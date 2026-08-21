@@ -8,10 +8,16 @@ const capacity = { aiCalls: 4, textCalls: 3, imageCalls: 1, estimatedMinutes: 2,
 const preflight = {
   createdAt: new Date().toISOString(), sourceTextChars: 321, sourceFingerprint: 'SENTINEL_SOURCE_FINGERPRINT',
   selected: [
-    { type: 'quiz', index: 0, uiId: 'SENTINEL_UI_ID_QUIZ', directive: 'SENTINEL_DIRECTIVE_QUIZ' },
-    { type: 'image', index: 1, uiId: 'SENTINEL_UI_ID_IMAGE', directive: 'SENTINEL_DIRECTIVE_IMAGE' },
+    { type: 'quiz', index: 0, uiId: 'SENTINEL_UI_ID_QUIZ', directive: 'SENTINEL_DIRECTIVE_QUIZ', generationAction: 'mixed', generationVariants: [
+      { generationIdentity: 'gm-sentinel-quiz-en', action: 'reuse', grade: '5th Grade', language: 'English', existingArtifactId: 'SENTINEL_RESOURCE_ID' },
+      { generationIdentity: 'gm-sentinel-quiz-es', action: 'generate', grade: '5th Grade', language: 'Spanish' },
+    ] },
+    { type: 'image', index: 1, uiId: 'SENTINEL_UI_ID_IMAGE', directive: 'SENTINEL_DIRECTIVE_IMAGE', generationAction: 'generate', generationVariants: [
+      { generationIdentity: 'gm-sentinel-image-en', action: 'generate', grade: '5th Grade', language: 'English' },
+    ] },
   ],
   skipped: [], differentiation: { range: 'None', types: ['simplified'], levelCount: 1 }, estimatedResourceGenerations: 4,
+  generationMatrix: { summary: { rowCount: 2, variantCount: 3, expectedCalls: 2, actions: { reuse: 1, generate: 2, variant: 0, refresh: 0 } } },
   planSchemaVersion: 2, capabilityFingerprint: 'full-pack-plan-v2', capacity,
 };
 const readyEnvelope = () => ({
@@ -155,9 +161,8 @@ test('actual Full Pack sidebar restores, adapts capacity, collapses rows, and ex
 });
 
 test.describe('local unreleased Full Pack editor', () => {
-  test.skip(!process.env.PW_BASE_URL, 'Set PW_BASE_URL to a local build that contains the unreleased Full Pack editor.');
-
-  test('actual Full Pack review lets the educator edit and persist the exact ready plan', async ({ page }) => {
+  test('actual Full Pack review lets the educator edit and persist the exact ready plan', async ({ page }, testInfo) => {
+  test.skip(!String(testInfo.project.use.baseURL || '').includes('127.0.0.1'), 'Run with the local Full Pack Playwright config.');
   const envelope: any = readyEnvelope();
   envelope.run.targetMode = 'current-settings';
   envelope.run.groups = {};
@@ -175,6 +180,13 @@ test.describe('local unreleased Full Pack editor', () => {
   const panel = page.getByTestId('full-pack-review-panel');
   await expect(panel).toBeVisible({ timeout: 120000 });
   await expect(panel.getByTestId('full-pack-text-access-summary')).toContainText('primary/source text remains available');
+  const exactCells = panel.getByTestId('full-pack-generation-cells').first();
+  await expect(exactCells).toContainText('5th Grade · English');
+  await expect(exactCells).toContainText('Reuse');
+  await expect(exactCells).toContainText('5th Grade · Spanish');
+  await expect(exactCells).toContainText('Generate');
+  await expect(panel.getByRole('progressbar')).toHaveCount(0);
+  await expect(panel.getByTestId('full-pack-row-generation-impact').first()).not.toHaveAttribute('aria-live');
 
   const policy = panel.getByTestId('full-pack-primary-policy');
   await policy.focus();
@@ -184,13 +196,18 @@ test.describe('local unreleased Full Pack editor', () => {
   await expect(panel.getByTestId('full-pack-text-access-summary')).toContainText('1 supplemental Adapted Text companion');
 
   const quizDirective = panel.locator('[data-testid="full-pack-resource-directive"][data-resource-key="SENTINEL_UI_ID_QUIZ"]');
+  await quizDirective.locator('xpath=ancestor::details[1]').locator('summary').click();
+  await expect(quizDirective).toBeVisible();
   await quizDirective.fill('Use evidence from two different paragraphs.');
   await panel.locator('[data-testid="full-pack-move-down"][data-resource-key="SENTINEL_UI_ID_QUIZ"]').click();
 
   await panel.getByTestId('full-pack-add-resource-select').selectOption('glossary');
   await panel.getByTestId('full-pack-add-resource').click();
   await expect(panel.getByTestId('full-pack-resource-type')).toHaveCount(4);
-  await panel.getByTestId('full-pack-resource-type').last().selectOption('outline');
+  const addedResourceType = panel.getByTestId('full-pack-resource-type').last();
+  await addedResourceType.locator('xpath=ancestor::details[1]').locator('summary').click();
+  await expect(addedResourceType).toBeVisible();
+  await addedResourceType.selectOption('outline');
 
   await expect.poll(async () => page.evaluate(key => {
     const value = JSON.parse(localStorage.getItem(key) || 'null');
@@ -294,6 +311,51 @@ test('actual Blueprint restore explains failures safely and copies and downloads
   const downloadedReport = fs.readFileSync(downloadedPath!, 'utf8');
   expectPrivateDiagnostic(downloadedReport, secrets);
   expect(JSON.parse(downloadedReport)).toMatchObject({ reportVersion: 2, done: true });
+});
+test('actual Blueprint restore distinguishes an available variant from a pruned sibling', async ({ page }) => {
+  await bootAlloFlow(page, 'full');
+  const uiId = 'SENTINEL_BLUEPRINT_PARTIAL_UI_ID';
+  const liveArtifactId = 'SENTINEL_BLUEPRINT_LIVE_ARTIFACT';
+  const missingArtifactId = 'SENTINEL_BLUEPRINT_MISSING_ARTIFACT';
+  const envelope: any = blueprintEnvelope();
+  envelope.plan.resourcePlan = [{
+    tool: 'quiz', directive: 'Compare two audiences.', uiId,
+    generationVariants: [
+      { generationIdentity: 'gm-blueprint-live', action: 'generate', grade: '5th Grade', language: 'English' },
+      { generationIdentity: 'gm-blueprint-missing', action: 'generate', grade: '5th Grade', language: 'Spanish' },
+    ],
+  }];
+  envelope.run.rows = {
+    [uiId]: {
+      uiId, tool: 'quiz', status: 'partial', resourceId: liveArtifactId,
+      resourceIds: [liveArtifactId, missingArtifactId],
+      missingResourceIds: [missingArtifactId], resourcePartiallyMissing: true,
+      variantResults: [
+        { generationIdentity: 'gm-blueprint-live', action: 'generate', status: 'landed', grade: '5th Grade', language: 'English', resourceId: liveArtifactId, artifactId: liveArtifactId },
+        { generationIdentity: 'gm-blueprint-missing', action: 'generate', status: 'landed', grade: '5th Grade', language: 'Spanish', resourceId: missingArtifactId, artifactId: missingArtifactId },
+      ],
+    },
+  };
+
+  await page.evaluate(async ({ key, value, artifactId }) => {
+    const storage = (window as any).AlloModules?.UtilsPure?.storageDB;
+    if (!storage) throw new Error('UtilsPure storageDB was not available');
+    await storage.set('allo_offline_history', { items: [{
+      id: artifactId, type: 'quiz', title: 'Available English quiz',
+      timestamp: new Date().toISOString(), data: { questions: [] },
+    }] });
+    localStorage.setItem(key, JSON.stringify(value));
+  }, { key: BLUEPRINT_STORE_KEY, value: envelope, artifactId: liveArtifactId });
+  await page.reload();
+  await page.getByRole('button', { name: /Message|AI Guide & Assistant/i }).first().click({ timeout: 120000 });
+
+  const card = page.locator('[data-help-key="blueprint_card_panel"]').first();
+  await expect(card).toBeVisible({ timeout: 120000 });
+  await expect(card.getByTestId('bp-variant-result')).toHaveCount(2);
+  await expect(card.locator('[data-testid="bp-variant-result"][data-variant-status="landed"]')).toHaveCount(1);
+  await expect(card.locator('[data-testid="bp-variant-result"][data-variant-status="missing"]')).toHaveCount(1);
+  await expect(card.getByTestId('bp-preview-variant-btn')).toHaveCount(1);
+  await expect(card.locator('[data-artifact-id="' + missingArtifactId + '"]')).toContainText('Resource gone');
 });
 test('actual Blueprint quota fallback stays visible and persists only pseudonymized diagnostics', async ({ page }) => {
   await seedBlueprintEnvelope(page, blueprintEnvelope(), true);

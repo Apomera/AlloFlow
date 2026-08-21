@@ -202,19 +202,27 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('somaticReset')))
   ];
 
   var VISUALS = [
-    { id: 'circle', label: 'Breathing circle' },
-    { id: 'ripples', label: 'Soft ripples' },
-    { id: 'glow', label: 'Focus glow' },
-    { id: 'wave', label: 'Flowing wave' },
-    { id: 'flower', label: 'Petal bloom' },
-    { id: 'horizon', label: 'Grounding horizon' },
-    { id: 'none', label: 'No visual' }
+    { id: 'circle', label: 'Breathing circle', symbol: '\u25EF', description: 'Expands and softens with the optional breath rhythm.' },
+    { id: 'ripples', label: 'Soft ripples', symbol: '\u223F', description: 'Three rings spread gently from a steady center.' },
+    { id: 'glow', label: 'Focus glow', symbol: '\u25C9', description: 'A quiet center point brightens and softens.' },
+    { id: 'wave', label: 'Flowing wave', symbol: '\u2248', description: 'Layered lines rise and settle with the breath rhythm.' },
+    { id: 'flower', label: 'Petal bloom', symbol: '\u273F', description: 'Petals open and close around a steady center.' },
+    { id: 'horizon', label: 'Grounding horizon', symbol: '\u25E1', description: 'A sun rises and settles over a quiet horizon.' },
+    { id: 'path', label: 'Breath path', symbol: '\u2194', description: 'A directional point follows the optional breath rhythm along a clear line.' },
+    { id: 'orbit', label: 'Breath orbit', symbol: '\u25CC', description: 'A round inhale marker and diamond exhale marker move clockwise across solid and dotted arcs that bold the current phase.' },
+    { id: 'none', label: 'No visual', symbol: '\u2014', description: 'Uses only the timer and optional sound cue.' }
   ];
 
   var VISUAL_MOTIONS = [
     { id: 'still', label: 'Still' },
     { id: 'gentle', label: 'Gentle' },
     { id: 'full', label: 'Full' }
+  ];
+
+  var GUIDANCE_MODES = [
+    { id: 'full', label: 'Full cue', description: 'Shows the phase, gentle wording, and count.' },
+    { id: 'phase', label: 'Phase only', description: 'Shows only In, Out, Ready, or Paused.' },
+    { id: 'hidden', label: 'Hidden', description: 'Keeps visible words off while screen-reader phase cues remain on.' }
   ];
 
   function defaultState() {
@@ -233,6 +241,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('somaticReset')))
       visualExpanded: false,
       pacedBreathing: true,
       soundEnabled: true,
+      showTimer: true,
+      guidanceMode: 'full',
+      showGuidance: true,
       showAll: false,
       lastDurationSec: 0,
       logs: []
@@ -287,6 +298,13 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('somaticReset')))
       if (VISUAL_MOTIONS[i].id === id) return VISUAL_MOTIONS[i];
     }
     return VISUAL_MOTIONS[1];
+  }
+
+  function getGuidanceMode(id) {
+    for (var i = 0; i < GUIDANCE_MODES.length; i += 1) {
+      if (GUIDANCE_MODES[i].id === id) return GUIDANCE_MODES[i];
+    }
+    return GUIDANCE_MODES[0];
   }
 
   function findProtocol(id) {
@@ -347,6 +365,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('somaticReset')))
     amount = Math.max(0, Math.min(1, amount));
     return {
       phase: phase,
+      phaseProgress: Math.max(0, Math.min(1, phaseProgress)),
+      cycleProgress: cycle ? Math.max(0, Math.min(1, position / cycle)) : 0,
+      absoluteCycleProgress: cycle ? Math.max(0, elapsed / cycle) : 0,
       count: Math.max(1, count),
       amount: amount,
       label: protocol.cadence
@@ -441,6 +462,14 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('somaticReset')))
       d.visualMode = getVisual(d.visualMode).id;
       d.visualMotion = getVisualMotion(d.visualMotion).id;
       d.visualExpanded = !!d.visualExpanded;
+      d.showTimer = d.showTimer !== false;
+      var hasSavedGuidanceMode = GUIDANCE_MODES.some(function(option) {
+        return option.id === rawState.guidanceMode;
+      });
+      d.guidanceMode = getGuidanceMode(hasSavedGuidanceMode
+        ? rawState.guidanceMode
+        : (rawState.showGuidance === false ? 'hidden' : 'full')).id;
+      d.showGuidance = d.guidanceMode !== 'hidden';
       d.logs = Array.isArray(d.logs) ? d.logs : [];
 
       var theme = (ctx && ctx.theme) || {};
@@ -485,11 +514,19 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('somaticReset')))
       var speakingState = React.useState(false);
       var isSpeaking = speakingState[0];
       var setIsSpeaking = speakingState[1];
+      var quietViewState = React.useState(false);
+      var quietView = quietViewState[0];
+      var setQuietView = quietViewState[1];
+      var visualPreviewState = React.useState('idle');
+      var visualPreviewPhase = visualPreviewState[0];
+      var setVisualPreviewPhase = visualPreviewState[1];
       var removalState = React.useState(null);
       var removalAction = removalState[0];
       var setRemovalAction = removalState[1];
       var completionRef = React.useRef(false);
       var deadlineRef = React.useRef(null);
+      var visualPreviewTimeoutsRef = React.useRef([]);
+      var orbitMotionRef = React.useRef(false);
       var viewHeadingRef = React.useRef(null);
       var historyHeadingRef = React.useRef(null);
       var confirmCancelRef = React.useRef(null);
@@ -503,7 +540,23 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('somaticReset')))
         setRemaining(selectedProtocol.duration);
         deadlineRef.current = null;
         completionRef.current = false;
+        setQuietView(false);
       }, [d.selectedProtocol, d.view]);
+
+      React.useEffect(function() {
+        clearVisualPreviewTimers();
+        setVisualPreviewPhase('idle');
+        return clearVisualPreviewTimers;
+      }, [d.view, d.selectedProtocol, d.visualMode, d.visualMotion, d.pacedBreathing, reduceMotion]);
+
+      React.useEffect(function() {
+        orbitMotionRef.current = d.view === 'practice' &&
+          d.visualMode === 'orbit' &&
+          !!(selectedProtocol.cadence && d.pacedBreathing) &&
+          d.visualMotion !== 'still' &&
+          !reduceMotion &&
+          isRunning;
+      }, [d.view, d.visualMode, d.visualMotion, d.pacedBreathing, selectedProtocol.id, reduceMotion, isRunning]);
 
       React.useEffect(function() {
         if (!isRunning || d.view !== 'practice') return undefined;
@@ -584,6 +637,45 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('somaticReset')))
         if (typeof ctx.announceToSR === 'function') ctx.announceToSR(message);
       }
 
+      function clearVisualPreviewTimers() {
+        visualPreviewTimeoutsRef.current.forEach(function(timeoutId) {
+          window.clearTimeout(timeoutId);
+        });
+        visualPreviewTimeoutsRef.current = [];
+      }
+
+      function visualPreviewUnavailableReason(protocol) {
+        if (d.visualMode === 'none') return 'Choose a visual to preview motion.';
+        if (reduceMotion) return 'System reduced motion keeps previews still.';
+        if (d.visualMotion === 'still') return 'Choose Gentle or Full motion to preview.';
+        if (!protocol.cadence) return 'This reset uses natural breathing.';
+        if (!d.pacedBreathing) return 'Turn on breath count to preview a rhythm.';
+        return '';
+      }
+
+      function startVisualPreview(protocol) {
+        if (visualPreviewUnavailableReason(protocol)) return;
+        clearVisualPreviewTimers();
+        setVisualPreviewPhase('in');
+        announce('Visual preview: breathe in gently.');
+        var inhaleTimeout = window.setTimeout(function() {
+          setVisualPreviewPhase('out');
+          announce('Visual preview: breathe out slowly.');
+        }, protocol.cadence[0] * 1000);
+        var completeTimeout = window.setTimeout(function() {
+          clearVisualPreviewTimers();
+          setVisualPreviewPhase('idle');
+          announce('Visual preview complete. The practice timer has not started.');
+        }, (protocol.cadence[0] + protocol.cadence[1]) * 1000);
+        visualPreviewTimeoutsRef.current = [inhaleTimeout, completeTimeout];
+      }
+
+      function stopVisualPreview() {
+        clearVisualPreviewTimers();
+        setVisualPreviewPhase('idle');
+        announce('Visual preview stopped. The practice timer has not started.');
+      }
+
       function toast(message, type) {
         if (typeof ctx.addToast === 'function') ctx.addToast(message, type || 'info');
       }
@@ -609,6 +701,11 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('somaticReset')))
         setRemaining(next);
         setIsRunning(false);
         announce('Practice paused.');
+      }
+
+      function togglePracticeTimer() {
+        if (isRunning) pausePracticeTimer();
+        else startPracticeTimer();
       }
 
       function restartPracticeTimer() {
@@ -1025,20 +1122,64 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('somaticReset')))
           });
       }
 
-      function visualChoiceButtons() {
-        return VISUALS.map(function(visual) {
-          var active = d.visualMode === visual.id;
-          return h('button', {
-            key: visual.id,
-            type: 'button',
-            onClick: function() {
-              setToolState({ visualMode: visual.id });
-              announce(visual.label + ' selected.');
-            },
-            'aria-pressed': active,
-            style: secondaryButton(active ? { borderColor: colors.accent, background: colors.soft, color: colors.accent } : {})
-          }, visual.label);
-        });
+      function visualChoiceControl() {
+        var current = getVisual(d.visualMode);
+        var descriptionId = 'somatic-reset-visual-description';
+        return h('div', {
+          'data-visual-picker': 'true',
+          'data-selected-visual': current.id,
+          style: { display: 'grid', gap: 5, flex: '1 1 240px', minWidth: 0, maxWidth: 390 }
+        },
+          h('label', {
+            htmlFor: 'somatic-reset-visual-guide',
+            style: { color: colors.text, fontSize: 11, fontWeight: 800 }
+          }, 'Visual guide'),
+          h('div', {
+            style: {
+              display: 'grid',
+              gridTemplateColumns: '32px minmax(0, 1fr)',
+              alignItems: 'center',
+              border: '1px solid ' + colors.border,
+              borderRadius: 10,
+              background: colors.input,
+              overflow: 'hidden'
+            }
+          },
+            h('span', {
+              'aria-hidden': 'true',
+              style: { color: colors.accent, fontSize: 18, lineHeight: 1, textAlign: 'center' }
+            }, current.symbol),
+            h('select', {
+              id: 'somatic-reset-visual-guide',
+              'data-visual-select': 'true',
+              value: current.id,
+              'aria-describedby': descriptionId,
+              onChange: function(event) {
+                var next = getVisual(event.target.value);
+                setToolState({ visualMode: next.id });
+                announce(next.label + ' selected.');
+              },
+              style: {
+                width: '100%',
+                minHeight: 42,
+                padding: '8px 30px 8px 5px',
+                border: 0,
+                background: colors.input,
+                color: colors.text,
+                fontSize: 13,
+                fontWeight: 750,
+                cursor: 'pointer'
+              }
+            }, VISUALS.map(function(visual) {
+              return h('option', { key: visual.id, value: visual.id }, visual.label);
+            }))
+          ),
+          h('span', {
+            id: descriptionId,
+            'data-visual-description': current.id,
+            style: { color: colors.muted, fontSize: 11, fontWeight: 650, lineHeight: 1.4 }
+          }, current.description)
+        );
       }
 
       function visualMotionControl() {
@@ -1046,6 +1187,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('somaticReset')))
         return h('label', { style: { display: 'grid', gap: 4, minWidth: 132, color: colors.text, fontSize: 11, fontWeight: 800 } },
           h('span', null, 'Visual motion'),
           h('select', {
+            'data-visual-motion-select': 'true',
             value: d.visualMotion,
             disabled: disabled,
             onChange: function(event) {
@@ -1071,6 +1213,33 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('somaticReset')))
         );
       }
 
+      function visualPreviewControl(protocol) {
+        var unavailable = visualPreviewUnavailableReason(protocol);
+        var previewing = visualPreviewPhase !== 'idle';
+        var reasonId = 'somatic-reset-visual-preview-note';
+        return h('div', { style: { display: 'grid', gap: 4, minWidth: 176, alignSelf: 'end' } },
+          h('button', {
+            type: 'button',
+            'data-visual-preview-toggle': 'true',
+            'data-visual-preview-phase': visualPreviewPhase,
+            onClick: function() {
+              if (previewing) stopVisualPreview();
+              else startVisualPreview(protocol);
+            },
+            disabled: !!unavailable,
+            'aria-pressed': previewing,
+            'aria-describedby': unavailable ? reasonId : undefined,
+            style: secondaryButton(Object.assign({ minHeight: 42 }, previewing
+              ? { borderColor: colors.accent, color: colors.accent }
+              : (unavailable ? { opacity: 0.62, cursor: 'not-allowed' } : {})))
+          }, previewing ? 'Stop preview' : 'Preview one breath'),
+          unavailable && h('span', {
+            id: reasonId,
+            style: { color: colors.muted, fontSize: 10, fontWeight: 650, lineHeight: 1.35 }
+          }, unavailable)
+        );
+      }
+
       function visualSizeButton() {
         if (d.visualMode === 'none') return null;
         return h('button', {
@@ -1084,6 +1253,25 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('somaticReset')))
         }, d.visualExpanded ? 'Large visual: on' : 'Large visual: off');
       }
 
+      function quietViewButton() {
+        return h('button', {
+          type: 'button',
+          onClick: function() {
+            setQuietView(!quietView);
+            announce(quietView ? 'Practice options restored.' : 'Quiet view on. Extra practice options are hidden.');
+          },
+          'aria-pressed': quietView,
+          'aria-keyshortcuts': quietView ? 'Escape' : undefined,
+          style: secondaryButton({
+            minHeight: 36,
+            padding: '6px 10px',
+            fontSize: 11,
+            borderColor: quietView ? colors.accent : colors.border,
+            color: quietView ? colors.accent : colors.text
+          })
+        }, quietView ? 'Exit quiet view' : 'Quiet view');
+      }
+
       function soundCueButton() {
         return h('button', {
           type: 'button',
@@ -1094,6 +1282,62 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('somaticReset')))
           'aria-pressed': d.soundEnabled,
           style: secondaryButton()
         }, d.soundEnabled ? 'Sound cue: on' : 'Sound cue: off');
+      }
+
+      function timerDisplayButton() {
+        return h('button', {
+          type: 'button',
+          onClick: function() {
+            setToolState({ showTimer: !d.showTimer });
+            announce(d.showTimer ? 'Countdown hidden. The practice will still finish automatically.' : 'Countdown shown.');
+          },
+          'aria-pressed': d.showTimer,
+          style: secondaryButton(d.showTimer ? {} : { borderColor: colors.accent, color: colors.accent })
+        }, d.showTimer ? 'Countdown: shown' : 'Countdown: hidden');
+      }
+
+      function guidanceDisplayControl() {
+        var current = getGuidanceMode(d.guidanceMode);
+        var descriptionId = 'somatic-reset-guidance-description';
+        return h('label', { style: { display: 'grid', gap: 4, minWidth: 190, maxWidth: 240, color: colors.text, fontSize: 11, fontWeight: 800 } },
+          h('span', null, 'Guidance words'),
+          h('select', {
+            'data-guidance-mode-select': 'true',
+            value: current.id,
+            'aria-describedby': descriptionId,
+            onChange: function(event) {
+              var next = getGuidanceMode(event.target.value);
+              setToolState({ guidanceMode: next.id, showGuidance: next.id !== 'hidden' });
+              if (next.id === 'full') announce('Full breathing cue selected.');
+              else if (next.id === 'phase') announce('Phase-only breathing cue selected.');
+              else announce('Guidance words hidden. Screen-reader phase cues remain on.');
+            },
+            style: {
+              minHeight: 42,
+              padding: '8px 30px 8px 10px',
+              borderRadius: 10,
+              border: '1px solid ' + colors.border,
+              background: colors.input,
+              color: colors.text,
+              fontSize: 13,
+              cursor: 'pointer'
+            }
+          }, GUIDANCE_MODES.map(function(option) {
+            return h('option', { key: option.id, value: option.id }, option.label);
+          })),
+          h('span', {
+            id: descriptionId,
+            'data-guidance-description': current.id,
+            style: { color: colors.muted, fontSize: 10, fontWeight: 650, lineHeight: 1.35 }
+          }, current.description)
+        );
+      }
+
+      function handlePracticeKeyDown(event) {
+        if (!quietView || event.key !== 'Escape') return;
+        event.preventDefault();
+        setQuietView(false);
+        announce('Quiet view closed. Practice options restored.');
       }
 
       function breathCountButton(protocol) {
@@ -1149,13 +1393,18 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('somaticReset')))
           ),
           h('fieldset', { style: cardStyle({ margin: 0 }) },
             h('legend', { style: { padding: '0 6px', color: colors.text, fontSize: 13, fontWeight: 850 } }, 'Choose a visual guide'),
-            h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } }, visualChoiceButtons()),
-            h('div', { style: { marginTop: 12 } }, renderVisual(selectedProtocol, true)),
-            h('div', { style: { marginTop: 10, display: 'flex', justifyContent: 'center' } }, visualMotionControl())
+            h('div', { style: { display: 'flex', justifyContent: 'center' } }, visualChoiceControl()),
+            h('div', { style: { marginTop: 12 } }, renderVisual(selectedProtocol, true, visualPreviewPhase)),
+            h('div', { style: { marginTop: 10, display: 'flex', alignItems: 'flex-start', justifyContent: 'center', gap: 8, flexWrap: 'wrap' } },
+              visualMotionControl(),
+              visualPreviewControl(selectedProtocol)
+            )
           ),
           h('div', { style: { display: 'flex', alignItems: 'center', gap: 9, flexWrap: 'wrap' } },
             breathCountButton(selectedProtocol),
             soundCueButton(),
+            timerDisplayButton(),
+            guidanceDisplayControl(),
             typeof ctx.callTTS === 'function' && h('button', {
               type: 'button',
               onClick: speakGuidance,
@@ -1179,35 +1428,49 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('somaticReset')))
         );
       }
 
-      function renderVisual(protocol, compact) {
+      function renderVisual(protocol, compact, previewMode) {
         var currentVisual = getVisual(d.visualMode);
         var breath = breathState(protocol, remaining);
         var usesPace = !!(protocol.cadence && d.pacedBreathing);
+        var previewing = !!(compact && (previewMode === 'in' || previewMode === 'out'));
+        var activeBreathPhase = previewing ? previewMode : breath.phase;
+        var activeBreathAmount = previewing ? (previewMode === 'in' ? 1 : 0) : breath.amount;
         var chosenMotion = getVisualMotion(d.visualMotion);
         var effectiveMotion = reduceMotion ? 'still' : chosenMotion.id;
         var motionStrength = effectiveMotion === 'full' ? 1 : (effectiveMotion === 'gentle' ? 0.58 : 0);
         var amount = !usesPace || motionStrength === 0
           ? 0.5
-          : 0.5 + (breath.amount - 0.5) * motionStrength;
+          : 0.5 + (activeBreathAmount - 0.5) * motionStrength;
         var scale = 0.76 + amount * 0.34;
-        var transitionMs = effectiveMotion === 'full' ? 780 : 1100;
+        var transitionMs = previewing
+          ? protocol.cadence[previewMode === 'in' ? 0 : 1] * 1000
+          : (effectiveMotion === 'full' ? 780 : 1100);
         var visualTransition = motionStrength === 0 ? 'none' : 'all ' + transitionMs + 'ms ease-in-out';
-        var expanded = !compact && d.visualExpanded;
-        var frameSize = compact ? 150 : (expanded ? 270 : 210);
-        var circleSize = compact ? 116 : (expanded ? 220 : 180);
+        var hasStarted = remaining < protocol.duration;
+        var phaseToken = usesPace ? (previewing ? previewMode : (isRunning ? breath.phase : (hasStarted ? 'paused' : 'ready'))) : 'steady';
+        var focused = !compact && quietView;
+        var expanded = !compact && (d.visualExpanded || focused);
+        var frameSize = compact ? 150 : (focused ? 300 : (expanded ? 270 : 210));
+        var circleSize = compact ? 116 : (focused ? 244 : (expanded ? 220 : 180));
         var frameCss = 'min(' + frameSize + 'px, 78vw)';
         var circleCss = 'min(' + circleSize + 'px, 66vw)';
-        var minimumHeight = compact ? 174 : (expanded ? 330 : 250);
-        var visualLabel = currentVisual.label + '. ' + (usesPace
-          ? breath.label + (isRunning ? ', count ' + breath.count : '')
-          : 'Steady guide; breathe naturally and move only if comfortable');
+        var minimumHeight = compact ? 174 : (focused ? 360 : (expanded ? 330 : 250));
+        var visualStatus = usesPace
+          ? (previewing
+              ? (previewMode === 'in' ? 'Preview: breathe in gently' : 'Preview: breathe out slowly')
+              : (isRunning ? breath.label + ', count ' + breath.count : (hasStarted ? 'Breath guide paused' : 'Optional breath guide ready')))
+          : 'Steady guide; breathe naturally and move only if comfortable';
+        var visualLabel = currentVisual.label + '. ' + visualStatus;
         if (effectiveMotion === 'still') visualLabel += '. Visual motion is still.';
 
         if (currentVisual.id === 'none') {
           return h('div', {
             'data-visual-mode': 'none',
+            'data-visual-phase': phaseToken,
+            'data-visual-running': isRunning ? 'true' : 'false',
+            'data-visual-size': compact ? 'preview' : (focused ? 'focus' : 'standard'),
             style: {
-              minHeight: compact ? 120 : 170,
+              minHeight: compact ? 120 : (focused ? 240 : 170),
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
@@ -1328,6 +1591,212 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('somaticReset')))
             h('path', { d: 'M 0 128 Q 60 112 120 128 T 240 128', fill: 'none', stroke: colors.accent, strokeWidth: compact ? 2 : 3, strokeLinecap: 'round', opacity: 0.82 }),
             h('path', { d: 'M 18 144 Q 70 132 120 144 T 222 144', fill: 'none', stroke: colors.muted, strokeWidth: 2, strokeLinecap: 'round', opacity: 0.68 })
           );
+        } else if (currentVisual.id === 'path') {
+          var pathDotX = 28 + amount * 184;
+          var pathDirection = usesPace && (isRunning || previewing) && effectiveMotion !== 'still'
+            ? (activeBreathPhase === 'in' ? 'right' : 'left')
+            : 'steady';
+          var pathMarker = pathDirection === 'right'
+            ? 'M -4 -5 L 5 0 L -4 5 Z'
+            : 'M 4 -5 L -5 0 L 4 5 Z';
+          visualBody = h('svg', {
+            viewBox: '0 0 240 100',
+            'aria-hidden': 'true',
+            focusable: 'false',
+            'data-breath-path': 'true',
+            'data-path-position': Math.round(amount * 100),
+            'data-path-direction': pathDirection,
+            style: { width: frameCss, height: 'auto', overflow: 'visible' }
+          },
+            h('line', { x1: 28, y1: 50, x2: 212, y2: 50, stroke: colors.border, strokeWidth: compact ? 5 : 6, strokeLinecap: 'round' }),
+            h('line', { x1: 28, y1: 50, x2: pathDotX.toFixed(2), y2: 50, stroke: colors.accent, strokeWidth: compact ? 3 : 4, strokeLinecap: 'round', style: { transition: visualTransition } }),
+            h('circle', { cx: 28, cy: 50, r: compact ? 5 : 6, fill: colors.panel, stroke: colors.muted, strokeWidth: 2 }),
+            h('circle', { cx: 212, cy: 50, r: compact ? 5 : 6, fill: colors.panel, stroke: colors.muted, strokeWidth: 2 }),
+            h('circle', { cx: pathDotX.toFixed(2), cy: 50, r: compact ? 13 : 16, fill: colors.soft, opacity: 0.72, style: { transition: visualTransition } }),
+            h('circle', { cx: pathDotX.toFixed(2), cy: 50, r: compact ? 7 : 9, fill: colors.panelAlt, stroke: colors.accent, strokeWidth: compact ? 2 : 3, style: { transition: visualTransition } }),
+            pathDirection === 'steady'
+              ? h('circle', { cx: pathDotX.toFixed(2), cy: 50, r: compact ? 2.5 : 3, fill: colors.accent, style: { transition: visualTransition } })
+              : h('path', {
+                  d: pathMarker,
+                  transform: 'translate(' + pathDotX.toFixed(2) + ' 50)',
+                  fill: colors.accent,
+                  style: { transition: visualTransition }
+                })
+          );
+        } else if (currentVisual.id === 'orbit') {
+          var orbitCenter = 120;
+          var orbitRadius = 82;
+          var orbitCycle = protocol.cadence ? protocol.cadence[0] + protocol.cadence[1] : 1;
+          var inhaleFraction = protocol.cadence ? protocol.cadence[0] / orbitCycle : 0.5;
+          var previewCycleProgress = previewMode === 'in' ? inhaleFraction : 1;
+          var activeCycleProgress = previewing ? previewCycleProgress : breath.absoluteCycleProgress;
+          var orbitCanMove = usesPace && effectiveMotion !== 'still';
+          var orbitMoving = orbitCanMove && (isRunning || previewing);
+          var orbitProgress = orbitCanMove ? activeCycleProgress : 0;
+          var orbitDisplayedProgress = previewing ? orbitProgress : orbitProgress % 1;
+          var orbitRotation = Math.round(orbitProgress * 3600) / 10;
+          var orbitMarkerTransition = previewing || (orbitMoving && orbitMotionRef.current) ? visualTransition : 'none';
+          var orbitActiveSegment = orbitMoving ? activeBreathPhase : 'steady';
+          var orbitMarkerPhase = orbitMoving ? activeBreathPhase : 'steady';
+          var orbitMarkerShape = orbitMarkerPhase === 'out' ? 'diamond' : 'circle';
+          var orbitSegmentTransition = orbitMoving && motionStrength > 0
+            ? 'stroke-width 260ms ease-in-out, opacity 260ms ease-in-out'
+            : 'none';
+          var inhaleSegmentState = orbitActiveSegment === 'steady' ? 'steady' : (orbitActiveSegment === 'in' ? 'active' : 'inactive');
+          var exhaleSegmentState = orbitActiveSegment === 'steady' ? 'steady' : (orbitActiveSegment === 'out' ? 'active' : 'inactive');
+          var orbitPhaseEndAngle = inhaleFraction * Math.PI * 2 - (Math.PI / 2);
+          var orbitHandoffX = orbitCenter + Math.cos(orbitPhaseEndAngle) * orbitRadius;
+          var orbitHandoffY = orbitCenter + Math.sin(orbitPhaseEndAngle) * orbitRadius;
+
+          function orbitPoint(fraction) {
+            var angle = fraction * Math.PI * 2 - (Math.PI / 2);
+            return {
+              x: orbitCenter + Math.cos(angle) * orbitRadius,
+              y: orbitCenter + Math.sin(angle) * orbitRadius
+            };
+          }
+
+          function orbitArc(startFraction, endFraction) {
+            var start = orbitPoint(startFraction);
+            var end = orbitPoint(endFraction);
+            var largeArc = endFraction - startFraction > 0.5 ? 1 : 0;
+            return 'M ' + start.x.toFixed(2) + ' ' + start.y.toFixed(2) +
+              ' A ' + orbitRadius + ' ' + orbitRadius + ' 0 ' + largeArc + ' 1 ' + end.x.toFixed(2) + ' ' + end.y.toFixed(2);
+          }
+
+          visualBody = h('svg', {
+            viewBox: '0 0 240 240',
+            'aria-hidden': 'true',
+            focusable: 'false',
+            'data-breath-orbit': 'true',
+            'data-orbit-phase': phaseToken,
+            'data-orbit-progress': orbitCanMove ? Math.round(orbitDisplayedProgress * 100) : 'steady',
+            'data-orbit-turn': orbitCanMove ? Math.floor(orbitProgress) : 'steady',
+            'data-orbit-rotation': orbitCanMove ? orbitRotation : 'steady',
+            'data-orbit-direction': orbitMoving ? 'clockwise' : 'steady',
+            'data-orbit-active-segment': orbitActiveSegment,
+            'data-orbit-inhale-percent': Math.round(inhaleFraction * 100),
+            style: { width: frameCss, height: 'auto', overflow: 'visible' }
+          },
+            h('circle', {
+              cx: orbitCenter,
+              cy: orbitCenter,
+              r: orbitRadius,
+              fill: 'none',
+              stroke: colors.border,
+              strokeWidth: compact ? 7 : 9
+            }),
+            h('path', {
+              d: orbitArc(0, inhaleFraction),
+              fill: 'none',
+              stroke: colors.accent,
+              strokeLinecap: 'round',
+              'data-orbit-segment': 'inhale',
+              'data-orbit-segment-state': inhaleSegmentState,
+              style: {
+                strokeWidth: inhaleSegmentState === 'active' ? (compact ? 6 : 7) : (inhaleSegmentState === 'inactive' ? (compact ? 3 : 4) : (compact ? 4 : 5)),
+                opacity: inhaleSegmentState === 'active' ? 1 : (inhaleSegmentState === 'inactive' ? 0.45 : 0.78),
+                transition: orbitSegmentTransition
+              }
+            }),
+            h('path', {
+              d: orbitArc(inhaleFraction, 1),
+              fill: 'none',
+              stroke: colors.muted,
+              strokeLinecap: 'round',
+              strokeDasharray: compact ? '3 7' : '4 8',
+              'data-orbit-segment': 'exhale',
+              'data-orbit-segment-state': exhaleSegmentState,
+              style: {
+                strokeWidth: exhaleSegmentState === 'active' ? (compact ? 5 : 6) : (exhaleSegmentState === 'inactive' ? (compact ? 2 : 3) : (compact ? 3 : 4)),
+                opacity: exhaleSegmentState === 'active' ? 1 : (exhaleSegmentState === 'inactive' ? 0.45 : 0.78),
+                transition: orbitSegmentTransition
+              }
+            }),
+            h('circle', {
+              cx: orbitCenter,
+              cy: orbitCenter,
+              r: 30 + amount * 27,
+              fill: colors.soft,
+              stroke: colors.accent,
+              strokeWidth: compact ? 1.5 : 2,
+              opacity: 0.48 + amount * 0.28,
+              style: { transition: visualTransition },
+              'data-orbit-center': 'true'
+            }),
+            h('circle', {
+              cx: orbitCenter,
+              cy: orbitCenter,
+              r: compact ? 5 : 7,
+              fill: colors.panelAlt,
+              stroke: colors.accent,
+              strokeWidth: 2
+            }),
+            h('rect', {
+              x: orbitHandoffX - (compact ? 4 : 5),
+              y: orbitHandoffY - (compact ? 4 : 5),
+              width: compact ? 8 : 10,
+              height: compact ? 8 : 10,
+              rx: 2,
+              fill: colors.panel,
+              stroke: colors.accent,
+              strokeWidth: 2,
+              transform: 'rotate(45 ' + orbitHandoffX.toFixed(2) + ' ' + orbitHandoffY.toFixed(2) + ')',
+              'data-orbit-handoff': 'true'
+            }),
+            h('g', {
+              'data-orbit-marker': 'true',
+              'data-orbit-marker-phase': orbitMarkerPhase,
+              'data-orbit-marker-shape': orbitMarkerShape,
+              'data-orbit-marker-direction': orbitMoving ? 'clockwise' : 'steady',
+              style: {
+                transform: 'rotate(' + orbitRotation + 'deg)',
+                transformOrigin: orbitCenter + 'px ' + orbitCenter + 'px',
+                transition: orbitMarkerTransition
+              }
+            },
+              h('circle', {
+                cx: orbitCenter,
+                cy: orbitCenter - orbitRadius,
+                r: compact ? 12 : 15,
+                fill: colors.soft,
+                opacity: 0.7
+              }),
+              orbitMarkerShape === 'diamond'
+                ? h('rect', {
+                    x: orbitCenter - (compact ? 5 : 6),
+                    y: orbitCenter - orbitRadius - (compact ? 5 : 6),
+                    width: compact ? 10 : 12,
+                    height: compact ? 10 : 12,
+                    rx: 2,
+                    fill: colors.panelAlt,
+                    stroke: colors.accent,
+                    strokeWidth: compact ? 2 : 3,
+                    transform: 'rotate(45 ' + orbitCenter + ' ' + (orbitCenter - orbitRadius) + ')',
+                    'data-orbit-marker-core': 'diamond'
+                  })
+                : h('circle', {
+                    cx: orbitCenter,
+                    cy: orbitCenter - orbitRadius,
+                    r: compact ? 6 : 8,
+                    fill: colors.panelAlt,
+                    stroke: colors.accent,
+                    strokeWidth: compact ? 2 : 3,
+                    'data-orbit-marker-core': 'circle'
+                  }),
+              orbitMoving && h('path', {
+                d: 'M ' + (orbitCenter - 4) + ' ' + (orbitCenter - orbitRadius - 4) +
+                  ' L ' + (orbitCenter + 4) + ' ' + (orbitCenter - orbitRadius) +
+                  ' L ' + (orbitCenter - 4) + ' ' + (orbitCenter - orbitRadius + 4),
+                fill: 'none',
+                stroke: colors.accent,
+                strokeWidth: compact ? 1.5 : 2,
+                strokeLinecap: 'round',
+                strokeLinejoin: 'round',
+                'data-orbit-direction-cue': 'clockwise'
+              })
+            )
+          );
         } else {
           visualBody = h('div', {
             style: {
@@ -1349,20 +1818,53 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('somaticReset')))
           }, '\u223F');
         }
 
-        return h('div', {
-          role: 'img',
-          'aria-label': visualLabel,
+        var visualAction = isRunning ? 'pause' : (hasStarted ? 'resume' : 'start');
+        var visualContainerStyle = {
+          minHeight: minimumHeight,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          overflow: 'hidden'
+        };
+        var visualContainerProps = {
           'data-visual-mode': currentVisual.id,
           'data-visual-motion': effectiveMotion,
-          'data-visual-size': compact ? 'preview' : (expanded ? 'large' : 'standard'),
-          style: {
-            minHeight: minimumHeight,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            overflow: 'hidden'
-          }
-        }, visualBody);
+          'data-visual-phase': phaseToken,
+          'data-visual-preview': previewing ? previewMode : 'idle',
+          'data-visual-running': isRunning ? 'true' : 'false',
+          'data-visual-size': compact ? 'preview' : (focused ? 'focus' : (expanded ? 'large' : 'standard')),
+          style: visualContainerStyle
+        };
+        if (focused) {
+          visualContainerProps.type = 'button';
+          visualContainerProps.onClick = togglePracticeTimer;
+          visualContainerProps['aria-label'] = (visualAction === 'pause' ? 'Pause' : (visualAction === 'resume' ? 'Resume' : 'Start')) + ' practice from ' + currentVisual.label + '.';
+          visualContainerProps['aria-keyshortcuts'] = 'Enter Space';
+          visualContainerProps['data-visual-toggle'] = 'true';
+          visualContainerProps['data-visual-action'] = visualAction;
+          Object.assign(visualContainerStyle, {
+            width: '100%',
+            flexDirection: 'column',
+            gap: 8,
+            padding: 0,
+            border: '1px solid transparent',
+            borderRadius: 12,
+            background: 'transparent',
+            color: colors.text,
+            fontFamily: 'inherit',
+            cursor: 'pointer'
+          });
+        } else {
+          visualContainerProps.role = 'img';
+          visualContainerProps['aria-label'] = visualLabel;
+        }
+        return h(focused ? 'button' : 'div', visualContainerProps,
+          visualBody,
+          focused && h('span', {
+            'aria-hidden': 'true',
+            style: { color: colors.muted, fontSize: 11, fontWeight: 750 }
+          }, visualAction === 'pause' ? 'Press visual to pause' : (visualAction === 'resume' ? 'Press visual to resume' : 'Press visual to start'))
+        );
       }
 
       function moveToAfter() {
@@ -1385,25 +1887,96 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('somaticReset')))
       function renderPractice() {
         var breath = breathState(selectedProtocol, remaining);
         var usesPace = !!(selectedProtocol.cadence && d.pacedBreathing);
-        var cue = usesPace
-          ? breath.label + (isRunning ? ' - ' + breath.count : '')
-          : (isRunning ? 'Breathe naturally and move only if comfortable' : 'Start when you are ready');
-        return h('div', { style: { display: 'grid', gap: 14, maxWidth: 720, margin: '0 auto' } },
-          h('div', { style: cardStyle({ textAlign: 'center', padding: 20, overflow: 'hidden' }) },
-            h('div', { style: { color: colors.muted, fontSize: 12, fontWeight: 850, textTransform: 'uppercase', letterSpacing: 0.8 } }, selectedProtocol.name),
+        var elapsed = Math.max(0, selectedProtocol.duration - remaining);
+        var progressPercent = selectedProtocol.duration ? Math.round((elapsed / selectedProtocol.duration) * 100) : 0;
+        var fullCue = usesPace
+          ? (isRunning ? breath.label + ' - ' + breath.count : (elapsed > 0 ? 'Paused - resume when ready' : 'Optional breath guide is ready'))
+          : (isRunning ? 'Breathe naturally and move only if comfortable' : (elapsed > 0 ? 'Paused - resume when ready' : 'Start when you are ready'));
+        var phaseCue = isRunning
+          ? (usesPace ? (breath.phase === 'in' ? 'In' : 'Out') : 'Natural breath')
+          : (elapsed > 0 ? 'Paused' : 'Ready');
+        var guidanceVisible = d.guidanceMode !== 'hidden';
+        var cue = d.guidanceMode === 'phase' ? phaseCue : fullCue;
+        // Announce phase changes without announcing each numeric count. This
+        // gives nonvisual users the same optional pacing signal as the visual.
+        var phaseAnnouncement = usesPace
+          ? (isRunning ? breath.label : (elapsed > 0 ? 'Practice paused.' : 'Optional breath guide ready.'))
+          : (isRunning ? 'Natural breathing.' : 'Practice ready.');
+        var phaseAnnouncementToken = usesPace
+          ? (isRunning ? breath.phase : (elapsed > 0 ? 'paused' : 'ready'))
+          : 'steady';
+        return h('div', {
+          'data-quiet-view': quietView ? 'true' : 'false',
+          'data-timer-visible': d.showTimer ? 'true' : 'false',
+          'data-guidance-visible': guidanceVisible ? 'true' : 'false',
+          'data-guidance-mode': d.guidanceMode,
+          onKeyDown: handlePracticeKeyDown,
+          style: { display: 'grid', gap: 14, maxWidth: quietView ? 820 : 720, margin: '0 auto' }
+        },
+          h('div', { style: cardStyle({ textAlign: 'center', padding: quietView ? 24 : 20, overflow: 'hidden', background: quietView ? colors.panelAlt : colors.panel }) },
+            h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap' } },
+              h('div', { style: { color: colors.muted, fontSize: 12, fontWeight: 850, textTransform: 'uppercase', letterSpacing: 0.8 } }, selectedProtocol.name),
+              quietViewButton()
+            ),
             renderVisual(selectedProtocol),
-            h('div', { role: 'timer', 'aria-live': remaining === 0 ? 'polite' : 'off', style: { color: colors.text, fontSize: 46, lineHeight: 1, fontWeight: 850, fontVariantNumeric: 'tabular-nums' } }, formatTime(remaining)),
-            h('p', { style: { minHeight: 24, margin: '12px 0 0', color: colors.accent, fontSize: 17, fontWeight: 850 } }, cue),
+            h('div', {
+              role: 'timer',
+              'aria-live': remaining === 0 ? 'polite' : 'off',
+              style: d.showTimer
+                ? { color: colors.text, fontSize: 46, lineHeight: 1, fontWeight: 850, fontVariantNumeric: 'tabular-nums' }
+                : { position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0, 0, 0, 0)', clipPath: 'inset(50%)', whiteSpace: 'nowrap', border: 0 }
+            }, formatTime(remaining)),
+            d.showTimer && h('div', {
+              role: 'progressbar',
+              'aria-label': 'Practice progress',
+              'aria-valuemin': 0,
+              'aria-valuemax': selectedProtocol.duration,
+              'aria-valuenow': elapsed,
+              'aria-valuetext': formatTime(remaining) + ' remaining',
+              'data-session-progress': progressPercent,
+              style: {
+                width: 'min(420px, 88%)',
+                height: 6,
+                margin: '14px auto 0',
+                overflow: 'hidden',
+                borderRadius: 999,
+                background: isContrast ? '#ffffff' : colors.border,
+                boxShadow: isContrast ? '0 0 0 1px ' + colors.border : 'none'
+              }
+            }, h('div', {
+              style: {
+                width: progressPercent + '%',
+                height: '100%',
+                background: colors.accent,
+                transition: reduceMotion ? 'none' : 'width 250ms linear'
+              }
+            })),
+            !d.showTimer && h('p', {
+              'data-countdown-hidden': 'true',
+              style: { margin: '10px 0 0', color: colors.muted, fontSize: 12, lineHeight: 1.45 }
+            }, 'Countdown hidden. This practice will still finish automatically.'),
+            h('p', {
+              'data-guidance-cue': guidanceVisible ? 'visible' : 'hidden',
+              'data-guidance-detail': d.guidanceMode,
+              'data-guidance-phase': phaseAnnouncementToken,
+              style: guidanceVisible
+                ? { minHeight: 24, margin: '12px 0 0', color: colors.accent, fontSize: d.guidanceMode === 'phase' ? 15 : 17, fontWeight: 850 }
+                : visuallyHidden
+            }, cue),
+            h('span', {
+              role: 'status',
+              'aria-live': 'polite',
+              'aria-atomic': 'true',
+              'data-breath-phase-announcer': phaseAnnouncementToken,
+              style: visuallyHidden
+            }, phaseAnnouncement),
             reduceMotion && h('p', { style: { margin: '6px 0 0', color: colors.muted, fontSize: 11 } }, 'Reduced motion is on; the visual remains steady.'),
-            h('p', { style: { margin: '12px auto 0', maxWidth: 520, color: colors.muted, fontSize: 13, lineHeight: 1.55 } }, instructionFor(selectedProtocol, gradeBand))
+            !quietView && h('p', { style: { margin: '12px auto 0', maxWidth: 520, color: colors.muted, fontSize: 13, lineHeight: 1.55 } }, instructionFor(selectedProtocol, gradeBand))
           ),
           h('div', { style: { display: 'flex', justifyContent: 'center', gap: 10, flexWrap: 'wrap' } },
             h('button', {
               type: 'button',
-              onClick: function() {
-                if (isRunning) pausePracticeTimer();
-                else startPracticeTimer();
-              },
+              onClick: togglePracticeTimer,
               style: primaryButton({ minWidth: 150 })
             }, isRunning ? 'Pause' : (remaining < selectedProtocol.duration ? 'Resume' : 'Start')),
             h('button', {
@@ -1414,17 +1987,19 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('somaticReset')))
             }, 'Restart timer'),
             h('button', { type: 'button', onClick: moveToAfter, style: secondaryButton({ minWidth: 140 }) }, 'End & check in')
           ),
-          h('fieldset', { style: cardStyle({ margin: 0, padding: 12 }) },
+          !quietView && h('fieldset', { style: cardStyle({ margin: 0, padding: 12 }) },
             h('legend', { style: { padding: '0 6px', color: colors.text, fontSize: 13, fontWeight: 850 } }, 'Practice options'),
-            h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
-              visualChoiceButtons(),
+            h('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 8, flexWrap: 'wrap' } },
+              visualChoiceControl(),
               visualMotionControl(),
               visualSizeButton(),
               breathCountButton(selectedProtocol),
-              soundCueButton()
+              soundCueButton(),
+              timerDisplayButton(),
+              guidanceDisplayControl()
             )
           ),
-          h('details', { style: cardStyle({ padding: 12 }) },
+          !quietView && h('details', { style: cardStyle({ padding: 12 }) },
             h('summary', { style: { color: colors.text, cursor: 'pointer', fontSize: 13, fontWeight: 850 } }, 'Still option and safety'),
             h('p', { style: { color: colors.muted, fontSize: 13, lineHeight: 1.55, margin: '10px 0' } }, selectedProtocol.still),
             safetyNote(true)
@@ -1663,15 +2238,6 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('somaticReset')))
         );
       }
 
-      var content;
-      if (d.view === 'choose') content = renderChoose();
-      else if (d.view === 'setup') content = renderSetup();
-      else if (d.view === 'practice') content = renderPractice();
-      else if (d.view === 'after') content = renderAfter();
-      else if (d.view === 'summary') content = renderSummary();
-      else if (d.view === 'history') content = renderHistory();
-      else content = renderCheckin();
-
       var visuallyHidden = {
         position: 'absolute',
         width: 1,
@@ -1684,6 +2250,15 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('somaticReset')))
         whiteSpace: 'nowrap',
         border: 0
       };
+
+      var content;
+      if (d.view === 'choose') content = renderChoose();
+      else if (d.view === 'setup') content = renderSetup();
+      else if (d.view === 'practice') content = renderPractice();
+      else if (d.view === 'after') content = renderAfter();
+      else if (d.view === 'summary') content = renderSummary();
+      else if (d.view === 'history') content = renderHistory();
+      else content = renderCheckin();
 
       return h('section', {
         role: 'region',

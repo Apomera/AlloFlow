@@ -89,13 +89,14 @@ describe('Word Sounds live audio delivery hardening', () => {
 
   it('gates teacher launch and every live push boundary when audio is incomplete', () => {
     for (const source of [anti, app]) {
-      expect(source).toContain("title: 'Some activity audio is not ready'");
+      expect(source).toContain("title: t('word_sounds.audio_preflight_title') || 'Some activity audio is not ready'");
       expect(source).toContain('const safePortableTtsAssets = (value) => {');
       expect(source).toContain('if (safeAssets) packedWord._ttsAssets = safeAssets;');
       expect(source).toContain('if (requiredKeys) packedWord._ttsRequiredKeys = requiredKeys;');
-      expect(source).toContain("confirmText: actionLabel === 'send' ? 'Send anyway' : 'Start anyway'");
-      expect(source).toContain("detail: `Missing audio: ${missingPreview.join(', ')}");
-      expect(source).toContain("cancelText: 'Review audio'");
+      expect(source).toContain("t('word_sounds.audio_preflight_message_send'");
+      expect(source).toContain("t('word_sounds.audio_preflight_detail_more'");
+      expect(source).toContain("t('word_sounds.audio_preflight_send_anyway')");
+      expect(source).toContain("cancelText: t('word_sounds.audio_preflight_review') || 'Review audio'");
       expect(source).toContain('onCancel: reviewAudio');
       expect(source).toContain("const reviewAudio = typeof onReview === 'function' ? onReview : () => {");
       expect(source).toContain('requestIncompleteAudioConfirmation: (_coverage, onConfirm)');
@@ -121,9 +122,9 @@ describe('Word Sounds live audio delivery hardening', () => {
   it('reports last-mile audio readiness through the bounded live progress leaf', () => {
     for (const source of [anti, app]) {
     expect(source).toContain("structuralAudioStatus === 'missing'");
-      expect(source).toContain("wsAudioStatus === 'requested' ? 'Resend requested'");
+      expect(source).toContain("t('word_sounds.audio_status_requested') || 'Resend requested'");
       expect(source).toContain("handleRestoreView(resource, { suppressLiveFollow: true });");
-      expect(source).toContain("addToast('Open the Word Sounds resource, then review its missing audio.', 'info');");
+      expect(source).toContain("addToast(t('word_sounds.audio_open_resource_missing_toast') || 'Open the Word Sounds resource, then review its missing audio.', 'info');");
       expect(source).toContain('wordSoundsPreparedAudioStatus.ready');
       expect(source).toContain('mailboxVersion >= 14');
       expect(source).toContain('payload.audioStatus, payload.audioReady, payload.audioTotal');
@@ -132,8 +133,8 @@ describe('Word Sounds live audio delivery hardening', () => {
       expect(source).toContain('onPreparedAudioRetry: handleWordSoundsPreparedAudioRetry');
       expect(source).toContain('preparedAudioDeliveryAt: wordSoundsAudioDeliveryAt');
       expect(source).toContain('audioDeliveryAt: resendAt');
-      expect(source).toContain("const wsAudioPrimaryLabel = wsAudioStatus === 'damaged' ? 'Resend audio' : wsAudioLabel;");
-      expect(source).toContain('Review and repair audio for');
+      expect(source).toContain("const wsAudioPrimaryLabel = wsAudioStatus === 'damaged' ? (t('word_sounds.audio_resend') || 'Resend audio') : wsAudioLabel;");
+      expect(source).toContain("t('word_sounds.audio_review_repair_aria'");
     }
 
     const start = mailbox.indexOf('function validWsMetricNumber');
@@ -168,7 +169,7 @@ describe('Word Sounds live audio delivery hardening', () => {
     expect(player).toContain('setPreparedAudioStartupReady(true)');
     expect(player).toContain('&& !preparedAudioStartupReady;');
     expect(player).toContain('reportPreparedRuntimePlayback(outcome.status)');
-    expect(player).toContain('? "Try sound again"');
+    expect(player).toContain('? ts("word_sounds.audio_try_again")');
     expect(player).toContain('ref: preparedAudioDialogRef');
     expect(player).toContain('"data-dialog-initial-focus": "true"');
   });

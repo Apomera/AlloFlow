@@ -564,15 +564,21 @@ const TEST_SUITES = [
         },
       },
       {
-        name: 'Per-chunk lane drift report (informational — heuristic centerline)',
+        name: 'Road-frame lane drift report (informational)',
         fn: (state) => {
-          // HEURISTIC: assumes each chunk's road is approximately straight and the
-          // centerline is the median of (x - laneOffset) within that chunk. For
-          // curving/branching roads or intersections, the heuristic over-estimates
-          // drift. Use the per-car data below to judge whether reported drift is
-          // a real lane-wandering bug or expected variation.
+          // Prefer the authored spline frame captured by the harness. The old
+          // median-(x - laneOffset) estimate compared cars at different stations
+          // on a bend and routinely reported false drift. Keep the median fallback
+          // for bounded/legacy snapshots that do not expose road-frame samples.
           const traffic = (state.trafficRef && state.trafficRef.current) || [];
           if (traffic.length === 0) return { pass: true, message: 'no traffic (skipped)' };
+          const roadFrames = state.infiniteWorldRef && state.infiniteWorldRef.current &&
+            state.infiniteWorldRef.current.trafficRoadFrames;
+          if (Array.isArray(roadFrames) && roadFrames.length > 0) {
+            const drifts = roadFrames.map((sample) => Number(sample.drift) || 0).sort((a, b) => b - a);
+            const meanDrift = drifts.reduce((sum, drift) => sum + drift, 0) / drifts.length;
+            return { pass: true, message: 'max drift ' + drifts[0].toFixed(2) + ' / mean ' + meanDrift.toFixed(2) + ' units (' + drifts.length + ' main-road cars in the authored tangent/perpendicular frame)' };
+          }
           const byChunk = new Map();
           for (const t of traffic) {
             if (t.crossStreet) continue;
@@ -596,7 +602,7 @@ const TEST_SUITES = [
           const maxDrift = driftReport[0] ? driftReport[0].drift : 0;
           const meanDrift = driftReport.reduce((s, d) => s + d.drift, 0) / driftReport.length;
           // Always pass; report stats as informational
-          return { pass: true, message: 'max drift ' + maxDrift.toFixed(2) + ' / mean ' + meanDrift.toFixed(2) + ' units (' + traffic.length + ' cars in ' + byChunk.size + ' chunks; >1.5 = possible bug)' };
+          return { pass: true, message: 'max drift ' + maxDrift.toFixed(2) + ' / mean ' + meanDrift.toFixed(2) + ' units (fallback median estimate; ' + traffic.length + ' cars in ' + byChunk.size + ' chunks)' };
         },
       },
     ],
@@ -970,12 +976,32 @@ async function runSuite(suite) {
               var pcgZ = (s.threeRef && s.threeRef.current && s.threeRef.current.playerCarGroup)
                 ? s.threeRef.current.playerCarGroup.position.z : 50;
               var carY = (s.carRef && s.carRef.current && s.carRef.current.y) || 50;
+              var trafficRoadFrames = [];
+              var liveTraffic = s.trafficRef && s.trafficRef.current;
+              if (Array.isArray(liveTraffic) && typeof iw.roadCenterAtY === 'function' &&
+                  typeof iw.roadHeadingAtY === 'function') {
+                liveTraffic.forEach(function(t) {
+                  if (!t || t.crossStreet || t._turning || typeof t.laneOffset !== 'number') return;
+                  var station = typeof t._roadStation === 'number' ? t._roadStation : t.y;
+                  var theta = iw.roadHeadingAtY(station);
+                  var center = iw.roadCenterAtY(station);
+                  var expectedX = center + t.laneOffset * Math.cos(theta);
+                  var expectedY = station - t.laneOffset * Math.sin(theta);
+                  trafficRoadFrames.push({
+                    id: t.id,
+                    drift: Math.hypot(t.x - expectedX, t.y - expectedY),
+                    station: station,
+                    laneOffset: t.laneOffset,
+                  });
+                });
+              }
               out[k] = { current: {
                 hasRoadHeightAtY: typeof iw.roadHeightAtY === 'function',
                 roadHeightAtCarY: iw.roadHeightAtY ? iw.roadHeightAtY(carY) : null,
                 roadHeightSamples: iw.roadHeightAtY ? [carY - 2, carY, carY + 2].map(function(y) {
                   return { y: y, h: iw.roadHeightAtY(y) };
                 }) : [],
+                trafficRoadFrames: trafficRoadFrames,
               }};
             } catch (e) { out[k] = { current: '<error: ' + e.message + '>' }; }
             continue;

@@ -276,7 +276,7 @@ const revisions = [
     id: "eppp-b014-research-1", expectedAnswerIndex: 0, expectedDifficulty: "foundation", targetDifficulty: "intermediate",
     expectedPrompt: "Ecological validity concerns the extent to which:",
     prompt: "A lab task uses virtual tokens and simplified instructions; the researcher wants to know whether performance reflects how people behave in everyday settings. Which validity question is being asked?",
-    choices: ["Whether the findings and procedure correspond to behavior in relevant real-world contexts", "Whether the sample was selected by a probability method from the national population", "Whether items show high internal consistency across repeated scoring", "Whether the statistical test preserves the planned familywise error rate"],
+    choices: ["Whether the design supports transfer beyond the laboratory setting", "Whether the sample was selected by a probability method from the national population", "Whether items show high internal consistency across repeated scoring", "Whether the statistical test preserves the planned familywise error rate"],
     rationale: "Ecological validity asks whether a task, setting, and observed behavior resemble meaningful real-world contexts. It is related to broader generalizability but focuses on correspondence between the research situation and everyday behavior.",
     feedback: {
       1: "Probability sampling bears on population generalizability, not whether the task resembles everyday behavior. A representative sample can still complete an artificial laboratory task.",

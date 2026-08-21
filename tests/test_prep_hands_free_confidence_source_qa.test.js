@@ -82,7 +82,8 @@ describe('Test Prep hands-free confidence and lifecycle source QA', () => {
     expect(source).toContain('role="alert">{handsFreeError}');
     expect(source).toContain('answer choices below 60 percent confidence wait for a yes or no confirmation');
     expect(source).toContain('other state-changing commands below 60 percent are not carried out');
-    expect(source).toContain('A score of zero or no score is treated as unavailable.');
+    expect(source).toContain('When the browser supplies a meaningful score');
+    expect(source).toContain('Whisper and Gemini do not supply a calibrated confidence score');
     expect(source).toContain("recognition.lang = 'en-US'");
     expect(source).toContain("utterance.lang = 'en-US'");
     expect(source).toContain("language: 'English'");
@@ -91,7 +92,7 @@ describe('Test Prep hands-free confidence and lifecycle source QA', () => {
   it('retains permission denial, bounded retry shutdown, and complete teardown cancellation paths', () => {
     expect(source).toContain("code === 'not-allowed' || code === 'service-not-allowed'");
     expect(source).toContain('Microphone permission is required for hands-free commands.');
-    expect(source).toContain('if (failures >= 3)');
+    expect(source).toContain('if (failures >= 3 || (detail && detail.fatal))');
     expect(source).toContain("setHandsFreeError('Voice recognition paused. Retry ' + failures + ' of 2 will start automatically.')");
     expect(source).toContain('Math.min(2000, 250 * Math.pow(2, handsFreeRecognitionErrorStreakRef.current))');
     expect(source).toContain('disableHandsFree(false, false);');

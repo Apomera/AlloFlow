@@ -86,6 +86,7 @@
             <li><a href="#set-image-style-once-unless-a-resource-needs-an-exception">Set image style once unless a resource needs an exception</a></li>
             <li><a href="#separate-the-requested-grade-from-internal-calibration">Separate the requested grade from internal calibration</a></li>
             <li><a href="#set-the-language-and-decide-about-translations">Set the language and decide about translations</a></li>
+            <li><a href="#see-the-grade-by-language-impact-before-a-pack-runs">See the grade-by-language impact before a pack runs</a></li>
             <li><a href="#watch-emoji-around-word-activities">Watch emoji around word activities</a></li>
             <li><a href="#a-two-minute-preflight">A two-minute preflight</a></li>
           </ol>
@@ -242,6 +243,43 @@
 <li>A translation is generated text. Check it the way you would check any other generated content, especially for subject vocabulary. A word that is correct in general use can be wrong in a science or mathematics context.</li>
 <li>Ask a proficient speaker to read anything a family will receive. A translation that is merely understandable is not the same as one that is respectful and clear.</li>
 </ul>
+<h2 id="see-the-grade-by-language-impact-before-a-pack-runs">See the grade-by-language impact before a pack runs</h2>
+<p>Full Pack and Blueprint freeze the Universal Settings used to prepare their reviewed plan. Their <strong>Generation impact</strong> summary expands those settings into the actual work that will happen:</p>
+<div class="table-scroll" role="region" aria-label="See the grade-by-language impact before a pack runs table" tabindex="0">
+<table>
+<thead>
+<tr>
+<th scope="col">Reviewed setting</th>
+<th scope="col">Plan effect</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>One target grade and one output language</td>
+<td>One version of an eligible resource.</td>
+</tr>
+<tr>
+<td>A Differentiation Set with three grades</td>
+<td>One version at each grade, but only for the resource types selected for differentiation.</td>
+</tr>
+<tr>
+<td><strong>All Selected Languages</strong> with three languages</td>
+<td>One version in each language for multilingual resources. Resources that do not fan out by language remain one resource.</td>
+</tr>
+<tr>
+<td>Three differentiated grades and three output languages</td>
+<td>A three-by-three matrix: nine versions for a resource that supports both settings.</td>
+</tr>
+<tr>
+<td>An exact resource already made from the same source and generation context</td>
+<td><strong>Reuse</strong>: the existing resource is linked into the run and adds no new AI call.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Translations and output-language variants are not the same thing. An output-language variant is its own resource version. The Translations policy can attach an additional translation inside each applicable version, and the reviewed plan keeps that policy frozen as part of its context.</p>
+<p>Plans also distinguish a purposeful variant from an accidental duplicate. Analyze Source is source-wide and generally appears only once. Repeatable resources, such as quizzes or activities, can appear more than once when their mode or instruction establishes a different purpose. Exact duplicates are suppressed, and new resource types are prioritised ahead of extra variants. Editing a plan row invalidates its old calculation, so the app checks the matrix again before it generates anything.</p>
+<p>Changing Universal Settings after a plan is reviewed does not silently change that plan. Refresh or rebuild the plan when you want the newer settings. The review then shows the updated grades, languages, reuse decisions, and call count.</p>
 <h2 id="watch-emoji-around-word-activities">Watch emoji around word activities</h2>
 <p>Emoji make headings and glossary terms easier to scan for some students. They also carry costs worth knowing about:</p>
 <ul>

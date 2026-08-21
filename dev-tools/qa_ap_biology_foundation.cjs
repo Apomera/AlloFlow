@@ -125,7 +125,7 @@ function checkReferences(records, asset, minimum = 2) {
 
 requireCondition(
   pack.schemaVersion === 1 && pack.itemSchemaVersion === 2 && pack.id === 'ap-biology-foundation-pilot' &&
-    pack.version === '0.1.0-internal-preview' && pack.status === 'preview' && pack.visibility === 'internal',
+    pack.version === '0.8.0-internal-preview' && pack.status === 'preview' && pack.visibility === 'internal',
   'asset-identity', 'Pack schema, identity, version, or internal-preview state is invalid.'
 );
 requireCondition(
@@ -143,6 +143,11 @@ requireCondition(
   pack.released === false && pack.releaseEligible === false && pack.officialItem === false && pack.calibrated === false &&
     library.released === false && library.releaseEligible === false && library.officialItem === false,
   'psychometric-boundary', 'Internal pilot assets must remain unreleased, unofficial, uncalibrated, and release-ineligible.'
+);
+requireCondition(
+  /unofficial/i.test(String(pack.disclaimer || '')) && /not affiliated with|not endorsed by/i.test(String(pack.disclaimer || '')) &&
+    /laboratory competency/i.test(String(pack.disclaimer || '')),
+  'asset-identity', 'The pack must carry a clear unofficial, non-predictive, laboratory-boundary disclaimer.'
 );
 requireCondition(
   pack.officialBlueprintUrl === cedUrl && pack.officialExamUrl === 'https://apcentral.collegeboard.org/courses/ap-biology/exam' &&
@@ -167,8 +172,8 @@ requireCondition(
 for (const unitId of expectedUnits) {
   const domain = domains.find((candidate) => candidate.id === unitId);
   requireCondition(
-    domain && Number(domain.itemCount) >= 5 && Number(domain.officialWeightMin) > 0 && Number(domain.officialWeightMax) > Number(domain.officialWeightMin),
-    'blueprint-and-unit-coverage', `${unitId} must declare an official weight range and at least five pilot items.`, { recordId: unitId }
+    domain && Number(domain.itemCount) >= 48 && Number(domain.officialWeightMin) > 0 && Number(domain.officialWeightMax) > Number(domain.officialWeightMin),
+    'blueprint-and-unit-coverage', `${unitId} must declare an official weight range and at least forty-eight pilot items.`, { recordId: unitId }
   );
 }
 requireCondition(
@@ -188,12 +193,16 @@ const itemIds = new Set();
 const answerCounts = countBy(items, (item) => item.answerIndex);
 const unitCounts = countBy(items, (item) => item.domainId);
 const practiceCounts = countBy(items, (item) => item.practiceId);
-requireCondition(items.length === 50 && new Set(items.map((item) => item.id)).size === 50, 'asset-identity', 'The AP Biology foundation pilot must contain exactly 50 uniquely identified items.');
-requireCondition(expectedUnits.every((unit) => unitCounts[unit] >= 5), 'blueprint-and-unit-coverage', 'Every current AP Biology unit must receive at least five items.');
+requireCondition(items.length === 400 && new Set(items.map((item) => item.id)).size === 400, 'asset-identity', 'The AP Biology foundation pilot must contain exactly 400 uniquely identified items.');
+requireCondition(expectedUnits.every((unit) => unitCounts[unit] >= 48), 'blueprint-and-unit-coverage', 'Every current AP Biology unit must receive at least forty-eight items.');
 requireCondition(expectedPractices.every((practice) => practiceCounts[practice] > 0), 'blueprint-and-unit-coverage', 'All six AP Biology science practices must be represented.');
 requireCondition(
-  answerCounts[0] === 13 && answerCounts[1] === 13 && answerCounts[2] === 12 && answerCounts[3] === 12,
-  'one-best-answer', 'Answer keys must be intentionally balanced at 13/13/12/12 across A-D.'
+  answerCounts[0] === 100 && answerCounts[1] === 100 && answerCounts[2] === 100 && answerCounts[3] === 100,
+  'one-best-answer', 'Answer keys must be intentionally balanced at 100/100/100/100 across A-D.'
+);
+requireCondition(
+  Array.isArray(pack.sections) && pack.sections.length === 80 && pack.sections.every((section) => Array.isArray(section.itemIds) && section.itemIds.length === 5),
+  'asset-identity', 'The 400-item pilot must expose eighty complete five-item internal banks.'
 );
 
 const prompts = [];
@@ -270,8 +279,8 @@ requireCondition(
     Array.isArray(library.flashcards) && library.flashcards.length === 8 &&
     Array.isArray(library.memoryAids) && library.memoryAids.length === 8 &&
     library.summary?.chapters === 8 && library.summary?.sections === 8 && library.summary?.knowledgeChecks === 8 &&
-    library.summary?.richLessonPrototypes === 2,
-  'library-inventory', 'The native AP Biology library inventory does not match its eight-unit foundation declaration.', { asset: 'learning-library' }
+    library.summary?.richLessonPrototypes === 8,
+  'library-inventory', 'The native AP Biology library inventory does not match its eight-unit structured-lesson declaration.', { asset: 'learning-library' }
 );
 requireCondition(
   chapters.every((chapter, index) => chapter.id === `ap-bio-ch-${String(index + 1).padStart(2, '0')}` &&
@@ -281,7 +290,7 @@ requireCondition(
   'library-content-structure', 'Every native chapter must be navigable, text-first, referenced, and structurally complete.', { asset: 'learning-library' }
 );
 requireCondition(
-  chapters.filter((chapter) => chapter.foundationPrototype === true).length === 2 &&
+  chapters.filter((chapter) => chapter.foundationPrototype === true).length === 8 &&
     chapters.filter((chapter) => chapter.foundationPrototype === true).every((chapter) => {
       const section = chapter.sections[0];
       return Array.isArray(section.examples) && section.examples.length >= 2 && Array.isArray(section.nonExamples) &&
@@ -289,7 +298,7 @@ requireCondition(
         Array.isArray(section.retrievalPrompts) && section.retrievalPrompts.length >= 3 && section.transferMove &&
         section.workedDataExample?.rows?.length >= 2;
     }),
-  'library-content-structure', 'The two richer lesson prototypes must contain examples, boundaries, misconception guidance, data work, retrieval, and transfer.', { asset: 'learning-library' }
+  'library-content-structure', 'All eight structured lessons must contain examples, boundaries, misconception guidance, data work, retrieval, and transfer.', { asset: 'learning-library' }
 );
 requireCondition(
   checks.every((check) => check.choices?.length === 4 && Number.isInteger(check.answerIndex) && wordCount(check.rationale) >= 8 && check.reviewStatus === 'source-reviewed-editorial-pass'),
@@ -302,7 +311,7 @@ requireCondition(
 requireCondition(
 library.rightsPolicy?.secureCollegeBoardContentUsed === false && library.rightsPolicy?.copiedOrRephrasedCollegeBoardQuestions === false &&
   library.accessibility?.independentReviewStatus === 'pending' && library.expertReviewGate?.status === 'pending' &&
-  library.releaseGates?.releaseEligible === false && library.contentMigration?.richLessonPrototypes === 2,
+  library.releaseGates?.releaseEligible === false && library.contentMigration?.richLessonPrototypes === 8,
   'rights-boundary', 'Learning-library rights, accessibility, expert, release, or migration boundaries regressed.', { asset: 'learning-library' }
 );
 

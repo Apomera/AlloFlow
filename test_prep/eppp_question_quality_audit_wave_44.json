@@ -1,0 +1,278 @@
+{
+  "schemaVersion": 1,
+  "reviewWave": "eppp-native-quality-wave-44",
+  "reviewedAt": "2026-08-20",
+  "scope": "Twenty-four EPPP items, three per domain, rewritten as applied or analytic decisions with balanced distractors and misconception-specific feedback.",
+  "summary": {
+    "totalItems": 1500,
+    "rewrittenItems": 24,
+    "domainsCovered": 8,
+    "difficultyRetieredItems": 22,
+    "applicationItems": 12,
+    "analysisItems": 12,
+    "keyPositionsPreserved": 24,
+    "optionSpecificExplanations": 96,
+    "selectedDistractorWarningsAfter": 0,
+    "selectedFeedbackWarningsAfter": 0,
+    "distractorWarningsBefore": {
+      "totalItems": 1500,
+      "warningOnly": true,
+      "forbiddenAggregateChoices": 0,
+      "uniqueKeyStemLexicalLeakageCandidates": 38,
+      "asymmetricExtremeDistractorCandidates": 43,
+      "advancedDirectRecallCandidates": 1,
+      "semanticConceptDuplicatePairs": 51,
+      "semanticConceptDuplicateClusters": 33,
+      "editorialAnchorsWithActiveWarnings": 0,
+      "editorialAnchorsWithNoCurrentWarning": 10,
+      "priorityDocketItems": 20
+    },
+    "distractorWarningsAfter": {
+      "totalItems": 1500,
+      "warningOnly": true,
+      "forbiddenAggregateChoices": 0,
+      "uniqueKeyStemLexicalLeakageCandidates": 38,
+      "asymmetricExtremeDistractorCandidates": 43,
+      "advancedDirectRecallCandidates": 1,
+      "semanticConceptDuplicatePairs": 50,
+      "semanticConceptDuplicateClusters": 32,
+      "editorialAnchorsWithActiveWarnings": 0,
+      "editorialAnchorsWithNoCurrentWarning": 10,
+      "priorityDocketItems": 20
+    },
+    "feedbackWarningsBefore": {
+      "totalItems": 1500,
+      "totalIncorrectOptions": 4500,
+      "itemsWithWarnings": 428,
+      "incorrectOptionsWithWarnings": 1191,
+      "insufficientDetailOptions": 578,
+      "genericTemplateOptions": 561,
+      "choiceRestatementOptions": 135,
+      "fullKeyEchoOptions": 61,
+      "priorityDocketItems": 100
+    },
+    "feedbackWarningsAfter": {
+      "totalItems": 1500,
+      "totalIncorrectOptions": 4500,
+      "itemsWithWarnings": 419,
+      "incorrectOptionsWithWarnings": 1164,
+      "insufficientDetailOptions": 578,
+      "genericTemplateOptions": 534,
+      "choiceRestatementOptions": 132,
+      "fullKeyEchoOptions": 61,
+      "currentWaveIncorrectOptions": 24,
+      "currentWaveOptionsWithWarnings": 0,
+      "previousWaveIncorrectOptions": 24,
+      "previousWaveOptionsWithWarnings": 0,
+      "latestWaveIncorrectOptions": 48,
+      "latestWaveOptionsWithWarnings": 0,
+      "activeWaveIncorrectOptions": 48,
+      "activeWaveOptionsWithWarnings": 0,
+      "wave09IncorrectOptions": 48,
+      "wave09OptionsWithWarnings": 0,
+      "wave10IncorrectOptions": 48,
+      "wave10OptionsWithWarnings": 0,
+      "wave11IncorrectOptions": 48,
+      "wave11OptionsWithWarnings": 0,
+      "priorityDocketItems": 100
+    },
+    "status": "pass"
+  },
+  "items": [
+    {
+      "id": "eppp-v3-biological-024",
+      "domainId": "biological",
+      "answerIndex": 3,
+      "difficultyBefore": "intermediate",
+      "difficultyAfter": "advanced",
+      "cognitiveProcess": "application"
+    },
+    {
+      "id": "eppp-v3-biological-039",
+      "domainId": "biological",
+      "answerIndex": 0,
+      "difficultyBefore": "intermediate",
+      "difficultyAfter": "advanced",
+      "cognitiveProcess": "application"
+    },
+    {
+      "id": "eppp-v3-biological-048",
+      "domainId": "biological",
+      "answerIndex": 3,
+      "difficultyBefore": "intermediate",
+      "difficultyAfter": "advanced",
+      "cognitiveProcess": "analysis"
+    },
+    {
+      "id": "eppp-v3-cognitive-affective-041",
+      "domainId": "cognitive-affective",
+      "answerIndex": 3,
+      "difficultyBefore": "intermediate",
+      "difficultyAfter": "advanced",
+      "cognitiveProcess": "analysis"
+    },
+    {
+      "id": "eppp-v3-cognitive-affective-045",
+      "domainId": "cognitive-affective",
+      "answerIndex": 3,
+      "difficultyBefore": "intermediate",
+      "difficultyAfter": "advanced",
+      "cognitiveProcess": "application"
+    },
+    {
+      "id": "eppp-v3-cognitive-affective-065",
+      "domainId": "cognitive-affective",
+      "answerIndex": 2,
+      "difficultyBefore": "intermediate",
+      "difficultyAfter": "advanced",
+      "cognitiveProcess": "analysis"
+    },
+    {
+      "id": "eppp-v3-social-cultural-026",
+      "domainId": "social-cultural",
+      "answerIndex": 2,
+      "difficultyBefore": "intermediate",
+      "difficultyAfter": "advanced",
+      "cognitiveProcess": "analysis"
+    },
+    {
+      "id": "eppp-v3-social-cultural-044",
+      "domainId": "social-cultural",
+      "answerIndex": 1,
+      "difficultyBefore": "intermediate",
+      "difficultyAfter": "advanced",
+      "cognitiveProcess": "application"
+    },
+    {
+      "id": "eppp-v3-social-cultural-054",
+      "domainId": "social-cultural",
+      "answerIndex": 0,
+      "difficultyBefore": "intermediate",
+      "difficultyAfter": "advanced",
+      "cognitiveProcess": "application"
+    },
+    {
+      "id": "eppp-v3-lifespan-034",
+      "domainId": "lifespan",
+      "answerIndex": 3,
+      "difficultyBefore": "intermediate",
+      "difficultyAfter": "advanced",
+      "cognitiveProcess": "analysis"
+    },
+    {
+      "id": "eppp-v3-lifespan-054",
+      "domainId": "lifespan",
+      "answerIndex": 3,
+      "difficultyBefore": "intermediate",
+      "difficultyAfter": "advanced",
+      "cognitiveProcess": "application"
+    },
+    {
+      "id": "eppp-v3-lifespan-060",
+      "domainId": "lifespan",
+      "answerIndex": 1,
+      "difficultyBefore": "intermediate",
+      "difficultyAfter": "advanced",
+      "cognitiveProcess": "analysis"
+    },
+    {
+      "id": "eppp-v3-assessment-058",
+      "domainId": "assessment",
+      "answerIndex": 3,
+      "difficultyBefore": "intermediate",
+      "difficultyAfter": "advanced",
+      "cognitiveProcess": "analysis"
+    },
+    {
+      "id": "eppp-v3-assessment-062",
+      "domainId": "assessment",
+      "answerIndex": 3,
+      "difficultyBefore": "intermediate",
+      "difficultyAfter": "advanced",
+      "cognitiveProcess": "application"
+    },
+    {
+      "id": "eppp-v3-assessment-078",
+      "domainId": "assessment",
+      "answerIndex": 3,
+      "difficultyBefore": "intermediate",
+      "difficultyAfter": "advanced",
+      "cognitiveProcess": "analysis"
+    },
+    {
+      "id": "eppp-v3-intervention-042",
+      "domainId": "intervention",
+      "answerIndex": 1,
+      "difficultyBefore": "advanced",
+      "difficultyAfter": "advanced",
+      "cognitiveProcess": "analysis"
+    },
+    {
+      "id": "eppp-v3-intervention-066",
+      "domainId": "intervention",
+      "answerIndex": 3,
+      "difficultyBefore": "advanced",
+      "difficultyAfter": "advanced",
+      "cognitiveProcess": "application"
+    },
+    {
+      "id": "eppp-v3-intervention-064",
+      "domainId": "intervention",
+      "answerIndex": 1,
+      "difficultyBefore": "intermediate",
+      "difficultyAfter": "advanced",
+      "cognitiveProcess": "application"
+    },
+    {
+      "id": "eppp-v3-research-006",
+      "domainId": "research",
+      "answerIndex": 2,
+      "difficultyBefore": "foundation",
+      "difficultyAfter": "advanced",
+      "cognitiveProcess": "application"
+    },
+    {
+      "id": "eppp-v3-research-026",
+      "domainId": "research",
+      "answerIndex": 1,
+      "difficultyBefore": "intermediate",
+      "difficultyAfter": "advanced",
+      "cognitiveProcess": "analysis"
+    },
+    {
+      "id": "eppp-v3-research-034",
+      "domainId": "research",
+      "answerIndex": 2,
+      "difficultyBefore": "foundation",
+      "difficultyAfter": "advanced",
+      "cognitiveProcess": "application"
+    },
+    {
+      "id": "eppp-v3-professional-041",
+      "domainId": "professional",
+      "answerIndex": 0,
+      "difficultyBefore": "intermediate",
+      "difficultyAfter": "advanced",
+      "cognitiveProcess": "analysis"
+    },
+    {
+      "id": "eppp-v3-professional-050",
+      "domainId": "professional",
+      "answerIndex": 1,
+      "difficultyBefore": "intermediate",
+      "difficultyAfter": "advanced",
+      "cognitiveProcess": "application"
+    },
+    {
+      "id": "eppp-v3-professional-074",
+      "domainId": "professional",
+      "answerIndex": 1,
+      "difficultyBefore": "intermediate",
+      "difficultyAfter": "advanced",
+      "cognitiveProcess": "analysis"
+    }
+  ],
+  "limitations": [
+    "Editorial and source review is not psychometric calibration or independent licensed-psychologist validation."
+  ]
+}

@@ -33,6 +33,17 @@
     return null;
   }
 
+  function getGenerationMatrix(injected) {
+    if (injected) return injected;
+    if (typeof window !== 'undefined' && window.AlloModules && window.AlloModules.GenerationMatrix) {
+      return window.AlloModules.GenerationMatrix;
+    }
+    if (typeof module !== 'undefined' && typeof require === 'function') {
+      try { return require('./generation_matrix_module.js'); } catch (_) { return null; }
+    }
+    return null;
+  }
+
   /**
    * deps:
    *   autoConfigure(request) → Promise<legacyConfig>   (AI create; optional)
@@ -47,7 +58,195 @@
     var d = deps || {};
     var C = getContracts(d.contracts);
     if (!C) throw new Error('AgentCoreContracts module is required');
+    var GenerationMatrix = getGenerationMatrix(d.generationMatrix);
     var knownTools = Array.isArray(d.knownTools) && d.knownTools.length ? d.knownTools : C.FALLBACK_TOOL_IDS;
+
+    function list(value) {
+      return Array.isArray(value) ? value.slice() : [];
+    }
+
+    // Freeze every Universal modifier at creation time. GenerationMatrix owns
+    // multiplicity and reuse policy; this service only captures the reviewed
+    // inputs so execution never consults whatever the controls contain later.
+    function frozenSettings(request, legacySettings) {
+      var req = request || {};
+      var prior = legacySettings && typeof legacySettings === 'object' && !Array.isArray(legacySettings) ? legacySettings : {};
+      var primaryLanguage = req.primaryLanguage || req.language || prior.primaryLanguage || prior.language || prior.leveledTextLanguage || '';
+      var reviewedImageStyle = req.universalImageStyle !== undefined ? req.universalImageStyle
+        : (req.imageGenerationStyle !== undefined ? req.imageGenerationStyle
+          : (prior.universalImageStyle !== undefined ? prior.universalImageStyle : prior.imageGenerationStyle));
+      var raw = Object.assign({}, prior, {
+        gradeLevel: req.gradeLevel || prior.gradeLevel || '',
+        primaryLanguage: primaryLanguage,
+        language: primaryLanguage,
+        leveledTextLanguage: primaryLanguage,
+        selectedLanguages: list(req.selectedLanguages !== undefined ? req.selectedLanguages : prior.selectedLanguages),
+        translationMode: req.translationMode !== undefined ? req.translationMode : prior.translationMode,
+        currentUiLanguage: req.currentUiLanguage !== undefined ? req.currentUiLanguage : prior.currentUiLanguage,
+        translationTargetChoices: list(req.translationTargetChoices !== undefined ? req.translationTargetChoices : prior.translationTargetChoices),
+        resolvedTranslationTarget: req.resolvedTranslationTarget !== undefined ? req.resolvedTranslationTarget : prior.resolvedTranslationTarget,
+        translationTarget: req.resolvedTranslationTarget !== undefined ? req.resolvedTranslationTarget
+          : (req.translationTarget !== undefined ? req.translationTarget : (prior.translationTarget || prior.resolvedTranslationTarget)),
+        differentiationRange: req.differentiationRange !== undefined ? req.differentiationRange : prior.differentiationRange,
+        differentiationTypes: list(req.differentiationTypes !== undefined ? req.differentiationTypes : prior.differentiationTypes),
+        differentiationCustomGrades: list(req.differentiationCustomGrades !== undefined ? req.differentiationCustomGrades : prior.differentiationCustomGrades),
+        studentInterests: Array.isArray(req.studentInterests)
+          ? req.studentInterests.slice()
+          : (req.studentInterests !== undefined ? req.studentInterests
+            : (Array.isArray(req.interests) ? req.interests.slice()
+              : (req.interests !== undefined ? req.interests : prior.studentInterests))),
+        dokLevel: req.dokLevel !== undefined ? req.dokLevel : prior.dokLevel,
+        useEmojis: req.useEmojis !== undefined ? req.useEmojis : prior.useEmojis,
+        textFormat: req.textFormat !== undefined ? req.textFormat : prior.textFormat,
+        imageGenerationStyle: reviewedImageStyle,
+        universalImageStyle: reviewedImageStyle,
+        imageAspectRatio: req.imageAspectRatio !== undefined ? req.imageAspectRatio : prior.imageAspectRatio,
+        generationContext: req.generationContext !== undefined ? req.generationContext : prior.generationContext,
+        generationOptions: req.generationOptions !== undefined ? req.generationOptions : prior.generationOptions,
+        toolOverrides: req.toolOverrides !== undefined ? req.toolOverrides : prior.toolOverrides,
+        backend: req.backend !== undefined ? req.backend : (req.aiBackend !== undefined ? req.aiBackend : prior.backend),
+        provider: req.provider !== undefined ? req.provider : (req.aiProvider !== undefined ? req.aiProvider : prior.provider),
+        model: req.model !== undefined ? req.model : (req.modelId !== undefined ? req.modelId : prior.model),
+        fallbackModel: req.fallbackModel !== undefined ? req.fallbackModel : prior.fallbackModel,
+        imageProvider: req.imageProvider !== undefined ? req.imageProvider : prior.imageProvider,
+        imageModel: req.imageModel !== undefined ? req.imageModel : prior.imageModel,
+        visionModel: req.visionModel !== undefined ? req.visionModel : prior.visionModel,
+        targetStandards: list(req.targetStandards !== undefined ? req.targetStandards : prior.targetStandards),
+        standardsFingerprint: req.standardsFingerprint
+          || (req.instructionalContext && req.instructionalContext.standardsFingerprint)
+          || prior.standardsFingerprint || '',
+        contextFingerprint: req.contextFingerprint || prior.contextFingerprint || '',
+        sourceArtifactId: req.sourceArtifactId || req.primaryArtifactId || prior.sourceArtifactId || ''
+      });
+      if (GenerationMatrix && typeof GenerationMatrix.buildFrozenGenerationSettings === 'function') {
+        try {
+          var canonical = GenerationMatrix.buildFrozenGenerationSettings(Object.assign({}, raw, {
+            sourceText: req.sourceText || '',
+            sourceFingerprint: req.sourceFingerprint || prior.sourceFingerprint || ''
+          }));
+          // The matrix normalizer intentionally retains only policy inputs.
+          // Blueprint review also needs the translation inputs themselves, so
+          // retain the complete Universal snapshot alongside its canonical
+          // derived fields.
+          return Object.freeze(Object.assign({}, raw, canonical));
+        } catch (_) {}
+      }
+      return Object.freeze(raw);
+    }
+
+    function generationOptions(request, settings) {
+      var req = request || {};
+      var artifacts = Array.isArray(req.existingArtifacts) ? req.existingArtifacts
+        : (Array.isArray(req.history) ? req.history : []);
+      return Object.assign({}, settings || {}, {
+        existingArtifacts: artifacts,
+        sourceText: req.sourceText || '',
+        sourceFingerprint: req.sourceFingerprint || settings.sourceFingerprint || ''
+      });
+    }
+
+    function resolveRows(rows, request, settings) {
+      var input = Array.isArray(rows) ? rows : [];
+      if (!GenerationMatrix || typeof GenerationMatrix.resolvePlanRows !== 'function') {
+        return input.map(function (row) {
+          return row && row.generationMatrixUnavailable === true
+            ? row : Object.assign({}, row, { generationMatrixUnavailable: true });
+        });
+      }
+      try {
+        var resolved = GenerationMatrix.resolvePlanRows(input, generationOptions(request, settings));
+        return resolved && Array.isArray(resolved.rows) ? resolved.rows : input;
+      } catch (_) {
+        return input.map(function (row) { return Object.assign({}, row, { generationMatrixUnavailable: true }); });
+      }
+    }
+
+    function generationFields(row) {
+      var out = {};
+      if (!row || typeof row !== 'object') return out;
+      ['generationAction', 'generationIdentity', 'generationVariants', 'existingArtifactId', 'variantKey', 'explicitVariantKey', 'variantKeyDerived',
+        'sourceFingerprint', 'sourceArtifactId', 'contextFingerprint', 'contextInputsFingerprint', 'contextFingerprintDerived',
+        'generationConfig', 'generationConfigFingerprint', 'generationPolicy', 'novelResource', 'suppressedGenerationVariants',
+        'generationMatrix', 'generationMatrixUnavailable'].forEach(function (key) {
+        if (row[key] !== undefined) out[key] = row[key];
+      });
+      return out;
+    }
+
+    function generationInputsChanged(before, after) {
+      if (!before || !after) return true;
+      var beforeActivity = before.activityConfig && typeof before.activityConfig === 'object' ? before.activityConfig : null;
+      var afterActivity = after.activityConfig && typeof after.activityConfig === 'object' ? after.activityConfig : null;
+      return String(before.tool || '') !== String(after.tool || '')
+        || String(before.directive || '') !== String(after.directive || '')
+        || String(before.activityMode || '') !== String(after.activityMode || '')
+        || JSON.stringify(beforeActivity) !== JSON.stringify(afterActivity);
+    }
+
+    function generationSettingsChanged(before, after) {
+      var keys = ['gradeLevel', 'primaryLanguage', 'language', 'leveledTextLanguage', 'selectedLanguages',
+        'translationMode', 'currentUiLanguage', 'translationTarget', 'resolvedTranslationTarget',
+        'differentiationRange', 'differentiationGrades', 'differentiationTypes', 'differentiationCustomGrades',
+        'studentInterests', 'dokLevel', 'useEmojis', 'textFormat', 'imageGenerationStyle', 'universalImageStyle', 'imageAspectRatio',
+        'backend', 'provider', 'model', 'fallbackModel', 'imageProvider', 'imageModel', 'visionModel', 'toolOverrides', 'generationOptions', 'generationContext',
+        'standardsFingerprint', 'contextFingerprint', 'contextInputsFingerprint', 'generationConfigFingerprint',
+        'sourceFingerprint', 'sourceArtifactId', 'groupId'];
+      var left = {};
+      var right = {};
+      keys.forEach(function (key) {
+        left[key] = before && before[key] !== undefined ? before[key] : null;
+        right[key] = after && after[key] !== undefined ? after[key] : null;
+      });
+      return JSON.stringify(left) !== JSON.stringify(right);
+    }
+
+    function priorArtifactDescriptors(blueprint, row) {
+      if (!row || !Array.isArray(row.generationVariants)) return [];
+      return row.generationVariants.map(function (variant) {
+        if (!variant || !variant.existingArtifactId) return null;
+        return {
+          id: variant.existingArtifactId,
+          type: row.tool,
+          generationIdentity: variant.generationIdentity,
+          sourceFingerprint: variant.sourceFingerprint || (blueprint.globalSettings && blueprint.globalSettings.sourceFingerprint),
+          sourceArtifactId: variant.sourceArtifactId || (blueprint.globalSettings && blueprint.globalSettings.sourceArtifactId),
+          contextFingerprint: variant.contextFingerprint || (blueprint.globalSettings && blueprint.globalSettings.contextFingerprint),
+          contextInputsFingerprint: variant.contextInputsFingerprint || (blueprint.globalSettings && blueprint.globalSettings.contextInputsFingerprint),
+          contextFingerprintDerived: variant.contextFingerprintDerived === true,
+          generationConfig: variant.generationConfig || row.generationConfig || null,
+          generationConfigFingerprint: variant.generationConfigFingerprint || row.generationConfigFingerprint || null,
+          grade: variant.grade,
+          language: variant.language,
+          variantKey: variant.variantKey,
+          explicitVariantKey: row.explicitVariantKey,
+          variantKeyDerived: row.variantKeyDerived === true,
+          directive: row.directive || '',
+          activityMode: row.activityMode || '',
+          activityConfig: row.activityConfig || null
+        };
+      }).filter(Boolean);
+    }
+
+    function refreshChangedGenerationRows(next, priorBlueprint, forceAll) {
+      if (!next || !Array.isArray(next.plan) || !priorBlueprint || !Array.isArray(priorBlueprint.plan)) return next;
+      var byId = {};
+      priorBlueprint.plan.forEach(function (row) { if (row && row.uiId) byId[row.uiId] = row; });
+      next.plan = next.plan.map(function (row, index) {
+        var prior = byId[row && row.uiId] || priorBlueprint.plan[index];
+        if (!prior || (!forceAll && !generationInputsChanged(prior, row))) return row;
+        var cleanRow = Object.assign({}, row);
+        ['generationAction', 'generationIdentity', 'generationVariants', 'existingArtifactId', 'variantKey', 'explicitVariantKey', 'variantKeyDerived',
+          'sourceFingerprint', 'sourceArtifactId', 'contextFingerprint', 'contextInputsFingerprint', 'contextFingerprintDerived',
+          'generationConfig', 'generationConfigFingerprint', 'generationPolicy', 'novelResource', 'suppressedGenerationVariants',
+          'generationMatrix', 'generationMatrixUnavailable'].forEach(function (key) { delete cleanRow[key]; });
+        var resolved = resolveRows([cleanRow], {
+          existingArtifacts: priorArtifactDescriptors(priorBlueprint, prior),
+          sourceFingerprint: priorBlueprint.globalSettings && priorBlueprint.globalSettings.sourceFingerprint
+        }, next.globalSettings);
+        return resolved[0] || cleanRow;
+      });
+      return next;
+    }
 
     function validate(blueprint) {
       return C.validateBlueprint(blueprint, { knownTools: knownTools });
@@ -96,7 +295,10 @@
       };
       if (typeof d.autoConfigure === 'function') {
         return Promise.resolve(d.autoConfigure(req)).then(function (legacyConfig) {
+          legacyConfig = legacyConfig && typeof legacyConfig === 'object' ? legacyConfig : {};
+          legacyConfig.globalSettings = frozenSettings(req, legacyConfig.globalSettings);
           var bp = applyDraftInstructionalTextDefaults(C.fromLegacyConfig(legacyConfig, ctx));
+          bp.plan = resolveRows(bp.plan, req, bp.globalSettings);
           var report = validate(bp);
           if (!report.ok) {
             var e = new Error('Generated Blueprint failed contract validation');
@@ -109,9 +311,9 @@
       var plan = Array.isArray(req.plan) && req.plan.length ? req.plan : ['analysis', 'lesson-plan'];
       var requestedGlobalSettings = req.globalSettings && typeof req.globalSettings === 'object' && !Array.isArray(req.globalSettings)
         ? req.globalSettings : {};
-      var globalSettings = Object.assign({}, requestedGlobalSettings);
-      if (ctx.gradeLevel) globalSettings.gradeLevel = ctx.gradeLevel;
+      var globalSettings = frozenSettings(req, requestedGlobalSettings);
       var bp = applyDraftInstructionalTextDefaults(C.fromLegacyConfig({ resourcePlan: plan, lessonDNA: req.lessonDNA || {}, globalSettings: globalSettings }, ctx));
+      bp.plan = resolveRows(bp.plan, req, bp.globalSettings);
       var report = validate(bp);
       if (!report.ok) {
         return Promise.reject(Object.assign(new Error('Draft failed contract validation'), { report: report }));
@@ -196,6 +398,23 @@
         review: { state: 'draft', reviewer: '' }, // edits always re-enter review
         provenance: b.provenance
       };
+      next = refreshChangedGenerationRows(next, b, generationSettingsChanged(b.globalSettings, next.globalSettings));
+      // A new row needs a matrix, but reviewed rows must retain their exact
+      // action/variant snapshot. Resolve only rows that do not already carry
+      // one; doing the whole plan here could turn a reviewed reuse into a
+      // generate merely because current workspace artifacts were not supplied.
+      var unresolvedIndexes = [];
+      var unresolvedRows = [];
+      next.plan.forEach(function (row, index) {
+        if (!row || (!Array.isArray(row.generationVariants) && !row.generationAction)) {
+          unresolvedIndexes.push(index);
+          unresolvedRows.push(row);
+        }
+      });
+      if (unresolvedRows.length) {
+        var resolvedNewRows = resolveRows(unresolvedRows, {}, next.globalSettings);
+        unresolvedIndexes.forEach(function (index, offset) { next.plan[index] = resolvedNewRows[offset] || next.plan[index]; });
+      }
       return validate(next);
     }
 
@@ -266,7 +485,7 @@
               complexity: safeText && safeText.complexity
             }, row.tool);
           }
-          return Object.assign({}, row, { instructionalText: safeText });
+          return Object.assign({}, row, generationFields(prior), { instructionalText: safeText });
         });
         // The legacy shape cannot represent every Blueprint field. Preserve
         // contract context that the AI revision never received rather than
@@ -274,7 +493,21 @@
         next.audience = Object.assign({}, b.audience, next.audience);
         next.sourcePolicy = b.sourcePolicy;
         next.instructionalContext = b.instructionalContext;
+        next.globalSettings = Object.assign({}, b.globalSettings, next.globalSettings);
         next.warnings = b.warnings;
+        next = refreshChangedGenerationRows(next, b, generationSettingsChanged(b.globalSettings, next.globalSettings));
+        var unresolvedIndexes = [];
+        var unresolvedRows = [];
+        next.plan.forEach(function (row, index) {
+          if (!row || (!Array.isArray(row.generationVariants) && !row.generationAction)) {
+            unresolvedIndexes.push(index);
+            unresolvedRows.push(row);
+          }
+        });
+        if (unresolvedRows.length) {
+          var resolvedNewRows = resolveRows(unresolvedRows, {}, next.globalSettings);
+          unresolvedIndexes.forEach(function (index, offset) { next.plan[index] = resolvedNewRows[offset] || next.plan[index]; });
+        }
         var out = validate(next);
         if (!out.ok) {
           var e = new Error('Revised Blueprint failed contract validation');
@@ -319,6 +552,22 @@
           tool: r.tool,
           directive: r.directive,
           instructionalText: r.instructionalText,
+          generationAction: r.generationAction,
+          generationIdentity: r.generationIdentity,
+          generationVariants: Array.isArray(r.generationVariants) ? r.generationVariants.slice() : [],
+          existingArtifactId: r.existingArtifactId,
+          variantKey: r.variantKey,
+          explicitVariantKey: r.explicitVariantKey,
+          variantKeyDerived: r.variantKeyDerived === true,
+          sourceFingerprint: r.sourceFingerprint,
+          contextFingerprint: r.contextFingerprint,
+          contextInputsFingerprint: r.contextInputsFingerprint,
+          contextFingerprintDerived: r.contextFingerprintDerived === true,
+          generationConfig: r.generationConfig,
+          generationConfigFingerprint: r.generationConfigFingerprint,
+          expectedCalls: Array.isArray(r.generationVariants)
+            ? r.generationVariants.filter(function (variant) { return variant && variant.action !== 'reuse'; }).length
+            : (r.generationAction === 'reuse' ? 0 : 1),
           commandId: commandId,
           contract: contract,
           status: (manifest && caps.missing.indexOf(cap(r.tool)) !== -1) ? 'blocked-missing-capability' : 'ready'

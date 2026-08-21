@@ -14,11 +14,20 @@
 import { describe, it, expect, beforeAll, afterEach } from 'vitest';
 import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
+import { readFileSync } from 'node:fs';
 import { setupWordSounds, baseProps } from './helpers/word_sounds_harness.js';
 import { makePackItem, makeThrowingAi, installCanvasStub } from './helpers/word_sounds_pack_fixture.js';
 
 const require = createRequire(import.meta.url);
 const MODULES_DIR = resolve(process.cwd(), 'desktop/web-app/node_modules');
+const UI_WORD_SOUNDS = JSON.parse(readFileSync(resolve(process.cwd(), 'ui_strings.js'), 'utf8')).word_sounds;
+
+function audioRecoveryString(_t, key, params = {}) {
+  if (!key.startsWith('word_sounds.audio_')) return key;
+  let result = UI_WORD_SOUNDS[key.replace('word_sounds.', '')] || key;
+  for (const [name, value] of Object.entries(params)) result = result.replace(`{${name}}`, String(value));
+  return result;
+}
 
 let React, ReactDOMClient, act, WordSoundsModal;
 
@@ -77,6 +86,9 @@ function studentPushOverrides(calls, extra = {}) {
     callTTS: makeThrowingAi(calls, 'callTTS'),
     callImagen: makeThrowingAi(calls, 'callImagen'),
     glossaryTerms: [],
+    // Match production's registered English safety net for the recovery flow;
+    // individual tests can replace this with a selected-language pack.
+    getWordSoundsString: audioRecoveryString,
     ...extra,
   };
 }
@@ -330,6 +342,34 @@ describe('live-session push: student lands in the activity, not the review panel
     } finally {
       globalThis.Audio = window.Audio = originalAudio;
     }
+  });
+
+  it('renders the audio recovery dialog through the selected language pack', async () => {
+    const strings = {
+      'word_sounds.audio_check': 'Revisión de audio',
+      'word_sounds.audio_waiting_title': 'El audio todavía no está disponible',
+      'word_sounds.audio_missing_message': 'No llegaron {missing} de {total} clips de audio requeridos. Pide a tu docente que prepare el audio que falta y reenvíe esta actividad.',
+      'word_sounds.audio_ask_teacher_resend': 'Pedir al docente que lo reenvíe',
+    };
+    const localized = (_t, key, params = {}) => {
+      let result = strings[key] || key;
+      for (const [name, value] of Object.entries(params)) result = result.replace(`{${name}}`, String(value));
+      return result;
+    };
+    const calls = [];
+    const packItem = makePackItem();
+    delete packItem._ttsAssets;
+    const Host = makeStatefulHost(studentPushOverrides(calls, {
+      wsPreloadedWords: [{ ...packItem, _audioRequested: false }],
+      getWordSoundsString: localized,
+    }));
+    const { host } = mount(React.createElement(Host));
+    await act(async () => { await new Promise((r) => setTimeout(r, 1300)); });
+    expect(host.textContent).toContain('Revisión de audio');
+    expect(host.textContent).toContain('El audio todavía no está disponible');
+    expect(host.textContent).toContain('No llegaron 1 de 1 clips de audio requeridos');
+    expect(host.textContent).toContain('Pedir al docente que lo reenvíe');
+    expect(host.textContent).not.toContain('Audio is not available yet');
   });
 
   it('practice push (no sequence): playable board renders, review panel does not', async () => {

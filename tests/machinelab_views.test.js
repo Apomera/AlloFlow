@@ -1,7 +1,10 @@
 import { beforeEach, describe, expect, it } from 'vitest';
+import fs from 'node:fs';
+import path from 'node:path';
 import { loadTool, renderTool, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
 
 const FILE = 'stem_lab/stem_tool_machinelab.js';
+const source = () => fs.readFileSync(path.resolve(process.cwd(), FILE), 'utf8');
 const BANDS = ['k2', 'g35', 'g68', 'g912'];
 const VIEWS = ['machines', 'build', 'range', 'siege', 'compare', 'learn'];
 
@@ -228,6 +231,13 @@ describe('Machine Lab: the range view', () => {
     const html = renderTool('machineLab', state({ view: 'range' }));
     expect(html).toContain('Predict, then fire');
     expect(html).toContain('Fire');
+  });
+
+  it('clears a prior score when a live range input changes', () => {
+    const text = source();
+    expect(text).toContain('var RANGE_RESULT_KEYS = {');
+    expect(text).toContain('rangePrediction: true');
+    expect(text).toContain('if (RANGE_RESULT_KEYS[key]) next.rangeResult = null;');
   });
 
   it('offers gravity presets and an air-resistance switch', () => {

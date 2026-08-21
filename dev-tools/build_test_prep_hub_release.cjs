@@ -322,7 +322,7 @@ execFileSync(process.execPath,[verifyTestPrepAssistantReviewPath],{cwd:root,stdi
 // carries a sha256, and only the AP-pilot generator emits the full
 // packId/version/visibility trio itself (2026-07-31).
 execFileSync(process.execPath,[stampLearningLibraryIdentityPath],{cwd:root,stdio:'inherit'});
-execFileSync(process.execPath,[buildTestPrepPackManifestPath],{cwd:root,stdio:'inherit'});
+execFileSync(process.execPath,[buildTestPrepPackManifestPath,...(skipPackRebuild?['--manifest-only']:[])],{cwd:root,stdio:'inherit'});
 
 const originalSource = fs.readFileSync(sourcePath, 'utf8');
 if (originalSource.includes('EPPP_PART_ONE_SCAFFOLD') || originalSource.includes('EPPP_NATIVE_ITEMS')) throw new Error('Test Prep Hub source must not embed the lazy EPPP Part 1 bank.');
@@ -634,4 +634,3 @@ ${prelude}${compiled}
   try { fs.unlinkSync(tempEntryPath); } catch (_) {}
   try { fs.unlinkSync(compiledPath); } catch (_) {}
 }
-

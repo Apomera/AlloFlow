@@ -102,11 +102,72 @@ describe('Particle Lab 3D rendered WCAG interaction states', () => {
     expect(buttonByText(host, '📍 Trace')?.getAttribute('aria-pressed')).toBe('true');
   });
 
+  it('keeps core controls visible while advanced chamber conditions fold into a native disclosure', async () => {
+    expect(host.querySelector('input[aria-label="Temperature in kelvin"]')).not.toBeNull();
+    expect(host.querySelector('input[aria-label="Particle count"]')).not.toBeNull();
+    const details = host.querySelector('#particle-advanced-conditions');
+    const summary = details?.querySelector('summary');
+    expect(details).not.toBeNull();
+    expect(summary?.textContent).toContain('Advanced conditions');
+    expect(summary?.textContent).toContain('11 u edge');
+    expect(details.open).toBe(false);
+    await act(async () => { summary.click(); await settle(); });
+    expect(details.open).toBe(true);
+    expect(details.querySelector('input[aria-label="Container edge length and volume"]')).not.toBeNull();
+    await act(async () => { summary.click(); await settle(); });
+    expect(details.open).toBe(false);
+  });
+
+  it('keeps optional visual overlays discoverable without crowding the essential stage controls', async () => {
+    const details = host.querySelector('#particle-visual-overlays');
+    const summary = details?.querySelector('summary');
+    expect(details).not.toBeNull();
+    expect(summary?.textContent).toContain('Visual overlays');
+    expect(summary?.textContent).toContain('2 on');
+    expect(details.open).toBe(false);
+    await act(async () => { summary.click(); await settle(); });
+    expect(details.open).toBe(true);
+    const overlayButtons = details.querySelectorAll('button');
+    expect(overlayButtons).toHaveLength(5);
+    await act(async () => { overlayButtons[0].click(); await settle(); });
+    expect(overlayButtons[0].getAttribute('aria-pressed')).toBe('true');
+    expect(summary.textContent).toContain('3 on');
+    await act(async () => { summary.click(); await settle(); });
+    expect(details.open).toBe(false);
+  });
+
   it('renders camera alternatives and minimum-size compact controls', () => {
     const cameraGroup = host.querySelector('[role="group"][aria-label="Camera views"]');
     expect(cameraGroup).not.toBeNull();
     expect(['Hero', 'Top', 'Close', '◎ Showcase camera', '◎ Follow tracer'].every((label) => !!buttonByText(cameraGroup, label))).toBe(true);
     Array.from(cameraGroup.querySelectorAll('button')).forEach((button) => expect(button.className).toContain('min-h-6'));
+  });
+
+  it('shows the experiment runway and scene key next to the 3D chamber', () => {
+    const runway = host.querySelector('#particle-experiment-runway');
+    expect(runway?.getAttribute('role')).toBe('region');
+    expect(runway?.getAttribute('aria-label')).toBe('Experiment loop');
+    expect(runway?.textContent).toContain('Predict');
+    expect(runway?.textContent).toContain('Observe');
+    expect(runway?.textContent).toContain('Explain');
+    expect(runway?.textContent).toContain('What to notice');
+    expect(host.querySelector('#particle-stage-status')?.textContent).toContain('Now: Predict');
+    expect(host.querySelector('#particle-scene-key')?.getAttribute('role')).toBe('img');
+    expect(host.querySelector('#particle-scene-key')?.getAttribute('aria-label')).toContain('cyan particles');
+    expect(host.querySelector('[aria-label="gas particle simulation"]')?.parentElement?.textContent).toContain('measured');
+    expect(host.querySelector('[aria-label="gas particle simulation"]')?.parentElement?.textContent).toContain('setpoint 300 K');
+  });
+
+  it('keeps the selected camera view visible and announced', async () => {
+    const cameraGroup = host.querySelector('[role="group"][aria-label="Camera views"]');
+    const hero = buttonByText(cameraGroup, 'Hero');
+    const top = buttonByText(cameraGroup, 'Top');
+    expect(hero.getAttribute('aria-pressed')).toBe('true');
+    expect(top.getAttribute('aria-pressed')).toBe('false');
+    await act(async () => { top.click(); await settle(); });
+    expect(hero.getAttribute('aria-pressed')).toBe('false');
+    expect(top.getAttribute('aria-pressed')).toBe('true');
+    expect(host.querySelector('[aria-label="gas particle simulation"]')?.parentElement?.textContent).toContain('View Top-down');
   });
 
   it('renders no persistent seven, eight, or nine pixel utility text', () => {

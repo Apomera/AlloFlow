@@ -749,9 +749,23 @@ const KwlResponseBoard = ({ main, branches, t }) => {
   )))));
 };
 const renderOutlineContent = (deps) => {
-  const { ErrorBoundary, KeyConceptMapView, VennGame, generatedContent, isInteractiveVenn, isProcessing, isTeacherMode, isVennPlaying, leveledTextLanguage, outlineTranslationMode, vennGameData, vennInputs, isEditingOutline, isMapLocked, setOutlineTranslationMode, setVennInputs, closeVenn, handleAddVennItem, handleGameCompletion, handleGameScoreUpdate, handleGenerateOutcome, handleInitializeVenn, handleOutlineChange, handleRemoveVennItem, handleSetIsVennPlayingToTrue, playSound, t, isCESortPlaying, ceGameData, closeCESort, setIsCESortPlaying, setCeGameData, isPipelinePlaying, setIsPipelinePlaying, closePipeline, isTChartPlaying, setIsTChartPlaying, closeTChart, isConceptMapSortPlaying, setIsConceptMapSortPlaying, closeConceptMapSort, isOutlineSortPlaying, setIsOutlineSortPlaying, closeOutlineSort, isFishboneSortPlaying, setIsFishboneSortPlaying, closeFishboneSort, isProblemSolutionSortPlaying, setIsProblemSolutionSortPlaying, closeProblemSolutionSort, isFrayerSortPlaying, setIsFrayerSortPlaying, closeFrayerSort, isSeeThinkWonderSortPlaying, setIsSeeThinkWonderSortPlaying, closeSeeThinkWonderSort, isStoryMapSortPlaying, setIsStoryMapSortPlaying, closeStoryMapSort, isInteractiveTChart, setIsInteractiveTChart, isInteractiveCESort, setIsInteractiveCESort, isInteractivePipeline, setIsInteractivePipeline, isInteractiveConceptMapSort, setIsInteractiveConceptMapSort, isInteractiveOutlineSort, setIsInteractiveOutlineSort, isInteractiveFishboneSort, setIsInteractiveFishboneSort, isInteractiveProblemSolutionSort, setIsInteractiveProblemSolutionSort, isInteractiveFrayerSort, setIsInteractiveFrayerSort, isInteractiveSeeThinkWonderSort, setIsInteractiveSeeThinkWonderSort, isInteractiveStoryMapSort, setIsInteractiveStoryMapSort, isInteractiveStrandChallenge, setIsInteractiveStrandChallenge, isInteractivePalaceRecall, setIsInteractivePalaceRecall, broadcastInteractiveOrganizer } = deps;
+  const { ErrorBoundary, KeyConceptMapView, VennGame, generatedContent, isInteractiveVenn, isProcessing, isTeacherMode, isVennPlaying, leveledTextLanguage, outlineTranslationMode, vennGameData, vennInputs, isEditingOutline, isMapLocked, setOutlineTranslationMode, setVennInputs, closeVenn, handleAddVennItem, handleGameCompletion, handleGameScoreUpdate, handleGenerateOutcome, handleInitializeVenn, handleOutlineChange, handleRemoveVennItem, handleSetIsVennPlayingToTrue, playSound, t, isCESortPlaying, ceGameData, closeCESort, setIsCESortPlaying, setCeGameData, isPipelinePlaying, setIsPipelinePlaying, closePipeline, isTChartPlaying, setIsTChartPlaying, closeTChart, isConceptMapSortPlaying, setIsConceptMapSortPlaying, closeConceptMapSort, isOutlineSortPlaying, setIsOutlineSortPlaying, closeOutlineSort, isFishboneSortPlaying, setIsFishboneSortPlaying, closeFishboneSort, isProblemSolutionSortPlaying, setIsProblemSolutionSortPlaying, closeProblemSolutionSort, isFrayerSortPlaying, setIsFrayerSortPlaying, closeFrayerSort, isSeeThinkWonderSortPlaying, setIsSeeThinkWonderSortPlaying, closeSeeThinkWonderSort, isStoryMapSortPlaying, setIsStoryMapSortPlaying, closeStoryMapSort, isInteractiveTChart, setIsInteractiveTChart, isInteractiveCESort, setIsInteractiveCESort, isInteractivePipeline, setIsInteractivePipeline, isInteractiveConceptMapSort, setIsInteractiveConceptMapSort, isInteractiveOutlineSort, setIsInteractiveOutlineSort, isInteractiveFishboneSort, setIsInteractiveFishboneSort, isInteractiveProblemSolutionSort, setIsInteractiveProblemSolutionSort, isInteractiveFrayerSort, setIsInteractiveFrayerSort, isInteractiveSeeThinkWonderSort, setIsInteractiveSeeThinkWonderSort, isInteractiveStoryMapSort, setIsInteractiveStoryMapSort, isInteractiveStrandChallenge, setIsInteractiveStrandChallenge, isInteractiveConceptRecall3d, setIsInteractiveConceptRecall3d, isInteractivePalaceRecall, setIsInteractivePalaceRecall, broadcastInteractiveOrganizer, interactiveOrganizerSync } = deps;
   const _broadcastInteractiveOrganizer = broadcastInteractiveOrganizer || (() => {
   });
+  const _liveReadinessFor = (type2) => typeof deps.getLiveOrganizerReadiness === "function" ? deps.getLiveOrganizerReadiness(type2, generatedContent) : { ok: true };
+  const _closeLiveOrganizerPreview = (type2) => {
+    if (!isTeacherMode || interactiveOrganizerSync?.type !== type2 || !["starting", "live"].includes(interactiveOrganizerSync.status)) return;
+    if (typeof deps.addToast === "function") {
+      deps.addToast("Teacher preview closed. The activity is still live for students; use \u201CStop for students\u201D to end it.", "info");
+    }
+  };
+  const LiveOrganizerStatus = ({ type: type2 }) => {
+    if (!isTeacherMode || interactiveOrganizerSync?.type !== type2 || interactiveOrganizerSync.status === "idle") return null;
+    const status = interactiveOrganizerSync.status;
+    const label = status === "starting" ? "Starting for students\u2026" : status === "stopping" ? "Stopping activity\u2026" : status === "error" ? "The student activity did not start." : "Live for students";
+    const tone = status === "error" ? "border-red-300 bg-red-50 text-red-800" : status === "live" ? "border-emerald-300 bg-emerald-50 text-emerald-800" : "border-sky-300 bg-sky-50 text-sky-800";
+    return /* @__PURE__ */ React.createElement("div", { className: "ml-2 flex items-center gap-2", role: "status", "aria-live": "polite" }, /* @__PURE__ */ React.createElement("span", { className: `rounded-full border px-3 py-1.5 text-xs font-bold ${tone}` }, label), status === "live" && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => _broadcastInteractiveOrganizer(null), className: "rounded-full border border-red-300 bg-red-50 px-3 py-1.5 text-xs font-bold text-red-700 hover:bg-red-100", "aria-label": t("a11y.stop_interactive_activity") }, "Stop for students"), interactiveOrganizerSync.error && status === "live" && /* @__PURE__ */ React.createElement("span", { className: "sr-only" }, "The previous live-session change failed."));
+  };
   const _GameLoadingFallback = () => React.createElement(
     "div",
     { className: "p-8 flex flex-col items-center justify-center gap-3 text-center", role: "status", "aria-live": "polite" },
@@ -779,10 +793,34 @@ const renderOutlineContent = (deps) => {
   const organizerData = normalizeVisualOrganizerData(generatedContent?.data, requestedType);
   const { main, main_en, branches, structureType } = organizerData;
   const type = structureType || "Structured Outline";
-  const MIN_GAME_ITEMS = 4;
-  const totalBranchItems = branches.reduce((s, b) => s + (b.items || []).filter((it) => typeof it === "object" ? it.text : it).length, 0);
-  const showGameButton = totalBranchItems >= MIN_GAME_ITEMS && branches.length >= 2;
-  const GameButtonHint = () => /* @__PURE__ */ React.createElement("p", { id: "game-btn-hint", className: "sr-only" }, t("games.button_hint") || "Practice what you just learned with a quick drag-and-drop sorting game. Keyboard friendly: press Enter to select an item, then choose a destination.");
+  const activityTypeByStructure = {
+    "Flow Chart": "pipeline",
+    "Process Flow / Sequence": "pipeline",
+    "T-Chart": "tchart",
+    Fishbone: "fishbone",
+    "Cause and Effect": "cesort",
+    "Problem Solution": "problemsolution",
+    "Key Concept Map": "conceptmap",
+    "Mind Map": "conceptmap",
+    "Frayer Model": "frayer",
+    "See-Think-Wonder": "seethinkwonder",
+    "Story Map": "storymap",
+    "Structured Outline": "outline"
+  };
+  const organizerActivityType = activityTypeByStructure[type] || null;
+  const organizerLaunchReadiness = organizerActivityType ? _liveReadinessFor(organizerActivityType) : { ok: true };
+  const showGameButton = !!organizerActivityType;
+  const _startOrganizerGame = (activityType, startLocal, activityConfig = null) => {
+    const readiness = _liveReadinessFor(activityType);
+    if (!readiness.ok) {
+      if (typeof deps.addToast === "function") deps.addToast(readiness.message || "Finish setting up this organizer before starting the activity.", "info");
+      return false;
+    }
+    startLocal();
+    _broadcastInteractiveOrganizer(activityType, activityConfig);
+    return true;
+  };
+  const GameButtonHint = () => /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("p", { id: "game-btn-hint", className: "sr-only" }, t("games.button_hint") || "Practice what you just learned with a quick drag-and-drop sorting game. Keyboard friendly: press Enter to select an item, then choose a destination."), !organizerLaunchReadiness.ok && /* @__PURE__ */ React.createElement("p", { id: "game-btn-readiness", role: "status", className: "max-w-sm rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-xs font-bold text-amber-900" }, organizerLaunchReadiness.message));
   const MainTitle = () => /* @__PURE__ */ React.createElement("div", { className: "text-center mb-8" }, isEditingOutline ? /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-2 max-w-md mx-auto" }, /* @__PURE__ */ React.createElement(
     "input",
     {
@@ -860,31 +898,16 @@ const renderOutlineContent = (deps) => {
     return /* @__PURE__ */ React.createElement("div", { className: "mx-auto max-w-7xl" }, showGameButton && /* @__PURE__ */ React.createElement("div", { className: "mb-4 flex justify-center" }, /* @__PURE__ */ React.createElement(GameButtonHint, null), /* @__PURE__ */ React.createElement(
       "button",
       {
-        onClick: () => {
-          setIsInteractivePipeline(true);
-          setIsPipelinePlaying(true);
-          _broadcastInteractiveOrganizer("pipeline");
-        },
-        className: "flex items-center gap-2 rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 px-5 py-2 text-sm font-bold text-white shadow-md transition-all hover:scale-105 hover:shadow-lg motion-safe:animate-[pulse_3s_ease-in-out_infinite]",
-        "aria-describedby": "game-btn-hint",
+        onClick: () => _startOrganizerGame("pipeline", () => setIsPipelinePlaying(true)),
+        disabled: !organizerLaunchReadiness.ok,
+        className: "flex items-center gap-2 rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 px-5 py-2 text-sm font-bold text-white shadow-md transition-all hover:scale-105 hover:shadow-lg motion-safe:animate-[pulse_3s_ease-in-out_infinite] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100",
+        "aria-describedby": organizerLaunchReadiness.ok ? "game-btn-hint" : "game-btn-hint game-btn-readiness",
         "aria-label": t("games.pipeline.title") || "Pipeline Builder"
       },
       /* @__PURE__ */ React.createElement(Gamepad2, { size: 16 }),
       " ",
       t("games.pipeline.play_btn") || "Build the Flow"
-    ), isInteractivePipeline && isTeacherMode && /* @__PURE__ */ React.createElement("div", { className: "ml-2 flex items-center gap-2", role: "status", "aria-live": "polite" }, /* @__PURE__ */ React.createElement("span", { className: "rounded-full border border-amber-300 bg-amber-100 px-2 py-1 text-xs font-bold text-amber-800" }, "?? ", t("outline.live_for_students") || "Live for students"), /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        onClick: () => {
-          setIsInteractivePipeline(false);
-          _broadcastInteractiveOrganizer(null);
-        },
-        className: "rounded-full border border-red-300 bg-red-50 px-2 py-1 text-xs font-bold text-red-700 hover:bg-red-100",
-        "aria-label": t("a11y.stop_interactive_activity")
-      },
-      "? ",
-      t("outline.stop_activity") || "Stop Activity"
-    ))), /* @__PURE__ */ React.createElement(MainTitle, null), React.createElement(FlowTopologyBoard, {
+    ), /* @__PURE__ */ React.createElement(LiveOrganizerStatus, { type: "pipeline" })), /* @__PURE__ */ React.createElement(MainTitle, null), React.createElement(FlowTopologyBoard, {
       branches,
       t,
       isEditingOutline,
@@ -993,7 +1016,7 @@ const renderOutlineContent = (deps) => {
           placeholder: t("concept_map.venn.add_item_placeholder"),
           className: "flex-grow text-xs p-2 rounded border border-blue-200 focus:ring-2 focus:ring-blue-400"
         }
-      ), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => handleAddVennItem("setB"), className: "min-h-11 min-w-11 bg-blue-200 hover:bg-blue-300 text-blue-800 p-2 rounded transition-colors focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2", "aria-label": `${t("common.add")}: ${setB.title}` }, /* @__PURE__ */ React.createElement(Plus, { size: 14 }))), /* @__PURE__ */ React.createElement("div", { className: "space-y-2 flex-grow overflow-y-auto max-h-60 custom-scrollbar pr-1" }, vennGameData.setB.map((item, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "bg-white p-2 rounded shadow-sm border border-blue-100 text-xs flex justify-between items-center group" }, /* @__PURE__ */ React.createElement("span", null, typeof item === "object" ? item.text : item), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => handleRemoveVennItem("setB", i), className: "min-h-11 min-w-11 text-blue-700 hover:text-blue-500 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity rounded focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2", "aria-label": `${t("common.remove")}: ${typeof item === "object" ? item.text : item}` }, /* @__PURE__ */ React.createElement(X, { size: 12 })))), vennGameData.setB.length === 0 && /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-blue-700 italic text-center" }, t("concept_sort.no_items"))))), /* @__PURE__ */ React.createElement(
+      ), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => handleAddVennItem("setB"), className: "min-h-11 min-w-11 bg-blue-200 hover:bg-blue-300 text-blue-800 p-2 rounded transition-colors focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2", "aria-label": `${t("common.add")}: ${setB.title}` }, /* @__PURE__ */ React.createElement(Plus, { size: 14 }))), /* @__PURE__ */ React.createElement("div", { className: "space-y-2 flex-grow overflow-y-auto max-h-60 custom-scrollbar pr-1" }, vennGameData.setB.map((item, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "bg-white p-2 rounded shadow-sm border border-blue-100 text-xs flex justify-between items-center group" }, /* @__PURE__ */ React.createElement("span", null, typeof item === "object" ? item.text : item), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => handleRemoveVennItem("setB", i), className: "min-h-11 min-w-11 text-blue-700 hover:text-blue-500 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity rounded focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2", "aria-label": `${t("common.remove")}: ${typeof item === "object" ? item.text : item}` }, /* @__PURE__ */ React.createElement(X, { size: 12 })))), vennGameData.setB.length === 0 && /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-blue-700 italic text-center" }, t("concept_sort.no_items"))))), /* @__PURE__ */ React.createElement("div", { className: "mb-4 flex justify-center" }, /* @__PURE__ */ React.createElement(LiveOrganizerStatus, { type: "venn" })), /* @__PURE__ */ React.createElement(
         "button",
         {
           "aria-label": t("common.start_game"),
@@ -1103,22 +1126,16 @@ const renderOutlineContent = (deps) => {
     return /* @__PURE__ */ React.createElement("div", { className: "max-w-5xl mx-auto px-2" }, /* @__PURE__ */ React.createElement(MainTitle, null), showGameButton && /* @__PURE__ */ React.createElement("div", { className: "flex justify-center mb-4" }, /* @__PURE__ */ React.createElement(GameButtonHint, null), /* @__PURE__ */ React.createElement(
       "button",
       {
-        onClick: () => {
-          setIsInteractiveTChart(true);
-          setIsTChartPlaying(true);
-          _broadcastInteractiveOrganizer("tchart");
-        },
-        className: "flex items-center gap-2 bg-gradient-to-r from-cyan-500 to-indigo-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all motion-safe:animate-[pulse_3s_ease-in-out_infinite]",
-        "aria-describedby": "game-btn-hint",
+        onClick: () => _startOrganizerGame("tchart", () => setIsTChartPlaying(true)),
+        disabled: !organizerLaunchReadiness.ok,
+        className: "flex items-center gap-2 bg-gradient-to-r from-cyan-500 to-indigo-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all motion-safe:animate-[pulse_3s_ease-in-out_infinite] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100",
+        "aria-describedby": organizerLaunchReadiness.ok ? "game-btn-hint" : "game-btn-hint game-btn-readiness",
         "aria-label": t("games.tchart_sort.play_btn") || "Play T-Chart Sort Game"
       },
       /* @__PURE__ */ React.createElement(Gamepad2, { size: 16 }),
       " ",
       t("games.tchart_sort.play_btn") || "Sort Into Columns"
-    ), isInteractiveTChart && isTeacherMode && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 ml-2", role: "status", "aria-live": "polite" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-amber-800 bg-amber-100 border border-amber-300 px-2 py-1 rounded-full" }, "\u{1F3AF} Live for students"), /* @__PURE__ */ React.createElement("button", { onClick: () => {
-      setIsInteractiveTChart(false);
-      _broadcastInteractiveOrganizer(null);
-    }, className: "text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-300 px-2 py-1 rounded-full", "aria-label": t("a11y.stop_interactive_activity") }, "\u23F9 Stop Activity"))), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-2 gap-0 bg-white rounded-2xl shadow-md border border-slate-200 overflow-hidden" }, renderTChartColumn(left, 0, "cyan", t("outline.tchart_left_default") || "Column A"), renderTChartColumn(right, 1, "indigo", t("outline.tchart_right_default") || "Column B")));
+    ), /* @__PURE__ */ React.createElement(LiveOrganizerStatus, { type: "tchart" })), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-2 gap-0 bg-white rounded-2xl shadow-md border border-slate-200 overflow-hidden" }, renderTChartColumn(left, 0, "cyan", t("outline.tchart_left_default") || "Column A"), renderTChartColumn(right, 1, "indigo", t("outline.tchart_right_default") || "Column B")));
   }
   if (type === "Fishbone") {
     if (!Array.isArray(branches) || branches.length < 2) {
@@ -1158,22 +1175,16 @@ const renderOutlineContent = (deps) => {
     return /* @__PURE__ */ React.createElement("div", { className: "max-w-6xl mx-auto px-2" }, /* @__PURE__ */ React.createElement(MainTitle, null), showGameButton && /* @__PURE__ */ React.createElement("div", { className: "flex justify-center mb-4" }, /* @__PURE__ */ React.createElement(GameButtonHint, null), /* @__PURE__ */ React.createElement(
       "button",
       {
-        onClick: () => {
-          setIsInteractiveFishboneSort(true);
-          setIsFishboneSortPlaying(true);
-          _broadcastInteractiveOrganizer("fishbone");
-        },
-        className: "flex items-center gap-2 bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all motion-safe:animate-[pulse_3s_ease-in-out_infinite]",
-        "aria-describedby": "game-btn-hint",
+        onClick: () => _startOrganizerGame("fishbone", () => setIsFishboneSortPlaying(true)),
+        disabled: !organizerLaunchReadiness.ok,
+        className: "flex items-center gap-2 bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all motion-safe:animate-[pulse_3s_ease-in-out_infinite] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100",
+        "aria-describedby": organizerLaunchReadiness.ok ? "game-btn-hint" : "game-btn-hint game-btn-readiness",
         "aria-label": t("games.fishbone_sort.play_btn") || "Play Fishbone Sort Game"
       },
       /* @__PURE__ */ React.createElement(Gamepad2, { size: 16 }),
       " ",
       t("games.fishbone_sort.play_btn") || "Sort Causes Onto Bones"
-    ), isInteractiveFishboneSort && isTeacherMode && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 ml-2", role: "status", "aria-live": "polite" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-amber-800 bg-amber-100 border border-amber-300 px-2 py-1 rounded-full" }, "\u{1F3AF} Live for students"), /* @__PURE__ */ React.createElement("button", { onClick: () => {
-      setIsInteractiveFishboneSort(false);
-      _broadcastInteractiveOrganizer(null);
-    }, className: "text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-300 px-2 py-1 rounded-full", "aria-label": t("a11y.stop_interactive_activity") }, "\u23F9 Stop Activity"))), /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl shadow-md border border-slate-200 p-4 overflow-x-auto" }, /* @__PURE__ */ React.createElement(
+    ), /* @__PURE__ */ React.createElement(LiveOrganizerStatus, { type: "fishbone" })), /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl shadow-md border border-slate-200 p-4 overflow-x-auto" }, /* @__PURE__ */ React.createElement(
       "svg",
       {
         "aria-hidden": "true",
@@ -1275,22 +1286,16 @@ const renderOutlineContent = (deps) => {
       return /* @__PURE__ */ React.createElement("div", { className: "max-w-4xl mx-auto px-2" }, showGameButton && /* @__PURE__ */ React.createElement("div", { className: "flex justify-center mb-4" }, /* @__PURE__ */ React.createElement(GameButtonHint, null), /* @__PURE__ */ React.createElement(
         "button",
         {
-          onClick: () => {
-            setIsInteractiveCESort(true);
-            setIsCESortPlaying(true);
-            _broadcastInteractiveOrganizer("cesort");
-          },
-          className: "flex items-center gap-2 bg-gradient-to-r from-orange-500 to-teal-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all motion-safe:animate-[pulse_3s_ease-in-out_infinite]",
-          "aria-describedby": "game-btn-hint",
+          onClick: () => _startOrganizerGame("cesort", () => setIsCESortPlaying(true)),
+          disabled: !organizerLaunchReadiness.ok,
+          className: "flex items-center gap-2 bg-gradient-to-r from-orange-500 to-teal-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all motion-safe:animate-[pulse_3s_ease-in-out_infinite] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100",
+          "aria-describedby": organizerLaunchReadiness.ok ? "game-btn-hint" : "game-btn-hint game-btn-readiness",
           "aria-label": t("games.ce_sort.title") || "Sort Causes and Effects"
         },
         /* @__PURE__ */ React.createElement(Gamepad2, { size: 16 }),
         " ",
         t("games.ce_sort.play_btn") || "Sort Causes & Effects"
-      ), isInteractiveCESort && isTeacherMode && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 ml-2", role: "status", "aria-live": "polite" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-amber-800 bg-amber-100 border border-amber-300 px-2 py-1 rounded-full" }, "\u{1F3AF} Live for students"), /* @__PURE__ */ React.createElement("button", { onClick: () => {
-        setIsInteractiveCESort(false);
-        _broadcastInteractiveOrganizer(null);
-      }, className: "text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-300 px-2 py-1 rounded-full", "aria-label": t("a11y.stop_interactive_activity") }, "\u23F9 Stop Activity"))), /* @__PURE__ */ React.createElement(MainTitle, null), /* @__PURE__ */ React.createElement("div", { className: "space-y-6" }, branches.map((b, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "relative pl-4 md:pl-0 group" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col md:flex-row items-stretch gap-0 bg-white rounded-2xl border border-slate-400 shadow-md overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: "flex-1 p-6 bg-orange-50 border-r border-orange-100 relative" }, /* @__PURE__ */ React.createElement("div", { className: "absolute top-0 left-0 bg-orange-200 text-orange-800 text-[11px] font-black uppercase tracking-wider px-3 py-1 rounded-br-lg" }, t("outline.labels.cause")), /* @__PURE__ */ React.createElement("div", { className: "pt-2 h-full flex items-center" }, isEditingOutline ? /* @__PURE__ */ React.createElement(
+      ), /* @__PURE__ */ React.createElement(LiveOrganizerStatus, { type: "cesort" })), /* @__PURE__ */ React.createElement(MainTitle, null), /* @__PURE__ */ React.createElement("div", { className: "space-y-6" }, branches.map((b, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "relative pl-4 md:pl-0 group" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col md:flex-row items-stretch gap-0 bg-white rounded-2xl border border-slate-400 shadow-md overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: "flex-1 p-6 bg-orange-50 border-r border-orange-100 relative" }, /* @__PURE__ */ React.createElement("div", { className: "absolute top-0 left-0 bg-orange-200 text-orange-800 text-[11px] font-black uppercase tracking-wider px-3 py-1 rounded-br-lg" }, t("outline.labels.cause")), /* @__PURE__ */ React.createElement("div", { className: "pt-2 h-full flex items-center" }, isEditingOutline ? /* @__PURE__ */ React.createElement(
         "textarea",
         {
           "aria-label": t("outline.edit_cause") || "Edit cause",
@@ -1303,22 +1308,16 @@ const renderOutlineContent = (deps) => {
     return /* @__PURE__ */ React.createElement("div", { className: "max-w-6xl mx-auto px-4 py-8" }, showGameButton && /* @__PURE__ */ React.createElement("div", { className: "flex justify-center mb-6" }, /* @__PURE__ */ React.createElement(GameButtonHint, null), /* @__PURE__ */ React.createElement(
       "button",
       {
-        onClick: () => {
-          setIsInteractiveCESort(true);
-          setIsCESortPlaying(true);
-          _broadcastInteractiveOrganizer("cesort");
-        },
-        className: "flex items-center gap-2 bg-gradient-to-r from-orange-500 to-teal-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all motion-safe:animate-[pulse_3s_ease-in-out_infinite]",
-        "aria-describedby": "game-btn-hint",
+        onClick: () => _startOrganizerGame("cesort", () => setIsCESortPlaying(true)),
+        disabled: !organizerLaunchReadiness.ok,
+        className: "flex items-center gap-2 bg-gradient-to-r from-orange-500 to-teal-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all motion-safe:animate-[pulse_3s_ease-in-out_infinite] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100",
+        "aria-describedby": organizerLaunchReadiness.ok ? "game-btn-hint" : "game-btn-hint game-btn-readiness",
         "aria-label": t("games.ce_sort.title") || "Sort Causes and Effects"
       },
       /* @__PURE__ */ React.createElement(Gamepad2, { size: 16 }),
       " ",
       t("games.ce_sort.play_btn") || "Sort Causes & Effects"
-    ), isInteractiveCESort && isTeacherMode && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 ml-2", role: "status", "aria-live": "polite" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-amber-800 bg-amber-100 border border-amber-300 px-2 py-1 rounded-full" }, "\u{1F3AF} Live for students"), /* @__PURE__ */ React.createElement("button", { onClick: () => {
-      setIsInteractiveCESort(false);
-      _broadcastInteractiveOrganizer(null);
-    }, className: "text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-300 px-2 py-1 rounded-full", "aria-label": t("a11y.stop_interactive_activity") }, "\u23F9 Stop Activity"))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col lg:flex-row items-center justify-center gap-8 lg:gap-16 mb-16" }, /* @__PURE__ */ React.createElement("div", { className: "flex-1 flex flex-col gap-6 w-full lg:items-end" }, causes.map((branch, i) => /* @__PURE__ */ React.createElement("div", { key: `c-${i}`, className: "bg-orange-50 border-l-4 border-orange-400 p-5 rounded-r-xl shadow-sm w-full max-w-md relative group hover:shadow-md transition-shadow" }, /* @__PURE__ */ React.createElement("h4", { className: "font-black text-orange-800 text-xs uppercase tracking-wider mb-3 flex items-center gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "w-2 h-2 rounded-full bg-orange-400" }), " ", t("outline.labels.causes")), /* @__PURE__ */ React.createElement("ul", { className: "space-y-2" }, branch.items.map((it, k) => /* @__PURE__ */ React.createElement("li", { key: k, className: "text-slate-700 font-medium text-sm flex items-start gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "w-1.5 h-1.5 rounded-full bg-orange-300 mt-1.5 shrink-0" }), it)))))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col items-center justify-center gap-4 z-10" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white p-3 rounded-full border-2 border-slate-200 shadow-sm" }, /* @__PURE__ */ React.createElement(ArrowRight, { size: 32, className: "text-slate-600 rotate-90 lg:rotate-0", strokeWidth: 3 }))), /* @__PURE__ */ React.createElement("div", { className: "flex-1 flex flex-col gap-6 w-full lg:items-start" }, effects.map((branch, i) => /* @__PURE__ */ React.createElement("div", { key: `e-${i}`, className: "bg-teal-50 border-r-4 border-teal-400 p-5 rounded-l-xl shadow-sm w-full max-w-md relative group hover:shadow-md transition-shadow text-right lg:text-left" }, /* @__PURE__ */ React.createElement("h4", { className: "font-black text-teal-800 text-xs uppercase tracking-wider mb-3 flex items-center gap-2 justify-end lg:justify-start" }, t("outline.labels.effects"), " ", /* @__PURE__ */ React.createElement("div", { className: "w-2 h-2 rounded-full bg-teal-400" })), /* @__PURE__ */ React.createElement("ul", { className: "space-y-2" }, branch.items.map((it, k) => /* @__PURE__ */ React.createElement("li", { key: k, className: "text-slate-700 font-medium text-sm flex items-start gap-2 justify-end lg:justify-start" }, it, /* @__PURE__ */ React.createElement("div", { className: "w-1.5 h-1.5 rounded-full bg-teal-300 mt-1.5 shrink-0 order-first lg:order-last" })))))))));
+    ), /* @__PURE__ */ React.createElement(LiveOrganizerStatus, { type: "cesort" })), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col lg:flex-row items-center justify-center gap-8 lg:gap-16 mb-16" }, /* @__PURE__ */ React.createElement("div", { className: "flex-1 flex flex-col gap-6 w-full lg:items-end" }, causes.map((branch, i) => /* @__PURE__ */ React.createElement("div", { key: `c-${i}`, className: "bg-orange-50 border-l-4 border-orange-400 p-5 rounded-r-xl shadow-sm w-full max-w-md relative group hover:shadow-md transition-shadow" }, /* @__PURE__ */ React.createElement("h4", { className: "font-black text-orange-800 text-xs uppercase tracking-wider mb-3 flex items-center gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "w-2 h-2 rounded-full bg-orange-400" }), " ", t("outline.labels.causes")), /* @__PURE__ */ React.createElement("ul", { className: "space-y-2" }, branch.items.map((it, k) => /* @__PURE__ */ React.createElement("li", { key: k, className: "text-slate-700 font-medium text-sm flex items-start gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "w-1.5 h-1.5 rounded-full bg-orange-300 mt-1.5 shrink-0" }), it)))))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col items-center justify-center gap-4 z-10" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white p-3 rounded-full border-2 border-slate-200 shadow-sm" }, /* @__PURE__ */ React.createElement(ArrowRight, { size: 32, className: "text-slate-600 rotate-90 lg:rotate-0", strokeWidth: 3 }))), /* @__PURE__ */ React.createElement("div", { className: "flex-1 flex flex-col gap-6 w-full lg:items-start" }, effects.map((branch, i) => /* @__PURE__ */ React.createElement("div", { key: `e-${i}`, className: "bg-teal-50 border-r-4 border-teal-400 p-5 rounded-l-xl shadow-sm w-full max-w-md relative group hover:shadow-md transition-shadow text-right lg:text-left" }, /* @__PURE__ */ React.createElement("h4", { className: "font-black text-teal-800 text-xs uppercase tracking-wider mb-3 flex items-center gap-2 justify-end lg:justify-start" }, t("outline.labels.effects"), " ", /* @__PURE__ */ React.createElement("div", { className: "w-2 h-2 rounded-full bg-teal-400" })), /* @__PURE__ */ React.createElement("ul", { className: "space-y-2" }, branch.items.map((it, k) => /* @__PURE__ */ React.createElement("li", { key: k, className: "text-slate-700 font-medium text-sm flex items-start gap-2 justify-end lg:justify-start" }, it, /* @__PURE__ */ React.createElement("div", { className: "w-1.5 h-1.5 rounded-full bg-teal-300 mt-1.5 shrink-0 order-first lg:order-last" })))))))));
   }
   if (type === "Problem Solution") {
     const outcomeIndex = branches.findIndex(
@@ -1326,8 +1325,7 @@ const renderOutlineContent = (deps) => {
     );
     const outcomeBranch = outcomeIndex !== -1 ? branches[outcomeIndex] : null;
     const solutionBranches = branches.filter((_, i) => i !== outcomeIndex);
-    const totalSolutionItems = solutionBranches.reduce((s, b) => s + (b.items || []).filter((it) => typeof it === "object" ? it.text : it).length, 0);
-    const showPSGame = totalSolutionItems >= 6;
+    const showPSGame = !!organizerActivityType;
     if (isProblemSolutionSortPlaying || isInteractiveProblemSolutionSort && !isTeacherMode) {
       return /* @__PURE__ */ React.createElement(ErrorBoundary, { fallbackMessage: "Solution Prioritize encountered an error." }, /* @__PURE__ */ React.createElement(
         ProblemSolutionSortGame,
@@ -1344,22 +1342,16 @@ const renderOutlineContent = (deps) => {
     return /* @__PURE__ */ React.createElement("div", { className: "max-w-5xl mx-auto px-4 py-12" }, showPSGame && /* @__PURE__ */ React.createElement("div", { className: "flex justify-center mb-6" }, /* @__PURE__ */ React.createElement(GameButtonHint, null), /* @__PURE__ */ React.createElement(
       "button",
       {
-        onClick: () => {
-          setIsInteractiveProblemSolutionSort(true);
-          setIsProblemSolutionSortPlaying(true);
-          _broadcastInteractiveOrganizer("problemsolution");
-        },
-        className: "flex items-center gap-2 bg-gradient-to-r from-rose-500 to-pink-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all motion-safe:animate-[pulse_3s_ease-in-out_infinite]",
-        "aria-describedby": "game-btn-hint",
+        onClick: () => _startOrganizerGame("problemsolution", () => setIsProblemSolutionSortPlaying(true)),
+        disabled: !organizerLaunchReadiness.ok,
+        className: "flex items-center gap-2 bg-gradient-to-r from-rose-500 to-pink-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all motion-safe:animate-[pulse_3s_ease-in-out_infinite] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100",
+        "aria-describedby": organizerLaunchReadiness.ok ? "game-btn-hint" : "game-btn-hint game-btn-readiness",
         "aria-label": t("games.problem_solution_sort.play_btn") || "Prioritize the Solutions"
       },
       /* @__PURE__ */ React.createElement(Gamepad2, { size: 16 }),
       " ",
       t("games.problem_solution_sort.play_btn") || "Prioritize the Solutions"
-    ), isInteractiveProblemSolutionSort && isTeacherMode && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 ml-2", role: "status", "aria-live": "polite" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-amber-800 bg-amber-100 border border-amber-300 px-2 py-1 rounded-full" }, "\u{1F3AF} Live for students"), /* @__PURE__ */ React.createElement("button", { onClick: () => {
-      setIsInteractiveProblemSolutionSort(false);
-      _broadcastInteractiveOrganizer(null);
-    }, className: "text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-300 px-2 py-1 rounded-full", "aria-label": t("a11y.stop_interactive_activity") }, "\u23F9 Stop Activity"))), /* @__PURE__ */ React.createElement("div", { className: "relative z-10 mb-16" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white border-l-8 border-red-500 rounded-r-3xl shadow-xl p-8 relative transform transition-transform hover:scale-[1.01] max-w-3xl mx-auto" }, /* @__PURE__ */ React.createElement("div", { className: "absolute -left-6 top-6 bg-red-700 text-white p-3 rounded-full shadow-md border-4 border-white" }, /* @__PURE__ */ React.createElement(AlertCircle, { size: 32 })), /* @__PURE__ */ React.createElement("div", { className: "pl-8" }, /* @__PURE__ */ React.createElement("h4", { className: "text-xs font-black text-red-500 uppercase tracking-widest mb-2 opacity-70 flex items-center gap-2" }, t("outline.labels.problem")), /* @__PURE__ */ React.createElement(MainTitle, null)), /* @__PURE__ */ React.createElement("div", { className: "absolute -bottom-24 left-1/2 -translate-x-1/2 flex flex-col items-center h-24 w-8 justify-end" }, /* @__PURE__ */ React.createElement("div", { className: "h-full w-1 bg-slate-200" }), /* @__PURE__ */ React.createElement("div", { className: "w-4 h-4 rounded-full bg-slate-300 border-4 border-white shadow-sm -mb-2" })))), /* @__PURE__ */ React.createElement("div", { className: "relative mb-16" }, /* @__PURE__ */ React.createElement("div", { className: "absolute top-[-2rem] left-[10%] right-[10%] h-1 bg-slate-200 rounded-full hidden md:block" }), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" }, solutionBranches.map((b, i) => {
+    ), /* @__PURE__ */ React.createElement(LiveOrganizerStatus, { type: "problemsolution" })), /* @__PURE__ */ React.createElement("div", { className: "relative z-10 mb-16" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white border-l-8 border-red-500 rounded-r-3xl shadow-xl p-8 relative transform transition-transform hover:scale-[1.01] max-w-3xl mx-auto" }, /* @__PURE__ */ React.createElement("div", { className: "absolute -left-6 top-6 bg-red-700 text-white p-3 rounded-full shadow-md border-4 border-white" }, /* @__PURE__ */ React.createElement(AlertCircle, { size: 32 })), /* @__PURE__ */ React.createElement("div", { className: "pl-8" }, /* @__PURE__ */ React.createElement("h4", { className: "text-xs font-black text-red-500 uppercase tracking-widest mb-2 opacity-70 flex items-center gap-2" }, t("outline.labels.problem")), /* @__PURE__ */ React.createElement(MainTitle, null)), /* @__PURE__ */ React.createElement("div", { className: "absolute -bottom-24 left-1/2 -translate-x-1/2 flex flex-col items-center h-24 w-8 justify-end" }, /* @__PURE__ */ React.createElement("div", { className: "h-full w-1 bg-slate-200" }), /* @__PURE__ */ React.createElement("div", { className: "w-4 h-4 rounded-full bg-slate-300 border-4 border-white shadow-sm -mb-2" })))), /* @__PURE__ */ React.createElement("div", { className: "relative mb-16" }, /* @__PURE__ */ React.createElement("div", { className: "absolute top-[-2rem] left-[10%] right-[10%] h-1 bg-slate-200 rounded-full hidden md:block" }), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" }, solutionBranches.map((b, i) => {
       const originalIndex = branches.indexOf(b);
       return /* @__PURE__ */ React.createElement("div", { key: i, className: "flex flex-col relative group" }, /* @__PURE__ */ React.createElement("div", { className: "absolute -top-8 left-1/2 -translate-x-1/2 h-8 w-1 bg-slate-200 hidden md:block group-hover:bg-green-300 transition-colors" }), /* @__PURE__ */ React.createElement("div", { className: "relative bg-white rounded-2xl border-t-8 border-green-500 shadow-md hover:shadow-xl transition-all duration-300 flex-grow p-6 flex flex-col h-full" }, /* @__PURE__ */ React.createElement("div", { className: "absolute -top-5 left-1/2 -translate-x-1/2 bg-green-100 text-green-800 px-4 py-1 rounded-full text-[11px] font-black uppercase tracking-wider border border-green-200 whitespace-nowrap shadow-sm z-10" }, "Solution Path ", i + 1), /* @__PURE__ */ React.createElement("div", { className: "mt-4 flex-grow" }, /* @__PURE__ */ React.createElement(BranchItem, { branch: b, bIdx: originalIndex, colorClass: "bg-transparent border-none shadow-none p-0" }))), /* @__PURE__ */ React.createElement("div", { className: "absolute -bottom-8 left-1/2 -translate-x-1/2 h-8 w-1 bg-slate-200 hidden md:block group-hover:bg-blue-300 transition-colors" }));
     })), /* @__PURE__ */ React.createElement("div", { className: "absolute bottom-[-2rem] left-[10%] right-[10%] h-1 bg-slate-200 rounded-full hidden md:block" })), /* @__PURE__ */ React.createElement("div", { className: "relative max-w-3xl mx-auto" }, /* @__PURE__ */ React.createElement("div", { className: "absolute -top-16 left-1/2 -translate-x-1/2 h-16 w-1 bg-slate-200 flex items-end justify-center pb-1" }, /* @__PURE__ */ React.createElement(ArrowDown, { size: 24, className: "text-slate-600" })), /* @__PURE__ */ React.createElement("div", { className: "bg-blue-50 border-2 border-blue-200 rounded-3xl p-8 text-center relative shadow-lg" }, /* @__PURE__ */ React.createElement("div", { className: "inline-flex items-center justify-center p-3 bg-blue-100 text-blue-600 rounded-full mb-4 shadow-sm border border-blue-200" }, /* @__PURE__ */ React.createElement(CheckCircle2, { size: 24 })), outcomeBranch ? /* @__PURE__ */ React.createElement("div", { className: "text-left" }, /* @__PURE__ */ React.createElement(BranchItem, { branch: outcomeBranch, bIdx: outcomeIndex, colorClass: "bg-transparent border-none shadow-none p-0" })) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("h3", { className: "text-xl font-black text-blue-900 mb-2" }, t("outline.labels.outcome")), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-blue-800/80 max-w-lg mx-auto leading-relaxed italic" }, "Analyze the results here. Did the proposed solutions effectively address the challenge? What were the trade-offs or final results?"), isTeacherMode && /* @__PURE__ */ React.createElement(
@@ -1394,22 +1386,16 @@ const renderOutlineContent = (deps) => {
     return /* @__PURE__ */ React.createElement("div", null, showGameButton && /* @__PURE__ */ React.createElement("div", { className: "flex justify-center mb-4" }, /* @__PURE__ */ React.createElement(GameButtonHint, null), /* @__PURE__ */ React.createElement(
       "button",
       {
-        onClick: () => {
-          setIsInteractiveConceptMapSort(true);
-          setIsConceptMapSortPlaying(true);
-          _broadcastInteractiveOrganizer("conceptmap");
-        },
-        className: "flex items-center gap-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all motion-safe:animate-[pulse_3s_ease-in-out_infinite]",
-        "aria-describedby": "game-btn-hint",
+        onClick: () => _startOrganizerGame("conceptmap", () => setIsConceptMapSortPlaying(true)),
+        disabled: !organizerLaunchReadiness.ok,
+        className: "flex items-center gap-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all motion-safe:animate-[pulse_3s_ease-in-out_infinite] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100",
+        "aria-describedby": organizerLaunchReadiness.ok ? "game-btn-hint" : "game-btn-hint game-btn-readiness",
         "aria-label": t("games.concept_map_sort.play_btn") || "Play Concept Map Sort Game"
       },
       /* @__PURE__ */ React.createElement(Gamepad2, { size: 16 }),
       " ",
       t("games.concept_map_sort.play_btn") || "Sort Onto Branches"
-    ), isInteractiveConceptMapSort && isTeacherMode && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 ml-2", role: "status", "aria-live": "polite" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-amber-800 bg-amber-100 border border-amber-300 px-2 py-1 rounded-full" }, "\u{1F3AF} Live for students"), /* @__PURE__ */ React.createElement("button", { onClick: () => {
-      setIsInteractiveConceptMapSort(false);
-      _broadcastInteractiveOrganizer(null);
-    }, className: "text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-300 px-2 py-1 rounded-full", "aria-label": t("a11y.stop_interactive_activity") }, "\u23F9 Stop Activity"))), /* @__PURE__ */ React.createElement(KeyConceptMapView, { branches, main, main_en, BranchItem, t }));
+    ), /* @__PURE__ */ React.createElement(LiveOrganizerStatus, { type: "conceptmap" })), /* @__PURE__ */ React.createElement(KeyConceptMapView, { branches, main, main_en, BranchItem, t }));
   }
   if (type === "Frayer Model" && !isEditingOutline) {
     if (branches.length !== 4) {
@@ -1473,22 +1459,16 @@ const renderOutlineContent = (deps) => {
     return /* @__PURE__ */ React.createElement("div", { className: "max-w-4xl mx-auto px-4 py-6 relative" }, showGameButton && /* @__PURE__ */ React.createElement("div", { className: "flex justify-center mb-4" }, /* @__PURE__ */ React.createElement(GameButtonHint, null), /* @__PURE__ */ React.createElement(
       "button",
       {
-        onClick: () => {
-          setIsInteractiveFrayerSort(true);
-          setIsFrayerSortPlaying(true);
-          _broadcastInteractiveOrganizer("frayer");
-        },
-        className: "flex items-center gap-2 bg-gradient-to-r from-indigo-500 to-emerald-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all motion-safe:animate-[pulse_3s_ease-in-out_infinite]",
-        "aria-describedby": "game-btn-hint",
+        onClick: () => _startOrganizerGame("frayer", () => setIsFrayerSortPlaying(true)),
+        disabled: !organizerLaunchReadiness.ok,
+        className: "flex items-center gap-2 bg-gradient-to-r from-indigo-500 to-emerald-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all motion-safe:animate-[pulse_3s_ease-in-out_infinite] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100",
+        "aria-describedby": organizerLaunchReadiness.ok ? "game-btn-hint" : "game-btn-hint game-btn-readiness",
         "aria-label": t("games.frayer_sort.play_btn") || "Play Frayer Sort Game"
       },
       /* @__PURE__ */ React.createElement(Gamepad2, { size: 16 }),
       " ",
       t("games.frayer_sort.play_btn") || "Sort into Quadrants"
-    ), isInteractiveFrayerSort && isTeacherMode && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 ml-2", role: "status", "aria-live": "polite" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-amber-800 bg-amber-100 border border-amber-300 px-2 py-1 rounded-full" }, "\u{1F3AF} Live for students"), /* @__PURE__ */ React.createElement("button", { onClick: () => {
-      setIsInteractiveFrayerSort(false);
-      _broadcastInteractiveOrganizer(null);
-    }, className: "text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-300 px-2 py-1 rounded-full", "aria-label": t("a11y.stop_interactive_activity") }, "\u23F9 Stop Activity"))), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-0 border-2 border-slate-400 rounded-2xl overflow-hidden shadow-lg bg-white relative", style: { minHeight: "460px" } }, renderQuadrant(defBranch, "indigo", "border-r border-b border-slate-300", "Definition", false, false), renderQuadrant(charBranch, "emerald", "border-b border-slate-300", "Characteristics", false, false), renderQuadrant(exBranch, "amber", "border-r border-slate-300", "Examples", true, true), renderQuadrant(nonExBranch, "rose", "", "Non-Examples", false, true), /* @__PURE__ */ React.createElement("div", { className: "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white border-4 border-slate-700 rounded-full px-5 py-2 shadow-2xl z-10 max-w-[180px]" }, /* @__PURE__ */ React.createElement("div", { className: "text-center font-black text-base text-slate-800 leading-tight whitespace-normal break-words" }, main || "Vocabulary Term"))), isTeacherMode ? /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 justify-center mt-3" }, frayerImage ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(
+    ), /* @__PURE__ */ React.createElement(LiveOrganizerStatus, { type: "frayer" })), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-0 border-2 border-slate-400 rounded-2xl overflow-hidden shadow-lg bg-white relative", style: { minHeight: "460px" } }, renderQuadrant(defBranch, "indigo", "border-r border-b border-slate-300", "Definition", false, false), renderQuadrant(charBranch, "emerald", "border-b border-slate-300", "Characteristics", false, false), renderQuadrant(exBranch, "amber", "border-r border-slate-300", "Examples", true, true), renderQuadrant(nonExBranch, "rose", "", "Non-Examples", false, true), /* @__PURE__ */ React.createElement("div", { className: "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white border-4 border-slate-700 rounded-full px-5 py-2 shadow-2xl z-10 max-w-[180px]" }, /* @__PURE__ */ React.createElement("div", { className: "text-center font-black text-base text-slate-800 leading-tight whitespace-normal break-words" }, main || "Vocabulary Term"))), isTeacherMode ? /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 justify-center mt-3" }, frayerImage ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(
       "button",
       {
         onClick: onRefineFrayerVisual,
@@ -1554,22 +1534,16 @@ const renderOutlineContent = (deps) => {
     return /* @__PURE__ */ React.createElement("div", { className: "max-w-5xl mx-auto px-4 py-6" }, /* @__PURE__ */ React.createElement(MainTitle, null), showGameButton && /* @__PURE__ */ React.createElement("div", { className: "flex justify-center mb-4" }, /* @__PURE__ */ React.createElement(GameButtonHint, null), /* @__PURE__ */ React.createElement(
       "button",
       {
-        onClick: () => {
-          setIsInteractiveSeeThinkWonderSort(true);
-          setIsSeeThinkWonderSortPlaying(true);
-          _broadcastInteractiveOrganizer("seethinkwonder");
-        },
-        className: "flex items-center gap-2 bg-gradient-to-r from-sky-500 to-amber-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all motion-safe:animate-[pulse_3s_ease-in-out_infinite]",
-        "aria-describedby": "game-btn-hint",
+        onClick: () => _startOrganizerGame("seethinkwonder", () => setIsSeeThinkWonderSortPlaying(true)),
+        disabled: !organizerLaunchReadiness.ok,
+        className: "flex items-center gap-2 bg-gradient-to-r from-sky-500 to-amber-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all motion-safe:animate-[pulse_3s_ease-in-out_infinite] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100",
+        "aria-describedby": organizerLaunchReadiness.ok ? "game-btn-hint" : "game-btn-hint game-btn-readiness",
         "aria-label": t("games.see_think_wonder_sort.play_btn") || "Play See-Think-Wonder Sort Game"
       },
       /* @__PURE__ */ React.createElement(Gamepad2, { size: 16 }),
       " ",
       t("games.see_think_wonder_sort.play_btn") || "Sort: Observation, Inference, or Question?"
-    ), isInteractiveSeeThinkWonderSort && isTeacherMode && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 ml-2", role: "status", "aria-live": "polite" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-amber-800 bg-amber-100 border border-amber-300 px-2 py-1 rounded-full" }, "\u{1F3AF} Live for students"), /* @__PURE__ */ React.createElement("button", { onClick: () => {
-      setIsInteractiveSeeThinkWonderSort(false);
-      _broadcastInteractiveOrganizer(null);
-    }, className: "text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-300 px-2 py-1 rounded-full", "aria-label": t("a11y.stop_interactive_activity") }, "\u23F9 Stop Activity"))), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-3 border-2 border-slate-400 rounded-2xl overflow-hidden shadow-lg bg-white divide-y md:divide-y-0 md:divide-x divide-slate-200" }, renderSTWColumn(seeBranch, "sky", "What you can directly observe"), renderSTWColumn(thinkBranch, "violet", "What the observations suggest"), renderSTWColumn(wonderBranch, "amber", "Questions you want to explore")), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-500 italic text-center mt-3" }, t("outline.see_think_wonder_caption") || "See, Think, Wonder (Harvard Project Zero): observation, inference, and open questioning kept distinct."));
+    ), /* @__PURE__ */ React.createElement(LiveOrganizerStatus, { type: "seethinkwonder" })), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-3 border-2 border-slate-400 rounded-2xl overflow-hidden shadow-lg bg-white divide-y md:divide-y-0 md:divide-x divide-slate-200" }, renderSTWColumn(seeBranch, "sky", "What you can directly observe"), renderSTWColumn(thinkBranch, "violet", "What the observations suggest"), renderSTWColumn(wonderBranch, "amber", "Questions you want to explore")), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-500 italic text-center mt-3" }, t("outline.see_think_wonder_caption") || "See, Think, Wonder (Harvard Project Zero): observation, inference, and open questioning kept distinct."));
   }
   if (type === "KWL Chart" && !isEditingOutline) {
     if (branches.length !== 3) {
@@ -1653,28 +1627,22 @@ const renderOutlineContent = (deps) => {
     return /* @__PURE__ */ React.createElement("div", { className: "max-w-5xl mx-auto px-4 py-6" }, /* @__PURE__ */ React.createElement(MainTitle, null), showGameButton && /* @__PURE__ */ React.createElement("div", { className: "flex justify-center mb-4" }, /* @__PURE__ */ React.createElement(GameButtonHint, null), /* @__PURE__ */ React.createElement(
       "button",
       {
-        onClick: () => {
-          setIsInteractiveStoryMapSort(true);
-          setIsStoryMapSortPlaying(true);
-          _broadcastInteractiveOrganizer("storymap");
-        },
-        className: "flex items-center gap-2 bg-gradient-to-r from-cyan-500 to-rose-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all motion-safe:animate-[pulse_3s_ease-in-out_infinite]",
-        "aria-describedby": "game-btn-hint",
+        onClick: () => _startOrganizerGame("storymap", () => setIsStoryMapSortPlaying(true)),
+        disabled: !organizerLaunchReadiness.ok,
+        className: "flex items-center gap-2 bg-gradient-to-r from-cyan-500 to-rose-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all motion-safe:animate-[pulse_3s_ease-in-out_infinite] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100",
+        "aria-describedby": organizerLaunchReadiness.ok ? "game-btn-hint" : "game-btn-hint game-btn-readiness",
         "aria-label": t("games.story_map_sort.play_btn") || "Play Story Map Sort Game"
       },
       /* @__PURE__ */ React.createElement(Gamepad2, { size: 16 }),
       " ",
       t("games.story_map_sort.play_btn") || "Sort Events Along the Arc"
-    ), isInteractiveStoryMapSort && isTeacherMode && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 ml-2", role: "status", "aria-live": "polite" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-amber-800 bg-amber-100 border border-amber-300 px-2 py-1 rounded-full" }, "\u{1F3AF} Live for students"), /* @__PURE__ */ React.createElement("button", { onClick: () => {
-      setIsInteractiveStoryMapSort(false);
-      _broadcastInteractiveOrganizer(null);
-    }, className: "text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-300 px-2 py-1 rounded-full", "aria-label": t("a11y.stop_interactive_activity") }, "\u23F9 Stop Activity"))), /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-b from-sky-50/80 via-white to-amber-50/40 border-2 border-slate-300 rounded-2xl p-6 shadow-lg" }, /* @__PURE__ */ React.createElement("svg", { viewBox: "0 0 900 400", className: "w-full h-auto", preserveAspectRatio: "xMidYMid meet", role: "img", "aria-label": t("outline.plot_diagram_arc_aria") || "Plot diagram arc showing narrative tension rising to the climax and falling toward resolution" }, /* @__PURE__ */ React.createElement("path", { d: "M 60 340 Q 250 280 450 70 Q 650 280 840 340", fill: "none", stroke: "#94a3b8", strokeWidth: "3", strokeLinecap: "round", strokeDasharray: "6 6" }), stages.map((stage, i) => /* @__PURE__ */ React.createElement("g", { key: i }, /* @__PURE__ */ React.createElement("circle", { cx: stage.x, cy: stage.y, r: "9", fill: stage.color, stroke: "white", strokeWidth: "3" }), /* @__PURE__ */ React.createElement("text", { x: stage.x, y: stage.y - 20, textAnchor: stage.anchor, style: { fontSize: "13px", fontWeight: 900, fill: stage.color, textTransform: "uppercase", letterSpacing: "0.05em" } }, stage.branch.title)))), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3 mt-6" }, stages.map((stage, i) => {
+    ), /* @__PURE__ */ React.createElement(LiveOrganizerStatus, { type: "storymap" })), /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-b from-sky-50/80 via-white to-amber-50/40 border-2 border-slate-300 rounded-2xl p-6 shadow-lg" }, /* @__PURE__ */ React.createElement("svg", { viewBox: "0 0 900 400", className: "w-full h-auto", preserveAspectRatio: "xMidYMid meet", role: "img", "aria-label": t("outline.plot_diagram_arc_aria") || "Plot diagram arc showing narrative tension rising to the climax and falling toward resolution" }, /* @__PURE__ */ React.createElement("path", { d: "M 60 340 Q 250 280 450 70 Q 650 280 840 340", fill: "none", stroke: "#94a3b8", strokeWidth: "3", strokeLinecap: "round", strokeDasharray: "6 6" }), stages.map((stage, i) => /* @__PURE__ */ React.createElement("g", { key: i }, /* @__PURE__ */ React.createElement("circle", { cx: stage.x, cy: stage.y, r: "9", fill: stage.color, stroke: "white", strokeWidth: "3" }), /* @__PURE__ */ React.createElement("text", { x: stage.x, y: stage.y - 20, textAnchor: stage.anchor, style: { fontSize: "13px", fontWeight: 900, fill: stage.color, textTransform: "uppercase", letterSpacing: "0.05em" } }, stage.branch.title)))), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3 mt-6" }, stages.map((stage, i) => {
       const items = (stage.branch.items || []).map(itemText).filter(Boolean);
       return /* @__PURE__ */ React.createElement("div", { key: i, className: "bg-white rounded-lg border border-slate-200 p-3 shadow-sm" }, /* @__PURE__ */ React.createElement("h5", { className: "text-xs font-black uppercase tracking-wider mb-2", style: { color: stage.color } }, stage.branch.title), /* @__PURE__ */ React.createElement("ul", { className: "space-y-1" }, items.length > 0 ? items.map((text, k) => /* @__PURE__ */ React.createElement("li", { key: k, className: "text-xs text-slate-700 leading-snug" }, "\u2022 ", text)) : /* @__PURE__ */ React.createElement("li", { className: "text-xs text-slate-600 italic" }, "\u2014")));
     }))), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-500 italic text-center mt-3" }, t("outline.story_map_caption") || "Story Map: tension rises through Rising Action to the Climax, then falls toward Resolution. The arc visualizes the shape of narrative tension."));
   }
   if (type === "Memory Palace" && !isEditingOutline) {
-    return /* @__PURE__ */ React.createElement("div", { className: "max-w-6xl mx-auto px-4 py-6" }, /* @__PURE__ */ React.createElement(MainTitle, null), /* @__PURE__ */ React.createElement(ErrorBoundary, { fallbackMessage: "Memory Palace encountered an error." }, /* @__PURE__ */ React.createElement(
+    return /* @__PURE__ */ React.createElement("div", { className: "max-w-6xl mx-auto px-4 py-6" }, /* @__PURE__ */ React.createElement(MainTitle, null), /* @__PURE__ */ React.createElement("div", { className: "mb-3 flex justify-center" }, /* @__PURE__ */ React.createElement(LiveOrganizerStatus, { type: "palacerecall" })), /* @__PURE__ */ React.createElement(ErrorBoundary, { fallbackMessage: "Memory Palace encountered an error." }, /* @__PURE__ */ React.createElement(
       MemoryPalaceView,
       {
         data: generatedContent?.data,
@@ -1688,19 +1656,20 @@ const renderOutlineContent = (deps) => {
         onGameComplete: handleGameCompletion,
         isTeacherMode,
         armed: !!isInteractivePalaceRecall,
+        liveRecallReadiness: _liveReadinessFor("palacerecall"),
+        onActivityReady: deps.handleInteractiveOrganizerReady,
+        onActivityFailed: deps.handleInteractiveOrganizerFailed,
         onRecallArm: () => {
-          if (setIsInteractivePalaceRecall) setIsInteractivePalaceRecall(true);
           _broadcastInteractiveOrganizer("palacerecall");
         },
         onRecallClose: () => {
-          if (setIsInteractivePalaceRecall) setIsInteractivePalaceRecall(false);
-          if (isTeacherMode) _broadcastInteractiveOrganizer(null);
+          _closeLiveOrganizerPreview("palacerecall");
         }
       }
     )));
   }
   if (type === "3D Concept Space" && !isEditingOutline) {
-    return /* @__PURE__ */ React.createElement("div", { className: "max-w-6xl mx-auto px-4 py-6" }, /* @__PURE__ */ React.createElement(MainTitle, null), /* @__PURE__ */ React.createElement(ErrorBoundary, { fallbackMessage: "3D Concept Space encountered an error." }, /* @__PURE__ */ React.createElement(
+    return /* @__PURE__ */ React.createElement("div", { className: "max-w-6xl mx-auto px-4 py-6" }, /* @__PURE__ */ React.createElement(MainTitle, null), /* @__PURE__ */ React.createElement("div", { className: "mb-3 flex justify-center gap-2" }, /* @__PURE__ */ React.createElement(LiveOrganizerStatus, { type: "strandchallenge3d" }), /* @__PURE__ */ React.createElement(LiveOrganizerStatus, { type: "conceptrecall3d" })), /* @__PURE__ */ React.createElement(ErrorBoundary, { fallbackMessage: "3D Concept Space encountered an error." }, /* @__PURE__ */ React.createElement(
       ConceptSpace3DView,
       {
         data: generatedContent?.data,
@@ -1714,13 +1683,22 @@ const renderOutlineContent = (deps) => {
         onGameComplete: handleGameCompletion,
         isTeacherMode,
         armed: !!isInteractiveStrandChallenge,
+        recallArmed: !!isInteractiveConceptRecall3d,
+        challengeLiveReadiness: _liveReadinessFor("strandchallenge3d"),
+        recallLiveReadiness: _liveReadinessFor("conceptrecall3d"),
+        onActivityReady: deps.handleInteractiveOrganizerReady,
+        onActivityFailed: deps.handleInteractiveOrganizerFailed,
         onChallengeArm: () => {
-          if (setIsInteractiveStrandChallenge) setIsInteractiveStrandChallenge(true);
           _broadcastInteractiveOrganizer("strandchallenge3d");
         },
         onChallengeClose: () => {
-          if (setIsInteractiveStrandChallenge) setIsInteractiveStrandChallenge(false);
-          if (isTeacherMode) _broadcastInteractiveOrganizer(null);
+          _closeLiveOrganizerPreview("strandchallenge3d");
+        },
+        onRecallArm: () => {
+          _broadcastInteractiveOrganizer("conceptrecall3d");
+        },
+        onRecallClose: () => {
+          _closeLiveOrganizerPreview("conceptrecall3d");
         }
       }
     )));
@@ -1746,22 +1724,16 @@ const renderOutlineContent = (deps) => {
     return /* @__PURE__ */ React.createElement("div", { className: "max-w-4xl mx-auto px-4 py-6" }, /* @__PURE__ */ React.createElement(MainTitle, null), showGameButton && /* @__PURE__ */ React.createElement("div", { className: "flex justify-center mb-4" }, /* @__PURE__ */ React.createElement(GameButtonHint, null), /* @__PURE__ */ React.createElement(
       "button",
       {
-        onClick: () => {
-          setIsInteractiveOutlineSort(true);
-          setIsOutlineSortPlaying(true);
-          _broadcastInteractiveOrganizer("outline");
-        },
-        className: "flex items-center gap-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all motion-safe:animate-[pulse_3s_ease-in-out_infinite]",
-        "aria-describedby": "game-btn-hint",
+        onClick: () => _startOrganizerGame("outline", () => setIsOutlineSortPlaying(true)),
+        disabled: !organizerLaunchReadiness.ok,
+        className: "flex items-center gap-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all motion-safe:animate-[pulse_3s_ease-in-out_infinite] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100",
+        "aria-describedby": organizerLaunchReadiness.ok ? "game-btn-hint" : "game-btn-hint game-btn-readiness",
         "aria-label": t("games.outline_sort.play_btn") || "Play Outline Sort Game"
       },
       /* @__PURE__ */ React.createElement(Gamepad2, { size: 16 }),
       " ",
       t("games.outline_sort.play_btn") || "Sort Under Headings"
-    ), isInteractiveOutlineSort && isTeacherMode && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 ml-2", role: "status", "aria-live": "polite" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-amber-800 bg-amber-100 border border-amber-300 px-2 py-1 rounded-full" }, "\u{1F3AF} Live for students"), /* @__PURE__ */ React.createElement("button", { onClick: () => {
-      setIsInteractiveOutlineSort(false);
-      _broadcastInteractiveOrganizer(null);
-    }, className: "text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-300 px-2 py-1 rounded-full", "aria-label": t("a11y.stop_interactive_activity") }, "\u23F9 Stop Activity"))), /* @__PURE__ */ React.createElement("div", { className: "relative mt-8 space-y-8 ml-4 md:ml-12" }, /* @__PURE__ */ React.createElement("div", { className: "absolute left-[-24px] top-4 bottom-8 w-0.5 bg-indigo-200/50 rounded-full" }), branches.map((branch, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "relative group animate-in slide-in-from-left-4 duration-500", style: { animationDelay: `${i * 100}ms` } }, /* @__PURE__ */ React.createElement("div", { className: "absolute left-[-29px] top-6 w-3 h-3 rounded-full bg-white border-2 border-indigo-400 z-10 group-hover:scale-125 transition-transform shadow-sm" }), /* @__PURE__ */ React.createElement("div", { className: "absolute left-[-24px] top-[29px] w-6 h-px bg-indigo-300" }), /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-r-xl rounded-bl-xl border-l-4 border-l-indigo-500 border-y border-r border-indigo-100 p-5 shadow-sm hover:shadow-md transition-all" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start gap-3 mb-3" }, /* @__PURE__ */ React.createElement("span", { className: "font-serif font-bold text-indigo-200 text-3xl leading-none select-none -mt-1" }, toRoman(i + 1)), /* @__PURE__ */ React.createElement("div", { className: "flex-grow" }, isEditingOutline ? /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-1" }, /* @__PURE__ */ React.createElement(
+    ), /* @__PURE__ */ React.createElement(LiveOrganizerStatus, { type: "outline" })), /* @__PURE__ */ React.createElement("div", { className: "relative mt-8 space-y-8 ml-4 md:ml-12" }, /* @__PURE__ */ React.createElement("div", { className: "absolute left-[-24px] top-4 bottom-8 w-0.5 bg-indigo-200/50 rounded-full" }), branches.map((branch, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "relative group animate-in slide-in-from-left-4 duration-500", style: { animationDelay: `${i * 100}ms` } }, /* @__PURE__ */ React.createElement("div", { className: "absolute left-[-29px] top-6 w-3 h-3 rounded-full bg-white border-2 border-indigo-400 z-10 group-hover:scale-125 transition-transform shadow-sm" }), /* @__PURE__ */ React.createElement("div", { className: "absolute left-[-24px] top-[29px] w-6 h-px bg-indigo-300" }), /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-r-xl rounded-bl-xl border-l-4 border-l-indigo-500 border-y border-r border-indigo-100 p-5 shadow-sm hover:shadow-md transition-all" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start gap-3 mb-3" }, /* @__PURE__ */ React.createElement("span", { className: "font-serif font-bold text-indigo-200 text-3xl leading-none select-none -mt-1" }, toRoman(i + 1)), /* @__PURE__ */ React.createElement("div", { className: "flex-grow" }, isEditingOutline ? /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-1" }, /* @__PURE__ */ React.createElement(
       "input",
       {
         "aria-label": t("common.enter_branch"),
@@ -2129,7 +2101,7 @@ function openConceptMap3D(opts) {
   });
   return destroy;
 }
-const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, playSound, onScoreUpdate, onGameComplete, isTeacherMode, armed, onChallengeArm, onChallengeClose }) => {
+const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, playSound, onScoreUpdate, onGameComplete, isTeacherMode, armed, recallArmed, challengeLiveReadiness, recallLiveReadiness, onChallengeArm, onChallengeClose, onRecallArm, onRecallClose, onActivityReady, onActivityFailed }) => {
   const hasContent = Array.isArray(data?.branches) && data.branches.length > 0;
   const hostRef = React.useRef(null);
   const handleRef = React.useRef(null);
@@ -2178,6 +2150,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
   const [describeOpen, setDescribeOpen] = React.useState(false);
   const recallResultsRef = React.useRef({});
   const recallFinishedRef = React.useRef(false);
+  const recallStartedByArmRef = React.useRef(false);
   const recallTimersRef = React.useRef([]);
   const recallHeadingRef = React.useRef(null);
   React.useEffect(() => () => {
@@ -2277,6 +2250,10 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
     setHint(null);
   };
   const startChallenge = (viaArm) => {
+    if (isTeacherMode && viaArm !== true && challengeLiveReadiness?.ok === false) {
+      if (addToast) addToast(challengeLiveReadiness.message || "Finish setting up this organizer before starting the student activity.", "info");
+      return;
+    }
     const E = window.AlloModules && window.AlloModules.ConceptGraphEngine;
     if (!E || !E.buildStrandChallenge || !graphRef.current) return;
     const ch = E.buildStrandChallenge(graphRef.current);
@@ -2801,8 +2778,13 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
     } catch (e) {
     }
   };
-  const startRecall = () => {
+  const startRecall = (viaArm = false) => {
     if (!recallEligible || challenge || furnishing) return;
+    const startedFromArm = viaArm === true;
+    if (isTeacherMode && !startedFromArm && recallLiveReadiness?.ok === false) {
+      if (addToast) addToast(recallLiveReadiness.message || "Finish setting up Concept Recall before starting the student activity.", "info");
+      return;
+    }
     const begin = () => {
       const MP2 = window.AlloModules && window.AlloModules.MemoryPalace;
       if (!MP2 || !MP2.buildRecallBank) {
@@ -2824,10 +2806,17 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
       setRecallFeedback(null);
       setRecallScore(null);
       setDescribeOpen(false);
+      recallStartedByArmRef.current = startedFromArm;
       setRecall({ order, seed });
       if (playSound) {
         try {
           playSound("start");
+        } catch (e) {
+        }
+      }
+      if (isTeacherMode && !startedFromArm && typeof onRecallArm === "function") {
+        try {
+          onRecallArm();
         } catch (e) {
         }
       }
@@ -2845,6 +2834,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
     setRecall(null);
     setRecallIdx(0);
     setTypedAnswer("");
+    recallStartedByArmRef.current = false;
     setRecallFeedback(null);
     setDescribeOpen(false);
     const H = handleRef.current;
@@ -2856,7 +2846,27 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
       if (H && H.flagNodes) H.flagNodes({}, "");
     } catch (e) {
     }
+    if (typeof onRecallClose === "function") {
+      try {
+        onRecallClose();
+      } catch (e) {
+      }
+    }
   };
+  React.useEffect(() => {
+    if (recallArmed && !isTeacherMode && !recall && ready && !failed && hasContent) startRecall(true);
+    else if (!recallArmed && !isTeacherMode && recall && recallStartedByArmRef.current) exitRecall();
+  }, [recallArmed, isTeacherMode, ready, failed, recall, hasContent]);
+  React.useEffect(() => {
+    if (isTeacherMode) return;
+    const launchActive = armed && challenge || recallArmed && recall;
+    if (!launchActive) return;
+    if (failed) {
+      if (typeof onActivityFailed === "function") onActivityFailed();
+      return;
+    }
+    if (ready && handleRef.current && typeof onActivityReady === "function") onActivityReady();
+  }, [armed, recallArmed, challenge, recall, ready, failed, isTeacherMode, onActivityReady, onActivityFailed]);
   const _finishRecall = (results, order) => {
     if (recallFinishedRef.current) return;
     recallFinishedRef.current = true;
@@ -3086,7 +3096,8 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
     "button",
     {
       onClick: startRecall,
-      className: "flex items-center gap-1 bg-gradient-to-r from-sky-500 to-cyan-500 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-sm hover:shadow-md hover:scale-105 transition-all",
+      disabled: isTeacherMode && recallLiveReadiness?.ok === false,
+      className: "flex items-center gap-1 bg-gradient-to-r from-sky-500 to-cyan-500 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-sm hover:shadow-md hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100",
       title: t("concept_space.recall_tooltip") || "Practice: every name is hidden \u2014 use the picture you made for each concept to name it"
     },
     "\u{1F9E0} ",
@@ -3095,12 +3106,13 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
     "button",
     {
       onClick: () => startChallenge(false),
-      className: "flex items-center gap-1 bg-gradient-to-r from-amber-500 to-orange-500 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-sm hover:shadow-md hover:scale-105 transition-all motion-safe:animate-[pulse_3s_ease-in-out_infinite]",
+      disabled: isTeacherMode && challengeLiveReadiness?.ok === false,
+      className: "flex items-center gap-1 bg-gradient-to-r from-amber-500 to-orange-500 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-sm hover:shadow-md hover:scale-105 transition-all motion-safe:animate-[pulse_3s_ease-in-out_infinite] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100",
       title: t("concept_space.challenge_tooltip") || "Practice: every concept falls off its strand \u2014 put each one back where it belongs"
     },
     "\u{1F3AF} ",
     t("concept_space.challenge_play") || "Strand Challenge"
-  ), hasContent && typeof window.callGemini === "function" && !failed && /* @__PURE__ */ React.createElement(
+  ), isTeacherMode && !challenge && !recall && challengeLiveReadiness?.ok === false && /* @__PURE__ */ React.createElement("span", { role: "status", className: "max-w-xs rounded-lg border border-amber-300 bg-amber-50 px-2 py-1 text-[11px] font-bold text-amber-900" }, "Strand Challenge: ", challengeLiveReadiness.message), isTeacherMode && !challenge && !recall && recallLiveReadiness?.ok === false && /* @__PURE__ */ React.createElement("span", { role: "status", className: "max-w-xs rounded-lg border border-amber-300 bg-amber-50 px-2 py-1 text-[11px] font-bold text-amber-900" }, "Concept Recall: ", recallLiveReadiness.message), hasContent && typeof window.callGemini === "function" && !failed && /* @__PURE__ */ React.createElement(
     "button",
     {
       onClick: handleArrange,
@@ -3447,7 +3459,7 @@ const _mpTourPaces = Object.freeze({
   standard: { label: "Standard", dwell: 5100, camera: 1, speech: 1 },
   brisk: { label: "Brisk", dwell: 3200, camera: 1.38, speech: 1.12 }
 });
-const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, playSound, onScoreUpdate, onGameComplete, isTeacherMode, armed, onRecallArm, onRecallClose }) => {
+const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, playSound, onScoreUpdate, onGameComplete, isTeacherMode, armed, liveRecallReadiness, onRecallArm, onRecallClose, onActivityReady, onActivityFailed }) => {
   const hasContent = Array.isArray(data?.branches) && data.branches.length > 0;
   const hostRef = React.useRef(null);
   const presentationRef = React.useRef(null);
@@ -3886,6 +3898,10 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
   const startRecall = (mode, viaArm, direction, only) => {
     const MP = window.AlloModules && window.AlloModules.MemoryPalace;
     if (!MP || recall) return;
+    if (isTeacherMode && viaArm !== true && liveRecallReadiness?.ok === false) {
+      if (addToast) addToast(liveRecallReadiness.message || "Finish setting up this Memory Palace before starting the student activity.", "info");
+      return;
+    }
     const palace = MP.buildPalace(data || {});
     const targets = palace.route.filter((id) => id !== "__entry");
     if (targets.length < 2) {
@@ -3946,6 +3962,14 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
       exitRecall();
     }
   }, [armed, isTeacherMode, ready, failed, recall, hasContent]);
+  React.useEffect(() => {
+    if (!armed || isTeacherMode) return;
+    if (failed || noWalk) {
+      if (typeof onActivityFailed === "function") onActivityFailed();
+      return;
+    }
+    if (recall && ready && typeof onActivityReady === "function") onActivityReady();
+  }, [armed, isTeacherMode, recall, ready, failed, noWalk, onActivityReady, onActivityFailed]);
   const recallChoices = React.useMemo(() => {
     const MP = window.AlloModules && window.AlloModules.MemoryPalace;
     if (!MP || !MP.buildLocusChoices || !recall || recall.mode !== "bank") return [];
@@ -5074,7 +5098,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     "button",
     {
       onClick: () => startRecall("bank", false),
-      disabled: !!furnishing || !!sculpting || routeEditing,
+      disabled: !!furnishing || !!sculpting || routeEditing || isTeacherMode && liveRecallReadiness?.ok === false,
       className: "flex items-center gap-1 bg-gradient-to-r from-amber-500 to-orange-500 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-sm hover:shadow-md hover:scale-105 transition-all motion-safe:animate-[pulse_3s_ease-in-out_infinite] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100",
       title: t("memory_palace.recall_tooltip") || "Practice: the labels are covered \u2014 walk the palace and recall what lives at each locus"
     },
@@ -5084,7 +5108,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     "button",
     {
       onClick: () => startRecall("self", false),
-      disabled: !!furnishing || !!sculpting || routeEditing,
+      disabled: !!furnishing || !!sculpting || routeEditing || isTeacherMode && liveRecallReadiness?.ok === false,
       className: "flex items-center gap-1 bg-white text-indigo-700 border border-indigo-300 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-indigo-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed",
       title: t("memory_palace.self_check_tooltip") || "Move through the route, reveal each answer, then mark whether you remembered it"
     },
@@ -5094,13 +5118,13 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     "button",
     {
       onClick: () => startRecall("type", false),
-      disabled: !!furnishing || !!sculpting || routeEditing,
+      disabled: !!furnishing || !!sculpting || routeEditing || isTeacherMode && liveRecallReadiness?.ok === false,
       className: "flex items-center gap-1 bg-white text-amber-700 border border-amber-300 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-amber-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed",
       title: t("memory_palace.recall_expert_tooltip") || "Expert mode: type each answer instead of picking from the bank (stronger retrieval practice; forgiving spelling)"
     },
     "\u2328 ",
     t("memory_palace.recall_expert") || "Expert recall"
-  ), hasContent && !failed && !noWalk && /* @__PURE__ */ React.createElement(
+  ), isTeacherMode && liveRecallReadiness?.ok === false && /* @__PURE__ */ React.createElement("span", { role: "status", className: "max-w-xs rounded-lg border border-amber-300 bg-amber-50 px-2 py-1 text-[11px] font-bold text-amber-900" }, "Recall walk: ", liveRecallReadiness.message), hasContent && !failed && !noWalk && /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",

@@ -15,6 +15,7 @@ import path from 'node:path';
 const read = (f) => fs.readFileSync(path.join(process.cwd(), f), 'utf8');
 const ANTI = read('AlloFlowANTI.txt');
 const RULES = read('firestore.rules');
+const MAILBOX = read('apps_script/session_mailbox/Code.gs');
 
 describe('presence heartbeat — write path is gated and validated', () => {
   it('lastSeen is an allowed Tier-1 leaf with a justification comment', () => {
@@ -22,10 +23,11 @@ describe('presence heartbeat — write path is gated and validated', () => {
     expect(ANTI).toMatch(/Presence heartbeat \(2026-07-16/);
   });
   it('the participant validator accepts only null or a finite non-negative number', () => {
-    expect(ANTI).toMatch(/field === 'signalAt' \|\| field === 'viewingAt' \|\| field === 'viewingResourceAt' \|\| field === 'lastSeen'/);
+    expect(MAILBOX).toMatch(/field === 'signalAt' \|\| field === 'viewingAt' \|\| field === 'viewingResourceAt' \|\| field === 'lastSeen'/);
+    expect(MAILBOX).toMatch(/value === null \|\| \(typeof value === 'number' && isFinite\(value\) && value >= 0\)/);
   });
   it('participantCanPatchSession allows the field on the per-uid roster root', () => {
-    expect(ANTI).toMatch(/wsProgress: 1, wsProbeResult: 1, lastSeen: 1/);
+    expect(MAILBOX).toMatch(/wsProgress: 1, wsProbeResult: 1, organizerProgress: 1, lastSeen: 1/);
   });
 });
 

@@ -130,6 +130,7 @@
 /time-schedule /app/?tool=timeSchedule 302
 /timeline-studio /app/?tool=timelineStudio 302
 /titration-lab /app/?tool=titrationLab 302
+/trajectory-computing /app/?tool=trajectoryComputing 302
 /tree-lab /app/?tool=treeLab 302
 /typing-practice /app/?tool=typingPractice 302
 /unit-convert /app/?tool=unitConvert 302
@@ -139,6 +140,7 @@
 /wave /app/?tool=wave 302
 /weather-systems /app/?tool=weatherSystems 302
 /weld-lab /app/?tool=weldLab 302
+/wheel-and-fire /app/?tool=wheelAndFire 302
 /world-builder /app/?tool=worldBuilder 302
 /zoom-gallery /app/?tool=zoomGallery 302
 # __ALLO_STEM_DEEP_LINKS_END__

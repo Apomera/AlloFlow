@@ -3778,6 +3778,19 @@ function _voiceStandbyPref() {
 }
 function _voiceEnginePref() {
   try {
+    const shared = typeof window !== "undefined" && window.AlloFlowVoice;
+    if (shared && typeof shared.loadPreference === "function") {
+      const pref = shared.loadPreference();
+      return typeof shared.normalizeVoiceEngine === "function" ? shared.normalizeVoiceEngine(pref && pref.engine) : String(pref && pref.engine || "auto");
+    }
+    const raw = localStorage.getItem("alloflow_voice_pref");
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      const engine = String(parsed && parsed.engine || "auto").toLowerCase();
+      if (engine === "best") return "whisper";
+      if (engine === "fast") return "webspeech";
+      if (["auto", "whisper", "webspeech", "gemini", "off"].includes(engine)) return engine;
+    }
     return localStorage.getItem("allo_voice_engine") === "webspeech" ? "webspeech" : "auto";
   } catch (_) {
     return "auto";
@@ -3949,6 +3962,7 @@ try {
 function createVoiceLoop(getCtx, opts = {}) {
   let rec = null, active = false, errStreak = 0, routeController = null, routeSerial = 0, pageHideHandler = null, muteChangeHandler = null;
   let micMeterRelease = null;
+  let sharedRecognition = null;
   let whisperState = null, engineName = "webspeech", standby = false, awake = false, awakeTimer = null;
   let paused = false, pauseResumeTimer = null;
   const DEFAULT_SPOKEN_PAUSE_MS = 3e4;
@@ -4016,6 +4030,36 @@ function createVoiceLoop(getCtx, opts = {}) {
       }
     }
   };
+  const suspendInputForOutput = () => {
+    if (sharedRecognition && typeof sharedRecognition.suspendForOutput === "function") {
+      try {
+        sharedRecognition.suspendForOutput();
+      } catch (_) {
+      }
+    }
+    if (active && rec) {
+      try {
+        rec.stop();
+      } catch (_) {
+      }
+    }
+  };
+  const resumeInputAfterOutput = () => {
+    if (!active || paused) return;
+    if (sharedRecognition && typeof sharedRecognition.resumeAfterOutput === "function") {
+      try {
+        sharedRecognition.resumeAfterOutput();
+      } catch (_) {
+      }
+      return;
+    }
+    if (rec) {
+      try {
+        rec.start();
+      } catch (_) {
+      }
+    }
+  };
   const cancelRoute = () => {
     routeSerial++;
     const controller = routeController;
@@ -4067,7 +4111,7 @@ function createVoiceLoop(getCtx, opts = {}) {
     const value = Number(c && c.voiceVolume);
     return Number.isFinite(value) && value <= 0;
   };
-  let bargeStream = null, bargeAudioCtx = null, bargeTimer = null, bargeGeneration = 0, activeResume = null;
+  let bargeStream = null, bargeOwnsStream = false, bargeAudioCtx = null, bargeTimer = null, bargeGeneration = 0, activeResume = null;
   const stopBargeWatch = () => {
     bargeGeneration++;
     if (bargeTimer) {
@@ -4077,13 +4121,14 @@ function createVoiceLoop(getCtx, opts = {}) {
       }
       bargeTimer = null;
     }
-    if (bargeStream) {
+    if (bargeStream && bargeOwnsStream) {
       try {
         bargeStream.getTracks().forEach((tr) => tr.stop());
       } catch (_) {
       }
-      bargeStream = null;
     }
+    bargeStream = null;
+    bargeOwnsStream = false;
     if (bargeAudioCtx) {
       try {
         bargeAudioCtx.close();
@@ -4116,20 +4161,24 @@ function createVoiceLoop(getCtx, opts = {}) {
   };
   const startBargeWatch = () => {
     stopBargeWatch();
+    if (!active || paused) return;
     const generation = bargeGeneration;
     const nav = typeof navigator !== "undefined" ? navigator : null;
     const Ctx = typeof window !== "undefined" ? window.AudioContext || window.webkitAudioContext : null;
-    if (!nav || !nav.mediaDevices || typeof nav.mediaDevices.getUserMedia !== "function" || !Ctx) return;
+    if (!Ctx) return;
     const detector = createBargeDetector({});
-    nav.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } }).then(function(stream) {
+    const attach = function(stream, ownsStream) {
       if (generation !== bargeGeneration || !speaking) {
-        try {
-          stream.getTracks().forEach((tr) => tr.stop());
-        } catch (_) {
+        if (ownsStream) {
+          try {
+            stream.getTracks().forEach((tr) => tr.stop());
+          } catch (_) {
+          }
         }
         return;
       }
       bargeStream = stream;
+      bargeOwnsStream = !!ownsStream;
       bargeAudioCtx = new Ctx();
       const analyser = bargeAudioCtx.createAnalyser();
       analyser.fftSize = 1024;
@@ -4155,6 +4204,15 @@ function createVoiceLoop(getCtx, opts = {}) {
         bargeTimer = setTimeout(tick, 50);
       };
       bargeTimer = setTimeout(tick, 50);
+    };
+    const existing = sharedRecognition && typeof sharedRecognition.getStream === "function" ? sharedRecognition.getStream() : null;
+    if (existing) {
+      attach(existing, false);
+      return;
+    }
+    if (!nav || !nav.mediaDevices || typeof nav.mediaDevices.getUserMedia !== "function") return;
+    nav.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } }).then(function(stream) {
+      attach(stream, true);
     }).catch(function() {
     });
   };
@@ -4164,12 +4222,7 @@ function createVoiceLoop(getCtx, opts = {}) {
     speaking = false;
     activeResume = null;
     stopBargeWatch();
-    if (active && !paused && rec) {
-      try {
-        rec.start();
-      } catch (_) {
-      }
-    }
+    resumeInputAfterOutput();
     if (active) updateVoiceSession(paused ? "paused" : "listening", paused ? "Microphone paused." : "Listening for a command.");
     return true;
   };
@@ -4184,12 +4237,7 @@ function createVoiceLoop(getCtx, opts = {}) {
     speaking = false;
     activeResume = null;
     stopBargeWatch();
-    if (!stopOpts.suppressResume && active && !paused && rec) {
-      try {
-        rec.start();
-      } catch (_) {
-      }
-    }
+    if (!stopOpts.suppressResume) resumeInputAfterOutput();
     if (active) updateVoiceSession(paused ? "paused" : "listening", paused ? "Microphone paused." : "Listening for a command.");
     return true;
   };
@@ -4209,12 +4257,7 @@ function createVoiceLoop(getCtx, opts = {}) {
     speaking = false;
     activeResume = null;
     stopBargeWatch();
-    if (active && !paused && rec) {
-      try {
-        rec.start();
-      } catch (_) {
-      }
-    }
+    resumeInputAfterOutput();
     if (active) updateVoiceSession(paused ? "paused" : "listening", paused ? "Microphone paused." : "Listening for a command.");
   };
   const beginExternalSpeech = (stopFn, meta = {}) => {
@@ -4252,12 +4295,7 @@ function createVoiceLoop(getCtx, opts = {}) {
     const end = () => finishExternalSpeech(token);
     activeResume = end;
     startBargeWatch();
-    if (active && rec) {
-      try {
-        rec.stop();
-      } catch (_) {
-      }
-    }
+    suspendInputForOutput();
     return Object.freeze({
       start: start2,
       end,
@@ -4351,12 +4389,7 @@ function createVoiceLoop(getCtx, opts = {}) {
       speaking = false;
       activeResume = null;
       stopBargeWatch();
-      if (active && !paused && rec) {
-        try {
-          rec.start();
-        } catch (_) {
-        }
-      }
+      resumeInputAfterOutput();
       if (active) updateVoiceSession(paused ? "paused" : "listening", paused ? "Microphone paused." : "Listening for a command.");
     };
     const playCurrentChunk = () => {
@@ -4421,12 +4454,7 @@ function createVoiceLoop(getCtx, opts = {}) {
           updateVoiceSession("processing", "Preparing the spoken response.");
           activeResume = resume2;
           startBargeWatch();
-          if (active && rec) {
-            try {
-              rec.stop();
-            } catch (_) {
-            }
-          }
+          suspendInputForOutput();
           window.speechSynthesis.speak(u);
           setTimeout(() => {
             if (speakSerial !== my || !speaking || browserStarted) return;
@@ -4460,12 +4488,7 @@ function createVoiceLoop(getCtx, opts = {}) {
           updateVoiceSession("processing", "Preparing the spoken response.");
           activeResume = resume2;
           startBargeWatch();
-          if (active && rec) {
-            try {
-              rec.stop();
-            } catch (_) {
-            }
-          }
+          suspendInputForOutput();
           let kokoroFinished = false;
           let browserFallbackStarted = false;
           const fallbackToBrowser = () => {
@@ -4645,6 +4668,14 @@ function createVoiceLoop(getCtx, opts = {}) {
     } catch (_) {
     }
     rec = null;
+    if (sharedRecognition) {
+      try {
+        if (typeof sharedRecognition.abort === "function") sharedRecognition.abort(reason || "voice-stopped");
+        else if (typeof sharedRecognition.stop === "function") sharedRecognition.stop();
+      } catch (_) {
+      }
+      sharedRecognition = null;
+    }
     if (whisperState) {
       try {
         whisperState.stream.getTracks().forEach(function(tr) {
@@ -4879,6 +4910,68 @@ function createVoiceLoop(getCtx, opts = {}) {
       if (currentRouteSerial === routeSerial) routeController = null;
     }
   };
+  const startSharedRecognition = (c, requestedEngine, standbyWanted) => {
+    const shared = opts && opts.voiceService || typeof window !== "undefined" && window.AlloFlowVoice;
+    if (!shared || typeof shared.createHandsFreeRecognizer !== "function") return null;
+    let engineAnnouncementMade = false;
+    const mapEngine = (value) => {
+      const id = String(value || "");
+      if (id === "gemini-audio") return "gemini";
+      if (id === "browser-whisper" || id === "local-whisper") return "whisper";
+      return "webspeech";
+    };
+    sharedRecognition = shared.createHandsFreeRecognizer({
+      engine: requestedEngine,
+      tier: c && c.voiceWhisperTier,
+      lang: c && c.voiceLang || "en-US",
+      continuous: true,
+      callGeminiAudio: opts && opts.callGeminiAudio || c && c.callGeminiAudio || typeof window !== "undefined" && window.callGeminiAudio,
+      onStream: (stream) => startMicMeter(stream),
+      onStreamClosed: () => stopMicMeter(),
+      onSpeechStart: () => noteUserSpeech(true),
+      onSpeechEnd: () => noteUserSpeech(false),
+      onTranscript: (text, isFinal, metadata) => {
+        if (!active || isFinal === false) return;
+        noteUserTurnEnd();
+        return handleUtterance(text, {
+          recognitionConfidence: metadata && typeof metadata.confidence === "number" ? metadata.confidence : null,
+          recognitionEngine: metadata && metadata.engine || null
+        });
+      },
+      onStateChange: (status) => {
+        if (!active || !status) return;
+        engineName = mapEngine(status.engine);
+        standby = engineName === "whisper" && !!standbyWanted;
+        updateVoiceSession(status.state || "starting", status.message || "", status.privacy);
+        if (status.state === "listening" && !engineAnnouncementMade) {
+          engineAnnouncementMade = true;
+          if (engineName === "gemini") {
+            announce("Gemini cloud transcription is active. Spoken audio is sent to Gemini one turn at a time.");
+          } else if (engineName === "whisper") {
+            announce(standby ? "On-device listening is waiting for hey Allo. Audio stays on this device." : "On-device Whisper is active. Audio stays on this device.");
+          } else {
+            if (standbyWanted) announce("Hey Allo standby is available only with on-device Whisper. Regular listening is on instead.");
+            else announce("Browser speech recognition is active.");
+          }
+        }
+      },
+      onError: (error, detail) => {
+        errStreak += 1;
+        const message = String(error && error.message || "Voice recognition failed.");
+        if (detail && detail.fatal) {
+          stop(message + " Voice control stopped.");
+          return;
+        }
+        updateVoiceSession("recovering", message + " Listening will continue.");
+      }
+    });
+    const started = sharedRecognition && sharedRecognition.start();
+    if (started === false) {
+      sharedRecognition = null;
+      return false;
+    }
+    return true;
+  };
   const startWhisperEngine = async (profile) => {
     const asr = await _getWhisperPipeline(profile);
     const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } });
@@ -4948,15 +5041,23 @@ function createVoiceLoop(getCtx, opts = {}) {
       rec.interimResults = true;
       rec.lang = c && c.voiceLang || "en-US";
       rec.onresult = (ev) => {
-        const last = ev.results[ev.results.length - 1];
-        if (!last || !last.isFinal) {
-          noteUserSpeech(true);
-          return;
+        const parts = [];
+        const confidences = [];
+        const first = typeof ev.resultIndex === "number" ? Math.max(0, ev.resultIndex) : 0;
+        for (let i = first; ev.results && i < ev.results.length; i++) {
+          const result = ev.results[i];
+          if (!result || !result[0]) continue;
+          if (!result.isFinal) {
+            noteUserSpeech(true);
+            continue;
+          }
+          parts.push(String(result[0].transcript || ""));
+          if (typeof result[0].confidence === "number" && Number.isFinite(result[0].confidence)) confidences.push(result[0].confidence);
         }
+        if (!parts.length) return;
         noteUserTurnEnd();
-        const alternative = last[0] || {};
-        const confidence = typeof alternative.confidence === "number" && Number.isFinite(alternative.confidence) ? alternative.confidence : null;
-        return handleUtterance(String(alternative.transcript || ""), { recognitionConfidence: confidence });
+        const confidence = parts.length === 1 && confidences.length === 1 ? confidences[0] : null;
+        return handleUtterance(parts.join(" "), { recognitionConfidence: confidence, recognitionEngine: "web-speech" });
       };
       rec.onspeechstart = () => noteUserSpeech(true);
       rec.onspeechend = () => noteUserSpeech(false);
@@ -5031,6 +5132,9 @@ function createVoiceLoop(getCtx, opts = {}) {
     } catch (_) {
       muteChangeHandler = null;
     }
+    const standbyWanted = _voiceStandbyPref();
+    const sharedStarted = startSharedRecognition(c, _voiceEnginePref(), standbyWanted);
+    if (sharedStarted !== null) return sharedStarted;
     try {
       if (_modelPolicy() === "auto") {
         if (!whisperProfile.supported) {
@@ -5046,7 +5150,6 @@ function createVoiceLoop(getCtx, opts = {}) {
       }
     } catch (_) {
     }
-    const standbyWanted = _voiceStandbyPref();
     let engineChosen = false;
     const probeTimer = setTimeout(function() {
       if (engineChosen || !active) return;
@@ -5104,11 +5207,16 @@ function createVoiceLoop(getCtx, opts = {}) {
     clearPauseResumeTimer();
     updateVoiceSession("paused", "Microphone paused.");
     cancelRoute();
-    try {
+    if (sharedRecognition && typeof sharedRecognition.pause === "function") {
+      try {
+        sharedRecognition.pause({ releaseMic: true, message: "Microphone paused." });
+      } catch (_) {
+      }
+    } else try {
       if (rec) rec.stop();
     } catch (_) {
     }
-    if (whisperState) {
+    if (!sharedRecognition && whisperState) {
       try {
         whisperState.stream.getTracks().forEach(function(tr) {
           tr.stop();
@@ -5149,7 +5257,17 @@ function createVoiceLoop(getCtx, opts = {}) {
     clearPauseResumeTimer();
     if (!active || !paused) return false;
     paused = false;
-    if (engineName === "whisper" && whisperState) {
+    if (sharedRecognition && typeof sharedRecognition.resume === "function") {
+      try {
+        const resumed = await Promise.resolve(sharedRecognition.resume());
+        if (!resumed) throw new Error("Microphone could not resume.");
+      } catch (e) {
+        paused = true;
+        updateVoiceSession("paused", "Microphone could not resume.");
+        announce("Could not turn the microphone back on: " + (e && e.message || "unknown"));
+        return false;
+      }
+    } else if (engineName === "whisper" && whisperState) {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } });
         if (!active || paused) {
@@ -5177,7 +5295,7 @@ function createVoiceLoop(getCtx, opts = {}) {
       } catch (_) {
       }
     }
-    startMicMeter(engineName === "whisper" && whisperState ? whisperState.stream : null);
+    if (!sharedRecognition) startMicMeter(engineName === "whisper" && whisperState ? whisperState.stream : null);
     updateVoiceSession("listening", "Listening for a command.");
     announce("Listening again.");
     return true;
@@ -5195,7 +5313,8 @@ function createVoiceLoop(getCtx, opts = {}) {
       active,
       paused,
       speaking,
-      listening: active && !paused && !speaking,
+      listening: active && !paused && !speaking && (!sharedRecognition || sharedRecognition.getState() === "listening"),
+      transcribing: !!(sharedRecognition && sharedRecognition.getState() === "transcribing"),
       engine: engineName,
       standby,
       awake,

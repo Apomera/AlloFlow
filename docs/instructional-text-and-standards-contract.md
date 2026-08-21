@@ -58,6 +58,37 @@ target implementation. Callers should tolerate missing metadata and use its
 conservative legacy inference; they must never infer educator replacement
 authorization.
 
+## Generation identity and plan matrices
+
+`generation_matrix_module.js` is the shared, pure policy used by Full Pack and
+Blueprint. Every planned output cell has a deterministic `generationIdentity`
+derived from the source fingerprint, resource type, relevant frozen context,
+grade, output language, and—only for repeatable resource types—a purposeful
+variant key. Generated artifacts preserve that identity at the top level and/or
+in their configuration snapshot; consumers tolerate both shapes during legacy
+migration.
+
+Reviewed rows carry `generationVariants`. Each cell records one of four actions:
+
+- `reuse`: link the exact existing artifact and make no AI call;
+- `generate`: create a resource type that does not yet exist for this source and
+  context;
+- `variant`: create a distinct, permitted purpose/mode of a repeatable type; or
+- `refresh`: replace intentionally changed or explicitly rebuilt work.
+
+Analyze Source is a source-global singleton. Other singleton policies allow one
+canonical resource per relevant source context. Repeatable types may have
+multiple copies only when a directive, mode, grade, or language makes them
+meaningfully distinct. Exact duplicate identities are suppressed. New resource
+types are prioritized before extra variants, while dependency ordering keeps
+analysis first and synthesis resources such as Lesson Plan last.
+
+Differentiation and output-language settings form an explicit cross-product only
+for resource types that support those axes. A row eligible for three grades and
+three languages therefore contains nine cells; reuse is decided independently
+for each cell. Translation policy remains part of the frozen generation context
+and is distinct from an output-language cell.
+
 ## Invariants
 
 - Grade aliases are normalized before prompts, snapshots, titles, and checks.
@@ -81,6 +112,10 @@ authorization.
   resources, change resource types and directives, reorder the run, or explicitly
   opt into a supplemental Adapted Text companion. Those edits retain stable row
   identities and update the generation/capacity estimate.
+- Full Pack and Blueprint show the same frozen grade-by-language matrix before
+  approval, re-resolve it after plan edits, execute exactly its non-reuse cells,
+  and link its reuse cells without calling the model. Rebuild is an explicit
+  refresh, never an accidental duplicate.
 - Student-facing share/export paths preserve role metadata and warn when a
   supplemental adaptation is delivered without its linked primary. Warnings
   preserve educator control; they are not legal determinations.

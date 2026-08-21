@@ -39,6 +39,27 @@ function liftResolver({ canvas, config, hostKey }) {
   return new Function(code)();
 }
 
+function liftGeminiAudioResolver({ config, hostKey }) {
+  const grab = (mark) => {
+    const s = anti.indexOf(mark);
+    expect(s, mark).toBeGreaterThan(-1);
+    const e = anti.indexOf('\n}', s) + 2;
+    return anti.slice(s, e);
+  };
+  const code = [
+    `const apiKey = ${JSON.stringify(hostKey || '')};`,
+    'const _alloHasAnyStudentEntry = () => false;',
+    'const _isQrStudentAiDisabled = () => false;',
+    `const localStorage = { getItem: () => ${JSON.stringify(config ? JSON.stringify(config) : null)} };`,
+    'const window = { sessionStorage: { getItem: () => null } };',
+    grab('function _readAlloAiUserConfig()'),
+    grab('function _alloEffectiveGeminiApiKey()'),
+    grab('function _alloResolveGeminiAudioCapability()'),
+    'return _alloResolveGeminiAudioCapability();',
+  ].join('\n');
+  return new Function(code)();
+}
+
 describe('AI capability resolver', () => {
   it('canvas → everything on', () => {
     expect(liftResolver({ canvas: true })).toEqual({ text: true, images: true, tts: 'full', reason: 'canvas' });
@@ -48,6 +69,16 @@ describe('AI capability resolver', () => {
   });
   it('local backend → text yes, images no, tts local', () => {
     expect(liftResolver({ canvas: false, config: { backend: 'lmstudio' } })).toEqual({ text: true, images: false, tts: 'local', reason: 'local-backend' });
+  });
+  it('keeps a Gemini cloud-services key available beside a local text backend', () => {
+    const config = { backend: 'lmstudio', geminiApiKey: 'gemini-services-key' };
+    expect(liftGeminiAudioResolver({ config })).toEqual({ available: true, reason: 'gemini-key' });
+    expect(liftResolver({ canvas: false, config }).reason).toBe('api-key');
+  });
+  it('reports Gemini audio as unavailable without a Gemini credential', () => {
+    expect(liftGeminiAudioResolver({ config: { backend: 'lmstudio' } })).toEqual({
+      available: false, reason: 'missing-gemini-key',
+    });
   });
   it('nothing configured → text/images off, tts still local (Kokoro/browser voice)', () => {
     const cap = liftResolver({ canvas: false, config: null });
@@ -61,6 +92,7 @@ describe('AI capability resolver', () => {
 describe('wiring', () => {
   it('the resolver is exported for modules and the host derives reactive state from it', () => {
     expect(anti).toContain('window.__alloResolveAiCapability = resolveAiCapability');
+    expect(anti).toContain('window.__alloResolveGeminiAudioCapability = _alloResolveGeminiAudioCapability');
     expect(anti).toContain("useState(() => resolveAiCapability())");
     expect(anti).toContain("addEventListener(ALLO_AI_CONFIG_CHANGED_EVENT");
   });

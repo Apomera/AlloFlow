@@ -616,7 +616,9 @@ describe('AlloBot hands-free agent button', () => {
     for (const path of ['AlloFlowANTI.txt', 'desktop/web-app/src/AlloFlowANTI.txt']) {
       const app = readFileSync(path, 'utf-8');
       expect(app, path).toContain('onToggleVoiceAgent: () => { const c = _alloCmdCtx(); if (alloVoiceActive) c.stopVoiceLoop(); else c.startVoiceLoop(); }');
-      expect(app, path).toMatch(/voiceAvailable: !!\(window\.SpeechRecognition \|\| window\.webkitSpeechRecognition\) \|\| _isDesktopBundledApp/);
+      expect(app, path).toContain('voiceAvailable: _alloVoiceInputAvailable()');
+      expect(app, path).toContain("typeof voice.isHandsFreeSupported === 'function'");
+      expect(app, path).toContain('voice.isHandsFreeSupported({ callGeminiAudio })');
     }
   });
   it('the button is accessible, guarded, and present in source AND built module', () => {
@@ -742,7 +744,7 @@ describe('AlloBot hands-free agent button', () => {
     expect(src).toContain('Listening for app commands.');
     expect(src).toContain('stop listening');
     expect(src).toContain('plan card you review before anything runs');
-    expect(src).toContain('A browser speech service may send command audio to its provider');
+    expect(src).toMatch(/a browser speech service may send command audio to its provider/i);
     expect(src).not.toContain('Ask a question or say what you want done');
     expect(src).not.toContain('Send as soon as I stop talking');
   });
@@ -768,10 +770,16 @@ describe('voice loop spoken replies and language', () => {
     // Also guards `paused` as of the momentary-pause work — the mic must not
     // auto-restart while the user has deliberately paused it.
     expect(mod).toMatch(/if \(active && !speaking && !paused\) \{/);
-    const speak = mod.slice(mod.indexOf('const speakReply'), mod.indexOf('const announce'));
-    // Starting a reply must still mute the recognizer. Barge-in arms its
-    // watcher in between, so pin the MAPPING rather than the adjacency.
-    expect(speak).toMatch(/speaking = true;[\s\S]{0,600}?startBargeWatch\(\);[\s\S]{0,160}?if \(active && rec\) \{ try \{ rec\.stop\(\); \} catch \(_\) \{\} \}/);
+    const speak = mod.slice(mod.indexOf('const speakNow'), mod.indexOf('const announce'));
+    const inputBoundary = mod.slice(mod.indexOf('const suspendInputForOutput'), mod.indexOf('const cancelRoute'));
+    // Starting a reply suspends either the shared recognizer or the legacy
+    // fallback through the same engine-neutral boundary.
+    expect(speak).toContain('startBargeWatch();');
+    expect(speak).toContain('suspendInputForOutput();');
+    expect(inputBoundary).toContain('sharedRecognition.suspendForOutput()');
+    expect(inputBoundary).toContain('if (active && rec) { try { rec.stop(); } catch (_) {} }');
+    expect(inputBoundary).toContain('sharedRecognition.resumeAfterOutput()');
+    expect(inputBoundary).toContain('if (rec) { try { rec.start(); } catch (_) {} }');
     // ...and the watcher that makes the reply interruptible is armed while
     // the output turn owns the microphone.
     // The visible speaking state begins only when the browser confirms
@@ -783,7 +791,7 @@ describe('voice loop spoken replies and language', () => {
     expect(speak).toContain('startBargeWatch();');
     expect(speak).toContain('u.onend = resume');
     expect(speak).toContain('setTimeout(resume, replyCeilingMs)'); // adaptive ceiling; mic never left dead
-    expect(speak).toContain('c.voiceSpeakReplies === false'); // opt-out respected
+    expect(mod).toContain('c.voiceSpeakReplies === false'); // opt-out respected at the wrapper boundary
     expect(speak).toMatch(/speakSerial !== my/); // a cancelled utterance cannot restart mid-speech
     // Root and desktop copies stay identical.
     expect(readFileSync('desktop/web-app/public/allo_commands_module.js', 'utf-8')).toBe(readFileSync('allo_commands_module.js', 'utf-8'));
@@ -803,7 +811,7 @@ describe('voice loop spoken replies and language', () => {
       const code = readFileSync(path, 'utf-8');
       expect(code, path).toContain('uses your selected recognition engine');
       expect(code, path).toContain('may send command audio to its provider');
-      expect(code, path).toContain('on-device Whisper keeps recognition audio on this device');
+      expect(code, path).toMatch(/on-device Whisper keeps recognition audio on this device/i);
       expect(code, path).not.toContain('both stay on this device');
     }
   });

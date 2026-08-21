@@ -131,6 +131,9 @@ describe('Art Studio graphic and form semantics', () => {
     expect(html).toContain('Hot press');
     expect(html).toContain('Rough');
     expect(html).toContain('Clear water');
+    expect(html).toContain('Flat');
+    expect(html).toContain('Mop');
+    expect(html).toContain('Rigger');
     expect(html).toContain('Lift');
     expect(html).toContain('Splatter');
     expect(html).toContain('Salt texture');
@@ -138,12 +141,64 @@ describe('Art Studio graphic and form semantics', () => {
     expect(html).toContain('Peel mask');
     expect(html).toContain('Drying rate');
     expect(html).toContain('Tilt strength');
+    expect(html).toContain('Staining strength');
+    expect(html).toContain('Pigment opacity');
+    expect(html).toContain('Pigment mobility');
+    expect(html).toContain('Chromatic separation');
+    expect(html).toContain('higher settings let faster color channels travel ahead');
+    expect(html).toContain('Rewetting sensitivity');
+    expect(html).toContain('Rewetting and glazing:');
+    expect(html).toContain('Clear water and wet glazes reactivate low-staining color more readily.');
+    expect(html).toContain('id="artstudio-watercolor-climate-presets" role="group" aria-label="Studio climate presets"');
+    expect(html).toContain('Dry studio');
+    expect(html).toContain('Balanced');
+    expect(html).toContain('Humid studio');
+    expect(html).toContain('Studio humidity');
+    expect(html).toContain('Studio airflow');
+    expect(html).toContain('id="artstudio-watercolor-paper-presets" role="group" aria-label="Watercolor paper presets"');
+    expect(html).toContain('Paper sizing');
+    expect(html).toContain('Bloom sensitivity');
+    expect(html).toContain('Paper chemistry:');
+    expect(html).toContain('Higher sizing keeps water and pigment near the surface');
+    expect(html).toContain('role="group" aria-label="Core watercolor controls"');
+    expect(html).toContain('id="artstudio-watercolor-advanced-controls"');
+    expect(html).toContain('Advanced pigment, paper, flow, and climate controls');
+    expect(html).toContain('Pigment character:');
+    expect(html).toContain('Current pigment character:');
+    expect(html).toContain('Choose Ultramarine pigment preset');
+    expect(html).toContain('Choose Ochre pigment preset');
+    expect(html).toContain('id="artstudio-watercolor-mixing-tray" role="group"');
+    expect(html).toContain('aria-labelledby="artstudio-watercolor-mixing-title"');
+    expect(html).toContain('id="artstudio-watercolor-mix-a"');
+    expect(html).toContain('id="artstudio-watercolor-mix-b"');
+    expect(html).toContain('aria-label="Pigment B proportion"');
+    expect(html).toContain('id="artstudio-watercolor-load-mixture"');
+    expect(html).toContain('Load mixed pigment');
+    expect(html).toContain('Wet-state autosave on.');
+    expect(html).toContain('id="artstudio-watercolor-diagnostics" role="group" aria-label="Watercolor diagnostics"');
+    expect(html).toContain('id="artstudio-watercolor-wetness-map"');
+    expect(html).toContain('id="artstudio-watercolor-flow-guides"');
+    expect(html).toContain('Wetness map');
+    expect(html).toContain('Flow guides');
+    expect(html).toContain('Screen-only overlays; autosaves and exports remain clean.');
     expect(html).toContain('id="artstudio-watercolor-remove-mask"');
     expect(html).toContain('Remove all mask');
     expect(html).toContain('Down');
     expect(html).toContain('Still');
     expect(html).toContain('Reload brush');
     expect(html).toContain('Export PNG');
+  });
+
+  it('keeps live watercolor state durable and history snapshots compact', () => {
+    const source = fs.readFileSync(sourcePath, 'utf8');
+
+    expect(source).toContain("var databaseName = 'alloflow-artstudio'");
+    expect(source).toContain("var storeName = 'watercolorStates'");
+    expect(source).toContain("packed: compact ? 'uint16-v1' : ''");
+    expect(source).toContain('_artStudioWatercolorCache.undo.push(captureState(true))');
+    expect(source).toContain('_artStudioWatercolorStateStore.save(durableStateKey, durableState)');
+    expect(source).toContain('record.state.flatSnapshot !== incomingSnapshot');
+    expect(source).toContain('localRevision !== revisionAtLoad');
   });
 
   it('suppresses the AI pulse when reduced motion is requested', () => {

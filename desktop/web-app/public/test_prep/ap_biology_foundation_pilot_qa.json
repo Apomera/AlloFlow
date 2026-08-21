@@ -3,7 +3,7 @@
   "schemaVersion": 1,
   "generatedAt": "2026-08-20T00:00:00.000Z",
   "packId": "ap-biology-foundation-pilot",
-  "version": "0.1.0-internal-preview",
+  "version": "0.8.0-internal-preview",
   "status": "pass",
   "automatedAssessment": "pass",
   "structuralFindings": [],
@@ -103,43 +103,43 @@
     }
   ],
   "metrics": {
-    "itemCount": 50,
+    "itemCount": 400,
     "unitCount": 8,
     "unitCounts": {
-      "chemistry-of-life": 6,
-      "cells": 6,
-      "cellular-energetics": 6,
-      "cell-communication-and-cell-cycle": 6,
-      "heredity": 6,
-      "gene-expression-and-regulation": 7,
-      "natural-selection": 7,
-      "ecology": 6
+      "chemistry-of-life": 49,
+      "cells": 49,
+      "cellular-energetics": 48,
+      "cell-communication-and-cell-cycle": 48,
+      "heredity": 49,
+      "gene-expression-and-regulation": 54,
+      "natural-selection": 54,
+      "ecology": 49
     },
     "practiceCounts": {
-      "SP1": 7,
-      "SP3": 9,
-      "SP2": 12,
-      "SP5": 8,
-      "SP4": 5,
-      "SP6": 9
+      "SP1": 54,
+      "SP3": 78,
+      "SP2": 60,
+      "SP5": 70,
+      "SP4": 71,
+      "SP6": 67
     },
     "answerCounts": {
-      "A": 13,
-      "B": 13,
-      "C": 12,
-      "D": 12
+      "A": 100,
+      "B": 100,
+      "C": 100,
+      "D": 100
     },
     "chapterCount": 8,
     "sectionCount": 8,
     "knowledgeCheckCount": 8,
     "flashcardCount": 8,
     "memoryAidCount": 8,
-    "richLessonPrototypeCount": 2,
+    "richLessonPrototypeCount": 8,
     "nearDuplicatePairCount": 0
   },
   "inputs": {
-    "packSha256": "05d8bcdec6a0b1d99af9c5f717f85940412159eab43ff2a16bcc16ad7a4f893d",
-    "learningLibrarySha256": "ec1af4b158f2d8722fe6b95ff06cd6643924d90674547a0a8aa29e24eaf79bf2",
+    "packSha256": "82f28c2bdd204913bf71ad461b7c1426949b7221eeb157cd333c5cd6cbe279ae",
+    "learningLibrarySha256": "2c18bae3c9d2a2176316e42d4ef9f6b1aec78cc08f33f0f6027cd6fde0628b55",
     "officialBlueprintUrl": "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
     "officialCourseUrl": "https://apstudents.collegeboard.org/courses/ap-biology",
     "factualCrossCheckUrl": "https://openstax.org/details/books/biology-2e"
@@ -149,15 +149,15 @@
       "asset": "pack",
       "status": "pass",
       "blocking": false,
-      "sourceSha256": "05d8bcdec6a0b1d99af9c5f717f85940412159eab43ff2a16bcc16ad7a4f893d",
-      "deploySha256": "05d8bcdec6a0b1d99af9c5f717f85940412159eab43ff2a16bcc16ad7a4f893d"
+      "sourceSha256": "82f28c2bdd204913bf71ad461b7c1426949b7221eeb157cd333c5cd6cbe279ae",
+      "deploySha256": "82f28c2bdd204913bf71ad461b7c1426949b7221eeb157cd333c5cd6cbe279ae"
     },
     {
       "asset": "learning-library",
       "status": "pass",
       "blocking": false,
-      "sourceSha256": "ec1af4b158f2d8722fe6b95ff06cd6643924d90674547a0a8aa29e24eaf79bf2",
-      "deploySha256": "ec1af4b158f2d8722fe6b95ff06cd6643924d90674547a0a8aa29e24eaf79bf2"
+      "sourceSha256": "2c18bae3c9d2a2176316e42d4ef9f6b1aec78cc08f33f0f6027cd6fde0628b55",
+      "deploySha256": "2c18bae3c9d2a2176316e42d4ef9f6b1aec78cc08f33f0f6027cd6fde0628b55"
     }
   ],
   "releaseBlockers": [

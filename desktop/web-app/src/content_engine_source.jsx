@@ -779,7 +779,10 @@ var createContentEngine = function(deps) {
         && typeof instructionalContextModule.getSourceCalibrationTarget === 'function'
         ? instructionalContextModule.getSourceCalibrationTarget(effGrade)
         : { requestedGrade: effGrade, promptGrade: effGrade, policyVersion: 'legacy' };
-    const calibrationStyle = sourceCalibration.promptGrade === 'Pre-K'
+    const calibrationStyle = instructionalContextModule
+        && typeof instructionalContextModule.getSourceCalibrationStyle === 'function'
+        ? instructionalContextModule.getSourceCalibrationStyle(sourceCalibration)
+        : sourceCalibration.promptGrade === 'Pre-K'
         ? 'Use extremely short sentences, generally 3-5 words, and no compound sentences.'
         : sourceCalibration.promptGrade === '1st Grade'
         ? 'Use short declarative sentences and high-frequency vocabulary.'
@@ -790,7 +793,10 @@ var createContentEngine = function(deps) {
         : sourceCalibration.promptGrade === '8th Grade'
         ? 'Use clear standard language without unnecessary jargon or nested clauses.'
         : 'Use direct language and sentence structures appropriate to the calibrated target.';
-    const sourceCalibrationGuidance = `
+    const sourceCalibrationGuidance = instructionalContextModule
+        && typeof instructionalContextModule.buildSourceCalibrationGuidance === 'function'
+        ? instructionalContextModule.buildSourceCalibrationGuidance(effGrade)
+        : `
         REQUESTED INSTRUCTIONAL TARGET: ${effGrade}
         INTERNAL GENERATION CALIBRATION: ${sourceCalibration.promptGrade}
         The internal target compensates for observed model overshoot; it is not the educator-facing grade label.
@@ -822,7 +828,10 @@ var createContentEngine = function(deps) {
           ? instructionalContextModule.isEnglishLanguage(effectiveLanguage)
           : effectiveLanguage === 'English';
       const measured = englishOutput && typeof calculateReadability === 'function'
-          ? calculateReadability(finalText)
+          ? (instructionalContextModule
+              && typeof instructionalContextModule.measureSourceComplexity === 'function'
+              ? instructionalContextModule.measureSourceComplexity(finalText, calculateReadability)
+              : calculateReadability(finalText))
           : null;
       let instructionalText = instructionalContextModule
           && typeof instructionalContextModule.normalizeInstructionalText === 'function'
@@ -844,9 +853,22 @@ var createContentEngine = function(deps) {
           requestedGrade: effGrade,
           calibrationTarget: sourceCalibration.promptGrade,
           measuredGrade: measured && measured.score,
-          method: measured ? 'flesch-kincaid-en' : '',
+          method: measured ? (measured.method || 'flesch-kincaid-en') : '',
           language: effectiveLanguage,
-          status: measured ? '' : 'unavailable'
+          status: measured ? '' : 'unavailable',
+          measurementScope: measured && measured.measurementScope,
+          measurementVersion: measured && measured.measurementVersion,
+          extractionVersion: measured && measured.extractionVersion,
+          rawFleschKincaidGrade: measured && measured.rawFleschKincaidGrade,
+          displayFleschKincaidGrade: measured && measured.displayFleschKincaidGrade,
+          averageSentenceLength: measured && measured.averageSentenceLength,
+          averageSyllablesPerWord: measured && measured.averageSyllablesPerWord,
+          bodyCounts: measured && measured.bodyCounts,
+          artifactCharacterCount: measured && measured.artifactCharacterCount,
+          bodyCharacterCount: measured && measured.bodyCharacterCount,
+          artifactFingerprint: measured && measured.artifactFingerprint,
+          bodyFingerprint: measured && measured.bodyFingerprint,
+          legacyArtifactMetrics: measured && measured.legacyArtifactMetrics
         }, finalText);
       }
       recordSourceProvenance({
@@ -859,6 +881,7 @@ var createContentEngine = function(deps) {
         calibrationTarget: sourceCalibration.promptGrade,
         calibrationPolicyVersion: sourceCalibration.policyVersion,
         measuredComplexity: measured,
+        legacyArtifactComplexity: measured && measured.legacyArtifactMetrics || null,
         instructionalText,
         standardsContext: effStandardsContext
       }, finalText);

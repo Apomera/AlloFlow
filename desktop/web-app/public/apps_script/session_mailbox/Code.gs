@@ -24,7 +24,7 @@
  * Apps Script cannot answer). GET on the /exec URL shows a human status line.
  */
 
-var VERSION = 16;
+var VERSION = 18;
 var SESSION_TTL_SEC = 6 * 60 * 60;      // live session marker + counters
 var MESSAGE_TTL_SEC = 45 * 60;          // live messages
 var UPLOAD_TTL_SEC = 30 * 60;           // pack upload parts awaiting finalize
@@ -662,6 +662,22 @@ function validWsProbeResultValue(value) {
   if (value.at != null && !validWsMetricNumber(value.at, 999999999999999)) return false;
   return true;
 }
+function validOrganizerProgressValue(value) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+  var allowed = { activityId: 1, type: 1, gameType: 1, status: 1, score: 1, correct: 1, total: 1, attempts: 1, at: 1 };
+  var keys = Object.keys(value);
+  if (keys.length !== 9) return false;
+  for (var i = 0; i < keys.length; i++) if (!allowed[keys[i]]) return false;
+  var types = ['venn', 'tchart', 'cesort', 'pipeline', 'conceptmap', 'outline', 'fishbone', 'problemsolution', 'frayer', 'seethinkwonder', 'storymap', 'strandchallenge3d', 'conceptrecall3d', 'palacerecall'];
+  var gameTypes = ['vennDiagram', 'tchartSort', 'causeEffectSort', 'pipelineBuilder', 'conceptMapSort', 'outlineSort', 'fishboneSort', 'problemSolutionSort', 'frayerSort', 'seeThinkWonderSort', 'storyMapSort', 'strandChallenge3d', 'strandChallenge3dAttempt', 'conceptRecall', 'conceptRecallAttempt', 'palaceRecall', 'palaceRecallAttempt'];
+  if (!(typeof value.activityId === 'string' && /^[A-Za-z0-9:_-]{8,160}$/.test(value.activityId))) return false;
+  if (types.indexOf(value.type) === -1) return false;
+  if (value.gameType !== null && gameTypes.indexOf(value.gameType) === -1) return false;
+  if (['loading', 'ready', 'failed', 'working', 'attempted', 'complete'].indexOf(value.status) === -1) return false;
+  if (!validWsMetricNumber(value.score) || !validWsMetricNumber(value.correct) || !validWsMetricNumber(value.total)) return false;
+  if (!validWsMetricNumber(value.attempts, 10000) || !validWsMetricNumber(value.at, 999999999999999)) return false;
+  return true;
+}
 function validLiveHostPresenceValue(value) {
   if (value === null) return true;
   if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
@@ -688,6 +704,7 @@ function validParticipantRosterField(field, value, uid) {
   if (field === 'viewingResourceStatus') return value === null || value === 'loading' || value === 'ready' || value === 'failed';
   if (field === 'wsProgress') return validWsProgressValue(value);
   if (field === 'wsProbeResult') return validWsProbeResultValue(value);
+  if (field === 'organizerProgress') return validOrganizerProgressValue(value);
   return false;
 }
 function validQuizResponseReceipt(value) {
@@ -755,7 +772,7 @@ function participantCanPatchSession(updates, uid, sessionData) {
   var rosterFields = {
     uid: 1, name: 1, joinedAt: 1, status: 1, xp: 1,
     signal: 1, signalAt: 1, viewingResourceId: 1, viewingResourceAt: 1, viewingResourceStatus: 1, viewingAt: 1,
-    wsProgress: 1, wsProbeResult: 1, lastSeen: 1
+    wsProgress: 1, wsProbeResult: 1, organizerProgress: 1, lastSeen: 1
   };
   var roots = [
     'bridgeReactions.' + uid,

@@ -29,5 +29,13 @@ describe('Art Studio section tabs accessibility', () => {
     expect(source).toContain('removeMask: function ()');
     expect(source).toContain('evaporation *= 0.45 + params.drying * 1.10;');
     expect(source).toContain('gravityStrength *= 0.10 + params.flowStrength * 1.50;');
+    expect(source).toContain('(1.08 - cellOpacity * 0.20)');
+    expect(source).toContain('(0.65 + localStaining * 0.70)');
+    expect(source).toContain('var pigmentStainingMass = new Float32Array(COUNT);');
+    expect(source).toContain('var pigmentOpacityMass = new Float32Array(COUNT);');
+    expect(source).toContain('var pigmentGranulationMass = new Float32Array(COUNT);');
+    expect(source).toContain('var pigmentMobilityMass = new Float32Array(COUNT);');
+    expect(source).toContain('(0.56 + cellMobility * 0.80)');
+    expect(source).toContain("description: 'granulating, transparent, low staining, medium mobility'");
   });
 });

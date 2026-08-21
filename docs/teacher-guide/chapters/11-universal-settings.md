@@ -92,6 +92,24 @@ Two cautions:
 - A translation is generated text. Check it the way you would check any other generated content, especially for subject vocabulary. A word that is correct in general use can be wrong in a science or mathematics context.
 - Ask a proficient speaker to read anything a family will receive. A translation that is merely understandable is not the same as one that is respectful and clear.
 
+## See the grade-by-language impact before a pack runs
+
+Full Pack and Blueprint freeze the Universal Settings used to prepare their reviewed plan. Their **Generation impact** summary expands those settings into the actual work that will happen:
+
+| Reviewed setting | Plan effect |
+| --- | --- |
+| One target grade and one output language | One version of an eligible resource. |
+| A Differentiation Set with three grades | One version at each grade, but only for the resource types selected for differentiation. |
+| **All Selected Languages** with three languages | One version in each language for multilingual resources. Resources that do not fan out by language remain one resource. |
+| Three differentiated grades and three output languages | A three-by-three matrix: nine versions for a resource that supports both settings. |
+| An exact resource already made from the same source and generation context | **Reuse**: the existing resource is linked into the run and adds no new AI call. |
+
+Translations and output-language variants are not the same thing. An output-language variant is its own resource version. The Translations policy can attach an additional translation inside each applicable version, and the reviewed plan keeps that policy frozen as part of its context.
+
+Plans also distinguish a purposeful variant from an accidental duplicate. Analyze Source is source-wide and generally appears only once. Repeatable resources, such as quizzes or activities, can appear more than once when their mode or instruction establishes a different purpose. Exact duplicates are suppressed, and new resource types are prioritised ahead of extra variants. Editing a plan row invalidates its old calculation, so the app checks the matrix again before it generates anything.
+
+Changing Universal Settings after a plan is reviewed does not silently change that plan. Refresh or rebuild the plan when you want the newer settings. The review then shows the updated grades, languages, reuse decisions, and call count.
+
 ## Watch emoji around word activities
 
 Emoji make headings and glossary terms easier to scan for some students. They also carry costs worth knowing about:

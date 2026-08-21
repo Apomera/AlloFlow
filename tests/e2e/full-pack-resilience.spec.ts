@@ -2,6 +2,7 @@ import { test, expect } from '@playwright/test';
 import * as path from 'path';
 import { readFileSync } from 'fs';
 
+const MATRIX_MODULE_PATH = path.resolve(__dirname, '../../generation_matrix_module.js');
 const MODULE_PATH = path.resolve(__dirname, '../../generation_helpers_module.js');
 
 test.describe.configure({ mode: 'serial' });
@@ -10,7 +11,9 @@ test.setTimeout(60000);
 test.describe('Full Pack browser fault injection', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('about:blank');
+    await page.addScriptTag({ path: MATRIX_MODULE_PATH });
     await page.addScriptTag({ path: MODULE_PATH });
+    await page.waitForFunction(() => !!(window as any).AlloModules?.GenerationMatrix);
     await page.waitForFunction(() => !!(window as any).AlloModules?.GenerationHelpers);
     await page.evaluate(() => {
       (window as any).__makeFullPackHarness = (overrides: any = {}) => {
@@ -30,6 +33,7 @@ test.describe('Full Pack browser fault injection', () => {
           differentiationCustomGrades: [],
           leveledTextCustomInstructions: '', selectedLanguages: [], targetStandards: [],
           useEmojis: false, textFormat: 'Standard Text', history: [],
+          translationMode: 'auto', currentUiLanguage: 'English', imageGenerationStyle: '', imageAspectRatio: '',
           inputText: 'The water cycle moves water through evaporation, condensation, and precipitation.',
           sourceTopic: 'Water cycle', standardsInput: '', standardsContext: null,
           resourceCount: '5', isAutoConfigEnabled: true,

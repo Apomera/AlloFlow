@@ -170,6 +170,16 @@ describe('reading theme palette', () => {
     lists.forEach((l) => expect(l).toContain("'dim'"));
   });
 
+  it('persists valid themes, accepts safe functional changes, and synchronizes open tabs', () => {
+    expect(ANTI).toContain("safeGetItem('allo_reading_theme')");
+    expect(ANTI).toContain("typeof v === 'function' ? v(prev) : v");
+    expect(ANTI).toContain("safeSetItem('allo_reading_theme', readingTheme)");
+    expect(ANTI).toContain("window.addEventListener('storage', syncReadingTheme)");
+    expect(ANTI).toContain("window.removeEventListener('storage', syncReadingTheme)");
+    expect(ANTI).toContain("event.key !== 'allo_reading_theme' && event.key !== null");
+    expect(ANTI).toContain("READING_THEME_IDS.includes(event.newValue) ? event.newValue : 'default'");
+  });
+
   it('gives the glossary term a readable colour on every theme', () => {
     // GlossaryTermSpan takes an isDarkBg prop that NO simplified-view call site
     // passes, so it always rendered indigo-600 (#4f46e5): 2.71:1 on dark,
@@ -230,5 +240,36 @@ describe('reading theme palette', () => {
     expect(APP_STYLES).toMatch(/button\.allo-reading-theme-swatch\[aria-checked="true"\]/);
     expect(APP_STYLES).toMatch(/\.theme-contrast button\.allo-reading-theme-swatch:focus-visible/);
     expect(APP_STYLES).toMatch(/@media \(forced-colors: active\)[\s\S]*?button\.allo-reading-theme-swatch[\s\S]*?CanvasText/);
+  });
+
+  it('switches palettes atomically and prints every theme as legible black on white', () => {
+    const interactionStart = APP_STYLES.indexOf('Reading-color interaction layer');
+    const bridgeStart = APP_STYLES.indexOf('App-theme / reading-theme compatibility bridge');
+    const interaction = APP_STYLES.slice(interactionStart, bridgeStart);
+    expect(interaction).not.toMatch(/transition:\s*(?:background-)?color/);
+
+    const printStart = APP_STYLES.lastIndexOf('@media print');
+    expect(printStart).toBeGreaterThan(APP_STYLES.indexOf('@media (forced-colors: active)'));
+    const print = APP_STYLES.slice(printStart);
+    expect(print).toContain('--allo-rt-bg: #ffffff');
+    expect(print).toContain('--allo-rt-fg: #000000');
+    expect(print).toContain('print-color-adjust: economy');
+    expect(print).toMatch(/\[data-reading-theme\] :where\(\*\) \{[\s\S]*?color: #000000 !important;/);
+    expect(print).toMatch(/\[data-reading-theme\] :is\(h1, h2, h3[\s\S]*?\) \{[\s\S]*?color: #000000 !important;/);
+    expect(APP_STYLES).toContain('Images, SVGs, and canvas output remain untouched');
+  });
+
+  it('keeps the settings dialog reachable and translated swatches usable on phones', () => {
+    expect(HEADER).toContain('allo-header-settings-dialog');
+    expect(HEADER).toContain('max-height: calc(100dvh - 8rem)');
+    expect(HEADER).toContain('overflow-y: auto');
+    const mobileDialog = HEADER.slice(HEADER.indexOf('@media (max-width: 639px)'));
+    expect(mobileDialog).toContain('left: .75rem !important');
+    expect(mobileDialog).toContain('right: .75rem !important');
+    expect(HEADER).toContain('allo-reading-theme-grid');
+    expect(HEADER).toContain('grid-template-columns: repeat(2, minmax(0, 1fr)) !important');
+    expect(HEADER).toContain('white-space: normal !important');
+    expect(APP_STYLES).toMatch(/button\.allo-reading-theme-swatch \{[\s\S]*?min-height: 44px;/);
+    expect(APP_STYLES).toMatch(/button\.allo-reading-theme-swatch > span:last-child \{[\s\S]*?text-overflow: ellipsis;/);
   });
 });

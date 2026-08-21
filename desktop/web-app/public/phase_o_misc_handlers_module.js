@@ -706,7 +706,7 @@ const getBlueprintResourcePlan = (blueprint) => {
     return rawPlan.map((item, idx) => {
         const type = typeof item === 'string' ? item : (item && (item.tool || item.type || item.id));
         if (!type) return null;
-        return {
+        const row = {
             type,
             // Stable row identity minted by the contract layer. Falls back to
             // the positional form only for plans built outside it.
@@ -722,7 +722,280 @@ const getBlueprintResourcePlan = (blueprint) => {
             activityMode: (typeof item === 'object' && item && typeof item.activityMode === 'string') ? item.activityMode : null,
             activityConfig: (typeof item === 'object' && item && item.activityConfig && typeof item.activityConfig === 'object') ? item.activityConfig : null
         };
+        if (typeof item === 'object' && item) {
+            if (typeof item.generationAction === 'string') row.generationAction = item.generationAction;
+            if (item.generationIdentity !== undefined) row.generationIdentity = item.generationIdentity;
+            if (Array.isArray(item.generationVariants)) row.generationVariants = item.generationVariants.map(v => v && typeof v === 'object' ? { ...v } : v);
+            if (typeof item.existingArtifactId === 'string') row.existingArtifactId = item.existingArtifactId;
+            if (typeof item.variantKey === 'string') row.variantKey = item.variantKey;
+            if (Object.prototype.hasOwnProperty.call(item, 'explicitVariantKey')) row.explicitVariantKey = item.explicitVariantKey;
+            if (item.variantKeyDerived === true || item.variantKeyDerived === false) row.variantKeyDerived = item.variantKeyDerived;
+            if (typeof item.sourceFingerprint === 'string') row.sourceFingerprint = item.sourceFingerprint;
+            if (Object.prototype.hasOwnProperty.call(item, 'sourceArtifactId')) row.sourceArtifactId = item.sourceArtifactId;
+            if (typeof item.contextFingerprint === 'string') row.contextFingerprint = item.contextFingerprint;
+            if (typeof item.contextInputsFingerprint === 'string') row.contextInputsFingerprint = item.contextInputsFingerprint;
+            if (item.contextFingerprintDerived === true || item.contextFingerprintDerived === false) row.contextFingerprintDerived = item.contextFingerprintDerived;
+            if (item.generationMatrix && typeof item.generationMatrix === 'object') row.generationMatrix = { ...item.generationMatrix };
+            if (item.generationMatrixUnavailable === true) row.generationMatrixUnavailable = true;
+        }
+        return row;
     }).filter(Boolean);
+};
+
+const _getBlueprintGenerationMatrix = () => {
+    try {
+        return typeof window !== 'undefined' && window.AlloModules
+            ? window.AlloModules.GenerationMatrix || null : null;
+    } catch (_) { return null; }
+};
+
+const _isBlueprintGenerationMatrixReady = () => {
+    const matrix = _getBlueprintGenerationMatrix();
+    return !!(matrix && typeof matrix.resolveGenerationMatrix === 'function');
+};
+
+const _createBlueprintGenerationMatrixError = (details) => {
+    const error = new Error('Blueprint generation planning is unavailable. No resources were generated; retry after the Generation Matrix module finishes loading.');
+    error.name = 'BlueprintGenerationMatrixUnavailableError';
+    error.code = 'BLUEPRINT_GENERATION_MATRIX_UNAVAILABLE';
+    error.reasonCode = 'generation-matrix-unavailable';
+    error.isRetryable = true;
+    error.isFatal = true;
+    if (details && typeof details === 'object') Object.assign(error, details);
+    return error;
+};
+
+// Convert a reviewed row into the exact execution cells the shared matrix
+// selected. A reviewed generationVariants array is authoritative. Only legacy
+// rows are resolved defensively; if the module is unavailable they retain the
+// historical one-call behavior and the run record says so explicitly.
+const _resolveBlueprintExecutionMatrix = (row, settingsSnapshot, existingArtifacts, sourceText, forceRefresh) => {
+    const reviewed = row && Array.isArray(row.generationVariants) ? row.generationVariants.filter(Boolean) : [];
+    const matrix = _getBlueprintGenerationMatrix();
+    const reviewedSourceFingerprint = (row && row.sourceFingerprint)
+        || (reviewed[0] && reviewed[0].sourceFingerprint)
+        || (settingsSnapshot && settingsSnapshot.sourceFingerprint)
+        || '';
+    let currentSourceFingerprint = '';
+    if (matrix && typeof matrix.fingerprintSourceText === 'function' && sourceText) {
+        try { currentSourceFingerprint = matrix.fingerprintSourceText(sourceText); } catch (_) {}
+    }
+    const sourceChanged = !!(currentSourceFingerprint && reviewedSourceFingerprint
+        && currentSourceFingerprint !== reviewedSourceFingerprint);
+    let currentGenerationConfigFingerprint = '';
+    if (matrix && typeof matrix.buildGenerationConfigFingerprint === 'function') {
+        try { currentGenerationConfigFingerprint = matrix.buildGenerationConfigFingerprint(row, settingsSnapshot || {}); } catch (_) {}
+    }
+    const reviewedGenerationConfigFingerprints = reviewed
+        .map(cell => cell && cell.generationConfigFingerprint).filter(Boolean);
+    if (!reviewedGenerationConfigFingerprints.length && row && row.generationConfigFingerprint) {
+        reviewedGenerationConfigFingerprints.push(row.generationConfigFingerprint);
+    }
+    const generationConfigChanged = !!(currentGenerationConfigFingerprint
+        && reviewedGenerationConfigFingerprints.length
+        && reviewedGenerationConfigFingerprints.some(value => value !== currentGenerationConfigFingerprint));
+    // Re-resolve only when an identity-bearing input changed. Otherwise retain
+    // the exact reviewed grade-language cells (including legacy snapshots that
+    // do not contain enough inputs to reconstruct their cross-product).
+    if ((sourceChanged || generationConfigChanged)
+        && matrix && typeof matrix.resolveGenerationMatrix === 'function') {
+        try {
+            const options = Object.assign({}, settingsSnapshot || {}, {
+                existingArtifacts: Array.isArray(existingArtifacts) ? existingArtifacts : [],
+                sourceText: sourceText || '',
+                sourceFingerprint: sourceChanged ? currentSourceFingerprint
+                    : ((settingsSnapshot && settingsSnapshot.sourceFingerprint) || currentSourceFingerprint || ''),
+                forceRefresh: forceRefresh === true,
+            });
+            const resolved = matrix.resolveGenerationMatrix(row, options);
+            if (resolved && Array.isArray(resolved.variants) && resolved.variants.length) {
+                return {
+                    available: true,
+                    action: resolved.action,
+                    sourceChanged,
+                    reviewedSourceFingerprint,
+                    currentSourceFingerprint: currentSourceFingerprint || reviewedSourceFingerprint,
+                    variants: resolved.variants.map(cell => Object.assign({}, cell, {
+                        explicitVariantKey: cell.explicitVariantKey !== undefined ? cell.explicitVariantKey : resolved.explicitVariantKey,
+                        variantKeyDerived: cell.variantKeyDerived !== undefined ? cell.variantKeyDerived : resolved.variantKeyDerived,
+                    }))
+                };
+            }
+        } catch (_) {}
+    }
+    if (reviewed.length && !sourceChanged) {
+        const artifactIdentity = (artifact) => {
+            const candidate = artifact && (artifact.generationIdentity
+                || (artifact.config && artifact.config.generationIdentity));
+            if (typeof candidate === 'string') return candidate;
+            return candidate && typeof candidate === 'object'
+                ? String(candidate.key || candidate.id || candidate.generationIdentity || candidate.identity || '') : '';
+        };
+        const artifacts = Array.isArray(existingArtifacts) ? existingArtifacts : [];
+        const executionVariants = reviewed.map(cell => {
+            let action = forceRefresh ? 'refresh' : (cell.action || row.generationAction || 'generate');
+            let existingArtifactId = cell.existingArtifactId || null;
+            if (!forceRefresh && action !== 'reuse' && cell.generationIdentity) {
+                const landed = artifacts.find(artifact => artifactIdentity(artifact) === String(cell.generationIdentity));
+                if (landed) {
+                    action = 'reuse';
+                    existingArtifactId = landed.id || landed.resourceId || landed.artifactId || null;
+                }
+            }
+            return {
+                ...cell,
+                action,
+                existingArtifactId,
+                explicitVariantKey: cell.explicitVariantKey !== undefined ? cell.explicitVariantKey : row.explicitVariantKey,
+                variantKeyDerived: cell.variantKeyDerived !== undefined ? cell.variantKeyDerived : row.variantKeyDerived,
+            };
+        });
+        return {
+            available: true,
+            action: executionVariants.every(cell => cell.action === 'reuse') ? 'reuse'
+                : (forceRefresh ? 'refresh' : (row.generationAction || reviewed[0].action || 'generate')),
+            sourceChanged: false,
+            reviewedSourceFingerprint,
+            currentSourceFingerprint: currentSourceFingerprint || reviewedSourceFingerprint,
+            variants: executionVariants,
+        };
+    }
+    if (row && (row.generationAction || row.generationIdentity || row.existingArtifactId) && !sourceChanged) {
+        return {
+            available: true,
+            action: forceRefresh ? 'refresh' : (row.generationAction || 'generate'),
+            sourceChanged: false,
+            reviewedSourceFingerprint,
+            currentSourceFingerprint: currentSourceFingerprint || reviewedSourceFingerprint,
+            variants: [{
+                type: row.type,
+                action: forceRefresh ? 'refresh' : (row.generationAction || 'generate'),
+                generationIdentity: row.generationIdentity || null,
+                existingArtifactId: row.existingArtifactId || null,
+                variantKey: row.variantKey || null,
+                explicitVariantKey: row.explicitVariantKey || null,
+                variantKeyDerived: row.variantKeyDerived === true,
+                grade: row.grade || row.gradeLevel || null,
+                language: row.language || row.leveledTextLanguage || null,
+            }],
+        };
+    }
+    if (matrix && typeof matrix.resolveGenerationMatrix === 'function') {
+        try {
+            const options = Object.assign({}, settingsSnapshot || {}, {
+                existingArtifacts: Array.isArray(existingArtifacts) ? existingArtifacts : [],
+                sourceText: sourceText || '',
+                sourceFingerprint: sourceChanged ? currentSourceFingerprint
+                    : ((settingsSnapshot && settingsSnapshot.sourceFingerprint) || currentSourceFingerprint || ''),
+                forceRefresh: forceRefresh === true,
+            });
+            const resolved = matrix.resolveGenerationMatrix(row, options);
+            if (resolved && Array.isArray(resolved.variants) && resolved.variants.length) {
+                return {
+                    available: true,
+                    action: resolved.action,
+                    sourceChanged,
+                    reviewedSourceFingerprint,
+                    currentSourceFingerprint: currentSourceFingerprint || reviewedSourceFingerprint,
+                    variants: resolved.variants.map(cell => Object.assign({}, cell, {
+                        explicitVariantKey: cell.explicitVariantKey !== undefined ? cell.explicitVariantKey : resolved.explicitVariantKey,
+                        variantKeyDerived: cell.variantKeyDerived !== undefined ? cell.variantKeyDerived : resolved.variantKeyDerived,
+                    }))
+                };
+            }
+        } catch (_) {}
+    }
+    if (reviewed.length && sourceChanged) {
+        return {
+            available: false,
+            action: forceRefresh ? 'refresh' : 'generate',
+            sourceChanged: true,
+            reviewedSourceFingerprint,
+            currentSourceFingerprint,
+            variants: reviewed.map(cell => Object.assign({}, cell, {
+                action: forceRefresh ? 'refresh' : 'generate',
+                generationIdentity: null,
+                existingArtifactId: null,
+                sourceFingerprint: currentSourceFingerprint,
+                matrixUnavailable: true,
+            })),
+        };
+    }
+    return {
+        available: false,
+        action: forceRefresh ? 'refresh' : 'generate',
+        sourceChanged,
+        reviewedSourceFingerprint,
+        currentSourceFingerprint: currentSourceFingerprint || reviewedSourceFingerprint,
+        variants: [{
+            type: row && row.type,
+            action: forceRefresh ? 'refresh' : 'generate',
+            generationIdentity: null,
+            existingArtifactId: null,
+            variantKey: null,
+            grade: null,
+            language: null,
+            matrixUnavailable: true,
+        }],
+    };
+};
+
+const _blueprintVariantId = (cell, uiId, index) => String(
+    (cell && (cell.generationIdentity || cell.variantId || cell.id))
+    || ((cell && cell.variantKey) ? `${uiId}:${cell.variantKey}:${index}` : `${uiId}:variant-${index + 1}`)
+);
+
+const _findBlueprintArtifact = (artifacts, id) => {
+    if (!id || !Array.isArray(artifacts)) return null;
+    return artifacts.find(item => item && String(item.id || item.resourceId || item.artifactId || '') === String(id)) || null;
+};
+
+// Share the UDL planner's source-choice policy when that module is present.
+// The fallback intentionally has the same safety property: a non-empty current
+// source that differs from the latest analysis wins, so execution never uses a
+// stale analyzed original behind the teacher's back.
+const _resolveBlueprintSourceSelection = (options) => {
+    const o = options || {};
+    try {
+        const udl = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.UdlChat;
+        if (udl && typeof udl.resolveBlueprintSourceChoice === 'function') {
+            return udl.resolveBlueprintSourceChoice(o);
+        }
+    } catch (_) {}
+    const currentText = String(o.inputText || '').trim() ? String(o.inputText)
+        : (String(o.requestedSourceText || '').trim() ? String(o.requestedSourceText) : String(o.sourceTopic || ''));
+    const analysisText = String((o.latestAnalysis && o.latestAnalysis.data && o.latestAnalysis.data.originalText) || '');
+    const normalize = (value) => String(value || '').trim().replace(/\s+/g, ' ');
+    const divergent = !!(normalize(currentText) && normalize(analysisText) && normalize(currentText) !== normalize(analysisText));
+    const useCurrent = !!normalize(currentText) && (divergent || !normalize(analysisText));
+    return {
+        text: useCurrent ? currentText : analysisText,
+        metadata: {
+            kind: 'workspace-source',
+            selectedSource: useCurrent ? (String(o.inputText || '').trim() ? 'current-editor' : 'current-request')
+                : (normalize(analysisText) ? 'latest-analysis' : 'none'),
+            reviewedSelection: o.sourcePolicy && o.sourcePolicy.selectedSource || null,
+            sourceChoiceRequired: false,
+            divergentFromLatestAnalysis: divergent,
+            latestAnalysisArtifactId: o.latestAnalysis && o.latestAnalysis.id || null,
+            selectionReason: divergent
+                ? 'Current source differs from the latest analyzed original; current source selected.'
+                : 'Selected the available workspace source.'
+        }
+    };
+};
+
+const _applyBlueprintResultToContext = (type, resultItem, lessonDNA, setSourceText) => {
+    if (!resultItem || !resultItem.data) return;
+    if (type === 'analysis') {
+        if (resultItem.data.originalText && typeof setSourceText === 'function') setSourceText(resultItem.data.originalText);
+        if (Array.isArray(resultItem.data.concepts) && lessonDNA.concepts.length === 0) lessonDNA.concepts = resultItem.data.concepts.slice(0, 5);
+    }
+    if (type === 'glossary' && Array.isArray(resultItem.data) && lessonDNA.keyTerms.length === 0) {
+        lessonDNA.keyTerms = resultItem.data.slice(0, 8).map(t => t.term).filter(Boolean);
+    }
+    if (type === 'image') lessonDNA.visualContext = resultItem.data.prompt || resultItem.data.altText || lessonDNA.visualContext;
+    if (type === 'lesson-plan' && resultItem.data.essentialQuestion && !lessonDNA.essentialQuestion) lessonDNA.essentialQuestion = resultItem.data.essentialQuestion;
 };
 
 // Generation failures need to be useful in two places: the in-app diagnostics
@@ -773,11 +1046,88 @@ const recordBlueprintResourceFailure = (details, warnLog) => {
     return message;
 };
 
+const _blueprintProviderFailurePolicy = (failure) => {
+    const module = typeof window !== 'undefined' && window.AlloModules
+        ? window.AlloModules.UtilsPure : null;
+    if (module && typeof module.classifyProviderError === 'function') {
+        const policy = module.classifyProviderError(failure);
+        return Object.assign({}, policy, {
+            safe: typeof module.getProviderErrorSafeFields === 'function'
+                ? module.getProviderErrorSafeFields(policy)
+                : {
+                    schemaVersion: 1, kind: policy.kind, category: policy.category,
+                    retryable: policy.retryable === true, quotaScope: policy.quotaScope,
+                    httpStatus: policy.httpStatus == null ? null : policy.httpStatus,
+                    retryAfterMs: policy.retryAfterMs == null ? null : policy.retryAfterMs,
+                },
+        });
+    }
+    const err = failure && typeof failure === 'object' ? failure : {};
+    const message = String(err.message || failure || '');
+    const nested = err.classification && typeof err.classification === 'object' ? err.classification : {};
+    const retryAfterMs = Number.isFinite(Number(err.retryAfterMs))
+        ? Math.max(0, Math.min(120000, Math.ceil(Number(err.retryAfterMs))))
+        : (Number.isFinite(Number(err.retryAfterSec))
+            ? Math.max(0, Math.min(120000, Math.ceil(Number(err.retryAfterSec) * 1000))) : null);
+    const daily = nested.perDay === true || /per[ -]?day|daily (?:quota|limit)|\brpd\b|insufficient quota|billing|credit balance/i.test(message);
+    const minute = nested.perMinute === true || /per[ -]?minute|\brpm\b|\btpm\b|rate.?limit/i.test(message)
+        || ((err.httpStatus === 429 || err.isQuota === true) && retryAfterMs != null);
+    const quota = err.isQuota === true || err.httpStatus === 429 || /API_QUOTA_EXHAUSTED|RESOURCE_EXHAUSTED|quota|\b429\b/i.test(message);
+    const abort = err.name === 'AbortError' || /abort|cancel/i.test(message);
+    const auth = err.isAuth === true || err.httpStatus === 401 || err.httpStatus === 403 || /API_AUTH_FAILED|auth|api key|forbidden|permission/i.test(message);
+    const config = err.isConfig === true || /API_MODEL_NOT_FOUND|not configured|not loaded|unsupported|no source/i.test(message);
+    const policyBlock = /safety|policy|content blocked|generation blocked/i.test(message);
+    const transient = /temporar|timeout|timed out|network|fetch|connection|502|503|504|overload/i.test(message);
+    let kind = 'unknown', category = 'unknown', retryable = true, delayMs = 800, quotaScope = 'none';
+    if (abort) { kind = 'abort'; category = 'configuration'; retryable = false; delayMs = 0; }
+    else if (quota && daily) { kind = 'quota-daily'; category = 'configuration'; retryable = false; delayMs = 0; quotaScope = 'daily'; }
+    else if (quota && minute) { kind = 'rate-limit'; category = 'transient'; retryable = true; delayMs = retryAfterMs == null ? 60000 : retryAfterMs; quotaScope = 'minute'; }
+    else if (quota) { kind = 'quota-unknown'; category = 'configuration'; retryable = false; delayMs = 0; quotaScope = 'unknown'; }
+    else if (auth) { kind = 'auth'; category = 'configuration'; retryable = false; delayMs = 0; }
+    else if (config) { kind = 'configuration'; category = 'configuration'; retryable = false; delayMs = 0; }
+    else if (policyBlock) { kind = 'policy'; category = 'configuration'; retryable = false; delayMs = 0; }
+    else if (transient) { kind = 'network'; category = 'transient'; retryable = true; delayMs = retryAfterMs == null ? 1500 : retryAfterMs; }
+    const safe = {
+        schemaVersion: 1, kind, category, retryable, quotaScope,
+        httpStatus: Number.isFinite(Number(err.httpStatus)) ? Number(err.httpStatus) : null,
+        retryAfterMs,
+    };
+    return { kind, category, retryable, delayMs, quotaScope, httpStatus: safe.httpStatus, retryAfterMs, safe };
+};
+
+const _waitForBlueprintProviderRetry = (delayMs, signal) => new Promise((resolve, reject) => {
+    let timer = null;
+    const cleanup = () => { if (signal) { try { signal.removeEventListener('abort', onAbort); } catch (_) {} } };
+    const onAbort = () => {
+        if (timer) clearTimeout(timer);
+        cleanup();
+        const error = new Error('Blueprint generation aborted');
+        error.name = 'AbortError';
+        error.isFatal = true;
+        reject(error);
+    };
+    if (signal && signal.aborted) return onAbort();
+    if (signal) { try { signal.addEventListener('abort', onAbort, { once: true }); } catch (_) {} }
+    timer = setTimeout(() => { cleanup(); resolve(); }, Math.max(0, Math.min(120000, Number(delayMs) || 0)));
+});
+
+const _isBlueprintTerminalFailure = (error, policy, retryExhausted) => {
+    if (!error) return false;
+    const resolved = policy || _blueprintProviderFailurePolicy(error);
+    if (retryExhausted && resolved.category === 'transient') return true;
+    if (['abort', 'auth', 'configuration', 'quota-daily', 'quota-unknown', 'policy'].includes(resolved.kind)) return true;
+    return !!(error.isFatal && resolved.category !== 'transient');
+};
+
 const executeOneBlueprint = async (blueprint, ctx) => {
     // onStep is ADDITIVE and optional — onResource stays exactly as it was
     // because Throughline's Generate-Unit driver consumes it.
     const { handleGenerate, historyOverride, dna, initialSourceText, onResource, onStep, signal, warnLog, settingsSnapshot, runId, runStartedAt } = ctx || {};
     const emitStep = (payload) => { if (typeof onStep === 'function') { try { onStep(payload); } catch (_) {} } };
+    if (!_isBlueprintGenerationMatrixReady()) {
+        const blockedRows = getBlueprintResourcePlan(blueprint).map(row => row && row.uiId).filter(Boolean);
+        throw _createBlueprintGenerationMatrixError({ matrixUnavailableRows: blockedRows });
+    }
     // Blueprint failures used to be INVISIBLE. A row was marked 'failed' purely
     // because handleGenerate returned falsy — no exception, no capture, no log.
     // So a run where every resource failed produced a completely clean console
@@ -828,9 +1178,62 @@ const executeOneBlueprint = async (blueprint, ctx) => {
             executionInstructionalContext,
             executionSettingsSnapshot.leveledTextLanguage || 'English'
         );
-        emitStep({ uiId: stepUiId, tool: type, status: 'running', index: i, instructionalText: stepInstructionalText });
-        const stepConfig = {
-            customInstructions: aiDirective,
+        const reviewedToolOverrides = executionSettingsSnapshot.toolOverrides
+            && typeof executionSettingsSnapshot.toolOverrides === 'object'
+            ? executionSettingsSnapshot.toolOverrides : {};
+        const reviewedToolOverride = reviewedToolOverrides[type];
+        const reviewedCustomInstructions = typeof reviewedToolOverride === 'string'
+            ? reviewedToolOverride
+            : (reviewedToolOverride && typeof reviewedToolOverride === 'object'
+                ? reviewedToolOverride.customInstructions : '');
+        const executionMatrix = _resolveBlueprintExecutionMatrix(
+            finalResources[i], executionSettingsSnapshot, currentBlueprintHistory, currentSourceText, false
+        );
+        if (!executionMatrix.available) {
+            const matrixError = _createBlueprintGenerationMatrixError({
+                uiId: stepUiId,
+                tool: type,
+                matrixUnavailableRows: [stepUiId],
+            });
+            emitStep({
+                uiId: stepUiId, tool: type, status: 'planned', index: i,
+                generationMatrixUnavailable: true,
+                generationMatrixStatus: 'unavailable',
+                blockedReason: matrixError.reasonCode,
+                retryable: true,
+                resourceId: null,
+                resourceIds: [],
+                variantResults: [],
+            });
+            throw matrixError;
+        }
+        const executionVariants = executionMatrix.variants;
+        emitStep({
+            uiId: stepUiId, tool: type, status: 'running', index: i,
+            instructionalText: stepInstructionalText,
+            generationAction: executionMatrix.action,
+            generationVariants: executionVariants,
+            generationMatrixUnavailable: !executionMatrix.available,
+            generationMatrixStatus: 'ready',
+            sourceChanged: executionMatrix.sourceChanged === true,
+            reviewedSourceFingerprint: executionMatrix.reviewedSourceFingerprint || '',
+            currentSourceFingerprint: executionMatrix.currentSourceFingerprint || '',
+            resourceId: null,
+            resourceIds: [],
+            variantResults: []
+        });
+        const stepConfig = Object.assign({}, executionSettingsSnapshot.generationOptions || {}, {
+            customInstructions: [aiDirective, reviewedCustomInstructions]
+                .map(value => String(value || '').trim()).filter(Boolean).join(' '),
+            toolOverrides: reviewedToolOverrides,
+            generationContext: executionSettingsSnapshot.generationContext || {},
+            backend: executionSettingsSnapshot.backend || '',
+            provider: executionSettingsSnapshot.provider || '',
+            model: executionSettingsSnapshot.model || '',
+            fallbackModel: executionSettingsSnapshot.fallbackModel || '',
+            imageProvider: executionSettingsSnapshot.imageProvider || '',
+            imageModel: executionSettingsSnapshot.imageModel || '',
+            visionModel: executionSettingsSnapshot.visionModel || '',
             historyOverride: currentBlueprintHistory,
             lessonDNA: lessonDNA,
             standardsContext: executionStandardsContext,
@@ -849,7 +1252,7 @@ const executeOneBlueprint = async (blueprint, ctx) => {
             // the dispatcher rethrows after its own UI handling, so failReason
             // carries the real message.
             rethrowErrors: true
-        };
+        });
         // Activities redesign (2026-08-16): forward a brainstorm step's activity
         // mode into the dispatcher's configOverride. Guarded on the tool so a
         // stray field on another row type cannot change behavior.
@@ -870,47 +1273,236 @@ const executeOneBlueprint = async (blueprint, ctx) => {
         if (auditScopeIds && auditScopeIds.length) stepConfig.artifactIds = auditScopeIds;
         let resultItem = null;
         let failReason = null;
-        let threw = null;
-        try {
-            resultItem = await handleGenerate(type, null, i < finalResources.length - 1, currentSourceText, stepConfig, false, executionSettingsSnapshot);
-            if (!resultItem) failReason = 'handleGenerate returned no resource (it did not throw)';
-            else if (!resultItem.instructionalText) resultItem = Object.assign({}, resultItem, { instructionalText: stepInstructionalText });
-        } catch (err) {
-            threw = err;
-            failReason = 'threw: ' + ((err && (err.message || err.name)) || String(err));
+        const variantResults = [];
+        const generatedRowItems = [];
+        const variantFailures = [];
+        for (let variantIndex = 0; variantIndex < executionVariants.length; variantIndex++) {
+            if (signal && signal.aborted) break;
+            const variant = executionVariants[variantIndex] || {};
+            const variantId = _blueprintVariantId(variant, stepUiId, variantIndex);
+            const reviewedAction = variant.action || executionMatrix.action || 'generate';
+            let action = reviewedAction;
+            let runtimeReason = null;
+            let variantItem = null;
+            let variantError = null;
+            let variantFailure = null;
+            let variantFailurePolicy = null;
+            let variantAttempts = 0;
+            let variantRetryExhausted = false;
+            if (action === 'reuse') {
+                variantItem = _findBlueprintArtifact(currentBlueprintHistory, variant.existingArtifactId);
+                if (!variantItem) {
+                    // The reviewed identity is still useful, but its target may
+                    // have been deleted between review and execution. Generate
+                    // that exact cell instead of failing the whole row or
+                    // silently looking up an ambient replacement.
+                    action = 'generate';
+                    runtimeReason = 'Reviewed reusable artifact was missing; generated the reviewed variant instead.';
+                }
+            }
+            if (!variantItem && action !== 'reuse') {
+                const variantConfig = Object.assign({}, stepConfig, {
+                    generationMatrixManaged: executionMatrix.available,
+                    generationMatrixUnavailable: !executionMatrix.available,
+                    generationIdentity: variant.generationIdentity || null,
+                    generationAction: action,
+                    generationVariant: Object.assign({}, variant, { action: action, runtimeReason: runtimeReason }),
+                    variantKey: variant.variantKey || null,
+                    explicitVariantKey: variant.explicitVariantKey || null,
+                    variantKeyDerived: variant.variantKeyDerived === true,
+                    sourceFingerprint: variant.sourceFingerprint || executionSettingsSnapshot.sourceFingerprint || '',
+                    contextFingerprint: variant.contextFingerprint || executionSettingsSnapshot.contextFingerprint || '',
+                    contextInputsFingerprint: variant.contextInputsFingerprint || executionSettingsSnapshot.contextInputsFingerprint || '',
+                    contextFingerprintDerived: variant.contextFingerprintDerived === true || executionSettingsSnapshot.contextFingerprintDerived === true,
+                    generationConfig: variant.generationConfig || finalResources[i].generationConfig || null,
+                    generationConfigFingerprint: variant.generationConfigFingerprint || finalResources[i].generationConfigFingerprint || '',
+                });
+                if (variant.grade) variantConfig.grade = variant.grade;
+                const runVariantGeneration = () => handleGenerate(
+                    type,
+                    variant.language || null,
+                    i < finalResources.length - 1 || variantIndex < executionVariants.length - 1,
+                    currentSourceText,
+                    variantConfig,
+                    false,
+                    executionSettingsSnapshot
+                );
+                try {
+                    variantAttempts = 1;
+                    variantItem = await runVariantGeneration();
+                    if (!variantItem) variantFailure = 'handleGenerate returned no resource (it did not throw)';
+                } catch (err) {
+                    variantError = err;
+                    variantFailure = 'threw: ' + ((err && (err.message || err.name)) || String(err));
+                    variantFailurePolicy = _blueprintProviderFailurePolicy(err);
+                    if (variantFailurePolicy.retryable && variantFailurePolicy.category === 'transient'
+                        && !(signal && signal.aborted)) {
+                        try {
+                            if (typeof warnLog === 'function') warnLog('[Blueprint] retrying provider-transient failure'
+                                + ' tool=' + type + ' uiId=' + stepUiId + ' variant=' + variantId
+                                + ' afterMs=' + variantFailurePolicy.delayMs + ' kind=' + variantFailurePolicy.kind);
+                        } catch (_) {}
+                        try {
+                            await _waitForBlueprintProviderRetry(variantFailurePolicy.delayMs, signal);
+                            variantAttempts = 2;
+                            variantItem = await runVariantGeneration();
+                            if (!variantItem) variantFailure = 'handleGenerate retry returned no resource (it did not throw)';
+                            else {
+                                variantError = null;
+                                variantFailure = null;
+                                variantFailurePolicy = null;
+                            }
+                        } catch (retryError) {
+                            variantAttempts = 2;
+                            variantRetryExhausted = true;
+                            variantError = retryError;
+                            variantFailure = 'threw after retry: ' + ((retryError && (retryError.message || retryError.name)) || String(retryError));
+                            variantFailurePolicy = _blueprintProviderFailurePolicy(retryError);
+                        }
+                    }
+                }
+            }
+            if (variantItem) {
+                // Reuse returns the exact stored artifact object. Identity and
+                // action belong to the reviewed cell/run record; cloning a
+                // reused item breaks workspace linkage without adding data.
+                if (action !== 'reuse') {
+                    variantItem = Object.assign({}, variantItem, {
+                        instructionalText: variantItem.instructionalText || stepInstructionalText,
+                        generationIdentity: variant.generationIdentity || variantItem.generationIdentity || null,
+                        generationAction: action,
+                        variantKey: variant.variantKey || variantItem.variantKey || null,
+                        explicitVariantKey: variant.explicitVariantKey || variantItem.explicitVariantKey || null,
+                        variantKeyDerived: variant.variantKeyDerived === true,
+                        sourceFingerprint: variant.sourceFingerprint || variantItem.sourceFingerprint || executionSettingsSnapshot.sourceFingerprint || '',
+                        gradeLevel: variant.grade || variantItem.gradeLevel,
+                        language: variant.language || variantItem.language,
+                    });
+                }
+                generatedRowItems.push(variantItem);
+                variantResults.push({
+                    variantId,
+                    generationIdentity: variant.generationIdentity || null,
+                    action,
+                    reviewedAction,
+                    status: 'landed',
+                    resourceId: variantItem.id || variantItem.resourceId || variantItem.artifactId || null,
+                    artifactId: variantItem.id || variantItem.resourceId || variantItem.artifactId || null,
+                    existingArtifactId: variant.existingArtifactId || null,
+                    variantKey: variant.variantKey || null,
+                    grade: variant.grade || null,
+                    language: variant.language || null,
+                    reason: runtimeReason || undefined,
+                    attempts: variantAttempts,
+                });
+            } else {
+                variantFailurePolicy = variantFailurePolicy || (variantError ? _blueprintProviderFailurePolicy(variantError) : null);
+                variantFailures.push({
+                    variantId, action, reviewedAction, reason: variantFailure, error: variantError, variant,
+                    attempts: variantAttempts,
+                    retryExhausted: variantRetryExhausted,
+                    failurePolicy: variantFailurePolicy,
+                    providerError: variantFailurePolicy && variantFailurePolicy.safe || null,
+                });
+                variantResults.push({
+                    variantId,
+                    generationIdentity: variant.generationIdentity || null,
+                    action,
+                    reviewedAction,
+                    status: 'failed',
+                    resourceId: null,
+                    artifactId: null,
+                    existingArtifactId: variant.existingArtifactId || null,
+                    variantKey: variant.variantKey || null,
+                    grade: variant.grade || null,
+                    language: variant.language || null,
+                    reason: variantFailure,
+                    attempts: variantAttempts,
+                    retryable: !!(variantFailurePolicy && variantFailurePolicy.retryable),
+                    failureKind: variantFailurePolicy && variantFailurePolicy.kind || 'unknown',
+                    quotaScope: variantFailurePolicy && variantFailurePolicy.quotaScope || 'none',
+                    providerError: variantFailurePolicy && variantFailurePolicy.safe || null,
+                });
+            }
         }
-        if (!resultItem) {
+        if (variantResults.length < executionVariants.length) {
+            const completedVariantCount = variantResults.length;
+            executionVariants.slice(completedVariantCount).forEach((variant, offset) => {
+                const variantIndex = completedVariantCount + offset;
+                variantResults.push({
+                    variantId: _blueprintVariantId(variant, stepUiId, variantIndex),
+                    generationIdentity: variant && variant.generationIdentity || null,
+                    action: variant && (variant.action || executionMatrix.action) || 'generate',
+                    reviewedAction: variant && (variant.action || executionMatrix.action) || 'generate',
+                    status: 'interrupted',
+                    resourceId: null,
+                    artifactId: null,
+                    existingArtifactId: variant && variant.existingArtifactId || null,
+                    variantKey: variant && variant.variantKey || null,
+                    grade: variant && variant.grade || null,
+                    language: variant && variant.language || null,
+                    reason: 'Generation stopped before this variant started.',
+                });
+            });
+        }
+        resultItem = generatedRowItems[0] || null;
+        failReason = variantFailures.map(f => f.reason).filter(Boolean).join(' | ') || null;
+        const runtimeActionRank = { reuse: 0, variant: 1, generate: 2, refresh: 3 };
+        const runtimeGenerationAction = variantResults.reduce((selected, cell) =>
+            (runtimeActionRank[cell.action] || 0) > (runtimeActionRank[selected] || 0) ? cell.action : selected,
+        'reuse');
+        if (variantFailures.length) {
             // Name the three things that actually distinguish the causes: which
             // row, why, and whether the dispatcher module is even present (a
             // missing GenDispatcher nulls EVERY row and is otherwise silent).
             let dispatcherLoaded = 'unknown';
             try { dispatcherLoaded = String(!!(typeof window !== 'undefined' && window.AlloModules && window.AlloModules.GenDispatcher)); } catch (_) {}
-            recordBlueprintResourceFailure({
+            variantFailures.forEach((failure) => recordBlueprintResourceFailure({
                 tool: type,
                 uiId: stepUiId,
                 index: i,
-                reason: failReason,
-                error: threw,
+                reason: `${failure.reason} [variant ${failure.variantId}]`,
+                error: failure.error,
                 dispatcherLoaded: dispatcherLoaded,
                 sourceTextChars: currentSourceText ? currentSourceText.length : 0,
                 runId,
                 elapsedMs: Number.isFinite(runStartedAt) ? Math.max(0, Date.now() - runStartedAt) : 0,
-            }, warnLog);
+            }, warnLog));
         }
+        const successfulVariantCount = variantResults.filter(v => v.status === 'landed').length;
+        const failedVariantCount = variantResults.filter(v => v.status === 'failed').length;
+        const interruptedVariantCount = variantResults.filter(v => v.status === 'interrupted').length;
         emitStep({ uiId: stepUiId, tool: type, index: i,
-                   status: resultItem ? 'landed' : 'failed',
-                   resourceId: (resultItem && resultItem.id) || null,
+                   status: resultItem
+                       ? ((failedVariantCount || interruptedVariantCount) ? 'partial' : 'landed')
+                       : (interruptedVariantCount ? 'interrupted' : 'failed'),
+                   resourceId: (resultItem && (resultItem.id || resultItem.resourceId || resultItem.artifactId)) || null,
+                   resourceIds: variantResults.map(v => v.resourceId).filter(Boolean),
+                   successfulVariantCount,
+                   failedVariantCount,
+                   interruptedVariantCount,
                    instructionalText: stepInstructionalText,
+                   generationAction: runtimeGenerationAction,
+                   reviewedGenerationAction: executionMatrix.action,
+                   generationVariants: executionVariants,
+                   generationMatrixUnavailable: !executionMatrix.available,
+                   generationMatrixStatus: 'ready',
+                   sourceChanged: executionMatrix.sourceChanged === true,
+                   reviewedSourceFingerprint: executionMatrix.reviewedSourceFingerprint || '',
+                   currentSourceFingerprint: executionMatrix.currentSourceFingerprint || '',
+                   variantResults,
                    // Carried into the run record so the card can SHOW why a row
                    // failed instead of only that it did.
-                   failReason: resultItem ? undefined : failReason,
+                   failReason: variantFailures.length ? failReason : undefined,
                    // Carried so the run record can answer "which rows does the
                    // current audit actually cover?" — the basis for per-row
                    // staleness once a row is later regenerated.
                    auditScopeIds: (resultItem && auditScopeIds) ? auditScopeIds : undefined });
         if (resultItem) {
             items.push(resultItem);
-            currentBlueprintHistory.push(resultItem);
+            if (!_findBlueprintArtifact(currentBlueprintHistory, resultItem.id || resultItem.resourceId || resultItem.artifactId)) {
+                currentBlueprintHistory.push(resultItem);
+            }
             if (resultItem.data) {
                 if (type === 'analysis') {
                     if (resultItem.data.originalText) {
@@ -931,20 +1523,52 @@ const executeOneBlueprint = async (blueprint, ctx) => {
                 }
             }
             if (typeof onResource === 'function') { try { onResource(type, resultItem); } catch (_) {} }
+            generatedRowItems.slice(1).forEach((additionalItem) => {
+                items.push(additionalItem);
+                const additionalId = additionalItem.id || additionalItem.resourceId || additionalItem.artifactId;
+                if (!_findBlueprintArtifact(currentBlueprintHistory, additionalId)) currentBlueprintHistory.push(additionalItem);
+                _applyBlueprintResultToContext(type, additionalItem, lessonDNA, (text) => { currentSourceText = text; });
+                if (typeof onResource === 'function') { try { onResource(type, additionalItem); } catch (_) {} }
+            });
         } else {
             // nulls stays a flat tool-name list for the existing toast/callers;
             // failedRows is the row-accurate record ("which image failed").
-            nulls.push(type);
-            failedRows.push({ uiId: stepUiId, tool: type, index: i, reason: failReason });
+            variantFailures.forEach((failure) => {
+                nulls.push(type);
+                failedRows.push({
+                    uiId: stepUiId, tool: type, index: i, variantId: failure.variantId,
+                    action: failure.action, reason: failure.reason, attempts: failure.attempts,
+                    retryable: !!(failure.failurePolicy && failure.failurePolicy.retryable),
+                    failureKind: failure.failurePolicy && failure.failurePolicy.kind || 'unknown',
+                    quotaScope: failure.failurePolicy && failure.failurePolicy.quotaScope || 'none',
+                    providerError: failure.providerError || null,
+                });
+            });
             // Resource-specific parse/shape failures should not strand the rest
             // of a plan. Preserve abort semantics for errors that make every
             // following step unsafe or impossible: cancellation, auth, quota,
             // safety/policy blocks, missing modules, and explicit fatal errors.
-            const message = threw && String(threw.message || threw.name || threw);
-            const fatal = !!(threw && (threw.isFatal || threw.isAuth
-                || threw.name === 'AbortError'
-                || /abort|cancel|auth|api key|quota|permission|forbidden|not loaded|safety|policy|blocked|no source/i.test(message)));
-            if (threw && fatal) throw threw;
+            const terminalFailure = variantFailures.find((failure) => _isBlueprintTerminalFailure(
+                failure.error, failure.failurePolicy, failure.retryExhausted
+            ));
+            if (terminalFailure) throw terminalFailure.error;
+        }
+        if (resultItem && variantFailures.length) {
+            variantFailures.forEach((failure) => {
+                nulls.push(type);
+                failedRows.push({
+                    uiId: stepUiId, tool: type, index: i, variantId: failure.variantId,
+                    action: failure.action, reason: failure.reason, attempts: failure.attempts,
+                    retryable: !!(failure.failurePolicy && failure.failurePolicy.retryable),
+                    failureKind: failure.failurePolicy && failure.failurePolicy.kind || 'unknown',
+                    quotaScope: failure.failurePolicy && failure.failurePolicy.quotaScope || 'none',
+                    providerError: failure.providerError || null,
+                });
+            });
+            const fatalFailure = variantFailures.find((failure) => _isBlueprintTerminalFailure(
+                failure.error, failure.failurePolicy, failure.retryExhausted
+            ));
+            if (fatalFailure) throw fatalFailure.error;
         }
         if (i < finalResources.length - 1) await new Promise(r => setTimeout(r, 1000));
     }
@@ -974,6 +1598,10 @@ const handleStopBlueprintRun = () => {
 };
 const handleExecuteBlueprint = async (deps) => {
   const { gradeLevel, leveledTextLanguage, currentUiLanguage, selectedLanguages, studentInterests, sourceTopic, inputText, history, generatedContent, apiKey, standardsInput, targetStandards, dokLevel, useEmojis, rosterKey, sessionData, user, appId, activeSessionAppId, activeSessionCode, studentNickname, sourceLength, sourceTone, textFormat, differentiationRange, differentiationTypes, differentiationCustomGrades, fullPackTargetGroup, isAutoConfigEnabled, resourceCount, creativeMode, noText, fillInTheBlank, imageGenerationStyle, imageAspectRatio, useLowQualityVisuals, autoRemoveWords, globalPoints, wizardData, isWizardOpen, standardsLookupRegion, standardsLookupGoal, pdfFixResult, showExportPreview, aiStandardQuery, aiStandardRegion, imageRefinementInput, activeBlueprint, ai, webSearchProvider, alloBotRef, pdfPreviewRef, exportPreviewRef, setError, setIsProcessing, setGenerationStep, setGeneratedContent, setHistory, setActiveView, setActiveSessionCode, setActiveSessionAppId, setStudentNickname, setIsWizardOpen, setShowSourceGen, setSourceTopic, setSourceCustomInstructions, setSourceLength, setSourceTone, setTextFormat, setSelectedLanguages, setGradeLevel, setStandardsInput, setTargetStandards, setDokLevel, setStudentInterests, setSuggestedStandards, setIsLookingUpStandards, setStandardsLookupGoal, setStandardsLookupRegion, setExpandedTools, setShowUDLGuide, setUdlMessages, setGuidedFlowState, setIsRefiningImage, setShowImageRefineModal, setIsExecutingBlueprint, setBlueprintExecutionResult, setShowExportPreview, setInputText, setIsTeacherMode, setIsParentMode, setIsIndependentMode, setActiveSidebarTab, setDoc, setSessionData, setShowSessionModal, setImageRefinementInput, setIsFindingStandards, setShowWizard, setSourceLevel, setSourceVocabulary, setIncludeSourceCitations, setLeveledTextLanguage, setActiveBlueprint, setPersistedLessonDNA, addToast, t, warnLog, debugLog, callGemini, callGeminiVision, callImagen, callGeminiImageEdit, cleanJson, safeJsonParse, sanitizeTruncatedCitations, normalizeResourceLinks, flyToElement, getDefaultTitle, storageDB, updateDoc, doc, db, playSound, playAdventureEventSound, generateSessionCode, stripUndefined, uploadSessionAssets, safeSetItem, handleGenerateSource, applyDetailedAutoConfig, handleGenerate, fileInputRef } = deps;
+  const translationMode = deps && deps.translationMode;
+  const universalImageStyle = deps && deps.universalImageStyle;
+  const currentGenerationConfigSnapshot = deps && deps.generationConfigSnapshot
+    && typeof deps.generationConfigSnapshot === 'object' ? deps.generationConfigSnapshot : {};
   try { if (window._DEBUG_PHASE_O) console.log("[PhaseO] handleExecuteBlueprint fired"); } catch(_) {}
     if (!activeBlueprint) return;
     const finalResources = getBlueprintResourcePlan(activeBlueprint);
@@ -981,6 +1609,16 @@ const handleExecuteBlueprint = async (deps) => {
         addToast("This blueprint does not include any resources yet.", "error");
         return;
     }
+    const _plannedGenerationSummary = finalResources.reduce((summary, row) => {
+        const variants = Array.isArray(row && row.generationVariants) && row.generationVariants.length
+            ? row.generationVariants : [{ action: row && row.generationAction || 'generate' }];
+        summary.variantCount += variants.length;
+        variants.forEach((variant) => {
+            if (variant && variant.action === 'reuse') summary.reuseCount += 1;
+            else summary.expectedCalls += 1;
+        });
+        return summary;
+    }, { rowCount: finalResources.length, variantCount: 0, expectedCalls: 0, reuseCount: 0 });
     // Re-entrancy: nulling activeBlueprint used to BE the guard (a second
     // click found nothing to run). The plan now survives execution so the
     // teacher can watch it, which removes that accidental protection — and the
@@ -996,6 +1634,56 @@ const handleExecuteBlueprint = async (deps) => {
     // generation config (grade, tone, counts, styles) before it returned. The
     // guard is only a guard if nothing irreversible happens above it.
     if (_blueprintRunInFlight) { addToast(t('blueprint.already_running') || 'That plan is already generating.', 'info'); return; }
+    if (!_isBlueprintGenerationMatrixReady()) {
+        const blockedAt = new Date().toISOString();
+        const blockedRunId = 'blueprint-matrix-waiting-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8);
+        const matrixUnavailableRows = [];
+        const blockedRows = {};
+        finalResources.forEach((row, index) => {
+            const uiId = (row && row.uiId) || (String(row && row.type) + '-' + index);
+            matrixUnavailableRows.push(uiId);
+            blockedRows[uiId] = {
+                uiId,
+                tool: row && row.type,
+                status: 'planned',
+                index,
+                generationAction: row && row.generationAction,
+                generationVariants: row && Array.isArray(row.generationVariants) ? row.generationVariants.map(cell => ({ ...cell })) : [],
+                generationMatrixUnavailable: true,
+                generationMatrixStatus: 'unavailable',
+                blockedReason: 'generation-matrix-unavailable',
+                retryable: true,
+                resourceId: null,
+                resourceIds: [],
+                variantResults: [],
+            };
+        });
+        const blockedRun = {
+            runId: blockedRunId,
+            status: 'waiting',
+            startedAt: blockedAt,
+            finishedAt: blockedAt,
+            done: true,
+            retryable: true,
+            reasonCode: 'generation-matrix-unavailable',
+            generationMatrixUnavailable: true,
+            generationMatrixStatus: 'unavailable',
+            generationMatrixGuarantees: { exactDedupe: false, exactFanOut: false, dispatchBlocked: true },
+            matrixUnavailableRows,
+            generationSummary: Object.assign({}, _plannedGenerationSummary, { exact: false }),
+            rows: blockedRows,
+        };
+        if (typeof setBlueprintExecutionResult === 'function') setBlueprintExecutionResult(blockedRun);
+        if (typeof setIsExecutingBlueprint === 'function') setIsExecutingBlueprint(false);
+        const loadingMessage = t('blueprint.matrix_unavailable_retry')
+            || 'Generation planning is still loading. No resources were generated; choose Generate again to retry.';
+        try { if (typeof warnLog === 'function') warnLog('[Blueprint] generation blocked: Generation Matrix module unavailable; no resource calls were made.'); } catch (_) {}
+        try { if (typeof addToast === 'function') addToast(loadingMessage, 'warning'); } catch (_) {}
+        if (typeof setUdlMessages === 'function') {
+            setUdlMessages(prev => [...prev, { role: 'model', text: loadingMessage }]);
+        }
+        return blockedRun;
+    }
     _blueprintRunInFlight = true;
     if (activeBlueprint.globalSettings) {
         if (activeBlueprint.globalSettings.gradeLevel) setGradeLevel(activeBlueprint.globalSettings.gradeLevel);
@@ -1006,29 +1694,115 @@ const handleExecuteBlueprint = async (deps) => {
     // run so Universal Settings cannot change between plan approval and the
     // first request, or leak into a later request while the run is active.
     const _globalSettings = activeBlueprint.globalSettings || {};
+    const _ambientImageGenerationStyle = imageGenerationStyle !== undefined && imageGenerationStyle !== null
+        ? imageGenerationStyle : universalImageStyle;
+    const _reviewedImageGenerationStyle = _globalSettings.imageGenerationStyle !== undefined && _globalSettings.imageGenerationStyle !== null
+        ? _globalSettings.imageGenerationStyle
+        : (_globalSettings.universalImageStyle !== undefined && _globalSettings.universalImageStyle !== null
+            ? _globalSettings.universalImageStyle : _ambientImageGenerationStyle);
     const _blueprintInstructionalContext = _resolveBlueprintInstructionalContext(activeBlueprint, null, {
         grade: _globalSettings.gradeLevel || gradeLevel,
         standard: activeBlueprint.standards || standardsInput || '',
     });
     const _blueprintStandardsContext = _blueprintInstructionalContext.standardsContext
         || activeBlueprint.standardsContext || null;
+    const _reviewedGenerationOptions = _globalSettings.generationOptions
+        && typeof _globalSettings.generationOptions === 'object' ? Object.assign({}, _globalSettings.generationOptions) : {};
+    const _reviewedToolOverrides = _globalSettings.toolOverrides
+        && typeof _globalSettings.toolOverrides === 'object'
+        ? Object.fromEntries(Object.entries(_globalSettings.toolOverrides).map(([type, value]) => [type,
+            value && typeof value === 'object' ? Object.assign({}, value) : value]))
+        : {};
+    const _currentProvider = currentGenerationConfigSnapshot.provider
+        && typeof currentGenerationConfigSnapshot.provider === 'object'
+        ? currentGenerationConfigSnapshot.provider : {};
     const _blueprintSettingsSnapshot = Object.freeze({
+        ..._reviewedGenerationOptions,
         gradeLevel: _blueprintInstructionalContext.instructionalGrade || _globalSettings.gradeLevel || gradeLevel,
-        leveledTextLanguage: _globalSettings.language || _globalSettings.leveledTextLanguage || leveledTextLanguage,
-        selectedLanguages: Array.isArray(selectedLanguages) ? selectedLanguages.slice() : selectedLanguages,
-        studentInterests: Array.isArray(studentInterests) ? studentInterests.slice() : studentInterests,
+        primaryLanguage: _globalSettings.primaryLanguage || _globalSettings.language || _globalSettings.leveledTextLanguage || leveledTextLanguage,
+        language: _globalSettings.primaryLanguage || _globalSettings.language || _globalSettings.leveledTextLanguage || leveledTextLanguage,
+        leveledTextLanguage: _globalSettings.primaryLanguage || _globalSettings.language || _globalSettings.leveledTextLanguage || leveledTextLanguage,
+        selectedLanguages: Object.freeze(Array.isArray(_globalSettings.selectedLanguages)
+            ? _globalSettings.selectedLanguages.slice()
+            : (Array.isArray(selectedLanguages) ? selectedLanguages.slice() : [])),
+        translationMode: _globalSettings.translationMode !== undefined ? _globalSettings.translationMode : translationMode,
+        currentUiLanguage: _globalSettings.currentUiLanguage !== undefined ? _globalSettings.currentUiLanguage : currentUiLanguage,
+        translationTargetChoices: Object.freeze(Array.isArray(_globalSettings.translationTargetChoices) ? _globalSettings.translationTargetChoices.slice() : []),
+        resolvedTranslationTarget: _globalSettings.resolvedTranslationTarget === undefined ? null : _globalSettings.resolvedTranslationTarget,
+        studentInterests: Array.isArray(_globalSettings.studentInterests)
+            ? Object.freeze(_globalSettings.studentInterests.slice())
+            : (Array.isArray(studentInterests) ? Object.freeze(studentInterests.slice()) : studentInterests),
         standardsInput: (_blueprintStandardsContext && _blueprintStandardsContext.promptText)
             || activeBlueprint.standards || standardsInput,
         standardsContext: _blueprintStandardsContext,
+        standardsFingerprint: (_blueprintInstructionalContext && _blueprintInstructionalContext.standardsFingerprint)
+            || _globalSettings.standardsFingerprint || '',
+        contextFingerprint: _globalSettings.contextFingerprint || '',
+        contextInputsFingerprint: _globalSettings.contextInputsFingerprint || '',
+        contextFingerprintDerived: _globalSettings.contextFingerprintDerived === true || !!_globalSettings.contextInputsFingerprint,
+        sourceFingerprint: _globalSettings.sourceFingerprint || '',
+        sourceArtifactId: _globalSettings.sourceArtifactId || '',
         instructionalContext: _blueprintInstructionalContext,
-        targetStandards: Array.isArray(targetStandards) ? targetStandards.slice() : targetStandards,
+        targetStandards: Object.freeze(Array.isArray(_globalSettings.targetStandards)
+            ? _globalSettings.targetStandards.slice()
+            : (Array.isArray(targetStandards) ? targetStandards.slice() : [])),
         dokLevel: _globalSettings.dokLevel || dokLevel,
         useEmojis: _globalSettings.useEmojis === undefined ? useEmojis : _globalSettings.useEmojis,
         textFormat: _globalSettings.textFormat || textFormat,
-        differentiationRange,
-        differentiationTypes: Array.isArray(differentiationTypes) ? differentiationTypes.slice() : differentiationTypes,
-        differentiationCustomGrades: Array.isArray(differentiationCustomGrades) ? differentiationCustomGrades.slice() : differentiationCustomGrades,
+        imageGenerationStyle: _reviewedImageGenerationStyle,
+        universalImageStyle: _reviewedImageGenerationStyle,
+        imageAspectRatio: _globalSettings.imageAspectRatio || imageAspectRatio,
+        generationOptions: Object.freeze(_reviewedGenerationOptions),
+        toolOverrides: Object.freeze(_reviewedToolOverrides),
+        generationContext: _globalSettings.generationContext && typeof _globalSettings.generationContext === 'object'
+            ? Object.freeze(Object.assign({}, _globalSettings.generationContext)) : Object.freeze({}),
+        // Provider/model are special: unlike educator settings, the active
+        // runtime cannot safely be forced back to a disconnected provider.
+        // Resolve the matrix against what will actually answer this call.
+        backend: _currentProvider.backend || _globalSettings.backend || '',
+        provider: _currentProvider.provider || _globalSettings.provider || _currentProvider.backend || '',
+        model: _currentProvider.model || _globalSettings.model || '',
+        fallbackModel: _currentProvider.fallbackModel || _globalSettings.fallbackModel || '',
+        imageProvider: _currentProvider.imageProvider || _globalSettings.imageProvider || '',
+        imageModel: _currentProvider.imageModel || _globalSettings.imageModel || '',
+        visionModel: _currentProvider.visionModel || _globalSettings.visionModel || '',
+        differentiationRange: _globalSettings.differentiationRange !== undefined ? _globalSettings.differentiationRange : differentiationRange,
+        differentiationGrades: Object.freeze(Array.isArray(_globalSettings.differentiationGrades) ? _globalSettings.differentiationGrades.slice() : []),
+        differentiationTypes: Object.freeze(Array.isArray(_globalSettings.differentiationTypes)
+            ? _globalSettings.differentiationTypes.slice()
+            : (Array.isArray(differentiationTypes) ? differentiationTypes.slice() : [])),
+        differentiationCustomGrades: Object.freeze(Array.isArray(_globalSettings.differentiationCustomGrades)
+            ? _globalSettings.differentiationCustomGrades.slice()
+            : (Array.isArray(differentiationCustomGrades) ? differentiationCustomGrades.slice() : [])),
     });
+    const _settingsDrift = [];
+    const _sameSetting = (a, b) => JSON.stringify(a === undefined ? null : a) === JSON.stringify(b === undefined ? null : b);
+    [
+        ['gradeLevel', gradeLevel, _blueprintSettingsSnapshot.gradeLevel],
+        ['language', leveledTextLanguage, _blueprintSettingsSnapshot.leveledTextLanguage],
+        ['selectedLanguages', Array.isArray(selectedLanguages) ? selectedLanguages : [], _blueprintSettingsSnapshot.selectedLanguages],
+        ['studentInterests', Array.isArray(studentInterests) ? studentInterests : studentInterests, _blueprintSettingsSnapshot.studentInterests],
+        ['targetStandards', Array.isArray(targetStandards) ? targetStandards : [], _blueprintSettingsSnapshot.targetStandards],
+        ['translationMode', translationMode, _blueprintSettingsSnapshot.translationMode],
+        ['currentUiLanguage', currentUiLanguage, _blueprintSettingsSnapshot.currentUiLanguage],
+        ['differentiationRange', differentiationRange, _blueprintSettingsSnapshot.differentiationRange],
+        ['differentiationTypes', Array.isArray(differentiationTypes) ? differentiationTypes : [], _blueprintSettingsSnapshot.differentiationTypes],
+        ['differentiationCustomGrades', Array.isArray(differentiationCustomGrades) ? differentiationCustomGrades : [], _blueprintSettingsSnapshot.differentiationCustomGrades],
+        ['dokLevel', dokLevel, _blueprintSettingsSnapshot.dokLevel],
+        ['useEmojis', useEmojis, _blueprintSettingsSnapshot.useEmojis],
+        ['textFormat', textFormat, _blueprintSettingsSnapshot.textFormat],
+        ['imageGenerationStyle', _ambientImageGenerationStyle, _blueprintSettingsSnapshot.imageGenerationStyle],
+        ['imageAspectRatio', imageAspectRatio, _blueprintSettingsSnapshot.imageAspectRatio],
+        ['toolOverrides', currentGenerationConfigSnapshot.canonical?.fields?.toolOverrides || currentGenerationConfigSnapshot.toolOverrides || {}, _blueprintSettingsSnapshot.toolOverrides],
+        ['generationOptions', currentGenerationConfigSnapshot.toolOptions || {}, _blueprintSettingsSnapshot.generationOptions],
+        ['backend', _currentProvider.backend || '', _globalSettings.backend || ''],
+        ['provider', _currentProvider.provider || '', _globalSettings.provider || ''],
+        ['model', _currentProvider.model || '', _globalSettings.model || ''],
+        ['fallbackModel', _currentProvider.fallbackModel || '', _globalSettings.fallbackModel || ''],
+        ['imageProvider', _currentProvider.imageProvider || '', _globalSettings.imageProvider || ''],
+        ['imageModel', _currentProvider.imageModel || '', _globalSettings.imageModel || ''],
+        ['visionModel', _currentProvider.visionModel || '', _globalSettings.visionModel || ''],
+    ].forEach(([field, ambient, reviewed]) => { if (!_sameSetting(ambient, reviewed)) _settingsDrift.push(field); });
     const lessonDNA = {
         grade: _blueprintInstructionalContext.instructionalGrade || activeBlueprint.globalSettings?.gradeLevel || gradeLevel,
         topic: sourceTopic || "",
@@ -1039,6 +1813,16 @@ const handleExecuteBlueprint = async (deps) => {
         visualContext: "",
         essentialQuestion: activeBlueprint.lessonDNA?.essentialQuestion || "",
     };
+    const _latestAnalysis = (Array.isArray(history) ? history : []).slice().reverse()
+        .find(h => h && h.type === 'analysis' && h.data && h.data.originalText);
+    const _sourceSelection = _resolveBlueprintSourceSelection({
+        inputText,
+        requestedSourceText: inputText || sourceTopic,
+        sourceTopic,
+        sourceOrigin: String(inputText || '').trim() ? 'current-editor' : 'current-topic',
+        latestAnalysis: _latestAnalysis,
+        sourcePolicy: activeBlueprint.sourcePolicy || null,
+    });
     // Seed one row per plan entry so the board shows the whole plan as
     // 'planned' immediately, rather than materialising rows as they start.
     const _runRows = {};
@@ -1049,6 +1833,22 @@ const handleExecuteBlueprint = async (deps) => {
             tool: r && r.type,
             status: 'planned',
             index: i,
+            generationAction: r && r.generationAction,
+            generationVariants: r && Array.isArray(r.generationVariants) ? r.generationVariants.map(v => ({ ...v })) : [],
+            explicitVariantKey: r && r.explicitVariantKey,
+            variantKeyDerived: !!(r && r.variantKeyDerived),
+            variantCount: r && Array.isArray(r.generationVariants) && r.generationVariants.length ? r.generationVariants.length : 1,
+            expectedCalls: r && Array.isArray(r.generationVariants)
+                ? r.generationVariants.filter(v => v && v.action !== 'reuse').length
+                : (r && r.generationAction === 'reuse' ? 0 : 1),
+            generationMatrixUnavailable: false,
+            generationMatrixStatus: 'ready',
+            resourceId: null,
+            resourceIds: [],
+            variantResults: [],
+            successfulVariantCount: 0,
+            failedVariantCount: 0,
+            interruptedVariantCount: 0,
             instructionalText: _resolveBlueprintInstructionalText(
                 r && r.type,
                 r && r.instructionalText,
@@ -1060,7 +1860,7 @@ const handleExecuteBlueprint = async (deps) => {
     setIsExecutingBlueprint(true);
     const _blueprintStartedAt = Date.now();
     const _blueprintRunId = 'blueprint-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8);
-    setBlueprintExecutionResult({ runId: _blueprintRunId, status: 'running', startedAt: new Date().toISOString(), settingsSnapshot: _blueprintSettingsSnapshot, instructionalContext: _blueprintInstructionalContext, rows: _runRows, done: false });
+    setBlueprintExecutionResult({ runId: _blueprintRunId, status: 'running', startedAt: new Date().toISOString(), settingsSnapshot: _blueprintSettingsSnapshot, settingsStale: _settingsDrift.length > 0, staleSettings: _settingsDrift, sourceSelection: _sourceSelection.metadata, generationSummary: Object.assign({}, _plannedGenerationSummary, { exact: true }), generationMatrixUnavailable: false, generationMatrixStatus: 'ready', generationMatrixGuarantees: { exactDedupe: true, exactFanOut: true, dispatchBlocked: false }, matrixUnavailableRows: [], instructionalContext: _blueprintInstructionalContext, rows: _runRows, done: false });
     // The chat panel used to be force-closed here, which threw away the
     // conversation the plan came out of — and, because the guided-flow stage
     // was never cleared, reopening it stranded every later message in the
@@ -1078,10 +1878,9 @@ const handleExecuteBlueprint = async (deps) => {
     setIsProcessing(true);
     addToast(`Executing Blueprint: Generating ${finalResources.length} resources...`, "info");
     try {
-        let currentSourceText = inputText;
-        const existingAnalysis = history.slice().reverse().find(h => h && h.type === 'analysis');
-        if (existingAnalysis?.data?.originalText) {
-            currentSourceText = existingAnalysis.data.originalText;
+        let currentSourceText = _sourceSelection.text;
+        if (_sourceSelection.metadata && _sourceSelection.metadata.divergentFromLatestAnalysis) {
+            try { if (warnLog) warnLog('[Blueprint] current source differs from latest analysis; using current source and rechecking generation identities.'); } catch (_) {}
         }
         // Pre-flight. Nearly every generator needs source text, and without it
         // the dispatcher returns undefined per resource — which the board scores
@@ -1122,6 +1921,18 @@ const handleExecuteBlueprint = async (deps) => {
                             [step.uiId]: Object.assign({}, base.rows[step.uiId], step)
                         })
                     });
+                    const matrixUnavailableRows = Object.keys(next.rows).filter(key =>
+                        next.rows[key] && next.rows[key].generationMatrixUnavailable === true);
+                    next.generationMatrixUnavailable = matrixUnavailableRows.length > 0;
+                    next.generationMatrixStatus = matrixUnavailableRows.length ? 'unavailable' : 'ready';
+                    next.generationMatrixGuarantees = matrixUnavailableRows.length
+                        ? { exactDedupe: false, exactFanOut: false, dispatchBlocked: true }
+                        : { exactDedupe: true, exactFanOut: true, dispatchBlocked: false };
+                    next.matrixUnavailableRows = matrixUnavailableRows;
+                    if (step.retryable === true) {
+                        next.retryable = true;
+                        next.reasonCode = step.blockedReason || 'generation-matrix-unavailable';
+                    }
                     // Promote the audit's scope to the run record. A row is
                     // covered by the current audit iff its resourceId is in
                     // this list — so a row regenerated afterwards drops out of
@@ -1204,6 +2015,42 @@ const handleExecuteBlueprint = async (deps) => {
             }]);
         }
     } catch (e) {
+        if (e && e.code === 'BLUEPRINT_GENERATION_MATRIX_UNAVAILABLE') {
+            const loadingMessage = t('blueprint.matrix_unavailable_retry')
+                || 'Generation planning is still loading. No additional resources were generated; choose Generate again to retry.';
+            try { if (typeof warnLog === 'function') warnLog('[Blueprint] generation paused: Generation Matrix resolution unavailable; retry is safe.', e); } catch (_) {}
+            try { if (typeof addToast === 'function') addToast(loadingMessage, 'warning'); } catch (_) {}
+            if (typeof setUdlMessages === 'function') setUdlMessages(prev => [...prev, { role: 'model', text: loadingMessage }]);
+            setBlueprintExecutionResult(prev => {
+                if (!prev || prev.runId !== _blueprintRunId || !prev.rows) return prev;
+                const rows = {};
+                Object.keys(prev.rows).forEach(k => {
+                    const r = prev.rows[k];
+                    rows[k] = (r && (r.status === 'running' || r.status === 'planned'))
+                        ? Object.assign({}, r, {
+                            status: 'planned',
+                            generationMatrixUnavailable: true,
+                            generationMatrixStatus: 'unavailable',
+                            blockedReason: 'generation-matrix-unavailable',
+                            retryable: true,
+                        }) : r;
+                });
+                const matrixUnavailableRows = Object.keys(rows).filter(k =>
+                    rows[k] && rows[k].generationMatrixUnavailable === true);
+                return Object.assign({}, prev, {
+                    rows,
+                    done: true,
+                    status: 'waiting',
+                    finishedAt: new Date().toISOString(),
+                    retryable: true,
+                    reasonCode: 'generation-matrix-unavailable',
+                    generationMatrixUnavailable: true,
+                    generationMatrixStatus: 'unavailable',
+                    generationMatrixGuarantees: { exactDedupe: false, exactFanOut: false, dispatchBlocked: true },
+                    matrixUnavailableRows,
+                });
+            });
+        } else {
         warnLog("Unhandled error:", e);
         addToast(t('blueprint.execution_error'), "error");
         setUdlMessages(prev => [...prev, { role: 'model', text: t('blueprint.execution_error') }]);
@@ -1220,6 +2067,7 @@ const handleExecuteBlueprint = async (deps) => {
             });
             return Object.assign({}, prev, { rows: rows, done: true, status: 'failed', finishedAt: new Date().toISOString() });
         });
+        }
     } finally {
         _blueprintRunInFlight = false;
         _blueprintAbortCtl = null;   // a Stop pressed after this is a harmless no-op
@@ -1254,16 +2102,63 @@ const handleRebuildBlueprintStep = async (deps, uiId) => {
     try { addToast(t('blueprint.already_running') || 'That plan is already generating.', 'info'); } catch (_) {}
     return null;
   }
+  if (!_isBlueprintGenerationMatrixReady()) {
+    setBlueprintExecutionResult(function (prev) {
+      if (!prev || !prev.rows || !prev.rows[uiId]) return prev;
+      const matrixUnavailableRows = Array.from(new Set([
+        ...(Array.isArray(prev.matrixUnavailableRows) ? prev.matrixUnavailableRows : []),
+        uiId,
+      ]));
+      return Object.assign({}, prev, {
+        status: 'waiting',
+        done: true,
+        retryable: true,
+        reasonCode: 'generation-matrix-unavailable',
+        generationMatrixUnavailable: true,
+        generationMatrixStatus: 'unavailable',
+        generationMatrixGuarantees: { exactDedupe: false, exactFanOut: false, dispatchBlocked: true },
+        matrixUnavailableRows,
+        rows: Object.assign({}, prev.rows, {
+          [uiId]: Object.assign({}, prev.rows[uiId], {
+            generationMatrixUnavailable: true,
+            generationMatrixStatus: 'unavailable',
+            blockedReason: 'generation-matrix-unavailable',
+            retryable: true,
+          })
+        })
+      });
+    });
+    const loadingMessage = t('blueprint.matrix_unavailable_retry')
+      || 'Generation planning is still loading. This step was not rebuilt; choose Rebuild again to retry.';
+    try { if (typeof warnLog === 'function') warnLog('[Blueprint] rebuild blocked: Generation Matrix module unavailable; no resource call was made.'); } catch (_) {}
+    try { addToast(loadingMessage, 'warning'); } catch (_) {}
+    return null;
+  }
   _blueprintRunInFlight = true;
   const _existingRunId = blueprintExecutionResult && blueprintExecutionResult.runId;
   const _rebuildRunId = _existingRunId || ('blueprint-rebuild-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8));
   const patch = (fields) => setBlueprintExecutionResult(function (prev) {
     if (!prev || prev.runId !== _rebuildRunId || !prev.rows || !prev.rows[uiId]) return prev;
-    return Object.assign({}, prev, {
-      rows: Object.assign({}, prev.rows, {
-        [uiId]: Object.assign({}, prev.rows[uiId], { uiId: uiId, tool: row.tool }, fields)
-      })
+    const rows = Object.assign({}, prev.rows, {
+      [uiId]: Object.assign({}, prev.rows[uiId], { uiId: uiId, tool: row.tool }, fields)
     });
+    const next = Object.assign({}, prev, { rows });
+    if (fields && typeof fields.generationMatrixUnavailable === 'boolean') {
+      const matrixUnavailableRows = Object.keys(rows).filter(key =>
+        rows[key] && rows[key].generationMatrixUnavailable === true);
+      next.generationMatrixUnavailable = matrixUnavailableRows.length > 0;
+      next.generationMatrixStatus = matrixUnavailableRows.length ? 'unavailable' : 'ready';
+      next.generationMatrixGuarantees = matrixUnavailableRows.length
+        ? { exactDedupe: false, exactFanOut: false, dispatchBlocked: true }
+        : { exactDedupe: true, exactFanOut: true, dispatchBlocked: false };
+      next.matrixUnavailableRows = matrixUnavailableRows;
+      if (!matrixUnavailableRows.length) {
+        next.retryable = false;
+        next.reasonCode = null;
+        if (next.status === 'waiting') next.status = 'completed';
+      }
+    }
+    return next;
   });
   // Stamp legacy records with a run ID once, but only if the exact record that
   // launched this rebuild is still current. All later writes require that ID.
@@ -1273,18 +2168,27 @@ const handleRebuildBlueprintStep = async (deps, uiId) => {
     return Object.assign({}, prev, {
       runId: _rebuildRunId,
       rows: Object.assign({}, prev.rows, {
-        [uiId]: Object.assign({}, prev.rows[uiId], { uiId: uiId, tool: row.tool, status: 'running' })
+        [uiId]: Object.assign({}, prev.rows[uiId], {
+          uiId: uiId, tool: row.tool, status: 'running',
+          resourceId: null, resourceIds: [], variantResults: [],
+          successfulVariantCount: 0, failedVariantCount: 0, interruptedVariantCount: 0,
+        })
       })
     });
   });
   try {
     const rebuildSettingsSnapshot = (blueprintExecutionResult && blueprintExecutionResult.settingsSnapshot) || null;
     const rebuildInstructionalContext = _resolveBlueprintInstructionalContext(activeBlueprint, rebuildSettingsSnapshot, persistedLessonDNA);
-    const rebuildDispatchSnapshot = rebuildSettingsSnapshot || Object.freeze({
-      gradeLevel: rebuildInstructionalContext.instructionalGrade || '',
+    const rebuildGlobals = activeBlueprint && activeBlueprint.globalSettings && typeof activeBlueprint.globalSettings === 'object'
+      ? activeBlueprint.globalSettings : {};
+    const rebuildDispatchSnapshot = rebuildSettingsSnapshot || Object.freeze(Object.assign({}, rebuildGlobals, {
+      gradeLevel: rebuildInstructionalContext.instructionalGrade || rebuildGlobals.gradeLevel || '',
+      language: rebuildGlobals.primaryLanguage || rebuildGlobals.language || rebuildGlobals.leveledTextLanguage || '',
+      leveledTextLanguage: rebuildGlobals.primaryLanguage || rebuildGlobals.language || rebuildGlobals.leveledTextLanguage || '',
       standardsContext: rebuildInstructionalContext.standardsContext || null,
+      standardsFingerprint: rebuildInstructionalContext.standardsFingerprint || rebuildGlobals.standardsFingerprint || '',
       instructionalContext: rebuildInstructionalContext,
-    });
+    }));
     const rebuildInstructionalText = _resolveBlueprintInstructionalText(
       row.tool,
       row.instructionalText,
@@ -1305,16 +2209,107 @@ const handleRebuildBlueprintStep = async (deps, uiId) => {
       rebuildConfig.activityMode = row.activityMode;
       if (row.activityConfig && typeof row.activityConfig === 'object') rebuildConfig.activityConfig = row.activityConfig;
     }
-    let resultItem = await handleGenerate(row.tool, null, false, null, rebuildConfig, false, rebuildDispatchSnapshot);
-    if (resultItem && !resultItem.instructionalText) resultItem = Object.assign({}, resultItem, { instructionalText: rebuildInstructionalText });
-    patch({ status: resultItem ? 'landed' : 'failed',
-            resourceId: (resultItem && resultItem.id) || null,
+    const rebuildMatrix = _resolveBlueprintExecutionMatrix(
+      Object.assign({ type: row.tool }, row), rebuildDispatchSnapshot,
+      Array.isArray(history) ? history : [], null, true
+    );
+    if (!rebuildMatrix.available) {
+      throw _createBlueprintGenerationMatrixError({ uiId, tool: row.tool, matrixUnavailableRows: [uiId] });
+    }
+    const rebuiltItems = [];
+    const variantResults = [];
+    for (let variantIndex = 0; variantIndex < rebuildMatrix.variants.length; variantIndex++) {
+      const variant = rebuildMatrix.variants[variantIndex] || {};
+      const variantId = _blueprintVariantId(variant, uiId, variantIndex);
+      const variantConfig = Object.assign({}, rebuildConfig, {
+        skipDifferentiation: true,
+        generationMatrixManaged: rebuildMatrix.available,
+        generationMatrixUnavailable: !rebuildMatrix.available,
+        generationIdentity: variant.generationIdentity || null,
+        generationAction: 'refresh',
+        generationVariant: Object.assign({}, variant, { action: 'refresh' }),
+        variantKey: variant.variantKey || null,
+        explicitVariantKey: variant.explicitVariantKey || null,
+        variantKeyDerived: variant.variantKeyDerived === true,
+        sourceFingerprint: variant.sourceFingerprint || rebuildDispatchSnapshot.sourceFingerprint || '',
+        contextFingerprint: variant.contextFingerprint || rebuildDispatchSnapshot.contextFingerprint || '',
+        contextInputsFingerprint: variant.contextInputsFingerprint || rebuildDispatchSnapshot.contextInputsFingerprint || '',
+        contextFingerprintDerived: variant.contextFingerprintDerived === true || rebuildDispatchSnapshot.contextFingerprintDerived === true,
+        generationConfig: variant.generationConfig || row.generationConfig || null,
+        generationConfigFingerprint: variant.generationConfigFingerprint || row.generationConfigFingerprint || '',
+      });
+      if (variant.grade) variantConfig.grade = variant.grade;
+      let item = null;
+      let variantFailure = null;
+      try {
+        item = await handleGenerate(row.tool, variant.language || null, false, null, variantConfig, false, rebuildDispatchSnapshot);
+        if (!item) variantFailure = 'handleGenerate returned no resource (it did not throw)';
+      } catch (variantError) {
+        variantFailure = 'threw: ' + ((variantError && (variantError.message || variantError.name)) || String(variantError));
+        try { if (warnLog) warnLog(`[Blueprint] rebuild variant failed uiId=${uiId} variant=${variantId}: ${variantFailure}`); } catch (_) {}
+      }
+      if (item) {
+        item = Object.assign({}, item, {
+          instructionalText: item.instructionalText || rebuildInstructionalText,
+          generationIdentity: variant.generationIdentity || item.generationIdentity || null,
+          generationAction: 'refresh',
+          variantKey: variant.variantKey || item.variantKey || null,
+          explicitVariantKey: variant.explicitVariantKey || item.explicitVariantKey || null,
+          variantKeyDerived: variant.variantKeyDerived === true,
+          sourceFingerprint: variant.sourceFingerprint || item.sourceFingerprint || rebuildDispatchSnapshot.sourceFingerprint || '',
+          gradeLevel: variant.grade || item.gradeLevel,
+          language: variant.language || item.language,
+        });
+        rebuiltItems.push(item);
+      }
+      variantResults.push({
+        variantId,
+        generationIdentity: variant.generationIdentity || null,
+        action: 'refresh',
+        status: item ? 'landed' : 'failed',
+        resourceId: item && (item.id || item.resourceId || item.artifactId) || null,
+        artifactId: item && (item.id || item.resourceId || item.artifactId) || null,
+        existingArtifactId: variant.existingArtifactId || null,
+        variantKey: variant.variantKey || null,
+        grade: variant.grade || null,
+        language: variant.language || null,
+        reason: variantFailure || undefined,
+      });
+    }
+    const failedVariantCount = variantResults.filter(v => v.status === 'failed').length;
+    const successfulVariantCount = variantResults.filter(v => v.status === 'landed').length;
+    const resultItem = rebuiltItems[0] || null;
+    patch({ status: resultItem ? (failedVariantCount ? 'partial' : 'landed') : 'failed',
+            resourceId: (resultItem && (resultItem.id || resultItem.resourceId || resultItem.artifactId)) || null,
+            resourceIds: variantResults.map(v => v.resourceId).filter(Boolean),
+            successfulVariantCount,
+            failedVariantCount,
+            interruptedVariantCount: 0,
+            generationAction: 'refresh',
+            generationVariants: rebuildMatrix.variants,
+            generationMatrixUnavailable: !rebuildMatrix.available,
+            generationMatrixStatus: 'ready',
+            variantResults,
             instructionalText: rebuildInstructionalText,
             rebuilt: true });
     return resultItem || null;
   } catch (e) {
-    warnLog && warnLog('[Blueprint] rebuild failed:', e && e.message ? e.message : e);
-    patch({ status: 'failed', resourceId: null, rebuilt: true });
+    if (e && e.code === 'BLUEPRINT_GENERATION_MATRIX_UNAVAILABLE') {
+      warnLog && warnLog('[Blueprint] rebuild paused: Generation Matrix resolution unavailable; retry is safe.');
+      patch({
+        status: 'planned',
+        generationMatrixUnavailable: true,
+        generationMatrixStatus: 'unavailable',
+        blockedReason: 'generation-matrix-unavailable',
+        retryable: true,
+        resourceId: null,
+        rebuilt: false,
+      });
+      try { addToast(t('blueprint.matrix_unavailable_retry') || 'Generation planning is still loading. This step was not rebuilt; choose Rebuild again to retry.', 'warning'); } catch (_) {}
+    } else {
+      warnLog && warnLog('[Blueprint] rebuild failed:', e && e.message ? e.message : e);
+      patch({ status: 'failed', resourceId: null, rebuilt: true });
+    }
     return null;
   } finally {
     _blueprintRunInFlight = false;

@@ -1988,6 +1988,51 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
             return false;
         }
     })();
+    // Non-secret provider/model identity is part of generation freshness. The
+    // active runtime profile wins because it is what will actually answer this
+    // call; stored and caller snapshots are compatibility fallbacks.
+    const _generationProviderProfile = (() => {
+        try {
+            const w = typeof window !== 'undefined' ? window : null;
+            const active = w && w.__alloActiveAIBackend && typeof w.__alloActiveAIBackend === 'object'
+                ? w.__alloActiveAIBackend : {};
+            const storage = w && w.localStorage;
+            const stored = storage ? JSON.parse(storage.getItem('alloflow_ai_config') || 'null') || {} : {};
+            const activeModels = active.models && typeof active.models === 'object' ? active.models : {};
+            const storedModels = stored.models && typeof stored.models === 'object' ? stored.models : {};
+            const windowModels = w && w.GEMINI_MODELS && typeof w.GEMINI_MODELS === 'object'
+                ? w.GEMINI_MODELS : {};
+            const localProfile = active.localModelProfile && typeof active.localModelProfile === 'object'
+                ? active.localModelProfile : {};
+            return {
+                backend: String(active.backend || stored.backend || configOverride.backend
+                    || (usesLocalTextBackend ? 'local' : 'cloud')).trim(),
+                provider: String(active.providerId || active.provider || stored.providerId
+                    || stored.provider || configOverride.provider || '').trim(),
+                model: String(active.model || localProfile.modelId || activeModels.default
+                    || stored.model || storedModels.default || configOverride.model
+                    || configOverride.modelId || windowModels.default || '').trim(),
+                fallbackModel: String(activeModels.fallback || storedModels.fallback
+                    || configOverride.fallbackModel || windowModels.fallback || '').trim(),
+                imageProvider: String(active.imageProvider || stored.imageProvider
+                    || configOverride.imageProvider || 'auto').trim(),
+                imageModel: String(activeModels.image || storedModels.image
+                    || configOverride.imageModel || windowModels.image || '').trim(),
+                visionModel: String(activeModels.vision || storedModels.vision
+                    || configOverride.visionModel || windowModels.vision || '').trim(),
+            };
+        } catch (_) {
+            return {
+                backend: usesLocalTextBackend ? 'local' : 'cloud',
+                provider: String(configOverride.provider || '').trim(),
+                model: String(configOverride.model || configOverride.modelId || '').trim(),
+                fallbackModel: String(configOverride.fallbackModel || '').trim(),
+                imageProvider: String(configOverride.imageProvider || 'auto').trim(),
+                imageModel: String(configOverride.imageModel || '').trim(),
+                visionModel: String(configOverride.visionModel || '').trim(),
+            };
+        }
+    })();
     // Constrained decoding for small local models: llama.cpp and LM Studio
     // compile a JSON schema to a GBNF grammar, so the shape becomes impossible
     // to get wrong rather than merely requested in prose. Returns null unless
@@ -2076,6 +2121,9 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
         if (!Array.isArray(items)) return '';
         return items.slice(-limit).map(h => `- ${(h && h.type) || 'resource'}: ${(h && h.title) || 'Untitled'}`).join('\n');
     };
+    const _generationMatrixModule = typeof window !== 'undefined' && window.AlloModules
+        ? window.AlloModules.GenerationMatrix
+        : null;
     setIsMapLocked(false);
     // Canonicalize every ingress (buttons, Blueprint, Full Pack, voice/palette).
     // Command parsing historically passed "6" while prompt tables and the UI
@@ -2256,7 +2304,16 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
     }
     setIsReviewGame(false);
     setReviewGameState({ claimed: new Set(), activeQuestion: null, showAnswer: false });
-    const effectiveLanguage = langOverride || leveledTextLanguage;
+    const _rawEffectiveLanguage = langOverride || leveledTextLanguage || 'English';
+    const effectiveLanguage = _generationMatrixModule
+        && typeof _generationMatrixModule.normalizeLanguageValue === 'function'
+        ? _generationMatrixModule.normalizeLanguageValue(_rawEffectiveLanguage, 'English')
+        : (() => {
+            const normalized = String(_rawEffectiveLanguage || 'English').replace(/\s+/g, ' ').trim();
+            if (normalized.toLowerCase() === 'english') return 'English';
+            if (normalized.toLowerCase() === 'all selected languages') return 'All Selected Languages';
+            return normalized || 'English';
+        })();
     // Roster/group differentiation describes THIS CLASS's lesson groupings —
     // ambient context that must not steer a single student's DA support.
     const differentiationContext = _isolatedContext ? '' : getGroupDifferentiationContext();
@@ -2314,6 +2371,247 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
     const interestsDirective = (studentInterests && studentInterests.length > 0)
         ? `STUDENT INTERESTS: Where it fits naturally, frame examples and contexts using: ${studentInterests.join(', ')}. Never force relevance or distort factual content.`
         : '';
+    // Give every newly generated artifact a source-aware identity, including
+    // resources made from an individual tool button. Full Pack and Blueprint
+    // can then reuse those exact outputs later instead of recognizing only
+    // resources that happened to originate inside a planner run.
+    let _resolvedGenerationIdentity = configOverride.generationIdentity || null;
+    const _hasReviewedGenerationIdentity = !!configOverride.generationIdentity;
+    let _generationSourceFingerprint = configOverride.sourceFingerprint || '';
+    let _generationContextFingerprint = configOverride.contextFingerprint || '';
+    let _generationContextInputsFingerprint = configOverride.contextInputsFingerprint
+        || (configOverride.generationIdentity && configOverride.generationIdentity.contextInputsFingerprint)
+        || '';
+    const _generationContextIsDerived = configOverride.contextFingerprintDerived === true
+        || configOverride.generationMatrixManaged === true
+        || !!configOverride.generationIdentity;
+    let _resolvedGenerationConfig = configOverride.generationConfig || null;
+    const _reviewedGenerationConfigFingerprint = configOverride.generationConfigFingerprint
+        || (configOverride.generationIdentity && configOverride.generationIdentity.generationConfigFingerprint)
+        || '';
+    const _reviewedGenerationIdentityKey = typeof configOverride.generationIdentity === 'string'
+        ? configOverride.generationIdentity
+        : (configOverride.generationIdentity && (configOverride.generationIdentity.key
+            || configOverride.generationIdentity.id)) || '';
+    let _resolvedGenerationConfigFingerprint = _reviewedGenerationConfigFingerprint;
+    let _reviewedGenerationConfigDrift = false;
+    let _resolvedGenerationVariantKey = configOverride.variantKey
+        || (configOverride.generationIdentity && configOverride.generationIdentity.variantKey)
+        || '';
+    let _resolvedExplicitVariantKey = configOverride.explicitVariantKey
+        || (configOverride.generationIdentity && configOverride.generationIdentity.explicitVariantKey)
+        || '';
+    let _resolvedVariantKeyDerived = configOverride.variantKeyDerived === true
+        || !!(configOverride.generationIdentity && configOverride.generationIdentity.variantKeyDerived === true);
+    const _matrixFingerprintValue = (value) => {
+        if (!_generationMatrixModule || typeof _generationMatrixModule.fingerprintSourceText !== 'function') return '';
+        try { return _generationMatrixModule.fingerprintSourceText(typeof value === 'string' ? value : JSON.stringify(value)); }
+        catch (_) { return ''; }
+    };
+    const _matrixGenerationContext = (() => {
+        const supplied = configOverride.generationContext && typeof configOverride.generationContext === 'object'
+            ? configOverride.generationContext : {};
+        const resources = supplied.resources && typeof supplied.resources === 'object'
+            ? Object.assign({}, supplied.resources) : {};
+        const differentiationFingerprint = _matrixFingerprintValue(differentiationContext);
+        const lessonDnaFingerprint = _matrixFingerprintValue(lessonDNA);
+        ['glossary', 'simplified', 'image', 'quiz', 'analysis', 'brainstorm',
+            'sentence-frames', 'alignment-report', 'timeline'].forEach((resourceType) => {
+            resources[resourceType] = Object.assign({}, resources[resourceType] || {},
+                differentiationFingerprint ? { differentiationContextFingerprint: differentiationFingerprint } : {});
+        });
+        ['quiz', 'sentence-frames', 'adventure'].forEach((resourceType) => {
+            resources[resourceType] = Object.assign({}, resources[resourceType] || {},
+                lessonDnaFingerprint ? { lessonDnaFingerprint } : {});
+        });
+        return Object.assign({}, supplied, Object.keys(resources).length ? { resources } : {});
+    })();
+    const _matrixResourceConfig = Object.assign({}, configOverride, {
+        outlineType: effectiveOutlineType || '',
+        effectiveVisualStyle: effectiveVisualStyle || '',
+        visualLayoutMode: visualLayoutMode || '',
+        quizMode: configOverride.quizMode || configOverride.mode || 'exit-ticket',
+        quizCount: effectiveQuizCount,
+        quizMcqCount: effectiveQuizCount,
+        quizReflectionCount,
+        faqCount: usesLocalTextBackend
+            ? Math.max(3, Math.min(Number(faqCount) || 5, 6)) : faqCount,
+        glossaryDefinitionLevel,
+        glossaryImageStyle: (glossaryImageStyle || '').trim() || (universalImageStyle || '').trim(),
+        glossaryTier2Count,
+        glossaryTier3Count,
+        includeEtymology,
+        autoRemoveWords,
+        textFormat,
+        leveledTextLength,
+        keepCitations,
+        includeCharts,
+        sourceTopic,
+        frameType,
+        timelineMode: configOverride.timelineMode || timelineMode || 'auto',
+        timelineCount: configOverride.timelineCount || timelineItemCount,
+        timelineItemCount: configOverride.timelineCount || timelineItemCount,
+        includeTimelineVisuals,
+        timelineTopic,
+        universalImageStyle,
+        conceptItemCount,
+        conceptImageMode,
+        selectedConcepts,
+        dbqMode: configOverride.dbqMode
+            || (typeof window !== 'undefined' && window._dbqMode) || 'standard',
+        isParentMode,
+        isIndependentMode,
+        isTeacherMode,
+        isAdventureStoryMode,
+        bridgeSimType,
+        bridgeStepCount: usesLocalTextBackend
+            ? Math.max(3, Math.min(Number(bridgeStepCount) || 5, 6)) : bridgeStepCount,
+        mathSubject: configOverride.mathSubject || mathSubject || 'General Math',
+        mathMode: configOverride.mathMode || mathMode || 'Problem Set Generator',
+        mathInput: configOverride.mathInput || mathInput || sourceTopic
+            || 'Create a relevant word problem based on the text',
+        isMathGraphEnabled,
+        templateType: configOverride.templateType || deps.noteTakingTemplateType || 'cornell-notes',
+        chartType: configOverride.chartType || deps.anchorChartType || 'auto',
+        backend: _generationProviderProfile.backend,
+        provider: _generationProviderProfile.provider,
+        model: _generationProviderProfile.model,
+        fallbackModel: _generationProviderProfile.fallbackModel,
+        imageProvider: _generationProviderProfile.imageProvider,
+        imageModel: _generationProviderProfile.imageModel,
+        visionModel: _generationProviderProfile.visionModel,
+    });
+    if (_generationMatrixModule && typeof _generationMatrixModule.resolveGenerationMatrix === 'function') {
+        try {
+            const _directMatrix = _generationMatrixModule.resolveGenerationMatrix({
+                type,
+                directive: effCustomInstructions || '',
+                variantKey: _resolvedGenerationVariantKey,
+                explicitVariantKey: _resolvedExplicitVariantKey,
+                variantKeyDerived: _resolvedVariantKeyDerived,
+                mode: configOverride.mode || configOverride.activityMode || '',
+                activityMode: configOverride.activityMode || '',
+                activityConfig: configOverride.activityConfig || null,
+                outlineType: effectiveOutlineType || '',
+                config: _matrixResourceConfig,
+            }, {
+                sourceText: textToProcess,
+                sourceFingerprint: _generationSourceFingerprint,
+                sourceArtifactId: _primarySourceArtifactId,
+                gradeLevel: effectiveGrade,
+                language: effectiveLanguage,
+                selectedLanguages: Array.isArray(selectedLanguages) ? selectedLanguages : [],
+                // This invocation represents one dispatcher cell. The outer
+                // recursion owns differentiation and All-Languages fan-out.
+                differentiationRange: 'None',
+                differentiationTypes: [],
+                standardsFingerprint: _activeInstructionalContext.standardsFingerprint
+                    || (_activeStandardsContext && _activeStandardsContext.fingerprint)
+                    || '',
+                contextFingerprint: _generationContextFingerprint,
+                contextFingerprintDerived: _generationContextIsDerived,
+                contextInputsFingerprint: _generationContextInputsFingerprint,
+                groupId: configOverride.rosterGroupId || '',
+                translationMode,
+                currentUiLanguage,
+                translationTarget: _xlate && _xlate.target || '',
+                studentInterests,
+                dokLevel,
+                useEmojis: !!useEmojis,
+                textFormat,
+                imageGenerationStyle: universalImageStyle || imageGenerationStyle || '',
+                imageAspectRatio,
+                generationContext: _matrixGenerationContext,
+                toolOverrides: configOverride.toolOverrides || {},
+                backend: _generationProviderProfile.backend,
+                provider: _generationProviderProfile.provider,
+                model: _generationProviderProfile.model,
+                fallbackModel: _generationProviderProfile.fallbackModel,
+                imageProvider: _generationProviderProfile.imageProvider,
+                imageModel: _generationProviderProfile.imageModel,
+                visionModel: _generationProviderProfile.visionModel,
+            });
+            const _directCell = _directMatrix && Array.isArray(_directMatrix.variants)
+                ? _directMatrix.variants[0]
+                : null;
+            _generationSourceFingerprint = (_directCell && _directCell.sourceFingerprint)
+                || (_directMatrix && _directMatrix.sourceFingerprint)
+                || _generationSourceFingerprint;
+            _generationContextFingerprint = (_directCell && _directCell.contextFingerprint)
+                || (_directMatrix && _directMatrix.settings && _directMatrix.settings.contextFingerprint)
+                || _generationContextFingerprint;
+            _generationContextInputsFingerprint = (_directCell && _directCell.contextInputsFingerprint)
+                || (_directMatrix && _directMatrix.settings && _directMatrix.settings.contextInputsFingerprint)
+                || _generationContextInputsFingerprint;
+            _resolvedGenerationConfig = (_directCell && _directCell.generationConfig)
+                || (_directMatrix && _directMatrix.generationConfig)
+                || _resolvedGenerationConfig;
+            _resolvedGenerationConfigFingerprint = (_directCell && _directCell.generationConfigFingerprint)
+                || (_directMatrix && _directMatrix.generationConfigFingerprint)
+                || _resolvedGenerationConfigFingerprint;
+            if (_hasReviewedGenerationIdentity
+                && _reviewedGenerationConfigFingerprint
+                && _resolvedGenerationConfigFingerprint
+                && _reviewedGenerationConfigFingerprint !== _resolvedGenerationConfigFingerprint
+                && _directCell && _directCell.generationIdentity) {
+                _reviewedGenerationConfigDrift = true;
+                _resolvedGenerationIdentity = Object.assign(
+                    {},
+                    typeof _resolvedGenerationIdentity === 'object' ? _resolvedGenerationIdentity : {},
+                    { key: _directCell.generationIdentity, type }
+                );
+            }
+            if (!_hasReviewedGenerationIdentity) {
+                _resolvedGenerationVariantKey = (_directCell && _directCell.variantKey)
+                    || (_directMatrix && _directMatrix.variantKey)
+                    || _resolvedGenerationVariantKey;
+                _resolvedExplicitVariantKey = (_directCell && _directCell.explicitVariantKey)
+                    || (_directMatrix && _directMatrix.explicitVariantKey)
+                    || _resolvedExplicitVariantKey;
+                _resolvedVariantKeyDerived = _directCell && _directCell.variantKeyDerived !== undefined
+                    ? _directCell.variantKeyDerived === true
+                    : (_directMatrix && _directMatrix.variantKeyDerived !== undefined
+                        ? _directMatrix.variantKeyDerived === true
+                        : _resolvedVariantKeyDerived);
+            }
+            if (!_resolvedGenerationIdentity && _directCell && _directCell.generationIdentity) {
+                _resolvedGenerationIdentity = {
+                    key: _directCell.generationIdentity,
+                    type,
+                    sourceFingerprint: _generationSourceFingerprint,
+                    sourceArtifactId: _primarySourceArtifactId,
+                    grade: _directCell.grade || effectiveGrade || null,
+                    language: _directCell.language || effectiveLanguage || null,
+                    variantKey: _resolvedGenerationVariantKey,
+                    explicitVariantKey: _resolvedExplicitVariantKey || null,
+                    variantKeyDerived: _resolvedVariantKeyDerived,
+                    contextFingerprint: _generationContextFingerprint,
+                    contextInputsFingerprint: _generationContextInputsFingerprint,
+                    generationConfigFingerprint: _resolvedGenerationConfigFingerprint,
+                };
+            }
+        } catch (_) {
+            // A stale or partially loaded matrix module must never block direct
+            // generation. The artifact simply remains legacy-unidentified.
+        }
+    }
+    if (typeof _resolvedGenerationIdentity === 'string' && _resolvedGenerationIdentity) {
+        _resolvedGenerationIdentity = { key: _resolvedGenerationIdentity, type };
+    }
+    if (_resolvedGenerationIdentity && typeof _resolvedGenerationIdentity === 'object') {
+        _resolvedGenerationIdentity = Object.assign({}, _resolvedGenerationIdentity, {
+            type,
+            sourceFingerprint: _generationSourceFingerprint || _resolvedGenerationIdentity.sourceFingerprint || '',
+            sourceArtifactId: _primarySourceArtifactId || _resolvedGenerationIdentity.sourceArtifactId || null,
+            grade: effectiveGrade || _resolvedGenerationIdentity.grade || null,
+            language: effectiveLanguage || _resolvedGenerationIdentity.language || null,
+            contextFingerprint: _generationContextFingerprint || _resolvedGenerationIdentity.contextFingerprint || '',
+            contextInputsFingerprint: _generationContextInputsFingerprint
+                || _resolvedGenerationIdentity.contextInputsFingerprint || '',
+            generationConfigFingerprint: _resolvedGenerationConfigFingerprint
+                || _resolvedGenerationIdentity.generationConfigFingerprint || '',
+        });
+    }
     // ── Artifact provenance ──────────────────────────────────────────────
     // ONE builder for every resource type. This used to be a literal declared
     // inside the 'simplified' branch plus a second, thinner literal for the
@@ -2338,8 +2636,38 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
         useEmojis: !!useEmojis,
         customInstructions: effCustomInstructions || "",
         imageStyle: (universalImageStyle || "").trim(),
-        backend: usesLocalTextBackend ? 'local' : 'cloud',
+        backend: _generationProviderProfile.backend || (usesLocalTextBackend ? 'local' : 'cloud'),
+        provider: _generationProviderProfile.provider || '',
+        model: _generationProviderProfile.model || '',
+        fallbackModel: _generationProviderProfile.fallbackModel || '',
+        imageProvider: _generationProviderProfile.imageProvider || 'auto',
+        imageModel: _generationProviderProfile.imageModel || '',
+        visionModel: _generationProviderProfile.visionModel || '',
         isolatedContext: _isolatedContext,
+        // Batch planners resolve novelty and grade/language variants before
+        // entering the dispatcher. Preserve that stable identity on the
+        // artifact so a later Full Pack or Blueprint can reuse the exact
+        // output instead of relying on a type-only history check.
+        generationIdentity: _resolvedGenerationIdentity
+            && typeof _resolvedGenerationIdentity === 'object'
+            ? Object.assign({}, _resolvedGenerationIdentity)
+            : null,
+        sourceFingerprint: _generationSourceFingerprint || '',
+        sourceArtifactId: _primarySourceArtifactId,
+        contextFingerprint: _generationContextFingerprint || '',
+        contextFingerprintDerived: !!_generationContextFingerprint,
+        contextInputsFingerprint: _generationContextInputsFingerprint || '',
+        generationConfig: _resolvedGenerationConfig,
+        generationConfigFingerprint: _resolvedGenerationConfigFingerprint || '',
+        reviewedGenerationConfigDrift: _reviewedGenerationConfigDrift,
+        reviewedGenerationIdentityKey: _reviewedGenerationConfigDrift
+            ? _reviewedGenerationIdentityKey || null : null,
+        variantKey: _resolvedGenerationVariantKey || '',
+        explicitVariantKey: _resolvedExplicitVariantKey || null,
+        variantKeyDerived: _resolvedVariantKeyDerived,
+        translationMode: translationMode || 'auto',
+        currentUiLanguage: currentUiLanguage || 'English',
+        translationTarget: _xlate && _xlate.target || null,
     }, (configOverride.rosterGroupId ? {
         rosterGroupId: configOverride.rosterGroupId,
         rosterGroupName: configOverride.rosterGroupName,
@@ -2385,8 +2713,14 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
         // return undefined after landing real resources.
         let _lastLangItem = null;
         try {
-            const langsToGen = ['English', ...selectedLanguages];
-            const uniqueLangs = [...new Set(langsToGen)];
+            const langsToGen = ['English', ...(Array.isArray(selectedLanguages) ? selectedLanguages : [])];
+            const uniqueLangs = _generationMatrixModule
+                && typeof _generationMatrixModule.normalizeLanguageValues === 'function'
+                ? _generationMatrixModule.normalizeLanguageValues(langsToGen, 'English')
+                : langsToGen
+                    .map(value => String(value == null ? '' : value).replace(/\s+/g, ' ').trim())
+                    .filter(Boolean)
+                    .filter((value, index, all) => all.findIndex(candidate => candidate.toLowerCase() === value.toLowerCase()) === index);
             for (let i = 0; i < uniqueLangs.length; i++) {
                 const lang = uniqueLangs[i];
                 const isLastLang = i === uniqueLangs.length - 1;

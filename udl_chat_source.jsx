@@ -2,6 +2,70 @@
 // (args, deps) => pattern. Body is byte-identical to original; closure-captured
 // state and helpers are passed via the deps object and destructured at top.
 
+const _normalizeBlueprintSourceText = (value) => String(value || '').trim().replace(/\s+/g, ' ');
+
+// Pick one source deliberately whenever the live editor/request and the most
+// recent analyzed original coexist. A changed editor is authoritative: using
+// an older analysis in that case silently generates against text the teacher
+// is no longer looking at. Matching text may still use the analysis as the
+// canonical workspace anchor. Only fingerprints/IDs enter sourcePolicy; the
+// source itself remains in its existing editor/history location.
+const resolveBlueprintSourceChoice = (options = {}) => {
+  const inputTextValue = String(options.inputText || '');
+  const requestedValue = String(options.requestedSourceText || '');
+  const topicValue = String(options.sourceTopic || '');
+  const currentText = inputTextValue.trim() ? inputTextValue
+    : (requestedValue.trim() ? requestedValue : topicValue);
+  const currentOrigin = inputTextValue.trim() ? 'current-editor'
+    : (String(options.sourceOrigin || '').trim() || (requestedValue.trim() ? 'current-request' : (topicValue.trim() ? 'current-topic' : 'none')));
+  const latestAnalysis = options.latestAnalysis && typeof options.latestAnalysis === 'object'
+    ? options.latestAnalysis : null;
+  const analysisText = String((latestAnalysis && latestAnalysis.data && latestAnalysis.data.originalText)
+    || options.latestAnalysisText || '');
+  const normalizedCurrent = _normalizeBlueprintSourceText(currentText);
+  const normalizedAnalysis = _normalizeBlueprintSourceText(analysisText);
+  const divergentFromLatestAnalysis = !!(normalizedCurrent && normalizedAnalysis && normalizedCurrent !== normalizedAnalysis);
+  const reviewedSelection = options.sourcePolicy && options.sourcePolicy.selectedSource
+    ? String(options.sourcePolicy.selectedSource) : '';
+  let selectedSource = 'none';
+  let text = '';
+  if (normalizedCurrent && divergentFromLatestAnalysis) {
+    selectedSource = currentOrigin;
+    text = currentText;
+  } else if (normalizedAnalysis) {
+    selectedSource = 'latest-analysis';
+    text = analysisText;
+  } else if (normalizedCurrent) {
+    selectedSource = currentOrigin;
+    text = currentText;
+  }
+  const matrix = typeof window !== 'undefined' && window.AlloModules
+    ? window.AlloModules.GenerationMatrix : null;
+  const fingerprint = (value) => {
+    if (!value || !matrix || typeof matrix.fingerprintSourceText !== 'function') return '';
+    try { return matrix.fingerprintSourceText(value); } catch (_) { return ''; }
+  };
+  return {
+    text,
+    metadata: {
+      kind: 'workspace-source',
+      selectedSource,
+      reviewedSelection: reviewedSelection || null,
+      sourceChoiceRequired: false,
+      divergentFromLatestAnalysis,
+      latestAnalysisArtifactId: latestAnalysis && latestAnalysis.id ? String(latestAnalysis.id) : null,
+      currentSourceFingerprint: fingerprint(currentText),
+      latestAnalysisSourceFingerprint: fingerprint(analysisText),
+      selectedSourceFingerprint: fingerprint(text),
+      selectionReason: divergentFromLatestAnalysis
+        ? 'Current source differs from the latest analyzed original; current source selected.'
+        : (selectedSource === 'latest-analysis'
+          ? 'Current source matches the latest analyzed original; analyzed source selected as the workspace anchor.'
+          : (selectedSource === 'none' ? 'No source is currently available.' : 'Current source selected.')),
+    }
+  };
+};
+
 const handleSendUDLMessage = async (manualText = null, deps) => {
   // Phase E hotfix: comprehensive deps list (was missing isShowMeMode, isBotVisible,
   // history, inputText, standardsInput, targetStandards, dokLevel, sourceLength,
@@ -12,13 +76,22 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
     activeBlueprint, activeView, alloBotRef, currentUiLanguage, guidedFlowState,
     isAutoFillMode, isShowMeMode, isBotVisible, sourceTopic, udlMessages, udlInput,
     leveledTextLanguage, persistedLessonDNA, history, inputText, standardsInput,
-    targetStandards, dokLevel, sourceLength, sourceTone, quizMcqCount,
-    differentiationRange, outlineType, visualStyle, vocabularyType, frameType,
+    targetStandards, dokLevel, useEmojis, imageGenerationStyle, imageAspectRatio, universalImageStyle,
+    sourceLength, sourceTone, quizMcqCount,
+    differentiationRange, differentiationTypes, differentiationCustomGrades,
+    translationMode, translationTargetChoices, resolveTranslationPolicy,
+    outlineType, visualStyle, visualCustomStyle, visualLayoutMode, vocabularyType, frameType,
+    quizMode, noteTakingTemplateType, anchorChartType, mcqVisualMode,
+    isAdventureStoryMode, isSocialStoryMode, isImmersiveMode, adventureChanceMode,
+    adventureConsistentCharacters, adventureFreeResponseEnabled, adventureLanguageMode, adventureInputMode,
     pdfFixResult, generatedContent, studentInterests, gradeLevel, gradeLevelInput,
     selectedLanguages, leveledTextCustomInstructions, quizCustomInstructions,
     glossaryCustomInstructions, frameCustomInstructions, adventureCustomInstructions,
     brainstormCustomInstructions, faqCustomInstructions, outlineCustomInstructions,
     visualCustomInstructions, lessonCustomAdditions, timelineTopic, fillInTheBlank,
+    conceptSortCustomInstructions, dbqCustomInstructions, noteTakingCustomInstructions,
+    anchorChartCustomInstructions, personaCustomInstructions,
+    includeBibliography, aiProviderProfile,
     resourceCount, fullPackTargetGroup, expandedTools, dokOptions, audioBank, voiceMap,
     // Latent-bug fix from auditor: STATE_QUERY intent ("what's my voice speed?")
     // references these as bare refs in the settings-summary builder.
@@ -99,17 +172,168 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
               standardsContext: resolvedStandardsContext,
               standardsFingerprint: '',
           });
+      const requestedLanguage = owns('language') ? overrides.language : leveledTextLanguage;
+      const frozenSelectedLanguages = owns('selectedLanguages')
+          ? (Array.isArray(overrides.selectedLanguages) ? overrides.selectedLanguages.slice() : [])
+          : (Array.isArray(selectedLanguages) ? selectedLanguages.slice() : []);
+      let frozenTranslationChoices = owns('translationTargetChoices')
+          ? (Array.isArray(overrides.translationTargetChoices) ? overrides.translationTargetChoices.slice() : [])
+          : [];
+      if (!frozenTranslationChoices.length && typeof translationTargetChoices === 'function') {
+          try { frozenTranslationChoices = translationTargetChoices(requestedLanguage, currentUiLanguage, frozenSelectedLanguages) || []; } catch (_) {}
+      }
+      if (!Array.isArray(frozenTranslationChoices) || !frozenTranslationChoices.length) {
+          frozenTranslationChoices = [requestedLanguage, currentUiLanguage].concat(frozenSelectedLanguages)
+              .map(value => String(value || '').trim()).filter((value, index, all) => value && all.indexOf(value) === index);
+      }
+      let resolvedTranslationTarget = owns('resolvedTranslationTarget') ? overrides.resolvedTranslationTarget : undefined;
+      if (resolvedTranslationTarget === undefined && typeof resolveTranslationPolicy === 'function') {
+          try {
+              const policy = resolveTranslationPolicy(
+                  owns('translationMode') ? overrides.translationMode : translationMode,
+                  requestedLanguage,
+                  currentUiLanguage,
+                  frozenTranslationChoices
+              );
+              resolvedTranslationTarget = policy && policy.enabled ? policy.target : null;
+          } catch (_) {}
+      }
+      const frozenToolOverrides = {
+          simplified: { customInstructions: String(leveledTextCustomInstructions || '') },
+          quiz: { customInstructions: String(quizCustomInstructions || '') },
+          glossary: { customInstructions: String(glossaryCustomInstructions || '') },
+          'sentence-frames': { customInstructions: String(frameCustomInstructions || '') },
+          adventure: { customInstructions: String(adventureCustomInstructions || '') },
+          brainstorm: { customInstructions: String(brainstormCustomInstructions || '') },
+          faq: { customInstructions: String(faqCustomInstructions || '') },
+          outline: { customInstructions: String(outlineCustomInstructions || '') },
+          image: { customInstructions: String(visualCustomInstructions || '') },
+          'lesson-plan': { customInstructions: String(lessonCustomAdditions || '') },
+          timeline: { customInstructions: String(timelineTopic || '') },
+          'concept-sort': { customInstructions: String(conceptSortCustomInstructions || '') },
+          dbq: { customInstructions: String(dbqCustomInstructions || '') },
+          'note-taking': { customInstructions: String(noteTakingCustomInstructions || '') },
+          'anchor-chart': { customInstructions: String(anchorChartCustomInstructions || '') },
+          persona: { customInstructions: String(personaCustomInstructions || '') },
+      };
+      Object.keys(frozenToolOverrides).forEach((type) => {
+          const customInstructions = frozenToolOverrides[type].customInstructions.trim();
+          if (!customInstructions) delete frozenToolOverrides[type];
+          else frozenToolOverrides[type].generationContext = { customInstructions };
+      });
+      const frozenGenerationOptions = {
+          outlineType, visualStyle, visualCustomStyle, visualLayoutMode,
+          quizMode, quizMcqCount, noteTakingTemplateType, anchorChartType,
+          frameType, fillInTheBlank, vocabularyType, mcqVisualMode,
+          isAdventureStoryMode, isSocialStoryMode, isImmersiveMode,
+          adventureChanceMode, adventureConsistentCharacters,
+          adventureFreeResponseEnabled, adventureLanguageMode, adventureInputMode,
+          includeSourceCitations, includeBibliography,
+          universalImageStyle: owns('universalImageStyle') ? overrides.universalImageStyle
+              : (universalImageStyle !== undefined && universalImageStyle !== null ? universalImageStyle : imageGenerationStyle),
+      };
+      Object.keys(frozenGenerationOptions).forEach((key) => {
+          if (frozenGenerationOptions[key] === undefined) delete frozenGenerationOptions[key];
+      });
+      const frozenProvider = aiProviderProfile && typeof aiProviderProfile === 'object' ? aiProviderProfile : {};
       return {
           gradeLevel: requestedGrade,
-          language: owns('language') ? overrides.language : leveledTextLanguage,
+          language: requestedLanguage,
+          primaryLanguage: requestedLanguage,
+          selectedLanguages: frozenSelectedLanguages,
+          translationMode: owns('translationMode') ? overrides.translationMode : translationMode,
+          currentUiLanguage: owns('currentUiLanguage') ? overrides.currentUiLanguage : currentUiLanguage,
+          translationTargetChoices: frozenTranslationChoices,
+          resolvedTranslationTarget,
+          differentiationRange: owns('differentiationRange') ? overrides.differentiationRange : differentiationRange,
+          differentiationTypes: owns('differentiationTypes')
+              ? (Array.isArray(overrides.differentiationTypes) ? overrides.differentiationTypes.slice() : [])
+              : (Array.isArray(differentiationTypes) ? differentiationTypes.slice() : []),
+          differentiationCustomGrades: owns('differentiationCustomGrades')
+              ? (Array.isArray(overrides.differentiationCustomGrades) ? overrides.differentiationCustomGrades.slice() : [])
+              : (Array.isArray(differentiationCustomGrades) ? differentiationCustomGrades.slice() : []),
+          dokLevel: owns('dokLevel') ? overrides.dokLevel : dokLevel,
+          useEmojis: owns('useEmojis') ? overrides.useEmojis : useEmojis,
+          textFormat: owns('textFormat') ? overrides.textFormat : textFormat,
+          imageGenerationStyle: owns('imageGenerationStyle') ? overrides.imageGenerationStyle
+              : (owns('universalImageStyle') ? overrides.universalImageStyle
+                  : (imageGenerationStyle !== undefined && imageGenerationStyle !== null ? imageGenerationStyle : universalImageStyle)),
+          universalImageStyle: owns('universalImageStyle') ? overrides.universalImageStyle
+              : (owns('imageGenerationStyle') ? overrides.imageGenerationStyle
+                  : (universalImageStyle !== undefined && universalImageStyle !== null ? universalImageStyle : imageGenerationStyle)),
+          imageAspectRatio: owns('imageAspectRatio') ? overrides.imageAspectRatio : imageAspectRatio,
+          toolOverrides: owns('toolOverrides') ? overrides.toolOverrides : frozenToolOverrides,
+          generationOptions: owns('generationOptions') ? overrides.generationOptions : frozenGenerationOptions,
+          generationContext: owns('generationContext') ? overrides.generationContext : {},
+          backend: owns('backend') ? overrides.backend : frozenProvider.backend,
+          provider: owns('provider') ? overrides.provider : (frozenProvider.provider || frozenProvider.backend),
+          model: owns('model') ? overrides.model : frozenProvider.model,
+          fallbackModel: owns('fallbackModel') ? overrides.fallbackModel : frozenProvider.fallbackModel,
+          imageProvider: owns('imageProvider') ? overrides.imageProvider : frozenProvider.imageProvider,
+          imageModel: owns('imageModel') ? overrides.imageModel : frozenProvider.imageModel,
+          visionModel: owns('visionModel') ? overrides.visionModel : frozenProvider.visionModel,
           standards: requestedStandards,
           standardsContext: resolvedStandardsContext,
           instructionalContext,
           interests: owns('interests') ? overrides.interests : studentInterests,
+          studentInterests: owns('studentInterests') ? overrides.studentInterests
+              : (Array.isArray(studentInterests) ? studentInterests.slice() : studentInterests),
       };
   };
   const _createAgentCoreLegacyDraft = async (request) => {
-      const normalizedRequest = Object.assign({}, request || {}, _agentCoreContext(request || {}));
+      // Planner and executor must fingerprint the same deliberate source
+      // choice. A changed current request wins over an older analysis; equal
+      // text can use the analysis as its stable workspace anchor.
+      const latestAnalysis = (Array.isArray(history) ? history : []).slice().reverse()
+          .find((artifact) => artifact && artifact.type === 'analysis' && artifact.data && artifact.data.originalText);
+      const sourceChoice = resolveBlueprintSourceChoice({
+          requestedSourceText: request && request.sourceText,
+          sourceOrigin: request && request.sourceOrigin,
+          latestAnalysis,
+          sourcePolicy: request && request.sourcePolicy,
+      });
+      const rawRequest = Object.assign({}, request || {}, {
+          sourceText: sourceChoice.text,
+          sourcePolicy: Object.assign({}, (request && request.sourcePolicy) || {}, sourceChoice.metadata),
+      });
+      const normalizedRequest = Object.assign({}, rawRequest, _agentCoreContext(rawRequest));
+      if (!Array.isArray(normalizedRequest.existingArtifacts)) {
+          const matrixModule = window.AlloModules && window.AlloModules.GenerationMatrix;
+          normalizedRequest.existingArtifacts = (Array.isArray(history) ? history : []).map((artifact) => ({
+              id: artifact && artifact.id,
+              type: artifact && artifact.type,
+              title: artifact && artifact.title,
+              directive: artifact && (artifact.directive || artifact.customInstructions || (artifact.config && artifact.config.customInstructions)),
+              variantKey: artifact && (artifact.variantKey || (artifact.config && artifact.config.variantKey)),
+              explicitVariantKey: artifact && (artifact.explicitVariantKey || (artifact.config && artifact.config.explicitVariantKey)),
+              variantKeyDerived: !!(artifact && (artifact.variantKeyDerived === true || (artifact.config && artifact.config.variantKeyDerived === true))),
+              activityMode: artifact && (artifact.activityMode || (artifact.config && artifact.config.activityMode)),
+              activityConfig: artifact && artifact.activityConfig,
+              gradeLevel: artifact && (artifact.gradeLevel || artifact.grade || (artifact.config && (artifact.config.gradeLevel || artifact.config.grade))),
+              language: artifact && (artifact.language || (artifact.config && (artifact.config.language || artifact.config.leveledTextLanguage))),
+              contextFingerprint: artifact && (artifact.contextFingerprint || (artifact.config && artifact.config.contextFingerprint)),
+              contextFingerprintDerived: !!(artifact && (artifact.contextFingerprintDerived === true || (artifact.config && artifact.config.contextFingerprintDerived === true))),
+              contextInputsFingerprint: artifact && (artifact.contextInputsFingerprint || (artifact.config && artifact.config.contextInputsFingerprint)),
+              generationConfig: artifact && (artifact.generationConfig || (artifact.config && artifact.config.generationConfig)),
+              generationConfigFingerprint: artifact && (artifact.generationConfigFingerprint || (artifact.config && artifact.config.generationConfigFingerprint)),
+              standardsFingerprint: artifact && (artifact.standardsFingerprint || (artifact.config && artifact.config.standardsFingerprint)),
+              translationMode: artifact && (artifact.translationMode || (artifact.config && artifact.config.translationMode)),
+              currentUiLanguage: artifact && (artifact.currentUiLanguage || (artifact.config && artifact.config.currentUiLanguage)),
+              translationTarget: artifact && (artifact.translationTarget || artifact.translationTargetLanguage || artifact.attachedTranslationTarget
+                  || (artifact.config && (artifact.config.translationTarget || artifact.config.translationTargetLanguage || artifact.config.attachedTranslationTarget))),
+              groupId: artifact && (artifact.groupId || artifact.rosterGroupId || (artifact.config && (artifact.config.groupId || artifact.config.rosterGroupId))),
+              sourceFingerprint: artifact && (artifact.sourceFingerprint
+                  || (artifact.config && artifact.config.sourceFingerprint)
+                  || (artifact.generationIdentity && artifact.generationIdentity.sourceFingerprint)
+                  || (artifact.instructionalText && artifact.instructionalText.complexity && artifact.instructionalText.complexity.contentFingerprint)
+                  || (matrixModule && typeof matrixModule.fingerprintSourceText === 'function'
+                      ? matrixModule.fingerprintSourceText(artifact.data && artifact.data.originalText)
+                      : '')),
+              sourceArtifactId: artifact && (artifact.sourceArtifactId || artifact.primaryArtifactId
+                  || (artifact.config && (artifact.config.sourceArtifactId || artifact.config.primaryArtifactId))),
+              generationIdentity: artifact && (artifact.generationIdentity || (artifact.config && artifact.config.generationIdentity)),
+          })).filter((artifact) => artifact.id && artifact.type);
+      }
       const result = await _getAgentCoreUIAdapter().createDraft(normalizedRequest);
       return result.legacyConfig;
   };
@@ -409,6 +633,7 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                          try {
                              const config = await _createAgentCoreLegacyDraft({
                                  sourceText: inputText || sourceTopic,
+                                 sourceOrigin: String(inputText || '').trim() ? 'current-editor' : 'current-topic',
                                  gradeLevel,
                                  standards: standardsInput,
                                  language: leveledTextLanguage,
@@ -478,6 +703,7 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                      try {
                          const config = await _createAgentCoreLegacyDraft({
                              sourceText: inputText || sourceTopic,
+                             sourceOrigin: String(inputText || '').trim() ? 'current-editor' : 'current-topic',
                              gradeLevel,
                              standards: standardsInput,
                              language: leveledTextLanguage,
@@ -1416,7 +1642,7 @@ Return ONLY JSON.`;
 };
 
 window.AlloModules = window.AlloModules || {};
-window.AlloModules.UdlChat = { planAndSendUdlMessage, handleSendUDLMessage };
+window.AlloModules.UdlChat = { planAndSendUdlMessage, handleSendUDLMessage, resolveBlueprintSourceChoice };
 
 
 // CommandWorkflow bridge: Agent Core owns the versioned draft/review

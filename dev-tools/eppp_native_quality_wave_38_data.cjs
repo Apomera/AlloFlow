@@ -1,0 +1,301 @@
+'use strict';
+
+const reviewedAt = '2026-08-20';
+const reviewWave = 'eppp-native-quality-wave-38';
+const baselineMetrics = Object.freeze({
+  distractor: { totalItems: 1500, warningOnly: true, forbiddenAggregateChoices: 0, uniqueKeyStemLexicalLeakageCandidates: 38, asymmetricExtremeDistractorCandidates: 43, advancedDirectRecallCandidates: 1, semanticConceptDuplicatePairs: 52, semanticConceptDuplicateClusters: 34, editorialAnchorsWithActiveWarnings: 0, editorialAnchorsWithNoCurrentWarning: 10, priorityDocketItems: 20 },
+  feedback: { totalItems: 1500, totalIncorrectOptions: 4500, itemsWithWarnings: 455, incorrectOptionsWithWarnings: 1265, insufficientDetailOptions: 587, genericTemplateOptions: 624, choiceRestatementOptions: 145, fullKeyEchoOptions: 64, priorityDocketItems: 100 },
+});
+
+const revisions = [
+  {
+    id: 'eppp-b002-assessment-2', expectedAnswerIndex: 2, expectedDifficulty: 'foundation', targetDifficulty: 'advanced',
+    expectedPrompt: 'A new measure of depressive symptoms shows only small associations with measures of mathematically unrelated abilities. Holding other evidence constant, this pattern most directly supports:',
+    prompt: 'A clinic validates a depression scale by showing its scores relate weakly to mathematical ability after accounting for general distress. What measurement inference does this pattern support?',
+    choices: ['Predictive validity because unrelated abilities support forecasting future symptoms', 'Test-retest reliability as temporal stability rather than a validity finding', 'Discriminant validity because weak links with unrelated constructs support distinctness', 'Internal consistency because items correlate within the scale, a reliability rather than validity finding'],
+    rationale: 'Weak associations with theoretically unrelated abilities support discriminant validity: the scale appears distinct from constructs it should not closely measure. This evidence complements, rather than replaces, convergent and criterion evidence.',
+    feedback: {
+      0: 'Predictive validity concerns whether scores forecast a later criterion. The vignette instead describes weak relations with an unrelated construct, which informs distinctness of the depression measure.',
+      1: 'Test-retest reliability concerns score stability across occasions. The relevant comparison is between the scale and an unrelated ability, so the inference concerns validity rather than temporal reliability.',
+      3: 'Internal consistency concerns relationships among items within the measure. A weak association with mathematical ability is an external construct comparison, not an item-homogeneity estimate.',
+    }, cognitiveProcess: 'analysis', learningObjectiveId: 'assessment-analyze-discriminant-validity-from-unrelated-constructs', distractorDesign: ['predictive-validity-versus-discriminant', 'temporal-reliability-versus-validity', 'internal-consistency-versus-external-validity'],
+  },
+  {
+    id: 'eppp-b003-assessment-1', expectedAnswerIndex: 0, expectedDifficulty: 'foundation', targetDifficulty: 'intermediate',
+    expectedPrompt: 'A client scores higher when a cognitive test is repeated because the client remembers item types and has learned useful test-taking strategies. This improvement is best described as:',
+    prompt: 'A client improves on a second cognitive screening after remembering item formats and strategies, but no independent functional change is observed. How should an evaluator interpret the score difference?',
+    choices: ['A practice effect that may inflate retest performance and complicate change interpretation', 'Regression dilution caused by a shift toward a more extreme score rather than genuine change', 'Criterion contamination because an external standard changed between administrations', 'Differential item functioning because item meaning differs across demographic groups'],
+    rationale: 'Familiarity with item formats and test-taking strategies can raise a retest score without a corresponding change in the measured ability. The evaluator should consider practice effects before inferring genuine improvement.',
+    feedback: {
+      1: 'Regression toward the mean describes movement toward an average after an unusually high or low first score. Remembering formats and strategies points to practice rather than sampling fluctuation.',
+      2: 'Criterion contamination occurs when an external criterion is influenced by factors unrelated to the target construct. The described score increase occurs within the test through familiarity.',
+      3: 'Differential item functioning concerns item performance differences across groups after matching on the construct. The same client improving after exposure is a practice issue.',
+    }, cognitiveProcess: 'analysis', learningObjectiveId: 'assessment-analyze-practice-effects-in-repeated-cognitive-testing', distractorDesign: ['regression-to-mean-versus-practice', 'criterion-contamination-versus-retest-change', 'dif-versus-practice-effect'],
+  },
+  {
+    id: 'eppp-b004-assessment-1', expectedAnswerIndex: 0, expectedDifficulty: 'foundation', targetDifficulty: 'advanced',
+    expectedPrompt: 'For a multi-item scale, coefficient alpha is used primarily as an estimate of:',
+    prompt: 'A 12-item symptom scale has alpha .92, yet scores correlate .50 across a one-week retest. What conclusion is most defensible?',
+    choices: ['The scale shows strong internal consistency but limited evidence of temporal stability', 'The high internal consistency of the scale establishes stable scores across the week', 'The retest coefficient demonstrates interrater agreement and internal consistency for the scale', 'The alpha coefficient proves criterion validity for clinical diagnosis'],
+    rationale: 'A high alpha indicates that items covary at one administration, whereas the lower retest correlation limits evidence for temporal stability. Internal consistency does not establish invariance across time or diagnostic validity.',
+    feedback: {
+      1: 'Internal consistency and temporal stability are different reliability questions. Items can be homogeneous at one occasion while scores still fluctuate across a week.',
+      2: 'Interrater agreement requires ratings from multiple evaluators. A retest correlation concerns repeated scores, and neither coefficient by itself demonstrates agreement among clinicians.',
+      3: 'Criterion validity requires an appropriate external outcome or standard. Alpha describes item relationships and cannot prove that a scale supports a clinical diagnosis.',
+    }, cognitiveProcess: 'analysis', learningObjectiveId: 'assessment-analyze-alpha-versus-temporal-stability', distractorDesign: ['internal-consistency-equals-stability', 'retest-versus-interrater-reliability', 'alpha-versus-criterion-validity'],
+  },
+  {
+    id: 'eppp-b001-biological-1', expectedAnswerIndex: 0, expectedDifficulty: 'foundation', targetDifficulty: 'advanced',
+    expectedPrompt: 'Damage to the ventromedial prefrontal cortex is most likely to produce which pattern?',
+    prompt: 'After a ventromedial prefrontal injury, a client remembers facts and recognizes faces but repeatedly chooses immediate rewards despite later losses and violates interpersonal norms. Which deficit best integrates the pattern?',
+    choices: ['Impaired value-based decisions and regulation of socially appropriate behavior', 'Inability to form new explicit memories despite preserved older memories', 'Loss of the left visual field from disrupted primary visual processing', 'Loss of spoken-language comprehension despite fluent speech production'],
+    rationale: 'Ventromedial prefrontal systems help represent reward value, integrate future consequences, and regulate socially informed decisions. Preserved memory, vision, and language make the alternative localization patterns less consistent.',
+    feedback: {
+      1: 'New explicit-memory formation is most associated with medial temporal structures. The client remembers facts, while the central difficulty concerns valuation and socially guided choice.',
+      2: 'A left visual-field loss would implicate posterior visual pathways and would not explain risky reward choices or violations of interpersonal norms.',
+      3: 'Fluent speech with poor comprehension suggests a language-network problem. It does not account for intact communication alongside impaired value-based and social decisions.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'biological-apply-ventromedial-prefrontal-function-to-choice', distractorDesign: ['memory-localization-versus-vmpfc', 'visual-cortex-versus-vmpfc', 'language-network-versus-vmpfc'],
+  },
+  {
+    id: 'eppp-b002-biological-1', expectedAnswerIndex: 0, expectedDifficulty: 'foundation', targetDifficulty: 'intermediate',
+    expectedPrompt: 'An adult has intact visual acuity and can identify common objects but cannot recognize familiar people by their faces. Which term best describes this selective impairment?',
+    prompt: 'A patient identifies objects and describes a familiar person\'s facial features but cannot identify the person by face, despite intact acuity. Which deficit is most likely?',
+    choices: ['Prosopagnosia involving impaired familiar-face recognition', 'Optic ataxia involving visually guided reaching', 'Expressive aphasia involving impaired speech production', 'Ideomotor apraxia involving difficulty sequencing learned gestures'],
+    rationale: 'Prosopagnosia is a selective difficulty recognizing familiar faces despite adequate basic vision and often preserved object recognition. The deficit concerns identity processing, not reaching, speech output, or gesture sequencing.',
+    feedback: {
+      1: 'Optic ataxia involves inaccurate visually guided reaching, not a selective inability to identify familiar faces. The vignette describes recognition rather than motor guidance.',
+      2: 'Expressive aphasia affects producing language. The patient can describe facial features, so the key difficulty is identifying a person from the face.',
+      3: 'Ideomotor apraxia concerns planning learned gestures despite adequate strength. It does not explain a face-identity deficit with intact object recognition.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'biological-apply-prosopagnosia-to-face-identity-dissociation', distractorDesign: ['optic-ataxia-versus-face-recognition', 'aphasia-versus-prosopagnosia', 'apraxia-versus-face-recognition'],
+  },
+  {
+    id: 'eppp-b004-biological-1', expectedAnswerIndex: 0, expectedDifficulty: 'foundation', targetDifficulty: 'advanced',
+    expectedPrompt: 'Which function is most closely associated with the insular cortex, particularly its role in representing the body’s internal state?',
+    prompt: 'After a lesion, a patient accurately reports external sounds and colors but has poor awareness of heartbeat, nausea, and internal arousal. Which function is most directly implicated?',
+    choices: ['Interoceptive awareness of internal bodily states', 'Primary visual acuity for detecting fine spatial detail rather than internal awareness', 'Spinal motor reflexes coordinating rapid withdrawal despite limited internal awareness', 'Initial sound transduction from vibration to neural signals'],
+    rationale: 'Interoception involves representing internal bodily signals such as heartbeat, visceral discomfort, and arousal. The insula integrates these signals into subjective awareness, distinct from primary sensory transduction or spinal reflexes.',
+    feedback: {
+      1: 'Primary visual acuity concerns retinal and early visual processing. Preserved color and sound reports do not explain reduced awareness of visceral states.',
+      2: 'Spinal withdrawal reflexes are organized through peripheral and spinal circuits. They can operate without the insular integration needed for conscious bodily awareness.',
+      3: 'Sound transduction begins in the cochlea and auditory pathway. The vignette preserves external sensation while highlighting difficulty representing internal bodily signals.',
+    }, cognitiveProcess: 'analysis', learningObjectiveId: 'biological-analyze-insula-and-interoceptive-awareness', distractorDesign: ['visual-acuity-versus-interoception', 'spinal-reflex-versus-insula', 'auditory-transduction-versus-interoception'],
+  },
+  {
+    id: 'eppp-b001-cognitive-1', expectedAnswerIndex: 1, expectedDifficulty: 'foundation', targetDifficulty: 'intermediate',
+    expectedPrompt: 'A child already enjoys drawing. After receiving expected tangible prizes contingent on drawing, the child draws less voluntarily once the prizes stop. This pattern best illustrates:',
+    prompt: 'A child who draws for enjoyment receives predictable prizes for drawing; after prizes stop, voluntary drawing falls below its prior level. Which interpretation best fits?',
+    choices: ['Spontaneous recovery after extinction of a previously reinforced response', 'The overjustification effect, in which external rewards reduce intrinsic motivation', 'Negative reinforcement of avoidance through removal of an aversive demand', 'Stimulus generalization across settings after a learned response'],
+    rationale: 'The overjustification effect occurs when an external reward shifts a previously enjoyable activity toward an instrumentally motivated activity, reducing intrinsic motivation after the reward is removed.',
+    feedback: {
+      0: 'Spontaneous recovery is the return of an extinguished response after a delay. The pattern instead concerns reduced voluntary interest after external rewards were introduced and withdrawn.',
+      2: 'Negative reinforcement strengthens behavior by removing an aversive condition. The vignette describes tangible rewards added to an enjoyable activity, not escape from a demand.',
+      3: 'Stimulus generalization extends a learned response across similar cues or settings. It does not explain a decline in intrinsic interest after rewards end.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'cognitive-apply-overjustification-to-extrinsic-reward-change', distractorDesign: ['spontaneous-recovery-versus-overjustification', 'negative-reinforcement-versus-reward-undermining', 'generalization-versus-intrinsic-motivation'],
+  },
+  {
+    id: 'eppp-b005-cognitive-1', expectedAnswerIndex: 1, expectedDifficulty: 'foundation', targetDifficulty: 'intermediate',
+    expectedPrompt: 'Self-determination theory identifies which three basic psychological needs as central to motivation and well-being?',
+    prompt: 'A counseling program lets clients choose personally meaningful goals, build skills through feedback, and connect with supportive peers. Which needs does this design target?',
+    choices: ['Power, status, and certainty', 'Autonomy, competence, and relatedness', 'Novelty, arousal, and dominance', 'Approval, wealth, and competition'],
+    rationale: 'Self-determination theory identifies autonomy, competence, and relatedness as basic psychological needs. Supporting choice, effective skill development, and connected relationships can foster internalized motivation and well-being.',
+    feedback: {
+      0: 'These motives may influence social behavior, but they are not the three basic needs specified by self-determination theory. The program emphasizes agency, effectiveness, and connection.',
+      2: 'Some of these experiences can affect engagement, while dominance is a social motive. The counseling design instead maps onto choice, effectiveness, and connection.',
+      3: 'These incentives are external or social motivators rather than the theory’s basic needs. The intervention emphasizes internal agency, skill, and belonging.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'cognitive-apply-self-determination-needs-to-counseling-design', distractorDesign: ['status-motive-versus-self-determination', 'arousal-motive-versus-self-determination', 'external-incentives-versus-self-determination'],
+  },
+  {
+    id: 'eppp-b002-cognitive-1', expectedAnswerIndex: 1, expectedDifficulty: 'foundation', targetDifficulty: 'advanced',
+    expectedPrompt: 'Rats readily learned an association between a novel flavor and later illness, while learning a different cue-consequence pairing more readily when an audiovisual cue preceded shock. What did this pattern most directly demonstrate?',
+    prompt: 'In conditioning studies, a novel flavor readily predicts later illness, whereas an audiovisual cue readily predicts shock. What principle best explains the selective ease of learning?',
+    choices: ['Rapid extinction when an expected outcome is omitted after acquisition', 'Biological preparedness shapes which cue–outcome associations are learned readily', 'General cue salience determines which associations are learned readily, independent of the outcome', 'A temporal-contiguity requirement blocks delayed flavor–illness learning'],
+    rationale: 'Biological preparedness makes some cue–outcome pairings easier to acquire because they fit species-relevant survival systems. Taste–illness and audiovisual–shock learning illustrate different prepared associations.',
+    feedback: {
+      0: 'Extinction concerns declining responding when a learned outcome no longer follows the cue. The studies compare acquisition of different associations, not loss after omission.',
+      2: 'General salience cannot explain why cue effectiveness changes with the type of outcome. Preparedness predicts a cue–outcome interaction rather than one global salience rule.',
+      3: 'Delayed taste–illness learning is evidence that ordinary temporal contiguity is not required in the same way for every association. Biological relevance helps explain the selectivity.',
+    }, cognitiveProcess: 'analysis', learningObjectiveId: 'cognitive-analyze-biological-preparedness-in-conditioning', distractorDesign: ['extinction-versus-prepared-learning', 'general-salience-versus-preparedness', 'contiguity-versus-taste-aversion'],
+  },
+  {
+    id: 'eppp-b001-intervention-1', expectedAnswerIndex: 1, expectedDifficulty: 'foundation', targetDifficulty: 'intermediate',
+    expectedPrompt: 'Which instruction is most characteristic of stimulus-control treatment for chronic insomnia?',
+    prompt: 'A patient spends long periods awake in bed and naps in the afternoon. Which initial instruction best applies stimulus-control treatment for chronic insomnia?',
+    choices: ['Remain in bed while awake to strengthen tolerance of nighttime frustration', 'Use the bed primarily for sleep and leave it when unable to sleep', 'Vary the morning wake time according to the previous night’s sleep', 'Complete stimulating work in bed until sleepiness becomes overwhelming'],
+    rationale: 'Stimulus control rebuilds the bed–sleep association by reserving the bed for sleep and leaving it during prolonged wakefulness. A consistent wake schedule and reduced naps may complement this instruction.',
+    feedback: {
+      0: 'Remaining awake in bed pairs the bed with frustration and alertness, weakening the intended sleep cue. Stimulus control instead interrupts that association during wakefulness.',
+      2: 'Changing the wake time according to a poor night can reinforce irregular sleep patterns. Stimulus control uses a stable schedule while addressing the bed–wake association.',
+      3: 'Stimulating work in bed strengthens an alertness cue in the sleep environment. The treatment asks the patient to move wakeful activities elsewhere.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'intervention-apply-stimulus-control-to-insomnia-bed-association', distractorDesign: ['bed-frustration-versus-stimulus-control', 'variable-wake-time-versus-insomnia-treatment', 'stimulating-bed-use-versus-sleep-cue'],
+  },
+  {
+    id: 'eppp-b001-intervention-2', expectedAnswerIndex: 3, expectedDifficulty: 'foundation', targetDifficulty: 'advanced',
+    expectedPrompt: 'Two exposure plans are being compared for a severe but objectively safe dog fear. Which feature distinguishes traditional flooding from systematic desensitization?',
+    prompt: 'For a client with a severe but objectively safe dog fear, one plan begins with a prolonged encounter with the most feared dog; another uses graded steps and relaxation. What distinction is being tested?',
+    choices: ['Progress through a collaboratively ranked, graded fear hierarchy while using practiced relaxation at each step', 'Begin with a mildly distressing imagined dog and advance after mastery across sessions', 'Test catastrophic predictions during moderate, prolonged exposure while selecting intensity from a hierarchy', 'Start with prolonged exposure to a highly feared stimulus rather than a graded hierarchy'],
+    rationale: 'Traditional flooding presents a highly feared stimulus for an extended period, whereas systematic desensitization uses graduated exposure, often paired with relaxation. Both require safety and careful consent.',
+    feedback: {
+      0: 'A graded hierarchy with relaxation describes systematic desensitization. Flooding differs by beginning at a high fear level rather than building intensity gradually.',
+      1: 'Starting mildly and advancing after mastery is a graded exposure strategy. It is inconsistent with flooding, which confronts a highly feared stimulus early.',
+      2: 'Flexible hierarchy-based testing can fit contemporary exposure, but the defining contrast in the vignette is prolonged high-intensity exposure versus graduated exposure.',
+    }, cognitiveProcess: 'analysis', learningObjectiveId: 'intervention-analyze-flooding-versus-systematic-desensitization', distractorDesign: ['hierarchy-relaxation-versus-flooding', 'mild-start-versus-flooding', 'flexible-exposure-versus-flooding'],
+  },
+  {
+    id: 'eppp-b002-intervention-1', expectedAnswerIndex: 1, expectedDifficulty: 'foundation', targetDifficulty: 'intermediate',
+    expectedPrompt: 'A child rarely begins homework but frequently chooses video games. A parent makes access to gaming contingent on first completing homework. This arrangement most directly applies the:',
+    prompt: 'A child rarely starts homework but eagerly chooses video games. A parent makes gaming available after homework completion. Which behavioral principle is being used?',
+    choices: ['Matching law, a different reinforcement principle relating response rates to relative reinforcement rates', 'Premack principle using a high-probability activity to reinforce a low-probability behavior', 'Overcorrection requiring practice of a competing behavior after an error', 'Respondent extinction removing a conditioned stimulus from a reflexive response'],
+    rationale: 'The Premack principle uses access to a preferred, high-probability activity as a consequence for completing a less-preferred, low-probability activity. The contingency increases the target behavior through reinforcement.',
+    feedback: {
+      0: 'Matching law predicts how behavior is distributed across alternatives as a function of reinforcement rates. The parent is arranging one activity as a reinforcer for another.',
+      2: 'Overcorrection adds repeated practice or restitution after an inappropriate act. Homework is not being used as a corrective exercise after an error.',
+      3: 'Respondent extinction reduces a reflexive response by presenting a conditioned cue without its eliciting event. This contingency concerns operant behavior and a preferred activity.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'intervention-apply-premack-principle-to-homework-contingency', distractorDesign: ['matching-law-versus-premack', 'overcorrection-versus-reinforcement-contingency', 'respondent-extinction-versus-operant-contingency'],
+  },
+  {
+    id: 'eppp-b001-lifespan-1', expectedAnswerIndex: 1, expectedDifficulty: 'foundation', targetDifficulty: 'intermediate',
+    expectedPrompt: 'During instruction, a more knowledgeable person supplies temporary support and gradually withdraws it as the learner becomes independently competent. This process is called:',
+    prompt: 'A mentor models a complex task, gives prompts, and fades assistance as the learner performs independently. Which developmental process is illustrated?',
+    choices: ['Maturational unfolding in which the learner changes independently of guided participation', 'Scaffolding within a learner’s zone of proximal development', 'Response cost removing a preferred stimulus after an error', 'Overcorrection requiring repeated practice of an incompatible response'],
+    rationale: 'Scaffolding is temporary, contingent support that enables performance beyond the learner’s independent level and is gradually withdrawn as competence develops. It is consistent with socially mediated learning.',
+    feedback: {
+      0: 'Maturation refers to biologically guided change and does not capture contingent assistance from a more knowledgeable person. The vignette emphasizes guided participation.',
+      2: 'Response cost removes a valued stimulus after a behavior to reduce that behavior. The mentor is adding instructional support, not arranging a punishment contingency.',
+      3: 'Overcorrection is a behavioral consequence involving repeated practice or restitution. The described prompts and fading are instructional supports within development.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'lifespan-apply-scaffolding-to-guided-learning', distractorDesign: ['maturation-versus-scaffolding', 'response-cost-versus-instructional-support', 'overcorrection-versus-scaffolding'],
+  },
+  {
+    id: 'eppp-b001-lifespan-2', expectedAnswerIndex: 3, expectedDifficulty: 'foundation', targetDifficulty: 'advanced',
+    expectedPrompt: 'In Arnett’s original formulation, emerging adulthood was proposed primarily as a period spanning:',
+    prompt: 'A longitudinal sample of 19- to 25-year-olds reports identity exploration, instability, and feeling between adolescence and settled adulthood. Which developmental period is being operationalized?',
+    choices: ['Middle childhood extending into the first pubertal transition', 'Early adolescence ending with secondary-school completion', 'Established adulthood during transition toward midlife', 'Emerging adulthood, described as the late teens through the twenties'],
+    rationale: 'Arnett proposed emerging adulthood as a period from the late teens through the twenties, marked by identity exploration, instability, self-focus, feeling in-between, and perceived possibilities.',
+    feedback: {
+      0: 'Middle childhood precedes the developmental period described and does not center on identity exploration between adolescence and settled adulthood.',
+      1: 'Early adolescence is earlier than the age range and emphasis in the vignette. Secondary-school completion is not the defining boundary for emerging adulthood.',
+      2: 'Established adulthood refers to a later period with greater role stability. The sample’s exploration and in-between feeling fit emerging adulthood instead.',
+    }, cognitiveProcess: 'analysis', learningObjectiveId: 'lifespan-analyze-emerging-adulthood-from-identity-and-role-transition', distractorDesign: ['middle-childhood-versus-emerging-adulthood', 'early-adolescence-versus-emerging-adulthood', 'established-adulthood-versus-emerging-adulthood'],
+  },
+  {
+    id: 'eppp-b002-lifespan-1', expectedAnswerIndex: 1, expectedDifficulty: 'foundation', targetDifficulty: 'intermediate',
+    expectedPrompt: 'An adolescent says, “No one else has ever felt what I feel, so nobody could understand me.” In Elkind\'s account of adolescent egocentrism, this statement most closely reflects the:',
+    prompt: 'A 15-year-old says peers may be sad, but no one can understand the intensity of her own feelings. Which adolescent-egocentrism construct fits?',
+    choices: ['Imaginary audience involving expectations of others’ scrutiny', 'Personal fable involving a sense of unique, incomprehensible experience', 'Object permanence involving understanding that hidden objects continue to exist', 'Social referencing involving using another person’s emotional cue'],
+    rationale: 'The personal fable is an adolescent belief that one’s feelings and experiences are uniquely intense or inaccessible to others. It differs from the imaginary audience’s focus on being observed.',
+    feedback: {
+      0: 'The imaginary audience concerns feeling watched or judged by others. The adolescent here emphasizes uniqueness and others’ inability to understand her experience.',
+      2: 'Object permanence is an early cognitive understanding that objects continue to exist when hidden. It is unrelated to adolescent beliefs about emotional uniqueness.',
+      3: 'Social referencing involves using another person’s emotional expression to interpret an ambiguous situation. The statement concerns private uniqueness, not social cues.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'lifespan-apply-personal-fable-to-adolescent-egocentrism', distractorDesign: ['imaginary-audience-versus-personal-fable', 'object-permanence-versus-adolescent-egocentrism', 'social-referencing-versus-personal-fable'],
+  },
+  {
+    id: 'eppp-b001-professional-1', expectedAnswerIndex: 1, expectedDifficulty: 'foundation', targetDifficulty: 'intermediate',
+    expectedPrompt: 'Why must confidentiality limits be discussed especially carefully during informed consent for group therapy?',
+    prompt: 'During consent for group therapy, a client asks whether the psychologist can promise that disclosures remain private. What should the psychologist explain?',
+    choices: ['The psychologist has no confidentiality duties once treatment becomes group-based and cannot promise privacy', 'The psychologist can set expectations and safeguards but cannot promise each member’s confidentiality', 'Group members acquire legal privilege under each jurisdictional rule', 'Confidentiality begins after the group has completed treatment'],
+    rationale: 'The psychologist can explain confidentiality expectations, obtain agreement to protect disclosures, and plan safeguards, but cannot control what other group members later reveal. That limit belongs in informed consent.',
+    feedback: {
+      0: 'A group format does not erase the psychologist’s ethical confidentiality duties. The psychologist still protects information and explains the practical limits created by other participants.',
+      2: 'Legal privilege varies by jurisdiction and does not create a universal guarantee among group members. Ethical consent should address the limits rather than assume a legal protection.',
+      3: 'Confidentiality applies during treatment and afterward, subject to applicable exceptions. It is not postponed until the group ends.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'professional-apply-group-therapy-confidentiality-limits', distractorDesign: ['group-format-erases-confidentiality', 'privilege-guarantee-versus-consent-limits', 'delayed-confidentiality-versus-ongoing-duty'],
+  },
+  {
+    id: 'eppp-b001-professional-2', expectedAnswerIndex: 3, expectedDifficulty: 'foundation', targetDifficulty: 'advanced',
+    expectedPrompt: 'Under the current APA Ethics Code, sexual intimacies between a psychologist and a current therapy client are:',
+    prompt: 'A therapist argues that a current client initiated sexual contact and signed a consent form. Under APA ethics, what governs the response?',
+    choices: ['Consent documentation can permit sexual intimacy when the current client appears autonomous', 'Consultation with an uninvolved psychologist can authorize sexual contact with a current client', 'Client initiation changes the rule for sexual contact with a current client when treatment goals are not disrupted', 'Sexual intimacies with a current therapy client are prohibited'],
+    rationale: 'The APA Ethics Code prohibits sexual intimacies with current therapy clients. Apparent consent, client initiation, consultation, or claimed lack of treatment disruption does not create an exception to that prohibition.',
+    feedback: {
+      0: 'A consent form cannot override the power differential and the Code’s prohibition involving a current therapy client. Ethical duties are not reduced to documenting agreement.',
+      1: 'Consultation can help a psychologist recognize risk and plan protection, but another psychologist cannot authorize conduct prohibited by the Ethics Code.',
+      2: 'Client initiation does not change the prohibition. The therapist remains responsible for maintaining the professional boundary throughout the current treatment relationship.',
+    }, cognitiveProcess: 'analysis', learningObjectiveId: 'professional-analyze-current-client-sexual-intimacy-prohibition', distractorDesign: ['consent-versus-ethical-prohibition', 'consultation-versus-code-boundary', 'client-initiation-versus-boundary-duty'],
+  },
+  {
+    id: 'eppp-b002-professional-1', expectedAnswerIndex: 1, expectedDifficulty: 'foundation', targetDifficulty: 'advanced',
+    expectedPrompt: 'Which statement most closely reflects APA Ethics Code General Principle A?',
+    prompt: 'A psychologist must choose between a profitable intervention with known risks and a slower option that better protects a client’s welfare. Which General Principle A value should guide the decision?',
+    choices: ['Promote accuracy, honesty, and truthfulness in psychological work', 'Strive to benefit those served and take care to do no harm', 'Respect dignity and rights, including privacy and self-determination', 'Recognize professional responsibilities to society and communities'],
+    rationale: 'General Principle A, Beneficence and Nonmaleficence, directs psychologists to benefit those with whom they work and avoid or minimize harm. The client-welfare tradeoff directly invokes that principle.',
+    feedback: {
+      0: 'Accuracy, honesty, and truthfulness are central to integrity, General Principle C. The dilemma focuses instead on balancing benefit and potential harm to a client.',
+      2: 'Dignity and rights are emphasized by General Principle E. Privacy and self-determination matter, but the stated decision centers on benefit and harm.',
+      3: 'Social responsibility is General Principle F. The scenario concerns the psychologist’s direct duty to protect a client’s welfare rather than broader community obligations.',
+    }, cognitiveProcess: 'analysis', learningObjectiveId: 'professional-analyze-general-principle-a-beneficence', distractorDesign: ['integrity-versus-beneficence', 'rights-versus-beneficence', 'social-responsibility-versus-beneficence'],
+  },
+  {
+    id: 'eppp-b001-social-1', expectedAnswerIndex: 0, expectedDifficulty: 'foundation', targetDifficulty: 'intermediate',
+    expectedPrompt: 'Students perform more poorly when a difficult test is framed as diagnostic of an ability about which their group is negatively stereotyped. This finding most directly illustrates:',
+    prompt: 'Students from a stigmatized group perform worse after an instructor says an exam measures the ability on which their group is stereotyped. Which mechanism best accounts for the change?',
+    choices: ['Stereotype threat activated by a salient negative group expectation', 'Group polarization following discussion with like-minded peers', 'False-consensus effect involving overestimating shared attitudes', 'Pluralistic ignorance involving mistaken beliefs about others’ private views'],
+    rationale: 'Stereotype threat is performance disruption that can occur when a negative stereotype about one’s group becomes relevant in an evaluative setting. The framing makes that identity concern salient.',
+    feedback: {
+      1: 'Group polarization is movement toward more extreme positions after group discussion. The vignette concerns performance under stereotype-relevant evaluation, not opinion shift.',
+      2: 'False consensus is overestimating how widely one’s attitudes or behaviors are shared. It does not explain performance decline after a stereotype becomes salient.',
+      3: 'Pluralistic ignorance involves misjudging others’ private beliefs while public behavior persists. The mechanism here is threat linked to an evaluative stereotype.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'social-cultural-apply-stereotype-threat-to-evaluative-framing', distractorDesign: ['group-polarization-versus-stereotype-threat', 'false-consensus-versus-stereotype-threat', 'pluralistic-ignorance-versus-stereotype-threat'],
+  },
+  {
+    id: 'eppp-b002-social-1', expectedAnswerIndex: 0, expectedDifficulty: 'foundation', targetDifficulty: 'intermediate',
+    expectedPrompt: 'In the condition reported in Milgram\'s 1963 obedience article, 26 of 40 participants continued to the maximum labeled shock level. What percentage is 26 of 40?',
+    prompt: 'A replication reports that 26 of 40 participants continued to the maximum labeled shock; a team wants the proportion and comparison with a 50% benchmark. Which summary is accurate?',
+    choices: ['About 65%, which is 15 percentage points above the benchmark', 'About 40%, which is 10 percentage points below the benchmark', 'About 50%, matching the benchmark', 'About 80%, which is 30 percentage points above the benchmark'],
+    rationale: 'Dividing 26 by 40 gives 0.65, or 65 percent. Compared with a 50-percent benchmark, the observed proportion is 15 percentage points higher, not 15 percent higher.',
+    feedback: {
+      1: 'Twenty-six divided by forty equals 0.65, so 40 percent understates the proportion. The difference from a 50-percent benchmark is positive rather than below it.',
+      2: 'A 50-percent proportion would represent 20 of 40 participants. The reported count is six participants higher, yielding 65 percent.',
+      3: 'Eighty percent of 40 would be 32 participants. The observed 26 participants correspond to 65 percent and a 15-point benchmark difference.',
+    }, cognitiveProcess: 'analysis', learningObjectiveId: 'social-cultural-analyze-proportion-and-benchmark-in-obedience-data', distractorDesign: ['underestimate-proportion', 'benchmark-equivalence-error', 'overestimate-proportion'],
+  },
+  {
+    id: 'eppp-b002-social-2', expectedAnswerIndex: 2, expectedDifficulty: 'foundation', targetDifficulty: 'advanced',
+    expectedPrompt: 'In an experiment with no interaction or personal payoff, participants distribute points between anonymous recipients identified solely by arbitrary category labels. A preference for the assigned category is evidence of what effect?',
+    prompt: 'Participants distribute points to anonymous recipients labeled by arbitrary categories, with no interaction or material payoff. They favor their assigned category. What inference is most direct?',
+    choices: ['Pluralistic ignorance from misreading peers’ private norms', 'Group polarization from discussion intensifying an initial preference', 'Minimal-group favoritism produced by categorization alone', 'Informational conformity from observing other members’ choices'],
+    rationale: 'Minimal-group research shows that assigning people to arbitrary categories can produce in-group favoritism even when members have no history, interaction, or material incentive. Categorization itself is sufficient in this design.',
+    feedback: {
+      0: 'Pluralistic ignorance requires a mistaken inference about others’ private beliefs and a resulting public pattern. The design removes interaction and focuses on category assignment.',
+      1: 'Group polarization requires discussion or interaction that shifts judgments toward greater extremity. Anonymous category labels without interaction do not provide that mechanism.',
+      3: 'Informational conformity involves using others’ behavior or judgments under uncertainty. The recipients are anonymous and the preference follows category membership rather than observed choices.',
+    }, cognitiveProcess: 'analysis', learningObjectiveId: 'social-cultural-analyze-minimal-group-favoritism-from-categorization', distractorDesign: ['pluralistic-ignorance-versus-minimal-group', 'group-polarization-versus-minimal-group', 'informational-conformity-versus-minimal-group'],
+  },
+  {
+    id: 'eppp-b002-research-1', expectedAnswerIndex: 0, expectedDifficulty: 'foundation', targetDifficulty: 'advanced',
+    expectedPrompt: 'Two clinicians independently assign cases to nominal diagnostic categories. Which statistic estimates their agreement while adjusting for agreement expected by chance under its model?',
+    prompt: 'Two clinicians classify 80 cases into diagnostic categories. Agreement is 80%, while 50% would be expected from category base rates. Which statistic should quantify chance-adjusted agreement?',
+    choices: ["Cohen's kappa", "Cohen's d", "Cronbach's alpha", "Pearson's r"],
+    rationale: "Cohen's kappa estimates agreement between categorical raters beyond the agreement expected by chance under the observed marginal distributions. The raw 80-percent agreement therefore needs a chance-adjusted index.",
+    feedback: {
+      1: "A standardized mean difference summarizes quantitative outcomes. It does not estimate agreement between clinicians assigning nominal categories.",
+      2: "An internal-consistency coefficient summarizes relationships among items or ratings treated as a scale. It is not the chance-adjusted statistic for two categorical raters.",
+      3: "A linear association between numeric variables can be high even when categorical raters disagree. It does not provide kappa's chance adjustment.",
+    }, cognitiveProcess: 'application', learningObjectiveId: 'research-apply-cohens-kappa-to-categorical-rater-agreement', distractorDesign: ['cohens-d-versus-kappa', 'alpha-versus-kappa', 'pearson-correlation-versus-kappa'],
+  },
+  {
+    id: 'eppp-b006-research-2', expectedAnswerIndex: 2, expectedDifficulty: 'foundation', targetDifficulty: 'advanced',
+    expectedPrompt: 'Which value is impossible for a Pearson correlation coefficient?',
+    prompt: 'A researcher receives r = 1.20 from a purported Pearson correlation after coding two symptom measures. Before interpreting the association, what should be concluded?',
+    choices: ['A very strong positive association, assuming the Pearson coding was checked', 'A plausible value when coding variables with unequal variances in a Pearson analysis', "The reported value is impossible for Pearson's r and signals a calculation or coding error", 'A coefficient that can exceed one when coding a small sample in Pearson analysis'],
+    rationale: "Pearson's r is bounded from -1 to 1. A reported value of 1.20 cannot be an ordinary Pearson correlation, so the analyst should inspect coding, computation, or the statistic label before drawing a substantive conclusion.",
+    feedback: {
+      0: 'A strong positive association can approach one but cannot exceed the coefficient’s mathematical upper bound. The value therefore requires verification rather than interpretation as strength.',
+      1: 'Unequal variances can affect the association estimate and its precision, but they do not expand Pearson’s allowable range beyond negative one to one.',
+      3: 'Sample size affects uncertainty and sampling variability, not the theoretical bounds of Pearson’s r. A value above one signals an error or different statistic.',
+    }, cognitiveProcess: 'analysis', learningObjectiveId: 'research-analyze-pearson-correlation-bounds-and-data-error', distractorDesign: ['strong-association-versus-correlation-bound', 'variance-imbalance-versus-correlation-bound', 'sample-size-versus-correlation-bound'],
+  },
+  {
+    id: 'eppp-b005-research-1', expectedAnswerIndex: 0, expectedDifficulty: 'foundation', targetDifficulty: 'advanced',
+    expectedPrompt: 'For a covered human-subjects protocol involving identifiable biospecimens, what decision authority does an Institutional Review Board possess under the Common Rule?',
+    prompt: 'An IRB reviews a biospecimen protocol and finds that the consent language fails to explain future storage. What authority does the IRB have under the Common Rule?',
+    choices: ['Approve, require modifications to, or disapprove the research', 'Require public release of sponsor results as a condition of approval', 'Determine whether the scientific hypotheses are correct before assessing protections', 'Take operational control of data collection until the investigator resolves consent'],
+    rationale: 'An IRB may approve research, require modifications to secure required protections, or disapprove a covered protocol. It reviews participant protections rather than taking over operations or adjudicating scientific truth.',
+    feedback: {
+      1: 'Public release of results may involve other policies or agreements, but it is not the Common Rule authority described here. The IRB addresses protections and approval status.',
+      2: 'IRB review can consider risks and the adequacy of the research plan, but it does not decide whether scientific hypotheses are true before evaluating participant protections.',
+      3: 'The investigator and institution retain operational responsibility for data collection. The IRB can require changes or withhold approval, not manage daily operations.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'research-apply-irb-authority-to-consent-protection-defect', distractorDesign: ['public-results-versus-irb-authority', 'hypothesis-truth-versus-human-protection', 'operational-control-versus-irb-review'],
+  },
+];
+
+module.exports = { baselineMetrics, reviewedAt, reviewWave, revisions };

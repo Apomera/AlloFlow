@@ -198,3 +198,59 @@ describe('live polling reliability helpers', () => {
     expect(LP.shouldApplyPollClose({ id: 'poll-new' }, {})).toBe(true);
   });
 });
+
+describe('private teacher check-ins', () => {
+  it('bounds check-in packets and accepts only explicit learner statuses', () => {
+    expect(LP.normalizeLiveCheckInPacket({ id: 'c1', activityId: 'p1', sentAt: 10 })).toEqual({ id: 'c1', activityId: 'p1', sentAt: 10 });
+    expect(LP.normalizeLiveCheckInPacket({ id: '', activityId: 'p1' })).toBeNull();
+    expect(LP.normalizeLiveCheckInAckPacket({ checkInId: 'c1', activityId: 'p1', status: 'help', acknowledgedAt: 20 })).toEqual({ checkInId: 'c1', activityId: 'p1', status: 'help', acknowledgedAt: 20 });
+    expect(LP.normalizeLiveCheckInAckPacket({ checkInId: 'c1', activityId: 'p1', status: 'response text' })).toBeNull();
+    expect(LP.LIVE_CHECK_IN_ACK_STATUSES).toEqual(['working', 'help']);
+  });
+
+  it('targets the active audience and rejects stale or mismatched acknowledgements', () => {
+    const acknowledgements = [];
+    const sent = [];
+    const host = LP.createHost({ sessionCode: 'ABCD', onCheckInAck: (uid, codename, ack) => acknowledgements.push({ uid, codename, ack }) });
+    host.peers.set('u1', { dc: { readyState: 'open', send: (message) => sent.push(JSON.parse(message)) } });
+    host.peers.set('u2', { dc: { readyState: 'open', send: () => {} } });
+    host.broadcastPoll({ id: 'poll-check', type: 'rating', prompt: 'Ready?' }, ['u1']);
+
+    const packet = host.sendCheckIn('u1', 'poll-check');
+    expect(packet).toMatchObject({ activityId: 'poll-check' });
+    expect(sent.at(-1)).toMatchObject({ type: 'checkIn', payload: { id: packet.id, activityId: 'poll-check' } });
+    expect(host.sendCheckIn('u2', 'poll-check')).toBeNull();
+    expect(host._receiveCheckInAck('u1', 'Blue Fox', { checkInId: 'wrong', activityId: 'poll-check', status: 'help' })).toBe(false);
+    expect(host._receiveCheckInAck('u1', 'Blue Fox', { checkInId: packet.id, activityId: 'poll-check', status: 'help', acknowledgedAt: 30 })).toBe(true);
+    expect(acknowledgements).toEqual([{ uid: 'u1', codename: 'Blue Fox', ack: { checkInId: packet.id, activityId: 'poll-check', status: 'help', acknowledgedAt: 30 } }]);
+  });
+
+  it('sends a bounded learner acknowledgement over the existing peer channel', () => {
+    const sent = [];
+    const guest = LP.createGuest({ sessionCode: 'ABCD', userUid: 'u1', codename: 'Blue Fox' });
+    guest.dc = { readyState: 'open', send: (message) => sent.push(JSON.parse(message)) };
+    expect(guest.sendCheckInAck('c1', 'p1', 'working')).toBe(true);
+    expect(sent[0]).toMatchObject({ type: 'checkInAck', payload: { checkInId: 'c1', activityId: 'p1', status: 'working' } });
+    expect(guest.sendCheckInAck('c1', 'p1', 'private response text')).toBe(false);
+  });
+
+  it('lets an active-audience learner request and cancel help without sending response text', () => {
+    const requests = [];
+    const host = LP.createHost({ sessionCode: 'ABCD', onHelpRequest: (uid, codename, packet) => requests.push({ uid, codename, packet }) });
+    host.broadcastPoll({ id: 'poll-help', type: 'freetext', prompt: 'Explain' }, ['u1']);
+    expect(host._receiveHelpRequest('u1', 'Blue Fox', { activityId: 'poll-help', status: 'help', requestedAt: 40 })).toBe(true);
+    expect(host._receiveHelpRequest('u2', 'Other', { activityId: 'poll-help', status: 'help' })).toBe(false);
+    expect(host._receiveHelpRequest('u1', 'Blue Fox', { activityId: 'old-poll', status: 'help' })).toBe(false);
+    expect(requests).toEqual([{ uid: 'u1', codename: 'Blue Fox', packet: { activityId: 'poll-help', status: 'help', requestedAt: 40 } }]);
+
+    const sent = [];
+    const guest = LP.createGuest({ sessionCode: 'ABCD', userUid: 'u1', codename: 'Blue Fox' });
+    guest.dc = { readyState: 'open', send: (message) => sent.push(JSON.parse(message)) };
+    expect(guest.sendHelpRequest('poll-help', true)).toBe(true);
+    expect(guest.sendHelpRequest('poll-help', false)).toBe(true);
+    expect(sent.map((message) => message.payload.status)).toEqual(['help', 'cleared']);
+    expect(JSON.stringify(sent)).not.toContain('Explain');
+    expect(LP.normalizeLiveHelpRequestPacket({ activityId: 'poll-help', status: 'response text' })).toBeNull();
+    expect(LP.LIVE_HELP_REQUEST_STATUSES).toEqual(['help', 'cleared']);
+  });
+});

@@ -258,6 +258,24 @@ describe('physical road layouts', () => {
     expect(RR.controlDistanceAhead(world, behind, car, 4.5)).toBeLessThan(0);
   });
 
+  it('projects main-road signal approach through the curved road frame', () => {
+    const heading = 0.42;
+    const spline = {
+      centerAt: (station) => 48 + Math.tan(heading) * station,
+      headingAt: () => heading,
+      heightAt: () => 0,
+    };
+    const world = { profile: { roadHalfWidth: 3.5 }, spline };
+    const signal = RR.mainRoadWorldPoint(world, 40, 0);
+    signal.type = 'light';
+    const car = RR.mainRoadWorldPoint(world, 52, 1.5);
+    car.heading = -Math.PI / 2 - heading;
+    const approach = RR.playerControlApproach(world, signal, car, 4.5);
+    expect(approach).toMatchObject({ sameRoad: true, approachGroup: 'main', travelSign: -1 });
+    expect(approach.distanceFromIntersection).toBeCloseTo(12, 6);
+    expect(RR.controlDistanceAhead(world, signal, car, 4.5)).toBeGreaterThan(0);
+  });
+
   it('keeps curved cross-street coordinates reversible and aligned with travel headings', () => {
     const pose = RR.crossStreetPose(48, 64, 0.35, 6.5, RR.MAP_SIZE);
     const worldPoint = RR.crossStreetWorldPoint(pose, 18, 1.5);
@@ -411,6 +429,20 @@ describe('physical road layouts', () => {
     expect(RR.pedestrianCountForRoad({ biome: 'commercial' })).toBe(4);
     expect(RR.pedestrianCountForRoad({ biome: 'rural' })).toBe(0);
     expect(RR.spawnStreamedPedestrians({ id: 'freeExplore' }, world, wideChunk, 0)).toHaveLength(4);
+  });
+
+  it('samples curved-road surface height from station/lateral coordinates', () => {
+    const heading = 0.42;
+    const spline = {
+      centerAt: (station) => 48 + Math.tan(heading) * station,
+      headingAt: () => heading,
+      heightAt: (station) => 1 + station * 0.1
+    };
+    const world = { profile: { roadHalfWidth: 3.5 }, spline };
+    const point = RR.mainRoadWorldPoint(world, 20, 2.4);
+    const pose = RR.roadSurfacePoseAt(world, point.x, point.y);
+    expect(pose.lateralOffset).toBeCloseTo(2.4, 5);
+    expect(pose.height).toBeCloseTo(3 + RR.roadCrownHeight(2.4, world.profile), 5);
   });
 
   it('places physical guardrails by curvature rather than compass heading', () => {
@@ -697,7 +729,7 @@ describe('physical road layouts', () => {
     const surface = RR.roadSurfacePoseAt(world, farCrossStreet.x, farCrossStreet.y);
     expect(surface.crossStreet).toBe(true);
     expect(surface.lateralOffset).toBeCloseTo(0, 6);
-    expect(surface.height).toBeCloseTo(world.spline.heightAt(farCrossStreet.y)
+    expect(surface.height).toBeCloseTo(world.spline.heightAt(centerY)
       + RR.roadCrownHeight(0, chunk, pose.width * 0.5), 6);
   });
 
@@ -1482,6 +1514,25 @@ describe('continuous scripted worlds', () => {
     expect(RR.worldPostedLimitMph(authored, chunks[3], 25, schoolY)).toBe(35);
   });
 
+  it('resolves the player posted limit from road station instead of curved-lane world Y', () => {
+    const heading = 0.45;
+    const chunks = {
+      2: { index: 2, biome: 'residential' },
+      3: { index: 3, biome: 'rural' }
+    };
+    const world = {
+      spline: {
+        centerAt: () => 40,
+        headingAt: () => heading
+      },
+      getChunk: (ci) => chunks[ci] || { index: ci, biome: 'residential' }
+    };
+    const vehicle = RR.mainRoadWorldPoint(world, 96.1, 6);
+    expect(Math.floor(vehicle.y / RR.CHUNK_SIZE)).toBe(2);
+    expect(Math.floor(RR.playerRoadStation(world, vehicle) / RR.CHUNK_SIZE)).toBe(3);
+    expect(RR.playerPostedLimitMph(world, vehicle, { speedLimit: 25 })).toBe(45);
+  });
+
   it('uses deterministic scenario-specific controls and school landmarks', () => {
     const residential = RR.createScenarioWorld({ id: 'residential', speedLimit: 25 });
     expect(residential.getChunk(0).hasIntersection).toBe(true);
@@ -1536,7 +1587,10 @@ describe('continuous scripted worlds', () => {
     for (const ped of peds) {
       expect(ped._chunk).toBe(1);
       expect(Math.abs(ped.crosswalkY - intersectionY)).toBeCloseTo(2.8, 8);
-      expect(Math.abs(ped.homeX - world.spline.centerAt(ped.crosswalkY))).toBeCloseTo(chunk.roadHalfWidth + 1, 5);
+      const expectedPoint = RR.mainRoadWorldPoint(world, ped.crosswalkY, ped._sidewalkLateral);
+      expect(ped.homeX).toBeCloseTo(expectedPoint.x, 6);
+      expect(ped.homeY).toBeCloseTo(expectedPoint.y, 6);
+      expect(Math.abs(ped._sidewalkLateral)).toBeCloseTo(chunk.roadHalfWidth + 1, 5);
     }
     expect(new Set(peds.map((ped) => Math.sign(ped.crosswalkY - intersectionY)))).toEqual(new Set([-1, 1]));
   });

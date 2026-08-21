@@ -175,6 +175,14 @@ const SHOTS = [
   ['10d-preciplab-3d-mountain-surface', { wcMode: 'precipHunt', precipHunt: { viewMode: '3d', cameraFocus: 'surface', preset: 'mountainSnow', moisture: 88, tempC: -16, midLevelTempC: -10, lowLevelHumidity: 76, surfaceTempC: -5, wind: 20, windDirection: 'east', updraft: 58, cloudDepth: 8, terrain: 'mountains' } }, false],
   ['10e-preciplab-3d-lightning-study', { wcMode: 'precipHunt', precipHunt: { viewMode: '3d', cameraFocus: 'cloud', preset: 'summerStorm', moisture: 94, tempC: -6, midLevelTempC: 8, lowLevelHumidity: 82, surfaceTempC: 28, wind: 22, windDirection: 'east', updraft: 78, cloudDepth: 11, terrain: 'plains', showStormAnatomy: true, lightningStudyStep: 'return-stroke' } }, true],
   ['10f-preciplab-3d-rain-impacts', { wcMode: 'precipHunt', precipHunt: { viewMode: '3d', cameraFocus: 'surface', preset: 'summerStorm', moisture: 94, tempC: -6, midLevelTempC: 8, lowLevelHumidity: 82, surfaceTempC: 28, wind: 22, windDirection: 'east', updraft: 78, cloudDepth: 11, terrain: 'plains', showStormAnatomy: false } }, false],
+  ['10g-preciplab-3d-coast-surface', { wcMode: 'precipHunt', precipHunt: { viewMode: '3d', cameraFocus: 'surface', preset: 'summerStorm', moisture: 90, tempC: -4, midLevelTempC: 7, lowLevelHumidity: 88, surfaceTempC: 24, wind: 16, windDirection: 'east', updraft: 62, cloudDepth: 9, terrain: 'coast', showStormAnatomy: false } }, false],
+  ['10h-preciplab-3d-phase-transform', { wcMode: 'precipHunt', precipHunt: { viewMode: '3d', cameraFocus: 'surface', preset: 'freezingRain', moisture: 90, tempC: -12, midLevelTempC: 8, lowLevelHumidity: 90, surfaceTempC: -4, wind: 10, windDirection: 'east', updraft: 68, cloudDepth: 8, terrain: 'plains', showStormAnatomy: false, stormTime: 62, stormAutoPlay: false } }, false],
+  ['10i-preciplab-3d-rain-shadow', { wcMode: 'precipHunt', precipHunt: { viewMode: '3d', cameraFocus: 'storm', preset: 'gentleRain', moisture: 92, tempC: 2, midLevelTempC: 7, lowLevelHumidity: 48, surfaceTempC: 18, wind: 32, windDirection: 'east', updraft: 56, cloudDepth: 8, terrain: 'mountains', showAirflow: true, showStormAnatomy: false, stormTime: 64, stormAutoPlay: false } }, false],
+  ['10j-preciplab-2d-virga', { wcMode: 'precipHunt', precipHunt: { viewMode: '2d', cameraFocus: 'surface', preset: 'virga', moisture: 72, tempC: 1, midLevelTempC: 10, lowLevelHumidity: 16, surfaceTempC: 27, wind: 18, windDirection: 'east', updraft: 48, cloudDepth: 6, terrain: 'plains', showStormAnatomy: false, stormTime: 62, stormAutoPlay: false } }, false],
+  ['10k-preciplab-3d-virga', { wcMode: 'precipHunt', precipHunt: { viewMode: '3d', cameraFocus: 'surface', preset: 'virga', moisture: 72, tempC: 1, midLevelTempC: 10, lowLevelHumidity: 16, surfaceTempC: 27, wind: 18, windDirection: 'east', updraft: 48, cloudDepth: 6, terrain: 'plains', showStormAnatomy: false, stormTime: 62, stormAutoPlay: false } }, false],
+  ['10l-preciplab-3d-cloud-formation', { wcMode: 'precipHunt', precipHunt: { viewMode: '3d', cameraFocus: 'cloud', preset: 'gentleRain', moisture: 96, tempC: 5, midLevelTempC: 9, lowLevelHumidity: 90, surfaceTempC: 18, wind: 10, windDirection: 'east', updraft: 68, cloudDepth: 8, terrain: 'plains', showAirflow: true, showStormAnatomy: false, stormTime: 62, stormAutoPlay: false } }, false],
+  ['10m-preciplab-2d-cloud-formation-dark', { wcMode: 'precipHunt', precipHunt: { viewMode: '2d', cameraFocus: 'cloud', preset: 'gentleRain', moisture: 96, tempC: 5, midLevelTempC: 9, lowLevelHumidity: 90, surfaceTempC: 18, wind: 10, windDirection: 'east', updraft: 68, cloudDepth: 8, terrain: 'plains', showAirflow: true, showStormAnatomy: false, stormTime: 62, stormAutoPlay: false } }, true],
+  ['10n-preciplab-3d-cloud-volume-dark', { wcMode: 'precipHunt', precipHunt: { viewMode: '3d', cameraFocus: 'cloud', preset: 'gentleRain', moisture: 96, tempC: 5, midLevelTempC: 9, lowLevelHumidity: 90, surfaceTempC: 18, wind: 10, windDirection: 'east', updraft: 68, cloudDepth: 8, terrain: 'plains', showAirflow: true, showStormAnatomy: false, stormTime: 62, stormAutoPlay: false } }, true],
   // 3D journey. journeyActive + journeyState mirror openPrecipitationIn3d().
   ['11-journey3d-evaporating', { journeyView: '3d', journeyActive: true, journeyState: 'evaporating', journeyPaused: false, activeStage: 'evaporation' }, false],
   ['12-journey3d-precipitating', { journeyView: '3d', journeyActive: true, journeyState: 'precipitating', journeyPaused: false, activeStage: 'precipitation' }, false],
@@ -215,6 +223,9 @@ const MOBILE_SHOTS = [
   ['M1-explorer-light', {}, false],
   ['M2-preciplab-light', { wcMode: 'precipHunt' }, false],
   ['M2b-preciplab-3d-light', { wcMode: 'precipHunt', precipHunt: { viewMode: '3d', preset: 'summerStorm', moisture: 94, tempC: -6, midLevelTempC: 8, lowLevelHumidity: 82, surfaceTempC: 28, wind: 22, windDirection: 'east', updraft: 78, cloudDepth: 11, terrain: 'plains' } }, false],
+  ['M2c-preciplab-3d-mountain', { wcMode: 'precipHunt', precipHunt: { viewMode: '3d', cameraFocus: 'storm', preset: 'gentleRain', moisture: 92, tempC: 2, midLevelTempC: 7, lowLevelHumidity: 48, surfaceTempC: 18, wind: 32, windDirection: 'east', updraft: 56, cloudDepth: 8, terrain: 'mountains', showAirflow: true, showStormAnatomy: false, stormTime: 64, stormAutoPlay: false } }, false],
+  ['M2d-preciplab-3d-virga', { wcMode: 'precipHunt', precipHunt: { viewMode: '3d', cameraFocus: 'surface', preset: 'virga', moisture: 72, tempC: 1, midLevelTempC: 10, lowLevelHumidity: 16, surfaceTempC: 27, wind: 18, windDirection: 'east', updraft: 48, cloudDepth: 6, terrain: 'plains', showStormAnatomy: false, stormTime: 62, stormAutoPlay: false } }, false],
+  ['M2e-preciplab-3d-cloud-formation', { wcMode: 'precipHunt', precipHunt: { viewMode: '3d', cameraFocus: 'cloud', preset: 'gentleRain', moisture: 96, tempC: 5, midLevelTempC: 9, lowLevelHumidity: 90, surfaceTempC: 18, wind: 10, windDirection: 'east', updraft: 68, cloudDepth: 8, terrain: 'plains', showAirflow: true, showStormAnatomy: false, stormTime: 62, stormAutoPlay: false } }, false],
   ['M3-steward-review-light', { wcMode: 'steward', steward: wsReview }, false],
 ];
 
@@ -224,7 +235,7 @@ const MOBILE_SHOTS = [
   const b = await chromium.launch({ args: ['--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
   const pg = await b.newPage({ viewport: { width: 1280, height: 900 } });
   const errors = [];
-  pg.on('pageerror', (e) => errors.push(String(e).slice(0, 200)));
+  pg.on('pageerror', (e) => errors.push(String((e && e.stack) || e).slice(0, 700)));
 
   await pg.setContent(
     '<!doctype html><html><head>'
@@ -314,7 +325,7 @@ const MOBILE_SHOTS = [
   // reports horizontal overflow, the classic narrow-width failure - the page
   // body must never scroll sideways.
   const mob = await b.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 });
-  mob.on('pageerror', (e) => errors.push('[mobile] ' + String(e).slice(0, 200)));
+  mob.on('pageerror', (e) => errors.push('[mobile] ' + String((e && e.stack) || e).slice(0, 700)));
   await mob.setContent(
     '<!doctype html><html><head>'
     + '<style>body{margin:0;background:#f1f5f9;font-family:system-ui}.dark body{background:#0f172a}</style></head>'

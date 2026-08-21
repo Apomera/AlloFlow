@@ -215,22 +215,126 @@ describe('Water Cycle Precipitation Lab', () => {
       expect(source).toContain('canvasEl.dataset.precipitationView = \'3d-cloud-chamber\';');
       expect(source).toContain('canvasEl.dataset.precipitationPhasePlanes');
       expect(source).toContain('canvasEl.dataset.precipitationTerrain');
-      expect(source).toContain("canvasEl.dataset.precipitationCloudRendering = 'soft-volume-plus-lit-mesh';");
+      expect(source).toContain("canvasEl.dataset.precipitationCloudRendering = 'procedural-billow-volume-without-sphere-shells';");
       expect(source).toContain('canvasEl.dataset.precipitationSurfaceEvidence');
       expect(source).toContain('var mountainTerrainGroupPrecip3d = new THREE.Group();');
       expect(source).toContain('var windShearGroupPrecip3d = new THREE.Group();');
       expect(source).toContain('function makeSoftCloudTexturePrecip3d()');
+      expect(source).toContain('function makeCloudDensityTexturePrecip3d(seedPrecip3d)');
+      expect(source).toContain('var cloudDensityTexturesPrecip3d = [];');
+      expect(source).toContain('var cloudInteriorDepthSpritesPrecip3d = [];');
+      expect(source).toContain('var cloudBaseDeckSpritesPrecip3d = [];');
+      expect(source).toContain('var cloudSilverLiningSpritesPrecip3d = [];');
+      expect(source).toContain('var cloudAnvilVeilSpritesPrecip3d = [];');
+      expect(source).toContain('canvasEl.dataset.precipitationCloudVolumeTechnique');
+      expect(source).toContain("? 'procedural-density-shelf' : 'hidden';");
+      expect(source).toContain("'parallax-density-depth-with-shell-mesh-hidden'");
+      expect(source).toContain('concat(cloudDensityTexturesPrecip3d)');
+      expect(source).toContain('function drawCloudFormationMicrophysics(ctx2, w, h, cloudCenter, cloudY, cloudBase)');
+      expect(source).toContain("canvasEl.dataset.cloudFormationRendering = 'rising-vapor-tracers-saturation-line-and-newborn-droplets';");
+      expect(source).toContain('var cloudFormationGroupPrecip3d = new THREE.Group();');
+      expect(source).toContain('var condensationLevelHaloPrecip3d = new THREE.Mesh(');
+      expect(source).toContain('var vaporTeachingTracerCountPrecip3d = 96;');
+      expect(source).toContain('var newbornDropletCapacityPrecip3d = 48;');
+      expect(source).toContain('var coalescencePairCountPrecip3d = 18;');
+      expect(source).toContain('coalescenceCollectorDropsPrecip3d');
+      expect(source).toContain('canvasEl.dataset.precipitationCondensationRendering');
+      expect(source).toContain('canvasEl.dataset.precipitationCoalescenceRendering');
       expect(source).toContain('var surfaceAccumulationGroupPrecip3d = new THREE.Group();');
       expect(source).toContain('function makePrecip3dParticleTexture(kindPrecip3d)');
       expect(source).toContain('function makePrecip3dChargeTexture(signPrecip3d)');
       expect(source).toContain('function makePrecip3dAtmosphereTexture()');
       expect(source).toContain('var impactRippleGroupPrecip3d = new THREE.Group();');
+      expect(source).toContain('function coastBoundaryXPrecip3d(coastZPrecip3d)');
       expect(source).toContain("canvasEl.dataset.precipitationParticleRendering = 'procedural-soft-textures';");
+      expect(source).toContain('canvasEl.dataset.precipitationParticlePhaseMorphing');
+      expect(source).toContain("'altitude-resolved-particle-transformation'");
+      expect(source).toContain('canvasEl.dataset.precipitationVirgaRendering');
+      expect(source).toContain('canvasEl.dataset.precipitationVaporTracerMeaning');
+      expect(source).toContain('var precipitationPhaseGroupPrecip3d = new THREE.Group();');
+      expect(source).toContain("var precipPhaseKeysPrecip3d = ['rain', 'freezing-rain', 'snow', 'ice'];");
+      expect(source).toContain('function precipPhaseBucketKeyPrecip3d(particlePhasePrecip3d, particleIndexPrecip3d)');
+      expect(source).toContain('phaseSystem3d.pointGeometry.setDrawRange(0, phaseCount3d);');
+      expect(source).toContain('var orographicFlowGroupPrecip3d = new THREE.Group();');
+      expect(source).toContain('function makePrecip3dMountainGeometry(radiusPrecip3d, heightPrecip3d, seedPrecip3d, snowCapPrecip3d)');
+      expect(source).toContain('var rainShadowPatchPrecip3d = new THREE.Mesh(');
+      expect(source).toContain('var virgaEvaporationGroupPrecip3d = new THREE.Group();');
+      expect(source).toContain('var virgaFragmentGeometryPrecip3d = new THREE.BufferGeometry();');
+      expect(source).toContain('var virgaVaporTracerCountPrecip3d = 88;');
+      expect(source).toContain('DRY LAYER · DROPS SHRINK → INVISIBLE VAPOR');
+      expect(source).toContain("canvasEl.dataset.virgaEvaporation = model.visualType === 'virga'");
+      expect(source).toContain('canvasEl.dataset.precipitationOrographicRendering');
+      expect(source).toContain('canvasEl.dataset.precipitationMountainRendering');
       expect(source).toContain("canvasEl.dataset.precipitationLightningRendering = 'branched-channel-core-and-cloud-flash';");
       expect(source).toContain('canvasEl.dataset.precipitationChargeRegions');
+      expect(source).toContain('canvasEl.dataset.precipitationCoastline');
       expect(source).toContain('new THREE.TubeGeometry(new THREE.CatmullRomCurve3(lightningMainPointsPrecip3d)');
-      expect(source).toContain('precipLineGeometry3d.setDrawRange(0, activeCount3d * 2);');
+      expect(source).toContain('phaseSystem3d.lineGeometry.setDrawRange(0, phaseCount3d * 2);');
     });
+  });
+
+  it('explains the magnified cloud-formation sequence in the warm inside-cloud lens', () => {
+    resetStemLab();
+    loadTool('stem_lab/stem_tool_watercycle.js', 'waterCycle');
+    const html = renderTool('waterCycle', {
+      waterCycle: {
+        wcMode: 'precipHunt',
+        precipHunt: {
+          viewMode: '3d',
+          cameraFocus: 'cloud',
+          preset: 'gentleRain',
+          moisture: 96,
+          tempC: 5,
+          midLevelTempC: 9,
+          lowLevelHumidity: 90,
+          surfaceTempC: 18,
+          wind: 10,
+          windDirection: 'east',
+          updraft: 68,
+          cloudDepth: 8,
+          terrain: 'plains',
+          showStormAnatomy: false,
+        },
+      },
+    });
+
+    expect(html).toContain('Vapor tracer → droplets');
+    expect(html).toContain('Drops collide + merge');
+    expect(html).toContain('teaching tracers for invisible water vapor');
+    expect(html).toContain('releases latent heat');
+    expect(html).toContain('Soft near-and-far density layers reveal cloud depth');
+    expect(html).toContain('level underside marks the modeled saturation base');
+    expect(html).toContain('Particles are enlarged for teaching and are not to scale');
+  });
+
+  it('explains and keys the visible virga evaporation sequence without implying vapor is visible', () => {
+    resetStemLab();
+    loadTool('stem_lab/stem_tool_watercycle.js', 'waterCycle');
+    const html = renderTool('waterCycle', {
+      waterCycle: {
+        wcMode: 'precipHunt',
+        precipHunt: {
+          viewMode: '3d',
+          cameraFocus: 'surface',
+          preset: 'virga',
+          moisture: 72,
+          tempC: 1,
+          midLevelTempC: 10,
+          lowLevelHumidity: 16,
+          surfaceTempC: 27,
+          wind: 18,
+          windDirection: 'east',
+          updraft: 48,
+          cloudDepth: 6,
+          terrain: 'plains',
+        },
+      },
+    });
+
+    expect(html).toContain('data-precipitation-kind="virga"');
+    expect(html).toContain('Drops → vapor tracer');
+    expect(html).toContain('teaching tracers for invisible water vapor');
+    expect(html).toContain('virga produces no surface impacts or accumulation');
   });
 
   it('labels the expanded controls and dynamic result for assistive technology', () => {

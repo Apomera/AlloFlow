@@ -3182,7 +3182,10 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
                     vision: false,
                     image: false,
                     imageEdit: false,
-                    audio: false,
+                    // The dedicated voice bridge uses Gemini generateContent
+                    // with inline audio. A successful Gemini key/model test is
+                    // therefore sufficient to authorize that explicit path.
+                    audio: this.backend === 'gemini',
                 },
             };
         } catch (e) {

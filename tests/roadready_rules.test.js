@@ -1148,7 +1148,11 @@ describe('RoadReady rules-of-road content', () => {
       expect(src).toContain('var BIOME_SPEED_LIMIT_MPH = { residential: 25, suburban: 25, commercial: 25, industrial: 25, rural: 45 };');
       expect(src).toContain('function getBiomeSpeedLimitMph(biome, fallbackMph)');
       expect(src).toContain('var SCHOOL_ZONE_RADIUS_WORLD = 20;');
-      expect(src).toContain('infiniteWorldRef.current, biomeChunk, 25, carRef.current.y');
+      expect(src).toContain('var playerBiomeStation = playerRoadStation(infiniteWorldRef.current, carRef.current);');
+      expect(src).toContain('var newLimit = playerPostedLimitMph(');
+      expect(src).toContain('var ciHere = Math.floor(playerRoadStation(infiniteWorldRef.current, car) / CHUNK_SIZE);');
+      expect(src).not.toContain('var ciHere = Math.floor(car.y / CHUNK_SIZE);');
+      expect(src).not.toContain('Math.floor(carRef.current.y / CHUNK_SIZE)] ?');
       expect(src).toContain('return worldPostedLimitMph(worldForLimit, ch, 25, worldY);');
       expect(src).toContain('var biomeLimit = worldPostedLimitMph(iw, chunk, 25, ci * CHUNK_SIZE + 3);');
       expect(src).toContain('var slBiomeMph = worldPostedLimitMph(iw, chunk, 25, chunk.index * CHUNK_SIZE + 6);');
@@ -1954,6 +1958,13 @@ describe('RoadReady road-local traffic invariants', () => {
     const src = readRoadReady(relPath);
     expect(src).toContain('function trafficRoadCoordinates(world, vehicle)');
     expect(src).toContain('function trafficRelativeRoadPosition(world, observer, target)');
+    expect(src).toContain('var currentChunkStation = playerRoadStation(iw, car);');
+    expect(src).not.toContain('var currentChunk = Math.floor(car.y / CHUNK_SIZE);');
+    expect(src).toContain('var trafficStation = roadStationFor(t);');
+    expect(src).toContain('getChunk(Math.floor(trafficStation / CHUNK_SIZE))');
+    expect(src).toContain('var wzTrafficStation = roadStationFor(t);');
+    expect(src).toContain('var trafficStationForRules = roadStationFor(t);');
+    expect(src).not.toContain('Math.floor(t.y / CHUNK_SIZE)');
     expect(src).toContain('function followingVehicleRoadState(world, observer, target, laneTolerance)');
     expect(src).toContain('var followingState = followingVehicleRoadState(');
     expect(src).toContain('var gapState = followingVehicleRoadState(');
@@ -1977,6 +1988,8 @@ describe('RoadReady road-local traffic invariants', () => {
     expect(src).toContain('var pendingRel = trafficRelativeRoadPosition(');
     expect(src).not.toContain('var ah = (other2.y - t.y) * myDirSign');
     expect(src).not.toContain('var ahp = (other3.y - t.y) * pendingDirSign');
+    expect(src).toContain('var mmTrailMaxJumpSq = 24 * 24;');
+    expect(src).toContain('if (mmTrailDx * mmTrailDx + mmTrailDy * mmTrailDy > mmTrailMaxJumpSq)');
   });
 });
 
@@ -1990,7 +2003,7 @@ describe('RoadReady authored AI lane consistency', () => {
     expect(src).toContain('var highwayLaneOffsets = authoredTrafficLaneOffsets(');
     expect(src).toContain('var defaultOffset = highwayLaneOffsets[highwayLaneOffsets.length - 1]');
     expect(src).toContain('t.laneOffset = nearestAuthoredTrafficLaneOffset(');
-    expect(src).toContain('var respSpeedLimit = getPostedLimitMphAt(t.y)');
+    expect(src).toContain('var respSpeedLimit = getPostedLimitMphAt(roadStationFor(t))');
     expect(src).not.toContain("var defaultOffset = myDirSign === 1 ? -4.6 : 4.6");
     expect(src).not.toContain("var innerOffset = myDirSign === 1 ? -1.8 : 1.8");
     expect(src).not.toContain("var defaultMagPost = scn.id === 'highway' ? 4.6 : 1.5");
@@ -2146,8 +2159,10 @@ describe('RoadReady visual geometry invariants', () => {
     expect(src).toContain('alignTrafficToStreamedWorld(infiniteWorldRef.current, trafficRef.current);');
     expect(src).toContain('var bikeLaneOff = bicycleLaneOffsetFor(cyProfile, cyDirSign);');
     expect(src).not.toContain('infiniteWorldRef.current = createInfiniteWorld(worldSeed);');
-    expect(src).toContain('var mainProfile = roadProfileAt(world, y, null);');
-    expect(src).toContain('var layout = roadLayoutFor(roadProfileAt(world, car.y, null));');
+    expect(src).toContain('var mainProfile = roadProfileAt(world, station, null);');
+    expect(src).toContain('var mainFrame = mainRoadLocalPoint(world, x, y);');
+    expect(src).toContain('var carRoadFrame = spline ? mainRoadLocalPoint(world, car.x, car.y) : null;');
+    expect(src).toContain('var layout = roadLayoutFor(roadProfileAt(world, carStation, null));');
     expect(src).toContain('chunk.pedestrianCount = pedestrianCountForRoad(profile || { biome: biome });');
     expect(src).toContain('var count = pedestrianCountForRoad(profile);');
     expect(src).not.toContain('var profile = world && world.profile;\n    var count = profile && profile.pedestrianCount');

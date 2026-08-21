@@ -16,6 +16,9 @@ import { loadAlloModule } from './setup.js';
 
 let PhaseO;
 beforeAll(() => {
+  // Mirror the production dependency order; unavailable-Matrix recovery is
+  // exercised separately by blueprint_generation_matrix.test.js.
+  loadAlloModule('generation_matrix_module.js');
   loadAlloModule('phase_o_misc_handlers_module.js');
   PhaseO = window.AlloModules?.PhaseOHandlers;
   if (!PhaseO?.handleRebuildBlueprintStep) throw new Error('handleRebuildBlueprintStep failed to register');

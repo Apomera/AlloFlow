@@ -63,6 +63,7 @@ beforeEach(() => {
   delete window.__alloStudentAiSetupAllowed;
   delete window.__alloQrStudentMode;
   delete window.__alloOpenDeviceStorageProbe;
+  delete window.__alloAISettingsRequestedSection;
   container = document.createElement('div');
   document.body.appendChild(container);
   root = ReactDOMClient.createRoot(container);
@@ -71,6 +72,7 @@ beforeEach(() => {
 afterEach(async () => {
   await act(async () => root.unmount());
   container.remove();
+  delete window.__alloAISettingsRequestedSection;
 });
 
 describe('guided default', () => {
@@ -187,6 +189,30 @@ describe('advanced surface', () => {
     for (const backend of ['gemini', 'alloflow-local', 'lmstudio', 'localai', 'ollama', 'openai', 'claude', 'custom']) {
       expect(options).toContain(backend);
     }
+  });
+
+  it('configures Gemini voice access without changing a local text backend', async () => {
+    window.localStorage.setItem('alloflow_ai_config', JSON.stringify({
+      backend: 'alloflow-local', baseUrl: 'http://localhost:32173',
+      validation: { ok: true, backend: 'alloflow-local' },
+    }));
+    window.__alloAISettingsRequestedSection = 'gemini-audio';
+    await render();
+    const key = container.querySelector('#ai-backend-gemini-services-key');
+    expect(key).toBeTruthy();
+    expect(container.textContent).toContain('Your primary text AI remains the built-in private AI');
+    await act(async () => {
+      const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
+      setter.call(key, 'voice-only-gemini-key');
+      key.dispatchEvent(new window.Event('input', { bubbles: true }));
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+    expect(readCfg()).toMatchObject({
+      backend: 'alloflow-local',
+      geminiApiKey: 'voice-only-gemini-key',
+      validation: { ok: true, backend: 'alloflow-local' },
+    });
+    expect(document.activeElement).toBe(key);
   });
 
   it('never renders a duplicate element id in any mode', async () => {

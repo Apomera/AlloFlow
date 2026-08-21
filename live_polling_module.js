@@ -206,6 +206,31 @@
   const LIVE_POLL_PROMPT_MAX_LENGTH = 500;
   const LIVE_POLL_CHOICE_MAX_LENGTH = 180;
   const LIVE_POLL_MAX_CHOICES = 12;
+  const LIVE_CHECK_IN_ID_MAX_LENGTH = 120;
+  const LIVE_CHECK_IN_ACK_STATUSES = ['working', 'help'];
+  const LIVE_HELP_REQUEST_STATUSES = ['help', 'cleared'];
+  const normalizeLiveCheckInPacket = (payload) => {
+    const source = payload && typeof payload === 'object' ? payload : {};
+    const id = String(source.id || '').trim().slice(0, LIVE_CHECK_IN_ID_MAX_LENGTH);
+    const activityId = String(source.activityId || '').trim().slice(0, LIVE_CHECK_IN_ID_MAX_LENGTH);
+    if (!id || !activityId) return null;
+    return { id: id, activityId: activityId, sentAt: Math.max(0, Number(source.sentAt) || 0) };
+  };
+  const normalizeLiveCheckInAckPacket = (payload) => {
+    const source = payload && typeof payload === 'object' ? payload : {};
+    const checkInId = String(source.checkInId || '').trim().slice(0, LIVE_CHECK_IN_ID_MAX_LENGTH);
+    const activityId = String(source.activityId || '').trim().slice(0, LIVE_CHECK_IN_ID_MAX_LENGTH);
+    const status = LIVE_CHECK_IN_ACK_STATUSES.indexOf(source.status) >= 0 ? source.status : '';
+    if (!checkInId || !activityId || !status) return null;
+    return { checkInId: checkInId, activityId: activityId, status: status, acknowledgedAt: Math.max(0, Number(source.acknowledgedAt) || 0) };
+  };
+  const normalizeLiveHelpRequestPacket = (payload) => {
+    const source = payload && typeof payload === 'object' ? payload : {};
+    const activityId = String(source.activityId || '').trim().slice(0, LIVE_CHECK_IN_ID_MAX_LENGTH);
+    const status = LIVE_HELP_REQUEST_STATUSES.indexOf(source.status) >= 0 ? source.status : '';
+    if (!activityId || !status) return null;
+    return { activityId: activityId, status: status, requestedAt: Math.max(0, Number(source.requestedAt) || 0) };
+  };
   const normalizeLivePollChoices = (value) => {
     const seen = new Set();
     const rawChoices = Array.isArray(value) ? value : String(value || '').split(/\r?\n/);
@@ -422,15 +447,16 @@
       };
     }).sort((a, b) => a.name.localeCompare(b.name));
   };
-  const LIVE_STUDENT_ACTIVITY_FILTERS = ['all', 'in-progress', 'finished', 'attention', 'offline'];
+  const LIVE_STUDENT_ACTIVITY_FILTERS = ['all', 'help', 'in-progress', 'finished', 'attention', 'offline'];
   const LIVE_STUDENT_ACTIVITY_SORTS = ['attention', 'name'];
   const liveStudentActivityMatchesFilter = (row, filter) => {
     const selected = LIVE_STUDENT_ACTIVITY_FILTERS.indexOf(filter) >= 0 ? filter : 'all';
     if (selected === 'all') return true;
+    if (selected === 'help') return row.supportStatus === 'help';
     if (selected === 'offline') return !row.connected;
     if (selected === 'in-progress') return ['working', 'opened', 'ready'].indexOf(row.status) >= 0;
     if (selected === 'finished') return ['submitted', 'revised', 'complete'].indexOf(row.status) >= 0;
-    return ['failed', 'withdrawn', 'waiting'].indexOf(row.status) >= 0;
+    return row.supportStatus === 'help' || ['failed', 'withdrawn', 'waiting'].indexOf(row.status) >= 0;
   };
   const summarizeLiveStudentActivityRows = (rows) => {
     const safeRows = Array.isArray(rows) ? rows : [];
@@ -457,8 +483,8 @@
     const attentionRank = { failed: 0, withdrawn: 1, waiting: 2, working: 3, opened: 4, ready: 4, submitted: 5, revised: 5, complete: 5 };
     return filtered.slice().sort(function (a, b) {
       if (sort === 'attention') {
-        const aRank = !a.connected ? -1 : (Object.prototype.hasOwnProperty.call(attentionRank, a.status) ? attentionRank[a.status] : 3);
-        const bRank = !b.connected ? -1 : (Object.prototype.hasOwnProperty.call(attentionRank, b.status) ? attentionRank[b.status] : 3);
+        const aRank = a.supportStatus === 'help' ? -2 : !a.connected ? -1 : (Object.prototype.hasOwnProperty.call(attentionRank, a.status) ? attentionRank[a.status] : 3);
+        const bRank = b.supportStatus === 'help' ? -2 : !b.connected ? -1 : (Object.prototype.hasOwnProperty.call(attentionRank, b.status) ? attentionRank[b.status] : 3);
         if (aRank !== bRank) return aRank - bRank;
       }
       return String(a.name || '').localeCompare(String(b.name || ''));
@@ -1424,6 +1450,8 @@
       this.onSessionQaStateChange = config.onSessionQaStateChange || (() => {});
       this.onSessionQaQuestion = config.onSessionQaQuestion || (() => {});
       this.onSessionQaUpvote = config.onSessionQaUpvote || (() => {});
+      this.onCheckInAck = config.onCheckInAck || (() => {});
+      this.onHelpRequest = config.onHelpRequest || (() => {});
       this.onGuestLeft = config.onGuestLeft || (() => {});
       this.peers = new Map();
       this.collectionUnsub = null;
@@ -1432,6 +1460,7 @@
       this.activePollResults = null;
       this.activePeerShowcase = null;
       this.peerShowcaseAudienceUids = null;
+      this.pendingCheckIns = new Map();
       this.sessionQaState = createSessionQaState({ enabled: config.enableSessionQa === true });
       this._stopped = false;
       // Roster gate: when set (Set of uids), offers from unknown uids are
@@ -1633,6 +1662,10 @@
               this._receiveSessionQaQuestion(uid, codename, parsed.payload);
             } else if (parsed && parsed.type === 'sessionQaUpvote' && parsed.payload) {
               this._receiveSessionQaUpvote(uid, parsed.payload);
+            } else if (parsed && parsed.type === 'checkInAck' && parsed.payload) {
+              this._receiveCheckInAck(uid, codename, parsed.payload);
+            } else if (parsed && parsed.type === 'helpRequest' && parsed.payload) {
+              this._receiveHelpRequest(uid, codename, parsed.payload);
             }
           } catch (err) {}
         };
@@ -1681,6 +1714,7 @@
       this.activePoll = poll;
       this.activeAudienceUids = Array.isArray(audienceUids) ? new Set(audienceUids) : null;
       this.activePollResults = null;
+      this.pendingCheckIns.clear();
       const msg = JSON.stringify({ type: 'poll', payload: poll });
       const clear = JSON.stringify({ type: 'closePoll', payload: {} });
       this.peers.forEach((peer, uid) => {
@@ -1704,6 +1738,7 @@
         this.activePoll = null;
         this.activeAudienceUids = null;
         this.activePollResults = null;
+        this.pendingCheckIns.clear();
       }
     }
 
@@ -1769,6 +1804,7 @@
       });
       this.activePeerShowcase = null;
       this.peerShowcaseAudienceUids = null;
+      this.pendingCheckIns.clear();
       return true;
     }
 
@@ -1909,6 +1945,41 @@
       }
     }
 
+    sendCheckIn(uid, activityId) {
+      if (!uid || !activityId || !this.activePoll || this.activePoll.id !== activityId || !this._isUidInActiveAudience(uid)) return null;
+      const peer = this.peers.get(uid);
+      if (!peer || !peer.dc || peer.dc.readyState !== 'open') return null;
+      const packet = normalizeLiveCheckInPacket({
+        id: 'checkin-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8),
+        activityId: activityId,
+        sentAt: Date.now(),
+      });
+      if (!packet) return null;
+      try {
+        peer.dc.send(JSON.stringify({ type: 'checkIn', payload: packet }));
+        this.pendingCheckIns.set(String(uid), packet);
+        return packet;
+      } catch (err) {
+        return null;
+      }
+    }
+
+    _receiveCheckInAck(uid, codename, payload) {
+      const ack = normalizeLiveCheckInAckPacket(payload);
+      const pending = this.pendingCheckIns.get(String(uid));
+      if (!ack || !pending || pending.id !== ack.checkInId || pending.activityId !== ack.activityId) return false;
+      this.pendingCheckIns.delete(String(uid));
+      this.onCheckInAck(uid, codename, ack);
+      return true;
+    }
+
+    _receiveHelpRequest(uid, codename, payload) {
+      const packet = normalizeLiveHelpRequestPacket(payload);
+      if (!packet || !this.activePoll || packet.activityId !== this.activePoll.id || !this._isUidInActiveAudience(uid)) return false;
+      this.onHelpRequest(uid, codename, packet);
+      return true;
+    }
+
     _cleanupPeer(uid, expectedPeer) {
       const peer = this.peers.get(uid);
       if (!peer || (expectedPeer && peer !== expectedPeer)) return;
@@ -1985,6 +2056,7 @@
       this.onSessionQaState = config.onSessionQaState || (() => {});
       this.onSessionQaFeatured = config.onSessionQaFeatured || (() => {});
       this.onFeedback = config.onFeedback || (() => {});
+      this.onCheckIn = config.onCheckIn || (() => {});
       this.onConnected = config.onConnected || (() => {});
       this.onDisconnected = config.onDisconnected || (() => {});
       this.onFailed = config.onFailed || (() => {});
@@ -2059,6 +2131,10 @@
           else if (parsed && parsed.type === 'feedback') {
             const packet = sanitizeFeedbackPacket(parsed.payload, parsed.payload && parsed.payload.pollId);
             if (packet) this.onFeedback(packet);
+          }
+          else if (parsed && parsed.type === 'checkIn') {
+            const packet = normalizeLiveCheckInPacket(parsed.payload);
+            if (packet) this.onCheckIn(packet);
           }
           else if (parsed && parsed.type === 'hostClosed') this.onHostClosed(parsed.payload || {});
         } catch (err) {}
@@ -2194,6 +2270,39 @@
           active: active === true,
           timestamp: Date.now(),
         } }));
+        return true;
+      } catch (err) {
+        return false;
+      }
+    }
+
+    sendCheckInAck(checkInId, activityId, status) {
+      if (!this.dc || this.dc.readyState !== 'open') return false;
+      const packet = normalizeLiveCheckInAckPacket({
+        checkInId: checkInId,
+        activityId: activityId,
+        status: status,
+        acknowledgedAt: Date.now(),
+      });
+      if (!packet) return false;
+      try {
+        this.dc.send(JSON.stringify({ type: 'checkInAck', payload: packet }));
+        return true;
+      } catch (err) {
+        return false;
+      }
+    }
+
+    sendHelpRequest(activityId, active) {
+      if (!this.dc || this.dc.readyState !== 'open') return false;
+      const packet = normalizeLiveHelpRequestPacket({
+        activityId: activityId,
+        status: active === false ? 'cleared' : 'help',
+        requestedAt: Date.now(),
+      });
+      if (!packet) return false;
+      try {
+        this.dc.send(JSON.stringify({ type: 'helpRequest', payload: packet }));
         return true;
       } catch (err) {
         return false;
@@ -2651,6 +2760,7 @@
     const [pendingEndAction, setPendingEndAction] = R.useState(null);
     const [guests, setGuests] = R.useState([]);
     const [responses, setResponses] = R.useState({});
+    const [checkInsByUid, setCheckInsByUid] = R.useState({});
     const [pollType, setPollType] = R.useState('rating');
     const [pollPrompt, setPollPrompt] = R.useState('');
     const [pollOptions, setPollOptions] = R.useState('Option A\nOption B\nOption C');
@@ -2736,7 +2846,7 @@
       activePollRef.current = null;
       routingByPollRef.current = {};
       setGuests([]); setActivePoll(null); setActiveParticipantUids([]);
-      setResponses({}); setRoutingByPoll({});
+      setResponses({}); setRoutingByPoll({}); setCheckInsByUid({});
       setStudentActivityFilter('all'); setStudentActivitySort('attention'); setStudentActivityQuery('');
       setStudentActivityExpanded(true); setComposerExpanded(true);
       setWordCloudModerationByPoll({}); setWordCloudAliasesByPoll({}); setWordCloudRenameDrafts({});
@@ -2776,7 +2886,7 @@
       activePollRef.current = null;
       routingByPollRef.current = {};
       setActivePoll(null); setActiveParticipantUids([]);
-      setResponses({}); setRoutingByPoll({});
+      setResponses({}); setRoutingByPoll({}); setCheckInsByUid({});
       setWordCloudModerationByPoll({}); setWordCloudAliasesByPoll({}); setWordCloudRenameDrafts({}); setFreeTextModerationByPoll({});
       setPeerShowcaseRound(null); setPeerVotesByRound({});
       setResponseStatusByPoll({}); setFeedbackByPoll({}); setFeedbackBusyByPoll({});
@@ -2919,6 +3029,23 @@
           setResponseStatusByPoll(function (prev) {
             const next = Object.assign({}, prev);
             next[payload.pollId] = Object.assign({}, next[payload.pollId] || {}, { [uid]: payload.status });
+            return next;
+          });
+        },
+        onCheckInAck: function (uid, codename, ack) {
+          if (!isCurrentTransport()) return;
+          setCheckInsByUid(function (prev) {
+            const current = prev[uid];
+            if (!current || current.id !== ack.checkInId || current.activityId !== ack.activityId) return prev;
+            return Object.assign({}, prev, { [uid]: Object.assign({}, current, { status: ack.status, acknowledgedAt: ack.acknowledgedAt }) });
+          });
+        },
+        onHelpRequest: function (uid, codename, packet) {
+          if (!isCurrentTransport()) return;
+          setCheckInsByUid(function (prev) {
+            const next = Object.assign({}, prev);
+            if (packet.status === 'cleared') delete next[uid];
+            else next[uid] = { id: 'student-request-' + uid, activityId: packet.activityId, status: 'help', acknowledgedAt: packet.requestedAt, studentInitiated: true };
             return next;
           });
         },
@@ -3092,6 +3219,7 @@
       hostRef.current.broadcastPoll(poll, audienceUids);
       setActiveParticipantUids(audienceUids);
       setActivePoll(poll);
+      setCheckInsByUid({});
       setResponses(function (prev) { const n = Object.assign({}, prev); n[poll.id] = []; return n; });
       setRoutingByPoll(function (prev) { const n = Object.assign({}, prev); n[poll.id] = {}; return n; });
       setWordCloudModerationByPoll(function (prev) { const n = Object.assign({}, prev); n[poll.id] = {}; return n; });
@@ -3118,6 +3246,7 @@
       activePollRef.current = null;
       routingByPollRef.current = {};
       setActivePoll(null);
+      setCheckInsByUid({});
       setPeerShowcaseRound(null);
       setActiveParticipantUids([]);
       setComposerExpanded(true);
@@ -3400,7 +3529,7 @@
         responseEntry: activeResponses.find(function (entry) { return entry.uid === uid; }) || null,
       };
     }) : [];
-    const studentActivityRows = buildLiveStudentActivityRows({
+    const rawStudentActivityRows = buildLiveStudentActivityRows({
       roster: roster,
       guests: guests,
       groups: sessionGroups,
@@ -3410,6 +3539,11 @@
       activeParticipantUids: activeParticipantUids,
       responses: activeResponses,
       responseStatuses: feedbackStatusForActive,
+    });
+    const studentActivityRows = rawStudentActivityRows.map(function (row) {
+      const signal = checkInsByUid[row.uid];
+      const supportStatus = activePoll && signal && signal.activityId === activePoll.id && signal.status === 'help' ? 'help' : '';
+      return supportStatus ? Object.assign({}, row, { supportStatus: supportStatus }) : row;
     });
     const studentActivityCounts = studentActivityRows.reduce(function (out, row) {
       out[row.status] = (out[row.status] || 0) + 1;
@@ -3422,6 +3556,15 @@
       query: studentActivityQuery,
       groups: sessionGroups,
     });
+    const sendTeacherCheckIn = function (row) {
+      if (!row || !activePoll || !hostRef.current || typeof hostRef.current.sendCheckIn !== 'function') return;
+      if (!row.connected || !activeParticipantUidSet.has(String(row.uid))) return;
+      const packet = hostRef.current.sendCheckIn(row.uid, activePoll.id);
+      if (!packet) return;
+      setCheckInsByUid(function (prev) {
+        return Object.assign({}, prev, { [row.uid]: Object.assign({}, packet, { status: 'sent' }) });
+      });
+    };
     const jumpToLiveWorkspaceSection = function (sectionId) {
       if (!sectionId || !hostDialogRef.current) return;
       if (sectionId === 'students') setStudentActivityExpanded(true);
@@ -3775,6 +3918,7 @@
           studentActivityRows.length ? ce('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(112px, 1fr))', gap: 6, marginTop: 9 }, role: 'group', 'aria-label': tr('Filter student activity') },
             [
               { id: 'all', label: tr('All students') },
+              { id: 'help', label: tr('Help requested') },
               { id: 'in-progress', label: tr('In progress') },
               { id: 'finished', label: tr('Finished') },
               { id: 'attention', label: tr('Needs attention') },
@@ -3819,15 +3963,20 @@
             )
           ) : null,
           visibleStudentActivityRows.length ? ce('div', { role: 'region', 'aria-label': tr('Scrollable live student activity table'), tabIndex: 0, style: { marginTop: 8, maxHeight: 250, overflow: 'auto', border: '1px solid #dbeafe', borderRadius: 8, background: 'white' } },
-            ce('table', { 'aria-label': tr('Live student activity status'), style: { width: '100%', minWidth: 620, borderCollapse: 'collapse', fontSize: '0.75rem' } },
+            ce('table', { 'aria-label': tr('Live student activity status'), style: { width: '100%', minWidth: 760, borderCollapse: 'collapse', fontSize: '0.75rem' } },
               ce('thead', null, ce('tr', { style: { position: 'sticky', top: 0, zIndex: 1, background: '#f8fafc', color: '#334155', textAlign: 'left' } },
                 ce('th', { scope: 'col', style: { padding: '0.45rem 0.55rem', borderBottom: '1px solid #e2e8f0' } }, tr('Student')),
                 ce('th', { scope: 'col', style: { padding: '0.45rem 0.55rem', borderBottom: '1px solid #e2e8f0' } }, tr('Connection')),
                 ce('th', { scope: 'col', style: { padding: '0.45rem 0.55rem', borderBottom: '1px solid #e2e8f0' } }, tr('Current activity')),
-                ce('th', { scope: 'col', style: { padding: '0.45rem 0.55rem', borderBottom: '1px solid #e2e8f0' } }, tr('Progress'))
+                ce('th', { scope: 'col', style: { padding: '0.45rem 0.55rem', borderBottom: '1px solid #e2e8f0' } }, tr('Progress')),
+                ce('th', { scope: 'col', style: { padding: '0.45rem 0.55rem', borderBottom: '1px solid #e2e8f0' } }, tr('Teacher check-in'))
               )),
               ce('tbody', null, visibleStudentActivityRows.map(function (row) {
                 const group = row.groupId && sessionGroups[row.groupId];
+                const checkIn = checkInsByUid[row.uid];
+                const checkInForActivePoll = !!(activePoll && checkIn && checkIn.activityId === activePoll.id);
+                const checkInPending = checkInForActivePoll && checkIn.status === 'sent';
+                const canCheckIn = !!(activePoll && row.connected && activeParticipantUidSet.has(String(row.uid)) && ['submitted', 'revised', 'complete'].indexOf(row.status) < 0);
                 return ce('tr', { key: row.uid },
                   ce('th', { scope: 'row', style: { padding: '0.45rem 0.55rem', borderBottom: '1px solid #f1f5f9', color: '#0f172a', textAlign: 'left' } }, row.name, group ? ce('span', { style: { display: 'block', color: '#64748b', fontSize: '0.65rem', fontWeight: 600 } }, group.name || row.groupId) : null),
                   ce('td', { style: { padding: '0.45rem 0.55rem', borderBottom: '1px solid #f1f5f9', color: row.connected ? '#166534' : '#64748b', fontWeight: 750 } }, row.connected ? tr('Connected') : tr('Offline')),
@@ -3835,6 +3984,16 @@
                   ce('td', { style: { padding: '0.45rem 0.55rem', borderBottom: '1px solid #f1f5f9' } },
                     ce('span', { style: { display: 'inline-block', padding: '0.18rem 0.42rem', borderRadius: 999, background: row.status === 'submitted' || row.status === 'revised' || row.status === 'complete' || row.status === 'opened' ? '#dcfce7' : row.status === 'working' ? '#fef3c7' : row.status === 'withdrawn' || row.status === 'failed' ? '#fee2e2' : '#f1f5f9', color: row.status === 'submitted' || row.status === 'revised' || row.status === 'complete' || row.status === 'opened' ? '#166534' : row.status === 'working' ? '#92400e' : row.status === 'withdrawn' || row.status === 'failed' ? '#991b1b' : '#475569', fontWeight: 850 } }, tr(row.status)),
                     row.progressDetail ? ce('span', { style: { display: 'block', marginTop: 2, color: '#64748b', fontSize: '0.66rem', fontVariantNumeric: 'tabular-nums' } }, row.progressDetail + ' ' + tr('completed')) : null
+                  ),
+                  ce('td', { style: { padding: '0.35rem 0.55rem', borderBottom: '1px solid #f1f5f9' } },
+                    canCheckIn ? ce('button', {
+                      type: 'button', disabled: checkInPending,
+                      onClick: function () { sendTeacherCheckIn(row); },
+                      'aria-label': (checkInForActivePoll && checkIn.status === 'help' ? tr('Check in again with') : tr('Check in with')) + ' ' + row.name,
+                      style: { minHeight: 40, padding: '0.3rem 0.55rem', border: '1px solid ' + (checkInForActivePoll && checkIn.status === 'help' ? '#dc2626' : '#2563eb'), borderRadius: 6, background: 'white', color: checkInPending ? '#94a3b8' : checkInForActivePoll && checkIn.status === 'help' ? '#b91c1c' : '#1d4ed8', cursor: checkInPending ? 'default' : 'pointer', fontWeight: 850, fontSize: '0.68rem' }
+                    }, checkInPending ? tr('Check-in sent') : checkInForActivePoll && checkIn.status === 'help' ? tr('Needs help - check again') : tr('Check in')) : ce('span', { style: { color: '#94a3b8', fontSize: '0.67rem' } }, row.connected ? tr('No check-in needed') : tr('Reconnect needed')),
+                    checkInForActivePoll && checkIn.status === 'working' ? ce('span', { role: 'status', style: { display: 'block', marginTop: 3, color: '#166534', fontSize: '0.65rem', fontWeight: 850 } }, tr('Student says they are working')) : null,
+                    checkInForActivePoll && checkIn.status === 'help' ? ce('span', { role: 'status', style: { display: 'block', marginTop: 3, color: '#b91c1c', fontSize: '0.65rem', fontWeight: 850 } }, tr('Student asked for help')) : null
                   )
                 );
               }))
@@ -4422,11 +4581,14 @@
     const [sessionQaNotice, setSessionQaNotice] = R.useState(null);
     const [connectionState, setConnectionState] = R.useState('idle');
     const [submitNotice, setSubmitNotice] = R.useState(null);
+    const [teacherCheckIn, setTeacherCheckIn] = R.useState(null);
+    const [helpRequested, setHelpRequested] = R.useState(false);
     const [studentFeedback, setStudentFeedback] = R.useState(null);
     const [currentAttempt, setCurrentAttempt] = R.useState(1);
     const [submittedResponse, setSubmittedResponse] = R.useState('');
     const studentPollIdRef = R.useRef(null);
     const statusSentRef = R.useRef('');
+    const helpRequestedRef = R.useRef(false);
     // Auto-rejoin: bumping joinNonce re-runs the join effect with a fresh
     // PollingGuest (fresh offer/signaling doc). The host accepts re-offers,
     // so this is the student half of the reconnect story.
@@ -4479,6 +4641,8 @@
             setResponseValue('');
             setSubmittedResponse('');
             setStudentFeedback(null);
+            setTeacherCheckIn(null);
+            setHelpRequested(false);
             setCurrentAttempt(1);
             statusSentRef.current = '';
           }
@@ -4491,6 +4655,8 @@
             setResponseValue('');
             setSubmittedResponse('');
             setStudentFeedback(null);
+            setTeacherCheckIn(null);
+            setHelpRequested(false);
             setCurrentAttempt(1);
             studentPollIdRef.current = null;
             statusSentRef.current = '';
@@ -4504,6 +4670,8 @@
         onPollResults: function (summary) {
           setSharedResults(summary); setActivePoll(null); setSubmitted(false); setResponseValue('');
           setSubmittedResponse(''); setStudentFeedback(null); setCurrentAttempt(1);
+          setTeacherCheckIn(null);
+          setHelpRequested(false);
           setPeerShowcase(null); setPeerVoteSelection(''); setPeerVoteSubmitted(false);
           studentPollIdRef.current = null; statusSentRef.current = ''; setSubmitNotice(null);
         },
@@ -4550,6 +4718,12 @@
             return current;
           });
         },
+        onCheckIn: function (packet) {
+          setActivePoll(function (current) {
+            if (current && current.id === packet.activityId) setTeacherCheckIn(Object.assign({}, packet, { status: 'received' }));
+            return current;
+          });
+        },
         onHostClosed: function () {
           // Terminal event: the teacher closed the polling panel. Force-clear
           // any active poll so the student is never left answering into a dead
@@ -4560,6 +4734,8 @@
           setResponseValue('');
           setSubmittedResponse('');
           setStudentFeedback(null);
+          setTeacherCheckIn(null);
+          setHelpRequested(false);
           setCurrentAttempt(1);
           setPeerShowcase(null);
           setPeerVoteSelection('');
@@ -4575,7 +4751,12 @@
           setConnectionState('reconnecting');
           scheduleRejoin();
         },
-        onConnected: function () { retryCountRef.current = 0; setConnectionState('connected'); setSubmitNotice(null); },
+        onConnected: function () {
+          retryCountRef.current = 0;
+          setConnectionState('connected');
+          setSubmitNotice(null);
+          if (helpRequestedRef.current && studentPollIdRef.current) guest.sendHelpRequest(studentPollIdRef.current, true);
+        },
         onDisconnected: function () { setConnectionState('reconnecting'); scheduleRejoin(); },
         onFailed: function () {
           setConnectionState(function (prev) { return prev === 'connected' ? prev : 'failed'; });
@@ -4591,6 +4772,8 @@
         guestRef.current = null;
       };
     }, [enabled, sessionCode, userUid, codename, joinNonce, hostNonce, sessionQaOptIn]);
+
+    R.useEffect(function () { helpRequestedRef.current = helpRequested; }, [helpRequested]);
 
     R.useEffect(function () {
       if (!activePoll || !isFeedbackPoll(activePoll) || submitted) return;
@@ -4867,6 +5050,7 @@
       const sent = guestRef.current.sendResponse(activePoll.id, payload, feedbackConfig.enabled ? { attempt: currentAttempt } : null);
       if (sent) {
         setSubmittedResponse(payload);
+        if (helpRequested && guestRef.current.sendHelpRequest(activePoll.id, false)) setHelpRequested(false);
         if (feedbackConfig.enabled) {
           setStudentFeedback(null);
           guestRef.current.sendResponseStatus(activePoll.id, 'submitted', currentAttempt);
@@ -4889,6 +5073,34 @@
         setSubmitNotice(tr('Connection lost — reconnecting. Your response was not sent; try again in a few seconds.'));
       }
     };
+    const answerTeacherCheckIn = function (status) {
+      if (!teacherCheckIn || !guestRef.current || connectionState !== 'connected') {
+        setSubmitNotice(tr('Reconnect to answer the teacher check-in.'));
+        return;
+      }
+      const sent = guestRef.current.sendCheckInAck(teacherCheckIn.id, teacherCheckIn.activityId, status);
+      if (!sent) {
+        setSubmitNotice(tr('Your check-in answer was not sent. Please try again.'));
+        return;
+      }
+      if (status === 'working' && helpRequested && guestRef.current.sendHelpRequest(teacherCheckIn.activityId, false)) setHelpRequested(false);
+      if (status === 'help') setHelpRequested(true);
+      setTeacherCheckIn(function (current) { return current ? Object.assign({}, current, { status: status }) : current; });
+      setSubmitNotice(null);
+    };
+    const toggleHelpRequest = function () {
+      if (!activePoll || !guestRef.current || connectionState !== 'connected') {
+        setSubmitNotice(tr('Reconnect to update your help request.'));
+        return;
+      }
+      const next = !helpRequested;
+      if (!guestRef.current.sendHelpRequest(activePoll.id, next)) {
+        setSubmitNotice(tr('Your help request was not sent. Please try again.'));
+        return;
+      }
+      setHelpRequested(next);
+      setSubmitNotice(next ? tr('Your teacher can now see that you requested help.') : tr('Your help request was cancelled.'));
+    };
 
     return ce('div', {
       ref: pollDialogRef,
@@ -4903,6 +5115,14 @@
           ce('span', { 'aria-hidden': 'true' }, connectionState === 'connected' ? '●' : connectionState === 'failed' ? '!' : '↻'),
           connectionState === 'connected' ? tr('Connected - response ready to send') : connectionState === 'failed' ? tr('Direct connection unavailable - download fallback ready') : connectionState === 'reconnecting' ? tr('Reconnecting - your draft stays here') : tr('Connecting - your draft stays here')
         ),
+        teacherCheckIn && teacherCheckIn.activityId === activePoll.id ? ce('section', { role: 'status', 'aria-live': 'assertive', 'aria-label': tr('Private teacher check-in'), style: { margin: '0 0 0.8rem', padding: '0.7rem', border: '2px solid #7c3aed', borderRadius: 9, background: '#f5f3ff', color: '#4c1d95' } },
+          ce('strong', { style: { display: 'block', fontSize: '0.78rem' } }, tr('Your teacher is checking in privately.')),
+          ce('p', { style: { margin: '0.3rem 0 0', fontSize: '0.74rem', lineHeight: 1.4 } }, teacherCheckIn.status === 'received' ? tr('Let your teacher know whether you are continuing or would like support. Your response content is not shared by this check-in.') : teacherCheckIn.status === 'help' ? tr('Your teacher can now see that you would like help.') : tr('Your teacher can now see that you are working.')),
+          teacherCheckIn.status === 'received' ? ce('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 7, marginTop: 8 } },
+            ce('button', { type: 'button', onClick: function () { answerTeacherCheckIn('working'); }, disabled: connectionState !== 'connected', style: { minHeight: 44, padding: '0.45rem 0.65rem', border: '1px solid #16a34a', borderRadius: 6, background: 'white', color: '#166534', fontWeight: 850, cursor: connectionState === 'connected' ? 'pointer' : 'default' } }, tr("I'm working")),
+            ce('button', { type: 'button', onClick: function () { answerTeacherCheckIn('help'); }, disabled: connectionState !== 'connected', style: { minHeight: 44, padding: '0.45rem 0.65rem', border: '1px solid #dc2626', borderRadius: 6, background: 'white', color: '#b91c1c', fontWeight: 850, cursor: connectionState === 'connected' ? 'pointer' : 'default' } }, tr('I need help'))
+          ) : ce('button', { type: 'button', onClick: function () { setTeacherCheckIn(null); }, style: { minHeight: 44, width: '100%', marginTop: 8, padding: '0.4rem 0.65rem', border: '1px solid #7c3aed', borderRadius: 6, background: 'white', color: '#6d28d9', fontWeight: 850, cursor: 'pointer' } }, tr('Dismiss check-in'))
+        ) : null,
         feedbackConfig.enabled && feedbackConfig.criteria ? ce('div', { style: { margin: '0 0 0.8rem 0', padding: '0.55rem', background: '#f8fafc', borderLeft: '3px solid #6366f1', borderRadius: 6, color: '#475569', fontSize: '0.76rem', lineHeight: 1.4 } },
           ce('strong', { style: { display: 'block', color: '#312e81', fontSize: '0.68rem', textTransform: 'uppercase', marginBottom: 2 } }, tr('Success criteria')),
           feedbackConfig.criteria
@@ -4974,6 +5194,14 @@
           ) :
           ce('textarea', { value: responseValue, maxLength: feedbackConfig.enabled ? FEEDBACK_RESPONSE_MAX_LENGTH : undefined, onChange: function (e) { setResponseValue(e.target.value); }, 'aria-label': tr('Your response'), placeholder: feedbackConfig.enabled && currentAttempt > 1 ? tr('Revise your response using the feedback') : tr('Type your response'), rows: 5, style: { width: '100%', padding: '0.6rem', border: '1px solid #cbd5e1', borderRadius: 6, fontFamily: 'inherit', boxSizing: 'border-box', margin: '0 0 1rem 0' } }),
         submitted ? null : ce('button', { onClick: submit, disabled: !canSubmit, style: { minHeight: 48, padding: '0.6rem 1.2rem', borderRadius: 6, border: 'none', background: canSubmit ? (connectionState === 'failed' ? '#b45309' : '#1e3a8a') : '#cbd5e1', color: 'white', cursor: canSubmit ? 'pointer' : 'default', fontWeight: 800, width: '100%' } }, submitButtonLabel),
+        ce('button', {
+          type: 'button',
+          onClick: toggleHelpRequest,
+          disabled: connectionState !== 'connected',
+          'aria-pressed': helpRequested,
+          'aria-label': helpRequested ? tr('Cancel private help request') : tr('Request private teacher help'),
+          style: { marginTop: 7, minHeight: 44, width: '100%', padding: '0.5rem', border: '1px solid ' + (helpRequested ? '#dc2626' : '#7c3aed'), borderRadius: 6, background: helpRequested ? '#fef2f2' : 'white', color: connectionState === 'connected' ? (helpRequested ? '#b91c1c' : '#6d28d9') : '#94a3b8', fontWeight: 900, cursor: connectionState === 'connected' ? 'pointer' : 'default' }
+        }, helpRequested ? tr('Cancel help request') : tr('Request help')),
         sessionQaOptIn && sessionQaState && sessionQaState.enabled ? ce('button', {
           type: 'button',
           onClick: function () { setSessionQaViewOpen(true); setSessionQaNotice(null); },
@@ -5001,6 +5229,11 @@
     LIVE_POLL_PROMPT_MAX_LENGTH: LIVE_POLL_PROMPT_MAX_LENGTH,
     LIVE_POLL_CHOICE_MAX_LENGTH: LIVE_POLL_CHOICE_MAX_LENGTH,
     LIVE_POLL_MAX_CHOICES: LIVE_POLL_MAX_CHOICES,
+    normalizeLiveCheckInPacket: normalizeLiveCheckInPacket,
+    normalizeLiveCheckInAckPacket: normalizeLiveCheckInAckPacket,
+    LIVE_CHECK_IN_ACK_STATUSES: LIVE_CHECK_IN_ACK_STATUSES,
+    normalizeLiveHelpRequestPacket: normalizeLiveHelpRequestPacket,
+    LIVE_HELP_REQUEST_STATUSES: LIVE_HELP_REQUEST_STATUSES,
     normalizeRatingScale: normalizeRatingScale,
     buildPollResultsSummary: buildPollResultsSummary,
     buildLivePollingAlloSheetEnvelope: buildLivePollingAlloSheetEnvelope,

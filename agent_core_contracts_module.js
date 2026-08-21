@@ -440,12 +440,48 @@
       // (round-trips are idempotent), minted from the PRE-REORDER index
       // otherwise so it travels with the item through the sort below.
       var uiId = (item && typeof item === 'object' && (item.uiId || item.stepId)) || (String(tool) + '-' + i);
-      items.push({
+      var normalized = {
         tool: String(tool),
         directive: String(directive || ''),
         uiId: String(uiId),
         instructionalText: normalizeInstructionalText(item && typeof item === 'object' ? item.instructionalText : null, String(tool))
-      });
+      };
+      // GenerationMatrix is reviewed plan data, not ambient UI state. Keep its
+      // row-level decision and exact variants intact across every
+      // Blueprint <-> legacy conversion. These fields are deliberately
+      // additive so older plans retain their original single-call behavior.
+      if (item && typeof item === 'object') {
+        if (typeof item.generationAction === 'string') normalized.generationAction = item.generationAction;
+        if (Object.prototype.hasOwnProperty.call(item, 'generationIdentity')) {
+          normalized.generationIdentity = isPlainObject(item.generationIdentity)
+            ? Object.assign({}, item.generationIdentity) : item.generationIdentity;
+        }
+        if (Array.isArray(item.generationVariants)) {
+          normalized.generationVariants = item.generationVariants.slice(0, 100).map(function (variant) {
+            return isPlainObject(variant) ? Object.assign({}, variant) : variant;
+          });
+        }
+        if (Object.prototype.hasOwnProperty.call(item, 'existingArtifactId')) normalized.existingArtifactId = item.existingArtifactId;
+        if (typeof item.variantKey === 'string') normalized.variantKey = item.variantKey;
+        if (Object.prototype.hasOwnProperty.call(item, 'explicitVariantKey')) normalized.explicitVariantKey = item.explicitVariantKey;
+        if (item.variantKeyDerived === true || item.variantKeyDerived === false) normalized.variantKeyDerived = item.variantKeyDerived;
+        if (typeof item.sourceFingerprint === 'string') normalized.sourceFingerprint = item.sourceFingerprint;
+        if (Object.prototype.hasOwnProperty.call(item, 'sourceArtifactId')) normalized.sourceArtifactId = item.sourceArtifactId;
+        if (typeof item.contextFingerprint === 'string') normalized.contextFingerprint = item.contextFingerprint;
+        if (typeof item.contextInputsFingerprint === 'string') normalized.contextInputsFingerprint = item.contextInputsFingerprint;
+        if (item.contextFingerprintDerived === true || item.contextFingerprintDerived === false) normalized.contextFingerprintDerived = item.contextFingerprintDerived;
+        if (isPlainObject(item.generationConfig)) normalized.generationConfig = Object.assign({}, item.generationConfig);
+        if (typeof item.generationConfigFingerprint === 'string') normalized.generationConfigFingerprint = item.generationConfigFingerprint;
+        if (typeof item.generationPolicy === 'string') normalized.generationPolicy = item.generationPolicy;
+        if (item.novelResource === true || item.novelResource === false) normalized.novelResource = item.novelResource;
+        if (Array.isArray(item.suppressedGenerationVariants)) normalized.suppressedGenerationVariants = item.suppressedGenerationVariants.map(function (variant) { return isPlainObject(variant) ? Object.assign({}, variant) : variant; });
+        // Transitional container accepted by early GenerationMatrix callers.
+        // The canonical resolver currently emits the flattened fields above,
+        // but retaining this object prevents a reviewed plan from losing data.
+        if (isPlainObject(item.generationMatrix)) normalized.generationMatrix = Object.assign({}, item.generationMatrix);
+        if (item.generationMatrixUnavailable === true) normalized.generationMatrixUnavailable = true;
+      }
+      items.push(normalized);
     }
     // Ordering invariant shared with phase_k/phase_o/ANTI: analysis first,
     // lesson-plan last.
@@ -633,7 +669,29 @@
       (isPlainObject(b.instructionalContext) && b.instructionalContext.standardsContext) || b.standardsContext
     );
     var legacy = {
-      resourcePlan: plan.map(function (r) { return { tool: r.tool, directive: r.directive, uiId: r.uiId, instructionalText: r.instructionalText }; }),
+      resourcePlan: plan.map(function (r) {
+        var row = { tool: r.tool, directive: r.directive, uiId: r.uiId, instructionalText: r.instructionalText };
+        if (typeof r.generationAction === 'string') row.generationAction = r.generationAction;
+        if (Object.prototype.hasOwnProperty.call(r, 'generationIdentity')) row.generationIdentity = isPlainObject(r.generationIdentity) ? Object.assign({}, r.generationIdentity) : r.generationIdentity;
+        if (Array.isArray(r.generationVariants)) row.generationVariants = r.generationVariants.map(function (variant) { return isPlainObject(variant) ? Object.assign({}, variant) : variant; });
+        if (Object.prototype.hasOwnProperty.call(r, 'existingArtifactId')) row.existingArtifactId = r.existingArtifactId;
+        if (typeof r.variantKey === 'string') row.variantKey = r.variantKey;
+        if (Object.prototype.hasOwnProperty.call(r, 'explicitVariantKey')) row.explicitVariantKey = r.explicitVariantKey;
+        if (r.variantKeyDerived === true || r.variantKeyDerived === false) row.variantKeyDerived = r.variantKeyDerived;
+        if (typeof r.sourceFingerprint === 'string') row.sourceFingerprint = r.sourceFingerprint;
+        if (Object.prototype.hasOwnProperty.call(r, 'sourceArtifactId')) row.sourceArtifactId = r.sourceArtifactId;
+        if (typeof r.contextFingerprint === 'string') row.contextFingerprint = r.contextFingerprint;
+        if (typeof r.contextInputsFingerprint === 'string') row.contextInputsFingerprint = r.contextInputsFingerprint;
+        if (r.contextFingerprintDerived === true || r.contextFingerprintDerived === false) row.contextFingerprintDerived = r.contextFingerprintDerived;
+        if (isPlainObject(r.generationConfig)) row.generationConfig = Object.assign({}, r.generationConfig);
+        if (typeof r.generationConfigFingerprint === 'string') row.generationConfigFingerprint = r.generationConfigFingerprint;
+        if (typeof r.generationPolicy === 'string') row.generationPolicy = r.generationPolicy;
+        if (r.novelResource === true || r.novelResource === false) row.novelResource = r.novelResource;
+        if (Array.isArray(r.suppressedGenerationVariants)) row.suppressedGenerationVariants = r.suppressedGenerationVariants.map(function (variant) { return isPlainObject(variant) ? Object.assign({}, variant) : variant; });
+        if (isPlainObject(r.generationMatrix)) row.generationMatrix = Object.assign({}, r.generationMatrix);
+        if (r.generationMatrixUnavailable === true) row.generationMatrixUnavailable = true;
+        return row;
+      }),
       recommendedResources: plan.map(function (r) { return r.tool; }),
       toolDirectives: plan.reduce(function (acc, r) { if (!acc[r.tool]) acc[r.tool] = r.directive || ''; return acc; }, {}),
       lessonDNA: isPlainObject(b.lessonDNA) ? b.lessonDNA : {},

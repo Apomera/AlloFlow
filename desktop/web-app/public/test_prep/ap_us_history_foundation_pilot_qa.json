@@ -1,0 +1,4612 @@
+{
+  "schemaVersion": 1,
+  "reportId": "ap-us-history-foundation-pilot-qa",
+  "generatedAt": "2026-08-20T00:00:00.000Z",
+  "packId": "ap-us-history-foundation-pilot",
+  "packVersion": "0.1.0-internal-preview",
+  "inputs": {
+    "pack": {
+      "path": "test_prep/ap_us_history_foundation_pilot.json",
+      "byteLength": 3056024,
+      "sha256": "55b730d7292474613e9ac7a8e3bde9b1e74fc0280608bdb7eb44cf8115c22308"
+    },
+    "learningLibrary": {
+      "path": "test_prep/ap_us_history_foundation_pilot_learning_library.json",
+      "byteLength": 534272,
+      "sha256": "dafb07123e4c09b54fb8f95748cdcbcc28f0248c393424590adecbf92b99bf88"
+    }
+  },
+  "standard": {
+    "label": "AlloFlow AP U.S. History internal-foundation structural and editorial QA v1",
+    "meaning": "Automated pass signals cover deterministic structure, period balance, historical-thinking-skill presence, answer-key distribution, feedback completeness, public-source linkage, independent-authoring declarations, native-library inventory and structure, original accessible diagrams, unscored workshop safeguards, and source/deploy parity.",
+    "limitation": "Automated QA cannot establish AP U.S. History content validity, distractor functioning, fairness, accessibility conformance, rights clearance, psychometric quality, official AP alignment, score meaning, or release readiness. College Board has not reviewed or endorsed these materials."
+  },
+  "automatedAssessment": {
+    "automatedQaStatus": "pass",
+    "releaseReady": false,
+    "structuralFindingCount": 0,
+    "signals": [
+      {
+        "check": "asset-identity",
+        "status": "pass",
+        "findingCount": 0,
+        "meaning": "Pack and library identities, versions, preview state, and cross-links are structurally consistent."
+      },
+      {
+        "check": "blueprint-and-unit-balance",
+        "status": "pass",
+        "findingCount": 0,
+        "meaning": "Six hundred original internal items are distributed across all nine public framework periods and sixty ten-item banks."
+      },
+      {
+        "check": "framework-topic-coverage",
+        "status": "pass",
+        "findingCount": 0,
+        "meaning": "All 105 current public framework topic IDs are represented; this is content coverage, not official exam equivalence."
+      },
+      {
+        "check": "depth-coverage",
+        "status": "pass",
+        "findingCount": 0,
+        "meaning": "Two original 50-item depth slices bring every current framework topic to at least two internal items."
+      },
+      {
+        "check": "third-layer-balance",
+        "status": "pass",
+        "findingCount": 0,
+        "meaning": "A third original 60-item slice strengthens lighter historical-thinking skills and reasoning processes across 60 topics."
+      },
+      {
+        "check": "third-layer-completion",
+        "status": "pass",
+        "findingCount": 0,
+        "meaning": "A 40-item original completion slice brings every current framework topic to at least three internal items."
+      },
+      {
+        "check": "fourth-layer-completion",
+        "status": "pass",
+        "findingCount": 0,
+        "meaning": "A 100-item original completion slice brings every current framework topic to at least four internal items."
+      },
+      {
+        "check": "fifth-layer-balance",
+        "status": "pass",
+        "findingCount": 0,
+        "meaning": "An 80-item original fifth-layer balance slice strengthens practice depth across 80 topics while every current framework topic retains at least four items."
+      },
+      {
+        "check": "fifth-layer-completion",
+        "status": "pass",
+        "findingCount": 0,
+        "meaning": "A 40-item original fifth-layer completion slice brings every current framework topic to at least five internal items."
+      },
+      {
+        "check": "sixth-layer-balance",
+        "status": "pass",
+        "findingCount": 0,
+        "meaning": "A 60-item original sixth-layer balance slice adds another practice angle across 60 topics while preserving five-item coverage for every current framework topic."
+      },
+      {
+        "check": "historical-thinking-skill-coverage",
+        "status": "pass",
+        "findingCount": 0,
+        "meaning": "All six public historical-thinking skills are represented in the foundation sample."
+      },
+      {
+        "check": "reasoning-process-balance",
+        "status": "pass",
+        "findingCount": 0,
+        "meaning": "Comparison, causation, and continuity-and-change remain represented with a substantive internal balance sample."
+      },
+      {
+        "check": "answer-key-balance",
+        "status": "pass",
+        "findingCount": 0,
+        "meaning": "Answer positions follow the declared 150/150/150/150 structural distribution; this is not psychometric evidence."
+      },
+      {
+        "check": "one-best-answer",
+        "status": "pass",
+        "findingCount": 0,
+        "meaning": "Every item and chapter check has one prompt, four distinct options, and a valid key."
+      },
+      {
+        "check": "substantive-feedback",
+        "status": "pass",
+        "findingCount": 0,
+        "meaning": "Every item has a rationale and four option-level feedback records."
+      },
+      {
+        "check": "source-and-provenance",
+        "status": "pass",
+        "findingCount": 0,
+        "meaning": "Public framework and factual-reference links plus independent-original provenance declarations are complete."
+      },
+      {
+        "check": "rights-boundary",
+        "status": "pass",
+        "findingCount": 0,
+        "meaning": "Automated QA confirms only that restricted-content and release flags remain closed; it is not independent rights clearance."
+      },
+      {
+        "check": "accessibility-boundary",
+        "status": "pass",
+        "findingCount": 0,
+        "meaning": "Automated QA confirms text/reading-order declarations and a still-pending independent accessibility gate."
+      },
+      {
+        "check": "expert-review-boundary",
+        "status": "pass",
+        "findingCount": 0,
+        "meaning": "Automated QA confirms the independent AP U.S. History expert gate remains pending and release-blocking."
+      },
+      {
+        "check": "psychometric-boundary",
+        "status": "pass",
+        "findingCount": 0,
+        "meaning": "Automated QA confirms the items remain uncalibrated and ineligible for score inference or release."
+      },
+      {
+        "check": "prompt-originality",
+        "status": "pass",
+        "findingCount": 0,
+        "meaning": "No exact normalized prompt duplicate appears in the internal sample."
+      },
+      {
+        "check": "prompt-coherence",
+        "status": "pass",
+        "findingCount": 0,
+        "meaning": "Item stems remain complete questions rather than dangling template text."
+      },
+      {
+        "check": "learning-alignment",
+        "status": "pass",
+        "findingCount": 0,
+        "meaning": "Every item resolves to an internal topic learning target and lesson route."
+      },
+      {
+        "check": "library-inventory",
+        "status": "pass",
+        "findingCount": 0,
+        "meaning": "Declared chapter, section, check, study-aid, and workshop counts match the actual library."
+      },
+      {
+        "check": "library-content-structure",
+        "status": "pass",
+        "findingCount": 0,
+        "meaning": "Chapters, references, review declarations, and release boundaries remain structurally complete."
+      },
+      {
+        "check": "library-content-depth",
+        "status": "pass",
+        "findingCount": 0,
+        "meaning": "Each native lesson has structured blocks, examples, nonexamples, evidence tables, and retrieval prompts."
+      },
+      {
+        "check": "diagram-integrity",
+        "status": "pass",
+        "findingCount": 0,
+        "meaning": "Optional original diagram specifications have accessible text equivalents and remain unscored."
+      },
+      {
+        "check": "workshop-unscored-safeguards",
+        "status": "pass",
+        "findingCount": 0,
+        "meaning": "SAQ-, DBQ-, and LEQ-style workshops remain original, synthetic, unscored, non-predictive, and release-ineligible."
+      },
+      {
+        "check": "deployment-parity",
+        "status": "pass",
+        "findingCount": 0,
+        "meaning": "When deployment mirrors exist, they are byte-identical to source; absent pre-build mirrors are deferred."
+      }
+    ],
+    "structuralFindings": []
+  },
+  "independentHumanReview": {
+    "releaseStatus": "blocked-pending-independent-review",
+    "releaseReady": false,
+    "blockerCount": 8,
+    "blockers": [
+      {
+        "gate": "independent-rights-review",
+        "expectedBlockingState": "pending",
+        "packDeclaredStatus": "pending",
+        "libraryDeclaredStatus": "pending",
+        "requiredEvidence": "Independent intellectual-property and public-use review of both assets."
+      },
+      {
+        "gate": "independent-accessibility-review",
+        "expectedBlockingState": "pending",
+        "packDeclaredStatus": "pending",
+        "libraryDeclaredStatus": "pending",
+        "requiredEvidence": "Independent WCAG/assistive-technology review plus production screen-reader and voice validation."
+      },
+      {
+        "gate": "ap-us-history-subject-expert-review",
+        "expectedBlockingState": "pending",
+        "packDeclaredStatus": "pending",
+        "libraryDeclaredStatus": "pending",
+        "requiredEvidence": "Independent review by a current AP U.S. History educator or faculty subject expert."
+      },
+      {
+        "gate": "independent-editorial-review",
+        "expectedBlockingState": "pending",
+        "packDeclaredStatus": "pending",
+        "libraryDeclaredStatus": "pending",
+        "requiredEvidence": "Independent review of historical accuracy, periodization, framing, and item quality."
+      },
+      {
+        "gate": "production-validation",
+        "expectedBlockingState": "pending",
+        "packDeclaredStatus": "pending",
+        "libraryDeclaredStatus": "pending",
+        "requiredEvidence": "End-to-end browser, keyboard, hands-free, and deployment validation."
+      },
+      {
+        "gate": "field-testing",
+        "expectedBlockingState": "not-started",
+        "packDeclaredStatus": "pending",
+        "libraryDeclaredStatus": "pending",
+        "requiredEvidence": "Representative learner field testing and documented item/library revisions."
+      },
+      {
+        "gate": "psychometric-calibration",
+        "expectedBlockingState": "not-started",
+        "packDeclaredStatus": "pending",
+        "libraryDeclaredStatus": "pending",
+        "requiredEvidence": "Qualified psychometric review and calibration before any score or readiness inference."
+      },
+      {
+        "gate": "ced-and-policy-reverification",
+        "expectedBlockingState": "pending",
+        "packDeclaredStatus": "pending",
+        "libraryDeclaredStatus": "pending",
+        "requiredEvidence": "Fresh verification of the current CED, clarifications, exam mode, timing, policies, and public-use boundary."
+      }
+    ],
+    "note": "These are genuine release blockers. Their presence is expected and does not make structural QA fail; automated checks must never convert them into completed reviews."
+  },
+  "deploymentParity": [
+    {
+      "asset": "pack",
+      "status": "pass",
+      "blocking": false,
+      "sourceSha256": "55b730d7292474613e9ac7a8e3bde9b1e74fc0280608bdb7eb44cf8115c22308",
+      "deploySha256": "55b730d7292474613e9ac7a8e3bde9b1e74fc0280608bdb7eb44cf8115c22308",
+      "note": "Source and deployment bytes are identical."
+    },
+    {
+      "asset": "learning-library",
+      "status": "pass",
+      "blocking": false,
+      "sourceSha256": "dafb07123e4c09b54fb8f95748cdcbcc28f0248c393424590adecbf92b99bf88",
+      "deploySha256": "dafb07123e4c09b54fb8f95748cdcbcc28f0248c393424590adecbf92b99bf88",
+      "note": "Source and deployment bytes are identical."
+    }
+  ],
+  "metrics": {
+    "blueprint": {
+      "framework": "AP U.S. History Course and Exam Description, Effective Fall 2026, Course Framework V.1",
+      "itemCount": 600,
+      "periodCount": 9,
+      "periodItemCounts": {
+        "period-1-1491-1607": 41,
+        "period-2-1607-1754": 47,
+        "period-3-1754-1800": 74,
+        "period-4-1800-1848": 80,
+        "period-5-1844-1877": 69,
+        "period-6-1865-1898": 80,
+        "period-7-1890-1945": 85,
+        "period-8-1945-1980": 84,
+        "period-9-1980-present": 40
+      },
+      "topicCount": 105,
+      "topicDepth": {
+        "topicsWithAtLeastTwoItems": 105,
+        "topicsWithThreeOrMoreItems": 105,
+        "topicsWithFourOrMoreItems": 105,
+        "topicsWithFiveOrMoreItems": 105,
+        "topicsWithSixOrMoreItems": 75,
+        "topicsWithSevenOrMoreItems": 0,
+        "singleItemTopicCount": 0
+      },
+      "thirdLayerCompletion": {
+        "status": "complete-third-layer",
+        "itemCount": 40,
+        "topicCount": 35,
+        "topicsWithAtLeastThreeItems": 105,
+        "topicsWithAtLeastFourItems": 105,
+        "topicsWithAtLeastFiveItems": 105,
+        "note": "A 40-item original completion slice adds a third practice angle for every topic that was previously at two items, with five additional deepeners; this remains an internal foundation rather than an official exam form."
+      },
+      "fourthLayerCompletion": {
+        "status": "complete-fourth-layer",
+        "itemCount": 100,
+        "topicCount": 100,
+        "topicsWithAtLeastFourItems": 105,
+        "topicsWithAtLeastFiveItems": 105,
+        "note": "A 100-item original completion slice adds a fourth practice angle for every topic that was previously at three items; this remains an internal foundation rather than an official exam form."
+      },
+      "fifthLayerBalance": {
+        "status": "fifth-layer-balance",
+        "itemCount": 80,
+        "topicCount": 80,
+        "topicsWithAtLeastFourItems": 105,
+        "topicsWithAtLeastFiveItems": 105,
+        "topicsWithAtLeastSixItems": 75,
+        "note": "An 80-item original fifth-layer balance slice strengthens cross-period practice depth before the fifth-layer completion slice finishes minimum coverage; this remains an internal foundation rather than an official exam form."
+      },
+      "fifthLayerCompletion": {
+        "status": "complete-fifth-layer",
+        "itemCount": 40,
+        "topicCount": 40,
+        "topicsWithAtLeastFiveItems": 105,
+        "topicsWithAtLeastSixItems": 75,
+        "note": "A 40-item original completion slice adds a fifth practice angle for the 25 topics that were previously at four items, with 15 additional deepeners; this remains an internal foundation rather than an official exam form."
+      },
+      "sixthLayerBalance": {
+        "status": "sixth-layer-balance",
+        "itemCount": 60,
+        "topicCount": 60,
+        "topicsWithAtLeastFiveItems": 105,
+        "topicsWithAtLeastSixItems": 75,
+        "topicsWithAtLeastSevenItems": 0,
+        "note": "A 60-item original sixth-layer balance slice adds another practice angle across 60 topics while preserving full five-item coverage; this remains an internal foundation rather than an official exam form."
+      },
+      "bankCount": 60,
+      "bankSize": 10,
+      "fullTopicCoverage": true,
+      "sourceSetStimuliIncluded": false,
+      "targetExamYear": null
+    },
+    "historicalThinkingSkills": {
+      "H1": 103,
+      "H5": 98,
+      "H2": 104,
+      "H3": 100,
+      "H4": 97,
+      "H6": 98
+    },
+    "reasoningProcesses": {
+      "comparison": 206,
+      "causation": 213,
+      "continuity-change": 181
+    },
+    "answerKeys": {
+      "0": 150,
+      "1": 150,
+      "2": 150,
+      "3": 150
+    },
+    "itemQuality": {
+      "singleChoiceItems": 600,
+      "independentOriginalItems": 600,
+      "sourceLinkedItems": 600,
+      "uncalibratedItems": 600,
+      "releaseEligibleItems": 0
+    },
+    "learningLibrary": {
+      "chapters": 9,
+      "sections": 27,
+      "knowledgeChecks": 27,
+      "flashcards": 27,
+      "memoryAids": 9,
+      "diagrams": 9,
+      "diagramPlacements": 9,
+      "constructedResponseWorkshops": 3,
+      "glossaryTerms": 27
+    }
+  },
+  "editorialReviewQueue": {
+    "count": 0,
+    "advisories": []
+  },
+  "items": [
+    {
+      "id": "apush-foundation-001",
+      "domainId": "period-1-1491-1607",
+      "practiceId": "H1",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-002",
+      "domainId": "period-1-1491-1607",
+      "practiceId": "H5",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-003",
+      "domainId": "period-1-1491-1607",
+      "practiceId": "H2",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-004",
+      "domainId": "period-1-1491-1607",
+      "practiceId": "H1",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-005",
+      "domainId": "period-1-1491-1607",
+      "practiceId": "H3",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-006",
+      "domainId": "period-2-1607-1754",
+      "practiceId": "H5",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-007",
+      "domainId": "period-2-1607-1754",
+      "practiceId": "H1",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-008",
+      "domainId": "period-2-1607-1754",
+      "practiceId": "H3",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-009",
+      "domainId": "period-2-1607-1754",
+      "practiceId": "H1",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-010",
+      "domainId": "period-2-1607-1754",
+      "practiceId": "H2",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-011",
+      "domainId": "period-3-1754-1800",
+      "practiceId": "H4",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-012",
+      "domainId": "period-3-1754-1800",
+      "practiceId": "H3",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-013",
+      "domainId": "period-3-1754-1800",
+      "practiceId": "H2",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-014",
+      "domainId": "period-3-1754-1800",
+      "practiceId": "H1",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-015",
+      "domainId": "period-3-1754-1800",
+      "practiceId": "H5",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-016",
+      "domainId": "period-3-1754-1800",
+      "practiceId": "H5",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-017",
+      "domainId": "period-4-1800-1848",
+      "practiceId": "H1",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-018",
+      "domainId": "period-4-1800-1848",
+      "practiceId": "H3",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-019",
+      "domainId": "period-4-1800-1848",
+      "practiceId": "H4",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-020",
+      "domainId": "period-4-1800-1848",
+      "practiceId": "H3",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-021",
+      "domainId": "period-4-1800-1848",
+      "practiceId": "H5",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-022",
+      "domainId": "period-4-1800-1848",
+      "practiceId": "H2",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-023",
+      "domainId": "period-5-1844-1877",
+      "practiceId": "H4",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-024",
+      "domainId": "period-5-1844-1877",
+      "practiceId": "H5",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-025",
+      "domainId": "period-5-1844-1877",
+      "practiceId": "H3",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-026",
+      "domainId": "period-5-1844-1877",
+      "practiceId": "H1",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-027",
+      "domainId": "period-5-1844-1877",
+      "practiceId": "H3",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-028",
+      "domainId": "period-5-1844-1877",
+      "practiceId": "H6",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-029",
+      "domainId": "period-6-1865-1898",
+      "practiceId": "H4",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-030",
+      "domainId": "period-6-1865-1898",
+      "practiceId": "H3",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-031",
+      "domainId": "period-6-1865-1898",
+      "practiceId": "H1",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-032",
+      "domainId": "period-6-1865-1898",
+      "practiceId": "H2",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-033",
+      "domainId": "period-6-1865-1898",
+      "practiceId": "H5",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-034",
+      "domainId": "period-6-1865-1898",
+      "practiceId": "H6",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-035",
+      "domainId": "period-7-1890-1945",
+      "practiceId": "H1",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-036",
+      "domainId": "period-7-1890-1945",
+      "practiceId": "H2",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-037",
+      "domainId": "period-7-1890-1945",
+      "practiceId": "H5",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-038",
+      "domainId": "period-7-1890-1945",
+      "practiceId": "H3",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-039",
+      "domainId": "period-7-1890-1945",
+      "practiceId": "H6",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-040",
+      "domainId": "period-7-1890-1945",
+      "practiceId": "H2",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-041",
+      "domainId": "period-8-1945-1980",
+      "practiceId": "H4",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-042",
+      "domainId": "period-8-1945-1980",
+      "practiceId": "H3",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-043",
+      "domainId": "period-8-1945-1980",
+      "practiceId": "H5",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-044",
+      "domainId": "period-8-1945-1980",
+      "practiceId": "H2",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-045",
+      "domainId": "period-8-1945-1980",
+      "practiceId": "H6",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-046",
+      "domainId": "period-9-1980-present",
+      "practiceId": "H1",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-047",
+      "domainId": "period-9-1980-present",
+      "practiceId": "H5",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-048",
+      "domainId": "period-9-1980-present",
+      "practiceId": "H3",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-049",
+      "domainId": "period-9-1980-present",
+      "practiceId": "H4",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-050",
+      "domainId": "period-9-1980-present",
+      "practiceId": "H6",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-051",
+      "domainId": "period-1-1491-1607",
+      "practiceId": "H4",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-052",
+      "domainId": "period-1-1491-1607",
+      "practiceId": "H2",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-053",
+      "domainId": "period-1-1491-1607",
+      "practiceId": "H3",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-054",
+      "domainId": "period-1-1491-1607",
+      "practiceId": "H1",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-055",
+      "domainId": "period-1-1491-1607",
+      "practiceId": "H5",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-056",
+      "domainId": "period-1-1491-1607",
+      "practiceId": "H6",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-057",
+      "domainId": "period-2-1607-1754",
+      "practiceId": "H4",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-058",
+      "domainId": "period-2-1607-1754",
+      "practiceId": "H1",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-059",
+      "domainId": "period-2-1607-1754",
+      "practiceId": "H2",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-060",
+      "domainId": "period-2-1607-1754",
+      "practiceId": "H5",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-061",
+      "domainId": "period-2-1607-1754",
+      "practiceId": "H3",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-062",
+      "domainId": "period-2-1607-1754",
+      "practiceId": "H6",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-063",
+      "domainId": "period-3-1754-1800",
+      "practiceId": "H4",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-064",
+      "domainId": "period-3-1754-1800",
+      "practiceId": "H2",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-065",
+      "domainId": "period-3-1754-1800",
+      "practiceId": "H1",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-066",
+      "domainId": "period-3-1754-1800",
+      "practiceId": "H3",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-067",
+      "domainId": "period-3-1754-1800",
+      "practiceId": "H5",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-068",
+      "domainId": "period-3-1754-1800",
+      "practiceId": "H6",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-069",
+      "domainId": "period-4-1800-1848",
+      "practiceId": "H4",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-070",
+      "domainId": "period-4-1800-1848",
+      "practiceId": "H1",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-071",
+      "domainId": "period-4-1800-1848",
+      "practiceId": "H2",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-072",
+      "domainId": "period-4-1800-1848",
+      "practiceId": "H5",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-073",
+      "domainId": "period-4-1800-1848",
+      "practiceId": "H3",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-074",
+      "domainId": "period-4-1800-1848",
+      "practiceId": "H6",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-075",
+      "domainId": "period-5-1844-1877",
+      "practiceId": "H4",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-076",
+      "domainId": "period-5-1844-1877",
+      "practiceId": "H1",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-077",
+      "domainId": "period-5-1844-1877",
+      "practiceId": "H2",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-078",
+      "domainId": "period-5-1844-1877",
+      "practiceId": "H5",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-079",
+      "domainId": "period-5-1844-1877",
+      "practiceId": "H6",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-080",
+      "domainId": "period-6-1865-1898",
+      "practiceId": "H4",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-081",
+      "domainId": "period-6-1865-1898",
+      "practiceId": "H1",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-082",
+      "domainId": "period-6-1865-1898",
+      "practiceId": "H2",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-083",
+      "domainId": "period-6-1865-1898",
+      "practiceId": "H5",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-084",
+      "domainId": "period-6-1865-1898",
+      "practiceId": "H6",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-085",
+      "domainId": "period-7-1890-1945",
+      "practiceId": "H4",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-086",
+      "domainId": "period-7-1890-1945",
+      "practiceId": "H1",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-087",
+      "domainId": "period-7-1890-1945",
+      "practiceId": "H2",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-088",
+      "domainId": "period-7-1890-1945",
+      "practiceId": "H5",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-089",
+      "domainId": "period-7-1890-1945",
+      "practiceId": "H6",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-090",
+      "domainId": "period-8-1945-1980",
+      "practiceId": "H4",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-091",
+      "domainId": "period-8-1945-1980",
+      "practiceId": "H1",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-092",
+      "domainId": "period-8-1945-1980",
+      "practiceId": "H2",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-093",
+      "domainId": "period-8-1945-1980",
+      "practiceId": "H3",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-094",
+      "domainId": "period-8-1945-1980",
+      "practiceId": "H5",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-095",
+      "domainId": "period-8-1945-1980",
+      "practiceId": "H6",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-096",
+      "domainId": "period-9-1980-present",
+      "practiceId": "H4",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-097",
+      "domainId": "period-9-1980-present",
+      "practiceId": "H1",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-098",
+      "domainId": "period-9-1980-present",
+      "practiceId": "H2",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-099",
+      "domainId": "period-9-1980-present",
+      "practiceId": "H5",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-100",
+      "domainId": "period-9-1980-present",
+      "practiceId": "H6",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-101",
+      "domainId": "period-3-1754-1800",
+      "practiceId": "H1",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-102",
+      "domainId": "period-3-1754-1800",
+      "practiceId": "H6",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-103",
+      "domainId": "period-4-1800-1848",
+      "practiceId": "H2",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-104",
+      "domainId": "period-4-1800-1848",
+      "practiceId": "H1",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-105",
+      "domainId": "period-4-1800-1848",
+      "practiceId": "H6",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-106",
+      "domainId": "period-5-1844-1877",
+      "practiceId": "H3",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-107",
+      "domainId": "period-5-1844-1877",
+      "practiceId": "H5",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-108",
+      "domainId": "period-6-1865-1898",
+      "practiceId": "H2",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-109",
+      "domainId": "period-6-1865-1898",
+      "practiceId": "H1",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-110",
+      "domainId": "period-6-1865-1898",
+      "practiceId": "H6",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-111",
+      "domainId": "period-7-1890-1945",
+      "practiceId": "H2",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-112",
+      "domainId": "period-7-1890-1945",
+      "practiceId": "H1",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-113",
+      "domainId": "period-7-1890-1945",
+      "practiceId": "H2",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-114",
+      "domainId": "period-7-1890-1945",
+      "practiceId": "H5",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-115",
+      "domainId": "period-7-1890-1945",
+      "practiceId": "H6",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-116",
+      "domainId": "period-8-1945-1980",
+      "practiceId": "H3",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-117",
+      "domainId": "period-8-1945-1980",
+      "practiceId": "H5",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-118",
+      "domainId": "period-8-1945-1980",
+      "practiceId": "H1",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-119",
+      "domainId": "period-8-1945-1980",
+      "practiceId": "H2",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-120",
+      "domainId": "period-8-1945-1980",
+      "practiceId": "H6",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-121",
+      "domainId": "period-1-1491-1607",
+      "practiceId": "H4",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-122",
+      "domainId": "period-1-1491-1607",
+      "practiceId": "H3",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-123",
+      "domainId": "period-1-1491-1607",
+      "practiceId": "H6",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-124",
+      "domainId": "period-1-1491-1607",
+      "practiceId": "H2",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-125",
+      "domainId": "period-1-1491-1607",
+      "practiceId": "H5",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-126",
+      "domainId": "period-1-1491-1607",
+      "practiceId": "H1",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-127",
+      "domainId": "period-2-1607-1754",
+      "practiceId": "H4",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-128",
+      "domainId": "period-2-1607-1754",
+      "practiceId": "H1",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-129",
+      "domainId": "period-2-1607-1754",
+      "practiceId": "H3",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-130",
+      "domainId": "period-2-1607-1754",
+      "practiceId": "H2",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-131",
+      "domainId": "period-2-1607-1754",
+      "practiceId": "H5",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-132",
+      "domainId": "period-3-1754-1800",
+      "practiceId": "H4",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-133",
+      "domainId": "period-3-1754-1800",
+      "practiceId": "H1",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-134",
+      "domainId": "period-3-1754-1800",
+      "practiceId": "H2",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-135",
+      "domainId": "period-3-1754-1800",
+      "practiceId": "H3",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-136",
+      "domainId": "period-3-1754-1800",
+      "practiceId": "H5",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-137",
+      "domainId": "period-3-1754-1800",
+      "practiceId": "H6",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-138",
+      "domainId": "period-4-1800-1848",
+      "practiceId": "H4",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-139",
+      "domainId": "period-4-1800-1848",
+      "practiceId": "H1",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-140",
+      "domainId": "period-4-1800-1848",
+      "practiceId": "H2",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-141",
+      "domainId": "period-4-1800-1848",
+      "practiceId": "H5",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-142",
+      "domainId": "period-4-1800-1848",
+      "practiceId": "H3",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-143",
+      "domainId": "period-5-1844-1877",
+      "practiceId": "H4",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-144",
+      "domainId": "period-5-1844-1877",
+      "practiceId": "H1",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-145",
+      "domainId": "period-5-1844-1877",
+      "practiceId": "H2",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-146",
+      "domainId": "period-4-1800-1848",
+      "practiceId": "H6",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-147",
+      "domainId": "period-5-1844-1877",
+      "practiceId": "H3",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-148",
+      "domainId": "period-5-1844-1877",
+      "practiceId": "H5",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-149",
+      "domainId": "period-6-1865-1898",
+      "practiceId": "H4",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-150",
+      "domainId": "period-6-1865-1898",
+      "practiceId": "H1",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-151",
+      "domainId": "period-6-1865-1898",
+      "practiceId": "H2",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-152",
+      "domainId": "period-6-1865-1898",
+      "practiceId": "H3",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-153",
+      "domainId": "period-6-1865-1898",
+      "practiceId": "H6",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-154",
+      "domainId": "period-7-1890-1945",
+      "practiceId": "H4",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-155",
+      "domainId": "period-7-1890-1945",
+      "practiceId": "H2",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-156",
+      "domainId": "period-7-1890-1945",
+      "practiceId": "H1",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-157",
+      "domainId": "period-7-1890-1945",
+      "practiceId": "H3",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-158",
+      "domainId": "period-7-1890-1945",
+      "practiceId": "H5",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-159",
+      "domainId": "period-7-1890-1945",
+      "practiceId": "H6",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-160",
+      "domainId": "period-8-1945-1980",
+      "practiceId": "H4",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-161",
+      "domainId": "period-8-1945-1980",
+      "practiceId": "H2",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-162",
+      "domainId": "period-8-1945-1980",
+      "practiceId": "H1",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-163",
+      "domainId": "period-8-1945-1980",
+      "practiceId": "H3",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-164",
+      "domainId": "period-8-1945-1980",
+      "practiceId": "H5",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-165",
+      "domainId": "period-8-1945-1980",
+      "practiceId": "H6",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-166",
+      "domainId": "period-9-1980-present",
+      "practiceId": "H4",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-167",
+      "domainId": "period-9-1980-present",
+      "practiceId": "H1",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-168",
+      "domainId": "period-9-1980-present",
+      "practiceId": "H2",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-169",
+      "domainId": "period-9-1980-present",
+      "practiceId": "H3",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-170",
+      "domainId": "period-9-1980-present",
+      "practiceId": "H6",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-171",
+      "domainId": "period-3-1754-1800",
+      "practiceId": "H1",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-172",
+      "domainId": "period-3-1754-1800",
+      "practiceId": "H2",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-173",
+      "domainId": "period-3-1754-1800",
+      "practiceId": "H3",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-174",
+      "domainId": "period-3-1754-1800",
+      "practiceId": "H4",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-175",
+      "domainId": "period-3-1754-1800",
+      "practiceId": "H5",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-176",
+      "domainId": "period-3-1754-1800",
+      "practiceId": "H6",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-177",
+      "domainId": "period-4-1800-1848",
+      "practiceId": "H1",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-178",
+      "domainId": "period-4-1800-1848",
+      "practiceId": "H2",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-179",
+      "domainId": "period-4-1800-1848",
+      "practiceId": "H3",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-180",
+      "domainId": "period-4-1800-1848",
+      "practiceId": "H4",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-181",
+      "domainId": "period-4-1800-1848",
+      "practiceId": "H5",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-182",
+      "domainId": "period-4-1800-1848",
+      "practiceId": "H6",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-183",
+      "domainId": "period-4-1800-1848",
+      "practiceId": "H1",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-184",
+      "domainId": "period-5-1844-1877",
+      "practiceId": "H2",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-185",
+      "domainId": "period-5-1844-1877",
+      "practiceId": "H3",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-186",
+      "domainId": "period-5-1844-1877",
+      "practiceId": "H4",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-187",
+      "domainId": "period-5-1844-1877",
+      "practiceId": "H5",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-188",
+      "domainId": "period-5-1844-1877",
+      "practiceId": "H6",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-189",
+      "domainId": "period-5-1844-1877",
+      "practiceId": "H1",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-190",
+      "domainId": "period-6-1865-1898",
+      "practiceId": "H2",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-191",
+      "domainId": "period-6-1865-1898",
+      "practiceId": "H3",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-192",
+      "domainId": "period-6-1865-1898",
+      "practiceId": "H4",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-193",
+      "domainId": "period-6-1865-1898",
+      "practiceId": "H5",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-194",
+      "domainId": "period-6-1865-1898",
+      "practiceId": "H6",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-195",
+      "domainId": "period-6-1865-1898",
+      "practiceId": "H1",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-196",
+      "domainId": "period-6-1865-1898",
+      "practiceId": "H2",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-197",
+      "domainId": "period-6-1865-1898",
+      "practiceId": "H3",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-198",
+      "domainId": "period-6-1865-1898",
+      "practiceId": "H4",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-199",
+      "domainId": "period-7-1890-1945",
+      "practiceId": "H5",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-200",
+      "domainId": "period-7-1890-1945",
+      "practiceId": "H6",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-201",
+      "domainId": "period-7-1890-1945",
+      "practiceId": "H1",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-202",
+      "domainId": "period-7-1890-1945",
+      "practiceId": "H2",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-203",
+      "domainId": "period-7-1890-1945",
+      "practiceId": "H3",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-204",
+      "domainId": "period-7-1890-1945",
+      "practiceId": "H4",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-205",
+      "domainId": "period-7-1890-1945",
+      "practiceId": "H5",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-206",
+      "domainId": "period-7-1890-1945",
+      "practiceId": "H6",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-207",
+      "domainId": "period-8-1945-1980",
+      "practiceId": "H1",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-208",
+      "domainId": "period-8-1945-1980",
+      "practiceId": "H2",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-209",
+      "domainId": "period-8-1945-1980",
+      "practiceId": "H3",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-210",
+      "domainId": "period-8-1945-1980",
+      "practiceId": "H4",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-211",
+      "domainId": "period-8-1945-1980",
+      "practiceId": "H5",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-212",
+      "domainId": "period-8-1945-1980",
+      "practiceId": "H6",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-213",
+      "domainId": "period-8-1945-1980",
+      "practiceId": "H1",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-214",
+      "domainId": "period-8-1945-1980",
+      "practiceId": "H2",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-215",
+      "domainId": "period-9-1980-present",
+      "practiceId": "H3",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-216",
+      "domainId": "period-3-1754-1800",
+      "practiceId": "H4",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-217",
+      "domainId": "period-4-1800-1848",
+      "practiceId": "H5",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-218",
+      "domainId": "period-5-1844-1877",
+      "practiceId": "H6",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-219",
+      "domainId": "period-6-1865-1898",
+      "practiceId": "H1",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-220",
+      "domainId": "period-8-1945-1980",
+      "practiceId": "H2",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-221",
+      "domainId": "period-1-1491-1607",
+      "practiceId": "H4",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-222",
+      "domainId": "period-1-1491-1607",
+      "practiceId": "H3",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-223",
+      "domainId": "period-1-1491-1607",
+      "practiceId": "H6",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-224",
+      "domainId": "period-1-1491-1607",
+      "practiceId": "H2",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-225",
+      "domainId": "period-2-1607-1754",
+      "practiceId": "H5",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-226",
+      "domainId": "period-2-1607-1754",
+      "practiceId": "H1",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-227",
+      "domainId": "period-2-1607-1754",
+      "practiceId": "H4",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-228",
+      "domainId": "period-2-1607-1754",
+      "practiceId": "H3",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-229",
+      "domainId": "period-2-1607-1754",
+      "practiceId": "H6",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-230",
+      "domainId": "period-3-1754-1800",
+      "practiceId": "H2",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-231",
+      "domainId": "period-3-1754-1800",
+      "practiceId": "H5",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-232",
+      "domainId": "period-3-1754-1800",
+      "practiceId": "H1",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-233",
+      "domainId": "period-3-1754-1800",
+      "practiceId": "H4",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-234",
+      "domainId": "period-3-1754-1800",
+      "practiceId": "H3",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-235",
+      "domainId": "period-3-1754-1800",
+      "practiceId": "H6",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-236",
+      "domainId": "period-3-1754-1800",
+      "practiceId": "H2",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-237",
+      "domainId": "period-3-1754-1800",
+      "practiceId": "H5",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-238",
+      "domainId": "period-4-1800-1848",
+      "practiceId": "H1",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-239",
+      "domainId": "period-4-1800-1848",
+      "practiceId": "H4",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-240",
+      "domainId": "period-4-1800-1848",
+      "practiceId": "H3",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-241",
+      "domainId": "period-4-1800-1848",
+      "practiceId": "H6",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-242",
+      "domainId": "period-4-1800-1848",
+      "practiceId": "H2",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-243",
+      "domainId": "period-4-1800-1848",
+      "practiceId": "H5",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-244",
+      "domainId": "period-4-1800-1848",
+      "practiceId": "H1",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-245",
+      "domainId": "period-4-1800-1848",
+      "practiceId": "H4",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-246",
+      "domainId": "period-5-1844-1877",
+      "practiceId": "H3",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-247",
+      "domainId": "period-5-1844-1877",
+      "practiceId": "H6",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-248",
+      "domainId": "period-5-1844-1877",
+      "practiceId": "H2",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-249",
+      "domainId": "period-5-1844-1877",
+      "practiceId": "H5",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-250",
+      "domainId": "period-5-1844-1877",
+      "practiceId": "H1",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-251",
+      "domainId": "period-5-1844-1877",
+      "practiceId": "H4",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-252",
+      "domainId": "period-5-1844-1877",
+      "practiceId": "H3",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-253",
+      "domainId": "period-6-1865-1898",
+      "practiceId": "H6",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-254",
+      "domainId": "period-6-1865-1898",
+      "practiceId": "H2",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-255",
+      "domainId": "period-6-1865-1898",
+      "practiceId": "H5",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-256",
+      "domainId": "period-6-1865-1898",
+      "practiceId": "H1",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-257",
+      "domainId": "period-6-1865-1898",
+      "practiceId": "H4",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-258",
+      "domainId": "period-6-1865-1898",
+      "practiceId": "H3",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-259",
+      "domainId": "period-6-1865-1898",
+      "practiceId": "H6",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-260",
+      "domainId": "period-6-1865-1898",
+      "practiceId": "H2",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-261",
+      "domainId": "period-7-1890-1945",
+      "practiceId": "H5",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-262",
+      "domainId": "period-7-1890-1945",
+      "practiceId": "H1",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-263",
+      "domainId": "period-7-1890-1945",
+      "practiceId": "H4",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-264",
+      "domainId": "period-7-1890-1945",
+      "practiceId": "H3",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-265",
+      "domainId": "period-7-1890-1945",
+      "practiceId": "H6",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-266",
+      "domainId": "period-7-1890-1945",
+      "practiceId": "H2",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-267",
+      "domainId": "period-7-1890-1945",
+      "practiceId": "H5",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-268",
+      "domainId": "period-7-1890-1945",
+      "practiceId": "H1",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-269",
+      "domainId": "period-8-1945-1980",
+      "practiceId": "H4",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-270",
+      "domainId": "period-8-1945-1980",
+      "practiceId": "H3",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-271",
+      "domainId": "period-8-1945-1980",
+      "practiceId": "H6",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-272",
+      "domainId": "period-8-1945-1980",
+      "practiceId": "H2",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-273",
+      "domainId": "period-8-1945-1980",
+      "practiceId": "H5",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-274",
+      "domainId": "period-8-1945-1980",
+      "practiceId": "H1",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-275",
+      "domainId": "period-8-1945-1980",
+      "practiceId": "H4",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-276",
+      "domainId": "period-8-1945-1980",
+      "practiceId": "H3",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-277",
+      "domainId": "period-9-1980-present",
+      "practiceId": "H6",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-278",
+      "domainId": "period-9-1980-present",
+      "practiceId": "H2",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-279",
+      "domainId": "period-9-1980-present",
+      "practiceId": "H5",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-280",
+      "domainId": "period-9-1980-present",
+      "practiceId": "H1",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-281",
+      "domainId": "period-2-1607-1754",
+      "practiceId": "H4",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-282",
+      "domainId": "period-2-1607-1754",
+      "practiceId": "H3",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-283",
+      "domainId": "period-2-1607-1754",
+      "practiceId": "H6",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-284",
+      "domainId": "period-3-1754-1800",
+      "practiceId": "H2",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-285",
+      "domainId": "period-3-1754-1800",
+      "practiceId": "H5",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-286",
+      "domainId": "period-3-1754-1800",
+      "practiceId": "H1",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-287",
+      "domainId": "period-3-1754-1800",
+      "practiceId": "H4",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-288",
+      "domainId": "period-4-1800-1848",
+      "practiceId": "H3",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-289",
+      "domainId": "period-4-1800-1848",
+      "practiceId": "H6",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-290",
+      "domainId": "period-4-1800-1848",
+      "practiceId": "H2",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-291",
+      "domainId": "period-4-1800-1848",
+      "practiceId": "H5",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-292",
+      "domainId": "period-4-1800-1848",
+      "practiceId": "H1",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-293",
+      "domainId": "period-5-1844-1877",
+      "practiceId": "H4",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-294",
+      "domainId": "period-5-1844-1877",
+      "practiceId": "H3",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-295",
+      "domainId": "period-5-1844-1877",
+      "practiceId": "H6",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-296",
+      "domainId": "period-5-1844-1877",
+      "practiceId": "H2",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-297",
+      "domainId": "period-6-1865-1898",
+      "practiceId": "H5",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-298",
+      "domainId": "period-6-1865-1898",
+      "practiceId": "H1",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-299",
+      "domainId": "period-6-1865-1898",
+      "practiceId": "H4",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-300",
+      "domainId": "period-6-1865-1898",
+      "practiceId": "H3",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-301",
+      "domainId": "period-6-1865-1898",
+      "practiceId": "H6",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-302",
+      "domainId": "period-7-1890-1945",
+      "practiceId": "H2",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-303",
+      "domainId": "period-7-1890-1945",
+      "practiceId": "H5",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-304",
+      "domainId": "period-7-1890-1945",
+      "practiceId": "H1",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-305",
+      "domainId": "period-7-1890-1945",
+      "practiceId": "H4",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-306",
+      "domainId": "period-7-1890-1945",
+      "practiceId": "H3",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-307",
+      "domainId": "period-7-1890-1945",
+      "practiceId": "H6",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-308",
+      "domainId": "period-7-1890-1945",
+      "practiceId": "H2",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-309",
+      "domainId": "period-8-1945-1980",
+      "practiceId": "H5",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-310",
+      "domainId": "period-8-1945-1980",
+      "practiceId": "H1",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-311",
+      "domainId": "period-8-1945-1980",
+      "practiceId": "H4",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-312",
+      "domainId": "period-8-1945-1980",
+      "practiceId": "H3",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-313",
+      "domainId": "period-8-1945-1980",
+      "practiceId": "H6",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-314",
+      "domainId": "period-8-1945-1980",
+      "practiceId": "H2",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-315",
+      "domainId": "period-9-1980-present",
+      "practiceId": "H5",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-316",
+      "domainId": "period-2-1607-1754",
+      "practiceId": "H1",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-317",
+      "domainId": "period-3-1754-1800",
+      "practiceId": "H4",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-318",
+      "domainId": "period-5-1844-1877",
+      "practiceId": "H3",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-319",
+      "domainId": "period-7-1890-1945",
+      "practiceId": "H6",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-320",
+      "domainId": "period-8-1945-1980",
+      "practiceId": "H2",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-321",
+      "domainId": "period-1-1491-1607",
+      "practiceId": "H4",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-322",
+      "domainId": "period-1-1491-1607",
+      "practiceId": "H3",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-323",
+      "domainId": "period-1-1491-1607",
+      "practiceId": "H6",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-324",
+      "domainId": "period-1-1491-1607",
+      "practiceId": "H2",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-325",
+      "domainId": "period-1-1491-1607",
+      "practiceId": "H5",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-326",
+      "domainId": "period-1-1491-1607",
+      "practiceId": "H1",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-327",
+      "domainId": "period-1-1491-1607",
+      "practiceId": "H4",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-328",
+      "domainId": "period-2-1607-1754",
+      "practiceId": "H3",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-329",
+      "domainId": "period-2-1607-1754",
+      "practiceId": "H6",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-330",
+      "domainId": "period-2-1607-1754",
+      "practiceId": "H2",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-331",
+      "domainId": "period-2-1607-1754",
+      "practiceId": "H5",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-332",
+      "domainId": "period-2-1607-1754",
+      "practiceId": "H1",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-333",
+      "domainId": "period-2-1607-1754",
+      "practiceId": "H4",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-334",
+      "domainId": "period-2-1607-1754",
+      "practiceId": "H3",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-335",
+      "domainId": "period-3-1754-1800",
+      "practiceId": "H6",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-336",
+      "domainId": "period-3-1754-1800",
+      "practiceId": "H2",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-337",
+      "domainId": "period-3-1754-1800",
+      "practiceId": "H5",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-338",
+      "domainId": "period-3-1754-1800",
+      "practiceId": "H1",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-339",
+      "domainId": "period-3-1754-1800",
+      "practiceId": "H4",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-340",
+      "domainId": "period-3-1754-1800",
+      "practiceId": "H3",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-341",
+      "domainId": "period-3-1754-1800",
+      "practiceId": "H6",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-342",
+      "domainId": "period-3-1754-1800",
+      "practiceId": "H2",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-343",
+      "domainId": "period-3-1754-1800",
+      "practiceId": "H5",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-344",
+      "domainId": "period-3-1754-1800",
+      "practiceId": "H1",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-345",
+      "domainId": "period-3-1754-1800",
+      "practiceId": "H4",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-346",
+      "domainId": "period-3-1754-1800",
+      "practiceId": "H3",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-347",
+      "domainId": "period-4-1800-1848",
+      "practiceId": "H6",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-348",
+      "domainId": "period-4-1800-1848",
+      "practiceId": "H2",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-349",
+      "domainId": "period-4-1800-1848",
+      "practiceId": "H5",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-350",
+      "domainId": "period-4-1800-1848",
+      "practiceId": "H1",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-351",
+      "domainId": "period-4-1800-1848",
+      "practiceId": "H4",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-352",
+      "domainId": "period-4-1800-1848",
+      "practiceId": "H3",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-353",
+      "domainId": "period-4-1800-1848",
+      "practiceId": "H6",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-354",
+      "domainId": "period-4-1800-1848",
+      "practiceId": "H2",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-355",
+      "domainId": "period-4-1800-1848",
+      "practiceId": "H5",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-356",
+      "domainId": "period-4-1800-1848",
+      "practiceId": "H1",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-357",
+      "domainId": "period-4-1800-1848",
+      "practiceId": "H4",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-358",
+      "domainId": "period-4-1800-1848",
+      "practiceId": "H3",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-359",
+      "domainId": "period-4-1800-1848",
+      "practiceId": "H6",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-360",
+      "domainId": "period-4-1800-1848",
+      "practiceId": "H2",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-361",
+      "domainId": "period-5-1844-1877",
+      "practiceId": "H5",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-362",
+      "domainId": "period-5-1844-1877",
+      "practiceId": "H1",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-363",
+      "domainId": "period-5-1844-1877",
+      "practiceId": "H4",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-364",
+      "domainId": "period-5-1844-1877",
+      "practiceId": "H3",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-365",
+      "domainId": "period-5-1844-1877",
+      "practiceId": "H6",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-366",
+      "domainId": "period-5-1844-1877",
+      "practiceId": "H2",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-367",
+      "domainId": "period-5-1844-1877",
+      "practiceId": "H5",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-368",
+      "domainId": "period-5-1844-1877",
+      "practiceId": "H1",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-369",
+      "domainId": "period-5-1844-1877",
+      "practiceId": "H4",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-370",
+      "domainId": "period-5-1844-1877",
+      "practiceId": "H3",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-371",
+      "domainId": "period-5-1844-1877",
+      "practiceId": "H6",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-372",
+      "domainId": "period-6-1865-1898",
+      "practiceId": "H2",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-373",
+      "domainId": "period-6-1865-1898",
+      "practiceId": "H5",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-374",
+      "domainId": "period-6-1865-1898",
+      "practiceId": "H1",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-375",
+      "domainId": "period-6-1865-1898",
+      "practiceId": "H4",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-376",
+      "domainId": "period-6-1865-1898",
+      "practiceId": "H3",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-377",
+      "domainId": "period-6-1865-1898",
+      "practiceId": "H6",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-378",
+      "domainId": "period-6-1865-1898",
+      "practiceId": "H2",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-379",
+      "domainId": "period-6-1865-1898",
+      "practiceId": "H5",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-380",
+      "domainId": "period-6-1865-1898",
+      "practiceId": "H1",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-381",
+      "domainId": "period-6-1865-1898",
+      "practiceId": "H4",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-382",
+      "domainId": "period-6-1865-1898",
+      "practiceId": "H3",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-383",
+      "domainId": "period-6-1865-1898",
+      "practiceId": "H6",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-384",
+      "domainId": "period-6-1865-1898",
+      "practiceId": "H2",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-385",
+      "domainId": "period-6-1865-1898",
+      "practiceId": "H5",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-386",
+      "domainId": "period-7-1890-1945",
+      "practiceId": "H1",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-387",
+      "domainId": "period-7-1890-1945",
+      "practiceId": "H4",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-388",
+      "domainId": "period-7-1890-1945",
+      "practiceId": "H3",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-389",
+      "domainId": "period-7-1890-1945",
+      "practiceId": "H6",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-390",
+      "domainId": "period-7-1890-1945",
+      "practiceId": "H2",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-391",
+      "domainId": "period-7-1890-1945",
+      "practiceId": "H5",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-392",
+      "domainId": "period-7-1890-1945",
+      "practiceId": "H1",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-393",
+      "domainId": "period-7-1890-1945",
+      "practiceId": "H4",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-394",
+      "domainId": "period-7-1890-1945",
+      "practiceId": "H3",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-395",
+      "domainId": "period-7-1890-1945",
+      "practiceId": "H6",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-396",
+      "domainId": "period-7-1890-1945",
+      "practiceId": "H2",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-397",
+      "domainId": "period-7-1890-1945",
+      "practiceId": "H5",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-398",
+      "domainId": "period-7-1890-1945",
+      "practiceId": "H1",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-399",
+      "domainId": "period-7-1890-1945",
+      "practiceId": "H4",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-400",
+      "domainId": "period-8-1945-1980",
+      "practiceId": "H3",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-401",
+      "domainId": "period-8-1945-1980",
+      "practiceId": "H6",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-402",
+      "domainId": "period-8-1945-1980",
+      "practiceId": "H2",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-403",
+      "domainId": "period-8-1945-1980",
+      "practiceId": "H5",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-404",
+      "domainId": "period-8-1945-1980",
+      "practiceId": "H1",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-405",
+      "domainId": "period-8-1945-1980",
+      "practiceId": "H4",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-406",
+      "domainId": "period-8-1945-1980",
+      "practiceId": "H3",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-407",
+      "domainId": "period-8-1945-1980",
+      "practiceId": "H6",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-408",
+      "domainId": "period-8-1945-1980",
+      "practiceId": "H2",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-409",
+      "domainId": "period-8-1945-1980",
+      "practiceId": "H5",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-410",
+      "domainId": "period-8-1945-1980",
+      "practiceId": "H1",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-411",
+      "domainId": "period-8-1945-1980",
+      "practiceId": "H4",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-412",
+      "domainId": "period-8-1945-1980",
+      "practiceId": "H3",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-413",
+      "domainId": "period-8-1945-1980",
+      "practiceId": "H6",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-414",
+      "domainId": "period-9-1980-present",
+      "practiceId": "H2",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-415",
+      "domainId": "period-9-1980-present",
+      "practiceId": "H5",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-416",
+      "domainId": "period-9-1980-present",
+      "practiceId": "H1",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-417",
+      "domainId": "period-9-1980-present",
+      "practiceId": "H4",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-418",
+      "domainId": "period-9-1980-present",
+      "practiceId": "H3",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-419",
+      "domainId": "period-9-1980-present",
+      "practiceId": "H6",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-420",
+      "domainId": "period-9-1980-present",
+      "practiceId": "H2",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-421",
+      "domainId": "period-1-1491-1607",
+      "practiceId": "H4",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-422",
+      "domainId": "period-1-1491-1607",
+      "practiceId": "H3",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-423",
+      "domainId": "period-1-1491-1607",
+      "practiceId": "H6",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-424",
+      "domainId": "period-1-1491-1607",
+      "practiceId": "H2",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-425",
+      "domainId": "period-1-1491-1607",
+      "practiceId": "H5",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-426",
+      "domainId": "period-2-1607-1754",
+      "practiceId": "H1",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-427",
+      "domainId": "period-2-1607-1754",
+      "practiceId": "H4",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-428",
+      "domainId": "period-2-1607-1754",
+      "practiceId": "H3",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-429",
+      "domainId": "period-2-1607-1754",
+      "practiceId": "H6",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-430",
+      "domainId": "period-2-1607-1754",
+      "practiceId": "H2",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-431",
+      "domainId": "period-2-1607-1754",
+      "practiceId": "H5",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-432",
+      "domainId": "period-3-1754-1800",
+      "practiceId": "H1",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-433",
+      "domainId": "period-3-1754-1800",
+      "practiceId": "H4",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-434",
+      "domainId": "period-3-1754-1800",
+      "practiceId": "H3",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-435",
+      "domainId": "period-3-1754-1800",
+      "practiceId": "H6",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-436",
+      "domainId": "period-3-1754-1800",
+      "practiceId": "H2",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-437",
+      "domainId": "period-3-1754-1800",
+      "practiceId": "H5",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-438",
+      "domainId": "period-3-1754-1800",
+      "practiceId": "H1",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-439",
+      "domainId": "period-3-1754-1800",
+      "practiceId": "H4",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-440",
+      "domainId": "period-3-1754-1800",
+      "practiceId": "H3",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-441",
+      "domainId": "period-3-1754-1800",
+      "practiceId": "H6",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-442",
+      "domainId": "period-4-1800-1848",
+      "practiceId": "H2",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-443",
+      "domainId": "period-4-1800-1848",
+      "practiceId": "H5",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-444",
+      "domainId": "period-4-1800-1848",
+      "practiceId": "H1",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-445",
+      "domainId": "period-4-1800-1848",
+      "practiceId": "H4",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-446",
+      "domainId": "period-4-1800-1848",
+      "practiceId": "H3",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-447",
+      "domainId": "period-4-1800-1848",
+      "practiceId": "H6",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-448",
+      "domainId": "period-4-1800-1848",
+      "practiceId": "H2",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-449",
+      "domainId": "period-4-1800-1848",
+      "practiceId": "H5",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-450",
+      "domainId": "period-4-1800-1848",
+      "practiceId": "H1",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-451",
+      "domainId": "period-4-1800-1848",
+      "practiceId": "H4",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-452",
+      "domainId": "period-4-1800-1848",
+      "practiceId": "H3",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-453",
+      "domainId": "period-5-1844-1877",
+      "practiceId": "H6",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-454",
+      "domainId": "period-5-1844-1877",
+      "practiceId": "H2",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-455",
+      "domainId": "period-5-1844-1877",
+      "practiceId": "H5",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-456",
+      "domainId": "period-5-1844-1877",
+      "practiceId": "H1",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-457",
+      "domainId": "period-5-1844-1877",
+      "practiceId": "H4",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-458",
+      "domainId": "period-5-1844-1877",
+      "practiceId": "H3",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-459",
+      "domainId": "period-5-1844-1877",
+      "practiceId": "H6",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-460",
+      "domainId": "period-5-1844-1877",
+      "practiceId": "H2",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-461",
+      "domainId": "period-5-1844-1877",
+      "practiceId": "H5",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-462",
+      "domainId": "period-6-1865-1898",
+      "practiceId": "H1",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-463",
+      "domainId": "period-6-1865-1898",
+      "practiceId": "H4",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-464",
+      "domainId": "period-6-1865-1898",
+      "practiceId": "H3",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-465",
+      "domainId": "period-6-1865-1898",
+      "practiceId": "H6",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-466",
+      "domainId": "period-6-1865-1898",
+      "practiceId": "H2",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-467",
+      "domainId": "period-6-1865-1898",
+      "practiceId": "H5",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-468",
+      "domainId": "period-6-1865-1898",
+      "practiceId": "H1",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-469",
+      "domainId": "period-6-1865-1898",
+      "practiceId": "H4",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-470",
+      "domainId": "period-6-1865-1898",
+      "practiceId": "H3",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-471",
+      "domainId": "period-6-1865-1898",
+      "practiceId": "H6",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-472",
+      "domainId": "period-6-1865-1898",
+      "practiceId": "H2",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-473",
+      "domainId": "period-7-1890-1945",
+      "practiceId": "H5",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-474",
+      "domainId": "period-7-1890-1945",
+      "practiceId": "H1",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-475",
+      "domainId": "period-7-1890-1945",
+      "practiceId": "H4",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-476",
+      "domainId": "period-7-1890-1945",
+      "practiceId": "H3",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-477",
+      "domainId": "period-7-1890-1945",
+      "practiceId": "H6",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-478",
+      "domainId": "period-7-1890-1945",
+      "practiceId": "H2",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-479",
+      "domainId": "period-7-1890-1945",
+      "practiceId": "H5",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-480",
+      "domainId": "period-7-1890-1945",
+      "practiceId": "H1",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-481",
+      "domainId": "period-7-1890-1945",
+      "practiceId": "H4",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-482",
+      "domainId": "period-7-1890-1945",
+      "practiceId": "H3",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-483",
+      "domainId": "period-7-1890-1945",
+      "practiceId": "H6",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-484",
+      "domainId": "period-8-1945-1980",
+      "practiceId": "H2",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-485",
+      "domainId": "period-8-1945-1980",
+      "practiceId": "H5",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-486",
+      "domainId": "period-8-1945-1980",
+      "practiceId": "H1",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-487",
+      "domainId": "period-8-1945-1980",
+      "practiceId": "H4",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-488",
+      "domainId": "period-8-1945-1980",
+      "practiceId": "H3",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-489",
+      "domainId": "period-8-1945-1980",
+      "practiceId": "H6",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-490",
+      "domainId": "period-8-1945-1980",
+      "practiceId": "H2",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-491",
+      "domainId": "period-8-1945-1980",
+      "practiceId": "H5",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-492",
+      "domainId": "period-8-1945-1980",
+      "practiceId": "H1",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-493",
+      "domainId": "period-8-1945-1980",
+      "practiceId": "H4",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-494",
+      "domainId": "period-8-1945-1980",
+      "practiceId": "H3",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-495",
+      "domainId": "period-9-1980-present",
+      "practiceId": "H6",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-496",
+      "domainId": "period-9-1980-present",
+      "practiceId": "H2",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-497",
+      "domainId": "period-9-1980-present",
+      "practiceId": "H5",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-498",
+      "domainId": "period-9-1980-present",
+      "practiceId": "H1",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-499",
+      "domainId": "period-9-1980-present",
+      "practiceId": "H4",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-500",
+      "domainId": "period-9-1980-present",
+      "practiceId": "H3",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-501",
+      "domainId": "period-1-1491-1607",
+      "practiceId": "H4",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-502",
+      "domainId": "period-1-1491-1607",
+      "practiceId": "H3",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-503",
+      "domainId": "period-2-1607-1754",
+      "practiceId": "H6",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-504",
+      "domainId": "period-2-1607-1754",
+      "practiceId": "H2",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-505",
+      "domainId": "period-3-1754-1800",
+      "practiceId": "H5",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-506",
+      "domainId": "period-3-1754-1800",
+      "practiceId": "H1",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-507",
+      "domainId": "period-3-1754-1800",
+      "practiceId": "H4",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-508",
+      "domainId": "period-4-1800-1848",
+      "practiceId": "H3",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-509",
+      "domainId": "period-4-1800-1848",
+      "practiceId": "H6",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-510",
+      "domainId": "period-4-1800-1848",
+      "practiceId": "H2",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-511",
+      "domainId": "period-5-1844-1877",
+      "practiceId": "H5",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-512",
+      "domainId": "period-5-1844-1877",
+      "practiceId": "H1",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-513",
+      "domainId": "period-5-1844-1877",
+      "practiceId": "H4",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-514",
+      "domainId": "period-6-1865-1898",
+      "practiceId": "H3",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-515",
+      "domainId": "period-6-1865-1898",
+      "practiceId": "H6",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-516",
+      "domainId": "period-6-1865-1898",
+      "practiceId": "H2",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-517",
+      "domainId": "period-7-1890-1945",
+      "practiceId": "H5",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-518",
+      "domainId": "period-7-1890-1945",
+      "practiceId": "H1",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-519",
+      "domainId": "period-7-1890-1945",
+      "practiceId": "H4",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-520",
+      "domainId": "period-7-1890-1945",
+      "practiceId": "H3",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-521",
+      "domainId": "period-8-1945-1980",
+      "practiceId": "H6",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-522",
+      "domainId": "period-8-1945-1980",
+      "practiceId": "H2",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-523",
+      "domainId": "period-8-1945-1980",
+      "practiceId": "H5",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-524",
+      "domainId": "period-8-1945-1980",
+      "practiceId": "H1",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-525",
+      "domainId": "period-9-1980-present",
+      "practiceId": "H4",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-526",
+      "domainId": "period-1-1491-1607",
+      "practiceId": "H3",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-527",
+      "domainId": "period-1-1491-1607",
+      "practiceId": "H6",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-528",
+      "domainId": "period-2-1607-1754",
+      "practiceId": "H2",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-529",
+      "domainId": "period-2-1607-1754",
+      "practiceId": "H5",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-530",
+      "domainId": "period-3-1754-1800",
+      "practiceId": "H1",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-531",
+      "domainId": "period-3-1754-1800",
+      "practiceId": "H4",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-532",
+      "domainId": "period-4-1800-1848",
+      "practiceId": "H3",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-533",
+      "domainId": "period-4-1800-1848",
+      "practiceId": "H6",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-534",
+      "domainId": "period-5-1844-1877",
+      "practiceId": "H2",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-535",
+      "domainId": "period-5-1844-1877",
+      "practiceId": "H5",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-536",
+      "domainId": "period-6-1865-1898",
+      "practiceId": "H1",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-537",
+      "domainId": "period-6-1865-1898",
+      "practiceId": "H4",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-538",
+      "domainId": "period-7-1890-1945",
+      "practiceId": "H3",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-539",
+      "domainId": "period-8-1945-1980",
+      "practiceId": "H6",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-540",
+      "domainId": "period-9-1980-present",
+      "practiceId": "H2",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-541",
+      "domainId": "period-1-1491-1607",
+      "practiceId": "H5",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-542",
+      "domainId": "period-1-1491-1607",
+      "practiceId": "H1",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-543",
+      "domainId": "period-1-1491-1607",
+      "practiceId": "H4",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-544",
+      "domainId": "period-1-1491-1607",
+      "practiceId": "H3",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-545",
+      "domainId": "period-2-1607-1754",
+      "practiceId": "H6",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-546",
+      "domainId": "period-2-1607-1754",
+      "practiceId": "H2",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-547",
+      "domainId": "period-2-1607-1754",
+      "practiceId": "H5",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-548",
+      "domainId": "period-2-1607-1754",
+      "practiceId": "H1",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-549",
+      "domainId": "period-2-1607-1754",
+      "practiceId": "H4",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-550",
+      "domainId": "period-3-1754-1800",
+      "practiceId": "H3",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-551",
+      "domainId": "period-3-1754-1800",
+      "practiceId": "H6",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-552",
+      "domainId": "period-3-1754-1800",
+      "practiceId": "H2",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-553",
+      "domainId": "period-3-1754-1800",
+      "practiceId": "H5",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-554",
+      "domainId": "period-3-1754-1800",
+      "practiceId": "H1",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-555",
+      "domainId": "period-3-1754-1800",
+      "practiceId": "H4",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-556",
+      "domainId": "period-3-1754-1800",
+      "practiceId": "H3",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-557",
+      "domainId": "period-4-1800-1848",
+      "practiceId": "H6",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-558",
+      "domainId": "period-4-1800-1848",
+      "practiceId": "H2",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-559",
+      "domainId": "period-4-1800-1848",
+      "practiceId": "H5",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-560",
+      "domainId": "period-4-1800-1848",
+      "practiceId": "H1",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-561",
+      "domainId": "period-4-1800-1848",
+      "practiceId": "H4",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-562",
+      "domainId": "period-4-1800-1848",
+      "practiceId": "H3",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-563",
+      "domainId": "period-4-1800-1848",
+      "practiceId": "H6",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-564",
+      "domainId": "period-4-1800-1848",
+      "practiceId": "H2",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-565",
+      "domainId": "period-5-1844-1877",
+      "practiceId": "H5",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-566",
+      "domainId": "period-5-1844-1877",
+      "practiceId": "H1",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-567",
+      "domainId": "period-5-1844-1877",
+      "practiceId": "H4",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-568",
+      "domainId": "period-5-1844-1877",
+      "practiceId": "H3",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-569",
+      "domainId": "period-5-1844-1877",
+      "practiceId": "H6",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-570",
+      "domainId": "period-5-1844-1877",
+      "practiceId": "H2",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-571",
+      "domainId": "period-5-1844-1877",
+      "practiceId": "H5",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-572",
+      "domainId": "period-6-1865-1898",
+      "practiceId": "H1",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-573",
+      "domainId": "period-6-1865-1898",
+      "practiceId": "H4",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-574",
+      "domainId": "period-6-1865-1898",
+      "practiceId": "H3",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-575",
+      "domainId": "period-6-1865-1898",
+      "practiceId": "H6",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-576",
+      "domainId": "period-6-1865-1898",
+      "practiceId": "H2",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-577",
+      "domainId": "period-6-1865-1898",
+      "practiceId": "H5",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-578",
+      "domainId": "period-6-1865-1898",
+      "practiceId": "H1",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-579",
+      "domainId": "period-6-1865-1898",
+      "practiceId": "H4",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-580",
+      "domainId": "period-7-1890-1945",
+      "practiceId": "H3",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-581",
+      "domainId": "period-7-1890-1945",
+      "practiceId": "H6",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-582",
+      "domainId": "period-7-1890-1945",
+      "practiceId": "H2",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-583",
+      "domainId": "period-7-1890-1945",
+      "practiceId": "H5",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-584",
+      "domainId": "period-7-1890-1945",
+      "practiceId": "H1",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-585",
+      "domainId": "period-7-1890-1945",
+      "practiceId": "H4",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-586",
+      "domainId": "period-7-1890-1945",
+      "practiceId": "H3",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-587",
+      "domainId": "period-7-1890-1945",
+      "practiceId": "H6",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-588",
+      "domainId": "period-7-1890-1945",
+      "practiceId": "H2",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-589",
+      "domainId": "period-8-1945-1980",
+      "practiceId": "H5",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-590",
+      "domainId": "period-8-1945-1980",
+      "practiceId": "H1",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-591",
+      "domainId": "period-8-1945-1980",
+      "practiceId": "H4",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-592",
+      "domainId": "period-8-1945-1980",
+      "practiceId": "H3",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-593",
+      "domainId": "period-8-1945-1980",
+      "practiceId": "H6",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-594",
+      "domainId": "period-8-1945-1980",
+      "practiceId": "H2",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-595",
+      "domainId": "period-8-1945-1980",
+      "practiceId": "H5",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-596",
+      "domainId": "period-8-1945-1980",
+      "practiceId": "H1",
+      "answerIndex": 3,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-597",
+      "domainId": "period-9-1980-present",
+      "practiceId": "H4",
+      "answerIndex": 0,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-598",
+      "domainId": "period-9-1980-present",
+      "practiceId": "H3",
+      "answerIndex": 1,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-599",
+      "domainId": "period-9-1980-present",
+      "practiceId": "H6",
+      "answerIndex": 2,
+      "findings": []
+    },
+    {
+      "id": "apush-foundation-600",
+      "domainId": "period-9-1980-present",
+      "practiceId": "H2",
+      "answerIndex": 3,
+      "findings": []
+    }
+  ],
+  "releaseAssessment": {
+    "releaseStatus": "not-release-ready",
+    "releaseReady": false,
+    "reason": "Automated structural QA passed, but every independent review, production, field-test, psychometric, and re-verification gate remains open."
+  }
+}

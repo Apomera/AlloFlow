@@ -1,14 +1,16 @@
 import { expect, test } from '@playwright/test';
 import { resolve } from 'node:path';
+import { readFileSync } from 'node:fs';
 
 const modulesDir = resolve(process.cwd(), 'desktop/web-app/node_modules');
+const wordSoundsStrings = JSON.parse(readFileSync(resolve(process.cwd(), 'ui_strings.js'), 'utf8')).word_sounds;
 
 test('Word Sounds recovers from a browser playback block without restarting the activity', async ({ page }) => {
   await page.setContent('<!doctype html><html><body><div id="root"></div></body></html>');
   await page.addScriptTag({ path: resolve(modulesDir, 'react/umd/react.development.js') });
   await page.addScriptTag({ path: resolve(modulesDir, 'react-dom/umd/react-dom.development.js') });
 
-  await page.evaluate(() => {
+  await page.evaluate((localizedWordSoundsStrings) => {
     const noop = () => {};
     const iconNames = ['AlertCircle', 'AlertTriangle', 'BarChart2', 'BarChart3', 'Calculator', 'Chart', 'Check', 'ChevronDown', 'ChevronLeft', 'ChevronRight', 'ClipboardList', 'Cloud', 'Download', 'Ear', 'Edit2', 'Globe', 'Maximize2', 'Mic', 'MicOff', 'Minimize', 'Music', 'Play', 'PlayCircle', 'Printer', 'RefreshCw', 'Settings', 'ShieldCheck', 'Star', 'Trash2', 'Trophy', 'Upload', 'Users', 'Volume2', 'Wifi', 'X', 'Zap'];
     for (const name of iconNames) {
@@ -28,6 +30,7 @@ test('Word Sounds recovers from a browser playback block without restarting the 
       setRtiGoals: noop, setRtiDecisionRuleMethod: noop, setRtiDecisionRuleThreshold: noop,
       setShowClassAnalytics: noop, studentNickname: '', warnLog: noop, debugLog: noop,
       __wordSoundsPlaybackAllowed: false,
+      __wordSoundsStrings: localizedWordSoundsStrings,
     });
     Object.defineProperty(HTMLMediaElement.prototype, 'canPlayType', { configurable: true, value: () => 'probably' });
     Object.defineProperty(HTMLMediaElement.prototype, 'load', {
@@ -49,7 +52,7 @@ test('Word Sounds recovers from a browser playback block without restarting the 
       },
     });
     Object.defineProperty(HTMLMediaElement.prototype, 'pause', { configurable: true, value: noop });
-  });
+  }, wordSoundsStrings);
 
   await page.addScriptTag({ path: resolve(process.cwd(), 'word_sounds_module.js') });
   await page.evaluate(() => {
@@ -87,7 +90,11 @@ test('Word Sounds recovers from a browser playback block without restarting the 
         allowRuntimeAi: false, callGemini: noop, callTTS: noop, callImagen: noop, selectedVoice: null,
         fetchTTSBytes: noop, onScoreUpdate: noop, speakWord: noop, playSound: noop, addToast: noop,
         t: (key: string, fallback?: string) => fallback || key,
-        getWordSoundsString: (_t: unknown, key: string) => key,
+        getWordSoundsString: (_t: unknown, key: string, params: Record<string, unknown> = {}) => {
+          let result = (window as any).__wordSoundsStrings[key.replace('word_sounds.', '')] || key;
+          for (const [name, value] of Object.entries(params)) result = result.replace(`{${name}}`, String(value));
+          return result;
+        },
         onPreparedAudioStatus: (report: unknown) => (window as any).__wordSoundsStatuses.push(report),
         preparedAudioDeliveryAt: 5150,
       });

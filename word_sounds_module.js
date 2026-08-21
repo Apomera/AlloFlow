@@ -17557,17 +17557,17 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           /*#__PURE__*/ React.createElement(
             "div",
             { className: "w-full max-w-md rounded-2xl bg-white p-6 text-center shadow-2xl" },
-            /*#__PURE__*/ React.createElement("div", { className: "mb-3 text-sm font-black uppercase tracking-widest text-indigo-700", "aria-hidden": "true" }, "Audio check"),
+            /*#__PURE__*/ React.createElement("div", { className: "mb-3 text-sm font-black uppercase tracking-widest text-indigo-700", "aria-hidden": "true" }, ts("word_sounds.audio_check")),
             /*#__PURE__*/ React.createElement(
               "h2",
               { id: "word-sounds-audio-status-title", className: "text-xl font-black text-slate-900" },
               preparedAudioPlayback.status === "blocked"
-                ? "Tap to enable audio"
+                ? ts("word_sounds.audio_enable_title")
                 : preparedAudioPlayback.status === "unsupported"
-                ? "This audio format is not supported"
+                ? ts("word_sounds.audio_unsupported_title")
                 : (preparedAudioPlayback.status === "damaged"
-                  ? "Some audio cannot be played"
-                  : (preparedAudioWaitExpired ? "Audio is not available yet" : "Checking audio playback...")),
+                  ? ts("word_sounds.audio_damaged_title")
+                  : (preparedAudioWaitExpired ? ts("word_sounds.audio_waiting_title") : ts("word_sounds.audio_checking_title"))),
             ),
             /*#__PURE__*/ React.createElement(
               "p",
@@ -17577,12 +17577,28 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 "data-testid": showPreparedAudioRecovery ? "word-sounds-audio-unavailable" : "word-sounds-audio-preparing",
               },
               preparedAudioPlayback.status === "blocked"
-                ? "Your browser stopped the sound from playing. Your place is saved; tap Try sound again to continue."
+                ? ts("word_sounds.audio_blocked_message")
                 : preparedAudioPlaybackFailed
-                ? `${preparedAudioPlayback.failed} of ${preparedAudioPlayback.total} required clips ${preparedAudioPlayback.status === "unsupported" ? "use an audio format this browser cannot play" : "appear to be damaged"}. ${preparedAudioRetryRequested ? "Your teacher has been asked to resend this activity." : "Ask your teacher to review and resend the audio."}`
+                ? (preparedAudioPlayback.status === "unsupported"
+                    ? (preparedAudioRetryRequested
+                        ? ts("word_sounds.audio_unsupported_requested_message", { failed: preparedAudioPlayback.failed, total: preparedAudioPlayback.total })
+                        : ts("word_sounds.audio_unsupported_message", { failed: preparedAudioPlayback.failed, total: preparedAudioPlayback.total }))
+                    : (preparedAudioRetryRequested
+                        ? ts("word_sounds.audio_damaged_requested_message", { failed: preparedAudioPlayback.failed, total: preparedAudioPlayback.total })
+                        : ts("word_sounds.audio_damaged_message", { failed: preparedAudioPlayback.failed, total: preparedAudioPlayback.total })))
                 : (preparedAudioWaitExpired
-                  ? `${preparedAudioCoverage.missing} of ${preparedAudioCoverage.total} required audio clips did not arrive. ${preparedAudioRetryRequested ? "Your teacher has been asked to resend this activity." : "Ask your teacher to prepare the missing audio and resend this activity."}`
-                  : `${preparedAudioPlaybackChecking ? "Silently testing" : "Checking"} ${Math.min(preparedAudioPlayback.total, preparedAudioPlayback.ready + preparedAudioPlayback.failed)} of ${preparedAudioCoverage.total} prepared audio clips before the activity starts.`),
+                  ? (preparedAudioRetryRequested
+                      ? ts("word_sounds.audio_missing_requested_message", { missing: preparedAudioCoverage.missing, total: preparedAudioCoverage.total })
+                      : ts("word_sounds.audio_missing_message", { missing: preparedAudioCoverage.missing, total: preparedAudioCoverage.total }))
+                  : (preparedAudioPlaybackChecking
+                      ? ts("word_sounds.audio_testing_message", {
+                          ready: Math.min(preparedAudioPlayback.total, preparedAudioPlayback.ready + preparedAudioPlayback.failed),
+                          total: preparedAudioCoverage.total,
+                        })
+                      : ts("word_sounds.audio_checking_message", {
+                          ready: Math.min(preparedAudioPlayback.total, preparedAudioPlayback.ready + preparedAudioPlayback.failed),
+                          total: preparedAudioCoverage.total,
+                        }))),
             ),
             showPreparedAudioRecovery && /*#__PURE__*/ React.createElement(
               "div",
@@ -17606,8 +17622,8 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   className: "min-h-11 rounded-xl bg-indigo-600 px-5 py-2 font-bold text-white hover:bg-indigo-700 disabled:cursor-wait disabled:opacity-70 focus:outline-none focus:ring-2 focus:ring-indigo-700 focus:ring-offset-2",
                 },
                 preparedAudioPlayback.status === "blocked"
-                  ? "Try sound again"
-                  : (preparedAudioRetryRequested ? "Request sent" : "Ask teacher to resend"),
+                  ? ts("word_sounds.audio_try_again")
+                  : (preparedAudioRetryRequested ? ts("word_sounds.audio_request_sent") : ts("word_sounds.audio_ask_teacher_resend")),
               ),
             ),
           ),

@@ -1,7 +1,9 @@
 import { describe, expect, it, vi } from 'vitest';
 import { loadAlloModule } from './setup.js';
 
-loadAlloModule('generation_helpers_module.js');
+loadAlloModule('generation_matrix_module.js');
+loadAlloModule('generation_helpers_source.jsx');
+const GenerationMatrix = window.AlloModules.GenerationMatrix;
 const GenerationHelpers = window.AlloModules.GenerationHelpers;
 
 const makeDeps = (overrides = {}) => {
@@ -11,13 +13,23 @@ const makeDeps = (overrides = {}) => {
     rosterKey: null,
     gradeLevel: '5th Grade',
     leveledTextLanguage: 'English',
+    translationMode: 'auto',
+    currentUiLanguage: 'English',
     studentInterests: [],
     dokLevel: '',
     leveledTextCustomInstructions: '',
     selectedLanguages: [],
+    differentiationRange: 'None',
+    differentiationTypes: ['simplified'],
+    differentiationCustomGrades: [],
     targetStandards: [],
     useEmojis: false,
     textFormat: 'Standard Text',
+    imageGenerationStyle: 'Auto',
+    imageAspectRatio: '16:9',
+    aiProviderProfile: {
+      backend: 'gemini', model: 'gemini-test', imageProvider: 'auto', imageModel: 'imagen-test', isLocal: false,
+    },
     history: [],
     inputText: 'A reliable source text for the pack.',
     sourceTopic: 'Test topic',
@@ -63,6 +75,7 @@ const makeDeps = (overrides = {}) => {
     applyDetailedAutoConfig: vi.fn(),
     getGroupDifferentiationContext: vi.fn(() => ''),
     getAssetManifest: vi.fn(() => []),
+    getDifferentiationGrades: vi.fn(grade => [grade]),
     handleGenerate: vi.fn(async (type) => ({ id: `resource-${type}`, type, data: {} })),
   };
   return Object.assign(deps, overrides);
@@ -494,7 +507,8 @@ describe('Full Pack failure diagnostics and resilience', () => {
     expect(deps.handleApplyRosterGroup).toHaveBeenCalledWith('support');
     expect(deps.handleGenerate).toHaveBeenCalledTimes(1);
     expect(deps.handleGenerate.mock.calls[0][6].gradeLevel).toBe('8th Grade');
-    expect(Object.keys(latestRun.groups)).toEqual(['support']);
+    expect(Object.keys(latestRun.groups)).toEqual(['complete', 'support']);
+    expect(latestRun.groups.complete.resources['quiz-0']).toMatchObject({ status: 'landed' });
     expect(latestRun.status).toBe('completed');
   });
 });
@@ -529,6 +543,637 @@ describe('Full Pack preflight summary', () => {
     expect(latestRun.preflight.skipped.map(item => item.type)).toEqual(['made-up-tool', 'timeline']);
   });
 });
+
+describe('Full Pack Generation Matrix integration', () => {
+  it('freezes the exact grade-language cross-product and executes the reviewed cells one by one', async () => {
+    let latestRun = null;
+    let nextId = 0;
+    const setFullPackRun = next => { latestRun = typeof next === 'function' ? next(latestRun) : next; };
+    const deps = makeDeps({
+      setFullPackRun,
+      gradeLevel: '5th Grade',
+      leveledTextLanguage: 'All Selected Languages',
+      selectedLanguages: ['Spanish', 'French'],
+      studentInterests: ['Robotics'],
+      dokLevel: '3',
+      useEmojis: true,
+      textFormat: 'Bullet Points',
+      imageGenerationStyle: 'Watercolor',
+      imageAspectRatio: '4:3',
+      differentiationRange: 'Custom',
+      differentiationTypes: ['quiz'],
+      differentiationCustomGrades: ['6th Grade'],
+      getDifferentiationGrades: vi.fn(() => ['5th Grade', '6th Grade']),
+      autoConfigureSettings: vi.fn(async () => ({ resourcePlan: [{ tool: 'quiz', directive: 'Check each level.' }] })),
+      handleGenerate: vi.fn(async (type, language, _keep, _source, config) => ({
+        id: `matrix-${++nextId}-${config.grade}-${language}`, type, data: {}, config: {},
+      })),
+    });
+
+    await GenerationHelpers.handlePlanFullPack(deps);
+    let reviewed = latestRun;
+    const row = reviewed.preflight.selected[0];
+    const cells = row.generationVariants.map(cell => `${cell.grade}|${cell.language}`).sort();
+    expect(cells).toEqual([
+      '5th Grade|English', '5th Grade|French', '5th Grade|Spanish',
+      '6th Grade|English', '6th Grade|French', '6th Grade|Spanish',
+    ]);
+    expect(reviewed.preflight.generationMatrix.summary).toMatchObject({ variantCount: 6, expectedCalls: 6 });
+    expect(reviewed.preflight.estimatedResourceGenerations).toBe(6);
+    expect(row).toMatchObject({ explicitVariantKey: null, variantKeyDerived: true });
+    const originalIdentities = row.generationVariants.map(cell => cell.generationIdentity);
+    reviewed = GenerationHelpers.editFullPackPlanResourceDirective(
+      reviewed, row.uiId, 'Use the reviewed evidence-check format.'
+    );
+    const editedRow = reviewed.preflight.selected[0];
+    expect(editedRow).toMatchObject({ explicitVariantKey: null, variantKeyDerived: true });
+    expect(editedRow.generationVariants.map(cell => `${cell.grade}|${cell.language}`).sort()).toEqual(cells);
+    expect(editedRow.generationVariants.map(cell => cell.generationIdentity)).not.toEqual(originalIdentities);
+    expect(reviewed.settingsSnapshot).toMatchObject({
+      translationMode: 'auto', currentUiLanguage: 'English', selectedLanguages: ['Spanish', 'French'],
+      studentInterests: ['Robotics'], dokLevel: '3', useEmojis: true,
+      textFormat: 'Bullet Points', imageGenerationStyle: 'Watercolor', imageAspectRatio: '4:3',
+    });
+    expect(reviewed.preflight.generationMatrix.settings).toMatchObject({
+      translationMode: 'auto', currentUiLanguage: 'English', selectedLanguages: ['Spanish', 'French'],
+      studentInterests: ['Robotics'], dokLevel: '3', useEmojis: true,
+      textFormat: 'Bullet Points', imageGenerationStyle: 'Watercolor', imageAspectRatio: '4:3',
+    });
+
+    deps.gradeLevel = '1st Grade';
+    deps.leveledTextLanguage = 'English';
+    deps.selectedLanguages = [];
+    deps.studentInterests = ['Changed after review'];
+    deps.dokLevel = '1';
+    deps.useEmojis = false;
+    deps.textFormat = 'Standard Text';
+    deps.imageGenerationStyle = 'Photorealistic';
+    deps.imageAspectRatio = '1:1';
+    await GenerationHelpers.handleApproveFullPack(reviewed, deps);
+
+    expect(deps.handleGenerate).toHaveBeenCalledTimes(6);
+    const executed = deps.handleGenerate.mock.calls.map(call => `${call[4].grade}|${call[1]}`).sort();
+    expect(executed).toEqual(cells);
+    deps.handleGenerate.mock.calls.forEach(call => {
+      expect(call[4].skipDifferentiation).toBe(true);
+      expect(call[4].generationIdentity).toEqual(expect.objectContaining({ key: expect.stringMatching(/^gm1-/) }));
+      expect(call[4]).toMatchObject({
+        explicitVariantKey: null, variantKeyDerived: true,
+        studentInterests: ['Robotics'], dokLevel: '3', useEmojis: true,
+        textFormat: 'Bullet Points', imageGenerationStyle: 'Watercolor', imageAspectRatio: '4:3',
+      });
+      expect(call[4].generationIdentity).toMatchObject({ explicitVariantKey: null, variantKeyDerived: true });
+      expect(call[6]).toMatchObject({
+        differentiationRange: 'None', selectedLanguages: ['Spanish', 'French'],
+        studentInterests: ['Robotics'], dokLevel: '3', useEmojis: true,
+        textFormat: 'Bullet Points', imageGenerationStyle: 'Watercolor', imageAspectRatio: '4:3',
+      });
+    });
+    const runtimeRow = Object.values(latestRun.resources)[0];
+    expect(runtimeRow).toMatchObject({ status: 'landed' });
+    expect(runtimeRow.resourceIds).toHaveLength(6);
+    expect(runtimeRow.generationVariants).toHaveLength(6);
+  });
+
+  it('keeps an Auto analysis row visible but reuses the exact source analysis without an AI call', async () => {
+    let latestRun = null;
+    const setFullPackRun = next => { latestRun = typeof next === 'function' ? next(latestRun) : next; };
+    const deps = makeDeps({
+      setFullPackRun,
+      resourceCount: 'Auto',
+      autoConfigureSettings: vi.fn(async () => ({ resourcePlan: [{ tool: 'quiz', directive: '' }] })),
+    });
+
+    await GenerationHelpers.handlePlanFullPack(deps);
+    const firstAnalysis = latestRun.preflight.selected.find(row => row.type === 'analysis');
+    expect(firstAnalysis).toBeTruthy();
+    const existingAnalysis = {
+      id: 'canonical-analysis',
+      type: 'analysis',
+      generationIdentity: firstAnalysis.generationVariants[0].generationIdentity,
+      data: { originalText: deps.inputText, concepts: ['One'] },
+      config: { generationIdentity: { key: firstAnalysis.generationVariants[0].generationIdentity } },
+    };
+    deps.history = [existingAnalysis];
+
+    await GenerationHelpers.handlePlanFullPack(deps);
+    let reviewed = latestRun;
+    const reusable = reviewed.preflight.selected.find(row => row.type === 'analysis');
+    expect(reusable.generationAction).toBe('reuse');
+    expect(reusable.existingArtifactId).toBe('canonical-analysis');
+    for (const row of reviewed.preflight.selected.filter(item => item.type !== 'analysis')) {
+      reviewed = GenerationHelpers.removeFullPackPlanResource(reviewed, row.uiId);
+    }
+
+    await GenerationHelpers.handleApproveFullPack(reviewed, deps);
+    expect(deps.handleGenerate).not.toHaveBeenCalled();
+    expect(Object.values(latestRun.resources)[0]).toMatchObject({
+      status: 'landed', generationAction: 'reuse', resourceId: 'canonical-analysis',
+    });
+  });
+
+  it('does not reuse a modern exact artifact after generation context changes', async () => {
+    let latestRun = null;
+    const deps = makeDeps({
+      setFullPackRun: next => { latestRun = typeof next === 'function' ? next(latestRun) : next; },
+      autoConfigureSettings: vi.fn(async () => ({ resourcePlan: [{ tool: 'quiz', directive: 'Same quiz.' }] })),
+    });
+    await GenerationHelpers.handlePlanFullPack(deps);
+    const identity = latestRun.preflight.selected[0].generationVariants[0].generationIdentity;
+    deps.history = [{
+      id: 'prior-quiz', type: 'quiz', generationIdentity: identity, data: {},
+      config: { generationIdentity: { key: identity } },
+    }];
+    await GenerationHelpers.handlePlanFullPack(deps);
+    expect(latestRun.preflight.selected[0].generationAction).toBe('reuse');
+
+    deps.useEmojis = true;
+    await GenerationHelpers.handlePlanFullPack(deps);
+    expect(latestRun.preflight.selected[0].generationAction).not.toBe('reuse');
+    expect(latestRun.preflight.estimatedResourceGenerations).toBe(1);
+  });
+
+  it('retains selected languages for a single embedded-translation glossary cell', async () => {
+    let latestRun = null;
+    const deps = makeDeps({
+      setFullPackRun: next => { latestRun = typeof next === 'function' ? next(latestRun) : next; },
+      selectedLanguages: ['Spanish'],
+      translationMode: 'selected',
+      currentUiLanguage: 'English',
+      resolveTranslationPolicy: vi.fn(() => ({ enabled: true, target: 'Spanish', mode: 'selected' })),
+      autoConfigureSettings: vi.fn(async () => ({ resourcePlan: [{ tool: 'glossary', directive: '' }] })),
+    });
+    await GenerationHelpers.handlePlanFullPack(deps);
+    const reviewed = latestRun;
+    expect(reviewed.preflight.selected[0].generationVariants).toHaveLength(1);
+    expect(reviewed.preflight.generationMatrix.settings).toMatchObject({
+      selectedLanguages: ['Spanish'], translationMode: 'selected', currentUiLanguage: 'English', translationTarget: 'Spanish',
+    });
+
+    await GenerationHelpers.handleApproveFullPack(reviewed, deps);
+    expect(deps.handleGenerate).toHaveBeenCalledTimes(1);
+    expect(deps.handleGenerate.mock.calls[0][6]).toMatchObject({
+      selectedLanguages: ['Spanish'], translationMode: 'selected', currentUiLanguage: 'English',
+    });
+    expect(deps.handleGenerate.mock.calls[0][4]).toMatchObject({
+      skipDifferentiation: true, selectedLanguages: ['Spanish'], translationTarget: 'Spanish',
+    });
+  });
+
+  it('plans and generates one canonical analysis across all roster groups', async () => {
+    vi.useFakeTimers();
+    let latestRun = null;
+    const source = 'One source shared by every roster group.';
+    const deps = makeDeps({
+      inputText: source,
+      fullPackTargetGroup: 'all',
+      resourceCount: 'Auto',
+      rosterKey: { groups: {
+        support: { name: 'Support', profile: { gradeLevel: '4th Grade' } },
+        extension: { name: 'Extension', profile: { gradeLevel: '7th Grade' } },
+      } },
+      setFullPackRun: next => { latestRun = typeof next === 'function' ? next(latestRun) : next; },
+      autoConfigureSettings: vi.fn(async () => ({ resourcePlan: [{ tool: 'analysis', directive: '' }] })),
+      handleGenerate: vi.fn(async type => ({
+        id: `${type}-${Math.random()}`, type,
+        data: type === 'analysis' ? { originalText: source, concepts: [] } : {},
+      })),
+    });
+    try {
+      const planning = GenerationHelpers.handlePlanFullPack(deps);
+      await vi.runAllTimersAsync();
+      await planning;
+      const reviewed = latestRun;
+      const analysisActions = Object.values(reviewed.groups).map(group =>
+        group.preflight.selected.find(row => row.type === 'analysis').generationAction);
+      expect(analysisActions).toEqual(['generate', 'reuse']);
+
+      const execution = GenerationHelpers.handleApproveFullPack(reviewed, deps);
+      await vi.runAllTimersAsync();
+      await execution;
+    } finally {
+      vi.useRealTimers();
+    }
+    expect(deps.handleGenerate.mock.calls.filter(call => call[0] === 'analysis')).toHaveLength(1);
+    const analysisRows = Object.values(latestRun.groups).map(group =>
+      Object.values(group.resources).find(row => row.type === 'analysis'));
+    expect(analysisRows.map(row => row.generationAction)).toEqual(['generate', 'reuse']);
+  });
+
+  it('retries only the failed language cell from a partially landed row', async () => {
+    vi.useFakeTimers();
+    let latestRun = null;
+    let spanishFailures = 0;
+    const deps = makeDeps({
+      leveledTextLanguage: 'All Selected Languages',
+      selectedLanguages: ['Spanish'],
+      setFullPackRun: next => { latestRun = typeof next === 'function' ? next(latestRun) : next; },
+      autoConfigureSettings: vi.fn(async () => ({ resourcePlan: [{ tool: 'quiz', directive: '' }] })),
+      handleGenerate: vi.fn(async (type, language) => {
+        if (language === 'Spanish' && spanishFailures < 2) {
+          spanishFailures += 1;
+          throw new Error('503 temporary provider overload');
+        }
+        return { id: `${type}-${language}`, type, data: {} };
+      }),
+    });
+    try {
+      const first = GenerationHelpers.handleGenerateFullPack(null, deps);
+      await vi.runAllTimersAsync();
+      await first;
+      const failedRun = latestRun;
+      expect(failedRun.status).toBe('partial');
+      expect(Object.values(failedRun.resources)[0].generationVariants.map(cell => cell.status)).toEqual(['landed', 'failed']);
+
+      deps.handleGenerate = vi.fn(async (type, language) => ({ id: `retry-${type}-${language}`, type, data: {} }));
+      const retry = GenerationHelpers.handleRetryFailedFullPack(failedRun, deps);
+      await vi.runAllTimersAsync();
+      await retry;
+    } finally {
+      vi.useRealTimers();
+    }
+    expect(deps.handleGenerate).toHaveBeenCalledTimes(1);
+    expect(deps.handleGenerate.mock.calls[0][1]).toBe('Spanish');
+    expect(Object.values(latestRun.resources)[0].generationVariants).toHaveLength(2);
+    expect(Object.values(latestRun.resources)[0].generationVariants.map(cell => cell.status)).toEqual(['landed', 'landed']);
+    expect(latestRun.status).toBe('completed');
+  });
+
+  it('retains unprocessed matrix cells when stopped mid-row and resumes only unfinished cells', async () => {
+    let latestRun = null;
+    let secondStartedResolve;
+    const secondStarted = new Promise(resolve => { secondStartedResolve = resolve; });
+    const deps = makeDeps({
+      leveledTextLanguage: 'All Selected Languages',
+      selectedLanguages: ['Spanish'],
+      differentiationRange: 'Custom',
+      differentiationTypes: ['quiz'],
+      differentiationCustomGrades: ['6th Grade'],
+      getDifferentiationGrades: vi.fn(() => ['5th Grade', '6th Grade']),
+      setFullPackRun: next => { latestRun = typeof next === 'function' ? next(latestRun) : next; },
+      autoConfigureSettings: vi.fn(async () => ({ resourcePlan: [{ tool: 'quiz', directive: '' }] })),
+    });
+    await GenerationHelpers.handlePlanFullPack(deps);
+    const reviewed = latestRun;
+    let callCount = 0;
+    deps.handleGenerate = vi.fn((type, language, _keep, _source, _config, _switch, override) => {
+      callCount += 1;
+      if (callCount === 1) return Promise.resolve({ id: `${type}-${language}-first`, type, data: {} });
+      secondStartedResolve();
+      return new Promise((resolve, reject) => {
+        override.generationSignal.addEventListener('abort', () => {
+          const error = new Error('stopped during matrix row');
+          error.name = 'AbortError';
+          reject(error);
+        }, { once: true });
+      });
+    });
+
+    const execution = GenerationHelpers.handleApproveFullPack(reviewed, deps);
+    await secondStarted;
+    GenerationHelpers.handleStopFullPack();
+    await execution;
+
+    const stoppedRun = latestRun;
+    const stoppedRow = Object.values(stoppedRun.resources)[0];
+    expect(stoppedRun.status).toBe('stopped');
+    expect(stoppedRow.generationVariants.map(cell => cell.status)).toEqual([
+      'landed', 'stopped', 'queued', 'queued',
+    ]);
+
+    deps.handleGenerate = vi.fn(async (type, language, _keep, _source, config) => ({
+      id: `resumed-${type}-${config.grade}-${language}`, type, data: {},
+    }));
+    await GenerationHelpers.handleRetryFailedFullPack(stoppedRun, deps);
+
+    expect(deps.handleGenerate).toHaveBeenCalledTimes(3);
+    const resumedRow = Object.values(latestRun.resources)[0];
+    expect(resumedRow.generationVariants).toHaveLength(4);
+    expect(resumedRow.generationVariants.map(cell => cell.status)).toEqual([
+      'landed', 'landed', 'landed', 'landed',
+    ]);
+    expect(resumedRow.resourceIds).toHaveLength(4);
+    expect(latestRun.status).toBe('completed');
+  });
+
+  it('keeps later reviewed rows queued when stopped between rows and resumes without regenerating landed work', async () => {
+    let latestRun = null;
+    const deps = makeDeps({
+      setFullPackRun: next => { latestRun = typeof next === 'function' ? next(latestRun) : next; },
+      autoConfigureSettings: vi.fn(async () => ({ resourcePlan: [
+        { tool: 'quiz', directive: '' },
+        { tool: 'glossary', directive: '' },
+      ] })),
+    });
+    await GenerationHelpers.handlePlanFullPack(deps);
+    const reviewed = latestRun;
+    deps.handleGenerate = vi.fn(async type => {
+      GenerationHelpers.handleStopFullPack();
+      return { id: `landed-${type}`, type, data: {} };
+    });
+
+    await GenerationHelpers.handleApproveFullPack(reviewed, deps);
+    const stoppedRun = latestRun;
+    const byType = type => Object.values(stoppedRun.resources).find(row => row.type === type);
+    expect(stoppedRun.status).toBe('stopped');
+    expect(byType('quiz')).toMatchObject({ status: 'landed' });
+    expect(byType('glossary')).toMatchObject({ status: 'stopped', retryable: true });
+
+    deps.handleGenerate = vi.fn(async type => ({ id: `resumed-${type}`, type, data: {} }));
+    await GenerationHelpers.handleRetryFailedFullPack(stoppedRun, deps);
+
+    expect(deps.handleGenerate).toHaveBeenCalledTimes(1);
+    expect(deps.handleGenerate.mock.calls[0][0]).toBe('glossary');
+    expect(Object.values(latestRun.resources).map(row => row.status)).toEqual(['landed', 'landed']);
+    expect(latestRun.status).toBe('completed');
+  });
+
+  it('preserves completed group lineage and resumes roster groups that were queued when stopped', async () => {
+    vi.useFakeTimers();
+    let latestRun = null;
+    const deps = makeDeps({
+      fullPackTargetGroup: 'all',
+      rosterKey: { groups: {
+        support: { name: 'Support', profile: { gradeLevel: '4th Grade' } },
+        extension: { name: 'Extension', profile: { gradeLevel: '7th Grade' } },
+      } },
+      setFullPackRun: next => { latestRun = typeof next === 'function' ? next(latestRun) : next; },
+      autoConfigureSettings: vi.fn(async () => ({ resourcePlan: [{ tool: 'quiz', directive: '' }] })),
+    });
+    try {
+      const planning = GenerationHelpers.handlePlanFullPack(deps);
+      await vi.runAllTimersAsync();
+      await planning;
+      const reviewed = latestRun;
+      deps.handleGenerate = vi.fn(async type => {
+        GenerationHelpers.handleStopFullPack();
+        return { id: `first-group-${type}`, type, data: {} };
+      });
+      const execution = GenerationHelpers.handleApproveFullPack(reviewed, deps);
+      await vi.runAllTimersAsync();
+      await execution;
+      const stoppedRun = latestRun;
+      expect(stoppedRun.status).toBe('stopped');
+      expect(Object.keys(stoppedRun.groups)).toEqual(['support', 'extension']);
+      expect(Object.values(stoppedRun.groups.support.resources)[0]).toMatchObject({ status: 'landed' });
+      expect(Object.values(stoppedRun.groups.extension.resources)[0]).toMatchObject({ status: 'queued' });
+
+      deps.handleGenerate = vi.fn(async type => ({ id: `resumed-group-${type}`, type, data: {} }));
+      const retry = GenerationHelpers.handleRetryFailedFullPack(stoppedRun, deps);
+      await vi.runAllTimersAsync();
+      await retry;
+
+      expect(deps.handleGenerate).toHaveBeenCalledTimes(1);
+      expect(Object.keys(latestRun.groups)).toEqual(['support', 'extension']);
+      expect(Object.values(latestRun.groups.support.resources)[0]).toMatchObject({ status: 'landed' });
+      expect(Object.values(latestRun.groups.extension.resources)[0]).toMatchObject({ status: 'landed' });
+      expect(latestRun.status).toBe('completed');
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('makes a row retryable when any cell is transient and preserves permanent failures after retry', async () => {
+    vi.useFakeTimers();
+    let latestRun = null;
+    const deps = makeDeps({
+      leveledTextLanguage: 'All Selected Languages',
+      selectedLanguages: ['Spanish'],
+      setFullPackRun: next => { latestRun = typeof next === 'function' ? next(latestRun) : next; },
+      autoConfigureSettings: vi.fn(async () => ({ resourcePlan: [{ tool: 'quiz', directive: '' }] })),
+      handleGenerate: vi.fn(async (_type, language) => {
+        if (language === 'English') throw new Error('authentication failed');
+        throw new Error('503 temporary provider overload');
+      }),
+    });
+    try {
+      const first = GenerationHelpers.handleGenerateFullPack(null, deps);
+      await vi.runAllTimersAsync();
+      await first;
+      const failedRun = latestRun;
+      const failedRow = Object.values(failedRun.resources)[0];
+      expect(failedRow.generationVariants.map(cell => [cell.language, cell.retryable])).toEqual([
+        ['English', false], ['Spanish', true],
+      ]);
+      expect(failedRow.retryable).toBe(true);
+
+      deps.handleGenerate = vi.fn(async (type, language) => ({ id: `recovered-${type}-${language}`, type, data: {} }));
+      const retry = GenerationHelpers.handleRetryFailedFullPack(failedRun, deps);
+      await vi.runAllTimersAsync();
+      await retry;
+    } finally {
+      vi.useRealTimers();
+    }
+
+    expect(deps.handleGenerate).toHaveBeenCalledTimes(1);
+    expect(deps.handleGenerate.mock.calls[0][1]).toBe('Spanish');
+    const finalRow = Object.values(latestRun.resources)[0];
+    expect(finalRow.generationVariants.map(cell => cell.status)).toEqual(['failed', 'landed']);
+    expect(finalRow.resourceIds).toEqual(['recovered-quiz-Spanish']);
+    expect(finalRow.retryable).toBe(false);
+    expect(latestRun.status).toBe('partial');
+  });
+
+  it('freezes tool overrides, generation options, image settings, and provider selection through approval drift', async () => {
+    let latestRun = null;
+    const deps = makeDeps({
+      quizCustomInstructions: 'Use the reviewed misconception checks.',
+      quizMcqCount: 7,
+      imageGenerationStyle: 'Watercolor',
+      imageAspectRatio: '4:3',
+      aiProviderProfile: {
+        backend: 'openai', model: 'gpt-reviewed', imageProvider: 'openai', imageModel: 'image-reviewed', isLocal: false,
+      },
+      setFullPackRun: next => { latestRun = typeof next === 'function' ? next(latestRun) : next; },
+      autoConfigureSettings: vi.fn(async () => ({ resourcePlan: [{ tool: 'quiz', directive: '' }] })),
+    });
+    await GenerationHelpers.handlePlanFullPack(deps);
+    const reviewed = latestRun;
+    const frozen = reviewed.settingsSnapshot.fullPackGenerationConfig;
+    expect(frozen).toMatchObject({
+      toolOverrides: { quiz: 'Use the reviewed misconception checks.' },
+      toolOptions: { quizMcqCount: 7 },
+      universal: { imageGenerationStyle: 'Watercolor', imageAspectRatio: '4:3' },
+      provider: { backend: 'openai', model: 'gpt-reviewed' },
+    });
+    expect(reviewed.preflight.generationMatrix.settings.toolOverrides.quiz).toMatchObject({
+      customInstructions: 'Use the reviewed misconception checks.',
+      generationContext: { customInstructions: 'Use the reviewed misconception checks.' },
+    });
+    expect(reviewed.preflight.selected[0].generationVariants[0].generationConfig).toMatchObject({
+      generationContext: {
+        resource: { customInstructions: 'Use the reviewed misconception checks.' },
+      },
+    });
+    expect(GenerationHelpers.getFullPackGenerationConfigSnapshot(deps).fingerprint).toBe(frozen.fingerprint);
+
+    deps.quizCustomInstructions = 'Ambient instructions that must not leak in.';
+    deps.quizMcqCount = 2;
+    deps.imageGenerationStyle = 'Photorealistic';
+    deps.imageAspectRatio = '1:1';
+    deps.aiProviderProfile = { backend: 'gemini', model: 'ambient-model', imageProvider: 'auto', imageModel: '' };
+    expect(GenerationHelpers.getFullPackGenerationConfigSnapshot(deps).fingerprint).not.toBe(frozen.fingerprint);
+    await GenerationHelpers.handleApproveFullPack(reviewed, deps);
+
+    const call = deps.handleGenerate.mock.calls[0];
+    expect(call[4]).toMatchObject({
+      quizMcqCount: 7, imageGenerationStyle: 'Watercolor', imageAspectRatio: '4:3',
+      backend: 'openai', model: 'gpt-reviewed',
+    });
+    expect(call[4].customInstructions).toContain('Use the reviewed misconception checks.');
+    expect(call[4].customInstructions).not.toContain('Ambient instructions');
+    expect(call[6]).toMatchObject({
+      quizCustomInstructions: 'Use the reviewed misconception checks.',
+      quizMcqCount: 7,
+      imageGenerationStyle: 'Watercolor',
+      imageAspectRatio: '4:3',
+      aiProviderProfile: { backend: 'openai', model: 'gpt-reviewed' },
+    });
+  });
+
+  it('scopes a tool-specific custom instruction to that resource identity', async () => {
+    let latestRun = null;
+    const deps = makeDeps({
+      setFullPackRun: next => { latestRun = typeof next === 'function' ? next(latestRun) : next; },
+      autoConfigureSettings: vi.fn(async () => ({ resourcePlan: [
+        { tool: 'quiz', directive: 'Check understanding.' },
+        { tool: 'outline', directive: 'Organize the source.' },
+      ] })),
+    });
+    await GenerationHelpers.handlePlanFullPack(deps);
+    const before = Object.fromEntries(latestRun.preflight.selected.map(row => [
+      row.type, row.generationVariants[0].generationIdentity,
+    ]));
+
+    deps.quizCustomInstructions = 'Use one misconception-based distractor.';
+    await GenerationHelpers.handlePlanFullPack(deps);
+    const after = Object.fromEntries(latestRun.preflight.selected.map(row => [
+      row.type, row.generationVariants[0].generationIdentity,
+    ]));
+
+    expect(after.quiz).not.toBe(before.quiz);
+    expect(after.outline).toBe(before.outline);
+  });
+
+  it('preserves canonical matrix config metadata in compact history descriptors', async () => {
+    let latestRun = null;
+    const source = 'A source whose prior artifact has canonical config metadata.';
+    const generationConfig = {
+      version: 'generation-config/v1', type: 'quiz', backend: 'openai', fields: { itemCount: 4 },
+    };
+    const deps = makeDeps({
+      inputText: source,
+      history: [{
+        id: 'prior-configured-quiz', type: 'quiz', generationIdentity: 'gm1-quiz-prior',
+        sourceFingerprint: GenerationMatrix.fingerprintSourceText(source),
+        config: {
+          contextFingerprint: 'ctx-prior', contextInputsFingerprint: 'ctxi-prior',
+          generationConfig, generationConfigFingerprint: 'cfg-quiz-prior',
+          backend: 'openai', provider: 'openai', model: 'gpt-prior',
+          imageProvider: 'openai', imageModel: 'image-prior',
+        },
+      }],
+      setFullPackRun: next => { latestRun = typeof next === 'function' ? next(latestRun) : next; },
+    });
+    await GenerationHelpers.handlePlanFullPack(deps);
+
+    expect(latestRun.preflight.generationMatrix.artifacts[0]).toMatchObject({
+      contextInputsFingerprint: 'ctxi-prior',
+      generationConfig,
+      generationConfigFingerprint: 'cfg-quiz-prior',
+      backend: 'openai', provider: 'openai', model: 'gpt-prior',
+      imageProvider: 'openai', imageModel: 'image-prior',
+      config: {
+        contextInputsFingerprint: 'ctxi-prior',
+        generationConfigFingerprint: 'cfg-quiz-prior',
+      },
+    });
+  });
+
+  it('gates and upgrades a legacy plan to the exact grade-language matrix after a late Matrix load', async () => {
+    let latestRun = null;
+    const deps = makeDeps({
+      gradeLevel: '5th Grade',
+      leveledTextLanguage: 'All Selected Languages',
+      selectedLanguages: ['Spanish', 'French'],
+      differentiationRange: 'Custom',
+      differentiationTypes: ['quiz'],
+      differentiationCustomGrades: ['6th Grade'],
+      getDifferentiationGrades: vi.fn(() => ['5th Grade', '6th Grade']),
+      autoConfigureSettings: vi.fn(async () => ({
+        resourcePlan: [{ tool: 'quiz', directive: 'Initial planner direction.' }],
+      })),
+      setFullPackRun: next => { latestRun = typeof next === 'function' ? next(latestRun) : next; },
+    });
+    const matrixModule = window.AlloModules.GenerationMatrix;
+    let reviewed;
+    try {
+      window.AlloModules.GenerationMatrix = null;
+      await GenerationHelpers.handlePlanFullPack(deps);
+      reviewed = latestRun;
+      expect(reviewed.preflight.sourceFingerprint).toMatch(/^fp-/);
+      expect(reviewed.preflight.generationMatrix.settings.version).toBe(0);
+      reviewed = GenerationHelpers.editFullPackPlanResourceDirective(
+        reviewed,
+        reviewed.preflight.selected[0].uiId,
+        'Educator-reviewed direction preserved across the late load.'
+      );
+    } finally {
+      window.AlloModules.GenerationMatrix = matrixModule;
+    }
+
+    await expect(GenerationHelpers.handleApproveFullPack(reviewed, deps)).resolves.toBe(false);
+    expect(deps.handleGenerate).not.toHaveBeenCalled();
+    expect(latestRun.status).toBe('ready');
+    expect(latestRun.preflight.generationMatrix.settings.version).toBe(GenerationMatrix.VERSION);
+    expect(latestRun.preflight.selected[0].directive).toBe(
+      'Educator-reviewed direction preserved across the late load.'
+    );
+    expect(latestRun.preflight.selected[0].generationVariants.map(cell =>
+      `${cell.grade}|${cell.language}`).sort()).toEqual([
+      '5th Grade|English', '5th Grade|French', '5th Grade|Spanish',
+      '6th Grade|English', '6th Grade|French', '6th Grade|Spanish',
+    ]);
+    expect(latestRun.preflight.estimatedResourceGenerations).toBe(6);
+    expect(deps.addToast).toHaveBeenCalledWith(expect.stringContaining('exact grade and language variants'), 'info');
+
+    await expect(GenerationHelpers.handleApproveFullPack(latestRun, deps)).resolves.toBe(true);
+    expect(deps.handleGenerate).toHaveBeenCalledTimes(6);
+    expect(latestRun.status).toBe('completed');
+  });
+
+  it('keeps a legacy ready plan and makes no resource calls while Matrix is unavailable at approval', async () => {
+    let latestRun = null;
+    const deps = makeDeps({
+      leveledTextLanguage: 'All Selected Languages',
+      selectedLanguages: ['Spanish'],
+      differentiationRange: 'Custom',
+      differentiationTypes: ['quiz'],
+      differentiationCustomGrades: ['6th Grade'],
+      getDifferentiationGrades: vi.fn(() => ['5th Grade', '6th Grade']),
+      setFullPackRun: next => { latestRun = typeof next === 'function' ? next(latestRun) : next; },
+    });
+    const matrixModule = window.AlloModules.GenerationMatrix;
+    try {
+      window.AlloModules.GenerationMatrix = null;
+      await GenerationHelpers.handlePlanFullPack(deps);
+      const reviewed = latestRun;
+      const plannerCalls = deps.autoConfigureSettings.mock.calls.length;
+
+      await expect(GenerationHelpers.handleApproveFullPack(reviewed, deps)).resolves.toBe(false);
+
+      expect(deps.handleGenerate).not.toHaveBeenCalled();
+      expect(deps.autoConfigureSettings).toHaveBeenCalledTimes(plannerCalls);
+      expect(latestRun).toBe(reviewed);
+      expect(latestRun).toMatchObject({ status: 'ready', runId: reviewed.runId });
+      expect(latestRun.preflight.generationMatrix.settings.version).toBe(0);
+      expect(deps.addToast).toHaveBeenCalledWith(expect.stringContaining('still loading'), 'info');
+    } finally {
+      window.AlloModules.GenerationMatrix = matrixModule;
+    }
+  });
+});
+
 describe('Full Pack compatibility and retry policy', () => {
   it('blocks an approved plan with an incompatible capability fingerprint', async () => {
     let latestRun = null;
@@ -747,7 +1392,7 @@ describe('Full Pack stress and soak resilience', () => {
       autoConfigureSettings: vi.fn(async () => ({ resourcePlan: [{ tool: 'quiz', directive: 'SENTINEL_DIRECTIVE' }] })),
       handleGenerate: vi.fn(async type => {
         attempt += 1;
-        if (attempt === 1) throw new Error('429 SENTINEL_ERROR');
+        if (attempt === 1) throw new Error('429 per-minute rate limit SENTINEL_ERROR');
         return { id: 'SENTINEL_RESOURCE_ID', type, data: {} };
       }),
     });

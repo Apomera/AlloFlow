@@ -243,6 +243,11 @@ const MODULES = [
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
+        name: 'GenerationMatrix',
+        filename: 'generation_matrix_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
         name: 'StandardsProvider',
         filename: 'standards_provider_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
@@ -1286,6 +1291,7 @@ const PLUGIN_FILES = [
     'stem_lab/stem_tool_spaceexplorer.js',
     'stem_lab/stem_tool_areamodel.js',
     'stem_lab/stem_tool_artstudio.js',
+    'stem_lab/stem_tool_wheelandfire.js',
     'stem_lab/stem_tool_brainatlas.js',
     'stem_lab/stem_tool_cell.js',
     'stem_lab/stem_tool_chembalance.js',

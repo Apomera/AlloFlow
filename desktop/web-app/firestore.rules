@@ -32,6 +32,22 @@ service cloud.firestore {
         function changedTop() {
           return request.resource.data.diff(resource.data).affectedKeys();
         }
+        function validOrganizerProgress(progress) {
+          return progress is map
+            && progress.keys().hasAll(['activityId', 'type', 'gameType', 'status', 'score', 'correct', 'total', 'attempts', 'at'])
+            && progress.keys().hasOnly(['activityId', 'type', 'gameType', 'status', 'score', 'correct', 'total', 'attempts', 'at'])
+            && progress.activityId is string
+            && progress.activityId.size() >= 8
+            && progress.activityId.size() <= 160
+            && progress.type in ['venn', 'tchart', 'cesort', 'pipeline', 'conceptmap', 'outline', 'fishbone', 'problemsolution', 'frayer', 'seethinkwonder', 'storymap', 'strandchallenge3d', 'conceptrecall3d', 'palacerecall']
+            && (progress.gameType == null || progress.gameType in ['vennDiagram', 'tchartSort', 'causeEffectSort', 'pipelineBuilder', 'conceptMapSort', 'outlineSort', 'fishboneSort', 'problemSolutionSort', 'frayerSort', 'seeThinkWonderSort', 'storyMapSort', 'strandChallenge3d', 'strandChallenge3dAttempt', 'conceptRecall', 'conceptRecallAttempt', 'palaceRecall', 'palaceRecallAttempt'])
+            && progress.status in ['loading', 'ready', 'failed', 'working', 'attempted', 'complete']
+            && progress.score is int && progress.score >= 0 && progress.score <= 100000
+            && progress.correct is int && progress.correct >= 0 && progress.correct <= 100000
+            && progress.total is int && progress.total >= 0 && progress.total <= 100000
+            && progress.attempts is int && progress.attempts >= 0 && progress.attempts <= 10000
+            && progress.at is number && progress.at > 0;
+        }
         function rosterOnlySelf() {
           // Students may only touch their OWN roster entry. Nested fields are
           // deliberately not enumerated here (the client/mailbox validators
@@ -48,7 +64,9 @@ service cloud.firestore {
             && (!('viewingResourceStatus' in request.resource.data.get('roster', {}).get(request.auth.uid, {}))
               || request.resource.data.get('roster', {}).get(request.auth.uid, {}).get('viewingResourceStatus', null) == null
               || request.resource.data.get('roster', {}).get(request.auth.uid, {}).get('viewingResourceStatus', '')
-                in ['loading', 'ready', 'failed']);
+                in ['loading', 'ready', 'failed'])
+            && (!('organizerProgress' in request.resource.data.get('roster', {}).get(request.auth.uid, {}))
+              || validOrganizerProgress(request.resource.data.get('roster', {}).get(request.auth.uid, {}).get('organizerProgress', null)));
         }
         function quizNestedOnlySelf(field) {
           return !(field in resource.data.get('quizState', {})

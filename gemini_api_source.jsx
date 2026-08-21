@@ -8,6 +8,12 @@
 // self-contained fit for this extraction.
 const createGeminiAPI = (deps) => {
     const { apiKey: _bootApiKey, _isCanvasEnv, GEMINI_MODELS, fetchWithExponentialBackoff, optimizeImage, warnLog, debugLog, getAbortSignal } = deps;
+    // Source-generation canaries and other bounded callers may request a lower
+    // ceiling. Production remains unchanged when the dependency is omitted.
+    const _configuredTextTokenCap = Number(deps && deps.maxTextOutputTokens);
+    const _textMaxOutputTokens = Number.isFinite(_configuredTextTokenCap)
+      ? Math.max(128, Math.min(65536, Math.round(_configuredTextTokenCap)))
+      : 65536;
     // Live key resolution (2026-08-10). The factory used to capture the key
     // once at creation, which runs at BOOT — a key saved in AI Backend
     // Settings mid-session was invisible until a manual page reload, so a
@@ -493,7 +499,7 @@ const createGeminiAPI = (deps) => {
       const payload = {
         contents: [{ parts: [{ text: prompt }] }],
         generationConfig: {
-            maxOutputTokens: 65536,
+            maxOutputTokens: _textMaxOutputTokens,
             ...(jsonMode ? { responseMimeType: "application/json" } : {}),
             ...(temperature !== null ? { temperature: temperature } : {})
         },

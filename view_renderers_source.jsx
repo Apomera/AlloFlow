@@ -906,9 +906,41 @@ const KwlResponseBoard = ({ main, branches, t }) => {
 };
 
 const renderOutlineContent = (deps) => {
-  const { ErrorBoundary, KeyConceptMapView, VennGame, generatedContent, isInteractiveVenn, isProcessing, isTeacherMode, isVennPlaying, leveledTextLanguage, outlineTranslationMode, vennGameData, vennInputs, isEditingOutline, isMapLocked, setOutlineTranslationMode, setVennInputs, closeVenn, handleAddVennItem, handleGameCompletion, handleGameScoreUpdate, handleGenerateOutcome, handleInitializeVenn, handleOutlineChange, handleRemoveVennItem, handleSetIsVennPlayingToTrue, playSound, t, isCESortPlaying, ceGameData, closeCESort, setIsCESortPlaying, setCeGameData, isPipelinePlaying, setIsPipelinePlaying, closePipeline, isTChartPlaying, setIsTChartPlaying, closeTChart, isConceptMapSortPlaying, setIsConceptMapSortPlaying, closeConceptMapSort, isOutlineSortPlaying, setIsOutlineSortPlaying, closeOutlineSort, isFishboneSortPlaying, setIsFishboneSortPlaying, closeFishboneSort, isProblemSolutionSortPlaying, setIsProblemSolutionSortPlaying, closeProblemSolutionSort, isFrayerSortPlaying, setIsFrayerSortPlaying, closeFrayerSort, isSeeThinkWonderSortPlaying, setIsSeeThinkWonderSortPlaying, closeSeeThinkWonderSort, isStoryMapSortPlaying, setIsStoryMapSortPlaying, closeStoryMapSort, isInteractiveTChart, setIsInteractiveTChart, isInteractiveCESort, setIsInteractiveCESort, isInteractivePipeline, setIsInteractivePipeline, isInteractiveConceptMapSort, setIsInteractiveConceptMapSort, isInteractiveOutlineSort, setIsInteractiveOutlineSort, isInteractiveFishboneSort, setIsInteractiveFishboneSort, isInteractiveProblemSolutionSort, setIsInteractiveProblemSolutionSort, isInteractiveFrayerSort, setIsInteractiveFrayerSort, isInteractiveSeeThinkWonderSort, setIsInteractiveSeeThinkWonderSort, isInteractiveStoryMapSort, setIsInteractiveStoryMapSort, isInteractiveStrandChallenge, setIsInteractiveStrandChallenge, isInteractivePalaceRecall, setIsInteractivePalaceRecall, broadcastInteractiveOrganizer } = deps;
+  const { ErrorBoundary, KeyConceptMapView, VennGame, generatedContent, isInteractiveVenn, isProcessing, isTeacherMode, isVennPlaying, leveledTextLanguage, outlineTranslationMode, vennGameData, vennInputs, isEditingOutline, isMapLocked, setOutlineTranslationMode, setVennInputs, closeVenn, handleAddVennItem, handleGameCompletion, handleGameScoreUpdate, handleGenerateOutcome, handleInitializeVenn, handleOutlineChange, handleRemoveVennItem, handleSetIsVennPlayingToTrue, playSound, t, isCESortPlaying, ceGameData, closeCESort, setIsCESortPlaying, setCeGameData, isPipelinePlaying, setIsPipelinePlaying, closePipeline, isTChartPlaying, setIsTChartPlaying, closeTChart, isConceptMapSortPlaying, setIsConceptMapSortPlaying, closeConceptMapSort, isOutlineSortPlaying, setIsOutlineSortPlaying, closeOutlineSort, isFishboneSortPlaying, setIsFishboneSortPlaying, closeFishboneSort, isProblemSolutionSortPlaying, setIsProblemSolutionSortPlaying, closeProblemSolutionSort, isFrayerSortPlaying, setIsFrayerSortPlaying, closeFrayerSort, isSeeThinkWonderSortPlaying, setIsSeeThinkWonderSortPlaying, closeSeeThinkWonderSort, isStoryMapSortPlaying, setIsStoryMapSortPlaying, closeStoryMapSort, isInteractiveTChart, setIsInteractiveTChart, isInteractiveCESort, setIsInteractiveCESort, isInteractivePipeline, setIsInteractivePipeline, isInteractiveConceptMapSort, setIsInteractiveConceptMapSort, isInteractiveOutlineSort, setIsInteractiveOutlineSort, isInteractiveFishboneSort, setIsInteractiveFishboneSort, isInteractiveProblemSolutionSort, setIsInteractiveProblemSolutionSort, isInteractiveFrayerSort, setIsInteractiveFrayerSort, isInteractiveSeeThinkWonderSort, setIsInteractiveSeeThinkWonderSort, isInteractiveStoryMapSort, setIsInteractiveStoryMapSort, isInteractiveStrandChallenge, setIsInteractiveStrandChallenge, isInteractiveConceptRecall3d, setIsInteractiveConceptRecall3d, isInteractivePalaceRecall, setIsInteractivePalaceRecall, broadcastInteractiveOrganizer, interactiveOrganizerSync } = deps;
   // Fallback if older host hasn't passed broadcastInteractiveOrganizer yet — no-op, local-only behavior preserved.
   const _broadcastInteractiveOrganizer = broadcastInteractiveOrganizer || (() => {});
+  const _liveReadinessFor = (type) => typeof deps.getLiveOrganizerReadiness === 'function'
+    ? deps.getLiveOrganizerReadiness(type, generatedContent)
+    : { ok: true };
+  const _closeLiveOrganizerPreview = (type) => {
+    if (!isTeacherMode || interactiveOrganizerSync?.type !== type
+        || !['starting', 'live'].includes(interactiveOrganizerSync.status)) return;
+    if (typeof deps.addToast === 'function') {
+      deps.addToast('Teacher preview closed. The activity is still live for students; use “Stop for students” to end it.', 'info');
+    }
+  };
+  const LiveOrganizerStatus = ({ type }) => {
+    if (!isTeacherMode || interactiveOrganizerSync?.type !== type || interactiveOrganizerSync.status === 'idle') return null;
+    const status = interactiveOrganizerSync.status;
+    const label = status === 'starting' ? 'Starting for students…'
+      : status === 'stopping' ? 'Stopping activity…'
+        : status === 'error' ? 'The student activity did not start.'
+          : 'Live for students';
+    const tone = status === 'error' ? 'border-red-300 bg-red-50 text-red-800'
+      : status === 'live' ? 'border-emerald-300 bg-emerald-50 text-emerald-800'
+        : 'border-sky-300 bg-sky-50 text-sky-800';
+    return (
+      <div className="ml-2 flex items-center gap-2" role="status" aria-live="polite">
+        <span className={`rounded-full border px-3 py-1.5 text-xs font-bold ${tone}`}>{label}</span>
+        {status === 'live' && (
+          <button type="button" onClick={() => _broadcastInteractiveOrganizer(null)} className="rounded-full border border-red-300 bg-red-50 px-3 py-1.5 text-xs font-bold text-red-700 hover:bg-red-100" aria-label={t('a11y.stop_interactive_activity')}>
+            Stop for students
+          </button>
+        )}
+        {interactiveOrganizerSync.error && status === 'live' && <span className="sr-only">The previous live-session change failed.</span>}
+      </div>
+    );
+  };
   // Branded loading state for lazily-registered organizer games — shown only in the brief
   // window before window.AlloModules.<Game> registers (or if it fails to load). Replaces 10
   // identical plain-text "Loading game..." fallbacks with one spinner + localized label
@@ -939,17 +971,39 @@ const renderOutlineContent = (deps) => {
         const organizerData = normalizeVisualOrganizerData(generatedContent?.data, requestedType);
         const { main, main_en, branches, structureType } = organizerData;
         const type = structureType || 'Structured Outline';
-        // Minimum total items needed to make a sort game pedagogically meaningful.
-        // Below this, a sort game is trivial — hide the Play button.
-        const MIN_GAME_ITEMS = 4;
-        const totalBranchItems = branches.reduce((s, b) => s + ((b.items || []).filter(it => (typeof it === 'object' ? it.text : it)).length), 0);
-        const showGameButton = totalBranchItems >= MIN_GAME_ITEMS && branches.length >= 2;
-        // Hidden description used by every Play-Sort-Game button via aria-describedby.
-        // Read after the button label so screen-reader users know what the button does pedagogically.
+        const activityTypeByStructure = {
+            'Flow Chart': 'pipeline', 'Process Flow / Sequence': 'pipeline',
+            'T-Chart': 'tchart', Fishbone: 'fishbone', 'Cause and Effect': 'cesort',
+            'Problem Solution': 'problemsolution', 'Key Concept Map': 'conceptmap', 'Mind Map': 'conceptmap',
+            'Frayer Model': 'frayer', 'See-Think-Wonder': 'seethinkwonder', 'Story Map': 'storymap',
+            'Structured Outline': 'outline',
+        };
+        const organizerActivityType = activityTypeByStructure[type] || null;
+        const organizerLaunchReadiness = organizerActivityType ? _liveReadinessFor(organizerActivityType) : { ok: true };
+        const showGameButton = !!organizerActivityType;
+        const _startOrganizerGame = (activityType, startLocal, activityConfig = null) => {
+            const readiness = _liveReadinessFor(activityType);
+            if (!readiness.ok) {
+                if (typeof deps.addToast === 'function') deps.addToast(readiness.message || 'Finish setting up this organizer before starting the activity.', 'info');
+                return false;
+            }
+            startLocal();
+            _broadcastInteractiveOrganizer(activityType, activityConfig);
+            return true;
+        };
+        // Every Play-Sort-Game control shares one description and, when needed,
+        // the exact repair guidance returned by the authoritative launch contract.
         const GameButtonHint = () => (
-            <p id="game-btn-hint" className="sr-only">
-                {t('games.button_hint') || 'Practice what you just learned with a quick drag-and-drop sorting game. Keyboard friendly: press Enter to select an item, then choose a destination.'}
-            </p>
+            <>
+                <p id="game-btn-hint" className="sr-only">
+                    {t('games.button_hint') || 'Practice what you just learned with a quick drag-and-drop sorting game. Keyboard friendly: press Enter to select an item, then choose a destination.'}
+                </p>
+                {!organizerLaunchReadiness.ok && (
+                    <p id="game-btn-readiness" role="status" className="max-w-sm rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-xs font-bold text-amber-900">
+                        {organizerLaunchReadiness.message}
+                    </p>
+                )}
+            </>
         );
         const MainTitle = () => (
              <div className="text-center mb-8">
@@ -1073,25 +1127,15 @@ const renderOutlineContent = (deps) => {
                       <div className="mb-4 flex justify-center">
                         <GameButtonHint />
                         <button
-                          onClick={() => { setIsInteractivePipeline(true); setIsPipelinePlaying(true); _broadcastInteractiveOrganizer('pipeline'); }}
-                          className="flex items-center gap-2 rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 px-5 py-2 text-sm font-bold text-white shadow-md transition-all hover:scale-105 hover:shadow-lg motion-safe:animate-[pulse_3s_ease-in-out_infinite]"
-                          aria-describedby="game-btn-hint"
+                          onClick={() => _startOrganizerGame('pipeline', () => setIsPipelinePlaying(true))}
+                          disabled={!organizerLaunchReadiness.ok}
+                          className="flex items-center gap-2 rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 px-5 py-2 text-sm font-bold text-white shadow-md transition-all hover:scale-105 hover:shadow-lg motion-safe:animate-[pulse_3s_ease-in-out_infinite] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100"
+                          aria-describedby={organizerLaunchReadiness.ok ? 'game-btn-hint' : 'game-btn-hint game-btn-readiness'}
                           aria-label={t('games.pipeline.title') || 'Pipeline Builder'}
                         >
                           <Gamepad2 size={16} /> {t('games.pipeline.play_btn') || 'Build the Flow'}
                         </button>
-                        {isInteractivePipeline && isTeacherMode && (
-                          <div className="ml-2 flex items-center gap-2" role="status" aria-live="polite">
-                            <span className="rounded-full border border-amber-300 bg-amber-100 px-2 py-1 text-xs font-bold text-amber-800">?? {t('outline.live_for_students') || 'Live for students'}</span>
-                            <button
-                              onClick={() => { setIsInteractivePipeline(false); _broadcastInteractiveOrganizer(null); }}
-                              className="rounded-full border border-red-300 bg-red-50 px-2 py-1 text-xs font-bold text-red-700 hover:bg-red-100"
-                              aria-label={t('a11y.stop_interactive_activity')}
-                            >
-                              ? {t('outline.stop_activity') || 'Stop Activity'}
-                            </button>
-                          </div>
-                        )}
+                        <LiveOrganizerStatus type="pipeline" />
                       </div>
                     )}
                     <MainTitle />
@@ -1289,6 +1333,7 @@ const renderOutlineContent = (deps) => {
                                 </div>
                             </div>
                         </div>
+                        <div className="mb-4 flex justify-center"><LiveOrganizerStatus type="venn" /></div>
                         <button
                             aria-label={t('common.start_game')}
                             disabled={!isVennGameReady}
@@ -1484,19 +1529,15 @@ const renderOutlineContent = (deps) => {
                         <div className="flex justify-center mb-4">
                             <GameButtonHint />
                             <button
-                                onClick={() => { setIsInteractiveTChart(true); setIsTChartPlaying(true); _broadcastInteractiveOrganizer('tchart'); }}
-                                className="flex items-center gap-2 bg-gradient-to-r from-cyan-500 to-indigo-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all motion-safe:animate-[pulse_3s_ease-in-out_infinite]"
-                                aria-describedby="game-btn-hint"
+                                onClick={() => _startOrganizerGame('tchart', () => setIsTChartPlaying(true))}
+                                disabled={!organizerLaunchReadiness.ok}
+                                className="flex items-center gap-2 bg-gradient-to-r from-cyan-500 to-indigo-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all motion-safe:animate-[pulse_3s_ease-in-out_infinite] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100"
+                                aria-describedby={organizerLaunchReadiness.ok ? 'game-btn-hint' : 'game-btn-hint game-btn-readiness'}
                                 aria-label={t('games.tchart_sort.play_btn') || 'Play T-Chart Sort Game'}
                             >
                                 <Gamepad2 size={16}/> {t('games.tchart_sort.play_btn') || 'Sort Into Columns'}
                             </button>
-                            {isInteractiveTChart && isTeacherMode && (
-                              <div className="flex items-center gap-2 ml-2" role="status" aria-live="polite">
-                                <span className="text-xs font-bold text-amber-800 bg-amber-100 border border-amber-300 px-2 py-1 rounded-full">🎯 Live for students</span>
-                                <button onClick={() => { setIsInteractiveTChart(false); _broadcastInteractiveOrganizer(null); }} className="text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-300 px-2 py-1 rounded-full" aria-label={t("a11y.stop_interactive_activity")}>⏹ Stop Activity</button>
-                              </div>
-                            )}
+                            <LiveOrganizerStatus type="tchart" />
                         </div>
                     )}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-0 bg-white rounded-2xl shadow-md border border-slate-200 overflow-hidden">
@@ -1561,19 +1602,15 @@ const renderOutlineContent = (deps) => {
                         <div className="flex justify-center mb-4">
                             <GameButtonHint />
                             <button
-                                onClick={() => { setIsInteractiveFishboneSort(true); setIsFishboneSortPlaying(true); _broadcastInteractiveOrganizer('fishbone'); }}
-                                className="flex items-center gap-2 bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all motion-safe:animate-[pulse_3s_ease-in-out_infinite]"
-                                aria-describedby="game-btn-hint"
+                                onClick={() => _startOrganizerGame('fishbone', () => setIsFishboneSortPlaying(true))}
+                                disabled={!organizerLaunchReadiness.ok}
+                                className="flex items-center gap-2 bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all motion-safe:animate-[pulse_3s_ease-in-out_infinite] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100"
+                                aria-describedby={organizerLaunchReadiness.ok ? 'game-btn-hint' : 'game-btn-hint game-btn-readiness'}
                                 aria-label={t('games.fishbone_sort.play_btn') || 'Play Fishbone Sort Game'}
                             >
                                 <Gamepad2 size={16}/> {t('games.fishbone_sort.play_btn') || 'Sort Causes Onto Bones'}
                             </button>
-                            {isInteractiveFishboneSort && isTeacherMode && (
-                              <div className="flex items-center gap-2 ml-2" role="status" aria-live="polite">
-                                <span className="text-xs font-bold text-amber-800 bg-amber-100 border border-amber-300 px-2 py-1 rounded-full">🎯 Live for students</span>
-                                <button onClick={() => { setIsInteractiveFishboneSort(false); _broadcastInteractiveOrganizer(null); }} className="text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-300 px-2 py-1 rounded-full" aria-label={t("a11y.stop_interactive_activity")}>⏹ Stop Activity</button>
-                              </div>
-                            )}
+                            <LiveOrganizerStatus type="fishbone" />
                         </div>
                     )}
                     {/* SVG fishbone skeleton — purely decorative, the real content is in the cards below */}
@@ -1739,19 +1776,15 @@ const renderOutlineContent = (deps) => {
                         <div className="flex justify-center mb-4">
                             <GameButtonHint />
                             <button
-                                onClick={() => { setIsInteractiveCESort(true); setIsCESortPlaying(true); _broadcastInteractiveOrganizer('cesort'); }}
-                                className="flex items-center gap-2 bg-gradient-to-r from-orange-500 to-teal-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all motion-safe:animate-[pulse_3s_ease-in-out_infinite]"
-                                aria-describedby="game-btn-hint"
+                                onClick={() => _startOrganizerGame('cesort', () => setIsCESortPlaying(true))}
+                                disabled={!organizerLaunchReadiness.ok}
+                                className="flex items-center gap-2 bg-gradient-to-r from-orange-500 to-teal-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all motion-safe:animate-[pulse_3s_ease-in-out_infinite] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100"
+                                aria-describedby={organizerLaunchReadiness.ok ? 'game-btn-hint' : 'game-btn-hint game-btn-readiness'}
                                 aria-label={t('games.ce_sort.title') || 'Sort Causes and Effects'}
                             >
                                 <Gamepad2 size={16}/> {t('games.ce_sort.play_btn') || 'Sort Causes & Effects'}
                             </button>
-                            {isInteractiveCESort && isTeacherMode && (
-                              <div className="flex items-center gap-2 ml-2" role="status" aria-live="polite">
-                                <span className="text-xs font-bold text-amber-800 bg-amber-100 border border-amber-300 px-2 py-1 rounded-full">🎯 Live for students</span>
-                                <button onClick={() => { setIsInteractiveCESort(false); _broadcastInteractiveOrganizer(null); }} className="text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-300 px-2 py-1 rounded-full" aria-label={t("a11y.stop_interactive_activity")}>⏹ Stop Activity</button>
-                              </div>
-                            )}
+                            <LiveOrganizerStatus type="cesort" />
                         </div>
                         )}
                         <MainTitle />
@@ -1801,19 +1834,15 @@ const renderOutlineContent = (deps) => {
                     <div className="flex justify-center mb-6">
                         <GameButtonHint />
                         <button
-                            onClick={() => { setIsInteractiveCESort(true); setIsCESortPlaying(true); _broadcastInteractiveOrganizer('cesort'); }}
-                            className="flex items-center gap-2 bg-gradient-to-r from-orange-500 to-teal-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all motion-safe:animate-[pulse_3s_ease-in-out_infinite]"
-                            aria-describedby="game-btn-hint"
+                            onClick={() => _startOrganizerGame('cesort', () => setIsCESortPlaying(true))}
+                            disabled={!organizerLaunchReadiness.ok}
+                            className="flex items-center gap-2 bg-gradient-to-r from-orange-500 to-teal-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all motion-safe:animate-[pulse_3s_ease-in-out_infinite] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100"
+                            aria-describedby={organizerLaunchReadiness.ok ? 'game-btn-hint' : 'game-btn-hint game-btn-readiness'}
                             aria-label={t('games.ce_sort.title') || 'Sort Causes and Effects'}
                         >
                             <Gamepad2 size={16}/> {t('games.ce_sort.play_btn') || 'Sort Causes & Effects'}
                         </button>
-                        {isInteractiveCESort && isTeacherMode && (
-                          <div className="flex items-center gap-2 ml-2" role="status" aria-live="polite">
-                            <span className="text-xs font-bold text-amber-800 bg-amber-100 border border-amber-300 px-2 py-1 rounded-full">🎯 Live for students</span>
-                            <button onClick={() => { setIsInteractiveCESort(false); _broadcastInteractiveOrganizer(null); }} className="text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-300 px-2 py-1 rounded-full" aria-label={t("a11y.stop_interactive_activity")}>⏹ Stop Activity</button>
-                          </div>
-                        )}
+                        <LiveOrganizerStatus type="cesort" />
                     </div>
                     )}
                     <div className="flex flex-col lg:flex-row items-center justify-center gap-8 lg:gap-16 mb-16">
@@ -1869,9 +1898,9 @@ const renderOutlineContent = (deps) => {
             const outcomeBranch = outcomeIndex !== -1 ? branches[outcomeIndex] : null;
             const solutionBranches = branches.filter((_, i) => i !== outcomeIndex);
             // ── Problem Solution Prioritize Game ──
-            const totalSolutionItems = solutionBranches.reduce((s, b) => s + ((b.items || []).filter(it => (typeof it === 'object' ? it.text : it)).length), 0);
-            // Game needs at least 6 solutions so the thirds are meaningful (2 per bucket).
-            const showPSGame = totalSolutionItems >= 6;
+            // Keep the control visible when incomplete; the shared validator supplies
+            // the six-solution requirement and the exact repair guidance.
+            const showPSGame = !!organizerActivityType;
             if (isProblemSolutionSortPlaying || (isInteractiveProblemSolutionSort && !isTeacherMode)) {
                 return (
                     <ErrorBoundary fallbackMessage="Solution Prioritize encountered an error.">
@@ -1892,19 +1921,15 @@ const renderOutlineContent = (deps) => {
                          <div className="flex justify-center mb-6">
                              <GameButtonHint />
                              <button
-                                 onClick={() => { setIsInteractiveProblemSolutionSort(true); setIsProblemSolutionSortPlaying(true); _broadcastInteractiveOrganizer('problemsolution'); }}
-                                 className="flex items-center gap-2 bg-gradient-to-r from-rose-500 to-pink-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all motion-safe:animate-[pulse_3s_ease-in-out_infinite]"
-                                 aria-describedby="game-btn-hint"
+                                 onClick={() => _startOrganizerGame('problemsolution', () => setIsProblemSolutionSortPlaying(true))}
+                                 disabled={!organizerLaunchReadiness.ok}
+                                 className="flex items-center gap-2 bg-gradient-to-r from-rose-500 to-pink-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all motion-safe:animate-[pulse_3s_ease-in-out_infinite] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100"
+                                 aria-describedby={organizerLaunchReadiness.ok ? 'game-btn-hint' : 'game-btn-hint game-btn-readiness'}
                                  aria-label={t('games.problem_solution_sort.play_btn') || 'Prioritize the Solutions'}
                              >
                                  <Gamepad2 size={16}/> {t('games.problem_solution_sort.play_btn') || 'Prioritize the Solutions'}
                              </button>
-                             {isInteractiveProblemSolutionSort && isTeacherMode && (
-                               <div className="flex items-center gap-2 ml-2" role="status" aria-live="polite">
-                                 <span className="text-xs font-bold text-amber-800 bg-amber-100 border border-amber-300 px-2 py-1 rounded-full">🎯 Live for students</span>
-                                 <button onClick={() => { setIsInteractiveProblemSolutionSort(false); _broadcastInteractiveOrganizer(null); }} className="text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-300 px-2 py-1 rounded-full" aria-label={t("a11y.stop_interactive_activity")}>⏹ Stop Activity</button>
-                               </div>
-                             )}
+                             <LiveOrganizerStatus type="problemsolution" />
                          </div>
                      )}
                      <div className="relative z-10 mb-16">
@@ -2014,19 +2039,15 @@ const renderOutlineContent = (deps) => {
                         <div className="flex justify-center mb-4">
                             <GameButtonHint />
                             <button
-                                onClick={() => { setIsInteractiveConceptMapSort(true); setIsConceptMapSortPlaying(true); _broadcastInteractiveOrganizer('conceptmap'); }}
-                                className="flex items-center gap-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all motion-safe:animate-[pulse_3s_ease-in-out_infinite]"
-                                aria-describedby="game-btn-hint"
+                                onClick={() => _startOrganizerGame('conceptmap', () => setIsConceptMapSortPlaying(true))}
+                                disabled={!organizerLaunchReadiness.ok}
+                                className="flex items-center gap-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all motion-safe:animate-[pulse_3s_ease-in-out_infinite] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100"
+                                aria-describedby={organizerLaunchReadiness.ok ? 'game-btn-hint' : 'game-btn-hint game-btn-readiness'}
                                 aria-label={t('games.concept_map_sort.play_btn') || 'Play Concept Map Sort Game'}
                             >
                                 <Gamepad2 size={16}/> {t('games.concept_map_sort.play_btn') || 'Sort Onto Branches'}
                             </button>
-                            {isInteractiveConceptMapSort && isTeacherMode && (
-                              <div className="flex items-center gap-2 ml-2" role="status" aria-live="polite">
-                                <span className="text-xs font-bold text-amber-800 bg-amber-100 border border-amber-300 px-2 py-1 rounded-full">🎯 Live for students</span>
-                                <button onClick={() => { setIsInteractiveConceptMapSort(false); _broadcastInteractiveOrganizer(null); }} className="text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-300 px-2 py-1 rounded-full" aria-label={t("a11y.stop_interactive_activity")}>⏹ Stop Activity</button>
-                              </div>
-                            )}
+                            <LiveOrganizerStatus type="conceptmap" />
                         </div>
                     )}
                     <KeyConceptMapView branches={branches} main={main} main_en={main_en} BranchItem={BranchItem} t={t} />
@@ -2126,19 +2147,15 @@ const renderOutlineContent = (deps) => {
                         <div className="flex justify-center mb-4">
                             <GameButtonHint />
                             <button
-                                onClick={() => { setIsInteractiveFrayerSort(true); setIsFrayerSortPlaying(true); _broadcastInteractiveOrganizer('frayer'); }}
-                                className="flex items-center gap-2 bg-gradient-to-r from-indigo-500 to-emerald-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all motion-safe:animate-[pulse_3s_ease-in-out_infinite]"
-                                aria-describedby="game-btn-hint"
+                                onClick={() => _startOrganizerGame('frayer', () => setIsFrayerSortPlaying(true))}
+                                disabled={!organizerLaunchReadiness.ok}
+                                className="flex items-center gap-2 bg-gradient-to-r from-indigo-500 to-emerald-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all motion-safe:animate-[pulse_3s_ease-in-out_infinite] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100"
+                                aria-describedby={organizerLaunchReadiness.ok ? 'game-btn-hint' : 'game-btn-hint game-btn-readiness'}
                                 aria-label={t('games.frayer_sort.play_btn') || 'Play Frayer Sort Game'}
                             >
                                 <Gamepad2 size={16}/> {t('games.frayer_sort.play_btn') || 'Sort into Quadrants'}
                             </button>
-                            {isInteractiveFrayerSort && isTeacherMode && (
-                              <div className="flex items-center gap-2 ml-2" role="status" aria-live="polite">
-                                <span className="text-xs font-bold text-amber-800 bg-amber-100 border border-amber-300 px-2 py-1 rounded-full">🎯 Live for students</span>
-                                <button onClick={() => { setIsInteractiveFrayerSort(false); _broadcastInteractiveOrganizer(null); }} className="text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-300 px-2 py-1 rounded-full" aria-label={t("a11y.stop_interactive_activity")}>⏹ Stop Activity</button>
-                              </div>
-                            )}
+                            <LiveOrganizerStatus type="frayer" />
                         </div>
                     )}
                     <div className="grid grid-cols-2 gap-0 border-2 border-slate-400 rounded-2xl overflow-hidden shadow-lg bg-white relative" style={{ minHeight: '460px' }}>
@@ -2253,19 +2270,15 @@ const renderOutlineContent = (deps) => {
                         <div className="flex justify-center mb-4">
                             <GameButtonHint />
                             <button
-                                onClick={() => { setIsInteractiveSeeThinkWonderSort(true); setIsSeeThinkWonderSortPlaying(true); _broadcastInteractiveOrganizer('seethinkwonder'); }}
-                                className="flex items-center gap-2 bg-gradient-to-r from-sky-500 to-amber-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all motion-safe:animate-[pulse_3s_ease-in-out_infinite]"
-                                aria-describedby="game-btn-hint"
+                                onClick={() => _startOrganizerGame('seethinkwonder', () => setIsSeeThinkWonderSortPlaying(true))}
+                                disabled={!organizerLaunchReadiness.ok}
+                                className="flex items-center gap-2 bg-gradient-to-r from-sky-500 to-amber-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all motion-safe:animate-[pulse_3s_ease-in-out_infinite] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100"
+                                aria-describedby={organizerLaunchReadiness.ok ? 'game-btn-hint' : 'game-btn-hint game-btn-readiness'}
                                 aria-label={t('games.see_think_wonder_sort.play_btn') || 'Play See-Think-Wonder Sort Game'}
                             >
                                 <Gamepad2 size={16}/> {t('games.see_think_wonder_sort.play_btn') || 'Sort: Observation, Inference, or Question?'}
                             </button>
-                            {isInteractiveSeeThinkWonderSort && isTeacherMode && (
-                              <div className="flex items-center gap-2 ml-2" role="status" aria-live="polite">
-                                <span className="text-xs font-bold text-amber-800 bg-amber-100 border border-amber-300 px-2 py-1 rounded-full">🎯 Live for students</span>
-                                <button onClick={() => { setIsInteractiveSeeThinkWonderSort(false); _broadcastInteractiveOrganizer(null); }} className="text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-300 px-2 py-1 rounded-full" aria-label={t("a11y.stop_interactive_activity")}>⏹ Stop Activity</button>
-                              </div>
-                            )}
+                            <LiveOrganizerStatus type="seethinkwonder" />
                         </div>
                     )}
                     <div className="grid grid-cols-1 md:grid-cols-3 border-2 border-slate-400 rounded-2xl overflow-hidden shadow-lg bg-white divide-y md:divide-y-0 md:divide-x divide-slate-200">
@@ -2431,19 +2444,15 @@ const renderOutlineContent = (deps) => {
                         <div className="flex justify-center mb-4">
                             <GameButtonHint />
                             <button
-                                onClick={() => { setIsInteractiveStoryMapSort(true); setIsStoryMapSortPlaying(true); _broadcastInteractiveOrganizer('storymap'); }}
-                                className="flex items-center gap-2 bg-gradient-to-r from-cyan-500 to-rose-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all motion-safe:animate-[pulse_3s_ease-in-out_infinite]"
-                                aria-describedby="game-btn-hint"
+                                onClick={() => _startOrganizerGame('storymap', () => setIsStoryMapSortPlaying(true))}
+                                disabled={!organizerLaunchReadiness.ok}
+                                className="flex items-center gap-2 bg-gradient-to-r from-cyan-500 to-rose-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all motion-safe:animate-[pulse_3s_ease-in-out_infinite] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100"
+                                aria-describedby={organizerLaunchReadiness.ok ? 'game-btn-hint' : 'game-btn-hint game-btn-readiness'}
                                 aria-label={t('games.story_map_sort.play_btn') || 'Play Story Map Sort Game'}
                             >
                                 <Gamepad2 size={16}/> {t('games.story_map_sort.play_btn') || 'Sort Events Along the Arc'}
                             </button>
-                            {isInteractiveStoryMapSort && isTeacherMode && (
-                              <div className="flex items-center gap-2 ml-2" role="status" aria-live="polite">
-                                <span className="text-xs font-bold text-amber-800 bg-amber-100 border border-amber-300 px-2 py-1 rounded-full">🎯 Live for students</span>
-                                <button onClick={() => { setIsInteractiveStoryMapSort(false); _broadcastInteractiveOrganizer(null); }} className="text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-300 px-2 py-1 rounded-full" aria-label={t("a11y.stop_interactive_activity")}>⏹ Stop Activity</button>
-                              </div>
-                            )}
+                            <LiveOrganizerStatus type="storymap" />
                         </div>
                     )}
                     <div className="bg-gradient-to-b from-sky-50/80 via-white to-amber-50/40 border-2 border-slate-300 rounded-2xl p-6 shadow-lg">
@@ -2489,6 +2498,7 @@ const renderOutlineContent = (deps) => {
             return (
                 <div className="max-w-6xl mx-auto px-4 py-6">
                     <MainTitle />
+                    <div className="mb-3 flex justify-center"><LiveOrganizerStatus type="palacerecall" /></div>
                     <ErrorBoundary fallbackMessage="Memory Palace encountered an error.">
                         <MemoryPalaceView
                             data={generatedContent?.data}
@@ -2502,13 +2512,14 @@ const renderOutlineContent = (deps) => {
                             onGameComplete={handleGameCompletion}
                             isTeacherMode={isTeacherMode}
                             armed={!!isInteractivePalaceRecall}
+                            liveRecallReadiness={_liveReadinessFor('palacerecall')}
+                            onActivityReady={deps.handleInteractiveOrganizerReady}
+                            onActivityFailed={deps.handleInteractiveOrganizerFailed}
                             onRecallArm={() => {
-                                if (setIsInteractivePalaceRecall) setIsInteractivePalaceRecall(true);
                                 _broadcastInteractiveOrganizer('palacerecall');
                             }}
                             onRecallClose={() => {
-                                if (setIsInteractivePalaceRecall) setIsInteractivePalaceRecall(false);
-                                if (isTeacherMode) _broadcastInteractiveOrganizer(null);
+                                _closeLiveOrganizerPreview('palacerecall');
                             }}
                         />
                     </ErrorBoundary>
@@ -2522,6 +2533,7 @@ const renderOutlineContent = (deps) => {
             return (
                 <div className="max-w-6xl mx-auto px-4 py-6">
                     <MainTitle />
+                    <div className="mb-3 flex justify-center gap-2"><LiveOrganizerStatus type="strandchallenge3d" /><LiveOrganizerStatus type="conceptrecall3d" /></div>
                     <ErrorBoundary fallbackMessage="3D Concept Space encountered an error.">
                         <ConceptSpace3DView
                             data={generatedContent?.data}
@@ -2535,13 +2547,22 @@ const renderOutlineContent = (deps) => {
                             onGameComplete={handleGameCompletion}
                             isTeacherMode={isTeacherMode}
                             armed={!!isInteractiveStrandChallenge}
+                            recallArmed={!!isInteractiveConceptRecall3d}
+                            challengeLiveReadiness={_liveReadinessFor('strandchallenge3d')}
+                            recallLiveReadiness={_liveReadinessFor('conceptrecall3d')}
+                            onActivityReady={deps.handleInteractiveOrganizerReady}
+                            onActivityFailed={deps.handleInteractiveOrganizerFailed}
                             onChallengeArm={() => {
-                                if (setIsInteractiveStrandChallenge) setIsInteractiveStrandChallenge(true);
                                 _broadcastInteractiveOrganizer('strandchallenge3d');
                             }}
                             onChallengeClose={() => {
-                                if (setIsInteractiveStrandChallenge) setIsInteractiveStrandChallenge(false);
-                                if (isTeacherMode) _broadcastInteractiveOrganizer(null);
+                                _closeLiveOrganizerPreview('strandchallenge3d');
+                            }}
+                            onRecallArm={() => {
+                                _broadcastInteractiveOrganizer('conceptrecall3d');
+                            }}
+                            onRecallClose={() => {
+                                _closeLiveOrganizerPreview('conceptrecall3d');
                             }}
                         />
                     </ErrorBoundary>
@@ -2575,19 +2596,15 @@ const renderOutlineContent = (deps) => {
                         <div className="flex justify-center mb-4">
                             <GameButtonHint />
                             <button
-                                onClick={() => { setIsInteractiveOutlineSort(true); setIsOutlineSortPlaying(true); _broadcastInteractiveOrganizer('outline'); }}
-                                className="flex items-center gap-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all motion-safe:animate-[pulse_3s_ease-in-out_infinite]"
-                                aria-describedby="game-btn-hint"
+                                onClick={() => _startOrganizerGame('outline', () => setIsOutlineSortPlaying(true))}
+                                disabled={!organizerLaunchReadiness.ok}
+                                className="flex items-center gap-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all motion-safe:animate-[pulse_3s_ease-in-out_infinite] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100"
+                                aria-describedby={organizerLaunchReadiness.ok ? 'game-btn-hint' : 'game-btn-hint game-btn-readiness'}
                                 aria-label={t('games.outline_sort.play_btn') || 'Play Outline Sort Game'}
                             >
                                 <Gamepad2 size={16}/> {t('games.outline_sort.play_btn') || 'Sort Under Headings'}
                             </button>
-                            {isInteractiveOutlineSort && isTeacherMode && (
-                              <div className="flex items-center gap-2 ml-2" role="status" aria-live="polite">
-                                <span className="text-xs font-bold text-amber-800 bg-amber-100 border border-amber-300 px-2 py-1 rounded-full">🎯 Live for students</span>
-                                <button onClick={() => { setIsInteractiveOutlineSort(false); _broadcastInteractiveOrganizer(null); }} className="text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-300 px-2 py-1 rounded-full" aria-label={t("a11y.stop_interactive_activity")}>⏹ Stop Activity</button>
-                              </div>
-                            )}
+                            <LiveOrganizerStatus type="outline" />
                         </div>
                     )}
                     <div className="relative mt-8 space-y-8 ml-4 md:ml-12">
@@ -2913,7 +2930,7 @@ function openConceptMap3D(opts) {
 // onPersist. ConceptGraph3D owns the a11y spine (sr-only reading-order outline that
 // becomes visible on any load/WebGL failure), and this component adds its own
 // static-outline fallback for the case where the modules themselves never load.
-const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, playSound, onScoreUpdate, onGameComplete, isTeacherMode, armed, onChallengeArm, onChallengeClose }) => {
+const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, playSound, onScoreUpdate, onGameComplete, isTeacherMode, armed, recallArmed, challengeLiveReadiness, recallLiveReadiness, onChallengeArm, onChallengeClose, onRecallArm, onRecallClose, onActivityReady, onActivityFailed }) => {
     const hasContent = Array.isArray(data?.branches) && data.branches.length > 0;
     const hostRef = React.useRef(null);
     const handleRef = React.useRef(null);
@@ -2989,6 +3006,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
     const [describeOpen, setDescribeOpen] = React.useState(false);
     const recallResultsRef = React.useRef({});
     const recallFinishedRef = React.useRef(false);   // guards a double finish (two pending advances)
+    const recallStartedByArmRef = React.useRef(false);
     const recallTimersRef = React.useRef([]);
     const recallHeadingRef = React.useRef(null);     // focus target across question changes
     React.useEffect(() => () => { recallTimersRef.current.forEach(clearTimeout); recallTimersRef.current = []; }, []);
@@ -3080,6 +3098,10 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
         setLastScore(null); setHint(null);
     };
     const startChallenge = (viaArm) => {
+        if (isTeacherMode && viaArm !== true && challengeLiveReadiness?.ok === false) {
+            if (addToast) addToast(challengeLiveReadiness.message || 'Finish setting up this organizer before starting the student activity.', 'info');
+            return;
+        }
         const E = window.AlloModules && window.AlloModules.ConceptGraphEngine;
         if (!E || !E.buildStrandChallenge || !graphRef.current) return;
         const ch = E.buildStrandChallenge(graphRef.current);
@@ -3543,8 +3565,13 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
         if (!H || !H.flagNodes) return;
         try { H.flagNodes({ [order[idx]]: 'current' }, _recallAnnounce(order, idx)); } catch (e) {}
     };
-    const startRecall = () => {
+    const startRecall = (viaArm = false) => {
         if (!recallEligible || challenge || furnishing) return;
+        const startedFromArm = viaArm === true;
+        if (isTeacherMode && !startedFromArm && recallLiveReadiness?.ok === false) {
+            if (addToast) addToast(recallLiveReadiness.message || 'Finish setting up Concept Recall before starting the student activity.', 'info');
+            return;
+        }
         const begin = () => {
             const MP = window.AlloModules && window.AlloModules.MemoryPalace;
             if (!MP || !MP.buildRecallBank) {
@@ -3559,8 +3586,10 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
             recallResultsRef.current = {};
             recallFinishedRef.current = false;
             setRecallIdx(0); setTypedAnswer(''); setRecallFeedback(null); setRecallScore(null); setDescribeOpen(false);
+            recallStartedByArmRef.current = startedFromArm;
             setRecall({ order, seed });
             if (playSound) { try { playSound('start'); } catch (e) {} }
+            if (isTeacherMode && !startedFromArm && typeof onRecallArm === 'function') { try { onRecallArm(); } catch (e) {} }
         };
         const MP = window.AlloModules && window.AlloModules.MemoryPalace;
         if (MP && MP.buildRecallBank) begin();
@@ -3570,11 +3599,25 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
         recallTimersRef.current.forEach(clearTimeout); recallTimersRef.current = [];
         recallFinishedRef.current = false;
         setRecall(null); setRecallIdx(0); setTypedAnswer('');
+        recallStartedByArmRef.current = false;
         setRecallFeedback(null); setDescribeOpen(false);
         const H = handleRef.current;
         try { if (H && H.uncoverAll) H.uncoverAll(); } catch (e) {}
         try { if (H && H.flagNodes) H.flagNodes({}, ''); } catch (e) {}
+        if (typeof onRecallClose === 'function') { try { onRecallClose(); } catch (e) {} }
     };
+    React.useEffect(() => {
+        if (recallArmed && !isTeacherMode && !recall && ready && !failed && hasContent) startRecall(true);
+        else if (!recallArmed && !isTeacherMode && recall && recallStartedByArmRef.current) exitRecall();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [recallArmed, isTeacherMode, ready, failed, recall, hasContent]);
+    React.useEffect(() => {
+        if (isTeacherMode) return;
+        const launchActive = (armed && challenge) || (recallArmed && recall);
+        if (!launchActive) return;
+        if (failed) { if (typeof onActivityFailed === 'function') onActivityFailed(); return; }
+        if (ready && handleRef.current && typeof onActivityReady === 'function') onActivityReady();
+    }, [armed, recallArmed, challenge, recall, ready, failed, isTeacherMode, onActivityReady, onActivityFailed]);
     const _finishRecall = (results, order) => {
         if (recallFinishedRef.current) return;   // two pending advances must not both score
         recallFinishedRef.current = true;
@@ -3773,7 +3816,8 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
                             {hasContent && recallEligible && !failed && (
                                 <button
                                     onClick={startRecall}
-                                    className="flex items-center gap-1 bg-gradient-to-r from-sky-500 to-cyan-500 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-sm hover:shadow-md hover:scale-105 transition-all"
+                                    disabled={isTeacherMode && recallLiveReadiness?.ok === false}
+                                    className="flex items-center gap-1 bg-gradient-to-r from-sky-500 to-cyan-500 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-sm hover:shadow-md hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                                     title={t('concept_space.recall_tooltip') || 'Practice: every name is hidden — use the picture you made for each concept to name it'}
                                 >
                                     🧠 {t('concept_space.recall_play') || 'Concept Recall'}
@@ -3782,11 +3826,22 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
                             {hasContent && challengeEligible && !failed && (
                                 <button
                                     onClick={() => startChallenge(false)}
-                                    className="flex items-center gap-1 bg-gradient-to-r from-amber-500 to-orange-500 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-sm hover:shadow-md hover:scale-105 transition-all motion-safe:animate-[pulse_3s_ease-in-out_infinite]"
+                                    disabled={isTeacherMode && challengeLiveReadiness?.ok === false}
+                                    className="flex items-center gap-1 bg-gradient-to-r from-amber-500 to-orange-500 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-sm hover:shadow-md hover:scale-105 transition-all motion-safe:animate-[pulse_3s_ease-in-out_infinite] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                                     title={t('concept_space.challenge_tooltip') || 'Practice: every concept falls off its strand — put each one back where it belongs'}
                                 >
                                     🎯 {t('concept_space.challenge_play') || 'Strand Challenge'}
                                 </button>
+                            )}
+                            {isTeacherMode && !challenge && !recall && challengeLiveReadiness?.ok === false && (
+                                <span role="status" className="max-w-xs rounded-lg border border-amber-300 bg-amber-50 px-2 py-1 text-[11px] font-bold text-amber-900">
+                                    Strand Challenge: {challengeLiveReadiness.message}
+                                </span>
+                            )}
+                            {isTeacherMode && !challenge && !recall && recallLiveReadiness?.ok === false && (
+                                <span role="status" className="max-w-xs rounded-lg border border-amber-300 bg-amber-50 px-2 py-1 text-[11px] font-bold text-amber-900">
+                                    Concept Recall: {recallLiveReadiness.message}
+                                </span>
                             )}
                             {hasContent && typeof window.callGemini === 'function' && !failed && (
                                 <button
@@ -4310,7 +4365,7 @@ const _mpTourPaces = Object.freeze({
     brisk: { label: 'Brisk', dwell: 3200, camera: 1.38, speech: 1.12 },
 });
 
-const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, playSound, onScoreUpdate, onGameComplete, isTeacherMode, armed, onRecallArm, onRecallClose }) => {    const hasContent = Array.isArray(data?.branches) && data.branches.length > 0;
+const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, playSound, onScoreUpdate, onGameComplete, isTeacherMode, armed, liveRecallReadiness, onRecallArm, onRecallClose, onActivityReady, onActivityFailed }) => {    const hasContent = Array.isArray(data?.branches) && data.branches.length > 0;
     const hostRef = React.useRef(null);
     const presentationRef = React.useRef(null);
     const presentationNativeRef = React.useRef(false);
@@ -4718,6 +4773,10 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     const startRecall = (mode, viaArm, direction, only) => {
         const MP = window.AlloModules && window.AlloModules.MemoryPalace;
         if (!MP || recall) return;
+        if (isTeacherMode && viaArm !== true && liveRecallReadiness?.ok === false) {
+            if (addToast) addToast(liveRecallReadiness.message || 'Finish setting up this Memory Palace before starting the student activity.', 'info');
+            return;
+        }
         const palace = MP.buildPalace(data || {});
         const targets = palace.route.filter((id) => id !== '__entry');
         if (targets.length < 2) { if (addToast) addToast(t('memory_palace.recall_empty') || 'Not enough loci to play yet.', 'info'); return; }
@@ -4767,6 +4826,11 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         else if (!armed && !isTeacherMode && recall && startedByArmRef.current) { startedByArmRef.current = false; exitRecall(); }
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [armed, isTeacherMode, ready, failed, recall, hasContent]);
+    React.useEffect(() => {
+        if (!armed || isTeacherMode) return;
+        if (failed || noWalk) { if (typeof onActivityFailed === 'function') onActivityFailed(); return; }
+        if (recall && ready && typeof onActivityReady === 'function') onActivityReady();
+    }, [armed, isTeacherMode, recall, ready, failed, noWalk, onActivityReady, onActivityFailed]);
 
     // The answer set for the locus you are standing at. It is a constant size and
     // is NOT consumed as you go: the old bank held one chip per locus and removed
@@ -5864,7 +5928,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                             {hasContent && !failed && !noWalk && recallEligible && (
                                 <button
                                     onClick={() => startRecall('bank', false)}
-                                    disabled={!!furnishing || !!sculpting || routeEditing}
+                                    disabled={!!furnishing || !!sculpting || routeEditing || (isTeacherMode && liveRecallReadiness?.ok === false)}
                                     className="flex items-center gap-1 bg-gradient-to-r from-amber-500 to-orange-500 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-sm hover:shadow-md hover:scale-105 transition-all motion-safe:animate-[pulse_3s_ease-in-out_infinite] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                                     title={t('memory_palace.recall_tooltip') || 'Practice: the labels are covered — walk the palace and recall what lives at each locus'}
                                 >
@@ -5874,7 +5938,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                             {hasContent && !failed && !noWalk && recallEligible && (
                                 <button
                                     onClick={() => startRecall('self', false)}
-                                    disabled={!!furnishing || !!sculpting || routeEditing}
+                                    disabled={!!furnishing || !!sculpting || routeEditing || (isTeacherMode && liveRecallReadiness?.ok === false)}
                                     className="flex items-center gap-1 bg-white text-indigo-700 border border-indigo-300 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-indigo-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                     title={t('memory_palace.self_check_tooltip') || 'Move through the route, reveal each answer, then mark whether you remembered it'}
                                 >
@@ -5884,12 +5948,17 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                             {hasContent && !failed && recallEligible && isTeacherMode && (
                                 <button
                                     onClick={() => startRecall('type', false)}
-                                    disabled={!!furnishing || !!sculpting || routeEditing}
+                                    disabled={!!furnishing || !!sculpting || routeEditing || (isTeacherMode && liveRecallReadiness?.ok === false)}
                                     className="flex items-center gap-1 bg-white text-amber-700 border border-amber-300 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-amber-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                     title={t('memory_palace.recall_expert_tooltip') || 'Expert mode: type each answer instead of picking from the bank (stronger retrieval practice; forgiving spelling)'}
                                 >
                                     ⌨ {t('memory_palace.recall_expert') || 'Expert recall'}
                                 </button>
+                            )}
+                            {isTeacherMode && liveRecallReadiness?.ok === false && (
+                                <span role="status" className="max-w-xs rounded-lg border border-amber-300 bg-amber-50 px-2 py-1 text-[11px] font-bold text-amber-900">
+                                    Recall walk: {liveRecallReadiness.message}
+                                </span>
                             )}
                             {hasContent && !failed && !noWalk && (
                                 <button

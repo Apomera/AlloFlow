@@ -66,7 +66,7 @@
         "computer-delivered-selected-response"
       ],
       "packUrl": "./test_prep/eppp_part_one_pack.json",
-      "sha256": "7ba3df738400917029a0e0d5e0e66607bab03128f9499f66aab9345d800dd7f3",
+      "sha256": "4fc982df20e85a87b2427dbfbcee19af857b24d4a17b339b8ae5333b3ff088ef",
       "learningLibraryUrl": "https://alloflow-cdn.pages.dev/test_prep/eppp_learning_library.json",
       "learningLibraryQaUrl": "https://alloflow-cdn.pages.dev/test_prep/eppp_learning_library_qa.json",
       "nativeQaUrl": "https://alloflow-cdn.pages.dev/test_prep/eppp_native_qa.json",
@@ -872,15 +872,15 @@
       ],
       "title": "AP Biology Independent Foundation Pilot",
       "shortTitle": "AP Biology Foundation Pilot",
-      "description": "An independently authored 50-question AP Biology foundation pilot spanning all eight current units. It tests the blueprint crosswalk, science-practice metadata, native chapter architecture, and internal QA before any full-bank expansion.",
-      "disclaimer": "",
+      "description": "An independently authored 400-question AP Biology foundation pilot spanning all eight current units. It tests the blueprint crosswalk, science-practice metadata, structured native chapter lessons, cumulative scenario reasoning, molecular evidence, and internal QA before any full-bank expansion.",
+      "disclaimer": "Independent, unofficial AP Biology preparation material for internal foundation-pilot development only. Not affiliated with, endorsed by, or authored by College Board. This pilot does not provide official scores, score predictions, college-credit predictions, laboratory competency, or a substitute for supervised laboratory work.",
       "credentialOwner": "College Board",
       "status": "preview",
-      "version": "0.1.0-internal-preview",
+      "version": "0.8.0-internal-preview",
       "blueprintLabel": "AP Biology Course and Exam Description, effective Fall 2025, Course Framework V.1",
       "blueprintEffective": "Fall 2025 CED; current official public reference reviewed 2026-08-20.",
       "officialBlueprintUrl": "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
-      "itemCount": 50,
+      "itemCount": 400,
       "domainCount": 8,
       "itemSchemaVersion": 2,
       "responseTypes": [
@@ -890,12 +890,46 @@
         "fully-digital"
       ],
       "packUrl": "./test_prep/ap_biology_foundation_pilot.json",
-      "sha256": "05d8bcdec6a0b1d99af9c5f717f85940412159eab43ff2a16bcc16ad7a4f893d",
+      "sha256": "82f28c2bdd204913bf71ad461b7c1426949b7221eeb157cd333c5cd6cbe279ae",
       "learningLibraryUrl": "./test_prep/ap_biology_foundation_pilot_learning_library.json",
       "learningLibraryQaUrl": "",
       "nativeQaUrl": "./test_prep/ap_biology_foundation_pilot_qa.json",
-      "learningLibrarySha256": "ec1af4b158f2d8722fe6b95ff06cd6643924d90674547a0a8aa29e24eaf79bf2",
-      "nativeQaSha256": "f1f333c478ed136104e63f778901272979758d8a5e6d13de531cddc7c566dd4b"
+      "learningLibrarySha256": "2c18bae3c9d2a2176316e42d4ef9f6b1aec78cc08f33f0f6027cd6fde0628b55",
+      "nativeQaSha256": "d97da778db069eb8ed20b00543801f2b03e6595c74cf4ae3d50fc9a8a0ef8020"
+    },
+    {
+      "id": "ap-us-history-foundation-pilot",
+      "loadMode": "lazy",
+      "visibility": "internal",
+      "portfolioCategories": [
+        "k12-college-readiness"
+      ],
+      "title": "AP U.S. History Independent Foundation Pilot",
+      "shortTitle": "AP U.S. History Foundation",
+      "description": "An independently authored 600-item AP U.S. History foundation pilot with complete five-item coverage across all 105 current public framework topics and all nine current public framework periods. It is internal, unofficial, uncalibrated, and not score-predictive.",
+      "disclaimer": "Independent, unofficial AP U.S. History preparation material for internal development only. Not affiliated with, endorsed by, or authored by College Board. AP and Advanced Placement are trademarks of College Board. All questions, answer options, explanations, feedback, chapters, and workshops are independently authored; no secure AP Classroom, Question Bank, Progress Check, practice-exam, teacher-only content, released question, or official rubric was used or reproduced. Practice results are not official AP scores, score predictions, psychometric estimates, or determinations of college credit or placement.",
+      "credentialOwner": "College Board",
+      "status": "preview",
+      "version": "0.1.0-internal-preview",
+      "blueprintLabel": "AP U.S. History Course and Exam Description, Effective Fall 2026, Course Framework V.1",
+      "blueprintEffective": "Fall 2026 CED; the public College Board page announces AP History exam updates beginning with the May 2027 administration. Target exam year remains intentionally unset.",
+      "officialBlueprintUrl": "https://apcentral.collegeboard.org/media/pdf/ap-us-history-course-and-exam-description.pdf",
+      "itemCount": 600,
+      "domainCount": 9,
+      "itemSchemaVersion": 2,
+      "responseTypes": [
+        "single-choice"
+      ],
+      "examModes": [
+        "fully-digital"
+      ],
+      "packUrl": "./test_prep/ap_us_history_foundation_pilot.json",
+      "sha256": "55b730d7292474613e9ac7a8e3bde9b1e74fc0280608bdb7eb44cf8115c22308",
+      "learningLibraryUrl": "./test_prep/ap_us_history_foundation_pilot_learning_library.json",
+      "learningLibraryQaUrl": "",
+      "nativeQaUrl": "./test_prep/ap_us_history_foundation_pilot_qa.json",
+      "learningLibrarySha256": "dafb07123e4c09b54fb8f95748cdcbcc28f0248c393424590adecbf92b99bf88",
+      "nativeQaSha256": "fe5c7734a8ed00a97758e6a4aa0233c786731b4c70d9a60d0836692bef8a9253"
     }
   ]
 }

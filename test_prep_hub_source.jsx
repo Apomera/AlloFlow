@@ -3639,6 +3639,7 @@ function TestPrepHub(props) {
     onClose = (() => {}),
     callTTS,
     callGemini,
+    callGeminiAudio,
     selectedVoice = 'Puck',
     addToast,
     internalQaMode = false,
@@ -3646,6 +3647,11 @@ function TestPrepHub(props) {
     assetFetchTimeoutMs = TEST_PREP_FETCH_TIMEOUT_MS,
   } = props || {};
   const SpeechRecognitionCtor = typeof window !== 'undefined' ? (window.SpeechRecognition || window.webkitSpeechRecognition) : null;
+  const sharedVoiceService = typeof window !== 'undefined' ? window.AlloFlowVoice : null;
+  const sharedHandsFreeAvailable = !!(sharedVoiceService
+    && typeof sharedVoiceService.isHandsFreeSupported === 'function'
+    && sharedVoiceService.isHandsFreeSupported({ lang: 'en-US', callGeminiAudio }));
+  const handsFreeRecognitionAvailable = Boolean(SpeechRecognitionCtor || sharedHandsFreeAvailable);
   const initialPacks = listTestPrepPacks();
   const initialReadyPack = initialPacks.find((pack) => pack.status === 'ready') || initialPacks[0];
   const [tab, setTab] = React.useState('explore');
@@ -3708,6 +3714,9 @@ function TestPrepHub(props) {
   const [handsFreeStatus, setHandsFreeStatus] = React.useState('idle');
   const [handsFreeTranscript, setHandsFreeTranscript] = React.useState('');
   const [handsFreeError, setHandsFreeError] = React.useState('');
+  const [handsFreeEngine, setHandsFreeEngine] = React.useState({
+    engine: '', engineLabel: 'Configured voice input', privacy: 'Recognition follows the Voice Input setting.'
+  });
   const [handsFreeRate, setHandsFreeRate] = React.useState(1);
   const [handsFreePromptMode, setHandsFreePromptMode] = React.useState(() => {
     try { return window.localStorage.getItem(TEST_PREP_HANDS_FREE_PROMPT_MODE_KEY) === 'quick' ? 'quick' : 'guided'; }
@@ -3919,9 +3928,10 @@ function TestPrepHub(props) {
       state: handsFreeStatus,
       mode: 'hands-free',
       label: 'Hands-free Test Prep',
+      privacy: handsFreeEngine.privacy,
       message: handsFreeStatus === 'listening' ? 'Listening for a Test Prep command.' : ''
     });
-  }, [handsFreeStatus]);
+  }, [handsFreeStatus, handsFreeEngine.privacy]);
 
   React.useEffect(() => {
     if (typeof window === 'undefined' || typeof window.addEventListener !== 'function') return undefined;
@@ -3948,7 +3958,7 @@ function TestPrepHub(props) {
         canListPracticeSets: true,
         canChoosePracticeSet: true,
         canStartPractice: true,
-        canStartHandsFree: Boolean(SpeechRecognitionCtor),
+        canStartHandsFree: handsFreeRecognitionAvailable,
       }),
       getState: () => ({
         phase: practiceStarted && currentItem ? 'practice-ready' : 'setup',
@@ -4964,6 +4974,13 @@ function TestPrepHub(props) {
     const recognition = handsFreeRecognitionRef.current;
     handsFreeRecognitionRef.current = null;
     if (recognition) {
+      if (recognition.__alloSharedHandsFree) {
+        try {
+          if (typeof recognition.abort === 'function') recognition.abort('test-prep-output');
+          else if (typeof recognition.stop === 'function') recognition.stop();
+        } catch (_) {}
+        return;
+      }
       recognition.onstart = null;
       recognition.onresult = null;
       recognition.onerror = null;
@@ -4996,84 +5013,138 @@ function TestPrepHub(props) {
     }, delayMs);
   }
 
+  function acceptHandsFreeTranscript(transcriptValue, recognitionConfidence) {
+    const transcript = String(transcriptValue || '').trim();
+    if (!transcript) { ensureHandsFreeListening(); return; }
+    const command = testPrepParseHandsFreeCommand(transcript, {
+      allowBareChoice: voiceSetChoicePromptUntilRef.current > Date.now() && (!currentItem || Boolean(result)),
+      packs: voicePracticeSets,
+    });
+    const confidenceDecision = testPrepHandsFreeConfidenceDecision(command, recognitionConfidence);
+    handsFreeRecognitionErrorStreakRef.current = 0;
+    setHandsFreeTranscript(transcript);
+    setHandsFreeStatus('processing');
+    stopHandsFreeRecognition(true);
+    if (confidenceDecision.reject) {
+      const thresholdPercent = Math.round(confidenceDecision.minimum * 100);
+      const message = 'For safety, that state-changing command was not carried out because speech-recognition confidence was below ' + thresholdPercent + ' percent. Please say the complete command again.';
+      setHandsFreeError(message);
+      speakTestPrepText(message);
+      return;
+    }
+    Promise.resolve(handsFreeCommandHandlerRef.current && handsFreeCommandHandlerRef.current(transcript, { command, confidenceDecision })).catch(() => {
+      setHandsFreeError('That voice command could not be completed.');
+      speakTestPrepText('That command could not be completed. Say help to hear the available commands.');
+    }).then(ensureHandsFreeListening, ensureHandsFreeListening);
+  }
+
+  function handleHandsFreeRecognitionError(event, detail) {
+    const code = String(event && (event.error || event.message) || 'unavailable');
+    if (detail && detail.shared && !detail.fatal) {
+      const failures = handsFreeRecognitionErrorStreakRef.current + 1;
+      handsFreeRecognitionErrorStreakRef.current = failures;
+      setHandsFreeStatus('recovering');
+      setHandsFreeError('Transcription paused. Retry ' + failures + ' of 2 will continue automatically.');
+      return;
+    }
+    handsFreeRecognitionRef.current = null;
+    const permissionDenied = code === 'not-allowed' || code === 'service-not-allowed' || /permission/i.test(code);
+    if (permissionDenied || (detail && detail.fatal && /(?:api key|not configured|\b401\b|\b403\b)/i.test(code))) {
+      handsFreeSuppressRestartRef.current = true;
+      handsFreeEnabledRef.current = false;
+      setHandsFreeEnabled(false);
+      setHandsFreeStatus('unavailable');
+      setHandsFreeError(permissionDenied
+        ? 'Microphone permission is required for hands-free commands.'
+        : code);
+      clearHandsFreeAudioCache();
+      announce(permissionDenied
+        ? 'Microphone permission is required for hands-free Test Prep.'
+        : 'The selected cloud transcription engine is not configured. Choose another Voice Input engine or add its credentials.', 'warning');
+      return;
+    }
+    if (code === 'aborted' || code === 'no-speech') return;
+    const failures = handsFreeRecognitionErrorStreakRef.current + 1;
+    handsFreeRecognitionErrorStreakRef.current = failures;
+    if (failures >= 3 || (detail && detail.fatal)) {
+      handsFreeSuppressRestartRef.current = true;
+      handsFreeEnabledRef.current = false;
+      setHandsFreeEnabled(false);
+      setHandsFreeStatus('unavailable');
+      setHandsFreeError('Hands-free mode stopped after repeated transcription or microphone errors. Use Hands-free mode to retry.');
+      clearHandsFreeAudioCache();
+      announce('Hands-free Test Prep stopped after repeated voice-input errors.', 'warning');
+      return;
+    }
+    setHandsFreeStatus('recovering');
+    setHandsFreeError('Voice recognition paused. Retry ' + failures + ' of 2 will start automatically.');
+  }
+
+  function finishHandsFreeRecognitionWindow() {
+    handsFreeRecognitionRef.current = null;
+    if (handsFreeSuppressRestartRef.current) { handsFreeSuppressRestartRef.current = false; return; }
+    if (handsFreeEnabledRef.current && !readAloudAudioRef.current && !readAloudUtteranceRef.current && !readAloudAbortRef.current) {
+      const delay = Math.min(2000, 250 * Math.pow(2, handsFreeRecognitionErrorStreakRef.current));
+      handsFreeRestartTimerRef.current = setTimeout(() => {
+        handsFreeRestartTimerRef.current = null;
+        startHandsFreeListening();
+      }, delay);
+    }
+  }
+
   function startHandsFreeListening() {
-    if (!handsFreeEnabledRef.current || !SpeechRecognitionCtor || readAloudAudioRef.current || readAloudUtteranceRef.current || readAloudAbortRef.current) return;
+    if (!handsFreeEnabledRef.current || !handsFreeRecognitionAvailable || readAloudAudioRef.current || readAloudUtteranceRef.current || readAloudAbortRef.current) return;
     stopHandsFreeRecognition(false);
     handsFreeSuppressRestartRef.current = false;
     try {
+      const shared = typeof window !== 'undefined' && window.AlloFlowVoice;
+      if (shared && typeof shared.createHandsFreeRecognizer === 'function') {
+        const controller = shared.createHandsFreeRecognizer({
+          lang: 'en-US',
+          continuous: false,
+          callGeminiAudio,
+          onStateChange: (status) => {
+            if (!handsFreeEnabledRef.current || !status) return;
+            setHandsFreeEngine({
+              engine: String(status.engine || ''),
+              engineLabel: String(status.engineLabel || 'Configured voice input'),
+              privacy: String(status.privacy || 'Recognition follows the Voice Input setting.'),
+            });
+            if (['starting', 'listening', 'transcribing', 'recovering'].includes(status.state)) setHandsFreeStatus(status.state);
+          },
+          onTranscript: (transcript, isFinal, metadata) => {
+            if (!handsFreeEnabledRef.current || isFinal === false) return;
+            acceptHandsFreeTranscript(transcript, metadata && metadata.confidence);
+          },
+          onError: (error, detail) => handleHandsFreeRecognitionError(error, Object.assign({ shared: true }, detail || {})),
+          onEnd: () => finishHandsFreeRecognitionWindow(),
+        });
+        handsFreeRecognitionRef.current = controller;
+        if (controller.start()) return;
+        handsFreeRecognitionRef.current = null;
+        return;
+      }
       const recognition = new SpeechRecognitionCtor();
       handsFreeRecognitionRef.current = recognition;
       recognition.continuous = false;
       recognition.interimResults = false;
       recognition.maxAlternatives = 1;
       recognition.lang = 'en-US';
-      recognition.onstart = () => { if (handsFreeEnabledRef.current) setHandsFreeStatus('listening'); };
+      recognition.onstart = () => {
+        if (!handsFreeEnabledRef.current) return;
+        setHandsFreeEngine({
+          engine: window.__alloLocalSRShim ? 'local-whisper' : 'web-speech',
+          engineLabel: window.__alloLocalSRShim ? 'On-device Whisper' : 'Browser speech service',
+          privacy: window.__alloLocalSRShim ? 'Audio stays on this device.' : 'Your browser may send audio to its speech provider.',
+        });
+        setHandsFreeStatus('listening');
+      };
       recognition.onresult = (event) => {
         const alternative = event && event.results && event.results[0] && event.results[0][0];
-        const transcript = String(alternative && alternative.transcript || '').trim();
-        const command = testPrepParseHandsFreeCommand(transcript, {
-          allowBareChoice: voiceSetChoicePromptUntilRef.current > Date.now() && (!currentItem || Boolean(result)),
-          packs: voicePracticeSets,
-        });
-        const confidenceDecision = testPrepHandsFreeConfidenceDecision(command, alternative && alternative.confidence);
-        handsFreeRecognitionErrorStreakRef.current = 0;
-        setHandsFreeTranscript(transcript);
-        setHandsFreeStatus('processing');
-        stopHandsFreeRecognition(true);
-        if (confidenceDecision.reject) {
-          const thresholdPercent = Math.round(confidenceDecision.minimum * 100);
-          const message = 'For safety, that state-changing command was not carried out because speech-recognition confidence was below ' + thresholdPercent + ' percent. Please say the complete command again.';
-          setHandsFreeError(message);
-          speakTestPrepText(message);
-          return;
-        }
-        Promise.resolve(handsFreeCommandHandlerRef.current && handsFreeCommandHandlerRef.current(transcript, { command, confidenceDecision })).catch(() => {
-          setHandsFreeError('That voice command could not be completed.');
-          speakTestPrepText('That command could not be completed. Say help to hear the available commands.');
-        // V7: hand the microphone back no matter which path the command took,
-        // including the ones that act silently and the ones that threw.
-        }).then(ensureHandsFreeListening, ensureHandsFreeListening);
+        acceptHandsFreeTranscript(alternative && alternative.transcript, alternative && alternative.confidence);
       };
-      recognition.onerror = (event) => {
-        const code = String(event && event.error || 'unavailable');
-        handsFreeRecognitionRef.current = null;
-        if (code === 'not-allowed' || code === 'service-not-allowed') {
-          handsFreeSuppressRestartRef.current = true;
-          handsFreeEnabledRef.current = false;
-          setHandsFreeEnabled(false);
-          setHandsFreeStatus('unavailable');
-          setHandsFreeError('Microphone permission is required for hands-free commands.');
-          clearHandsFreeAudioCache();
-          announce('Microphone permission is required for hands-free Test Prep.', 'warning');
-          return;
-        }
-        if (code === 'aborted' || code === 'no-speech') return;
-        const failures = handsFreeRecognitionErrorStreakRef.current + 1;
-        handsFreeRecognitionErrorStreakRef.current = failures;
-        if (failures >= 3) {
-          handsFreeSuppressRestartRef.current = true;
-          handsFreeEnabledRef.current = false;
-          setHandsFreeEnabled(false);
-          setHandsFreeStatus('unavailable');
-          setHandsFreeError('Hands-free mode stopped after repeated microphone errors. Use Hands-free mode to retry.');
-          clearHandsFreeAudioCache();
-          announce('Hands-free Test Prep stopped after repeated microphone errors.', 'warning');
-          return;
-        }
-        setHandsFreeStatus('recovering');
-        setHandsFreeError('Voice recognition paused. Retry ' + failures + ' of 2 will start automatically.');
-      };
-      recognition.onend = () => {
-        handsFreeRecognitionRef.current = null;
-        if (handsFreeSuppressRestartRef.current) { handsFreeSuppressRestartRef.current = false; return; }
-        if (handsFreeEnabledRef.current && !readAloudAudioRef.current && !readAloudUtteranceRef.current && !readAloudAbortRef.current) {
-          const delay = Math.min(2000, 250 * Math.pow(2, handsFreeRecognitionErrorStreakRef.current));
-          handsFreeRestartTimerRef.current = setTimeout(() => {
-            handsFreeRestartTimerRef.current = null;
-            startHandsFreeListening();
-          }, delay);
-        }
-      };
+      recognition.onerror = (event) => handleHandsFreeRecognitionError(event, { shared: false });
+      recognition.onend = finishHandsFreeRecognitionWindow;
       recognition.start();
     } catch (_) {
       handsFreeRecognitionRef.current = null;
@@ -5388,7 +5459,7 @@ function TestPrepHub(props) {
       active: handsFreeEnabledRef.current,
       state: handsFreeStatus,
       compatibility: currentHandsFreeCompatibility,
-      speechRecognitionAvailable: Boolean(SpeechRecognitionCtor),
+      speechRecognitionAvailable: handsFreeRecognitionAvailable,
     });
     return Object.assign({}, status, {
       selectedSetId: selectedPack ? selectedPack.id : '',
@@ -5468,11 +5539,11 @@ function TestPrepHub(props) {
     });
     const firstItem = target.items && target.items[0];
     const compatibility = testPrepHandsFreeCompatibility(target, firstItem);
-    if (withHandsFree && (!SpeechRecognitionCtor || !compatibility.allowed)) {
+    if (withHandsFree && (!handsFreeRecognitionAvailable || !compatibility.allowed)) {
       return getTestPrepVoiceBoundaryStatus({
         ok: false, ready: false, active: false,
-        state: SpeechRecognitionCtor ? 'incompatible' : 'unavailable',
-        message: SpeechRecognitionCtor ? compatibility.message : 'This browser does not provide speech recognition. Practice can still start with the start practice command.',
+        state: handsFreeRecognitionAvailable ? 'incompatible' : 'unavailable',
+        message: handsFreeRecognitionAvailable ? compatibility.message : 'No configured voice-input engine is available. Practice can still start with the start practice command.',
       });
     }
     if (!startDefaultVoicePracticeSet(target)) return getTestPrepVoiceBoundaryStatus({
@@ -5559,10 +5630,10 @@ function TestPrepHub(props) {
       announce(compatibility.message, 'warning');
       return;
     }
-    if (!SpeechRecognitionCtor) {
+    if (!handsFreeRecognitionAvailable) {
       setHandsFreeStatus('unavailable');
-      setHandsFreeError('This browser does not provide speech recognition. Read question remains available.');
-      announce('Voice commands are unavailable in this browser. Read-aloud still works.', 'warning');
+      setHandsFreeError('No configured voice-input engine is available. Read question remains available.');
+      announce('Voice commands are unavailable with the current Voice Input setting. Read-aloud still works.', 'warning');
       return;
     }
     clearHandsFreeAudioCache();
@@ -5590,7 +5661,7 @@ function TestPrepHub(props) {
           mode: 'hands-free',
           label: 'Hands-free Test Prep',
           state: 'starting',
-          privacy: 'Recognition follows the configured browser or on-device speech engine.',
+          privacy: 'Recognition follows the global Voice Input setting.',
           onStop: () => {
             handsFreeVoiceLeaseRef.current = null;
             if (handsFreeEnabledRef.current) disableHandsFree(true, false);
@@ -6351,12 +6422,13 @@ function TestPrepHub(props) {
                     <button type="button" onClick={() => { try { window.AlloModules && window.AlloModules.ItemCorrection && window.AlloModules.ItemCorrection.openFor({ packId: selectedPack.id, packTitle: selectedPack.title, itemId: currentItem.id, prompt: currentItem.prompt, domain: currentItem.domainId, reviewTier: currentItem.examItemStatus === 'not-approved-as-independent-exam-item' ? 'guided-review' : 'source-reviewed', currentAnswer: currentItem.choices[currentItem.answerIndex] }); } catch (_) {} }} className="rounded-lg border border-teal-400 bg-teal-50 px-3 py-2 text-sm font-bold text-teal-900 focus:ring-2 focus:ring-teal-600">Suggest a correction</button>
                     <button type="button" onClick={chooseAnotherPracticeSet} className="rounded-lg border border-slate-400 bg-white px-3 py-2 text-sm font-bold text-slate-800 focus:ring-2 focus:ring-indigo-600">Practice options</button>
                   </div>
-                  <p id="test-prep-hands-free-privacy" className="mt-3 rounded-lg border border-slate-300 bg-slate-50 px-3 py-2 text-xs leading-relaxed text-slate-700"><strong>Hands-free privacy:</strong> Your browser's speech-recognition service may process what you say. The configured text-to-speech provider may process the current and next three question texts, and the configured AI provider may process clarification requests. Processing may be local or remote depending on the AlloFlow setup. Do not speak or enter personally identifiable information. Voice recognition currently listens for English (United States) commands, and narration is requested in English. When the browser supplies a meaningful score, answer choices below 60 percent confidence wait for a yes or no confirmation; other state-changing commands below 60 percent are not carried out. A score of zero or no score is treated as unavailable.</p>
+                  <p id="test-prep-hands-free-privacy" className="mt-3 rounded-lg border border-slate-300 bg-slate-50 px-3 py-2 text-xs leading-relaxed text-slate-700"><strong>Hands-free privacy:</strong> Recognition follows the global Voice Input setting. On-device Whisper keeps audio on this device; a browser speech service may use its provider; Gemini sends one completed spoken turn to Gemini only when Gemini cloud transcription is explicitly selected. Auto never selects Gemini. The configured text-to-speech provider may process the current and next three question texts, and the configured AI provider may process clarification requests. Do not speak or enter personally identifiable information. Voice recognition currently listens for English (United States) commands, and narration is requested in English. When the browser supplies a meaningful score, answer choices below 60 percent confidence wait for a yes or no confirmation; other state-changing commands below 60 percent are not carried out. Whisper and Gemini do not supply a calibrated confidence score, so consequential commands retain the existing confirmation safeguards.</p>
                   <p id="test-prep-hands-free-quick-help" className="mt-2 text-xs leading-relaxed text-slate-700"><strong>Quick prompts:</strong> Questions and answer choices are still read aloud, but repeated command coaching is skipped. Say a letter such as B or a number such as 2; saying “choose” is optional.</p>
                   {!currentHandsFreeCompatibility.allowed && <p className="mt-2 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-sm font-bold text-amber-950" role="status" aria-live="polite">{currentHandsFreeCompatibility.message}</p>}
                   <p role="status" aria-live="polite" className={readAloudStatus === 'unavailable' ? 'mt-2 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-950' : 'sr-only'}>{readAloudMessage}</p>
                   {(handsFreeEnabled || handsFreeError) && <section className="mt-4 rounded-xl border border-cyan-300 bg-cyan-50 p-4" aria-labelledby="test-prep-hands-free-title">
                     <div className="flex flex-wrap items-center justify-between gap-2"><div><h4 id="test-prep-hands-free-title" className="font-black text-cyan-950">Hands-free Test Prep</h4><p className="mt-1 text-sm text-cyan-950">The microphone pauses during narration. Audio for the next three questions is prepared quietly when configured text-to-speech is available.</p></div><span className="rounded-full border border-cyan-500 bg-white px-3 py-1 text-xs font-black uppercase text-cyan-950" role="status" aria-live="polite">{handsFreeEnabled ? handsFreeStatus : handsFreeStatus === 'unavailable' ? 'unavailable' : 'off'} - {Math.round(handsFreeRate * 100)}% speed - {handsFreePromptMode} prompts</span></div>
+                    {handsFreeEnabled && <p className="mt-2 text-xs font-bold text-cyan-950"><span>{handsFreeEngine.engineLabel}.</span>{' '}{handsFreeEngine.privacy}</p>}
                     {handsFreeEnabled && <p className="mt-3 text-sm font-semibold text-cyan-950">{handsFreePromptMode === 'quick' ? 'Quick prompts are on. Say help any time to hear every command.' : 'Say: B or 2 to choose an answer; check answer; next question; read choices; read option B; status; save for review; mark sure, unsure, or guessed after checking; slower; faster; ask followed by a neutral definition; or stop hands free.'}</p>}
                     {!!handsFreeTranscript && <p className="mt-2 rounded-lg border border-cyan-200 bg-white p-2 text-sm text-slate-800"><strong>Heard:</strong> {handsFreeTranscript}</p>}
                     {!!handsFreePendingChoice && <p className="mt-2 rounded-lg border border-amber-400 bg-amber-50 p-2 text-sm font-black text-amber-950" role="status" aria-live="assertive">Waiting for confirmation: option {String.fromCharCode(65 + handsFreePendingChoice.choiceIndex)}. Say yes to accept it, or no to try again.</p>}

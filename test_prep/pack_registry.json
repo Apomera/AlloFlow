@@ -286,6 +286,16 @@
       "portfolioCategories": [
         "k12-college-readiness"
       ]
+    },
+    {
+      "id": "ap-us-history-foundation-pilot",
+      "sourcePath": "test_prep/ap_us_history_foundation_pilot.json",
+      "pipelineFamily": "ap-native",
+      "loadMode": "lazy",
+      "visibility": "internal",
+      "portfolioCategories": [
+        "k12-college-readiness"
+      ]
     }
   ]
 }

@@ -38,6 +38,8 @@ describe('Full Pack educator plan editor host wiring', () => {
   it('states the supplemental/non-replacement policy without implying an IEP decision', () => {
     expect(host).toContain('data-testid="full-pack-text-access-summary"');
     expect(host).toContain('The primary/source text remains available to anchor this pack.');
+    expect(host).toContain('Number(section?.preflight?.sourceTextChars || 0) > 0');
+    expect(host).toContain("Boolean(String(section?.preflight?.sourceFingerprint || '').trim())");
     expect(host).toContain('No primary-text replacement or IEP modification is inferred.');
     expect(strings).toContain('"policy_preserve_primary": "Preserve primary (recommended)"');
     expect(strings).toContain('"policy_educator_directed": "Include supplemental Adapted Text"');

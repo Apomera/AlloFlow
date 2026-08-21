@@ -141,7 +141,8 @@ function readCatalogContext() {
     const id = r[1];
     const isHeader = /category:\s*true/.test(r[0]);
     if (isHeader) {
-      const lm = r[0].match(/label:\s*'((?:\\.|[^'\\])*)'/);
+      const lm = r[0].match(/label:\s*'((?:\\.|[^'\\])*)'/)
+        || r[0].match(/label:\s*t\(\s*'[^']+'\s*,\s*'((?:\\.|[^'\\])*)'/);
       current = lm ? decode(lm[1]).replace(/^[^\w]+/, '') : current;
     } else if (!id.startsWith('_cat_')) {
       sections[id] = current;

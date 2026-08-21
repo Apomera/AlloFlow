@@ -36,6 +36,23 @@
       standardsContext: ctx.standardsContext || null,
       instructionalContext: ctx.instructionalContext || null,
       interests: String(interests),
+      studentInterests: Array.isArray(ctx.studentInterests)
+        ? ctx.studentInterests.slice()
+        : (Array.isArray(ctx.interests) ? ctx.interests.slice() : ctx.studentInterests),
+      selectedLanguages: Array.isArray(ctx.selectedLanguages) ? ctx.selectedLanguages.slice() : [],
+      translationMode: ctx.translationMode,
+      currentUiLanguage: ctx.currentUiLanguage,
+      translationTargetChoices: Array.isArray(ctx.translationTargetChoices) ? ctx.translationTargetChoices.slice() : [],
+      resolvedTranslationTarget: ctx.resolvedTranslationTarget,
+      differentiationRange: ctx.differentiationRange,
+      differentiationTypes: Array.isArray(ctx.differentiationTypes) ? ctx.differentiationTypes.slice() : [],
+      differentiationCustomGrades: Array.isArray(ctx.differentiationCustomGrades) ? ctx.differentiationCustomGrades.slice() : [],
+      dokLevel: ctx.dokLevel,
+      useEmojis: ctx.useEmojis,
+      textFormat: ctx.textFormat,
+      imageGenerationStyle: ctx.imageGenerationStyle,
+      imageAspectRatio: ctx.imageAspectRatio,
+      targetStandards: Array.isArray(ctx.targetStandards) ? ctx.targetStandards.slice() : [],
       sourcePolicy: ctx.sourcePolicy,
       provenance: ctx.provenance
     };
@@ -49,12 +66,18 @@
     var knownTools = Array.isArray(d.knownTools) && d.knownTools.length ? d.knownTools : C.FALLBACK_TOOL_IDS;
 
     function service(extra) {
-      return S.createBlueprintService(Object.assign({ contracts: C, knownTools: knownTools }, extra || {}));
+      return S.createBlueprintService(Object.assign({ contracts: C, knownTools: knownTools, generationMatrix: d.generationMatrix }, extra || {}));
     }
 
     function toBlueprint(legacyConfig, context) {
       var ctx = normalizeContext(context);
       var draft = C.fromLegacyConfig(legacyConfig, ctx);
+      var matrix = d.generationMatrix || (typeof window !== 'undefined' && window.AlloModules && window.AlloModules.GenerationMatrix);
+      if (!matrix) {
+        draft.plan = draft.plan.map(function (row) {
+          return row.generationMatrixUnavailable === true ? row : Object.assign({}, row, { generationMatrixUnavailable: true });
+        });
+      }
       if (ctx.sourcePolicy && typeof ctx.sourcePolicy === 'object') draft.sourcePolicy = ctx.sourcePolicy;
       var report = service().validate(draft);
       if (!report.ok) {

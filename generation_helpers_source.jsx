@@ -54,6 +54,703 @@ const _fullPackFingerprint = (value) => {
 const _cloneFullPackValue = (value) => {
   try { return JSON.parse(JSON.stringify(value)); } catch (_) { return value; }
 };
+const _getGenerationMatrixModule = () => {
+  try {
+    return typeof window !== 'undefined' && window.AlloModules
+      ? window.AlloModules.GenerationMatrix
+      : null;
+  } catch (_) { return null; }
+};
+const _normalizeFullPackSourceFingerprint = (value, sourceText) => {
+  const matrixModule = _getGenerationMatrixModule();
+  try {
+    if (matrixModule && typeof matrixModule.normalizeSourceFingerprint === 'function') {
+      const normalized = matrixModule.normalizeSourceFingerprint(value, sourceText);
+      if (normalized) return String(normalized);
+    }
+    if (matrixModule && typeof matrixModule.fingerprintSourceText === 'function' && sourceText) {
+      const normalized = matrixModule.fingerprintSourceText(sourceText);
+      if (normalized) return String(normalized);
+    }
+  } catch (_) {}
+  return String(value || _fullPackFingerprint(sourceText || ''));
+};
+const _fingerprintFullPackGenerationContextValue = (value) => {
+  const matrixModule = _getGenerationMatrixModule();
+  try {
+    if (matrixModule && typeof matrixModule.fingerprintSourceText === 'function') {
+      return String(matrixModule.fingerprintSourceText(
+        typeof value === 'string' ? value : JSON.stringify(value)
+      ) || '');
+    }
+  } catch (_) {}
+  return value == null || value === '' ? '' : _fullPackFingerprint(
+    typeof value === 'string' ? value : JSON.stringify(value)
+  );
+};
+const _FULL_PACK_DIFFERENTIATION_CONTEXT_TYPES = Object.freeze([
+  'glossary', 'simplified', 'image', 'quiz', 'brainstorm',
+  'sentence-frames', 'alignment-report', 'timeline',
+]);
+const _FULL_PACK_LESSON_DNA_CONTEXT_TYPES = Object.freeze([
+  'quiz', 'sentence-frames', 'adventure',
+]);
+const _buildFullPackScopedGenerationContext = (
+  baseFingerprint, differentiationContext, lessonDNA, batchConfig
+) => {
+  const resources = {};
+  const differentiationContextFingerprint = _fingerprintFullPackGenerationContextValue(differentiationContext);
+  const lessonDnaFingerprint = _fingerprintFullPackGenerationContextValue(lessonDNA);
+  _FULL_PACK_DIFFERENTIATION_CONTEXT_TYPES.forEach(type => {
+    if (differentiationContextFingerprint) {
+      resources[type] = { differentiationContextFingerprint };
+    }
+  });
+  _FULL_PACK_LESSON_DNA_CONTEXT_TYPES.forEach(type => {
+    if (!lessonDnaFingerprint) return;
+    resources[type] = Object.assign({}, resources[type] || {}, { lessonDnaFingerprint });
+  });
+  const compactBatchConfig = typeof _compactFullPackBatchConfig === 'function'
+    ? _compactFullPackBatchConfig(batchConfig || {}) : {};
+  const batchResourceMap = {
+    glossaryConfig: 'glossary',
+    quizConfig: 'quiz',
+    outlineConfig: 'outline',
+    visualConfig: 'image',
+    adventureConfig: 'adventure',
+    brainstormConfig: 'brainstorm',
+  };
+  Object.entries(batchResourceMap).forEach(([key, type]) => {
+    if (!compactBatchConfig[key] || typeof compactBatchConfig[key] !== 'object') return;
+    resources[type] = Object.assign({}, resources[type] || {}, {
+      batchConfig: _cloneFullPackValue(compactBatchConfig[key]),
+    });
+  });
+  const batchGlobals = {};
+  Object.entries(compactBatchConfig).forEach(([key, value]) => {
+    if (key === 'lessonDNA' || Object.prototype.hasOwnProperty.call(batchResourceMap, key)
+        || key === 'hasTimeline') return;
+    batchGlobals[key] = _cloneFullPackValue(value);
+  });
+  if (Object.keys(batchGlobals).length) {
+    // Batch-wide planner output may influence any generated support, but the
+    // source-global analysis intentionally depends on the source alone so one
+    // canonical analysis can be shared across roster groups.
+    const contextualTypes = Object.keys(_FULL_PACK_TOOL_OVERRIDE_FIELDS)
+      .concat(['lesson-plan', 'alignment-report']);
+    contextualTypes.filter(type => type !== 'analysis').forEach(type => {
+      resources[type] = Object.assign({}, resources[type] || {}, {
+        batchConfig: batchGlobals,
+      });
+    });
+  }
+  return Object.keys(resources).length ? { resources } : {};
+};
+const _FULL_PACK_TOOL_OVERRIDE_FIELDS = Object.freeze({
+  simplified: 'leveledTextCustomInstructions',
+  quiz: 'quizCustomInstructions',
+  adventure: 'adventureCustomInstructions',
+  'sentence-frames': 'frameCustomInstructions',
+  brainstorm: 'brainstormCustomInstructions',
+  faq: 'faqCustomInstructions',
+  outline: 'outlineCustomInstructions',
+  image: 'visualCustomInstructions',
+  timeline: 'timelineTopic',
+  'lesson-plan': 'lessonCustomAdditions',
+  glossary: 'glossaryCustomInstructions',
+  persona: 'personaCustomInstructions',
+  'concept-sort': 'conceptSortCustomInstructions',
+  dbq: 'dbqCustomInstructions',
+  'note-taking': 'noteTakingCustomInstructions',
+  'anchor-chart': 'anchorChartCustomInstructions',
+});
+const _FULL_PACK_TOOL_OPTION_FIELDS = Object.freeze([
+  'outlineType', 'visualStyle', 'visualCustomStyle', 'visualLayoutMode',
+  'universalImageStyle',
+  'quizMode', 'quizCount', 'quizMcqCount', 'quizReflectionCount',
+  'passAnalysisToQuiz', 'cellGameDifficulty', 'faqCount',
+  'noteTakingTemplateType', 'anchorChartType',
+  'frameType', 'fillInTheBlank', 'vocabularyType', 'isAdventureStoryMode',
+  'isSocialStoryMode', 'isImmersiveMode', 'adventureChanceMode',
+  'adventureConsistentCharacters', 'adventureFreeResponseEnabled',
+  'adventureLanguageMode', 'adventureInputMode', 'mcqVisualMode',
+  'includeSourceCitations', 'includeBibliography',
+  'checkAccuracyWithSearch', 'leveledTextLength', 'keepCitations', 'includeCharts',
+  'glossaryDefinitionLevel', 'glossaryImageStyle', 'glossaryTier2Count',
+  'glossaryTier3Count', 'includeEtymology', 'autoRemoveWords',
+  'useLowQualityVisuals', 'noText', 'creativeMode',
+  'timelineMode', 'timelineCount', 'timelineItemCount', 'includeTimelineVisuals',
+  'conceptItemCount', 'conceptImageMode', 'selectedConcepts', 'dbqMode',
+  'isParentMode', 'isIndependentMode', 'isTeacherMode',
+  'bridgeSimType', 'bridgeStepCount', 'personaMode', 'alignmentMode',
+]);
+const _boundedFullPackConfigValue = (value) => {
+  if (value == null || ['boolean', 'number'].includes(typeof value)) return value;
+  if (typeof value === 'string') return value.slice(0, 4000);
+  if (Array.isArray(value)) return value.slice(0, 100).map(_boundedFullPackConfigValue);
+  return undefined;
+};
+const _fullPackMatrixToolOverrides = (toolOverrides) => Object.fromEntries(
+  Object.entries(toolOverrides && typeof toolOverrides === 'object' ? toolOverrides : {})
+    .filter(([, value]) => !!String(value || '').trim())
+    .map(([type, value]) => [type, {
+      customInstructions: String(value),
+      generationContext: { customInstructions: String(value) },
+    }])
+);
+const _captureFullPackGenerationConfig = (deps = {}) => {
+  const matrixModule = _getGenerationMatrixModule();
+  const toolOverrides = {};
+  Object.entries(_FULL_PACK_TOOL_OVERRIDE_FIELDS).forEach(([type, field]) => {
+    let value = deps[field];
+    if (type === 'concept-sort' && !String(value || '').trim()) value = deps.conceptInput;
+    toolOverrides[type] = String(value || '').slice(0, 4000);
+  });
+  const toolOptions = {};
+  const canonicalOptionFields = matrixModule && matrixModule.RESOURCE_GENERATION_CONFIG_FIELDS
+    ? Object.values(matrixModule.RESOURCE_GENERATION_CONFIG_FIELDS)
+        .reduce((all, fields) => all.concat(Array.isArray(fields) ? fields : []), [])
+    : [];
+  Array.from(new Set(_FULL_PACK_TOOL_OPTION_FIELDS.concat(canonicalOptionFields))).forEach(field => {
+    const value = _boundedFullPackConfigValue(deps[field]);
+    if (value !== undefined) toolOptions[field] = value;
+  });
+  const profile = deps.aiProviderProfile && typeof deps.aiProviderProfile === 'object'
+    ? deps.aiProviderProfile : {};
+  const provider = {
+    backend: String(profile.backend || deps.aiBackend || ''),
+    provider: String(profile.provider || profile.aiProvider || deps.aiProvider
+      || profile.backend || deps.aiBackend || ''),
+    model: String(profile.model || deps.aiModel || ''),
+    fallbackModel: String(profile.fallbackModel || profile.models?.fallback
+      || deps.aiFallbackModel || ''),
+    imageProvider: String(profile.imageProvider || ''),
+    imageModel: String(profile.imageModel || profile.models?.image || ''),
+    visionModel: String(profile.visionModel || profile.models?.vision || ''),
+    isLocal: profile.isLocal === true,
+  };
+  const raw = {
+    version: 1,
+    toolOverrides,
+    toolOptions,
+    universal: {
+      imageGenerationStyle: String(deps.imageGenerationStyle || ''),
+      imageAspectRatio: String(deps.imageAspectRatio || ''),
+    },
+    provider,
+  };
+  const canonicalToolOverrides = _fullPackMatrixToolOverrides(toolOverrides);
+  const canonicalSettings = {
+    toolOverrides: canonicalToolOverrides,
+    generationOptions: toolOptions,
+    generationContext: { fullPackGenerationConfig: raw, toolOptions },
+    imageGenerationStyle: raw.universal.imageGenerationStyle,
+    universalImageStyle: raw.universal.imageGenerationStyle,
+    imageAspectRatio: raw.universal.imageAspectRatio,
+    backend: provider.backend,
+    model: provider.model,
+    provider: provider.provider,
+    fallbackModel: provider.fallbackModel,
+    imageProvider: provider.imageProvider,
+    imageModel: provider.imageModel,
+    visionModel: provider.visionModel,
+  };
+  let canonical = null;
+  let fingerprint = '';
+  try {
+    if (matrixModule && typeof matrixModule.projectEffectiveGenerationConfig === 'function') {
+      canonical = matrixModule.projectEffectiveGenerationConfig({ type: 'full-pack' }, canonicalSettings);
+    }
+    if (matrixModule && typeof matrixModule.buildGenerationConfigFingerprint === 'function') {
+      fingerprint = matrixModule.buildGenerationConfigFingerprint({ type: 'full-pack' }, canonicalSettings) || '';
+    }
+  } catch (_) {}
+  // Compatibility for a stale host. The canonical module owns this once its
+  // config projector is available; the fallback is deliberately local to the
+  // reviewed Full Pack envelope and never participates in cross-workflow policy.
+  if (!fingerprint) fingerprint = _fullPackFingerprint(JSON.stringify(raw));
+  return Object.freeze(Object.assign({}, raw, {
+    canonical: _cloneFullPackValue(canonical),
+    fingerprint: String(fingerprint),
+  }));
+};
+const _fullPackToolOverride = (type, generationConfig) => String(
+  generationConfig && generationConfig.toolOverrides
+    && generationConfig.toolOverrides[type] || ''
+);
+const _fullPackGenerationConfigDeps = (generationConfig) => {
+  const source = generationConfig && typeof generationConfig === 'object' ? generationConfig : {};
+  const overrides = source.toolOverrides && typeof source.toolOverrides === 'object' ? source.toolOverrides : {};
+  const out = Object.assign({}, source.toolOptions || {});
+  Object.entries(_FULL_PACK_TOOL_OVERRIDE_FIELDS).forEach(([type, field]) => {
+    out[field] = String(overrides[type] || '');
+  });
+  if (!out.conceptSortCustomInstructions && overrides['concept-sort']) {
+    out.conceptSortCustomInstructions = String(overrides['concept-sort']);
+  }
+  out.imageGenerationStyle = String(source.universal && source.universal.imageGenerationStyle || '');
+  out.universalImageStyle = out.imageGenerationStyle;
+  out.imageAspectRatio = String(source.universal && source.universal.imageAspectRatio || '');
+  out.aiProviderProfile = _cloneFullPackValue(source.provider || {});
+  out.aiBackend = String(source.provider && source.provider.backend || '');
+  out.aiProvider = String(source.provider && source.provider.provider || '');
+  out.aiModel = String(source.provider && source.provider.model || '');
+  out.aiFallbackModel = String(source.provider && source.provider.fallbackModel || '');
+  return out;
+};
+const _buildFullPackGenerationSettings = (options = {}) => {
+  const matrixModule = _getGenerationMatrixModule();
+  if (matrixModule && typeof matrixModule.buildFrozenGenerationSettings === 'function') {
+    return matrixModule.buildFrozenGenerationSettings(options);
+  }
+  // Compatibility only for a stale host that has not loaded GenerationMatrix.
+  // Policy (singleton/repeatable/reuse decisions) intentionally remains in the
+  // shared module; this fallback preserves the former one-call-per-row path.
+  return Object.freeze({
+    version: 0,
+    sourceFingerprint: String(options.sourceFingerprint || ''),
+    sourceArtifactId: options.sourceArtifactId || null,
+    gradeLevel: String(options.gradeLevel || options.grade || ''),
+    language: String(options.language || options.leveledTextLanguage || 'English'),
+    selectedLanguages: Array.isArray(options.selectedLanguages) ? options.selectedLanguages.slice() : [],
+    differentiationRange: String(options.differentiationRange || 'None'),
+    differentiationGrades: Array.isArray(options.differentiationGrades || options.grades)
+      ? (options.differentiationGrades || options.grades).slice() : [],
+    differentiationTypes: Array.isArray(options.differentiationTypes) ? options.differentiationTypes.slice() : [],
+    standardsFingerprint: String(options.standardsFingerprint || ''),
+    contextBaseFingerprint: String(options.contextBaseFingerprint || options.contextFingerprint || ''),
+    contextFingerprint: String(options.contextFingerprint || ''),
+    groupId: options.groupId || null,
+    translationMode: String(options.translationMode || options.translationPolicy?.mode || ''),
+    currentUiLanguage: String(options.currentUiLanguage || options.uiLanguage || ''),
+    translationTarget: String(options.translationTarget || options.translationTargetLanguage
+      || options.attachedTranslationTarget || options.translationPolicy?.target || ''),
+    studentInterests: Array.isArray(options.studentInterests) ? options.studentInterests.slice() : [],
+    dokLevel: String(options.dokLevel || ''),
+    useEmojis: !!options.useEmojis,
+    textFormat: String(options.textFormat || ''),
+    imageGenerationStyle: String(options.imageGenerationStyle || ''),
+    imageAspectRatio: String(options.imageAspectRatio || ''),
+    generationContext: _cloneFullPackValue(options.generationContext || {}),
+    generationOptions: _cloneFullPackValue(options.generationOptions || {}),
+    toolOverrides: _cloneFullPackValue(options.toolOverrides || {}),
+    generationConfig: _cloneFullPackValue(options.generationConfig || {}),
+    generationConfigFingerprint: String(options.generationConfigFingerprint || ''),
+    backend: String(options.backend || ''),
+    model: String(options.model || ''),
+    provider: String(options.provider || ''),
+    fallbackModel: String(options.fallbackModel || ''),
+    imageProvider: String(options.imageProvider || ''),
+    imageModel: String(options.imageModel || ''),
+    visionModel: String(options.visionModel || ''),
+    forceRefresh: !!options.forceRefresh,
+  });
+};
+const _fallbackFullPackPlanRows = (rows, settings) => {
+  const selected = (Array.isArray(rows) ? rows : []).map((raw, index) => {
+    const row = raw && typeof raw === 'object' ? raw : {};
+    const type = String(row.type || row.tool || '');
+    const variantKey = String(row.variantKey || ('legacy-' + type + '-' + index));
+    const variant = {
+      generationIdentity: row.generationIdentity || null,
+      type,
+      grade: settings.gradeLevel || '',
+      language: settings.language || 'English',
+      action: 'generate',
+      existingArtifactId: null,
+      reason: 'Generation Matrix was unavailable; using legacy Full Pack dispatch.',
+      variantKey,
+      legacyDispatch: true,
+    };
+    return Object.assign({}, row, {
+      type,
+      generationAction: 'generate',
+      generationIdentity: variant.generationIdentity,
+      generationVariants: [variant],
+      existingArtifactId: null,
+      variantKey,
+    });
+  });
+  const imageCalls = selected.filter(row => row.type === 'image').length;
+  return {
+    rows: selected,
+    skipped: [],
+    summary: {
+      rowCount: selected.length,
+      variantCount: selected.length,
+      expectedCalls: selected.length,
+      imageCalls,
+      actions: { generate: selected.length, reuse: 0, variant: 0, refresh: 0 },
+    },
+    settings,
+    legacyFallback: true,
+  };
+};
+const _fullPackMatrixCustomInstruction = (type, settings) => {
+  const typed = settings && settings.toolOverrides && settings.toolOverrides[type];
+  if (typed && typeof typed === 'object') return String(typed.customInstructions || '');
+  return typeof typed === 'string' ? typed : '';
+};
+const _fullPackMatrixIdentityRow = (row, settings) => {
+  const source = row && typeof row === 'object' ? row : {};
+  const displayDirective = String(source.directive || '');
+  const userOverride = _fullPackMatrixCustomInstruction(source.type || source.tool || '', settings);
+  const directive = `${displayDirective} ${userOverride ? `(User Note: ${userOverride})` : ''}`.trim();
+  return Object.assign({}, source, {
+    directive,
+    _fullPackDisplayDirective: displayDirective,
+  });
+};
+const _resolveFullPackPlanRows = (rows, options = {}) => {
+  const settings = options.settings || _buildFullPackGenerationSettings(options);
+  const matrixModule = _getGenerationMatrixModule();
+  if (!matrixModule || typeof matrixModule.resolvePlanRows !== 'function') {
+    return _fallbackFullPackPlanRows(rows, settings);
+  }
+  const identityRows = (Array.isArray(rows) ? rows : [])
+    .map(row => _fullPackMatrixIdentityRow(row, settings));
+  const resolved = matrixModule.resolvePlanRows(identityRows, Object.assign({}, options, settings, {
+    settings,
+  }));
+  if (!resolved || !Array.isArray(resolved.rows) || !resolved.summary) {
+    throw new Error('Generation Matrix returned an invalid Full Pack plan.');
+  }
+  const displayRows = resolved.rows.map(row => {
+    const displayDirective = Object.prototype.hasOwnProperty.call(row, '_fullPackDisplayDirective')
+      ? row._fullPackDisplayDirective : row.directive;
+    const copy = Object.assign({}, row, { directive: displayDirective || '' });
+    delete copy._fullPackDisplayDirective;
+    return copy;
+  });
+  return Object.assign({}, resolved, { rows: displayRows, settings: resolved.settings || settings });
+};
+const _summarizeFullPackMatrixRows = (rows) => {
+  const actions = { reuse: 0, generate: 0, variant: 0, refresh: 0 };
+  let variantCount = 0;
+  let expectedCalls = 0;
+  let imageCalls = 0;
+  (Array.isArray(rows) ? rows : []).forEach(row => {
+    const variants = Array.isArray(row && row.generationVariants) && row.generationVariants.length
+      ? row.generationVariants
+      : [{ action: row && row.generationAction || 'generate' }];
+    variants.forEach(variant => {
+      const action = ['reuse', 'generate', 'variant', 'refresh'].includes(variant && variant.action)
+        ? variant.action : 'generate';
+      actions[action] += 1;
+      variantCount += 1;
+      if (action !== 'reuse') {
+        expectedCalls += 1;
+        if (row && row.type === 'image') imageCalls += 1;
+      }
+    });
+  });
+  return {
+    rowCount: Array.isArray(rows) ? rows.length : 0,
+    skippedRowCount: 0,
+    variantCount,
+    expectedCalls,
+    imageCalls,
+    actions,
+  };
+};
+const _sameFullPackGenerationIdentity = (left, right) => {
+  if (left == null || right == null) return false;
+  if (typeof left === 'string' || typeof right === 'string') return String(left) === String(right);
+  try { return JSON.stringify(left) === JSON.stringify(right); } catch (_) { return left === right; }
+};
+const _fullPackHistoryArtifact = (items, variant) => {
+  const list = Array.isArray(items) ? items : [];
+  const artifactId = variant && (variant.existingArtifactId || variant.resourceId);
+  if (artifactId != null) {
+    const exact = list.find(item => item && String(item.id) === String(artifactId));
+    if (exact) return exact;
+  }
+  const identity = variant && variant.generationIdentity;
+  if (identity != null) {
+    return list.find(item => item && _sameFullPackGenerationIdentity(
+      item.generationIdentity || item.config?.generationIdentity || item.provenance?.generationIdentity,
+      identity
+    )) || null;
+  }
+  return null;
+};
+const _trackFullPackHistoryArtifact = (items, artifact, variant, action) => {
+  if (!artifact || typeof artifact !== 'object') return null;
+  const generationIdentity = artifact.generationIdentity || variant?.generationIdentity || null;
+  const sourceFingerprint = artifact.sourceFingerprint || artifact.config?.sourceFingerprint
+    || variant?.sourceFingerprint || '';
+  const sourceArtifactId = artifact.sourceArtifactId || artifact.config?.sourceArtifactId
+    || variant?.sourceArtifactId || null;
+  const contextFingerprint = artifact.contextFingerprint || artifact.config?.contextFingerprint
+    || variant?.contextFingerprint || '';
+  const contextInputsFingerprint = artifact.contextInputsFingerprint
+    || artifact.config?.contextInputsFingerprint || variant?.contextInputsFingerprint || '';
+  const generationConfig = _cloneFullPackValue(artifact.generationConfig
+    || artifact.config?.generationConfig || variant?.generationConfig || {});
+  const generationConfigFingerprint = artifact.generationConfigFingerprint
+    || artifact.config?.generationConfigFingerprint || variant?.generationConfigFingerprint || '';
+  const tracked = Object.assign({}, artifact, {
+    generationIdentity,
+    sourceFingerprint,
+    sourceArtifactId,
+    contextFingerprint,
+    contextInputsFingerprint,
+    generationConfig,
+    generationConfigFingerprint,
+    fullPackGenerationAction: action || variant?.action || 'generate',
+    config: Object.assign({}, artifact.config || {}, {
+      generationIdentity,
+      sourceFingerprint,
+      sourceArtifactId,
+      contextFingerprint,
+      contextInputsFingerprint,
+      generationConfig,
+      generationConfigFingerprint,
+    }),
+  });
+  const list = Array.isArray(items) ? items : [];
+  const index = list.findIndex(item => item && tracked.id != null && String(item.id) === String(tracked.id));
+  if (index >= 0) list[index] = tracked;
+  else list.push(tracked);
+  return tracked;
+};
+const _fullPackVariantLineageKey = (variant, index = 0) => {
+  if (variant && (variant.type || variant.grade || variant.language || variant.variantKey)) {
+    return ['cell', variant.type || '', variant.grade || '', variant.language || '',
+      variant.variantKey || ''].join('|');
+  }
+  if (variant && variant.generationIdentity) return 'identity:' + String(variant.generationIdentity);
+  return 'cell|||||' + index;
+};
+const _mergeFullPackVariantLineage = (prior, updates) => {
+  const out = (Array.isArray(prior) ? prior : []).map(item => _cloneFullPackValue(item));
+  const positions = new Map(out.map((item, index) => [_fullPackVariantLineageKey(item, index), index]));
+  (Array.isArray(updates) ? updates : []).forEach((item, index) => {
+    const key = _fullPackVariantLineageKey(item, index);
+    if (positions.has(key)) out[positions.get(key)] = Object.assign({}, out[positions.get(key)], item);
+    else {
+      positions.set(key, out.length);
+      out.push(_cloneFullPackValue(item));
+    }
+  });
+  return out;
+};
+const _FULL_PACK_RETRYABLE_STATUSES = new Set(['failed', 'interrupted', 'stopped', 'queued', 'planned']);
+const _fullPackVariantNeedsRetry = variant => !!(variant
+  && _FULL_PACK_RETRYABLE_STATUSES.has(variant.status || 'planned')
+  && variant.retryable !== false);
+const _fullPackResourceNeedsRetry = resource => {
+  if (!resource || !_FULL_PACK_RETRYABLE_STATUSES.has(resource.status)) return false;
+  const variants = Array.isArray(resource.generationVariants) ? resource.generationVariants : [];
+  return variants.length ? variants.some(_fullPackVariantNeedsRetry) : resource.retryable !== false;
+};
+const _fullPackResourceHasUnresolvedWork = resource => {
+  if (!resource) return false;
+  const variants = Array.isArray(resource.generationVariants) ? resource.generationVariants : [];
+  return variants.length
+    ? variants.some(variant => variant && _FULL_PACK_RETRYABLE_STATUSES.has(variant.status || 'planned'))
+    : _FULL_PACK_RETRYABLE_STATUSES.has(resource.status);
+};
+const _queueFullPackPlanRows = (rows, existingResources = {}) => {
+  const out = Object.assign({}, _cloneFullPackValue(existingResources || {}));
+  (Array.isArray(rows) ? rows : []).forEach((row, index) => {
+    if (!row || !row.type) return;
+    const key = String(row.uiId || row.key || (row.type + '-' + index));
+    const prior = out[key] && typeof out[key] === 'object' ? out[key] : {};
+    const plannedVariants = (Array.isArray(row.generationVariants) ? row.generationVariants : [])
+      .map(variant => Object.assign({}, variant, {
+        status: _FULL_PACK_RETRYABLE_STATUSES.has(variant && variant.status)
+          ? variant.status : 'planned',
+      }));
+    out[key] = Object.assign({}, prior, {
+      key,
+      type: row.type,
+      index,
+      directive: row.directive || '',
+      instructionalText: _cloneFullPackValue(row.instructionalText),
+      generationAction: row.generationAction || row.action || prior.generationAction || 'generate',
+      generationIdentity: row.generationIdentity || prior.generationIdentity || null,
+      generationVariants: _mergeFullPackVariantLineage(prior.generationVariants, plannedVariants),
+      status: prior.status && ['landed', 'completed'].includes(prior.status) ? prior.status : 'queued',
+      retryable: prior.retryable === false && !plannedVariants.some(_fullPackVariantNeedsRetry)
+        ? false : true,
+    });
+  });
+  return out;
+};
+const _markQueuedFullPackResourcesStopped = (resources) => Object.fromEntries(
+  Object.entries(resources || {}).map(([key, resource]) => {
+    if (!resource || !['queued', 'planned'].includes(resource.status)) return [key, resource];
+    return [key, Object.assign({}, resource, {
+      status: 'stopped',
+      retryable: true,
+      reason: resource.reason || 'Queued when the Full Pack run stopped.',
+    })];
+  })
+);
+const _compactFullPackMatrixArtifacts = (items) => (Array.isArray(items) ? items : [])
+  .filter(item => item && typeof item === 'object' && item.id != null && item.type)
+  .map(item => {
+    const config = item.config && typeof item.config === 'object' ? item.config : {};
+    const provenance = item.provenance && typeof item.provenance === 'object' ? item.provenance : {};
+    const instructionalText = item.instructionalText && typeof item.instructionalText === 'object'
+      ? item.instructionalText : {};
+    let sourceFingerprint = item.sourceFingerprint || config.sourceFingerprint || provenance.sourceFingerprint || '';
+    const originalText = item.type === 'analysis' && item.data && typeof item.data.originalText === 'string'
+      ? item.data.originalText : '';
+    if (!sourceFingerprint && originalText) {
+      try { sourceFingerprint = _buildFullPackGenerationSettings({ sourceText: originalText }).sourceFingerprint || ''; } catch (_) {}
+    }
+    const sourceArtifactId = item.sourceArtifactId || config.sourceArtifactId || provenance.sourceArtifactId
+      || instructionalText.sourceArtifactId || instructionalText.primaryArtifactId || null;
+    const grade = item.grade || item.gradeLevel || item.targetGradeLevel || config.grade || config.gradeLevel
+      || instructionalText.complexity?.requestedGrade || '';
+    const language = item.language || config.language || instructionalText.complexity?.language || '';
+    const generationIdentity = item.generationIdentity || config.generationIdentity || provenance.generationIdentity || null;
+    const variantKey = item.variantKey || config.variantKey || provenance.variantKey || '';
+    const explicitVariantKey = item.explicitVariantKey || config.explicitVariantKey || provenance.explicitVariantKey || null;
+    const variantKeyDerived = item.variantKeyDerived === true || config.variantKeyDerived === true || provenance.variantKeyDerived === true;
+    const directive = item.directive || config.customInstructions || '';
+    const mode = item.mode || config.mode || '';
+    const contextFingerprint = item.contextFingerprint || config.contextFingerprint || provenance.contextFingerprint || '';
+    const contextInputsFingerprint = item.contextInputsFingerprint
+      || config.contextInputsFingerprint || provenance.contextInputsFingerprint || '';
+    const generationConfig = _cloneFullPackValue(item.generationConfig
+      || config.generationConfig || provenance.generationConfig || {});
+    const generationConfigFingerprint = item.generationConfigFingerprint
+      || config.generationConfigFingerprint || provenance.generationConfigFingerprint || '';
+    const backend = item.backend || config.backend || provenance.backend || '';
+    const provider = item.provider || config.provider || provenance.provider || '';
+    const model = item.model || config.model || provenance.model || '';
+    const fallbackModel = item.fallbackModel || config.fallbackModel || provenance.fallbackModel || '';
+    const imageProvider = item.imageProvider || config.imageProvider || provenance.imageProvider || '';
+    const imageModel = item.imageModel || config.imageModel || provenance.imageModel || '';
+    const visionModel = item.visionModel || config.visionModel || provenance.visionModel || '';
+    const standardsFingerprint = item.standardsFingerprint || config.standardsFingerprint || provenance.standardsFingerprint || '';
+    const groupId = item.groupId || item.rosterGroupId || config.groupId || config.rosterGroupId || null;
+    const translationMode = item.translationMode || config.translationMode || '';
+    const currentUiLanguage = item.currentUiLanguage || config.currentUiLanguage || '';
+    const translationTarget = item.translationTarget || config.translationTarget || '';
+    const studentInterests = Array.isArray(item.studentInterests || config.studentInterests)
+      ? (item.studentInterests || config.studentInterests).slice() : [];
+    const dokLevel = item.dokLevel || item.dok || config.dokLevel || config.dok || '';
+    const useEmojis = item.useEmojis === true || config.useEmojis === true;
+    const textFormat = item.textFormat || config.textFormat || '';
+    const imageGenerationStyle = item.imageGenerationStyle || item.imageStyle
+      || config.imageGenerationStyle || config.imageStyle || '';
+    const imageAspectRatio = item.imageAspectRatio || config.imageAspectRatio || '';
+    const generationContext = _cloneFullPackValue(item.generationContext || config.generationContext || {});
+    return {
+      id: item.id,
+      type: item.type,
+      generationIdentity: _cloneFullPackValue(generationIdentity),
+      sourceFingerprint,
+      sourceArtifactId,
+      grade,
+      language,
+      variantKey,
+      explicitVariantKey,
+      variantKeyDerived,
+      directive,
+      mode,
+      contextFingerprint,
+      contextInputsFingerprint,
+      generationConfig,
+      generationConfigFingerprint,
+      backend,
+      provider,
+      model,
+      fallbackModel,
+      imageProvider,
+      imageModel,
+      visionModel,
+      standardsFingerprint,
+      groupId,
+      translationMode,
+      currentUiLanguage,
+      translationTarget,
+      studentInterests,
+      dokLevel,
+      useEmojis,
+      textFormat,
+      imageGenerationStyle,
+      imageAspectRatio,
+      generationContext,
+      config: {
+        generationIdentity: _cloneFullPackValue(generationIdentity),
+        sourceFingerprint,
+        sourceArtifactId,
+        gradeLevel: grade,
+        language,
+        variantKey,
+        explicitVariantKey,
+        variantKeyDerived,
+        customInstructions: directive,
+        mode,
+        contextFingerprint,
+        contextInputsFingerprint,
+        generationConfig,
+        generationConfigFingerprint,
+        backend,
+        provider,
+        model,
+        fallbackModel,
+        imageProvider,
+        imageModel,
+        visionModel,
+        standardsFingerprint,
+        groupId,
+        rosterGroupId: groupId,
+        translationMode,
+        currentUiLanguage,
+        translationTarget,
+        studentInterests,
+        dokLevel,
+        useEmojis,
+        textFormat,
+        imageGenerationStyle,
+        imageAspectRatio,
+        generationContext,
+      },
+    };
+  });
+const _recheckFullPackVariant = (row, reviewedVariant, options = {}) => {
+  const matrixModule = _getGenerationMatrixModule();
+  if (!matrixModule || typeof matrixModule.resolveGenerationMatrix !== 'function' || reviewedVariant?.legacyDispatch) {
+    return Object.assign({}, reviewedVariant || {});
+  }
+  const grade = reviewedVariant?.grade || options.settings?.gradeLevel || '';
+  const language = reviewedVariant?.language || options.settings?.language || 'English';
+  const identityRow = _fullPackMatrixIdentityRow(row, options.settings || {});
+  const resolved = matrixModule.resolveGenerationMatrix(Object.assign({}, identityRow, {
+    grade,
+    language,
+  }), Object.assign({}, options.settings || {}, {
+    sourceText: options.sourceText,
+    sourceFingerprint: options.sourceFingerprint || options.settings?.sourceFingerprint,
+    sourceArtifactId: options.sourceArtifactId || options.settings?.sourceArtifactId,
+    gradeLevel: grade,
+    grades: [grade],
+    differentiationGrades: [grade],
+    differentiationRange: 'None',
+    language,
+    selectedLanguages: Array.isArray(options.settings?.selectedLanguages)
+      ? options.settings.selectedLanguages : [],
+    existingArtifacts: Array.isArray(options.existingArtifacts) ? options.existingArtifacts : [],
+    groupId: options.groupId || options.settings?.groupId || null,
+    allowVariants: true,
+    forceRefresh: reviewedVariant?.action === 'refresh',
+  }));
+  const candidates = resolved && Array.isArray(resolved.variants) ? resolved.variants : [];
+  const candidate = candidates.find(item => item && (
+    (reviewedVariant?.variantKey && item.variantKey === reviewedVariant.variantKey)
+    || _sameFullPackGenerationIdentity(item.generationIdentity, reviewedVariant?.generationIdentity)
+  )) || candidates.find(item => item
+    && String(item.grade || '') === String(grade || '')
+    && String(item.language || '') === String(language || ''))
+    || candidates[0];
+  return candidate ? Object.assign({}, reviewedVariant || {}, candidate) : Object.assign({}, reviewedVariant || {});
+};
 const _getInstructionalContextModule = () => {
   try {
     return typeof window !== 'undefined' && window.AlloModules
@@ -139,15 +836,67 @@ const _compactFullPackBatchConfig = (config) => {
 };
 const FULL_PACK_PLAN_SCHEMA_VERSION = 2;
 const FULL_PACK_CAPABILITY_FINGERPRINT = 'full-pack-plan-v2';
-const _fullPackFailurePolicy = (reason) => {
-  const message = String(reason || '');
-  if (/auth(?:entication|orization)?|api[ -]?key|forbidden|permission|unsupported|invalid (?:configuration|config)|not configured|unknown resource type|quota exhausted|insufficient quota|unusable|malformed|invalid output/i.test(message)) {
-    return { category: 'configuration', retryable: false, delayMs: 0 };
+const _fullPackFailurePolicy = (failure) => {
+  const module = typeof window !== 'undefined' && window.AlloModules
+    ? window.AlloModules.UtilsPure : null;
+  if (module && typeof module.classifyProviderError === 'function') {
+    const policy = module.classifyProviderError(failure);
+    const providerError = typeof module.getProviderErrorSafeFields === 'function'
+      ? module.getProviderErrorSafeFields(policy)
+      : {
+          schemaVersion: 1, kind: policy.kind, category: policy.category,
+          retryable: policy.retryable === true, quotaScope: policy.quotaScope,
+          httpStatus: policy.httpStatus == null ? null : policy.httpStatus,
+          retryAfterMs: policy.retryAfterMs == null ? null : policy.retryAfterMs,
+        };
+    return {
+      category: policy.category,
+      retryable: policy.retryable === true,
+      delayMs: policy.retryable ? policy.delayMs : 0,
+      kind: policy.kind,
+      quotaScope: policy.quotaScope,
+      providerError,
+    };
   }
-  if (/rate.?limit|429|temporar|timeout|timed out|network|fetch|connection|502|503|504|overload/i.test(message)) {
-    return { category: 'transient', retryable: true, delayMs: 1500 };
+
+  // Conservative stale-module fallback. Only explicit minute-bucket evidence
+  // earns an outer retry; an unscoped quota may be daily and must not multiply
+  // provider calls.
+  const err = failure && typeof failure === 'object' ? failure : {};
+  const message = String(err.message || failure || '');
+  const nested = err.classification && typeof err.classification === 'object' ? err.classification : {};
+  const retryAfterMs = Number.isFinite(Number(err.retryAfterMs))
+    ? Math.max(0, Math.min(120000, Math.ceil(Number(err.retryAfterMs))))
+    : (Number.isFinite(Number(err.retryAfterSec))
+        ? Math.max(0, Math.min(120000, Math.ceil(Number(err.retryAfterSec) * 1000))) : null);
+  const daily = nested.perDay === true || /per[ -]?day|daily (?:quota|limit)|\brpd\b|insufficient quota|billing|credit balance/i.test(message);
+  const minute = nested.perMinute === true || /per[ -]?minute|\brpm\b|\btpm\b|rate.?limit/i.test(message)
+    || ((err.httpStatus === 429 || err.isQuota === true) && retryAfterMs != null);
+  const quota = err.isQuota === true || err.httpStatus === 429 || /API_QUOTA_EXHAUSTED|RESOURCE_EXHAUSTED|quota|\b429\b/i.test(message);
+  const authOrConfig = err.isAuth === true || err.isConfig === true || err.isFatal === true
+    || /auth(?:entication|orization)?|api[ -]?key|forbidden|permission|unsupported|invalid (?:configuration|config)|not configured|unknown resource type|unusable|malformed|invalid output/i.test(message);
+  let kind = 'unknown';
+  let category = 'unknown';
+  let retryable = true;
+  let delayMs = 800;
+  let quotaScope = 'none';
+  if (quota && daily) {
+    kind = 'quota-daily'; category = 'configuration'; retryable = false; delayMs = 0; quotaScope = 'daily';
+  } else if (quota && minute) {
+    kind = 'rate-limit'; category = 'transient'; retryable = true; delayMs = retryAfterMs == null ? 60000 : retryAfterMs; quotaScope = 'minute';
+  } else if (quota) {
+    kind = 'quota-unknown'; category = 'configuration'; retryable = false; delayMs = 0; quotaScope = 'unknown';
+  } else if (authOrConfig) {
+    kind = err.isAuth === true ? 'auth' : 'configuration'; category = 'configuration'; retryable = false; delayMs = 0;
+  } else if (/temporar|timeout|timed out|network|fetch|connection|502|503|504|overload/i.test(message)) {
+    kind = 'network'; category = 'transient'; retryable = true; delayMs = retryAfterMs == null ? 1500 : retryAfterMs;
   }
-  return { category: 'unknown', retryable: true, delayMs: 800 };
+  const providerError = {
+    schemaVersion: 1, kind, category, retryable, quotaScope,
+    httpStatus: Number.isFinite(Number(err.httpStatus)) ? Number(err.httpStatus) : null,
+    retryAfterMs,
+  };
+  return { category, retryable, delayMs, kind, quotaScope, providerError };
 };
 
 const _waitForFullPackDelay = (delayMs, signal) => new Promise((resolve, reject) => {
@@ -521,7 +1270,7 @@ const handleGenerateMath = async (inputOverride = null, switchView = true, modeO
 };
 
 const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
-  const { isProcessing, fullPackTargetGroup, rosterKey, gradeLevel, leveledTextLanguage, translationMode, resolveTranslationPolicy, currentUiLanguage, studentInterests, dokLevel, differentiationRange, differentiationTypes, differentiationCustomGrades, generationSignal, leveledTextCustomInstructions, selectedLanguages, targetStandards, useEmojis, textFormat, history, inputText, sourceTopic, standardsInput, standardsContext, instructionalContext, resourceCount, isAutoConfigEnabled, quizCustomInstructions, adventureCustomInstructions, frameCustomInstructions, brainstormCustomInstructions, faqCustomInstructions, outlineCustomInstructions, visualCustomInstructions, timelineTopic, lessonCustomAdditions, conceptInput, glossaryCustomInstructions, personaCustomInstructions, conceptSortCustomInstructions, dbqCustomInstructions, noteTakingCustomInstructions, anchorChartCustomInstructions, setIsProcessing, setGenerationStep, setGenerationStage, setFullPackTargetGroup, setGradeLevel, setLeveledTextLanguage, setStudentInterests, setDokLevel, setLeveledTextCustomInstructions, setSelectedLanguages, setTargetStandards, setUseEmojis, setTextFormat, setPersistedLessonDNA, setFullPackRun, setError, addToast, t, warnLog, handleApplyRosterGroup, handleGenerate, autoConfigureSettings, applyDetailedAutoConfig, getGroupDifferentiationContext, getAssetManifest, getDifferentiationGrades, aiProviderProfile } = deps;
+  const { isProcessing, fullPackTargetGroup, fullPackGroupId, rosterKey, gradeLevel, leveledTextLanguage, translationMode, resolveTranslationPolicy, currentUiLanguage, studentInterests, dokLevel, differentiationRange, differentiationTypes, differentiationCustomGrades, generationSignal, leveledTextCustomInstructions, selectedLanguages, targetStandards, useEmojis, textFormat, imageGenerationStyle, imageAspectRatio, history, inputText, sourceTopic, standardsInput, standardsContext, instructionalContext, resourceCount, isAutoConfigEnabled, quizCustomInstructions, adventureCustomInstructions, frameCustomInstructions, brainstormCustomInstructions, faqCustomInstructions, outlineCustomInstructions, visualCustomInstructions, timelineTopic, lessonCustomAdditions, conceptInput, glossaryCustomInstructions, personaCustomInstructions, conceptSortCustomInstructions, dbqCustomInstructions, noteTakingCustomInstructions, anchorChartCustomInstructions, setIsProcessing, setGenerationStep, setGenerationStage, setFullPackTargetGroup, setGradeLevel, setLeveledTextLanguage, setStudentInterests, setDokLevel, setLeveledTextCustomInstructions, setSelectedLanguages, setTargetStandards, setUseEmojis, setTextFormat, setPersistedLessonDNA, setFullPackRun, setError, addToast, t, warnLog, handleApplyRosterGroup, handleGenerate, autoConfigureSettings, applyDetailedAutoConfig, getGroupDifferentiationContext, getAssetManifest, getDifferentiationGrades, aiProviderProfile } = deps;
   // Resolved once from the host-threaded policy. Falls back to the historical
   // rule (gloss into English when the content is not English) if an older host
   // has not threaded the resolver yet, so a stale CDN never silently changes
@@ -544,7 +1293,7 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
     const recordFullPackFailure = (details) => {
         const d = details || {};
         const reason = redactFullPackDiagnosticText(d.reason || 'unknown generation failure', 4000);
-        const metricPolicy = _fullPackFailurePolicy(reason);
+        const metricPolicy = _fullPackFailurePolicy(d.error || reason);
         _recordFullPackMetric('failure', { category: d.category || metricPolicy.category });
         const message = '[FullPack] resource generation failed'
             + ' resource=' + String(d.type || 'unknown')
@@ -606,15 +1355,22 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
     const _fullPackRunAbortCtl = _ownsFullPackAbort && typeof AbortController !== 'undefined' ? new AbortController() : null;
     const _fullPackSignal = generationSignal || (_fullPackRunAbortCtl && _fullPackRunAbortCtl.signal) || null;
     if (_fullPackRunAbortCtl) _fullPackAbortCtl = _fullPackRunAbortCtl;
+    const _fullPackGenerationConfig = _captureFullPackGenerationConfig(deps);
     const _fullPackSettingsSnapshot = Object.freeze({
         gradeLevel,
         leveledTextLanguage,
+        translationMode,
+        currentUiLanguage,
         studentInterests: Array.isArray(studentInterests) ? studentInterests.slice() : studentInterests,
         dokLevel,
         selectedLanguages: Array.isArray(selectedLanguages) ? selectedLanguages.slice() : selectedLanguages,
         targetStandards: Array.isArray(targetStandards) ? targetStandards.slice() : targetStandards,
         useEmojis,
         textFormat,
+        imageGenerationStyle,
+        imageAspectRatio,
+        aiProviderProfile: _cloneFullPackValue(_fullPackGenerationConfig.provider),
+        fullPackGenerationConfig: _cloneFullPackValue(_fullPackGenerationConfig),
         differentiationRange,
         differentiationTypes: Array.isArray(differentiationTypes) ? differentiationTypes.slice() : differentiationTypes,
         differentiationCustomGrades: Array.isArray(differentiationCustomGrades) ? differentiationCustomGrades.slice() : differentiationCustomGrades,
@@ -623,6 +1379,7 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
         standardsContext: _cloneFullPackValue(_runStandardsContext),
         instructionalContext: _cloneFullPackValue(_activeInstructionalContext),
         fullPackTargetGroup,
+        fullPackGroupId: fullPackGroupId || null,
         rosterSignature: _fullPackRosterSignature(rosterKey),
     });
     const updateFullPackRun = (mutator) => {
@@ -636,20 +1393,110 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
         });
     };
     if (typeof setFullPackRun === 'function') {
-        setFullPackRun({ runId: _fullPackRunId, retryOf: (_retryRun || _groupRetryRun) && (_retryRun || _groupRetryRun).runId || null, approvedFrom: _approvedRun && _approvedRun.runId || null, status: _preflightOnly ? 'planning' : 'running', startedAt: new Date().toISOString(), elapsedMs: 0, settingsSnapshot: _fullPackSettingsSnapshot, resources: {}, groups: {} });
+        const lineageResources = _retryRun && _retryRun.resources
+            ? _cloneFullPackValue(_retryRun.resources) : {};
+        const lineageGroups = _groupRetryRun && (_groupRetryRun.lineageGroups || _groupRetryRun.groups)
+            ? _cloneFullPackValue(_groupRetryRun.lineageGroups || _groupRetryRun.groups) : {};
+        setFullPackRun({ runId: _fullPackRunId, retryOf: (_retryRun || _groupRetryRun) && (_retryRun || _groupRetryRun).runId || null, approvedFrom: _approvedRun && _approvedRun.runId || null, status: _preflightOnly ? 'planning' : 'running', startedAt: new Date().toISOString(), elapsedMs: 0, settingsSnapshot: _fullPackSettingsSnapshot, resources: lineageResources, groups: lineageGroups });
     }
     const targetGroup = (_approvedRun && _approvedRun.targetMode === 'all-groups') || _groupRetryRun ? 'all' : fullPackTargetGroup;
-    if (targetGroup === 'all' && rosterKey?.groups && Object.keys(rosterKey.groups).length > 0) {
-        const groupEntries = Object.entries(rosterKey.groups);
+    const reviewedGroupMap = _approvedRun && _approvedRun.targetMode === 'all-groups' && _approvedRun.groups
+        ? Object.fromEntries(Object.entries(_approvedRun.groups).map(([gid, run]) => [gid, {
+            name: run && run.groupName || gid,
+            profile: run && run.settingsSnapshot || {},
+        }]))
+        : null;
+    const activeGroupMap = reviewedGroupMap || (rosterKey && rosterKey.groups) || {};
+    if (targetGroup === 'all' && Object.keys(activeGroupMap).length > 0) {
+        const groupEntries = Object.entries(activeGroupMap);
+        // Every child sees artifacts landed by earlier children. This is
+        // especially important for source-scoped singleton resources such as
+        // analysis: the first group may create the canonical artifact, and all
+        // later groups can re-resolve their reviewed row to reuse it.
+        const sharedGroupHistory = Array.isArray(history) ? history.slice() : [];
+        const sharedGroupHandleGenerate = async (...args) => {
+            const generatedItem = await handleGenerate(...args);
+            const cellConfig = args[4] && typeof args[4] === 'object' ? args[4] : {};
+            const identityEnvelope = cellConfig.generationIdentity && typeof cellConfig.generationIdentity === 'object'
+                ? cellConfig.generationIdentity : {};
+            const generatedIdentity = generatedItem && (generatedItem.generationIdentity
+                || generatedItem.config?.generationIdentity)
+                || identityEnvelope.key || cellConfig.generationIdentity || null;
+            // The dispatcher normally stamps this provenance. Mirror the
+            // reviewed cell metadata here as well so a custom/legacy
+            // dispatcher cannot make a resource invisible to the next roster
+            // group and accidentally regenerate a source-global singleton.
+            const item = generatedItem && typeof generatedItem === 'object'
+                ? Object.assign({}, generatedItem, {
+                    generationIdentity: generatedIdentity,
+                    sourceFingerprint: generatedItem.sourceFingerprint || cellConfig.sourceFingerprint
+                        || identityEnvelope.sourceFingerprint || '',
+                    sourceArtifactId: generatedItem.sourceArtifactId || cellConfig.sourceArtifactId
+                        || identityEnvelope.sourceArtifactId || null,
+                    contextFingerprint: generatedItem.contextFingerprint || cellConfig.contextFingerprint
+                        || identityEnvelope.contextFingerprint || '',
+                    contextInputsFingerprint: generatedItem.contextInputsFingerprint
+                        || cellConfig.contextInputsFingerprint
+                        || identityEnvelope.contextInputsFingerprint || '',
+                    generationConfig: _cloneFullPackValue(generatedItem.generationConfig
+                        || cellConfig.generationConfig || identityEnvelope.generationConfig || {}),
+                    generationConfigFingerprint: generatedItem.generationConfigFingerprint
+                        || cellConfig.generationConfigFingerprint
+                        || identityEnvelope.generationConfigFingerprint || '',
+                    variantKey: generatedItem.variantKey || cellConfig.variantKey
+                        || identityEnvelope.variantKey || '',
+                    explicitVariantKey: generatedItem.explicitVariantKey || cellConfig.explicitVariantKey
+                        || identityEnvelope.explicitVariantKey || null,
+                    variantKeyDerived: generatedItem.variantKeyDerived === true
+                        || cellConfig.variantKeyDerived === true || identityEnvelope.variantKeyDerived === true,
+                    config: Object.assign({}, generatedItem.config || {}, {
+                        generationIdentity: generatedIdentity,
+                        sourceFingerprint: generatedItem.config?.sourceFingerprint || cellConfig.sourceFingerprint
+                            || identityEnvelope.sourceFingerprint || '',
+                        sourceArtifactId: generatedItem.config?.sourceArtifactId || cellConfig.sourceArtifactId
+                            || identityEnvelope.sourceArtifactId || null,
+                        contextFingerprint: generatedItem.config?.contextFingerprint || cellConfig.contextFingerprint
+                            || identityEnvelope.contextFingerprint || '',
+                        contextInputsFingerprint: generatedItem.config?.contextInputsFingerprint
+                            || cellConfig.contextInputsFingerprint
+                            || identityEnvelope.contextInputsFingerprint || '',
+                        generationConfig: _cloneFullPackValue(generatedItem.config?.generationConfig
+                            || cellConfig.generationConfig || identityEnvelope.generationConfig || {}),
+                        generationConfigFingerprint: generatedItem.config?.generationConfigFingerprint
+                            || cellConfig.generationConfigFingerprint
+                            || identityEnvelope.generationConfigFingerprint || '',
+                        variantKey: generatedItem.config?.variantKey || cellConfig.variantKey
+                            || identityEnvelope.variantKey || '',
+                        explicitVariantKey: generatedItem.config?.explicitVariantKey || cellConfig.explicitVariantKey
+                            || identityEnvelope.explicitVariantKey || null,
+                        variantKeyDerived: generatedItem.config?.variantKeyDerived === true
+                            || cellConfig.variantKeyDerived === true || identityEnvelope.variantKeyDerived === true,
+                    }),
+                }) : generatedItem;
+            if (item && item.id != null) {
+                const existingIndex = sharedGroupHistory.findIndex(existing => existing
+                    && String(existing.id) === String(item.id));
+                if (existingIndex >= 0) sharedGroupHistory[existingIndex] = item;
+                else sharedGroupHistory.push(item);
+            }
+            return item;
+        };
         let _hadGroupFailures = false;
         updateFullPackRun(prev => Object.assign({}, prev, {
             targetMode: 'all-groups',
-            groups: Object.fromEntries(groupEntries.map(([gid, group]) => [gid, {
-                groupId: gid,
-                groupName: group && group.name || gid,
-                status: 'queued',
-                resources: {},
-            }]))
+            groups: Object.assign({}, prev.groups || {}, Object.fromEntries(groupEntries.map(([gid, group]) => {
+                const reviewed = (_approvedRun && _approvedRun.groups && _approvedRun.groups[gid])
+                    || (_groupRetryRun && ((_groupRetryRun.lineageGroups && _groupRetryRun.lineageGroups[gid])
+                        || (_groupRetryRun.groups && _groupRetryRun.groups[gid]))) || {};
+                const selected = reviewed.preflight && Array.isArray(reviewed.preflight.selected)
+                    ? reviewed.preflight.selected : [];
+                return [gid, Object.assign({}, reviewed, {
+                    groupId: gid,
+                    groupName: reviewed.groupName || group && group.name || gid,
+                    status: 'queued',
+                    resources: _queueFullPackPlanRows(selected, reviewed.resources || {}),
+                })];
+            })))
         }));
         const savedSettings = {
             grade: gradeLevel, lang: leveledTextLanguage, interests: studentInterests,
@@ -661,7 +1508,12 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
         try {
             for (let gi = 0; gi < groupEntries.length && !(_fullPackSignal && _fullPackSignal.aborted); gi++) {
                 const [gid, group] = groupEntries[gi];
-                const profile = (group && group.profile) || {};
+                const reviewedGroupRun = (_approvedRun && _approvedRun.groups && _approvedRun.groups[gid])
+                    || (_groupRetryRun && _groupRetryRun.groups && _groupRetryRun.groups[gid])
+                    || null;
+                const profile = reviewedGroupRun && reviewedGroupRun.settingsSnapshot
+                    ? reviewedGroupRun.settingsSnapshot
+                    : ((group && group.profile) || {});
                 if (typeof setGenerationStage === 'function') setGenerationStage(_preflightOnly ? 'analyze' : 'build');
                 setGenerationStep(`${_preflightOnly ? 'Planning' : 'Generating'} full pack for ${group.name} (${gi+1}/${groupEntries.length})...`);
                 handleApplyRosterGroup(gid);
@@ -694,18 +1546,29 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
                     }),
                     { gradeLevel: profile.gradeLevel || gradeLevel, standardsContext: groupStandardsContext }
                 );
-                const groupDeps = Object.assign({}, deps, {
+                const groupFrozenGenerationDeps = _fullPackGenerationConfigDeps(
+                    profile.fullPackGenerationConfig || _fullPackGenerationConfig
+                );
+                const groupDeps = Object.assign({}, deps, groupFrozenGenerationDeps, {
                     isProcessing: false,
                     setIsProcessing: () => {},
                     fullPackTargetGroup: 'none',
+                    fullPackGroupId: gid,
+                    history: sharedGroupHistory,
+                    handleGenerate: sharedGroupHandleGenerate,
                     gradeLevel: profile.gradeLevel || gradeLevel,
                     leveledTextLanguage: profile.leveledTextLanguage || leveledTextLanguage,
+                    translationMode: profile.translationMode === undefined ? translationMode : profile.translationMode,
+                    currentUiLanguage: profile.currentUiLanguage || currentUiLanguage,
                     studentInterests: profile.studentInterests
                         ? (Array.isArray(profile.studentInterests) ? profile.studentInterests : String(profile.studentInterests).split(',').map(s => s.trim()).filter(Boolean))
                         : studentInterests,
                     dokLevel: profile.dokLevel || dokLevel,
                     leveledTextCustomInstructions: profile.leveledTextCustomInstructions || leveledTextCustomInstructions,
                     selectedLanguages: Array.isArray(profile.selectedLanguages) ? profile.selectedLanguages : selectedLanguages,
+                    differentiationRange: profile.differentiationRange || differentiationRange,
+                    differentiationTypes: Array.isArray(profile.differentiationTypes) ? profile.differentiationTypes : differentiationTypes,
+                    differentiationCustomGrades: Array.isArray(profile.differentiationCustomGrades) ? profile.differentiationCustomGrades : differentiationCustomGrades,
                     targetStandards: Array.isArray(profile.targetStandards) ? profile.targetStandards : targetStandards,
                     standardsContext: groupStandardsContext,
                     instructionalContext: groupInstructionalContext,
@@ -714,12 +1577,45 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
                     generationSignal: _fullPackSignal,
                     setFullPackRun: setChildFullPackRun,
                 });
-                const childRequest = _groupRetryRun && _groupRetryRun.groups && _groupRetryRun.groups[gid]
-                    ? { __fullPackRetryRun: _groupRetryRun.groups[gid] }
+                const groupRetryCandidate = _groupRetryRun && _groupRetryRun.groups
+                    && _groupRetryRun.groups[gid];
+                const groupHasRetryableResources = groupRetryCandidate
+                    && Object.values(groupRetryCandidate.resources || {}).some(_fullPackResourceNeedsRetry);
+                const childRequest = groupRetryCandidate && groupHasRetryableResources
+                    ? { __fullPackRetryRun: groupRetryCandidate }
+                    : (groupRetryCandidate && groupRetryCandidate.preflight
+                        && Array.isArray(groupRetryCandidate.preflight.selected)
+                        && groupRetryCandidate.preflight.selected.length
+                        ? { __fullPackApprovedRun: groupRetryCandidate }
                     : (_approvedRun && _approvedRun.groups && _approvedRun.groups[gid]
                         ? { __fullPackApprovedRun: _approvedRun.groups[gid] }
-                        : (_preflightOnly ? { __fullPackPreflightOnly: true } : chatContextOverride));
+                        : (_preflightOnly ? { __fullPackPreflightOnly: true } : chatContextOverride)));
                 await handleGenerateFullPack(childRequest, groupDeps);
+                if (_preflightOnly && childRun && childRun.preflight && Array.isArray(childRun.preflight.selected)) {
+                    const matrixModule = _getGenerationMatrixModule();
+                    childRun.preflight.selected.forEach(row => {
+                        const policy = matrixModule && typeof matrixModule.getResourcePolicy === 'function'
+                            ? matrixModule.getResourcePolicy(row && row.type) : null;
+                        if (!policy || policy.cardinality !== 'source-global-singleton') return;
+                        (Array.isArray(row.generationVariants) ? row.generationVariants : []).forEach((variant, index) => {
+                            if (!variant || !variant.generationIdentity) return;
+                            if (_fullPackHistoryArtifact(sharedGroupHistory, variant)) return;
+                            sharedGroupHistory.push({
+                                id: 'planned-full-pack-' + String(variant.generationIdentity) + '-' + index,
+                                type: row.type,
+                                generationIdentity: variant.generationIdentity,
+                                sourceFingerprint: variant.sourceFingerprint || childRun.preflight.sourceFingerprint || '',
+                                sourceArtifactId: variant.sourceArtifactId || null,
+                                grade: variant.grade || null,
+                                language: variant.language || 'English',
+                                variantKey: variant.variantKey || row.variantKey || '',
+                                explicitVariantKey: row.explicitVariantKey || null,
+                                variantKeyDerived: row.variantKeyDerived === true,
+                                _fullPackPlannedArtifact: true,
+                            });
+                        });
+                    });
+                }
                 if (childRun && ['failed', 'partial', 'interrupted'].includes(childRun.status)) _hadGroupFailures = true;
             }
             const _allStopped = !!(_fullPackSignal && _fullPackSignal.aborted);
@@ -729,8 +1625,10 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
                 const childRuns = Object.values(groups);
                 const hasChildFailures = childRuns.some(run => run && (run.status === 'failed' || run.status === 'partial' || run.status === 'interrupted'));
                 const finishedAt = new Date().toISOString();
+                const resolvedGroupStatus = _allStopped ? 'stopped'
+                    : (_preflightOnly ? 'ready' : (hasChildFailures ? 'partial' : _groupFinalStatus));
                 return Object.assign({}, prev, {
-                    status: _groupFinalStatus,
+                    status: resolvedGroupStatus,
                     finishedAt: _preflightOnly ? null : finishedAt,
                     readyAt: _preflightOnly ? finishedAt : null,
                     elapsedMs: Math.max(0, Date.now() - _fullPackStartedAt),
@@ -764,7 +1662,11 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
         handleApplyRosterGroup(targetGroup);
         await new Promise(r => setTimeout(r, 100));
     }
-    const latestAnalysis = history.slice().reverse().find(h => h && h.type === 'analysis');
+    // Virtual artifacts are inserted only to make later roster-group plans
+    // account for reuse. They are not real source artifacts and must never be
+    // written into an approved row as its primary/source artifact id.
+    const latestAnalysis = history.slice().reverse().find(h => h && h.type === 'analysis'
+        && h._fullPackPlannedArtifact !== true);
     let batchSourceText = (latestAnalysis && latestAnalysis.data && latestAnalysis.data.originalText)
         ? latestAnalysis.data.originalText
         : (typeof inputText === 'string' ? inputText.trim() : '');
@@ -778,9 +1680,10 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
         if (_ownsFullPackAbort) _fullPackRunInFlight = false;
         return false;
     }
-    const _sourceFingerprint = _fullPackFingerprint(batchSourceText);
-    if (_planSourceRun && _planSourceRun.preflight && _planSourceRun.preflight.sourceFingerprint
-        && _planSourceRun.preflight.sourceFingerprint !== _sourceFingerprint) {
+    const _sourceFingerprint = _normalizeFullPackSourceFingerprint('', batchSourceText);
+    const _plannedSourceFingerprint = _planSourceRun && _planSourceRun.preflight
+        ? _normalizeFullPackSourceFingerprint(_planSourceRun.preflight.sourceFingerprint || '') : '';
+    if (_plannedSourceFingerprint && _plannedSourceFingerprint !== _sourceFingerprint) {
         const changedSourceError = new Error('The source changed since this Full Pack plan was created. Create a new plan before generating or retrying.');
         recordFullPackFailure({ type: 'preflight', index: 0, reason: changedSourceError.message, error: changedSourceError, sourceTextChars: batchSourceText.length });
         updateFullPackRun(prev => Object.assign({}, prev, { status: 'failed', reason: changedSourceError.message, finishedAt: new Date().toISOString(), elapsedMs: Math.max(0, Date.now() - _fullPackStartedAt) }));
@@ -820,6 +1723,16 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
             visualContext: "",
             essentialQuestion: "",
         };
+        const _plannedFullPackGenerationContext = _planSourceRun && _planSourceRun.planPayload
+            && _planSourceRun.planPayload.generationContext || null;
+        const _hasPlannedDifferentiationContext = !!(_plannedFullPackGenerationContext
+            && Object.prototype.hasOwnProperty.call(
+                _plannedFullPackGenerationContext, 'differentiationContext'
+            ));
+        const _fullPackDifferentiationContext = _hasPlannedDifferentiationContext
+            ? String(_plannedFullPackGenerationContext.differentiationContext || '')
+            : (typeof getGroupDifferentiationContext === 'function'
+                ? String(getGroupDifferentiationContext() || '') : '');
         if (_approvedRun && _approvedRun.planPayload && _approvedRun.planPayload.lessonDNA) {
             Object.assign(lessonDNA, _approvedRun.planPayload.lessonDNA);
         }
@@ -848,33 +1761,42 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
             resourcesToGen.splice(1, 0, { type: 'simplified', directive: '' });
         }
         if (!_retryRun && !_approvedRun && (resourceCount === 'Auto' || resourceCount === 'All')) {
-             const hasAnalysis = history.some(h => h.type === 'analysis');
-             if (!hasAnalysis) {
+             if (!resourcesToGen.some(item => item && item.type === 'analysis')) {
                  resourcesToGen.unshift({ type: 'analysis', directive: "Essential verification step." });
              }
         }
         const existingTypes = history.map(h => h.type);
         if (_approvedRun) {
             resourcesToGen = ((_approvedRun.preflight && _approvedRun.preflight.selected) || [])
-                .map((item, index) => ({
+                .map((item, index) => Object.assign({}, item, {
                     type: item.type,
                     directive: item.directive || '',
                     uiId: item.uiId || (item.type + '-' + index),
                     instructionalText: item.instructionalText || null,
+                    generationVariants: Array.isArray(item.generationVariants)
+                        ? _cloneFullPackValue(item.generationVariants) : item.generationVariants,
                 }));
         } else if (_retryRun) {
             resourcesToGen = Object.values(_retryRun.resources || {})
-                .filter(item => item && ['failed', 'interrupted', 'stopped'].includes(item.status))
-                .map(item => ({
+                .filter(_fullPackResourceNeedsRetry)
+                .map(item => Object.assign({}, item, {
                     type: item.type,
                     directive: item.directive || '',
                     uiId: item.key || (item.type + '-' + item.index),
                     instructionalText: item.instructionalText || null,
+                    lineageGenerationVariants: Array.isArray(item.generationVariants)
+                        ? _cloneFullPackValue(item.generationVariants) : [],
+                    generationVariants: Array.isArray(item.generationVariants)
+                        ? item.generationVariants.filter(_fullPackVariantNeedsRetry)
+                            .map(variant => Object.assign({}, variant, {
+                                status: 'planned', resourceId: null,
+                            }))
+                        : item.generationVariants,
                 }));
         } else if (isAutoConfigEnabled) {
             setGenerationStep(t('process.auto_config'));
             const customInputToUse = (chatContextOverride && typeof chatContextOverride === 'string') ? chatContextOverride : leveledTextCustomInstructions;
-            const rosterCtx = getGroupDifferentiationContext();
+            const rosterCtx = _fullPackDifferentiationContext;
             const enrichedCustomInput = rosterCtx ? `${customInputToUse}\n${rosterCtx}` : customInputToUse;
             batchConfig = await autoConfigureSettings(
                 batchSourceText,
@@ -920,8 +1842,11 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
                 const essentials = ['analysis', 'lesson-plan'];
                 essentials.forEach(item => {
                     const inBatch = resourcesToGen.some(r => r.type === item);
-                    const inHistory = existingTypes.includes(item);
-                    if (!inBatch && !inHistory) {
+                    // Keep source-scoped singleton rows visible in the reviewed
+                    // plan even when a matching artifact already exists. The
+                    // Generation Matrix resolves that row to reuse (zero calls)
+                    // instead of hiding the instructional dependency.
+                    if (!inBatch) {
                         resourcesToGen.push({ type: item, directive: "Essential resource added by default." });
                     }
                 });
@@ -968,8 +1893,8 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
             }));
         });
         planFailures.forEach(failure => { fullPackFailures.push(failure); recordFullPackFailure(failure); });
-        const runnableResources = normalizedResources.filter(item => !(item.type === 'timeline' && batchConfig.hasTimeline === false));
-        const _skippedResources = planFailures.map(f => ({ type: f.type, index: f.index, reason: f.reason }))
+        let runnableResources = normalizedResources.filter(item => !(item.type === 'timeline' && batchConfig.hasTimeline === false));
+        let _skippedResources = planFailures.map(f => ({ type: f.type, index: f.index, reason: f.reason }))
             .concat(_policySkippedResources)
             .concat(normalizedResources.filter(item => item.type === 'timeline' && batchConfig.hasTimeline === false)
                 .map(item => ({ type: item.type, reason: 'Skipped by auto-configuration.' })));
@@ -979,25 +1904,130 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
                 ? Array.from(new Set([gradeLevel].concat(Array.isArray(differentiationCustomGrades) ? differentiationCustomGrades : [])))
                 : [gradeLevel, gradeLevel, gradeLevel]);
         const _diffTypeSet = new Set(Array.isArray(differentiationTypes) ? differentiationTypes : ['simplified']);
-        const _estimatedResourceGenerations = runnableResources.reduce((total, item) =>
-            total + (_diffTypeSet.has(item.type) ? Math.max(1, _diffLevels.length) : 1), 0);
-        const _imageCalls = runnableResources.reduce((sum, item) =>
-            sum + (item.type === 'image' ? (_diffTypeSet.has(item.type) ? Math.max(1, _diffLevels.length) : 1) : 0), 0);
+        const _matrixContextFingerprint = _fullPackFingerprint(JSON.stringify({
+            standardsFingerprint: _activeInstructionalContext.standardsFingerprint,
+            instructionalGrade: _activeInstructionalContext.instructionalGrade || gradeLevel,
+            interests: Array.isArray(studentInterests) ? studentInterests : [],
+            dokLevel: dokLevel || '',
+            useEmojis: !!useEmojis,
+            translationMode: translationMode || '',
+            currentUiLanguage: currentUiLanguage || '',
+            translationTarget: _xlate && _xlate.target || '',
+            selectedLanguages: Array.isArray(selectedLanguages) ? selectedLanguages : [],
+            groupId: fullPackGroupId || null,
+        }));
+        const _matrixGenerationContext = _buildFullPackScopedGenerationContext(
+            _matrixContextFingerprint,
+            _fullPackDifferentiationContext,
+            lessonDNA,
+            batchConfig
+        );
+        const _reviewedGenerationMatrix = _planSourceRun && _planSourceRun.preflight
+            && _planSourceRun.preflight.generationMatrix;
+        const _matrixArtifacts = _reviewedGenerationMatrix && Array.isArray(_reviewedGenerationMatrix.artifacts)
+            ? _cloneFullPackValue(_reviewedGenerationMatrix.artifacts)
+            : _compactFullPackMatrixArtifacts(history);
+        const _matrixSettings = _reviewedGenerationMatrix && _reviewedGenerationMatrix.settings
+            ? _reviewedGenerationMatrix.settings
+            : _buildFullPackGenerationSettings({
+                sourceText: batchSourceText,
+                sourceFingerprint: _sourceFingerprint,
+                sourceArtifactId: latestAnalysis && latestAnalysis.id || null,
+                gradeLevel,
+                language: leveledTextLanguage,
+                leveledTextLanguage,
+                selectedLanguages,
+                differentiationRange,
+                differentiationGrades: _diffLevels,
+                differentiationCustomGrades,
+                differentiationTypes: Array.from(_diffTypeSet),
+                standardsFingerprint: _activeInstructionalContext.standardsFingerprint,
+                contextFingerprint: _matrixContextFingerprint,
+                groupId: fullPackGroupId || null,
+                translationMode,
+                currentUiLanguage,
+                translationTarget: _xlate && _xlate.target || null,
+                studentInterests,
+                dokLevel,
+                useEmojis,
+                textFormat,
+                imageGenerationStyle,
+                universalImageStyle: imageGenerationStyle,
+                imageAspectRatio,
+                backend: _fullPackGenerationConfig.provider.backend,
+                model: _fullPackGenerationConfig.provider.model,
+                provider: _fullPackGenerationConfig.provider.provider
+                    || _fullPackGenerationConfig.provider.backend,
+                fallbackModel: _fullPackGenerationConfig.provider.fallbackModel,
+                imageProvider: _fullPackGenerationConfig.provider.imageProvider,
+                imageModel: _fullPackGenerationConfig.provider.imageModel,
+                visionModel: _fullPackGenerationConfig.provider.visionModel,
+                toolOverrides: _fullPackMatrixToolOverrides(_fullPackGenerationConfig.toolOverrides),
+                generationOptions: _cloneFullPackValue(_fullPackGenerationConfig.toolOptions),
+                generationConfig: _cloneFullPackValue(_fullPackGenerationConfig.canonical || _fullPackGenerationConfig),
+                generationConfigFingerprint: _fullPackGenerationConfig.fingerprint,
+                generationContext: _matrixGenerationContext,
+            });
+        const _hasReviewedVariants = !!(_approvedRun || _retryRun)
+            && runnableResources.every(item => Array.isArray(item.generationVariants) && item.generationVariants.length > 0);
+        const _matrixResolution = _hasReviewedVariants
+            ? {
+                rows: runnableResources,
+                skipped: [],
+                summary: _summarizeFullPackMatrixRows(runnableResources),
+                settings: _matrixSettings,
+              }
+            : _resolveFullPackPlanRows(runnableResources, Object.assign({}, _matrixSettings, {
+                settings: _matrixSettings,
+                sourceText: batchSourceText,
+                sourceFingerprint: _sourceFingerprint,
+                sourceArtifactId: latestAnalysis && latestAnalysis.id || null,
+                existingArtifacts: history,
+                allowVariants: true,
+                groupId: fullPackGroupId || null,
+                translationMode,
+                currentUiLanguage,
+                translationTarget: _xlate && _xlate.target || null,
+            }));
+        runnableResources = _matrixResolution.rows;
+        const _matrixSkipped = (Array.isArray(_matrixResolution.skipped) ? _matrixResolution.skipped : [])
+            .map(item => Object.assign({}, item, { matrixPolicy: true }));
+        _skippedResources = _skippedResources.concat(_matrixSkipped);
+        const _matrixSummary = Object.assign(
+            _summarizeFullPackMatrixRows(runnableResources),
+            _matrixResolution.summary || {}
+        );
+        const _estimatedResourceGenerations = Math.max(0, Number(_matrixSummary.expectedCalls) || 0);
+        const _imageCalls = Math.max(0, Number(_matrixSummary.imageCalls) || 0);
         const _capacity = _estimateFullPackCapacity(_estimatedResourceGenerations, _imageCalls, aiProviderProfile || {});
         const _fullPackPreflight = {
             createdAt: new Date().toISOString(),
             sourceTextChars: batchSourceText.length,
             sourceFingerprint: _sourceFingerprint,
             retryOf: _retryRun && _retryRun.runId || null,
-            selected: runnableResources.map((item, index) => ({
+            selected: runnableResources.map((item, index) => Object.assign({}, item, {
                 type: item.type,
                 index,
                 uiId: item.uiId || (item.type + '-' + index),
                 directive: item.directive || '',
                 instructionalText: _cloneFullPackValue(item.instructionalText),
+                generationVariants: _cloneFullPackValue(item.generationVariants || []),
             })),
             skipped: _skippedResources,
-            differentiation: { range: differentiationRange || 'None', types: Array.from(_diffTypeSet), levelCount: Math.max(1, _diffLevels.length) },
+            differentiation: { range: differentiationRange || 'None', types: Array.from(_diffTypeSet), grades: _diffLevels.slice(), levelCount: Math.max(1, _diffLevels.length) },
+            generationMatrix: {
+                version: 1,
+                settings: _cloneFullPackValue(_matrixSettings),
+                summary: _cloneFullPackValue(_matrixSummary),
+                artifacts: _matrixArtifacts,
+                translation: {
+                    mode: translationMode || 'auto',
+                    currentUiLanguage: currentUiLanguage || 'English',
+                    target: _xlate && _xlate.target || null,
+                    outputLanguage: leveledTextLanguage || 'English',
+                    selectedLanguages: Array.isArray(selectedLanguages) ? selectedLanguages.slice() : [],
+                },
+            },
             estimatedResourceGenerations: _estimatedResourceGenerations,
             planSchemaVersion: FULL_PACK_PLAN_SCHEMA_VERSION,
             capabilityFingerprint: FULL_PACK_CAPABILITY_FINGERPRINT,
@@ -1006,6 +2036,9 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
         };
         const _planPayload = {
             batchConfig: _compactFullPackBatchConfig(batchConfig),
+            generationContext: {
+                differentiationContext: _fullPackDifferentiationContext,
+            },
             standardsContext: _cloneFullPackValue(activeStandardsContext),
             instructionalContext: _cloneFullPackValue(_activeInstructionalContext),
             lessonDNA: Object.assign({}, lessonDNA, {
@@ -1030,6 +2063,374 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
             return true;
         }
         let currentSessionHistory = [...history];
+        // Materialize the whole reviewed queue before the first request. If a
+        // teacher stops between rows (or the browser interrupts the run), the
+        // remaining work stays explicit and can be resumed without rebuilding
+        // or silently dropping later resources.
+        updateFullPackRun(prev => Object.assign({}, prev, {
+            resources: _queueFullPackPlanRows(runnableResources, prev.resources || {}),
+        }));
+        const matrixExecutionEnabled = !!(_getGenerationMatrixModule()
+            && _matrixSettings && _matrixSettings.version && _matrixSettings.version !== 0);
+        if (matrixExecutionEnabled) {
+            let plannedCallsRemaining = _estimatedResourceGenerations;
+            const applyResultToLessonDna = (type, resultItem) => {
+                if (!resultItem || !resultItem.data) return;
+                if (type === 'analysis') {
+                    if (resultItem.data.originalText) batchSourceText = resultItem.data.originalText;
+                    if (Array.isArray(resultItem.data.concepts) && lessonDNA.concepts.length === 0) {
+                        lessonDNA.concepts = resultItem.data.concepts.slice(0, 5);
+                    }
+                }
+                if (type === 'glossary' && Array.isArray(resultItem.data) && lessonDNA.keyTerms.length === 0) {
+                    lessonDNA.keyTerms = resultItem.data.slice(0, 8).map(term => term.term).filter(Boolean);
+                }
+                if (type === 'image') lessonDNA.visualContext = resultItem.data.prompt || resultItem.data.altText;
+                if (type === 'lesson-plan' && resultItem.data.essentialQuestion && !lessonDNA.essentialQuestion) {
+                    lessonDNA.essentialQuestion = resultItem.data.essentialQuestion;
+                }
+            };
+            addToast(t('process.gen_batch', { count: runnableResources.length }), "info");
+            for (let i = 0; i < runnableResources.length && !(_fullPackSignal && _fullPackSignal.aborted); i++) {
+                const plannedRow = runnableResources[i] || {};
+                const { type, directive } = plannedRow;
+                const plannedInstructionalText = plannedRow.instructionalText;
+                const resourceKey = String(plannedRow.uiId || (type + '-' + i));
+                const resourceStartedAt = Date.now();
+                const reviewedVariants = Array.isArray(plannedRow.generationVariants) && plannedRow.generationVariants.length
+                    ? _cloneFullPackValue(plannedRow.generationVariants)
+                    : _fallbackFullPackPlanRows([plannedRow], _matrixSettings).rows[0].generationVariants;
+                const runtimeVariants = [];
+                const rowResults = [];
+                const rowFailures = [];
+                const rowMatrixSettings = _buildFullPackGenerationSettings(Object.assign({}, _matrixSettings, {
+                    generationContext: _buildFullPackScopedGenerationContext(
+                        _matrixContextFingerprint,
+                        _fullPackDifferentiationContext,
+                        lessonDNA,
+                        batchConfig
+                    ),
+                }));
+                let maxAttempts = reviewedVariants.some(variant => variant && variant.action === 'reuse') ? 0 : 1;
+                updateFullPackRun(prev => Object.assign({}, prev, { resources: Object.assign({}, prev.resources, {
+                    [resourceKey]: Object.assign({}, prev.resources && prev.resources[resourceKey], {
+                        key: resourceKey, type, index: i, directive: directive || '',
+                        instructionalText: _cloneFullPackValue(plannedInstructionalText),
+                        generationAction: plannedRow.generationAction || plannedRow.action || 'generate',
+                        generationIdentity: plannedRow.generationIdentity || null,
+                        generationVariants: _mergeFullPackVariantLineage(
+                            prev.resources && prev.resources[resourceKey]
+                                && prev.resources[resourceKey].generationVariants,
+                            reviewedVariants.map(variant => Object.assign({}, variant, { status: 'planned' }))
+                        ),
+                        status: 'running', attempts: maxAttempts,
+                        startedAt: new Date(resourceStartedAt).toISOString(), elapsedMs: 0,
+                    })
+                }) }));
+
+                const userOverride = _fullPackToolOverride(type, _fullPackGenerationConfig);
+                const combinedInstructions = `${directive} ${userOverride ? `(User Note: ${userOverride})` : ''}`.trim();
+                const stepConfigBase = {
+                    ...batchConfig,
+                    ..._cloneFullPackValue(_fullPackGenerationConfig.toolOptions || {}),
+                    lessonDNA,
+                    customInstructions: combinedInstructions,
+                    standardsContext: activeStandardsContext,
+                    instructionalContext: _activeInstructionalContext,
+                    instructionalText: plannedInstructionalText,
+                    historyOverride: currentSessionHistory,
+                    rethrowErrors: true,
+                };
+                if (type === 'outline' && directive
+                    && !_fullPackGenerationConfig.toolOptions?.outlineType) {
+                    const lower = directive.toLowerCase();
+                    if (lower.includes('compare') || lower.includes('venn')) stepConfigBase.outlineType = 'Venn Diagram';
+                    else if (lower.includes('process') || lower.includes('flow')) stepConfigBase.outlineType = 'Flow Chart';
+                    else if (lower.includes('cause')) stepConfigBase.outlineType = 'Cause and Effect';
+                    else if (lower.includes('mind') || lower.includes('concept')) stepConfigBase.outlineType = 'Key Concept Map';
+                    else stepConfigBase.outlineType = 'Structured Outline';
+                }
+                if (type === 'lesson-plan') stepConfigBase.assetManifest = getAssetManifest(currentSessionHistory);
+                const effectiveDokLevel = (batchConfig && batchConfig.quizConfig && batchConfig.quizConfig.dok)
+                    || rowMatrixSettings.dokLevel || dokLevel;
+
+                for (let vi = 0; vi < reviewedVariants.length && !(_fullPackSignal && _fullPackSignal.aborted); vi++) {
+                    const reviewedVariant = reviewedVariants[vi] || {};
+                    let variant = _recheckFullPackVariant(plannedRow, reviewedVariant, {
+                        settings: rowMatrixSettings,
+                        sourceText: batchSourceText,
+                        sourceFingerprint: _sourceFingerprint,
+                        sourceArtifactId: rowMatrixSettings.sourceArtifactId,
+                        existingArtifacts: currentSessionHistory,
+                        groupId: fullPackGroupId || null,
+                    });
+                    variant = Object.assign({}, variant, {
+                        explicitVariantKey: plannedRow.explicitVariantKey || null,
+                        variantKeyDerived: plannedRow.variantKeyDerived === true,
+                    });
+                    let action = ['reuse', 'generate', 'variant', 'refresh'].includes(variant.action)
+                        ? variant.action : (reviewedVariant.action || 'generate');
+                    let resultItem = action === 'reuse' ? _fullPackHistoryArtifact(currentSessionHistory, variant) : null;
+                    if (action === 'reuse' && !resultItem) {
+                        action = reviewedVariant.action === 'refresh' ? 'refresh'
+                            : (reviewedVariant.action === 'variant' ? 'variant' : 'generate');
+                        variant = Object.assign({}, variant, {
+                            action, existingArtifactId: null,
+                            reason: 'Reviewed reusable artifact was unavailable at execution.',
+                        });
+                    }
+                    if (resultItem) {
+                        const trackedReuse = _trackFullPackHistoryArtifact(currentSessionHistory, resultItem, variant, 'reuse');
+                        rowResults.push(trackedReuse);
+                        runtimeVariants.push(Object.assign({}, variant, {
+                            action: 'reuse', status: 'reused', resourceId: trackedReuse.id || null, attempts: 0,
+                        }));
+                        applyResultToLessonDna(type, trackedReuse);
+                        continue;
+                    }
+
+                    const cellGrade = variant.grade || gradeLevel;
+                    const cellLanguage = variant.language || (leveledTextLanguage === 'All Selected Languages' ? 'English' : leveledTextLanguage);
+                    const identityEnvelope = variant.generationIdentity ? {
+                        key: variant.generationIdentity,
+                        type,
+                        sourceFingerprint: variant.sourceFingerprint || _sourceFingerprint,
+                        sourceArtifactId: variant.sourceArtifactId || rowMatrixSettings.sourceArtifactId || null,
+                        grade: cellGrade || null,
+                        language: cellLanguage || 'English',
+                        variantKey: variant.variantKey || plannedRow.variantKey || '',
+                        explicitVariantKey: plannedRow.explicitVariantKey || null,
+                        variantKeyDerived: plannedRow.variantKeyDerived === true,
+                        contextFingerprint: variant.contextFingerprint || rowMatrixSettings.contextFingerprint || '',
+                        contextInputsFingerprint: variant.contextInputsFingerprint
+                            || rowMatrixSettings.contextInputsFingerprint || '',
+                        generationConfig: _cloneFullPackValue(variant.generationConfig || {}),
+                        generationConfigFingerprint: variant.generationConfigFingerprint
+                            || rowMatrixSettings.generationConfigFingerprint || '',
+                    } : null;
+                    const cellConfig = Object.assign({}, stepConfigBase, {
+                        grade: cellGrade,
+                        skipDifferentiation: true,
+                        generationIdentity: identityEnvelope,
+                        sourceFingerprint: variant.sourceFingerprint || _sourceFingerprint,
+                        sourceArtifactId: variant.sourceArtifactId || rowMatrixSettings.sourceArtifactId || null,
+                        variantKey: variant.variantKey || plannedRow.variantKey || '',
+                        explicitVariantKey: plannedRow.explicitVariantKey || null,
+                        variantKeyDerived: plannedRow.variantKeyDerived === true,
+                        contextFingerprint: variant.contextFingerprint || rowMatrixSettings.contextFingerprint || '',
+                        contextFingerprintDerived: true,
+                        contextInputsFingerprint: variant.contextInputsFingerprint
+                            || rowMatrixSettings.contextInputsFingerprint || '',
+                        generationMatrixManaged: true,
+                        translationMode: rowMatrixSettings.translationMode || translationMode || '',
+                        currentUiLanguage: rowMatrixSettings.currentUiLanguage || currentUiLanguage || '',
+                        translationTarget: rowMatrixSettings.translationTarget || (_xlate && _xlate.target) || '',
+                        selectedLanguages: Array.isArray(rowMatrixSettings.selectedLanguages)
+                            ? rowMatrixSettings.selectedLanguages.slice() : selectedLanguages,
+                        standardsFingerprint: rowMatrixSettings.standardsFingerprint || '',
+                        studentInterests: Array.isArray(rowMatrixSettings.studentInterests)
+                            ? rowMatrixSettings.studentInterests.slice() : studentInterests,
+                        dokLevel: rowMatrixSettings.dokLevel || dokLevel || '',
+                        useEmojis: rowMatrixSettings.useEmojis === true,
+                        textFormat: rowMatrixSettings.textFormat || textFormat || '',
+                        imageGenerationStyle: rowMatrixSettings.imageGenerationStyle || imageGenerationStyle || '',
+                        imageAspectRatio: rowMatrixSettings.imageAspectRatio || imageAspectRatio || '',
+                        generationContext: _cloneFullPackValue(rowMatrixSettings.generationContext || {}),
+                        generationConfig: _cloneFullPackValue(variant.generationConfig
+                            || rowMatrixSettings.generationConfig || _fullPackGenerationConfig.canonical || {}),
+                        generationConfigFingerprint: variant.generationConfigFingerprint
+                            || rowMatrixSettings.generationConfigFingerprint
+                            || _fullPackGenerationConfig.fingerprint,
+                        backend: rowMatrixSettings.backend || _fullPackGenerationConfig.provider.backend,
+                        model: rowMatrixSettings.model || _fullPackGenerationConfig.provider.model,
+                        provider: rowMatrixSettings.provider
+                            || _fullPackGenerationConfig.provider.provider
+                            || _fullPackGenerationConfig.provider.backend,
+                        fallbackModel: rowMatrixSettings.fallbackModel
+                            || _fullPackGenerationConfig.provider.fallbackModel,
+                        imageProvider: rowMatrixSettings.imageProvider || _fullPackGenerationConfig.provider.imageProvider,
+                        imageModel: rowMatrixSettings.imageModel || _fullPackGenerationConfig.provider.imageModel,
+                        visionModel: rowMatrixSettings.visionModel || _fullPackGenerationConfig.provider.visionModel,
+                        toolOverrides: _cloneFullPackValue(rowMatrixSettings.toolOverrides
+                            || _fullPackGenerationConfig.toolOverrides),
+                        rosterGroupId: fullPackGroupId || undefined,
+                        historyOverride: currentSessionHistory,
+                    });
+                    const generationDepsOverride = {
+                        ..._fullPackGenerationConfigDeps(_fullPackGenerationConfig),
+                        gradeLevel: cellGrade,
+                        leveledTextLanguage: cellLanguage,
+                        studentInterests: Array.isArray(rowMatrixSettings.studentInterests)
+                            ? rowMatrixSettings.studentInterests.slice() : studentInterests,
+                        dokLevel: effectiveDokLevel,
+                        // The explicit language override and skipDifferentiation
+                        // make this one exact matrix cell; retain the frozen
+                        // language set because Glossary embeds those selected
+                        // translations inside its single artifact.
+                        selectedLanguages: Array.isArray(rowMatrixSettings.selectedLanguages)
+                            ? rowMatrixSettings.selectedLanguages.slice() : selectedLanguages,
+                        translationMode: rowMatrixSettings.translationMode || translationMode,
+                        currentUiLanguage: rowMatrixSettings.currentUiLanguage || currentUiLanguage,
+                        resolveTranslationPolicy,
+                        targetStandards,
+                        standardsContext: activeStandardsContext,
+                        instructionalContext: _activeInstructionalContext,
+                        useEmojis: rowMatrixSettings.useEmojis === true,
+                        textFormat: rowMatrixSettings.textFormat || textFormat,
+                        imageGenerationStyle: rowMatrixSettings.imageGenerationStyle || imageGenerationStyle,
+                        imageAspectRatio: rowMatrixSettings.imageAspectRatio || imageAspectRatio,
+                        aiProviderProfile: _cloneFullPackValue(_fullPackGenerationConfig.provider),
+                        fullPackGenerationConfig: _cloneFullPackValue(_fullPackGenerationConfig),
+                        ..._cloneFullPackValue(_fullPackGenerationConfig.toolOptions || {}),
+                        differentiationRange: 'None',
+                        differentiationTypes,
+                        differentiationCustomGrades,
+                        getGroupDifferentiationContext: () => type === 'analysis'
+                            ? '' : _fullPackDifferentiationContext,
+                        generationSignal: _fullPackSignal,
+                    };
+                    let finalError = null;
+                    let failureReason = '';
+                    let failurePolicy = null;
+                    let attempts = 1;
+                    const keepLoading = plannedCallsRemaining > 1;
+                    try {
+                        resultItem = await handleGenerate(type, cellLanguage, keepLoading, batchSourceText, cellConfig, false, generationDepsOverride);
+                        plannedCallsRemaining = Math.max(0, plannedCallsRemaining - 1);
+                        if (!isUsableGeneratedResource(resultItem, type)) throw new Error('handleGenerate returned an unusable ' + type + ' resource');
+                    } catch (error) {
+                        plannedCallsRemaining = Math.max(0, plannedCallsRemaining - 1);
+                        finalError = error;
+                        resultItem = null;
+                        failureReason = redactFullPackDiagnosticText((finalError && (finalError.message || finalError.name)) || String(finalError), 2000);
+                        failurePolicy = _fullPackFailurePolicy(finalError);
+                        if (!_isFullPackAbort(finalError, _fullPackSignal) && failurePolicy.retryable) {
+                            attempts = 2;
+                            maxAttempts = Math.max(maxAttempts, attempts);
+                            updateFullPackRun(prev => Object.assign({}, prev, { resources: Object.assign({}, prev.resources, {
+                                [resourceKey]: Object.assign({}, prev.resources && prev.resources[resourceKey], {
+                                    status: 'retrying', attempts, failureCategory: failurePolicy.category,
+                                    suggestedDelayMs: failurePolicy.delayMs,
+                                    failureKind: failurePolicy.kind,
+                                    quotaScope: failurePolicy.quotaScope,
+                                    providerError: failurePolicy.providerError,
+                                })
+                            }) }));
+                            _recordFullPackMetric('retry-scheduled', { type });
+                            warnLog('[FullPack] retrying resource=' + type + ' afterMs=' + failurePolicy.delayMs
+                                + ' kind=' + failurePolicy.kind + ' quotaScope=' + failurePolicy.quotaScope);
+                            try {
+                                await _waitForFullPackDelay(failurePolicy.delayMs, _fullPackSignal);
+                                resultItem = await handleGenerate(type, cellLanguage, keepLoading, batchSourceText, cellConfig, false, generationDepsOverride);
+                                if (!isUsableGeneratedResource(resultItem, type)) throw new Error('handleGenerate retry returned an unusable ' + type + ' resource');
+                                _recordFullPackMetric('retry-recovered', { type });
+                            } catch (retryError) {
+                                finalError = retryError;
+                                resultItem = null;
+                                failureReason = redactFullPackDiagnosticText((finalError && (finalError.message || finalError.name)) || String(finalError), 2000);
+                                failurePolicy = _fullPackFailurePolicy(finalError);
+                                if (!_isFullPackAbort(finalError, _fullPackSignal)) _recordFullPackMetric('retry-exhausted', { type });
+                            }
+                        }
+                    }
+                    maxAttempts = Math.max(maxAttempts, attempts);
+                    if (resultItem) {
+                        if (!resultItem.instructionalText && plannedInstructionalText) {
+                            resultItem = Object.assign({}, resultItem, { instructionalText: _cloneFullPackValue(plannedInstructionalText) });
+                        }
+                        const trackedResult = _trackFullPackHistoryArtifact(currentSessionHistory, resultItem, variant, action);
+                        rowResults.push(trackedResult);
+                        runtimeVariants.push(Object.assign({}, variant, {
+                            action, status: 'landed', resourceId: trackedResult.id || null, attempts,
+                        }));
+                        applyResultToLessonDna(type, trackedResult);
+                    } else if (_isFullPackAbort(finalError, _fullPackSignal)) {
+                        runtimeVariants.push(Object.assign({}, variant, {
+                            action, status: 'stopped', resourceId: null, attempts,
+                        }));
+                    } else {
+                        failurePolicy = failurePolicy || _fullPackFailurePolicy(finalError || failureReason);
+                        const failure = {
+                            type,
+                            index: i,
+                            reason: failureReason,
+                            error: finalError,
+                            category: failurePolicy.category,
+                            retryable: failurePolicy.retryable,
+                            suggestedDelayMs: failurePolicy.delayMs,
+                            failureKind: failurePolicy.kind,
+                            quotaScope: failurePolicy.quotaScope,
+                            providerError: failurePolicy.providerError,
+                            sourceTextChars: batchSourceText ? batchSourceText.length : 0,
+                            generationIdentity: variant.generationIdentity || null,
+                            grade: cellGrade,
+                            language: cellLanguage,
+                        };
+                        rowFailures.push(failure);
+                        fullPackFailures.push(failure);
+                        recordFullPackFailure(failure);
+                        runtimeVariants.push(Object.assign({}, variant, {
+                            action, status: 'failed', resourceId: null, attempts,
+                            reason: failure.reason, failureCategory: failure.category,
+                            retryable: failure.retryable, suggestedDelayMs: failure.suggestedDelayMs,
+                            failureKind: failure.failureKind, quotaScope: failure.quotaScope,
+                            providerError: failure.providerError,
+                        }));
+                    }
+                }
+
+                const resourceElapsedMs = Math.max(0, Date.now() - resourceStartedAt);
+                const stopped = !!(_fullPackSignal && _fullPackSignal.aborted);
+                const pendingVariants = reviewedVariants.slice(runtimeVariants.length).map(variant => Object.assign({}, variant, {
+                    status: 'queued', resourceId: null, attempts: 0, retryable: true,
+                    reason: variant.reason || 'Queued when the Full Pack run stopped.',
+                }));
+                const currentVariantResults = runtimeVariants.concat(pendingVariants);
+                const finalizedVariants = _mergeFullPackVariantLineage(
+                    plannedRow.lineageGenerationVariants || [], currentVariantResults
+                );
+                const unresolvedVariants = finalizedVariants.filter(variant => variant
+                    && ['failed', 'interrupted', 'stopped', 'queued', 'planned'].includes(variant.status));
+                const rowStatus = unresolvedVariants.length
+                    ? (stopped ? 'stopped' : 'failed') : 'landed';
+                const runtimeActions = Array.from(new Set(finalizedVariants.map(variant => variant.action).filter(Boolean)));
+                const generationAction = runtimeActions.length === 1 ? runtimeActions[0]
+                    : (runtimeActions.length ? 'mixed' : plannedRow.generationAction || 'generate');
+                const resourceIds = rowResults.map(item => item && item.id)
+                    .filter((id, index, list) => id != null && list.indexOf(id) === index);
+                if (rowStatus === 'landed') _recordFullPackMetric('resource-finish', { type, status: 'landed', durationMs: resourceElapsedMs });
+                else if (!stopped) _recordFullPackMetric('resource-finish', { type, status: 'failed', durationMs: resourceElapsedMs });
+                const firstFailure = rowFailures[0]
+                    || unresolvedVariants.find(variant => variant && variant.reason) || null;
+                const retryableVariants = finalizedVariants.filter(_fullPackVariantNeedsRetry);
+                updateFullPackRun(prev => Object.assign({}, prev, { resources: Object.assign({}, prev.resources, {
+                    [resourceKey]: Object.assign({}, prev.resources && prev.resources[resourceKey], {
+                        key: resourceKey, type, index: i, directive: directive || '', status: rowStatus,
+                        generationAction,
+                        generationIdentity: plannedRow.generationIdentity || null,
+                        generationVariants: finalizedVariants,
+                        resourceId: resourceIds[0]
+                            || prev.resources && prev.resources[resourceKey]
+                                && prev.resources[resourceKey].resourceId || null,
+                        resourceIds: Array.from(new Set([].concat(
+                            prev.resources && prev.resources[resourceKey]
+                                && prev.resources[resourceKey].resourceIds || [],
+                            resourceIds
+                        ).filter(id => id != null))),
+                        attempts: maxAttempts,
+                        reason: firstFailure && firstFailure.reason || undefined,
+                        failureCategory: firstFailure
+                            && (firstFailure.category || firstFailure.failureCategory) || undefined,
+                        retryable: retryableVariants.length > 0,
+                        suggestedDelayMs: retryableVariants[0] && retryableVariants[0].suggestedDelayMs
+                            || firstFailure && firstFailure.suggestedDelayMs || undefined,
+                        finishedAt: new Date().toISOString(), elapsedMs: resourceElapsedMs,
+                    })
+                }) }));
+                const isLast = i === runnableResources.length - 1;
+                if (!isLast && !(_fullPackSignal && _fullPackSignal.aborted)) await _waitForFullPackDelay(800, _fullPackSignal);
+            }
+        } else {
         addToast(t('process.gen_batch', { count: runnableResources.length }), "info");
         for (let i = 0; i < runnableResources.length && !(_fullPackSignal && _fullPackSignal.aborted); i++) {
             const { type, directive } = runnableResources[i];
@@ -1064,6 +2465,7 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
             const combinedInstructions = `${directive} ${userOverride ? `(User Note: ${userOverride})` : ''}`.trim();
             const stepConfig = {
                 ...batchConfig,
+                ..._cloneFullPackValue(_fullPackGenerationConfig.toolOptions || {}),
                 lessonDNA: lessonDNA,
                 customInstructions: combinedInstructions,
                 standardsContext: activeStandardsContext,
@@ -1096,6 +2498,7 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
             const effectiveDokLevel = (batchConfig && batchConfig.quizConfig && batchConfig.quizConfig.dok) || dokLevel;
             const generationLanguageOverride = leveledTextLanguage === 'All Selected Languages' ? null : leveledTextLanguage;
             const generationDepsOverride = {
+                ..._fullPackGenerationConfigDeps(_fullPackGenerationConfig),
                 // Full Pack can be invoked for roster groups while the React
                 // render still contains the previous group's settings. These
                 // values are explicit inputs for the dispatcher, not UI state.
@@ -1124,12 +2527,22 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
             } catch (error) {
                 let finalError = error;
                 resultItem = null;
-                let failureReason = (finalError && (finalError.message || finalError.name)) || String(finalError);
-                let failurePolicy = _fullPackFailurePolicy(failureReason);
+                let failureReason = redactFullPackDiagnosticText((finalError && (finalError.message || finalError.name)) || String(finalError), 2000);
+                let failurePolicy = _fullPackFailurePolicy(finalError);
                 if (!_isFullPackAbort(finalError, _fullPackSignal) && failurePolicy.retryable) {
-                    updateFullPackRun(prev => Object.assign({}, prev, { resources: Object.assign({}, prev.resources, { [resourceKey]: Object.assign({}, prev.resources && prev.resources[resourceKey], { status: 'retrying', attempts: 2, failureCategory: failurePolicy.category, suggestedDelayMs: failurePolicy.delayMs }) }) }));
+                    updateFullPackRun(prev => Object.assign({}, prev, { resources: Object.assign({}, prev.resources, {
+                        [resourceKey]: Object.assign({}, prev.resources && prev.resources[resourceKey], {
+                            status: 'retrying', attempts: 2,
+                            failureCategory: failurePolicy.category,
+                            suggestedDelayMs: failurePolicy.delayMs,
+                            failureKind: failurePolicy.kind,
+                            quotaScope: failurePolicy.quotaScope,
+                            providerError: failurePolicy.providerError,
+                        })
+                    }) }));
                     _recordFullPackMetric('retry-scheduled', { type });
-                    warnLog('[FullPack] transient failure; retrying resource=' + type + ' afterMs=' + failurePolicy.delayMs + ' reason=' + failureReason);
+                    warnLog('[FullPack] retrying resource=' + type + ' afterMs=' + failurePolicy.delayMs
+                        + ' kind=' + failurePolicy.kind + ' quotaScope=' + failurePolicy.quotaScope);
                     try {
                         await _waitForFullPackDelay(failurePolicy.delayMs, _fullPackSignal);
                         resultItem = await handleGenerate(type, generationLanguageOverride, !isLast, batchSourceText, stepConfig, false, generationDepsOverride);
@@ -1141,8 +2554,8 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
                     } catch (retryError) {
                         finalError = retryError;
                         resultItem = null;
-                        failureReason = (finalError && (finalError.message || finalError.name)) || String(finalError);
-                        failurePolicy = _fullPackFailurePolicy(failureReason);
+                        failureReason = redactFullPackDiagnosticText((finalError && (finalError.message || finalError.name)) || String(finalError), 2000);
+                        failurePolicy = _fullPackFailurePolicy(finalError);
                         if (!_isFullPackAbort(finalError, _fullPackSignal)) _recordFullPackMetric('retry-exhausted', { type });
                     }
                 }
@@ -1160,12 +2573,24 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
                             category: failurePolicy.category,
                             retryable: failurePolicy.retryable,
                             suggestedDelayMs: failurePolicy.delayMs,
+                            failureKind: failurePolicy.kind,
+                            quotaScope: failurePolicy.quotaScope,
+                            providerError: failurePolicy.providerError,
                             sourceTextChars: batchSourceText ? batchSourceText.length : 0,
                         };
                         fullPackFailures.push(failure);
                         recordFullPackFailure(failure);
                         _recordFullPackMetric('resource-finish', { type, status: 'failed', durationMs: _resourceElapsedMs });
-                        updateFullPackRun(prev => Object.assign({}, prev, { resources: Object.assign({}, prev.resources, { [resourceKey]: Object.assign({}, prev.resources && prev.resources[resourceKey], { key: resourceKey, type, index: i, directive: directive || '', status: 'failed', reason: failure.reason, failureCategory: failure.category, retryable: failure.retryable, suggestedDelayMs: failure.suggestedDelayMs, finishedAt: _resourceFinishedAt, elapsedMs: _resourceElapsedMs }) }) }));
+                        updateFullPackRun(prev => Object.assign({}, prev, { resources: Object.assign({}, prev.resources, {
+                            [resourceKey]: Object.assign({}, prev.resources && prev.resources[resourceKey], {
+                                key: resourceKey, type, index: i, directive: directive || '', status: 'failed',
+                                reason: failure.reason, failureCategory: failure.category,
+                                retryable: failure.retryable, suggestedDelayMs: failure.suggestedDelayMs,
+                                failureKind: failure.failureKind, quotaScope: failure.quotaScope,
+                                providerError: failure.providerError,
+                                finishedAt: _resourceFinishedAt, elapsedMs: _resourceElapsedMs,
+                            })
+                        }) }));
                     }
                 }
             }
@@ -1198,10 +2623,16 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
             }
             if (!isLast && !(_fullPackSignal && _fullPackSignal.aborted)) await _waitForFullPackDelay(800, _fullPackSignal);
         }
+        }
         setPersistedLessonDNA(lessonDNA);
         const _fullPackStopped = !!(_fullPackSignal && _fullPackSignal.aborted);
         if (_fullPackStopped) {
-            updateFullPackRun(prev => Object.assign({}, prev, { status: 'stopped', finishedAt: new Date().toISOString(), elapsedMs: Math.max(0, Date.now() - _fullPackStartedAt) }));
+            updateFullPackRun(prev => Object.assign({}, prev, {
+                status: 'stopped',
+                resources: _markQueuedFullPackResourcesStopped(prev.resources),
+                finishedAt: new Date().toISOString(),
+                elapsedMs: Math.max(0, Date.now() - _fullPackStartedAt),
+            }));
             if (_recordTopLevelMetrics) _recordFullPackMetric('run-finish', { status: 'stopped' });
             addToast('Full Pack generation stopped. Finished resources were kept.', 'info');
         } else if (fullPackFailures.length > 0) {
@@ -1212,13 +2643,40 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
             if (_recordTopLevelMetrics) _recordFullPackMetric('run-finish', { status: 'partial' });
             addToast(partialMessage, "warning");
         } else {
-            updateFullPackRun(prev => Object.assign({}, prev, { status: 'completed', finishedAt: new Date().toISOString(), elapsedMs: Math.max(0, Date.now() - _fullPackStartedAt) }));
-            if (_recordTopLevelMetrics) _recordFullPackMetric('run-finish', { status: 'completed' });
-            addToast(t('process.pack_complete'), "success");
+            const retainedPermanentFailures = !!(_retryRun && Object.values(_retryRun.resources || {})
+                .some(resource => {
+                    const variants = Array.isArray(resource && resource.generationVariants)
+                        ? resource.generationVariants : [];
+                    return variants.length
+                        ? variants.some(variant => variant
+                            && _FULL_PACK_RETRYABLE_STATUSES.has(variant.status || 'planned')
+                            && variant.retryable === false)
+                        : _fullPackResourceHasUnresolvedWork(resource) && resource.retryable === false;
+                }));
+            updateFullPackRun(prev => {
+                const unresolved = Object.values(prev.resources || {}).filter(_fullPackResourceHasUnresolvedWork);
+                return Object.assign({}, prev, {
+                    status: unresolved.length ? 'partial' : 'completed',
+                    failureCount: unresolved.length || 0,
+                    finishedAt: new Date().toISOString(),
+                    elapsedMs: Math.max(0, Date.now() - _fullPackStartedAt),
+                });
+            });
+            if (_recordTopLevelMetrics) _recordFullPackMetric('run-finish', {
+                status: retainedPermanentFailures ? 'partial' : 'completed'
+            });
+            addToast(retainedPermanentFailures
+                ? 'Retry finished. Permanently failed resources were preserved for review.'
+                : t('process.pack_complete'), retainedPermanentFailures ? 'warning' : "success");
         }
     } catch (e) {
         if (_isFullPackAbort(e, _fullPackSignal)) {
-            updateFullPackRun(prev => Object.assign({}, prev, { status: 'stopped', finishedAt: new Date().toISOString(), elapsedMs: Math.max(0, Date.now() - _fullPackStartedAt) }));
+            updateFullPackRun(prev => Object.assign({}, prev, {
+                status: 'stopped',
+                resources: _markQueuedFullPackResourcesStopped(prev.resources),
+                finishedAt: new Date().toISOString(),
+                elapsedMs: Math.max(0, Date.now() - _fullPackStartedAt),
+            }));
             if (_recordTopLevelMetrics) _recordFullPackMetric('run-finish', { status: 'stopped' });
             addToast('Full Pack generation stopped. Finished resources were kept.', 'info');
         } else {
@@ -1741,14 +3199,39 @@ const _normalizeFullPackPlanRows = (record, rows) => {
 };
 
 const _recalculateFullPackPlan = (record, rows, skipped = null) => {
-  const selected = _normalizeFullPackPlanRows(record, rows);
   const preflight = record.preflight || {};
-  const diff = preflight.differentiation || {};
-  const diffTypes = new Set(Array.isArray(diff.types) ? diff.types : []);
-  const levelCount = Math.max(1, Number(diff.levelCount) || 1);
-  const aiCalls = selected.reduce((sum, item) => sum + (diffTypes.has(item.type) ? levelCount : 1), 0);
-  const imageCalls = selected.reduce((sum, item) =>
-    sum + (item.type === 'image' ? (diffTypes.has(item.type) ? levelCount : 1) : 0), 0);
+  let selected = _normalizeFullPackPlanRows(record, rows);
+  const matrixEnvelope = preflight.generationMatrix && typeof preflight.generationMatrix === 'object'
+    ? preflight.generationMatrix : null;
+  let matrixSummary = null;
+  let matrixSkipped = [];
+  let resolvedMatrixSettings = null;
+  if (matrixEnvelope && matrixEnvelope.settings && _getGenerationMatrixModule()) {
+    const resolution = _resolveFullPackPlanRows(selected, Object.assign({}, matrixEnvelope.settings, {
+      settings: matrixEnvelope.settings,
+      existingArtifacts: Array.isArray(matrixEnvelope.artifacts) ? matrixEnvelope.artifacts : [],
+      allowVariants: true,
+      translationMode: matrixEnvelope.translation?.mode || matrixEnvelope.settings.translationMode,
+      currentUiLanguage: matrixEnvelope.translation?.currentUiLanguage || matrixEnvelope.settings.currentUiLanguage,
+      translationTarget: matrixEnvelope.translation?.target || matrixEnvelope.settings.translationTarget,
+    }));
+    selected = _normalizeFullPackPlanRows(record, resolution.rows);
+    resolvedMatrixSettings = resolution.settings || matrixEnvelope.settings;
+    matrixSummary = Object.assign(_summarizeFullPackMatrixRows(selected), resolution.summary || {});
+    matrixSkipped = (Array.isArray(resolution.skipped) ? resolution.skipped : [])
+      .map(item => Object.assign({}, item, { matrixPolicy: true }));
+  }
+  if (!matrixSummary) {
+    const diff = preflight.differentiation || {};
+    const diffTypes = new Set(Array.isArray(diff.types) ? diff.types : []);
+    const levelCount = Math.max(1, Number(diff.levelCount) || 1);
+    const aiCalls = selected.reduce((sum, item) => sum + (diffTypes.has(item.type) ? levelCount : 1), 0);
+    const imageCalls = selected.reduce((sum, item) =>
+      sum + (item.type === 'image' ? (diffTypes.has(item.type) ? levelCount : 1) : 0), 0);
+    matrixSummary = Object.assign(_summarizeFullPackMatrixRows(selected), { expectedCalls: aiCalls, imageCalls });
+  }
+  const aiCalls = Math.max(0, Number(matrixSummary.expectedCalls) || 0);
+  const imageCalls = Math.max(0, Number(matrixSummary.imageCalls) || 0);
   const priorCapacity = preflight.capacity || {};
   const capacity = _estimateFullPackCapacity(aiCalls, imageCalls, {
     backend: priorCapacity.provider,
@@ -1757,10 +3240,18 @@ const _recalculateFullPackPlan = (record, rows, skipped = null) => {
     imageModel: priorCapacity.imageModel,
     isLocal: priorCapacity.isLocal,
   });
+  const priorSkipped = skipped === null
+    ? (Array.isArray(preflight.skipped) ? preflight.skipped : [])
+    : (Array.isArray(skipped) ? skipped : []);
+  const nextSkipped = priorSkipped.filter(item => !(item && item.matrixPolicy)).concat(matrixSkipped);
   return Object.assign({}, record, {
     preflight: Object.assign({}, preflight, {
       selected,
-      skipped: skipped === null ? (Array.isArray(preflight.skipped) ? preflight.skipped.slice() : []) : skipped,
+      skipped: nextSkipped,
+      generationMatrix: matrixEnvelope ? Object.assign({}, matrixEnvelope, {
+        settings: _cloneFullPackValue(resolvedMatrixSettings || matrixEnvelope.settings),
+        summary: _cloneFullPackValue(matrixSummary),
+      }) : preflight.generationMatrix,
       estimatedResourceGenerations: aiCalls,
       capacity,
     }),
@@ -1965,8 +3456,43 @@ const handleRemoveFullPackPlanResource = (priorRun, resourceKey, deps, groupId =
   return updated;
 };
 
+const _fullPackRecordNeedsMatrixUpgrade = (record) => {
+  const preflight = record && record.preflight;
+  const matrix = preflight && preflight.generationMatrix;
+  if (!matrix || !matrix.settings) return false;
+  if (!matrix.settings.version || matrix.settings.version === 0) return true;
+  return (Array.isArray(preflight.selected) ? preflight.selected : []).some(row =>
+    (Array.isArray(row && row.generationVariants) ? row.generationVariants : [])
+      .some(variant => variant && variant.legacyDispatch === true));
+};
+
+const _upgradeFullPackPlanAfterMatrixLoad = (run) => {
+  const matrixModule = _getGenerationMatrixModule();
+  if (!run || !matrixModule || typeof matrixModule.resolvePlanRows !== 'function') return run;
+  if (run.targetMode === 'all-groups') {
+    let changed = false;
+    const groups = Object.fromEntries(Object.entries(run.groups || {}).map(([groupId, group]) => {
+      if (!_fullPackRecordNeedsMatrixUpgrade(group)) return [groupId, group];
+      const upgraded = _recalculateFullPackPlan(group, group.preflight.selected);
+      changed = changed || upgraded !== group;
+      return [groupId, upgraded];
+    }));
+    return changed ? Object.assign({}, run, { groups }) : run;
+  }
+  if (!_fullPackRecordNeedsMatrixUpgrade(run)) return run;
+  return _recalculateFullPackPlan(run, run.preflight.selected);
+};
+
+const _fullPackRunNeedsMatrixUpgrade = (run) => {
+  if (!run) return false;
+  if (run.targetMode === 'all-groups') {
+    return Object.values(run.groups || {}).some(_fullPackRecordNeedsMatrixUpgrade);
+  }
+  return _fullPackRecordNeedsMatrixUpgrade(run);
+};
+
 const handleApproveFullPack = async (priorRun, deps) => {
-  const run = priorRun && typeof priorRun === 'object' ? priorRun : null;
+  let run = priorRun && typeof priorRun === 'object' ? priorRun : null;
   if (!run || run.status !== 'ready') {
     try { if (deps && typeof deps.addToast === 'function') deps.addToast('Create or refresh the Full Pack plan before generating.', 'info'); } catch (_) {}
     return false;
@@ -1983,8 +3509,32 @@ const handleApproveFullPack = async (priorRun, deps) => {
     try { if (deps && typeof deps.addToast === 'function') deps.addToast('This Full Pack plan was created by an older generator. Refresh the plan before generating.', 'warning'); } catch (_) {}
     return false;
   }
+  const upgradedRun = _upgradeFullPackPlanAfterMatrixLoad(run);
+  if (upgradedRun !== run) {
+    run = upgradedRun;
+    if (deps && typeof deps.setFullPackRun === 'function') {
+      deps.setFullPackRun(run);
+      try {
+        if (typeof deps.addToast === 'function') deps.addToast(
+          'The generation engine finished loading, so this plan was refreshed with its exact grade and language variants. Review the updated plan, then generate again.',
+          'info'
+        );
+      } catch (_) {}
+      return false;
+    }
+  }
+  if (_fullPackRunNeedsMatrixUpgrade(run)) {
+    try {
+      if (deps && typeof deps.addToast === 'function') deps.addToast(
+        'The generation engine is still loading. Your reviewed Full Pack plan was kept; wait a moment, then generate again so its exact grade and language variants can be verified.',
+        'info'
+      );
+    } catch (_) {}
+    return false;
+  }
   const snapshot = run.settingsSnapshot && typeof run.settingsSnapshot === 'object' ? run.settingsSnapshot : {};
-  const approvedDeps = Object.assign({}, deps || {}, snapshot, {
+  const frozenGenerationDeps = _fullPackGenerationConfigDeps(snapshot.fullPackGenerationConfig);
+  const approvedDeps = Object.assign({}, deps || {}, snapshot, frozenGenerationDeps, {
     isProcessing: false,
     fullPackTargetGroup: run.targetMode === 'all-groups' ? 'all' : 'none',
   });
@@ -1993,10 +3543,13 @@ const handleApproveFullPack = async (priorRun, deps) => {
 
 const handleRetryFailedFullPack = async (priorRun, deps) => {
   const run = priorRun && typeof priorRun === 'object' ? priorRun : null;
-  const isRetryable = item => item && ['failed', 'interrupted', 'stopped'].includes(item.status) && item.retryable !== false;
-  const failed = run ? Object.values(run.resources || {}).filter(isRetryable) : [];
+  const failed = run ? Object.values(run.resources || {}).filter(_fullPackResourceNeedsRetry) : [];
   const affectedGroups = run ? Object.entries(run.groups || {}).filter(([, group]) =>
-    group && Object.values(group.resources || {}).some(isRetryable)) : [];
+    group && (Object.values(group.resources || {}).some(_fullPackResourceNeedsRetry)
+      || (Object.keys(group.resources || {}).length === 0
+        && ['queued', 'stopped', 'interrupted'].includes(group.status)
+        && group.preflight && Array.isArray(group.preflight.selected)
+        && group.preflight.selected.length > 0))) : [];
   if (!run || (failed.length === 0 && affectedGroups.length === 0)) {
     try { if (deps && typeof deps.addToast === 'function') deps.addToast('There are no failed or interrupted Full Pack resources to retry.', 'info'); } catch (_) {}
     return false;
@@ -2007,15 +3560,24 @@ const handleRetryFailedFullPack = async (priorRun, deps) => {
       name: group.groupName || gid,
       profile: group.settingsSnapshot || {},
     }]));
-    const retryDeps = Object.assign({}, deps || {}, {
+    const rootSnapshot = run.settingsSnapshot && typeof run.settingsSnapshot === 'object'
+      ? run.settingsSnapshot : {};
+    const frozenGenerationDeps = _fullPackGenerationConfigDeps(rootSnapshot.fullPackGenerationConfig);
+    const retryDeps = Object.assign({}, deps || {}, rootSnapshot, frozenGenerationDeps, {
       isProcessing: false,
       fullPackTargetGroup: 'all',
       rosterKey: Object.assign({}, deps && deps.rosterKey || {}, { groups: rosterGroups }),
     });
-    return handleGenerateFullPack({ __fullPackGroupRetryRun: Object.assign({}, run, { groups: retryGroups }) }, retryDeps);
+    return handleGenerateFullPack({ __fullPackGroupRetryRun: Object.assign({}, run, {
+      groups: retryGroups,
+      lineageGroups: run.groups || {},
+    }) }, retryDeps);
   }
   const snapshot = run.settingsSnapshot && typeof run.settingsSnapshot === 'object' ? run.settingsSnapshot : {};
-  const retryDeps = Object.assign({}, deps || {}, snapshot, { isProcessing: false, fullPackTargetGroup: 'none' });
+  const frozenGenerationDeps = _fullPackGenerationConfigDeps(snapshot.fullPackGenerationConfig);
+  const retryDeps = Object.assign({}, deps || {}, snapshot, frozenGenerationDeps, {
+    isProcessing: false, fullPackTargetGroup: 'none'
+  });
   return handleGenerateFullPack({ __fullPackRetryRun: run }, retryDeps);
 };window.AlloModules = window.AlloModules || {};
 window.AlloModules.GenerationHelpers = {
@@ -2033,6 +3595,7 @@ window.AlloModules.GenerationHelpers = {
   handleApproveFullPack,
   handleRetryFailedFullPack,
   handleStopFullPack,
+  getFullPackGenerationConfigSnapshot: deps => _cloneFullPackValue(_captureFullPackGenerationConfig(deps || {})),
   estimateFullPackCapacity: _estimateFullPackCapacity,
   handleComplexityAdjustment,
 };

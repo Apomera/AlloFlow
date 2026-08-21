@@ -287,6 +287,88 @@ function HeaderBar(props) {
       return next;
     });
   }, []);
+  const [voiceInputEngine, setVoiceInputEngine] = React.useState(() => {
+    try {
+      const shared = typeof window !== "undefined" && window.AlloFlowVoice;
+      if (shared && typeof shared.loadPreference === "function") return shared.loadPreference().engine || "auto";
+      const parsed = JSON.parse(localStorage.getItem("alloflow_voice_pref") || "{}");
+      return ["auto", "whisper", "webspeech", "gemini", "off"].includes(parsed.engine) ? parsed.engine : "auto";
+    } catch (_) {
+      return "auto";
+    }
+  });
+  const [geminiAudioConfigRevision, setGeminiAudioConfigRevision] = React.useState(0);
+  React.useEffect(() => {
+    const refreshGeminiAudioConfig = () => setGeminiAudioConfigRevision((revision) => revision + 1);
+    const syncVoiceEngine = (event) => {
+      const next = event && event.detail && event.detail.engine;
+      if (["auto", "whisper", "webspeech", "gemini", "off"].includes(next)) setVoiceInputEngine(next);
+    };
+    window.addEventListener("alloflow:ai-config-changed", refreshGeminiAudioConfig);
+    window.addEventListener("alloflow:student-ai-config-changed", refreshGeminiAudioConfig);
+    window.addEventListener("storage", refreshGeminiAudioConfig);
+    window.addEventListener("alloflow:voice-engine-changed", syncVoiceEngine);
+    return () => {
+      window.removeEventListener("alloflow:ai-config-changed", refreshGeminiAudioConfig);
+      window.removeEventListener("alloflow:student-ai-config-changed", refreshGeminiAudioConfig);
+      window.removeEventListener("storage", refreshGeminiAudioConfig);
+      window.removeEventListener("alloflow:voice-engine-changed", syncVoiceEngine);
+    };
+  }, []);
+  const geminiAudioCapability = (() => {
+    void geminiAudioConfigRevision;
+    try {
+      if (typeof window.__alloResolveGeminiAudioCapability === "function") {
+        const resolved = window.__alloResolveGeminiAudioCapability();
+        if (resolved && typeof resolved.available === "boolean") return resolved;
+      }
+      return { available: typeof window.callGeminiAudio === "function", reason: "bridge-only" };
+    } catch (_) {
+      return { available: false, reason: "configuration-unavailable" };
+    }
+  })();
+  const canConfigureGeminiAudio = !_isCanvasEnv && typeof setShowAIBackendModal === "function" && (isTeacherMode || !!window.__alloStudentAiSetupAllowed);
+  const voiceInputDescriptions = {
+    auto: "Uses prepared on-device Whisper when available, otherwise browser speech. If browser speech is unavailable, it can prepare local Whisper. Auto never uploads microphone audio to Gemini.",
+    whisper: "Private on-device transcription. The speech model may download before the first listening session.",
+    webspeech: "Uses this browser's speech service. The browser may send audio to its provider.",
+    gemini: "Sends each completed spoken turn to Gemini for cloud transcription. Requires internet access and a configured Gemini key.",
+    off: "Voice input and hands-free listening stay off. Spoken output remains available."
+  };
+  const chooseVoiceInputEngine = (value) => {
+    const next = ["auto", "whisper", "webspeech", "gemini", "off"].includes(value) ? value : "auto";
+    setVoiceInputEngine(next);
+    try {
+      const shared = typeof window !== "undefined" && window.AlloFlowVoice;
+      if (shared && typeof shared.setVoiceEngine === "function") shared.setVoiceEngine(next);
+      else {
+        const current = JSON.parse(localStorage.getItem("alloflow_voice_pref") || "{}");
+        localStorage.setItem("alloflow_voice_pref", JSON.stringify({ ...current, engine: next }));
+        localStorage.removeItem("allo_voice_engine");
+        if (typeof window !== "undefined" && typeof window.dispatchEvent === "function") {
+          window.dispatchEvent(new window.CustomEvent("alloflow:voice-engine-changed", { detail: { engine: next } }));
+        }
+      }
+      const loop = typeof window !== "undefined" && window.__alloVoiceLoop;
+      const wasListening = !!(loop && loop.isActive && loop.isActive());
+      if (next === "off") {
+        if (shared && typeof shared.stopActiveVoiceSession === "function") shared.stopActiveVoiceSession("voice-input-off");
+        else if (wasListening && loop && typeof loop.stop === "function") loop.stop();
+        if (wasListening && typeof addToast === "function") addToast("Voice input is off and the active listening session was stopped.", "info");
+      } else if (wasListening && typeof addToast === "function") {
+        addToast("Voice-input changes apply the next time listening starts.", "info");
+      }
+    } catch (_) {
+    }
+  };
+  const openGeminiAudioConfiguration = () => {
+    try {
+      window.__alloAISettingsRequestedSection = "gemini-audio";
+    } catch (_) {
+    }
+    handleSetShowVoiceSettingsToFalse();
+    if (typeof setShowAIBackendModal === "function") setShowAIBackendModal(true);
+  };
   const [pollAsk, setPollAsk] = React.useState("");
   const [pollAiBusy, setPollAiBusy] = React.useState(false);
   const suggestPollTimes = async () => {
@@ -448,6 +530,12 @@ function HeaderBar(props) {
           .allo-premium-appbar { min-height: 68px; }
           .allo-premium-compact-nav { scrollbar-width: none; }
           .allo-premium-compact-nav::-webkit-scrollbar { display: none; }
+          .allo-header-settings-dialog { max-height: calc(100dvh - 8rem); overflow-y: auto; overscroll-behavior: contain; scrollbar-gutter: stable; }
+          @media (max-width: 639px) {
+            .allo-header-settings-dialog { top: 5rem !important; right: .75rem !important; left: .75rem !important; width: auto !important; max-height: calc(100dvh - 6rem); padding: 1rem !important; }
+            .allo-reading-theme-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+            .allo-reading-theme-grid .allo-reading-theme-swatch > span:last-child { overflow: visible !important; text-overflow: clip !important; white-space: normal !important; }
+          }
           @media (prefers-reduced-motion: reduce) { .allo-premium-header, .allo-premium-header * { transition-duration: .01ms !important; } }
         `), /* @__PURE__ */ React.createElement("div", { className: "w-full max-w-[1600px] mx-auto relative" }, /* @__PURE__ */ React.createElement("div", { className: headerCollapsed ? "allo-premium-appbar flex items-center gap-2 sm:gap-3 min-w-0" : "flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4" }, /* @__PURE__ */ React.createElement("div", { className: headerCollapsed ? "flex flex-1 items-center gap-2 sm:gap-3 min-w-0" : "" }, /* @__PURE__ */ React.createElement("h1", { className: `${headerCollapsed ? "text-xl md:text-2xl" : "text-2xl md:text-3xl"} font-black tracking-tight flex items-center gap-3 ${theme === "contrast" ? "text-yellow-400" : "text-white drop-shadow-sm"}` }, /* @__PURE__ */ React.createElement("span", { className: `inline-flex items-center justify-center ${theme === "contrast" ? "" : `${headerCollapsed ? "p-1 rounded-xl" : "p-1.5 rounded-2xl"} bg-gradient-to-br from-amber-400/20 to-orange-500/20 border border-amber-200/30`}`, "aria-hidden": "true" }, /* @__PURE__ */ React.createElement(Layers, { className: headerCollapsed ? "w-7 h-7" : "w-9 h-9", "aria-hidden": "true" })), theme === "contrast" ? t("header.app_name") : /* @__PURE__ */ React.createElement("span", { className: "bg-gradient-to-r from-amber-300 via-orange-300 to-orange-400 bg-clip-text text-transparent" }, t("header.app_name")), !headerCollapsed && /* @__PURE__ */ React.createElement("div", { className: `hidden 2xl:flex items-center gap-1 ml-4 p-1 rounded-full border backdrop-blur-md shadow-sm select-none pointer-events-none ${theme === "contrast" ? "border-yellow-400 bg-black" : "bg-white/10 border-white/20"}` }, /* @__PURE__ */ React.createElement("div", { className: `px-3 py-1 rounded-full flex items-center gap-1.5 ${theme === "contrast" ? "text-yellow-400" : "text-green-200"}` }, /* @__PURE__ */ React.createElement(CheckCircle2, { size: 12, className: "fill-current opacity-50", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-black uppercase tracking-widest opacity-90" }, t("header.equitable"))), /* @__PURE__ */ React.createElement("div", { className: `w-px h-3 ${theme === "contrast" ? "bg-yellow-400" : "bg-white/10"}` }), /* @__PURE__ */ React.createElement("div", { className: `px-3 py-1 rounded-full flex items-center gap-1.5 ${theme === "contrast" ? "text-yellow-400" : "text-teal-200"}` }, /* @__PURE__ */ React.createElement(CheckCircle2, { size: 12, className: "fill-current opacity-50", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-black uppercase tracking-widest opacity-90" }, t("header.accessible"))), /* @__PURE__ */ React.createElement("div", { className: `w-px h-3 ${theme === "contrast" ? "bg-yellow-400" : "bg-white/10"}` }), /* @__PURE__ */ React.createElement("div", { className: `px-3 py-1 rounded-full flex items-center gap-1.5 ${theme === "contrast" ? "text-yellow-400" : "text-purple-200"}` }, /* @__PURE__ */ React.createElement(CheckCircle2, { size: 12, className: "fill-current opacity-50", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-black uppercase tracking-widest opacity-90" }, t("header.scaffolded"))))), !headerCollapsed && /* @__PURE__ */ React.createElement("p", { className: `mt-2 text-sm font-medium italic opacity-90 ${theme === "contrast" ? "text-yellow-400" : "text-indigo-100"}` }, t("header.tagline")), headerCollapsed ? /* @__PURE__ */ React.createElement("div", { className: "min-w-0 max-w-[18rem] flex flex-col justify-center leading-tight" }, /* @__PURE__ */ React.createElement("span", { className: `truncate text-[11px] font-black uppercase tracking-[.14em] ${theme === "contrast" ? "text-yellow-400" : "text-indigo-100"}` }, compactRoleLabel, " ", /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "/"), " ", compactContextLabel), /* @__PURE__ */ React.createElement("span", { className: `mt-1 flex min-w-0 items-center gap-1 text-[11px] font-medium ${theme === "contrast" ? "text-red-400" : "text-orange-100"}`, title: piiWarningText }, /* @__PURE__ */ React.createElement(AlertCircle, { size: 11, className: "shrink-0", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("span", { className: "truncate" }, piiWarningText))) : /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-2 mt-2" }, /* @__PURE__ */ React.createElement("span", { className: `inline-flex items-center gap-1 text-[11px] ${theme === "contrast" ? "text-yellow-400" : "px-2.5 py-0.5 rounded-xl bg-white/10 border border-white/20 text-indigo-100"}` }, t("header.rights")), /* @__PURE__ */ React.createElement("span", { className: `inline-flex items-center gap-1 text-[11px] font-medium ${theme === "contrast" ? "text-red-400" : "px-2.5 py-0.5 rounded-xl bg-orange-400/15 border border-orange-300/30 text-orange-100"}` }, /* @__PURE__ */ React.createElement(AlertCircle, { size: 10, "aria-hidden": "true" }), " ", piiWarningText), /* @__PURE__ */ React.createElement(
     "button",
@@ -633,7 +721,7 @@ function HeaderBar(props) {
     /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold hidden xl:inline" }, t("immersive.label_text")),
     showTextSettings ? /* @__PURE__ */ React.createElement(ChevronUp, { size: 12 }) : /* @__PURE__ */ React.createElement(ChevronDown, { size: 12 })
   ), showTextSettings && _headerPortal(
-    /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { "aria-hidden": "true", className: "fixed inset-0 z-[10000]", onClick: handleSetShowTextSettingsToFalse }), /* @__PURE__ */ React.createElement("div", { ref: _textSettingsRef, tabIndex: -1, role: "dialog", "aria-modal": "true", "aria-labelledby": "header-text-settings-title", className: `fixed top-28 right-20 w-72 p-5 rounded-xl shadow-2xl border z-[10001] animate-in fade-in zoom-in-95 motion-reduce:animate-none duration-200 ${_skin.panel}` }, /* @__PURE__ */ React.createElement("div", { className: "space-y-5" }, /* @__PURE__ */ React.createElement("div", { className: `flex justify-between items-center border-b ${_skin.divider} pb-2` }, /* @__PURE__ */ React.createElement("h4", { id: "header-text-settings-title", className: "font-bold text-sm" }, t("settings.text.header")), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: resetFontSize, "data-help-key": "header_settings_text_reset", className: `text-[11px] font-bold flex items-center gap-1 ${_skin.action}` }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 10 }), " ", t("common.reset")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: handleSetShowTextSettingsToFalse, className: `min-w-6 min-h-6 rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${_skin.dismiss}`, "aria-label": t("common.close") || "Close text settings" }, "\xD7"))), /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, /* @__PURE__ */ React.createElement("label", { className: `text-xs font-bold flex items-center gap-1 ${_skin.label}` }, t("settings.text.font_family")), /* @__PURE__ */ React.createElement(
+    /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { "aria-hidden": "true", className: "fixed inset-0 z-[10000]", onClick: handleSetShowTextSettingsToFalse }), /* @__PURE__ */ React.createElement("div", { ref: _textSettingsRef, tabIndex: -1, role: "dialog", "aria-modal": "true", "aria-labelledby": "header-text-settings-title", className: `allo-header-settings-dialog fixed top-28 right-20 w-72 p-5 rounded-xl shadow-2xl border z-[10001] animate-in fade-in zoom-in-95 motion-reduce:animate-none duration-200 ${_skin.panel}` }, /* @__PURE__ */ React.createElement("div", { className: "space-y-5" }, /* @__PURE__ */ React.createElement("div", { className: `flex justify-between items-center border-b ${_skin.divider} pb-2` }, /* @__PURE__ */ React.createElement("h4", { id: "header-text-settings-title", className: "font-bold text-sm" }, t("settings.text.header")), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: resetFontSize, "data-help-key": "header_settings_text_reset", className: `text-[11px] font-bold flex items-center gap-1 ${_skin.action}` }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 10 }), " ", t("common.reset")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: handleSetShowTextSettingsToFalse, className: `min-w-6 min-h-6 rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${_skin.dismiss}`, "aria-label": t("common.close") || "Close text settings" }, "\xD7"))), /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, /* @__PURE__ */ React.createElement("label", { className: `text-xs font-bold flex items-center gap-1 ${_skin.label}` }, t("settings.text.font_family")), /* @__PURE__ */ React.createElement(
       "select",
       {
         "aria-label": t("common.selection"),
@@ -700,7 +788,7 @@ function HeaderBar(props) {
         "data-help-key": "header_settings_text_spacing",
         className: "w-full h-1.5 bg-indigo-100 rounded-lg appearance-none cursor-pointer accent-indigo-600"
       }
-    )), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-center mb-2" }, /* @__PURE__ */ React.createElement("label", { className: `text-xs font-bold flex items-center gap-1 ${_skin.label}` }, t("settings.reading_theme") || "\u{1F3A8} Reading Theme"), /* @__PURE__ */ React.createElement("span", { "aria-live": "polite", className: `text-[11px] font-mono ${_skin.chip} px-1.5 py-0.5 rounded` }, selectedReadingThemeLabel)), /* @__PURE__ */ React.createElement("p", { className: `text-[11px] ${theme === "light" ? "text-slate-600" : "text-slate-300"} mb-2` }, t("settings.reading_theme_desc") || "Background & text color for all content views", " ", t("settings.reading_theme_scope") || "Changes lesson colors only; your app theme stays the same."), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-5 gap-1.5", role: "radiogroup", "aria-label": t("header.reading_theme_aria") || "Reading theme" }, [
+    )), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-center mb-2" }, /* @__PURE__ */ React.createElement("label", { className: `text-xs font-bold flex items-center gap-1 ${_skin.label}` }, t("settings.reading_theme") || "\u{1F3A8} Reading Theme"), /* @__PURE__ */ React.createElement("span", { "aria-live": "polite", className: `text-[11px] font-mono ${_skin.chip} px-1.5 py-0.5 rounded` }, selectedReadingThemeLabel)), /* @__PURE__ */ React.createElement("p", { className: `text-[11px] ${theme === "light" ? "text-slate-600" : "text-slate-300"} mb-2` }, t("settings.reading_theme_desc") || "Background & text color for all content views", " ", t("settings.reading_theme_scope") || "Changes lesson colors only; your app theme stays the same."), /* @__PURE__ */ React.createElement("div", { className: "allo-reading-theme-grid grid grid-cols-5 gap-1.5", role: "radiogroup", "aria-label": t("header.reading_theme_aria") || "Reading theme" }, [
       { id: "default", label: t("header.reading_theme_default") || "Default", bg: "#ffffff", fg: "#1e293b", border: "#64748b", focus: "#4f46e5", emoji: "\u25CB" },
       { id: "warm", label: t("header.reading_theme_warm") || "Warm", bg: "#fdcba5", fg: "#432714", border: "#a85b2f", focus: "#1d4ed8", emoji: "\u2600\uFE0F" },
       { id: "sepia", label: t("header.reading_theme_sepia") || "Sepia", bg: "#d1bfa9", fg: "#2a1f13", border: "#7f5e3d", focus: "#174ea6", emoji: "\u{1F4DC}" },
@@ -759,7 +847,21 @@ function HeaderBar(props) {
     /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold hidden xl:inline" }, t("immersive.label_voice")),
     showVoiceSettings ? /* @__PURE__ */ React.createElement(ChevronUp, { size: 12 }) : /* @__PURE__ */ React.createElement(ChevronDown, { size: 12 })
   ), showVoiceSettings && _headerPortal(
-    /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { "aria-hidden": "true", className: "fixed inset-0 z-[10000]", onClick: handleSetShowVoiceSettingsToFalse }), /* @__PURE__ */ React.createElement("div", { ref: _voiceSettingsRef, tabIndex: -1, role: "dialog", "aria-modal": "true", "aria-labelledby": "header-voice-settings-title", className: `fixed top-28 right-4 w-64 p-5 rounded-xl shadow-2xl border z-[10001] animate-in fade-in zoom-in-95 motion-reduce:animate-none duration-200 ${_skin.panel}` }, /* @__PURE__ */ React.createElement("div", { className: "space-y-3" }, /* @__PURE__ */ React.createElement("div", { className: `flex justify-between items-center border-b ${_skin.divider} pb-2` }, /* @__PURE__ */ React.createElement("h4", { id: "header-voice-settings-title", className: "font-bold text-sm" }, t("settings.voice.label")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: handleSetShowVoiceSettingsToFalse, className: `min-w-6 min-h-6 rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${_skin.dismiss}`, "aria-label": t("common.close") || "Close voice settings" }, "\xD7")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement(
+    /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { "aria-hidden": "true", className: "fixed inset-0 z-[10000]", onClick: handleSetShowVoiceSettingsToFalse }), /* @__PURE__ */ React.createElement("div", { ref: _voiceSettingsRef, tabIndex: -1, role: "dialog", "aria-modal": "true", "aria-labelledby": "header-voice-settings-title", className: `allo-header-settings-dialog fixed top-28 right-4 w-64 p-5 rounded-xl shadow-2xl border z-[10001] animate-in fade-in zoom-in-95 motion-reduce:animate-none duration-200 ${_skin.panel}` }, /* @__PURE__ */ React.createElement("div", { className: "space-y-3" }, /* @__PURE__ */ React.createElement("div", { className: `flex justify-between items-center border-b ${_skin.divider} pb-2` }, /* @__PURE__ */ React.createElement("h4", { id: "header-voice-settings-title", className: "font-bold text-sm" }, t("settings.voice.label")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: handleSetShowVoiceSettingsToFalse, className: `min-w-6 min-h-6 rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${_skin.dismiss}`, "aria-label": t("common.close") || "Close voice settings" }, "\xD7")), /* @__PURE__ */ React.createElement("div", { className: `rounded-lg border p-2 ${_skin.surface}` }, /* @__PURE__ */ React.createElement("label", { htmlFor: "header-voice-input-engine", className: `text-[11px] uppercase font-bold ${_skin.label} block mb-1` }, "Voice input"), /* @__PURE__ */ React.createElement(
+      "select",
+      {
+        id: "header-voice-input-engine",
+        "aria-describedby": "header-voice-input-engine-help",
+        value: voiceInputEngine,
+        onChange: (event) => chooseVoiceInputEngine(event.target.value),
+        className: `w-full text-xs p-2 rounded-lg border ${_skin.field} focus:ring-2 focus:ring-indigo-500 outline-none`
+      },
+      /* @__PURE__ */ React.createElement("option", { value: "auto" }, "Auto (private-first)"),
+      /* @__PURE__ */ React.createElement("option", { value: "whisper" }, "On-device Whisper"),
+      /* @__PURE__ */ React.createElement("option", { value: "webspeech" }, "Browser speech service"),
+      /* @__PURE__ */ React.createElement("option", { value: "gemini" }, "Gemini cloud transcription"),
+      /* @__PURE__ */ React.createElement("option", { value: "off" }, "Off")
+    ), /* @__PURE__ */ React.createElement("p", { id: "header-voice-input-engine-help", className: `mt-1 text-[11px] leading-tight ${_skin.label}` }, voiceInputDescriptions[voiceInputEngine]), voiceInputEngine === "gemini" && !geminiAudioCapability.available && /* @__PURE__ */ React.createElement("div", { role: "status", "aria-live": "polite", className: `mt-2 rounded-lg border p-2 ${_skin.note}` }, /* @__PURE__ */ React.createElement("p", { className: `text-[11px] font-bold leading-tight ${_skin.noteHead}` }, canConfigureGeminiAudio ? "Gemini transcription is selected, but no Gemini cloud-services key is configured." : "Gemini cloud transcription is unavailable in this activity."), /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex flex-wrap gap-1.5" }, canConfigureGeminiAudio && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: openGeminiAudioConfiguration, "data-help-key": "header_voice_configure_gemini", className: "rounded-md bg-sky-700 px-2 py-1 text-[11px] font-bold text-white hover:bg-sky-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2" }, "Configure Gemini access"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => chooseVoiceInputEngine("auto"), className: `rounded-md border px-2 py-1 text-[11px] font-bold ${_skin.field}` }, "Use Auto instead")))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: `text-[11px] uppercase font-bold ${_skin.label} block mb-1` }, "Spoken-output voice"), /* @__PURE__ */ React.createElement(
       "select",
       {
         "aria-label": t("common.selection"),

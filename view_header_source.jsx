@@ -261,6 +261,85 @@ function HeaderBar(props) {
       return next;
     });
   }, []);
+  const [voiceInputEngine, setVoiceInputEngine] = React.useState(() => {
+    try {
+      const shared = typeof window !== 'undefined' && window.AlloFlowVoice;
+      if (shared && typeof shared.loadPreference === 'function') return shared.loadPreference().engine || 'auto';
+      const parsed = JSON.parse(localStorage.getItem('alloflow_voice_pref') || '{}');
+      return ['auto', 'whisper', 'webspeech', 'gemini', 'off'].includes(parsed.engine) ? parsed.engine : 'auto';
+    } catch (_) { return 'auto'; }
+  });
+  const [geminiAudioConfigRevision, setGeminiAudioConfigRevision] = React.useState(0);
+  React.useEffect(() => {
+    const refreshGeminiAudioConfig = () => setGeminiAudioConfigRevision((revision) => revision + 1);
+    const syncVoiceEngine = (event) => {
+      const next = event && event.detail && event.detail.engine;
+      if (['auto', 'whisper', 'webspeech', 'gemini', 'off'].includes(next)) setVoiceInputEngine(next);
+    };
+    window.addEventListener('alloflow:ai-config-changed', refreshGeminiAudioConfig);
+    window.addEventListener('alloflow:student-ai-config-changed', refreshGeminiAudioConfig);
+    window.addEventListener('storage', refreshGeminiAudioConfig);
+    window.addEventListener('alloflow:voice-engine-changed', syncVoiceEngine);
+    return () => {
+      window.removeEventListener('alloflow:ai-config-changed', refreshGeminiAudioConfig);
+      window.removeEventListener('alloflow:student-ai-config-changed', refreshGeminiAudioConfig);
+      window.removeEventListener('storage', refreshGeminiAudioConfig);
+      window.removeEventListener('alloflow:voice-engine-changed', syncVoiceEngine);
+    };
+  }, []);
+  const geminiAudioCapability = (() => {
+    void geminiAudioConfigRevision;
+    try {
+      if (typeof window.__alloResolveGeminiAudioCapability === 'function') {
+        const resolved = window.__alloResolveGeminiAudioCapability();
+        if (resolved && typeof resolved.available === 'boolean') return resolved;
+      }
+      // Compatibility with an older host that supplied only the audio bridge.
+      return { available: typeof window.callGeminiAudio === 'function', reason: 'bridge-only' };
+    } catch (_) {
+      return { available: false, reason: 'configuration-unavailable' };
+    }
+  })();
+  const canConfigureGeminiAudio = !_isCanvasEnv
+    && typeof setShowAIBackendModal === 'function'
+    && (isTeacherMode || !!window.__alloStudentAiSetupAllowed);
+  const voiceInputDescriptions = {
+    auto: 'Uses prepared on-device Whisper when available, otherwise browser speech. If browser speech is unavailable, it can prepare local Whisper. Auto never uploads microphone audio to Gemini.',
+    whisper: 'Private on-device transcription. The speech model may download before the first listening session.',
+    webspeech: 'Uses this browser\'s speech service. The browser may send audio to its provider.',
+    gemini: 'Sends each completed spoken turn to Gemini for cloud transcription. Requires internet access and a configured Gemini key.',
+    off: 'Voice input and hands-free listening stay off. Spoken output remains available.'
+  };
+  const chooseVoiceInputEngine = (value) => {
+    const next = ['auto', 'whisper', 'webspeech', 'gemini', 'off'].includes(value) ? value : 'auto';
+    setVoiceInputEngine(next);
+    try {
+      const shared = typeof window !== 'undefined' && window.AlloFlowVoice;
+      if (shared && typeof shared.setVoiceEngine === 'function') shared.setVoiceEngine(next);
+      else {
+        const current = JSON.parse(localStorage.getItem('alloflow_voice_pref') || '{}');
+        localStorage.setItem('alloflow_voice_pref', JSON.stringify({ ...current, engine: next }));
+        localStorage.removeItem('allo_voice_engine');
+        if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function') {
+          window.dispatchEvent(new window.CustomEvent('alloflow:voice-engine-changed', { detail: { engine: next } }));
+        }
+      }
+      const loop = typeof window !== 'undefined' && window.__alloVoiceLoop;
+      const wasListening = !!(loop && loop.isActive && loop.isActive());
+      if (next === 'off') {
+        if (shared && typeof shared.stopActiveVoiceSession === 'function') shared.stopActiveVoiceSession('voice-input-off');
+        else if (wasListening && loop && typeof loop.stop === 'function') loop.stop();
+        if (wasListening && typeof addToast === 'function') addToast('Voice input is off and the active listening session was stopped.', 'info');
+      } else if (wasListening && typeof addToast === 'function') {
+        addToast('Voice-input changes apply the next time listening starts.', 'info');
+      }
+    } catch (_) {}
+  };
+  const openGeminiAudioConfiguration = () => {
+    try { window.__alloAISettingsRequestedSection = 'gemini-audio'; } catch (_) {}
+    handleSetShowVoiceSettingsToFalse();
+    if (typeof setShowAIBackendModal === 'function') setShowAIBackendModal(true);
+  };
   const [pollAsk, setPollAsk] = React.useState('');
   const [pollAiBusy, setPollAiBusy] = React.useState(false);
   // Fills the options box for the organizer to edit. It never shares, never
@@ -487,6 +566,12 @@ function HeaderBar(props) {
           .allo-premium-appbar { min-height: 68px; }
           .allo-premium-compact-nav { scrollbar-width: none; }
           .allo-premium-compact-nav::-webkit-scrollbar { display: none; }
+          .allo-header-settings-dialog { max-height: calc(100dvh - 8rem); overflow-y: auto; overscroll-behavior: contain; scrollbar-gutter: stable; }
+          @media (max-width: 639px) {
+            .allo-header-settings-dialog { top: 5rem !important; right: .75rem !important; left: .75rem !important; width: auto !important; max-height: calc(100dvh - 6rem); padding: 1rem !important; }
+            .allo-reading-theme-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+            .allo-reading-theme-grid .allo-reading-theme-swatch > span:last-child { overflow: visible !important; text-overflow: clip !important; white-space: normal !important; }
+          }
           @media (prefers-reduced-motion: reduce) { .allo-premium-header, .allo-premium-header * { transition-duration: .01ms !important; } }
         `}</style>
         <div className="w-full max-w-[1600px] mx-auto relative">
@@ -747,7 +832,7 @@ function HeaderBar(props) {
                             {showTextSettings && _headerPortal(
                                 <>
                                     <div aria-hidden="true" className="fixed inset-0 z-[10000]" onClick={handleSetShowTextSettingsToFalse}></div>
-                                    <div ref={_textSettingsRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="header-text-settings-title" className={`fixed top-28 right-20 w-72 p-5 rounded-xl shadow-2xl border z-[10001] animate-in fade-in zoom-in-95 motion-reduce:animate-none duration-200 ${_skin.panel}`}>
+                                    <div ref={_textSettingsRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="header-text-settings-title" className={`allo-header-settings-dialog fixed top-28 right-20 w-72 p-5 rounded-xl shadow-2xl border z-[10001] animate-in fade-in zoom-in-95 motion-reduce:animate-none duration-200 ${_skin.panel}`}>
                                         <div className="space-y-5">
                                             <div className={`flex justify-between items-center border-b ${_skin.divider} pb-2`}>
                                                 <h4 id="header-text-settings-title" className="font-bold text-sm">{t('settings.text.header')}</h4>
@@ -842,7 +927,7 @@ function HeaderBar(props) {
                                                     <span aria-live="polite" className={`text-[11px] font-mono ${_skin.chip} px-1.5 py-0.5 rounded`}>{selectedReadingThemeLabel}</span>
                                                 </div>
                                                 <p className={`text-[11px] ${theme === 'light' ? 'text-slate-600' : 'text-slate-300'} mb-2`}>{t('settings.reading_theme_desc') || 'Background & text color for all content views'} {t('settings.reading_theme_scope') || 'Changes lesson colors only; your app theme stays the same.'}</p>
-                                                <div className="grid grid-cols-5 gap-1.5" role="radiogroup" aria-label={t('header.reading_theme_aria') || 'Reading theme'}>
+                                                <div className="allo-reading-theme-grid grid grid-cols-5 gap-1.5" role="radiogroup" aria-label={t('header.reading_theme_aria') || 'Reading theme'}>
                                                     {[
                                                         { id: 'default', label: t('header.reading_theme_default') || 'Default', bg: '#ffffff', fg: '#1e293b', border: '#64748b', focus: '#4f46e5', emoji: '○' },
                                                         { id: 'warm', label: t('header.reading_theme_warm') || 'Warm', bg: '#fdcba5', fg: '#432714', border: '#a85b2f', focus: '#1d4ed8', emoji: '☀️' },
@@ -901,13 +986,50 @@ function HeaderBar(props) {
                             {showVoiceSettings && _headerPortal(
                                 <>
                                     <div aria-hidden="true" className="fixed inset-0 z-[10000]" onClick={handleSetShowVoiceSettingsToFalse}></div>
-                                    <div ref={_voiceSettingsRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="header-voice-settings-title" className={`fixed top-28 right-4 w-64 p-5 rounded-xl shadow-2xl border z-[10001] animate-in fade-in zoom-in-95 motion-reduce:animate-none duration-200 ${_skin.panel}`}>
+                                    <div ref={_voiceSettingsRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="header-voice-settings-title" className={`allo-header-settings-dialog fixed top-28 right-4 w-64 p-5 rounded-xl shadow-2xl border z-[10001] animate-in fade-in zoom-in-95 motion-reduce:animate-none duration-200 ${_skin.panel}`}>
                                         <div className="space-y-3">
                                             <div className={`flex justify-between items-center border-b ${_skin.divider} pb-2`}>
                                                 <h4 id="header-voice-settings-title" className="font-bold text-sm">{t('settings.voice.label')}</h4>
                                                 <button type="button" onClick={handleSetShowVoiceSettingsToFalse} className={`min-w-6 min-h-6 rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${_skin.dismiss}`} aria-label={t('common.close') || 'Close voice settings'}>&times;</button>
                                             </div>
+                                            <div className={`rounded-lg border p-2 ${_skin.surface}`}>
+                                                <label htmlFor="header-voice-input-engine" className={`text-[11px] uppercase font-bold ${_skin.label} block mb-1`}>Voice input</label>
+                                                <select
+                                                    id="header-voice-input-engine"
+                                                    aria-describedby="header-voice-input-engine-help"
+                                                    value={voiceInputEngine}
+                                                    onChange={(event) => chooseVoiceInputEngine(event.target.value)}
+                                                    className={`w-full text-xs p-2 rounded-lg border ${_skin.field} focus:ring-2 focus:ring-indigo-500 outline-none`}
+                                                >
+                                                    <option value="auto">Auto (private-first)</option>
+                                                    <option value="whisper">On-device Whisper</option>
+                                                    <option value="webspeech">Browser speech service</option>
+                                                    <option value="gemini">Gemini cloud transcription</option>
+                                                    <option value="off">Off</option>
+                                                </select>
+                                                <p id="header-voice-input-engine-help" className={`mt-1 text-[11px] leading-tight ${_skin.label}`}>{voiceInputDescriptions[voiceInputEngine]}</p>
+                                                {voiceInputEngine === 'gemini' && !geminiAudioCapability.available && (
+                                                  <div role="status" aria-live="polite" className={`mt-2 rounded-lg border p-2 ${_skin.note}`}>
+                                                    <p className={`text-[11px] font-bold leading-tight ${_skin.noteHead}`}>
+                                                      {canConfigureGeminiAudio
+                                                        ? 'Gemini transcription is selected, but no Gemini cloud-services key is configured.'
+                                                        : 'Gemini cloud transcription is unavailable in this activity.'}
+                                                    </p>
+                                                    <div className="mt-2 flex flex-wrap gap-1.5">
+                                                      {canConfigureGeminiAudio && (
+                                                        <button type="button" onClick={openGeminiAudioConfiguration} data-help-key="header_voice_configure_gemini" className="rounded-md bg-sky-700 px-2 py-1 text-[11px] font-bold text-white hover:bg-sky-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2">
+                                                          Configure Gemini access
+                                                        </button>
+                                                      )}
+                                                      <button type="button" onClick={() => chooseVoiceInputEngine('auto')} className={`rounded-md border px-2 py-1 text-[11px] font-bold ${_skin.field}`}>
+                                                        Use Auto instead
+                                                      </button>
+                                                    </div>
+                                                  </div>
+                                                )}
+                                            </div>
                                             <div>
+                                                <label className={`text-[11px] uppercase font-bold ${_skin.label} block mb-1`}>Spoken-output voice</label>
                                                 <select aria-label={t('common.selection')}
                                                     value={selectedVoice}
                                                     onChange={(e) => {

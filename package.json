@@ -12,6 +12,8 @@
     "build:mcp-registry-metadata": "node desktop/mcp/build_registry_metadata.cjs",
   "build:ap-psychology-500": "node dev-tools/build_ap_psychology_500_bank.cjs",
   "qa:ap-psychology-pilot": "node dev-tools/qa_ap_psychology_pilot.cjs",
+  "build:ap-us-history-foundation": "node dev-tools/build_ap_us_history_100_bank.cjs",
+  "qa:ap-us-history-foundation": "node dev-tools/qa_ap_us_history_foundation.cjs",
     "build:test-prep-manifest": "node dev-tools/build_test_prep_pack_manifest.cjs",
     "build:test-prep-hub": "node dev-tools/build_test_prep_hub_release.cjs",
     "verify:eppp-archive": "node dev-tools/build_eppp_migration_source_archive.cjs --verify",

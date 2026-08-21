@@ -167,4 +167,11 @@ describe('Machine Lab: camera limits', () => {
     expect(text).toContain('pitch = Math.max(-70, Math.min(78, nx));');
     expect(text).toContain('zoom = Math.max(0.5, Math.min(2.6, nz));');
   });
+
+  it('resets the Build camera when switching to a different engine', () => {
+    const text = fs.readFileSync(path.resolve(process.cwd(), FILE), 'utf8');
+    expect(text).toContain('machineRotY: MACHINE_HOME.rotY');
+    expect(text).toContain('machineRotX: MACHINE_HOME.rotX');
+    expect(text).toContain('machineZoom: MACHINE_HOME.zoom');
+  });
 });

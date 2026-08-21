@@ -40,6 +40,38 @@ describe('Particle Lab 3D interaction surface accessibility contract', () => {
     expect(source).toContain("setCameraShot('close')");
   });
 
+  it('labels the experiment loop, scene key, and active camera state', () => {
+    expect(source).toContain("id: 'particle-experiment-runway'");
+    expect(source).toContain("'aria-label': 'Experiment loop'");
+    expect(source).toContain("id: 'particle-stage-status'");
+    expect(source).toContain("id: 'particle-scene-key'");
+    expect(source).toContain("var activeCameraView = followTracer ? 'follow'");
+    expect(source).toContain("'aria-pressed': activeCameraView === 'hero'");
+    expect(source).toContain("'aria-label': 'Overview camera view'");
+    expect(source).toContain("var evidenceCue = currentProtocol ? currentProtocol.watch");
+    expect(source).toContain("'measured'");
+    expect(source).toContain("'setpoint ' + temperature");
+  });
+
+  it('makes advanced chamber conditions discoverable, persistent, and announced', () => {
+    expect(source).toContain("var [advancedOpen, setAdvancedOpen] = useState(bucket.advancedOpen === true)");
+    expect(source).toContain("id: 'particle-advanced-conditions'");
+    expect(source).toContain('open: advancedOpen');
+    expect(source).toContain('persist({ advancedOpen: next })');
+    expect(source).toContain('Advanced chamber conditions expanded.');
+    expect(source).toContain('Advanced chamber conditions collapsed.');
+  });
+
+  it('groups optional visual overlays behind a persistent accessible disclosure', () => {
+    expect(source).toContain("var [visualsOpen, setVisualsOpen] = useState(bucket.visualsOpen === true)");
+    expect(source).toContain("id: 'particle-visual-overlays'");
+    expect(source).toContain('open: visualsOpen');
+    expect(source).toContain('persist({ visualsOpen: next })');
+    expect(source).toContain('Visual overlay controls expanded.');
+    expect(source).toContain('Visual overlay controls collapsed.');
+    expect(source).toContain("h('span', null, 'Visual overlays')");
+  });
+
   it('gives the shortcuts dialog complete focus lifecycle and safe dismissal', () => {
     expect(source).toContain("role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'particle-keys-title'");
     expect(source).toContain("'aria-describedby': 'particle-keys-description'");

@@ -770,7 +770,7 @@ describe('three-copy sync pins (Phase C sections)', () => {
     it('ships the canonical mailbox server script through the extracted module path', () => {
         expect(publicMailboxSource).toBe(gsSource);
         expect(anti).not.toContain('const ALLO_MB_SCRIPT_SOURCE = `');
-        expect(anti).toContain("loadModule('MailboxScriptSource', 'https://alloflow-cdn.pages.dev/mailbox_script_source_module.js')");
+        expect(anti).toMatch(/loadModule\('MailboxScriptSource', 'https:\/\/alloflow-cdn\.pages\.dev\/mailbox_script_source_module\.js(?:\?v=[a-z0-9]+)?'\)/);
         expect(anti).toContain('const ALLO_MB_SCRIPT_FALLBACK_GZIP = ');
         expect(anti).toContain('const _alloValidateMailboxScriptSource = async (candidate) => {');
         expect(anti).toContain('const _alloDecodeMailboxScriptFallback = async () => {');

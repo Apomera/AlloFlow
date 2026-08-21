@@ -1,7 +1,7 @@
 (function() {
 'use strict';
   // WCAG 2.2 AA: Accessibility CSS
-  if (!document.getElementById("persona-ui-module-a11y")) { var _s = document.createElement("style"); _s.id = "persona-ui-module-a11y"; _s.textContent = "@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } } .text-slate-600 { color: #64748b !important; }"; document.head.appendChild(_s); }
+  if (!document.getElementById("persona-ui-module-a11y")) { var _s = document.createElement("style"); _s.id = "persona-ui-module-a11y"; _s.textContent = "@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } }"; document.head.appendChild(_s); }
 if (window.AlloModules && window.AlloModules.PersonaUIModule) { console.log('[CDN] PersonaUIModule already loaded, skipping'); return; }
 // persona_ui_source.jsx — InteractiveBlueprintCard, HarmonyMeter, CharacterColumn
 // Extracted from AlloFlowANTI.txt for CDN modularization
@@ -150,7 +150,7 @@ const GoldenThreadPanel = ({
         concept: c
       }) || 'Remove concept ' + c,
       className: "ml-1 text-amber-600 hover:text-red-500 font-bold leading-none"
-    }, "\xD7"));
+    }, "×"));
   }), isEditing && /*#__PURE__*/React.createElement("span", {
     className: "inline-flex items-center gap-1"
   }, /*#__PURE__*/React.createElement("input", {
@@ -184,7 +184,7 @@ const GoldenThreadPanel = ({
         term: term
       }) || 'Remove term ' + term,
       className: "ml-1 text-indigo-600 hover:text-red-500 font-bold leading-none"
-    }, "\xD7"));
+    }, "×"));
   }), isEditing && /*#__PURE__*/React.createElement("span", {
     className: "inline-flex items-center gap-1"
   }, /*#__PURE__*/React.createElement("input", {
@@ -287,7 +287,25 @@ const InteractiveBlueprintCard = React.memo(({
         id: typeof item === 'object' && item.uiId || `step-${idx}-${type}`,
         type,
         directive,
-        instructionalText: getPlanInstructionalText(type, typeof item === 'object' && item ? item.instructionalText : null)
+        instructionalText: getPlanInstructionalText(type, typeof item === 'object' && item ? item.instructionalText : null),
+        generationAction: typeof item === 'object' && item ? item.generationAction : null,
+        generationIdentity: typeof item === 'object' && item ? item.generationIdentity : null,
+        generationVariants: typeof item === 'object' && item && Array.isArray(item.generationVariants) ? item.generationVariants : [],
+        existingArtifactId: typeof item === 'object' && item ? item.existingArtifactId : null,
+        variantKey: typeof item === 'object' && item ? item.variantKey : null,
+        explicitVariantKey: typeof item === 'object' && item ? item.explicitVariantKey : null,
+        variantKeyDerived: !!(typeof item === 'object' && item && item.variantKeyDerived === true),
+        sourceFingerprint: typeof item === 'object' && item ? item.sourceFingerprint : null,
+        sourceArtifactId: typeof item === 'object' && item ? item.sourceArtifactId : null,
+        contextFingerprint: typeof item === 'object' && item ? item.contextFingerprint : null,
+        contextInputsFingerprint: typeof item === 'object' && item ? item.contextInputsFingerprint : null,
+        contextFingerprintDerived: !!(typeof item === 'object' && item && item.contextFingerprintDerived === true),
+        generationPolicy: typeof item === 'object' && item ? item.generationPolicy : null,
+        novelResource: !!(typeof item === 'object' && item && item.novelResource === true),
+        suppressedGenerationVariants: typeof item === 'object' && item && Array.isArray(item.suppressedGenerationVariants) ? item.suppressedGenerationVariants : [],
+        generationMatrixUnavailable: !!(typeof item === 'object' && item && item.generationMatrixUnavailable === true),
+        activityMode: typeof item === 'object' && item ? item.activityMode : null,
+        activityConfig: typeof item === 'object' && item ? item.activityConfig : null
       };
     }).filter(Boolean);
   };
@@ -302,7 +320,25 @@ const InteractiveBlueprintCard = React.memo(({
       tool: i.type,
       directive: i.directive || "",
       uiId: i.id,
-      instructionalText: getPlanInstructionalText(i.type, i.instructionalText)
+      instructionalText: getPlanInstructionalText(i.type, i.instructionalText),
+      generationAction: i.generationAction || null,
+      generationIdentity: i.generationIdentity || null,
+      generationVariants: Array.isArray(i.generationVariants) ? i.generationVariants : [],
+      existingArtifactId: i.existingArtifactId || null,
+      variantKey: i.variantKey || null,
+      explicitVariantKey: i.explicitVariantKey || null,
+      variantKeyDerived: i.variantKeyDerived === true,
+      sourceFingerprint: i.sourceFingerprint || null,
+      sourceArtifactId: i.sourceArtifactId || null,
+      contextFingerprint: i.contextFingerprint || null,
+      contextInputsFingerprint: i.contextInputsFingerprint || null,
+      contextFingerprintDerived: i.contextFingerprintDerived === true,
+      generationPolicy: i.generationPolicy || null,
+      novelResource: i.novelResource === true,
+      suppressedGenerationVariants: Array.isArray(i.suppressedGenerationVariants) ? i.suppressedGenerationVariants : [],
+      generationMatrixUnavailable: i.generationMatrixUnavailable === true,
+      activityMode: i.activityMode || null,
+      activityConfig: i.activityConfig || null
     }));
     const toolDirectives = resourcePlan.reduce((acc, curr) => {
       if (!acc[curr.tool]) acc[curr.tool] = curr.directive || "";
@@ -350,11 +386,36 @@ const InteractiveBlueprintCard = React.memo(({
     // A resource-type change is a new instructional designation. Do not carry
     // an adapted-text role onto a quiz (or vice versa).
     newItems[index].instructionalText = getPlanInstructionalText(newType, null);
+    newItems[index].generationAction = null;
+    newItems[index].generationIdentity = null;
+    newItems[index].generationVariants = [];
+    newItems[index].existingArtifactId = null;
+    newItems[index].variantKey = null;
+    newItems[index].explicitVariantKey = null;
+    newItems[index].variantKeyDerived = false;
+    newItems[index].generationPolicy = null;
+    newItems[index].novelResource = false;
+    newItems[index].suppressedGenerationVariants = [];
+    newItems[index].generationMatrixUnavailable = false;
     syncChanges(newItems);
   };
   const handleDirectiveChange = (index, newText) => {
     const newItems = [...items];
     newItems[index].directive = newText;
+    // A directive is part of a repeatable resource's purpose identity. Clear
+    // the reviewed matrix so the shared resolver recomputes new/reuse/variant
+    // status before execution instead of applying a stale identity.
+    newItems[index].generationAction = null;
+    newItems[index].generationIdentity = null;
+    newItems[index].generationVariants = [];
+    newItems[index].existingArtifactId = null;
+    newItems[index].variantKey = null;
+    newItems[index].explicitVariantKey = null;
+    newItems[index].variantKeyDerived = false;
+    newItems[index].generationPolicy = null;
+    newItems[index].novelResource = false;
+    newItems[index].suppressedGenerationVariants = [];
+    newItems[index].generationMatrixUnavailable = false;
     syncChanges(newItems);
   };
   const handleDelete = index => {
@@ -460,7 +521,51 @@ const InteractiveBlueprintCard = React.memo(({
     return opt && opt.desc || '';
   };
   const toggleDesc = id => setOpenDescIds(prev => prev.indexOf(id) === -1 ? prev.concat([id]) : prev.filter(x => x !== id));
-  const hasFailureDiagnostics = Boolean(run && Object.values(run.rows || {}).some(row => row && ['failed', 'interrupted', 'stopped'].includes(row.status)));
+  const hasFailureDiagnostics = Boolean(run && Object.values(run.rows || {}).some(row => row && ['partial', 'failed', 'interrupted', 'stopped'].includes(row.status)));
+  const blueprintSettings = config?.globalSettings || {};
+  const blueprintVariants = items.flatMap(item => Array.isArray(item.generationVariants) ? item.generationVariants : []);
+  const blueprintMatrixModuleReady = (() => {
+    try {
+      const matrix = typeof window !== 'undefined' && window.AlloModules ? window.AlloModules.GenerationMatrix : null;
+      return !!(matrix && typeof matrix.resolveGenerationMatrix === 'function');
+    } catch (_) {
+      return false;
+    }
+  })();
+  const plannedMatrixUnavailable = items.some(item => item && item.generationMatrixUnavailable === true);
+  const runtimeMatrixUnavailable = !!(run && (run.generationMatrixUnavailable === true || run.generationMatrixUnavailable === undefined && Object.values(run.rows || {}).some(row => row && row.generationMatrixUnavailable === true)));
+  // A run record is authoritative once execution has been attempted. Before
+  // that, retain the reviewed row marker and also detect a live module-load
+  // failure so a legacy plan cannot promise a matrix that is not present.
+  const blueprintMatrixUnavailable = run && typeof run.generationMatrixUnavailable === 'boolean' ? runtimeMatrixUnavailable : plannedMatrixUnavailable || !blueprintMatrixModuleReady;
+  const blueprintMatrixReady = !blueprintMatrixUnavailable && items.length > 0 && items.every(item => Array.isArray(item.generationVariants) && item.generationVariants.length > 0);
+  const matrixRetryPending = !!(run && run.retryable === true && run.reasonCode === 'generation-matrix-unavailable');
+  const blueprintExpectedCalls = blueprintVariants.filter(variant => variant && variant.action !== 'reuse').length;
+  const blueprintReuseCount = blueprintVariants.filter(variant => variant && variant.action === 'reuse').length;
+  const blueprintGrades = Array.from(new Set(blueprintVariants.map(variant => variant && variant.grade).filter(Boolean)));
+  const blueprintLanguages = Array.from(new Set(blueprintVariants.map(variant => variant && variant.language).filter(Boolean)));
+  const configuredLanguages = blueprintSettings.leveledTextLanguage === 'All Selected Languages' ? Array.from(new Set(['English', ...(Array.isArray(blueprintSettings.selectedLanguages) ? blueprintSettings.selectedLanguages : [])])) : [blueprintSettings.leveledTextLanguage || blueprintSettings.language || 'English'];
+  const resolvedTranslationTarget = blueprintSettings.resolvedTranslationTarget || blueprintSettings.translationTarget || null;
+  const embeddedGlossaryLanguages = items.some(item => item && item.type === 'glossary') ? Array.from(new Set(Array.isArray(blueprintSettings.selectedLanguages) ? blueprintSettings.selectedLanguages.filter(Boolean) : [])) : [];
+  const sourceSelection = run && run.sourceSelection || config?.sourcePolicy || null;
+  const staleSettingNames = run && Array.isArray(run.staleSettings) ? run.staleSettings : [];
+  const readableSettingName = field => ({
+    gradeLevel: 'grade',
+    language: 'primary language',
+    selectedLanguages: 'output languages',
+    studentInterests: 'student interests',
+    targetStandards: 'standards',
+    translationMode: 'translation policy',
+    currentUiLanguage: 'interface language',
+    differentiationRange: 'differentiation range',
+    differentiationTypes: 'differentiated resources',
+    differentiationCustomGrades: 'custom grades',
+    dokLevel: 'DOK level',
+    useEmojis: 'emoji preference',
+    textFormat: 'text format',
+    imageGenerationStyle: 'image style',
+    imageAspectRatio: 'image aspect ratio'
+  })[field] || String(field || '').replace(/([A-Z])/g, ' $1').trim();
   return /*#__PURE__*/React.createElement("div", {
     "data-help-key": "blueprint_card_panel",
     className: "bg-white border-2 border-indigo-100 rounded-xl p-4 my-2 shadow-lg animate-in zoom-in duration-300 w-full max-w-2xl"
@@ -520,7 +625,52 @@ const InteractiveBlueprintCard = React.memo(({
     size: 14
   }) : /*#__PURE__*/React.createElement(Pencil, {
     size: 14
-  }), isEditing ? t('blueprint.done_editing') : t('blueprint.edit_plan')))), run?.persistenceWarning && /*#__PURE__*/React.createElement("div", {
+  }), isEditing ? t('blueprint.done_editing') : t('blueprint.edit_plan')))), blueprintMatrixUnavailable && /*#__PURE__*/React.createElement("div", {
+    "data-testid": "bp-matrix-unavailable-warning",
+    role: "alert",
+    className: "mb-3 rounded-lg border border-amber-400 bg-amber-50 p-2.5 text-xs leading-relaxed text-amber-950"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "font-bold"
+  }, t('blueprint.matrix_unavailable_title') || 'Generation planning is still loading.'), /*#__PURE__*/React.createElement("div", {
+    className: "mt-0.5"
+  }, t('blueprint.matrix_unavailable_detail') || 'Blueprint is paused: exact duplicate checks and grade/language versions must be resolved before any resources can run. Nothing is generated while this warning is shown.'), matrixRetryPending && /*#__PURE__*/React.createElement("div", {
+    className: "mt-1 font-semibold",
+    "data-testid": "bp-matrix-retry-guidance"
+  }, t('blueprint.matrix_unavailable_retry') || 'Choose Generate again to retry after generation planning finishes loading.')), /*#__PURE__*/React.createElement("div", {
+    "data-testid": "bp-generation-matrix-summary",
+    role: "status",
+    "aria-live": "polite",
+    className: "mb-3 rounded-lg border border-sky-200 bg-sky-50 p-2.5 text-[11px] leading-relaxed text-sky-950"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "font-bold"
+  }, t('blueprint.generation_impact') || 'Generation impact'), /*#__PURE__*/React.createElement("div", {
+    className: "mt-0.5"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "font-semibold"
+  }, t('blueprint.audience') || 'Audience', ":"), ' ', blueprintGrades.length ? blueprintGrades.join(', ') : blueprintSettings.gradeLevel || config?.instructionalContext?.instructionalGrade || t('fullpack.current_grade') || 'Current grade', ' · ', /*#__PURE__*/React.createElement("span", {
+    className: "font-semibold"
+  }, t('blueprint.output_languages') || 'Output languages', ":"), ' ', (blueprintLanguages.length ? blueprintLanguages : configuredLanguages).join(', ')), /*#__PURE__*/React.createElement("div", {
+    className: "mt-0.5"
+  }, blueprintMatrixUnavailable ? t('blueprint.matrix_unavailable_summary') || 'Exact call, reuse, and audience-version counts are unavailable; Blueprint will not generate until the planner is ready.' : blueprintMatrixReady ? `${blueprintExpectedCalls} ${t('blueprint.new_generations') || 'new generations'} · ${blueprintReuseCount} ${t('blueprint.reused_outputs') || 'existing outputs reused'}` : t('blueprint.matrix_refresh_pending') || 'The exact reuse and variant matrix will be refreshed before generation because this plan was edited.'), blueprintSettings.translationMode && /*#__PURE__*/React.createElement("div", {
+    className: "mt-0.5",
+    "data-testid": "bp-translation-impact"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "font-semibold"
+  }, t('blueprint.translation_policy') || 'Translation policy', ":"), ' ', String(blueprintSettings.translationMode), ' Â· ', /*#__PURE__*/React.createElement("span", {
+    className: "font-semibold"
+  }, t('blueprint.attached_translation') || 'Attached translation', ":"), ' ', resolvedTranslationTarget || t('blueprint.translation_off') || 'off / no target resolved', embeddedGlossaryLanguages.length ? ` Â· ${t('blueprint.embedded_glossary_languages') || 'Embedded glossary languages'}: ${embeddedGlossaryLanguages.join(', ')}` : '')), run?.settingsStale && /*#__PURE__*/React.createElement("div", {
+    "data-testid": "bp-settings-stale-notice",
+    role: "status",
+    className: "mb-3 rounded-lg border border-amber-300 bg-amber-50 p-2 text-xs text-amber-950"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "font-bold"
+  }, t('blueprint.reviewed_settings_used') || 'Reviewed settings are being used.'), ' ', t('blueprint.settings_changed_since_review') || 'Universal Settings changed after this Blueprint was reviewed', staleSettingNames.length ? `: ${staleSettingNames.map(readableSettingName).join(', ')}.` : '.'), sourceSelection?.divergentFromLatestAnalysis && /*#__PURE__*/React.createElement("div", {
+    "data-testid": "bp-source-choice-notice",
+    role: "status",
+    className: "mb-3 rounded-lg border border-violet-200 bg-violet-50 p-2 text-xs text-violet-950"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "font-bold"
+  }, t('blueprint.current_source_selected') || 'Current source selected.'), ' ', t('blueprint.source_differs_from_analysis') || 'It differs from the latest analyzed original, so Blueprint uses the current source and rechecks reuse before generation.'), run?.persistenceWarning && /*#__PURE__*/React.createElement("div", {
     "data-testid": "bp-storage-warning",
     role: "status",
     className: "mb-3 rounded-lg border border-amber-300 bg-amber-50 p-2 text-xs text-amber-950"
@@ -533,7 +683,7 @@ const InteractiveBlueprintCard = React.memo(({
   }), isRunning && run && run.rows && (() => {
     const _rows = Object.keys(run.rows).map(k => run.rows[k]);
     const _total = _rows.length;
-    const _settled = _rows.filter(r => r && (r.status === 'landed' || r.status === 'failed' || r.status === 'interrupted')).length;
+    const _settled = _rows.filter(r => r && (r.status === 'landed' || r.status === 'partial' || r.status === 'failed' || r.status === 'interrupted')).length;
     const _active = _rows.find(r => r && r.status === 'running');
     return /*#__PURE__*/React.createElement("div", {
       "data-testid": "bp-run-progress",
@@ -674,6 +824,10 @@ const InteractiveBlueprintCard = React.memo(({
         label: t('blueprint.status_landed') || 'Done',
         cls: 'bg-emerald-50 text-emerald-700 border-emerald-200'
       },
+      partial: {
+        label: t('blueprint.status_partial') || 'Partial',
+        cls: 'bg-amber-50 text-amber-900 border-amber-300'
+      },
       failed: {
         label: t('blueprint.status_failed') || 'Failed',
         cls: 'bg-red-50 text-red-700 border-red-200'
@@ -702,10 +856,10 @@ const InteractiveBlueprintCard = React.memo(({
     // run, so nothing is shown before that — a plan-wide "not
     // audited" would be noise, not information.
     //
-    // Coverage is by resourceId, not by row: a row regenerated
-    // after the audit gets a NEW resourceId and therefore drops
-    // out of the audited set on its own. That is the staleness
-    // signal, and it needs no extra bookkeeping.
+    // Coverage is by artifact ID, not merely by row. A matrix row
+    // can land several grade/language artifacts, so every surviving
+    // output must be present in the audit scope. Legacy rows retain
+    // the singular resourceId fallback.
     const _auditIds = run && run.audit && Array.isArray(run.audit.resourceIds) ? run.audit.resourceIds : null;
     const _isAuditRow = !!(run && run.audit && run.audit.rowUiId === item.id);
     // A resource trimmed out of history by MAX_OFFLINE_ITEMS is
@@ -719,17 +873,48 @@ const InteractiveBlueprintCard = React.memo(({
     // half (Preview is already suppressed for these rows and Rebuild
     // is still offered), so drop the success badge and keep one
     // truthful signal instead of two conflicting ones.
-    const _suppressStatusBadge = _missing && _status === 'landed';
+    const _suppressStatusBadge = _missing && (_status === 'landed' || _status === 'partial');
+    const _claimedArtifactIds = _rowRun && Array.isArray(_rowRun.resourceIds) && _rowRun.resourceIds.length ? _rowRun.resourceIds.filter(Boolean) : _rowRun && _rowRun.resourceId ? [_rowRun.resourceId] : [];
+    const _missingArtifactIds = new Set((_rowRun && Array.isArray(_rowRun.missingResourceIds) ? _rowRun.missingResourceIds : []).map(value => String(value)));
+    const _survivingArtifactIds = _claimedArtifactIds.filter(value => !_missingArtifactIds.has(String(value)));
+    const _allSurvivingArtifactsAudited = _survivingArtifactIds.length > 0 && _survivingArtifactIds.every(value => _auditIds && _auditIds.indexOf(value) !== -1);
     const _auditBadge = _missing ? {
       label: t('blueprint.resource_missing') || 'Resource gone',
       cls: 'bg-slate-100 text-slate-700 border-slate-300'
-    } : !_auditIds || _isAuditRow || _status !== 'landed' ? null : _rowRun && _auditIds.indexOf(_rowRun.resourceId) !== -1 ? {
+    } : !_auditIds || _isAuditRow || _status !== 'landed' && _status !== 'partial' ? null : _allSurvivingArtifactsAudited ? {
       label: t('blueprint.audit_covered') || 'Audited',
       cls: 'bg-teal-50 text-teal-700 border-teal-200'
     } : {
       label: t('blueprint.audit_stale') || 'Not in audit',
       cls: 'bg-amber-50 text-amber-800 border-amber-200'
     };
+    const _generationVariants = Array.isArray(item.generationVariants) ? item.generationVariants : [];
+    const _newVariants = _generationVariants.filter(variant => variant && variant.action !== 'reuse');
+    const _reusedVariants = _generationVariants.filter(variant => variant && variant.action === 'reuse');
+    const _variantGrades = Array.from(new Set(_generationVariants.map(variant => variant && variant.grade).filter(Boolean)));
+    const _variantLanguages = Array.from(new Set(_generationVariants.map(variant => variant && variant.language).filter(Boolean)));
+    const _runtimeVariants = _rowRun && Array.isArray(_rowRun.variantResults) ? _rowRun.variantResults : [];
+    const _rowMatrixUnavailable = _rowRun && typeof _rowRun.generationMatrixUnavailable === 'boolean' ? _rowRun.generationMatrixUnavailable : !!(item && item.generationMatrixUnavailable === true) || !blueprintMatrixModuleReady;
+    const _missingRuntimeResourceIds = new Set((_rowRun && Array.isArray(_rowRun.missingResourceIds) ? _rowRun.missingResourceIds : []).map(value => String(value)));
+    const _runtimeArtifactId = variant => variant && (variant.resourceId || variant.artifactId) || null;
+    const _runtimeArtifactMissing = variant => {
+      const artifactId = _runtimeArtifactId(variant);
+      return !!(artifactId && _missingRuntimeResourceIds.has(String(artifactId)));
+    };
+    const _successfulRuntimeVariants = _runtimeVariants.filter(variant => variant && variant.status === 'landed' && _runtimeArtifactId(variant) && !_runtimeArtifactMissing(variant));
+    const _failedRuntimeVariants = _runtimeVariants.filter(variant => variant && (variant.status === 'failed' || variant.status === 'interrupted'));
+    const _missingRuntimeVariants = _runtimeVariants.filter(_runtimeArtifactMissing);
+    const _previewSelection = variant => ({
+      variantId: variant && variant.variantId || null,
+      generationIdentity: variant && variant.generationIdentity || null,
+      grade: variant && variant.grade || null,
+      language: variant && variant.language || null,
+      action: variant && variant.action || null,
+      status: variant && variant.status || null,
+      resourceId: variant && (variant.resourceId || variant.artifactId) || null,
+      artifactId: variant && (variant.artifactId || variant.resourceId) || null,
+      resourceIds: _rowRun && Array.isArray(_rowRun.resourceIds) ? _rowRun.resourceIds.slice() : []
+    });
     return /*#__PURE__*/React.createElement("div", {
       key: item.id,
       className: "flex gap-3 items-start p-3 bg-slate-50 rounded-lg border border-slate-100 border-l-4",
@@ -790,11 +975,19 @@ const InteractiveBlueprintCard = React.memo(({
       className: "ml-1 text-[10px] font-bold w-4 h-4 rounded-full border border-slate-300 text-slate-600 hover:bg-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-400",
       title: t('blueprint.what_is_this') || 'What does this resource do?',
       "aria-label": `${t('blueprint.what_is_this') || 'What does this resource do?'}: ${getToolLabel(item.type)}`
-    }, "?"), typeof onPreviewStep === 'function' && _status === 'landed' && !_missing && /*#__PURE__*/React.createElement("button", {
+    }, "?"), typeof onPreviewStep === 'function' && (_status === 'landed' || _status === 'partial') && !_missing && _runtimeVariants.length <= 1 && /*#__PURE__*/React.createElement("button", {
       type: "button",
       "data-testid": "bp-preview-btn",
       "data-help-key": "blueprint_preview_step_btn",
-      onClick: () => onPreviewStep(item.id),
+      onClick: () => {
+        const selection = _successfulRuntimeVariants.length ? _previewSelection(_successfulRuntimeVariants[0]) : _previewSelection({
+          status: 'landed',
+          resourceId: _rowRun && _rowRun.resourceId,
+          artifactId: _rowRun && _rowRun.resourceId,
+          action: _rowRun && _rowRun.generationAction
+        });
+        onPreviewStep(item.id, selection.resourceId, selection);
+      },
       title: t('blueprint.preview_step') || 'Preview this resource',
       "aria-label": `${t('blueprint.preview_step') || 'Preview this resource'}: ${getToolLabel(item.type)}`,
       className: "ml-1 text-[10px] font-bold px-1.5 py-0.5 rounded border border-slate-300 text-slate-700 hover:bg-slate-100 hover:border-slate-400 transition-colors"
@@ -810,7 +1003,7 @@ const InteractiveBlueprintCard = React.memo(({
       id: `bp-desc-${item.id}`,
       "data-testid": "bp-desc-body",
       className: "mb-1 text-[11px] leading-snug text-slate-600 bg-white border border-slate-200 rounded p-2"
-    }, getToolDesc(item.type)), (_status === 'failed' || _status === 'interrupted') && _safeFailure && /*#__PURE__*/React.createElement("p", {
+    }, getToolDesc(item.type)), (_status === 'partial' || _status === 'failed' || _status === 'interrupted') && _safeFailure && /*#__PURE__*/React.createElement("p", {
       "data-testid": "bp-fail-reason",
       "data-failure-code": _safeFailure.code,
       className: "mb-1 text-[11px] leading-snug text-red-800 bg-red-50 border border-red-200 rounded p-2"
@@ -820,7 +1013,59 @@ const InteractiveBlueprintCard = React.memo(({
       className: "block mt-1 opacity-80 break-words"
     }, t('blueprint.failure_log_help') || 'Technical details remain in the on-device error log; copied and downloaded diagnostics are sanitized.')), /*#__PURE__*/React.createElement("p", {
       className: "text-sm text-slate-700 leading-relaxed italic"
-    }, "\"", item.directive || "No specific instructions.", "\"")));
+    }, "\"", item.directive || "No specific instructions.", "\""), /*#__PURE__*/React.createElement("p", {
+      "data-testid": "bp-row-generation-impact",
+      "data-resource-key": item.id,
+      "data-matrix-status": _rowMatrixUnavailable ? 'unavailable' : _generationVariants.length ? 'ready' : 'pending',
+      className: "mt-1 text-[10px] leading-relaxed text-sky-900"
+    }, _rowMatrixUnavailable ? /*#__PURE__*/React.createElement("span", {
+      "data-testid": "bp-row-matrix-unavailable"
+    }, t('blueprint.row_matrix_unavailable') || 'Waiting for generation planning. This row will not run until exact duplicate and audience-version checks are available.') : _generationVariants.length ? `${_newVariants.length} ${t('blueprint.new_versions') || 'new'} / ${_reusedVariants.length} ${t('blueprint.reused_versions') || 'reused'}${_variantGrades.length ? `; ${_variantGrades.join(', ')}` : ''}${_variantLanguages.length ? `; ${_variantLanguages.join(', ')}` : ''}${item.type === 'glossary' && embeddedGlossaryLanguages.length ? `; ${t('blueprint.embedded_languages') || 'embedded'}: ${embeddedGlossaryLanguages.join(', ')}` : ''}` : t('blueprint.row_matrix_pending') || 'Reuse and audience variants will be checked before generation.'), (_runtimeVariants.length > 1 || _failedRuntimeVariants.length > 0 || _missingRuntimeVariants.length > 0) && /*#__PURE__*/React.createElement("div", {
+      "data-testid": "bp-variant-results",
+      className: "mt-2 rounded border border-slate-200 bg-white p-2"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "mb-1 text-[10px] font-bold text-slate-700"
+    }, _successfulRuntimeVariants.length, " ", t('blueprint.variant_successful') || 'successful', ' Â· ', _failedRuntimeVariants.length, " ", t('blueprint.variant_unsuccessful') || 'failed or interrupted'), _missingRuntimeVariants.length > 0 && /*#__PURE__*/React.createElement("div", {
+      className: "mb-1 text-[10px] font-semibold text-amber-800"
+    }, _missingRuntimeVariants.length, " ", t('blueprint.variant_unavailable') || 'successful version unavailable in the workspace'), /*#__PURE__*/React.createElement("ul", {
+      className: "space-y-1"
+    }, _runtimeVariants.map((variant, variantIndex) => {
+      const artifactId = variant && (variant.artifactId || variant.resourceId) || null;
+      const isMissingArtifact = _runtimeArtifactMissing(variant);
+      const isSuccessful = !!(variant && variant.status === 'landed' && artifactId && !isMissingArtifact);
+      let safeVariantReason = null;
+      if (!isSuccessful && variant && variant.reason && typeof summarizeFailureReason === 'function') {
+        try {
+          safeVariantReason = summarizeFailureReason(variant.reason);
+        } catch (_) {}
+      }
+      const audience = [variant && variant.grade, variant && variant.language].filter(Boolean).join(' Â· ') || t('blueprint.default_audience') || 'Default audience';
+      return /*#__PURE__*/React.createElement("li", {
+        key: variant && (variant.variantId || variant.generationIdentity) || `${item.id}-runtime-${variantIndex}`,
+        "data-testid": "bp-variant-result",
+        "data-variant-status": isMissingArtifact ? 'missing' : variant && variant.status || 'unknown',
+        "data-artifact-id": artifactId || '',
+        className: `rounded border px-2 py-1 text-[10px] ${isSuccessful ? 'border-emerald-200 bg-emerald-50 text-emerald-950' : 'border-amber-200 bg-amber-50 text-amber-950'}`
+      }, /*#__PURE__*/React.createElement("div", {
+        className: "flex flex-wrap items-center gap-x-1.5 gap-y-1"
+      }, /*#__PURE__*/React.createElement("span", {
+        className: "font-bold"
+      }, isSuccessful ? t('blueprint.status_landed') || 'Done' : isMissingArtifact ? t('blueprint.resource_missing') || 'Resource gone' : variant && variant.status === 'interrupted' ? t('blueprint.status_interrupted') || 'Interrupted' : t('blueprint.status_failed') || 'Failed'), /*#__PURE__*/React.createElement("span", null, audience), /*#__PURE__*/React.createElement("span", {
+        className: "uppercase opacity-75"
+      }, variant && variant.action || 'generate'), artifactId && /*#__PURE__*/React.createElement("span", {
+        className: "break-all opacity-75"
+      }, t('blueprint.artifact_id') || 'Artifact', ": ", artifactId), isSuccessful && typeof onPreviewStep === 'function' && /*#__PURE__*/React.createElement("button", {
+        type: "button",
+        "data-testid": "bp-preview-variant-btn",
+        onClick: () => {
+          const selection = _previewSelection(variant);
+          onPreviewStep(item.id, selection.resourceId, selection);
+        },
+        className: "ml-auto rounded border border-emerald-300 bg-white px-1.5 py-0.5 font-bold text-emerald-800 hover:bg-emerald-100"
+      }, t('blueprint.preview_step_short') || 'Preview')), !isSuccessful && /*#__PURE__*/React.createElement("div", {
+        className: "mt-0.5 opacity-85"
+      }, isMissingArtifact ? t('blueprint.variant_missing') || 'This successful version is no longer in the workspace. Rebuild the step to create it again.' : safeVariantReason && safeVariantReason.summary || t('blueprint.variant_failure_safe') || 'This variant did not finish; technical details remain in the on-device error log.'));
+    })))));
   }), items.length === 0 && /*#__PURE__*/React.createElement("p", {
     className: "text-center text-slate-600 text-sm italic py-4"
   }, t('blueprint.empty_plan'))), typeof onSaveTemplate === 'function' && items.length > 0 && !isEditing && /*#__PURE__*/React.createElement("div", {
@@ -875,7 +1120,7 @@ const InteractiveBlueprintCard = React.memo(({
       className: "font-bold"
     }, getToolLabel(it.type)), /*#__PURE__*/React.createElement("span", {
       className: keep ? 'text-slate-700' : 'text-slate-500 line-through'
-    }, " \u2014 \"", it.directive, "\"")));
+    }, " — \"", it.directive, "\"")));
   })), /*#__PURE__*/React.createElement("div", {
     className: "flex gap-2"
   }, /*#__PURE__*/React.createElement("button", {
@@ -906,14 +1151,14 @@ const InteractiveBlueprintCard = React.memo(({
   }, t('blueprint.cancel')), /*#__PURE__*/React.createElement("button", {
     type: "button",
     "data-help-key": "blueprint_generate_pack_btn",
-    "aria-label": isRunning ? t('blueprint.status_running') || 'Building...' : t('common.generate'),
+    "aria-label": isRunning ? t('blueprint.status_running') || 'Building...' : matrixRetryPending ? t('blueprint.matrix_unavailable_retry_short') || 'Retry generation planning' : t('common.generate'),
     disabled: !!isRunning,
     onClick: onConfirm,
     className: "flex-[2] py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-300 disabled:cursor-not-allowed text-white rounded-lg text-xs font-bold shadow-md transition-transform active:scale-95 flex items-center justify-center gap-2"
   }, /*#__PURE__*/React.createElement(Sparkles, {
     size: 14,
     className: "text-yellow-700 fill-current"
-  }), " ", isRunning ? t('blueprint.status_running') || 'Building...' : t('blueprint.generate'))));
+  }), " ", isRunning ? t('blueprint.status_running') || 'Building...' : matrixRetryPending ? t('blueprint.matrix_unavailable_retry_short') || 'Retry generation planning' : t('blueprint.generate'))));
 });
 const HarmonyMeter = ({
   score

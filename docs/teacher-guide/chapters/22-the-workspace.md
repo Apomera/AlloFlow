@@ -141,10 +141,13 @@ It lives at the very bottom of the tool list, under an **Auto-Configure** card, 
 - **The size selector** on that card controls how much gets made. **Auto (AI Decides)** is the default, or choose **Short (5)**, **Standard (8)**, **Deep (12)**, or **All Tools**.
 - **Auto-Configure** itself fills in the per-tool settings for you rather than making you set each one.
 - **Plan full pack** is the control to press first. It says what it does: review resources, settings, and estimated generations *before* creating them. In the review, you can add or remove resources, change each resource type, edit its instruction, and move it up or down. Read the updated estimate, because that number is your AI usage for the run.
+- **Generation impact** separates new generations from existing resources that can be reused. Each row shows the grade and output-language versions it will make. A differentiated, multilingual quiz might show three grades by three languages as nine versions; an existing analysis of the same source can show **Reuse** and cost no new generation.
 - **Text access summary** confirms whether an Adapted Text companion is included. The recommended policy preserves the primary/source text and omits adapted text by default. Choosing **Include supplemental Adapted Text** adds a companion; it does not designate that companion as a primary replacement or infer an IEP modification.
 - **Generate Full Resource Pack** then runs it. The helper text names the shape of what you get: analysis, text, glossary, visuals, quiz and more.
 
-The full pack is the fastest route from one text to a usable lesson set. It is also the easiest way to spend a lot of generations at once, which is exactly why the planner shows the estimate first.
+The planner treats Analyze Source as one source-wide resource and suppresses exact duplicate rows. It prioritises resource types you do not have yet, while allowing purposeful variants of repeatable resources when their instructions or modes differ. Analysis stays before resources that depend on it, and Lesson Plan stays last so it can synthesize the resources that came before. Editing a reviewed row clears its old calculation; the reuse and variant matrix is checked again before generation.
+
+The full pack is the fastest route from one text to a usable lesson set. It is also the easiest way to spend a lot of generations at once, which is exactly why the planner shows the exact matrix and estimate first.
 
 ## Blueprint Mode: describe the lesson, approve the plan, then build
 
@@ -162,9 +165,10 @@ This is the most powerful path in the app and the least discoverable, because it
 - **Edit Plan** opens direct editing, with **Add Resource Step** to insert one and **Done Editing** to finish.
 - **Reorder** by dragging, or use **Move up** and **Move down**, which exist so reordering does not require a mouse.
 - **What does this resource do?** explains any step you do not recognise.
+- **Generation impact** names the frozen audience grades and output languages, the number of new generations, and how many existing outputs will be reused. Each resource row shows its own new/reused version count. If you edit a type or instruction, the card says that this calculation will be refreshed before the run.
 - Ask a question without touching the plan and it answers, leaving the blueprint unchanged.
 
-**Building it.** **Generate Plan** starts the run. A progress line reads *Building, N of M steps finished*. If you need to stop, **Stop after this step** finishes the step in progress and then halts: everything already finished is kept, and the remaining steps show a **Rebuild** control so you can run them one at a time later.
+**Building it.** **Generate Plan** starts the run. Blueprint uses the same source-aware reuse and grade-by-language matrix as Full Pack: an exact existing resource is linked into the lesson without another AI call, while a changed directive or explicit rebuild requests fresh work. A progress line reads *Building, N of M steps finished*. If you need to stop, **Stop after this step** finishes the step in progress and then halts: everything already finished is kept, and the remaining steps show a **Rebuild** control so you can run them one at a time later.
 
 **Two things worth knowing before you start.** If there is no source text yet, AlloFlow warns that some resources may not generate and suggests adding or generating a source first. And previous plans are archived rather than discarded, so an earlier blueprint can be restored, though not while a plan is still generating.
 

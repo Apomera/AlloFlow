@@ -109,11 +109,13 @@ while ((m = loadModuleRe.exec(monolith)) !== null) {
   const name = m[1];
   let url = m[2];
   // Rewrite CDN URLs to local paths served by our http server.
-  // jsdelivr pattern: https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@<ref>/<path>
+  // Current Cloudflare Pages pattern: https://alloflow-cdn.pages.dev/<path>
+  // Legacy jsdelivr pattern: https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@<ref>/<path>
   // <ref> is either a git hash (hex) or a branch name (e.g. @main). Both forms
   // appear in source — build.js rewrites @main → hash for prod, but the dev
   // form is what we see when reading raw AlloFlowANTI.txt.
   url = url
+    .replace(/^https?:\/\/alloflow-cdn\.pages\.dev\//, '/')
     .replace(/^https?:\/\/cdn\.jsdelivr\.net\/gh\/Apomera\/AlloFlow@[A-Za-z0-9._-]+\//, '/')
     .replace(/^https?:\/\/raw\.githubusercontent\.com\/Apomera\/AlloFlow\/[^/]+\//, '/');
   if (seen.has(name)) continue;

@@ -11,6 +11,8 @@
   var VERSION = 'instructional-context/v1';
   var TEXT_SCHEMA_VERSION = 1;
   var CONTEXT_SCHEMA_VERSION = 1;
+  var SOURCE_BODY_EXTRACTION_VERSION = 'measurable-source-body/v1';
+  var SOURCE_COMPLEXITY_MEASUREMENT_VERSION = 'source-body-fk/v1';
   var ROLES = ['primary', 'supplemental', 'unspecified'];
   var FORMS = ['original', 'same-text-supported', 'adapted'];
   var DESIGNATION_SOURCES = ['educator', 'workflow-default', 'legacy-inferred'];
@@ -132,6 +134,30 @@
     };
   }
 
+  function getSourceCalibrationStyle(value) {
+    var calibration = isObject(value) && value.promptGrade
+      ? value
+      : getSourceCalibrationTarget(value);
+    var promptGrade = normalizeGradeLabel(calibration.promptGrade || calibration.calibrationTarget || '', '');
+    if (promptGrade === 'Pre-K') return 'Use extremely short sentences, generally 3-5 words, and no compound sentences.';
+    if (promptGrade === '1st Grade') return 'Use short declarative sentences and high-frequency vocabulary.';
+    if (promptGrade === '3rd Grade') return 'Use mostly simple sentences with only limited compound sentences.';
+    if (promptGrade === '5th Grade') return 'Use straightforward syntax and avoid dense academic language.';
+    if (promptGrade === '8th Grade') return 'Use clear standard language without unnecessary jargon or nested clauses.';
+    return 'Use direct language and sentence structures appropriate to the calibrated target.';
+  }
+
+  function buildSourceCalibrationGuidance(value) {
+    var calibration = getSourceCalibrationTarget(value);
+    return [
+      'REQUESTED INSTRUCTIONAL TARGET: ' + calibration.requestedGrade,
+      'INTERNAL GENERATION CALIBRATION: ' + calibration.promptGrade,
+      'The internal target compensates for observed model overshoot; it is not the educator-facing grade label.',
+      getSourceCalibrationStyle(calibration),
+      'If a sentence is borderline, split it and prefer the shorter accurate word.'
+    ].join('\n');
+  }
+
   function fingerprintText(value) {
     var input = String(value === undefined || value === null ? '' : value).replace(/\r\n?/g, '\n');
     var hash = 2166136261;
@@ -146,6 +172,146 @@
     var serialized = '';
     try { serialized = JSON.stringify(value === undefined ? null : value); } catch (_) { serialized = String(value || ''); }
     return fingerprintText(serialized);
+  }
+
+  function _sourceFooterLabel(value) {
+    return String(value || '')
+      .trim()
+      .replace(/^#{1,6}\s+/, '')
+      .replace(/\s+#+\s*$/, '')
+      .replace(/^[*_]+|[*_]+$/g, '')
+      .replace(/:\s*$/, '')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .toLowerCase();
+  }
+
+  function _isSourceFooterBoundary(value) {
+    var raw = String(value || '').trim();
+    if (!raw) return false;
+    var label = _sourceFooterLabel(raw);
+    if (/^(?:source text references|accuracy check references|referenced sources|verified sources|sources|references|works? cited|bibliography|citations)$/.test(label)) return true;
+    if (/^(?:source[- ]support|source[- ]support check|citation support|grounding support)$/.test(label)) return true;
+    if (/^(?:about this document|ai (?:use |assistance )?disclosure|ai-generated content disclosure|artificial intelligence disclosure)$/.test(label)) return true;
+    var proseLabel = raw
+      .replace(/^\s*(?:>|[-*+]\s+)?/, '')
+      .replace(/^[*_]+/, '')
+      .replace(/[*_]+\s*$/, '')
+      .trim();
+    return /^(?:Source-support check\s*\(automated|Partial-grounding notice\s*:|Source-attribution notice\s*:|About this document\s*:\s*drafted with AI assistance|(?:AI(?: use| assistance|-generated content)?|Artificial intelligence) disclosure\s*:)/i.test(proseLabel);
+  }
+
+  /**
+   * Return the canonical prose scope used for generated-source readability.
+   *
+   * The generated title and application-authored evidence/disclosure trailers
+   * are artifact chrome, not learner prose. Standalone Markdown headings are
+   * excluded because the host tokenizer treats every newline-delimited heading
+   * label as a sentence. Inline Markdown anchors are deliberately left intact
+   * so the readability tokenizer can retain their visible labels.
+   */
+  function extractMeasurableSourceBody(value) {
+    var artifact = String(value === undefined || value === null ? '' : value)
+      .replace(/\r\n?/g, '\n')
+      .replace(/^\uFEFF/, '')
+      .replace(/[ \t]+$/gm, '')
+      .trim();
+    if (!artifact) return '';
+    var lines = artifact.split('\n');
+    var first = lines.length ? lines[0].trim() : '';
+    if (/^Title\s*:\s*\S/i.test(first) || /^#(?!#)\s+\S/.test(first)) lines.shift();
+
+    var cutoff = lines.length;
+    for (var i = 0; i < lines.length; i++) {
+      if (_isSourceFooterBoundary(lines[i])) {
+        cutoff = i;
+        break;
+      }
+    }
+    lines = lines.slice(0, cutoff);
+    while (lines.length && !lines[lines.length - 1].trim()) lines.pop();
+    if (lines.length && /^\s*(?:-{3,}|\*{3,}|_{3,})\s*$/.test(lines[lines.length - 1])) lines.pop();
+    while (lines.length && !lines[lines.length - 1].trim()) lines.pop();
+
+    lines = lines.filter(function (line) {
+      return !/^\s{0,3}#{1,6}[ \t]+.+?[ \t]*#*[ \t]*$/.test(String(line));
+    });
+    return lines.join('\n').replace(/\n{3,}/g, '\n\n').trim();
+  }
+
+  function _finiteNumber(value) {
+    if (value === null || value === undefined || (typeof value === 'string' && !value.trim())) return null;
+    var numeric = Number(value);
+    return Number.isFinite(numeric) ? numeric : null;
+  }
+
+  function _readabilitySnapshot(value) {
+    if (!isObject(value)) return null;
+    var score = _finiteNumber(value.score);
+    var words = _finiteNumber(value.words);
+    var sentences = _finiteNumber(value.sentences);
+    var syllables = _finiteNumber(value.syllables);
+    return {
+      score: score === null ? null : score.toFixed(1),
+      words: words,
+      sentences: sentences,
+      syllables: syllables
+    };
+  }
+
+  function measureSourceComplexity(artifactText, calculateReadability) {
+    if (typeof calculateReadability !== 'function') return null;
+    var artifact = String(artifactText === undefined || artifactText === null ? '' : artifactText)
+      .replace(/\r\n?/g, '\n')
+      .trim();
+    var body = extractMeasurableSourceBody(artifact);
+    if (!body) return null;
+    var artifactStats = null;
+    var bodyStats = null;
+    try {
+      artifactStats = calculateReadability(artifact);
+      bodyStats = body === artifact ? artifactStats : calculateReadability(body);
+    } catch (_) {
+      return null;
+    }
+    var snapshot = _readabilitySnapshot(bodyStats);
+    if (!snapshot) return null;
+    var hasCounts = snapshot.words !== null && snapshot.words > 0
+      && snapshot.sentences !== null && snapshot.sentences > 0
+      && snapshot.syllables !== null && snapshot.syllables >= 0;
+    var averageSentenceLength = hasCounts ? snapshot.words / snapshot.sentences : null;
+    var averageSyllablesPerWord = hasCounts ? snapshot.syllables / snapshot.words : null;
+    var rawGrade = hasCounts
+      ? (0.39 * averageSentenceLength) + (11.8 * averageSyllablesPerWord) - 15.59
+      : _finiteNumber(snapshot.score);
+    var clampedGrade = rawGrade === null ? _finiteNumber(snapshot.score) : Math.max(0, Math.min(18, rawGrade));
+    var displayScore = clampedGrade === null ? null : clampedGrade.toFixed(1);
+    var displayGrade = displayScore === null ? null : Number(displayScore);
+    return {
+      measurementVersion: SOURCE_COMPLEXITY_MEASUREMENT_VERSION,
+      extractionVersion: SOURCE_BODY_EXTRACTION_VERSION,
+      measurementScope: 'source-body',
+      method: 'flesch-kincaid-en',
+      score: displayScore,
+      rawFleschKincaidGrade: rawGrade,
+      displayFleschKincaidGrade: displayGrade,
+      averageSentenceLength: averageSentenceLength,
+      averageSyllablesPerWord: averageSyllablesPerWord,
+      words: snapshot.words,
+      sentences: snapshot.sentences,
+      syllables: snapshot.syllables,
+      bodyCounts: {
+        characters: body.length,
+        words: snapshot.words,
+        sentences: snapshot.sentences,
+        syllables: snapshot.syllables
+      },
+      artifactCharacterCount: artifact.length,
+      bodyCharacterCount: body.length,
+      artifactFingerprint: fingerprintText(artifact),
+      bodyFingerprint: fingerprintText(body),
+      legacyArtifactMetrics: _readabilitySnapshot(artifactStats)
+    };
   }
 
   function isEnglishLanguage(value) {
@@ -175,6 +341,23 @@
     var language = cleanText(source.language || opts.language || 'English', 80);
     var fingerprint = cleanText(source.contentFingerprint || opts.contentFingerprint, 120);
     var status = cleanText(source.status, 40);
+    var sourceCarriesMeasurement = source.measuredGrade !== undefined || source.score !== undefined
+      || source.measurementVersion !== undefined || source.rawFleschKincaidGrade !== undefined;
+    var metricSource = sourceCarriesMeasurement ? source : opts;
+    var rawFk = _finiteNumber(metricSource.rawFleschKincaidGrade);
+    var displayFk = _finiteNumber(metricSource.displayFleschKincaidGrade);
+    if (displayFk === null && hasMeasured) displayFk = measured;
+    var averageSentenceLength = _finiteNumber(metricSource.averageSentenceLength);
+    var averageSyllablesPerWord = _finiteNumber(metricSource.averageSyllablesPerWord);
+    var rawBodyCounts = isObject(metricSource.bodyCounts) ? metricSource.bodyCounts : {};
+    var hasBodyCounts = Object.keys(rawBodyCounts).length > 0;
+    var bodyCounts = hasBodyCounts ? {
+      characters: _finiteNumber(rawBodyCounts.characters),
+      words: _finiteNumber(rawBodyCounts.words),
+      sentences: _finiteNumber(rawBodyCounts.sentences),
+      syllables: _finiteNumber(rawBodyCounts.syllables)
+    } : null;
+    var legacyArtifactMetrics = _readabilitySnapshot(metricSource.legacyArtifactMetrics);
     if (!status) status = hasMeasured && isEnglishLanguage(language)
       ? complexityStatus(measured, requestedGrade)
       : 'unavailable';
@@ -186,7 +369,20 @@
       status: status,
       contentFingerprint: fingerprint,
       measuredAt: cleanText(source.measuredAt, 80),
-      language: language
+      language: language,
+      measurementScope: cleanText(metricSource.measurementScope, 40),
+      measurementVersion: cleanText(metricSource.measurementVersion, 80),
+      extractionVersion: cleanText(metricSource.extractionVersion, 80),
+      rawFleschKincaidGrade: rawFk,
+      displayFleschKincaidGrade: displayFk,
+      averageSentenceLength: averageSentenceLength,
+      averageSyllablesPerWord: averageSyllablesPerWord,
+      bodyCounts: bodyCounts,
+      artifactCharacterCount: _finiteNumber(metricSource.artifactCharacterCount),
+      bodyCharacterCount: _finiteNumber(metricSource.bodyCharacterCount),
+      artifactFingerprint: cleanText(metricSource.artifactFingerprint, 120),
+      bodyFingerprint: cleanText(metricSource.bodyFingerprint, 120),
+      legacyArtifactMetrics: legacyArtifactMetrics
     };
   }
 
@@ -276,6 +472,19 @@
     next.complexity.status = cleanText(reason, 40) || 'stale';
     next.complexity.contentFingerprint = content === undefined ? '' : fingerprintText(content);
     next.complexity.measuredAt = '';
+    next.complexity.measurementScope = '';
+    next.complexity.measurementVersion = '';
+    next.complexity.extractionVersion = '';
+    next.complexity.rawFleschKincaidGrade = null;
+    next.complexity.displayFleschKincaidGrade = null;
+    next.complexity.averageSentenceLength = null;
+    next.complexity.averageSyllablesPerWord = null;
+    next.complexity.bodyCounts = null;
+    next.complexity.artifactCharacterCount = null;
+    next.complexity.bodyCharacterCount = null;
+    next.complexity.artifactFingerprint = '';
+    next.complexity.bodyFingerprint = '';
+    next.complexity.legacyArtifactMetrics = null;
     return next;
   }
 
@@ -318,14 +527,20 @@
     VERSION: VERSION,
     TEXT_SCHEMA_VERSION: TEXT_SCHEMA_VERSION,
     CONTEXT_SCHEMA_VERSION: CONTEXT_SCHEMA_VERSION,
+    SOURCE_BODY_EXTRACTION_VERSION: SOURCE_BODY_EXTRACTION_VERSION,
+    SOURCE_COMPLEXITY_MEASUREMENT_VERSION: SOURCE_COMPLEXITY_MEASUREMENT_VERSION,
     ROLES: ROLES.slice(),
     FORMS: FORMS.slice(),
     normalizeGrade: normalizeGrade,
     normalizeGradeLabel: normalizeGradeLabel,
     getComplexityTarget: getComplexityTarget,
     getSourceCalibrationTarget: getSourceCalibrationTarget,
+    getSourceCalibrationStyle: getSourceCalibrationStyle,
+    buildSourceCalibrationGuidance: buildSourceCalibrationGuidance,
     fingerprintText: fingerprintText,
     fingerprintValue: fingerprintValue,
+    extractMeasurableSourceBody: extractMeasurableSourceBody,
+    measureSourceComplexity: measureSourceComplexity,
     isEnglishLanguage: isEnglishLanguage,
     complexityStatus: complexityStatus,
     normalizeComplexity: normalizeComplexity,

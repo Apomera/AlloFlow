@@ -90,10 +90,13 @@ describe('Test Prep hands-free source QA', () => {
 
   it('discloses provider boundaries, PII risk, and fail-safe command confidence behavior', () => {
     expect(source).toContain('<strong>Hands-free privacy:</strong>');
-    expect(source).toContain("browser's speech-recognition service may process what you say");
+    expect(source).toContain('Recognition follows the global Voice Input setting.');
+    expect(source).toContain('On-device Whisper keeps audio on this device');
+    expect(source).toContain('a browser speech service may use its provider');
+    expect(source).toContain('Gemini sends one completed spoken turn to Gemini only when Gemini cloud transcription is explicitly selected');
+    expect(source).toContain('Auto never selects Gemini.');
     expect(source).toContain('configured text-to-speech provider may process the current and next three question texts');
     expect(source).toContain('configured AI provider may process clarification requests');
-    expect(source).toContain('Processing may be local or remote depending on the AlloFlow setup.');
     expect(source).toContain('Do not speak or enter personally identifiable information.');
     expect(source).toContain('answer choices below 60 percent confidence wait for a yes or no confirmation');
     expect(source).toContain('other state-changing commands below 60 percent are not carried out');

@@ -82,6 +82,25 @@ describe('AIProvider connection verification', () => {
     expect(calls[0]).toMatchObject({ model: 'gpt-fixture', max_tokens: 8 });
   });
 
+  it('advertises audio only for a verified Gemini connection', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () => ({
+      ok: true,
+      status: 200,
+      json: async () => ({
+        models: [{ name: 'models/gemini-flash-fixture', supportedGenerationMethods: ['generateContent'] }],
+      }),
+    })));
+    const ai = provider('gemini', async () => ({
+      json: async () => ({ candidates: [{ content: { parts: [{ text: 'OK' }] } }] }),
+    }));
+
+    await expect(ai.testConnection()).resolves.toMatchObject({
+      success: true,
+      selectedModel: 'gemini-flash-fixture',
+      capabilities: { text: true, audio: true },
+    });
+  });
+
   it('fails when the provider returns an empty completion', async () => {
     vi.stubGlobal('fetch', vi.fn(async () => ({
       ok: true,

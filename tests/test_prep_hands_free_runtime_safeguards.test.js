@@ -266,7 +266,7 @@ describe('Test Prep hands-free runtime safeguards', () => {
         mocks.recognitionInstances[2].onerror({ error: 'network' });
         mocks.recognitionInstances[2].onend();
       });
-      expect(host.textContent).toContain('Hands-free mode stopped after repeated microphone errors.');
+      expect(host.textContent).toContain('Hands-free mode stopped after repeated transcription or microphone errors.');
       expect(findButton('Hands-free mode')).toBeTruthy();
       await act(async () => { await new Promise((resolveWait) => setTimeout(resolveWait, 1_100)); });
       expect(mocks.recognitionInstances).toHaveLength(3);

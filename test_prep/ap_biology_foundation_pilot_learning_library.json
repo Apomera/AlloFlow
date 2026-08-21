@@ -3,9 +3,9 @@
   "librarySchemaVersion": 1,
   "libraryId": "ap-biology-foundation-pilot-learning-library",
   "packId": "ap-biology-foundation-pilot",
-  "version": "0.1.0-internal-preview",
+  "version": "0.8.0-internal-preview",
   "title": "AP Biology Foundation Pilot Learning Library",
-  "description": "An independently authored AP Biology internal foundation pilot with eight unit chapter shells, two richer lesson prototypes, chapter retrieval checks, linked study cards, and reasoning aids. It is not released, official, calibrated, or score-predictive.",
+  "description": "An independently authored AP Biology internal foundation pilot with 400 selected-response items, eight structured unit lessons, chapter retrieval checks, linked study cards, and reasoning aids. It is not released, official, calibrated, or score-predictive.",
   "status": "preview",
   "visibility": "internal",
   "released": false,
@@ -18,8 +18,8 @@
     "examFormatReferenceYear": 2026,
     "officialBlueprintUrl": "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
     "officialCourseUrl": "https://apstudents.collegeboard.org/courses/ap-biology",
-    "pilotVersion": "ap-biology-foundation-v1",
-    "pilotNote": "Foundation pilot only: 50 original selected-response items, eight unit shells, two rich lesson prototypes, and internal remediation routes. Do not expand to a 500-item release candidate until content, rights, accessibility, and subject-expert gates advance.",
+    "pilotVersion": "ap-biology-foundation-v8",
+    "pilotNote": "Foundation pilot only: 400 original selected-response items, eight structured unit lessons, and internal remediation routes. This remains an internal enhancement pass; do not treat it as a 500-item release candidate until content, rights, accessibility, and subject-expert gates advance.",
     "bigIdeas": [
       {
         "id": "BI1",
@@ -74,7 +74,7 @@
         "description": "Make claims, support them with evidence, connect reasoning to theory, and predict system changes."
       }
     ],
-    "learningObjectiveCatalogVersion": "ap-biology-foundation-v1",
+    "learningObjectiveCatalogVersion": "ap-biology-foundation-v8",
     "learningObjectiveCatalog": [
       {
         "id": "ap-bio-lo-1-1",
@@ -1788,10 +1788,19 @@
     },
     {
       "id": "openstax-biology-2e",
-      "title": "Biology 2e",
+      "title": "Biology 2e Open Textbook",
       "organization": "OpenStax, Rice University",
       "url": "https://openstax.org/details/books/biology-2e",
       "credibility": "Open college-level biology reference used for factual cross-checking; no prose, figures, or assessment content are reproduced.",
+      "sourceType": "open-textbook-reference",
+      "reviewedAt": "2026-08-20"
+    },
+    {
+      "id": "openstax-biology-2e-introduction",
+      "title": "Biology 2e: The Study of Life",
+      "organization": "OpenStax, Rice University",
+      "url": "https://openstax.org/books/biology-2e/pages/4-introduction",
+      "credibility": "OpenStax chapter used for factual cross-checking of introductory biological principles; no prose, figures, or assessment content are reproduced.",
       "sourceType": "open-textbook-reference",
       "reviewedAt": "2026-08-20"
     }
@@ -1886,7 +1895,7 @@
           "reviewStatus": "source-reviewed-editorial-pass",
           "reviewNote": "Original foundation lesson shell; AP Biology subject-expert, accessibility, rights, and production review remain pending.",
           "contentComplete": true,
-          "contentEnhancementVersion": "ap-bio-foundation-v1",
+          "contentEnhancementVersion": "ap-bio-foundation-v2",
           "contentBlocks": [
             {
               "type": "paragraph",
@@ -2334,7 +2343,7 @@
           "reviewStatus": "source-reviewed-editorial-pass",
           "reviewNote": "Original foundation lesson shell; AP Biology subject-expert, accessibility, rights, and production review remain pending.",
           "contentComplete": true,
-          "contentEnhancementVersion": "ap-bio-foundation-v1",
+          "contentEnhancementVersion": "ap-bio-foundation-v2",
           "contentBlocks": [
             {
               "type": "paragraph",
@@ -2777,7 +2786,7 @@
           "reviewStatus": "source-reviewed-editorial-pass",
           "reviewNote": "Original foundation lesson shell; AP Biology subject-expert, accessibility, rights, and production review remain pending.",
           "contentComplete": true,
-          "contentEnhancementVersion": "ap-bio-foundation-shell-v1",
+          "contentEnhancementVersion": "ap-bio-foundation-v2",
           "contentBlocks": [
             {
               "type": "paragraph",
@@ -2791,24 +2800,424 @@
             },
             {
               "type": "paragraph",
-              "text": "Study objective.Explain how enzyme activity, electron transfer, and energy coupling influence photosynthesis and cellular respiration.",
+              "text": "Examples.Use these to connect a biological structure or process to an observable consequence.",
               "runs": [
                 {
                   "type": "strong",
                   "children": [
                     {
                       "type": "text",
-                      "text": "Study objective."
+                      "text": "Examples."
                     }
                   ]
                 },
                 {
                   "type": "text",
-                  "text": "Explain how enzyme activity, electron transfer, and energy coupling influence photosynthesis and cellular respiration."
+                  "text": "Use these to connect a biological structure or process to an observable consequence."
+                }
+              ]
+            },
+            {
+              "type": "list",
+              "ordered": false,
+              "items": [
+                {
+                  "text": "A competitive inhibitor has a smaller effect when enough substrate is present to compete for the active site.",
+                  "runs": [
+                    {
+                      "type": "text",
+                      "text": "A competitive inhibitor has a smaller effect when enough substrate is present to compete for the active site."
+                    }
+                  ]
+                },
+                {
+                  "text": "Light reactions supply ATP and NADPH that the Calvin cycle can use for carbon fixation.",
+                  "runs": [
+                    {
+                      "type": "text",
+                      "text": "Light reactions supply ATP and NADPH that the Calvin cycle can use for carbon fixation."
+                    }
+                  ]
+                },
+                {
+                  "text": "Oxygen consumption can serve as an indirect readout of aerobic electron transport in isolated mitochondria.",
+                  "runs": [
+                    {
+                      "type": "text",
+                      "text": "Oxygen consumption can serve as an indirect readout of aerobic electron transport in isolated mitochondria."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "Nonexamples and boundaries.These statements identify nearby ideas that should not be treated as equivalent.",
+              "runs": [
+                {
+                  "type": "strong",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Nonexamples and boundaries."
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "text": "These statements identify nearby ideas that should not be treated as equivalent."
+                }
+              ]
+            },
+            {
+              "type": "list",
+              "ordered": false,
+              "items": [
+                {
+                  "text": "An enzyme lowers activation energy but does not change the net free-energy difference or reaction equilibrium.",
+                  "runs": [
+                    {
+                      "type": "text",
+                      "text": "An enzyme lowers activation energy but does not change the net free-energy difference or reaction equilibrium."
+                    }
+                  ]
+                },
+                {
+                  "text": "A plateau in photosynthetic output does not prove that light has stopped being absorbed.",
+                  "runs": [
+                    {
+                      "type": "text",
+                      "text": "A plateau in photosynthetic output does not prove that light has stopped being absorbed."
+                    }
+                  ]
+                },
+                {
+                  "text": "Fermentation regenerates electron carriers but does not yield the same ATP output as aerobic respiration.",
+                  "runs": [
+                    {
+                      "type": "text",
+                      "text": "Fermentation regenerates electron carriers but does not yield the same ATP output as aerobic respiration."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "Common misconception.A high reaction rate does not mean a pathway has unlimited energy or that an enzyme is permanently changed into a product; rate, energy coupling, and regulation are separate claims.",
+              "runs": [
+                {
+                  "type": "strong",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Common misconception."
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "text": "A high reaction rate does not mean a pathway has unlimited energy or that an enzyme is permanently changed into a product; rate, energy coupling, and regulation are separate claims."
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "Worked data moment.State what the observation supports and then name the conclusion it cannot establish.",
+              "runs": [
+                {
+                  "type": "strong",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Worked data moment."
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "text": "State what the observation supports and then name the conclusion it cannot establish."
+                }
+              ]
+            },
+            {
+              "type": "table",
+              "rows": [
+                {
+                  "cells": [
+                    {
+                      "kind": "header",
+                      "text": "Observation",
+                      "columnSpan": 1,
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "Observation"
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "header",
+                      "text": "Supports",
+                      "columnSpan": 1,
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "Supports"
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "header",
+                      "text": "Does not establish",
+                      "columnSpan": 1,
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "Does not establish"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "cells": [
+                    {
+                      "kind": "cell",
+                      "text": "More substrate reduces the effect of an inhibitor.",
+                      "columnSpan": 1,
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "More substrate reduces the effect of an inhibitor."
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "cell",
+                      "text": "The inhibitor may compete reversibly for an active site.",
+                      "columnSpan": 1,
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "The inhibitor may compete reversibly for an active site."
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "cell",
+                      "text": "That every inhibitor is competitive or that inhibition disappears at all concentrations.",
+                      "columnSpan": 1,
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "That every inhibitor is competitive or that inhibition disappears at all concentrations."
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "cells": [
+                    {
+                      "kind": "cell",
+                      "text": "Oxygen output rises with light and then plateaus.",
+                      "columnSpan": 1,
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "Oxygen output rises with light and then plateaus."
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "cell",
+                      "text": "Light is limiting initially and another factor may limit later.",
+                      "columnSpan": 1,
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "Light is limiting initially and another factor may limit later."
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "cell",
+                      "text": "That carbon fixation or respiration has stopped completely.",
+                      "columnSpan": 1,
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "That carbon fixation or respiration has stopped completely."
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "cells": [
+                    {
+                      "kind": "cell",
+                      "text": "An ATP synthase inhibitor lowers ATP and alters oxygen consumption.",
+                      "columnSpan": 1,
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "An ATP synthase inhibitor lowers ATP and alters oxygen consumption."
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "cell",
+                      "text": "Proton-gradient use is coupled to oxidative phosphorylation.",
+                      "columnSpan": 1,
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "Proton-gradient use is coupled to oxidative phosphorylation."
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "cell",
+                      "text": "That ATP synthase is the only protein in the respiratory chain.",
+                      "columnSpan": 1,
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "That ATP synthase is the only protein in the respiratory chain."
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "Retrieval practice.Answer before returning to the pilot items.",
+              "runs": [
+                {
+                  "type": "strong",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Retrieval practice."
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "text": "Answer before returning to the pilot items."
+                }
+              ]
+            },
+            {
+              "type": "list",
+              "ordered": true,
+              "items": [
+                {
+                  "text": "Explain why an enzyme can speed a reaction without changing equilibrium.",
+                  "runs": [
+                    {
+                      "type": "text",
+                      "text": "Explain why an enzyme can speed a reaction without changing equilibrium."
+                    }
+                  ]
+                },
+                {
+                  "text": "Trace how electron transport creates a proton gradient.",
+                  "runs": [
+                    {
+                      "type": "text",
+                      "text": "Trace how electron transport creates a proton gradient."
+                    }
+                  ]
+                },
+                {
+                  "text": "Distinguish the outputs of light reactions from the inputs of carbon fixation.",
+                  "runs": [
+                    {
+                      "type": "text",
+                      "text": "Distinguish the outputs of light reactions from the inputs of carbon fixation."
+                    }
+                  ]
+                },
+                {
+                  "text": "State what oxygen does at the end of aerobic electron transport.",
+                  "runs": [
+                    {
+                      "type": "text",
+                      "text": "State what oxygen does at the end of aerobic electron transport."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "Transfer move.For an energetics data set, identify the measured proxy, locate the limiting step, and separate a rate claim from a claim about total energy or pathway completion.",
+              "runs": [
+                {
+                  "type": "strong",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Transfer move."
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "text": "For an energetics data set, identify the measured proxy, locate the limiting step, and separate a rate claim from a claim about total energy or pathway completion."
                 }
               ]
             }
-          ]
+          ],
+          "examples": [
+            "A competitive inhibitor has a smaller effect when enough substrate is present to compete for the active site.",
+            "Light reactions supply ATP and NADPH that the Calvin cycle can use for carbon fixation.",
+            "Oxygen consumption can serve as an indirect readout of aerobic electron transport in isolated mitochondria."
+          ],
+          "nonExamples": [
+            "An enzyme lowers activation energy but does not change the net free-energy difference or reaction equilibrium.",
+            "A plateau in photosynthetic output does not prove that light has stopped being absorbed.",
+            "Fermentation regenerates electron carriers but does not yield the same ATP output as aerobic respiration."
+          ],
+          "commonMisconceptions": [
+            "A high reaction rate does not mean a pathway has unlimited energy or that an enzyme is permanently changed into a product; rate, energy coupling, and regulation are separate claims."
+          ],
+          "workedDataExample": {
+            "headers": [
+              "Observation",
+              "Supports",
+              "Does not establish"
+            ],
+            "rows": [
+              [
+                "More substrate reduces the effect of an inhibitor.",
+                "The inhibitor may compete reversibly for an active site.",
+                "That every inhibitor is competitive or that inhibition disappears at all concentrations."
+              ],
+              [
+                "Oxygen output rises with light and then plateaus.",
+                "Light is limiting initially and another factor may limit later.",
+                "That carbon fixation or respiration has stopped completely."
+              ],
+              [
+                "An ATP synthase inhibitor lowers ATP and alters oxygen consumption.",
+                "Proton-gradient use is coupled to oxidative phosphorylation.",
+                "That ATP synthase is the only protein in the respiratory chain."
+              ]
+            ]
+          },
+          "retrievalPrompts": [
+            "Explain why an enzyme can speed a reaction without changing equilibrium.",
+            "Trace how electron transport creates a proton gradient.",
+            "Distinguish the outputs of light reactions from the inputs of carbon fixation.",
+            "State what oxygen does at the end of aerobic electron transport."
+          ],
+          "transferMove": "For an energetics data set, identify the measured proxy, locate the limiting step, and separate a rate claim from a claim about total energy or pathway completion."
         }
       ],
       "knowledgeChecks": [
@@ -2835,7 +3244,7 @@
         }
       ],
       "contentComplete": true,
-      "foundationPrototype": false
+      "foundationPrototype": true
     },
     {
       "id": "ap-bio-ch-04",
@@ -2893,7 +3302,7 @@
           "reviewStatus": "source-reviewed-editorial-pass",
           "reviewNote": "Original foundation lesson shell; AP Biology subject-expert, accessibility, rights, and production review remain pending.",
           "contentComplete": true,
-          "contentEnhancementVersion": "ap-bio-foundation-shell-v1",
+          "contentEnhancementVersion": "ap-bio-foundation-v2",
           "contentBlocks": [
             {
               "type": "paragraph",
@@ -2907,24 +3316,424 @@
             },
             {
               "type": "paragraph",
-              "text": "Study objective.Predict how receptor pathways, feedback loops, and checkpoints affect cellular responses.",
+              "text": "Examples.Use these to connect a biological structure or process to an observable consequence.",
               "runs": [
                 {
                   "type": "strong",
                   "children": [
                     {
                       "type": "text",
-                      "text": "Study objective."
+                      "text": "Examples."
                     }
                   ]
                 },
                 {
                   "type": "text",
-                  "text": "Predict how receptor pathways, feedback loops, and checkpoints affect cellular responses."
+                  "text": "Use these to connect a biological structure or process to an observable consequence."
+                }
+              ]
+            },
+            {
+              "type": "list",
+              "ordered": false,
+              "items": [
+                {
+                  "text": "A receptor knockout can reveal whether a target cell requires a specific receptor for a growth response.",
+                  "runs": [
+                    {
+                      "type": "text",
+                      "text": "A receptor knockout can reveal whether a target cell requires a specific receptor for a growth response."
+                    }
+                  ]
+                },
+                {
+                  "text": "Insulin release after a rise in blood glucose illustrates negative feedback that counteracts the initial change.",
+                  "runs": [
+                    {
+                      "type": "text",
+                      "text": "Insulin release after a rise in blood glucose illustrates negative feedback that counteracts the initial change."
+                    }
+                  ]
+                },
+                {
+                  "text": "A DNA-damage checkpoint can delay S-phase entry while repair pathways act.",
+                  "runs": [
+                    {
+                      "type": "text",
+                      "text": "A DNA-damage checkpoint can delay S-phase entry while repair pathways act."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "Nonexamples and boundaries.These statements identify nearby ideas that should not be treated as equivalent.",
+              "runs": [
+                {
+                  "type": "strong",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Nonexamples and boundaries."
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "text": "These statements identify nearby ideas that should not be treated as equivalent."
+                }
+              ]
+            },
+            {
+              "type": "list",
+              "ordered": false,
+              "items": [
+                {
+                  "text": "A signal molecule outside a cell does not guarantee a response if the target cell lacks the receptor or relay components.",
+                  "runs": [
+                    {
+                      "type": "text",
+                      "text": "A signal molecule outside a cell does not guarantee a response if the target cell lacks the receptor or relay components."
+                    }
+                  ]
+                },
+                {
+                  "text": "Positive feedback amplifies a change; it is not interchangeable with homeostatic negative feedback.",
+                  "runs": [
+                    {
+                      "type": "text",
+                      "text": "Positive feedback amplifies a change; it is not interchangeable with homeostatic negative feedback."
+                    }
+                  ]
+                },
+                {
+                  "text": "A cell-cycle checkpoint is not a guarantee that every DNA lesion will be repaired successfully.",
+                  "runs": [
+                    {
+                      "type": "text",
+                      "text": "A cell-cycle checkpoint is not a guarantee that every DNA lesion will be repaired successfully."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "Common misconception.The same ligand can cause different effects in different cells because receptor abundance, relay proteins, and gene-regulatory context differ.",
+              "runs": [
+                {
+                  "type": "strong",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Common misconception."
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "text": "The same ligand can cause different effects in different cells because receptor abundance, relay proteins, and gene-regulatory context differ."
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "Worked data moment.State what the observation supports and then name the conclusion it cannot establish.",
+              "runs": [
+                {
+                  "type": "strong",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Worked data moment."
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "text": "State what the observation supports and then name the conclusion it cannot establish."
+                }
+              ]
+            },
+            {
+              "type": "table",
+              "rows": [
+                {
+                  "cells": [
+                    {
+                      "kind": "header",
+                      "text": "Observation",
+                      "columnSpan": 1,
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "Observation"
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "header",
+                      "text": "Supports",
+                      "columnSpan": 1,
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "Supports"
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "header",
+                      "text": "Does not establish",
+                      "columnSpan": 1,
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "Does not establish"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "cells": [
+                    {
+                      "kind": "cell",
+                      "text": "Only receptor-positive cells activate a reporter after ligand addition.",
+                      "columnSpan": 1,
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "Only receptor-positive cells activate a reporter after ligand addition."
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "cell",
+                      "text": "The receptor is likely necessary for that pathway in the tested cells.",
+                      "columnSpan": 1,
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "The receptor is likely necessary for that pathway in the tested cells."
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "cell",
+                      "text": "That the receptor is sufficient for every response in every cell type.",
+                      "columnSpan": 1,
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "That the receptor is sufficient for every response in every cell type."
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "cells": [
+                    {
+                      "kind": "cell",
+                      "text": "A signaling protein peaks at five minutes and falls by twenty minutes.",
+                      "columnSpan": 1,
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "A signaling protein peaks at five minutes and falls by twenty minutes."
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "cell",
+                      "text": "The pathway response is transient under the tested dose.",
+                      "columnSpan": 1,
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "The pathway response is transient under the tested dose."
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "cell",
+                      "text": "That the signal had no effect after the peak.",
+                      "columnSpan": 1,
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "That the signal had no effect after the peak."
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "cells": [
+                    {
+                      "kind": "cell",
+                      "text": "DNA-damaged cells accumulate in G1.",
+                      "columnSpan": 1,
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "DNA-damaged cells accumulate in G1."
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "cell",
+                      "text": "A checkpoint may delay progression before replication.",
+                      "columnSpan": 1,
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "A checkpoint may delay progression before replication."
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "cell",
+                      "text": "That every arrested cell will repair the damage and divide.",
+                      "columnSpan": 1,
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "That every arrested cell will repair the damage and divide."
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "Retrieval practice.Answer before returning to the pilot items.",
+              "runs": [
+                {
+                  "type": "strong",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Retrieval practice."
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "text": "Answer before returning to the pilot items."
+                }
+              ]
+            },
+            {
+              "type": "list",
+              "ordered": true,
+              "items": [
+                {
+                  "text": "Compare receptor specificity with signal amplification.",
+                  "runs": [
+                    {
+                      "type": "text",
+                      "text": "Compare receptor specificity with signal amplification."
+                    }
+                  ]
+                },
+                {
+                  "text": "Give one example of negative feedback and identify the variable being regulated.",
+                  "runs": [
+                    {
+                      "type": "text",
+                      "text": "Give one example of negative feedback and identify the variable being regulated."
+                    }
+                  ]
+                },
+                {
+                  "text": "Explain how cyclins and checkpoints coordinate cell-cycle timing.",
+                  "runs": [
+                    {
+                      "type": "text",
+                      "text": "Explain how cyclins and checkpoints coordinate cell-cycle timing."
+                    }
+                  ]
+                },
+                {
+                  "text": "Predict why a receptor blocker may affect only a subset of cells.",
+                  "runs": [
+                    {
+                      "type": "text",
+                      "text": "Predict why a receptor blocker may affect only a subset of cells."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "Transfer move.When a signaling prompt reports a response, work backward from the affected cell and ask which receptor, relay, feedback loop, or checkpoint could connect the evidence to the claim.",
+              "runs": [
+                {
+                  "type": "strong",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Transfer move."
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "text": "When a signaling prompt reports a response, work backward from the affected cell and ask which receptor, relay, feedback loop, or checkpoint could connect the evidence to the claim."
                 }
               ]
             }
-          ]
+          ],
+          "examples": [
+            "A receptor knockout can reveal whether a target cell requires a specific receptor for a growth response.",
+            "Insulin release after a rise in blood glucose illustrates negative feedback that counteracts the initial change.",
+            "A DNA-damage checkpoint can delay S-phase entry while repair pathways act."
+          ],
+          "nonExamples": [
+            "A signal molecule outside a cell does not guarantee a response if the target cell lacks the receptor or relay components.",
+            "Positive feedback amplifies a change; it is not interchangeable with homeostatic negative feedback.",
+            "A cell-cycle checkpoint is not a guarantee that every DNA lesion will be repaired successfully."
+          ],
+          "commonMisconceptions": [
+            "The same ligand can cause different effects in different cells because receptor abundance, relay proteins, and gene-regulatory context differ."
+          ],
+          "workedDataExample": {
+            "headers": [
+              "Observation",
+              "Supports",
+              "Does not establish"
+            ],
+            "rows": [
+              [
+                "Only receptor-positive cells activate a reporter after ligand addition.",
+                "The receptor is likely necessary for that pathway in the tested cells.",
+                "That the receptor is sufficient for every response in every cell type."
+              ],
+              [
+                "A signaling protein peaks at five minutes and falls by twenty minutes.",
+                "The pathway response is transient under the tested dose.",
+                "That the signal had no effect after the peak."
+              ],
+              [
+                "DNA-damaged cells accumulate in G1.",
+                "A checkpoint may delay progression before replication.",
+                "That every arrested cell will repair the damage and divide."
+              ]
+            ]
+          },
+          "retrievalPrompts": [
+            "Compare receptor specificity with signal amplification.",
+            "Give one example of negative feedback and identify the variable being regulated.",
+            "Explain how cyclins and checkpoints coordinate cell-cycle timing.",
+            "Predict why a receptor blocker may affect only a subset of cells."
+          ],
+          "transferMove": "When a signaling prompt reports a response, work backward from the affected cell and ask which receptor, relay, feedback loop, or checkpoint could connect the evidence to the claim."
         }
       ],
       "knowledgeChecks": [
@@ -2951,7 +3760,7 @@
         }
       ],
       "contentComplete": true,
-      "foundationPrototype": false
+      "foundationPrototype": true
     },
     {
       "id": "ap-bio-ch-05",
@@ -3008,7 +3817,7 @@
           "reviewStatus": "source-reviewed-editorial-pass",
           "reviewNote": "Original foundation lesson shell; AP Biology subject-expert, accessibility, rights, and production review remain pending.",
           "contentComplete": true,
-          "contentEnhancementVersion": "ap-bio-foundation-shell-v1",
+          "contentEnhancementVersion": "ap-bio-foundation-v2",
           "contentBlocks": [
             {
               "type": "paragraph",
@@ -3022,24 +3831,424 @@
             },
             {
               "type": "paragraph",
-              "text": "Study objective.Use meiosis, probability, and inheritance models to explain genetic variation and phenotype patterns.",
+              "text": "Examples.Use these to connect a biological structure or process to an observable consequence.",
               "runs": [
                 {
                   "type": "strong",
                   "children": [
                     {
                       "type": "text",
-                      "text": "Study objective."
+                      "text": "Examples."
                     }
                   ]
                 },
                 {
                   "type": "text",
-                  "text": "Use meiosis, probability, and inheritance models to explain genetic variation and phenotype patterns."
+                  "text": "Use these to connect a biological structure or process to an observable consequence."
+                }
+              ]
+            },
+            {
+              "type": "list",
+              "ordered": false,
+              "items": [
+                {
+                  "text": "A test cross can reveal a hidden recessive allele in an organism with a dominant phenotype.",
+                  "runs": [
+                    {
+                      "type": "text",
+                      "text": "A test cross can reveal a hidden recessive allele in an organism with a dominant phenotype."
+                    }
+                  ]
+                },
+                {
+                  "text": "Recombination frequency below 50 percent can provide an approximate map distance for linked genes.",
+                  "runs": [
+                    {
+                      "type": "text",
+                      "text": "Recombination frequency below 50 percent can provide an approximate map distance for linked genes."
+                    }
+                  ]
+                },
+                {
+                  "text": "A common-garden experiment can separate inherited differences from environmental effects on phenotype.",
+                  "runs": [
+                    {
+                      "type": "text",
+                      "text": "A common-garden experiment can separate inherited differences from environmental effects on phenotype."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "Nonexamples and boundaries.These statements identify nearby ideas that should not be treated as equivalent.",
+              "runs": [
+                {
+                  "type": "strong",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Nonexamples and boundaries."
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "text": "These statements identify nearby ideas that should not be treated as equivalent."
+                }
+              ]
+            },
+            {
+              "type": "list",
+              "ordered": false,
+              "items": [
+                {
+                  "text": "Crossing over exchanges segments between homologous chromosomes; it does not replace every allele with a dominant allele.",
+                  "runs": [
+                    {
+                      "type": "text",
+                      "text": "Crossing over exchanges segments between homologous chromosomes; it does not replace every allele with a dominant allele."
+                    }
+                  ]
+                },
+                {
+                  "text": "A phenotype ratio is not automatically a genotype ratio when dominance or environmental effects are involved.",
+                  "runs": [
+                    {
+                      "type": "text",
+                      "text": "A phenotype ratio is not automatically a genotype ratio when dominance or environmental effects are involved."
+                    }
+                  ]
+                },
+                {
+                  "text": "Meiosis creates varied gametes, but fertilization and population sampling also influence observed offspring frequencies.",
+                  "runs": [
+                    {
+                      "type": "text",
+                      "text": "Meiosis creates varied gametes, but fertilization and population sampling also influence observed offspring frequencies."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "Common misconception.Dominant describes an allele expression relationship in a particular genotype; it does not mean the allele is more common, stronger, or better for survival.",
+              "runs": [
+                {
+                  "type": "strong",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Common misconception."
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "text": "Dominant describes an allele expression relationship in a particular genotype; it does not mean the allele is more common, stronger, or better for survival."
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "Worked data moment.State what the observation supports and then name the conclusion it cannot establish.",
+              "runs": [
+                {
+                  "type": "strong",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Worked data moment."
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "text": "State what the observation supports and then name the conclusion it cannot establish."
+                }
+              ]
+            },
+            {
+              "type": "table",
+              "rows": [
+                {
+                  "cells": [
+                    {
+                      "kind": "header",
+                      "text": "Observation",
+                      "columnSpan": 1,
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "Observation"
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "header",
+                      "text": "Supports",
+                      "columnSpan": 1,
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "Supports"
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "header",
+                      "text": "Does not establish",
+                      "columnSpan": 1,
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "Does not establish"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "cells": [
+                    {
+                      "kind": "cell",
+                      "text": "Recombinant offspring make up 18 percent of a test cross.",
+                      "columnSpan": 1,
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "Recombinant offspring make up 18 percent of a test cross."
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "cell",
+                      "text": "The loci may be linked and about 18 map units apart.",
+                      "columnSpan": 1,
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "The loci may be linked and about 18 map units apart."
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "cell",
+                      "text": "That all gametes experienced a crossover.",
+                      "columnSpan": 1,
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "That all gametes experienced a crossover."
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "cells": [
+                    {
+                      "kind": "cell",
+                      "text": "A 1:2:1 ratio includes an intermediate heterozygote.",
+                      "columnSpan": 1,
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "A 1:2:1 ratio includes an intermediate heterozygote."
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "cell",
+                      "text": "Incomplete dominance may describe the locus.",
+                      "columnSpan": 1,
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "Incomplete dominance may describe the locus."
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "cell",
+                      "text": "That every trait with a 1:2:1 count follows the same molecular mechanism.",
+                      "columnSpan": 1,
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "That every trait with a 1:2:1 count follows the same molecular mechanism."
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "cells": [
+                    {
+                      "kind": "cell",
+                      "text": "Clones grown in a shared environment remain different in height.",
+                      "columnSpan": 1,
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "Clones grown in a shared environment remain different in height."
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "cell",
+                      "text": "Genotype contributes to the phenotype difference.",
+                      "columnSpan": 1,
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "Genotype contributes to the phenotype difference."
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "cell",
+                      "text": "That environment has no effect on height.",
+                      "columnSpan": 1,
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "That environment has no effect on height."
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "Retrieval practice.Answer before returning to the pilot items.",
+              "runs": [
+                {
+                  "type": "strong",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Retrieval practice."
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "text": "Answer before returning to the pilot items."
+                }
+              ]
+            },
+            {
+              "type": "list",
+              "ordered": true,
+              "items": [
+                {
+                  "text": "Identify the chromosome events that create variation in meiosis.",
+                  "runs": [
+                    {
+                      "type": "text",
+                      "text": "Identify the chromosome events that create variation in meiosis."
+                    }
+                  ]
+                },
+                {
+                  "text": "Explain how a test cross works.",
+                  "runs": [
+                    {
+                      "type": "text",
+                      "text": "Explain how a test cross works."
+                    }
+                  ]
+                },
+                {
+                  "text": "Calculate a simple joint probability using independent loci.",
+                  "runs": [
+                    {
+                      "type": "text",
+                      "text": "Calculate a simple joint probability using independent loci."
+                    }
+                  ]
+                },
+                {
+                  "text": "Distinguish genotype, phenotype, and environmental contribution.",
+                  "runs": [
+                    {
+                      "type": "text",
+                      "text": "Distinguish genotype, phenotype, and environmental contribution."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "Transfer move.For an inheritance problem, state the parental genotypes or assumptions before calculating; then check whether the observed phenotype is being modified by dominance, sex linkage, or environment.",
+              "runs": [
+                {
+                  "type": "strong",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Transfer move."
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "text": "For an inheritance problem, state the parental genotypes or assumptions before calculating; then check whether the observed phenotype is being modified by dominance, sex linkage, or environment."
                 }
               ]
             }
-          ]
+          ],
+          "examples": [
+            "A test cross can reveal a hidden recessive allele in an organism with a dominant phenotype.",
+            "Recombination frequency below 50 percent can provide an approximate map distance for linked genes.",
+            "A common-garden experiment can separate inherited differences from environmental effects on phenotype."
+          ],
+          "nonExamples": [
+            "Crossing over exchanges segments between homologous chromosomes; it does not replace every allele with a dominant allele.",
+            "A phenotype ratio is not automatically a genotype ratio when dominance or environmental effects are involved.",
+            "Meiosis creates varied gametes, but fertilization and population sampling also influence observed offspring frequencies."
+          ],
+          "commonMisconceptions": [
+            "Dominant describes an allele expression relationship in a particular genotype; it does not mean the allele is more common, stronger, or better for survival."
+          ],
+          "workedDataExample": {
+            "headers": [
+              "Observation",
+              "Supports",
+              "Does not establish"
+            ],
+            "rows": [
+              [
+                "Recombinant offspring make up 18 percent of a test cross.",
+                "The loci may be linked and about 18 map units apart.",
+                "That all gametes experienced a crossover."
+              ],
+              [
+                "A 1:2:1 ratio includes an intermediate heterozygote.",
+                "Incomplete dominance may describe the locus.",
+                "That every trait with a 1:2:1 count follows the same molecular mechanism."
+              ],
+              [
+                "Clones grown in a shared environment remain different in height.",
+                "Genotype contributes to the phenotype difference.",
+                "That environment has no effect on height."
+              ]
+            ]
+          },
+          "retrievalPrompts": [
+            "Identify the chromosome events that create variation in meiosis.",
+            "Explain how a test cross works.",
+            "Calculate a simple joint probability using independent loci.",
+            "Distinguish genotype, phenotype, and environmental contribution."
+          ],
+          "transferMove": "For an inheritance problem, state the parental genotypes or assumptions before calculating; then check whether the observed phenotype is being modified by dominance, sex linkage, or environment."
         }
       ],
       "knowledgeChecks": [
@@ -3066,7 +4275,7 @@
         }
       ],
       "contentComplete": true,
-      "foundationPrototype": false
+      "foundationPrototype": true
     },
     {
       "id": "ap-bio-ch-06",
@@ -3126,7 +4335,7 @@
           "reviewStatus": "source-reviewed-editorial-pass",
           "reviewNote": "Original foundation lesson shell; AP Biology subject-expert, accessibility, rights, and production review remain pending.",
           "contentComplete": true,
-          "contentEnhancementVersion": "ap-bio-foundation-shell-v1",
+          "contentEnhancementVersion": "ap-bio-foundation-v2",
           "contentBlocks": [
             {
               "type": "paragraph",
@@ -3140,24 +4349,424 @@
             },
             {
               "type": "paragraph",
-              "text": "Study objective.Trace information from DNA through RNA and protein and predict consequences of mutations or regulatory changes.",
+              "text": "Examples.Use these to connect a biological structure or process to an observable consequence.",
               "runs": [
                 {
                   "type": "strong",
                   "children": [
                     {
                       "type": "text",
-                      "text": "Study objective."
+                      "text": "Examples."
                     }
                   ]
                 },
                 {
                   "type": "text",
-                  "text": "Trace information from DNA through RNA and protein and predict consequences of mutations or regulatory changes."
+                  "text": "Use these to connect a biological structure or process to an observable consequence."
+                }
+              ]
+            },
+            {
+              "type": "list",
+              "ordered": false,
+              "items": [
+                {
+                  "text": "A promoter mutation can lower transcription without changing the coding sequence of a gene.",
+                  "runs": [
+                    {
+                      "type": "text",
+                      "text": "A promoter mutation can lower transcription without changing the coding sequence of a gene."
+                    }
+                  ]
+                },
+                {
+                  "text": "PCR primers anneal on opposite sides of a target and define the region amplified through repeated cycles.",
+                  "runs": [
+                    {
+                      "type": "text",
+                      "text": "PCR primers anneal on opposite sides of a target and define the region amplified through repeated cycles."
+                    }
+                  ]
+                },
+                {
+                  "text": "Different transcription factors can let liver and muscle cells use the same genome differently.",
+                  "runs": [
+                    {
+                      "type": "text",
+                      "text": "Different transcription factors can let liver and muscle cells use the same genome differently."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "Nonexamples and boundaries.These statements identify nearby ideas that should not be treated as equivalent.",
+              "runs": [
+                {
+                  "type": "strong",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Nonexamples and boundaries."
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "text": "These statements identify nearby ideas that should not be treated as equivalent."
+                }
+              ]
+            },
+            {
+              "type": "list",
+              "ordered": false,
+              "items": [
+                {
+                  "text": "Replication copies DNA, whereas transcription copies information into RNA and translation uses RNA to build a polypeptide.",
+                  "runs": [
+                    {
+                      "type": "text",
+                      "text": "Replication copies DNA, whereas transcription copies information into RNA and translation uses RNA to build a polypeptide."
+                    }
+                  ]
+                },
+                {
+                  "text": "A synonymous substitution changes a nucleotide sequence without necessarily changing the encoded amino acid.",
+                  "runs": [
+                    {
+                      "type": "text",
+                      "text": "A synonymous substitution changes a nucleotide sequence without necessarily changing the encoded amino acid."
+                    }
+                  ]
+                },
+                {
+                  "text": "A measured increase in mRNA is not direct proof of a matching increase in functional protein.",
+                  "runs": [
+                    {
+                      "type": "text",
+                      "text": "A measured increase in mRNA is not direct proof of a matching increase in functional protein."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "Common misconception.Gene expression is regulated at multiple stages; the presence of a gene in a cell does not mean that the gene is being transcribed or translated at the same rate as in every other cell.",
+              "runs": [
+                {
+                  "type": "strong",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Common misconception."
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "text": "Gene expression is regulated at multiple stages; the presence of a gene in a cell does not mean that the gene is being transcribed or translated at the same rate as in every other cell."
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "Worked data moment.State what the observation supports and then name the conclusion it cannot establish.",
+              "runs": [
+                {
+                  "type": "strong",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Worked data moment."
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "text": "State what the observation supports and then name the conclusion it cannot establish."
+                }
+              ]
+            },
+            {
+              "type": "table",
+              "rows": [
+                {
+                  "cells": [
+                    {
+                      "kind": "header",
+                      "text": "Observation",
+                      "columnSpan": 1,
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "Observation"
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "header",
+                      "text": "Supports",
+                      "columnSpan": 1,
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "Supports"
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "header",
+                      "text": "Does not establish",
+                      "columnSpan": 1,
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "Does not establish"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "cells": [
+                    {
+                      "kind": "cell",
+                      "text": "All DNA after one replication in light nitrogen has intermediate density.",
+                      "columnSpan": 1,
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "All DNA after one replication in light nitrogen has intermediate density."
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "cell",
+                      "text": "Each molecule contains one old and one new strand.",
+                      "columnSpan": 1,
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "Each molecule contains one old and one new strand."
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "cell",
+                      "text": "That DNA replication occurs without complementary base pairing.",
+                      "columnSpan": 1,
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "That DNA replication occurs without complementary base pairing."
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "cells": [
+                    {
+                      "kind": "cell",
+                      "text": "A transcript is four times more abundant in muscle than liver.",
+                      "columnSpan": 1,
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "A transcript is four times more abundant in muscle than liver."
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "cell",
+                      "text": "The gene is more highly expressed at the RNA level in muscle under these conditions.",
+                      "columnSpan": 1,
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "The gene is more highly expressed at the RNA level in muscle under these conditions."
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "cell",
+                      "text": "That muscle has four copies of the gene or four different proteins.",
+                      "columnSpan": 1,
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "That muscle has four copies of the gene or four different proteins."
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "cells": [
+                    {
+                      "kind": "cell",
+                      "text": "Removing one PCR primer eliminates the target band.",
+                      "columnSpan": 1,
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "Removing one PCR primer eliminates the target band."
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "cell",
+                      "text": "Both primers are needed to define and amplify the target efficiently.",
+                      "columnSpan": 1,
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "Both primers are needed to define and amplify the target efficiently."
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "cell",
+                      "text": "That the original sample lacked every copy of the target sequence.",
+                      "columnSpan": 1,
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "That the original sample lacked every copy of the target sequence."
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "Retrieval practice.Answer before returning to the pilot items.",
+              "runs": [
+                {
+                  "type": "strong",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Retrieval practice."
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "text": "Answer before returning to the pilot items."
+                }
+              ]
+            },
+            {
+              "type": "list",
+              "ordered": true,
+              "items": [
+                {
+                  "text": "Use complementary and antiparallel pairing to write an RNA sequence.",
+                  "runs": [
+                    {
+                      "type": "text",
+                      "text": "Use complementary and antiparallel pairing to write an RNA sequence."
+                    }
+                  ]
+                },
+                {
+                  "text": "Compare replication, transcription, and translation.",
+                  "runs": [
+                    {
+                      "type": "text",
+                      "text": "Compare replication, transcription, and translation."
+                    }
+                  ]
+                },
+                {
+                  "text": "Predict one effect of a promoter or enhancer change.",
+                  "runs": [
+                    {
+                      "type": "text",
+                      "text": "Predict one effect of a promoter or enhancer change."
+                    }
+                  ]
+                },
+                {
+                  "text": "Explain why a frameshift can affect downstream codons.",
+                  "runs": [
+                    {
+                      "type": "text",
+                      "text": "Explain why a frameshift can affect downstream codons."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "Transfer move.Trace an information-flow prompt from DNA sequence or regulatory region to RNA abundance, protein sequence, and phenotype; stop at the first step that the evidence actually measures.",
+              "runs": [
+                {
+                  "type": "strong",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Transfer move."
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "text": "Trace an information-flow prompt from DNA sequence or regulatory region to RNA abundance, protein sequence, and phenotype; stop at the first step that the evidence actually measures."
                 }
               ]
             }
-          ]
+          ],
+          "examples": [
+            "A promoter mutation can lower transcription without changing the coding sequence of a gene.",
+            "PCR primers anneal on opposite sides of a target and define the region amplified through repeated cycles.",
+            "Different transcription factors can let liver and muscle cells use the same genome differently."
+          ],
+          "nonExamples": [
+            "Replication copies DNA, whereas transcription copies information into RNA and translation uses RNA to build a polypeptide.",
+            "A synonymous substitution changes a nucleotide sequence without necessarily changing the encoded amino acid.",
+            "A measured increase in mRNA is not direct proof of a matching increase in functional protein."
+          ],
+          "commonMisconceptions": [
+            "Gene expression is regulated at multiple stages; the presence of a gene in a cell does not mean that the gene is being transcribed or translated at the same rate as in every other cell."
+          ],
+          "workedDataExample": {
+            "headers": [
+              "Observation",
+              "Supports",
+              "Does not establish"
+            ],
+            "rows": [
+              [
+                "All DNA after one replication in light nitrogen has intermediate density.",
+                "Each molecule contains one old and one new strand.",
+                "That DNA replication occurs without complementary base pairing."
+              ],
+              [
+                "A transcript is four times more abundant in muscle than liver.",
+                "The gene is more highly expressed at the RNA level in muscle under these conditions.",
+                "That muscle has four copies of the gene or four different proteins."
+              ],
+              [
+                "Removing one PCR primer eliminates the target band.",
+                "Both primers are needed to define and amplify the target efficiently.",
+                "That the original sample lacked every copy of the target sequence."
+              ]
+            ]
+          },
+          "retrievalPrompts": [
+            "Use complementary and antiparallel pairing to write an RNA sequence.",
+            "Compare replication, transcription, and translation.",
+            "Predict one effect of a promoter or enhancer change.",
+            "Explain why a frameshift can affect downstream codons."
+          ],
+          "transferMove": "Trace an information-flow prompt from DNA sequence or regulatory region to RNA abundance, protein sequence, and phenotype; stop at the first step that the evidence actually measures."
         }
       ],
       "knowledgeChecks": [
@@ -3184,7 +4793,7 @@
         }
       ],
       "contentComplete": true,
-      "foundationPrototype": false
+      "foundationPrototype": true
     },
     {
       "id": "ap-bio-ch-07",
@@ -3248,7 +4857,7 @@
           "reviewStatus": "source-reviewed-editorial-pass",
           "reviewNote": "Original foundation lesson shell; AP Biology subject-expert, accessibility, rights, and production review remain pending.",
           "contentComplete": true,
-          "contentEnhancementVersion": "ap-bio-foundation-shell-v1",
+          "contentEnhancementVersion": "ap-bio-foundation-v2",
           "contentBlocks": [
             {
               "type": "paragraph",
@@ -3262,24 +4871,424 @@
             },
             {
               "type": "paragraph",
-              "text": "Study objective.Use population data, evolutionary mechanisms, and phylogenetic evidence to explain relatedness and change.",
+              "text": "Examples.Use these to connect a biological structure or process to an observable consequence.",
               "runs": [
                 {
                   "type": "strong",
                   "children": [
                     {
                       "type": "text",
-                      "text": "Study objective."
+                      "text": "Examples."
                     }
                   ]
                 },
                 {
                   "type": "text",
-                  "text": "Use population data, evolutionary mechanisms, and phylogenetic evidence to explain relatedness and change."
+                  "text": "Use these to connect a biological structure or process to an observable consequence."
+                }
+              ]
+            },
+            {
+              "type": "list",
+              "ordered": false,
+              "items": [
+                {
+                  "text": "A heritable beak difference linked to reproductive success can change allele frequencies during drought.",
+                  "runs": [
+                    {
+                      "type": "text",
+                      "text": "A heritable beak difference linked to reproductive success can change allele frequencies during drought."
+                    }
+                  ]
+                },
+                {
+                  "text": "A bottleneck can produce different allele-frequency outcomes in replicate populations through chance.",
+                  "runs": [
+                    {
+                      "type": "text",
+                      "text": "A bottleneck can produce different allele-frequency outcomes in replicate populations through chance."
+                    }
+                  ]
+                },
+                {
+                  "text": "A phylogenetic node can support a claim about relative common ancestry without showing direct ancestry between living species.",
+                  "runs": [
+                    {
+                      "type": "text",
+                      "text": "A phylogenetic node can support a claim about relative common ancestry without showing direct ancestry between living species."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "Nonexamples and boundaries.These statements identify nearby ideas that should not be treated as equivalent.",
+              "runs": [
+                {
+                  "type": "strong",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Nonexamples and boundaries."
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "text": "These statements identify nearby ideas that should not be treated as equivalent."
+                }
+              ]
+            },
+            {
+              "type": "list",
+              "ordered": false,
+              "items": [
+                {
+                  "text": "An individual organism does not evolve a new inherited genotype simply because the environment creates a need.",
+                  "runs": [
+                    {
+                      "type": "text",
+                      "text": "An individual organism does not evolve a new inherited genotype simply because the environment creates a need."
+                    }
+                  ]
+                },
+                {
+                  "text": "Genetic drift is not the same mechanism as natural selection because chance sampling need not favor a trait.",
+                  "runs": [
+                    {
+                      "type": "text",
+                      "text": "Genetic drift is not the same mechanism as natural selection because chance sampling need not favor a trait."
+                    }
+                  ]
+                },
+                {
+                  "text": "Hardy-Weinberg equilibrium is a model with restrictive assumptions, not a description of every real population.",
+                  "runs": [
+                    {
+                      "type": "text",
+                      "text": "Hardy-Weinberg equilibrium is a model with restrictive assumptions, not a description of every real population."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "Common misconception.Natural selection acts on phenotypic variation in individuals, but the evolutionary outcome is measured as a change in population-level allele or trait frequencies across generations.",
+              "runs": [
+                {
+                  "type": "strong",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Common misconception."
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "text": "Natural selection acts on phenotypic variation in individuals, but the evolutionary outcome is measured as a change in population-level allele or trait frequencies across generations."
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "Worked data moment.State what the observation supports and then name the conclusion it cannot establish.",
+              "runs": [
+                {
+                  "type": "strong",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Worked data moment."
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "text": "State what the observation supports and then name the conclusion it cannot establish."
+                }
+              ]
+            },
+            {
+              "type": "table",
+              "rows": [
+                {
+                  "cells": [
+                    {
+                      "kind": "header",
+                      "text": "Observation",
+                      "columnSpan": 1,
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "Observation"
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "header",
+                      "text": "Supports",
+                      "columnSpan": 1,
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "Supports"
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "header",
+                      "text": "Does not establish",
+                      "columnSpan": 1,
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "Does not establish"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "cells": [
+                    {
+                      "kind": "cell",
+                      "text": "Identical starting populations diverge after a severe random bottleneck.",
+                      "columnSpan": 1,
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "Identical starting populations diverge after a severe random bottleneck."
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "cell",
+                      "text": "Chance sampling and genetic drift can change allele frequencies.",
+                      "columnSpan": 1,
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "Chance sampling and genetic drift can change allele frequencies."
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "cell",
+                      "text": "That one allele was superior in every replicate.",
+                      "columnSpan": 1,
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "That one allele was superior in every replicate."
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "cells": [
+                    {
+                      "kind": "cell",
+                      "text": "Migration makes neighboring allele frequencies more similar.",
+                      "columnSpan": 1,
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "Migration makes neighboring allele frequencies more similar."
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "cell",
+                      "text": "Gene flow is transferring alleles between populations.",
+                      "columnSpan": 1,
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "Gene flow is transferring alleles between populations."
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "cell",
+                      "text": "That natural selection has stopped in both populations.",
+                      "columnSpan": 1,
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "That natural selection has stopped in both populations."
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "cells": [
+                    {
+                      "kind": "cell",
+                      "text": "A trait is heritable and associated with more offspring.",
+                      "columnSpan": 1,
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "A trait is heritable and associated with more offspring."
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "cell",
+                      "text": "Natural selection can increase the associated trait or alleles.",
+                      "columnSpan": 1,
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "Natural selection can increase the associated trait or alleles."
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "cell",
+                      "text": "That the trait is beneficial in every environment.",
+                      "columnSpan": 1,
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "That the trait is beneficial in every environment."
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "Retrieval practice.Answer before returning to the pilot items.",
+              "runs": [
+                {
+                  "type": "strong",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Retrieval practice."
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "text": "Answer before returning to the pilot items."
+                }
+              ]
+            },
+            {
+              "type": "list",
+              "ordered": true,
+              "items": [
+                {
+                  "text": "List the conditions required for natural selection to change a population.",
+                  "runs": [
+                    {
+                      "type": "text",
+                      "text": "List the conditions required for natural selection to change a population."
+                    }
+                  ]
+                },
+                {
+                  "text": "Compare drift, gene flow, mutation, and selection.",
+                  "runs": [
+                    {
+                      "type": "text",
+                      "text": "Compare drift, gene flow, mutation, and selection."
+                    }
+                  ]
+                },
+                {
+                  "text": "Use p and q to interpret a Hardy-Weinberg calculation.",
+                  "runs": [
+                    {
+                      "type": "text",
+                      "text": "Use p and q to interpret a Hardy-Weinberg calculation."
+                    }
+                  ]
+                },
+                {
+                  "text": "Explain what a sister-taxon relationship does and does not mean.",
+                  "runs": [
+                    {
+                      "type": "text",
+                      "text": "Explain what a sister-taxon relationship does and does not mean."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "Transfer move.For an evolutionary data set, identify whether the evidence concerns inheritance, reproductive success, chance sampling, migration, or reproductive isolation before naming the mechanism.",
+              "runs": [
+                {
+                  "type": "strong",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Transfer move."
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "text": "For an evolutionary data set, identify whether the evidence concerns inheritance, reproductive success, chance sampling, migration, or reproductive isolation before naming the mechanism."
                 }
               ]
             }
-          ]
+          ],
+          "examples": [
+            "A heritable beak difference linked to reproductive success can change allele frequencies during drought.",
+            "A bottleneck can produce different allele-frequency outcomes in replicate populations through chance.",
+            "A phylogenetic node can support a claim about relative common ancestry without showing direct ancestry between living species."
+          ],
+          "nonExamples": [
+            "An individual organism does not evolve a new inherited genotype simply because the environment creates a need.",
+            "Genetic drift is not the same mechanism as natural selection because chance sampling need not favor a trait.",
+            "Hardy-Weinberg equilibrium is a model with restrictive assumptions, not a description of every real population."
+          ],
+          "commonMisconceptions": [
+            "Natural selection acts on phenotypic variation in individuals, but the evolutionary outcome is measured as a change in population-level allele or trait frequencies across generations."
+          ],
+          "workedDataExample": {
+            "headers": [
+              "Observation",
+              "Supports",
+              "Does not establish"
+            ],
+            "rows": [
+              [
+                "Identical starting populations diverge after a severe random bottleneck.",
+                "Chance sampling and genetic drift can change allele frequencies.",
+                "That one allele was superior in every replicate."
+              ],
+              [
+                "Migration makes neighboring allele frequencies more similar.",
+                "Gene flow is transferring alleles between populations.",
+                "That natural selection has stopped in both populations."
+              ],
+              [
+                "A trait is heritable and associated with more offspring.",
+                "Natural selection can increase the associated trait or alleles.",
+                "That the trait is beneficial in every environment."
+              ]
+            ]
+          },
+          "retrievalPrompts": [
+            "List the conditions required for natural selection to change a population.",
+            "Compare drift, gene flow, mutation, and selection.",
+            "Use p and q to interpret a Hardy-Weinberg calculation.",
+            "Explain what a sister-taxon relationship does and does not mean."
+          ],
+          "transferMove": "For an evolutionary data set, identify whether the evidence concerns inheritance, reproductive success, chance sampling, migration, or reproductive isolation before naming the mechanism."
         }
       ],
       "knowledgeChecks": [
@@ -3306,7 +5315,7 @@
         }
       ],
       "contentComplete": true,
-      "foundationPrototype": false
+      "foundationPrototype": true
     },
     {
       "id": "ap-bio-ch-08",
@@ -3365,7 +5374,7 @@
           "reviewStatus": "source-reviewed-editorial-pass",
           "reviewNote": "Original foundation lesson shell; AP Biology subject-expert, accessibility, rights, and production review remain pending.",
           "contentComplete": true,
-          "contentEnhancementVersion": "ap-bio-foundation-shell-v1",
+          "contentEnhancementVersion": "ap-bio-foundation-v2",
           "contentBlocks": [
             {
               "type": "paragraph",
@@ -3379,24 +5388,424 @@
             },
             {
               "type": "paragraph",
-              "text": "Study objective.Analyze energy flow, population growth, species interactions, biodiversity, and ecosystem disruption.",
+              "text": "Examples.Use these to connect a biological structure or process to an observable consequence.",
               "runs": [
                 {
                   "type": "strong",
                   "children": [
                     {
                       "type": "text",
-                      "text": "Study objective."
+                      "text": "Examples."
                     }
                   ]
                 },
                 {
                   "type": "text",
-                  "text": "Analyze energy flow, population growth, species interactions, biodiversity, and ecosystem disruption."
+                  "text": "Use these to connect a biological structure or process to an observable consequence."
+                }
+              ]
+            },
+            {
+              "type": "list",
+              "ordered": false,
+              "items": [
+                {
+                  "text": "A logistic curve levels near carrying capacity as limiting factors intensify.",
+                  "runs": [
+                    {
+                      "type": "text",
+                      "text": "A logistic curve levels near carrying capacity as limiting factors intensify."
+                    }
+                  ]
+                },
+                {
+                  "text": "Energy available to secondary consumers is reduced by repeated metabolic losses between trophic levels.",
+                  "runs": [
+                    {
+                      "type": "text",
+                      "text": "Energy available to secondary consumers is reduced by repeated metabolic losses between trophic levels."
+                    }
+                  ]
+                },
+                {
+                  "text": "A before-after comparison with untreated plots can test whether invasive-plant removal changes native diversity.",
+                  "runs": [
+                    {
+                      "type": "text",
+                      "text": "A before-after comparison with untreated plots can test whether invasive-plant removal changes native diversity."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "Nonexamples and boundaries.These statements identify nearby ideas that should not be treated as equivalent.",
+              "runs": [
+                {
+                  "type": "strong",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Nonexamples and boundaries."
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "text": "These statements identify nearby ideas that should not be treated as equivalent."
+                }
+              ]
+            },
+            {
+              "type": "list",
+              "ordered": false,
+              "items": [
+                {
+                  "text": "Energy is transferred and dissipated as heat; it is not created anew at each trophic level.",
+                  "runs": [
+                    {
+                      "type": "text",
+                      "text": "Energy is transferred and dissipated as heat; it is not created anew at each trophic level."
+                    }
+                  ]
+                },
+                {
+                  "text": "A population at carrying capacity can still have births, deaths, immigration, and emigration.",
+                  "runs": [
+                    {
+                      "type": "text",
+                      "text": "A population at carrying capacity can still have births, deaths, immigration, and emigration."
+                    }
+                  ]
+                },
+                {
+                  "text": "Sharing a habitat does not mean two species have identical niches or must be mutually exclusive.",
+                  "runs": [
+                    {
+                      "type": "text",
+                      "text": "Sharing a habitat does not mean two species have identical niches or must be mutually exclusive."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "Common misconception.A density-dependent factor is defined by how its effect changes with population density, not by whether the factor is biological or whether it reduces population size.",
+              "runs": [
+                {
+                  "type": "strong",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Common misconception."
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "text": "A density-dependent factor is defined by how its effect changes with population density, not by whether the factor is biological or whether it reduces population size."
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "Worked data moment.State what the observation supports and then name the conclusion it cannot establish.",
+              "runs": [
+                {
+                  "type": "strong",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Worked data moment."
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "text": "State what the observation supports and then name the conclusion it cannot establish."
+                }
+              ]
+            },
+            {
+              "type": "table",
+              "rows": [
+                {
+                  "cells": [
+                    {
+                      "kind": "header",
+                      "text": "Observation",
+                      "columnSpan": 1,
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "Observation"
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "header",
+                      "text": "Supports",
+                      "columnSpan": 1,
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "Supports"
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "header",
+                      "text": "Does not establish",
+                      "columnSpan": 1,
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "Does not establish"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "cells": [
+                    {
+                      "kind": "cell",
+                      "text": "Native diversity increases more in removal plots than matched untreated plots.",
+                      "columnSpan": 1,
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "Native diversity increases more in removal plots than matched untreated plots."
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "cell",
+                      "text": "The intervention may have restored diversity beyond background change.",
+                      "columnSpan": 1,
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "The intervention may have restored diversity beyond background change."
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "cell",
+                      "text": "That the invasive species was the only cause of the original decline without additional controls.",
+                      "columnSpan": 1,
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "That the invasive species was the only cause of the original decline without additional controls."
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "cells": [
+                    {
+                      "kind": "cell",
+                      "text": "Disease prevalence rises with crowding, while a temperature shock affects all densities similarly.",
+                      "columnSpan": 1,
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "Disease prevalence rises with crowding, while a temperature shock affects all densities similarly."
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "cell",
+                      "text": "Disease is density dependent and the shock is density independent.",
+                      "columnSpan": 1,
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "Disease is density dependent and the shock is density independent."
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "cell",
+                      "text": "That either factor is the only limit on the population.",
+                      "columnSpan": 1,
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "That either factor is the only limit on the population."
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "cells": [
+                    {
+                      "kind": "cell",
+                      "text": "A predator introduction is followed by prey decline on invaded islands but not controls.",
+                      "columnSpan": 1,
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "A predator introduction is followed by prey decline on invaded islands but not controls."
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "cell",
+                      "text": "The invasion is associated with an ecosystem disruption.",
+                      "columnSpan": 1,
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "The invasion is associated with an ecosystem disruption."
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "cell",
+                      "text": "That the predator caused the entire decline without timing and comparison evidence.",
+                      "columnSpan": 1,
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "That the predator caused the entire decline without timing and comparison evidence."
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "Retrieval practice.Answer before returning to the pilot items.",
+              "runs": [
+                {
+                  "type": "strong",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Retrieval practice."
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "text": "Answer before returning to the pilot items."
+                }
+              ]
+            },
+            {
+              "type": "list",
+              "ordered": true,
+              "items": [
+                {
+                  "text": "Calculate net population change from demographic rates.",
+                  "runs": [
+                    {
+                      "type": "text",
+                      "text": "Calculate net population change from demographic rates."
+                    }
+                  ]
+                },
+                {
+                  "text": "Explain why energy decreases between trophic levels.",
+                  "runs": [
+                    {
+                      "type": "text",
+                      "text": "Explain why energy decreases between trophic levels."
+                    }
+                  ]
+                },
+                {
+                  "text": "Distinguish density-dependent from density-independent limits.",
+                  "runs": [
+                    {
+                      "type": "text",
+                      "text": "Distinguish density-dependent from density-independent limits."
+                    }
+                  ]
+                },
+                {
+                  "text": "Use niche dimensions to explain coexistence or competition.",
+                  "runs": [
+                    {
+                      "type": "text",
+                      "text": "Use niche dimensions to explain coexistence or competition."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "Transfer move.Match the scale of the evidence to the ecological claim: individual response, population growth, community interaction, or ecosystem disruption; then name the comparison that makes the inference credible.",
+              "runs": [
+                {
+                  "type": "strong",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Transfer move."
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "text": "Match the scale of the evidence to the ecological claim: individual response, population growth, community interaction, or ecosystem disruption; then name the comparison that makes the inference credible."
                 }
               ]
             }
-          ]
+          ],
+          "examples": [
+            "A logistic curve levels near carrying capacity as limiting factors intensify.",
+            "Energy available to secondary consumers is reduced by repeated metabolic losses between trophic levels.",
+            "A before-after comparison with untreated plots can test whether invasive-plant removal changes native diversity."
+          ],
+          "nonExamples": [
+            "Energy is transferred and dissipated as heat; it is not created anew at each trophic level.",
+            "A population at carrying capacity can still have births, deaths, immigration, and emigration.",
+            "Sharing a habitat does not mean two species have identical niches or must be mutually exclusive."
+          ],
+          "commonMisconceptions": [
+            "A density-dependent factor is defined by how its effect changes with population density, not by whether the factor is biological or whether it reduces population size."
+          ],
+          "workedDataExample": {
+            "headers": [
+              "Observation",
+              "Supports",
+              "Does not establish"
+            ],
+            "rows": [
+              [
+                "Native diversity increases more in removal plots than matched untreated plots.",
+                "The intervention may have restored diversity beyond background change.",
+                "That the invasive species was the only cause of the original decline without additional controls."
+              ],
+              [
+                "Disease prevalence rises with crowding, while a temperature shock affects all densities similarly.",
+                "Disease is density dependent and the shock is density independent.",
+                "That either factor is the only limit on the population."
+              ],
+              [
+                "A predator introduction is followed by prey decline on invaded islands but not controls.",
+                "The invasion is associated with an ecosystem disruption.",
+                "That the predator caused the entire decline without timing and comparison evidence."
+              ]
+            ]
+          },
+          "retrievalPrompts": [
+            "Calculate net population change from demographic rates.",
+            "Explain why energy decreases between trophic levels.",
+            "Distinguish density-dependent from density-independent limits.",
+            "Use niche dimensions to explain coexistence or competition."
+          ],
+          "transferMove": "Match the scale of the evidence to the ecological claim: individual response, population growth, community interaction, or ecosystem disruption; then name the comparison that makes the inference credible."
         }
       ],
       "knowledgeChecks": [
@@ -3423,7 +5832,7 @@
         }
       ],
       "contentComplete": true,
-      "foundationPrototype": false
+      "foundationPrototype": true
     }
   ],
   "diagrams": [],
@@ -3730,7 +6139,7 @@
     "diagrams": 0,
     "diagramPlacements": 0,
     "constructedResponseWorkshops": 0,
-    "richLessonPrototypes": 2,
+    "richLessonPrototypes": 8,
     "sourceReviewedChapters": 8,
     "sourceReviewedFlashcards": 8,
     "sourceReviewedMemoryAids": 8,
@@ -3775,11 +6184,11 @@
   "transitionNotice": "Reverify the current AP Biology CED, clarifications, exam format, policies, prerequisite language, laboratory boundaries, and public-use boundaries before any release.",
   "contentMigration": {
     "schemaVersion": 1,
-    "contentVersion": "ap-biology-foundation-v1",
+    "contentVersion": "ap-biology-foundation-v8",
     "sections": 8,
     "completeSections": 8,
-    "richLessonPrototypes": 2,
+    "richLessonPrototypes": 8,
     "status": "foundation-prototype",
-    "note": "All eight unit shells are navigable; richer structured lesson blocks are intentionally limited to Units 1 and 2 until the foundation pilot receives review."
+    "note": "All eight unit lessons are navigable and now include structured examples, boundaries, misconception guidance, worked data, retrieval, and transfer; independent review remains pending."
   }
 }

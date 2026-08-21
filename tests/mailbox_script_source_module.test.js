@@ -138,7 +138,7 @@ describe('mailbox script source extraction', () => {
         expect(buildSource).toContain("modPath: path.join(ROOT, 'mailbox_script_source_module.js')");
         expect(buildSource).toContain("publicPath: path.join(ROOT, 'desktop/web-app', 'public', 'mailbox_script_source_module.js')");
         expect(buildSource).toContain("require('./_build_mailbox_script_source_module.js').buildMailboxScriptSourceModule(src)");
-        expect(hostSource).toContain("loadModule('MailboxScriptSource', 'https://alloflow-cdn.pages.dev/mailbox_script_source_module.js')");
+        expect(hostSource).toMatch(/loadModule\('MailboxScriptSource', 'https:\/\/alloflow-cdn\.pages\.dev\/mailbox_script_source_module\.js(?:\?v=[a-z0-9]+)?'\)/);
         expect(hostSource).toContain("window.dispatchEvent(new CustomEvent('alloflow:module-registry-changed'))");
     });
 

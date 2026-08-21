@@ -1,0 +1,301 @@
+'use strict';
+
+const reviewedAt = '2026-08-20';
+const reviewWave = 'eppp-native-quality-wave-37';
+const baselineMetrics = Object.freeze({
+  distractor: { totalItems: 1500, warningOnly: true, forbiddenAggregateChoices: 0, uniqueKeyStemLexicalLeakageCandidates: 38, asymmetricExtremeDistractorCandidates: 43, advancedDirectRecallCandidates: 1, semanticConceptDuplicatePairs: 52, semanticConceptDuplicateClusters: 34, editorialAnchorsWithActiveWarnings: 0, editorialAnchorsWithNoCurrentWarning: 10, priorityDocketItems: 20 },
+  feedback: { totalItems: 1500, totalIncorrectOptions: 4500, itemsWithWarnings: 457, incorrectOptionsWithWarnings: 1271, insufficientDetailOptions: 587, genericTemplateOptions: 630, choiceRestatementOptions: 145, fullKeyEchoOptions: 64, priorityDocketItems: 100 },
+});
+
+const revisions = [
+  {
+    id: "eppp-b002-assessment-1", expectedAnswerIndex: 0, expectedDifficulty: "foundation", targetDifficulty: "advanced",
+    expectedPrompt: "A neuropsychological memory score is strongly associated with whether patients independently remember appointments and medications at home. This finding provides evidence most directly about the score's:",
+    prompt: "A memory score predicts whether adults remember medications and appointments at home, even after controlling for basic accuracy. What inference is most defensible about the score's validity?",
+    choices: ["Its performance relates to functioning in relevant everyday contexts, supporting ecological validity", "Its items show internal consistency because responses correlate across test trials, a reliability rather than validity claim", "Its scores have interrater reliability because clinicians agree on behavioral ratings", "Its factor structure is invariant because home outcomes fit the same latent model"],
+    rationale: "A relationship between test performance and meaningful everyday functioning supports ecological validity. It addresses transfer to ordinary behavior, distinct from internal consistency, interrater agreement, or factorial invariance.",
+    feedback: {
+      1: "Internal consistency concerns relationships among items within the measure. A home-function association instead asks whether performance corresponds with behavior beyond the testing session.",
+      2: "Interrater reliability concerns agreement among evaluators. The evidence described links a score with independent everyday outcomes rather than comparing raters.",
+      3: "Factorial invariance concerns whether a measurement structure functions comparably across groups. The home outcome is evidence about ecological correspondence instead.",
+    }, cognitiveProcess: "analysis", learningObjectiveId: "assessment-analyze-ecological-validity-from-everyday-memory-function", distractorDesign: ["internal-consistency-versus-ecological-validity", "interrater-versus-ecological-validity", "factorial-invariance-versus-ecological-validity"],
+  },
+  {
+    id: "eppp-b014-assessment-1", expectedAnswerIndex: 0, expectedDifficulty: "foundation", targetDifficulty: "intermediate",
+    expectedPrompt: "Why is a psychological-test raw score usually insufficient by itself?",
+    prompt: "A client earns 27 correct on a symptom inventory, but the report must compare the result with norms and interpret severity for a referral question. Which step is essential before drawing a conclusion?",
+    choices: ["Interpret the raw total using the instrument's scoring rules, norms or criteria, reliability, and referral context", "Treat the total as a diagnosis because numerical results are objective and clinicians need not interpret norms or the referral question", "Assume a higher total has the same meaning across instruments and populations, irrespective of norms or referral context", "Discard the total because raw scores have no role after administration; no interpretation or referral context is needed"],
+    rationale: "A raw total becomes interpretable through relevant scoring conventions, normative or criterion information, reliability, validity evidence, and context. It is not inherently diagnostic or comparable across instruments.",
+    feedback: {
+      1: "Numerical scoring does not convert a raw total into a diagnosis. Diagnostic interpretation requires construct evidence, context, and appropriate clinical reasoning.",
+      2: "Raw totals can have different meanings across instruments, norms, and populations. A higher number is not a universal severity metric.",
+      3: "Raw scores remain the starting data for interpretation and comparison with appropriate standards. They require context rather than becoming useless after administration.",
+    }, cognitiveProcess: "application", learningObjectiveId: "assessment-apply-norms-and-context-to-raw-score-interpretation", distractorDesign: ["raw-score-to-diagnosis-error", "cross-instrument-score-equivalence", "raw-score-dismissal-error"],
+  },
+  {
+    id: "eppp-b019-assessment-2", expectedAnswerIndex: 1, expectedDifficulty: "foundation", targetDifficulty: "advanced",
+    expectedPrompt: "Which finding best illustrates a double dissociation between two cognitive functions?",
+    prompt: "Patient A has impaired naming but intact spatial analysis after a left lesion; Patient B has intact naming but impaired spatial analysis after a different lesion. What inference does the reciprocal pattern support?",
+    choices: ["The tasks differ in difficulty, so lesion comparisons are uninformative", "The two functions show a double dissociation consistent with partial functional separability", "Both lesions disrupt the same process because each patient has one impairment", "Practice effects explain the opposite patterns across patients"],
+    rationale: "A double dissociation is reciprocal: one lesion selectively disrupts one function relative to another, while a second lesion reverses that pattern. It supports functional separability more strongly than a single dissociation, while still depending on task assumptions.",
+    feedback: {
+      0: "Task difficulty can influence performance, but it does not explain reciprocal selectivity across lesions by itself. The comparison remains informative when tasks are appropriately designed.",
+      2: "One impairment in each patient does not imply a shared process when the impaired functions reverse across lesions. The reciprocal pattern is the critical evidence.",
+      3: "Practice could affect performance, yet it would not predict opposite selective impairments tied to different lesions. Lesion-function relations provide the relevant inference.",
+    }, cognitiveProcess: "analysis", learningObjectiveId: "assessment-analyze-double-dissociation-for-functional-separability", distractorDesign: ["task-difficulty-confusion", "single-impairment-overgeneralization", "practice-effect-confusion"],
+  },
+  {
+    id: "eppp-b003-biological-2", expectedAnswerIndex: 2, expectedDifficulty: "foundation", targetDifficulty: "intermediate",
+    expectedPrompt: "Dopaminergic neurons in the ventral tegmental area project to the nucleus accumbens as part of a circuit strongly implicated in which functions?",
+    prompt: "During reward learning, a cue that predicts an unexpected payoff produces phasic activity in VTA neurons projecting to the nucleus accumbens. Which process best fits?",
+    choices: ["Working-memory manipulation through dorsolateral prefrontal circuits rather than reward learning", "Fine motor initiation through dorsal striatal output", "Motivated behavior and reinforcement learning shaped by prediction signals", "Pituitary endocrine feedback controlling prolactin release"],
+    rationale: "The mesolimbic projection from the ventral tegmental area to the nucleus accumbens participates in motivated behavior and reinforcement learning. Prediction-related activity reflects updating the value of cues and outcomes rather than a simple pleasure signal.",
+    feedback: {
+      0: "Dorsolateral prefrontal networks support working-memory manipulation, but the VTA-to-accumbens pathway is not the primary circuit described by this reward-learning pattern.",
+      1: "Dorsal striatal circuits contribute to movement initiation and habits. The cue-related reward signal here points toward mesolimbic motivation and reinforcement.",
+      3: "Prolactin regulation involves hypothalamic dopamine pathways acting on the pituitary. It does not explain phasic cue-prediction activity in the accumbens pathway.",
+    }, cognitiveProcess: "application", learningObjectiveId: "biological-apply-mesolimbic-reward-prediction-to-cue-learning", distractorDesign: ["prefrontal-working-memory-confusion", "dorsal-striatal-motor-confusion", "pituitary-dopamine-confusion"],
+  },
+  {
+    id: "eppp-b011-biological-2", expectedAnswerIndex: 2, expectedDifficulty: "foundation", targetDifficulty: "advanced",
+    expectedPrompt: "Multiple sclerosis most directly involves:",
+    prompt: "A young adult has episodes of visual loss, sensory changes, and MRI lesions distributed across the brain and spinal cord. Which mechanism best integrates the pattern?",
+    choices: ["Peripheral neuromuscular-junction degeneration", "Excess dopamine production in basal ganglia", "Immune-mediated demyelination in the central nervous system", "Congenital absence of spinal sensory neurons"],
+    rationale: "Multiple sclerosis is an immune-mediated inflammatory disease of the central nervous system characterized by demyelination and neuroaxonal injury. Its dissemination across time and neural regions helps distinguish the pattern from peripheral or congenital disorders.",
+    feedback: {
+      0: "Neuromuscular-junction degeneration affects peripheral transmission rather than producing disseminated lesions in the brain and spinal cord.",
+      1: "Excess basal-ganglia dopamine does not account for episodic visual and sensory deficits accompanied by disseminated central lesions.",
+      3: "A congenital absence of sensory neurons would not explain an adult-onset, relapsing pattern with lesions distributed across central neural structures.",
+    }, cognitiveProcess: "analysis", learningObjectiveId: "biological-analyze-multiple-sclerosis-mechanism-from-disseminated-lesions", distractorDesign: ["neuromuscular-junction-versus-cns", "dopamine-versus-demyelination", "congenital-neuron-loss-versus-relapsing-disease"],
+  },
+  {
+    id: "eppp-b016-biological-2", expectedAnswerIndex: 2, expectedDifficulty: "foundation", targetDifficulty: "intermediate",
+    expectedPrompt: "The orbitofrontal cortex contributes importantly to:",
+    prompt: "After an orbitofrontal injury, a client keeps choosing a formerly rewarded option even after its outcome changes. Which function is most impaired?",
+    choices: ["Basic cochlear transduction of sound into neural signals rather than changing outcome value", "Peripheral myelin synthesis around motor axons, not updating outcome value", "Updating outcome value to guide flexible choice", "Segmental spinal reflexes operating through local circuits with minimal cortical evaluation of outcome value"],
+    rationale: "Orbitofrontal systems represent and update outcome value, supporting flexible choice when reward contingencies change. Damage can impair reversal learning and decision making even when basic sensation and movement remain intact.",
+    feedback: {
+      0: "Cochlear transduction converts acoustic vibration into neural activity in the inner ear. It does not explain perseveration after a reward contingency changes.",
+      1: "Schwann cells produce peripheral myelin, a process outside orbitofrontal decision circuitry. The vignette concerns updated value and flexible choice.",
+      3: "Spinal reflexes can operate through segmental circuits, whereas the observed problem requires evaluating changing consequences and adapting a choice.",
+    }, cognitiveProcess: "application", learningObjectiveId: "biological-apply-orbitofrontal-outcome-updating-to-reversal-choice", distractorDesign: ["cochlear-transduction-confusion", "peripheral-myelination-confusion", "spinal-reflex-versus-flexible-choice"],
+  },
+  {
+    id: "eppp-b010-cognitive-1", expectedAnswerIndex: 1, expectedDifficulty: "foundation", targetDifficulty: "intermediate",
+    expectedPrompt: "A negotiator’s estimate remains pulled toward an arbitrary opening number even after reconsideration. This illustrates:",
+    prompt: "A buyer hears an arbitrary opening price, then estimates a product's value; later adjustments remain too close to that initial number. Which bias is illustrated?",
+    choices: ["Availability based on how easily similar purchases come to mind, with no adjustment of a value", "Anchoring from insufficient adjustment away from an initial value", "Hindsight from treating the initial opening price as predictable", "Mood-congruent recall of favorable shopping experiences"],
+    rationale: "Anchoring occurs when an initial value exerts disproportionate influence on a later numerical judgment. Adjustment away from that starting point remains insufficient, although several mechanisms can contribute to anchoring effects.",
+    feedback: {
+      0: "Availability concerns the ease of retrieving examples, not the pull of a numeric starting point. The vignette centers on adjustment from an opening value.",
+      2: "Hindsight concerns judging an outcome as predictable after learning it. The buyer is making a current estimate that remains tied to an initial number.",
+      3: "Mood-congruent recall involves retrieving material consistent with affect. It does not explain a systematic numerical pull toward an arbitrary anchor.",
+    }, cognitiveProcess: "application", learningObjectiveId: "cognitive-apply-anchoring-to-negotiation-estimate-adjustment", distractorDesign: ["availability-versus-anchoring", "hindsight-versus-anchoring", "mood-congruence-versus-anchoring"],
+  },
+  {
+    id: "eppp-b019-cognitive-1", expectedAnswerIndex: 0, expectedDifficulty: "foundation", targetDifficulty: "intermediate",
+    expectedPrompt: "A patient accurately repeats a health claim but attributes it to a physician even though it was encountered in a social-media post. Which memory failure is most specifically involved?",
+    prompt: "A client accurately recalls a health claim but says a physician gave it, although the claim appeared in a social-media post. Which memory process should the clinician assess?",
+    choices: ["Source monitoring for assigning remembered content to its origin", "Procedural learning for acquiring a practiced motor skill", "Semantic loss involving the meaning of health terms", "Prospective memory for a future appointment"],
+    rationale: "Source monitoring assigns retrieved content to an origin, context, or mode of acquisition. Here the proposition remains available but its origin is misattributed, distinguishing the problem from loss of knowledge, skill learning, or future-intention failure.",
+    feedback: {
+      1: "Procedural learning concerns habits and skills, such as typing or riding. The client remembers propositional content but misidentifies where it was learned.",
+      2: "Semantic loss would involve weakened knowledge or meaning. The health claim is recalled accurately, so the error concerns its source rather than its content.",
+      3: "Prospective memory concerns carrying out a planned future action. The vignette describes a past source attribution error, not a missed future intention.",
+    }, cognitiveProcess: "application", learningObjectiveId: "cognitive-apply-source-monitoring-to-misattributed-health-information", distractorDesign: ["procedural-memory-confusion", "semantic-memory-loss-confusion", "prospective-memory-confusion"],
+  },
+  {
+    id: "eppp-b023-cognitive-1", expectedAnswerIndex: 0, expectedDifficulty: "foundation", targetDifficulty: "advanced",
+    expectedPrompt: "In Lazarus and Folkman's transactional model, the experience of psychological stress depends especially on:",
+    prompt: "Two employees face the same restructuring notice; one appraises it as a challenge with support, the other as a threat with few options. Which model best explains their different stress responses?",
+    choices: ["Stress reflects appraisal of significance and coping resources within the person–environment transaction", "Stress follows a fixed physiological sequence despite interpretation", "Stress occurs when an event is objectively negative across people", "Stress requires eliminating emotion-focused coping after the event"],
+    rationale: "The transactional model emphasizes the person–environment relationship as appraised by the individual. Primary appraisal concerns relevance or potential harm, threat, or challenge; secondary appraisal concerns coping options and resources, both of which can change through reappraisal.",
+    feedback: {
+      1: "Physiological responses matter, but the transactional model does not treat stress as a fixed sequence independent of meaning, resources, and appraisal.",
+      2: "An event's objective features do not determine identical stress responses across people. Appraisal and available coping resources help explain the divergence.",
+      3: "Emotion-focused coping can be adaptive in some circumstances and is part of the coping process. The model does not require removing it after stress begins.",
+    }, cognitiveProcess: "analysis", learningObjectiveId: "cognitive-analyze-transactional-stress-from-appraisal-and-coping", distractorDesign: ["fixed-physiology-versus-appraisal", "objective-event-versus-personal-appraisal", "emotion-coping-elimination-error"],
+  },
+  {
+    id: "eppp-b004-intervention-1", expectedAnswerIndex: 1, expectedDifficulty: "intermediate", targetDifficulty: "advanced",
+    expectedPrompt: "During early sessions, a client repeatedly arrives late after meetings in which anger toward a supervisor was discussed and then describes similar cycles of conflict and withdrawal in past close relationships. Which therapist response most directly reflects a contemporary psychodynamic focus?",
+    prompt: "A client arrives late after discussing anger toward a supervisor, then describes similar conflict-and-withdrawal cycles in close relationships. Which response best reflects contemporary psychodynamic work?",
+    choices: ["Create a reward schedule for punctuality and defer discussion of the repeated relational pattern", "Explore affect, lateness as possible avoidance, recurring relational patterns, and their emergence in therapy", "Offer unconditional positive regard while avoiding hypotheses about patterns outside immediate awareness", "Challenge the automatic belief that supervisors are critical and assign a thought record for the next meeting"],
+    rationale: "Contemporary psychodynamic work explores affect, possible avoidance, recurring interpersonal themes, past experience, and their expression in the therapy relationship. The therapist investigates rather than assumes that lateness is avoidance, keeping the formulation collaborative and open to alternatives.",
+    feedback: {
+      0: "A reward schedule may address punctuality behavior, but deferring the relational pattern misses the affective and interpersonal material emerging around lateness.",
+      2: "Acceptance can support therapy, yet avoiding hypotheses about recurring patterns removes a central psychodynamic avenue for exploring how relationships and treatment interact.",
+      3: "A thought record and automatic-belief challenge fit a cognitive approach. They do not directly examine affect, relational repetition, possible avoidance, and its appearance in therapy.",
+    }, cognitiveProcess: "analysis", learningObjectiveId: "intervention-analyze-contemporary-psychodynamic-relational-patterns", distractorDesign: ["behavioral-punctuality-versus-relational-formulation", "support-without-interpretive-inquiry", "cognitive-restructuring-versus-psychodynamic-inquiry"],
+  },
+  {
+    id: "eppp-b006-intervention-1", expectedAnswerIndex: 1, expectedDifficulty: "foundation", targetDifficulty: "intermediate",
+    expectedPrompt: "Why should improvement from baseline in a placebo group not automatically be attributed entirely to a placebo mechanism?",
+    prompt: "In a randomized trial, both an active-treatment group and placebo group improve from baseline. Why cannot the placebo group's pre–post change be treated as the drug-specific effect?",
+    choices: ["Placebo participants cannot show genuine or sustained change during the study", "Change may combine expectancy and context with natural history, regression, and measurement effects", "Random assignment keeps symptoms stable until treatment begins", "A placebo response equals the active drug's treatment-specific effect"],
+    rationale: "Pre–post change in a placebo group can combine expectancy and treatment context with spontaneous change, regression to the mean, and measurement effects. Isolating a placebo effect requires an appropriate comparison and careful design.",
+    feedback: {
+      0: "Placebo-group participants can improve for several genuine reasons, including expectancy, natural recovery, and measurement change. Their improvement is not automatically meaningless.",
+      2: "Random assignment balances groups on average but does not freeze symptoms between measurements. Natural change and measurement effects can occur during the trial.",
+      3: "A placebo response is not identical to an active drug's treatment-specific effect. The active-versus-placebo contrast is needed to estimate the specific component.",
+    }, cognitiveProcess: "analysis", learningObjectiveId: "intervention-analyze-placebo-prepost-change-and-treatment-specific-effect", distractorDesign: ["placebo-improvement-dismissal", "randomization-as-symptom-control", "placebo-equals-specific-effect"],
+  },
+  {
+    id: "eppp-b013-intervention-2", expectedAnswerIndex: 3, expectedDifficulty: "foundation", targetDifficulty: "intermediate",
+    expectedPrompt: "In a token economy, tokens function primarily as:",
+    prompt: "A clinic gives points after target behaviors and lets clients exchange them for preferred activities. In this behavior plan, what role do the points play?",
+    choices: ["Unconditioned aversive stimuli that suppress target behavior", "Instructions describing target behavior for clients to memorize", "Permanent substitutes for natural reinforcement across settings", "Conditioned reinforcers exchangeable for backup reinforcers"],
+    rationale: "Tokens are conditioned reinforcers delivered for defined target responses and exchanged according to specified schedules for backup reinforcers. Their value is learned through that exchange relationship.",
+    feedback: {
+      0: "Aversive stimuli decrease behavior through their consequences, whereas tokens are intended to strengthen target responses through learned reward value.",
+      1: "Instructions describe what to do but do not function as consequences delivered after behavior. Tokens are contingent reinforcers rather than directions.",
+      2: "Tokens are not permanent replacements for natural reinforcement. Their learned value depends on exchange arrangements and the broader reinforcement context.",
+    }, cognitiveProcess: "application", learningObjectiveId: "intervention-apply-token-economy-conditioned-reinforcement", distractorDesign: ["aversive-stimulus-versus-token", "instruction-versus-consequence", "token-as-permanent-replacement"],
+  },
+  {
+    id: "eppp-b013-lifespan-1", expectedAnswerIndex: 1, expectedDifficulty: "foundation", targetDifficulty: "intermediate",
+    expectedPrompt: "In temperament research, goodness of fit refers to:",
+    prompt: "A highly active preschooler thrives with predictable movement breaks and flexible tasks but struggles in a rigid, sedentary classroom. Which developmental concept best organizes this pattern?",
+    choices: ["A temperament profile that is optimal across settings", "Goodness of fit between the child's characteristics and environmental demands and supports", "A heritability estimate of activity level", "Interrater agreement about behavior ratings"],
+    rationale: "Goodness of fit concerns how well environmental expectations and supports accord with an individual child's temperament and capacities. Adaptation depends on the transaction between child characteristics and context, not a universally ideal temperament.",
+    feedback: {
+      0: "The same temperament can function differently across environments. Goodness of fit asks how demands and supports interact with the child's characteristics.",
+      2: "Heritability describes population variation associated with genetic differences, not whether a particular classroom matches a child's activity level.",
+      3: "Interrater agreement concerns consistency among observers. The vignette contrasts settings and supports, which is a temperament–environment fit question.",
+    }, cognitiveProcess: "application", learningObjectiveId: "lifespan-apply-goodness-of-fit-to-temperament-and-classroom-context", distractorDesign: ["universal-temperament-optimum", "heritability-versus-fit", "observer-agreement-versus-fit"],
+  },
+  {
+    id: "eppp-b014-lifespan-1", expectedAnswerIndex: 1, expectedDifficulty: "foundation", targetDifficulty: "advanced",
+    expectedPrompt: "In Kohlberg’s theory, postconventional reasoning evaluates rules primarily in terms of:",
+    prompt: "An adolescent defends a rule by appealing to rights and a social contract, while acknowledging that laws can be revised when they violate basic principles. Which level of moral reasoning is illustrated?",
+    choices: ["Avoiding punishment and pursuing personal rewards, while not appealing to social rights or a broader contract", "Postconventional reasoning based on rights, social contracts, or ethical principles", "Seeking peer approval and conforming to familiar interpersonal expectations rather than reasoning about social contracts or principles", "Obeying enacted law even when fairness is questioned, treating legal rules as overriding rights or ethical principles"],
+    rationale: "Postconventional reasoning appeals beyond simple convention to rights, social contracts, or universalizable principles. Kohlberg's hierarchy and measures have important cultural and theoretical criticisms, so the level is an interpretive framework rather than a complete account of moral life.",
+    feedback: {
+      0: "Punishment and reward reasoning reflects an earlier instrumental orientation. The adolescent is evaluating law through principles that extend beyond personal consequences.",
+      2: "Peer approval and interpersonal expectations characterize conventional reasoning. The vignette emphasizes rights and revisable social rules rather than relationship conformity.",
+      3: "Treating enacted law as decisive reflects conventional rule maintenance. Postconventional reasoning permits criticism or revision of laws using broader principles.",
+    }, cognitiveProcess: "analysis", learningObjectiveId: "lifespan-analyze-postconventional-moral-reasoning-from-rights-and-contracts", distractorDesign: ["punishment-reward-reasoning", "peer-approval-conventional-reasoning", "law-obedience-conventional-reasoning"],
+  },
+  {
+    id: "eppp-b019-lifespan-1", expectedAnswerIndex: 2, expectedDifficulty: "foundation", targetDifficulty: "intermediate",
+    expectedPrompt: "Vygotsky’s account of cognitive development places particular emphasis on:",
+    prompt: "A teacher models a strategy, gives prompts, and gradually withdraws help as a learner internalizes language-based tools. Which framework best explains this progression?",
+    choices: ["Maturation occurring independently of language, instruction, and social interaction", "A fixed sequence of solitary discoveries unaffected by cultural tools or practices", "Socially mediated learning and the internalization of culturally organized tools", "Reinforcement as the primary process capable of producing higher mental functions"],
+    rationale: "Vygotsky emphasized that higher mental functions develop through social interaction and culturally organized tools, especially language, which are progressively internalized. Instruction, collaboration, and historical-cultural context therefore have central roles.",
+    feedback: {
+      0: "Vygotsky did not treat maturation as independent of instruction or interaction. The teacher's prompts and the learner's internalization are central evidence against this view.",
+      1: "A solitary fixed sequence omits cultural tools and guided participation. The progression described depends on social mediation and changing support.",
+      3: "Reinforcement can influence behavior, but Vygotsky's account emphasizes culturally mediated activity, language, and internalization rather than a single learning mechanism.",
+    }, cognitiveProcess: "analysis", learningObjectiveId: "lifespan-analyze-vygotsky-social-mediation-and-internalization", distractorDesign: ["maturation-without-interaction", "solitary-fixed-sequence", "reinforcement-only-development"],
+  },
+  {
+    id: "eppp-b005-professional-2", expectedAnswerIndex: 3, expectedDifficulty: "foundation", targetDifficulty: "intermediate",
+    expectedPrompt: "A psychologist explains a new service through an interpreter, but the client nods while giving answers that reveal misunderstanding. What communication requirement remains unmet?",
+    prompt: "A psychologist uses an interpreter for consent, but the client's answers reveal misunderstanding of risks and alternatives. What must happen before the service proceeds?",
+    choices: ["Use technical language to preserve precision", "Treat nodding as consent", "Omit consent to avoid further delay", "Explain in reasonably understandable language and check comprehension"],
+    rationale: "Consent information must be conveyed in language the person can reasonably understand, with attention to comprehension and any applicable legal or Code-based exception. An interpreter is a means of communication, not proof that the client understands the decision.",
+    feedback: {
+      0: "Technical precision does not satisfy informed consent when the client cannot understand the explanation. Plain language, interpretation, and comprehension checks are needed.",
+      1: "Nodding can signal politeness or uncertainty and does not establish comprehension. The psychologist should clarify risks, alternatives, and voluntary agreement.",
+      2: "Communication difficulty increases the need for accessible consent; it does not remove the consent requirement. The service should wait for meaningful understanding.",
+    }, cognitiveProcess: "application", learningObjectiveId: "professional-apply-understandable-consent-communication-with-interpreter", distractorDesign: ["technical-language-over-comprehension", "nodding-as-consent", "communication-difficulty-as-consent-waiver"],
+  },
+  {
+    id: "eppp-b010-professional-2", expectedAnswerIndex: 3, expectedDifficulty: "foundation", targetDifficulty: "intermediate",
+    expectedPrompt: "Under APA Standard 4.05, disclosure without individual consent may occur when:",
+    prompt: "A former client asks a psychologist to release records to a licensing board; the board also issues a lawful request for a narrow set of records. When can disclosure occur without individual consent?",
+    choices: ["A colleague expresses curiosity about an unusual case, which is not a lawful basis for disclosure", "Public attention could benefit from discussing the case, but it does not authorize disclosure", "An informal third-party request arrives before authority is established for disclosure", "Law requires or legally permits disclosure for a valid professional or protective purpose"],
+    rationale: "Standard 4.05 permits disclosure with appropriate consent and, without consent, when mandated by law or legally permitted for specified valid purposes. Any disclosure should be limited to what the lawful purpose requires.",
+    feedback: {
+      0: "Professional curiosity is not a lawful basis for releasing a former client's records. Confidentiality continues unless consent or an applicable legal permission exists.",
+      1: "Public interest or attention does not create permission to disclose private clinical information. A valid purpose must be grounded in consent, law, or a protective exception.",
+      2: "An informal request lacks the authority described in the standard. The psychologist should verify the legal basis and limit material to the valid request.",
+    }, cognitiveProcess: "application", learningObjectiveId: "professional-apply-standard-4-05-lawful-confidentiality-disclosure", distractorDesign: ["colleague-curiosity-disclosure", "publicity-disclosure", "informal-request-disclosure"],
+  },
+  {
+    id: "eppp-b020-professional-2", expectedAnswerIndex: 2, expectedDifficulty: "foundation", targetDifficulty: "advanced",
+    expectedPrompt: "In clinical research ethics, equipoise most directly refers to:",
+    prompt: "A trial compares two accepted treatments, and the clinical community lacks a reasoned basis for preferring one. What ethical concept supports random assignment?",
+    choices: ["Equal final clinical outcomes are required across treatment groups", "The investigator's financial neutrality regarding which clinical intervention is marketed", "Clinical equipoise: genuine uncertainty about comparative therapeutic merits", "Accepting the null hypothesis with complete certainty about clinical outcomes"],
+    rationale: "Clinical equipoise is genuine uncertainty within the relevant expert community about which intervention is therapeutically preferable, supporting ethical random assignment. It does not require equal final results, financial neutrality alone, or certainty that treatments are equivalent.",
+    feedback: {
+      0: "Equipoise concerns uncertainty before or during allocation, not a requirement that treatment groups finish with identical outcomes.",
+      1: "Financial conflicts can affect research ethics, but financial neutrality alone does not define uncertainty about comparative therapeutic merits.",
+      3: "A nonsignificant result does not prove treatment equivalence, and equipoise is an ethical state of uncertainty rather than a statistical conclusion.",
+    }, cognitiveProcess: "analysis", learningObjectiveId: "professional-analyze-clinical-equipoise-for-ethical-randomization", distractorDesign: ["equal-outcomes-versus-equipoise", "financial-neutrality-versus-equipoise", "null-certainty-versus-equipoise"],
+  },
+  {
+    id: "eppp-b003-social-2", expectedAnswerIndex: 2, expectedDifficulty: "foundation", targetDifficulty: "intermediate",
+    expectedPrompt: "In Darley and Latané's seizure-emergency experiment, participants who believed several other people also heard the emergency were generally less likely or slower to intervene. The study was designed to test:",
+    prompt: "In an online emergency simulation, participants who believe several observers can also respond are slower to call for help. Which process best explains the pattern?",
+    choices: ["Group polarization after public discussion", "Social loafing on a shared physical task", "Diffusion of responsibility among bystanders", "Cognitive dissonance from forced compliance"],
+    rationale: "When responsibility can be shared among perceived bystanders, each person may feel less personally responsible for acting. The pattern is a diffusion-of-responsibility mechanism rather than a task-effort or attitude-change effect.",
+    feedback: {
+      0: "Group polarization concerns shifts toward more extreme positions after discussion. The emergency pattern concerns responsibility for action, not opinion extremity.",
+      1: "Social loafing involves reduced effort on a shared task when individual contributions are less identifiable. Calling for help is a responsibility-allocation problem.",
+      3: "Cognitive dissonance follows inconsistency between attitudes and behavior. The slower response here reflects perceived responsibility among observers.",
+    }, cognitiveProcess: "application", learningObjectiveId: "social-cultural-apply-diffusion-of-responsibility-to-emergency-helping", distractorDesign: ["group-polarization-versus-helping", "social-loafing-versus-helping", "dissonance-versus-helping"],
+  },
+  {
+    id: "eppp-b012-social-2", expectedAnswerIndex: 2, expectedDifficulty: "foundation", targetDifficulty: "intermediate",
+    expectedPrompt: "Pluralistic ignorance occurs when people:",
+    prompt: "At a meeting, employees privately dislike a new norm but infer that colleagues support it, so they voice public agreement. Which process is illustrated?",
+    choices: ["Privately accepting a norm while publicly opposing it", "Accurately inferring colleagues' private beliefs and public agreement", "Pluralistic ignorance: private doubt with mistaken public consensus", "Changing attitudes because an expert provides new facts"],
+    rationale: "Pluralistic ignorance occurs when individuals privately reject or question a norm while incorrectly believing most others accept it, helping sustain public conformity despite private doubts.",
+    feedback: {
+      0: "Private acceptance with public opposition reverses the pattern described. Pluralistic ignorance involves private doubt paired with perceived public consensus.",
+      1: "Accurate inference would not create the mistaken consensus that sustains pluralistic ignorance. The defining problem is misreading others' private beliefs.",
+      3: "Expert persuasion can change attitudes, but it does not describe a false consensus among peers followed by public conformity.",
+    }, cognitiveProcess: "application", learningObjectiveId: "social-cultural-apply-pluralistic-ignorance-to-public-conformity", distractorDesign: ["reversed-private-public-pattern", "accurate-consensus-inference", "expert-persuasion-versus-ignorance"],
+  },
+  {
+    id: "eppp-b023-social-2", expectedAnswerIndex: 2, expectedDifficulty: "foundation", targetDifficulty: "advanced",
+    expectedPrompt: "Scapegoat theory most directly proposes that prejudice can arise when people:",
+    prompt: "After layoffs, a supervisor blames a low-power immigrant group for budget problems despite contrary records. Which theory best explains this attribution?",
+    choices: ["Infer attitudes from their own behavior under strong external pressure", "Improve intergroup relations by pursuing a shared superordinate goal", "Displace frustration or blame onto a vulnerable outgroup", "Conform privately because a minority presents a consistent position"],
+    rationale: "Scapegoat theory describes prejudice as one possible outcome when frustration, threat, or hardship is displaced onto a vulnerable outgroup that is blamed for problems it did not cause. The process is not inevitable and does not imply that frustration is the sole source of prejudice.",
+    feedback: {
+      0: "Self-perception concerns inferring one's own attitudes from behavior. The supervisor is assigning blame to another group, which is a different attributional process.",
+      1: "Shared goals can reduce intergroup conflict, but they do not explain blaming a vulnerable group after a stressful organizational event.",
+      3: "Minority influence concerns how a consistent minority can affect majority judgments. The vignette instead shows displaced blame toward a low-power outgroup.",
+    }, cognitiveProcess: "analysis", learningObjectiveId: "social-cultural-analyze-scapegoating-after-group-level-threat", distractorDesign: ["self-perception-versus-scapegoating", "superordinate-goal-versus-scapegoating", "minority-influence-versus-scapegoating"],
+  },
+  {
+    id: "eppp-b004-research-1", expectedAnswerIndex: 0, expectedDifficulty: "foundation", targetDifficulty: "advanced",
+    expectedPrompt: "Scores on a new measure correlate strongly with theoretically related variables, weakly with unrelated variables, and predict patterns specified by the underlying theory. What form of evidence is being assembled?",
+    prompt: "A new anxiety scale correlates with related anxiety measures, shows weak links to unrelated abilities, and predicts theoretically expected behavior. What validation program is underway?",
+    choices: ["Construct validation through convergent, discriminant, and theory-based evidence", "Sampling precision for validation of a target-population estimate", "Interobserver reliability for agreement among raters", "Statistical power for detecting a nonzero association"],
+    rationale: "Construct validation evaluates whether evidence and theoretical relationships support interpreting scores as reflecting a proposed construct. It is an ongoing evidentiary program combining convergent, discriminant, and theory-based findings rather than a single coefficient.",
+    feedback: {
+      1: "Sampling precision concerns uncertainty around a population estimate. The described correlations and predictions address interpretation of scores, not sampling error.",
+      2: "Interobserver reliability concerns agreement among evaluators. The evidence here compares a measure with related, unrelated, and theory-linked variables.",
+      3: "Statistical power concerns the chance of detecting an effect under specified conditions. It does not identify the validity evidence being assembled.",
+    }, cognitiveProcess: "analysis", learningObjectiveId: "research-analyze-construct-validation-from-convergent-discriminant-theory-evidence", distractorDesign: ["sampling-precision-versus-validity", "interobserver-reliability-versus-validity", "power-versus-validity"],
+  },
+  {
+    id: "eppp-b008-research-1", expectedAnswerIndex: 0, expectedDifficulty: "foundation", targetDifficulty: "intermediate",
+    expectedPrompt: "Publication bias threatens a research synthesis when:",
+    prompt: "A review finds that studies with favorable results are easier to locate than studies with null results, even though both met the eligibility criteria. What threat to synthesis follows?",
+    choices: ["Publication bias from result-dependent study availability", "Preregistration that records hypotheses before each study begins", "Interval estimates reported alongside standardized effect sizes", "A broad search that actively seeks unpublished investigations"],
+    rationale: "Publication bias occurs when study availability is related to findings, such as favorable or statistically significant results being more likely to appear. A synthesis of available studies can then overestimate the underlying effect.",
+    feedback: {
+      1: "Preregistration improves transparency by recording plans before data collection. It does not make study availability depend on favorable results.",
+      2: "Reporting intervals and standardized effects improves quantitative interpretation. It does not explain why studies with null findings are harder to locate.",
+      3: "Seeking unpublished investigations is a strategy for reducing publication bias. The described threat is the result-dependent availability that motivates the strategy.",
+    }, cognitiveProcess: "application", learningObjectiveId: "research-apply-publication-bias-to-result-dependent-study-availability", distractorDesign: ["preregistration-versus-publication-bias", "effect-reporting-versus-publication-bias", "unpublished-search-as-threat"],
+  },
+  {
+    id: "eppp-v2-research-026", expectedAnswerIndex: 2, expectedDifficulty: "intermediate", targetDifficulty: "advanced",
+    expectedPrompt: "Which statement best explains the purpose of random assignment in an experiment?",
+    prompt: "A trial uses a random sequence to allocate volunteers to two conditions before treatment begins. Which design benefit is most directly intended?",
+    choices: ["Representativeness of the sample for the target population rather than balance across conditions", "A normal distribution for each measured variable in each condition", "Balance of participant characteristics across conditions on average, strengthening causal inference", "Removing the need to measure outcomes after the manipulation of the conditions"],
+    rationale: "Random assignment reduces systematic preexisting differences between conditions on average, which supports attribution of outcome differences to the manipulation. It does not make a sample representative, guarantee distributional assumptions, or remove the need for outcome measurement.",
+    feedback: {
+      0: "Representativeness depends on sampling and recruitment, not assignment after volunteers enter the study. A randomized allocation can use a nonrepresentative sample.",
+      1: "Random assignment does not guarantee normality for measured variables. Distributional assumptions are evaluated separately from allocation procedures.",
+      3: "Causal inference still requires measuring outcomes after the manipulation. Assignment supports comparability; it does not replace the outcome assessment.",
+    }, cognitiveProcess: "analysis", learningObjectiveId: "research-analyze-random-assignment-for-causal-inference", distractorDesign: ["representativeness-versus-assignment", "normality-versus-assignment", "outcome-measurement-versus-assignment"],
+  },
+];
+
+module.exports = { baselineMetrics, reviewedAt, reviewWave, revisions };

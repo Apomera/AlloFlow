@@ -5286,7 +5286,7 @@
                 desc: 'Zoom deep into real, openly-licensed images in OpenSeadragon \u2014 the viewer museums use \u2014 from the Pillars of Creation and Saturn\u2019s rings to an Apollo bootprint, the real Apollo 11 capsule, and a coral fan. Smithsonian Open Access (CC0) + NASA (public domain), with a Notice \u2192 Wonder observation coach beside it.',
                 color: 'sky', ready: true
               },
-              { id: '_cat_Arts&Music', icon: '', label: t('stem.tools_menu.arts_music'), desc: '', color: 'slate', chip: 'creative', palette: ['violet', 'rose', 'indigo'], category: true },
+              { id: '_cat_ArtsMusic', icon: '', label: t('stem.tools_menu.arts_music', 'Arts & Music'), desc: '', color: 'slate', chip: 'creative', palette: ['violet', 'rose', 'indigo'], category: true },
 
               {
 
@@ -5303,6 +5303,11 @@
                 id: 'artStudio', icon: '🎨', label: t('stem.tools_menu.art_design_studio'),
                 desc: 'Explore color theory, mix colors, draw pixel art, create symmetry patterns, and check accessibility contrast.',
                 color: 'rose', ready: true
+              },
+              {
+                id: 'wheelAndFire', icon: '\uD83C\uDFFA', label: 'Wheel & Fire: Pottery Lab',
+                desc: 'Shape clay by wheel or hand, investigate wall and coil stability, control kiln heatwork, test fired performance, and compare pottery technologies in specific cultural contexts.',
+                color: 'amber', ready: true
               },
               {
                 id: 'freeForms', icon: '\uD83C\uDFDB\uFE0F', label: 'Free Forms',
@@ -6988,7 +6993,7 @@
             // constraints, with a deliberately un-modelled contested tier.
             cityLab: true,
             // Art & Music
-            artStudio: true, creative: true, gameStudio: true, freeForms: true,
+            artStudio: true, wheelAndFire: true, creative: true, gameStudio: true, freeForms: true,
             // Earth & Space
             astronomy: true, coasterLab: true, galaxy: true, moonMission: true, plateTectonics: true, spaceColony: true, spaceExplorer: true, spaceStation: true,
             // Data & Logic

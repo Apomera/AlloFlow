@@ -1,0 +1,301 @@
+'use strict';
+
+const reviewedAt = '2026-08-20';
+const reviewWave = 'eppp-native-quality-wave-39';
+const baselineMetrics = Object.freeze({
+  distractor: { totalItems: 1500, warningOnly: true, forbiddenAggregateChoices: 0, uniqueKeyStemLexicalLeakageCandidates: 38, asymmetricExtremeDistractorCandidates: 43, advancedDirectRecallCandidates: 1, semanticConceptDuplicatePairs: 51, semanticConceptDuplicateClusters: 33, editorialAnchorsWithActiveWarnings: 0, editorialAnchorsWithNoCurrentWarning: 10, priorityDocketItems: 20 },
+  feedback: { totalItems: 1500, totalIncorrectOptions: 4500, itemsWithWarnings: 442, incorrectOptionsWithWarnings: 1230, insufficientDetailOptions: 587, genericTemplateOptions: 591, choiceRestatementOptions: 139, fullKeyEchoOptions: 61, priorityDocketItems: 100 },
+});
+
+const revisions = [
+  {
+    id: 'eppp-b001-biological-2', expectedAnswerIndex: 2, expectedDifficulty: 'foundation', targetDifficulty: 'advanced',
+    expectedPrompt: 'In the classic NMDA-dependent model of hippocampal long-term potentiation, which event is essential for initiating synaptic strengthening?',
+    prompt: 'A hippocampal synapse strengthens after paired presynaptic activity and postsynaptic depolarization. Which event best explains the molecular gate that initiates this long-term potentiation?',
+    choices: ['Reduced presynaptic glutamate release followed by persistent synaptic weakening', 'Closure of postsynaptic calcium channels during depolarization', 'NMDA-receptor activation permitting postsynaptic calcium entry during depolarization', 'Activity-dependent AMPA-receptor internalization that reduces postsynaptic responsiveness'],
+    rationale: 'Depolarization relieves the NMDA receptor’s magnesium block, allowing calcium entry that activates intracellular pathways for synaptic strengthening. The process increases AMPA-mediated responsiveness rather than removing receptors.',
+    feedback: {
+      0: 'Reduced glutamate release would weaken transmission and does not provide the calcium signal associated with potentiation. The paired activity described instead opens a postsynaptic coincidence gate.',
+      1: 'Closing calcium channels would prevent the intracellular signal needed for strengthening. NMDA receptors must permit calcium entry after sufficient depolarization.',
+      3: 'AMPA-receptor internalization generally reduces postsynaptic responsiveness, a direction opposite to long-term potentiation. Strengthening commonly involves increased AMPA contribution after calcium signaling.',
+    }, cognitiveProcess: 'analysis', learningObjectiveId: 'biological-analyze-nmda-calcium-gate-in-long-term-potentiation', distractorDesign: ['glutamate-release-versus-potentiation', 'calcium-channel-closure-versus-nmda-gate', 'ampa-internalization-versus-strengthening'],
+  },
+  {
+    id: 'eppp-b002-biological-2', expectedAnswerIndex: 2, expectedDifficulty: 'foundation', targetDifficulty: 'intermediate',
+    expectedPrompt: 'Following a predominantly right-parietal stroke, a patient eats from one side of the plate and copies detail from one side of a drawing despite intact primary visual fields. Which diagnosis best integrates the findings?',
+    prompt: 'After a right-parietal stroke, a patient omits food on the left side of a plate and copies only right-sided details, yet formal visual-field testing is intact. Which syndrome best fits?',
+    choices: ['Visual-form agnosia involving impaired object recognition rather than left spatial attention', 'Broca aphasia involving effortful speech production', 'Left spatial neglect involving reduced attention to contralateral space', 'Prosopagnosia involving impaired familiar-face recognition'],
+    rationale: 'Left spatial neglect follows disruption of right-attentional networks and causes reduced awareness or exploration of contralateral space. Intact primary fields distinguish neglect from a simple hemianopic loss.',
+    feedback: {
+      0: 'Visual-form agnosia concerns recognizing or integrating object shape despite adequate vision. The patient’s omissions are spatially lateralized and occur with intact visual fields.',
+      1: 'Broca aphasia affects speech production and does not explain consistently omitting the left side of food and drawings after a right-parietal injury.',
+      3: 'Prosopagnosia is a face-identity impairment. The observed deficit concerns attention to left-sided space across eating and copying tasks.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'biological-apply-right-parietal-neglect-to-lateralized-omissions', distractorDesign: ['agnosia-versus-spatial-neglect', 'broca-aphasia-versus-neglect', 'prosopagnosia-versus-neglect'],
+  },
+  {
+    id: 'eppp-b005-biological-2', expectedAnswerIndex: 2, expectedDifficulty: 'foundation', targetDifficulty: 'advanced',
+    expectedPrompt: 'Despite comprising a much smaller share of total brain mass, approximately what proportion of the human brain’s neurons are located in the cerebellum?',
+    prompt: 'A neuroanatomy report notes that the cerebellum occupies a small fraction of brain mass but contains a striking share of neurons. Which estimate best captures the reported relationship?',
+    choices: ['Approximately 20 percent of the brain’s neurons', 'Approximately 40 percent of the brain’s neurons', 'Approximately 80 percent of the brain’s neurons', 'Approximately 100 percent of the brain’s neurons'],
+    rationale: 'The cerebellum contains roughly four-fifths of the brain’s neurons despite its modest mass, largely because its densely packed granule cells are numerous. Mass and neuron count therefore diverge substantially.',
+    feedback: {
+      0: 'A fifth of the brain’s neurons understates the cerebellar concentration described. The key point is that dense cellular packing yields a much larger neuronal share than its mass suggests.',
+      1: 'Forty percent is closer but still below the commonly reported estimate. The cerebellum’s granule-cell population places its neuronal share near four-fifths.',
+      3: 'The cerebellum contains a large neuronal share, not the entire brain’s population. Cerebral and other structures retain substantial neurons as well.',
+    }, cognitiveProcess: 'analysis', learningObjectiveId: 'biological-analyze-cerebellar-neuron-density-versus-brain-mass', distractorDesign: ['underestimate-cerebellar-neuron-share', 'moderate-neuron-share-estimate', 'total-neuron-share-overstatement'],
+  },
+  {
+    id: 'eppp-b002-cognitive-2', expectedAnswerIndex: 3, expectedDifficulty: 'foundation', targetDifficulty: 'advanced',
+    expectedPrompt: 'In research on retrospective evaluations of aversive experiences, which features tended to influence the remembered evaluation more than the total duration?',
+    prompt: 'A patient rates two painful procedures after both have ended. The procedures differ in their most intense moment and how they finish, while total duration is similar. Which pattern should guide interpretation of the retrospective ratings?',
+    choices: ['The initial moment and total duration dominate rather than the intense peak', 'The average intensity and elapsed time determine the remembered evaluation', 'The number of separate interruptions determines the remembered evaluation', 'The most intense and final moments disproportionately shape the remembered evaluation'],
+    rationale: 'Peak-end findings show that retrospective evaluations are strongly influenced by the most intense moment and the ending, with duration contributing less than a straightforward temporal average would predict.',
+    feedback: {
+      0: 'The beginning and duration do not capture the peak-end pattern emphasized in retrospective pain judgments. The strongest and final experiences carry disproportionate weight.',
+      1: 'An average across intensity and elapsed time would treat the whole procedure more evenly. Retrospective evaluation instead emphasizes a salient peak and the ending.',
+      2: 'Interruptions may affect experience, but their count is not the defining predictor in the finding described. Salient intensity and endpoint information are more central.',
+    }, cognitiveProcess: 'analysis', learningObjectiveId: 'cognitive-analyze-peak-end-evaluation-of-aversive-experiences', distractorDesign: ['initial-duration-versus-peak-end', 'average-intensity-versus-peak-end', 'interruptions-versus-peak-end'],
+  },
+  {
+    id: 'eppp-b004-cognitive-2', expectedAnswerIndex: 3, expectedDifficulty: 'foundation', targetDifficulty: 'intermediate',
+    expectedPrompt: 'People consistently rate a robin as a better example of “bird” than a penguin, even though both belong to the category. This graded typicality finding is most compatible with:',
+    prompt: 'When teaching the category bird, learners judge robins as more representative than penguins even though both are birds. Which account best explains the graded judgments?',
+    choices: ['A strict necessary-and-sufficient feature account', 'A pure stimulus-response chaining account', 'An equipotential category-membership account', 'A prototype-based account of categorization'],
+    rationale: 'Prototype accounts represent a category through a central or typical example, so members can vary in representativeness. Graded typicality is difficult to explain with a binary feature rule alone.',
+    feedback: {
+      0: 'A necessary-and-sufficient feature rule predicts categorical membership but has difficulty explaining why one valid member feels more typical than another.',
+      1: 'Stimulus-response chaining describes learned sequences rather than graded similarity within a natural category. The judgments concern representativeness of category members.',
+      2: 'An equipotential account treats category members as equivalent once they qualify. The observed difference in typicality calls for a graded representation.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'cognitive-apply-prototype-theory-to-graded-category-typicality', distractorDesign: ['feature-rule-versus-prototype', 'stimulus-response-versus-categorization', 'equipotential-membership-versus-typicality'],
+  },
+  {
+    id: 'eppp-b007-cognitive-2', expectedAnswerIndex: 3, expectedDifficulty: 'foundation', targetDifficulty: 'advanced',
+    expectedPrompt: 'A witness reports staring at a knife during a brief robbery and later expresses confidence about what occurred but gives little description of the perpetrator’s face. Which attentional account should guide a cautious evaluation of the identification?',
+    prompt: 'During a brief robbery, a witness focuses on a weapon and later feels highly confident but recalls few facial details. Which account best explains why confidence may not indicate an accurate identification?',
+    choices: ['The threatening object enhances encoding of surrounding facial and clothing detail', 'Stress removes the effects of exposure duration and viewing angle from identification accuracy', 'Confidence after a salient threat closely tracks the completeness of peripheral encoding', 'Capture attention and reduce memory for other event details'],
+    rationale: 'Weapon focus describes attention captured by a salient threat, leaving fewer resources for peripheral details such as a perpetrator’s face. Confidence can remain high despite incomplete encoding.',
+    feedback: {
+      0: 'A threatening object can draw attention away from surrounding information rather than enhance facial encoding. The sparse facial memory is consistent with attentional capture.',
+      1: 'Stress and viewing conditions still influence encoding and identification. They do not erase exposure effects or make a confident report automatically accurate.',
+      2: 'High confidence is not a reliable proxy for complete peripheral encoding after a salient threat. The witness’s confidence and facial detail can diverge.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'cognitive-apply-weapon-focus-to-eyewitness-identification', distractorDesign: ['threat-enhances-peripheral-encoding', 'stress-erases-encoding-conditions', 'confidence-equals-memory-completeness'],
+  },
+  {
+    id: 'eppp-b003-social-1', expectedAnswerIndex: 0, expectedDifficulty: 'foundation', targetDifficulty: 'advanced',
+    expectedPrompt: 'An IAT compares latency across two paired-categorization blocks, such as self-plus-calm and self-plus-anxious versus the reversed pairings. What construct is the latency contrast intended to estimate?',
+    prompt: 'An implicit-association task shows faster responses when self and calm share a key than when self and anxious share a key. What does the latency contrast most directly estimate?',
+    choices: ['Differential association of target concepts with an attribute', 'Accuracy of a person’s explicit autobiographical memory', 'Frequency of observable discriminatory acts in daily life', 'Clinical severity of a diagnosable personality disorder'],
+    rationale: 'The IAT latency contrast estimates relative strength of associations between concept pairs under the task’s response mappings. It is not a direct behavioral frequency, diagnostic severity, or autobiographical-memory measure.',
+    feedback: {
+      1: 'Explicit autobiographical memory concerns consciously recalled personal events. Response latency in paired categorization instead indexes relative associative compatibility.',
+      2: 'Observed discriminatory acts require behavioral observation or self-report. An implicit latency contrast may relate to behavior but is not a direct frequency count.',
+      3: 'A personality-disorder diagnosis requires clinical assessment and impairment criteria. The task estimates associative strength rather than diagnostic severity.',
+    }, cognitiveProcess: 'analysis', learningObjectiveId: 'social-cultural-analyze-iat-latency-as-relative-association', distractorDesign: ['explicit-memory-versus-implicit-association', 'behavior-frequency-versus-iat', 'diagnostic-severity-versus-iat'],
+  },
+  {
+    id: 'eppp-b004-social-2', expectedAnswerIndex: 2, expectedDifficulty: 'foundation', targetDifficulty: 'intermediate',
+    expectedPrompt: 'In variations of Asch’s line-judgment paradigm, which change most directly weakened majority pressure by breaking unanimity?',
+    prompt: 'In a line-judgment study, one confederate gives the correct answer while the remaining majority gives an incorrect answer. What effect should this dissenting response have?',
+    choices: ['Keeping the confederates unanimous in the same incorrect response', 'Requiring the participant to answer after the majority', 'Adding a dissenter whose response differed from the majority', 'Increasing the number of unanimous confederates indefinitely'],
+    rationale: 'A single dissenter breaks the majority’s unanimity and reduces social pressure, even when the dissenter’s answer is not fully correct. The participant gains social permission to trust perception.',
+    feedback: {
+      0: 'Unanimity maintains the social pressure that supports conformity. It does not provide the dissenting comparison that weakens the majority’s influence.',
+      1: 'Answering later may alter timing, but it does not directly break the majority’s agreement. The critical manipulation is the presence of a dissenting response.',
+      3: 'A larger unanimous majority generally preserves or increases pressure. The weakening effect comes from disagreement within the majority, not from adding more agreement.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'social-cultural-apply-dissent-to-asch-conformity-pressure', distractorDesign: ['unanimity-maintains-pressure', 'response-timing-versus-dissent', 'larger-majority-versus-dissent'],
+  },
+  {
+    id: 'eppp-b005-social-2', expectedAnswerIndex: 2, expectedDifficulty: 'foundation', targetDifficulty: 'intermediate',
+    expectedPrompt: 'A group task pools everyone’s output so that no member’s contribution can be identified. Compared with working alone, members reduce their individual effort. This is:',
+    prompt: 'A team’s final score combines anonymous contributions, and members exert less effort than they did on an individual version of the task. Which process best explains the reduction?',
+    choices: ['Group polarization', 'Minority influence', 'Social loafing', 'Social facilitation'],
+    rationale: 'Social loafing is reduced individual effort when responsibility or contribution is less identifiable in a group. Anonymously pooled output creates precisely that accountability condition.',
+    feedback: {
+      0: 'A shift toward more extreme judgments after group interaction is different from the effort reduction described here. The key variable is accountability for individual contribution.',
+      1: 'Changes in majority judgments caused by a consistent minority do not explain reduced effort when contributions are pooled. The vignette concerns group accountability.',
+      3: 'Audience effects can alter performance, often improving well-practiced responses. The defining feature here is reduced accountability for an individual’s effort.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'social-cultural-apply-social-loafing-to-anonymous-group-output', distractorDesign: ['polarization-versus-effort', 'minority-influence-versus-effort', 'facilitation-versus-loafing'],
+  },
+  {
+    id: 'eppp-b002-lifespan-2', expectedAnswerIndex: 3, expectedDifficulty: 'foundation', targetDifficulty: 'intermediate',
+    expectedPrompt: 'Two preschoolers sit beside one another using similar blocks. Each builds independently, with little coordination or exchange between them. Parten\'s classification would describe this as:',
+    prompt: 'Two preschoolers build beside one another with similar blocks but rarely coordinate or exchange materials. Which play classification best fits the observation?',
+    choices: ['Cooperative play involving coordinated roles and a shared goal', 'Associative play involving interaction with limited shared structure', 'Onlooker behavior involving watching peers rather than joining the activity', 'Parallel play involving nearby but independent activity'],
+    rationale: 'Parallel play occurs when children play alongside one another with similar materials but remain largely independent. It differs from associative or cooperative play, which involve greater social coordination.',
+    feedback: {
+      0: 'Cooperative play requires coordinated roles, shared plans, or a common goal. The children remain independent despite being near one another.',
+      1: 'Associative play includes interaction or exchange without a formal shared structure. The observation emphasizes little coordination or exchange, which is more consistent with parallel play.',
+      2: 'Onlooker behavior involves watching others play without participating. Both children are actively building, so their activity is parallel rather than observational.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'lifespan-apply-parten-parallel-play-to-preschool-observation', distractorDesign: ['cooperative-versus-parallel-play', 'associative-versus-parallel-play', 'onlooker-versus-parallel-play'],
+  },
+  {
+    id: 'eppp-b003-lifespan-1', expectedAnswerIndex: 1, expectedDifficulty: 'foundation', targetDifficulty: 'intermediate',
+    expectedPrompt: 'During a still-face procedure, a caregiver becomes briefly unresponsive after normal interaction. Which infant response pattern is most characteristic of the paradigm?',
+    prompt: 'During a still-face episode, an infant first tries to regain the caregiver’s attention, then becomes distressed and withdraws when the caregiver remains unresponsive. What does this pattern illustrate?',
+    choices: ['Immediate sleep followed by sustained positive affect', 'Attempts to reengage followed by distress or withdrawal', 'No detectable change from the interactive episode', 'A stable preference for an unfamiliar adult observer'],
+    rationale: 'The still-face paradigm reveals infants’ attempts to repair disrupted interaction, followed by negative affect, reduced engagement, or withdrawal when contingent responding does not resume.',
+    feedback: {
+      0: 'Sleep and sustained positive affect do not capture the regulatory response elicited by a suddenly unresponsive caregiver. Infants commonly signal, fuss, and disengage.',
+      2: 'A lack of change would imply that contingent interaction is not important. The paradigm demonstrates altered affect and behavior when social responsiveness is interrupted.',
+      3: 'The procedure concerns the familiar caregiver’s responsiveness, not a stable preference for an unfamiliar observer. The infant’s distress follows the interactional disruption.',
+    }, cognitiveProcess: 'analysis', learningObjectiveId: 'lifespan-analyze-still-face-reengagement-and-withdrawal', distractorDesign: ['sleep-versus-still-face-response', 'no-change-versus-still-face-response', 'stranger-preference-versus-still-face'],
+  },
+  {
+    id: 'eppp-b003-lifespan-2', expectedAnswerIndex: 3, expectedDifficulty: 'foundation', targetDifficulty: 'intermediate',
+    expectedPrompt: 'Under the World Health Organization definition, a live birth is classified as preterm when it occurs:',
+    prompt: 'A live-born infant arrives at 36 completed weeks of gestation. Using the World Health Organization threshold, how should the timing be classified?',
+    choices: ['Before 28 completed weeks of gestation', 'Before 32 completed weeks of gestation', 'Before 35 completed weeks of gestation', 'Before 37 completed weeks of gestation'],
+    rationale: 'Preterm birth is defined as live birth before 37 completed weeks of gestation. A delivery at 36 completed weeks therefore falls within the preterm category.',
+    feedback: {
+      0: 'Twenty-eight weeks is a threshold for a much earlier subset of preterm birth. The general preterm definition uses the 37-week boundary.',
+      1: 'Thirty-two weeks identifies an earlier gestational subgroup, not the broad preterm threshold. A 36-week birth remains preterm under the standard definition.',
+      2: 'Thirty-five weeks is below the standard cutoff and would miss infants born at 35 or 36 completed weeks. The classification uses before 37 weeks.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'lifespan-apply-preterm-threshold-to-gestational-age', distractorDesign: ['very-early-preterm-threshold', 'early-preterm-threshold', 'near-term-threshold-error'],
+  },
+  {
+    id: 'eppp-b003-assessment-2', expectedAnswerIndex: 2, expectedDifficulty: 'foundation', targetDifficulty: 'advanced',
+    expectedPrompt: 'Under the historical projective hypothesis, why are relatively ambiguous stimuli presented during personality assessment?',
+    prompt: 'A clinician presents an ambiguous picture and asks a client to describe what is happening, then examines recurring themes across responses. What assumption underlies this projective method?',
+    choices: ['To reduce language demands enough that norms transfer directly across cultural groups and standardize responses', 'To make examiner inquiry optional when a response appears clinically meaningful', 'To permit personal meanings and patterns to shape responses', 'To derive an intelligence estimate from the number of conventional perceptions'],
+    rationale: 'The projective hypothesis assumes that ambiguous material allows personal meanings, conflicts, and recurring interpretive patterns to influence responses. Historically, clinicians treated those patterns as clues to personality dynamics.',
+    feedback: {
+      0: 'Ambiguity does not make norms culturally transferable or remove language demands. The method is based on eliciting personally shaped interpretations, with cultural limits requiring caution.',
+      1: 'Clinical inquiry and standardized administration remain important for interpreting a response. Ambiguity is intended to invite personal meaning, not eliminate examiner judgment.',
+      3: 'Counting conventional perceptions is not an intelligence estimate. The projective rationale concerns thematic interpretation of responses to ambiguous material.',
+    }, cognitiveProcess: 'analysis', learningObjectiveId: 'assessment-analyze-projective-hypothesis-and-ambiguous-stimuli', distractorDesign: ['cultural-norm-transfer-versus-projective', 'examiner-inquiry-versus-projective', 'intelligence-estimate-versus-projective'],
+  },
+  {
+    id: 'eppp-b004-assessment-2', expectedAnswerIndex: 2, expectedDifficulty: 'intermediate', targetDifficulty: 'advanced',
+    expectedPrompt: "A clinic's intake interview already predicts treatment dropout. Which finding would most directly support the incremental validity of a new questionnaire?",
+    prompt: 'An intake interview already predicts treatment dropout. A new questionnaire is added to the model. Which result would demonstrate incremental validity for the questionnaire?',
+    choices: ['The questionnaire takes less time to administer than the interview', 'Its items yield a high internal-consistency coefficient in the clinic sample', 'Its scores explain additional outcome variation after interview scores are entered', 'Its score reports contain fewer missing responses than the interview records'],
+    rationale: 'Incremental validity is shown when a new measure explains meaningful criterion variance beyond predictors already in the model. Reliability, efficiency, and missingness can matter but do not establish added predictive information.',
+    feedback: {
+      0: 'Shorter administration improves efficiency but says nothing about whether the questionnaire adds prediction beyond the interview. Incremental validity is a model-comparison question.',
+      1: 'Internal consistency describes item coherence within the questionnaire. A reliable measure can still add little criterion information after the interview is considered.',
+      3: 'Fewer missing responses improve data quality, yet they do not show that the new scores account for additional dropout variation beyond the existing predictor.',
+    }, cognitiveProcess: 'analysis', learningObjectiveId: 'assessment-analyze-incremental-validity-after-existing-predictor', distractorDesign: ['efficiency-versus-incremental-validity', 'internal-consistency-versus-incremental-validity', 'missingness-versus-incremental-validity'],
+  },
+  {
+    id: 'eppp-b005-assessment-1', expectedAnswerIndex: 0, expectedDifficulty: 'foundation', targetDifficulty: 'advanced',
+    expectedPrompt: 'What historical finding is referred to as the Flynn effect?',
+    prompt: 'A researcher compares intelligence-test norms across several countries and finds that later-born cohorts earned higher average scores than earlier cohorts on many measures. Which phenomenon is this?',
+    choices: ['Average intelligence-test scores rose across many twentieth-century cohorts', 'The same individuals gain broad cognitive ability steadily, rather than showing an average cohort gain across many tests', 'Practice effects raise an individual’s intelligence-test retest score by roughly one standard deviation', 'Periodic renorming raises reported scores while raw performance remains unchanged across cohorts'],
+    rationale: 'The Flynn effect refers to secular increases in average intelligence-test performance across successive cohorts in many settings. It describes cohort differences, not individual aging or simple retest practice.',
+    feedback: {
+      1: 'A cohort trend does not mean one person’s ability rises continuously across the lifespan. The finding compares generations tested at comparable ages.',
+      2: 'Practice effects concern repeated testing of the same person and can raise a retest score. The Flynn effect concerns population-level cohort changes across historical time.',
+      3: 'Renorming changes score interpretation but does not explain higher raw performance among later-born cohorts. The phenomenon is a secular performance increase.',
+    }, cognitiveProcess: 'analysis', learningObjectiveId: 'assessment-analyze-flynn-effect-as-cohort-score-gain', distractorDesign: ['lifespan-change-versus-cohort-effect', 'practice-effect-versus-flynn-effect', 'renorming-versus-cohort-gain'],
+  },
+  {
+    id: 'eppp-b002-intervention-2', expectedAnswerIndex: 3, expectedDifficulty: 'foundation', targetDifficulty: 'advanced',
+    expectedPrompt: "Which set contains three therapist conditions central to Rogers's 1957 account of constructive personality change?",
+    prompt: 'A therapist aims to create conditions that support client growth rather than direct the client toward a predetermined interpretation. Which set best represents Rogers’s core therapeutic conditions?',
+    choices: ['Interpretive neutrality, analyst abstinence, and free association', 'Graduated exposure, response prevention, and skills rehearsal', 'Directive advice, persuasive challenge, and therapist confrontation', 'Congruence, empathic understanding, and unconditional positive regard'],
+    rationale: 'Rogers emphasized therapist congruence, empathic understanding, and unconditional positive regard as conditions that support constructive personality change. The relationship is facilitative rather than coercively directive.',
+    feedback: {
+      0: 'Neutrality, abstinence, and free association are associated with classical analytic technique. They do not name Rogers’s person-centered conditions.',
+      1: 'Exposure, response prevention, and rehearsal are behavioral or cognitive-behavioral procedures. They describe intervention techniques rather than the person-centered relational conditions.',
+      2: 'Directive advice and confrontation place the therapist in a controlling role. Rogers emphasized authenticity, empathic understanding, and acceptance instead.',
+    }, cognitiveProcess: 'analysis', learningObjectiveId: 'intervention-analyze-rogerian-core-conditions', distractorDesign: ['analytic-technique-versus-person-centered', 'behavioral-procedure-versus-rogerian', 'directive-therapy-versus-rogerian'],
+  },
+  {
+    id: 'eppp-b003-intervention-1', expectedAnswerIndex: 1, expectedDifficulty: 'foundation', targetDifficulty: 'intermediate',
+    expectedPrompt: 'Which set consists primarily of factors shared across multiple psychotherapy approaches rather than procedures unique to one treatment manual?',
+    prompt: 'A training director asks which elements may contribute to improvement across psychodynamic, cognitive-behavioral, and humanistic treatments. Which set best represents common factors?',
+    choices: ['Exposure hierarchy, response prevention, and behavioral experiments', 'Therapeutic alliance, empathy, and positive expectations', 'Free association, dream interpretation, and analysis of resistance', 'Contingency contracting, shaping, and token reinforcement'],
+    rationale: 'Common factors include the therapeutic alliance, empathic relationship, credible rationale, and positive expectations that can operate across different therapy schools. The alternatives are model-specific techniques.',
+    feedback: {
+      0: 'Exposure and response prevention with behavioral experiments are procedures associated with particular behavioral or cognitive-behavioral protocols, not broad common factors.',
+      2: 'Free association, dream interpretation, and resistance analysis are classically psychodynamic techniques. They are not shared equally across the named approaches.',
+      3: 'Contingency contracts, shaping, and token reinforcement are behavioral methods. Common factors refer to relationship and expectancy processes that span orientations.',
+    }, cognitiveProcess: 'analysis', learningObjectiveId: 'intervention-analyze-common-factors-across-psychotherapies', distractorDesign: ['cbt-procedures-versus-common-factors', 'psychodynamic-techniques-versus-common-factors', 'behavioral-techniques-versus-common-factors'],
+  },
+  {
+    id: 'eppp-b004-intervention-2', expectedAnswerIndex: 3, expectedDifficulty: 'foundation', targetDifficulty: 'intermediate',
+    expectedPrompt: 'A client has met the agreed goals, and the final three sessions are scheduled. Which approach best uses this closing phase?',
+    prompt: 'A client has met the agreed goals and three sessions remain. How should the therapist use this planned termination phase?',
+    choices: ['Keep the ending implicit, remain available, and send a brief closure message after the final scheduled appointment', 'Add open-ended sessions while declining to revisit goals because sadness about ending is treated as continued treatment need', 'Reserve discussion of maintenance, warning signs, and referrals for contact initiated by the client after termination', 'Review progress collaboratively, discuss remaining needs, and plan next steps'],
+    rationale: 'Planned termination reviews gains, anticipates relapse or maintenance needs, processes the ending, and arranges referrals or follow-up when appropriate. It is an active clinical phase rather than an administrative endpoint.',
+    feedback: {
+      0: 'Leaving the ending implicit can undermine preparation and continuity. A planned close should make progress, feelings, and next-step supports explicit.',
+      1: 'Unbounded extension can conflict with the agreed goals and does not address termination thoughtfully. The therapist should review needs while respecting the planned ending.',
+      2: 'Maintenance planning and referrals should be discussed before therapy ends, not deferred until the client seeks contact afterward. Preparation supports continuity and autonomy.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'intervention-apply-planned-termination-to-progress-and-referral', distractorDesign: ['implicit-ending-versus-termination-planning', 'open-ended-extension-versus-planned-close', 'deferred-referral-versus-termination-preparation'],
+  },
+  {
+    id: 'eppp-b007-research-1', expectedAnswerIndex: 0, expectedDifficulty: 'foundation', targetDifficulty: 'advanced',
+    expectedPrompt: 'A new anxiety scale correlates strongly with credible anxiety measures that use different measurement methods but weakly with an unrelated physical-height measure. Together, these findings support:',
+    prompt: 'A new anxiety measure aligns with established anxiety measures collected through different methods and shows weak relations with height. What validity evidence is being assembled?',
+    choices: ['Convergent and discriminant evidence for construct validity', 'Interrater reliability and temporal stability provide different validity evidence', 'Random assignment and experimental control', 'Sensitivity and specificity at one diagnostic cutoff'],
+    rationale: 'Strong relations with related measures support convergent evidence, while weak relations with an unrelated attribute support discriminant evidence. Together they contribute to construct-validity interpretation.',
+    feedback: {
+      1: 'Interrater reliability concerns agreement among evaluators, and temporal stability concerns repeated scores. Neither explains correlations with related and unrelated constructs.',
+      2: 'Causal design features such as allocation and control do not describe the measurement relationships in this vignette. The evidence concerns how scores relate to constructs.',
+      3: 'Sensitivity and specificity require a diagnostic reference standard and classification table. Correlations with anxiety and height instead address construct validity.',
+    }, cognitiveProcess: 'analysis', learningObjectiveId: 'research-analyze-convergent-discriminant-construct-validity', distractorDesign: ['reliability-versus-construct-validity', 'experimental-control-versus-validity', 'diagnostic-accuracy-versus-validity'],
+  },
+  {
+    id: 'eppp-b009-research-2', expectedAnswerIndex: 2, expectedDifficulty: 'foundation', targetDifficulty: 'intermediate',
+    expectedPrompt: 'For a family of 10 hypothesis tests with desired familywise alpha of .05, the basic Bonferroni procedure tests each at:',
+    prompt: 'A researcher plans 10 confirmatory tests and wants a Bonferroni familywise alpha of .05. What per-test threshold should be used?',
+    choices: ['Use an alpha of .50 for each of the ten individual tests', 'Use an alpha of .050 for each test with no adjustment', 'Use an alpha of .005 for each of the ten tests', 'Use an alpha of .045 after subtracting one comparison'],
+    rationale: 'The Bonferroni threshold divides the desired familywise alpha by the number of tests: .05 divided by 10 equals .005 per test. This conservative rule limits the familywise error rate.',
+    feedback: {
+      0: 'Multiplying .05 by 10 gives .50 and would greatly relax the threshold rather than protect familywise error. Bonferroni uses division by the test count.',
+      1: 'Using .050 for each test ignores multiplicity. Ten unadjusted tests create a higher chance of at least one false positive than the requested familywise level.',
+      3: 'Subtracting a comparison is not the Bonferroni calculation. The rule divides .05 by all 10 planned tests, yielding .005.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'research-apply-bonferroni-threshold-to-multiple-tests', distractorDesign: ['multiply-alpha-error', 'unadjusted-alpha-error', 'subtract-comparison-error'],
+  },
+  {
+    id: 'eppp-b013-research-2', expectedAnswerIndex: 2, expectedDifficulty: 'foundation', targetDifficulty: 'intermediate',
+    expectedPrompt: 'Regression analysis is commonly used to:',
+    prompt: 'A clinic uses baseline severity and attendance to estimate later symptom change. What is the most defensible use of a regression model?',
+    choices: ['Establish a causal model in which a predictor causes the outcome after measured covariates are entered into the equation', 'Use a measurement-error model to correct observed scores when reliability estimates are supplied for each variable', 'Model or predict an outcome from one or more predictors', 'Evaluate mean equivalence across variables measured on different scales within the same participants using a comparison model'],
+    rationale: 'Regression models the association between an outcome and one or more predictors and can generate adjusted predictions. Entering covariates does not by itself establish causal direction or remove measurement error.',
+    feedback: {
+      0: 'Adjusted association can improve prediction but does not prove that a predictor causes the outcome. Causal claims require design and identification assumptions beyond the regression equation.',
+      1: 'Reliability information can support specialized correction procedures, but ordinary regression is not primarily a score-correction method for measurement error.',
+      3: 'Mean equivalence is assessed with suitable comparison or measurement models, not inferred from a regression prediction equation across differently scaled variables.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'research-apply-regression-to-prediction-with-covariates', distractorDesign: ['causal-claim-versus-regression', 'measurement-error-correction-versus-regression', 'mean-equivalence-versus-regression'],
+  },
+  {
+    id: 'eppp-b002-professional-2', expectedAnswerIndex: 3, expectedDifficulty: 'foundation', targetDifficulty: 'advanced',
+    expectedPrompt: 'According to APA Ethics Code Standard 10.01, what should psychologists explain when obtaining informed consent to therapy as early as feasible?',
+    prompt: 'Before therapy begins, a psychologist reviews what treatment will involve, likely course, fees, third-party involvement, and confidentiality exceptions. Which ethical requirement is being met?',
+    choices: ['The therapist’s credentials, office hours, and preferred treatment model rather than course, fees, third-party involvement, or confidentiality limits', 'The client’s diagnosis, expected prognosis, and complete clinical record', 'The insurer’s authorization, reimbursement rate, and utilization schedule', 'Its nature, anticipated course, fees, third-party involvement, and limits of confidentiality'],
+    rationale: 'Standard 10.01 calls for informed consent to therapy as early as feasible, including the nature and anticipated course, fees, third-party involvement, and limits of confidentiality. The information supports voluntary participation.',
+    feedback: {
+      0: 'Credentials and scheduling may be useful practical information, but they do not comprise the required therapy-consent explanation described by the standard.',
+      1: 'A diagnosis or full record may not yet be available and is not the required core of initial therapy consent. The standard emphasizes treatment, fees, third parties, and confidentiality limits.',
+      2: 'Insurance details can affect treatment, but the ethical requirement is broader than reimbursement administration. Consent must address what therapy entails and its confidentiality boundaries.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'professional-apply-standard-10-01-therapy-consent-content', distractorDesign: ['credentials-versus-consent-content', 'diagnosis-versus-consent-content', 'insurance-administration-versus-consent'],
+  },
+  {
+    id: 'eppp-b003-professional-2', expectedAnswerIndex: 3, expectedDifficulty: 'intermediate', targetDifficulty: 'advanced',
+    expectedPrompt: "A psychologist intends to provide ongoing video therapy to a client who will regularly connect from another state. Which response best reflects APA's telepsychology guidelines approved in 2024?",
+    prompt: 'A psychologist plans recurring video sessions while the client regularly connects from another state. Which preparation best addresses telepsychology competence, privacy, emergencies, and jurisdiction?',
+    choices: ['Confirm platform encryption and make a competence plan for the relevant jurisdiction, then use existing consent procedures unchanged', 'Obtain telepsychology consent and review licensure requirements in the psychologist’s state, treating the client’s travel as incidental', 'Ask the platform vendor to manage privacy and emergencies because a business-associate agreement transfers those professional responsibilities', 'Confirm competence and suitability, tailored consent, data security, emergency plans, and legal authorization in relevant jurisdictions'],
+    rationale: 'Telepsychology requires competence and suitability assessment, tailored informed consent, privacy and security planning, emergency procedures, and compliance with laws where the psychologist and client are located. Vendor tools do not transfer professional duties.',
+    feedback: {
+      0: 'Encryption is important but does not replace telepsychology-specific consent, emergency planning, competence review, or jurisdictional authorization. In-person procedures may need adaptation.',
+      1: 'Consent and licensure review are necessary, yet the client’s location is not incidental. Emergency access, privacy, suitability, and rules in each relevant jurisdiction require attention.',
+      2: 'A vendor can provide technical safeguards but cannot assume the psychologist’s ethical duties for emergency response, clinical suitability, or lawful practice.',
+    }, cognitiveProcess: 'analysis', learningObjectiveId: 'professional-analyze-telepsychology-competence-privacy-and-jurisdiction', distractorDesign: ['encryption-only-versus-telepsychology', 'travel-incidental-versus-jurisdiction', 'vendor-duty-transfer-versus-psychologist-duty'],
+  },
+  {
+    id: 'eppp-b005-professional-1', expectedAnswerIndex: 1, expectedDifficulty: 'foundation', targetDifficulty: 'intermediate',
+    expectedPrompt: 'A psychologist advertises credentials that the psychologist knows were never earned. Which Ethics Code provision most directly governs the advertisement?',
+    prompt: 'A psychologist’s website lists a doctoral credential that the psychologist never earned. Which Ethics Code provision most directly addresses the conduct?',
+    choices: ['Standard 2.05, Delegation of Work to Others', 'Standard 5.01, Avoidance of False or Deceptive Statements', 'Standard 6.03, Withholding Records for Nonpayment', 'Standard 9.10, Explaining Assessment Results'],
+    rationale: 'Standard 5.01 prohibits false or deceptive statements about a psychologist’s research, practice, or professional activities. Claiming an unearned credential is a direct misrepresentation in advertising.',
+    feedback: {
+      0: 'Delegation concerns assigning work to people with appropriate competence and responsibility. It does not govern a false credential displayed in an advertisement.',
+      2: 'Withholding records for nonpayment concerns financial and records practices. It does not address misrepresentation of professional qualifications.',
+      3: 'Explaining assessment results concerns communicating findings to clients or other authorized recipients. The conduct here occurs in public advertising and involves a false statement.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'professional-apply-standard-5-01-to-false-credential-advertising', distractorDesign: ['delegation-versus-advertising', 'records-payment-versus-advertising', 'assessment-feedback-versus-advertising'],
+  },
+];
+
+module.exports = { baselineMetrics, reviewedAt, reviewWave, revisions };

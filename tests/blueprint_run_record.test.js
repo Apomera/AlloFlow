@@ -14,6 +14,9 @@ import { loadAlloModule } from './setup.js';
 
 let PhaseO;
 beforeAll(() => {
+  // Production loads the shared identity/fan-out policy before the executor.
+  // Missing-policy behavior has its own explicit zero-call gate tests.
+  loadAlloModule('generation_matrix_module.js');
   loadAlloModule('phase_o_misc_handlers_module.js');
   PhaseO = window.AlloModules?.PhaseOHandlers;
   if (!PhaseO?.executeOneBlueprint) throw new Error('PhaseOHandlers.executeOneBlueprint failed to register');

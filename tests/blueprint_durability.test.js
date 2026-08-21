@@ -172,10 +172,25 @@ describe('finished runs file themselves into the active unit', () => {
     expect(fn).toMatch(/activeUnitId === 'all' \|\| activeUnitId === 'uncategorized'/);
   });
 
-  it.each(HOSTS3)('%s only files resources that actually landed', (file) => {
+  it.each(HOSTS3)('%s files every successful resource from landed or partial rows', (file) => {
     const src = rd(file);
     const fn = src.slice(src.indexOf("File a finished run's resources"), src.indexOf('// Reconcile the run record against history.'));
-    expect(fn).toMatch(/status === 'landed'/);
-    expect(fn).toContain('!r.resourceMissing');
+    // A partially successful fan-out still has real resources to file. Failed
+    // variants contribute no resource ID, while fully failed/interrupted rows
+    // are excluded by the exact settled-success status allowlist.
+    expect(fn).toContain(".filter(r => r && ['landed', 'partial'].includes(r.status))");
+    expect(fn).toContain('.flatMap(r => Array.isArray(r.resourceIds) && r.resourceIds.length ? r.resourceIds : [r.resourceId])');
+    expect(fn).toContain('.filter(Boolean)');
+  });
+
+  it.each(HOSTS3)('%s safely ignores missing resource IDs and missing history resources', (file) => {
+    const src = rd(file);
+    const fn = src.slice(src.indexOf("File a finished run's resources"), src.indexOf('// Reconcile the run record against history.'));
+    // Do not schedule a history write if successful rows have no usable ID,
+    // and never stamp an unrelated resource when a claimed ID is no longer in
+    // history. The membership check also makes partially deleted fan-outs safe.
+    expect(fn).toContain('if (!landed.length) return;');
+    expect(fn).toContain('const target = new Set(landed);');
+    expect(fn).toContain('!target.has(item.id) || item.unitId');
   });
 });

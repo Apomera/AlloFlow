@@ -490,8 +490,9 @@
       ,'.wc-climate-control[data-wc-delta=true]{box-shadow:0 0 0 1px rgba(124,58,237,.24),0 6px 14px rgba(124,58,237,.08)}.wc-climate-delta{display:block;margin-top:4px;color:#6d28d9;font-size:11px;font-weight:900;line-height:1.25}.dark .wc-climate-control[data-wc-delta=true]{box-shadow:0 0 0 1px rgba(196,181,253,.34),0 8px 16px rgba(99,102,241,.16)}.dark .wc-climate-delta{color:#c4b5fd}@media(forced-colors:active){.wc-climate-control[data-wc-delta=true]{outline:2px solid Highlight}.wc-climate-delta{color:CanvasText}}',
       ,'@media(max-width:700px){.wc-start-path-grid{grid-template-columns:1fr}.wc-start-action{min-height:46px}.wc-science-story-chain{grid-template-columns:1fr}.wc-science-story-arrow{transform:rotate(90deg);justify-self:center;margin:-3px 0}.wc-climate-response{grid-template-columns:1fr}}@media(prefers-reduced-motion:reduce){.wc-cycle-brief::after{display:none}.wc-start-action,.wc-metric,.wc-stage-rack button,.wc-evap-meter-track span{transition:none!important}.wc-start-action:hover,.wc-metric:hover,.wc-stage-rack button:hover{transform:none!important}}@media(forced-colors:active){.wc-start-path,.wc-start-action,.wc-start-number,.wc-science-story,.wc-science-story-step,.wc-climate-control,.wc-climate-value,.wc-climate-response,.wc-evap-meter-track{border:1px solid CanvasText;background:Canvas;color:CanvasText}.wc-start-path-head strong,.wc-start-path-head span,.wc-start-action strong,.wc-start-action small,.wc-science-story-title,.wc-science-story-step span,.wc-science-story-step strong,.wc-climate-response-kicker,.wc-climate-response strong,.wc-climate-response p,.wc-control-effect,.wc-climate-model-note,.wc-evap-meter-head{color:CanvasText}.wc-evap-meter-track span{background:Highlight}}'
       ,'.wc-steward-card{transition:transform 170ms ease,box-shadow 170ms ease;box-shadow:0 2px 8px rgba(15,23,42,.06)}.wc-steward-card:hover{transform:translateY(-2px);box-shadow:0 12px 26px rgba(15,23,42,.15)}.wc-steward-card button:hover{filter:brightness(1.1)}.wc-steward-cta{transition:transform 160ms ease,box-shadow 160ms ease,filter 160ms ease}.wc-steward-cta:hover{transform:translateY(-1px);filter:brightness(1.06)}.wc-steward-cta:active{transform:scale(.99)}'
-      ,'.wc-precip-view-toggle{display:inline-flex;align-items:stretch;gap:0;overflow:hidden;border:1px solid rgba(14,116,144,.38);border-radius:9px;background:rgba(255,255,255,.72)}.wc-precip-view-choice{min-height:38px;padding:6px 9px;border:0;border-right:1px solid rgba(14,116,144,.22);background:transparent;color:#075985;font-size:10px;font-weight:900;white-space:nowrap}.wc-precip-view-choice:last-child{border-right:0}.wc-precip-view-choice:hover{background:rgba(224,242,254,.84)}.wc-precip-view-choice[aria-pressed=true]{background:#0369a1;color:#fff}.wc-precip-3d-canvas{display:block;width:100%;height:clamp(300px,42vw,520px);min-height:300px;background:#061a2c;touch-action:none}.wc-precip-3d-key{position:absolute;left:10px;right:10px;bottom:58px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;pointer-events:none}.wc-precip-3d-key>span,.wc-precip-3d-reset{display:inline-flex;align-items:center;gap:5px;min-height:25px;padding:4px 7px;border:1px solid rgba(186,230,253,.3);border-radius:999px;background:rgba(3,18,31,.72);color:#e0f2fe;font-size:11px;font-weight:900;line-height:1}.wc-precip-3d-gesture{opacity:.8;font-size:11px!important;font-weight:700!important;letter-spacing:.01em!important}.wc-precip-3d-key i{display:inline-block;width:8px;height:8px;border-radius:50%;background:#7dd3fc;box-shadow:0 0 8px rgba(125,211,252,.8)}.wc-precip-3d-key i.is-updraft{background:#fde68a;box-shadow:0 0 8px rgba(253,230,138,.8)}.wc-precip-3d-key i.is-thermal{background:#fb7185;box-shadow:0 0 8px rgba(251,113,133,.72)}.wc-precip-3d-key i.is-charge{background:linear-gradient(90deg,#fde68a 0 50%,#fb7185 50%);box-shadow:0 0 8px rgba(251,113,133,.68)}.wc-precip-3d-reset{pointer-events:auto;margin-left:auto;border-color:rgba(125,211,252,.46);background:rgba(7,89,133,.88);color:#fff;cursor:pointer}.wc-precip-3d-reset:hover{background:#0e7490}.wc-precip-3d-science{margin:6px 0 0;padding:7px 9px;border:1px solid rgba(56,189,248,.22);border-left:3px solid #38bdf8;border-radius:8px;background:rgba(224,242,254,.58);color:#075985;font-size:10px;line-height:1.38}.dark .wc-precip-3d-science{background:rgba(8,47,73,.52);border-color:rgba(125,211,252,.24);border-left-color:#7dd3fc;color:#bae6fd}.dark .wc-precip-view-toggle{border-color:rgba(125,211,252,.34);background:rgba(15,23,42,.76)}.dark .wc-precip-view-choice{border-color:rgba(125,211,252,.22);color:#bae6fd}.dark .wc-precip-view-choice:hover{background:rgba(8,47,73,.86)}.dark .wc-precip-view-choice[aria-pressed=true]{background:#0ea5e9;color:#082f49}@media(max-width:560px){.wc-precip-head-actions{display:grid;grid-template-columns:1fr 1fr;align-items:stretch;width:100%}.wc-precip-head-actions>.wc-precip-view-toggle{grid-column:1/-1;grid-row:2}.wc-precip-head-actions>.wc-precip-btn:first-child{grid-column:1;grid-row:1}.wc-precip-head-actions>.wc-precip-btn.is-primary{grid-column:2;grid-row:1}.wc-precip-view-toggle{min-width:0}.wc-precip-view-choice{flex:1;padding-inline:6px}.wc-precip-3d-canvas{height:clamp(300px,78vw,430px);min-height:300px}.wc-precip-3d-key{left:7px;right:7px;bottom:57px}.wc-precip-3d-key>span,.wc-precip-3d-reset{font-size:11px;padding-inline:6px}.wc-precip-3d-gesture{display:none!important}}@media(prefers-reduced-motion:reduce){.wc-precip-3d-canvas{animation:none}.wc-precip-view-choice,.wc-precip-3d-reset{transition:none!important}}@media(forced-colors:active){.wc-precip-view-toggle,.wc-precip-view-choice,.wc-precip-3d-key>span,.wc-precip-3d-reset,.wc-precip-3d-science{border:1px solid CanvasText;background:Canvas;color:CanvasText}.wc-precip-view-choice[aria-pressed=true],.wc-precip-3d-reset{background:Highlight;color:HighlightText}.wc-precip-3d-key i{background:Highlight;box-shadow:none}}'
+      ,'.wc-precip-view-toggle{display:inline-flex;align-items:stretch;gap:0;overflow:hidden;border:1px solid rgba(14,116,144,.38);border-radius:9px;background:rgba(255,255,255,.72)}.wc-precip-view-choice{min-height:38px;padding:6px 9px;border:0;border-right:1px solid rgba(14,116,144,.22);background:transparent;color:#075985;font-size:11px;font-weight:900;white-space:nowrap}.wc-precip-view-choice:last-child{border-right:0}.wc-precip-view-choice:hover{background:rgba(224,242,254,.84)}.wc-precip-view-choice[aria-pressed=true]{background:#0369a1;color:#fff}.wc-precip-3d-canvas{display:block;width:100%;height:clamp(300px,42vw,520px);min-height:300px;background:#061a2c;touch-action:none}.wc-precip-3d-key{position:absolute;z-index:4;left:10px;right:10px;bottom:58px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;pointer-events:none}.wc-precip-3d-key>span,.wc-precip-3d-reset{display:inline-flex;align-items:center;gap:5px;min-height:25px;padding:4px 7px;border:1px solid rgba(186,230,253,.3);border-radius:999px;background:rgba(3,18,31,.72);color:#e0f2fe;font-size:11px;font-weight:900;line-height:1}.wc-precip-3d-gesture{opacity:.8;font-size:11px!important;font-weight:700!important;letter-spacing:.01em!important}.wc-precip-3d-key i{display:inline-block;width:8px;height:8px;border-radius:50%;background:#7dd3fc;box-shadow:0 0 8px rgba(125,211,252,.8)}.wc-precip-3d-key i.is-updraft{background:#fde68a;box-shadow:0 0 8px rgba(253,230,138,.8)}.wc-precip-3d-key i.is-thermal{background:#fb7185;box-shadow:0 0 8px rgba(251,113,133,.72)}.wc-precip-3d-key i.is-charge{background:linear-gradient(90deg,#fde68a 0 50%,#fb7185 50%);box-shadow:0 0 8px rgba(251,113,133,.68)}.wc-precip-3d-key i.is-orographic{background:linear-gradient(90deg,#7dd3fc 0 48%,#fbbf24 52%);box-shadow:0 0 8px rgba(125,211,252,.62)}.wc-precip-3d-reset{pointer-events:auto;margin-left:auto;border-color:rgba(125,211,252,.46);background:rgba(7,89,133,.88);color:#fff;cursor:pointer}.wc-precip-3d-reset:hover{background:#0e7490}.wc-precip-3d-science{margin:6px 0 0;padding:7px 9px;border:1px solid rgba(56,189,248,.22);border-left:3px solid #38bdf8;border-radius:8px;background:rgba(224,242,254,.58);color:#075985;font-size:11px;line-height:1.38}.dark .wc-precip-3d-science{background:rgba(8,47,73,.52);border-color:rgba(125,211,252,.24);border-left-color:#7dd3fc;color:#bae6fd}.dark .wc-precip-view-toggle{border-color:rgba(125,211,252,.34);background:rgba(15,23,42,.76)}.dark .wc-precip-view-choice{border-color:rgba(125,211,252,.22);color:#bae6fd}.dark .wc-precip-view-choice:hover{background:rgba(8,47,73,.86)}.dark .wc-precip-view-choice[aria-pressed=true]{background:#0ea5e9;color:#082f49}@media(max-width:560px){.wc-precip-head-actions{display:grid;grid-template-columns:1fr 1fr;align-items:stretch;width:100%}.wc-precip-head-actions>.wc-precip-view-toggle{grid-column:1/-1;grid-row:2}.wc-precip-head-actions>.wc-precip-btn:first-child{grid-column:1;grid-row:1}.wc-precip-head-actions>.wc-precip-btn.is-primary{grid-column:2;grid-row:1}.wc-precip-view-toggle{min-width:0}.wc-precip-view-choice{flex:1;padding-inline:6px}.wc-precip-3d-canvas{height:clamp(300px,78vw,430px);min-height:300px}.wc-precip-3d-key{left:7px;right:7px;bottom:119px;gap:4px}.wc-precip-3d-key>span,.wc-precip-3d-reset{font-size:11px;padding-inline:6px}.wc-precip-key-secondary,.wc-precip-3d-gesture{display:none!important}}@media(prefers-reduced-motion:reduce){.wc-precip-3d-canvas{animation:none}.wc-precip-view-choice,.wc-precip-3d-reset{transition:none!important}}@media(forced-colors:active){.wc-precip-view-toggle,.wc-precip-view-choice,.wc-precip-3d-key>span,.wc-precip-3d-reset,.wc-precip-3d-science{border:1px solid CanvasText;background:Canvas;color:CanvasText}.wc-precip-view-choice[aria-pressed=true],.wc-precip-3d-reset{background:Highlight;color:HighlightText}.wc-precip-3d-key i{background:Highlight;box-shadow:none}}'
       ,'.wc-precip-3d-focus{position:absolute;z-index:3;top:10px;left:10px;display:inline-flex;overflow:hidden;border:1px solid rgba(186,230,253,.34);border-radius:9px;background:rgba(3,18,31,.78);backdrop-filter:blur(9px)}.wc-precip-3d-focus-choice{min-height:36px;padding:6px 9px;border:0;border-right:1px solid rgba(186,230,253,.18);background:transparent;color:#dff6ff;font-size:11px;font-weight:900;white-space:nowrap}.wc-precip-3d-focus-choice:last-child{border-right:0}.wc-precip-3d-focus-choice:hover{background:rgba(14,116,144,.48)}.wc-precip-3d-focus-choice[aria-pressed=true]{background:#0ea5e9;color:#082f49}.wc-precip-3d-thermal-rail{position:absolute;z-index:2;top:58px;right:10px;display:grid;gap:5px;width:116px;padding:7px;border:1px solid rgba(186,230,253,.28);border-radius:10px;background:rgba(3,18,31,.72);color:#e0f2fe;backdrop-filter:blur(9px);pointer-events:none}.wc-precip-3d-thermal-rail>strong{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#bae6fd}.wc-precip-3d-thermal-level{display:grid;grid-template-columns:9px minmax(0,1fr) auto;align-items:center;gap:5px;font-size:11px;line-height:1.15}.wc-precip-3d-thermal-level i{display:block;width:8px;height:8px;border-radius:50%;background:#fbbf24;box-shadow:0 0 7px rgba(251,191,36,.72)}.wc-precip-3d-thermal-level[data-temperature-phase=frozen] i{background:#7dd3fc;box-shadow:0 0 7px rgba(125,211,252,.8)}.wc-precip-3d-thermal-level b{font-weight:800}.wc-precip-3d-thermal-level em{font-style:normal;font-weight:900;color:#fff}.wc-precip-3d-thermal-rail small{padding-top:4px;border-top:1px solid rgba(186,230,253,.2);font-size:11px;line-height:1.2;color:#bae6fd}.dark .wc-precip-3d-focus,.dark .wc-precip-3d-thermal-rail{background:rgba(2,6,23,.8)}@media(max-width:560px){.wc-precip-3d-focus{top:7px;left:7px;right:7px;display:flex}.wc-precip-3d-focus-choice{flex:1;min-height:34px;padding-inline:5px;font-size:11px}.wc-precip-3d-thermal-rail{top:48px;right:7px;width:102px;padding:6px}.wc-precip-3d-thermal-rail>strong{display:none}.wc-precip-3d-thermal-level{grid-template-columns:8px minmax(0,1fr) auto;gap:3px;font-size:11px}.wc-precip-3d-thermal-rail small{font-size:11px}.wc-precip-3d-key{padding-right:0}}@media(prefers-reduced-motion:reduce){.wc-precip-3d-focus-choice{transition:none!important}}@media(forced-colors:active){.wc-precip-3d-focus,.wc-precip-3d-focus-choice,.wc-precip-3d-thermal-rail{border-color:CanvasText;background:Canvas;color:CanvasText}.wc-precip-3d-focus-choice[aria-pressed=true]{background:Highlight;color:HighlightText}.wc-precip-3d-thermal-level i{background:CanvasText;box-shadow:none}.wc-precip-3d-thermal-level em,.wc-precip-3d-thermal-rail>strong,.wc-precip-3d-thermal-rail small{color:CanvasText}}'
+      ,'.wc-precip-3d-key i.is-evaporation{background:radial-gradient(circle at 35% 35%,#e0f2fe 0 22%,#fde68a 30% 58%,rgba(251,191,36,.18) 72%);box-shadow:0 0 8px rgba(251,191,36,.72)}.wc-precip-3d-key i.is-condensation{background:radial-gradient(circle at 35% 35%,#f8fafc 0 18%,#67e8f9 24% 52%,#0284c7 62% 100%);box-shadow:0 0 9px rgba(103,232,249,.86)}.wc-precip-3d-key i.is-coalescence{width:12px;border-radius:999px;background:radial-gradient(circle at 24% 50%,#bae6fd 0 18%,transparent 22%),radial-gradient(circle at 70% 50%,#38bdf8 0 30%,#0369a1 34% 100%);box-shadow:0 0 9px rgba(56,189,248,.78)}'
     ].join('');
     if (document.head) document.head.appendChild(st);
   })();
@@ -4096,6 +4097,15 @@ const d = labToolData.waterCycle || {};
                 canvasEl.dataset.precipitationWindDirection = model.config.windDirection;
                 canvasEl.dataset.orographicFlow = model.config.terrain === 'mountains' && model.config.windDirection !== 'calm' && model.config.wind >= 2
                   ? 'windward-lift-leeward-drying' : 'none';
+                canvasEl.dataset.virgaEvaporation = model.visualType === 'virga'
+                  ? 'shrinking-drops-fragmentation-and-vapor-return' : 'hidden';
+                canvasEl.dataset.cloudFormationRendering = 'rising-vapor-tracers-saturation-line-and-newborn-droplets';
+                canvasEl.dataset.cloudVaporTracerMeaning = 'visible-teaching-path-for-invisible-water-vapor';
+                canvasEl.dataset.cloudParticleScale = 'teaching-magnification-not-to-scale';
+                canvasEl.dataset.cloudDropletGrowth = model.config.tempC > 0 && model.growthIndex >= 38
+                  ? 'warm-cloud-collision-coalescence' : model.config.tempC <= 0
+                    ? 'cold-cloud-ice-growth' : 'nucleation-and-growth';
+                canvasEl.dataset.lowLevelDryness = (1 - model.config.lowLevelHumidity / 100).toFixed(3);
                 canvasEl.dataset.thermalProfile = model.thermalLayers.transitionKind;
                 canvasEl.dataset.freezingLevel = model.freezingLevel == null
                   ? 'none' : model.freezingLevel.toFixed(3);
@@ -4603,6 +4613,163 @@ const d = labToolData.waterCycle || {};
                 ctx2.restore();
               }
 
+              function drawCloudFormationMicrophysics(ctx2, w, h, cloudCenter, cloudY, cloudBase) {
+                var moistureStrength2d = model.config.moisture / 100;
+                var liftStrength2d = model.liftIndex / 100;
+                var lifecycleCloudStrength2d = model.lifecycle && isFinite(model.lifecycle.cloudFactor)
+                  ? model.lifecycle.cloudFactor : 1;
+                var formationStrength2d = wcPrecipClamp(
+                  (moistureStrength2d * 0.58 + liftStrength2d * 0.42) * lifecycleCloudStrength2d,
+                  0,
+                  1
+                );
+                var microphysicsTime2d = motionReduced || model.config.paused ? 0 : visualTime;
+                var cloudBaseHalfWidth2d = Math.min(w * 0.21, 174);
+                var cloudBaseLeft2d = cloudCenter - cloudBaseHalfWidth2d;
+                var cloudBaseRight2d = cloudCenter + cloudBaseHalfWidth2d;
+                ctx2.save();
+
+                var saturationGlow2d = ctx2.createLinearGradient(0, cloudBase - 15, 0, cloudBase + 18);
+                saturationGlow2d.addColorStop(0, 'rgba(103,232,249,0)');
+                saturationGlow2d.addColorStop(0.5, 'rgba(103,232,249,' + (0.055 + formationStrength2d * 0.11) + ')');
+                saturationGlow2d.addColorStop(1, 'rgba(14,165,233,0)');
+                ctx2.fillStyle = saturationGlow2d;
+                ctx2.fillRect(cloudBaseLeft2d, cloudBase - 15, cloudBaseHalfWidth2d * 2, 33);
+                ctx2.strokeStyle = 'rgba(165,243,252,' + (0.44 + formationStrength2d * 0.34) + ')';
+                ctx2.lineWidth = 1.25;
+                ctx2.setLineDash([2, 5]);
+                ctx2.beginPath();
+                ctx2.moveTo(cloudBaseLeft2d, cloudBase);
+                ctx2.lineTo(cloudBaseRight2d, cloudBase);
+                ctx2.stroke();
+                ctx2.setLineDash([]);
+
+                var formationTracerCount2d = Math.round(18 + formationStrength2d * 20);
+                for (var formationTracerIndex2d = 0; formationTracerIndex2d < formationTracerCount2d; formationTracerIndex2d++) {
+                  var formationTracerSeed2d = ((formationTracerIndex2d * 43) % 67) / 67;
+                  var formationTracerProgress2d = motionReduced || model.config.paused
+                    ? (formationTracerIndex2d + 1) / (formationTracerCount2d + 1)
+                    : (formationTracerSeed2d + microphysicsTime2d * (0.034 + liftStrength2d * 0.035)) % 1;
+                  var formationTracerAngle2d = formationTracerIndex2d * 1.83 + microphysicsTime2d * 0.34;
+                  var formationTracerX2d = cloudCenter +
+                    (formationTracerSeed2d - 0.5) * cloudBaseHalfWidth2d * 1.22 * (1 - formationTracerProgress2d * 0.24) +
+                    Math.sin(formationTracerAngle2d) * (3 + formationTracerProgress2d * 4);
+                  var formationTracerY2d = cloudBase + h * 0.17 - formationTracerProgress2d * h * 0.205;
+                  var condensedBlend2d = wcPrecipClamp((formationTracerProgress2d - 0.76) / 0.24, 0, 1);
+                  var formationTracerAlpha2d = (0.28 + formationStrength2d * 0.4) *
+                    (0.68 + Math.sin(formationTracerAngle2d) * 0.16);
+                  if (condensedBlend2d < 0.12) {
+                    ctx2.globalAlpha = formationTracerAlpha2d * 0.58;
+                    ctx2.strokeStyle = '#67e8f9';
+                    ctx2.lineWidth = 1.3;
+                    ctx2.beginPath();
+                    ctx2.moveTo(formationTracerX2d + Math.sin(formationTracerAngle2d) * 1.6,
+                      formationTracerY2d + 7.5);
+                    ctx2.lineTo(formationTracerX2d, formationTracerY2d + 1.8);
+                    ctx2.stroke();
+                  }
+                  ctx2.globalAlpha = formationTracerAlpha2d;
+                  ctx2.fillStyle = condensedBlend2d > 0 ? '#e0f2fe' : '#a5f3fc';
+                  ctx2.beginPath();
+                  ctx2.arc(
+                    formationTracerX2d,
+                    formationTracerY2d,
+                    1.8 + condensedBlend2d * (1.15 + formationStrength2d * 0.85),
+                    0,
+                    Math.PI * 2
+                  );
+                  ctx2.fill();
+                  if (condensedBlend2d < 0.12) {
+                    ctx2.globalAlpha = formationTracerAlpha2d * 0.42;
+                    ctx2.strokeStyle = '#22d3ee';
+                    ctx2.lineWidth = 0.9;
+                    ctx2.beginPath();
+                    ctx2.arc(formationTracerX2d, formationTracerY2d, 3.05, 0, Math.PI * 2);
+                    ctx2.stroke();
+                  }
+                  if (condensedBlend2d > 0.15) {
+                    ctx2.globalAlpha = formationTracerAlpha2d * condensedBlend2d * 0.58;
+                    ctx2.strokeStyle = '#7dd3fc';
+                    ctx2.lineWidth = 0.8;
+                    ctx2.beginPath();
+                    ctx2.arc(formationTracerX2d, formationTracerY2d,
+                      2.3 + condensedBlend2d * 1.6, 0, Math.PI * 2);
+                    ctx2.stroke();
+                  }
+                }
+
+                var warmCoalescenceStrength2d = model.config.tempC > 0
+                  ? wcPrecipClamp((model.growthIndex / 100 - 0.3) / 0.48, 0, 1) : 0;
+                if (warmCoalescenceStrength2d > 0.025) {
+                  var coalescencePairCount2d = 9;
+                  for (var coalescencePairIndex2d = 0; coalescencePairIndex2d < coalescencePairCount2d; coalescencePairIndex2d++) {
+                    var coalescenceSeed2d = ((coalescencePairIndex2d * 31) % 43) / 43;
+                    var coalescenceCycle2d = motionReduced || model.config.paused
+                      ? coalescenceSeed2d
+                      : (coalescenceSeed2d + microphysicsTime2d * (0.075 + liftStrength2d * 0.04)) % 1;
+                    var coalescenceEase2d = coalescenceCycle2d * coalescenceCycle2d * (3 - 2 * coalescenceCycle2d);
+                    var collectorX2d = cloudCenter + (coalescenceSeed2d - 0.5) * cloudBaseHalfWidth2d * 1.45;
+                    var collectorY2d = cloudY + 20 + (coalescencePairIndex2d % 3) * 13 +
+                      Math.sin(coalescencePairIndex2d * 1.7) * 3;
+                    var coalescenceAngle2d = coalescencePairIndex2d * 1.19 + microphysicsTime2d * 0.18;
+                    var coalescenceDistance2d = 9.5 - coalescenceEase2d * 7.2;
+                    var coalescenceDx2d = Math.cos(coalescenceAngle2d) * coalescenceDistance2d;
+                    var coalescenceDy2d = Math.sin(coalescenceAngle2d) * coalescenceDistance2d * 0.48;
+                    ctx2.globalAlpha = (0.14 + warmCoalescenceStrength2d * 0.34) * (1 - coalescenceEase2d * 0.45);
+                    ctx2.strokeStyle = '#0369a1';
+                    ctx2.lineWidth = 1.35;
+                    ctx2.beginPath();
+                    ctx2.moveTo(collectorX2d - coalescenceDx2d, collectorY2d - coalescenceDy2d);
+                    ctx2.lineTo(collectorX2d + coalescenceDx2d, collectorY2d + coalescenceDy2d);
+                    ctx2.stroke();
+                    ctx2.fillStyle = '#0ea5e9';
+                    ctx2.beginPath();
+                    ctx2.arc(collectorX2d - coalescenceDx2d, collectorY2d - coalescenceDy2d, 1.35, 0, Math.PI * 2);
+                    ctx2.arc(collectorX2d + coalescenceDx2d, collectorY2d + coalescenceDy2d, 1.35, 0, Math.PI * 2);
+                    ctx2.fill();
+                    ctx2.globalAlpha = 0.42 + warmCoalescenceStrength2d * 0.48;
+                    ctx2.fillStyle = '#0369a1';
+                    ctx2.beginPath();
+                    ctx2.arc(collectorX2d, collectorY2d + Math.max(0, coalescenceCycle2d - 0.72) * 8,
+                      1.65 + warmCoalescenceStrength2d * 1.35 + coalescenceEase2d * 0.45, 0, Math.PI * 2);
+                    ctx2.fill();
+                  }
+                } else if (model.config.tempC <= 0) {
+                  ctx2.strokeStyle = '#e0f2fe';
+                  ctx2.lineWidth = 1;
+                  for (var cloudIceGlintIndex2d = 0; cloudIceGlintIndex2d < 8; cloudIceGlintIndex2d++) {
+                    var cloudIceGlintX2d = cloudCenter + (((cloudIceGlintIndex2d * 37) % 61) / 61 - 0.5) * cloudBaseHalfWidth2d * 1.5;
+                    var cloudIceGlintY2d = cloudY + 15 + ((cloudIceGlintIndex2d * 19) % 47) / 47 * Math.max(22, cloudBase - cloudY - 28);
+                    var cloudIceGlintSize2d = 2.4 + (cloudIceGlintIndex2d % 3) * 0.65;
+                    ctx2.globalAlpha = 0.34 + formationStrength2d * 0.38;
+                    for (var cloudIceArm2d = 0; cloudIceArm2d < 3; cloudIceArm2d++) {
+                      var cloudIceAngle2d = cloudIceArm2d * Math.PI / 3 + cloudIceGlintIndex2d * 0.31 + microphysicsTime2d * 0.12;
+                      ctx2.beginPath();
+                      ctx2.moveTo(cloudIceGlintX2d - Math.cos(cloudIceAngle2d) * cloudIceGlintSize2d,
+                        cloudIceGlintY2d - Math.sin(cloudIceAngle2d) * cloudIceGlintSize2d);
+                      ctx2.lineTo(cloudIceGlintX2d + Math.cos(cloudIceAngle2d) * cloudIceGlintSize2d,
+                        cloudIceGlintY2d + Math.sin(cloudIceAngle2d) * cloudIceGlintSize2d);
+                      ctx2.stroke();
+                    }
+                  }
+                }
+
+                var saturationLabel2d = 'SATURATION · TRACER → VISIBLE DROPLETS';
+                ctx2.font = '800 11px system-ui, sans-serif';
+                ctx2.textAlign = 'center';
+                ctx2.textBaseline = 'middle';
+                var saturationLabelWidth2d = Math.min(cloudBaseHalfWidth2d * 1.86,
+                  ctx2.measureText(saturationLabel2d).width + 14);
+                ctx2.globalAlpha = 1;
+                ctx2.fillStyle = 'rgba(3,18,31,.8)';
+                ctx2.fillRect(cloudCenter - saturationLabelWidth2d / 2, cloudBase - 10,
+                  saturationLabelWidth2d, 20);
+                ctx2.fillStyle = '#cffafe';
+                ctx2.fillText(saturationLabel2d, cloudCenter, cloudBase + 0.5,
+                  Math.max(0, saturationLabelWidth2d - 12));
+                ctx2.restore();
+              }
+
               function drawPrecipCanvas(timestampOrForce) {
                 animationFrame = null;
                 if (!alive || !canvasEl.isConnected) {
@@ -4717,6 +4884,37 @@ const d = labToolData.waterCycle || {};
                   context.beginPath();
                   context.ellipse(rainShadowCenter, groundY - h * 0.05, w * 0.2, h * 0.12, 0, 0, Math.PI * 2);
                   context.fill();
+                  context.restore();
+                }
+                if (model.visualType === 'virga') {
+                  var virgaDryness2d = 1 - model.config.lowLevelHumidity / 100;
+                  var virgaFallTarget2d = h * (0.68 - virgaDryness2d * 0.2);
+                  var virgaEvaporationTop2d = cloudBase +
+                    (virgaFallTarget2d - cloudBase) * Math.max(0.3, 0.48 - virgaDryness2d * 0.14);
+                  context.save();
+                  var virgaDryLayerGradient2d = context.createLinearGradient(0, virgaEvaporationTop2d, 0, groundY);
+                  virgaDryLayerGradient2d.addColorStop(0, 'rgba(251,191,36,0)');
+                  virgaDryLayerGradient2d.addColorStop(0.18, 'rgba(251,191,36,' + (0.035 + virgaDryness2d * 0.035) + ')');
+                  virgaDryLayerGradient2d.addColorStop(1, 'rgba(245,158,11,' + (0.055 + virgaDryness2d * 0.055) + ')');
+                  context.fillStyle = virgaDryLayerGradient2d;
+                  context.fillRect(0, virgaEvaporationTop2d, w, Math.max(0, groundY - virgaEvaporationTop2d));
+                  context.strokeStyle = 'rgba(253,230,138,' + (0.38 + virgaDryness2d * 0.28) + ')';
+                  context.lineWidth = 1;
+                  context.setLineDash([6, 5]);
+                  context.beginPath();
+                  context.moveTo(0, virgaEvaporationTop2d);
+                  context.lineTo(w, virgaEvaporationTop2d);
+                  context.stroke();
+                  context.setLineDash([]);
+                  var virgaDryLabel2d = 'DRY LAYER · DROPS SHRINK → INVISIBLE VAPOR';
+                  context.font = '800 11px system-ui, sans-serif';
+                  var virgaDryLabelWidth2d = Math.min(w - 20, context.measureText(virgaDryLabel2d).width + 14);
+                  context.fillStyle = 'rgba(48,33,8,.76)';
+                  context.fillRect(8, virgaEvaporationTop2d + 6, virgaDryLabelWidth2d, 20);
+                  context.fillStyle = '#fde68a';
+                  context.textAlign = 'left';
+                  context.textBaseline = 'middle';
+                  context.fillText(virgaDryLabel2d, 15, virgaEvaporationTop2d + 16, Math.max(0, virgaDryLabelWidth2d - 14));
                   context.restore();
                 }
                 var stormDrift = windSign * model.config.wind / 40 * w * 0.24;
@@ -4886,7 +5084,51 @@ const d = labToolData.waterCycle || {};
                     (model.visualType === 'virga' ? Math.max(0.08, 1 - progress) : 1);
                   var particlePhase = wcPrecipPhaseFromModel(model, progress);
                   drawHydrometeor(context, particleX, particleY, particleSize, particleAlpha, particle, particlePhase, drift);
+                  if (model.visualType === 'virga' && progress > 0.44 && particleAlpha > 0.015) {
+                    var virgaFragmentProgress2d = Math.max(0, Math.min(1, (progress - 0.44) / 0.56));
+                    context.save();
+                    context.fillStyle = '#dff7ff';
+                    context.globalAlpha = particleAlpha * (0.22 + virgaFragmentProgress2d * 0.48);
+                    for (var virgaFragmentIndex2d = 0; virgaFragmentIndex2d < 2; virgaFragmentIndex2d++) {
+                      var virgaFragmentAngle2d = particle.wobble + virgaFragmentIndex2d * Math.PI + visualTime * 0.32;
+                      var virgaFragmentDistance2d = 2 + virgaFragmentProgress2d * (4 + virgaFragmentIndex2d * 2);
+                      context.beginPath();
+                      context.arc(
+                        particleX + Math.cos(virgaFragmentAngle2d) * virgaFragmentDistance2d,
+                        particleY + Math.sin(virgaFragmentAngle2d) * virgaFragmentDistance2d,
+                        Math.max(0.55, particleSize * (0.18 - virgaFragmentProgress2d * 0.055)),
+                        0, Math.PI * 2
+                      );
+                      context.fill();
+                    }
+                    context.restore();
+                  }
                 }
+
+                if (model.visualType === 'virga') {
+                  var virgaTracerDryness2d = 1 - model.config.lowLevelHumidity / 100;
+                  var virgaTracerCount2d = Math.round(12 + virgaTracerDryness2d * 16);
+                  context.save();
+                  for (var virgaTracerIndex2d = 0; virgaTracerIndex2d < virgaTracerCount2d; virgaTracerIndex2d++) {
+                    var virgaTracerSeed2d = ((virgaTracerIndex2d * 37) % 53) / 53;
+                    var virgaTracerPhase2d = (virgaTracerSeed2d + visualTime * (0.022 + virgaTracerDryness2d * 0.018)) % 1;
+                    var virgaTracerX2d = cloudCenter + (virgaTracerSeed2d - 0.5) * w * 0.22 + drift * 0.72 +
+                      Math.sin(virgaTracerIndex2d * 1.7 + visualTime * 0.5) * (3 + virgaTracerPhase2d * 5);
+                    var virgaTracerY2d = fallTarget - 2 - virgaTracerPhase2d * h * (0.08 + virgaTracerDryness2d * 0.07);
+                    var virgaTracerAlpha2d = (0.08 + virgaTracerDryness2d * 0.22) * (1 - virgaTracerPhase2d);
+                    context.globalAlpha = virgaTracerAlpha2d;
+                    context.fillStyle = '#fde68a';
+                    context.beginPath();
+                    context.arc(virgaTracerX2d, virgaTracerY2d, 0.75 + (1 - virgaTracerPhase2d) * 0.65, 0, Math.PI * 2);
+                    context.fill();
+                  }
+                  context.restore();
+                }
+
+                // The cloud-formation layer is an explanatory foreground lens:
+                // draw it after the fall field so upward teaching tracers and
+                // collision paths remain distinguishable from falling rain.
+                drawCloudFormationMicrophysics(context, w, h, cloudCenter, cloudY, cloudBase);
 
                 if (model.reachesGround) {
                   var surfaceFootprintCenter = cloudCenter + stormDrift;
@@ -5425,7 +5667,7 @@ const d = labToolData.waterCycle || {};
               var atmosphereTexturePrecip3d = makePrecip3dAtmosphereTexture();
 
               var horizonPrecip3d = new THREE.Mesh(
-                new THREE.PlaneGeometry(11, 5.4),
+                new THREE.PlaneGeometry(20, 9),
                 new THREE.MeshBasicMaterial({
                   color: 0xffffff, map: atmosphereTexturePrecip3d,
                   transparent: true, opacity: 0.94, depthWrite: false
@@ -5460,25 +5702,68 @@ const d = labToolData.waterCycle || {};
               scenePrecip3d.add(floorGlowPrecip3d);
 
               var mountainTerrainGroupPrecip3d = new THREE.Group();
-              var mountainGeometryPrecip3d = new THREE.ConeGeometry(0.86, 1.55, 7);
-              var mountainSnowGeometryPrecip3d = new THREE.ConeGeometry(0.34, 0.52, 7);
+              function makePrecip3dMountainGeometry(radiusPrecip3d, heightPrecip3d, seedPrecip3d, snowCapPrecip3d) {
+                var mountainGeometryPrecip3d = new THREE.ConeGeometry(
+                  radiusPrecip3d, heightPrecip3d, snowCapPrecip3d ? 12 : 14, snowCapPrecip3d ? 2 : 5
+                );
+                var mountainPositionAttributePrecip3d = mountainGeometryPrecip3d.attributes.position;
+                var mountainVertexColorsPrecip3d = [];
+                for (var mountainVertexIndexPrecip3d = 0; mountainVertexIndexPrecip3d < mountainPositionAttributePrecip3d.count; mountainVertexIndexPrecip3d++) {
+                  var mountainVertexXPrecip3d = mountainPositionAttributePrecip3d.getX(mountainVertexIndexPrecip3d);
+                  var mountainVertexYPrecip3d = mountainPositionAttributePrecip3d.getY(mountainVertexIndexPrecip3d);
+                  var mountainVertexZPrecip3d = mountainPositionAttributePrecip3d.getZ(mountainVertexIndexPrecip3d);
+                  var mountainVertexRadiusPrecip3d = Math.sqrt(
+                    mountainVertexXPrecip3d * mountainVertexXPrecip3d + mountainVertexZPrecip3d * mountainVertexZPrecip3d
+                  );
+                  var mountainVertexAnglePrecip3d = Math.atan2(mountainVertexZPrecip3d, mountainVertexXPrecip3d);
+                  var mountainVertexHeightPrecip3d = Math.max(0, Math.min(1,
+                    mountainVertexYPrecip3d / heightPrecip3d + 0.5
+                  ));
+                  if (mountainVertexRadiusPrecip3d > 0.002 && mountainVertexHeightPrecip3d < 0.995) {
+                    var mountainRidgePrecip3d = 1 +
+                      Math.sin(mountainVertexAnglePrecip3d * 5 + seedPrecip3d * 1.73) * (snowCapPrecip3d ? 0.035 : 0.075) +
+                      Math.sin(mountainVertexAnglePrecip3d * 11 - mountainVertexHeightPrecip3d * 7 + seedPrecip3d) * (snowCapPrecip3d ? 0.02 : 0.045);
+                    mountainPositionAttributePrecip3d.setX(mountainVertexIndexPrecip3d, mountainVertexXPrecip3d * mountainRidgePrecip3d);
+                    mountainPositionAttributePrecip3d.setZ(mountainVertexIndexPrecip3d, mountainVertexZPrecip3d * mountainRidgePrecip3d);
+                  }
+                  var mountainSunFacePrecip3d = 0.5 + 0.5 * Math.cos(mountainVertexAnglePrecip3d + 0.68);
+                  var mountainStrataPrecip3d = Math.sin(
+                    mountainVertexHeightPrecip3d * 23 + mountainVertexAnglePrecip3d * 3 + seedPrecip3d
+                  ) * (snowCapPrecip3d ? 0.025 : 0.04);
+                  var mountainVertexColorPrecip3d = new THREE.Color(snowCapPrecip3d ? 0xdbeafe : 0x405667);
+                  mountainVertexColorPrecip3d.multiplyScalar(snowCapPrecip3d
+                    ? 0.82 + mountainSunFacePrecip3d * 0.24 + mountainStrataPrecip3d
+                    : 0.58 + mountainSunFacePrecip3d * 0.31 + mountainVertexHeightPrecip3d * 0.12 + mountainStrataPrecip3d);
+                  mountainVertexColorsPrecip3d.push(
+                    mountainVertexColorPrecip3d.r, mountainVertexColorPrecip3d.g, mountainVertexColorPrecip3d.b
+                  );
+                }
+                mountainGeometryPrecip3d.setAttribute('color', new THREE.Float32BufferAttribute(mountainVertexColorsPrecip3d, 3));
+                mountainGeometryPrecip3d.computeVertexNormals();
+                return mountainGeometryPrecip3d;
+              }
               var mountainSnowMaterialPrecip3d = new THREE.MeshStandardMaterial({
-                color: 0xdbeafe, roughness: 0.98, metalness: 0
+                color: 0xffffff, vertexColors: true, roughness: 0.98, metalness: 0, flatShading: true
               });
               var mountainSnowCapsPrecip3d = [];
               for (var mountainIndexPrecip3d = 0; mountainIndexPrecip3d < 6; mountainIndexPrecip3d++) {
                 var mountainMaterialPrecip3d = new THREE.MeshStandardMaterial({
-                  color: mountainIndexPrecip3d % 2 ? 0x334155 : 0x475569,
-                  roughness: 1, metalness: 0
+                  color: 0xffffff, vertexColors: true, roughness: 1, metalness: 0, flatShading: true
                 });
-                var mountainPrecip3d = new THREE.Mesh(mountainGeometryPrecip3d, mountainMaterialPrecip3d);
+                var mountainPrecip3d = new THREE.Mesh(
+                  makePrecip3dMountainGeometry(0.86, 1.55, mountainIndexPrecip3d + 1, false),
+                  mountainMaterialPrecip3d
+                );
                 var mountainScalePrecip3d = 0.72 + (mountainIndexPrecip3d % 3) * 0.2;
                 var mountainHeightScalePrecip3d = 0.78 + (mountainIndexPrecip3d % 2) * 0.3;
                 mountainPrecip3d.scale.set(mountainScalePrecip3d, mountainHeightScalePrecip3d, mountainScalePrecip3d);
                 mountainPrecip3d.position.set(-2.7 + mountainIndexPrecip3d * 1.08, -1.47, -1.1 - (mountainIndexPrecip3d % 2) * 0.42);
                 mountainPrecip3d.rotation.y = mountainIndexPrecip3d * 0.62;
                 mountainTerrainGroupPrecip3d.add(mountainPrecip3d);
-                var mountainSnowCapPrecip3d = new THREE.Mesh(mountainSnowGeometryPrecip3d, mountainSnowMaterialPrecip3d);
+                var mountainSnowCapPrecip3d = new THREE.Mesh(
+                  makePrecip3dMountainGeometry(0.34, 0.52, mountainIndexPrecip3d + 8, true),
+                  mountainSnowMaterialPrecip3d
+                );
                 mountainSnowCapPrecip3d.position.set(
                   mountainPrecip3d.position.x,
                   mountainPrecip3d.position.y + 1.55 * mountainHeightScalePrecip3d / 2 - 0.24,
@@ -5492,21 +5777,250 @@ const d = labToolData.waterCycle || {};
               }
               scenePrecip3d.add(mountainTerrainGroupPrecip3d);
 
+              // Orographic weather is drawn as one mirrored system: blue moisture
+              // climbs the windward face, while amber air descends over a dry
+              // leeward surface. The current wind direction flips the whole story.
+              var orographicFlowGroupPrecip3d = new THREE.Group();
+              var orographicLiftCurvesPrecip3d = [];
+              var orographicDescentCurvesPrecip3d = [];
+              var orographicLiftLinesPrecip3d = [];
+              var orographicDescentLinesPrecip3d = [];
+              for (var orographicCurveIndexPrecip3d = 0; orographicCurveIndexPrecip3d < 3; orographicCurveIndexPrecip3d++) {
+                var orographicCurveZPrecip3d = 0.18 + orographicCurveIndexPrecip3d * 0.25;
+                var orographicLiftCurvePrecip3d = new THREE.CatmullRomCurve3([
+                  new THREE.Vector3(-3.7, -1.35 + orographicCurveIndexPrecip3d * 0.08, orographicCurveZPrecip3d),
+                  new THREE.Vector3(-2.75, -0.9 + orographicCurveIndexPrecip3d * 0.1, orographicCurveZPrecip3d),
+                  new THREE.Vector3(-2.05, -0.47 + orographicCurveIndexPrecip3d * 0.11, orographicCurveZPrecip3d),
+                  new THREE.Vector3(-1.65, -0.08 + orographicCurveIndexPrecip3d * 0.12, orographicCurveZPrecip3d),
+                  new THREE.Vector3(-0.42, 0.86 + orographicCurveIndexPrecip3d * 0.08, orographicCurveZPrecip3d)
+                ]);
+                var orographicDescentCurvePrecip3d = new THREE.CatmullRomCurve3([
+                  new THREE.Vector3(-0.34, 0.86 + orographicCurveIndexPrecip3d * 0.08, orographicCurveZPrecip3d),
+                  new THREE.Vector3(0.78, 0.36 + orographicCurveIndexPrecip3d * 0.04, orographicCurveZPrecip3d),
+                  new THREE.Vector3(1.88, -0.55 + orographicCurveIndexPrecip3d * 0.03, orographicCurveZPrecip3d),
+                  new THREE.Vector3(2.72, -0.94 + orographicCurveIndexPrecip3d * 0.05, orographicCurveZPrecip3d),
+                  new THREE.Vector3(3.65, -1.25 + orographicCurveIndexPrecip3d * 0.06, orographicCurveZPrecip3d)
+                ]);
+                var orographicLiftLinePrecip3d = new THREE.Line(
+                  new THREE.BufferGeometry().setFromPoints(orographicLiftCurvePrecip3d.getPoints(32)),
+                  new THREE.LineBasicMaterial({
+                    color: 0x67e8f9, transparent: true, opacity: 0,
+                    depthWrite: false, blending: THREE.AdditiveBlending
+                  })
+                );
+                var orographicDescentLinePrecip3d = new THREE.Line(
+                  new THREE.BufferGeometry().setFromPoints(orographicDescentCurvePrecip3d.getPoints(32)),
+                  new THREE.LineBasicMaterial({
+                    color: 0xfbbf24, transparent: true, opacity: 0,
+                    depthWrite: false, blending: THREE.NormalBlending
+                  })
+                );
+                orographicFlowGroupPrecip3d.add(orographicLiftLinePrecip3d);
+                orographicFlowGroupPrecip3d.add(orographicDescentLinePrecip3d);
+                orographicLiftCurvesPrecip3d.push(orographicLiftCurvePrecip3d);
+                orographicDescentCurvesPrecip3d.push(orographicDescentCurvePrecip3d);
+                orographicLiftLinesPrecip3d.push(orographicLiftLinePrecip3d);
+                orographicDescentLinesPrecip3d.push(orographicDescentLinePrecip3d);
+              }
+              var orographicMarkerCountPrecip3d = 36;
+              var orographicLiftMarkerPositionsPrecip3d = new Float32Array(orographicMarkerCountPrecip3d * 3);
+              var orographicDescentMarkerPositionsPrecip3d = new Float32Array(orographicMarkerCountPrecip3d * 3);
+              var orographicLiftMarkerGeometryPrecip3d = new THREE.BufferGeometry();
+              var orographicDescentMarkerGeometryPrecip3d = new THREE.BufferGeometry();
+              orographicLiftMarkerGeometryPrecip3d.setAttribute('position', new THREE.BufferAttribute(orographicLiftMarkerPositionsPrecip3d, 3));
+              orographicDescentMarkerGeometryPrecip3d.setAttribute('position', new THREE.BufferAttribute(orographicDescentMarkerPositionsPrecip3d, 3));
+              var orographicLiftMarkersPrecip3d = new THREE.Points(
+                orographicLiftMarkerGeometryPrecip3d,
+                new THREE.PointsMaterial({
+                  color: 0xcffafe, map: airflowTexturePrecip3d, alphaTest: 0.02,
+                  size: 0.09, transparent: true, opacity: 0,
+                  depthWrite: false, blending: THREE.AdditiveBlending
+                })
+              );
+              var orographicDescentMarkersPrecip3d = new THREE.Points(
+                orographicDescentMarkerGeometryPrecip3d,
+                new THREE.PointsMaterial({
+                  color: 0xfde68a, map: airflowTexturePrecip3d, alphaTest: 0.02,
+                  size: 0.085, transparent: true, opacity: 0,
+                  depthWrite: false, blending: THREE.NormalBlending
+                })
+              );
+              orographicFlowGroupPrecip3d.add(orographicLiftMarkersPrecip3d);
+              orographicFlowGroupPrecip3d.add(orographicDescentMarkersPrecip3d);
+
+              var windwardMistCountPrecip3d = 46;
+              var leewardHazeCountPrecip3d = 38;
+              var windwardMistSeedsPrecip3d = [];
+              var leewardHazeSeedsPrecip3d = [];
+              var windwardMistPositionsPrecip3d = new Float32Array(windwardMistCountPrecip3d * 3);
+              var leewardHazePositionsPrecip3d = new Float32Array(leewardHazeCountPrecip3d * 3);
+              for (var windwardMistIndexPrecip3d = 0; windwardMistIndexPrecip3d < windwardMistCountPrecip3d; windwardMistIndexPrecip3d++) {
+                windwardMistSeedsPrecip3d.push({
+                  phase: ((windwardMistIndexPrecip3d * 29) % 47) / 47,
+                  z: (((windwardMistIndexPrecip3d * 31) % 43) / 43 - 0.5) * 0.92,
+                  lift: ((windwardMistIndexPrecip3d * 17) % 37) / 37
+                });
+              }
+              for (var leewardHazeIndexPrecip3d = 0; leewardHazeIndexPrecip3d < leewardHazeCountPrecip3d; leewardHazeIndexPrecip3d++) {
+                leewardHazeSeedsPrecip3d.push({
+                  phase: ((leewardHazeIndexPrecip3d * 23) % 41) / 41,
+                  z: (((leewardHazeIndexPrecip3d * 19) % 37) / 37 - 0.5) * 1.18,
+                  rise: ((leewardHazeIndexPrecip3d * 13) % 31) / 31
+                });
+              }
+              var windwardMistGeometryPrecip3d = new THREE.BufferGeometry();
+              windwardMistGeometryPrecip3d.setAttribute('position', new THREE.BufferAttribute(windwardMistPositionsPrecip3d, 3));
+              var windwardMistPrecip3d = new THREE.Points(
+                windwardMistGeometryPrecip3d,
+                new THREE.PointsMaterial({
+                  color: 0xbae6fd, map: softDotTexturePrecip3d, alphaTest: 0.018,
+                  size: 0.14, transparent: true, opacity: 0,
+                  depthWrite: false, blending: THREE.NormalBlending
+                })
+              );
+              var leewardHazeGeometryPrecip3d = new THREE.BufferGeometry();
+              leewardHazeGeometryPrecip3d.setAttribute('position', new THREE.BufferAttribute(leewardHazePositionsPrecip3d, 3));
+              var leewardHazePrecip3d = new THREE.Points(
+                leewardHazeGeometryPrecip3d,
+                new THREE.PointsMaterial({
+                  color: 0xfbbf24, map: softDotTexturePrecip3d, alphaTest: 0.018,
+                  size: 0.105, transparent: true, opacity: 0,
+                  depthWrite: false, blending: THREE.NormalBlending
+                })
+              );
+              orographicFlowGroupPrecip3d.add(windwardMistPrecip3d);
+              orographicFlowGroupPrecip3d.add(leewardHazePrecip3d);
+
+              var rainShadowPatchPrecip3d = new THREE.Mesh(
+                new THREE.CircleGeometry(1.18, 44),
+                new THREE.MeshBasicMaterial({
+                  color: 0x9a6526, transparent: true, opacity: 0,
+                  side: THREE.DoubleSide, depthWrite: false, blending: THREE.NormalBlending
+                })
+              );
+              rainShadowPatchPrecip3d.rotation.x = -Math.PI / 2;
+              rainShadowPatchPrecip3d.position.set(2.35, -2.13, 0.32);
+              rainShadowPatchPrecip3d.scale.set(1.58, 0.72, 1);
+              orographicFlowGroupPrecip3d.add(rainShadowPatchPrecip3d);
+              var rainShadowCrackMaterialPrecip3d = new THREE.LineBasicMaterial({
+                color: 0x5b371d, transparent: true, opacity: 0, depthWrite: false
+              });
+              var rainShadowCracksPrecip3d = new THREE.LineSegments(
+                new THREE.BufferGeometry().setFromPoints([
+                  new THREE.Vector3(1.45, -2.095, 0.05), new THREE.Vector3(1.92, -2.09, 0.28),
+                  new THREE.Vector3(1.92, -2.09, 0.28), new THREE.Vector3(2.2, -2.087, 0.68),
+                  new THREE.Vector3(1.92, -2.09, 0.28), new THREE.Vector3(2.3, -2.09, 0.08),
+                  new THREE.Vector3(2.45, -2.088, 0.68), new THREE.Vector3(2.72, -2.085, 0.36),
+                  new THREE.Vector3(2.72, -2.085, 0.36), new THREE.Vector3(3.18, -2.09, 0.58),
+                  new THREE.Vector3(2.72, -2.085, 0.36), new THREE.Vector3(2.82, -2.09, -0.05)
+                ]),
+                rainShadowCrackMaterialPrecip3d
+              );
+              orographicFlowGroupPrecip3d.add(rainShadowCracksPrecip3d);
+              orographicFlowGroupPrecip3d.visible = false;
+              scenePrecip3d.add(orographicFlowGroupPrecip3d);
+
               var coastTerrainGroupPrecip3d = new THREE.Group();
+              function coastBoundaryXPrecip3d(coastZPrecip3d) {
+                return 0.05 + Math.sin(coastZPrecip3d * 1.16) * 0.18 +
+                  Math.sin(coastZPrecip3d * 0.48 + 1.1) * 0.1;
+              }
+              var coastWaterShapePrecip3d = new THREE.Shape();
+              coastWaterShapePrecip3d.moveTo(-5, 3.5);
+              coastWaterShapePrecip3d.lineTo(-5, -3.5);
+              for (var coastShapeIndexPrecip3d = 0; coastShapeIndexPrecip3d <= 26; coastShapeIndexPrecip3d++) {
+                var coastShapeZPrecip3d = 3.5 - coastShapeIndexPrecip3d / 26 * 7;
+                coastWaterShapePrecip3d.lineTo(coastBoundaryXPrecip3d(coastShapeZPrecip3d), -coastShapeZPrecip3d);
+              }
+              coastWaterShapePrecip3d.closePath();
               var coastWaterPrecip3d = new THREE.Mesh(
-                new THREE.PlaneGeometry(5.2, 6.8),
-                new THREE.MeshPhysicalMaterial({ color: 0x0e7490, roughness: 0.16, metalness: 0.04, transparent: true, opacity: 0.88 })
+                new THREE.ShapeGeometry(coastWaterShapePrecip3d),
+                new THREE.MeshPhysicalMaterial({
+                  color: 0x0e7490, roughness: 0.18, metalness: 0.05,
+                  clearcoat: 0.42, clearcoatRoughness: 0.2,
+                  transparent: true, opacity: 0.92, side: THREE.DoubleSide
+                })
               );
               coastWaterPrecip3d.rotation.x = -Math.PI / 2;
-              coastWaterPrecip3d.position.set(-2.45, -2.11, 0);
+              coastWaterPrecip3d.position.set(0, -2.11, 0);
               coastTerrainGroupPrecip3d.add(coastWaterPrecip3d);
-              var coastFoamPrecip3d = new THREE.Mesh(
-                new THREE.PlaneGeometry(0.12, 6.5),
-                new THREE.MeshBasicMaterial({ color: 0xe0f2fe, transparent: true, opacity: 0.66, side: THREE.DoubleSide, depthWrite: false })
+
+              var coastStripSegmentsPrecip3d = 26;
+              var coastBeachPositionsPrecip3d = [];
+              var coastBeachIndicesPrecip3d = [];
+              var coastFoamLinePointsPrecip3d = [];
+              for (var coastStripIndexPrecip3d = 0; coastStripIndexPrecip3d <= coastStripSegmentsPrecip3d; coastStripIndexPrecip3d++) {
+                var coastStripZPrecip3d = -3.5 + coastStripIndexPrecip3d / coastStripSegmentsPrecip3d * 7;
+                var coastStripXPrecip3d = coastBoundaryXPrecip3d(coastStripZPrecip3d);
+                var coastBeachWidthPrecip3d = 0.42 + Math.sin(coastStripZPrecip3d * 0.82 + 0.5) * 0.07;
+                coastBeachPositionsPrecip3d.push(
+                  coastStripXPrecip3d, -2.088, coastStripZPrecip3d,
+                  coastStripXPrecip3d + coastBeachWidthPrecip3d, -2.09, coastStripZPrecip3d
+                );
+                coastFoamLinePointsPrecip3d.push(new THREE.Vector3(coastStripXPrecip3d - 0.025, -2.065, coastStripZPrecip3d));
+                if (coastStripIndexPrecip3d < coastStripSegmentsPrecip3d) {
+                  var coastBeachBasePrecip3d = coastStripIndexPrecip3d * 2;
+                  coastBeachIndicesPrecip3d.push(
+                    coastBeachBasePrecip3d, coastBeachBasePrecip3d + 1, coastBeachBasePrecip3d + 2,
+                    coastBeachBasePrecip3d + 1, coastBeachBasePrecip3d + 3, coastBeachBasePrecip3d + 2
+                  );
+                }
+              }
+              var coastBeachGeometryPrecip3d = new THREE.BufferGeometry();
+              coastBeachGeometryPrecip3d.setAttribute('position', new THREE.Float32BufferAttribute(coastBeachPositionsPrecip3d, 3));
+              coastBeachGeometryPrecip3d.setIndex(coastBeachIndicesPrecip3d);
+              coastBeachGeometryPrecip3d.computeVertexNormals();
+              var coastBeachPrecip3d = new THREE.Mesh(
+                coastBeachGeometryPrecip3d,
+                new THREE.MeshStandardMaterial({
+                  color: 0x8b6f47, roughness: 1, metalness: 0,
+                  transparent: true, opacity: 0.92, side: THREE.DoubleSide
+                })
               );
-              coastFoamPrecip3d.rotation.x = -Math.PI / 2;
-              coastFoamPrecip3d.position.set(0.12, -2.075, 0);
+              coastTerrainGroupPrecip3d.add(coastBeachPrecip3d);
+              var coastFoamPrecip3d = new THREE.Line(
+                new THREE.BufferGeometry().setFromPoints(coastFoamLinePointsPrecip3d),
+                new THREE.LineBasicMaterial({
+                  color: 0xe0f2fe, transparent: true, opacity: 0.78,
+                  depthWrite: false, blending: THREE.AdditiveBlending
+                })
+              );
               coastTerrainGroupPrecip3d.add(coastFoamPrecip3d);
+              var coastWaveLinesPrecip3d = [];
+              for (var coastWaveIndexPrecip3d = 0; coastWaveIndexPrecip3d < 4; coastWaveIndexPrecip3d++) {
+                var coastWavePointsPrecip3d = [];
+                for (var coastWavePointIndexPrecip3d = 0; coastWavePointIndexPrecip3d <= 24; coastWavePointIndexPrecip3d++) {
+                  var coastWaveZPrecip3d = -3.25 + coastWavePointIndexPrecip3d / 24 * 6.5;
+                  coastWavePointsPrecip3d.push(new THREE.Vector3(
+                    coastBoundaryXPrecip3d(coastWaveZPrecip3d) - 0.5 - coastWaveIndexPrecip3d * 0.58 +
+                      Math.sin(coastWaveZPrecip3d * 1.5 + coastWaveIndexPrecip3d) * 0.045,
+                    -2.06 + coastWaveIndexPrecip3d * 0.002,
+                    coastWaveZPrecip3d
+                  ));
+                }
+                var coastWaveLinePrecip3d = new THREE.Line(
+                  new THREE.BufferGeometry().setFromPoints(coastWavePointsPrecip3d),
+                  new THREE.LineBasicMaterial({
+                    color: 0x7dd3fc, transparent: true, opacity: 0.16,
+                    depthWrite: false, blending: THREE.AdditiveBlending
+                  })
+                );
+                coastTerrainGroupPrecip3d.add(coastWaveLinePrecip3d);
+                coastWaveLinesPrecip3d.push(coastWaveLinePrecip3d);
+              }
+              var coastFoamMarkerCountPrecip3d = 28;
+              var coastFoamMarkerPositionsPrecip3d = new Float32Array(coastFoamMarkerCountPrecip3d * 3);
+              var coastFoamMarkerGeometryPrecip3d = new THREE.BufferGeometry();
+              coastFoamMarkerGeometryPrecip3d.setAttribute('position', new THREE.BufferAttribute(coastFoamMarkerPositionsPrecip3d, 3));
+              var coastFoamMarkersPrecip3d = new THREE.Points(
+                coastFoamMarkerGeometryPrecip3d,
+                new THREE.PointsMaterial({
+                  color: 0xf0f9ff, map: softDotTexturePrecip3d, alphaTest: 0.02,
+                  size: 0.08, transparent: true, opacity: 0.72,
+                  depthWrite: false, blending: THREE.AdditiveBlending
+                })
+              );
+              coastTerrainGroupPrecip3d.add(coastFoamMarkersPrecip3d);
               scenePrecip3d.add(coastTerrainGroupPrecip3d);
 
               var surfaceAccumulationGroupPrecip3d = new THREE.Group();
@@ -5642,9 +6156,11 @@ const d = labToolData.waterCycle || {};
               [2.85, 1.58, 0.2].forEach(function(layerY, layerIndex) {
                 var bandMaterial = new THREE.MeshBasicMaterial({
                   color: layerIndex === 0 ? 0x7dd3fc : layerIndex === 1 ? 0xfde68a : 0xfb7185,
-                  transparent: true, opacity: 0.055, side: THREE.DoubleSide, depthWrite: false
+                  map: softDotTexturePrecip3d, alphaTest: 0.004,
+                  transparent: true, opacity: 0.072, side: THREE.DoubleSide,
+                  depthWrite: false, blending: THREE.AdditiveBlending
                 });
-                var band = new THREE.Mesh(new THREE.PlaneGeometry(7.4, 0.64), bandMaterial);
+                var band = new THREE.Mesh(new THREE.PlaneGeometry(7.2, 0.58), bandMaterial);
                 band.position.set(0, layerY, -1.9);
                 thermalGroupPrecip3d.add(band);
                 thermalBandsPrecip3d.push(band);
@@ -5694,6 +6210,233 @@ const d = labToolData.waterCycle || {};
                 return softTexturePrecip3d;
               }
               var cloudSoftTexturePrecip3d = makeSoftCloudTexturePrecip3d();
+              function cloudDensityRandomPrecip3d(indexPrecip3d, seedPrecip3d) {
+                var cloudDensityValuePrecip3d = Math.sin(
+                  (indexPrecip3d + 1) * (12.9898 + seedPrecip3d * 7.173)
+                ) * 43758.5453;
+                return cloudDensityValuePrecip3d - Math.floor(cloudDensityValuePrecip3d);
+              }
+              function makeCloudDensityTexturePrecip3d(seedPrecip3d) {
+                var densityCanvasPrecip3d = document.createElement('canvas');
+                densityCanvasPrecip3d.width = 192;
+                densityCanvasPrecip3d.height = 192;
+                var densityContextPrecip3d = densityCanvasPrecip3d.getContext('2d');
+                densityContextPrecip3d.clearRect(0, 0, 192, 192);
+                for (var densityLobeIndexPrecip3d = 0; densityLobeIndexPrecip3d < 16; densityLobeIndexPrecip3d++) {
+                  var densityLobeXPrecip3d = 28 + cloudDensityRandomPrecip3d(densityLobeIndexPrecip3d * 5, seedPrecip3d) * 136;
+                  var densityLobeYPrecip3d = 35 + cloudDensityRandomPrecip3d(densityLobeIndexPrecip3d * 5 + 1, seedPrecip3d) * 126;
+                  var densityLobeRadiusPrecip3d = 17 + cloudDensityRandomPrecip3d(densityLobeIndexPrecip3d * 5 + 2, seedPrecip3d) * 26;
+                  var densityLobeAlphaPrecip3d = 0.3 + cloudDensityRandomPrecip3d(densityLobeIndexPrecip3d * 5 + 3, seedPrecip3d) * 0.4;
+                  var densityLobeGradientPrecip3d = densityContextPrecip3d.createRadialGradient(
+                    densityLobeXPrecip3d - densityLobeRadiusPrecip3d * 0.16,
+                    densityLobeYPrecip3d - densityLobeRadiusPrecip3d * 0.2,
+                    densityLobeRadiusPrecip3d * 0.06,
+                    densityLobeXPrecip3d,
+                    densityLobeYPrecip3d,
+                    densityLobeRadiusPrecip3d
+                  );
+                  densityLobeGradientPrecip3d.addColorStop(0, 'rgba(255,255,255,' + densityLobeAlphaPrecip3d + ')');
+                  densityLobeGradientPrecip3d.addColorStop(0.55, 'rgba(241,248,252,' + (densityLobeAlphaPrecip3d * 0.72) + ')');
+                  densityLobeGradientPrecip3d.addColorStop(1, 'rgba(203,225,236,0)');
+                  densityContextPrecip3d.fillStyle = densityLobeGradientPrecip3d;
+                  densityContextPrecip3d.fillRect(
+                    densityLobeXPrecip3d - densityLobeRadiusPrecip3d,
+                    densityLobeYPrecip3d - densityLobeRadiusPrecip3d,
+                    densityLobeRadiusPrecip3d * 2,
+                    densityLobeRadiusPrecip3d * 2
+                  );
+                }
+                densityContextPrecip3d.globalCompositeOperation = 'destination-out';
+                for (var densityPocketIndexPrecip3d = 0; densityPocketIndexPrecip3d < 6; densityPocketIndexPrecip3d++) {
+                  var densityPocketXPrecip3d = 34 + cloudDensityRandomPrecip3d(densityPocketIndexPrecip3d * 3 + 173, seedPrecip3d) * 124;
+                  var densityPocketYPrecip3d = 45 + cloudDensityRandomPrecip3d(densityPocketIndexPrecip3d * 3 + 174, seedPrecip3d) * 108;
+                  var densityPocketRadiusPrecip3d = 9 + cloudDensityRandomPrecip3d(densityPocketIndexPrecip3d * 3 + 175, seedPrecip3d) * 17;
+                  var densityPocketGradientPrecip3d = densityContextPrecip3d.createRadialGradient(
+                    densityPocketXPrecip3d,
+                    densityPocketYPrecip3d,
+                    1,
+                    densityPocketXPrecip3d,
+                    densityPocketYPrecip3d,
+                    densityPocketRadiusPrecip3d
+                  );
+                  densityPocketGradientPrecip3d.addColorStop(0, 'rgba(0,0,0,.2)');
+                  densityPocketGradientPrecip3d.addColorStop(1, 'rgba(0,0,0,0)');
+                  densityContextPrecip3d.fillStyle = densityPocketGradientPrecip3d;
+                  densityContextPrecip3d.fillRect(
+                    densityPocketXPrecip3d - densityPocketRadiusPrecip3d,
+                    densityPocketYPrecip3d - densityPocketRadiusPrecip3d,
+                    densityPocketRadiusPrecip3d * 2,
+                    densityPocketRadiusPrecip3d * 2
+                  );
+                }
+                densityContextPrecip3d.globalCompositeOperation = 'destination-in';
+                var densityEdgeMaskPrecip3d = densityContextPrecip3d.createRadialGradient(96, 94, 16, 96, 96, 92);
+                densityEdgeMaskPrecip3d.addColorStop(0, 'rgba(255,255,255,1)');
+                densityEdgeMaskPrecip3d.addColorStop(0.72, 'rgba(255,255,255,.92)');
+                densityEdgeMaskPrecip3d.addColorStop(1, 'rgba(255,255,255,0)');
+                densityContextPrecip3d.fillStyle = densityEdgeMaskPrecip3d;
+                densityContextPrecip3d.fillRect(0, 0, 192, 192);
+                var densityBaseMaskPrecip3d = densityContextPrecip3d.createLinearGradient(0, 18, 0, 186);
+                densityBaseMaskPrecip3d.addColorStop(0, 'rgba(255,255,255,0)');
+                densityBaseMaskPrecip3d.addColorStop(0.17, 'rgba(255,255,255,.9)');
+                densityBaseMaskPrecip3d.addColorStop(0.72, 'rgba(255,255,255,1)');
+                densityBaseMaskPrecip3d.addColorStop(0.84, 'rgba(255,255,255,.88)');
+                densityBaseMaskPrecip3d.addColorStop(0.91, 'rgba(255,255,255,0)');
+                densityBaseMaskPrecip3d.addColorStop(1, 'rgba(255,255,255,0)');
+                densityContextPrecip3d.fillStyle = densityBaseMaskPrecip3d;
+                densityContextPrecip3d.fillRect(0, 0, 192, 192);
+                densityContextPrecip3d.globalCompositeOperation = 'source-over';
+                var densityTexturePrecip3d = new THREE.CanvasTexture(densityCanvasPrecip3d);
+                densityTexturePrecip3d.minFilter = THREE.LinearFilter;
+                densityTexturePrecip3d.magFilter = THREE.LinearFilter;
+                densityTexturePrecip3d.generateMipmaps = false;
+                densityTexturePrecip3d.needsUpdate = true;
+                return densityTexturePrecip3d;
+              }
+              var cloudDensityTexturesPrecip3d = [];
+              for (var cloudDensityTextureIndexPrecip3d = 0; cloudDensityTextureIndexPrecip3d < 5; cloudDensityTextureIndexPrecip3d++) {
+                cloudDensityTexturesPrecip3d.push(makeCloudDensityTexturePrecip3d(0.31 + cloudDensityTextureIndexPrecip3d * 0.73));
+              }
+              var cloudInteriorBillowLayoutPrecip3d = [
+                [-1.85, 1.26, 1.55, 0.78], [-1.18, 1.16, 1.65, 0.82],
+                [-0.45, 1.23, 1.75, 0.9], [0.35, 1.15, 1.85, 0.84],
+                [1.12, 1.27, 1.65, 0.8], [1.78, 1.22, 1.45, 0.74],
+                [-1.65, 1.65, 1.45, 0.88], [-0.9, 1.62, 1.72, 0.98],
+                [-0.15, 1.72, 1.82, 1.02], [0.7, 1.65, 1.68, 0.94],
+                [1.48, 1.7, 1.5, 0.86], [-1.25, 2.05, 1.3, 0.82],
+                [-0.58, 2.1, 1.55, 0.94], [0.1, 2.18, 1.65, 1.02],
+                [0.8, 2.08, 1.45, 0.9], [1.35, 2, 1.2, 0.78],
+                [-0.45, 2.5, 1.25, 0.85], [0.15, 2.63, 1.4, 0.96],
+                [0.65, 2.45, 1.3, 0.85]
+              ];
+              var cloudInteriorDepthSpritesPrecip3d = [];
+              for (var cloudInteriorDepthIndexPrecip3d = 0;
+                cloudInteriorDepthIndexPrecip3d < cloudInteriorBillowLayoutPrecip3d.length;
+                cloudInteriorDepthIndexPrecip3d++) {
+                var cloudInteriorBillowPrecip3d = cloudInteriorBillowLayoutPrecip3d[cloudInteriorDepthIndexPrecip3d];
+                var cloudInteriorDepthSeedPrecip3d = cloudDensityRandomPrecip3d(
+                  cloudInteriorDepthIndexPrecip3d * 7 + 311,
+                  1.91
+                );
+                var cloudInteriorDepthMaterialPrecip3d = new THREE.SpriteMaterial({
+                  map: cloudDensityTexturesPrecip3d[cloudInteriorDepthIndexPrecip3d % cloudDensityTexturesPrecip3d.length],
+                  color: cloudInteriorDepthIndexPrecip3d % 3 === 0 ? 0xb6d7e5
+                    : cloudInteriorDepthIndexPrecip3d % 3 === 1 ? 0xd8eaf2 : 0xa8c8d6,
+                  transparent: true, opacity: 0, depthTest: true, depthWrite: false,
+                  blending: THREE.NormalBlending
+                });
+                var cloudInteriorDepthSpritePrecip3d = new THREE.Sprite(cloudInteriorDepthMaterialPrecip3d);
+                var cloudInteriorDepthPrecip3d = cloudDensityRandomPrecip3d(
+                  cloudInteriorDepthIndexPrecip3d * 7 + 312,
+                  2.47
+                );
+                var cloudInteriorXPrecip3d = cloudInteriorBillowPrecip3d[0] +
+                  Math.sin(cloudInteriorDepthIndexPrecip3d * 1.37) * 0.055;
+                var cloudInteriorYPrecip3d = cloudInteriorBillowPrecip3d[1] +
+                  Math.cos(cloudInteriorDepthIndexPrecip3d * 0.83) * 0.045;
+                var cloudInteriorDepthRowPrecip3d = cloudInteriorYPrecip3d < 1.4 ? 0
+                  : cloudInteriorYPrecip3d < 1.95 ? 1
+                    : cloudInteriorYPrecip3d < 2.35 ? 2 : 3;
+                cloudInteriorDepthSpritePrecip3d.position.set(
+                  cloudInteriorXPrecip3d,
+                  cloudInteriorYPrecip3d,
+                  -0.96 + cloudInteriorDepthPrecip3d * 1.92
+                );
+                cloudInteriorDepthSpritePrecip3d.scale.set(
+                  cloudInteriorBillowPrecip3d[2] * (0.92 + cloudInteriorDepthSeedPrecip3d * 0.16),
+                  cloudInteriorBillowPrecip3d[3] * (0.94 +
+                    cloudDensityRandomPrecip3d(cloudInteriorDepthIndexPrecip3d * 7 + 313, 3.13) * 0.14),
+                  1
+                );
+                cloudInteriorDepthSpritePrecip3d.userData.baseX = cloudInteriorDepthSpritePrecip3d.position.x;
+                cloudInteriorDepthSpritePrecip3d.userData.baseY = cloudInteriorDepthSpritePrecip3d.position.y;
+                cloudInteriorDepthSpritePrecip3d.userData.baseScaleX = cloudInteriorDepthSpritePrecip3d.scale.x;
+                cloudInteriorDepthSpritePrecip3d.userData.baseScaleY = cloudInteriorDepthSpritePrecip3d.scale.y;
+                cloudInteriorDepthSpritePrecip3d.userData.phase = cloudInteriorDepthIndexPrecip3d * 0.57;
+                cloudInteriorDepthSpritePrecip3d.userData.depth = cloudInteriorDepthPrecip3d;
+                cloudInteriorDepthSpritePrecip3d.userData.row = cloudInteriorDepthRowPrecip3d;
+                cloudInteriorDepthSpritePrecip3d.userData.baseOpacity = 0;
+                cloudGroupPrecip3d.add(cloudInteriorDepthSpritePrecip3d);
+                cloudInteriorDepthSpritesPrecip3d.push(cloudInteriorDepthSpritePrecip3d);
+              }
+              var cloudBaseDeckSpritesPrecip3d = [];
+              for (var cloudBaseDeckIndexPrecip3d = 0; cloudBaseDeckIndexPrecip3d < 9; cloudBaseDeckIndexPrecip3d++) {
+                var cloudBaseDeckMaterialPrecip3d = new THREE.SpriteMaterial({
+                  map: cloudDensityTexturesPrecip3d[(cloudBaseDeckIndexPrecip3d + 2) % cloudDensityTexturesPrecip3d.length],
+                  color: cloudBaseDeckIndexPrecip3d % 2 ? 0x718a96 : 0x607986,
+                  transparent: true, opacity: 0, depthTest: true, depthWrite: false,
+                  blending: THREE.NormalBlending
+                });
+                var cloudBaseDeckSpritePrecip3d = new THREE.Sprite(cloudBaseDeckMaterialPrecip3d);
+                cloudBaseDeckSpritePrecip3d.position.set(
+                  -1.82 + cloudBaseDeckIndexPrecip3d * 0.455,
+                  1.055 + Math.sin(cloudBaseDeckIndexPrecip3d * 1.73) * 0.035,
+                  -0.18 + (cloudBaseDeckIndexPrecip3d % 3) * 0.18
+                );
+                cloudBaseDeckSpritePrecip3d.scale.set(
+                  1.34 + (cloudBaseDeckIndexPrecip3d % 3) * 0.14,
+                  0.52 + (cloudBaseDeckIndexPrecip3d % 2) * 0.08,
+                  1
+                );
+                cloudBaseDeckSpritePrecip3d.userData.baseX = cloudBaseDeckSpritePrecip3d.position.x;
+                cloudBaseDeckSpritePrecip3d.userData.baseY = cloudBaseDeckSpritePrecip3d.position.y;
+                cloudBaseDeckSpritePrecip3d.userData.phase = cloudBaseDeckIndexPrecip3d * 0.49;
+                cloudBaseDeckSpritePrecip3d.userData.baseOpacity = 0;
+                cloudGroupPrecip3d.add(cloudBaseDeckSpritePrecip3d);
+                cloudBaseDeckSpritesPrecip3d.push(cloudBaseDeckSpritePrecip3d);
+              }
+              var cloudSilverLiningSpritesPrecip3d = [];
+              for (var cloudSilverLiningIndexPrecip3d = 0; cloudSilverLiningIndexPrecip3d < 8; cloudSilverLiningIndexPrecip3d++) {
+                var cloudSilverLiningMaterialPrecip3d = new THREE.SpriteMaterial({
+                  map: cloudSoftTexturePrecip3d,
+                  color: cloudSilverLiningIndexPrecip3d % 2 ? 0xfff4d6 : 0xf8fafc,
+                  transparent: true, opacity: 0, depthTest: true, depthWrite: false,
+                  blending: THREE.AdditiveBlending
+                });
+                var cloudSilverLiningSpritePrecip3d = new THREE.Sprite(cloudSilverLiningMaterialPrecip3d);
+                cloudSilverLiningSpritePrecip3d.position.set(
+                  -1.645 + cloudSilverLiningIndexPrecip3d * 0.47,
+                  2.42 + Math.sin(cloudSilverLiningIndexPrecip3d / 7 * Math.PI) * 0.5,
+                  -0.82 + (cloudSilverLiningIndexPrecip3d % 2) * 0.08
+                );
+                cloudSilverLiningSpritePrecip3d.scale.set(
+                  0.86 + (cloudSilverLiningIndexPrecip3d % 3) * 0.13,
+                  0.48 + (cloudSilverLiningIndexPrecip3d % 2) * 0.09,
+                  1
+                );
+                cloudSilverLiningSpritePrecip3d.userData.baseX = cloudSilverLiningSpritePrecip3d.position.x;
+                cloudSilverLiningSpritePrecip3d.userData.baseY = cloudSilverLiningSpritePrecip3d.position.y;
+                cloudSilverLiningSpritePrecip3d.userData.phase = cloudSilverLiningIndexPrecip3d * 0.63;
+                cloudSilverLiningSpritePrecip3d.userData.baseOpacity = 0;
+                cloudGroupPrecip3d.add(cloudSilverLiningSpritePrecip3d);
+                cloudSilverLiningSpritesPrecip3d.push(cloudSilverLiningSpritePrecip3d);
+              }
+              var cloudAnvilVeilSpritesPrecip3d = [];
+              for (var cloudAnvilVeilIndexPrecip3d = 0; cloudAnvilVeilIndexPrecip3d < 9; cloudAnvilVeilIndexPrecip3d++) {
+                var cloudAnvilVeilMaterialPrecip3d = new THREE.SpriteMaterial({
+                  map: cloudDensityTexturesPrecip3d[(cloudAnvilVeilIndexPrecip3d + 1) % cloudDensityTexturesPrecip3d.length],
+                  color: cloudAnvilVeilIndexPrecip3d % 2 ? 0xc8dae2 : 0xe5eef2,
+                  transparent: true, opacity: 0, depthTest: true, depthWrite: false,
+                  blending: THREE.NormalBlending
+                });
+                var cloudAnvilVeilSpritePrecip3d = new THREE.Sprite(cloudAnvilVeilMaterialPrecip3d);
+                cloudAnvilVeilSpritePrecip3d.position.set(
+                  (cloudAnvilVeilIndexPrecip3d - 4) * 0.51,
+                  2.66 + Math.cos(cloudAnvilVeilIndexPrecip3d * 0.74) * 0.075,
+                  -0.72 + (cloudAnvilVeilIndexPrecip3d % 3) * 0.12
+                );
+                cloudAnvilVeilSpritePrecip3d.scale.set(
+                  1.64 + (cloudAnvilVeilIndexPrecip3d % 3) * 0.2,
+                  0.48 + (cloudAnvilVeilIndexPrecip3d % 2) * 0.09,
+                  1
+                );
+                cloudAnvilVeilSpritePrecip3d.userData.baseX = cloudAnvilVeilSpritePrecip3d.position.x;
+                cloudAnvilVeilSpritePrecip3d.userData.baseY = cloudAnvilVeilSpritePrecip3d.position.y;
+                cloudAnvilVeilSpritePrecip3d.userData.phase = cloudAnvilVeilIndexPrecip3d * 0.61;
+                cloudAnvilVeilSpritePrecip3d.userData.baseOpacity = 0;
+                cloudGroupPrecip3d.add(cloudAnvilVeilSpritePrecip3d);
+                cloudAnvilVeilSpritesPrecip3d.push(cloudAnvilVeilSpritePrecip3d);
+              }
               var cloudVolumeSpritesPrecip3d = [];
               for (var cloudVolumeIndexPrecip3d = 0; cloudVolumeIndexPrecip3d < 30; cloudVolumeIndexPrecip3d++) {
                 var cloudVolumeRowPrecip3d = Math.floor(cloudVolumeIndexPrecip3d / 8);
@@ -5800,36 +6543,187 @@ const d = labToolData.waterCycle || {};
               }
               var nucleusGeometryPrecip3d = new THREE.BufferGeometry();
               nucleusGeometryPrecip3d.setAttribute('position', new THREE.BufferAttribute(nucleusPositionsPrecip3d, 3));
-              var nucleusPointsPrecip3d = new THREE.Points(nucleusGeometryPrecip3d, new THREE.PointsMaterial({ color: 0xe0f2fe, map: softDotTexturePrecip3d, alphaTest: 0.02, size: 0.028, transparent: true, opacity: 0.58, depthWrite: false, blending: THREE.AdditiveBlending }));
+              var nucleusPointsPrecip3d = new THREE.Points(nucleusGeometryPrecip3d, new THREE.PointsMaterial({ color: 0xf59e0b, map: softDotTexturePrecip3d, alphaTest: 0.02, size: 0.032, transparent: true, opacity: 0.58, depthTest: false, depthWrite: false, blending: THREE.NormalBlending }));
+              nucleusPointsPrecip3d.renderOrder = 8;
               cloudGroupPrecip3d.add(nucleusPointsPrecip3d);
               var dropletGeometryPrecip3d = new THREE.BufferGeometry();
               dropletGeometryPrecip3d.setAttribute('position', new THREE.BufferAttribute(dropletPositionsPrecip3d, 3));
-              var dropletPointsPrecip3d = new THREE.Points(dropletGeometryPrecip3d, new THREE.PointsMaterial({ color: 0x7dd3fc, map: rainDropTexturePrecip3d, alphaTest: 0.025, size: 0.052, transparent: true, opacity: 0.72, depthWrite: false, blending: THREE.AdditiveBlending }));
+              var dropletPointsPrecip3d = new THREE.Points(dropletGeometryPrecip3d, new THREE.PointsMaterial({ color: 0x0ea5e9, map: rainDropTexturePrecip3d, alphaTest: 0.025, size: 0.052, transparent: true, opacity: 0.72, depthTest: false, depthWrite: false, blending: THREE.NormalBlending }));
+              dropletPointsPrecip3d.renderOrder = 9;
               cloudGroupPrecip3d.add(dropletPointsPrecip3d);
               var iceGeometryPrecip3d = new THREE.BufferGeometry();
               iceGeometryPrecip3d.setAttribute('position', new THREE.BufferAttribute(icePositionsPrecip3d, 3));
-              var icePointsPrecip3d = new THREE.Points(iceGeometryPrecip3d, new THREE.PointsMaterial({ color: 0xfef3c7, map: snowFlakeTexturePrecip3d, alphaTest: 0.025, size: 0.068, transparent: true, opacity: 0.86, depthWrite: false, blending: THREE.AdditiveBlending }));
+              var icePointsPrecip3d = new THREE.Points(iceGeometryPrecip3d, new THREE.PointsMaterial({ color: 0xfef3c7, map: snowFlakeTexturePrecip3d, alphaTest: 0.025, size: 0.068, transparent: true, opacity: 0.86, depthTest: false, depthWrite: false, blending: THREE.AdditiveBlending }));
+              icePointsPrecip3d.renderOrder = 9;
               cloudGroupPrecip3d.add(icePointsPrecip3d);
+
+              var cloudFormationGroupPrecip3d = new THREE.Group();
+              cloudGroupPrecip3d.add(cloudFormationGroupPrecip3d);
+              var condensationLevelMaterialPrecip3d = new THREE.MeshBasicMaterial({
+                color: 0x0891b2, transparent: true, opacity: 0,
+                side: THREE.DoubleSide, depthTest: false, depthWrite: false,
+                blending: THREE.NormalBlending
+              });
+              var condensationLevelHaloPrecip3d = new THREE.Mesh(
+                new THREE.RingGeometry(1.42, 1.49, 72),
+                condensationLevelMaterialPrecip3d
+              );
+              condensationLevelHaloPrecip3d.rotation.x = -Math.PI / 2;
+              condensationLevelHaloPrecip3d.position.set(0, 1.015, 0.04);
+              condensationLevelHaloPrecip3d.scale.set(1.18, 0.52, 1);
+              condensationLevelHaloPrecip3d.renderOrder = 7;
+              cloudFormationGroupPrecip3d.add(condensationLevelHaloPrecip3d);
+
+              var condensationLevelMarkerCountPrecip3d = 56;
+              var condensationLevelMarkerPositionsPrecip3d = new Float32Array(condensationLevelMarkerCountPrecip3d * 3);
+              for (var condensationLevelMarkerIndexPrecip3d = 0; condensationLevelMarkerIndexPrecip3d < condensationLevelMarkerCountPrecip3d; condensationLevelMarkerIndexPrecip3d++) {
+                var condensationLevelMarkerAnglePrecip3d = condensationLevelMarkerIndexPrecip3d /
+                  condensationLevelMarkerCountPrecip3d * Math.PI * 2;
+                condensationLevelMarkerPositionsPrecip3d[condensationLevelMarkerIndexPrecip3d * 3] =
+                  Math.cos(condensationLevelMarkerAnglePrecip3d) * 1.72;
+                condensationLevelMarkerPositionsPrecip3d[condensationLevelMarkerIndexPrecip3d * 3 + 1] = 1.025;
+                condensationLevelMarkerPositionsPrecip3d[condensationLevelMarkerIndexPrecip3d * 3 + 2] =
+                  Math.sin(condensationLevelMarkerAnglePrecip3d) * 0.76 + 0.04;
+              }
+              var condensationLevelMarkerGeometryPrecip3d = new THREE.BufferGeometry();
+              condensationLevelMarkerGeometryPrecip3d.setAttribute('position', new THREE.BufferAttribute(condensationLevelMarkerPositionsPrecip3d, 3));
+              var condensationLevelMarkersPrecip3d = new THREE.Points(
+                condensationLevelMarkerGeometryPrecip3d,
+                new THREE.PointsMaterial({
+                  color: 0x22d3ee, map: softDotTexturePrecip3d, alphaTest: 0.02,
+                  size: 0.052, transparent: true, opacity: 0,
+                  depthTest: false, depthWrite: false, blending: THREE.NormalBlending
+                })
+              );
+              condensationLevelMarkersPrecip3d.renderOrder = 8;
+              cloudFormationGroupPrecip3d.add(condensationLevelMarkersPrecip3d);
+
+              var vaporTeachingTracerCountPrecip3d = 96;
+              var vaporTeachingTracerPositionsPrecip3d = new Float32Array(vaporTeachingTracerCountPrecip3d * 3);
+              var vaporTeachingTracerSeedsPrecip3d = [];
+              for (var vaporTeachingTracerIndexPrecip3d = 0; vaporTeachingTracerIndexPrecip3d < vaporTeachingTracerCountPrecip3d; vaporTeachingTracerIndexPrecip3d++) {
+                vaporTeachingTracerSeedsPrecip3d.push({
+                  phase: ((vaporTeachingTracerIndexPrecip3d * 43) % 97) / 97,
+                  angle: vaporTeachingTracerIndexPrecip3d * 2.399,
+                  radius: 0.24 + ((vaporTeachingTracerIndexPrecip3d * 29) % 71) / 71 * 1.34,
+                  zScale: 0.34 + ((vaporTeachingTracerIndexPrecip3d * 17) % 59) / 59 * 0.42,
+                  speed: 0.82 + ((vaporTeachingTracerIndexPrecip3d * 31) % 53) / 53 * 0.42
+                });
+              }
+              var vaporTeachingTracerGeometryPrecip3d = new THREE.BufferGeometry();
+              vaporTeachingTracerGeometryPrecip3d.setAttribute('position', new THREE.BufferAttribute(vaporTeachingTracerPositionsPrecip3d, 3));
+              var vaporTeachingTracersPrecip3d = new THREE.Points(
+                vaporTeachingTracerGeometryPrecip3d,
+                new THREE.PointsMaterial({
+                  color: 0x06b6d4, map: airflowTexturePrecip3d, alphaTest: 0.02,
+                  size: 0.048, transparent: true, opacity: 0,
+                  depthTest: false, depthWrite: false, blending: THREE.NormalBlending
+                })
+              );
+              vaporTeachingTracersPrecip3d.renderOrder = 8;
+              cloudFormationGroupPrecip3d.add(vaporTeachingTracersPrecip3d);
+
+              var newbornDropletCapacityPrecip3d = 48;
+              var newbornDropletPositionsPrecip3d = new Float32Array(newbornDropletCapacityPrecip3d * 3);
+              var newbornDropletGeometryPrecip3d = new THREE.BufferGeometry();
+              newbornDropletGeometryPrecip3d.setAttribute('position', new THREE.BufferAttribute(newbornDropletPositionsPrecip3d, 3));
+              newbornDropletGeometryPrecip3d.setDrawRange(0, 0);
+              var newbornDropletsPrecip3d = new THREE.Points(
+                newbornDropletGeometryPrecip3d,
+                new THREE.PointsMaterial({
+                  color: 0x38bdf8, map: rainDropTexturePrecip3d, alphaTest: 0.025,
+                  size: 0.078, transparent: true, opacity: 0,
+                  depthTest: false, depthWrite: false, blending: THREE.NormalBlending
+                })
+              );
+              newbornDropletsPrecip3d.renderOrder = 10;
+              cloudFormationGroupPrecip3d.add(newbornDropletsPrecip3d);
+
+              var condensationScudSpritesPrecip3d = [];
+              for (var condensationScudIndexPrecip3d = 0; condensationScudIndexPrecip3d < 7; condensationScudIndexPrecip3d++) {
+                var condensationScudMaterialPrecip3d = new THREE.SpriteMaterial({
+                  map: cloudSoftTexturePrecip3d,
+                  color: condensationScudIndexPrecip3d % 2 ? 0xdff7ff : 0xcffafe,
+                  transparent: true, opacity: 0, depthWrite: false
+                });
+                var condensationScudSpritePrecip3d = new THREE.Sprite(condensationScudMaterialPrecip3d);
+                condensationScudSpritePrecip3d.position.set(
+                  -1.5 + condensationScudIndexPrecip3d * 0.5,
+                  0.87 + (condensationScudIndexPrecip3d % 3) * 0.055,
+                  -0.08 + (condensationScudIndexPrecip3d % 2) * 0.18
+                );
+                condensationScudSpritePrecip3d.scale.set(
+                  0.72 + (condensationScudIndexPrecip3d % 3) * 0.12,
+                  0.32 + (condensationScudIndexPrecip3d % 2) * 0.08,
+                  1
+                );
+                condensationScudSpritePrecip3d.userData.baseX = condensationScudSpritePrecip3d.position.x;
+                condensationScudSpritePrecip3d.userData.baseY = condensationScudSpritePrecip3d.position.y;
+                condensationScudSpritePrecip3d.userData.baseScaleX = condensationScudSpritePrecip3d.scale.x;
+                condensationScudSpritePrecip3d.userData.baseScaleY = condensationScudSpritePrecip3d.scale.y;
+                condensationScudSpritePrecip3d.userData.phase = condensationScudIndexPrecip3d / 7;
+                condensationScudSpritePrecip3d.userData.baseOpacity = 0;
+                cloudFormationGroupPrecip3d.add(condensationScudSpritePrecip3d);
+                condensationScudSpritesPrecip3d.push(condensationScudSpritePrecip3d);
+              }
+
+              var coalescencePairCountPrecip3d = 18;
+              var coalescenceLinePositionsPrecip3d = new Float32Array(coalescencePairCountPrecip3d * 6);
+              var coalescenceCollectorPositionsPrecip3d = new Float32Array(coalescencePairCountPrecip3d * 3);
+              var coalescenceSeedsPrecip3d = [];
+              for (var coalescenceSeedIndexPrecip3d = 0; coalescenceSeedIndexPrecip3d < coalescencePairCountPrecip3d; coalescenceSeedIndexPrecip3d++) {
+                coalescenceSeedsPrecip3d.push({
+                  phase: ((coalescenceSeedIndexPrecip3d * 23) % 41) / 41,
+                  x: (((coalescenceSeedIndexPrecip3d * 37) % 73) / 73 - 0.5) * 2.95,
+                  y: 1.32 + ((coalescenceSeedIndexPrecip3d * 19) % 47) / 47 * 1.08,
+                  z: (((coalescenceSeedIndexPrecip3d * 31) % 61) / 61 - 0.5) * 1.18,
+                  angle: coalescenceSeedIndexPrecip3d * 1.31
+                });
+              }
+              var coalescenceLineGeometryPrecip3d = new THREE.BufferGeometry();
+              coalescenceLineGeometryPrecip3d.setAttribute('position', new THREE.BufferAttribute(coalescenceLinePositionsPrecip3d, 3));
+              var coalescenceLineMaterialPrecip3d = new THREE.LineBasicMaterial({
+                color: 0x0284c7, transparent: true, opacity: 0,
+                depthTest: false, depthWrite: false, blending: THREE.NormalBlending
+              });
+              var coalescenceLinesPrecip3d = new THREE.LineSegments(
+                coalescenceLineGeometryPrecip3d,
+                coalescenceLineMaterialPrecip3d
+              );
+              coalescenceLinesPrecip3d.renderOrder = 10;
+              cloudFormationGroupPrecip3d.add(coalescenceLinesPrecip3d);
+              var coalescenceCollectorGeometryPrecip3d = new THREE.BufferGeometry();
+              coalescenceCollectorGeometryPrecip3d.setAttribute('position', new THREE.BufferAttribute(coalescenceCollectorPositionsPrecip3d, 3));
+              var coalescenceCollectorDropsPrecip3d = new THREE.Points(
+                coalescenceCollectorGeometryPrecip3d,
+                new THREE.PointsMaterial({
+                  color: 0x0284c7, map: rainDropTexturePrecip3d, alphaTest: 0.025,
+                  size: 0.12, transparent: true, opacity: 0,
+                  depthTest: false, depthWrite: false, blending: THREE.NormalBlending
+                })
+              );
+              coalescenceCollectorDropsPrecip3d.renderOrder = 11;
+              cloudFormationGroupPrecip3d.add(coalescenceCollectorDropsPrecip3d);
 
               var chargeParticleCountPrecip3d = 18;
               var positiveChargePositionsPrecip3d = new Float32Array(chargeParticleCountPrecip3d * 3);
               var negativeChargePositionsPrecip3d = new Float32Array(chargeParticleCountPrecip3d * 3);
               for (var chargeParticleIndexPrecip3d = 0; chargeParticleIndexPrecip3d < chargeParticleCountPrecip3d; chargeParticleIndexPrecip3d++) {
-                var chargeParticleXPrecip3d = -1.58 + ((chargeParticleIndexPrecip3d * 37) % 73) / 73 * 3.16;
-                var chargeParticleZPrecip3d = -0.62 + ((chargeParticleIndexPrecip3d * 29) % 61) / 61 * 1.24;
+                var chargeParticleXPrecip3d = Math.sin(chargeParticleIndexPrecip3d * 2.399 + 0.42) * 1.54;
+                var chargeParticleZPrecip3d = Math.cos(chargeParticleIndexPrecip3d * 1.713 + 0.18) * 0.61;
                 positiveChargePositionsPrecip3d[chargeParticleIndexPrecip3d * 3] = chargeParticleXPrecip3d;
-                positiveChargePositionsPrecip3d[chargeParticleIndexPrecip3d * 3 + 1] = 2.12 + ((chargeParticleIndexPrecip3d * 19) % 41) / 41 * 0.68;
+                positiveChargePositionsPrecip3d[chargeParticleIndexPrecip3d * 3 + 1] = 2.12 + ((chargeParticleIndexPrecip3d * 7) % 19) / 19 * 0.68;
                 positiveChargePositionsPrecip3d[chargeParticleIndexPrecip3d * 3 + 2] = chargeParticleZPrecip3d;
-                negativeChargePositionsPrecip3d[chargeParticleIndexPrecip3d * 3] = chargeParticleXPrecip3d * 0.92;
-                negativeChargePositionsPrecip3d[chargeParticleIndexPrecip3d * 3 + 1] = 1.08 + ((chargeParticleIndexPrecip3d * 23) % 43) / 43 * 0.62;
-                negativeChargePositionsPrecip3d[chargeParticleIndexPrecip3d * 3 + 2] = -chargeParticleZPrecip3d * 0.88;
+                negativeChargePositionsPrecip3d[chargeParticleIndexPrecip3d * 3] = Math.cos(chargeParticleIndexPrecip3d * 2.071 + 0.73) * 1.42;
+                negativeChargePositionsPrecip3d[chargeParticleIndexPrecip3d * 3 + 1] = 1.08 + ((chargeParticleIndexPrecip3d * 11) % 23) / 23 * 0.62;
+                negativeChargePositionsPrecip3d[chargeParticleIndexPrecip3d * 3 + 2] = Math.sin(chargeParticleIndexPrecip3d * 1.887) * 0.56;
               }
               var positiveChargeGeometryPrecip3d = new THREE.BufferGeometry();
               positiveChargeGeometryPrecip3d.setAttribute('position', new THREE.BufferAttribute(positiveChargePositionsPrecip3d, 3));
               var positiveChargePointsPrecip3d = new THREE.Points(positiveChargeGeometryPrecip3d, new THREE.PointsMaterial({
                 color: 0xfde68a, map: positiveChargeTexturePrecip3d, alphaTest: 0.025,
-                size: 0.17, transparent: true, opacity: 0, depthTest: false,
-                depthWrite: false, blending: THREE.AdditiveBlending
+                size: 0.205, transparent: true, opacity: 0, depthTest: false,
+                depthWrite: false, blending: THREE.NormalBlending
               }));
               positiveChargePointsPrecip3d.renderOrder = 4;
               cloudGroupPrecip3d.add(positiveChargePointsPrecip3d);
@@ -5837,8 +6731,8 @@ const d = labToolData.waterCycle || {};
               negativeChargeGeometryPrecip3d.setAttribute('position', new THREE.BufferAttribute(negativeChargePositionsPrecip3d, 3));
               var negativeChargePointsPrecip3d = new THREE.Points(negativeChargeGeometryPrecip3d, new THREE.PointsMaterial({
                 color: 0xfb7185, map: negativeChargeTexturePrecip3d, alphaTest: 0.025,
-                size: 0.17, transparent: true, opacity: 0, depthTest: false,
-                depthWrite: false, blending: THREE.AdditiveBlending
+                size: 0.205, transparent: true, opacity: 0, depthTest: false,
+                depthWrite: false, blending: THREE.NormalBlending
               }));
               negativeChargePointsPrecip3d.renderOrder = 4;
               cloudGroupPrecip3d.add(negativeChargePointsPrecip3d);
@@ -5858,20 +6752,18 @@ const d = labToolData.waterCycle || {};
                   ));
                 }
                 var updraftGeometryPrecip3d = new THREE.BufferGeometry().setFromPoints(updraftPointsPrecip3d);
-                var updraftLinePrecip3d = new THREE.Line(updraftGeometryPrecip3d, new THREE.LineBasicMaterial({ color: updraftIndexPrecip3d === 1 ? 0xfde68a : 0x7dd3fc, transparent: true, opacity: 0.48, depthWrite: false, blending: THREE.AdditiveBlending }));
+                var updraftLinePrecip3d = new THREE.Line(updraftGeometryPrecip3d, new THREE.LineBasicMaterial({ color: updraftIndexPrecip3d === 1 ? 0xf59e0b : 0x0891b2, transparent: true, opacity: 0.48, depthTest: false, depthWrite: false, blending: THREE.NormalBlending }));
                 updraftGroupPrecip3d.add(updraftLinePrecip3d);
                 updraftCurvesPrecip3d.push(updraftLinePrecip3d);
               }
               var updraftMarkerPositionsPrecip3d = new Float32Array(34 * 3);
               var updraftMarkerGeometryPrecip3d = new THREE.BufferGeometry();
               updraftMarkerGeometryPrecip3d.setAttribute('position', new THREE.BufferAttribute(updraftMarkerPositionsPrecip3d, 3));
-              var updraftMarkersPrecip3d = new THREE.Points(updraftMarkerGeometryPrecip3d, new THREE.PointsMaterial({ color: 0xfde68a, map: airflowTexturePrecip3d, alphaTest: 0.02, size: 0.09, transparent: true, opacity: 0.86, depthWrite: false, blending: THREE.AdditiveBlending }));
+              var updraftMarkersPrecip3d = new THREE.Points(updraftMarkerGeometryPrecip3d, new THREE.PointsMaterial({ color: 0xf59e0b, map: airflowTexturePrecip3d, alphaTest: 0.02, size: 0.09, transparent: true, opacity: 0.86, depthTest: false, depthWrite: false, blending: THREE.NormalBlending }));
               updraftGroupPrecip3d.add(updraftMarkersPrecip3d);
 
               var precipParticleCount3d = 220;
               var precipitationSeeds3d = [];
-              var precipPositions3d = new Float32Array(precipParticleCount3d * 3);
-              var precipLinePositions3d = new Float32Array(precipParticleCount3d * 2 * 3);
               for (var precipSeedIndex3d = 0; precipSeedIndex3d < precipParticleCount3d; precipSeedIndex3d++) {
                 precipitationSeeds3d.push({
                   x: ((precipSeedIndex3d * 83) % 223) / 223 - 0.5,
@@ -5879,20 +6771,137 @@ const d = labToolData.waterCycle || {};
                   phase: ((precipSeedIndex3d * 43) % 227) / 227
                 });
               }
-              var precipPointGeometry3d = new THREE.BufferGeometry();
-              precipPointGeometry3d.setAttribute('position', new THREE.BufferAttribute(precipPositions3d, 3));
-              var precipPointMaterial3d = new THREE.PointsMaterial({
-                color: 0xbae6fd, map: rainDropTexturePrecip3d, alphaTest: 0.025,
-                size: 0.06, transparent: true, opacity: 0.86,
-                depthWrite: false, blending: THREE.AdditiveBlending
+              var precipitationPhaseGroupPrecip3d = new THREE.Group();
+              var precipPhaseKeysPrecip3d = ['rain', 'freezing-rain', 'snow', 'ice'];
+              var precipPhaseStylesPrecip3d = [
+                { key: 'rain', texture: rainDropTexturePrecip3d, color: 0x7dd3fc, lineColor: 0x38bdf8, size: 0.06, lineLength: 0.28 },
+                { key: 'freezing-rain', texture: rainDropTexturePrecip3d, color: 0x67e8f9, lineColor: 0xa5f3fc, size: 0.068, lineLength: 0.22 },
+                { key: 'snow', texture: snowFlakeTexturePrecip3d, color: 0xf8fafc, lineColor: 0xf8fafc, size: 0.128, lineLength: 0 },
+                { key: 'ice', texture: hailStoneTexturePrecip3d, color: 0xe0f2fe, lineColor: 0x67e8f9, size: 0.108, lineLength: 0.1 }
+              ];
+              var precipPhaseSystemsPrecip3d = {};
+              precipPhaseStylesPrecip3d.forEach(function(precipPhaseStylePrecip3d) {
+                var precipPhasePositionsPrecip3d = new Float32Array(precipParticleCount3d * 3);
+                var precipPhaseLinePositionsPrecip3d = new Float32Array(precipParticleCount3d * 2 * 3);
+                var precipPhasePointGeometryPrecip3d = new THREE.BufferGeometry();
+                precipPhasePointGeometryPrecip3d.setAttribute('position', new THREE.BufferAttribute(precipPhasePositionsPrecip3d, 3));
+                precipPhasePointGeometryPrecip3d.setDrawRange(0, 0);
+                var precipPhasePointMaterialPrecip3d = new THREE.PointsMaterial({
+                  color: precipPhaseStylePrecip3d.color, map: precipPhaseStylePrecip3d.texture,
+                  alphaTest: 0.025, size: precipPhaseStylePrecip3d.size,
+                  transparent: true, opacity: 0.86, depthWrite: false,
+                  blending: THREE.AdditiveBlending
+                });
+                var precipPhasePointsPrecip3d = new THREE.Points(
+                  precipPhasePointGeometryPrecip3d, precipPhasePointMaterialPrecip3d
+                );
+                var precipPhaseLineGeometryPrecip3d = new THREE.BufferGeometry();
+                precipPhaseLineGeometryPrecip3d.setAttribute('position', new THREE.BufferAttribute(precipPhaseLinePositionsPrecip3d, 3));
+                precipPhaseLineGeometryPrecip3d.setDrawRange(0, 0);
+                var precipPhaseLineMaterialPrecip3d = new THREE.LineBasicMaterial({
+                  color: precipPhaseStylePrecip3d.lineColor, transparent: true,
+                  opacity: 0.44, depthWrite: false, blending: THREE.AdditiveBlending
+                });
+                var precipPhaseLinesPrecip3d = new THREE.LineSegments(
+                  precipPhaseLineGeometryPrecip3d, precipPhaseLineMaterialPrecip3d
+                );
+                precipitationPhaseGroupPrecip3d.add(precipPhasePointsPrecip3d);
+                precipitationPhaseGroupPrecip3d.add(precipPhaseLinesPrecip3d);
+                precipPhaseSystemsPrecip3d[precipPhaseStylePrecip3d.key] = {
+                  style: precipPhaseStylePrecip3d,
+                  positions: precipPhasePositionsPrecip3d,
+                  linePositions: precipPhaseLinePositionsPrecip3d,
+                  pointGeometry: precipPhasePointGeometryPrecip3d,
+                  pointMaterial: precipPhasePointMaterialPrecip3d,
+                  points: precipPhasePointsPrecip3d,
+                  lineGeometry: precipPhaseLineGeometryPrecip3d,
+                  lineMaterial: precipPhaseLineMaterialPrecip3d,
+                  lines: precipPhaseLinesPrecip3d
+                };
               });
-              var precipPoints3d = new THREE.Points(precipPointGeometry3d, precipPointMaterial3d);
-              scenePrecip3d.add(precipPoints3d);
-              var precipLineGeometry3d = new THREE.BufferGeometry();
-              precipLineGeometry3d.setAttribute('position', new THREE.BufferAttribute(precipLinePositions3d, 3));
-              var precipLineMaterial3d = new THREE.LineBasicMaterial({ color: 0x7dd3fc, transparent: true, opacity: 0.46, depthWrite: false, blending: THREE.AdditiveBlending });
-              var precipLines3d = new THREE.LineSegments(precipLineGeometry3d, precipLineMaterial3d);
-              scenePrecip3d.add(precipLines3d);
+              scenePrecip3d.add(precipitationPhaseGroupPrecip3d);
+
+              // Virga needs a visibly different ending from surface precipitation:
+              // large drops become fine fragments, disappear, and re-enter the
+              // atmosphere. The gold particles are teaching tracers for otherwise
+              // invisible water vapor, not a claim that vapor itself is visible.
+              var virgaEvaporationGroupPrecip3d = new THREE.Group();
+              var virgaFragmentCapacityPrecip3d = 140;
+              var virgaFragmentPositionsPrecip3d = new Float32Array(virgaFragmentCapacityPrecip3d * 3);
+              var virgaFragmentGeometryPrecip3d = new THREE.BufferGeometry();
+              virgaFragmentGeometryPrecip3d.setAttribute('position', new THREE.BufferAttribute(virgaFragmentPositionsPrecip3d, 3));
+              virgaFragmentGeometryPrecip3d.setDrawRange(0, 0);
+              var virgaFragmentMaterialPrecip3d = new THREE.PointsMaterial({
+                color: 0x38bdf8, map: rainDropTexturePrecip3d, alphaTest: 0.025,
+                size: 0.036, transparent: true, opacity: 0,
+                depthWrite: false, blending: THREE.NormalBlending
+              });
+              var virgaFragmentsPrecip3d = new THREE.Points(virgaFragmentGeometryPrecip3d, virgaFragmentMaterialPrecip3d);
+              virgaEvaporationGroupPrecip3d.add(virgaFragmentsPrecip3d);
+
+              var virgaVaporTracerCountPrecip3d = 88;
+              var virgaVaporTracerPositionsPrecip3d = new Float32Array(virgaVaporTracerCountPrecip3d * 3);
+              var virgaVaporTracerSeedsPrecip3d = [];
+              for (var virgaVaporSeedIndexPrecip3d = 0; virgaVaporSeedIndexPrecip3d < virgaVaporTracerCountPrecip3d; virgaVaporSeedIndexPrecip3d++) {
+                virgaVaporTracerSeedsPrecip3d.push({
+                  x: ((virgaVaporSeedIndexPrecip3d * 41) % 89) / 89 - 0.5,
+                  z: ((virgaVaporSeedIndexPrecip3d * 53) % 83) / 83 - 0.5,
+                  phase: ((virgaVaporSeedIndexPrecip3d * 31) % 97) / 97,
+                  speed: 0.78 + ((virgaVaporSeedIndexPrecip3d * 17) % 29) / 29 * 0.46
+                });
+              }
+              var virgaVaporTracerGeometryPrecip3d = new THREE.BufferGeometry();
+              virgaVaporTracerGeometryPrecip3d.setAttribute('position', new THREE.BufferAttribute(virgaVaporTracerPositionsPrecip3d, 3));
+              virgaVaporTracerGeometryPrecip3d.setDrawRange(0, 0);
+              var virgaVaporTracersPrecip3d = new THREE.Points(
+                virgaVaporTracerGeometryPrecip3d,
+                new THREE.PointsMaterial({
+                  color: 0xfbbf24, map: softDotTexturePrecip3d, alphaTest: 0.018,
+                  size: 0.075, transparent: true, opacity: 0,
+                  depthWrite: false, blending: THREE.NormalBlending
+                })
+              );
+              virgaEvaporationGroupPrecip3d.add(virgaVaporTracersPrecip3d);
+
+              var virgaDryHazeSpritesPrecip3d = [];
+              for (var virgaHazeIndexPrecip3d = 0; virgaHazeIndexPrecip3d < 3; virgaHazeIndexPrecip3d++) {
+                var virgaDryHazeMaterialPrecip3d = new THREE.SpriteMaterial({
+                  map: cloudSoftTexturePrecip3d, color: 0xfbbf24,
+                  transparent: true, opacity: 0, depthTest: false, depthWrite: false,
+                  blending: THREE.NormalBlending
+                });
+                var virgaDryHazeSpritePrecip3d = new THREE.Sprite(virgaDryHazeMaterialPrecip3d);
+                virgaDryHazeSpritePrecip3d.userData.baseX = (virgaHazeIndexPrecip3d - 1) * 1.65;
+                virgaDryHazeSpritePrecip3d.userData.phase = virgaHazeIndexPrecip3d * 1.9;
+                virgaDryHazeSpritePrecip3d.position.set(virgaDryHazeSpritePrecip3d.userData.baseX, -0.55, -1.45);
+                virgaDryHazeSpritePrecip3d.scale.set(3.05, 1.28, 1);
+                virgaDryHazeSpritePrecip3d.renderOrder = 1;
+                virgaEvaporationGroupPrecip3d.add(virgaDryHazeSpritePrecip3d);
+                virgaDryHazeSpritesPrecip3d.push(virgaDryHazeSpritePrecip3d);
+              }
+              var virgaEvaporationRingPositionsPrecip3d = new Float32Array(56 * 3);
+              for (var virgaRingPointIndexPrecip3d = 0; virgaRingPointIndexPrecip3d < 56; virgaRingPointIndexPrecip3d++) {
+                var virgaRingAnglePrecip3d = virgaRingPointIndexPrecip3d / 56 * Math.PI * 2;
+                var virgaRingRadiusPrecip3d = 2.48 + Math.sin(virgaRingPointIndexPrecip3d * 2.17) * 0.12;
+                virgaEvaporationRingPositionsPrecip3d[virgaRingPointIndexPrecip3d * 3] = Math.cos(virgaRingAnglePrecip3d) * virgaRingRadiusPrecip3d;
+                virgaEvaporationRingPositionsPrecip3d[virgaRingPointIndexPrecip3d * 3 + 1] = 0;
+                virgaEvaporationRingPositionsPrecip3d[virgaRingPointIndexPrecip3d * 3 + 2] = Math.sin(virgaRingAnglePrecip3d) * virgaRingRadiusPrecip3d * 0.76;
+              }
+              var virgaEvaporationRingGeometryPrecip3d = new THREE.BufferGeometry();
+              virgaEvaporationRingGeometryPrecip3d.setAttribute('position', new THREE.BufferAttribute(virgaEvaporationRingPositionsPrecip3d, 3));
+              var virgaEvaporationRingMaterialPrecip3d = new THREE.PointsMaterial({
+                color: 0xf59e0b, map: softDotTexturePrecip3d, alphaTest: 0.018,
+                size: 0.07, transparent: true, opacity: 0,
+                depthTest: false, depthWrite: false, blending: THREE.NormalBlending
+              });
+              var virgaEvaporationRingPrecip3d = new THREE.Points(
+                virgaEvaporationRingGeometryPrecip3d, virgaEvaporationRingMaterialPrecip3d
+              );
+              virgaEvaporationRingPrecip3d.renderOrder = 4;
+              virgaEvaporationRingPrecip3d.userData.baseScale = 1;
+              virgaEvaporationGroupPrecip3d.add(virgaEvaporationRingPrecip3d);
+              virgaEvaporationGroupPrecip3d.visible = false;
+              scenePrecip3d.add(virgaEvaporationGroupPrecip3d);
 
               var lightningGroupPrecip3d = new THREE.Group();
               scenePrecip3d.add(lightningGroupPrecip3d);
@@ -5995,10 +7004,36 @@ const d = labToolData.waterCycle || {};
                   ? 'leeward-thinning' : 'none';
                 canvasEl.dataset.precipitationCloudMorphology = modelPrecip3d.lightningEligible && modelPrecip3d.config.updraft >= 58
                   ? 'cumulonimbus-anvil' : modelPrecip3d.config.cloudDepth >= 7 ? 'deep-layered' : 'shallow';
-                canvasEl.dataset.precipitationCloudRendering = 'soft-volume-plus-lit-mesh';
+                canvasEl.dataset.precipitationCloudRendering = 'procedural-billow-volume-without-sphere-shells';
+                canvasEl.dataset.precipitationCloudVolumeTechnique = 'procedural-density-slices-flat-base-and-silver-lining';
+                canvasEl.dataset.precipitationCloudFocusRendering = modelPrecip3d.config.cameraFocus === 'cloud'
+                  ? 'parallax-density-depth-with-shell-mesh-hidden'
+                  : 'sculpted-density-billows-plus-procedural-anvil';
+                canvasEl.dataset.precipitationAnvilRendering = modelPrecip3d.config.showStormAnatomy &&
+                  modelPrecip3d.lightningEligible && modelPrecip3d.config.updraft >= 58
+                  ? 'procedural-density-shelf' : 'hidden';
+                canvasEl.dataset.precipitationCondensationRendering = 'rising-vapor-tracers-saturation-halo-newborn-droplets-and-scud';
+                canvasEl.dataset.precipitationCloudVaporTracerMeaning = 'visible-teaching-path-for-invisible-water-vapor';
+                canvasEl.dataset.precipitationCloudParticleScale = 'teaching-magnification-not-to-scale';
+                canvasEl.dataset.precipitationCoalescenceRendering = modelPrecip3d.config.tempC > 0 && modelPrecip3d.growthIndex >= 32
+                  ? 'paired-collision-paths-and-collector-drops' : 'hidden-for-cold-cloud';
                 canvasEl.dataset.precipitationParticleRendering = 'procedural-soft-textures';
-                canvasEl.dataset.precipitationAtmosphere = 'gradient-haze-and-cloud-shadow';
+                canvasEl.dataset.precipitationParticlePhaseMorphing = modelPrecip3d.thermalLayers.crossings.length
+                  ? 'altitude-resolved-particle-transformation' : 'single-phase-fall';
+                canvasEl.dataset.precipitationVirgaRendering = modelPrecip3d.visualType === 'virga'
+                  ? 'shrinking-drops-fragments-dry-haze-and-vapor-tracers' : 'hidden';
+                canvasEl.dataset.precipitationVaporTracerMeaning = modelPrecip3d.visualType === 'virga'
+                  ? 'visible-teaching-tracer-for-invisible-water-vapor' : 'hidden';
+                canvasEl.dataset.precipitationAtmosphere = 'full-bleed-gradient-haze-and-cloud-shadow';
+                canvasEl.dataset.precipitationThermalBandRendering = 'edge-feathered-atmospheric-ribbons';
                 canvasEl.dataset.precipitationLightningRendering = 'branched-channel-core-and-cloud-flash';
+                canvasEl.dataset.precipitationOrographicRendering = modelPrecip3d.config.terrain === 'mountains' &&
+                  modelPrecip3d.config.wind > 2
+                  ? 'windward-moisture-lift-and-leeward-warming' : 'hidden';
+                canvasEl.dataset.precipitationMountainRendering = modelPrecip3d.config.terrain === 'mountains'
+                  ? 'procedural-ridged-relief-and-snowcaps' : 'hidden';
+                canvasEl.dataset.precipitationCoastline = modelPrecip3d.config.terrain === 'coast'
+                  ? 'curved-beach-foam-and-wave-lines' : 'hidden';
                 canvasEl.dataset.precipitationChargeRegions = modelPrecip3d.config.showStormAnatomy &&
                   modelPrecip3d.stormAnatomy && modelPrecip3d.stormAnatomy.chargeSeparation.active
                   ? 'upper-positive-lower-negative' : 'hidden';
@@ -6018,7 +7053,8 @@ const d = labToolData.waterCycle || {};
                 var cloudPresence3d = modelPrecip3d.visualType === 'clear'
                   ? 0.08 : (0.52 + cfg3d.moisture / 190) * lifecycleCloudFactor3d;
                 var stormShade3d = modelPrecip3d.relativeIntensity / 100;
-                horizonPrecip3d.material.opacity = 0.9 + Math.min(0.08, stormShade3d * 0.08);
+                horizonPrecip3d.material.opacity = cfg3d.cameraFocus === 'cloud'
+                  ? 0.74 : 0.9 + Math.min(0.08, stormShade3d * 0.08);
                 hemiPrecip3d.intensity = 1.32 - stormShade3d * 0.3;
                 keyLightPrecip3d.intensity = 1.7 - stormShade3d * 0.42;
                 cloudShadowPrecip3d.material.opacity = modelPrecip3d.visualType === 'clear'
@@ -6030,11 +7066,72 @@ const d = labToolData.waterCycle || {};
                 );
                 cloudShadowPrecip3d.position.x = (cfg3d.windDirection === 'west' ? -1 : 1) * cfg3d.wind / 140;
                 cloudGroupPrecip3d.scale.set(depthFactor3d, 0.78 + depthFactor3d * 0.2, 0.82 + moistureFactor3d * 0.22);
+                var cloudFocusActivePrecip3d = cfg3d.cameraFocus === 'cloud';
+                cloudInteriorDepthSpritesPrecip3d.forEach(function(cloudInteriorDepthSprite3d, cloudInteriorDepthIndex3d) {
+                  var cloudInteriorDepthWeight3d = 0.74 + Math.sin(
+                    cloudInteriorDepthSprite3d.userData.depth * Math.PI
+                  ) * 0.26;
+                  var cloudInteriorDepthRow3d = cloudInteriorDepthSprite3d.userData.row;
+                  var cloudInteriorFocusBase3d = cloudInteriorDepthRow3d === 0 ? 0.19
+                    : cloudInteriorDepthRow3d === 1 ? 0.17 : 0.18;
+                  cloudInteriorDepthSprite3d.visible = cloudPresence3d > 0.1;
+                  cloudInteriorDepthSprite3d.userData.baseOpacity = cloudInteriorDepthSprite3d.visible
+                    ? (cloudFocusActivePrecip3d
+                        ? cloudInteriorFocusBase3d + cloudPresence3d * 0.105
+                        : 0.11 + cloudPresence3d * 0.09) * cloudInteriorDepthWeight3d
+                    : 0;
+                  cloudInteriorDepthSprite3d.material.opacity = cloudInteriorDepthSprite3d.userData.baseOpacity;
+                  var cloudInteriorDepthTone3d = cloudInteriorDepthRow3d === 0
+                    ? (cloudInteriorDepthIndex3d % 2 ? 0x385663 : 0x4f7180)
+                    : cloudInteriorDepthRow3d === 1
+                      ? (cloudInteriorDepthIndex3d % 2 ? 0x88aeba : 0xb1cdd6)
+                      : (cloudInteriorDepthIndex3d % 2 ? 0xdcedf2 : 0xbcd8e1);
+                  if (modelPrecip3d.lightningEligible && cloudInteriorDepthIndex3d % 4 === 2) {
+                    cloudInteriorDepthTone3d = cloudInteriorDepthRow3d === 0 ? 0x304b59 : 0x6e8c9b;
+                  }
+                  cloudInteriorDepthSprite3d.material.color.setHex(cloudInteriorDepthTone3d);
+                });
+                cloudBaseDeckSpritesPrecip3d.forEach(function(cloudBaseDeckSprite3d, cloudBaseDeckIndex3d) {
+                  cloudBaseDeckSprite3d.visible = cloudPresence3d > 0.1;
+                  cloudBaseDeckSprite3d.userData.baseOpacity = cloudBaseDeckSprite3d.visible
+                    ? (0.052 + cloudPresence3d * 0.085 + stormShade3d * 0.052 +
+                      (cloudFocusActivePrecip3d ? 0.078 : 0)) *
+                      (0.9 + (cloudBaseDeckIndex3d % 3) * 0.045)
+                    : 0;
+                  cloudBaseDeckSprite3d.material.opacity = cloudBaseDeckSprite3d.userData.baseOpacity;
+                  cloudBaseDeckSprite3d.material.color.setHex(
+                    stormShade3d > 0.58
+                      ? (cloudBaseDeckIndex3d % 2 ? 0x334d59 : 0x2b424e)
+                      : (cloudBaseDeckIndex3d % 2 ? 0x456572 : 0x365562)
+                  );
+                });
+                cloudSilverLiningSpritesPrecip3d.forEach(function(cloudSilverLiningSprite3d, cloudSilverLiningIndex3d) {
+                  cloudSilverLiningSprite3d.visible = cloudPresence3d > 0.1;
+                  cloudSilverLiningSprite3d.userData.baseOpacity = cloudSilverLiningSprite3d.visible
+                    ? (0.032 + cloudPresence3d * 0.05 + (1 - stormShade3d) * 0.022) *
+                      (cloudFocusActivePrecip3d ? 1.28 : 1) *
+                      (1 - cloudSilverLiningIndex3d * 0.025)
+                    : 0;
+                  cloudSilverLiningSprite3d.material.opacity = cloudSilverLiningSprite3d.userData.baseOpacity;
+                });
+                var cloudAnvilVeilActive3d = cfg3d.showStormAnatomy && modelPrecip3d.lightningEligible &&
+                  cfg3d.updraft >= 58 && !cloudFocusActivePrecip3d;
+                cloudAnvilVeilSpritesPrecip3d.forEach(function(cloudAnvilVeilSprite3d, cloudAnvilVeilIndex3d) {
+                  cloudAnvilVeilSprite3d.visible = cloudAnvilVeilActive3d;
+                  cloudAnvilVeilSprite3d.userData.baseOpacity = cloudAnvilVeilActive3d
+                    ? (0.09 + cfg3d.updraft / 780 + cloudPresence3d * 0.035) *
+                      (0.92 + (cloudAnvilVeilIndex3d % 3) * 0.04)
+                    : 0;
+                  cloudAnvilVeilSprite3d.material.opacity = cloudAnvilVeilSprite3d.userData.baseOpacity;
+                  cloudAnvilVeilSprite3d.material.color.setHex(
+                    stormShade3d > 0.58
+                      ? (cloudAnvilVeilIndex3d % 2 ? 0x91a7b2 : 0xb7c8cf)
+                      : (cloudAnvilVeilIndex3d % 2 ? 0xc8dae2 : 0xe5eef2)
+                  );
+                });
                 cloudVolumeSpritesPrecip3d.forEach(function(cloudVolumeSprite3d) {
-                  var cloudVolumeShade3d = cloudVolumeSprite3d.userData.row === 0 ? 0.82
-                    : cloudVolumeSprite3d.userData.row === 1 ? 1 : cloudVolumeSprite3d.userData.row === 2 ? 0.9 : 0.72;
-                  cloudVolumeSprite3d.material.opacity = Math.max(0.025, Math.min(0.42,
-                    (0.06 + cloudPresence3d * 0.32) * cloudVolumeShade3d));
+                  cloudVolumeSprite3d.visible = false;
+                  cloudVolumeSprite3d.material.opacity = 0;
                   cloudVolumeSprite3d.material.color.setHex(
                     modelPrecip3d.lightningEligible && cloudVolumeSprite3d.userData.row >= 2
                       ? 0x94a3b8 : cloudVolumeSprite3d.userData.row <= 1 ? 0xf8fafc : 0xcbd5e1
@@ -6042,15 +7139,58 @@ const d = labToolData.waterCycle || {};
                 });
                 cloudPuffsPrecip3d.forEach(function(puff3d) {
                   var rowShade3d = puff3d.position.y > 2.1 ? 0.84 : puff3d.position.y > 1.6 ? 1 : 0.76;
-                  puff3d.material.opacity = Math.max(0.012, Math.min(0.16, (0.018 + cloudPresence3d * 0.105) * rowShade3d));
+                  puff3d.visible = false;
+                  var insideCloudMeshFade3d = 0;
+                  puff3d.material.opacity = Math.max(0.008, Math.min(0.16,
+                    (0.018 + cloudPresence3d * 0.105) * rowShade3d * insideCloudMeshFade3d));
                 });
-                cloudCorePrecip3d.material.opacity = Math.max(0.015, Math.min(0.14, 0.02 + cloudPresence3d * 0.085));
+                cloudCorePrecip3d.visible = false;
+                cloudCorePrecip3d.material.opacity = Math.max(0.012, Math.min(0.14,
+                  (0.02 + cloudPresence3d * 0.085) * (cloudFocusActivePrecip3d ? 0 : 1)));
                 cloudLightPrecip3d.intensity = 0.7 + cfg3d.moisture / 100 * 1.3;
-                nucleusPointsPrecip3d.material.opacity = 0.24 + cfg3d.moisture / 100 * 0.66;
-                dropletPointsPrecip3d.material.opacity = 0.22 + modelPrecip3d.growthIndex / 100 * 0.7;
+                cloudLightPrecip3d.color.setHex(stormShade3d > 0.62 ? 0x60a5fa : 0x38bdf8);
+                var cloudLensBoostPrecip3d = cloudFocusActivePrecip3d ? 1 : 0;
+                var cloudFormationStrengthPrecip3d = Math.max(0, Math.min(1,
+                  (cfg3d.moisture / 100 * 0.58 + modelPrecip3d.liftIndex / 100 * 0.42) * lifecycleCloudFactor3d
+                ));
+                nucleusPointsPrecip3d.material.opacity = 0.16 + cfg3d.moisture / 100 * 0.34 + cloudLensBoostPrecip3d * 0.26;
+                nucleusPointsPrecip3d.material.size = 0.027 + cloudLensBoostPrecip3d * 0.012;
+                dropletPointsPrecip3d.material.opacity = 0.2 + modelPrecip3d.growthIndex / 100 * 0.42 + cloudLensBoostPrecip3d * 0.23;
+                dropletPointsPrecip3d.material.size = 0.046 + modelPrecip3d.growthIndex / 1800 + cloudLensBoostPrecip3d * 0.012;
                 var iceVisible3d = modelPrecip3d.cloudPhase.indexOf('ice') !== -1 || cfg3d.tempC <= 0 || modelPrecip3d.lightningEligible;
                 icePointsPrecip3d.visible = iceVisible3d;
-                icePointsPrecip3d.material.opacity = iceVisible3d ? 0.32 + Math.min(0.58, modelPrecip3d.electrificationIndex / 100) : 0;
+                icePointsPrecip3d.material.opacity = iceVisible3d
+                  ? 0.26 + Math.min(0.42, modelPrecip3d.electrificationIndex / 150) + cloudLensBoostPrecip3d * 0.18 : 0;
+                icePointsPrecip3d.material.size = 0.06 + cloudLensBoostPrecip3d * 0.022;
+                cloudFormationGroupPrecip3d.visible = cloudFormationStrengthPrecip3d > 0.16;
+                condensationLevelMaterialPrecip3d.opacity = cloudFormationGroupPrecip3d.visible
+                  ? 0.1 + cloudFormationStrengthPrecip3d * 0.16 + cloudLensBoostPrecip3d * 0.16 : 0;
+                condensationLevelMarkersPrecip3d.material.opacity = cloudFormationGroupPrecip3d.visible
+                  ? 0.18 + cloudFormationStrengthPrecip3d * 0.34 + cloudLensBoostPrecip3d * 0.22 : 0;
+                condensationLevelMarkersPrecip3d.material.size = 0.042 + cloudFormationStrengthPrecip3d * 0.018 + cloudLensBoostPrecip3d * 0.014;
+                vaporTeachingTracersPrecip3d.material.opacity = cloudFormationGroupPrecip3d.visible
+                  ? 0.12 + cloudFormationStrengthPrecip3d * 0.28 + cloudLensBoostPrecip3d * 0.2 : 0;
+                vaporTeachingTracersPrecip3d.material.size = 0.036 + cloudFormationStrengthPrecip3d * 0.018 + cloudLensBoostPrecip3d * 0.012;
+                newbornDropletsPrecip3d.material.opacity = cloudFormationGroupPrecip3d.visible
+                  ? 0.25 + cloudFormationStrengthPrecip3d * 0.38 + cloudLensBoostPrecip3d * 0.2 : 0;
+                newbornDropletsPrecip3d.material.size = 0.064 + modelPrecip3d.growthIndex / 1800 + cloudLensBoostPrecip3d * 0.014;
+                condensationScudSpritesPrecip3d.forEach(function(condensationScudSprite3d, condensationScudIndex3d) {
+                  condensationScudSprite3d.userData.baseOpacity = cloudFormationGroupPrecip3d.visible
+                    ? (0.026 + cloudFormationStrengthPrecip3d * 0.055 + cloudLensBoostPrecip3d * 0.025) *
+                      (1 - condensationScudIndex3d * 0.035) : 0;
+                  condensationScudSprite3d.material.opacity = condensationScudSprite3d.userData.baseOpacity;
+                });
+                var warmCoalescenceStrengthPrecip3d = cfg3d.tempC > 0
+                  ? Math.max(0, Math.min(1, (modelPrecip3d.growthIndex / 100 - 0.3) / 0.48)) : 0;
+                var warmCoalescenceActivePrecip3d = warmCoalescenceStrengthPrecip3d > 0.025;
+                coalescenceLinesPrecip3d.visible = warmCoalescenceActivePrecip3d;
+                coalescenceCollectorDropsPrecip3d.visible = warmCoalescenceActivePrecip3d;
+                coalescenceLineMaterialPrecip3d.opacity = warmCoalescenceActivePrecip3d
+                  ? 0.12 + warmCoalescenceStrengthPrecip3d * 0.28 + cloudLensBoostPrecip3d * 0.15 : 0;
+                coalescenceCollectorDropsPrecip3d.material.opacity = warmCoalescenceActivePrecip3d
+                  ? 0.34 + warmCoalescenceStrengthPrecip3d * 0.38 + cloudLensBoostPrecip3d * 0.18 : 0;
+                coalescenceCollectorDropsPrecip3d.material.size = 0.085 +
+                  warmCoalescenceStrengthPrecip3d * 0.07 + cloudLensBoostPrecip3d * 0.025;
                 var chargeRegionsActive3d = cfg3d.showStormAnatomy && modelPrecip3d.stormAnatomy &&
                   modelPrecip3d.stormAnatomy.chargeSeparation && modelPrecip3d.stormAnatomy.chargeSeparation.active;
                 positiveChargePointsPrecip3d.visible = !!chargeRegionsActive3d;
@@ -6072,6 +7212,38 @@ const d = labToolData.waterCycle || {};
                 windMarkersPrecip3d.material.opacity = windShearGroupPrecip3d.visible ? 0.4 + cfg3d.wind / 100 * 0.5 : 0;
                 mountainTerrainGroupPrecip3d.visible = cfg3d.terrain === 'mountains';
                 coastTerrainGroupPrecip3d.visible = cfg3d.terrain === 'coast';
+                var orographicActivePrecip3d = cfg3d.terrain === 'mountains' && cfg3d.wind > 2;
+                var orographicStrengthPrecip3d = Math.max(0, Math.min(1, modelPrecip3d.terrainLift / 28));
+                var rainShadowStrengthPrecip3d = Math.max(0, Math.min(1,
+                  cfg3d.wind / 42 * 0.62 + (1 - cfg3d.lowLevelHumidity / 100) * 0.38
+                ));
+                orographicFlowGroupPrecip3d.visible = orographicActivePrecip3d;
+                orographicFlowGroupPrecip3d.scale.x = cfg3d.windDirection === 'west' ? -1 : 1;
+                orographicLiftLinesPrecip3d.forEach(function(orographicLiftLine3d, orographicLiftLineIndex3d) {
+                  orographicLiftLine3d.material.opacity = orographicActivePrecip3d && cfg3d.showAirflow
+                    ? 0.16 + orographicStrengthPrecip3d * 0.32 - orographicLiftLineIndex3d * 0.025 : 0;
+                });
+                orographicDescentLinesPrecip3d.forEach(function(orographicDescentLine3d, orographicDescentLineIndex3d) {
+                  orographicDescentLine3d.material.opacity = orographicActivePrecip3d && cfg3d.showAirflow
+                    ? 0.11 + rainShadowStrengthPrecip3d * 0.26 - orographicDescentLineIndex3d * 0.018 : 0;
+                });
+                orographicLiftMarkersPrecip3d.visible = orographicActivePrecip3d && cfg3d.showAirflow;
+                orographicDescentMarkersPrecip3d.visible = orographicActivePrecip3d && cfg3d.showAirflow;
+                orographicLiftMarkersPrecip3d.material.opacity = orographicLiftMarkersPrecip3d.visible
+                  ? 0.38 + orographicStrengthPrecip3d * 0.46 : 0;
+                orographicDescentMarkersPrecip3d.material.opacity = orographicDescentMarkersPrecip3d.visible
+                  ? 0.28 + rainShadowStrengthPrecip3d * 0.42 : 0;
+                windwardMistPrecip3d.visible = orographicActivePrecip3d;
+                leewardHazePrecip3d.visible = orographicActivePrecip3d;
+                windwardMistPrecip3d.material.opacity = orographicActivePrecip3d
+                  ? Math.min(0.68, 0.14 + cfg3d.moisture / 240 + orographicStrengthPrecip3d * 0.14) : 0;
+                leewardHazePrecip3d.material.opacity = orographicActivePrecip3d
+                  ? 0.1 + rainShadowStrengthPrecip3d * 0.34 : 0;
+                rainShadowPatchPrecip3d.visible = orographicActivePrecip3d;
+                rainShadowPatchPrecip3d.material.opacity = orographicActivePrecip3d
+                  ? 0.07 + rainShadowStrengthPrecip3d * 0.18 : 0;
+                rainShadowCrackMaterialPrecip3d.opacity = orographicActivePrecip3d
+                  ? 0.1 + rainShadowStrengthPrecip3d * 0.34 : 0;
                 mountainSnowCapsPrecip3d.forEach(function(mountainSnowCap3d) {
                   mountainSnowCap3d.visible = cfg3d.surfaceTempC <= 4 || cfg3d.tempC <= -4 ||
                     modelPrecip3d.visualType === 'snow' || modelPrecip3d.visualType === 'sleet';
@@ -6105,7 +7277,7 @@ const d = labToolData.waterCycle || {};
                   Math.max(accumulation3d.puddling, accumulation3d.glaze, accumulation3d.hail) > 2;
                 impactRipplesPrecip3d.forEach(function(impactRipple3d) {
                   impactRipple3d.material.color.setHex(modelPrecip3d.visualType === 'freezing-rain'
-                    ? 0xa5f3fc : modelPrecip3d.visualType === 'hail' ? 0xe0f2fe : 0x7dd3fc);
+                    ? 0x0891b2 : modelPrecip3d.visualType === 'hail' ? 0x67e8f9 : 0x0284c7);
                 });
                 floorGlowPrecip3d.material.color.setHex(accumulation3d.glaze > accumulation3d.puddling
                   ? 0xa5f3fc : 0x38bdf8);
@@ -6124,30 +7296,67 @@ const d = labToolData.waterCycle || {};
                   phasePlane3d.material.opacity = thermalCrossing3d.kind === 'melting' ? 0.12 : 0.16;
                 });
                 var precipitationVisible3d = modelPrecip3d.visualType !== 'clear';
-                precipPoints3d.visible = precipitationVisible3d;
-                precipLines3d.visible = precipitationVisible3d && modelPrecip3d.visualType !== 'snow';
-                var precipitationTexture3d = modelPrecip3d.visualType === 'snow' ? snowFlakeTexturePrecip3d
-                  : modelPrecip3d.visualType === 'hail' || modelPrecip3d.visualType === 'sleet'
-                    ? hailStoneTexturePrecip3d : rainDropTexturePrecip3d;
-                if (precipPointMaterial3d.map !== precipitationTexture3d) {
-                  precipPointMaterial3d.map = precipitationTexture3d;
-                  precipPointMaterial3d.needsUpdate = true;
-                }
-                precipPointMaterial3d.color.setHex(modelPrecip3d.visualType === 'snow' ? 0xf8fafc : modelPrecip3d.visualType === 'hail' ? 0xe0f2fe : 0x7dd3fc);
-                precipPointMaterial3d.size = modelPrecip3d.visualType === 'hail' ? 0.115 : modelPrecip3d.visualType === 'snow' ? 0.125 : 0.058 + modelPrecip3d.relativeIntensity / 920;
-                precipLineMaterial3d.color.setHex(modelPrecip3d.visualType === 'freezing-rain' ? 0x67e8f9 : 0x7dd3fc);
-                precipLineMaterial3d.opacity = modelPrecip3d.visualType === 'virga' ? 0.2 : 0.38 + modelPrecip3d.relativeIntensity / 250;
+                precipitationPhaseGroupPrecip3d.visible = precipitationVisible3d;
+                precipPhaseKeysPrecip3d.forEach(function(precipPhaseKeyPrecip3d) {
+                  var precipPhaseSystemPrecip3d = precipPhaseSystemsPrecip3d[precipPhaseKeyPrecip3d];
+                  var phaseSizeBoostPrecip3d = precipPhaseKeyPrecip3d === 'rain' || precipPhaseKeyPrecip3d === 'freezing-rain'
+                    ? modelPrecip3d.relativeIntensity / 1800 : modelPrecip3d.relativeIntensity / 4200;
+                  precipPhaseSystemPrecip3d.pointMaterial.size = precipPhaseSystemPrecip3d.style.size + phaseSizeBoostPrecip3d;
+                  precipPhaseSystemPrecip3d.pointMaterial.opacity = modelPrecip3d.visualType === 'virga'
+                    ? 0.52 : 0.76 + modelPrecip3d.relativeIntensity / 620;
+                  precipPhaseSystemPrecip3d.lines.visible = precipPhaseSystemPrecip3d.style.lineLength > 0;
+                  precipPhaseSystemPrecip3d.lineMaterial.opacity = modelPrecip3d.visualType === 'virga'
+                    ? 0.17 : 0.3 + modelPrecip3d.relativeIntensity / 360;
+                });
+                var virgaActivePrecip3d = modelPrecip3d.visualType === 'virga';
+                var virgaDrynessPrecip3d = 1 - cfg3d.lowLevelHumidity / 100;
+                var virgaFallBottomPrecip3d = -0.55 - (cfg3d.lowLevelHumidity / 100) * 1.12;
+                var virgaEvaporationOnsetProgressPrecip3d = Math.max(0.28, 0.48 - virgaDrynessPrecip3d * 0.16);
+                var virgaEvaporationOnsetYPrecip3d = 0.95 - virgaEvaporationOnsetProgressPrecip3d *
+                  (0.95 - virgaFallBottomPrecip3d);
+                virgaEvaporationGroupPrecip3d.visible = virgaActivePrecip3d;
+                virgaFragmentMaterialPrecip3d.opacity = virgaActivePrecip3d
+                  ? 0.42 + virgaDrynessPrecip3d * 0.36 : 0;
+                virgaFragmentMaterialPrecip3d.size = 0.034 + virgaDrynessPrecip3d * 0.018;
+                virgaVaporTracersPrecip3d.material.opacity = virgaActivePrecip3d
+                  ? 0.24 + virgaDrynessPrecip3d * 0.42 : 0;
+                virgaVaporTracersPrecip3d.material.size = 0.064 + virgaDrynessPrecip3d * 0.038;
+                virgaEvaporationRingPrecip3d.position.set(0, virgaEvaporationOnsetYPrecip3d, 0.08);
+                virgaEvaporationRingPrecip3d.userData.baseScale = 0.86 + cfg3d.cloudDepth / 32;
+                virgaEvaporationRingPrecip3d.scale.setScalar(virgaEvaporationRingPrecip3d.userData.baseScale);
+                virgaEvaporationRingMaterialPrecip3d.opacity = virgaActivePrecip3d
+                  ? 0.36 + virgaDrynessPrecip3d * 0.34 : 0;
+                virgaDryHazeSpritesPrecip3d.forEach(function(virgaDryHazeSprite3d, virgaDryHazeIndex3d) {
+                  virgaDryHazeSprite3d.position.y = (virgaEvaporationOnsetYPrecip3d + virgaFallBottomPrecip3d) * 0.5 -
+                    virgaDryHazeIndex3d * 0.035;
+                  virgaDryHazeSprite3d.scale.set(
+                    2.62 + cfg3d.cloudDepth / 10 + virgaDryHazeIndex3d * 0.14,
+                    0.72 + virgaDrynessPrecip3d * 0.62,
+                    1
+                  );
+                  virgaDryHazeSprite3d.userData.baseOpacity = virgaActivePrecip3d
+                    ? 0.035 + virgaDrynessPrecip3d * 0.07 : 0;
+                  virgaDryHazeSprite3d.material.opacity = virgaDryHazeSprite3d.userData.baseOpacity;
+                });
                 var lightningStudy3d = cfg3d.showStormAnatomy && cfg3d.lightningStudyStep !== 'auto';
                 lightningGroupPrecip3d.visible = cfg3d.showStormAnatomy && (modelPrecip3d.lightningEligible || lightningStudy3d);
-                anvilGroupPrecip3d.visible = cfg3d.showStormAnatomy && modelPrecip3d.lightningEligible && cfg3d.updraft >= 58;
+                anvilGroupPrecip3d.visible = false;
                 anvilGroupPrecip3d.scale.set(0.78 + cfg3d.updraft / 160, 0.8 + lifecycleCloudFactor3d * 0.2, 0.78 + cfg3d.cloudDepth / 26);
                 anvilPuffsPrecip3d.forEach(function(anvilPuff3d) {
-                  anvilPuff3d.material.opacity = anvilGroupPrecip3d.visible ? Math.min(0.19, 0.065 + cfg3d.updraft / 760) : 0;
+                  anvilPuff3d.material.opacity = 0;
                 });
                 if (cfg3d.cameraFocus !== activeCameraFocusPrecip3d) {
                   focusPrecip3dCamera(cfg3d.cameraFocus, false);
                 }
                 setPrecip3dCanvasData();
+              }
+
+              function precipPhaseBucketKeyPrecip3d(particlePhasePrecip3d, particleIndexPrecip3d) {
+                if (particlePhasePrecip3d === 'snow') return 'snow';
+                if (particlePhasePrecip3d === 'hail' || particlePhasePrecip3d === 'sleet') return 'ice';
+                if (particlePhasePrecip3d === 'freezing-rain') return 'freezing-rain';
+                if (particlePhasePrecip3d === 'mix') return particleIndexPrecip3d % 2 ? 'snow' : 'rain';
+                return 'rain';
               }
 
               function updatePrecip3dParticles(time3d) {
@@ -6156,7 +7365,162 @@ const d = labToolData.waterCycle || {};
                 var intensity3d = modelPrecip3d.relativeIntensity / 100;
                 var activeCount3d = type3d === 'clear' ? 0 : Math.max(12, Math.min(precipParticleCount3d, Math.round(24 + intensity3d * 185)));
                 var baseFallSpeed3d = type3d === 'snow' ? 0.18 : type3d === 'hail' ? 0.72 : type3d === 'sleet' ? 0.58 : 0.48;
-                for (var particleIndex3d = 0; particleIndex3d < precipParticleCount3d; particleIndex3d++) {
+                var precipPhaseCountsPrecip3d = { rain: 0, 'freezing-rain': 0, snow: 0, ice: 0 };
+                var virgaFragmentActiveCountPrecip3d = 0;
+                var virgaDrynessUpdatePrecip3d = 1 - cfg3d.lowLevelHumidity / 100;
+                var virgaEvaporationOnsetUpdatePrecip3d = Math.max(0.28, 0.48 - virgaDrynessUpdatePrecip3d * 0.16);
+                var microphysicsTimePrecip3d = motionReducedPrecip3d ? 0 : time3d;
+                var microphysicsGrowthPrecip3d = modelPrecip3d.growthIndex / 100;
+                var microphysicsLiftPrecip3d = modelPrecip3d.liftIndex / 100;
+                var microphysicsWindSignPrecip3d = cfg3d.windDirection === 'west' ? -1 : 1;
+                var microphysicsCompactionPrecip3d = 1 - microphysicsGrowthPrecip3d * 0.12;
+                for (var nucleusMotionIndexPrecip3d = 0; nucleusMotionIndexPrecip3d < microSeedsPrecip3d.length; nucleusMotionIndexPrecip3d++) {
+                  var nucleusMotionSeedPrecip3d = microSeedsPrecip3d[nucleusMotionIndexPrecip3d];
+                  var nucleusMotionPhasePrecip3d = nucleusMotionSeedPrecip3d.phase +
+                    microphysicsTimePrecip3d * (0.1 + cfg3d.wind / 430);
+                  nucleusPositionsPrecip3d[nucleusMotionIndexPrecip3d * 3] = nucleusMotionSeedPrecip3d.x +
+                    Math.sin(nucleusMotionPhasePrecip3d) * 0.026 +
+                    microphysicsWindSignPrecip3d * cfg3d.wind / 40 * 0.018;
+                  nucleusPositionsPrecip3d[nucleusMotionIndexPrecip3d * 3 + 1] = nucleusMotionSeedPrecip3d.y +
+                    Math.cos(nucleusMotionPhasePrecip3d * 0.78) * (0.018 + microphysicsLiftPrecip3d * 0.022);
+                  nucleusPositionsPrecip3d[nucleusMotionIndexPrecip3d * 3 + 2] = nucleusMotionSeedPrecip3d.z +
+                    Math.sin(nucleusMotionPhasePrecip3d * 0.63) * 0.018;
+                }
+                nucleusGeometryPrecip3d.attributes.position.needsUpdate = true;
+                for (var dropletMotionIndexPrecip3d = 0; dropletMotionIndexPrecip3d < 180; dropletMotionIndexPrecip3d++) {
+                  var dropletMotionSeedPrecip3d = microSeedsPrecip3d[dropletMotionIndexPrecip3d];
+                  var dropletMotionPhasePrecip3d = dropletMotionSeedPrecip3d.phase * 1.19 +
+                    microphysicsTimePrecip3d * (0.14 + microphysicsLiftPrecip3d * 0.08);
+                  dropletPositionsPrecip3d[dropletMotionIndexPrecip3d * 3] =
+                    dropletMotionSeedPrecip3d.x * 0.95 * microphysicsCompactionPrecip3d +
+                    Math.sin(dropletMotionPhasePrecip3d) * 0.045;
+                  dropletPositionsPrecip3d[dropletMotionIndexPrecip3d * 3 + 1] =
+                    (dropletMotionSeedPrecip3d.y - 0.1) * microphysicsCompactionPrecip3d +
+                    Math.cos(dropletMotionPhasePrecip3d * 0.82) * 0.034;
+                  dropletPositionsPrecip3d[dropletMotionIndexPrecip3d * 3 + 2] =
+                    dropletMotionSeedPrecip3d.z * 0.9 * microphysicsCompactionPrecip3d +
+                    Math.sin(dropletMotionPhasePrecip3d * 0.57) * 0.03;
+                }
+                dropletGeometryPrecip3d.attributes.position.needsUpdate = true;
+                for (var iceMotionIndexPrecip3d = 0; iceMotionIndexPrecip3d < 72; iceMotionIndexPrecip3d++) {
+                  var iceMotionSeedPrecip3d = microSeedsPrecip3d[iceMotionIndexPrecip3d * 2];
+                  var iceMotionPhasePrecip3d = iceMotionSeedPrecip3d.phase * 0.73 +
+                    microphysicsTimePrecip3d * (0.16 + microphysicsLiftPrecip3d * 0.12);
+                  icePositionsPrecip3d[iceMotionIndexPrecip3d * 3] = iceMotionSeedPrecip3d.x * 0.76 +
+                    Math.sin(iceMotionPhasePrecip3d) * 0.055;
+                  icePositionsPrecip3d[iceMotionIndexPrecip3d * 3 + 1] = iceMotionSeedPrecip3d.y + 0.15 +
+                    Math.sin(iceMotionPhasePrecip3d * 0.7) * (0.025 + microphysicsLiftPrecip3d * 0.045);
+                  icePositionsPrecip3d[iceMotionIndexPrecip3d * 3 + 2] = iceMotionSeedPrecip3d.z * 0.78 +
+                    Math.cos(iceMotionPhasePrecip3d * 0.61) * 0.04;
+                }
+                iceGeometryPrecip3d.attributes.position.needsUpdate = true;
+
+                var cloudFormationStrengthUpdatePrecip3d = Math.max(0, Math.min(1,
+                  (cfg3d.moisture / 100 * 0.58 + microphysicsLiftPrecip3d * 0.42) *
+                  (modelPrecip3d.lifecycle && isFinite(modelPrecip3d.lifecycle.cloudFactor)
+                    ? modelPrecip3d.lifecycle.cloudFactor : 1)
+                ));
+                var vaporTeachingTracerActiveCountPrecip3d = Math.max(28, Math.min(vaporTeachingTracerCountPrecip3d,
+                  Math.round(34 + cloudFormationStrengthUpdatePrecip3d * 62)));
+                var newbornDropletActiveCountPrecip3d = 0;
+                for (var vaporTeachingTracerMotionIndexPrecip3d = 0;
+                    vaporTeachingTracerMotionIndexPrecip3d < vaporTeachingTracerActiveCountPrecip3d;
+                    vaporTeachingTracerMotionIndexPrecip3d++) {
+                  var vaporTeachingTracerSeedPrecip3d = vaporTeachingTracerSeedsPrecip3d[vaporTeachingTracerMotionIndexPrecip3d];
+                  var vaporTeachingTracerProgressPrecip3d = (vaporTeachingTracerSeedPrecip3d.phase +
+                    microphysicsTimePrecip3d * (0.038 + microphysicsLiftPrecip3d * 0.046) *
+                    vaporTeachingTracerSeedPrecip3d.speed) % 1;
+                  var vaporTeachingTracerRadiusPrecip3d = vaporTeachingTracerSeedPrecip3d.radius *
+                    (1 - vaporTeachingTracerProgressPrecip3d * 0.34);
+                  var vaporTeachingTracerAngleUpdatePrecip3d = vaporTeachingTracerSeedPrecip3d.angle +
+                    vaporTeachingTracerProgressPrecip3d * 0.82 + microphysicsTimePrecip3d * 0.08;
+                  var vaporTeachingTracerXPrecip3d = Math.cos(vaporTeachingTracerAngleUpdatePrecip3d) *
+                    vaporTeachingTracerRadiusPrecip3d +
+                    microphysicsWindSignPrecip3d * cfg3d.wind / 40 * vaporTeachingTracerProgressPrecip3d * 0.12;
+                  var vaporTeachingTracerYPrecip3d = 0.16 + vaporTeachingTracerProgressPrecip3d * 1.02 +
+                    Math.sin(vaporTeachingTracerAngleUpdatePrecip3d * 1.7) * 0.025;
+                  var vaporTeachingTracerZPrecip3d = Math.sin(vaporTeachingTracerAngleUpdatePrecip3d) *
+                    vaporTeachingTracerSeedPrecip3d.zScale;
+                  vaporTeachingTracerPositionsPrecip3d[vaporTeachingTracerMotionIndexPrecip3d * 3] = vaporTeachingTracerXPrecip3d;
+                  vaporTeachingTracerPositionsPrecip3d[vaporTeachingTracerMotionIndexPrecip3d * 3 + 1] = vaporTeachingTracerYPrecip3d;
+                  vaporTeachingTracerPositionsPrecip3d[vaporTeachingTracerMotionIndexPrecip3d * 3 + 2] = vaporTeachingTracerZPrecip3d;
+                  if (vaporTeachingTracerProgressPrecip3d > 0.72 &&
+                      newbornDropletActiveCountPrecip3d < newbornDropletCapacityPrecip3d) {
+                    var newbornDropletBlendPrecip3d = (vaporTeachingTracerProgressPrecip3d - 0.72) / 0.28;
+                    newbornDropletPositionsPrecip3d[newbornDropletActiveCountPrecip3d * 3] =
+                      vaporTeachingTracerXPrecip3d * (0.96 - newbornDropletBlendPrecip3d * 0.08);
+                    newbornDropletPositionsPrecip3d[newbornDropletActiveCountPrecip3d * 3 + 1] =
+                      1.015 + newbornDropletBlendPrecip3d * 0.26;
+                    newbornDropletPositionsPrecip3d[newbornDropletActiveCountPrecip3d * 3 + 2] =
+                      vaporTeachingTracerZPrecip3d * 0.92;
+                    newbornDropletActiveCountPrecip3d++;
+                  }
+                }
+                vaporTeachingTracerGeometryPrecip3d.setDrawRange(0, vaporTeachingTracerActiveCountPrecip3d);
+                vaporTeachingTracerGeometryPrecip3d.attributes.position.needsUpdate = true;
+                newbornDropletGeometryPrecip3d.setDrawRange(0, newbornDropletActiveCountPrecip3d);
+                newbornDropletGeometryPrecip3d.attributes.position.needsUpdate = true;
+                vaporTeachingTracersPrecip3d.visible = cloudFormationGroupPrecip3d.visible;
+                newbornDropletsPrecip3d.visible = cloudFormationGroupPrecip3d.visible && newbornDropletActiveCountPrecip3d > 0;
+                var condensationPulsePrecip3d = motionReducedPrecip3d
+                  ? 1 : 1 + Math.sin(microphysicsTimePrecip3d * 0.72) * 0.024;
+                condensationLevelHaloPrecip3d.scale.set(1.18 * condensationPulsePrecip3d,
+                  0.52 * condensationPulsePrecip3d, 1);
+                condensationLevelMarkersPrecip3d.rotation.y = motionReducedPrecip3d
+                  ? 0 : microphysicsTimePrecip3d * 0.035;
+                condensationScudSpritesPrecip3d.forEach(function(condensationScudSprite3d) {
+                  var condensationScudProgress3d = motionReducedPrecip3d
+                    ? condensationScudSprite3d.userData.phase
+                    : (condensationScudSprite3d.userData.phase + microphysicsTimePrecip3d * 0.055) % 1;
+                  condensationScudSprite3d.position.x = condensationScudSprite3d.userData.baseX +
+                    Math.sin(microphysicsTimePrecip3d * 0.21 + condensationScudSprite3d.userData.phase * 7) * 0.055;
+                  condensationScudSprite3d.position.y = condensationScudSprite3d.userData.baseY +
+                    condensationScudProgress3d * 0.24;
+                  condensationScudSprite3d.scale.set(
+                    condensationScudSprite3d.userData.baseScaleX * (0.86 + condensationScudProgress3d * 0.24),
+                    condensationScudSprite3d.userData.baseScaleY * (0.84 + condensationScudProgress3d * 0.2),
+                    1
+                  );
+                  condensationScudSprite3d.material.opacity = condensationScudSprite3d.userData.baseOpacity *
+                    (0.42 + Math.sin(condensationScudProgress3d * Math.PI) * 0.58);
+                });
+
+                var warmCoalescenceStrengthUpdatePrecip3d = cfg3d.tempC > 0
+                  ? Math.max(0, Math.min(1, (microphysicsGrowthPrecip3d - 0.3) / 0.48)) : 0;
+                if (warmCoalescenceStrengthUpdatePrecip3d > 0.025) {
+                  for (var coalescenceMotionIndexPrecip3d = 0; coalescenceMotionIndexPrecip3d < coalescencePairCountPrecip3d; coalescenceMotionIndexPrecip3d++) {
+                    var coalescenceMotionSeedPrecip3d = coalescenceSeedsPrecip3d[coalescenceMotionIndexPrecip3d];
+                    var coalescenceCyclePrecip3d = (coalescenceMotionSeedPrecip3d.phase +
+                      microphysicsTimePrecip3d * (0.095 + microphysicsLiftPrecip3d * 0.055)) % 1;
+                    var coalescenceEasePrecip3d = coalescenceCyclePrecip3d * coalescenceCyclePrecip3d *
+                      (3 - 2 * coalescenceCyclePrecip3d);
+                    var coalescenceAngleUpdatePrecip3d = coalescenceMotionSeedPrecip3d.angle +
+                      microphysicsTimePrecip3d * 0.12;
+                    var coalescenceSeparationPrecip3d = 0.19 - coalescenceEasePrecip3d * 0.16;
+                    var coalescenceDxPrecip3d = Math.cos(coalescenceAngleUpdatePrecip3d) * coalescenceSeparationPrecip3d;
+                    var coalescenceDyPrecip3d = Math.sin(coalescenceAngleUpdatePrecip3d) * coalescenceSeparationPrecip3d * 0.55;
+                    var coalescenceDzPrecip3d = Math.sin(coalescenceAngleUpdatePrecip3d * 0.71) * coalescenceSeparationPrecip3d * 0.48;
+                    var coalescenceLineOffsetPrecip3d = coalescenceMotionIndexPrecip3d * 6;
+                    coalescenceLinePositionsPrecip3d[coalescenceLineOffsetPrecip3d] = coalescenceMotionSeedPrecip3d.x - coalescenceDxPrecip3d;
+                    coalescenceLinePositionsPrecip3d[coalescenceLineOffsetPrecip3d + 1] = coalescenceMotionSeedPrecip3d.y - coalescenceDyPrecip3d;
+                    coalescenceLinePositionsPrecip3d[coalescenceLineOffsetPrecip3d + 2] = coalescenceMotionSeedPrecip3d.z - coalescenceDzPrecip3d;
+                    coalescenceLinePositionsPrecip3d[coalescenceLineOffsetPrecip3d + 3] = coalescenceMotionSeedPrecip3d.x + coalescenceDxPrecip3d;
+                    coalescenceLinePositionsPrecip3d[coalescenceLineOffsetPrecip3d + 4] = coalescenceMotionSeedPrecip3d.y + coalescenceDyPrecip3d;
+                    coalescenceLinePositionsPrecip3d[coalescenceLineOffsetPrecip3d + 5] = coalescenceMotionSeedPrecip3d.z + coalescenceDzPrecip3d;
+                    coalescenceCollectorPositionsPrecip3d[coalescenceMotionIndexPrecip3d * 3] = coalescenceMotionSeedPrecip3d.x;
+                    coalescenceCollectorPositionsPrecip3d[coalescenceMotionIndexPrecip3d * 3 + 1] =
+                      coalescenceMotionSeedPrecip3d.y - Math.max(0, coalescenceCyclePrecip3d - 0.72) * 0.32;
+                    coalescenceCollectorPositionsPrecip3d[coalescenceMotionIndexPrecip3d * 3 + 2] = coalescenceMotionSeedPrecip3d.z;
+                  }
+                  coalescenceLineGeometryPrecip3d.attributes.position.needsUpdate = true;
+                  coalescenceCollectorGeometryPrecip3d.attributes.position.needsUpdate = true;
+                  coalescenceLinesPrecip3d.visible = true;
+                  coalescenceCollectorDropsPrecip3d.visible = true;
+                } else {
+                  coalescenceLinesPrecip3d.visible = false;
+                  coalescenceCollectorDropsPrecip3d.visible = false;
+                }
+                for (var particleIndex3d = 0; particleIndex3d < activeCount3d; particleIndex3d++) {
                   var seed3d = precipitationSeeds3d[particleIndex3d];
                   var progress3d = (seed3d.phase + time3d * baseFallSpeed3d * (0.72 + (seed3d.z + 0.5) * 0.5)) % 1;
                   var drift3d = (cfg3d.wind / 40) * (cfg3d.windDirection === 'west' ? -1 : 1);
@@ -6164,24 +7528,144 @@ const d = labToolData.waterCycle || {};
                   var z3d = seed3d.z * 2.1;
                   var fallBottom3d = type3d === 'virga' ? -0.55 - (cfg3d.lowLevelHumidity / 100) * 1.12 : -2.03;
                   var y3d = 0.95 - progress3d * (0.95 - fallBottom3d);
-                  if (type3d === 'snow' || type3d === 'mix') x3d += Math.sin(time3d * 1.2 + seed3d.phase * 7) * 0.08;
+                  var particlePhasePrecip3d = wcPrecipPhaseFromModel(modelPrecip3d, progress3d);
+                  if (particlePhasePrecip3d === 'virga') particlePhasePrecip3d = cfg3d.tempC <= 0 ? 'snow' : 'rain';
+                  var phaseBucketKeyPrecip3d = precipPhaseBucketKeyPrecip3d(particlePhasePrecip3d, particleIndex3d);
+                  if (phaseBucketKeyPrecip3d === 'snow') {
+                    x3d += Math.sin(time3d * 1.2 + seed3d.phase * 7) * 0.09;
+                    z3d += Math.cos(time3d * 0.86 + seed3d.phase * 9) * 0.045;
+                  }
                   var leewardParticle3d = cfg3d.terrain === 'mountains' && cfg3d.wind > 2 &&
                     (cfg3d.windDirection === 'west' ? x3d < -0.62 : x3d > 0.62);
-                  if (leewardParticle3d && ((particleIndex3d * 17) % 10) < 6) y3d = -9;
-                  precipPositions3d[particleIndex3d * 3] = x3d;
-                  precipPositions3d[particleIndex3d * 3 + 1] = y3d;
-                  precipPositions3d[particleIndex3d * 3 + 2] = z3d;
-                  precipLinePositions3d[particleIndex3d * 6] = x3d;
-                  precipLinePositions3d[particleIndex3d * 6 + 1] = y3d + 0.13;
-                  precipLinePositions3d[particleIndex3d * 6 + 2] = z3d;
-                  precipLinePositions3d[particleIndex3d * 6 + 3] = x3d + drift3d * 0.035;
-                  precipLinePositions3d[particleIndex3d * 6 + 4] = y3d - (type3d === 'hail' ? 0.08 : 0.28);
-                  precipLinePositions3d[particleIndex3d * 6 + 5] = z3d;
+                  if (leewardParticle3d && ((particleIndex3d * 17) % 10) < 6) continue;
+                  if (type3d === 'virga') {
+                    var virgaEvaporationProgressPrecip3d = Math.max(0, Math.min(1,
+                      (progress3d - virgaEvaporationOnsetUpdatePrecip3d) /
+                      Math.max(0.1, 1 - virgaEvaporationOnsetUpdatePrecip3d)
+                    ));
+                    var virgaParticleSurvivalPrecip3d = 1 - Math.pow(virgaEvaporationProgressPrecip3d, 0.78);
+                    var virgaParticleSamplePrecip3d = ((particleIndex3d * 67) % 101) / 101;
+                    if (virgaParticleSamplePrecip3d > virgaParticleSurvivalPrecip3d) continue;
+                    if (virgaEvaporationProgressPrecip3d > 0.12 &&
+                        virgaFragmentActiveCountPrecip3d < virgaFragmentCapacityPrecip3d) {
+                      var virgaFragmentScatterPrecip3d = virgaEvaporationProgressPrecip3d * 0.18;
+                      virgaFragmentPositionsPrecip3d[virgaFragmentActiveCountPrecip3d * 3] = x3d +
+                        Math.sin(particleIndex3d * 1.73 + time3d * 0.46) * virgaFragmentScatterPrecip3d;
+                      virgaFragmentPositionsPrecip3d[virgaFragmentActiveCountPrecip3d * 3 + 1] = y3d;
+                      virgaFragmentPositionsPrecip3d[virgaFragmentActiveCountPrecip3d * 3 + 2] = z3d +
+                        Math.cos(particleIndex3d * 1.31 + time3d * 0.38) * virgaFragmentScatterPrecip3d * 0.65;
+                      virgaFragmentActiveCountPrecip3d++;
+                      continue;
+                    }
+                  }
+                  var phaseSystemPrecip3d = precipPhaseSystemsPrecip3d[phaseBucketKeyPrecip3d];
+                  var phaseParticleIndexPrecip3d = precipPhaseCountsPrecip3d[phaseBucketKeyPrecip3d]++;
+                  phaseSystemPrecip3d.positions[phaseParticleIndexPrecip3d * 3] = x3d;
+                  phaseSystemPrecip3d.positions[phaseParticleIndexPrecip3d * 3 + 1] = y3d;
+                  phaseSystemPrecip3d.positions[phaseParticleIndexPrecip3d * 3 + 2] = z3d;
+                  if (phaseSystemPrecip3d.style.lineLength > 0) {
+                    phaseSystemPrecip3d.linePositions[phaseParticleIndexPrecip3d * 6] = x3d;
+                    phaseSystemPrecip3d.linePositions[phaseParticleIndexPrecip3d * 6 + 1] = y3d + 0.1;
+                    phaseSystemPrecip3d.linePositions[phaseParticleIndexPrecip3d * 6 + 2] = z3d;
+                    phaseSystemPrecip3d.linePositions[phaseParticleIndexPrecip3d * 6 + 3] = x3d + drift3d * 0.035;
+                    phaseSystemPrecip3d.linePositions[phaseParticleIndexPrecip3d * 6 + 4] = y3d - phaseSystemPrecip3d.style.lineLength;
+                    phaseSystemPrecip3d.linePositions[phaseParticleIndexPrecip3d * 6 + 5] = z3d;
+                  }
                 }
-                precipPointGeometry3d.setDrawRange(0, activeCount3d);
-                precipLineGeometry3d.setDrawRange(0, activeCount3d * 2);
-                precipPointGeometry3d.attributes.position.needsUpdate = true;
-                precipLineGeometry3d.attributes.position.needsUpdate = true;
+                precipPhaseKeysPrecip3d.forEach(function(phaseKeyPrecip3d) {
+                  var phaseSystem3d = precipPhaseSystemsPrecip3d[phaseKeyPrecip3d];
+                  var phaseCount3d = precipPhaseCountsPrecip3d[phaseKeyPrecip3d];
+                  phaseSystem3d.pointGeometry.setDrawRange(0, phaseCount3d);
+                  phaseSystem3d.lineGeometry.setDrawRange(0, phaseCount3d * 2);
+                  phaseSystem3d.pointGeometry.attributes.position.needsUpdate = true;
+                  phaseSystem3d.lineGeometry.attributes.position.needsUpdate = true;
+                  phaseSystem3d.points.visible = phaseCount3d > 0;
+                  phaseSystem3d.lines.visible = phaseCount3d > 0 && phaseSystem3d.style.lineLength > 0;
+                });
+                virgaFragmentGeometryPrecip3d.setDrawRange(0, virgaFragmentActiveCountPrecip3d);
+                virgaFragmentGeometryPrecip3d.attributes.position.needsUpdate = true;
+                virgaFragmentsPrecip3d.visible = type3d === 'virga' && virgaFragmentActiveCountPrecip3d > 0;
+                if (type3d === 'virga') {
+                  var virgaFallBottomUpdatePrecip3d = -0.55 - (cfg3d.lowLevelHumidity / 100) * 1.12;
+                  var virgaVaporActiveCountPrecip3d = Math.max(24, Math.min(virgaVaporTracerCountPrecip3d,
+                    Math.round(38 + virgaDrynessUpdatePrecip3d * 50)));
+                  var virgaVaporTimePrecip3d = motionReducedPrecip3d ? 0 : time3d;
+                  var virgaWindSignPrecip3d = cfg3d.windDirection === 'west' ? -1 : 1;
+                  for (var virgaVaporIndexPrecip3d = 0; virgaVaporIndexPrecip3d < virgaVaporActiveCountPrecip3d; virgaVaporIndexPrecip3d++) {
+                    var virgaVaporSeedPrecip3d = virgaVaporTracerSeedsPrecip3d[virgaVaporIndexPrecip3d];
+                    var virgaVaporProgressPrecip3d = (virgaVaporSeedPrecip3d.phase +
+                      virgaVaporTimePrecip3d * (0.026 + virgaDrynessUpdatePrecip3d * 0.024) * virgaVaporSeedPrecip3d.speed) % 1;
+                    var virgaVaporRisePrecip3d = virgaVaporProgressPrecip3d * (0.52 + virgaDrynessUpdatePrecip3d * 0.62);
+                    virgaVaporTracerPositionsPrecip3d[virgaVaporIndexPrecip3d * 3] =
+                      virgaVaporSeedPrecip3d.x * (2.45 + cfg3d.cloudDepth * 0.08) +
+                      virgaWindSignPrecip3d * cfg3d.wind / 42 * (0.72 + virgaVaporProgressPrecip3d * 0.65) +
+                      Math.sin(virgaVaporIndexPrecip3d * 1.8 + virgaVaporTimePrecip3d * 0.5) * 0.08;
+                    virgaVaporTracerPositionsPrecip3d[virgaVaporIndexPrecip3d * 3 + 1] =
+                      virgaFallBottomUpdatePrecip3d + 0.03 + virgaVaporRisePrecip3d;
+                    virgaVaporTracerPositionsPrecip3d[virgaVaporIndexPrecip3d * 3 + 2] =
+                      virgaVaporSeedPrecip3d.z * 1.9 +
+                      Math.cos(virgaVaporIndexPrecip3d * 1.47 + virgaVaporTimePrecip3d * 0.42) * 0.06;
+                  }
+                  virgaVaporTracerGeometryPrecip3d.setDrawRange(0, virgaVaporActiveCountPrecip3d);
+                  virgaVaporTracerGeometryPrecip3d.attributes.position.needsUpdate = true;
+                  virgaVaporTracersPrecip3d.visible = true;
+                  virgaDryHazeSpritesPrecip3d.forEach(function(virgaDryHazeSprite3d) {
+                    virgaDryHazeSprite3d.position.x = virgaDryHazeSprite3d.userData.baseX +
+                      (motionReducedPrecip3d ? 0 : Math.sin(virgaVaporTimePrecip3d * 0.16 + virgaDryHazeSprite3d.userData.phase) * 0.055);
+                    virgaDryHazeSprite3d.material.opacity = virgaDryHazeSprite3d.userData.baseOpacity *
+                      (motionReducedPrecip3d ? 1 : 0.93 + Math.sin(virgaVaporTimePrecip3d * 0.2 + virgaDryHazeSprite3d.userData.phase) * 0.07);
+                  });
+                  var virgaRingPulsePrecip3d = motionReducedPrecip3d ? 1 : 1 + Math.sin(virgaVaporTimePrecip3d * 0.62) * 0.025;
+                  virgaEvaporationRingPrecip3d.scale.setScalar(
+                    virgaEvaporationRingPrecip3d.userData.baseScale * virgaRingPulsePrecip3d
+                  );
+                } else {
+                  virgaVaporTracerGeometryPrecip3d.setDrawRange(0, 0);
+                  virgaVaporTracersPrecip3d.visible = false;
+                }
+                if (orographicFlowGroupPrecip3d.visible) {
+                  var orographicTimePrecip3d = motionReducedPrecip3d ? 0 : time3d;
+                  var orographicLiftPoint3d = new THREE.Vector3();
+                  var orographicDescentPoint3d = new THREE.Vector3();
+                  for (var orographicMarkerIndex3d = 0; orographicMarkerIndex3d < orographicMarkerCountPrecip3d; orographicMarkerIndex3d++) {
+                    var orographicCurveIndex3d = orographicMarkerIndex3d % orographicLiftCurvesPrecip3d.length;
+                    var orographicLiftProgress3d = (orographicMarkerIndex3d / orographicMarkerCountPrecip3d +
+                      orographicTimePrecip3d * (0.075 + cfg3d.wind / 520)) % 1;
+                    var orographicDescentProgress3d = (orographicMarkerIndex3d / orographicMarkerCountPrecip3d +
+                      orographicTimePrecip3d * (0.09 + cfg3d.wind / 470) + 0.16) % 1;
+                    if (!isFinite(orographicLiftProgress3d)) orographicLiftProgress3d = orographicMarkerIndex3d / orographicMarkerCountPrecip3d;
+                    if (!isFinite(orographicDescentProgress3d)) orographicDescentProgress3d = orographicMarkerIndex3d / orographicMarkerCountPrecip3d;
+                    orographicLiftProgress3d = Math.max(0.001, Math.min(0.999, orographicLiftProgress3d));
+                    orographicDescentProgress3d = Math.max(0.001, Math.min(0.999, orographicDescentProgress3d));
+                    orographicLiftCurvesPrecip3d[orographicCurveIndex3d].getPoint(orographicLiftProgress3d, orographicLiftPoint3d);
+                    orographicDescentCurvesPrecip3d[orographicCurveIndex3d].getPoint(orographicDescentProgress3d, orographicDescentPoint3d);
+                    orographicLiftMarkerPositionsPrecip3d[orographicMarkerIndex3d * 3] = orographicLiftPoint3d.x;
+                    orographicLiftMarkerPositionsPrecip3d[orographicMarkerIndex3d * 3 + 1] = orographicLiftPoint3d.y;
+                    orographicLiftMarkerPositionsPrecip3d[orographicMarkerIndex3d * 3 + 2] = orographicLiftPoint3d.z;
+                    orographicDescentMarkerPositionsPrecip3d[orographicMarkerIndex3d * 3] = orographicDescentPoint3d.x;
+                    orographicDescentMarkerPositionsPrecip3d[orographicMarkerIndex3d * 3 + 1] = orographicDescentPoint3d.y;
+                    orographicDescentMarkerPositionsPrecip3d[orographicMarkerIndex3d * 3 + 2] = orographicDescentPoint3d.z;
+                  }
+                  orographicLiftMarkerGeometryPrecip3d.attributes.position.needsUpdate = true;
+                  orographicDescentMarkerGeometryPrecip3d.attributes.position.needsUpdate = true;
+                  for (var mistIndexPrecip3d = 0; mistIndexPrecip3d < windwardMistCountPrecip3d; mistIndexPrecip3d++) {
+                    var mistSeedPrecip3d = windwardMistSeedsPrecip3d[mistIndexPrecip3d];
+                    var mistProgressPrecip3d = (mistSeedPrecip3d.phase + orographicTimePrecip3d * 0.045) % 1;
+                    windwardMistPositionsPrecip3d[mistIndexPrecip3d * 3] = -3.25 + mistProgressPrecip3d * 2.72;
+                    windwardMistPositionsPrecip3d[mistIndexPrecip3d * 3 + 1] = -1.18 + mistProgressPrecip3d * 2.02 +
+                      mistSeedPrecip3d.lift * 0.18 + Math.sin(mistProgressPrecip3d * Math.PI * 3 + mistSeedPrecip3d.phase * 8) * 0.08;
+                    windwardMistPositionsPrecip3d[mistIndexPrecip3d * 3 + 2] = 0.22 + mistSeedPrecip3d.z;
+                  }
+                  windwardMistGeometryPrecip3d.attributes.position.needsUpdate = true;
+                  for (var hazeIndexPrecip3d = 0; hazeIndexPrecip3d < leewardHazeCountPrecip3d; hazeIndexPrecip3d++) {
+                    var hazeSeedPrecip3d = leewardHazeSeedsPrecip3d[hazeIndexPrecip3d];
+                    var hazeProgressPrecip3d = (hazeSeedPrecip3d.phase + orographicTimePrecip3d * 0.028) % 1;
+                    leewardHazePositionsPrecip3d[hazeIndexPrecip3d * 3] = 0.78 + hazeProgressPrecip3d * 2.65;
+                    leewardHazePositionsPrecip3d[hazeIndexPrecip3d * 3 + 1] = -1.56 + hazeSeedPrecip3d.rise * 0.48 + hazeProgressPrecip3d * 0.26;
+                    leewardHazePositionsPrecip3d[hazeIndexPrecip3d * 3 + 2] = 0.18 + hazeSeedPrecip3d.z;
+                  }
+                  leewardHazeGeometryPrecip3d.attributes.position.needsUpdate = true;
+                }
                 for (var markerIndex3d = 0; markerIndex3d < 34; markerIndex3d++) {
                   var markerSeed3d = (markerIndex3d * 0.19) % 1;
                   var markerAngle3d = markerSeed3d * Math.PI * 6 + markerIndex3d;
@@ -6201,6 +7685,79 @@ const d = labToolData.waterCycle || {};
                   windMarkerPositionsPrecip3d[windMarkerIndex3d * 3 + 2] = 0.95 + windBandPrecip3d * 0.18;
                 }
                 windMarkerGeometryPrecip3d.attributes.position.needsUpdate = true;
+                coastWaveLinesPrecip3d.forEach(function(coastWaveLine3d, coastWaveLineIndex3d) {
+                  coastWaveLine3d.material.opacity = coastTerrainGroupPrecip3d.visible
+                    ? 0.12 + (motionReducedPrecip3d ? 0 : (Math.sin(time3d * 0.38 + coastWaveLineIndex3d) + 1) * 0.035) : 0;
+                  coastWaveLine3d.position.x = motionReducedPrecip3d ? 0 :
+                    Math.sin(time3d * 0.22 + coastWaveLineIndex3d * 0.8) * 0.025;
+                });
+                coastFoamPrecip3d.material.opacity = coastTerrainGroupPrecip3d.visible
+                  ? 0.7 + (motionReducedPrecip3d ? 0 : Math.sin(time3d * 0.45) * 0.08) : 0;
+                for (var coastFoamMarkerIndex3d = 0; coastFoamMarkerIndex3d < coastFoamMarkerCountPrecip3d; coastFoamMarkerIndex3d++) {
+                  var coastFoamProgress3d = motionReducedPrecip3d
+                    ? coastFoamMarkerIndex3d / coastFoamMarkerCountPrecip3d
+                    : (coastFoamMarkerIndex3d / coastFoamMarkerCountPrecip3d + time3d * 0.035) % 1;
+                  var coastFoamZPrecip3d = -3.2 + coastFoamProgress3d * 6.4;
+                  coastFoamMarkerPositionsPrecip3d[coastFoamMarkerIndex3d * 3] = coastBoundaryXPrecip3d(coastFoamZPrecip3d) - 0.04 +
+                    (motionReducedPrecip3d ? 0 : Math.sin(time3d * 0.72 + coastFoamMarkerIndex3d) * 0.035);
+                  coastFoamMarkerPositionsPrecip3d[coastFoamMarkerIndex3d * 3 + 1] = -2.045;
+                  coastFoamMarkerPositionsPrecip3d[coastFoamMarkerIndex3d * 3 + 2] = coastFoamZPrecip3d;
+                }
+                coastFoamMarkerGeometryPrecip3d.attributes.position.needsUpdate = true;
+                var cloudVolumeTimePrecip3d = motionReducedPrecip3d ? 0 : time3d;
+                var cloudVolumeWindSignPrecip3d = cfg3d.windDirection === 'west' ? -1 : 1;
+                cloudInteriorDepthSpritesPrecip3d.forEach(function(cloudInteriorDepthSprite3d) {
+                  var cloudInteriorDepthPhase3d = cloudVolumeTimePrecip3d *
+                    (0.075 + cfg3d.wind / 920) + cloudInteriorDepthSprite3d.userData.phase;
+                  var cloudInteriorDepthBreath3d = motionReducedPrecip3d
+                    ? 1 : 1 + Math.sin(cloudInteriorDepthPhase3d * 0.74) * 0.022;
+                  cloudInteriorDepthSprite3d.position.x = cloudInteriorDepthSprite3d.userData.baseX +
+                    cloudVolumeWindSignPrecip3d * Math.sin(cloudInteriorDepthPhase3d) * 0.045;
+                  cloudInteriorDepthSprite3d.position.y = cloudInteriorDepthSprite3d.userData.baseY +
+                    Math.cos(cloudInteriorDepthPhase3d * 0.81) * 0.026;
+                  cloudInteriorDepthSprite3d.scale.set(
+                    cloudInteriorDepthSprite3d.userData.baseScaleX * cloudInteriorDepthBreath3d,
+                    cloudInteriorDepthSprite3d.userData.baseScaleY * (2 - cloudInteriorDepthBreath3d),
+                    1
+                  );
+                  cloudInteriorDepthSprite3d.material.rotation = motionReducedPrecip3d
+                    ? 0 : Math.sin(cloudInteriorDepthPhase3d * 0.43) * 0.055;
+                  cloudInteriorDepthSprite3d.material.opacity = cloudInteriorDepthSprite3d.userData.baseOpacity *
+                    (motionReducedPrecip3d ? 1 : 0.93 + Math.sin(cloudInteriorDepthPhase3d * 0.59) * 0.07);
+                });
+                cloudBaseDeckSpritesPrecip3d.forEach(function(cloudBaseDeckSprite3d) {
+                  var cloudBaseDeckPhase3d = cloudVolumeTimePrecip3d * 0.12 + cloudBaseDeckSprite3d.userData.phase;
+                  cloudBaseDeckSprite3d.position.x = cloudBaseDeckSprite3d.userData.baseX +
+                    cloudVolumeWindSignPrecip3d * Math.sin(cloudBaseDeckPhase3d) * 0.035;
+                  cloudBaseDeckSprite3d.position.y = cloudBaseDeckSprite3d.userData.baseY +
+                    Math.sin(cloudBaseDeckPhase3d * 0.66) * 0.016;
+                  cloudBaseDeckSprite3d.material.rotation = motionReducedPrecip3d
+                    ? 0 : Math.sin(cloudBaseDeckPhase3d * 0.42) * 0.025;
+                  cloudBaseDeckSprite3d.material.opacity = cloudBaseDeckSprite3d.userData.baseOpacity *
+                    (motionReducedPrecip3d ? 1 : 0.94 + Math.cos(cloudBaseDeckPhase3d * 0.78) * 0.06);
+                });
+                cloudSilverLiningSpritesPrecip3d.forEach(function(cloudSilverLiningSprite3d) {
+                  var cloudSilverLiningPhase3d = cloudVolumeTimePrecip3d * 0.09 +
+                    cloudSilverLiningSprite3d.userData.phase;
+                  cloudSilverLiningSprite3d.position.x = cloudSilverLiningSprite3d.userData.baseX +
+                    Math.sin(cloudSilverLiningPhase3d) * 0.028;
+                  cloudSilverLiningSprite3d.position.y = cloudSilverLiningSprite3d.userData.baseY +
+                    Math.cos(cloudSilverLiningPhase3d * 0.72) * 0.022;
+                  cloudSilverLiningSprite3d.material.opacity = cloudSilverLiningSprite3d.userData.baseOpacity *
+                    (motionReducedPrecip3d ? 1 : 0.9 + Math.sin(cloudSilverLiningPhase3d * 0.83) * 0.1);
+                });
+                cloudAnvilVeilSpritesPrecip3d.forEach(function(cloudAnvilVeilSprite3d) {
+                  var cloudAnvilVeilPhase3d = cloudVolumeTimePrecip3d * 0.065 +
+                    cloudAnvilVeilSprite3d.userData.phase;
+                  cloudAnvilVeilSprite3d.position.x = cloudAnvilVeilSprite3d.userData.baseX +
+                    cloudVolumeWindSignPrecip3d * Math.sin(cloudAnvilVeilPhase3d) * 0.038;
+                  cloudAnvilVeilSprite3d.position.y = cloudAnvilVeilSprite3d.userData.baseY +
+                    Math.cos(cloudAnvilVeilPhase3d * 0.72) * 0.018;
+                  cloudAnvilVeilSprite3d.material.rotation = motionReducedPrecip3d
+                    ? 0 : Math.sin(cloudAnvilVeilPhase3d * 0.44) * 0.018;
+                  cloudAnvilVeilSprite3d.material.opacity = cloudAnvilVeilSprite3d.userData.baseOpacity *
+                    (motionReducedPrecip3d ? 1 : 0.94 + Math.sin(cloudAnvilVeilPhase3d * 0.8) * 0.06);
+                });
                 cloudPuffsPrecip3d.forEach(function(puff3d) {
                   puff3d.position.y = puff3d.userData.baseY + (motionReducedPrecip3d ? 0 : Math.sin(time3d * 0.34 + puff3d.userData.phase) * 0.035);
                   puff3d.rotation.y = motionReducedPrecip3d ? 0 : time3d * 0.012 + puff3d.userData.phase * 0.08;
@@ -6227,7 +7784,7 @@ const d = labToolData.waterCycle || {};
                   var impactScale3d = (0.3 + impactProgress3d * (1.12 + intensity3d * 0.38)) * impactRipple3d.userData.size;
                   impactRipple3d.scale.setScalar(impactScale3d);
                   impactRipple3d.material.opacity = impactRippleGroupPrecip3d.visible
-                    ? (1 - impactProgress3d) * (0.09 + intensity3d * 0.19) : 0;
+                    ? (1 - impactProgress3d) * (0.17 + intensity3d * 0.28) : 0;
                 });
                 var stormEligible3d = modelPrecip3d.lightningEligible && modelPrecip3d.config.showStormAnatomy;
                 var studyStep3d = modelPrecip3d.config.lightningStudyStep;
@@ -6250,7 +7807,21 @@ const d = labToolData.waterCycle || {};
                   : studyStep3d === 'charge-separation' && modelPrecip3d.config.showStormAnatomy ? 0.075 : 0;
                 lightningLightPrecip3d.intensity = flash3d ? 2.1 : 0;
                 cloudLightPrecip3d.intensity = 0.7 + cfg3d.moisture / 100 * 1.3 + (flash3d ? 0.45 : 0);
-                horizonPrecip3d.material.color.setHex(flash3d ? 0xdff7ff : 0xffffff);
+                var cloudFocusAtmospherePrecip3d = cfg3d.cameraFocus === 'cloud';
+                horizonPrecip3d.material.color.setHex(
+                  flash3d ? 0xdff7ff : cloudFocusAtmospherePrecip3d ? 0x385d6b : 0xffffff
+                );
+                scenePrecip3d.background.setHex(
+                  cloudFocusAtmospherePrecip3d
+                    ? (isDark ? 0x01070d : 0x03131f)
+                    : (isDark ? 0x020617 : 0x061a2c)
+                );
+                scenePrecip3d.fog.color.setHex(
+                  cloudFocusAtmospherePrecip3d
+                    ? (isDark ? 0x071722 : 0x123b4b)
+                    : (isDark ? 0x020617 : 0x08283b)
+                );
+                scenePrecip3d.fog.density = cloudFocusAtmospherePrecip3d ? 0.038 : 0.055;
                 lightningHaloPrecip3d.material.opacity = flash3d ? 0.22 : 0;
                 if (flash3d) lightningHaloPrecip3d.scale.setScalar(1 + Math.sin(time3d * 3) * 0.12);
                 var accumulationGlow3d = Math.max(
@@ -6362,7 +7933,7 @@ const d = labToolData.waterCycle || {};
                 [cloudSoftTexturePrecip3d, softDotTexturePrecip3d, airflowTexturePrecip3d,
                   rainDropTexturePrecip3d, snowFlakeTexturePrecip3d, hailStoneTexturePrecip3d,
                   positiveChargeTexturePrecip3d, negativeChargeTexturePrecip3d,
-                  atmosphereTexturePrecip3d].forEach(function(texture3d) {
+                  atmosphereTexturePrecip3d].concat(cloudDensityTexturesPrecip3d).forEach(function(texture3d) {
                   if (texture3d && texture3d.dispose) texture3d.dispose();
                 });
                 renderer3d.dispose();
@@ -6390,7 +7961,8 @@ const d = labToolData.waterCycle || {};
 
             var precipCanvasLabel = '2.5D precipitation chamber. ' + precipModel.displayLabel + '. ' +
               precipModel.formationLabel + ', ' + precipModel.cloudPhase + ', ' + precipModel.profileLabel + '. ' +
-              precipModel.phasePathLabel + '. ' + precipModel.thunder.explanation + ' ' +
+              precipModel.phasePathLabel + '. Faint cyan points are teaching tracers for invisible water vapor rising to the modeled saturation boundary, where visible cloud droplets form. ' +
+              precipModel.thunder.explanation + ' ' +
               (lightningStudyActive
                 ? 'Static study snapshot. Thunder audio and automatic timing are paused; choose Auto to resume.'
                 : precipModel.thunder.caption) +
@@ -6398,6 +7970,10 @@ const d = labToolData.waterCycle || {};
               'Ground accumulation indices: snow ' + precipModel.lifecycle.accumulation.snow + ', glaze ' + precipModel.lifecycle.accumulation.glaze + ', hail ' + precipModel.lifecycle.accumulation.hail + ', puddling ' + precipModel.lifecycle.accumulation.puddling + ', runoff ' + precipModel.lifecycle.accumulation.runoff + '. Electrical activity index ' + precipModel.electrificationIndex + ' out of 100. ' +
               'Temperature profile: cloud ' + precipConfig.tempC.toFixed(0) + ' degrees Celsius, middle atmosphere ' +
               precipConfig.midLevelTempC.toFixed(0) + ' degrees Celsius, surface ' + precipConfig.surfaceTempC.toFixed(0) + ' degrees Celsius. ' +
+              (precipModel.thermalLayers.crossings.length
+                ? 'Falling particles visibly change shape and phase at each modeled zero-degree crossing. ' : '') +
+              (precipModel.visualType === 'virga'
+                ? 'Drops visibly shrink and fragment in the dry lower layer; faint gold teaching tracers represent invisible water vapor returning to the air. ' : '') +
               'Cloud moisture ' + precipConfig.moisture.toFixed(0) + ' percent, updraft ' +
               precipConfig.updraft.toFixed(0) + ' out of 100, below-cloud humidity ' +
               precipConfig.lowLevelHumidity.toFixed(0) + ' percent, wind ' + precipConfig.wind.toFixed(0) +
@@ -6406,7 +7982,7 @@ const d = labToolData.waterCycle || {};
                 ? 'Guided lightning phase: ' + activeLightningStudy.label + '. ' + lightningStudyCopy + ' '
                 : 'Lightning sequence uses automatic modeled timing. ') +
               (precipConfig.terrain === 'mountains'
-                ? 'Air rises on the windward slope, while precipitation thins in the leeward rain shadow.'
+                ? 'Moist air rises and condenses on the windward slope; descending air warms and dries over the leeward rain shadow.'
                 : '') + (precipConfig.showStormAnatomy
                   ? (precipModel.stormAnatomy.chargeSeparation.active
                     ? ' Storm anatomy: positive small ice crystals occupy the upper cloud, negative graupel occupies the lower cloud. '
@@ -6414,14 +7990,33 @@ const d = labToolData.waterCycle || {};
                     precipModel.stormAnatomy.lightningPathway.label + '. ' + precipModel.stormAnatomy.thunderWave.label + '.'
                   : '');
 
+            var precip2dScienceCopy = 'Cloud-formation overlay: faint cyan points are teaching tracers for invisible water vapor. Rising air cools toward saturation at the dotted cloud base, where visible droplets form on tiny nuclei. ' +
+              (precipConfig.tempC > 0
+                ? 'Paired paths show warm-cloud droplets colliding and coalescing into larger collector drops.'
+                : 'Crystal glints show the ice-growth pathway in this subfreezing cloud.') +
+              ' Particles are enlarged for teaching and are not to scale.';
+
             var precip3dScienceCopy = precipConfig.cameraFocus === 'cloud'
-              ? 'Inside-cloud lens: vapor condenses on tiny nuclei, droplets collide and grow, and ice interacting with graupel can separate electric charge. Updraft strength controls how long particles remain aloft.'
+              ? 'Inside-cloud lens: faint cyan points are teaching tracers for invisible water vapor. Rising air cools toward saturation at the glowing cloud base; vapor condenses on tiny nuclei into visible droplets and releases latent heat. ' +
+                (precipConfig.tempC > 0
+                  ? 'Paired paths converge as warm-cloud droplets collide and coalesce into larger collector drops.'
+                  : 'In this subfreezing cloud, crystal glints show ice growth while droplets may remain supercooled.') +
+                ' Soft near-and-far density layers reveal cloud depth, while the level underside marks the modeled saturation base. Updraft strength controls how long particles remain aloft. Particles are enlarged for teaching and are not to scale.'
               : precipConfig.cameraFocus === 'surface'
-                ? 'Surface-path lens: follow particles through every 0°C crossing. The floor shows modeled snow cover, ice glaze, hail, puddling, and runoff as the storm matures.' +
-                  (precipModel.reachesGround && ['rain', 'freezing-rain', 'hail', 'mix'].indexOf(precipModel.visualType) !== -1
-                    ? ' Expanding rings reveal individual surface impacts.' : '') +
-                  (precipConfig.terrain === 'mountains' ? ' Windward lift increases precipitation while the leeward side sits in a rain shadow.' : '')
-                : 'Whole-storm lens: soft cloud volume, horizontal wind, rising air, phase-change layers, falling particles, and surface accumulation are all tied to the current controls.';
+                ? (precipModel.visualType === 'virga'
+                  ? 'Dry-air lens: falling drops shrink into fine fragments and disappear before reaching the ground. The faint gold dots are teaching tracers for invisible water vapor mixing back into the air; virga produces no surface impacts or accumulation.'
+                  : 'Surface-path lens: follow particles through every 0°C crossing. Snowflakes, liquid drops, supercooled drops, and ice pellets now change shape at the glowing phase boundary. The floor shows modeled snow cover, ice glaze, hail, puddling, and runoff as the storm matures.' +
+                    (precipModel.reachesGround && ['rain', 'freezing-rain', 'hail', 'mix'].indexOf(precipModel.visualType) !== -1
+                      ? ' Expanding rings reveal individual surface impacts.' : '') +
+                    (precipConfig.terrain === 'mountains' ? ' Moist blue flow rises and condenses on the windward face; amber descending air warms and reveals the dry leeward rain shadow.' : '') +
+                    (precipConfig.terrain === 'coast' ? ' The curved beach separates ocean collection from runoff over land.' : ''))
+                : 'Whole-storm lens: layered billow volume, horizontal wind, rising air, phase-change layers, falling particles, and surface accumulation are all tied to the current controls.' +
+                  (precipModel.thermalLayers.crossings.length
+                    ? ' Watch particle symbols transform as they pass through each glowing 0°C layer.' : '') +
+                  (precipModel.visualType === 'virga'
+                    ? ' The amber dry layer shows where drops fragment and evaporate; gold molecular tracers represent the resulting invisible vapor.' : '') +
+                  (precipConfig.terrain === 'mountains'
+                    ? ' Windward moisture lift and leeward warming make the rain shadow visible in the landscape.' : '');
 
             function precipSlider(spec) {
               var value = precipConfig[spec.key];
@@ -6731,12 +8326,22 @@ const d = labToolData.waterCycle || {};
                           (precipModel.thermalLayers.crossings.length === 1 ? 'layer' : 'layers')
                         : 'No 0\u00B0C crossing')),
                     precipViewMode === '3d' && h('div', { className: 'wc-precip-3d-key', role: 'group', 'aria-label': '3D cloud chamber visual key' },
-                      h('span', null, h('i', { className: 'is-nuclei', 'aria-hidden': 'true' }), 'Nuclei + droplets'),
-                      h('span', null, h('i', { className: 'is-updraft', 'aria-hidden': 'true' }), 'Updraft'),
-                      h('span', null, h('i', { className: 'is-thermal', 'aria-hidden': 'true' }), '0°C layers'),
+                      h('span', null,
+                        h('i', { className: precipConfig.cameraFocus === 'cloud' ? 'is-condensation' : 'is-nuclei', 'aria-hidden': 'true' }),
+                        precipConfig.cameraFocus === 'cloud' ? 'Vapor tracer → droplets' : 'Nuclei + droplets'),
+                      precipConfig.cameraFocus === 'cloud' && precipConfig.tempC > 0 && precipModel.growthIndex >= 32 &&
+                        h('span', null, h('i', { className: 'is-coalescence', 'aria-hidden': 'true' }), 'Drops collide + merge'),
+                      h('span', { className: 'wc-precip-key-secondary' }, h('i', { className: 'is-updraft', 'aria-hidden': 'true' }), 'Updraft'),
+                      h('span', { className: 'wc-precip-key-secondary' }, h('i', { className: 'is-thermal', 'aria-hidden': 'true' }), '0°C layers'),
+                      precipModel.visualType === 'virga' &&
+                        h('span', null, h('i', { className: 'is-evaporation', 'aria-hidden': 'true' }), 'Drops → vapor tracer'),
+                      precipConfig.terrain === 'mountains' && precipConfig.wind > 2 &&
+                        h('span', null, h('i', { className: 'is-orographic', 'aria-hidden': 'true' }), 'Lift → dry shadow'),
                       precipConfig.showStormAnatomy && precipModel.lightningEligible &&
                         h('span', null, h('i', { className: 'is-charge', 'aria-hidden': 'true' }), 'Charge zones'),
-                      h('span', { className: 'wc-precip-3d-gesture' }, 'Drag to orbit · scroll to zoom'),
+                      h('span', { className: 'wc-precip-3d-gesture' },
+                        precipConfig.showStormAnatomy && precipModel.lightningEligible
+                          ? 'Orbit · zoom' : 'Drag to orbit · scroll to zoom'),
                       h('button', { type: 'button', className: 'wc-precip-3d-reset', onClick: function() {
                         if (precip3dCanvasNode && precip3dCanvasNode._wcPrecip3dResetCamera) precip3dCanvasNode._wcPrecip3dResetCamera();
                       }, 'aria-label': 'Reset the 3D cloud chamber camera' }, 'Reset view')),
@@ -6764,8 +8369,9 @@ const d = labToolData.waterCycle || {};
                         precipMotionReduced ? 'Static' : (precipConfig.paused ? 'Resume' : 'Pause'))
                     )
                   ),
-                  precipViewMode === '3d' && h('p', { className: 'wc-precip-3d-science', role: 'note',
-                    'data-camera-focus': precipConfig.cameraFocus }, precip3dScienceCopy),
+                  h('p', { className: 'wc-precip-3d-science', role: 'note',
+                    'data-camera-focus': precipViewMode === '3d' ? precipConfig.cameraFocus : 'cross-section' },
+                    precipViewMode === '3d' ? precip3dScienceCopy : precip2dScienceCopy),
                   h('div', { className: 'wc-precip-path-strip', role: 'group',
                     'data-path-outcome': precipModel.visualType,
                     'aria-label': 'Precipitation fall sequence: ' + precipModel.cloudPhase + ', ' +

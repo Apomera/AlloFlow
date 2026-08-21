@@ -152,6 +152,13 @@ const explicitMetadataOverrides = {
     credibility: 'OpenStax is a nonprofit educational initiative at Rice University. Its textbooks use expert authorship, faculty review, and a documented errata process, making this a credible instructional reference rather than an assessment blueprint.',
     metadataSource: 'explicit-override',
   },
+  'https://openstax.org/books/us-history/pages/2-introduction': {
+    title: 'U.S. History OpenStax: Introduction',
+    organization: 'OpenStax, Rice University',
+    summary: 'This openly licensed U.S. history textbook introduction frames historical inquiry, evidence, chronology, and the scope of the periods covered in the text for independent study.',
+    credibility: 'OpenStax is a nonprofit educational initiative at Rice University. Its openly licensed textbooks use expert authorship, faculty review, and a documented errata process; this is an instructional reference, not an official assessment specification.',
+    metadataSource: 'explicit-override',
+  },
   'https://openstax.org/books/writing-guide/pages/handbook': {
     title: 'Handbook - Writing Guide with Handbook',
     organization: 'OpenStax, Rice University',
@@ -348,7 +355,7 @@ function fallbackWebMetadata(reference) {
     organization,
     summary: 'This ' + organization + ' resource addresses ' + title + '. Open the source to review its complete scope, definitions, recommendations, examples, publication date, and stated limitations.',
     credibility: credibilityFor(reference, organization),
-    metadataSource: 'url-derived-reviewed-fallback',
+    metadataSource: /openstax\.org$/i.test(new URL(reference).hostname) ? 'host-derived-reviewed' : 'url-derived-reviewed-fallback',
   };
 }
 

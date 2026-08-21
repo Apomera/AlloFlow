@@ -373,6 +373,118 @@ const storageDB = {
     }
   }
 };
+const PROVIDER_RETRY_AFTER_MAX_MS = 120000;
+
+// RFC 9110 Retry-After accepts either delta-seconds or an HTTP date. Keep the
+// raw header out of every return value: callers get numeric, bounded metadata.
+const parseProviderRetryAfter = (value, nowMs = Date.now(), maxDelayMs = PROVIDER_RETRY_AFTER_MAX_MS) => {
+  if (value == null || value === '') return null;
+  const text = String(value).trim();
+  const numeric = /^\d+(?:\.\d+)?$/.test(text) ? Number(text) : NaN;
+  const rawDelayMs = Number.isFinite(numeric) ? numeric * 1000 : Date.parse(text) - Number(nowMs);
+  if (!Number.isFinite(rawDelayMs)) return null;
+  const normalizedRawMs = Math.max(0, Math.ceil(rawDelayMs));
+  const capMs = Math.max(0, Number.isFinite(Number(maxDelayMs)) ? Number(maxDelayMs) : PROVIDER_RETRY_AFTER_MAX_MS);
+  const delayMs = Math.min(normalizedRawMs, capMs);
+  return {
+    delayMs,
+    retryAfterSec: Math.ceil(delayMs / 1000),
+    exceedsRetryWindow: normalizedRawMs > capMs,
+  };
+};
+
+// Shared workflow policy. The returned object is safe to persist or emit as
+// telemetry: it never includes Error.message, response bodies, URLs, prompts,
+// keys, filenames, or arbitrary provider codes.
+const classifyProviderError = (error) => {
+  const err = error && typeof error === 'object' ? error : {};
+  const message = String(err.message || error || '').toLowerCase();
+  const nested = err.classification && typeof err.classification === 'object' ? err.classification : {};
+  const rawStatus = err.httpStatus != null ? err.httpStatus : (err.status != null ? err.status : err.statusCode);
+  const httpStatus = Number.isFinite(Number(rawStatus))
+    ? Math.max(0, Math.min(999, Math.round(Number(rawStatus)))) : null;
+  const rawRetryMs = err.retryAfterMs != null
+    ? Number(err.retryAfterMs)
+    : (err.retryAfterSec != null ? Number(err.retryAfterSec) * 1000 : NaN);
+  const retryAfterMs = Number.isFinite(rawRetryMs)
+    ? Math.max(0, Math.min(PROVIDER_RETRY_AFTER_MAX_MS, Math.ceil(rawRetryMs))) : null;
+  const isAbort = err.name === 'AbortError' || err.code === 'ABORT_ERR'
+    || /\babort(?:ed)?\b|\bcancel(?:led|ed)?\b/.test(message);
+  const perDay = nested.perDay === true || err.quotaScope === 'daily'
+    || /per[ -]?day|daily (?:quota|limit)|\brpd\b|requests? per day|day limit|monthly (?:quota|limit)|billing|credit balance|hard limit|insufficient[_ -]?quota/.test(message);
+  const perMinute = nested.perMinute === true || err.quotaScope === 'minute'
+    || /per[ -]?minute|\brpm\b|\btpm\b|requests? per minute|tokens? per minute/.test(message)
+    || ((httpStatus === 429 || err.isQuota === true || err.isRateLimited === true) && retryAfterMs != null);
+  const quotaSignal = nested.kind === 'quota' || err.isQuota === true || err.isRateLimited === true
+    || httpStatus === 429
+    || /api_quota_exhausted|resource_exhausted|quota exceeded|quota exhausted|\b429\b|rate[ _-]?limit/.test(message);
+  const authSignal = nested.kind === 'auth' || err.isAuth === true || httpStatus === 401 || httpStatus === 403
+    || /api_auth_failed|unauthenticated|unauthorized|forbidden|api[ _-]?key|permission denied|credential/.test(message);
+  const configSignal = nested.kind === 'config' || err.isConfig === true || err.isConfigState === true
+    || /api_model_not_found|not configured|configuration|unknown resource type|\bunsupported\b|model not found|invalid_argument|not loaded|no source/.test(message);
+  const outputSignal = /unusable|malformed|invalid output|invalid json|parse failure|schema validation/.test(message);
+  const policySignal = nested.kind === 'refusal'
+    || /safety|content blocked|generation blocked|policy block|model refusal/.test(message);
+  const timeoutSignal = /timeout|timed out|etimedout|408/.test(message);
+  const transientSignal = timeoutSignal || httpStatus === 502 || httpStatus === 503 || httpStatus === 504
+    || /temporar|network|failed to fetch|connection|overload|service unavailable/.test(message);
+
+  let kind = 'unknown';
+  let category = 'unknown';
+  let quotaScope = 'none';
+  let retryable = true;
+  let delayMs = 800;
+  if (isAbort) {
+    kind = 'abort'; category = 'configuration'; retryable = false; delayMs = 0;
+  } else if (quotaSignal && perDay) {
+    kind = 'quota-daily'; category = 'configuration'; quotaScope = 'daily'; retryable = false; delayMs = 0;
+  } else if (quotaSignal && perMinute) {
+    kind = 'rate-limit'; category = 'transient'; quotaScope = 'minute'; retryable = true;
+    delayMs = retryAfterMs != null ? retryAfterMs : 60000;
+  } else if (quotaSignal && /rate[ _-]?limit/.test(message)) {
+    kind = 'rate-limit'; category = 'transient'; quotaScope = 'minute'; retryable = true;
+    delayMs = retryAfterMs != null ? retryAfterMs : 60000;
+  } else if (quotaSignal) {
+    // RESOURCE_EXHAUSTED without scope can mean either a minute bucket or a
+    // daily budget. The transport already made its bounded inner attempts.
+    kind = 'quota-unknown'; category = 'configuration'; quotaScope = 'unknown'; retryable = false; delayMs = 0;
+  } else if (authSignal) {
+    kind = 'auth'; category = 'configuration'; retryable = false; delayMs = 0;
+  } else if (policySignal) {
+    kind = 'policy'; category = 'configuration'; retryable = false; delayMs = 0;
+  } else if (configSignal || outputSignal || err.isFatal === true) {
+    kind = outputSignal ? 'invalid-output' : 'configuration';
+    category = 'configuration'; retryable = false; delayMs = 0;
+  } else if (transientSignal) {
+    kind = timeoutSignal ? 'timeout' : (httpStatus && httpStatus >= 500 ? 'service-unavailable' : 'network');
+    category = 'transient'; retryable = true; delayMs = retryAfterMs != null ? retryAfterMs : 1500;
+  }
+  return Object.freeze({
+    schemaVersion: 1,
+    kind,
+    category,
+    retryable,
+    delayMs: Math.max(0, Math.min(PROVIDER_RETRY_AFTER_MAX_MS, Math.round(delayMs))),
+    quotaScope,
+    httpStatus,
+    retryAfterMs,
+  });
+};
+
+const getProviderErrorSafeFields = (error) => {
+  const policy = error && error.schemaVersion === 1 && typeof error.kind === 'string'
+    ? error : classifyProviderError(error);
+  return {
+    schemaVersion: 1,
+    kind: policy.kind,
+    category: policy.category,
+    retryable: policy.retryable === true,
+    quotaScope: policy.quotaScope,
+    httpStatus: policy.httpStatus == null ? null : policy.httpStatus,
+    retryAfterMs: policy.retryAfterMs == null ? null : policy.retryAfterMs,
+  };
+};
+
 const fetchWithExponentialBackoff = async (url, options = {}, maxRetries = 5, perRequestTimeoutMs = 120000, telemetry = null) => {
   // Per-request timeout (2026-06-16). The retry cap below only fires when a request FAILS.
   // A request the server accepts but never answers (no response, no error) would otherwise
@@ -388,11 +500,32 @@ const fetchWithExponentialBackoff = async (url, options = {}, maxRetries = 5, pe
   const _notify = (name, info) => {
     try { if (telemetry && typeof telemetry[name] === 'function') telemetry[name](info); } catch (_) {}
   };
+  const _abortError = () => {
+    const error = new Error('Request aborted by caller');
+    error.name = 'AbortError';
+    error.isFatal = true;
+    return error;
+  };
+  const _waitAbortably = (delayMs) => new Promise((resolve, reject) => {
+    let timer = null;
+    const cleanup = () => {
+      if (callerSignal) { try { callerSignal.removeEventListener('abort', onAbort); } catch (_) {} }
+    };
+    const onAbort = () => {
+      if (timer) clearTimeout(timer);
+      cleanup();
+      reject(_abortError());
+    };
+    if (callerSignal && callerSignal.aborted) return onAbort();
+    if (callerSignal) { try { callerSignal.addEventListener('abort', onAbort, { once: true }); } catch (_) {} }
+    timer = setTimeout(() => { cleanup(); resolve(); }, Math.max(0, delayMs));
+  });
   for (let i = 0; i < maxRetries; i++) {
     _notify('onInnerAttempt', { attempt: i + 1, maxRetries, url: _safeUrl });
     const _timeoutCtrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
     let _timedOut = false;
     let _timer = null;
+    let _retryAfter = null;
     const _onCallerAbort = () => { if (_timeoutCtrl) { try { _timeoutCtrl.abort(); } catch (_) {} } };
     if (_timeoutCtrl) {
       _timer = setTimeout(() => { _timedOut = true; try { _timeoutCtrl.abort(); } catch (_) {} }, perRequestTimeoutMs);
@@ -408,16 +541,19 @@ const fetchWithExponentialBackoff = async (url, options = {}, maxRetries = 5, pe
       // the 2026-08-14 investigation had to infer the refill rate from success timestamps because
       // nothing captured this header. Delta-seconds or HTTP-date per RFC 9110; normalized to whole
       // seconds-from-now. A number, never text — safe for the pasteable log.
-      let _retryAfterSec = null;
       try {
         const _ra = (!response.ok && response.headers && typeof response.headers.get === 'function') ? response.headers.get('retry-after') : null;
-        if (_ra != null && _ra !== '') {
-          const _raNum = Number(_ra);
-          const _sec = Number.isFinite(_raNum) ? _raNum : (Date.parse(_ra) - Date.now()) / 1000;
-          if (Number.isFinite(_sec)) _retryAfterSec = Math.max(0, Math.round(_sec));
-        }
+        _retryAfter = parseProviderRetryAfter(_ra);
       } catch (_) {}
-      _notify('onInnerResponse', { attempt: i + 1, maxRetries, status: response.status, ok: response.ok, retryAfterSec: _retryAfterSec, url: _safeUrl });
+      _notify('onInnerResponse', {
+        attempt: i + 1,
+        maxRetries,
+        status: response.status,
+        ok: response.ok,
+        retryAfterSec: _retryAfter ? _retryAfter.retryAfterSec : null,
+        retryAfterCapped: !!(_retryAfter && _retryAfter.exceedsRetryWindow),
+        url: _safeUrl,
+      });
       if (response.ok) {
         return response;
       }
@@ -439,7 +575,10 @@ const fetchWithExponentialBackoff = async (url, options = {}, maxRetries = 5, pe
         // Numeric evidence for the layers above: the classifier re-wraps this error and its
         // message alone cannot distinguish 401 from 403, nor carry the server's Retry-After.
         error.httpStatus = response.status;
-        if (_retryAfterSec != null) error.retryAfterSec = _retryAfterSec;
+        if (_retryAfter) {
+          error.retryAfterSec = _retryAfter.retryAfterSec;
+          error.retryAfterMs = _retryAfter.delayMs;
+        }
         throw error;
       }
       if (response.status === 429 || response.status === 503) {
@@ -448,23 +587,27 @@ const fetchWithExponentialBackoff = async (url, options = {}, maxRetries = 5, pe
         if (i === maxRetries - 1) {
           const _exhausted = new Error(`HTTP ${response.status} — Failed to fetch ${_safeUrl} after ${maxRetries} retries.`);
           _exhausted.httpStatus = response.status;
-          if (_retryAfterSec != null) _exhausted.retryAfterSec = _retryAfterSec;
+          _exhausted.isRateLimited = response.status === 429;
+          _exhausted.providerErrorKind = response.status === 429 ? 'rate-limit' : 'service-unavailable';
+          if (_retryAfter) {
+            _exhausted.retryAfterSec = _retryAfter.retryAfterSec;
+            _exhausted.retryAfterMs = _retryAfter.delayMs;
+          }
           throw _exhausted;
         }
       }
     } catch (error) {
+      const _errorPolicy = classifyProviderError(error);
       _notify('onInnerError', {
         attempt: i + 1,
-        errorClass: _timedOut ? 'timeout' : ((error && error.name === 'AbortError') ? 'network' : 'network'),
+        errorClass: _timedOut ? 'timeout' : _errorPolicy.kind,
+        ...getProviderErrorSafeFields(_errorPolicy),
       });
       // Caller-initiated abort (e.g. the user pressed Stop): propagate immediately and NEVER
       // retry — re-issuing a request the caller explicitly cancelled is wrong (and would burn
       // another quota slice). Surfaced as a named AbortError so callGemini stops cleanly.
       if (callerSignal && callerSignal.aborted) {
-        const _abErr = new Error('Request aborted by caller');
-        _abErr.name = 'AbortError';
-        _abErr.isFatal = true;
-        throw _abErr;
+        throw _abortError();
       }
       // Our own per-request timeout: the request hung. Treat as transient (a retry may settle);
       // on the final attempt, surface an honest timeout error instead of hanging forever.
@@ -487,9 +630,19 @@ const fetchWithExponentialBackoff = async (url, options = {}, maxRetries = 5, pe
     // Exponential backoff with jitter to prevent thundering herd on parallel requests
     const baseDelay = Math.pow(2, i) * 1000;
     const jitter = Math.random() * baseDelay * 0.5; // 0-50% random jitter
-    const delay = baseDelay + jitter;
+    const delay = Math.min(PROVIDER_RETRY_AFTER_MAX_MS, Math.max(
+      baseDelay + jitter,
+      _retryAfter ? _retryAfter.delayMs : 0
+    ));
+    _notify('onInnerBackoff', {
+      attempt: i + 1,
+      nextAttempt: i + 2,
+      delayMs: Math.round(delay),
+      retryAfterSec: _retryAfter ? _retryAfter.retryAfterSec : null,
+      retryAfterCapped: !!(_retryAfter && _retryAfter.exceedsRetryWindow),
+    });
     warnLog(`[API] Backing off ${Math.round(delay)}ms before retry ${i + 1}...`);
-    await new Promise(resolve => setTimeout(resolve, delay));
+    await _waitAbortably(delay);
   }
   throw new Error(`Failed to fetch ${_safeUrl} after ${maxRetries} retries.`);
 };
@@ -941,6 +1094,9 @@ window.AlloModules.UtilsPure = {
   flattenObject,
   unflattenObject,
   storageDB,
+  parseProviderRetryAfter,
+  classifyProviderError,
+  getProviderErrorSafeFields,
   fetchWithExponentialBackoff,
   isGoogleRedirect,
   isYouTubeUrl,
@@ -951,7 +1107,7 @@ window.AlloModules.UtilsPure = {
 if (typeof window._upgradeUtilsPure === 'function') {
   window._upgradeUtilsPure();
 }
-console.log('[UtilsPureModule] 14 utilities registered; monolith shim upgraded.');
+console.log('[UtilsPureModule] 17 utilities registered; monolith shim upgraded.');
 
 window.AlloModules.UtilsPureModule = true;
 })();

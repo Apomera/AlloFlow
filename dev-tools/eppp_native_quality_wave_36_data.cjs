@@ -1,0 +1,301 @@
+'use strict';
+
+const reviewedAt = '2026-08-20';
+const reviewWave = 'eppp-native-quality-wave-36';
+const baselineMetrics = Object.freeze({
+  distractor: { totalItems: 1500, warningOnly: true, forbiddenAggregateChoices: 0, uniqueKeyStemLexicalLeakageCandidates: 39, asymmetricExtremeDistractorCandidates: 43, advancedDirectRecallCandidates: 1, semanticConceptDuplicatePairs: 52, semanticConceptDuplicateClusters: 37, editorialAnchorsWithActiveWarnings: 0, editorialAnchorsWithNoCurrentWarning: 10, priorityDocketItems: 20 },
+  feedback: { totalItems: 1500, totalIncorrectOptions: 4500, itemsWithWarnings: 457, incorrectOptionsWithWarnings: 1271, insufficientDetailOptions: 587, genericTemplateOptions: 630, choiceRestatementOptions: 145, fullKeyEchoOptions: 64, priorityDocketItems: 100 },
+});
+
+const revisions = [
+  {
+    id: "eppp-b001-assessment-2", expectedAnswerIndex: 2, expectedDifficulty: "foundation", targetDifficulty: "intermediate",
+    expectedPrompt: "A clinic already uses a brief intake measure. A proposed new test demonstrates incremental validity when it:",
+    prompt: "A clinic's current intake screen predicts missed appointments. After the psychologist adds a short measure, cross-validated prediction improves by 6%. What evidence does this result provide?",
+    choices: ["Evidence that the current and added measures have acceptable internal consistency and similar prediction in the clinic sample", "Evidence that patients complete the added measure faster than the current intake screen", "Evidence that the added measure contributes incremental prediction after the current screen", "Evidence that the added measure has stronger face validity for predicting appointment behavior than the current screen"],
+    rationale: "Incremental validity is demonstrated when a new measure improves prediction or decision making beyond information already supplied by an existing measure. Cross-validated improvement addresses added predictive value, not reliability, completion time, or face validity.",
+    feedback: {
+      0: "Internal consistency describes how coherently items function together. Similar prediction and reliability do not establish that the added measure contributes new information beyond the current screen.",
+      1: "Completion burden may affect practical utility, but faster administration does not show that the new measure improves prediction of missed appointments.",
+      3: "Face validity concerns whether a test appears relevant to its purpose. The cross-validated change in prediction addresses added information rather than appearance.",
+    }, cognitiveProcess: "application", learningObjectiveId: "assessment-apply-incremental-validity-to-added-clinic-prediction", distractorDesign: ["reliability-versus-incremental-validity", "administration-utility-versus-prediction", "face-validity-versus-prediction"],
+  },
+  {
+    id: "eppp-b014-assessment-2", expectedAnswerIndex: 2, expectedDifficulty: "intermediate", targetDifficulty: "advanced",
+    expectedPrompt: "On a BASC-3 evaluation, a parent rates hyperactivity as clinically significant while a teacher rates it in the average range. Both protocols appear interpretable, and interview data suggest that behavior changes with task structure. What is the most defensible next step?",
+    prompt: "A parent rates hyperactivity high at home, a teacher sees few symptoms during structured lessons, and records show problems during unstructured transitions. Which interpretation plan best tests whether context explains the discrepancy?",
+    choices: ["Treat the home rating as the criterion and discount observations from school records", "Average ratings before considering the settings and records in which behavior was observed", "Compare task demands and opportunities across settings, then integrate interview, observation, and records", "Assume rater disagreement reflects stable differences in severity rather than behavior recorded across settings"],
+    rationale: "Multi-informant ratings sample behavior from different observers and settings. A discrepancy should generate hypotheses about task demands, opportunity to observe, rater perspective, and measurement error that are tested with interviews, records, observation, and validity information.",
+    feedback: {
+      0: "A home report provides important evidence but does not establish a context-neutral criterion. School observations may reveal demands or supports that change the behavior.",
+      1: "Averaging can conceal the very context effect the discrepant ratings suggest. The settings and observation opportunities should be interpreted before combining scores.",
+      3: "Rater disagreement can reflect context, perspective, or measurement limits rather than stable severity differences. Additional data are needed to distinguish those explanations.",
+    }, cognitiveProcess: "analysis", learningObjectiveId: "assessment-analyze-multi-informant-context-discrepancy", distractorDesign: ["single-informant-criterion-error", "mechanical-averaging-error", "stable-severity-overinterpretation"],
+  },
+  {
+    id: "eppp-b022-assessment-1", expectedAnswerIndex: 0, expectedDifficulty: "intermediate", targetDifficulty: "advanced",
+    expectedPrompt: "An adult outpatient completes a 344-item self-report inventory. Several clinical scales are elevated, but response-validity indicators also suggest inconsistent and unusually negative responding. What should the psychologist do first?",
+    prompt: "An outpatient profile shows high symptom scales, inconsistent responding, and unusually negative self-presentation. Before drawing diagnostic conclusions, what decision should guide the next step?",
+    choices: ["Evaluate response validity and testing context before interpreting substantive scales", "Translate each elevated scale into a separate diagnosis and reconcile them later", "Average elevated scales to reduce the effect of inconsistent responding", "Replace the inventory with an ability test because symptom reports lack utility"],
+    rationale: "Response-validity indicators determine whether and how substantive scales can be interpreted. Inconsistent or unusually negative responding requires contextual evaluation before clinical elevations are used in formulation; scale scores do not independently establish diagnoses.",
+    feedback: {
+      1: "Elevated scales are not equivalent to separate diagnoses. Interpreting them before evaluating response quality can turn an invalid profile into an unsupported formulation.",
+      2: "Averaging scores cannot repair inconsistent responding or clarify the purpose of a negative self-presentation. Validity evidence must be considered at the profile level.",
+      3: "An ability test answers a different assessment question and does not resolve the symptom inventory's response-quality concern. The existing profile needs contextual review.",
+    }, cognitiveProcess: "analysis", learningObjectiveId: "assessment-analyze-response-validity-before-profile-interpretation", distractorDesign: ["scale-to-diagnosis-error", "score-averaging-error", "construct-substitution-error"],
+  },
+  {
+    id: "eppp-b014-biological-1", expectedAnswerIndex: 0, expectedDifficulty: "foundation", targetDifficulty: "intermediate",
+    expectedPrompt: "A heritability estimate of .50 for a trait in one population means that:",
+    prompt: "A twin study reports heritability of .50 for reading skill among children in one district. The district then funds a tutoring program that improves scores. Which inference is justified?",
+    choices: ["The estimate describes genetic contribution to differences in that population; the tutoring result can still reflect environmental change", "The estimate means each child's reading is half genetic and tutoring cannot alter the trait", "The district's value should apply to children raised across many environments", "The tutoring effect shows the original estimate was mathematically incorrect"],
+    rationale: "Heritability describes the proportion of variation associated statistically with genetic differences within a specified population and environment. It does not partition an individual, imply immutability, or automatically generalize across settings.",
+    feedback: {
+      1: "A population statistic cannot be divided into genetic and environmental percentages for one child. Environmental intervention can change outcomes even when heritability is substantial.",
+      2: "Heritability depends on the population and range of environments studied. A district estimate does not transfer automatically to different populations or circumstances.",
+      3: "Tutoring can change outcomes through environmental pathways without contradicting a heritability estimate. The estimate concerns variation, not whether change is possible.",
+    }, cognitiveProcess: "application", learningObjectiveId: "biological-apply-heritability-to-population-and-intervention-inference", distractorDesign: ["individual-genetic-partition-error", "cross-population-generalization-error", "heritability-immutability-error"],
+  },
+  {
+    id: "eppp-b023-biological-2", expectedAnswerIndex: 1, expectedDifficulty: "foundation", targetDifficulty: "intermediate",
+    expectedPrompt: "Which pairing correctly identifies two evidence-based medications for opioid use disorder and their receptor actions?",
+    prompt: "A patient with opioid use disorder asks why a clinic offers methadone or buprenorphine and discusses naltrexone as a different option. Which receptor explanation is accurate?",
+    choices: ["Methadone blocks mu receptors, while buprenorphine activates them fully", "Methadone is a full mu agonist, whereas buprenorphine is a partial agonist", "Naltrexone activates mu receptors and therefore substitutes for opioid exposure", "Buprenorphine and naltrexone share the same receptor action and induction plan"],
+    rationale: "Methadone is a full mu-opioid receptor agonist and buprenorphine is a partial agonist; both are evidence-based medications for opioid use disorder. Naltrexone is an antagonist, so medication selection and initiation requirements are not interchangeable.",
+    feedback: {
+      0: "Methadone activates the mu receptor as a full agonist, while buprenorphine has partial agonist activity. Reversing those actions changes the treatment rationale.",
+      2: "Naltrexone blocks opioid receptors rather than activating them. Its antagonist mechanism distinguishes it from agonist medications used to maintain receptor stimulation.",
+      3: "Buprenorphine and naltrexone have different receptor actions and initiation requirements. Treating them as equivalent could create a clinically unsafe medication plan.",
+    }, cognitiveProcess: "application", learningObjectiveId: "biological-apply-opioid-medication-receptor-actions", distractorDesign: ["full-versus-partial-agonist-reversal", "antagonist-versus-agonist-confusion", "induction-equivalence-error"],
+  },
+  {
+    id: "eppp-b024-biological-1", expectedAnswerIndex: 0, expectedDifficulty: "foundation", targetDifficulty: "advanced",
+    expectedPrompt: "Which neuropathological combination is most characteristic of Alzheimer disease?",
+    prompt: "A memory clinic reviews imaging and tissue findings from a patient with progressive episodic-memory loss and later visuospatial impairment. Which pathological pairing would most strongly support the suspected diagnosis?",
+    choices: ["Extracellular beta-amyloid plaques with intracellular tau tangles", "Peripheral demyelination with neuromuscular-junction inflammation", "Thiamine-depletion lesions with isolated mammillary-body injury", "Spinal motor-neuron loss with preserved cortical tissue"],
+    rationale: "Alzheimer disease is characteristically associated with extracellular beta-amyloid plaques and intracellular neurofibrillary tangles composed of abnormal tau. These findings support the diagnosis but must be interpreted with the clinical pattern because pathology and cognition do not map perfectly one-to-one.",
+    feedback: {
+      1: "Peripheral demyelination and neuromuscular-junction inflammation describe processes outside the characteristic cortical pathology of Alzheimer disease. The clinical pattern would need a different differential.",
+      2: "Thiamine depletion with mammillary-body injury points toward nutritional amnestic syndromes. It does not provide the paired cortical pathology described for Alzheimer disease.",
+      3: "Spinal motor-neuron loss suggests a motor-system disorder and does not account for progressive episodic and visuospatial cognitive decline with cortical pathology.",
+    }, cognitiveProcess: "analysis", learningObjectiveId: "biological-analyze-alzheimer-neuropathology-with-clinical-pattern", distractorDesign: ["peripheral-demyelination-confusion", "thiamine-lesion-confusion", "motor-neuron-pathology-confusion"],
+  },
+  {
+    id: "eppp-b003-cognitive-1", expectedAnswerIndex: 1, expectedDifficulty: "intermediate", targetDifficulty: "advanced",
+    expectedPrompt: "In Festinger and Carlsmith's forced-compliance experiment, participants who received $1 for telling another person that a dull task was enjoyable later rated the task more favorably than participants who received $20. Under the investigators' dissonance account, why?",
+    prompt: "Participants perform a dull task, tell a confederate it was enjoyable, then privately rate it. Those paid a small amount later report more enjoyment than those paid a large amount. Which mechanism best explains the pattern?",
+    choices: ["A large reward creates greater arousal, while a small reward is misread as enjoyment", "A small reward leaves little external justification, so attitude shifts reduce dissonance", "Participants in the small-payment group follow a demand cue inferred from the experimenter's preferred answer", "A large payment conditions a negative reaction through punishment"],
+    rationale: "A large payment supplies a ready external reason for making a counter-attitudinal statement. A small payment supplies less justification, leaving greater inconsistency between behavior and private appraisal; shifting the attitude toward the task was the proposed way to reduce dissonance.",
+    feedback: {
+      0: "The dissonance account does not require the small-payment group to experience greater physiological arousal. The contrast concerns how much external justification the reward supplies.",
+      2: "Demand characteristics could influence reports, but they do not explain why the smaller reward produced the predicted attitude shift in the investigators' account.",
+      3: "The payment was not framed as punishment, and the pattern does not depend on conditioning a negative response. It depends on insufficient justification for the statement.",
+    }, cognitiveProcess: "analysis", learningObjectiveId: "cognitive-analyze-insufficient-justification-dissonance", distractorDesign: ["arousal-misattribution-confusion", "demand-characteristics-confusion", "punishment-conditioning-confusion"],
+  },
+  {
+    id: "eppp-b009-cognitive-1", expectedAnswerIndex: 1, expectedDifficulty: "foundation", targetDifficulty: "intermediate",
+    expectedPrompt: "A learner remembers 1-7-7-6-1-8-1-2 as “1776” and “1812.” This strategy illustrates:",
+    prompt: "A trainee remembers a safety code by grouping digits into familiar years and then recalls the groups as larger units. Which memory strategy is operating?",
+    choices: ["Repeating each digit aloud to preserve each unit briefly", "Chunking elements into meaningful units to reduce active load", "Retrieving word units more easily in the physical setting where they were learned", "Allowing earlier learning to disrupt later code units"],
+    rationale: "Chunking organizes individual elements into larger meaningful units, reducing the number of units that must be actively maintained. Prior knowledge often supplies the structure that makes those groups easier to retain.",
+    feedback: {
+      0: "Repeating digits can maintain information briefly, but the vignette emphasizes reorganizing separate elements into larger groups rather than simple repetition.",
+      2: "Environmental reinstatement describes context-dependent retrieval. The trainee's advantage comes from how the digits are organized, not from returning to a physical setting.",
+      3: "Proactive interference occurs when earlier learning disrupts later material. Grouping the code into meaningful units is an encoding and maintenance strategy instead.",
+    }, cognitiveProcess: "application", learningObjectiveId: "cognitive-apply-chunking-to-working-memory-organization", distractorDesign: ["rehearsal-versus-chunking", "context-dependent-retrieval-confusion", "proactive-interference-confusion"],
+  },
+  {
+    id: "eppp-b021-cognitive-3", expectedAnswerIndex: 2, expectedDifficulty: "foundation", targetDifficulty: "intermediate",
+    expectedPrompt: "A participant must report the hue of each printed stimulus while ignoring its readable meaning. Which trial should produce the greatest response conflict?",
+    prompt: "In a color-naming task, the participant must say the ink hue while ignoring the printed word. Which trial should slow responses most?",
+    choices: ["A neutral symbol printed in the target ink hue", "A color word printed in the matching ink hue", "A color word naming a different hue from its ink", "A pronounceable nonword printed in the target ink hue"],
+    rationale: "An incongruent color word activates a highly practiced reading response that competes with the required ink-color response. Congruent words can facilitate responding, while symbols and nonwords provide less competing color information.",
+    feedback: {
+      0: "A neutral symbol supplies the target hue without a competing color name. It therefore creates less response conflict than an incongruent readable word.",
+      1: "A matching color word supports the required response because reading and ink naming point toward the same color. Congruence usually reduces response time.",
+      3: "A pronounceable nonword may require attention but does not activate a conflicting color meaning. The strongest conflict requires an incongruent color word.",
+    }, cognitiveProcess: "application", learningObjectiveId: "cognitive-apply-stroop-interference-to-incongruent-color-word", distractorDesign: ["neutral-stimulus-confusion", "congruency-facilitation-confusion", "nonword-versus-color-conflict"],
+  },
+  {
+    id: "eppp-b003-intervention-2", expectedAnswerIndex: 3, expectedDifficulty: "intermediate", targetDifficulty: "advanced",
+    expectedPrompt: "A psychologist is preparing to treat a client whose cultural background and explanatory model of distress differ from the psychologist's. Which preparation plan most completely applies Sue, Arredondo, and McDavis's multicultural counseling competencies?",
+    prompt: "Before treating a client whose idioms of distress and family roles differ from the clinician's experience, which preparation best reflects multicultural competence?",
+    choices: ["Select a protocol from demographic labels and keep its steps unchanged rather than reflect on individual context", "Ask the client to teach the clinician the needed culture-specific knowledge while the clinician defers reflection on assumptions", "Focus on common factors and reflect on cultural context if the alliance later weakens", "Reflect on assumptions, learn the client's worldview, seek consultation, and adapt skills collaboratively"],
+    rationale: "Multicultural counseling competence integrates awareness of the clinician's assumptions and biases, knowledge of the client's worldview and context, and skill in using culturally responsive interventions. Client feedback informs care but does not replace the psychologist's responsibility for reflection, consultation, and skill development.",
+    feedback: {
+      0: "Demographic labels cannot determine an individual client's worldview, and an inflexible protocol can miss relevant context. Competence requires reflective adaptation rather than a preset script.",
+      1: "Client expertise is valuable, but placing responsibility for the clinician's cultural learning on the client is incomplete. Consultation and self-reflection remain professional responsibilities.",
+      2: "Cultural context should inform formulation from the outset, not wait until alliance difficulty appears. Common factors do not remove the need for culturally responsive skills.",
+    }, cognitiveProcess: "analysis", learningObjectiveId: "intervention-analyze-multicultural-competence-in-treatment-preparation", distractorDesign: ["demographic-protocol-rigidity", "client-as-cultural-teacher-burden", "culture-as-late-alliance-issue"],
+  },
+  {
+    id: "eppp-b008-intervention-1", expectedAnswerIndex: 1, expectedDifficulty: "foundation", targetDifficulty: "advanced",
+    expectedPrompt: "A meta-analysis finds that stronger alliance ratings are associated with better psychotherapy outcomes across several orientations. Which conclusion is warranted by that result?",
+    prompt: "Across several therapy orientations, stronger alliance ratings correlate with better outcomes. What conclusion is warranted when interpreting this meta-analytic pattern?",
+    choices: ["Alliance replaces case formulation because its correlation with outcome is consistent", "Alliance is a consistent correlate of treatment outcome, but the association does not establish one causal pathway", "Alliance is the single active ingredient because the correlation proves its causal role", "Attendance is an interchangeable correlate of alliance quality"],
+    rationale: "Meta-analytic research has found a positive association between alliance quality and psychotherapy outcome across orientations. Correlation supports a consistent relationship, but it does not show that alliance is the sole cause or that treatment selection is irrelevant.",
+    feedback: {
+      0: "A strong alliance does not substitute for assessment, formulation, or selection of an intervention suited to the client's needs. The finding is compatible with multiple contributors to outcome.",
+      2: "The association does not isolate one active ingredient or establish that alliance causes improvement by itself. Alliance may interact with treatment, client, and therapist factors.",
+      3: "Attendance reflects participation but is not equivalent to the collaborative bond, goals, and task agreement captured by alliance measures. The constructs should not be substituted.",
+    }, cognitiveProcess: "analysis", learningObjectiveId: "intervention-analyze-alliance-outcome-correlation-with-causal-caution", distractorDesign: ["alliance-replaces-formulation", "single-cause-overclaim", "attendance-alliance-equivalence"],
+  },
+  {
+    id: "eppp-b011-intervention-2", expectedAnswerIndex: 3, expectedDifficulty: "foundation", targetDifficulty: "advanced",
+    expectedPrompt: "A client asks why posttraumatic treatment includes recounting an event in session and practicing visits to an ordinary store that poses no current danger. Which description gives the best treatment rationale?",
+    prompt: "A client practices recalling a trauma memory and visits a safe store that has been avoided. The therapist explains that repetition targets avoidance and new learning. Which rationale best captures the intervention?",
+    choices: ["Use distraction to avoid trauma cues until distress decreases, then stop safe exposure practice", "Use store visits to improve social skill while memory work preserves autobiographical detail and avoids trauma cues", "Provide reassurance so practice remains comfortable and avoids strong emotion during safe practice", "Pair repeated trauma-memory work with safe in-vivo approach to avoided cues"],
+    rationale: "Prolonged exposure uses supported repeated contact with the trauma memory and safe avoided situations to reduce avoidance and create new learning about danger, distress, and coping. The work is collaborative and paced, but its mechanism is not distraction or guaranteed calm.",
+    feedback: {
+      0: "Distraction can reduce contact with trauma cues and therefore maintain avoidance. Exposure practice is intended to support new learning through engaged, repeated approach.",
+      1: "The store practice targets safe avoided cues, not general social skill, while memory work addresses trauma-related avoidance. Both components serve an exposure rationale.",
+      2: "Therapist support and pacing matter, but the goal is not to prevent strong emotion. Learning can occur while distress is experienced and managed during approach.",
+    }, cognitiveProcess: "analysis", learningObjectiveId: "intervention-analyze-prolonged-exposure-memory-and-in-vivo-rationale", distractorDesign: ["distraction-versus-exposure", "social-skill-versus-trauma-cue", "reassurance-versus-new-learning"],
+  },
+  {
+    id: "eppp-b020-lifespan-2", expectedAnswerIndex: 3, expectedDifficulty: "foundation", targetDifficulty: "intermediate",
+    expectedPrompt: "The continuity–discontinuity debate in developmental psychology asks whether development is best understood as:",
+    prompt: "A developmental team observes gradual vocabulary growth in one skill but stage-like shifts in another. Which issue are they addressing?",
+    choices: ["Whether gradual change reflects inheritance or learning opportunity", "Whether developmental rank order remains stable rather than stage-like across time", "Whether one sequence is shared across settings despite gradual or stage-like patterns", "Whether change is gradual and quantitative or stage-like and qualitative"],
+    rationale: "Continuity concerns smooth, cumulative change, whereas discontinuity concerns qualitative shifts often described as stages. Contemporary developmental evidence can support different patterns for different abilities, so the debate is a framing question rather than an all-or-none conclusion.",
+    feedback: {
+      0: "Nature and nurture concern sources of development, not whether change unfolds gradually or through qualitative transitions. A developmental process can involve both influences.",
+      1: "Rank-order stability asks whether people retain relative positions over time. The vignette instead contrasts the form and pace of change within abilities.",
+      2: "Cross-cultural sequence concerns generality across settings. The continuity question compares cumulative quantitative change with stage-like qualitative change.",
+    }, cognitiveProcess: "analysis", learningObjectiveId: "lifespan-analyze-continuity-and-discontinuity-in-development", distractorDesign: ["nature-nurture-versus-continuity", "stability-versus-change-form", "cross-cultural-sequence-versus-continuity"],
+  },
+  {
+    id: "eppp-b022-lifespan-1", expectedAnswerIndex: 1, expectedDifficulty: "foundation", targetDifficulty: "intermediate",
+    expectedPrompt: "In the Strange Situation, a disorganized attachment classification is indicated most directly by:",
+    prompt: "During Strange Situation reunions, an infant approaches then freezes, turns away, and shows apprehension toward the caregiver. Which classification best fits this pattern?",
+    choices: ["A consistent avoidant strategy that minimizes reunion contact", "A disorganized pattern marked by contradictory or disoriented behavior", "A resistant pattern with organized proximity seeking and difficulty settling", "A secure pattern with exploration followed by effective comfort"],
+    rationale: "Disorganized attachment involves a breakdown or absence of a coherent strategy for obtaining comfort, such as contradictory approach–avoidance, freezing, apprehension, or disorientation. It is a relationship classification, not itself a psychiatric attachment-disorder diagnosis.",
+    feedback: {
+      0: "Avoidant infants show a relatively coherent strategy of minimizing contact or signaling need. Freezing and contradictory approach behavior suggest a less organized pattern.",
+      2: "Resistant infants maintain an organized proximity-seeking strategy but remain difficult to soothe. The contradictory apprehensive sequence points toward disorganization.",
+      3: "Secure infants typically use the caregiver as a base and regain comfort at reunion. Freezing and apprehension are inconsistent with that organized pattern.",
+    }, cognitiveProcess: "application", learningObjectiveId: "lifespan-apply-attachment-classification-to-disorganized-reunion-behavior", distractorDesign: ["avoidant-versus-disorganized", "resistant-versus-disorganized", "secure-versus-disorganized"],
+  },
+  {
+    id: "eppp-b021-lifespan-1", expectedAnswerIndex: 1, expectedDifficulty: "foundation", targetDifficulty: "intermediate",
+    expectedPrompt: "The most accurate contemporary use of Kübler-Ross’s five-stage model is to treat the stages as:",
+    prompt: "A bereaved client reports numbness, anger, and moments of acceptance in different weeks, while family members worry that grief is stuck. Which interpretation best fits contemporary use of the five-stage model?",
+    choices: ["The person is failing to complete the stage sequence and needs to progress to the next stage", "The labels may describe possible experiences rather than a fixed sequence or timetable", "The stage pattern is a diagnostic screen that separates normal grief from disorder", "The stages are biological phases with durations independent of context"],
+    rationale: "Denial, anger, bargaining, depression, and acceptance can name recognizable experiences, but evidence does not support prescribing them as a universal invariant sequence for bereavement. Grief varies widely, and the original work centered on people facing death.",
+    feedback: {
+      0: "Grief does not require a person to complete stages in order, and prescribing a next step can pathologize normal variation in mourning.",
+      2: "The model is not a diagnostic screen. Distress, duration, impairment, and context require separate clinical assessment rather than stage matching.",
+      3: "Grief experiences are shaped by relationships, culture, circumstances, and personal meaning. Fixed biological durations overstate what the model can establish.",
+    }, cognitiveProcess: "analysis", learningObjectiveId: "lifespan-analyze-kubler-ross-model-with-grief-variation", distractorDesign: ["stage-completion-prescription", "stage-model-as-diagnostic-screen", "fixed-biological-grief-timing"],
+  },
+  {
+    id: "eppp-b003-professional-1", expectedAnswerIndex: 1, expectedDifficulty: "intermediate", targetDifficulty: "advanced",
+    expectedPrompt: "After several recent medical episodes, a psychologist notices missed details in sessions and believes the condition may be interfering with adequate performance. No client has complained. What is the best initial course under the currently operative APA Ethics Code Standard 2.06(b)?",
+    prompt: "A psychologist's health episodes are followed by missed session details, suggesting that professional performance may be affected. No complaint has been filed. What sequence best follows the ethics standard?",
+    choices: ["Continue unchanged until a client documents a specific harm", "Seek appropriate assistance or consultation, then limit, suspend, or end affected duties as warranted", "Transfer the current caseload before evaluating how the condition affects work", "Tell clients the diagnosis and rely on their consent to continue"],
+    rationale: "Standard 2.06(b) calls for appropriate measures, such as professional consultation or assistance, followed by a reasoned determination about whether work duties should be limited, suspended, or terminated. A complaint is not required, and the response should be proportionate to actual interference and continuity obligations.",
+    feedback: {
+      0: "Waiting for a documented client harm overlooks the duty to address impairment when professional performance may be affected. Preventive consultation and proportionate action are required.",
+      2: "A full transfer may be unnecessary or disruptive before the psychologist evaluates the extent of interference. Consultation should inform which duties need limits or coverage.",
+      3: "Client consent does not waive the psychologist's responsibility to practice competently. Diagnosis disclosure is not a substitute for assistance, consultation, and duty management.",
+    }, cognitiveProcess: "analysis", learningObjectiveId: "professional-analyze-impairment-standard-2-06-response-sequence", distractorDesign: ["wait-for-harm-error", "premature-full-transfer", "client-consent-as-competence-waiver"],
+  },
+  {
+    id: "eppp-b010-professional-1", expectedAnswerIndex: 1, expectedDifficulty: "foundation", targetDifficulty: "intermediate",
+    expectedPrompt: "A court orders production of assessment information that includes protected test content. Before responding, which approach best balances material integrity with the legal demand?",
+    prompt: "A court requests protected test protocols for a narrowly defined proceeding. The psychologist reviews the order and considers a protective arrangement. Which principle should guide the response?",
+    choices: ["Release secure test items for unrestricted copying once a court requests them", "Preserve test security through reasonable lawful steps while responding to the order", "Refuse any disclosure involving protected test materials despite the legal order", "Publish the test protocols after redacting the client's name"],
+    rationale: "Standard 9.11 calls for reasonable efforts to preserve the integrity and security of test materials consistent with law and contractual obligations. The psychologist should examine the order, seek a protective or limited-disclosure mechanism when appropriate, and avoid casual publication or reflexive noncompliance.",
+    feedback: {
+      0: "A court request does not make secure materials suitable for unrestricted copying. The psychologist should seek lawful limits that protect item integrity while addressing the order.",
+      2: "Ethical test security does not authorize ignoring a valid legal demand. Review, consultation, and protective procedures can reconcile disclosure duties with material protection.",
+      3: "Removing a client's name does not protect test-item security. Secure protocols can compromise future assessment validity even when identifying information is redacted.",
+    }, cognitiveProcess: "application", learningObjectiveId: "professional-apply-test-security-to-court-ordered-disclosure", distractorDesign: ["unrestricted-court-release", "reflexive-legal-refusal", "anonymization-versus-item-security"],
+  },
+  {
+    id: "eppp-b019-professional-1", expectedAnswerIndex: 0, expectedDifficulty: "foundation", targetDifficulty: "advanced",
+    expectedPrompt: "An evaluator has a referral question about work capacity, one elevated screening score, conflicting collateral reports, and no validity indicators. What evidentiary basis is required before offering a firm opinion?",
+    prompt: "A work-capacity referral includes one elevated screen, conflicting collateral reports, and no validity indicators. Before giving a firm opinion, what evidentiary standard applies?",
+    choices: ["Use information and techniques sufficient to substantiate the proposed findings", "Rely on the screen with a disclaimer about unresolved collateral conflict", "Accept the retaining party's account when it answers the referral question", "Select a method after forming a provisional conclusion and explain contrary data later"],
+    rationale: "Standard 9.01 requires opinions and recommendations to rest on information and techniques adequate to support the conclusion. A lone screening score, one interested account, or conclusion-driven method selection does not resolve validity and collateral conflicts for a firm work-capacity opinion.",
+    feedback: {
+      1: "A disclaimer does not make a single screening score adequate evidence when collateral information conflicts and validity indicators are absent. The evaluator must gather proportionate support.",
+      2: "The retaining party's account is one source and may be interested. It cannot replace independent, relevant information needed to substantiate a work-capacity conclusion.",
+      3: "Choosing methods after deciding the conclusion invites confirmation bias. Evidence and techniques should be selected to address the referral question before the opinion is finalized.",
+    }, cognitiveProcess: "analysis", learningObjectiveId: "professional-analyze-adequate-evidence-for-forensic-opinion", distractorDesign: ["screening-score-overreach", "retaining-party-account-overreach", "conclusion-driven-method-selection"],
+  },
+  {
+    id: "eppp-b018-social-1", expectedAnswerIndex: 2, expectedDifficulty: "foundation", targetDifficulty: "advanced",
+    expectedPrompt: "A motivated consumer carefully evaluates a health message’s evidence but also gives some weight to the communicator’s recognized expertise. How would the heuristic-systematic model classify this processing?",
+    prompt: "A consumer studies a health message carefully and also relies on the source's expertise cue. Which processing pattern does the heuristic-systematic model predict?",
+    choices: ["Systematic analysis excludes source cues once evidence is reviewed", "Heuristic judgment makes content analysis unnecessary when the source is credible", "Systematic evaluation and heuristic cues can operate together", "A stable personal style determines one processing mode across topics"],
+    rationale: "The model distinguishes systematic processing of message information from heuristic processing based on learned judgment rules or cues. The modes are not mutually exclusive, and the amount of systematic processing depends partly on motivation and ability.",
+    feedback: {
+      0: "Careful evidence review does not erase the influence of a source cue. A person can analyze message content while also using expertise as a judgment input.",
+      1: "A credible source may provide a heuristic, but it does not make message analysis unnecessary when motivation and ability support systematic processing.",
+      3: "Processing varies with motivation, ability, message demands, and context. A stable preference does not force one mode across every topic or decision.",
+    }, cognitiveProcess: "analysis", learningObjectiveId: "social-cultural-analyze-heuristic-systematic-co-occurrence", distractorDesign: ["systematic-excludes-heuristic", "heuristic-replaces-content", "fixed-processing-style"],
+  },
+  {
+    id: "eppp-b021-social-1", expectedAnswerIndex: 1, expectedDifficulty: "foundation", targetDifficulty: "intermediate",
+    expectedPrompt: "Two youth groups remain hostile after informal social events. Their bus then becomes stranded, and repairing it requires members of both groups to coordinate skills and effort. Which condition should most reduce conflict?",
+    prompt: "Two youth groups remain hostile until a stranded bus requires both groups to combine skills to repair it. Which change should most reduce the conflict?",
+    choices: ["More unstructured contact while recognition and resources remain competitive", "Cooperation on a consequential goal that neither group can accomplish alone", "A request to stop naming group memberships while competing goals continue", "A contest that rewards one group for outperforming the other"],
+    rationale: "Intergroup contact alone did not resolve experimentally intensified conflict. Cooperation on a consequential superordinate goal requiring joint effort helped reduce hostility, supporting the importance of interdependence and goal structure in intergroup relations.",
+    feedback: {
+      0: "Contact can provide opportunities for change, but unstructured interaction may leave competition intact. The crucial feature is a shared outcome that requires interdependence.",
+      2: "Suppressing group labels does not change the opposing incentives or create cooperation. Conflict reduction is more likely when members need one another to achieve a valued outcome.",
+      3: "A contest preserves an intergroup comparison and rewards one side's advantage. It does not create the cooperative interdependence associated with reduced hostility.",
+    }, cognitiveProcess: "application", learningObjectiveId: "social-cultural-apply-superordinate-goal-to-intergroup-conflict", distractorDesign: ["unstructured-contact-with-competition", "label-suppression-with-competition", "intergroup-contest-reinforcement"],
+  },
+  {
+    id: "eppp-b025-social-2", expectedAnswerIndex: 1, expectedDifficulty: "foundation", targetDifficulty: "intermediate",
+    expectedPrompt: "Which change is most likely to reduce stereotype-threat pressure during an evaluative task?",
+    prompt: "An evaluative task highlights a negative stereotype about one group. Which design change would most directly reduce the added performance pressure?",
+    choices: ["Describe the task as a measure of fixed group differences", "Remove stereotype-relevant cues and communicate that ability can develop", "Tell participants that test anxiety confirms the group expectation", "Display group labels before testing so the comparison is salient"],
+    rationale: "Stereotype threat arises when a negative group stereotype becomes relevant to performance and creates additional cognitive or affective pressure. Reducing stereotype-relevant cues, communicating an incremental view of ability, and supporting belonging can reduce that burden.",
+    feedback: {
+      0: "Framing the task as a test of fixed group differences makes the stereotype more relevant and increases evaluative pressure rather than reducing it.",
+      2: "Treating anxiety as confirmation adds pressure and invites stereotype-consistent interpretation. It does not provide the safety or incremental framing that can reduce threat.",
+      3: "Making group comparison salient can activate the stereotype and its evaluative consequences. Reducing relevant cues is more consistent with threat-reduction strategies.",
+    }, cognitiveProcess: "application", learningObjectiveId: "social-cultural-apply-stereotype-threat-reduction-to-evaluation", distractorDesign: ["fixed-ability-threat-frame", "anxiety-confirmation-threat", "salient-group-comparison"],
+  },
+  {
+    id: "eppp-b001-research-2", expectedAnswerIndex: 2, expectedDifficulty: "foundation", targetDifficulty: "intermediate",
+    expectedPrompt: "After assignment by chance, some participants cross over, miss sessions, or provide incomplete follow-up data. For the principal efficacy comparison, who remains in the target analysis population?",
+    prompt: "A randomized trial includes participants who switch conditions, miss visits, or lack final data. For the primary comparison, how should assigned-group membership be defined?",
+    choices: ["Retain randomized participants who completed the assigned sessions, excluding visits with missing data", "Retain randomized participants who followed the protocol with no crossover or missed visits", "Analyze randomized participants in their assigned groups, with missing data handled by a prespecified method", "Retain randomized participants whose outcomes moved in the predicted direction, even when follow-up data are missing"],
+    rationale: "Under the classical intention-to-treat principle, every randomized participant remains in the target analysis population and in the originally assigned group regardless of adherence or crossover. Missing outcomes still require a prespecified, defensible handling method.",
+    feedback: {
+      0: "Restricting analysis to session completers can break the randomized comparison and bias the estimate toward adherent participants. Completion is not the membership rule.",
+      1: "Per-protocol membership describes adherence, not the classical intention-to-treat population. Crossover and missed sessions do not erase the original assignment.",
+      3: "Selecting participants based on improvement makes the analysis outcome-dependent and can manufacture an apparent effect. Inclusion follows randomization, not favorable results.",
+    }, cognitiveProcess: "application", learningObjectiveId: "research-apply-intention-to-treat-to-randomized-trial-deviations", distractorDesign: ["completer-analysis-confusion", "per-protocol-versus-intention-to-treat", "outcome-dependent-inclusion"],
+  },
+  {
+    id: "eppp-b016-research-1", expectedAnswerIndex: 0, expectedDifficulty: "foundation", targetDifficulty: "intermediate",
+    expectedPrompt: "In a medication trial, allocation codes are concealed from the people receiving capsules and from the clinicians who rate symptom change. Which description best captures the intended masking?",
+    prompt: "In a medication trial, participants and symptom raters are unaware of capsule assignment. Which design feature is being described?",
+    choices: ["Blinding participants and outcome assessors to assignment, limiting expectancy and observer bias", "Blinding the statistician and editor to the study hypothesis rather than treatment assignment", "Blinding researchers and participants to eligibility criteria instead of assignment", "Concealing from clinicians and participants that the study exists, not their assignment"],
+    rationale: "Double-blinding aims to keep participants and relevant investigators or outcome assessors unaware of assignment, reducing expectancy and observer bias. The exact roles blinded should be reported rather than inferred from a generic label.",
+    feedback: {
+      1: "Masking an analyst or editor from the hypothesis is a different safeguard. The vignette concerns people receiving treatment and clinicians rating symptom change.",
+      2: "Eligibility criteria are not the assignment information at issue. Blinding concerns knowledge of which intervention a participant received and who rates outcomes.",
+      3: "Participants and clinicians know they are taking part in a trial even when allocation is masked. Concealing the study's existence is not the design feature described.",
+    }, cognitiveProcess: "application", learningObjectiveId: "research-apply-double-blinding-to-participant-and-assessor-masking", distractorDesign: ["hypothesis-masking-confusion", "eligibility-masking-confusion", "study-existence-concealment"],
+  },
+  {
+    id: "eppp-v2-research-002", expectedAnswerIndex: 2, expectedDifficulty: "intermediate", targetDifficulty: "advanced",
+    expectedPrompt: "A researcher has four independent groups and proposes six unadjusted pairwise t-tests, each at alpha .05, as the primary analysis. Why is an omnibus ANOVA preferred at the initial stage?",
+    prompt: "A researcher plans six unadjusted pairwise tests for four independent groups. Which statistical concern favors an omnibus first step?",
+    choices: ["Pairwise tests cannot compare group means when unadjusted", "An omnibus test is reserved for studies with two groups rather than unadjusted comparisons", "The familywise false-positive rate grows as unadjusted comparisons accumulate", "An omnibus test eliminates the need for follow-up after unadjusted comparisons"],
+    rationale: "Conducting many unadjusted pairwise tests increases the probability of at least one false positive across the family. An omnibus ANOVA evaluates whether group means differ while controlling the initial familywise Type I error, after which planned or adjusted comparisons can localize differences.",
+    feedback: {
+      0: "Pairwise tests can compare group means, but their repeated use creates a multiple-comparison problem. The concern is error accumulation, not an inability to compare means.",
+      1: "An omnibus ANOVA is designed for two or more independent group means. It is useful here because the proposed design contains four groups.",
+      3: "An omnibus result can indicate that a difference exists but does not identify which groups differ. Follow-up comparisons may still be needed with appropriate control.",
+    }, cognitiveProcess: "analysis", learningObjectiveId: "research-analyze-omnibus-anova-for-familywise-error-control", distractorDesign: ["pairwise-capability-error", "anova-group-count-error", "omnibus-eliminates-follow-ups"],
+  },
+];
+
+module.exports = { baselineMetrics, reviewedAt, reviewWave, revisions };

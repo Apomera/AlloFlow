@@ -133,7 +133,7 @@ describe('Teacher student-activity ledger', () => {
 
   it('summarizes and filters the privacy-safe roster by progress, connection, activity, and group', () => {
     const rows = [
-      { uid: 'u1', name: 'Ari', groupId: 'g1', connected: true, activity: 'Evidence Sort', status: 'working', progressDetail: '' },
+      { uid: 'u1', name: 'Ari', groupId: 'g1', connected: true, activity: 'Evidence Sort', status: 'working', supportStatus: 'help', progressDetail: '' },
       { uid: 'u2', name: 'Bo', groupId: '', connected: true, activity: 'Word Sounds', status: 'complete', progressDetail: '8/8' },
       { uid: 'u3', name: 'Cy', groupId: '', connected: true, activity: 'Map Lab', status: 'failed', progressDetail: '' },
       { uid: 'u4', name: 'Dee', groupId: '', connected: false, activity: 'Assigned resource', status: 'waiting', progressDetail: '' },
@@ -141,15 +141,17 @@ describe('Teacher student-activity ledger', () => {
 
     expect(LivePolling.summarizeLiveStudentActivityRows(rows)).toEqual({
       all: 4,
+      help: 1,
       'in-progress': 1,
       finished: 1,
-      attention: 2,
+      attention: 3,
       offline: 1,
     });
+    expect(LivePolling.filterLiveStudentActivityRows(rows, { filter: 'help' }).map((row) => row.uid)).toEqual(['u1']);
     expect(LivePolling.filterLiveStudentActivityRows(rows, { filter: 'finished' }).map((row) => row.uid)).toEqual(['u2']);
-    expect(LivePolling.filterLiveStudentActivityRows(rows, { filter: 'attention' }).map((row) => row.uid)).toEqual(['u3', 'u4']);
+    expect(LivePolling.filterLiveStudentActivityRows(rows, { filter: 'attention' }).map((row) => row.uid)).toEqual(['u1', 'u3', 'u4']);
     expect(LivePolling.filterLiveStudentActivityRows(rows, { query: 'blue pod', groups: { g1: { name: 'Blue Pod' } } }).map((row) => row.uid)).toEqual(['u1']);
-    expect(LivePolling.filterLiveStudentActivityRows(rows, { sort: 'attention' }).map((row) => row.uid)).toEqual(['u4', 'u3', 'u1', 'u2']);
+    expect(LivePolling.filterLiveStudentActivityRows(rows, { sort: 'attention' }).map((row) => row.uid)).toEqual(['u1', 'u4', 'u3', 'u2']);
     expect(LivePolling.LIVE_STUDENT_ACTIVITY_SORTS).toEqual(['attention', 'name']);
     expect(JSON.stringify(LivePolling.filterLiveStudentActivityRows(rows, { query: 'map lab' }))).not.toContain('response');
   });
@@ -254,6 +256,13 @@ describe('Word Cloud reuses the existing live-poll lifecycle', () => {
     expect(pollingSource).toContain("tr('Approve visible held')");
     expect(pollingSource).toContain("tr('Hide visible held')");
     expect(pollingSource).toContain("'aria-label': tr('Scrollable live student activity table')");
+    expect(pollingSource).toContain("tr('Teacher check-in')");
+    expect(pollingSource).toContain("tr('Private teacher check-in')");
+    expect(pollingSource).toContain('sendTeacherCheckIn(row)');
+    expect(pollingSource).toContain("answerTeacherCheckIn('help')");
+    expect(pollingSource).toContain("tr('Help requested')");
+    expect(pollingSource).toContain("tr('Request help')");
+    expect(pollingSource).toContain("tr('Cancel help request')");
     expect(shellSource).toContain('activitySnapshots: liveActivitySnapshots');
     expect(shellSource).toContain("width:'min(1180px, calc(100vw - 2rem))'");
     expect(shellSource).toContain('aria-modal="true"');

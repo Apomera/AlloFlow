@@ -1,0 +1,301 @@
+'use strict';
+
+const reviewedAt = '2026-08-20';
+const reviewWave = 'eppp-native-quality-wave-35';
+const baselineMetrics = Object.freeze({
+  distractor: { totalItems: 1500, warningOnly: true, forbiddenAggregateChoices: 0, uniqueKeyStemLexicalLeakageCandidates: 40, asymmetricExtremeDistractorCandidates: 54, advancedDirectRecallCandidates: 1, semanticConceptDuplicatePairs: 51, semanticConceptDuplicateClusters: 36, editorialAnchorsWithActiveWarnings: 0, editorialAnchorsWithNoCurrentWarning: 10, priorityDocketItems: 20 },
+  feedback: { totalItems: 1500, totalIncorrectOptions: 4500, itemsWithWarnings: 464, incorrectOptionsWithWarnings: 1289, insufficientDetailOptions: 602, genericTemplateOptions: 633, choiceRestatementOptions: 145, fullKeyEchoOptions: 64, priorityDocketItems: 100 },
+});
+
+const revisions = [
+  {
+    id: "eppp-v2-assessment-070", expectedAnswerIndex: 2, expectedDifficulty: "intermediate", targetDifficulty: "advanced",
+    expectedPrompt: "Complete the statement: The Wechsler Adult Intelligence Scale (WAIS-V) yields:",
+    prompt: "A client shows strong verbal reasoning but weak processing speed; the examiner wants a profile that separates broad ability from specific domains. Which WAIS-V output would best support that interpretation?",
+    choices: ["A single composite that replaces interpretation of domain scores", "Separate verbal and performance totals modeled after older editions", "A Full Scale IQ accompanied by five primary cognitive indexes for interpreting uneven cognitive performance", "A personality profile derived from validity and clinical scales"],
+    rationale: "The WAIS-V provides a Full Scale IQ alongside five primary cognitive indexes. Examining both levels helps an examiner describe an uneven pattern rather than collapsing meaningful domain differences into one summary score.",
+    feedback: {
+      0: "A composite summarizes overall performance but cannot display the domain pattern the examiner is trying to interpret. WAIS-V results retain index information for that purpose.",
+      1: "Verbal and performance totals reflect an older organizational model. The current interpretation uses primary indexes that sample distinct cognitive domains.",
+      3: "Validity and clinical scales describe personality assessment. The WAIS-V is a cognitive instrument whose outputs summarize intellectual and processing abilities.",
+    }, cognitiveProcess: "application", learningObjectiveId: "assessment-apply-wais-v-index-profile-to-uneven-cognitive-pattern", distractorDesign: ["composite-versus-profile-confusion", "legacy-wais-structure-confusion", "personality-versus-cognitive-test-confusion"],
+  },
+  {
+    id: "eppp-b007-assessment-2", expectedAnswerIndex: 2, expectedDifficulty: "foundation", targetDifficulty: "intermediate",
+    expectedPrompt: "Differential item functioning is present when an item:",
+    prompt: "Two groups matched on overall ability answer an item differently even after conditioning on the target trait. What should an examiner investigate?",
+    choices: ["Whether the item is simply easy for both groups at the observed ability level", "Whether the item correlates with total score in the combined norm sample", "Differential item functioning, reflected in unequal response probabilities at comparable ability", "Whether the response format uses selected rather than constructed answers"],
+    rationale: "DIF occurs when people from different groups who are comparable on the measured ability have different probabilities of responding to an item. It flags an item for investigation but does not by itself prove bias.",
+    feedback: {
+      0: "Item difficulty describes how readily a group answers correctly. DIF asks whether group membership changes the response probability after ability is held comparable.",
+      1: "A total-score correlation describes item discrimination in an aggregate sample. It does not test whether matched groups respond differently at the same ability level.",
+      3: "Selected versus constructed response is a format distinction. DIF concerns conditional group differences in item performance, regardless of the format used.",
+    }, cognitiveProcess: "analysis", learningObjectiveId: "assessment-analyze-differential-item-functioning-at-matched-ability", distractorDesign: ["difficulty-versus-dif-confusion", "aggregate-discrimination-confusion", "response-format-confusion"],
+  },
+  {
+    id: "eppp-b008-assessment-1", expectedAnswerIndex: 0, expectedDifficulty: "intermediate", targetDifficulty: "advanced",
+    expectedPrompt: "An examinee earns an observed score of 70, reported with a 95% interval of 66–74 calculated from the test's standard error of measurement. The interval is intended primarily to indicate that:",
+    prompt: "An examinee earns 70 and receives a 95% interval of 66–74 based on the measure's standard error. A supervisor asks what the interval says about measurement precision. Which interpretation is best?",
+    choices: ["The observed result is imprecise, so the person's underlying level is represented by a range around 70", "The next administration is expected to fall inside 66–74", "The population mean for similar examinees is estimated by 66–74", "The interval confirms a one-factor structure"],
+    rationale: "A standard-error interval expresses uncertainty around an individual observed score because measurement error is present. It is not a forecast of a future score, an estimate of a population mean, or evidence about latent structure.",
+    feedback: {
+      1: "A future score can differ for reasons beyond the current score's standard error. The interval qualifies this observation rather than promising a particular retest range.",
+      2: "An individual-score interval is not an interval estimate of the population mean. It communicates uncertainty about this examinee's standing on the construct.",
+      3: "Factor structure concerns how items relate to latent dimensions. A standard-error interval addresses score precision, not whether one factor explains the responses.",
+    }, cognitiveProcess: "application", learningObjectiveId: "assessment-apply-standard-error-interval-to-individual-score-interpretation", distractorDesign: ["future-score-prediction-confusion", "individual-versus-population-interval-confusion", "precision-versus-factor-structure-confusion"],
+  },
+  {
+    id: "eppp-b003-biological-1", expectedAnswerIndex: 0, expectedDifficulty: "foundation", targetDifficulty: "intermediate",
+    expectedPrompt: "During an acute laboratory stressor, blood samples show an early hypothalamic releasing signal, a later pituitary signal, and then a glucocorticoid rise from the adrenal cortex. Which ordering matches the observed endocrine relay?",
+    prompt: "During a stress challenge, CRH rises before ACTH, followed by cortisol. A drug blocks pituitary ACTH release. Which sequence identifies the pathway being interrupted?",
+    choices: ["Hypothalamic CRH → pituitary ACTH → adrenal-cortex cortisol", "Pituitary CRH → hypothalamic ACTH → adrenal-medulla cortisol", "Adrenal ACTH → pituitary CRH → hypothalamic cortisol", "Hypothalamic ACTH → adrenal CRH → pituitary cortisol"],
+    rationale: "The HPA cascade begins with hypothalamic corticotropin-releasing hormone, which stimulates pituitary ACTH; ACTH then acts on the adrenal cortex to promote cortisol secretion. Blocking pituitary ACTH interrupts the middle relay.",
+    feedback: {
+      1: "CRH is released by the hypothalamus, whereas ACTH is released by the pituitary. The adrenal medulla produces catecholamines rather than cortisol.",
+      2: "The sequence reverses the endocrine direction and assigns signals to the wrong organs. Cortisol is the downstream adrenal-cortex output of ACTH.",
+      3: "ACTH does not originate in the hypothalamus, and CRH is not an adrenal signal. The observed timing follows the hypothalamus-to-pituitary-to-cortex relay.",
+    }, cognitiveProcess: "application", learningObjectiveId: "biological-apply-hpa-axis-order-to-stress-hormone-interruption", distractorDesign: ["hpa-organ-source-reversal", "hpa-direction-reversal", "hpa-signal-source-confusion"],
+  },
+  {
+    id: "eppp-b004-biological-2", expectedAnswerIndex: 2, expectedDifficulty: "foundation", targetDifficulty: "intermediate",
+    expectedPrompt: "A patient develops persistent involuntary orofacial and limb movements after taking a medication for several years. Which medication history is most characteristic of tardive dyskinesia?",
+    prompt: "A client develops repetitive chewing and tongue movements after years of a psychiatric drug. Which medication mechanism best explains the risk?",
+    choices: ["A serotonin-reuptake agent taken for recurrent panic", "An intermittent benzodiazepine used for situational insomnia", "Long-term dopamine-receptor blockade from a therapeutic agent", "A short course of an anti-inflammatory for joint pain"],
+    rationale: "Tardive dyskinesia is associated with prolonged exposure to dopamine-receptor blocking agents, most commonly antipsychotic drugs and some dopamine-antagonist antiemetics. The delayed involuntary movements fit that medication mechanism.",
+    feedback: {
+      0: "Serotonin-reuptake medications can produce other movement or activation effects, but the classic delayed chewing and tongue movements point to dopamine-receptor blockade.",
+      1: "Benzodiazepines affect inhibitory signaling and are not the characteristic exposure linked to tardive dyskinesia. Duration alone does not identify the relevant pharmacologic mechanism.",
+      3: "Anti-inflammatory treatment is not a typical cause of delayed oro-bucco-lingual movements. The medication history needs a dopamine-receptor blocking mechanism.",
+    }, cognitiveProcess: "application", learningObjectiveId: "biological-apply-dopamine-blockade-history-to-tardive-dyskinesia", distractorDesign: ["serotonin-versus-dopamine-blockade-confusion", "benzodiazepine-mechanism-confusion", "anti-inflammatory-side-effect-confusion"],
+  },
+  {
+    id: "eppp-b009-biological-2", expectedAnswerIndex: 2, expectedDifficulty: "foundation", targetDifficulty: "intermediate",
+    expectedPrompt: "In functional neuroimaging, functional connectivity usually refers to:",
+    prompt: "Two regions show correlated low-frequency BOLD fluctuations during rest, but no tract tracing or intervention was performed. What conclusion is justified?",
+    choices: ["A direct axonal tract links the regions, even though no anatomical tracing was performed", "One region causes the other to activate, even though no intervention established direction", "The regions exhibit statistical dependence in their activity signals, which indicates functional connectivity", "The regions are physically adjacent in cortex because their activity signals are correlated"],
+    rationale: "Functional connectivity describes statistical dependence, often temporal correlation, between signals from distinct neural regions. Resting-state correlation does not establish an anatomical tract, causal direction, or physical proximity.",
+    feedback: {
+      0: "Anatomical connectivity requires evidence about physical pathways, such as tract tracing or diffusion measures. Correlated BOLD signals do not establish a direct axonal link.",
+      1: "Correlation is compatible with shared input or other common causes. An intervention or directed model would be needed to support a causal claim.",
+      3: "Spatially separated regions can have correlated activity, and nearby regions can show different signals. Functional connectivity is a statistical relation, not a distance measure.",
+    }, cognitiveProcess: "analysis", learningObjectiveId: "biological-analyze-functional-connectivity-without-causal-overclaim", distractorDesign: ["functional-versus-anatomical-connectivity", "correlation-versus-causation", "connectivity-versus-spatial-distance"],
+  },
+  {
+    id: "eppp-v2-cognitive-affective-008", expectedAnswerIndex: 1, expectedDifficulty: "intermediate", targetDifficulty: "advanced",
+    expectedPrompt: "Complete the statement: The levels-of-processing framework (Craik & Lockhart) predicts that:",
+    prompt: "A student studies terms by judging meaning for one set and font color for another; recognition is better for meaning judgments on a later test. Which account best explains the difference?",
+    choices: ["Basic encoding strategies produce comparable memory once study time is matched", "Deeper semantic analysis generally produces stronger memory than attention to surface features", "Rehearsal duration is the main determinant of retention", "Visual analysis is inherently deeper than verbal analysis"],
+    rationale: "Levels-of-processing theory predicts that semantic analysis creates a richer memory trace than attention to physical features such as font color. The later recognition advantage follows from the depth of encoding rather than study time alone.",
+    feedback: {
+      0: "Equal study time does not make encoding operations equivalent. Judging meaning engages a deeper analysis than judging a perceptual feature.",
+      2: "Rehearsal can matter, but the vignette holds the study activity in view and contrasts semantic meaning with surface form. Depth of analysis is the key distinction.",
+      3: "Visual and verbal materials can receive shallow or deep processing. Modality by itself does not determine the depth of the encoded representation.",
+    }, cognitiveProcess: "application", learningObjectiveId: "cognitive-apply-levels-of-processing-to-semantic-encoding-advantage", distractorDesign: ["equal-study-time-confusion", "rehearsal-duration-overclaim", "modality-versus-depth-confusion"],
+  },
+  {
+    id: "eppp-v2-cognitive-affective-010", expectedAnswerIndex: 3, expectedDifficulty: "intermediate", targetDifficulty: "advanced",
+    expectedPrompt: "Which situation best illustrates Learned helplessness (Seligman)?",
+    prompt: "After repeated inescapable noise, a subject fails to initiate behavior despite earlier training that had made escape possible. Which inference is most defensible?",
+    choices: ["Prior failure increases active escape across later tasks", "Motivation is restored by attributing outcomes to a stable biological trait", "An innate helplessness program explains behavior independent of learning history", "Perceived uncontrollability can reduce initiation of escape even when a route is available"],
+    rationale: "Learned helplessness follows experience with uncontrollable aversive events and can reduce motivation to act when control later becomes possible. The account emphasizes learned expectations, not an inborn program or a universal response.",
+    feedback: {
+      0: "The observed failure to initiate escape is the opposite of an across-task increase in active coping. Prior uncontrollability can suppress attempts when escape becomes available.",
+      1: "Attributing outcomes to a trait is not the learning mechanism described. The critical experience is that actions previously failed to control the aversive event.",
+      2: "The phenomenon depends on a history of uncontrollability and does not require an innate helplessness program. Learning history shapes later expectations and action.",
+    }, cognitiveProcess: "analysis", learningObjectiveId: "cognitive-analyze-learned-helplessness-from-uncontrollable-aversive-history", distractorDesign: ["escape-behavior-direction-reversal", "trait-attribution-confusion", "innate-versus-learned-account"],
+  },
+  {
+    id: "eppp-v2-cognitive-affective-022", expectedAnswerIndex: 3, expectedDifficulty: "intermediate", targetDifficulty: "advanced",
+    expectedPrompt: "Complete the statement: Schemas (Bartlett) influence memory by:",
+    prompt: "After hearing an unfamiliar story, a person recalls omitted details that fit familiar cultural scripts and alters ambiguous events toward expectations. Which role of schemas is shown?",
+    choices: ["Schemas preserve accurate storage when material is organized", "Schemas have minimal influence once a person consciously tries to remember", "Schemas affect procedural motor memory but not narrative recall", "Schemas organize encoding and retrieval but can also introduce systematic, expectation-consistent distortions"],
+    rationale: "Schemas organize incoming material and guide retrieval, making familiar information efficient to process. They can also fill gaps or reshape ambiguous details in ways that fit prior knowledge and expectations.",
+    feedback: {
+      0: "Organization can support efficient memory, but the recalled additions and altered details show that schema support can also produce systematic error.",
+      1: "Conscious effort does not remove the influence of prior knowledge. Schemas can guide selection and reconstruction during deliberate remembering.",
+      2: "Schemas influence narrative and autobiographical recall as well as procedural knowledge. The story example directly demonstrates reconstructive effects on episodic material.",
+    }, cognitiveProcess: "application", learningObjectiveId: "cognitive-apply-schema-theory-to-culturally-shaped-memory-distortion", distractorDesign: ["accuracy-only-schema-account", "conscious-control-overclaim", "procedural-only-schema-account"],
+  },
+  {
+    id: "eppp-v3-intervention-067", expectedAnswerIndex: 0, expectedDifficulty: "advanced", targetDifficulty: "advanced",
+    expectedPrompt: "A client with PTSD avoids an objectively safe transit station associated with an assault and recounts the trauma only in broad summaries. Within Prolonged Exposure (PE), which plan most directly addresses the maintaining avoidance while preserving an exposure-learning focus?",
+    prompt: "During PE planning, a client avoids a station and gives broad trauma summaries. The therapist wants new expectations about danger to compete with avoidance. Which plan best fits?",
+    choices: ["Pair repeated imaginal revisiting with in-vivo approach to reminders in objectively appropriate settings, then process what changed", "Require distress to reach a low threshold during each exercise before moving forward", "Begin with cognitive disputation and postpone trauma reminders until beliefs feel corrected", "Use relaxation to end exposure whenever arousal rises so reminders become associated with calm"],
+    rationale: "PE targets avoidance through repeated imaginal trauma revisiting and in-vivo approach to objectively safe reminders, followed by processing. Learning is strengthened across repetitions and contexts; a prescribed distress drop is not the sole criterion.",
+    feedback: {
+      1: "Within-session distress reduction can occur, but PE does not make a particular distress threshold the test for progress. Approach and new learning remain central.",
+      2: "Cognitive work may be included, yet postponing trauma reminders preserves avoidance. PE directly practices contact with the memory and safe cues.",
+      3: "Ending exposure whenever arousal rises can reinforce escape and safety behavior. The plan should support approach and processing rather than contingent retreat.",
+    }, cognitiveProcess: "analysis", learningObjectiveId: "intervention-analyze-prolonged-exposure-components-for-trauma-avoidance", distractorDesign: ["habituation-threshold-overclaim", "cognition-before-exposure-sequencing", "relaxation-as-safety-behavior"],
+  },
+  {
+    id: "eppp-v2-intervention-065", expectedAnswerIndex: 2, expectedDifficulty: "intermediate", targetDifficulty: "advanced",
+    expectedPrompt: "Complete the statement: The primary difference between efficacy and effectiveness in psychological treatment research is:",
+    prompt: "A manualized treatment works in a screened RCT, while a community clinic wants to know how it performs with mixed comorbidity and routine staffing. Which distinction is being applied?",
+    choices: ["They are interchangeable labels for the same type of evidence", "Efficacy concerns medication mechanisms; effectiveness concerns psychotherapy models", "Efficacy concerns controlled trial conditions; effectiveness concerns outcomes in everyday care", "Effectiveness results are less interpretable because community data lack scientific value"],
+    rationale: "Efficacy asks whether a treatment works under controlled, ideal conditions. Effectiveness asks how it performs in routine practice with diverse clients, comorbidity, ordinary staffing, and typical implementation constraints.",
+    feedback: {
+      0: "The terms answer different implementation questions. Controlled trials and routine practice differ in client selection, setting, delivery, and treatment flexibility.",
+      1: "The distinction applies across psychological and medical treatments. It concerns study conditions and generalizability, not whether the intervention is medication or psychotherapy.",
+      3: "Community evidence can be scientifically informative about transportability and implementation. Its less-controlled conditions change the question rather than remove its value.",
+    }, cognitiveProcess: "application", learningObjectiveId: "intervention-apply-efficacy-effectiveness-distinction-to-community-treatment", distractorDesign: ["same-evidence-confusion", "medication-versus-psychotherapy-confusion", "community-evidence-devaluation"],
+  },
+  {
+    id: "eppp-v2-intervention-070", expectedAnswerIndex: 3, expectedDifficulty: "foundation", targetDifficulty: "intermediate",
+    expectedPrompt: "Complete the statement: Psychoeducation is:",
+    prompt: "After a new diagnosis, a clinician explains the condition, rationale for care, options for managing symptoms, and relapse warning signs, then checks the family's understanding. What intervention is this?",
+    choices: ["An academic lesson designed for trainees rather than clients", "An obsolete therapy component with no outcome relevance", "A professional training module for clinicians", "Psychoeducation: client-focused information that supports informed engagement and coping"],
+    rationale: "Psychoeducation provides understandable information about a condition, treatment rationale, coping strategies, and relapse warning signs. It supports informed participation, self-management, and collaboration with family or care partners.",
+    feedback: {
+      0: "The intended audience is the client and relevant support network, not a class of trainees. The information is integrated into care to support understanding and action.",
+      1: "Psychoeducation is a common evidence-informed component of treatment. Explaining the rationale and coping options can improve collaboration and reduce confusion or stigma.",
+      2: "Professional training teaches clinicians how to practice, whereas psychoeducation translates clinical information for clients and families managing a condition.",
+    }, cognitiveProcess: "application", learningObjectiveId: "intervention-apply-psychoeducation-to-diagnosis-and-treatment-engagement", distractorDesign: ["trainee-lesson-confusion", "obsolete-intervention-confusion", "clinician-training-confusion"],
+  },
+  {
+    id: "eppp-v2-lifespan-045", expectedAnswerIndex: 1, expectedDifficulty: "intermediate", targetDifficulty: "advanced",
+    expectedPrompt: "Complete the statement: The critical period hypothesis in language development suggests that:",
+    prompt: "A child begins first-language instruction at age 3 and another learner begins after puberty; the latter reaches fluent vocabulary but struggles with native-like grammar. Which developmental inference fits?",
+    choices: ["Age has little influence on the efficiency of first-language learning", "Biological maturation creates a sensitive window when effortless first-language learning is easier", "Postpubertal learners are unable to acquire meaningful language", "Language development reflects inherited mechanisms with no experiential contribution"],
+    rationale: "The critical-period account proposes that biological maturation creates a sensitive window for efficient first-language acquisition. Later learners can gain substantial language skill, but native-like mastery may be more difficult.",
+    feedback: {
+      0: "The contrast between early and postpubertal learning suggests that age-related maturation matters. The hypothesis does not treat acquisition efficiency as constant across development.",
+      2: "Later learners can acquire vocabulary and communicate meaningfully. The proposed constraint concerns ease and native-like mastery, not an inability to learn language.",
+      3: "Biological readiness is part of the account, but language experience and interaction remain essential. The hypothesis is not a claim that learning is inherited alone.",
+    }, cognitiveProcess: "analysis", learningObjectiveId: "lifespan-analyze-critical-period-pattern-in-first-language-learning", distractorDesign: ["age-independence-confusion", "critical-period-absolute-impairment", "nature-only-language-account"],
+  },
+  {
+    id: "eppp-v2-lifespan-050", expectedAnswerIndex: 2, expectedDifficulty: "foundation", targetDifficulty: "intermediate",
+    expectedPrompt: "Complete the statement: Erikson's trust vs. mistrust (infancy) is resolved positively when:",
+    prompt: "An infant's caregiver responds predictably to hunger, discomfort, and bids for comfort. Which developmental outcome does Erikson's first stage predict?",
+    choices: ["Self-soothing skills emerge because adults minimize contact", "Isolation from stress prevents mistrust from developing", "Reliable, responsive care supports basic trust and a growing expectation that needs can be met", "Early independence becomes the central psychosocial task"],
+    rationale: "Erikson proposed that consistent, responsive caregiving helps infants develop basic trust and hope. The infant learns that needs can be met through dependable relationships, not through isolation or premature independence.",
+    feedback: {
+      0: "Self-regulation develops within responsive relationships rather than from minimizing contact. Predictable comfort helps the infant learn that caregivers are dependable.",
+      1: "Mistrust is not prevented by shielding an infant from stress. It is resolved through repeated experiences of appropriate care when needs arise.",
+      3: "Independence is a later psychosocial focus. Infancy's central task concerns whether the social world feels reliable enough to support trust.",
+    }, cognitiveProcess: "application", learningObjectiveId: "lifespan-apply-erikson-trust-to-responsive-infant-care", distractorDesign: ["contact-minimization-confusion", "stress-shielding-confusion", "stage-sequencing-confusion"],
+  },
+  {
+    id: "eppp-b008-lifespan-1", expectedAnswerIndex: 1, expectedDifficulty: "foundation", targetDifficulty: "intermediate",
+    expectedPrompt: "After retirement, an older adult misses a work-based social network but has opportunities to join a community choir and volunteer program. Which prediction follows from the engagement account of later-life adjustment?",
+    prompt: "After retirement, an older adult replaces a work role with choir and volunteer activities and reports improved belonging. Which account best explains the adjustment?",
+    choices: ["Reducing social roles protects adjustment by limiting new demands", "Maintaining meaningful roles and substituting activities for lost roles can support later-life adjustment", "Avoiding new relationships preserves the person's prior identity", "Lowering physical and cognitive activity prevents stress during transition"],
+    rationale: "Activity theory emphasizes continued meaningful engagement and substitution for roles lost through retirement or other transitions. New social and cognitive activities can support belonging, though individual preferences and circumstances still matter.",
+    feedback: {
+      0: "The observed improvement follows added engagement rather than withdrawal. Activity theory predicts that meaningful replacement roles can preserve purpose and connection.",
+      2: "Avoiding new relationships would remove a potential source of belonging. The example supports adaptation through new roles, not identity preservation through isolation.",
+      3: "Reducing activity is not the engagement account's prediction. Participation in a choir and volunteer program illustrates continued social and cognitive involvement.",
+    }, cognitiveProcess: "application", learningObjectiveId: "lifespan-apply-activity-theory-to-retirement-role-substitution", distractorDesign: ["withdrawal-versus-engagement-confusion", "relationship-avoidance-confusion", "activity-reduction-confusion"],
+  },
+  {
+    id: "eppp-v2-professional-031", expectedAnswerIndex: 0, expectedDifficulty: "intermediate", targetDifficulty: "advanced",
+    expectedPrompt: "Complete the statement: Supervision ethics require that supervisors:",
+    prompt: "A supervisee begins using an assessment outside their training. The supervisor reviews recordings, offers corrective comments, and documents a plan for improved practice. Which ethical duty is illustrated?",
+    choices: ["Maintain active oversight, candid evaluation, skill development, and responsibility for supervised work", "Take authorship credit for the supervisee's client materials", "Permit independent practice while trusting the supervisee's self-monitoring", "End contact so the supervisory relationship remains nonpersonal"],
+    rationale: "Ethical supervision requires monitoring work, providing honest feedback, developing competence, maintaining appropriate boundaries, and taking responsibility for client welfare within the supervisory relationship.",
+    feedback: {
+      1: "Supervision does not transfer authorship of a supervisee's work to the supervisor. The duty is to guide practice and protect clients through oversight.",
+      2: "Delegating work does not remove the supervisor's monitoring responsibility. A supervisee working beyond training needs structured review and corrective support.",
+      3: "A professional supervisory relationship needs appropriate contact and feedback. Avoiding contact would leave competence and client welfare unaddressed.",
+    }, cognitiveProcess: "analysis", learningObjectiveId: "professional-analyze-supervision-oversight-and-competence-duty", distractorDesign: ["authorship-credit-confusion", "delegation-without-oversight", "boundary-as-distance-confusion"],
+  },
+  {
+    id: "eppp-v2-professional-034", expectedAnswerIndex: 3, expectedDifficulty: "intermediate", targetDifficulty: "advanced",
+    expectedPrompt: "Complete the statement: A psychologist receives a referral for a client whose presenting problem is outside their area of competence. The psychologist should:",
+    prompt: "A psychologist receives a referral for a rare disorder outside current training; a well-prepared clinician with relevant experience is available nearby. What response best follows professional standards?",
+    choices: ["Accept the case and learn the needed skills while treatment proceeds", "Decline the referral and make no effort to connect the client with care", "Treat if the client agrees, even though the psychologist lacks relevant preparation", "State the boundary, connect the client with an appropriate provider, and accept care when consultation supports safe practice"],
+    rationale: "When a qualified specialist is available, referral is the prudent response. If care access were limited, consultation, study, supervision, informed disclosure, and careful monitoring could support work within developing competence.",
+    feedback: {
+      0: "Learning during treatment does not by itself establish competence for a rare presenting problem. The available specialist should be considered before accepting the referral.",
+      1: "Declining without helping the client connect to appropriate care leaves the referral problem unresolved. Competence includes recognizing limits and facilitating a suitable referral.",
+      2: "Client agreement does not cure a competence gap. The psychologist must evaluate preparation, access to consultation, and the client's welfare before providing the service.",
+    }, cognitiveProcess: "analysis", learningObjectiveId: "professional-analyze-competence-limits-and-referral-options", distractorDesign: ["learn-as-you-treat-confusion", "referral-without-care-coordination", "consent-cures-incompetence-confusion"],
+  },
+  {
+    id: "eppp-v2-professional-039", expectedAnswerIndex: 0, expectedDifficulty: "foundation", targetDifficulty: "intermediate",
+    expectedPrompt: "A psychologist practicing in a rural community discovers their only grocery store clerk is also their client. This situation is most accurately described by which option?",
+    prompt: "In a small town, a psychologist sees a client at the only grocery store. Avoiding the store is impractical. What ethical response is most appropriate?",
+    choices: ["A potentially unavoidable multiple relationship managed through clear boundaries and attention to harm", "Terminate therapy because any community contact violates ethics", "Relocate the practice to eliminate the overlap", "Continue as before after obtaining a verbal promise from the client"],
+    rationale: "Small communities can make incidental multiple relationships difficult to avoid. The psychologist should assess foreseeable harm, protect confidentiality, clarify boundaries, and take reasonable steps to manage the overlap.",
+    feedback: {
+      1: "Incidental community contact is not automatically a reason to end treatment. The relevant task is evaluating risk and managing the relationship responsibly.",
+      2: "Relocating may be impractical and is not the standard response to a single unavoidable encounter. Boundary planning and confidentiality protection are more proportionate.",
+      3: "A verbal promise does not address privacy, role confusion, or foreseeable harm. Continuing requires an explicit plan for encounters and clinical boundaries.",
+    }, cognitiveProcess: "application", learningObjectiveId: "professional-apply-rural-multiple-relationship-management-to-incidental-contact", distractorDesign: ["automatic-termination-confusion", "relocation-as-default-confusion", "verbal-consent-as-sufficient"],
+  },
+  {
+    id: "eppp-b007-social-1", expectedAnswerIndex: 0, expectedDifficulty: "intermediate", targetDifficulty: "advanced",
+    expectedPrompt: "A supervisor attributes her team's successful launch to her leadership but explains a failed launch as the result of an unpredictable client. Which interpretation best fits this attribution pattern?",
+    prompt: "A supervisor explains a successful launch by pointing to her leadership, yet attributes an unsuccessful launch to an unpredictable client's actions. Which attributional process is shown?",
+    choices: ["Outcome-biased attribution: internal causes are assigned to favorable results and situational causes to unfavorable results", "External locus of control, because one outcome had a situational explanation", "Actor-observer asymmetry, because the supervisor compares her behavior with another actor's", "Availability heuristic, because the recent client problem is easy to recall"],
+    rationale: "The explanation changes with outcome valence: success receives internal credit, whereas failure receives a situational explanation. That pattern is self-serving attribution rather than a stable control orientation or a memory shortcut.",
+    feedback: {
+      1: "One situational explanation for failure does not establish a general external locus of control. The contrast between success and failure is the diagnostic feature.",
+      2: "Actor-observer asymmetry compares explanations of one's own behavior with another person's behavior. Here the same supervisor changes explanations across outcome valence.",
+      3: "Availability concerns how easily examples come to mind when judging likelihood. The pattern concerns causal credit and blame, not recall fluency.",
+    }, cognitiveProcess: "analysis", learningObjectiveId: "social-cultural-analyze-self-serving-attribution-across-success-and-failure", distractorDesign: ["locus-of-control-confusion", "actor-observer-confusion", "availability-heuristic-confusion"],
+  },
+  {
+    id: "eppp-b007-social-2", expectedAnswerIndex: 2, expectedDifficulty: "intermediate", targetDifficulty: "advanced",
+    expectedPrompt: "A university is designing an intergroup-contact program to reduce prejudice. Which prediction is most consistent with Pettigrew and Tropp's meta-analysis?",
+    prompt: "A university creates a cross-group program with shared projects but mixed status and inconsistent institutional support. What prediction follows from contact research?",
+    choices: ["Threatening encounters eliminate an average prejudice-reduction association across studies", "The association largely reflects low-prejudice people selecting contact, so rigorous studies should show little relation", "Contact tends to relate to lower prejudice; cooperative structure can strengthen the association but is not required in each setting", "Benefits require equal status, cooperation, common goals, and institutional support in combination"],
+    rationale: "Pettigrew and Tropp's meta-analysis found that intergroup contact generally relates to lower prejudice, with stronger effects under facilitating conditions. Equal status, cooperation, common goals, and support help but are not necessary in every contact setting.",
+    feedback: {
+      0: "Threat and poor structure can weaken an encounter, but the meta-analytic pattern still showed an average association between contact and lower prejudice.",
+      1: "Selection may contribute in some studies, yet the association persisted across more rigorous designs. The evidence is not reduced to low-prejudice participants seeking contact.",
+      3: "The classic conditions facilitate positive contact, but the meta-analysis did not treat their joint presence as a prerequisite for every beneficial association.",
+    }, cognitiveProcess: "analysis", learningObjectiveId: "social-cultural-analyze-intergroup-contact-meta-analytic-prediction", distractorDesign: ["contact-effect-elimination", "selection-explanation-overreach", "facilitating-conditions-as-prerequisite"],
+  },
+  {
+    id: "eppp-b011-social-1", expectedAnswerIndex: 0, expectedDifficulty: "intermediate", targetDifficulty: "advanced",
+    expectedPrompt: "After approving a punitive policy, a committee member says, \"Everyone voted for it, so no individual can be responsible for the families harmed.\" Which moral-disengagement mechanism is most specifically illustrated?",
+    prompt: "A committee defends a harmful vote by saying responsibility belongs to the group rather than to any individual. Which mechanism is most direct?",
+    choices: ["Diffusion of responsibility, because collective action obscures each member's personal agency", "Displacement of responsibility, because an authority directed the act", "Moral justification, because harm was framed as serving a valued purpose", "Distortion of consequences, because the harm was minimized or misrepresented"],
+    rationale: "Diffusion of responsibility disperses agency across a group, allowing each member to feel less personally accountable. Displacement shifts agency to an authority, moral justification reframes conduct, and consequence distortion minimizes harm.",
+    feedback: {
+      1: "No directing authority is described. The member is reducing personal agency by pointing to collective participation, which is diffusion rather than displacement.",
+      2: "The statement does not portray the policy as morally valuable. It addresses who is accountable, not why the harmful action should be viewed as acceptable.",
+      3: "The member does not minimize or deny the families' harm. The defense distributes responsibility among voters, leaving consequence distortion unsupported.",
+    }, cognitiveProcess: "application", learningObjectiveId: "social-cultural-apply-moral-disengagement-mechanisms-to-collective-accountability", distractorDesign: ["diffusion-versus-displacement", "moral-justification-confusion", "consequence-distortion-confusion"],
+  },
+  {
+    id: "eppp-b001-research-1", expectedAnswerIndex: 0, expectedDifficulty: "foundation", targetDifficulty: "intermediate",
+    expectedPrompt: "A variable changes the strength or direction of the association between a predictor and an outcome. In a statistical model, that variable functions as a:",
+    prompt: "A treatment improves math scores more for students with high baseline anxiety than for those with low anxiety. In this analysis, baseline anxiety functions as what?",
+    choices: ["A moderator that changes the strength or direction of the treatment–outcome association", "A mediator that transmits the treatment effect through an intervening process", "A confounder by definition that invalidates the comparison", "A randomization block used to conceal condition assignment"],
+    rationale: "A moderator specifies when, for whom, or under what conditions an association differs, commonly through an interaction term. Baseline anxiety changes the treatment association here; a mediator would describe an intervening pathway.",
+    feedback: {
+      1: "A mediator explains how an effect may be transmitted. The vignette says the treatment association differs by anxiety level, which is a moderation pattern.",
+      2: "A confounder is related to the predictor and outcome in a way that can bias their association. Anxiety's interaction with treatment does not make it a confounder by definition.",
+      3: "A randomization block is a design or allocation device. It does not describe a measured characteristic that changes the treatment effect across students.",
+    }, cognitiveProcess: "application", learningObjectiveId: "research-apply-moderation-to-anxiety-dependent-treatment-effect", distractorDesign: ["moderator-versus-mediator", "moderator-versus-confounder", "statistical-moderator-versus-randomization-block"],
+  },
+  {
+    id: "eppp-b008-research-2", expectedAnswerIndex: 2, expectedDifficulty: "intermediate", targetDifficulty: "advanced",
+    expectedPrompt: "A 12-item scale yields α = .92, but a confirmatory factor analysis favors two correlated factors over one factor. Which interpretation is most defensible?",
+    prompt: "A 12-item scale has alpha .92, yet CFA favors two correlated factors. What should an evaluator conclude before using one total score?",
+    choices: ["Alpha outweighs factor evidence, so one dimension is established", "Two factors imply item covariance was too low to support alpha .92", "High internal consistency can coexist with related dimensions and does not establish unidimensionality", "The discrepancy by itself says little about prediction of external criteria"],
+    rationale: "Alpha can be high when items are redundant or when related dimensions share covariance. It does not establish unidimensionality; factor analysis supplies the relevant evidence about latent structure before a total score is interpreted.",
+    feedback: {
+      0: "Alpha summarizes item covariance and does not adjudicate the number of latent dimensions. The factor solution is relevant to whether a single total score is coherent.",
+      1: "Related factors can generate substantial covariance, so a high alpha is compatible with the two-factor result. Alpha is not a test that item covariance is too low.",
+      3: "The discrepancy primarily concerns internal structure and score interpretation. It does not by itself establish or refute prediction of external criteria.",
+    }, cognitiveProcess: "analysis", learningObjectiveId: "research-analyze-alpha-and-factor-structure-before-total-score-use", distractorDesign: ["alpha-over-factor-evidence", "factor-covariance-confusion", "internal-structure-versus-criterion-validity"],
+  },
+  {
+    id: "eppp-b009-research-1", expectedAnswerIndex: 0, expectedDifficulty: "intermediate", targetDifficulty: "advanced",
+    expectedPrompt: "Clinic staff report deliberately following hand-hygiene procedures more often while a visible audit team is present, even though the team gives no feedback and no policy changes. Which research artifact is most directly illustrated?",
+    prompt: "Hand-hygiene compliance rises during visible audits even with no feedback or policy change. What source of bias should researchers consider?",
+    choices: ["Participant reactivity to being observed, often called a Hawthorne effect", "Observer-expectancy bias in the auditors' coding", "A testing effect from repeated ability measurement", "Regression toward the mean after selecting extreme performers"],
+    rationale: "The Hawthorne label describes participant reactivity: awareness of observation changes behavior. The pattern is not primarily a rater-expectancy effect, a memory benefit from repeated testing, or statistical movement after selecting extreme scores.",
+    feedback: {
+      1: "Observer expectancy concerns how auditors' beliefs influence coding. Here the staff themselves change hand-hygiene behavior when they notice observation.",
+      2: "Testing effects arise when repeated exposure changes performance on a measure. Hand-hygiene behavior is changing in response to observation, not practice with test items.",
+      3: "Regression to the mean concerns retesting selected extreme observations. The rise during visible audits is a behavioral response to being watched.",
+    }, cognitiveProcess: "application", learningObjectiveId: "research-apply-participant-reactivity-to-observed-clinic-behavior", distractorDesign: ["participant-reactivity-versus-observer-expectancy", "testing-effect-confusion", "regression-versus-reactivity-confusion"],
+  },
+];
+
+module.exports = { baselineMetrics, reviewedAt, reviewWave, revisions };

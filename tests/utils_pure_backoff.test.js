@@ -6,7 +6,7 @@
 // path sleeps through real backoff; the fast-fail statuses throw on the first response).
 //
 // Anti-drift: extracts the real arrow from source at runtime and runs it with a stubbed fetch.
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -16,12 +16,15 @@ function makeFetcher() {
   const anchor = 'const fetchWithExponentialBackoff = ';
   const at = SRC.indexOf(anchor);
   if (at < 0) throw new Error('fetchWithExponentialBackoff not found');
+  const policyAt = SRC.indexOf('const PROVIDER_RETRY_AFTER_MAX_MS = ');
+  if (policyAt < 0 || policyAt > at) throw new Error('provider retry policy not found');
   const braceStart = SRC.indexOf('{', SRC.indexOf('=>', at));
   let i = braceStart, d = 0, end = -1;
   for (; i < SRC.length; i++) { const c = SRC[i]; if (c === '{') d++; else if (c === '}') { d--; if (d === 0) { end = i; break; } } }
   const head = SRC.slice(at + anchor.length, SRC.indexOf('=>', at));
   // eslint-disable-next-line no-eval
-  return new Function('fetch', 'warnLog', 'return (' + head + '=> ' + SRC.slice(braceStart, end + 1) + ');');
+  return new Function('fetch', 'warnLog', SRC.slice(policyAt, at)
+    + '\nreturn (' + head + '=> ' + SRC.slice(braceStart, end + 1) + ');');
 }
 const build = makeFetcher();
 
@@ -144,5 +147,83 @@ describe('fetchWithExponentialBackoff — per-request timeout (anti-hang)', () =
     expect(SRC).toContain('perRequestTimeoutMs = 120000');
     expect(SRC).toContain('new AbortController()');
     expect(SRC).toContain('Request aborted by caller'); // caller-abort propagates, no retry
+  });
+});
+
+describe('fetchWithExponentialBackoff server-directed, abortable backoff', () => {
+  it('uses delta-seconds Retry-After as the actual delay floor', async () => {
+    vi.useFakeTimers();
+    const onInnerBackoff = vi.fn();
+    const responses = [
+      { ok: false, status: 429, statusText: 'Too Many Requests', headers: { get: () => '2' } },
+      { ok: true, status: 200, headers: { get: () => null } },
+    ];
+    const fetchImpl = vi.fn(async () => responses.shift());
+    const originalRandom = Math.random;
+    Math.random = () => 0;
+    try {
+      const request = build(fetchImpl, () => {})('https://api.example.test/v1?key=SECRET', {}, 2, 5000, { onInnerBackoff });
+      await vi.advanceTimersByTimeAsync(1999);
+      expect(fetchImpl).toHaveBeenCalledTimes(1);
+      await vi.advanceTimersByTimeAsync(1);
+      await expect(request).resolves.toMatchObject({ ok: true });
+      expect(fetchImpl).toHaveBeenCalledTimes(2);
+      expect(onInnerBackoff).toHaveBeenCalledWith(expect.objectContaining({ delayMs: 2000, retryAfterSec: 2 }));
+    } finally {
+      Math.random = originalRandom;
+      vi.useRealTimers();
+    }
+  });
+
+  it('honors an HTTP-date Retry-After and caps an excessive server delay', () => {
+    const policyAt = SRC.indexOf('const PROVIDER_RETRY_AFTER_MAX_MS = ');
+    const classifyAt = SRC.indexOf('const classifyProviderError = ', policyAt);
+    const prefix = SRC.slice(policyAt, classifyAt);
+    // eslint-disable-next-line no-new-func
+    const parse = new Function(prefix + '\nreturn parseProviderRetryAfter;')();
+    const now = Date.parse('2026-08-20T12:00:00.000Z');
+    expect(parse('Thu, 20 Aug 2026 12:00:03 GMT', now)).toMatchObject({ delayMs: 3000, retryAfterSec: 3, exceedsRetryWindow: false });
+    expect(parse('3600', now)).toMatchObject({ delayMs: 120000, retryAfterSec: 120, exceedsRetryWindow: true });
+  });
+
+  it('uses an HTTP-date Retry-After as the actual delay floor', async () => {
+    vi.useFakeTimers();
+    const now = Date.parse('2026-08-20T12:00:00.000Z');
+    vi.setSystemTime(now);
+    const responses = [
+      { ok: false, status: 429, statusText: 'Too Many Requests', headers: { get: () => 'Thu, 20 Aug 2026 12:00:03 GMT' } },
+      { ok: true, status: 200, headers: { get: () => null } },
+    ];
+    const fetchImpl = vi.fn(async () => responses.shift());
+    const originalRandom = Math.random;
+    Math.random = () => 0;
+    try {
+      const request = build(fetchImpl, () => {})('https://api.example.test/v1', {}, 2, 5000);
+      await vi.advanceTimersByTimeAsync(2999);
+      expect(fetchImpl).toHaveBeenCalledTimes(1);
+      await vi.advanceTimersByTimeAsync(1);
+      await expect(request).resolves.toMatchObject({ ok: true });
+      expect(fetchImpl).toHaveBeenCalledTimes(2);
+    } finally {
+      Math.random = originalRandom;
+      vi.useRealTimers();
+    }
+  });
+
+  it('aborts while waiting for Retry-After and never reissues the request', async () => {
+    vi.useFakeTimers();
+    const response = { ok: false, status: 429, statusText: 'Too Many Requests', headers: { get: () => '60' } };
+    const fetchImpl = vi.fn(async () => response);
+    const ctl = new AbortController();
+    try {
+      const request = build(fetchImpl, () => {})('https://api.example.test/v1', { signal: ctl.signal }, 2, 5000);
+      await vi.advanceTimersByTimeAsync(0);
+      ctl.abort();
+      await expect(request).rejects.toMatchObject({ name: 'AbortError' });
+      expect(fetchImpl).toHaveBeenCalledTimes(1);
+      expect(vi.getTimerCount()).toBe(0);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

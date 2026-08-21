@@ -38,20 +38,20 @@
     "fullKeyEchoOptions": 718
   },
   "liveBefore": {
-    "itemsWithWarnings": 464,
-    "incorrectOptionsWithWarnings": 1289,
-    "insufficientDetailOptions": 602,
-    "genericTemplateOptions": 633,
-    "choiceRestatementOptions": 145,
-    "fullKeyEchoOptions": 64
+    "itemsWithWarnings": 419,
+    "incorrectOptionsWithWarnings": 1164,
+    "insufficientDetailOptions": 578,
+    "genericTemplateOptions": 534,
+    "choiceRestatementOptions": 132,
+    "fullKeyEchoOptions": 61
   },
   "liveAfter": {
-    "itemsWithWarnings": 464,
-    "incorrectOptionsWithWarnings": 1289,
-    "insufficientDetailOptions": 602,
-    "genericTemplateOptions": 633,
-    "choiceRestatementOptions": 145,
-    "fullKeyEchoOptions": 64
+    "itemsWithWarnings": 419,
+    "incorrectOptionsWithWarnings": 1164,
+    "insufficientDetailOptions": 578,
+    "genericTemplateOptions": 534,
+    "choiceRestatementOptions": 132,
+    "fullKeyEchoOptions": 61
   },
   "deepPrerequisiteSatisfied": true,
   "halvingTargetsSatisfied": true,
@@ -59,7 +59,7 @@
   "fingerprints": {
     "selection": "796d90d0c26e71169497e3867bf8f9eb5575d33106aa156a8f5a41bb35e768e7",
     "composition": "86336c1c190009dfd3972a1da6411f805cdff04d9dae028e968adf052408da0a",
-    "protectedContent": "4df0112ccc8204a3ead852eca64fd86ed7261934b642575263ee225c3040f38b"
+    "protectedContent": "d47c9de7e467dfa970dcbb20d79d1ac542ba22977f4b78263131a54fa3c3d82c"
   },
   "summary": {
     "selectedItems": 420,
@@ -75,7 +75,7 @@
       "id": "eppp-b005-cognitive-1",
       "family": "triple-ceg",
       "expectedAnswerIndex": 1,
-      "protectedFingerprint": "b61886e79d9fde63fe6b7f15d13ca64710c5337f1607bb30399421b4fdd8db21",
+      "protectedFingerprint": "f991613b2a666b15319ce14f0afbaaee19bc75811ce85d141e628b8cd87b4ec9",
       "modes": {
         "0": "rationale-grounded-option-contrast-draft",
         "2": "rationale-grounded-option-contrast-draft",
@@ -86,7 +86,7 @@
       "id": "eppp-b006-intervention-1",
       "family": "triple-ceg",
       "expectedAnswerIndex": 1,
-      "protectedFingerprint": "a6b52d9eed50e2a59cfb861f005d6afae13163a0f767fc7665c7c9f88ee34725",
+      "protectedFingerprint": "23481006282c20fc165e9248a7592698842c237b5e719b6f0569d202ed32099e",
       "modes": {
         "0": "rationale-grounded-option-contrast-draft",
         "2": "rationale-grounded-option-contrast-draft",
@@ -262,7 +262,7 @@
       "id": "eppp-b009-biological-2",
       "family": "triple-ceg",
       "expectedAnswerIndex": 2,
-      "protectedFingerprint": "bb878552e782790b25e18a9ef9888ce33798983e319862122b2623408ad3fd57",
+      "protectedFingerprint": "f2d839a2e7f07f25648185746bed7b14ce0bfc46aed5c74835f1f723e6c8911b",
       "modes": {
         "0": "rationale-grounded-option-contrast-draft",
         "1": "rationale-grounded-option-contrast-draft",
@@ -273,7 +273,7 @@
       "id": "eppp-b009-cognitive-1",
       "family": "triple-ceg",
       "expectedAnswerIndex": 1,
-      "protectedFingerprint": "f835b62fc77713ac9367fde48bb4e8c5a50f81cf261d654bee104007d83239ee",
+      "protectedFingerprint": "e119e99c708ff2e631b168ada4702b2efc1cb1fab88ee06898da9bbc40222556",
       "modes": {
         "0": "rationale-grounded-option-contrast-draft",
         "2": "rationale-grounded-option-contrast-draft",
@@ -284,7 +284,7 @@
       "id": "eppp-b009-lifespan-1",
       "family": "triple-ceg",
       "expectedAnswerIndex": 1,
-      "protectedFingerprint": "c8392f7acec6c5414e354877d83437a935638be894ef54a2d2d93ad96fbbb3b8",
+      "protectedFingerprint": "a546b52f0913a2ec37ac20ca83fcb9a3302caa3407bf1121eb6170af0408e8b8",
       "modes": {
         "0": "rationale-grounded-option-contrast-draft",
         "2": "rationale-grounded-option-contrast-draft",
@@ -361,7 +361,7 @@
       "id": "eppp-b010-professional-2",
       "family": "triple-ceg",
       "expectedAnswerIndex": 3,
-      "protectedFingerprint": "d46478caa3f35622f92b8b781812a20c62bbafad4755571c73fa815bd82cb5d8",
+      "protectedFingerprint": "c8d64c73e76132737a62e1a2f49512a43bb16d6029de887bf725d18ec714ba88",
       "modes": {
         "0": "rationale-grounded-option-contrast-draft",
         "1": "rationale-grounded-option-contrast-draft",
@@ -405,7 +405,7 @@
       "id": "eppp-b011-biological-2",
       "family": "triple-ceg",
       "expectedAnswerIndex": 2,
-      "protectedFingerprint": "3c7f83511c537755995bf1058709d22d5c453d9e4b1e0499be0b8b7f8380da46",
+      "protectedFingerprint": "71f9b1c0394f3fbd5c93ea41314a78ac5ec25d6aab12b0588d416c00d887cfd4",
       "modes": {
         "0": "rationale-grounded-option-contrast-draft",
         "1": "rationale-grounded-option-contrast-draft",
@@ -570,7 +570,7 @@
       "id": "eppp-b012-social-2",
       "family": "triple-ceg",
       "expectedAnswerIndex": 2,
-      "protectedFingerprint": "bbef6c844d6034aed15e9c7cbfb3ee39eadfb38a2b99137b034075c5bd1552e3",
+      "protectedFingerprint": "cef203a12977412e48d1dc471e077aa09aecc662d3220b22f7febc2333897715",
       "modes": {
         "0": "rationale-grounded-option-contrast-draft",
         "1": "rationale-grounded-option-contrast-draft",
@@ -603,7 +603,7 @@
       "id": "eppp-b013-intervention-2",
       "family": "triple-ceg",
       "expectedAnswerIndex": 3,
-      "protectedFingerprint": "9afc030b2ca8d2178cb448cd472accbcb0ad9f45328348b8bad766bd613004a5",
+      "protectedFingerprint": "427b79aaa0b17f19f735922cc10dadff9f66cd97c334b631d933c026a8f6535e",
       "modes": {
         "0": "rationale-grounded-option-contrast-draft",
         "1": "rationale-grounded-option-contrast-draft",
@@ -614,7 +614,7 @@
       "id": "eppp-b013-lifespan-1",
       "family": "triple-ceg",
       "expectedAnswerIndex": 1,
-      "protectedFingerprint": "8ffafa72d5beddced6db9b5a44acedace1b29e21c2a314a815cb8fc2c3ffddc0",
+      "protectedFingerprint": "4092b2d91fe1ed0b3b829168c20360f477bddb3d1ab0e6e3b4ca146d1f198e99",
       "modes": {
         "0": "rationale-grounded-option-contrast-draft",
         "2": "rationale-grounded-option-contrast-draft",
@@ -658,7 +658,7 @@
       "id": "eppp-b014-assessment-1",
       "family": "triple-ceg",
       "expectedAnswerIndex": 0,
-      "protectedFingerprint": "537724f61c17cb0d3aa58414648bbdb76cb1eceba78c3d243a94aa997bc0ebf8",
+      "protectedFingerprint": "e75cd3150370e331b9a9e210321f5438482eb4ebbc246bf90c11dcef3328ef84",
       "modes": {
         "1": "rationale-grounded-option-contrast-draft",
         "2": "rationale-grounded-option-contrast-draft",
@@ -669,7 +669,7 @@
       "id": "eppp-b014-biological-1",
       "family": "triple-ceg",
       "expectedAnswerIndex": 0,
-      "protectedFingerprint": "98f47005f1982449f3721c05352a7ef02bb519ae334c201edbd9ee668e8d74ef",
+      "protectedFingerprint": "aea8578e15e4a9ec7a5fc71b423a98469983549a791bf9be92d2ed71dfe2a4be",
       "modes": {
         "1": "rationale-grounded-option-contrast-draft",
         "2": "rationale-grounded-option-contrast-draft",
@@ -702,7 +702,7 @@
       "id": "eppp-b014-lifespan-1",
       "family": "triple-ceg",
       "expectedAnswerIndex": 1,
-      "protectedFingerprint": "d3c4050688cd31524047656e1a39cd1a9984816f24c24b213b013ad121dff6c9",
+      "protectedFingerprint": "1f8ab33314f0f375ab03ea458cb4a4065f7f1c02d6e50ad25fe1d82576d7fd8b",
       "modes": {
         "0": "rationale-grounded-option-contrast-draft",
         "2": "rationale-grounded-option-contrast-draft",
@@ -724,7 +724,7 @@
       "id": "eppp-b014-research-1",
       "family": "triple-ceg",
       "expectedAnswerIndex": 0,
-      "protectedFingerprint": "9832f5cd8a459aebf39321d5de1ccab11925c834039365284f7f08718cb74f98",
+      "protectedFingerprint": "fcc8cfe0b928cc92f6a2b22e2851cead1112d3b5ea0c75d160fbd83cb945a78f",
       "modes": {
         "1": "rationale-grounded-option-contrast-draft",
         "2": "rationale-grounded-option-contrast-draft",
@@ -856,7 +856,7 @@
       "id": "eppp-b015-research-2",
       "family": "triple-ceg",
       "expectedAnswerIndex": 2,
-      "protectedFingerprint": "fdee417a73fcafd16823f70852d083df72d0c9d34d203bab1446637007ef8b3b",
+      "protectedFingerprint": "e3f8ff3a480d59b9bf4d9ad6fc4cf096a440123bbe4bf2fe4775006488419416",
       "modes": {
         "0": "rationale-grounded-option-contrast-draft",
         "1": "rationale-grounded-option-contrast-draft",
@@ -922,7 +922,7 @@
       "id": "eppp-b016-biological-2",
       "family": "triple-ceg",
       "expectedAnswerIndex": 2,
-      "protectedFingerprint": "197c4bcec0b69ead6b6516b8b8e5105d3cce329d326c9695cb9641281104afb3",
+      "protectedFingerprint": "766cedecf99712626747442b91fb8aa9f42ed06c3fb1b6b573e1720b2f9cfd49",
       "modes": {
         "0": "rationale-grounded-option-contrast-draft",
         "1": "rationale-grounded-option-contrast-draft",
@@ -1131,7 +1131,7 @@
       "id": "eppp-b018-lifespan-2",
       "family": "triple-ceg",
       "expectedAnswerIndex": 2,
-      "protectedFingerprint": "f7d4ecbcbde38c7e5a30464832985722c5bd90b19741c05544d5abdd19a2cf30",
+      "protectedFingerprint": "cae2f0757d07225d91f8fecd0b6b0447e780bbf9e42c52176c419a4ba70527e7",
       "modes": {
         "0": "rationale-grounded-option-contrast-draft",
         "1": "rationale-grounded-option-contrast-draft",
@@ -1175,7 +1175,7 @@
       "id": "eppp-b019-assessment-2",
       "family": "triple-ceg",
       "expectedAnswerIndex": 1,
-      "protectedFingerprint": "ec66eced7ed74c5804a6ae398934c754962e91906070b1cc9b0d5e395c79a49e",
+      "protectedFingerprint": "d986deacd4f119266c34fdc80ef99d7da69f0253761c98cdd9058081ecacea4d",
       "modes": {
         "0": "rationale-grounded-option-contrast-draft",
         "2": "rationale-grounded-option-contrast-draft",
@@ -1219,7 +1219,7 @@
       "id": "eppp-b019-lifespan-1",
       "family": "triple-ceg",
       "expectedAnswerIndex": 2,
-      "protectedFingerprint": "f98676ac55b0d771c0b616a63bcf2a9e469dd2e7fb093a7b0254ee20909088ac",
+      "protectedFingerprint": "170141f3545ae38c66894d9141708d1018df11f5192a6fd844d95e89008df9e1",
       "modes": {
         "0": "rationale-grounded-option-contrast-draft",
         "1": "rationale-grounded-option-contrast-draft",
@@ -1307,7 +1307,7 @@
       "id": "eppp-b020-lifespan-1",
       "family": "triple-ceg",
       "expectedAnswerIndex": 2,
-      "protectedFingerprint": "73d9b344f56f9221f530fbce4687a5cd54c277d7110c079b668b836a91ad3a5e",
+      "protectedFingerprint": "87f667f115c15657f2c6cc842957d998a4c752a403209e2b8bc4e9326a177c3f",
       "modes": {
         "0": "rationale-grounded-option-contrast-draft",
         "1": "rationale-grounded-option-contrast-draft",
@@ -1318,7 +1318,7 @@
       "id": "eppp-b020-professional-2",
       "family": "triple-ceg",
       "expectedAnswerIndex": 2,
-      "protectedFingerprint": "5494889f827edc9c6d662dc301404e8a30743c825990447387eec1371650701e",
+      "protectedFingerprint": "58aab991efef0482ad0a081d3f13b18d3fec3306c90cf3585e2af732d6f462e7",
       "modes": {
         "0": "rationale-grounded-option-contrast-draft",
         "1": "rationale-grounded-option-contrast-draft",
@@ -1450,7 +1450,7 @@
       "id": "eppp-b021-lifespan-1",
       "family": "triple-ceg",
       "expectedAnswerIndex": 1,
-      "protectedFingerprint": "4866089ea1649b07f5cce6c4d834a80af0886b4a125ed9ab87e52a9acf2bcfe0",
+      "protectedFingerprint": "0f1b10d4d09dfc88b527ee7c105bf3873781b03f2d61f3e0662ed2452464b2c2",
       "modes": {
         "0": "rationale-grounded-option-contrast-draft",
         "2": "rationale-grounded-option-contrast-draft",
@@ -1582,7 +1582,7 @@
       "id": "eppp-b022-lifespan-1",
       "family": "triple-ceg",
       "expectedAnswerIndex": 1,
-      "protectedFingerprint": "fe07fa3259e871c1727c4b5696acc67471fc382b97fc2820562d419da242efe4",
+      "protectedFingerprint": "d80f0589f32ab2e7f887334eace61aa74bb9da9a75655056abdcb251f4d775a2",
       "modes": {
         "0": "rationale-grounded-option-contrast-draft",
         "2": "rationale-grounded-option-contrast-draft",
@@ -1604,7 +1604,7 @@
       "id": "eppp-b022-professional-1",
       "family": "triple-ceg",
       "expectedAnswerIndex": 0,
-      "protectedFingerprint": "4252cf4b52fdda40345c0a9e85f96ae0be4b379a950c6173601604be905f7551",
+      "protectedFingerprint": "47384b471d9ac73aabdfe8aea7bf1eb4807aac525cc36e3a7f5f9cf4a69892f5",
       "modes": {
         "1": "rationale-grounded-option-contrast-draft",
         "2": "rationale-grounded-option-contrast-draft",
@@ -1637,7 +1637,7 @@
       "id": "eppp-b022-professional-4",
       "family": "triple-ceg",
       "expectedAnswerIndex": 3,
-      "protectedFingerprint": "92e3693fcf0ddc3a61a5a6311e0eb91507c61f89218ea84a7b6b342eaa15ac5d",
+      "protectedFingerprint": "f9fcb64bdfa3f3b9e65e5397742d3ac7d9b391ab90f30237a16c10b05dae05dd",
       "modes": {
         "0": "rationale-grounded-option-contrast-draft",
         "1": "rationale-grounded-option-contrast-draft",
@@ -1670,7 +1670,7 @@
       "id": "eppp-b023-assessment-1",
       "family": "triple-ceg",
       "expectedAnswerIndex": 0,
-      "protectedFingerprint": "ccb3b9feab3e8570a180f4a5be856b27c5c7f6c7a4494eca3e420df3d6e0c393",
+      "protectedFingerprint": "0e63eb2a60ae16549ea154749f8229bc1cb21bcdd11d1e41ecb31d0d3a53c9d8",
       "modes": {
         "1": "rationale-grounded-option-contrast-draft",
         "2": "rationale-grounded-option-contrast-draft",
@@ -1692,7 +1692,7 @@
       "id": "eppp-b023-biological-2",
       "family": "triple-ceg",
       "expectedAnswerIndex": 1,
-      "protectedFingerprint": "7ee1687fffec4f76bd59807ab63c5f30df59f0e9e29757ff7282976ce91ba8c2",
+      "protectedFingerprint": "f5d7eea0864de6a2e998b4086c54892db39e092e0e302bd5a2cc73d07974d429",
       "modes": {
         "0": "rationale-grounded-option-contrast-draft",
         "2": "rationale-grounded-option-contrast-draft",
@@ -1703,7 +1703,7 @@
       "id": "eppp-b023-cognitive-1",
       "family": "triple-ceg",
       "expectedAnswerIndex": 0,
-      "protectedFingerprint": "38699575cdfb4c628546fe9a622139d9a14094bb01ae5e94085f328209c31901",
+      "protectedFingerprint": "55a1b679e4c29a8705ff873f396a032779225b15228d447b9b7e4d0fff289f79",
       "modes": {
         "1": "rationale-grounded-option-contrast-draft",
         "2": "rationale-grounded-option-contrast-draft",
@@ -1758,7 +1758,7 @@
       "id": "eppp-b023-professional-3",
       "family": "triple-ceg",
       "expectedAnswerIndex": 3,
-      "protectedFingerprint": "cc32fc63dfc975d62e38ac626f6ea19a2da5002286608228e40281cd8659c349",
+      "protectedFingerprint": "bc55c9738f9fd6502c2facd1326a906b75195bc8aa398a469933045ce9e61488",
       "modes": {
         "0": "rationale-grounded-option-contrast-draft",
         "1": "rationale-grounded-option-contrast-draft",
@@ -1769,7 +1769,7 @@
       "id": "eppp-b023-social-2",
       "family": "triple-ceg",
       "expectedAnswerIndex": 2,
-      "protectedFingerprint": "c9abebeade9fa6f5ee77a4e3b2b36164989e524a9b060704d7986242dbf02d48",
+      "protectedFingerprint": "44bc5cb2702ebf2decf3b4d02ee730db59860b0760ac8f6ca07f064613b9ee0f",
       "modes": {
         "0": "rationale-grounded-option-contrast-draft",
         "1": "rationale-grounded-option-contrast-draft",
@@ -1802,7 +1802,7 @@
       "id": "eppp-b024-biological-1",
       "family": "triple-ceg",
       "expectedAnswerIndex": 0,
-      "protectedFingerprint": "1e5d9a6cd0c243320034352671fbc2bd3c26abe28b84fc659eabc44bc63b138a",
+      "protectedFingerprint": "8c8b19b0478fd1550bdb8b78d2ecdd86036fe9e210243bad7c68c9611dfb5bd2",
       "modes": {
         "1": "rationale-grounded-option-contrast-draft",
         "2": "rationale-grounded-option-contrast-draft",
@@ -1923,7 +1923,7 @@
       "id": "eppp-b025-cognitive-1",
       "family": "triple-ceg",
       "expectedAnswerIndex": 0,
-      "protectedFingerprint": "608d7205e8b1d0af6bed516fbdbf601bbec95858c4800e8bbf14471a43b1a519",
+      "protectedFingerprint": "69443cfda0d07f2330fbf4f4a667784a2f677e137256f9f0c8caa4c04c20cb68",
       "modes": {
         "1": "rationale-grounded-option-contrast-draft",
         "2": "rationale-grounded-option-contrast-draft",
@@ -1956,7 +1956,7 @@
       "id": "eppp-b025-intervention-4",
       "family": "triple-ceg",
       "expectedAnswerIndex": 3,
-      "protectedFingerprint": "41b15a1bb585940eed03724fa8b73a5f3c0b27dc19c0fd1bdb19daecea8ab023",
+      "protectedFingerprint": "6bbb9456b507cfeb89146fa561dd3f76327bc7ab1309b95deda1b698b84dab9b",
       "modes": {
         "0": "rationale-grounded-option-contrast-draft",
         "1": "rationale-grounded-option-contrast-draft",
@@ -2000,7 +2000,7 @@
       "id": "eppp-b025-social-2",
       "family": "triple-ceg",
       "expectedAnswerIndex": 1,
-      "protectedFingerprint": "c65a516350b7a584d5d124b9be233923f1f647d1b003ad81b4e2176df5b1bc1c",
+      "protectedFingerprint": "47d6c6e3586eabfe2e9b27781e0af37940e66dcdb235581a456d7b6a254a8dae",
       "modes": {
         "0": "rationale-grounded-option-contrast-draft",
         "2": "rationale-grounded-option-contrast-draft",
@@ -2077,7 +2077,7 @@
       "id": "eppp-b026-cognitive-1",
       "family": "triple-ceg",
       "expectedAnswerIndex": 0,
-      "protectedFingerprint": "1169fe303553db9c05c497b83fa6a7c7efae5c58135476e8bd767e183b62bfea",
+      "protectedFingerprint": "2d350d38d25d4f98489026b7df083a6603abe64c3db506ae68704dac8823a787",
       "modes": {
         "1": "rationale-grounded-option-contrast-draft",
         "2": "rationale-grounded-option-contrast-draft",
@@ -2220,7 +2220,7 @@
       "id": "eppp-b027-cognitive-1",
       "family": "triple-ceg",
       "expectedAnswerIndex": 0,
-      "protectedFingerprint": "8eae3b2661d352d8c31dd6ef7d49a61619e18903f8d0d40bd72a074479e517c8",
+      "protectedFingerprint": "f0cddae0b3a7e272212bc7211d5bdf1904c55b7351c571c3882385f24f857b79",
       "modes": {
         "1": "rationale-grounded-option-contrast-draft",
         "2": "rationale-grounded-option-contrast-draft",
@@ -2286,7 +2286,7 @@
       "id": "eppp-b027-lifespan-2",
       "family": "triple-ceg",
       "expectedAnswerIndex": 1,
-      "protectedFingerprint": "16ee0dd788965f23193817bf8406347fb8a8a1b1e5a7078db63dc4d8be7520bf",
+      "protectedFingerprint": "1158e70f1420a4797a1aa8c209abf07c54e4556e4c95bd4fc0dbbc92069dc795",
       "modes": {
         "0": "rationale-grounded-option-contrast-draft",
         "2": "rationale-grounded-option-contrast-draft",
@@ -2374,7 +2374,7 @@
       "id": "eppp-b028-biological-1",
       "family": "triple-ceg",
       "expectedAnswerIndex": 0,
-      "protectedFingerprint": "bacd920d9b8045e5b9559db840726587ee1acadff888d51bc3bc2f0a2d7474da",
+      "protectedFingerprint": "43c4a629015c1719cc7074e4d4434154623218ad25aedfb2d83de95ebe091def",
       "modes": {
         "1": "rationale-grounded-option-contrast-draft",
         "2": "rationale-grounded-option-contrast-draft",
@@ -2385,7 +2385,7 @@
       "id": "eppp-b028-biological-2",
       "family": "triple-ceg",
       "expectedAnswerIndex": 1,
-      "protectedFingerprint": "c11976fd5052b9d6e34a78f8d4f3b88f6a943d32639be639c46526ec754e6078",
+      "protectedFingerprint": "3f5d5281df555e416478d99b074ce98dcdf6df1967d6188d2b5291d0d9661c84",
       "modes": {
         "0": "rationale-grounded-option-contrast-draft",
         "2": "rationale-grounded-option-contrast-draft",
@@ -2451,7 +2451,7 @@
       "id": "eppp-b028-lifespan-3",
       "family": "triple-ceg",
       "expectedAnswerIndex": 2,
-      "protectedFingerprint": "4bd92f0109d6357c279753c83b61dae51d1ba5986399ae839a77bccfc884b991",
+      "protectedFingerprint": "d10c49d7b8283d277e77dd13e24d9615773f7803db13536af063ebf2fcf7b386",
       "modes": {
         "0": "rationale-grounded-option-contrast-draft",
         "1": "rationale-grounded-option-contrast-draft",
@@ -2902,7 +2902,7 @@
       "id": "eppp-v2-cognitive-affective-003",
       "family": "triple-insufficient",
       "expectedAnswerIndex": 0,
-      "protectedFingerprint": "534816f22f833e234a3c6dff1b6d8b4fc20a2927578d23e1760476fc34289570",
+      "protectedFingerprint": "b6ec4849f282275094b4baacbfeb7c3192cf663b88ad74648e35d1e96ea72301",
       "modes": {
         "1": "source-reviewed-legacy-reason-expanded",
         "2": "source-reviewed-legacy-reason-expanded",
@@ -2935,7 +2935,7 @@
       "id": "eppp-v2-cognitive-affective-010",
       "family": "triple-insufficient",
       "expectedAnswerIndex": 3,
-      "protectedFingerprint": "cedfade8140b9161e8db59972e1180e0878e0c85384b7dbe890861f0e4c85bcc",
+      "protectedFingerprint": "07576c8c161d50af7e0ce2e9d2ef0ee3a230c836d8b0f8d4d72a763096c97c89",
       "modes": {
         "0": "source-reviewed-legacy-reason-expanded",
         "1": "source-reviewed-legacy-reason-expanded",
@@ -2990,7 +2990,7 @@
       "id": "eppp-v2-cognitive-affective-022",
       "family": "triple-insufficient",
       "expectedAnswerIndex": 3,
-      "protectedFingerprint": "473ba9990209e51adf0e41cf6b6d3ba44668e4150c60ca83b0df18d5ef726b72",
+      "protectedFingerprint": "0f3ee65a859cafbe35a2f7e1ab8319cbea41cf86d892ac9751cbcfbaf5a4ae46",
       "modes": {
         "0": "source-reviewed-legacy-reason-expanded",
         "1": "rationale-grounded-option-contrast-draft",
@@ -3342,7 +3342,7 @@
       "id": "eppp-v2-lifespan-006",
       "family": "triple-insufficient",
       "expectedAnswerIndex": 2,
-      "protectedFingerprint": "1220eaeaa7cb1ef7207acd75a4aba4c316750e2761caff01f01210f7c6e685fd",
+      "protectedFingerprint": "0fdd81ce58b5e3d21c72fbe5d2d9c38a9c8baca5d0c01d1a5861bb191df0c417",
       "modes": {
         "0": "source-reviewed-legacy-reason-expanded",
         "1": "source-reviewed-legacy-reason-expanded",
@@ -3529,7 +3529,7 @@
       "id": "eppp-v2-lifespan-045",
       "family": "triple-insufficient",
       "expectedAnswerIndex": 1,
-      "protectedFingerprint": "5dc87e4f3d11ccaa1412994d0135441c42a6db8350c9aad6857f05952ceb47c5",
+      "protectedFingerprint": "540fd5c3485ac0e412dbf8ef87cba209c10c6bbe97f5b8fc502a32d866d9c96e",
       "modes": {
         "0": "source-reviewed-legacy-reason-expanded",
         "2": "source-reviewed-legacy-reason-expanded",
@@ -3628,7 +3628,7 @@
       "id": "eppp-v2-professional-031",
       "family": "triple-insufficient",
       "expectedAnswerIndex": 0,
-      "protectedFingerprint": "b93e912c6eb5eb1bfcf60b6ab865c412919cbf6c9f57762883b9ee12583d6a2c",
+      "protectedFingerprint": "df01c85911f0eb0fb20cea1f41df882670dbad4bbe32994325dfdec5a405a0a5",
       "modes": {
         "1": "source-reviewed-legacy-reason-expanded",
         "2": "source-reviewed-legacy-reason-expanded",
@@ -3639,7 +3639,7 @@
       "id": "eppp-v2-professional-034",
       "family": "triple-insufficient",
       "expectedAnswerIndex": 3,
-      "protectedFingerprint": "20878bed7ce5774e2627d1313fc8e9c13d9fde7f588aba7ef096b61a979e7e92",
+      "protectedFingerprint": "8310a8fd8ee8896d1591e8df2b083c3365cafda0c29491a769f734871640adf4",
       "modes": {
         "0": "rationale-grounded-option-contrast-draft",
         "1": "rationale-grounded-option-contrast-draft",
@@ -3837,7 +3837,7 @@
       "id": "eppp-v2-research-026",
       "family": "triple-insufficient",
       "expectedAnswerIndex": 2,
-      "protectedFingerprint": "e6a4b888bee82f1899da9e15f83595a54e86b3456903f419ac6d6624a95ee28f",
+      "protectedFingerprint": "06657144c5b30ae5cd2ae6740fd27b6b85242c69444dcdada454c5a7e919add2",
       "modes": {
         "0": "rationale-grounded-option-contrast-draft",
         "1": "source-reviewed-legacy-reason-expanded",
@@ -3848,7 +3848,7 @@
       "id": "eppp-v2-social-cultural-004",
       "family": "triple-insufficient",
       "expectedAnswerIndex": 2,
-      "protectedFingerprint": "95952a0f3441cbc7a7ee18d64424ff095074d552866159f324472bb150738454",
+      "protectedFingerprint": "ab9a39d71f56f32c4ed252bee846599407e06572dccc15b9462770d7432c7600",
       "modes": {
         "0": "source-reviewed-legacy-reason-expanded",
         "1": "source-reviewed-legacy-reason-expanded",
@@ -4101,7 +4101,7 @@
       "id": "eppp-v3-biological-039",
       "family": "triple-ceg",
       "expectedAnswerIndex": 0,
-      "protectedFingerprint": "81d1a8bc574a4394c9422dd3a8b2bc2c85c7d651648975841f741ac3fc7919d0",
+      "protectedFingerprint": "4001a30aad21a08ca26ac3ad404b4a274aaebc6d09c54dfcb6daf220c58e32d6",
       "modes": {
         "1": "rationale-grounded-option-contrast-draft",
         "2": "rationale-grounded-option-contrast-draft",
@@ -4222,7 +4222,7 @@
       "id": "eppp-v3-cognitive-affective-041",
       "family": "triple-ceg",
       "expectedAnswerIndex": 3,
-      "protectedFingerprint": "52cc1d090cd4f5e49549d3f90ca11ff4b8e8211cb3d8df06d610165b5be144eb",
+      "protectedFingerprint": "8a3c22184b7780459557c1f0c9cf5d394cc78b61dd801c571fea603dfe6d4f7c",
       "modes": {
         "0": "rationale-grounded-option-contrast-draft",
         "1": "rationale-grounded-option-contrast-draft",
@@ -4244,7 +4244,7 @@
       "id": "eppp-v3-cognitive-affective-045",
       "family": "triple-ceg",
       "expectedAnswerIndex": 3,
-      "protectedFingerprint": "61414e8958a7008668fedf22b9889a262fecdb9c4a14e11c679aae6881663657",
+      "protectedFingerprint": "cf747caa61370bfee448b52980d7676a10f052f1d1590498577bfbeddb2e6aae",
       "modes": {
         "0": "rationale-grounded-option-contrast-draft",
         "1": "rationale-grounded-option-contrast-draft",
@@ -4387,7 +4387,7 @@
       "id": "eppp-v3-lifespan-034",
       "family": "triple-ceg",
       "expectedAnswerIndex": 3,
-      "protectedFingerprint": "9b1225c1608337cad50826f6377aa97cb9356dd4f07c6779e02323393829aca9",
+      "protectedFingerprint": "beecee9e43c7eb99e5fd7221b535bff0ed0eccf7124b0c31ea81bf28ecc27d83",
       "modes": {
         "0": "rationale-grounded-option-contrast-draft",
         "1": "rationale-grounded-option-contrast-draft",
@@ -4497,7 +4497,7 @@
       "id": "eppp-v3-research-009",
       "family": "triple-ceg",
       "expectedAnswerIndex": 2,
-      "protectedFingerprint": "8605b3f98c329bf2615b6023ebdb9218688fceefc749f1629c25b24c73c36cd2",
+      "protectedFingerprint": "fca16163845eb5af5a6331d86a84cc6f5f543928f305f126c704571d57fe3ba0",
       "modes": {
         "0": "rationale-grounded-option-contrast-draft",
         "1": "rationale-grounded-option-contrast-draft",
@@ -4530,7 +4530,7 @@
       "id": "eppp-v3-research-018",
       "family": "triple-ceg",
       "expectedAnswerIndex": 0,
-      "protectedFingerprint": "3433e25ac79735604564af78f7a7b1cfadd0f93c44318cf71f35e61b037d7564",
+      "protectedFingerprint": "31f5fec638a3304fb18c62a6317185f16f383463e1eb069b004d5a99280d26ed",
       "modes": {
         "1": "rationale-grounded-option-contrast-draft",
         "2": "rationale-grounded-option-contrast-draft",
@@ -4552,7 +4552,7 @@
       "id": "eppp-v3-research-024",
       "family": "triple-ceg",
       "expectedAnswerIndex": 3,
-      "protectedFingerprint": "5922eb18d2f1eaeeadba1655205845e28f68e8e759fe33e2d5a52cdfcda280f7",
+      "protectedFingerprint": "229f7d32332ea5a97c78eba7c8303270aeea082b57fc41424b83f8524e9a83f7",
       "modes": {
         "0": "rationale-grounded-option-contrast-draft",
         "1": "rationale-grounded-option-contrast-draft",
@@ -4563,7 +4563,7 @@
       "id": "eppp-v3-research-029",
       "family": "triple-ceg",
       "expectedAnswerIndex": 1,
-      "protectedFingerprint": "f2c6e47064b6fead2b5b9ac88f81031428d320015590f162f01c3fa3bd647332",
+      "protectedFingerprint": "df4b998defdcc472006f9c3910d607ea0d7d3f9147bc59c6b739b34d6e367ba2",
       "modes": {
         "0": "rationale-grounded-option-contrast-draft",
         "2": "rationale-grounded-option-contrast-draft",
@@ -4684,7 +4684,7 @@
       "id": "eppp-v3-social-cultural-044",
       "family": "triple-ceg",
       "expectedAnswerIndex": 1,
-      "protectedFingerprint": "28f8aa78d9e06e56e9ffcaf79ec3d8b9371bf235e52a69d99cb011a20e91e371",
+      "protectedFingerprint": "57810218847588e86caebf83dd36a775c7a9b7a9bf3d1bd3a07975025fdb1f04",
       "modes": {
         "0": "rationale-grounded-option-contrast-draft",
         "2": "rationale-grounded-option-contrast-draft",

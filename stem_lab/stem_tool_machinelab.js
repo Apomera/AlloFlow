@@ -3178,11 +3178,26 @@ window.StemLab = window.StemLab || {
       var provenCount = Object.keys(d.provenBenches || {}).length;
       var firedCount = (d.machinesFired || []).length;
 
+      // A score belongs to the prediction and physics that produced it. Keep
+      // the old shot in the history (and let the stale-flight banner explain
+      // it), but remove the short "It flew..." result as soon as a live input
+      // changes so a learner never mistakes yesterday's score for today's one.
+      var RANGE_RESULT_KEYS = {
+        machine: true, gravity: true, drag: true, windZ: true, launchElevation: true,
+        projMass: true, projDiameter: true, releaseAngle: true,
+        cwMass: true, cwDrop: true, beamLong: true, beamShort: true,
+        slingLength: true, armMass: true,
+        torsionTurns: true, torsionArmLength: true, torsionDraw: true,
+        torsionArmMass: true, ballistaStringMass: true, onagerSling: true,
+        winchHandleR: true, winchDrumR: true, winchPulleys: true,
+        rangePrediction: true
+      };
       var upd = function (key, val) {
         setLabToolData(function (prev) {
           var cur = (prev && prev.machineLab) || {};
           var next = Object.assign({}, cur);
           next[key] = val;
+          if (RANGE_RESULT_KEYS[key]) next.rangeResult = null;
           return Object.assign({}, prev, { machineLab: next });
         });
       };
@@ -4023,8 +4038,15 @@ window.StemLab = window.StemLab || {
             key: mm.id, 'aria-pressed': on ? 'true' : 'false',
             onClick: function () {
               // Switching engines is a clean reset: do not let an in-flight
-              // shot from the previous machine continue through the new model.
-              updMulti({ machine: mm.id, lastShot: null, lastShotSig: '', rangeResult: null, animating: false });
+              // shot from the previous machine continue through the new model,
+              // and do not carry a close-up framing onto a differently sized
+              // engine.
+              updMulti({
+                machine: mm.id, lastShot: null, lastShotSig: '', rangeResult: null, animating: false,
+                machineRotY: MACHINE_HOME.rotY, machineRotX: MACHINE_HOME.rotX, machineZoom: MACHINE_HOME.zoom
+              });
+              announceToSR(__alloT('stem.machinelab.machine_switched', 'Showing ') + machineLabel(mm.id) +
+                __alloT('stem.machinelab.machine_switched_camera', '. Camera reset to the overview.'));
             },
             style: {
               padding: '7px 13px', borderRadius: 999, cursor: 'pointer',
@@ -4176,7 +4198,12 @@ window.StemLab = window.StemLab || {
       function camControls(cam, label, fsWhich) {
         function btn(key, glyph, aria, fn) {
           return h('button', {
-            key: key, onClick: fn, 'aria-label': aria, title: aria,
+            key: key,
+            onClick: function () {
+              fn();
+              announceToSR(aria + '.');
+            },
+            'aria-label': aria, title: aria,
             style: {
               padding: '3px 8px', borderRadius: 7, cursor: 'pointer',
               border: '1px solid ' + T.border, background: T.card, color: T.text,
@@ -4563,6 +4590,7 @@ window.StemLab = window.StemLab || {
               key: item.label, type: 'button',
               onClick: function () {
                 if (cam && item.view) cam.setView(item.view[0], item.view[1], item.view[2]);
+                announceToSR(__alloT('stem.machinelab.anatomy_focus_announce', 'Focusing on ') + item.label + '.');
               },
               onFocus: function (ev) {
                 if (ev && ev.currentTarget) ev.currentTarget.style.outline = '2px solid ' + T.accent;
@@ -4590,6 +4618,45 @@ window.StemLab = window.StemLab || {
           h('span', {
             key: 'hint', style: { fontSize: 11, color: T.dim, fontStyle: 'italic' }
           }, __alloT('stem.machinelab.anatomy_hint', 'Click a part or drag to inspect the structure.'))
+        ]);
+      }
+
+      function yardSignalKey() {
+        var items = [
+          { label: __alloT('stem.machinelab.signal_ready', 'ready'), color: T.accent },
+          { label: __alloT('stem.machinelab.signal_stored', 'stored energy'), color: T.load },
+          { label: __alloT('stem.machinelab.signal_release', 'release'), color: T.ok }
+        ];
+        return h('div', {
+          key: 'signals', role: 'group',
+          'aria-label': __alloT('stem.machinelab.signal_aria', '3D yard signal lights'),
+          style: {
+            display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap',
+            marginTop: 4, padding: '2px 2px 0', color: T.dim
+          }
+        }, [
+          h('span', {
+            key: 'title',
+            style: { fontSize: 10, fontWeight: 800, letterSpacing: 0.8, textTransform: 'uppercase', color: T.accent }
+          }, __alloT('stem.machinelab.signal_title', 'Scene signals')),
+          items.map(function (item) {
+            return h('span', {
+              key: item.label,
+              style: {
+                display: 'inline-flex', alignItems: 'center', gap: 4,
+                fontSize: 11, color: T.muted, whiteSpace: 'nowrap'
+              }
+            }, [
+              h('span', {
+                key: 'dot', 'aria-hidden': 'true',
+                style: { width: 8, height: 8, borderRadius: '50%', background: item.color, flex: '0 0 auto' }
+              }),
+              item.label
+            ]);
+          }),
+          h('span', {
+            key: 'hint', style: { fontSize: 11, color: T.dim, fontStyle: 'italic' }
+          }, __alloT('stem.machinelab.signal_hint', 'The lights mirror the energy story.'))
         ]);
       }
 
@@ -4727,7 +4794,8 @@ window.StemLab = window.StemLab || {
                 }
               }, null),
               camControls(mCam, machineLabel(machineId), 'machine'),
-              anatomyKey(mCam)
+              anatomyKey(mCam),
+              yardSignalKey()
               ]),
               // The machine's swing was animated but unreachable: the only Fire
               // control lived in the Test Range, which has no 3D view, so a

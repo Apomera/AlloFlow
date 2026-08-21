@@ -32,7 +32,9 @@ describe('V7 — the microphone always comes back', () => {
   });
 
   it('runs recovery after every dispatch, including the ones that throw', () => {
-    const onresult = source.slice(source.indexOf('recognition.onresult = (event) => {'), source.indexOf('recognition.onerror = (event) => {'));
+    const onresult = source.slice(source.indexOf('function acceptHandsFreeTranscript('), source.indexOf('function handleHandsFreeRecognitionError('));
+    // Every recognition engine now enters through the shared transcript
+    // adapter; recovery still belongs to this single settle point.
     // .then(fn, fn) rather than .finally so it survives an environment without
     // Promise.prototype.finally, and so both settle paths are explicit.
     expect(onresult).toContain('}).then(ensureHandsFreeListening, ensureHandsFreeListening);');

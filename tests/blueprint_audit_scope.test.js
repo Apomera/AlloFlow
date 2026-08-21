@@ -10,7 +10,7 @@
 // 'current eligible history' to 'explicit artifact IDs' — and the scope it
 // records (content.comprehensive.auditScope, dispatcher:3985) then becomes the
 // basis for per-row staleness: a row regenerated after the audit gets a NEW
-// resourceId and drops out of the audited set on its own.
+// artifact ID(s) and drops out of the audited set on its own.
 
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
@@ -21,6 +21,9 @@ let PhaseO;
 let selectScope;
 
 beforeAll(() => {
+  // Blueprint execution intentionally hard-gates on the shared matrix. Tests
+  // exercise the production contract, so register it before invoking Phase O.
+  loadAlloModule('generation_matrix_module.js');
   loadAlloModule('phase_o_misc_handlers_module.js');
   PhaseO = window.AlloModules?.PhaseOHandlers;
   if (!PhaseO?.executeOneBlueprint) throw new Error('PhaseOHandlers failed to register');
@@ -41,15 +44,33 @@ const PLAN = {
   ],
 };
 
+const MULTI_VARIANT_PLAN = {
+  resourcePlan: [
+    {
+      tool: 'quiz', directive: 'q', uiId: 'row-quiz', generationAction: 'variant',
+      generationVariants: [
+        { type: 'quiz', action: 'variant', variantKey: 'quiz-en', grade: '5th Grade', language: 'English' },
+        { type: 'quiz', action: 'variant', variantKey: 'quiz-es', grade: '5th Grade', language: 'Spanish' },
+      ],
+    },
+    { tool: 'alignment-report', directive: '', uiId: 'row-audit' },
+  ],
+};
+
 const runPlan = async (opts = {}) => {
   const configs = [];
-  const handleGenerate = vi.fn(async (type, _l, _k, _t, cfg) => {
-    configs.push({ type, cfg });
+  const callsByType = {};
+  const handleGenerate = vi.fn(async (type, language, _k, _t, cfg) => {
+    callsByType[type] = (callsByType[type] || 0) + 1;
+    const callIndex = callsByType[type];
+    configs.push({ type, language, cfg });
     if (opts.failType === type) return null;
-    return { id: 'res-' + type, type, data: {} };
+    if (typeof opts.failWhen === 'function' && opts.failWhen({ type, language, cfg, callIndex })) return null;
+    const suffix = callIndex > 1 ? '-' + callIndex : '';
+    return { id: 'res-' + type + suffix, type, data: {} };
   });
   const steps = [];
-  const res = await PhaseO.executeOneBlueprint(PLAN, {
+  const res = await PhaseO.executeOneBlueprint(opts.plan || PLAN, {
     handleGenerate, historyOverride: [], onStep: (s) => steps.push(s),
   });
   return { configs, steps, res };
@@ -90,6 +111,30 @@ describe('a blueprint run scopes its own audit', () => {
     const { steps } = await runPlan({ failType: 'alignment-report' });
     const auditStep = steps.find((s) => s.uiId === 'row-audit' && s.status === 'failed');
     expect(auditStep.auditScopeIds).toBeUndefined();
+  });
+
+  it('scopes the audit to every artifact landed by a multi-variant row', async () => {
+    const { configs, steps } = await runPlan({ plan: MULTI_VARIANT_PLAN });
+    const quizStep = steps.find((s) => s.uiId === 'row-quiz' && s.status === 'landed');
+    expect(quizStep.resourceIds).toEqual(['res-quiz', 'res-quiz-2']);
+    expect(quizStep.variantResults.map((variant) => variant.status)).toEqual(['landed', 'landed']);
+
+    const auditCall = configs.find((c) => c.type === 'alignment-report');
+    expect(auditCall.cfg.artifactIds).toEqual(['res-quiz', 'res-quiz-2']);
+  });
+
+  it("keeps a partial row's landed artifacts in scope and excludes its failed cells", async () => {
+    const { configs, steps } = await runPlan({
+      plan: MULTI_VARIANT_PLAN,
+      failWhen: ({ type, language }) => type === 'quiz' && language === 'Spanish',
+    });
+    const quizStep = steps.find((s) => s.uiId === 'row-quiz' && s.status === 'partial');
+    expect(quizStep.resourceIds).toEqual(['res-quiz']);
+    expect(quizStep.successfulVariantCount).toBe(1);
+    expect(quizStep.failedVariantCount).toBe(1);
+
+    const auditCall = configs.find((c) => c.type === 'alignment-report');
+    expect(auditCall.cfg.artifactIds).toEqual(['res-quiz']);
   });
 });
 
@@ -141,7 +186,13 @@ describe('audit-connection wiring guardrails', () => {
     const src = read(file);
     expect(src).toContain('bp-audit-badge');
     // Coverage is by resourceId — that is what makes a regenerated row drop out.
-    expect(src).toMatch(/_auditIds\.indexOf\(_rowRun\.resourceId\)/);
+    expect(src).toContain('const _claimedArtifactIds');
+    expect(src).toContain('Array.isArray(_rowRun.resourceIds)');
+    expect(src).toMatch(/_rowRun\.resourceId\s*\?\s*\[_rowRun\.resourceId\]\s*:\s*\[\]/);
+    expect(src).toMatch(/_status !== 'landed'\s*&&\s*_status !== 'partial'/);
+    expect(src).toContain('const _survivingArtifactIds');
+    expect(src).toContain('const _allSurvivingArtifactsAudited');
+    expect(src).toMatch(/_survivingArtifactIds\.every\([\s\S]*?_auditIds\.indexOf\(value\)/);
   });
 
   it('the dispatcher still reads the explicit-scope key we send', () => {
@@ -193,8 +244,21 @@ describe('run record is reconciled against history', () => {
     expect(src).toContain('if (!isHistoryLoaded) return;');
   });
 
-  it.each(HOSTS2)('%s only marks rows that actually claim a resource', (file) => {
+  it.each(HOSTS2)('%s files every artifact landed by landed and partial rows', (file) => {
     const src = read2(file);
-    expect(src).toMatch(/r\.resourceId && !live\.has\(r\.resourceId\)/);
+    expect(src).toContain(".filter(r => r && ['landed', 'partial'].includes(r.status))");
+    expect(src).toContain('.flatMap(r => Array.isArray(r.resourceIds) && r.resourceIds.length ? r.resourceIds : [r.resourceId])');
+  });
+
+  it.each(HOSTS2)('%s reconciles all claimed artifacts and distinguishes partial loss', (file) => {
+    const src = read2(file);
+    expect(src).toContain('const claimed = r && Array.isArray(r.resourceIds) && r.resourceIds.length');
+    expect(src).toContain('? r.resourceIds.filter(Boolean)');
+    expect(src).toContain(': (r && r.resourceId ? [r.resourceId] : [])');
+    expect(src).toContain('const missingResourceIds = claimed.filter(id => !live.has(id));');
+    expect(src).toContain('const missing = claimed.length > 0 && missingResourceIds.length === claimed.length;');
+    expect(src).toContain('const partiallyMissing = missingResourceIds.length > 0 && !missing;');
+    expect(src).toContain('resourcePartiallyMissing: partiallyMissing');
+    expect(src).toContain('missingResourceIds });');
   });
 });

@@ -222,7 +222,7 @@ function UDLGuideModal(props) {
             localStorage.setItem("allo_agent_voice_hint_v1", "1");
           } catch (_) {
           }
-          setUdlMessages((prev) => [...prev, { role: "model", text: t("chat_guide.talk_hint") || "Listening for app commands. Try \u201Copen the learning hub\u201D, \u201Cread this page\u201D, or \u201Cwhere is the export button?\u201D. Say \u201Cpause listening\u201D to pause AlloBot commands or \u201Cstop listening\u201D to finish. To ask a question or request several steps, type below; typed multi-step requests get a plan card you review before anything runs. Privacy note: AlloBot uses your selected recognition engine. A browser speech service may send command audio to its provider; on-device Whisper keeps recognition audio on this device." }]);
+          setUdlMessages((prev) => [...prev, { role: "model", text: t("chat_guide.talk_hint") || "Listening for app commands. You can also ask a question or describe a multi-step request; proposed actions appear in a plan card you review before anything runs. Try \u201Copen the learning hub\u201D, \u201Cread this page\u201D, or \u201Cwhere is the export button?\u201D Say \u201Cpause listening\u201D to pause or \u201Cstop listening\u201D to finish. Privacy note: this uses your selected recognition engine. On-device Whisper keeps recognition audio on this device; a browser speech service may send command audio to its provider; Gemini cloud transcription sends each completed spoken turn to Gemini only when you explicitly select it." }]);
         }
       },
       className: `hover:bg-white/20 px-2 py-1.5 rounded transition-colors mr-1 flex items-center gap-1 text-[11px] font-bold border ${alloVoiceActive ? voicePaused ? "bg-amber-400 text-indigo-900 border-amber-500" : "bg-red-600 text-white border-red-400 animate-pulse" : "border-white/40"}`,
@@ -1029,8 +1029,16 @@ function AIBackendModalBody(props) {
     GEMINI_MODELS
   } = props;
   const isStudentAiSetup = Boolean(typeof window !== "undefined" && window.__alloStudentAiSetupAllowed && window.__alloQrStudentMode);
+  const requestedSettingsSection = (() => {
+    try {
+      return String(window.__alloAISettingsRequestedSection || "");
+    } catch (_) {
+      return "";
+    }
+  })();
   const [guidedView, setGuidedView] = React.useState("choose");
-  const [advancedOpen, setAdvancedOpen] = React.useState(isStudentAiSetup);
+  const [advancedOpen, setAdvancedOpen] = React.useState(isStudentAiSetup || requestedSettingsSection === "gemini-audio");
+  const [configRevision, setConfigRevision] = React.useState(0);
   const [guidedReady, setGuidedReady] = React.useState(false);
   const guidedHeadingRef = React.useRef(null);
   const prevGuidedViewRef = React.useRef("choose");
@@ -1062,6 +1070,27 @@ function AIBackendModalBody(props) {
       return {};
     }
   };
+  React.useEffect(() => {
+    if (requestedSettingsSection !== "gemini-audio") return void 0;
+    const timer = setTimeout(() => {
+      const cfg = readAIBackendConfig();
+      const targetId = isStudentAiSetup && String(cfg.backend || "gemini") !== "gemini" ? "ai-backend-provider" : String(cfg.backend || "gemini") === "gemini" ? "ai-backend-apikey" : "ai-backend-gemini-services-key";
+      const target = document.getElementById(targetId);
+      try {
+        if (target && target.focus) target.focus({ preventScroll: true });
+      } catch (_) {
+      }
+      try {
+        if (target && target.scrollIntoView) target.scrollIntoView({ block: "center" });
+      } catch (_) {
+      }
+      try {
+        delete window.__alloAISettingsRequestedSection;
+      } catch (_) {
+      }
+    }, 0);
+    return () => clearTimeout(timer);
+  }, []);
   const fingerprintAIBackendConfig = (config) => {
     try {
       return typeof window.__alloStudentAiConfigFingerprint === "function" ? window.__alloStudentAiConfigFingerprint(config) : "";
@@ -1306,6 +1335,10 @@ function AIBackendModalBody(props) {
   const applyBackendChoice = (backend, { showStatus = false } = {}) => {
     const current = readAIBackendConfig();
     const updated = { ...current, backend, baseUrl: aiBackendDefaults[backend] || "" };
+    if (String(current.backend || "gemini") === "gemini" && current.apiKey && !updated.geminiApiKey) {
+      updated.geminiApiKey = current.apiKey;
+    }
+    if (backend === "gemini" && updated.geminiApiKey) updated.apiKey = updated.geminiApiKey;
     if (backend !== current.backend) delete updated.models;
     writeAIBackendConfig(updated);
     const urlEl = document.getElementById("ai-backend-url");
@@ -1319,6 +1352,7 @@ function AIBackendModalBody(props) {
         status.className = "text-xs font-bold mt-2 text-amber-800 bg-amber-50 p-2.5 rounded-xl border border-amber-100";
       }
     }
+    setConfigRevision((revision) => revision + 1);
     setTimeout(refreshEngineStrip, 0);
   };
   const GUIDED_BACKEND_LABELS = {
@@ -1360,14 +1394,38 @@ function AIBackendModalBody(props) {
       type: "password",
       autoComplete: "off",
       placeholder: t("ai_backend.api_key_placeholder") || "Your API key...",
-      defaultValue: readAIBackendConfig().apiKey || "",
+      key: "primary-api-key-" + String(readAIBackendConfig().backend || "gemini") + "-" + configRevision,
+      defaultValue: String(readAIBackendConfig().backend || "gemini") === "gemini" ? readAIBackendConfig().geminiApiKey || readAIBackendConfig().apiKey || "" : readAIBackendConfig().apiKey || "",
       onChange: (e) => {
         const current = readAIBackendConfig();
-        writeAIBackendConfig({ ...current, apiKey: e.target.value });
+        const next = { ...current, apiKey: e.target.value };
+        if (String(current.backend || "gemini") === "gemini") next.geminiApiKey = e.target.value;
+        writeAIBackendConfig(next);
       },
       className: "w-full p-2.5 border-2 border-slate-200 rounded-xl focus:border-violet-500 focus:ring-4 focus:ring-violet-500/20 outline-none text-sm font-medium text-slate-700"
     }
   ));
+  const renderGeminiCloudServicesField = () => {
+    const cfg = readAIBackendConfig();
+    if (isStudentAiSetup || String(cfg.backend || "gemini") === "gemini") return null;
+    return /* @__PURE__ */ React.createElement("div", { id: "ai-backend-gemini-services-section", tabIndex: -1, className: "rounded-xl border-2 border-sky-100 bg-sky-50/70 p-3" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "ai-backend-gemini-services-key", className: "block text-[11px] font-bold text-sky-900 uppercase tracking-wider mb-1.5" }, "Gemini cloud-services key ", /* @__PURE__ */ React.createElement("span", { className: "normal-case font-normal text-sky-800" }, "(optional)")), /* @__PURE__ */ React.createElement(
+      "input",
+      {
+        "data-help-key": "ai_backend_gemini_services_key_input",
+        id: "ai-backend-gemini-services-key",
+        "aria-describedby": "ai-backend-gemini-services-help",
+        type: "password",
+        autoComplete: "off",
+        placeholder: "Gemini API key...",
+        defaultValue: cfg.geminiApiKey || "",
+        onChange: (event) => {
+          const current = readAIBackendConfig();
+          writeAIBackendConfig({ ...current, geminiApiKey: event.target.value }, { preserveValidation: true });
+        },
+        className: "w-full p-2.5 border-2 border-sky-200 rounded-xl focus:border-sky-600 focus:ring-4 focus:ring-sky-500/20 outline-none text-sm font-medium text-slate-700 bg-white"
+      }
+    ), /* @__PURE__ */ React.createElement("p", { id: "ai-backend-gemini-services-help", className: "mt-1 text-[11px] leading-relaxed text-sky-900" }, "Used only for Gemini cloud features you explicitly select, including Gemini voice transcription. Your primary text AI remains ", GUIDED_BACKEND_LABELS[String(cfg.backend || "")] || String(cfg.backend || "the selected backend"), "."));
+  };
   const renderEngineStrip = () => /* @__PURE__ */ React.createElement("div", { id: "ai-backend-engine-strip", style: { display: "none" }, "aria-live": "polite", ref: (node) => {
     if (node && !node.dataset.engineInit) {
       node.dataset.engineInit = "1";
@@ -1534,7 +1592,7 @@ function AIBackendModalBody(props) {
         node.dataset.sdInit = "1";
         setTimeout(refreshSdTurboStrip, 0);
       }
-    } }), renderApiKeyField(), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5" }, t("ai_backend.wolfram_label") || "Wolfram Alpha App ID", " ", /* @__PURE__ */ React.createElement("span", { className: "normal-case font-normal text-slate-600" }, t("ai_backend.wolfram_hint") || "(optional \u2014 enhances math)")), /* @__PURE__ */ React.createElement(
+    } }), renderApiKeyField(), renderGeminiCloudServicesField(), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5" }, t("ai_backend.wolfram_label") || "Wolfram Alpha App ID", " ", /* @__PURE__ */ React.createElement("span", { className: "normal-case font-normal text-slate-600" }, t("ai_backend.wolfram_hint") || "(optional \u2014 enhances math)")), /* @__PURE__ */ React.createElement(
       "input",
       {
         "data-help-key": "ai_backend_wolfram_input",

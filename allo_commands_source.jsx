@@ -3310,7 +3310,26 @@ function _getWhisperPipeline(profileOrLanguage) {
   return _whisperPipelinePromise;
 }
 function _voiceStandbyPref() { try { return localStorage.getItem("allo_voice_standby") === "on"; } catch (_) { return false; } }
-function _voiceEnginePref() { try { return localStorage.getItem("allo_voice_engine") === "webspeech" ? "webspeech" : "auto"; } catch (_) { return "auto"; } }
+function _voiceEnginePref() {
+  try {
+    const shared = typeof window !== "undefined" && window.AlloFlowVoice;
+    if (shared && typeof shared.loadPreference === "function") {
+      const pref = shared.loadPreference();
+      return typeof shared.normalizeVoiceEngine === "function"
+        ? shared.normalizeVoiceEngine(pref && pref.engine)
+        : String(pref && pref.engine || "auto");
+    }
+    const raw = localStorage.getItem("alloflow_voice_pref");
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      const engine = String(parsed && parsed.engine || "auto").toLowerCase();
+      if (engine === "best") return "whisper";
+      if (engine === "fast") return "webspeech";
+      if (["auto", "whisper", "webspeech", "gemini", "off"].includes(engine)) return engine;
+    }
+    return localStorage.getItem("allo_voice_engine") === "webspeech" ? "webspeech" : "auto";
+  } catch (_) { return "auto"; }
+}
 
 // ── P-1 intent router, navigation lane (provenance design §13.1) ───────────
 // "Where is X?" is a TOOL question, not a lesson question — answered
@@ -3452,6 +3471,7 @@ try { if (typeof window !== 'undefined') window.__alloMicLevelMonitor = micLevel
 function createVoiceLoop(getCtx, opts = {}) {
   let rec = null, active = false, errStreak = 0, routeController = null, routeSerial = 0, pageHideHandler = null, muteChangeHandler = null;
   let micMeterRelease = null;
+  let sharedRecognition = null;
   let whisperState = null, engineName = "webspeech", standby = false, awake = false, awakeTimer = null;
   // Momentary pause: the session stays alive but the microphone is released.
   // UI callers get an indefinite pause. Spoken pauses install a bounded
@@ -3512,6 +3532,20 @@ function createVoiceLoop(getCtx, opts = {}) {
     micMeterRelease = null;
     if (release) { try { release(); } catch (_) {} }
   };
+  const suspendInputForOutput = () => {
+    if (sharedRecognition && typeof sharedRecognition.suspendForOutput === "function") {
+      try { sharedRecognition.suspendForOutput(); } catch (_) {}
+    }
+    if (active && rec) { try { rec.stop(); } catch (_) {} }
+  };
+  const resumeInputAfterOutput = () => {
+    if (!active || paused) return;
+    if (sharedRecognition && typeof sharedRecognition.resumeAfterOutput === "function") {
+      try { sharedRecognition.resumeAfterOutput(); } catch (_) {}
+      return;
+    }
+    if (rec) { try { rec.start(); } catch (_) {} }
+  };
   const cancelRoute = () => {
     routeSerial++;
     const controller = routeController;
@@ -3555,10 +3589,10 @@ function createVoiceLoop(getCtx, opts = {}) {
     return Number.isFinite(value) && value <= 0;
   };
   // Spoken replies close the hands-free loop: across the room a toast is
-  // invisible. The mic is stopped for the duration of the utterance so the
-  // recognizer never transcribes our own reply back into a command, then
-  // restarted by the reply's end handler (rec.onend skips its usual restart
-  // while `speaking`; the whisper engine drops frames). Preference order:
+  // invisible. Recognition is suspended for the duration of the utterance so
+  // it never transcribes our own reply. A local PCM stream may remain open
+  // solely for barge-in; Web Speech is stopped and a short-lived local barge
+  // monitor owns the microphone instead. Preference order:
   // Kokoro (the app's neural voice — on-device once its model is loaded,
   // speak() hands back a blob URL we play ourselves) → speechSynthesis only
   // as the until-Kokoro-loads fallback. Both are on-device; no audio leaves
@@ -3566,11 +3600,13 @@ function createVoiceLoop(getCtx, opts = {}) {
   // (localStorage allo_voice_speak_replies = "off").
   // Barge-in plumbing. The watcher runs only while a reply owns the output
   // turn (including neural preparation), and is torn down when that turn ends.
-  let bargeStream = null, bargeAudioCtx = null, bargeTimer = null, bargeGeneration = 0, activeResume = null;
+  let bargeStream = null, bargeOwnsStream = false, bargeAudioCtx = null, bargeTimer = null, bargeGeneration = 0, activeResume = null;
   const stopBargeWatch = () => {
     bargeGeneration++;
     if (bargeTimer) { try { clearTimeout(bargeTimer); } catch (_) {} bargeTimer = null; }
-    if (bargeStream) { try { bargeStream.getTracks().forEach((tr) => tr.stop()); } catch (_) {} bargeStream = null; }
+    if (bargeStream && bargeOwnsStream) { try { bargeStream.getTracks().forEach((tr) => tr.stop()); } catch (_) {} }
+    bargeStream = null;
+    bargeOwnsStream = false;
     if (bargeAudioCtx) { try { bargeAudioCtx.close(); } catch (_) {} bargeAudioCtx = null; }
   };
   // Stop the audio AND hand the floor straight back, so the words the user is
@@ -3590,14 +3626,21 @@ function createVoiceLoop(getCtx, opts = {}) {
   };
   const startBargeWatch = () => {
     stopBargeWatch();
+    // A true pause/stop must never reopen the microphone just to make the
+    // acknowledgement interruptible.
+    if (!active || paused) return;
     const generation = bargeGeneration;
     const nav = typeof navigator !== "undefined" ? navigator : null;
     const Ctx = typeof window !== "undefined" ? (window.AudioContext || window.webkitAudioContext) : null;
-    if (!nav || !nav.mediaDevices || typeof nav.mediaDevices.getUserMedia !== "function" || !Ctx) return;
+    if (!Ctx) return;
     const detector = createBargeDetector({});
-    nav.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } }).then(function (stream) {
-      if (generation !== bargeGeneration || !speaking) { try { stream.getTracks().forEach((tr) => tr.stop()); } catch (_) {} return; }
+    const attach = function (stream, ownsStream) {
+      if (generation !== bargeGeneration || !speaking) {
+        if (ownsStream) { try { stream.getTracks().forEach((tr) => tr.stop()); } catch (_) {} }
+        return;
+      }
       bargeStream = stream;
+      bargeOwnsStream = !!ownsStream;
       bargeAudioCtx = new Ctx();
       const analyser = bargeAudioCtx.createAnalyser();
       analyser.fftSize = 1024;
@@ -3617,7 +3660,14 @@ function createVoiceLoop(getCtx, opts = {}) {
         bargeTimer = setTimeout(tick, 50);
       };
       bargeTimer = setTimeout(tick, 50);
-    }).catch(function () {});
+    };
+    const existing = sharedRecognition && typeof sharedRecognition.getStream === "function"
+      ? sharedRecognition.getStream() : null;
+    if (existing) { attach(existing, false); return; }
+    if (!nav || !nav.mediaDevices || typeof nav.mediaDevices.getUserMedia !== "function") return;
+    nav.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } })
+      .then(function (stream) { attach(stream, true); })
+      .catch(function () {});
   };
   const finishExternalSpeech = (token) => {
     if (!externalSpeech || externalSpeech.token !== token) return false;
@@ -3625,7 +3675,7 @@ function createVoiceLoop(getCtx, opts = {}) {
     speaking = false;
     activeResume = null;
     stopBargeWatch();
-    if (active && !paused && rec) { try { rec.start(); } catch (_) {} }
+    resumeInputAfterOutput();
     if (active) updateVoiceSession(paused ? "paused" : "listening", paused ? "Microphone paused." : "Listening for a command.");
     return true;
   };
@@ -3639,7 +3689,7 @@ function createVoiceLoop(getCtx, opts = {}) {
     speaking = false;
     activeResume = null;
     stopBargeWatch();
-    if (!stopOpts.suppressResume && active && !paused && rec) { try { rec.start(); } catch (_) {} }
+    if (!stopOpts.suppressResume) resumeInputAfterOutput();
     if (active) updateVoiceSession(paused ? "paused" : "listening", paused ? "Microphone paused." : "Listening for a command.");
     return true;
   };
@@ -3656,7 +3706,7 @@ function createVoiceLoop(getCtx, opts = {}) {
     speaking = false;
     activeResume = null;
     stopBargeWatch();
-    if (active && !paused && rec) { try { rec.start(); } catch (_) {} }
+    resumeInputAfterOutput();
     if (active) updateVoiceSession(paused ? "paused" : "listening", paused ? "Microphone paused." : "Listening for a command.");
   };
   const beginExternalSpeech = (stopFn, meta = {}) => {
@@ -3691,7 +3741,7 @@ function createVoiceLoop(getCtx, opts = {}) {
     const end = () => finishExternalSpeech(token);
     activeResume = end;
     startBargeWatch();
-    if (active && rec) { try { rec.stop(); } catch (_) {} }
+    suspendInputForOutput();
     return Object.freeze({
       start,
       end,
@@ -3776,7 +3826,7 @@ function createVoiceLoop(getCtx, opts = {}) {
       // watchdog, and barge-in) funnels through here. A pause must therefore
       // be checked here as well as in rec.onend; otherwise the spoken "Paused"
       // acknowledgement turns the microphone straight back on.
-      if (active && !paused && rec) { try { rec.start(); } catch (_) {} }
+      resumeInputAfterOutput();
       if (active) updateVoiceSession(paused ? "paused" : "listening", paused ? "Microphone paused." : "Listening for a command.");
     };
     const playCurrentChunk = () => {
@@ -3838,7 +3888,7 @@ function createVoiceLoop(getCtx, opts = {}) {
         updateVoiceSession("processing", "Preparing the spoken response.");
         activeResume = resume;
         startBargeWatch();
-        if (active && rec) { try { rec.stop(); } catch (_) {} }
+        suspendInputForOutput();
         window.speechSynthesis.speak(u);
         // Some platform voices accept the queue call but never begin. Avoid a
         // long false busy state and tell the user what needs attention.
@@ -3870,7 +3920,7 @@ function createVoiceLoop(getCtx, opts = {}) {
         updateVoiceSession("processing", "Preparing the spoken response.");
         activeResume = resume;
         startBargeWatch();
-        if (active && rec) { try { rec.stop(); } catch (_) {} }
+        suspendInputForOutput();
         let kokoroFinished = false;
         let browserFallbackStarted = false;
         const fallbackToBrowser = () => {
@@ -4032,6 +4082,13 @@ function createVoiceLoop(getCtx, opts = {}) {
     } catch (_) {
     }
     rec = null;
+    if (sharedRecognition) {
+      try {
+        if (typeof sharedRecognition.abort === "function") sharedRecognition.abort(reason || "voice-stopped");
+        else if (typeof sharedRecognition.stop === "function") sharedRecognition.stop();
+      } catch (_) {}
+      sharedRecognition = null;
+    }
     // Whisper engine teardown: release the mic tracks FIRST (the browser's
     // recording indicator must go dark immediately), then the audio graph.
     if (whisperState) {
@@ -4241,6 +4298,74 @@ function createVoiceLoop(getCtx, opts = {}) {
       if (currentRouteSerial === routeSerial) routeController = null;
     }
   };
+  const startSharedRecognition = (c, requestedEngine, standbyWanted) => {
+    const shared = (opts && opts.voiceService) || (typeof window !== "undefined" && window.AlloFlowVoice);
+    if (!shared || typeof shared.createHandsFreeRecognizer !== "function") return null;
+    let engineAnnouncementMade = false;
+    const mapEngine = (value) => {
+      const id = String(value || "");
+      if (id === "gemini-audio") return "gemini";
+      if (id === "browser-whisper" || id === "local-whisper") return "whisper";
+      return "webspeech";
+    };
+    sharedRecognition = shared.createHandsFreeRecognizer({
+      engine: requestedEngine,
+      tier: c && c.voiceWhisperTier,
+      lang: c && c.voiceLang || "en-US",
+      continuous: true,
+      callGeminiAudio: (opts && opts.callGeminiAudio) || (c && c.callGeminiAudio) || (typeof window !== "undefined" && window.callGeminiAudio),
+      onStream: (stream) => startMicMeter(stream),
+      onStreamClosed: () => stopMicMeter(),
+      onSpeechStart: () => noteUserSpeech(true),
+      onSpeechEnd: () => noteUserSpeech(false),
+      onTranscript: (text, isFinal, metadata) => {
+        if (!active || isFinal === false) return;
+        noteUserTurnEnd();
+        return handleUtterance(text, {
+          recognitionConfidence: metadata && typeof metadata.confidence === "number" ? metadata.confidence : null,
+          recognitionEngine: metadata && metadata.engine || null
+        });
+      },
+      onStateChange: (status) => {
+        if (!active || !status) return;
+        engineName = mapEngine(status.engine);
+        standby = engineName === "whisper" && !!standbyWanted;
+        updateVoiceSession(status.state || "starting", status.message || "", status.privacy);
+        if (status.state === "listening" && !engineAnnouncementMade) {
+          engineAnnouncementMade = true;
+          if (engineName === "gemini") {
+            announce("Gemini cloud transcription is active. Spoken audio is sent to Gemini one turn at a time.");
+          } else if (engineName === "whisper") {
+            announce(standby
+              ? "On-device listening is waiting for hey Allo. Audio stays on this device."
+              : "On-device Whisper is active. Audio stays on this device.");
+          } else {
+            if (standbyWanted) announce("Hey Allo standby is available only with on-device Whisper. Regular listening is on instead.");
+            else announce("Browser speech recognition is active.");
+          }
+        }
+      },
+      onError: (error, detail) => {
+        errStreak += 1;
+        const message = String(error && error.message || "Voice recognition failed.");
+        if (detail && detail.fatal) {
+          stop(message + " Voice control stopped.");
+          return;
+        }
+        updateVoiceSession("recovering", message + " Listening will continue.");
+      }
+    });
+    const started = sharedRecognition && sharedRecognition.start();
+    if (started === false) {
+      sharedRecognition = null;
+      return false;
+    }
+    return true;
+  };
+
+  // Legacy on-device fallback for a skewed deployment where AlloCommands has
+  // updated before the shared Voice module. Current builds use the shared
+  // recognizer above for Browser Speech, Whisper, and Gemini alike.
   // On-device engine: getUserMedia → RMS-segmented PCM → local Whisper →
   // handleUtterance. Raw audio NEVER leaves the device; only a recognized
   // command's TEXT enters the normal (FERPA-covered) routing path. While a
@@ -4301,13 +4426,20 @@ function createVoiceLoop(getCtx, opts = {}) {
       rec.interimResults = true;
       rec.lang = c && c.voiceLang || "en-US";
       rec.onresult = (ev) => {
-        const last = ev.results[ev.results.length - 1];
-        if (!last || !last.isFinal) { noteUserSpeech(true); return; }
+        const parts = [];
+        const confidences = [];
+        const first = typeof ev.resultIndex === "number" ? Math.max(0, ev.resultIndex) : 0;
+        for (let i = first; ev.results && i < ev.results.length; i++) {
+          const result = ev.results[i];
+          if (!result || !result[0]) continue;
+          if (!result.isFinal) { noteUserSpeech(true); continue; }
+          parts.push(String(result[0].transcript || ""));
+          if (typeof result[0].confidence === "number" && Number.isFinite(result[0].confidence)) confidences.push(result[0].confidence);
+        }
+        if (!parts.length) return;
         noteUserTurnEnd();
-        const alternative = last[0] || {};
-        const confidence = typeof alternative.confidence === "number" && Number.isFinite(alternative.confidence)
-          ? alternative.confidence : null;
-        return handleUtterance(String(alternative.transcript || ""), { recognitionConfidence: confidence });
+        const confidence = parts.length === 1 && confidences.length === 1 ? confidences[0] : null;
+        return handleUtterance(parts.join(" "), { recognitionConfidence: confidence, recognitionEngine: "web-speech" });
       };
       rec.onspeechstart = () => noteUserSpeech(true);
       rec.onspeechend = () => noteUserSpeech(false);
@@ -4382,6 +4514,9 @@ function createVoiceLoop(getCtx, opts = {}) {
     };
     try { window.addEventListener("alloflow-mute-changed", muteChangeHandler); }
     catch (_) { muteChangeHandler = null; }
+    const standbyWanted = _voiceStandbyPref();
+    const sharedStarted = startSharedRecognition(c, _voiceEnginePref(), standbyWanted);
+    if (sharedStarted !== null) return sharedStarted;
     // Policy 'auto': first voice use quietly fetches the on-device speech
     // model in the background so the local engine is ready next start.
     // Never blocks the loop; failures stay silent (the explicit
@@ -4399,7 +4534,6 @@ function createVoiceLoop(getCtx, opts = {}) {
         }).catch(function (_) {});
       }
     } catch (_) {}
-    const standbyWanted = _voiceStandbyPref();
     // Bound the on-device probe. hasWhisper() can hang (see _deviceStorage),
     // and start() has already promised the caller that voice is on, so the
     // mic must open on browser speech rather than wait forever.
@@ -4464,8 +4598,10 @@ function createVoiceLoop(getCtx, opts = {}) {
     clearPauseResumeTimer();
     updateVoiceSession("paused", "Microphone paused.");
     cancelRoute();
-    try { if (rec) rec.stop(); } catch (_) {}
-    if (whisperState) {
+    if (sharedRecognition && typeof sharedRecognition.pause === "function") {
+      try { sharedRecognition.pause({ releaseMic: true, message: "Microphone paused." }); } catch (_) {}
+    } else try { if (rec) rec.stop(); } catch (_) {}
+    if (!sharedRecognition && whisperState) {
       try { whisperState.stream.getTracks().forEach(function (tr) { tr.stop(); }); } catch (_) {}
       try { if (whisperState.src) whisperState.src.disconnect(); } catch (_) {}
       whisperState.stream = null;
@@ -4498,7 +4634,17 @@ function createVoiceLoop(getCtx, opts = {}) {
     clearPauseResumeTimer();
     if (!active || !paused) return false;
     paused = false;
-    if (engineName === "whisper" && whisperState) {
+    if (sharedRecognition && typeof sharedRecognition.resume === "function") {
+      try {
+        const resumed = await Promise.resolve(sharedRecognition.resume());
+        if (!resumed) throw new Error("Microphone could not resume.");
+      } catch (e) {
+        paused = true;
+        updateVoiceSession("paused", "Microphone could not resume.");
+        announce("Could not turn the microphone back on: " + ((e && e.message) || "unknown"));
+        return false;
+      }
+    } else if (engineName === "whisper" && whisperState) {
       try {
         // Permission already granted, so this re-acquires without a prompt.
         const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } });
@@ -4516,7 +4662,7 @@ function createVoiceLoop(getCtx, opts = {}) {
     } else {
       try { if (rec) rec.start(); } catch (_) {}
     }
-    startMicMeter(engineName === "whisper" && whisperState ? whisperState.stream : null);
+    if (!sharedRecognition) startMicMeter(engineName === "whisper" && whisperState ? whisperState.stream : null);
     updateVoiceSession("listening", "Listening for a command.");
     announce("Listening again.");
     return true;
@@ -4534,7 +4680,8 @@ function createVoiceLoop(getCtx, opts = {}) {
       active,
       paused,
       speaking,
-      listening: active && !paused && !speaking,
+      listening: active && !paused && !speaking && (!sharedRecognition || sharedRecognition.getState() === "listening"),
+      transcribing: !!(sharedRecognition && sharedRecognition.getState() === "transcribing"),
       engine: engineName,
       standby,
       awake,
