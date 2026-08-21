@@ -354,9 +354,9 @@ function HeaderBar(props) {
       if (next === "off") {
         if (shared && typeof shared.stopActiveVoiceSession === "function") shared.stopActiveVoiceSession("voice-input-off");
         else if (wasListening && loop && typeof loop.stop === "function") loop.stop();
-        if (wasListening && typeof addToast === "function") addToast("Voice input is off and the active listening session was stopped.", "info");
+        if (wasListening && typeof addToast === "function") addToast(t("header.voice_input_stopped") || "Voice input is off and the active listening session was stopped.", "info");
       } else if (wasListening && typeof addToast === "function") {
-        addToast("Voice-input changes apply the next time listening starts.", "info");
+        addToast(t("header.voice_input_changes_next_start") || "Voice-input changes apply the next time listening starts.", "info");
       }
     } catch (_) {
     }
@@ -375,7 +375,7 @@ function HeaderBar(props) {
     const ask = String(pollAsk || "").trim();
     if (!ask || pollAiBusy) return;
     if (typeof window.callGemini !== "function") {
-      if (typeof addToast === "function") addToast("The assistant is not available right now. You can still type the options yourself.", "info");
+      if (typeof addToast === "function") addToast(t("header.assistant_unavailable_type_options") || "The assistant is not available right now. You can still type the options yourself.", "info");
       return;
     }
     setPollAiBusy(true);
@@ -385,13 +385,13 @@ function HeaderBar(props) {
       );
       const lines = String(reply || "").split(/\r?\n/).map((line) => line.replace(/^[\s\-*\u2022]*\d*[.)]?\s*/, "").replace(/[\u0000-\u001f\u007f]/g, " ").replace(/\s+/g, " ").trim().slice(0, 80)).filter(Boolean).slice(0, 12);
       if (!lines.length) {
-        if (typeof addToast === "function") addToast("The assistant did not suggest any times. Try describing the window you have in mind.", "info");
+        if (typeof addToast === "function") addToast(t("header.assistant_no_times") || "The assistant did not suggest any times. Try describing the window you have in mind.", "info");
         return;
       }
       setSharedAssignmentActivity((previous) => ({ ...previous || {}, optionsText: lines.join("\n") }));
-      if (typeof addToast === "function") addToast("Suggested " + lines.length + " options. Edit them before you share.", "success");
+      if (typeof addToast === "function") addToast(t("header.suggested_options", { count: lines.length }) || "Suggested " + lines.length + " options. Edit them before you share.", "success");
     } catch (error) {
-      if (typeof addToast === "function") addToast("Could not suggest times: " + (error && error.message || "unknown"), "error");
+      if (typeof addToast === "function") addToast((t("header.suggest_times_failed") || "Could not suggest times: {error}").replace("{error}", error && error.message || "unknown"), "error");
     } finally {
       setPollAiBusy(false);
     }
@@ -625,10 +625,10 @@ function HeaderBar(props) {
       className: `inline-flex shrink-0 items-center justify-center gap-2 rounded-xl px-3 text-xs font-black border transition-colors ${activeSessionCode ? "bg-emerald-600 text-white border-emerald-300" : "bg-white text-indigo-950 border-white shadow-lg hover:bg-indigo-50"}`,
       "data-help-key": "header_session_start",
       title: t("session.start_tooltip"),
-      "aria-label": activeSessionCode ? `Live: ${activeSessionCode}` : t("session.start") || t("common.connect")
+      "aria-label": activeSessionCode ? t("header.live_session_code", { code: activeSessionCode }) || `Live: ${activeSessionCode}` : t("session.start") || t("common.connect")
     },
     /* @__PURE__ */ React.createElement(Wifi, { size: 16, "aria-hidden": "true" }),
-    /* @__PURE__ */ React.createElement("span", { className: "hidden lg:inline" }, activeSessionCode ? `Live: ${activeSessionCode}` : t("session.start"))
+    /* @__PURE__ */ React.createElement("span", { className: "hidden lg:inline" }, activeSessionCode ? t("header.live_session_code", { code: activeSessionCode }) || `Live: ${activeSessionCode}` : t("session.start"))
   ), !isTeacherMode && !activeSessionCode && /* @__PURE__ */ React.createElement(
     "button",
     {
@@ -642,7 +642,7 @@ function HeaderBar(props) {
     },
     /* @__PURE__ */ React.createElement(WifiOff, { size: 16, "aria-hidden": "true" }),
     /* @__PURE__ */ React.createElement("span", { className: "hidden lg:inline" }, t("session.join"))
-  ), !isTeacherMode && activeSessionCode && /* @__PURE__ */ React.createElement("span", { role: "status", className: "hidden md:inline-flex min-h-11 shrink-0 items-center gap-2 rounded-xl border border-emerald-300/60 bg-emerald-600 px-3 text-xs font-black text-white" }, /* @__PURE__ */ React.createElement(Wifi, { size: 16, className: "animate-pulse motion-reduce:animate-none", "aria-hidden": "true" }), " Live: ", activeSessionCode), isTeacherMode && /* @__PURE__ */ React.createElement(
+  ), !isTeacherMode && activeSessionCode && /* @__PURE__ */ React.createElement("span", { role: "status", className: "hidden md:inline-flex min-h-11 shrink-0 items-center gap-2 rounded-xl border border-emerald-300/60 bg-emerald-600 px-3 text-xs font-black text-white" }, /* @__PURE__ */ React.createElement(Wifi, { size: 16, className: "animate-pulse motion-reduce:animate-none", "aria-hidden": "true" }), " ", t("header.live_session") || "Live:", " ", activeSessionCode), isTeacherMode && /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -847,7 +847,7 @@ function HeaderBar(props) {
     /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold hidden xl:inline" }, t("immersive.label_voice")),
     showVoiceSettings ? /* @__PURE__ */ React.createElement(ChevronUp, { size: 12 }) : /* @__PURE__ */ React.createElement(ChevronDown, { size: 12 })
   ), showVoiceSettings && _headerPortal(
-    /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { "aria-hidden": "true", className: "fixed inset-0 z-[10000]", onClick: handleSetShowVoiceSettingsToFalse }), /* @__PURE__ */ React.createElement("div", { ref: _voiceSettingsRef, tabIndex: -1, role: "dialog", "aria-modal": "true", "aria-labelledby": "header-voice-settings-title", className: `allo-header-settings-dialog fixed top-28 right-4 w-64 p-5 rounded-xl shadow-2xl border z-[10001] animate-in fade-in zoom-in-95 motion-reduce:animate-none duration-200 ${_skin.panel}` }, /* @__PURE__ */ React.createElement("div", { className: "space-y-3" }, /* @__PURE__ */ React.createElement("div", { className: `flex justify-between items-center border-b ${_skin.divider} pb-2` }, /* @__PURE__ */ React.createElement("h4", { id: "header-voice-settings-title", className: "font-bold text-sm" }, t("settings.voice.label")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: handleSetShowVoiceSettingsToFalse, className: `min-w-6 min-h-6 rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${_skin.dismiss}`, "aria-label": t("common.close") || "Close voice settings" }, "\xD7")), /* @__PURE__ */ React.createElement("div", { className: `rounded-lg border p-2 ${_skin.surface}` }, /* @__PURE__ */ React.createElement("label", { htmlFor: "header-voice-input-engine", className: `text-[11px] uppercase font-bold ${_skin.label} block mb-1` }, "Voice input"), /* @__PURE__ */ React.createElement(
+    /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { "aria-hidden": "true", className: "fixed inset-0 z-[10000]", onClick: handleSetShowVoiceSettingsToFalse }), /* @__PURE__ */ React.createElement("div", { ref: _voiceSettingsRef, tabIndex: -1, role: "dialog", "aria-modal": "true", "aria-labelledby": "header-voice-settings-title", className: `allo-header-settings-dialog fixed top-28 right-4 w-64 p-5 rounded-xl shadow-2xl border z-[10001] animate-in fade-in zoom-in-95 motion-reduce:animate-none duration-200 ${_skin.panel}` }, /* @__PURE__ */ React.createElement("div", { className: "space-y-3" }, /* @__PURE__ */ React.createElement("div", { className: `flex justify-between items-center border-b ${_skin.divider} pb-2` }, /* @__PURE__ */ React.createElement("h4", { id: "header-voice-settings-title", className: "font-bold text-sm" }, t("settings.voice.label")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: handleSetShowVoiceSettingsToFalse, className: `min-w-6 min-h-6 rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${_skin.dismiss}`, "aria-label": t("common.close") || "Close voice settings" }, "\xD7")), /* @__PURE__ */ React.createElement("div", { className: `rounded-lg border p-2 ${_skin.surface}` }, /* @__PURE__ */ React.createElement("label", { htmlFor: "header-voice-input-engine", className: `text-[11px] uppercase font-bold ${_skin.label} block mb-1` }, t("header.voice_input") || "Voice input"), /* @__PURE__ */ React.createElement(
       "select",
       {
         id: "header-voice-input-engine",
@@ -856,12 +856,12 @@ function HeaderBar(props) {
         onChange: (event) => chooseVoiceInputEngine(event.target.value),
         className: `w-full text-xs p-2 rounded-lg border ${_skin.field} focus:ring-2 focus:ring-indigo-500 outline-none`
       },
-      /* @__PURE__ */ React.createElement("option", { value: "auto" }, "Auto (private-first)"),
-      /* @__PURE__ */ React.createElement("option", { value: "whisper" }, "On-device Whisper"),
-      /* @__PURE__ */ React.createElement("option", { value: "webspeech" }, "Browser speech service"),
-      /* @__PURE__ */ React.createElement("option", { value: "gemini" }, "Gemini cloud transcription"),
-      /* @__PURE__ */ React.createElement("option", { value: "off" }, "Off")
-    ), /* @__PURE__ */ React.createElement("p", { id: "header-voice-input-engine-help", className: `mt-1 text-[11px] leading-tight ${_skin.label}` }, voiceInputDescriptions[voiceInputEngine]), voiceInputEngine === "gemini" && !geminiAudioCapability.available && /* @__PURE__ */ React.createElement("div", { role: "status", "aria-live": "polite", className: `mt-2 rounded-lg border p-2 ${_skin.note}` }, /* @__PURE__ */ React.createElement("p", { className: `text-[11px] font-bold leading-tight ${_skin.noteHead}` }, canConfigureGeminiAudio ? "Gemini transcription is selected, but no Gemini cloud-services key is configured." : "Gemini cloud transcription is unavailable in this activity."), /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex flex-wrap gap-1.5" }, canConfigureGeminiAudio && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: openGeminiAudioConfiguration, "data-help-key": "header_voice_configure_gemini", className: "rounded-md bg-sky-700 px-2 py-1 text-[11px] font-bold text-white hover:bg-sky-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2" }, "Configure Gemini access"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => chooseVoiceInputEngine("auto"), className: `rounded-md border px-2 py-1 text-[11px] font-bold ${_skin.field}` }, "Use Auto instead")))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: `text-[11px] uppercase font-bold ${_skin.label} block mb-1` }, "Spoken-output voice"), /* @__PURE__ */ React.createElement(
+      /* @__PURE__ */ React.createElement("option", { value: "auto" }, t("header.voice_engine_auto") || "Auto (private-first)"),
+      /* @__PURE__ */ React.createElement("option", { value: "whisper" }, t("header.voice_engine_whisper") || "On-device Whisper"),
+      /* @__PURE__ */ React.createElement("option", { value: "webspeech" }, t("header.voice_engine_webspeech") || "Browser speech service"),
+      /* @__PURE__ */ React.createElement("option", { value: "gemini" }, t("header.voice_engine_gemini") || "Gemini cloud transcription"),
+      /* @__PURE__ */ React.createElement("option", { value: "off" }, t("header.voice_engine_off") || "Off")
+    ), /* @__PURE__ */ React.createElement("p", { id: "header-voice-input-engine-help", className: `mt-1 text-[11px] leading-tight ${_skin.label}` }, voiceInputDescriptions[voiceInputEngine]), voiceInputEngine === "gemini" && !geminiAudioCapability.available && /* @__PURE__ */ React.createElement("div", { role: "status", "aria-live": "polite", className: `mt-2 rounded-lg border p-2 ${_skin.note}` }, /* @__PURE__ */ React.createElement("p", { className: `text-[11px] font-bold leading-tight ${_skin.noteHead}` }, canConfigureGeminiAudio ? t("header.gemini_key_missing") || "Gemini transcription is selected, but no Gemini cloud-services key is configured." : t("header.gemini_unavailable_activity") || "Gemini cloud transcription is unavailable in this activity."), /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex flex-wrap gap-1.5" }, canConfigureGeminiAudio && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: openGeminiAudioConfiguration, "data-help-key": "header_voice_configure_gemini", className: "rounded-md bg-sky-700 px-2 py-1 text-[11px] font-bold text-white hover:bg-sky-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2" }, t("header.configure_gemini_access") || "Configure Gemini access"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => chooseVoiceInputEngine("auto"), className: `rounded-md border px-2 py-1 text-[11px] font-bold ${_skin.field}` }, t("header.use_auto_instead") || "Use Auto instead")))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: `text-[11px] uppercase font-bold ${_skin.label} block mb-1` }, t("header.spoken_output_voice") || "Spoken-output voice"), /* @__PURE__ */ React.createElement(
       "select",
       {
         "aria-label": t("common.selection"),
@@ -888,7 +888,7 @@ function HeaderBar(props) {
         "data-help-key": "header_settings_voice_select",
         className: `w-full text-xs p-2 rounded-lg border ${_skin.field} focus:ring-2 focus:ring-indigo-500 outline-none`
       },
-      _isCanvasEnv ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("optgroup", { label: "\u2728 " + (t("header.voice_cloud_group") || "Cloud voice (Gemini): most natural, needs the internet") }, GEMINI_VOICES.slice(0, 15).map((v) => /* @__PURE__ */ React.createElement("option", { key: v.id, value: v.id }, v.label || v.id))), renderKokoroVoiceGroup(), renderDeviceVoiceGroup()) : isLocalVoiceMode ? /* @__PURE__ */ React.createElement(React.Fragment, null, renderKokoroVoiceGroup(), /* @__PURE__ */ React.createElement("optgroup", { label: "\u{1F3A4} Edge TTS Voices" }, EDGE_TTS_VOICES.map((v) => /* @__PURE__ */ React.createElement("option", { key: v.id, value: v.id }, v.label))), renderDeviceVoiceGroup()) : (
+      _isCanvasEnv ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("optgroup", { label: "\u2728 " + (t("header.voice_cloud_group") || "Cloud voice (Gemini): most natural, needs the internet") }, GEMINI_VOICES.slice(0, 15).map((v) => /* @__PURE__ */ React.createElement("option", { key: v.id, value: v.id }, v.label || v.id))), renderKokoroVoiceGroup(), renderDeviceVoiceGroup()) : isLocalVoiceMode ? /* @__PURE__ */ React.createElement(React.Fragment, null, renderKokoroVoiceGroup(), /* @__PURE__ */ React.createElement("optgroup", { label: t("header.edge_tts_voices") || "\u{1F3A4} Edge TTS Voices" }, EDGE_TTS_VOICES.map((v) => /* @__PURE__ */ React.createElement("option", { key: v.id, value: v.id }, v.label))), renderDeviceVoiceGroup()) : (
         /* Every other surface — the hosted web app, which is what a
            phone loads. This branch used to be cloud voices only. */
         /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("optgroup", { label: "\u2728 " + (t("header.voice_cloud_group") || "Cloud voice (Gemini): most natural, needs the internet") }, GEMINI_VOICES.map((v) => /* @__PURE__ */ React.createElement("option", { key: v.id, value: v.id }, v.label))), renderKokoroVoiceGroup(), renderDeviceVoiceGroup())
@@ -1127,7 +1127,7 @@ function HeaderBar(props) {
       style: { minWidth: "160px", textAlign: "center" }
     },
     /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", className: "absolute -top-2 right-4 w-4 h-4 bg-indigo-600 rotate-45 border-l-2 border-t-2 border-indigo-400" }),
-    /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F4A1}"), " Click ", /* @__PURE__ */ React.createElement("strong", null, "?"), " anytime for help!")
+    /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F4A1}"), " ", t("header.click_for_help") || "Click", " ", /* @__PURE__ */ React.createElement("strong", null, "?"), " ", t("header.anytime_for_help") || "anytime for help!")
   )), isTeacherMode && /* @__PURE__ */ React.createElement(
     "button",
     {
@@ -1418,8 +1418,8 @@ function HeaderBar(props) {
       title: t("session.start_tooltip")
     },
     /* @__PURE__ */ React.createElement(Wifi, { size: 14 }),
-    activeSessionCode ? `Live: ${activeSessionCode}` : /* @__PURE__ */ React.createElement("span", { className: "hidden lg:inline" }, t("session.start"))
-  )) : /* @__PURE__ */ React.createElement("div", { className: "flex items-center" }, activeSessionCode ? /* @__PURE__ */ React.createElement("div", { className: `flex items-center gap-2 text-white px-3 py-1.5 rounded-lg text-xs font-bold border shadow-sm transition-colors ${sessionData ? "bg-green-700 border-green-600" : "bg-yellow-500 border-yellow-400"}` }, sessionData ? /* @__PURE__ */ React.createElement(Wifi, { size: 14, className: "animate-pulse" }) : /* @__PURE__ */ React.createElement(RefreshCw, { size: 14, className: "animate-spin" }), /* @__PURE__ */ React.createElement("span", null, sessionData ? `Synced: ${activeSessionCode}` : `Connecting: ${activeSessionCode}`), /* @__PURE__ */ React.createElement(
+    activeSessionCode ? t("header.live_session_code", { code: activeSessionCode }) || `Live: ${activeSessionCode}` : /* @__PURE__ */ React.createElement("span", { className: "hidden lg:inline" }, t("session.start"))
+  )) : /* @__PURE__ */ React.createElement("div", { className: "flex items-center" }, activeSessionCode ? /* @__PURE__ */ React.createElement("div", { className: `flex items-center gap-2 text-white px-3 py-1.5 rounded-lg text-xs font-bold border shadow-sm transition-colors ${sessionData ? "bg-green-700 border-green-600" : "bg-yellow-500 border-yellow-400"}` }, sessionData ? /* @__PURE__ */ React.createElement(Wifi, { size: 14, className: "animate-pulse" }) : /* @__PURE__ */ React.createElement(RefreshCw, { size: 14, className: "animate-spin" }), /* @__PURE__ */ React.createElement("span", null, sessionData ? t("header.synced_session_code", { code: activeSessionCode }) || `Synced: ${activeSessionCode}` : t("header.connecting_session_code", { code: activeSessionCode }) || `Connecting: ${activeSessionCode}`), /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
