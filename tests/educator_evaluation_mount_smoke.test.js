@@ -320,7 +320,7 @@ describe('EducatorEvaluationPanel', () => {
 
     click(container.querySelector('#ae-tab-about'));
     expect(container.querySelector('#ae-panel fieldset').disabled).toBe(true);
-    expect(container.textContent).toContain('Portal configuration is read-only.');
+    expect(container.textContent).toContain('District configuration is read-only here.');
   });
 
   it('fails closed on bootstrap errors, exposes no records, and retries identity verification', async () => {

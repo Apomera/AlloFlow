@@ -209,7 +209,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('somaticReset')))
     { id: 'flower', label: 'Petal bloom', symbol: '\u273F', description: 'Petals open and close around a steady center.' },
     { id: 'horizon', label: 'Grounding horizon', symbol: '\u25E1', description: 'A sun rises and settles over a quiet horizon.' },
     { id: 'path', label: 'Breath path', symbol: '\u2194', description: 'A directional point follows the optional breath rhythm along a clear line.' },
-    { id: 'orbit', label: 'Breath orbit', symbol: '\u25CC', description: 'A round inhale marker and diamond exhale marker move clockwise across solid and dotted arcs that bold the current phase.' },
+    { id: 'orbit', label: 'Breath orbit', symbol: '\u25CC', description: 'Direct IN and OUT labels pair with solid inhale and dotted exhale patterns across the arcs and center ring; the center changes to pause bars when the session pauses; an outlined diamond or ring shows the next phase handoff; round and diamond markers move clockwise, with shape-coded marks for each optional count.' },
     { id: 'none', label: 'No visual', symbol: '\u2014', description: 'Uses only the timer and optional sound cue.' }
   ];
 
@@ -1639,6 +1639,13 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('somaticReset')))
           var orbitActiveSegment = orbitMoving ? activeBreathPhase : 'steady';
           var orbitMarkerPhase = orbitMoving ? activeBreathPhase : 'steady';
           var orbitMarkerShape = orbitMarkerPhase === 'out' ? 'diamond' : 'circle';
+          var orbitCenterPhase = orbitMarkerPhase;
+          var orbitCenterPattern = orbitCenterPhase === 'out' ? 'dotted' : (orbitCenterPhase === 'in' ? 'solid' : 'steady');
+          var orbitCenterRadius = 30 + amount * 27;
+          var orbitSessionState = previewing ? 'preview' : (isRunning ? 'moving' : (hasStarted ? 'paused' : 'ready'));
+          var orbitCenterStatusShape = orbitSessionState === 'paused' ? 'pause-bars' : 'dot';
+          var orbitCadenceTickTotal = protocol.cadence ? Math.round(orbitCycle) : 0;
+          var orbitInhaleTickBoundary = protocol.cadence ? Math.round(protocol.cadence[0]) : 0;
           var orbitSegmentTransition = orbitMoving && motionStrength > 0
             ? 'stroke-width 260ms ease-in-out, opacity 260ms ease-in-out'
             : 'none';
@@ -1647,12 +1654,23 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('somaticReset')))
           var orbitPhaseEndAngle = inhaleFraction * Math.PI * 2 - (Math.PI / 2);
           var orbitHandoffX = orbitCenter + Math.cos(orbitPhaseEndAngle) * orbitRadius;
           var orbitHandoffY = orbitCenter + Math.sin(orbitPhaseEndAngle) * orbitRadius;
+          var orbitPhaseProgress = orbitMarkerPhase === 'in'
+            ? Math.min(1, Math.max(0, orbitDisplayedProgress / Math.max(inhaleFraction, 0.001)))
+            : (orbitMarkerPhase === 'out'
+                ? Math.min(1, Math.max(0, (orbitDisplayedProgress - inhaleFraction) / Math.max(1 - inhaleFraction, 0.001)))
+                : 0);
+          var orbitDestination = orbitMarkerPhase === 'in' ? 'handoff' : (orbitMarkerPhase === 'out' ? 'return' : 'steady');
+          var orbitHandoffState = orbitMarkerPhase === 'in' ? 'destination' : (orbitMarkerPhase === 'out' ? 'passed' : 'steady');
+          var orbitReturnState = orbitMarkerPhase === 'out' ? 'destination' : (orbitMarkerPhase === 'in' ? 'waiting' : 'steady');
+          var orbitDestinationOpacity = orbitMoving ? 0.3 + orbitPhaseProgress * 0.5 : 0;
+          var orbitStationTransition = orbitMoving && motionStrength > 0 ? 'opacity 260ms ease-in-out' : 'none';
 
-          function orbitPoint(fraction) {
+          function orbitPoint(fraction, radius) {
             var angle = fraction * Math.PI * 2 - (Math.PI / 2);
+            var pointRadius = radius === undefined ? orbitRadius : radius;
             return {
-              x: orbitCenter + Math.cos(angle) * orbitRadius,
-              y: orbitCenter + Math.sin(angle) * orbitRadius
+              x: orbitCenter + Math.cos(angle) * pointRadius,
+              y: orbitCenter + Math.sin(angle) * pointRadius
             };
           }
 
@@ -1663,6 +1681,51 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('somaticReset')))
             return 'M ' + start.x.toFixed(2) + ' ' + start.y.toFixed(2) +
               ' A ' + orbitRadius + ' ' + orbitRadius + ' 0 ' + largeArc + ' 1 ' + end.x.toFixed(2) + ' ' + end.y.toFixed(2);
           }
+
+          var orbitCadenceTicks = [];
+          if (usesPace) {
+            for (var orbitTickIndex = 1; orbitTickIndex < orbitCadenceTickTotal; orbitTickIndex += 1) {
+              if (orbitTickIndex === orbitInhaleTickBoundary) continue;
+              var orbitTickFraction = orbitTickIndex / orbitCycle;
+              var orbitTickPhase = orbitTickIndex < orbitInhaleTickBoundary ? 'in' : 'out';
+              if (orbitTickPhase === 'in') {
+                var orbitTickInner = orbitPoint(orbitTickFraction, orbitRadius - 5);
+                var orbitTickOuter = orbitPoint(orbitTickFraction, orbitRadius + 5);
+                orbitCadenceTicks.push(h('line', {
+                  key: 'in-' + orbitTickIndex,
+                  x1: orbitTickInner.x.toFixed(2),
+                  y1: orbitTickInner.y.toFixed(2),
+                  x2: orbitTickOuter.x.toFixed(2),
+                  y2: orbitTickOuter.y.toFixed(2),
+                  stroke: colors.panel,
+                  strokeWidth: compact ? 2 : 2.5,
+                  strokeLinecap: 'round',
+                  'data-orbit-cadence-tick': orbitTickIndex,
+                  'data-orbit-tick-phase': 'in',
+                  'data-orbit-tick-shape': 'bar'
+                }));
+              } else {
+                var orbitTickPoint = orbitPoint(orbitTickFraction);
+                orbitCadenceTicks.push(h('circle', {
+                  key: 'out-' + orbitTickIndex,
+                  cx: orbitTickPoint.x.toFixed(2),
+                  cy: orbitTickPoint.y.toFixed(2),
+                  r: compact ? 3 : 3.5,
+                  fill: colors.panel,
+                  stroke: colors.muted,
+                  strokeWidth: compact ? 1.5 : 2,
+                  'data-orbit-cadence-tick': orbitTickIndex,
+                  'data-orbit-tick-phase': 'out',
+                  'data-orbit-tick-shape': 'hollow-dot'
+                }));
+              }
+            }
+          }
+          var orbitReturnPoint = orbitPoint(0, orbitRadius + 20);
+          var orbitReturnConnector = orbitPoint(0, orbitRadius + 11);
+          var orbitLabelRadius = orbitRadius + (compact ? 19 : 23);
+          var orbitInhaleLabelPoint = orbitPoint(inhaleFraction / 2, orbitLabelRadius);
+          var orbitExhaleLabelPoint = orbitPoint(inhaleFraction + ((1 - inhaleFraction) / 2), orbitLabelRadius);
 
           visualBody = h('svg', {
             viewBox: '0 0 240 240',
@@ -1675,7 +1738,10 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('somaticReset')))
             'data-orbit-rotation': orbitCanMove ? orbitRotation : 'steady',
             'data-orbit-direction': orbitMoving ? 'clockwise' : 'steady',
             'data-orbit-active-segment': orbitActiveSegment,
+            'data-orbit-destination': orbitDestination,
+            'data-orbit-phase-progress': orbitMoving ? Math.round(orbitPhaseProgress * 100) : 'steady',
             'data-orbit-inhale-percent': Math.round(inhaleFraction * 100),
+            'data-orbit-cadence': usesPace ? protocol.cadence.join('-') : 'natural',
             style: { width: frameCss, height: 'auto', overflow: 'visible' }
           },
             h('circle', {
@@ -1713,13 +1779,92 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('somaticReset')))
                 transition: orbitSegmentTransition
               }
             }),
+            usesPace && h('g', {
+              'data-orbit-phase-labels': 'true'
+            },
+              h('text', {
+                x: orbitInhaleLabelPoint.x.toFixed(2),
+                y: orbitInhaleLabelPoint.y.toFixed(2),
+                textAnchor: 'middle',
+                dominantBaseline: 'middle',
+                fill: colors.accent,
+                fontSize: compact ? 12 : 13,
+                fontWeight: inhaleSegmentState === 'active' ? 500 : 400,
+                letterSpacing: compact ? 0.8 : 1.1,
+                opacity: inhaleSegmentState === 'active' ? 1 : (inhaleSegmentState === 'inactive' ? 0.45 : 0.78),
+                style: {
+                  textDecoration: inhaleSegmentState === 'active' ? 'underline' : 'none',
+                  transition: orbitSegmentTransition
+                },
+                'data-orbit-phase-label': 'in',
+                'data-orbit-label-state': inhaleSegmentState,
+                'data-orbit-label-emphasis': inhaleSegmentState === 'active' ? 'underlined' : 'plain'
+              }, 'IN'),
+              h('text', {
+                x: orbitExhaleLabelPoint.x.toFixed(2),
+                y: orbitExhaleLabelPoint.y.toFixed(2),
+                textAnchor: 'middle',
+                dominantBaseline: 'middle',
+                fill: colors.muted,
+                fontSize: compact ? 12 : 13,
+                fontWeight: exhaleSegmentState === 'active' ? 500 : 400,
+                letterSpacing: compact ? 0.8 : 1.1,
+                opacity: exhaleSegmentState === 'active' ? 1 : (exhaleSegmentState === 'inactive' ? 0.45 : 0.78),
+                style: {
+                  textDecoration: exhaleSegmentState === 'active' ? 'underline' : 'none',
+                  transition: orbitSegmentTransition
+                },
+                'data-orbit-phase-label': 'out',
+                'data-orbit-label-state': exhaleSegmentState,
+                'data-orbit-label-emphasis': exhaleSegmentState === 'active' ? 'underlined' : 'plain'
+              }, 'OUT')
+            ),
+            usesPace && h('g', {
+              'data-orbit-cadence-map': 'true',
+              'data-orbit-cadence-count': orbitCadenceTickTotal,
+              'data-orbit-inhale-count': protocol.cadence[0],
+              'data-orbit-exhale-count': protocol.cadence[1]
+            }, orbitCadenceTicks),
+            usesPace && h('g', {
+              'data-orbit-return': 'true',
+              'data-orbit-return-shape': 'ring',
+              'data-orbit-return-state': orbitReturnState,
+              'data-orbit-station-shape': 'ring'
+            },
+              orbitReturnState === 'destination' && h('circle', {
+                cx: orbitReturnPoint.x.toFixed(2),
+                cy: orbitReturnPoint.y.toFixed(2),
+                r: compact ? 8 : 10,
+                fill: 'none',
+                stroke: colors.accent,
+                strokeWidth: compact ? 1.5 : 2,
+                opacity: orbitDestinationOpacity,
+                style: { transition: orbitStationTransition },
+                'data-orbit-destination-halo': 'return'
+              }),
+              h('line', {
+                x1: orbitCenter,
+                y1: orbitReturnConnector.y.toFixed(2),
+                x2: orbitCenter,
+                y2: (orbitReturnPoint.y + 4).toFixed(2),
+                stroke: colors.muted,
+                strokeWidth: compact ? 1.5 : 2,
+                strokeLinecap: 'round'
+              }),
+              h('circle', {
+                cx: orbitReturnPoint.x.toFixed(2),
+                cy: orbitReturnPoint.y.toFixed(2),
+                r: compact ? 3.5 : 4.5,
+                fill: colors.panel,
+                stroke: colors.accent,
+                strokeWidth: compact ? 1.5 : 2
+              })
+            ),
             h('circle', {
               cx: orbitCenter,
               cy: orbitCenter,
-              r: 30 + amount * 27,
+              r: orbitCenterRadius,
               fill: colors.soft,
-              stroke: colors.accent,
-              strokeWidth: compact ? 1.5 : 2,
               opacity: 0.48 + amount * 0.28,
               style: { transition: visualTransition },
               'data-orbit-center': 'true'
@@ -1727,23 +1872,91 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('somaticReset')))
             h('circle', {
               cx: orbitCenter,
               cy: orbitCenter,
-              r: compact ? 5 : 7,
-              fill: colors.panelAlt,
+              r: orbitCenterRadius,
+              fill: 'none',
               stroke: colors.accent,
-              strokeWidth: 2
+              strokeWidth: orbitCenterPhase === 'steady' ? (compact ? 1.5 : 2) : (compact ? 2.5 : 3),
+              strokeDasharray: orbitCenterPattern === 'dotted' ? (compact ? '3 6' : '4 7') : undefined,
+              strokeLinecap: 'round',
+              opacity: orbitCenterPhase === 'steady' ? 0.58 : 0.92,
+              style: { transition: visualTransition },
+              'data-orbit-center-ring': 'true',
+              'data-orbit-center-phase': orbitCenterPhase,
+              'data-orbit-center-pattern': orbitCenterPattern
             }),
-            h('rect', {
-              x: orbitHandoffX - (compact ? 4 : 5),
-              y: orbitHandoffY - (compact ? 4 : 5),
-              width: compact ? 8 : 10,
-              height: compact ? 8 : 10,
-              rx: 2,
-              fill: colors.panel,
-              stroke: colors.accent,
-              strokeWidth: 2,
-              transform: 'rotate(45 ' + orbitHandoffX.toFixed(2) + ' ' + orbitHandoffY.toFixed(2) + ')',
-              'data-orbit-handoff': 'true'
-            }),
+            h('g', {
+              'data-orbit-center-status': 'true',
+              'data-orbit-center-status-state': orbitSessionState,
+              'data-orbit-center-status-shape': orbitCenterStatusShape
+            },
+              h('circle', {
+                cx: orbitCenter,
+                cy: orbitCenter,
+                r: compact ? 8 : 10,
+                fill: colors.panelAlt,
+                stroke: orbitSessionState === 'paused' ? colors.muted : colors.accent,
+                strokeWidth: 2
+              }),
+              orbitCenterStatusShape === 'pause-bars'
+                ? h('g', { 'data-orbit-pause-bars': 'true' },
+                    h('line', {
+                      x1: orbitCenter - 3,
+                      y1: orbitCenter - 5,
+                      x2: orbitCenter - 3,
+                      y2: orbitCenter + 5,
+                      stroke: colors.accent,
+                      strokeWidth: compact ? 2.5 : 3,
+                      strokeLinecap: 'round'
+                    }),
+                    h('line', {
+                      x1: orbitCenter + 3,
+                      y1: orbitCenter - 5,
+                      x2: orbitCenter + 3,
+                      y2: orbitCenter + 5,
+                      stroke: colors.accent,
+                      strokeWidth: compact ? 2.5 : 3,
+                      strokeLinecap: 'round'
+                    })
+                  )
+                : h('circle', {
+                    cx: orbitCenter,
+                    cy: orbitCenter,
+                    r: compact ? 2 : 2.5,
+                    fill: colors.accent,
+                    'data-orbit-center-dot': 'true'
+                  })
+            ),
+            usesPace && h('g', {
+              'data-orbit-handoff': 'true',
+              'data-orbit-handoff-state': orbitHandoffState,
+              'data-orbit-station-shape': 'diamond'
+            },
+              orbitHandoffState === 'destination' && h('rect', {
+                x: orbitHandoffX - (compact ? 7 : 9),
+                y: orbitHandoffY - (compact ? 7 : 9),
+                width: compact ? 14 : 18,
+                height: compact ? 14 : 18,
+                rx: compact ? 2.5 : 3,
+                fill: 'none',
+                stroke: colors.accent,
+                strokeWidth: compact ? 1.5 : 2,
+                opacity: orbitDestinationOpacity,
+                transform: 'rotate(45 ' + orbitHandoffX.toFixed(2) + ' ' + orbitHandoffY.toFixed(2) + ')',
+                style: { transition: orbitStationTransition },
+                'data-orbit-destination-halo': 'handoff'
+              }),
+              h('rect', {
+                x: orbitHandoffX - (compact ? 4 : 5),
+                y: orbitHandoffY - (compact ? 4 : 5),
+                width: compact ? 8 : 10,
+                height: compact ? 8 : 10,
+                rx: 2,
+                fill: colors.panel,
+                stroke: colors.accent,
+                strokeWidth: 2,
+                transform: 'rotate(45 ' + orbitHandoffX.toFixed(2) + ' ' + orbitHandoffY.toFixed(2) + ')'
+              })
+            ),
             h('g', {
               'data-orbit-marker': 'true',
               'data-orbit-marker-phase': orbitMarkerPhase,

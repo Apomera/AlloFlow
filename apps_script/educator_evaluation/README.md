@@ -132,7 +132,10 @@ administrative restriction.
   storage, audit rows, and finalized snapshots. There is no generic sheet/file API.
 - All mutating operations use a script lock. Whole-workspace portal saves also
   require an expected revision; a stale browser gets a `conflict` response
-  instead of silently overwriting newer work. Setup, membership/assignment
+  instead of silently overwriting newer work. The portal then fetches the
+  authoritative revision, compares base/attempted/current values, loads the
+  district copy, and offers replay only for non-overlapping fields; overlapping
+  fields always keep the district value. Setup, membership/assignment
   administration, and content-free notification audit writes are serialized
   but are not workspace-revision operations.
 - Canonical saves first stage a private `workspace.pending.json` commit journal.
@@ -271,33 +274,41 @@ The private Drive folder also contains `workspace.json` and an internal
 ### District operations center
 
 The administrator-only operations center in **Setup** replaces the routine
-"open Apps Script and run a helper" path for recurring work. It provides four
+"open Apps Script and run a helper" path for recurring work. Together with the
+reviewed Workspace setup card, it provides five
 review-before-confirm workflows:
 
-1. **Accounts and evaluator assignments.** Load the current authorized
+1. **District workspace configuration.** Edit a browser draft, then call
+   `reviewPortalWorkspaceConfiguration({config})` to receive a server-produced
+   current-versus-proposed list and impact counts. Only
+   `performPortalWorkspaceConfiguration({reviewToken,
+   acknowledgeImpact:true})` can commit it. Generic workspace autosave rejects
+   administrator configuration changes. The confirmed commit is audited, and
+   existing frozen framework/weight snapshots are not recalculated.
+2. **Accounts and evaluator assignments.** Load the current authorized
    directory, enter a managed-domain member or educator/evaluator assignment,
    review the exact normalized values, confirm legitimate educational
    interest, and apply. A stale or already-used review cannot be replayed.
    Bootstrap administrators cannot be deactivated or demoted, and at least one
    active administrator is always required.
-2. **Annual cycle due-date schedule.** Choose a date, optional exact building
+3. **Annual cycle due-date schedule.** Choose a date, optional exact building
    filter, and either missing dates or all open cycles. Review the affected
    count and sample first. Inactive and finalized educators are always skipped;
    a workspace change invalidates the review.
-3. **Audited private exports.** Choose roster/status CSV, one educator's full
+4. **Audited private exports.** Choose roster/status CSV, one educator's full
    portal record, or a full repository backup; record a specific authorized
    purpose; review the scope; and acknowledge district destination, retention,
    legal-hold, and official-record procedures. The server creates a private
    file in `Authorized exports`, re-reads and hashes it, and records the action
    in the canonical audit. Creating the file neither shares it nor makes it the
    official record.
-4. **Archive inventory and restore rehearsal.** Re-verify annual archives,
+5. **Archive inventory and restore rehearsal.** Re-verify annual archives,
    compare archived and current counts/revisions, and create a separate private
    restore candidate in `Restore rehearsals`. A rehearsal never writes to or
    replaces the live workspace. District IT must inspect and test the candidate
    under its approved recovery procedure before any real recovery decision.
 
-All four workflows derive the acting identity on the server. Review tokens are
+All five workflows derive the acting identity on the server. Review tokens are
 actor-bound, single-use, state-bound, and valid for ten minutes. The controls
 do not replace district approval, records custody, incident response, or a
 tested backup/restore plan.
@@ -355,7 +366,10 @@ The HTML portal uses `google.script.run`:
 - `savePortalWorkspace({workspace, expectedVersion, mutation})` /
   `saveWorkspace(...)` -> `{ok, workspace, revision, version}` or a conflict
 - `sendPortalNotification({teacherId, target:'teacher'|'evaluator'})`
-- `getPortalCohortStats({teacherId, metric, from?, to?})`
+- `getPortalCohortStats({teacherId, metric:'overall'|'d1'|'d2'|'d3'|'d4', from?, to?})`
+  -> a permission-filtered finalized-formal-observation aggregate. Each eligible
+  peer contributes one mean; fewer than ten peers are suppressed without
+  disclosing the small-group count. Annual-cycle snapshots are not mixed in.
 - `reviewPortalReleasedEvaluationShare({teacherId})` -> `{ok, review:{token,
   expiresAt, educatorName, recipient, finalizedAt, action, ...}}`. Read-only;
   evaluator or admin only. The token expires after ten minutes and is bound to
@@ -387,6 +401,12 @@ The HTML portal uses `google.script.run`:
   -> `{ok, review:{token, affectedEducators, skippedFinalized, sample, ...}}`;
   then `performPortalCycleSchedule({reviewToken, acknowledgeImpact:true})`
   commits the reviewed schedule through the revisioned workspace path.
+- `reviewPortalWorkspaceConfiguration({config})` -> `{ok, review:{token,
+  changes, impacts, expiresAt}}`; then
+  `performPortalWorkspaceConfiguration({reviewToken, acknowledgeImpact:true})`
+  commits only the exact reviewed configuration, adds a canonical audit event,
+  and returns the new revision. Admin only. Any intervening workspace change,
+  expired or reused token, or ordinary autosave attempt is rejected.
 - `reviewPortalDistrictExport({scope:'status_csv'|'educator_record'|
   'repository_backup', teacherId?, purpose})` -> a read-only scope/purpose
   review; then `performPortalDistrictExport({reviewToken,

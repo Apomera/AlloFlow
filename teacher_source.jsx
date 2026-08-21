@@ -47,7 +47,9 @@ const buildRosterSessionEvidenceCsv = (session) => {
   const headers = [
     'record_type', 'session_id', 'ended_at', 'duration_minutes', 'transport',
     'codename', 'group_id', 'quiz_responses', 'activity_opportunities',
-    'activity_submissions', 'revisions', 'follow_up', 'activity_kind',
+    'activity_submissions', 'revisions', 'follow_up', 'organizer_type',
+    'organizer_status', 'organizer_score', 'organizer_correct', 'organizer_total',
+    'organizer_attempts', 'activity_kind',
     'invited', 'submitted', 'approved', 'hidden', 'feedback_sent', 'votes_cast',
   ];
   const rows = [headers];
@@ -60,6 +62,8 @@ const buildRosterSessionEvidenceCsv = (session) => {
         'participant', source.id || '', source.endedAt || '', source.durationMinutes ?? '', source.mode || '',
         codename, record.groupId || '', record.responseCount || 0, record.liveActivityCount || 0,
         record.liveSubmissionCount || 0, record.liveRevisionCount || 0, followUp.has(codename) ? 'yes' : 'no',
+        record.organizer?.type || '', record.organizer?.status || '', record.organizer?.score || 0,
+        record.organizer?.correct || 0, record.organizer?.total || 0, record.organizer?.attempts || 0,
         '', '', '', '', '', '', '',
       ]);
     });
@@ -67,7 +71,7 @@ const buildRosterSessionEvidenceCsv = (session) => {
     const record = activity && typeof activity === 'object' ? activity : {};
     rows.push([
       'activity', source.id || '', source.endedAt || '', source.durationMinutes ?? '', source.mode || '',
-      '', '', '', '', '', record.revised || 0, '', record.kind || 'activity',
+      '', '', '', '', '', record.revised || 0, '', '', '', '', '', '', '', record.kind || 'activity',
       record.invited || 0, record.submitted || 0, record.approved || 0, record.hidden || 0,
       record.feedbackSent || 0, record.votesCast || 0,
     ]);
@@ -166,7 +170,8 @@ const filterRosterSessionHistory = (sessions, focusValue = 'all', activityKindVa
     const cohorts = Array.isArray(brief.evidenceCohorts) ? brief.evidenceCohorts : [];
     const nextMoves = Array.isArray(brief.nextMoves) ? brief.nextMoves : [];
     const activities = Array.isArray(session.liveActivities) ? session.liveActivities : [];
-    const kindMatches = activityKind === 'all' || activities.some(activity => activity && activity.kind === activityKind);
+    const organizerKind = String(session.organizerActivity?.type || '').trim();
+    const kindMatches = activityKind === 'all' || organizerKind === activityKind || activities.some(activity => activity && activity.kind === activityKind);
     if (!kindMatches) return false;
     if (focus === 'follow_up') return cohorts.some(cohort => cohort && cohort.intent === 'support') || nextMoves.some(move => move && move.code !== 'review-evidence');
     if (focus === 'revision') return nextMoves.some(move => move && move.code === 'revision-opportunity') || Number(brief.feedbackSent || 0) > Number(brief.revisions || 0);
@@ -212,8 +217,9 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
     .slice(0, 250), [followUpResources]);
   const sessionActivityKinds = useMemo(() => Array.from(new Set(
     (Array.isArray(rosterKey?.sessionHistory) ? rosterKey.sessionHistory : [])
-      .flatMap(session => Array.isArray(session?.liveActivities) ? session.liveActivities : [])
-      .map(activity => String(activity?.kind || '').trim())
+      .flatMap(session => (Array.isArray(session?.liveActivities) ? session.liveActivities : [])
+        .map(activity => String(activity?.kind || '').trim())
+        .concat(String(session?.organizerActivity?.type || '').trim()))
       .filter(Boolean)
   )).sort(), [rosterKey?.sessionHistory]);
   const filteredSessionHistory = useMemo(() => filterRosterSessionHistory(
@@ -494,6 +500,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
       const nd = { ...(prev.displayNames || {}) }; delete nd[name];
       const np = { ...(prev.progressHistory || {}) }; delete np[name];
       const nh = (Array.isArray(prev.sessionHistory) ? prev.sessionHistory : []).map(session => {
+        const removedOrganizer = session.participants?.[name]?.organizer || null;
         const participants = { ...(session.participants || {}) }; delete participants[name];
         const insightBrief = session.insightBrief && typeof session.insightBrief === 'object' ? {
           ...session.insightBrief,
@@ -503,7 +510,19 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
             return { ...cohort, codenames, count: codenames.length };
           }).filter(cohort => cohort.count > 0),
         } : session.insightBrief;
-        return { ...session, participants, insightBrief, absentCodenames: (session.absentCodenames || []).filter(codename => codename !== name) };
+        const organizerActivity = session.organizerActivity && typeof session.organizerActivity === 'object' ? {
+          ...session.organizerActivity,
+          participantCount: Math.max(0, Number(session.organizerActivity.participantCount || 0) - (removedOrganizer ? 1 : 0)),
+          statusCounts: removedOrganizer ? {
+            ...(session.organizerActivity.statusCounts || {}),
+            [removedOrganizer.status]: Math.max(0, Number(session.organizerActivity.statusCounts?.[removedOrganizer.status] || 0) - 1),
+          } : session.organizerActivity.statusCounts,
+          followUpCodenames: (session.organizerActivity.followUpCodenames || []).filter(codename => codename !== name),
+        } : null;
+        const nextSession = { ...session, participants, insightBrief, absentCodenames: (session.absentCodenames || []).filter(codename => codename !== name) };
+        if (organizerActivity?.participantCount > 0) nextSession.organizerActivity = organizerActivity;
+        else delete nextSession.organizerActivity;
+        return nextSession;
       });
       return { ...prev, students: ns, learnerIds: ni, displayNames: nd, progressHistory: np, sessionHistory: nh };
     });
@@ -911,6 +930,9 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
                       {Array.isArray(session.liveActivities) && session.liveActivities.length > 0 && (
                         <p><span className="font-bold">Live activity evidence:</span> {session.liveActivities.length} activit{session.liveActivities.length === 1 ? 'y' : 'ies'} · {session.liveActivities.reduce((sum, activity) => sum + (activity.submitted || 0), 0)} submissions · {session.liveActivities.reduce((sum, activity) => sum + (activity.revised || 0), 0)} revisions</p>
                       )}
+                      {session.organizerActivity && (
+                        <p><span className="font-bold">Visual organizer:</span> {String(session.organizerActivity.type || 'organizer').replace(/3d$/i, ' 3D')} · {session.organizerActivity.statusCounts?.complete || 0} complete · {session.organizerActivity.statusCounts?.attempted || 0} attempted · {(session.organizerActivity.followUpCodenames || []).length} launch follow-up</p>
+                      )}
                       {session.insightBrief && (
                         <div className="rounded-lg border border-indigo-100 bg-indigo-50/70 p-2">
                           <p><span className="font-bold text-indigo-900">Insight brief:</span> {session.insightBrief.activityCount || 0} activities · {session.insightBrief.submissions || 0} submissions · {session.insightBrief.revisions || 0} revisions · {(session.insightBrief.followUpCodenames || []).length} follow-up</p>
@@ -939,7 +961,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
                         <p><span className="font-bold">Class Goals met:</span> {session.classGoals.map(goal => `${goal.label} (${goal.mode === 'independent' ? goal.delivered + ' students' : '+' + goal.tokens + ' each, ' + goal.delivered + ' students'})`).join(' · ')}</p>
                       )}
                       {Object.entries(session.participants || {}).map(([codename, record]) => (
-                        <p key={codename}><span className="font-bold">{codename}</span>: {record.responseCount || 0} quiz response{record.responseCount === 1 ? '' : 's'}{record.liveActivityCount ? ` · ${record.liveSubmissionCount || 0}/${record.liveActivityCount} activity submissions` : ''}{record.liveRevisionCount ? ` · ${record.liveRevisionCount} revision${record.liveRevisionCount === 1 ? '' : 's'}` : ''}{record.groupId ? ` · group ${record.groupId}` : ''}</p>
+                        <p key={codename}><span className="font-bold">{codename}</span>: {record.responseCount || 0} quiz response{record.responseCount === 1 ? '' : 's'}{record.liveActivityCount ? ` · ${record.liveSubmissionCount || 0}/${record.liveActivityCount} activity submissions` : ''}{record.liveRevisionCount ? ` · ${record.liveRevisionCount} revision${record.liveRevisionCount === 1 ? '' : 's'}` : ''}{record.organizer ? ` · organizer ${record.organizer.status}${record.organizer.total ? ` ${record.organizer.correct}/${record.organizer.total}` : ''}` : ''}{record.groupId ? ` · group ${record.groupId}` : ''}</p>
                       ))}
                       {(session.unmatchedCodenames || []).length > 0 && <p className="text-rose-700"><span className="font-bold">Unmatched:</span> {session.unmatchedCodenames.join(', ')}</p>}
                     </div>
@@ -1123,7 +1145,19 @@ const ConfettiEffect = ({ isActive }) => {
   );
 };
 // @section ESCAPE_ROOM — Escape Room student overlay
-const StudentConceptQuestOverlay = React.memo(({ sessionData, user, activeSessionCode, targetAppId, playSound }) => {
+const StudentConceptQuestOverlay = React.memo(({ sessionData, user, activeSessionCode, targetAppId, t, playSound }) => {
+  const tr = (key, fallback, params = {}) => {
+    const fullKey = `concept_quest.${key}`;
+    const translated = typeof t === 'function' ? t(fullKey, params) : '';
+    if (typeof translated === 'string' && translated && translated !== fullKey) return translated;
+    return Object.keys(params).reduce((text, name) => text.replace(`{${name}}`, params[name]), fallback);
+  };
+  const gameLabel = (entry, type, field = 'name') => {
+    if (!entry) return '';
+    const suffix = field === 'description' ? 'description' : 'name';
+    const key = entry[`${field}Key`] || (entry.id ? `${type}_${entry.id}_${suffix}` : '');
+    return key ? tr(key, entry[field] || '') : (entry[field] || '');
+  };
   const escapeState = sessionData?.escapeRoomState;
   const quest = escapeState?.conceptQuest;
   const engine = window.AlloModules?.ConceptQuestEngine;
@@ -1178,44 +1212,46 @@ const StudentConceptQuestOverlay = React.memo(({ sessionData, user, activeSessio
     <div className="fixed inset-0 z-[9999] overflow-auto bg-gradient-to-br from-slate-950 via-indigo-950 to-purple-950 text-white" role="region" aria-labelledby="concept-quest-title">
       <header className="sticky top-0 z-20 border-b border-indigo-400/30 bg-slate-950/95 p-3 backdrop-blur">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3">
-          <div><h2 id="concept-quest-title" className="text-xl font-black">🗺️ {quest.title}</h2><p className="text-xs text-indigo-200">Turn {quest.turn} · {currentRoom?.name}</p></div>
-          <div className="flex gap-3 text-sm font-bold" aria-label={`Party health ${quest.party.hp} of ${quest.party.maxHp}`}><span>❤️ {quest.party.hp}/{quest.party.maxHp}</span><span>🛡️ {quest.party.shield || 0}</span><span>✨ {quest.party.xp || 0} XP</span><span>🔷 {(quest.sigils || []).length}/{quest.sigilsRequired || 3}</span></div>
+          <div><h2 id="concept-quest-title" className="text-xl font-black">🗺️ {quest.title}</h2><p className="text-xs text-indigo-200">{tr('turn_room', 'Turn {turn} · {room}', { turn: quest.turn, room: currentRoom?.name || '' })}</p></div>
+          <div className="flex gap-3 text-sm font-bold" aria-label={tr('party_health_aria', 'Party health {current} of {maximum}', { current: quest.party.hp, maximum: quest.party.maxHp })}><span>❤️ {quest.party.hp}/{quest.party.maxHp}</span><span>🛡️ {quest.party.shield || 0}</span><span>✨ {quest.party.xp || 0} XP</span><span>🔷 {(quest.sigils || []).length}/{quest.sigilsRequired || 3}</span></div>
         </div>
         <div className="mx-auto mt-2 h-2 max-w-6xl overflow-hidden rounded-full bg-slate-700"><div className="h-full bg-emerald-500 transition-all motion-reduce:transition-none" style={{ width: `${partyHpPercent}%` }} /></div>
       </header>
       <main className="mx-auto grid max-w-6xl gap-5 p-4 lg:grid-cols-[1.25fr_.75fr]">
         <section className="rounded-2xl border border-indigo-400/30 bg-slate-900/80 p-4" aria-labelledby="quest-map-heading">
-          <h3 id="quest-map-heading" className="mb-3 text-lg font-black">Cooperative map</h3>
-          <div className="relative min-h-[360px] rounded-xl border border-slate-700 bg-slate-950/70" aria-label="Eight-room game map">
+          <h3 id="quest-map-heading" className="mb-3 text-lg font-black">{tr('cooperative_map', 'Cooperative map')}</h3>
+          <div className="relative min-h-[360px] rounded-xl border border-slate-700 bg-slate-950/70" aria-label={tr('map_aria', 'Eight-room game map')}>
             {rooms.map(room => {
               const isCurrent = room.id === quest.currentRoomId;
               const isVisited = (quest.visited || []).includes(room.id);
               const isAdjacent = (currentRoom?.neighbors || []).includes(room.id);
               const isLocked = room.kind === 'boss' && (quest.sigils || []).length < (quest.sigilsRequired || 3);
-              return <button key={room.id} type="button" disabled={!isAdjacent || isLocked || quest.phase !== 'explore' || escapeState.isPaused || isSubmitting} onClick={() => writeChoice('questVotes', room.id)} style={{ left: `${room.x}%`, top: `${room.y}%`, transform: 'translate(-50%, -50%)' }} className={`absolute min-h-14 w-24 rounded-xl border-2 p-1 text-center text-[11px] font-bold focus:outline-none focus:ring-4 focus:ring-yellow-300 ${isCurrent ? 'border-yellow-300 bg-yellow-500 text-slate-950' : isAdjacent && !isLocked ? 'border-cyan-300 bg-indigo-800 hover:bg-indigo-700' : isVisited ? 'border-emerald-500 bg-slate-800' : 'border-slate-600 bg-slate-900 text-slate-300'} disabled:cursor-default`} aria-current={isCurrent ? 'location' : undefined} aria-label={`${room.name}, ${room.kind}${isLocked ? ', locked until more concept sigils are earned' : ''}${isCurrent ? ', current room' : ''}`}><span className="block text-xl" aria-hidden="true">{isLocked ? '🔒' : room.emoji}</span>{room.name}</button>;
+              const lockedSuffix = isLocked ? tr('room_locked_suffix', ', locked until more concept sigils are earned') : '';
+              const currentSuffix = isCurrent ? tr('room_current_suffix', ', current room') : '';
+              return <button key={room.id} type="button" disabled={!isAdjacent || isLocked || quest.phase !== 'explore' || escapeState.isPaused || isSubmitting} onClick={() => writeChoice('questVotes', room.id)} style={{ left: `${room.x}%`, top: `${room.y}%`, transform: 'translate(-50%, -50%)' }} className={`absolute min-h-14 w-24 rounded-xl border-2 p-1 text-center text-[11px] font-bold focus:outline-none focus:ring-4 focus:ring-yellow-300 ${isCurrent ? 'border-yellow-300 bg-yellow-500 text-slate-950' : isAdjacent && !isLocked ? 'border-cyan-300 bg-indigo-800 hover:bg-indigo-700' : isVisited ? 'border-emerald-500 bg-slate-800' : 'border-slate-600 bg-slate-900 text-slate-300'} disabled:cursor-default`} aria-current={isCurrent ? 'location' : undefined} aria-label={tr('room_aria', '{name}, {kind}{locked}{current}', { name: room.name, kind: tr(`room_kind_${room.kind}`, room.kind), locked: lockedSuffix, current: currentSuffix })}><span className="block text-xl" aria-hidden="true">{isLocked ? '🔒' : room.emoji}</span>{room.name}</button>;
             })}
           </div>
-          <div className="mt-3 rounded-xl bg-indigo-950/60 p-3"><p className="font-bold">{currentRoom?.emoji} {currentRoom?.name}</p><p className="text-sm text-indigo-100">Concept: {currentRoom?.concept}</p>
-            <div className="mt-3"><p className="mb-2 text-sm font-bold">Choose a party role</p><div className="grid grid-cols-2 gap-2">{(quest.roles || engine.ROLES || []).map(role => <button key={role.id} type="button" onClick={() => writeChoice('questRoles', role.id)} aria-pressed={myRole === role.id} className={`min-h-14 rounded-lg border p-2 text-left text-xs focus:ring-4 focus:ring-yellow-300 ${myRole === role.id ? 'border-emerald-300 bg-emerald-900' : 'border-slate-600 bg-slate-800'}`}><strong>{role.emoji} {role.name}</strong><span className="mt-1 block text-slate-300">{role.description}</span></button>)}</div></div>
-            {quest.phase === 'explore' && <div className="mt-3"><p className="mb-2 text-sm">Vote for a connected room. Earn {quest.sigilsRequired || 3} concept sigils to unlock the Mastery Gate.</p><div className="flex flex-wrap gap-2">{adjacent.map(room => { const locked = room.kind === 'boss' && (quest.sigils || []).length < (quest.sigilsRequired || 3); return <button key={room.id} type="button" disabled={isSubmitting || escapeState.isPaused || locked} onClick={() => writeChoice('questVotes', room.id)} className={`min-h-11 rounded-lg px-3 py-2 text-sm font-bold focus:ring-4 focus:ring-yellow-300 disabled:opacity-50 ${myVote === room.id ? 'bg-yellow-400 text-slate-950' : 'bg-indigo-700 hover:bg-indigo-600'}`}>{locked ? '🔒' : room.emoji} {room.name}</button>; })}</div>{myVote && <p role="status" className="mt-2 text-sm text-yellow-200">Your vote is recorded.</p>}</div>}
+          <div className="mt-3 rounded-xl bg-indigo-950/60 p-3"><p className="font-bold">{currentRoom?.emoji} {currentRoom?.name}</p><p className="text-sm text-indigo-100">{tr('concept_label', 'Concept: {concept}', { concept: currentRoom?.concept || '' })}</p>
+            <div className="mt-3"><p className="mb-2 text-sm font-bold">{tr('choose_role', 'Choose a party role')}</p><div className="grid grid-cols-2 gap-2">{(quest.roles || engine.ROLES || []).map(role => <button key={role.id} type="button" onClick={() => writeChoice('questRoles', role.id)} aria-pressed={myRole === role.id} className={`min-h-14 rounded-lg border p-2 text-left text-xs focus:ring-4 focus:ring-yellow-300 ${myRole === role.id ? 'border-emerald-300 bg-emerald-900' : 'border-slate-600 bg-slate-800'}`}><strong>{role.emoji} {gameLabel(role, 'role')}</strong><span className="mt-1 block text-slate-300">{gameLabel(role, 'role', 'description')}</span></button>)}</div></div>
+            {quest.phase === 'explore' && <div className="mt-3"><p className="mb-2 text-sm">{tr('vote_instruction', 'Vote for a connected room. Earn {count} concept sigils to unlock the Mastery Gate.', { count: quest.sigilsRequired || 3 })}</p><div className="flex flex-wrap gap-2">{adjacent.map(room => { const locked = room.kind === 'boss' && (quest.sigils || []).length < (quest.sigilsRequired || 3); return <button key={room.id} type="button" disabled={isSubmitting || escapeState.isPaused || locked} onClick={() => writeChoice('questVotes', room.id)} className={`min-h-11 rounded-lg px-3 py-2 text-sm font-bold focus:ring-4 focus:ring-yellow-300 disabled:opacity-50 ${myVote === room.id ? 'bg-yellow-400 text-slate-950' : 'bg-indigo-700 hover:bg-indigo-600'}`}>{locked ? '🔒' : room.emoji} {room.name}</button>; })}</div>{myVote && <p role="status" className="mt-2 text-sm text-yellow-200">{tr('vote_recorded', 'Your vote is recorded.')}</p>}</div>}
           </div>
         </section>
-        <section className="space-y-4" aria-label="Current encounter">
-          {quest.activeEvent && <div className="rounded-2xl border-2 border-amber-300 bg-amber-950/70 p-4" role="status" aria-live="polite"><p className="text-xs font-black uppercase text-amber-300">Teacher GM event</p><h3 className="text-lg font-black">{quest.activeEvent.title}</h3><p className="mt-1 text-sm">{quest.activeEvent.description}</p></div>}
-          {quest.lastRound && <div className="rounded-2xl border border-cyan-400/40 bg-cyan-950/60 p-4" role="status" aria-live="polite"><p className="font-black">Round recap: {quest.lastRound.correct}/{quest.lastRound.total} checks succeeded</p><p className="mt-1 text-sm">The party dealt {quest.lastRound.damage} damage and took {quest.lastRound.incoming}.</p>{quest.lastRound.combo && <p className="mt-1 font-bold text-yellow-200">⚡ Concept Combo! Three different abilities worked together.</p>}{quest.lastRound.synergyCount > 0 && <p className="text-sm text-emerald-200">{quest.lastRound.synergyCount} role synergies activated.</p>}{quest.lastRound.assistedCount > 0 && <p className="text-sm text-sky-200">🤝 {quest.lastRound.assistedCount} peer assists activated.</p>}{quest.lastRound.encounterRule && <p className="mt-1 rounded-lg bg-slate-900/60 p-2 text-sm text-cyan-100">{quest.lastRound.encounterRule}</p>}<details className="mt-2 text-sm"><summary className="cursor-pointer font-bold">Review the concept</summary><p className="mt-1 text-cyan-100">{quest.lastRound.explanation}</p></details></div>}
+        <section className="space-y-4" aria-label={tr('current_encounter_aria', 'Current encounter')}>
+          {quest.activeEvent && <div className="rounded-2xl border-2 border-amber-300 bg-amber-950/70 p-4" role="status" aria-live="polite"><p className="text-xs font-black uppercase text-amber-300">{tr('teacher_event', 'Teacher GM event')}</p><h3 className="text-lg font-black">{quest.activeEvent.title}</h3><p className="mt-1 text-sm">{quest.activeEvent.description}</p></div>}
+          {quest.lastRound && <div className="rounded-2xl border border-cyan-400/40 bg-cyan-950/60 p-4" role="status" aria-live="polite"><p className="font-black">{tr('round_recap', 'Round recap: {correct}/{total} checks succeeded', { correct: quest.lastRound.correct, total: quest.lastRound.total })}</p><p className="mt-1 text-sm">{tr('damage_recap', 'The party dealt {damage} damage and took {incoming}.', { damage: quest.lastRound.damage, incoming: quest.lastRound.incoming })}</p>{quest.lastRound.combo && <p className="mt-1 font-bold text-yellow-200">⚡ {tr('combo_full', 'Concept Combo! Three different abilities worked together.')}</p>}{quest.lastRound.synergyCount > 0 && <p className="text-sm text-emerald-200">{tr('role_synergies_activated', '{count} role synergies activated.', { count: quest.lastRound.synergyCount })}</p>}{quest.lastRound.assistedCount > 0 && <p className="text-sm text-sky-200">🤝 {tr('peer_assists_activated', '{count} peer assists activated.', { count: quest.lastRound.assistedCount })}</p>}{quest.lastRound.encounterRule && <p className="mt-1 rounded-lg bg-slate-900/60 p-2 text-sm text-cyan-100">{quest.lastRound.encounterRule}</p>}<details className="mt-2 text-sm"><summary className="cursor-pointer font-bold">{tr('review_concept', 'Review the concept')}</summary><p className="mt-1 text-cyan-100">{quest.lastRound.explanation}</p></details></div>}
           {quest.phase === 'battle' && currentEnemy && <div className="rounded-2xl border border-fuchsia-400/40 bg-slate-900 p-4">
-            <div className="text-center"><div className="text-6xl" aria-hidden="true">{currentEnemy.emoji}</div><h3 className="text-xl font-black">{currentEnemy.name}</h3><p className="text-sm text-fuchsia-200">A misconception about {currentRoom.concept}</p>{currentRoom.kind === 'puzzle' && <p className="mt-1 text-xs font-bold text-cyan-200">Reasoning Lock: reach two-thirds class consensus for bonus damage.</p>}{currentRoom.kind === 'boss' && <p className="mt-1 text-xs font-bold text-yellow-200">Mastery Barrier: reach 60% class accuracy to break through.</p>}</div>
-            <div className="my-3 h-3 overflow-hidden rounded-full bg-slate-700" aria-label={`Enemy health ${currentEnemy.hp} of ${currentEnemy.maxHp}`}><div className="h-full bg-fuchsia-500" style={{ width: `${enemyHpPercent}%` }} /></div>
+            <div className="text-center"><div className="text-6xl" aria-hidden="true">{currentEnemy.emoji}</div><h3 className="text-xl font-black">{currentEnemy.name}</h3><p className="text-sm text-fuchsia-200">{tr('misconception_about', 'A misconception about {concept}', { concept: currentRoom.concept })}</p>{currentRoom.kind === 'puzzle' && <p className="mt-1 text-xs font-bold text-cyan-200">{tr('reasoning_lock_student', 'Reasoning Lock: reach two-thirds class consensus for bonus damage.')}</p>}{currentRoom.kind === 'boss' && <p className="mt-1 text-xs font-bold text-yellow-200">{tr('mastery_barrier_student', 'Mastery Barrier: reach 60% class accuracy to break through.')}</p>}</div>
+            <div className="my-3 h-3 overflow-hidden rounded-full bg-slate-700" aria-label={tr('enemy_health_aria', 'Enemy health {current} of {maximum}', { current: currentEnemy.hp, maximum: currentEnemy.maxHp })}><div className="h-full bg-fuchsia-500" style={{ width: `${enemyHpPercent}%` }} /></div>
             <fieldset disabled={!!myAction || isSubmitting || escapeState.isPaused} className="space-y-3"><legend className="font-bold">{currentRoom.challenge.prompt}</legend>
-              <div className="grid grid-cols-2 gap-2">{(quest.abilities || []).map(ability => <button type="button" key={ability.id} onClick={() => setAbilityId(ability.id)} aria-pressed={abilityId === ability.id} className={`min-h-16 rounded-lg border p-2 text-left text-xs focus:ring-4 focus:ring-yellow-300 ${abilityId === ability.id ? 'border-cyan-300 bg-cyan-900' : 'border-slate-600 bg-slate-800'}`}><span className="font-black">{ability.emoji} {ability.name}</span><span className="mt-1 block text-slate-300">{ability.description}</span></button>)}</div>
+              <div className="grid grid-cols-2 gap-2">{(quest.abilities || []).map(ability => <button type="button" key={ability.id} onClick={() => setAbilityId(ability.id)} aria-pressed={abilityId === ability.id} className={`min-h-16 rounded-lg border p-2 text-left text-xs focus:ring-4 focus:ring-yellow-300 ${abilityId === ability.id ? 'border-cyan-300 bg-cyan-900' : 'border-slate-600 bg-slate-800'}`}><span className="font-black">{ability.emoji} {gameLabel(ability, 'ability')}</span><span className="mt-1 block text-slate-300">{gameLabel(ability, 'ability', 'description')}</span></button>)}</div>
               <div className="space-y-2">{currentRoom.challenge.options.map((option, index) => <label key={index} className={`flex min-h-11 cursor-pointer items-center gap-2 rounded-lg border p-2 text-sm ${answerIndex === index ? 'border-yellow-300 bg-yellow-950' : 'border-slate-600 bg-slate-800'}`}><input type="radio" name="concept-quest-answer" checked={answerIndex === index} onChange={() => setAnswerIndex(index)} />{option}</label>)}</div>
-              {peerRoster.length > 0 && <div className="rounded-xl border border-sky-500/40 bg-sky-950/50 p-3"><p className="font-bold text-sky-100">Support a teammate</p><p className="text-xs text-sky-200">Optional: a correct response can help one classmate this turn.</p><div className="mt-2 grid grid-cols-3 gap-1">{(quest.supports || engine.SUPPORTS || []).map(support => <button key={support.id} type="button" onClick={() => setSupportId(support.id)} aria-pressed={supportId === support.id} className={`min-h-11 rounded-lg border p-1 text-xs font-bold ${supportId === support.id ? 'border-sky-300 bg-sky-800' : 'border-slate-600 bg-slate-800'}`}>{support.emoji} {support.name}</button>)}</div><label className="mt-2 block text-xs font-bold text-sky-100">Teammate<select value={supportTargetUid} onChange={event => setSupportTargetUid(event.target.value)} className="mt-1 min-h-11 w-full rounded-lg border border-sky-400 bg-slate-900 p-2 text-white"><option value="">No assist this turn</option>{peerRoster.map(peer => <option key={peer.uid} value={peer.uid}>{peer.name || 'Classmate'}</option>)}</select></label></div>}
-              <button type="button" onClick={() => answerIndex != null && writeChoice('questActions', { abilityId, roleId: myRole || '', answerIndex, submittedAt: Date.now(), ...(supportTargetUid ? { supportId, supportTargetUid } : {}) })} disabled={answerIndex == null} className="min-h-12 w-full rounded-xl bg-emerald-600 px-4 py-2 font-black hover:bg-emerald-500 disabled:opacity-50">Commit turn</button>
-            </fieldset>{myAction && <p role="status" className="mt-3 rounded-lg bg-emerald-950 p-2 text-center text-sm text-emerald-200">Turn committed. Discuss your reasoning while the co-GM resolves the round.</p>}
+              {peerRoster.length > 0 && <div className="rounded-xl border border-sky-500/40 bg-sky-950/50 p-3"><p className="font-bold text-sky-100">{tr('support_teammate', 'Support a teammate')}</p><p className="text-xs text-sky-200">{tr('support_optional', 'Optional: a correct response can help one classmate this turn.')}</p><div className="mt-2 grid grid-cols-3 gap-1">{(quest.supports || engine.SUPPORTS || []).map(support => <button key={support.id} type="button" onClick={() => setSupportId(support.id)} aria-pressed={supportId === support.id} className={`min-h-11 rounded-lg border p-1 text-xs font-bold ${supportId === support.id ? 'border-sky-300 bg-sky-800' : 'border-slate-600 bg-slate-800'}`}>{support.emoji} {gameLabel(support, 'support')}</button>)}</div><label className="mt-2 block text-xs font-bold text-sky-100">{tr('teammate', 'Teammate')}<select value={supportTargetUid} onChange={event => setSupportTargetUid(event.target.value)} className="mt-1 min-h-11 w-full rounded-lg border border-sky-400 bg-slate-900 p-2 text-white"><option value="">{tr('no_assist', 'No assist this turn')}</option>{peerRoster.map(peer => <option key={peer.uid} value={peer.uid}>{peer.name || tr('classmate', 'Classmate')}</option>)}</select></label></div>}
+              <button type="button" onClick={() => answerIndex != null && writeChoice('questActions', { abilityId, roleId: myRole || '', answerIndex, submittedAt: Date.now(), ...(supportTargetUid ? { supportId, supportTargetUid } : {}) })} disabled={answerIndex == null} className="min-h-12 w-full rounded-xl bg-emerald-600 px-4 py-2 font-black hover:bg-emerald-500 disabled:opacity-50">{tr('commit_turn', 'Commit turn')}</button>
+            </fieldset>{myAction && <p role="status" className="mt-3 rounded-lg bg-emerald-950 p-2 text-center text-sm text-emerald-200">{tr('committed_notice', 'Turn committed. Discuss your reasoning while the co-GM resolves the round.')}</p>}
           </div>}
-          {quest.phase === 'complete' && <div className="rounded-2xl border-2 border-yellow-300 bg-emerald-950 p-6 text-center" role="status"><div className="text-6xl">🏆</div><h3 className="text-2xl font-black">Mastery Gate cleared!</h3><p>The class won by combining its ideas.</p>{debrief && <><div className="mt-4 grid grid-cols-2 gap-2 text-sm sm:grid-cols-3"><span className="rounded-lg bg-emerald-900 p-2"><strong className="block text-xl">{debrief.accuracy}%</strong>Accuracy</span><span className="rounded-lg bg-emerald-900 p-2"><strong className="block text-xl">{debrief.combos}</strong>Combos</span><span className="rounded-lg bg-emerald-900 p-2"><strong className="block text-xl">{debrief.roleSynergies}</strong>Role synergies</span><span className="rounded-lg bg-emerald-900 p-2"><strong className="block text-xl">{debrief.peerAssists}</strong>Peer assists</span><span className="rounded-lg bg-emerald-900 p-2"><strong className="block text-xl">{debrief.puzzlesSolved}</strong>Puzzles</span><span className="rounded-lg bg-emerald-900 p-2"><strong className="block text-xl">{debrief.rounds}</strong>Rounds</span></div>{debrief.strongestConcept && <p className="mt-3 text-sm text-emerald-100">Strongest concept: <strong>{debrief.strongestConcept.concept}</strong> ({debrief.strongestConcept.accuracy}%)</p>}</>}</div>}
-          {quest.phase === 'defeat' && <div className="rounded-2xl border-2 border-rose-400 bg-rose-950 p-6 text-center" role="alert"><h3 className="text-2xl font-black">The party needs a regroup</h3><p>The teacher can introduce help, an item, or a new challenge—this is not an individual loss.</p></div>}
-          <div className="rounded-2xl border border-slate-700 bg-slate-900 p-4"><h3 className="font-black">Shared inventory</h3>{quest.inventory.length ? <ul className="mt-2 space-y-2 text-sm">{quest.inventory.map((item, index) => <li key={`${item.id}-${index}`} className="rounded-lg bg-slate-800 p-2">{item.emoji} <strong>{item.name}</strong> — {item.description}</li>)}</ul> : <p className="mt-2 text-sm text-slate-300">Items awarded or generated by the teacher appear here.</p>}</div>
+          {quest.phase === 'complete' && <div className="rounded-2xl border-2 border-yellow-300 bg-emerald-950 p-6 text-center" role="status"><div className="text-6xl">🏆</div><h3 className="text-2xl font-black">{tr('gate_cleared', 'Mastery Gate cleared!')}</h3><p>{tr('class_won', 'The class won by combining its ideas.')}</p>{debrief && <><div className="mt-4 grid grid-cols-2 gap-2 text-sm sm:grid-cols-3"><span className="rounded-lg bg-emerald-900 p-2"><strong className="block text-xl">{debrief.accuracy}%</strong>{tr('accuracy', 'Accuracy')}</span><span className="rounded-lg bg-emerald-900 p-2"><strong className="block text-xl">{debrief.combos}</strong>{tr('combos', 'Combos')}</span><span className="rounded-lg bg-emerald-900 p-2"><strong className="block text-xl">{debrief.roleSynergies}</strong>{tr('role_synergies', 'Role synergies')}</span><span className="rounded-lg bg-emerald-900 p-2"><strong className="block text-xl">{debrief.peerAssists}</strong>{tr('peer_assists', 'Peer assists')}</span><span className="rounded-lg bg-emerald-900 p-2"><strong className="block text-xl">{debrief.puzzlesSolved}</strong>{tr('puzzles', 'Puzzles')}</span><span className="rounded-lg bg-emerald-900 p-2"><strong className="block text-xl">{debrief.rounds}</strong>{tr('rounds', 'Rounds')}</span></div>{debrief.strongestConcept && <p className="mt-3 text-sm text-emerald-100">{tr('strongest_concept', 'Strongest concept: {concept} ({accuracy}%)', { concept: debrief.strongestConcept.concept, accuracy: debrief.strongestConcept.accuracy })}</p>}</>}</div>}
+          {quest.phase === 'defeat' && <div className="rounded-2xl border-2 border-rose-400 bg-rose-950 p-6 text-center" role="alert"><h3 className="text-2xl font-black">{tr('regroup_title', 'The party needs a regroup')}</h3><p>{tr('regroup_body', 'The teacher can introduce help, an item, or a new challenge—this is not an individual loss.')}</p></div>}
+          <div className="rounded-2xl border border-slate-700 bg-slate-900 p-4"><h3 className="font-black">{tr('shared_inventory', 'Shared inventory')}</h3>{quest.inventory.length ? <ul className="mt-2 space-y-2 text-sm">{quest.inventory.map((item, index) => <li key={`${item.id}-${index}`} className="rounded-lg bg-slate-800 p-2">{item.emoji} <strong>{item.name}</strong> — {item.description}</li>)}</ul> : <p className="mt-2 text-sm text-slate-300">{tr('inventory_empty', 'Items awarded or generated by the teacher appear here.')}</p>}</div>
         </section>
       </main>
     </div>
@@ -2114,6 +2150,11 @@ const ClassicEscapeRoomTeacherControls = React.memo(({ sessionData, activeSessio
   );
 });
 const ConceptQuestTeacherControlsLoader = React.memo(props => {
+  const tr = (key, fallback) => {
+    const fullKey = `concept_quest.${key}`;
+    const translated = typeof props.t === 'function' ? props.t(fullKey) : '';
+    return typeof translated === 'string' && translated && translated !== fullKey ? translated : fallback;
+  };
   const [ready, setReady] = useState(() => !!window.AlloModules?.ConceptQuestTeacherControls);
   useEffect(() => {
     if (window.AlloModules?.ConceptQuestTeacherControls) { setReady(true); return; }
@@ -2127,7 +2168,7 @@ const ConceptQuestTeacherControlsLoader = React.memo(props => {
     document.head.appendChild(script);
   }, []);
   const ConceptControls = window.AlloModules?.ConceptQuestTeacherControls;
-  return ready && ConceptControls ? <ConceptControls {...props} /> : <div role="status" className="rounded-xl bg-indigo-50 p-4 text-indigo-800">Loading Concept Quest co-GM controls…</div>;
+  return ready && ConceptControls ? <ConceptControls {...props} /> : <div role="status" className="rounded-xl bg-indigo-50 p-4 text-indigo-800">{tr('loading_teacher_controls', 'Loading Concept Quest co-GM controls…')}</div>;
 });
 
 const EscapeRoomTeacherControls = React.memo(props => {
@@ -2148,6 +2189,9 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
     const [bossGmPrompt, setBossGmPrompt] = useState('');
     const [bossGmDraft, setBossGmDraft] = useState(null);
     const [bossGmBusy, setBossGmBusy] = useState(false);
+    const normalizedBossPhase = String(bossStats?.phaseName || 'watchful').trim().toLowerCase().replace(/\s+/g, '_');
+    const bossPhaseId = ['watchful', 'enraged', 'final_form'].includes(normalizedBossPhase) ? normalizedBossPhase : 'watchful';
+    const bossPhaseLabel = t(`concept_quest.boss_phase_${bossPhaseId}`);
     // Phase-2 quiz auto-routing: per-question rules. Mirrored to window
     // so the App-level useEffect (AlloFlowANTI.txt, near rosterKey
     // auto-grouping) can read them. Rule schema:
@@ -2561,15 +2605,14 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
         if (kind === 'rally') updates['quizState.bossStats.classHP'] = Math.min(bossStats.classMaxHP || 100, (bossStats.classHP ?? 100) + 10);
         if (kind === 'soften') updates['quizState.bossStats.currentHP'] = Math.max(1, (bossStats.currentHP ?? bossStats.maxHP) - Math.round((bossStats.maxHP || 1000) * 0.05));
         if (kind === 'intensify') updates['quizState.bossStats.currentHP'] = Math.min(bossStats.maxHP, (bossStats.currentHP ?? bossStats.maxHP) + Math.round((bossStats.maxHP || 1000) * 0.05));
-        updates['quizState.bossStats.gmEvent'] = kind === 'rally'
-            ? 'The teacher rallied the class: +10 class HP.'
-            : kind === 'soften' ? 'The teacher exposed a weakness in the monster.' : 'The monster entered a tougher phase.';
+        updates['quizState.bossStats.gmEvent'] = null;
+        updates['quizState.bossStats.gmEventKey'] = `boss_event_${kind}`;
         try { await updateDoc(sessionRef, updates); }
         catch (error) { warnLog('Boss pacing adjustment failed:', error); }
     };
     const normalizeBossGmDraft = (draft = {}) => ({
-        title: String(draft.title || 'Monster Event').replace(/[<>]/g, '').trim().slice(0, 100),
-        description: String(draft.description || bossGmPrompt || 'The battle changes unexpectedly.').replace(/[<>]/g, '').trim().slice(0, 500),
+        title: String(draft.title || t('concept_quest.boss_draft_default_title')).replace(/[<>]/g, '').trim().slice(0, 100),
+        description: String(draft.description || bossGmPrompt || t('concept_quest.boss_draft_default_description')).replace(/[<>]/g, '').trim().slice(0, 500),
         effect: ['narrative', 'rally', 'expose', 'intensify'].includes(draft.effect) ? draft.effect : 'narrative',
         amount: Math.max(1, Math.min(10, Number(draft.amount) || 5))
     });
@@ -2591,7 +2634,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
         if (!bossGmDraft) return;
         const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
         const draft = normalizeBossGmDraft(bossGmDraft);
-        const updates = { 'quizState.bossStats.gmEvent': `${draft.title}: ${draft.description}` };
+        const updates = { 'quizState.bossStats.gmEvent': `${draft.title}: ${draft.description}`, 'quizState.bossStats.gmEventKey': null };
         if (draft.effect === 'rally') updates['quizState.bossStats.classHP'] = Math.min(bossStats?.classMaxHP || 100, (bossStats?.classHP ?? 100) + draft.amount);
         const hpDelta = Math.round((bossStats?.maxHP || 1000) * (draft.amount / 100));
         if (draft.effect === 'expose') updates['quizState.bossStats.currentHP'] = Math.max(1, (bossStats?.currentHP ?? bossStats?.maxHP) - hpDelta);
@@ -2655,7 +2698,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                 const currentHP = bossStats?.currentHP ?? bossMaxHP;
                 const newHP = Math.max(0, currentHP - damage);
                 const remainingBossPercent = newHP / bossMaxHP;
-                const bossPhaseName = remainingBossPercent <= 0.33 ? 'Final Form' : remainingBossPercent <= 0.66 ? 'Enraged' : 'Watchful';
+                const bossPhaseName = remainingBossPercent <= 0.33 ? 'final_form' : remainingBossPercent <= 0.66 ? 'enraged' : 'watchful';
                 const difficultyMultiplier = bossStats?.difficulty === 'easy' ? 0.5 : bossStats?.difficulty === 'hard' ? 1.5 : 1.0;
                 const baseClassDamage = Math.ceil((wrongCredit / eligibleCount) * 25);
                 const classDamage = Math.round(baseClassDamage * difficultyMultiplier);
@@ -2854,7 +2897,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                 battleLog: [],
                 masteryStreak: 0,
                 lastComboBonus: 0,
-                phaseName: 'Watchful',
+                phaseName: 'watchful',
                 roundFeedback: null
             };
             if (!existingImage) {
@@ -3497,9 +3540,9 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                                          )}
                                      </div>
                                      <h3 className="text-xl font-black text-slate-800 uppercase tracking-widest mb-2">{bossStats.name || t('quiz.boss.default_name')}</h3>
-                                     <div className="mb-2 flex flex-wrap items-center justify-center gap-2 text-xs font-bold"><span className="rounded-full bg-red-100 px-2 py-1 text-red-800">Phase: {bossStats.phaseName || 'Watchful'}</span><span className="rounded-full bg-yellow-100 px-2 py-1 text-yellow-900">Mastery streak: {bossStats.masteryStreak || 0}</span>{bossStats.lastComboBonus > 0 && <span className="rounded-full bg-purple-100 px-2 py-1 text-purple-800">⚡ Combo +{bossStats.lastComboBonus}</span>}</div>
-                                     <div className="mb-3 flex flex-wrap justify-center gap-2" aria-label="Teacher monster pacing controls"><button type="button" onClick={() => handleBossPacingAdjustment('rally')} className="min-h-11 rounded-lg bg-emerald-700 px-3 text-xs font-bold text-white">Rally class +10 HP</button><button type="button" onClick={() => handleBossPacingAdjustment('soften')} className="min-h-11 rounded-lg bg-indigo-700 px-3 text-xs font-bold text-white">Expose weakness</button><button type="button" onClick={() => handleBossPacingAdjustment('intensify')} className="min-h-11 rounded-lg border border-red-300 bg-white px-3 text-xs font-bold text-red-800">Intensify monster</button></div>
-                                     <details className="mb-3 w-full max-w-sm rounded-xl border border-purple-200 bg-purple-50 p-3 text-left"><summary className="cursor-pointer text-sm font-black text-purple-900">🎲 Co-GM event workshop</summary><p className="mt-1 text-xs text-purple-700">AI drafts only. Preview and edit before publishing.</p><textarea value={bossGmPrompt} onChange={event => setBossGmPrompt(event.target.value)} rows={2} placeholder="Introduce an event tied to the current concept" className="mt-2 w-full rounded-lg border border-purple-300 p-2 text-sm" /><div className="mt-2 flex gap-2"><button type="button" onClick={createBossGmDraft} className="min-h-11 flex-1 rounded-lg border border-purple-300 bg-white text-xs font-bold text-purple-800">Manual draft</button><button type="button" disabled={bossGmBusy} onClick={generateBossGmDraft} className="min-h-11 flex-1 rounded-lg bg-purple-700 text-xs font-bold text-white disabled:opacity-50">{bossGmBusy ? 'Drafting…' : 'AI draft'}</button></div>{bossGmDraft && <div className="mt-2 rounded-lg border border-amber-300 bg-amber-50 p-2"><label className="text-xs font-bold text-slate-700">Title<input value={bossGmDraft.title} onChange={event => setBossGmDraft({ ...bossGmDraft, title: event.target.value })} className="mt-1 min-h-11 w-full rounded border border-amber-300 p-2" /></label><label className="mt-2 block text-xs font-bold text-slate-700">Description<textarea value={bossGmDraft.description} onChange={event => setBossGmDraft({ ...bossGmDraft, description: event.target.value })} rows={2} className="mt-1 w-full rounded border border-amber-300 p-2" /></label><p className="mt-1 text-xs text-amber-900">Effect: <strong>{bossGmDraft.effect}</strong> · Strength {bossGmDraft.amount}</p><div className="mt-2 flex gap-2"><button type="button" onClick={() => setBossGmDraft(null)} className="min-h-11 flex-1 rounded-lg bg-slate-200 text-xs font-bold">Discard</button><button type="button" onClick={publishBossGmDraft} className="min-h-11 flex-1 rounded-lg bg-emerald-700 text-xs font-bold text-white">Publish event</button></div></div>}</details>
+                                     <div className="mb-2 flex flex-wrap items-center justify-center gap-2 text-xs font-bold"><span className="rounded-full bg-red-100 px-2 py-1 text-red-800">{t('concept_quest.boss_phase', { phase: bossPhaseLabel })}</span><span className="rounded-full bg-yellow-100 px-2 py-1 text-yellow-900">{t('concept_quest.boss_mastery_streak', { count: bossStats.masteryStreak || 0 })}</span>{bossStats.lastComboBonus > 0 && <span className="rounded-full bg-purple-100 px-2 py-1 text-purple-800">⚡ {t('concept_quest.boss_combo_bonus', { bonus: bossStats.lastComboBonus })}</span>}</div>
+                                     <div className="mb-3 flex flex-wrap justify-center gap-2" aria-label={t('concept_quest.boss_pacing_aria')}><button type="button" onClick={() => handleBossPacingAdjustment('rally')} className="min-h-11 rounded-lg bg-emerald-700 px-3 text-xs font-bold text-white">{t('concept_quest.boss_rally_class_hp')}</button><button type="button" onClick={() => handleBossPacingAdjustment('soften')} className="min-h-11 rounded-lg bg-indigo-700 px-3 text-xs font-bold text-white">{t('concept_quest.boss_expose_weakness')}</button><button type="button" onClick={() => handleBossPacingAdjustment('intensify')} className="min-h-11 rounded-lg border border-red-300 bg-white px-3 text-xs font-bold text-red-800">{t('concept_quest.boss_intensify_monster')}</button></div>
+                                     <details className="mb-3 w-full max-w-sm rounded-xl border border-purple-200 bg-purple-50 p-3 text-left"><summary className="cursor-pointer text-sm font-black text-purple-900">🎲 {t('concept_quest.boss_event_workshop')}</summary><p className="mt-1 text-xs text-purple-700">{t('concept_quest.ai_draft_notice')}</p><textarea value={bossGmPrompt} onChange={event => setBossGmPrompt(event.target.value)} rows={2} placeholder={t('concept_quest.boss_event_placeholder')} className="mt-2 w-full rounded-lg border border-purple-300 p-2 text-sm" /><div className="mt-2 flex gap-2"><button type="button" onClick={createBossGmDraft} className="min-h-11 flex-1 rounded-lg border border-purple-300 bg-white text-xs font-bold text-purple-800">{t('concept_quest.manual_draft')}</button><button type="button" disabled={bossGmBusy} onClick={generateBossGmDraft} className="min-h-11 flex-1 rounded-lg bg-purple-700 text-xs font-bold text-white disabled:opacity-50">{bossGmBusy ? t('concept_quest.boss_drafting') : t('concept_quest.ai_draft')}</button></div>{bossGmDraft && <div className="mt-2 rounded-lg border border-amber-300 bg-amber-50 p-2"><label className="text-xs font-bold text-slate-700">{t('concept_quest.draft_title_label')}<input value={bossGmDraft.title} onChange={event => setBossGmDraft({ ...bossGmDraft, title: event.target.value })} className="mt-1 min-h-11 w-full rounded border border-amber-300 p-2" /></label><label className="mt-2 block text-xs font-bold text-slate-700">{t('concept_quest.description')}<textarea value={bossGmDraft.description} onChange={event => setBossGmDraft({ ...bossGmDraft, description: event.target.value })} rows={2} className="mt-1 w-full rounded border border-amber-300 p-2" /></label><p className="mt-1 text-xs text-amber-900">{t('concept_quest.boss_effect')} <strong>{t(`concept_quest.boss_effect_${bossGmDraft.effect}`)}</strong> · {t('concept_quest.boss_strength', { amount: bossGmDraft.amount })}</p><div className="mt-2 flex gap-2"><button type="button" onClick={() => setBossGmDraft(null)} className="min-h-11 flex-1 rounded-lg bg-slate-200 text-xs font-bold">{t('concept_quest.discard')}</button><button type="button" onClick={publishBossGmDraft} className="min-h-11 flex-1 rounded-lg bg-emerald-700 text-xs font-bold text-white">{t('concept_quest.boss_publish_event')}</button></div></div>}</details>
                                      <div className={`w-full max-w-sm bg-slate-300 h-8 rounded-full border-4 relative overflow-hidden shadow-inner mb-2 ${bossStats.currentHP > 0 && (bossStats.currentHP / bossStats.maxHP) < 0.25 ? 'border-red-500 animate-pulse motion-reduce:animate-none' : 'border-slate-400'}`}>
                                          <div
                                             className={`h-full transition-all motion-reduce:transition-none duration-1000 ease-out ${(bossStats.currentHP / bossStats.maxHP) < 0.25 ? 'bg-gradient-to-r from-red-700 to-red-500' : 'bg-gradient-to-r from-red-600 to-orange-500'}`}

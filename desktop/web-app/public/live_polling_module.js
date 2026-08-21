@@ -209,6 +209,13 @@
   const LIVE_CHECK_IN_ID_MAX_LENGTH = 120;
   const LIVE_CHECK_IN_ACK_STATUSES = ['working', 'help'];
   const LIVE_HELP_REQUEST_STATUSES = ['help', 'cleared'];
+  const LIVE_POLL_DRAFT_MAX_CHARS = 16000;
+  const LIVE_QA_DRAFT_MAX_AGE_MS = 4 * 60 * 60 * 1000;
+  const LIVE_TEACHER_ACTION_STATE_MAX_AGE_MS = 6 * 60 * 60 * 1000;
+  const buildLiveSessionSupportActivityId = (sessionCode) => {
+    const code = String(sessionCode || '').trim().replace(/[^A-Za-z0-9._-]+/g, '-').slice(0, 80);
+    return 'session-support-' + (code || 'local');
+  };
   const normalizeLiveCheckInPacket = (payload) => {
     const source = payload && typeof payload === 'object' ? payload : {};
     const id = String(source.id || '').trim().slice(0, LIVE_CHECK_IN_ID_MAX_LENGTH);
@@ -230,6 +237,103 @@
     const status = LIVE_HELP_REQUEST_STATUSES.indexOf(source.status) >= 0 ? source.status : '';
     if (!activityId || !status) return null;
     return { activityId: activityId, status: status, requestedAt: Math.max(0, Number(source.requestedAt) || 0) };
+  };
+  const livePollDraftStorageKey = (sessionCode, userUid, pollId) => {
+    const parts = [sessionCode, userUid, pollId].map(function (value) {
+      return encodeURIComponent(String(value || '').trim().slice(0, LIVE_CHECK_IN_ID_MAX_LENGTH));
+    });
+    return parts.every(Boolean) ? 'allo:live-poll-draft:v1:' + parts.join(':') : '';
+  };
+  const normalizeLivePollDraft = (payload, expectedPollId) => {
+    const source = payload && typeof payload === 'object' ? payload : {};
+    const pollId = String(source.pollId || '').trim().slice(0, LIVE_CHECK_IN_ID_MAX_LENGTH);
+    if (!pollId || (expectedPollId && pollId !== String(expectedPollId))) return null;
+    const type = ['rating', 'mcq', 'freetext', 'wordcloud'].indexOf(source.type) >= 0 ? source.type : 'freetext';
+    let value = source.value;
+    if (type === 'rating') value = value === '' || value == null ? '' : Number(value);
+    else value = String(value == null ? '' : value).slice(0, LIVE_POLL_DRAFT_MAX_CHARS);
+    if (type === 'rating' && value !== '' && !Number.isFinite(value)) return null;
+    return { pollId: pollId, type: type, value: value, savedAt: Math.max(0, Number(source.savedAt) || 0) };
+  };
+  const readLivePollDraft = (sessionCode, userUid, pollId, storage) => {
+    const key = livePollDraftStorageKey(sessionCode, userUid, pollId);
+    if (!key) return null;
+    try {
+      const target = storage || ((typeof window !== 'undefined' && window.sessionStorage) ? window.sessionStorage : null);
+      const raw = target && target.getItem(key);
+      return raw ? normalizeLivePollDraft(JSON.parse(raw), pollId) : null;
+    } catch (err) { return null; }
+  };
+  const writeLivePollDraft = (sessionCode, userUid, poll, value, storage) => {
+    const key = livePollDraftStorageKey(sessionCode, userUid, poll && poll.id);
+    if (!key || !poll) return false;
+    const draft = normalizeLivePollDraft({ pollId: poll.id, type: poll.type, value: value, savedAt: Date.now() }, poll.id);
+    if (!draft) return false;
+    try {
+      const target = storage || ((typeof window !== 'undefined' && window.sessionStorage) ? window.sessionStorage : null);
+      if (!target) return false;
+      const hasValue = draft.type === 'rating' ? draft.value !== '' : !!String(draft.value || '');
+      if (!hasValue) target.removeItem(key);
+      else target.setItem(key, JSON.stringify(draft));
+      return true;
+    } catch (err) { return false; }
+  };
+  const clearLivePollDraft = (sessionCode, userUid, pollId, storage) => {
+    const key = livePollDraftStorageKey(sessionCode, userUid, pollId);
+    if (!key) return false;
+    try {
+      const target = storage || ((typeof window !== 'undefined' && window.sessionStorage) ? window.sessionStorage : null);
+      if (!target) return false;
+      target.removeItem(key);
+      return true;
+    } catch (err) { return false; }
+  };
+  const liveSessionQaDraftStorageKey = (sessionCode, userUid) => {
+    const parts = [sessionCode, userUid].map(function (value) {
+      return encodeURIComponent(String(value || '').trim().slice(0, LIVE_CHECK_IN_ID_MAX_LENGTH));
+    });
+    return parts.every(Boolean) ? 'allo:live-qa-draft:v1:' + parts.join(':') : '';
+  };
+  const normalizeLiveSessionQaDraft = (payload, now) => {
+    const source = payload && typeof payload === 'object' ? payload : {};
+    const text = String(source.text == null ? '' : source.text).replace(/\r\n?/g, '\n').trim().slice(0, 500);
+    const savedAt = Math.max(0, Number(source.savedAt) || 0);
+    const current = Math.max(0, Number(now) || Date.now());
+    if (!text || !savedAt || current - savedAt > LIVE_QA_DRAFT_MAX_AGE_MS) return null;
+    return { text: text, savedAt: savedAt };
+  };
+  const readLiveSessionQaDraft = (sessionCode, userUid, storage, now) => {
+    const key = liveSessionQaDraftStorageKey(sessionCode, userUid);
+    if (!key) return null;
+    try {
+      const target = storage || ((typeof window !== 'undefined' && window.sessionStorage) ? window.sessionStorage : null);
+      const raw = target && target.getItem(key);
+      const draft = raw ? normalizeLiveSessionQaDraft(JSON.parse(raw), now) : null;
+      if (!draft && raw && target) target.removeItem(key);
+      return draft;
+    } catch (err) { return null; }
+  };
+  const writeLiveSessionQaDraft = (sessionCode, userUid, draftText, storage, now) => {
+    const key = liveSessionQaDraftStorageKey(sessionCode, userUid);
+    if (!key) return false;
+    try {
+      const target = storage || ((typeof window !== 'undefined' && window.sessionStorage) ? window.sessionStorage : null);
+      if (!target) return false;
+      const normalized = String(draftText == null ? '' : draftText).replace(/\r\n?/g, '\n').trim().slice(0, 500);
+      if (!normalized) target.removeItem(key);
+      else target.setItem(key, JSON.stringify({ text: normalized, savedAt: Math.max(0, Number(now) || Date.now()) }));
+      return true;
+    } catch (err) { return false; }
+  };
+  const clearLiveSessionQaDraft = (sessionCode, userUid, storage) => {
+    const key = liveSessionQaDraftStorageKey(sessionCode, userUid);
+    if (!key) return false;
+    try {
+      const target = storage || ((typeof window !== 'undefined' && window.sessionStorage) ? window.sessionStorage : null);
+      if (!target) return false;
+      target.removeItem(key);
+      return true;
+    } catch (err) { return false; }
   };
   const normalizeLivePollChoices = (value) => {
     const seen = new Set();
@@ -330,6 +434,67 @@
       return searchable.some(function (value) { return String(value || '').toLocaleLowerCase().indexOf(query) >= 0; });
     });
   };
+  const WORD_CLOUD_CLUSTER_MAX_TERMS = 80;
+  const WORD_CLOUD_CLUSTER_MAX_SUGGESTIONS = 20;
+  const buildWordCloudClusterPrompt = (items) => {
+    const approved = (Array.isArray(items) ? items : []).filter(function (item) {
+      return item && item.status === 'approved' && normalizeWordCloudTerm(item.label);
+    }).slice(0, WORD_CLOUD_CLUSTER_MAX_TERMS).map(function (item) {
+      return { term: normalizeWordCloudTerm(item.label), count: Math.max(1, Math.floor(Number(item.count) || 1)) };
+    });
+    if (approved.length < 2) return '';
+    return [
+      'Group only genuinely synonymous or conceptually equivalent classroom word-cloud terms.',
+      'Return JSON only: {"clusters":[{"label":"canonical term","members":["exact input term","exact input term"]}]}.',
+      'Use exact input terms in members. Each cluster needs 2 or more members. Do not invent terms or explain.',
+      'These are teacher-approved anonymous aggregate terms; no student identities are included.',
+      JSON.stringify(approved),
+    ].join('\n');
+  };
+  const parseWordCloudClusterSuggestions = (value, items) => {
+    const approved = (Array.isArray(items) ? items : []).filter(function (item) {
+      return item && item.status === 'approved' && normalizeWordCloudTerm(item.label);
+    });
+    const byKey = new Map();
+    approved.forEach(function (item) { byKey.set(wordCloudTermKey(item.label), item); });
+    let parsed = value;
+    if (typeof value === 'string') {
+      let text = value.trim().replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '');
+      const start = text.indexOf('{');
+      const end = text.lastIndexOf('}');
+      if (start >= 0 && end > start) text = text.slice(start, end + 1);
+      try { parsed = JSON.parse(text); } catch (err) { return []; }
+    }
+    const clusters = parsed && Array.isArray(parsed.clusters) ? parsed.clusters : [];
+    const used = new Set();
+    return clusters.slice(0, WORD_CLOUD_CLUSTER_MAX_SUGGESTIONS).reduce(function (out, cluster) {
+      const label = normalizeWordCloudTerm(cluster && cluster.label);
+      const members = Array.from(new Set((cluster && Array.isArray(cluster.members) ? cluster.members : []).map(wordCloudTermKey).filter(function (key) {
+        return key && byKey.has(key) && !used.has(key);
+      })));
+      if (!label || members.length < 2) return out;
+      members.forEach(function (key) { used.add(key); });
+      out.push({
+        id: 'cluster-' + out.length + '-' + wordCloudTermKey(label).replace(/[^a-z0-9]+/g, '-').slice(0, 32),
+        label: label,
+        memberKeys: members,
+        members: members.map(function (key) { return byKey.get(key).label; }),
+        count: members.reduce(function (sum, key) { return sum + Math.max(1, Number(byKey.get(key).count) || 1); }, 0),
+      });
+      return out;
+    }, []);
+  };
+  const buildWordCloudAliasPatch = (items, suggestion) => {
+    const memberKeys = new Set(Array.isArray(suggestion && suggestion.memberKeys) ? suggestion.memberKeys : []);
+    const label = normalizeWordCloudTerm(suggestion && suggestion.label);
+    if (!label || memberKeys.size < 2) return {};
+    return (Array.isArray(items) ? items : []).reduce(function (patch, item) {
+      if (!item || !memberKeys.has(wordCloudTermKey(item.label))) return patch;
+      const sourceKeys = Array.isArray(item.sourceKeys) && item.sourceKeys.length ? item.sourceKeys : [item.value];
+      sourceKeys.forEach(function (key) { if (key) patch[String(key)] = label; });
+      return patch;
+    }, {});
+  };
   const stableWordCloudColor = (value) => {
     const colors = ['#1d4ed8', '#7c3aed', '#0f766e', '#be123c', '#b45309', '#0369a1'];
     const key = wordCloudTermKey(value);
@@ -342,6 +507,51 @@
     const safeMax = Math.max(safeCount, Number(maxCount) || 1);
     const strength = Math.log1p(safeCount) / Math.log1p(safeMax);
     return (0.9 + (strength * 1.25)).toFixed(2) + 'rem';
+  };
+  const normalizeLiveTransportKind = (value) => {
+    const kind = String(value || '').trim().toLowerCase();
+    return kind === 'mailbox' || kind === 'lan' ? kind : 'firebase';
+  };
+  const buildLiveTransportHealth = (config) => {
+    const source = config && typeof config === 'object' ? config : {};
+    const kind = normalizeLiveTransportKind(source.transportKind);
+    const now = Math.max(0, Number(source.now) || Date.now());
+    const connectedCount = Math.max(0, Math.floor(Number(source.connectedCount) || 0));
+    const expectedCount = Math.max(connectedCount, Math.floor(Number(source.expectedCount) || 0));
+    const trace = (Array.isArray(source.trace) ? source.trace : []).filter(function (entry) {
+      return entry && typeof entry === 'object' && Number(entry.at) > 0;
+    });
+    let lastSync = null;
+    let lastProblem = null;
+    for (let index = trace.length - 1; index >= 0; index -= 1) {
+      const entry = trace[index];
+      const event = String(entry.event || '');
+      if (!lastSync && (event === 'sync:write-ok' || event === 'mailbox:pack-cycle' || event === 'mailbox:doc-version')) lastSync = entry;
+      if (!lastProblem && /REFUSED|write-failed|transport-unavailable|bridge-missing|timeout/i.test(event)) lastProblem = entry;
+      if (lastSync && lastProblem) break;
+    }
+    const problemIsCurrent = !!(lastProblem && (!lastSync || Number(lastProblem.at) > Number(lastSync.at)));
+    const status = problemIsCurrent ? 'attention' : connectedCount > 0 ? 'healthy' : 'waiting';
+    return {
+      kind: kind,
+      providerLabel: kind === 'mailbox' ? 'Google Class Mailbox' : kind === 'lan' ? 'Local network' : 'Firebase',
+      status: status,
+      connectedCount: connectedCount,
+      expectedCount: expectedCount,
+      directCount: connectedCount,
+      missingDirectCount: Math.max(0, expectedCount - connectedCount),
+      lastSyncAt: lastSync ? Number(lastSync.at) : 0,
+      lastSyncAgeMs: lastSync ? Math.max(0, now - Number(lastSync.at)) : null,
+      lastProblemAt: lastProblem ? Number(lastProblem.at) : 0,
+      problemEvent: problemIsCurrent ? String(lastProblem.event || '') : '',
+    };
+  };
+  const formatLiveElapsed = (milliseconds) => {
+    const seconds = Math.max(0, Math.floor((Number(milliseconds) || 0) / 1000));
+    if (seconds < 60) return seconds + 's';
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return minutes + 'm';
+    return Math.floor(minutes / 60) + 'h ' + (minutes % 60) + 'm';
   };
   const liveActivityKindLabel = (kind) => {
     const key = String(kind || '').toLowerCase();
@@ -489,6 +699,157 @@
       }
       return String(a.name || '').localeCompare(String(b.name || ''));
     });
+  };
+  const LIVE_TEACHER_ACTION_REASONS = ['help', 'failed', 'offline', 'withdrawn', 'waiting'];
+  const normalizeLiveTeacherActionState = (value, now) => {
+    if (value === true) return { status: 'resolved', updatedAt: Math.max(0, Number(now) || Date.now()), snoozedUntil: 0 };
+    const source = value && typeof value === 'object' ? value : {};
+    const status = ['claimed', 'snoozed', 'resolved'].indexOf(source.status) >= 0 ? source.status : 'open';
+    return {
+      status: status,
+      updatedAt: Math.max(0, Number(source.updatedAt) || 0),
+      snoozedUntil: status === 'snoozed' ? Math.max(0, Number(source.snoozedUntil) || 0) : 0,
+    };
+  };
+  const buildLiveTeacherActionQueue = (rows, actionStates, now) => {
+    const states = actionStates && typeof actionStates === 'object' ? actionStates : {};
+    const current = Math.max(0, Number(now) || Date.now());
+    const priorities = { help: 0, failed: 1, offline: 2, withdrawn: 3, waiting: 4 };
+    return (Array.isArray(rows) ? rows : []).reduce(function (queue, row) {
+      if (!row || !row.uid) return queue;
+      let reason = '';
+      if (row.supportStatus === 'help') reason = 'help';
+      else if (row.status === 'failed') reason = 'failed';
+      else if (!row.connected) reason = 'offline';
+      else if (row.status === 'withdrawn') reason = 'withdrawn';
+      else if (row.status === 'waiting') reason = 'waiting';
+      if (!reason) return queue;
+      const version = Math.max(0, Number(row.supportUpdatedAt || row.updatedAt) || 0);
+      const key = [String(row.uid), reason, String(row.activity || ''), String(version)].join(':');
+      const actionState = normalizeLiveTeacherActionState(states[key], current);
+      if (actionState.status === 'resolved' || (actionState.status === 'snoozed' && actionState.snoozedUntil > current)) return queue;
+      queue.push({
+        key: key,
+        uid: String(row.uid),
+        name: String(row.name || 'Student'),
+        reason: reason,
+        activity: String(row.activity || 'No live activity'),
+        connected: !!row.connected,
+        status: String(row.status || ''),
+        priority: priorities[reason],
+        openedAt: version,
+        waitMs: version ? Math.max(0, current - version) : 0,
+        actionStatus: actionState.status === 'claimed' ? 'claimed' : 'open',
+      });
+      return queue;
+    }, []).sort(function (a, b) {
+      return a.priority !== b.priority ? a.priority - b.priority : a.name.localeCompare(b.name);
+    });
+  };
+  const liveTeacherActionStorageKey = (sessionCode) => {
+    const code = encodeURIComponent(String(sessionCode || '').trim().slice(0, 80));
+    return code ? 'allo:live-teacher-actions:v1:' + code : '';
+  };
+  const normalizeLiveTeacherActionStateMap = (value, now) => {
+    const source = value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+    const current = Math.max(0, Number(now) || Date.now());
+    return Object.keys(source).slice(-250).reduce(function (out, key) {
+      const state = normalizeLiveTeacherActionState(source[key], current);
+      if (!state.updatedAt || current - state.updatedAt > LIVE_TEACHER_ACTION_STATE_MAX_AGE_MS) return out;
+      if (state.status !== 'open') out[String(key).slice(0, 500)] = state;
+      return out;
+    }, {});
+  };
+  const readLiveTeacherActionState = (sessionCode, storage, now) => {
+    const key = liveTeacherActionStorageKey(sessionCode);
+    if (!key) return {};
+    try {
+      const target = storage || ((typeof window !== 'undefined' && window.sessionStorage) ? window.sessionStorage : null);
+      const raw = target && target.getItem(key);
+      return raw ? normalizeLiveTeacherActionStateMap(JSON.parse(raw), now) : {};
+    } catch (err) { return {}; }
+  };
+  const writeLiveTeacherActionState = (sessionCode, state, storage, now) => {
+    const key = liveTeacherActionStorageKey(sessionCode);
+    if (!key) return false;
+    try {
+      const target = storage || ((typeof window !== 'undefined' && window.sessionStorage) ? window.sessionStorage : null);
+      if (!target) return false;
+      const normalized = normalizeLiveTeacherActionStateMap(state, now);
+      if (!Object.keys(normalized).length) target.removeItem(key);
+      else target.setItem(key, JSON.stringify(normalized));
+      return true;
+    } catch (err) { return false; }
+  };
+  const buildLiveSessionWrapUp = (config) => {
+    const source = config && typeof config === 'object' ? config : {};
+    const now = Math.max(0, Number(source.now) || Date.now());
+    const polls = (Array.isArray(source.completedPolls) ? source.completedPolls : []).filter(Boolean).slice(-100);
+    if (source.activePoll) polls.push({
+      poll: source.activePoll,
+      responses: Array.isArray(source.activeResponses) ? source.activeResponses : [],
+      audienceUids: Array.isArray(source.activeParticipantUids) ? source.activeParticipantUids : [],
+      audienceCount: Array.isArray(source.activeParticipantUids) ? source.activeParticipantUids.length : 0,
+      startedAt: source.activePoll.startedAt,
+      endedAt: 0,
+      active: true,
+    });
+    const incomplete = new Set();
+    let invited = 0;
+    let responses = 0;
+    const timeline = polls.map(function (entry) {
+      const poll = entry.poll || {};
+      const audienceUids = Array.isArray(entry.audienceUids) ? entry.audienceUids.map(String) : [];
+      const responseRows = uniqueResponsesForSummary(entry.responses || []);
+      const responseUids = new Set(responseRows.map(function (row) { return String(row && row.uid || ''); }).filter(Boolean));
+      audienceUids.forEach(function (uid) { if (!responseUids.has(uid)) incomplete.add(uid); });
+      const audienceCount = Math.max(audienceUids.length, Number(entry.audienceCount) || 0);
+      invited += audienceCount;
+      responses += responseRows.length;
+      return {
+        id: String(poll.id || entry.endedAt || ('poll-' + timeline.length)),
+        kind: liveActivityKindLabel(poll.type === 'mcq' ? 'multiple_choice' : poll.type === 'freetext' ? 'free_text' : poll.type),
+        phase: entry.active ? 'collecting' : 'closed',
+        responded: responseRows.length,
+        invited: audienceCount,
+        startedAt: Math.max(0, Number(entry.startedAt || poll.startedAt) || 0),
+        endedAt: Math.max(0, Number(entry.endedAt) || 0),
+      };
+    });
+    const knownIds = new Set(timeline.map(function (item) { return item.id; }));
+    (Array.isArray(source.activitySnapshots) ? source.activitySnapshots : []).slice(-60).forEach(function (snapshot) {
+      if (!snapshot || !snapshot.activityId || knownIds.has(String(snapshot.activityId))) return;
+      const counts = snapshot.counts && typeof snapshot.counts === 'object' ? snapshot.counts : {};
+      const statuses = snapshot.participantStatus && typeof snapshot.participantStatus === 'object' ? snapshot.participantStatus : {};
+      const audience = Array.isArray(snapshot.audienceUids) ? snapshot.audienceUids.map(String) : Object.keys(statuses);
+      const finished = audience.filter(function (uid) { return ['submitted', 'revised', 'complete'].indexOf(statuses[uid]) >= 0; }).length;
+      timeline.push({
+        id: String(snapshot.activityId),
+        kind: liveActivityKindLabel(snapshot.kind || snapshot.family),
+        phase: String(snapshot.phase || 'closed'),
+        responded: Math.max(finished, Number(counts.submitted) || 0),
+        invited: audience.length,
+        startedAt: Math.max(0, Number(snapshot.startedAt) || 0),
+        endedAt: Math.max(0, Number(snapshot.endedAt) || 0),
+      });
+    });
+    const queue = Array.isArray(source.actionQueue) ? source.actionQueue : [];
+    const qaQuestions = source.sessionQaState && Array.isArray(source.sessionQaState.questions) ? source.sessionQaState.questions : [];
+    const sessionStartedAt = Math.max(0, Number(source.sessionStartedAt) || (timeline.length ? Math.min.apply(null, timeline.map(function (item) { return item.startedAt || now; })) : now));
+    return {
+      activityCount: timeline.length,
+      pollCount: polls.length,
+      invitedCount: invited,
+      responseCount: responses,
+      responseRate: invited ? Math.max(0, Math.min(100, Math.round((responses / invited) * 100))) : 0,
+      incompleteUids: Array.from(incomplete).slice(0, 250),
+      unresolvedCount: queue.length,
+      helpRequestCount: queue.filter(function (item) { return item && item.reason === 'help'; }).length,
+      deliveryFailureCount: queue.filter(function (item) { return item && item.reason === 'failed'; }).length,
+      pendingQuestionCount: qaQuestions.filter(function (question) { return question && question.status === 'pending'; }).length,
+      durationMs: Math.max(0, now - sessionStartedAt),
+      timeline: timeline.sort(function (a, b) { return (b.startedAt || b.endedAt) - (a.startedAt || a.endedAt); }).slice(0, 20),
+    };
   };
   const FEEDBACK_RESPONSE_MAX_LENGTH = 2300;
   const FEEDBACK_CRITERIA_MAX_LENGTH = 1200;
@@ -1521,11 +1882,17 @@
       return this._isUidAllowed(uid) && (!this.peerShowcaseAudienceUids || this.peerShowcaseAudienceUids.has(uid));
     }
 
+    _isUidInSupportActivity(uid, activityId) {
+      if (!uid || !activityId || !this._isUidAllowed(uid)) return false;
+      if (activityId === buildLiveSessionSupportActivityId(this.sessionCode)) return true;
+      return !!(this.activePoll && this.activePoll.id === activityId && this._isUidInActiveAudience(uid));
+    }
+
     _acceptsResponse(uid, codename, payload) {
       if (!payload || typeof payload !== 'object' || Array.isArray(payload) || !this._isUidInActiveAudience(uid)) {
         return false;
       }
-      if (this.activePoll && payload.pollId === this.activePoll.id) return true;
+      if (this.activePoll && payload.pollId === this.activePoll.id) return this.activePoll.submissionsLocked !== true;
       if (!this.acceptResponse) return false;
       const pollId = payload.pollId;
       const validPollId = (typeof pollId === 'string'
@@ -1946,7 +2313,7 @@
     }
 
     sendCheckIn(uid, activityId) {
-      if (!uid || !activityId || !this.activePoll || this.activePoll.id !== activityId || !this._isUidInActiveAudience(uid)) return null;
+      if (!this._isUidInSupportActivity(uid, activityId)) return null;
       const peer = this.peers.get(uid);
       if (!peer || !peer.dc || peer.dc.readyState !== 'open') return null;
       const packet = normalizeLiveCheckInPacket({
@@ -1975,7 +2342,7 @@
 
     _receiveHelpRequest(uid, codename, payload) {
       const packet = normalizeLiveHelpRequestPacket(payload);
-      if (!packet || !this.activePoll || packet.activityId !== this.activePoll.id || !this._isUidInActiveAudience(uid)) return false;
+      if (!packet || !this._isUidInSupportActivity(uid, packet.activityId)) return false;
       this.onHelpRequest(uid, codename, packet);
       return true;
     }
@@ -2722,6 +3089,11 @@
     const activitySnapshots = Array.isArray(props.activitySnapshots) ? props.activitySnapshots : [];
     const onSendToStudent = typeof props.onSendToStudent === 'function' ? props.onSendToStudent : null;
     const onSendToGroup = typeof props.onSendToGroup === 'function' ? props.onSendToGroup : null;
+    const onSendToStudents = typeof props.onSendToStudents === 'function' ? props.onSendToStudents : null;
+    const onOpenDiagnostics = typeof props.onOpenDiagnostics === 'function' ? props.onOpenDiagnostics : null;
+    const onRequestEndSession = typeof props.onRequestEndSession === 'function' ? props.onRequestEndSession : null;
+    const transportKind = normalizeLiveTransportKind(props.transportKind);
+    const sessionStartedAt = Math.max(0, Number(props.sessionStartedAt) || 0);
     // Optional consumer bridge for contextual workflows such as Adventure
     // Mode. Only anonymous response text and public round metadata leave this
     // panel; teacher-private author uid/codename never do.
@@ -2797,6 +3169,7 @@
     const [studentActivitySort, setStudentActivitySort] = R.useState('attention');
     const [studentActivityQuery, setStudentActivityQuery] = R.useState('');
     const [studentActivityExpanded, setStudentActivityExpanded] = R.useState(true);
+    const [studentActivityVisibleLimit, setStudentActivityVisibleLimit] = R.useState(50);
     const [composerExpanded, setComposerExpanded] = R.useState(true);
     // routingByPoll: { pollId: { uid: groupId } } — used both to suppress
     // duplicate routing on re-submission and to compute aggregates.
@@ -2810,6 +3183,10 @@
     const [wordCloudRenameDrafts, setWordCloudRenameDrafts] = R.useState({});
     const [wordCloudModerationFilter, setWordCloudModerationFilter] = R.useState('all');
     const [wordCloudModerationQuery, setWordCloudModerationQuery] = R.useState('');
+    const [wordCloudVisibleLimit, setWordCloudVisibleLimit] = R.useState(60);
+    const [wordCloudClusterSuggestions, setWordCloudClusterSuggestions] = R.useState([]);
+    const [wordCloudClusterBusy, setWordCloudClusterBusy] = R.useState(false);
+    const [wordCloudClusterNotice, setWordCloudClusterNotice] = R.useState('');
     // Standard free-text responses stay teacher-private until explicitly
     // approved for a bounded anonymous showcase.
     const [freeTextModerationByPoll, setFreeTextModerationByPoll] = R.useState({});
@@ -2826,6 +3203,11 @@
     const [feedbackBusyByPoll, setFeedbackBusyByPoll] = R.useState({});
     const [feedbackBulkBusy, setFeedbackBulkBusy] = R.useState(false);
     const [followUpResourceId, setFollowUpResourceId] = R.useState('');
+    const [reviewedActionKeys, setReviewedActionKeys] = R.useState(function () { return readLiveTeacherActionState(sessionCode); });
+    const [actionQueueBusyUid, setActionQueueBusyUid] = R.useState('');
+    const [actionQueueNotice, setActionQueueNotice] = R.useState({ kind: '', text: '' });
+    const [healthNow, setHealthNow] = R.useState(function () { return Date.now(); });
+    const [wrapUpExpanded, setWrapUpExpanded] = R.useState(false);
     const [sessionQaState, setSessionQaState] = R.useState(function () {
       return createSessionQaState({ enabled: sessionQaOptIn });
     });
@@ -2840,6 +3222,20 @@
     const panelWasOpenRef = R.useRef(isOpen);
     const panelSessionRef = R.useRef(sessionCode);
     R.useEffect(function () {
+      if (!isOpen || typeof setInterval !== 'function') return undefined;
+      setHealthNow(Date.now());
+      const timer = setInterval(function () { setHealthNow(Date.now()); }, 15000);
+      return function () { clearInterval(timer); };
+    }, [isOpen, sessionCode]);
+    R.useEffect(function () {
+      writeLiveTeacherActionState(sessionCode, reviewedActionKeys, null, healthNow);
+      if (typeof props.onTeacherActionStateChange === 'function') {
+        props.onTeacherActionStateChange(normalizeLiveTeacherActionStateMap(reviewedActionKeys, healthNow));
+      }
+    }, [sessionCode, reviewedActionKeys]);
+    R.useEffect(function () { setStudentActivityVisibleLimit(50); }, [studentActivityFilter, studentActivitySort, studentActivityQuery]);
+    R.useEffect(function () { setWordCloudVisibleLimit(60); }, [wordCloudModerationFilter, wordCloudModerationQuery]);
+    R.useEffect(function () {
       const sessionChanged = transportSessionRef.current !== sessionCode;
       transportSessionRef.current = sessionCode;
       if (hostTransportActive && !sessionChanged) return;
@@ -2848,12 +3244,14 @@
       setGuests([]); setActivePoll(null); setActiveParticipantUids([]);
       setResponses({}); setRoutingByPoll({}); setCheckInsByUid({});
       setStudentActivityFilter('all'); setStudentActivitySort('attention'); setStudentActivityQuery('');
-      setStudentActivityExpanded(true); setComposerExpanded(true);
+      setStudentActivityExpanded(true); setStudentActivityVisibleLimit(50); setComposerExpanded(true);
       setWordCloudModerationByPoll({}); setWordCloudAliasesByPoll({}); setWordCloudRenameDrafts({});
-      setWordCloudModerationFilter('all'); setWordCloudModerationQuery(''); setFreeTextModerationByPoll({});
+      setWordCloudModerationFilter('all'); setWordCloudModerationQuery(''); setWordCloudVisibleLimit(60);
+      setWordCloudClusterSuggestions([]); setWordCloudClusterBusy(false); setWordCloudClusterNotice(''); setFreeTextModerationByPoll({});
       setPeerShowcaseRound(null); setPeerVotesByRound({});
       setResponseStatusByPoll({}); setFeedbackByPoll({}); setFeedbackBusyByPoll({});
       setFeedbackBulkBusy(false); setLastSharedResultsAt(null);
+      setReviewedActionKeys(readLiveTeacherActionState(sessionCode)); setActionQueueBusyUid(''); setActionQueueNotice({ kind: '', text: '' });
       if (sessionChanged) {
         setCreatedGroups([]);
         setSessionQaState(createSessionQaState({ enabled: sessionQaOptIn }));
@@ -2862,6 +3260,7 @@
         setPendingEndAction(null);
         setAlloSheetReviewOpen(false);
         setAlloSheetFeedback({ kind: '', text: '' });
+        setWrapUpExpanded(false);
       }
     }, [hostTransportActive, sessionCode]);
     R.useEffect(function () { activePollRef.current = activePoll; }, [activePoll]);
@@ -2891,6 +3290,7 @@
       setPeerShowcaseRound(null); setPeerVotesByRound({});
       setResponseStatusByPoll({}); setFeedbackByPoll({}); setFeedbackBusyByPoll({});
       setFeedbackBulkBusy(false); setLastSharedResultsAt(null);
+      setActionQueueBusyUid(''); setActionQueueNotice({ kind: '', text: '' });
     }, [isOpen, hostTransportActive, sessionCode]);
 
     // One-tap presets (e.g. the Live Session Center's Quick Check) seed the
@@ -3182,6 +3582,30 @@
       if (name) commitGroup(name);
     };
 
+    const activatePollForAudience = function (poll, audienceUids) {
+      if (!hostRef.current || !poll || !Array.isArray(audienceUids) || audienceUids.length === 0) return false;
+      activePollRef.current = poll;
+      routingByPollRef.current = Object.assign({}, routingByPollRef.current, { [poll.id]: {} });
+      hostRef.current.broadcastPoll(poll, audienceUids);
+      setActiveParticipantUids(audienceUids);
+      setActivePoll(poll);
+      setCheckInsByUid({});
+      setResponses(function (prev) { const n = Object.assign({}, prev); n[poll.id] = []; return n; });
+      setRoutingByPoll(function (prev) { const n = Object.assign({}, prev); n[poll.id] = {}; return n; });
+      setWordCloudModerationByPoll(function (prev) { const n = Object.assign({}, prev); n[poll.id] = {}; return n; });
+      setWordCloudAliasesByPoll(function (prev) { const n = Object.assign({}, prev); n[poll.id] = {}; return n; });
+      setFreeTextModerationByPoll(function (prev) { const n = Object.assign({}, prev); n[poll.id] = {}; return n; });
+      setWordCloudClusterSuggestions([]); setWordCloudClusterBusy(false); setWordCloudClusterNotice('');
+      setPeerShowcaseRound(null);
+      setPeerVotesByRound({});
+      setResponseStatusByPoll(function (prev) { const n = Object.assign({}, prev); n[poll.id] = {}; return n; });
+      setFeedbackByPoll(function (prev) { const n = Object.assign({}, prev); n[poll.id] = {}; return n; });
+      setFeedbackBusyByPoll(function (prev) { const n = Object.assign({}, prev); n[poll.id] = {}; return n; });
+      setLastSharedResultsAt(null);
+      setComposerExpanded(false);
+      if (typeof setTimeout === 'function') setTimeout(function () { jumpToLiveWorkspaceSection('active'); }, 0);
+      return true;
+    };
     const broadcast = function () {
       if (!hostRef.current || !composerValidation.ready) {
         if (activePoll) jumpToLiveWorkspaceSection('active');
@@ -3214,24 +3638,7 @@
         routingGroups
       );
       if (audienceUids.length === 0) return;
-      activePollRef.current = poll;
-      routingByPollRef.current = Object.assign({}, routingByPollRef.current, { [poll.id]: {} });
-      hostRef.current.broadcastPoll(poll, audienceUids);
-      setActiveParticipantUids(audienceUids);
-      setActivePoll(poll);
-      setCheckInsByUid({});
-      setResponses(function (prev) { const n = Object.assign({}, prev); n[poll.id] = []; return n; });
-      setRoutingByPoll(function (prev) { const n = Object.assign({}, prev); n[poll.id] = {}; return n; });
-      setWordCloudModerationByPoll(function (prev) { const n = Object.assign({}, prev); n[poll.id] = {}; return n; });
-      setFreeTextModerationByPoll(function (prev) { const n = Object.assign({}, prev); n[poll.id] = {}; return n; });
-      setPeerShowcaseRound(null);
-      setPeerVotesByRound({});
-      setResponseStatusByPoll(function (prev) { const n = Object.assign({}, prev); n[poll.id] = {}; return n; });
-      setFeedbackByPoll(function (prev) { const n = Object.assign({}, prev); n[poll.id] = {}; return n; });
-      setFeedbackBusyByPoll(function (prev) { const n = Object.assign({}, prev); n[poll.id] = {}; return n; });
-      setLastSharedResultsAt(null);
-      setComposerExpanded(false);
-      if (typeof setTimeout === 'function') setTimeout(function () { jumpToLiveWorkspaceSection('active'); }, 0);
+      activatePollForAudience(poll, audienceUids);
     };
     const closePoll = function (closePanelAfter) {
       if (!hostRef.current || !activePoll) return;
@@ -3293,6 +3700,23 @@
       setComposerExpanded(true);
       jumpToLiveWorkspaceSection('create');
     };
+    const relaunchCompletedPollForIncomplete = function (entry) {
+      if (activePoll || !entry || !entry.poll || !hostRef.current) return false;
+      const answered = new Set(uniqueResponsesForSummary(entry.responses || []).map(function (row) { return String(row && row.uid || ''); }).filter(Boolean));
+      const connected = new Set(guests.map(function (guest) { return String(guest && guest.uid || ''); }).filter(Boolean));
+      const incompleteUids = (Array.isArray(entry.audienceUids) ? entry.audienceUids : []).map(String).filter(function (uid) {
+        return uid && !answered.has(uid) && connected.has(uid);
+      });
+      if (!incompleteUids.length) return false;
+      const startedAt = Date.now();
+      const poll = Object.assign({}, entry.poll, {
+        id: 'poll-' + startedAt,
+        startedAt: startedAt,
+        submissionsLocked: false,
+        relaunchOf: String(entry.poll.id || '').slice(0, LIVE_CHECK_IN_ID_MAX_LENGTH),
+      });
+      return activatePollForAudience(poll, incompleteUids);
+    };
 
     const currentAlloSheetSnapshot = function () {
       if (!activePoll) return null;
@@ -3338,14 +3762,24 @@
       }
     };
 
+    const setWordCloudCollectionLocked = function (locked) {
+      if (!hostRef.current || !activePoll || activePoll.type !== 'wordcloud') return false;
+      const nextPoll = Object.assign({}, activePoll, { submissionsLocked: !!locked });
+      activePollRef.current = nextPoll;
+      hostRef.current.broadcastPoll(nextPoll, activeParticipantUids);
+      setActivePoll(nextPoll);
+      return true;
+    };
     const shareResults = function () {
       if (!hostRef.current || !activePoll || isFeedbackPoll(activePoll)) return;
+      if (activePoll.type === 'wordcloud' && activePoll.submissionsLocked !== true) setWordCloudCollectionLocked(true);
       const eligibleResponses = uniqueResponsesForSummary(filterLivePollingResponsesToAudience(
         responses[activePoll.id] || [],
         activeParticipantUids
       ));
       const summary = buildPollResultsSummary(activePoll, eligibleResponses, activeParticipantUids.length, {
-        wordCloudModeration: wordCloudModerationByPoll[activePoll.id] || {}
+        wordCloudModeration: wordCloudModerationByPoll[activePoll.id] || {},
+        wordCloudAliases: wordCloudAliasesByPoll[activePoll.id] || {}
       });
       hostRef.current.broadcastPollResults(activePoll.id, summary);
       setLastSharedResultsAt(Date.now());
@@ -3489,6 +3923,8 @@
       activeParticipantUids
     );
     const uniqueActiveResponses = uniqueResponsesForSummary(activeResponses);
+    const activeResponseUidSet = new Set(uniqueActiveResponses.map(function (row) { return String(row && row.uid || ''); }).filter(Boolean));
+    const activeIncompleteUids = activeParticipantUids.map(String).filter(function (uid) { return !activeResponseUidSet.has(uid); });
     const activeFeedbackConfig = normalizeFeedbackConfig(activePoll);
     const responseGoalBase = activeParticipantUids.length;
     const responseGoal = Math.max(responseGoalBase, uniqueActiveResponses.length, 1);
@@ -3540,10 +3976,15 @@
       responses: activeResponses,
       responseStatuses: feedbackStatusForActive,
     });
+    const sessionSupportActivityId = buildLiveSessionSupportActivityId(sessionCode);
+    const currentSupportActivityId = activePoll ? activePoll.id : sessionSupportActivityId;
     const studentActivityRows = rawStudentActivityRows.map(function (row) {
       const signal = checkInsByUid[row.uid];
-      const supportStatus = activePoll && signal && signal.activityId === activePoll.id && signal.status === 'help' ? 'help' : '';
-      return supportStatus ? Object.assign({}, row, { supportStatus: supportStatus }) : row;
+      const supportStatus = signal && signal.activityId === currentSupportActivityId && signal.status === 'help' ? 'help' : '';
+      return supportStatus ? Object.assign({}, row, {
+        supportStatus: supportStatus,
+        supportUpdatedAt: Number(signal.acknowledgedAt || signal.sentAt) || 0,
+      }) : row;
     });
     const studentActivityCounts = studentActivityRows.reduce(function (out, row) {
       out[row.status] = (out[row.status] || 0) + 1;
@@ -3556,14 +3997,107 @@
       query: studentActivityQuery,
       groups: sessionGroups,
     });
+    const externalTeacherActionState = normalizeLiveTeacherActionStateMap(props.teacherActionState, healthNow);
+    const effectiveTeacherActionState = Object.assign({}, reviewedActionKeys, externalTeacherActionState);
+    const teacherActionQueue = buildLiveTeacherActionQueue(studentActivityRows, effectiveTeacherActionState, healthNow);
+    const reviewedActionCount = Object.keys(effectiveTeacherActionState).filter(function (key) { return normalizeLiveTeacherActionState(effectiveTeacherActionState[key], healthNow).status === 'resolved'; }).length;
+    const teacherActionCounts = teacherActionQueue.reduce(function (counts, item) {
+      counts[item.reason] = (counts[item.reason] || 0) + 1;
+      return counts;
+    }, {});
+    const trace = Array.isArray(props.sessionSyncTrace)
+      ? props.sessionSyncTrace
+      : ((typeof window !== 'undefined' && Array.isArray(window.__alloSessionSyncTrace)) ? window.__alloSessionSyncTrace : []);
+    const transportHealth = buildLiveTransportHealth({
+      transportKind: transportKind,
+      connectedCount: guests.length,
+      expectedCount: Object.keys(roster).length,
+      trace: trace,
+      now: healthNow,
+    });
+    const sessionWrapUp = buildLiveSessionWrapUp({
+      completedPolls: completedPolls,
+      activePoll: activePoll,
+      activeResponses: uniqueActiveResponses,
+      activeParticipantUids: activeParticipantUids,
+      activitySnapshots: activitySnapshots,
+      actionQueue: teacherActionQueue,
+      sessionQaState: sessionQaState,
+      sessionStartedAt: sessionStartedAt,
+      now: healthNow,
+    });
     const sendTeacherCheckIn = function (row) {
-      if (!row || !activePoll || !hostRef.current || typeof hostRef.current.sendCheckIn !== 'function') return;
-      if (!row.connected || !activeParticipantUidSet.has(String(row.uid))) return;
-      const packet = hostRef.current.sendCheckIn(row.uid, activePoll.id);
+      if (!row || !hostRef.current || typeof hostRef.current.sendCheckIn !== 'function') return;
+      if (!row.connected || (activePoll && !activeParticipantUidSet.has(String(row.uid)))) return;
+      const packet = hostRef.current.sendCheckIn(row.uid, currentSupportActivityId);
       if (!packet) return;
       setCheckInsByUid(function (prev) {
         return Object.assign({}, prev, { [row.uid]: Object.assign({}, packet, { status: 'sent' }) });
       });
+    };
+    const updateTeacherActionState = function (item, status, snoozedUntil) {
+      if (!item || !item.key) return;
+      setReviewedActionKeys(function (prev) {
+        const next = Object.assign({}, prev);
+        if (status === 'open') delete next[item.key];
+        else next[item.key] = normalizeLiveTeacherActionState({ status: status, updatedAt: Date.now(), snoozedUntil: snoozedUntil || 0 });
+        return next;
+      });
+    };
+    const markTeacherActionReviewed = function (item) {
+      updateTeacherActionState(item, 'resolved');
+    };
+    const focusTeacherActionStudents = function (item) {
+      if (!item) return;
+      setStudentActivityExpanded(true);
+      setStudentActivityFilter(item.reason === 'help' ? 'help' : item.reason === 'offline' ? 'offline' : 'attention');
+      setStudentActivityQuery(item.name || '');
+    };
+    const sendTeacherActionResource = async function (item) {
+      if (!item || !onSendToStudent || !followUpResourceId || actionQueueBusyUid) return;
+      setActionQueueBusyUid(item.uid);
+      setActionQueueNotice({ kind: '', text: '' });
+      try {
+        const result = await Promise.resolve(onSendToStudent(item.uid, followUpResourceId));
+        if (result && result.pendingConfirmation) {
+          setActionQueueNotice({ kind: 'info', text: tr('Complete the resource confirmation, then return to this queue.') });
+          return;
+        }
+        if (result === false || (result && typeof result === 'object' && Number(result.failed) > 0 && Number(result.sent) < 1)) throw new Error('delivery rejected');
+        markTeacherActionReviewed(item);
+        setActionQueueNotice({ kind: 'success', text: tr('Resource sent to') + ' ' + item.name + '.' });
+      } catch (err) {
+        setActionQueueNotice({ kind: 'error', text: tr('The resource could not be sent. Check the session connection and try again.') });
+      } finally {
+        setActionQueueBusyUid('');
+      }
+    };
+    const sendCheckInToIncomplete = function () {
+      let sent = 0;
+      activeIncompleteUids.forEach(function (uid) {
+        const row = studentActivityRows.find(function (entry) { return entry.uid === uid; });
+        if (row && row.connected) { sendTeacherCheckIn(row); sent += 1; }
+      });
+      setActionQueueNotice({ kind: sent ? 'success' : 'error', text: sent ? tr('Check-in sent to') + ' ' + sent + ' ' + tr(sent === 1 ? 'student.' : 'students.') : tr('No incomplete students are currently connected.') });
+    };
+    const sendResourceToIncomplete = async function () {
+      if (!followUpResourceId || !activeIncompleteUids.length || actionQueueBusyUid) return;
+      setActionQueueBusyUid('__incomplete__');
+      setActionQueueNotice({ kind: '', text: '' });
+      try {
+        let result;
+        if (onSendToStudents) result = await Promise.resolve(onSendToStudents(activeIncompleteUids, followUpResourceId));
+        else if (onSendToStudent) result = await Promise.all(activeIncompleteUids.map(function (uid) { return Promise.resolve(onSendToStudent(uid, followUpResourceId)); }));
+        else throw new Error('delivery unavailable');
+        if (result && result.pendingConfirmation) {
+          setActionQueueNotice({ kind: 'info', text: tr('Complete the resource confirmation, then return to this follow-up.') });
+          return;
+        }
+        if (result === false || (Array.isArray(result) && result.some(function (item) { return item === false || (item && Number(item.failed) > 0); })) || (result && !Array.isArray(result) && Number(result.failed) > 0)) throw new Error('delivery rejected');
+        setActionQueueNotice({ kind: 'success', text: tr('Resource sent to incomplete students.') });
+      } catch (err) {
+        setActionQueueNotice({ kind: 'error', text: tr('The resource could not be sent to every incomplete student. Review connection status and retry.') });
+      } finally { setActionQueueBusyUid(''); }
     };
     const jumpToLiveWorkspaceSection = function (sectionId) {
       if (!sectionId || !hostDialogRef.current) return;
@@ -3575,7 +4109,11 @@
         if (!target) return;
         let reducedMotion = false;
         try { reducedMotion = !!window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (err) {}
-        if (typeof target.scrollIntoView === 'function') {
+        const toolbar = root.querySelector('[data-live-host-toolbar]');
+        const toolbarOffset = toolbar && toolbar.getBoundingClientRect ? Math.ceil(toolbar.getBoundingClientRect().height) + 14 : 84;
+        if (typeof root.scrollTo === 'function' && Number.isFinite(Number(target.offsetTop))) {
+          try { root.scrollTo({ top: Math.max(0, Number(target.offsetTop) - toolbarOffset), behavior: reducedMotion ? 'auto' : 'smooth' }); } catch (err) {}
+        } else if (typeof target.scrollIntoView === 'function') {
           try { target.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'start' }); } catch (err) { try { target.scrollIntoView(); } catch (scrollErr) {} }
         }
         try { target.focus({ preventScroll: true }); } catch (err) { try { target.focus(); } catch (focusErr) {} }
@@ -3587,6 +4125,7 @@
       out[item.status] += item.count;
       return out;
     }, { pending: 0, approved: 0, hidden: 0 });
+    const approvedWordCloudUniqueCount = wordCloudTermsForActive.filter(function (item) { return item.status === 'approved'; }).length;
     const setWordCloudTermStatus = function (key, status) {
       if (!activePoll || activePoll.type !== 'wordcloud' || !key) return;
       setWordCloudModerationByPoll(function (prev) {
@@ -3637,6 +4176,40 @@
         return next;
       });
       setWordCloudRenameDrafts({});
+      setWordCloudClusterSuggestions([]);
+      setWordCloudClusterNotice('');
+      setLastSharedResultsAt(null);
+    };
+    const suggestWordCloudClusters = async function () {
+      if (wordCloudClusterBusy || !activePoll || activePoll.type !== 'wordcloud' || activePoll.submissionsLocked !== true) return;
+      const approvedItems = wordCloudTermsForActive.filter(function (item) { return item.status === 'approved'; });
+      const prompt = buildWordCloudClusterPrompt(approvedItems);
+      const generator = props.callGemini || ((typeof window !== 'undefined') && window.callGemini);
+      if (!prompt || typeof generator !== 'function') {
+        setWordCloudClusterNotice(tr('Approve at least two terms and connect an AI provider to suggest groups.'));
+        return;
+      }
+      setWordCloudClusterBusy(true); setWordCloudClusterNotice(''); setWordCloudClusterSuggestions([]);
+      try {
+        const generated = await generator(prompt, false);
+        const suggestions = parseWordCloudClusterSuggestions(generated, approvedItems);
+        setWordCloudClusterSuggestions(suggestions);
+        setWordCloudClusterNotice(suggestions.length ? tr('Review each suggested group before applying it.') : tr('No confident term groups were suggested.'));
+      } catch (err) {
+        setWordCloudClusterNotice(tr('Term grouping suggestions were unavailable. You can still rename and merge terms manually.'));
+      } finally { setWordCloudClusterBusy(false); }
+    };
+    const applyWordCloudCluster = function (suggestion) {
+      if (!activePoll || activePoll.type !== 'wordcloud') return;
+      const patch = buildWordCloudAliasPatch(wordCloudTermsForActive, suggestion);
+      if (Object.keys(patch).length < 2) return;
+      setWordCloudAliasesByPoll(function (prev) {
+        const next = Object.assign({}, prev);
+        next[activePoll.id] = Object.assign({}, next[activePoll.id] || {}, patch);
+        return next;
+      });
+      setWordCloudClusterSuggestions(function (prev) { return prev.filter(function (item) { return item.id !== suggestion.id; }); });
+      setWordCloudClusterNotice(tr('Term group applied. Review the merged label before revealing.'));
       setLastSharedResultsAt(null);
     };
     const activeFreeTextModeration = activePoll ? (freeTextModerationByPoll[activePoll.id] || {}) : {};
@@ -3871,7 +4444,7 @@
           inert: (pendingGroupName !== null || pendingEndAction !== null || alloSheetReviewOpen) ? '' : undefined,
           style: { background: 'white', maxWidth: 1180, width: '96vw', maxHeight: '94vh', overflow: 'auto', borderRadius: 14, padding: '1.25rem', boxShadow: '0 20px 50px rgba(0,0,0,0.3)' }
         },
-        ce('div', { style: { position: 'sticky', top: '-1.25rem', zIndex: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, flexWrap: 'wrap', margin: '-1.25rem -1.25rem 0.75rem', padding: '0.9rem 1.25rem', background: 'rgba(255,255,255,0.97)', borderBottom: '1px solid #e2e8f0', borderRadius: '14px 14px 0 0', boxShadow: '0 4px 12px rgba(15,23,42,0.06)' } },
+        ce('div', { 'data-live-host-toolbar': '', style: { position: 'sticky', top: '-1.25rem', zIndex: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, flexWrap: 'wrap', margin: '-1.25rem -1.25rem 0.75rem', padding: '0.9rem 1.25rem', background: 'rgba(255,255,255,0.97)', borderBottom: '1px solid #e2e8f0', borderRadius: '14px 14px 0 0', boxShadow: '0 4px 12px rgba(15,23,42,0.06)' } },
           ce('h2', { id: 'live-polling-host-title', style: { margin: 0, fontSize: '1.15rem', color: '#0f172a' } }, tr('Live Polling —') + ' ', ce('span', { style: { fontFamily: 'monospace', color: '#1e3a8a' } }, sessionCode), activePoll ? ce('span', { style: { display: 'inline-block', marginLeft: 8, padding: '0.18rem 0.42rem', borderRadius: 999, background: '#dcfce7', color: '#166534', fontSize: '0.66rem', verticalAlign: 'middle' } }, tr('Poll live')) : null),
           ce('select', {
             defaultValue: '',
@@ -3884,7 +4457,8 @@
             sessionQaOptIn ? ce('option', { value: 'questions' }, tr('Live Q&A')) : null,
             ce('option', { value: 'create' }, tr('Create poll')),
             ce('option', { value: 'active', disabled: !activePoll }, activePoll ? tr('Active poll') + ' (' + uniqueActiveResponses.length + '/' + responseGoalBase + ')' : tr('No active poll')),
-            completedPolls.length ? ce('option', { value: 'recent' }, tr('Recent polls') + ' (' + completedPolls.length + ')') : null
+            completedPolls.length ? ce('option', { value: 'recent' }, tr('Recent polls') + ' (' + completedPolls.length + ')') : null,
+            ce('option', { value: 'wrap-up' }, tr('Session wrap-up'))
           ),
           ce('button', { type: 'button', onClick: openAlloSheetReview, disabled: !activePoll && completedPolls.length === 0, 'aria-label': tr('Review Live Polling aggregates in AlloSheet'), style: { minHeight: 44, padding: '0.4rem 0.7rem', border: '1px solid #2563eb', borderRadius: 6, background: 'white', color: '#1d4ed8', cursor: (!activePoll && completedPolls.length === 0) ? 'default' : 'pointer', fontWeight: 800, fontSize: '0.76rem' } }, tr('Open in AlloSheet')),
                     ce('button', { ref: hostCloseRef, type: 'button', onClick: requestPanelClose, style: { minWidth: 44, minHeight: 44, background: '#f1f5f9', border: 'none', padding: '0.4rem 0.8rem', borderRadius: 6, cursor: 'pointer', fontWeight: 600 } }, tr('Close'))
@@ -3892,6 +4466,20 @@
         ce('p', { id: 'live-polling-host-description', style: { fontSize: '0.85rem', color: '#475569', margin: '0 0 0.75rem 0' } }, tr('Connected:') + ' ',
           ce('strong', null, guests.length), ' ' + (guests.length === 1 ? tr('guest') : tr('guests')),
           guests.length > 0 ? ' (' + guests.map(function (g) { return g.codename; }).join(', ') + ')' : ''
+        ),
+        ce('section', { 'aria-label': tr('Live session connection health'), style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap', marginBottom: '0.8rem', padding: '0.6rem 0.7rem', border: '1px solid ' + (transportHealth.status === 'attention' ? '#fecaca' : transportHealth.status === 'healthy' ? '#bbf7d0' : '#fde68a'), borderRadius: 9, background: transportHealth.status === 'attention' ? '#fef2f2' : transportHealth.status === 'healthy' ? '#f0fdf4' : '#fffbeb' } },
+          ce('div', { style: { minWidth: 0 } },
+            ce('div', { style: { display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' } },
+              ce('strong', { style: { color: '#0f172a', fontSize: '0.78rem' } }, tr(transportHealth.providerLabel)),
+              ce('span', { role: 'status', style: { padding: '0.16rem 0.42rem', borderRadius: 999, background: transportHealth.status === 'attention' ? '#fee2e2' : transportHealth.status === 'healthy' ? '#dcfce7' : '#fef3c7', color: transportHealth.status === 'attention' ? '#991b1b' : transportHealth.status === 'healthy' ? '#166534' : '#92400e', fontSize: '0.64rem', fontWeight: 900 } }, transportHealth.status === 'attention' ? tr('Sync needs attention') : transportHealth.status === 'healthy' ? tr('Sync healthy') : tr('Waiting for students'))
+            ),
+            ce('div', { style: { marginTop: 3, color: '#475569', fontSize: '0.68rem', lineHeight: 1.35 } },
+              transportHealth.directCount + ' / ' + transportHealth.expectedCount + ' ' + tr('students connected'),
+              transportHealth.lastSyncAgeMs !== null ? ' · ' + tr('Last sync') + ' ' + formatLiveElapsed(transportHealth.lastSyncAgeMs) + ' ' + tr('ago') : '',
+              transportHealth.problemEvent ? ' · ' + tr('Latest issue:') + ' ' + transportHealth.problemEvent : ''
+            )
+          ),
+          onOpenDiagnostics ? ce('button', { type: 'button', onClick: onOpenDiagnostics, style: { minHeight: 40, padding: '0.35rem 0.6rem', border: '1px solid #64748b', borderRadius: 6, background: 'white', color: '#334155', fontSize: '0.68rem', fontWeight: 850, cursor: 'pointer' } }, tr('Open diagnostics')) : null
         ),
         ce('section', { 'aria-labelledby': 'live-student-activity-title', 'data-live-workspace-section': 'students', tabIndex: -1, style: { scrollMarginTop: 76, marginBottom: '0.85rem', padding: '0.75rem', border: '1px solid #bfdbfe', borderRadius: 10, background: '#eff6ff' } },
           ce('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 10, flexWrap: 'wrap' } },
@@ -3914,6 +4502,59 @@
               style: { minHeight: 40, padding: '0.38rem 0.62rem', border: '1px solid #93c5fd', borderRadius: 7, background: 'white', color: '#1d4ed8', fontWeight: 850, cursor: 'pointer', fontSize: '0.72rem' }
             }, studentActivityExpanded ? tr('Hide details') : tr('Show details'))
           ),
+          teacherActionQueue.length ? ce('section', { 'aria-labelledby': 'live-teacher-action-queue-title', style: { marginTop: 9, padding: '0.7rem', border: '1px solid #c4b5fd', borderRadius: 9, background: '#faf5ff' } },
+            ce('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8, flexWrap: 'wrap' } },
+              ce('div', null,
+                ce('h4', { id: 'live-teacher-action-queue-title', style: { margin: 0, color: '#5b21b6', fontSize: '0.82rem' } }, tr('Teacher action queue') + ' (' + teacherActionQueue.length + ')'),
+                ce('p', { style: { margin: '0.2rem 0 0', color: '#6b21a8', fontSize: '0.68rem', lineHeight: 1.35 } }, tr('Private follow-ups are prioritized here; named response content is not shown.'))
+              ),
+              ce('div', { style: { display: 'flex', gap: 4, flexWrap: 'wrap', alignItems: 'center' } },
+                LIVE_TEACHER_ACTION_REASONS.map(function (reason) {
+                  const count = teacherActionCounts[reason] || 0;
+                  return count ? ce('span', { key: reason, style: { padding: '0.18rem 0.38rem', border: '1px solid #ddd6fe', borderRadius: 999, background: 'white', color: reason === 'help' || reason === 'failed' ? '#b91c1c' : '#5b21b6', fontSize: '0.64rem', fontWeight: 900 } }, count + ' ' + tr(reason)) : null;
+                }),
+                reviewedActionCount ? ce('button', { type: 'button', onClick: function () { setReviewedActionKeys({}); }, style: { minHeight: 36, padding: '0.25rem 0.45rem', border: '1px solid #7c3aed', borderRadius: 5, background: 'white', color: '#6d28d9', fontWeight: 850, fontSize: '0.64rem', cursor: 'pointer' } }, tr('Restore reviewed') + ' (' + reviewedActionCount + ')') : null
+              )
+            ),
+            onSendToStudent && resources.length ? ce('label', { style: { display: 'block', marginTop: 7, color: '#581c87', fontSize: '0.67rem', fontWeight: 850 } },
+              tr('Follow-up resource for queue actions'),
+              ce('select', { value: followUpResourceId, onChange: function (event) { setFollowUpResourceId(event.target.value); }, 'aria-label': tr('Select a follow-up resource for the teacher action queue'), style: { display: 'block', width: '100%', minHeight: 42, marginTop: 3, padding: '0.38rem 0.5rem', border: '1px solid #c4b5fd', borderRadius: 6, background: 'white', color: '#1e293b' } },
+                ce('option', { value: '' }, tr('Select a resource (optional)')),
+                resources.slice(0, 250).map(function (resource) { return ce('option', { key: resource.id, value: resource.id }, resource.title || resource.label || resource.id); })
+              )
+            ) : null,
+            ce('div', { role: 'list', 'aria-label': tr('Students needing teacher follow-up'), style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 6, marginTop: 7 } },
+              teacherActionQueue.slice(0, 8).map(function (item) {
+                const row = studentActivityRows.find(function (entry) { return entry.uid === item.uid; });
+                const signal = checkInsByUid[item.uid];
+                const checkInPending = !!(signal && signal.activityId === currentSupportActivityId && signal.status === 'sent');
+                const reasonLabel = item.reason === 'help' ? tr('Help requested') : item.reason === 'failed' ? tr('Resource delivery failed') : item.reason === 'offline' ? tr('Student is offline') : item.reason === 'withdrawn' ? tr('Response withdrawn') : tr('Waiting to begin');
+                const resourceBusy = actionQueueBusyUid === item.uid;
+                return ce('article', { key: item.key, role: 'listitem', style: { padding: '0.55rem', border: '1px solid #ddd6fe', borderRadius: 7, background: 'white' } },
+                  ce('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 6, alignItems: 'center' } },
+                    ce('strong', { style: { display: 'block', color: '#1e293b', fontSize: '0.76rem' } }, item.name),
+                    ce('span', { style: { color: item.waitMs >= 120000 ? '#b91c1c' : '#64748b', fontSize: '0.63rem', fontWeight: 900, whiteSpace: 'nowrap' } }, tr('Waiting') + ' ' + formatLiveElapsed(item.waitMs))
+                  ),
+                  ce('span', { style: { display: 'block', marginTop: 2, color: item.reason === 'help' || item.reason === 'failed' ? '#b91c1c' : '#6b21a8', fontSize: '0.67rem', fontWeight: 900 } }, reasonLabel),
+                  item.actionStatus === 'claimed' ? ce('span', { style: { display: 'inline-block', marginTop: 3, padding: '0.14rem 0.34rem', borderRadius: 999, background: '#ede9fe', color: '#5b21b6', fontSize: '0.61rem', fontWeight: 900 } }, tr('Claimed')) : null,
+                  ce('span', { style: { display: 'block', marginTop: 2, color: '#64748b', fontSize: '0.64rem' } }, tr(item.activity)),
+                  ce('div', { style: { display: 'flex', gap: 4, flexWrap: 'wrap', marginTop: 6 } },
+                    item.connected && row ? ce('button', { type: 'button', disabled: checkInPending, onClick: function () { sendTeacherCheckIn(row); updateTeacherActionState(item, 'claimed'); }, style: { minHeight: 38, padding: '0.3rem 0.5rem', border: '1px solid #7c3aed', borderRadius: 5, background: 'white', color: checkInPending ? '#94a3b8' : '#6d28d9', fontWeight: 850, fontSize: '0.65rem', cursor: checkInPending ? 'default' : 'pointer' } }, checkInPending ? tr('Check-in sent') : tr('Check in')) : null,
+                    onSendToStudent && followUpResourceId ? ce('button', { type: 'button', disabled: !!actionQueueBusyUid, onClick: function () { sendTeacherActionResource(item); }, style: { minHeight: 38, padding: '0.3rem 0.5rem', border: '1px solid #2563eb', borderRadius: 5, background: '#eff6ff', color: resourceBusy ? '#94a3b8' : '#1d4ed8', fontWeight: 850, fontSize: '0.65rem', cursor: actionQueueBusyUid ? 'default' : 'pointer' } }, resourceBusy ? tr('Sending...') : tr('Send resource')) : null,
+                    ce('button', { type: 'button', onClick: function () { updateTeacherActionState(item, item.actionStatus === 'claimed' ? 'open' : 'claimed'); }, style: { minHeight: 38, padding: '0.3rem 0.5rem', border: '1px solid #7c3aed', borderRadius: 5, background: item.actionStatus === 'claimed' ? '#ede9fe' : 'white', color: '#6d28d9', fontWeight: 850, fontSize: '0.65rem', cursor: 'pointer' } }, item.actionStatus === 'claimed' ? tr('Release') : tr('Claim')),
+                    ce('button', { type: 'button', onClick: function () { updateTeacherActionState(item, 'snoozed', Date.now() + 120000); }, style: { minHeight: 38, padding: '0.3rem 0.5rem', border: '1px solid #94a3b8', borderRadius: 5, background: 'white', color: '#475569', fontWeight: 850, fontSize: '0.65rem', cursor: 'pointer' } }, tr('Snooze 2m')),
+                    ce('button', { type: 'button', onClick: function () { focusTeacherActionStudents(item); }, style: { minHeight: 38, padding: '0.3rem 0.5rem', border: '1px solid #94a3b8', borderRadius: 5, background: 'white', color: '#475569', fontWeight: 850, fontSize: '0.65rem', cursor: 'pointer' } }, tr('View student')),
+                    ce('button', { type: 'button', onClick: function () { markTeacherActionReviewed(item); }, style: { minHeight: 38, padding: '0.3rem 0.5rem', border: '1px solid #16a34a', borderRadius: 5, background: 'white', color: '#166534', fontWeight: 850, fontSize: '0.65rem', cursor: 'pointer' } }, tr('Resolve'))
+                  )
+                );
+              })
+            ),
+            teacherActionQueue.length > 8 ? ce('p', { style: { margin: '0.45rem 0 0', color: '#6b21a8', fontSize: '0.67rem', fontWeight: 800 } }, tr('{n} more students are available in the filtered activity table.', { n: teacherActionQueue.length - 8 })) : null,
+            actionQueueNotice.text ? ce('p', { role: actionQueueNotice.kind === 'error' ? 'alert' : 'status', 'aria-live': 'polite', style: { margin: '0.45rem 0 0', color: actionQueueNotice.kind === 'error' ? '#b91c1c' : '#166534', fontSize: '0.7rem', fontWeight: 850 } }, actionQueueNotice.text) : null
+          ) : studentActivityRows.length ? ce('div', { role: 'status', style: { marginTop: 9, padding: '0.5rem 0.6rem', border: '1px solid #bbf7d0', borderRadius: 7, background: '#f0fdf4', color: '#166534', fontSize: '0.7rem', fontWeight: 850 } },
+            tr('Teacher action queue is clear.'),
+            reviewedActionCount ? ce('button', { type: 'button', onClick: function () { setReviewedActionKeys({}); }, style: { display: 'block', minHeight: 40, marginTop: 5, padding: '0.3rem 0.5rem', border: '1px solid #16a34a', borderRadius: 5, background: 'white', color: '#166534', fontWeight: 850, cursor: 'pointer' } }, tr('Restore reviewed') + ' (' + reviewedActionCount + ')') : null
+          ) : null,
           ce('div', { id: 'live-student-activity-details', hidden: !studentActivityExpanded },
           studentActivityRows.length ? ce('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(112px, 1fr))', gap: 6, marginTop: 9 }, role: 'group', 'aria-label': tr('Filter student activity') },
             [
@@ -3971,12 +4612,12 @@
                 ce('th', { scope: 'col', style: { padding: '0.45rem 0.55rem', borderBottom: '1px solid #e2e8f0' } }, tr('Progress')),
                 ce('th', { scope: 'col', style: { padding: '0.45rem 0.55rem', borderBottom: '1px solid #e2e8f0' } }, tr('Teacher check-in'))
               )),
-              ce('tbody', null, visibleStudentActivityRows.map(function (row) {
+              ce('tbody', null, visibleStudentActivityRows.slice(0, studentActivityVisibleLimit).map(function (row) {
                 const group = row.groupId && sessionGroups[row.groupId];
                 const checkIn = checkInsByUid[row.uid];
-                const checkInForActivePoll = !!(activePoll && checkIn && checkIn.activityId === activePoll.id);
-                const checkInPending = checkInForActivePoll && checkIn.status === 'sent';
-                const canCheckIn = !!(activePoll && row.connected && activeParticipantUidSet.has(String(row.uid)) && ['submitted', 'revised', 'complete'].indexOf(row.status) < 0);
+                const checkInForCurrentSupport = !!(checkIn && checkIn.activityId === currentSupportActivityId);
+                const checkInPending = checkInForCurrentSupport && checkIn.status === 'sent';
+                const canCheckIn = !!(row.connected && (!activePoll || (activeParticipantUidSet.has(String(row.uid)) && ['submitted', 'revised', 'complete'].indexOf(row.status) < 0)));
                 return ce('tr', { key: row.uid },
                   ce('th', { scope: 'row', style: { padding: '0.45rem 0.55rem', borderBottom: '1px solid #f1f5f9', color: '#0f172a', textAlign: 'left' } }, row.name, group ? ce('span', { style: { display: 'block', color: '#64748b', fontSize: '0.65rem', fontWeight: 600 } }, group.name || row.groupId) : null),
                   ce('td', { style: { padding: '0.45rem 0.55rem', borderBottom: '1px solid #f1f5f9', color: row.connected ? '#166534' : '#64748b', fontWeight: 750 } }, row.connected ? tr('Connected') : tr('Offline')),
@@ -3989,15 +4630,16 @@
                     canCheckIn ? ce('button', {
                       type: 'button', disabled: checkInPending,
                       onClick: function () { sendTeacherCheckIn(row); },
-                      'aria-label': (checkInForActivePoll && checkIn.status === 'help' ? tr('Check in again with') : tr('Check in with')) + ' ' + row.name,
-                      style: { minHeight: 40, padding: '0.3rem 0.55rem', border: '1px solid ' + (checkInForActivePoll && checkIn.status === 'help' ? '#dc2626' : '#2563eb'), borderRadius: 6, background: 'white', color: checkInPending ? '#94a3b8' : checkInForActivePoll && checkIn.status === 'help' ? '#b91c1c' : '#1d4ed8', cursor: checkInPending ? 'default' : 'pointer', fontWeight: 850, fontSize: '0.68rem' }
-                    }, checkInPending ? tr('Check-in sent') : checkInForActivePoll && checkIn.status === 'help' ? tr('Needs help - check again') : tr('Check in')) : ce('span', { style: { color: '#94a3b8', fontSize: '0.67rem' } }, row.connected ? tr('No check-in needed') : tr('Reconnect needed')),
-                    checkInForActivePoll && checkIn.status === 'working' ? ce('span', { role: 'status', style: { display: 'block', marginTop: 3, color: '#166534', fontSize: '0.65rem', fontWeight: 850 } }, tr('Student says they are working')) : null,
-                    checkInForActivePoll && checkIn.status === 'help' ? ce('span', { role: 'status', style: { display: 'block', marginTop: 3, color: '#b91c1c', fontSize: '0.65rem', fontWeight: 850 } }, tr('Student asked for help')) : null
+                      'aria-label': (checkInForCurrentSupport && checkIn.status === 'help' ? tr('Check in again with') : tr('Check in with')) + ' ' + row.name,
+                      style: { minHeight: 40, padding: '0.3rem 0.55rem', border: '1px solid ' + (checkInForCurrentSupport && checkIn.status === 'help' ? '#dc2626' : '#2563eb'), borderRadius: 6, background: 'white', color: checkInPending ? '#94a3b8' : checkInForCurrentSupport && checkIn.status === 'help' ? '#b91c1c' : '#1d4ed8', cursor: checkInPending ? 'default' : 'pointer', fontWeight: 850, fontSize: '0.68rem' }
+                    }, checkInPending ? tr('Check-in sent') : checkInForCurrentSupport && checkIn.status === 'help' ? tr('Needs help - check again') : tr('Check in')) : ce('span', { style: { color: '#94a3b8', fontSize: '0.67rem' } }, row.connected ? tr('No check-in needed') : tr('Reconnect needed')),
+                    checkInForCurrentSupport && checkIn.status === 'working' ? ce('span', { role: 'status', style: { display: 'block', marginTop: 3, color: '#166534', fontSize: '0.65rem', fontWeight: 850 } }, tr('Student says they are working')) : null,
+                    checkInForCurrentSupport && checkIn.status === 'help' ? ce('span', { role: 'status', style: { display: 'block', marginTop: 3, color: '#b91c1c', fontSize: '0.65rem', fontWeight: 850 } }, tr('Student asked for help')) : null
                   )
                 );
               }))
-            )
+            ),
+            visibleStudentActivityRows.length > studentActivityVisibleLimit ? ce('button', { type: 'button', onClick: function () { setStudentActivityVisibleLimit(function (limit) { return limit + 50; }); }, style: { width: '100%', minHeight: 44, border: 'none', borderTop: '1px solid #dbeafe', background: '#eff6ff', color: '#1d4ed8', fontWeight: 850, cursor: 'pointer' } }, tr('Show 50 more students') + ' (' + (visibleStudentActivityRows.length - studentActivityVisibleLimit) + ' ' + tr('remaining') + ')') : null
           ) : ce('p', { style: { margin: '0.6rem 0 0', color: '#64748b', fontSize: '0.75rem' } }, studentActivityRows.length ? tr('No students match this activity filter.') : tr('Students will appear here when they join the session.'))
           )
         ),
@@ -4195,12 +4837,13 @@
           ) : null
         ),
         activePoll ? ce('div', { 'data-live-workspace-section': 'active', tabIndex: -1, style: { scrollMarginTop: 76, border: '1px solid #c7d2fe', background: '#eef2ff', borderRadius: 8, padding: '0.75rem' } },
-          ce('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 } },
+          ce('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8, flexWrap: 'wrap' } },
             ce('div', null,
               ce('div', { style: { fontSize: '0.75rem', color: '#1e3a8a', fontWeight: 700, textTransform: 'uppercase' } }, activePoll.type),
               ce('div', { style: { fontWeight: 600, marginTop: 2 } }, activePoll.prompt)
             ),
             ce('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap', justifyContent: 'flex-end' } },
+              activePoll.type === 'wordcloud' ? ce('button', { type: 'button', onClick: function () { setWordCloudCollectionLocked(!activePoll.submissionsLocked); }, style: { minHeight: 40, padding: '0.35rem 0.7rem', borderRadius: 6, border: '1px solid #b45309', background: activePoll.submissionsLocked ? '#fffbeb' : 'white', color: '#92400e', cursor: 'pointer', fontWeight: 800, fontSize: '0.8rem' } }, activePoll.submissionsLocked ? tr('Resume collecting') : tr('Pause and review')) : null,
               !activeFeedbackConfig.enabled ? ce('button', { onClick: shareResults, disabled: !canShareActiveResults, style: { padding: '0.35rem 0.7rem', borderRadius: 6, border: '1px solid ' + (!canShareActiveResults ? '#cbd5e1' : '#2563eb'), background: 'white', color: !canShareActiveResults ? '#94a3b8' : '#1d4ed8', cursor: !canShareActiveResults ? 'default' : 'pointer', fontWeight: 700, fontSize: '0.8rem' } }, activePoll.type === 'wordcloud' ? (lastSharedResultsAt ? tr('Reveal updated word cloud') : tr('Reveal approved word cloud')) : (lastSharedResultsAt ? tr('Share updated results') : tr('Share anonymous results'))) : null,
               ce('button', { onClick: requestClosePoll, style: { minHeight: 40, padding: '0.35rem 0.7rem', borderRadius: 6, border: '1px solid #b91c1c', background: 'white', color: '#b91c1c', cursor: 'pointer', fontWeight: 700, fontSize: '0.8rem' } }, tr('End poll'))
             )
@@ -4212,6 +4855,25 @@
           ce('div', { style: { marginTop: 8, height: 8, borderRadius: 999, background: '#dbeafe', overflow: 'hidden' }, role: 'progressbar', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': responsePercent, 'aria-label': tr('Poll response progress') },
             ce('div', { style: { width: responsePercent + '%', height: '100%', background: responsePercent >= 100 ? '#16a34a' : '#2563eb', transition: 'width 180ms ease' } })
           ),
+          activeIncompleteUids.length ? ce('section', { 'aria-label': tr('Follow up with incomplete students'), style: { marginTop: 9, padding: '0.6rem', border: '1px solid #fcd34d', borderRadius: 8, background: '#fffbeb' } },
+            ce('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' } },
+              ce('div', null,
+                ce('strong', { style: { color: '#78350f', fontSize: '0.76rem' } }, activeIncompleteUids.length + ' ' + tr(activeIncompleteUids.length === 1 ? 'student has not responded' : 'students have not responded')),
+                ce('div', { style: { marginTop: 2, color: '#92400e', fontSize: '0.67rem' } }, tr('Follow up privately without exposing response content.'))
+              ),
+              ce('div', { style: { display: 'flex', gap: 5, flexWrap: 'wrap' } },
+                ce('button', { type: 'button', onClick: function () { setStudentActivityExpanded(true); setStudentActivityFilter('in-progress'); setStudentActivityQuery(''); jumpToLiveWorkspaceSection('students'); }, style: { minHeight: 40, padding: '0.35rem 0.55rem', border: '1px solid #b45309', borderRadius: 6, background: 'white', color: '#92400e', fontWeight: 850, fontSize: '0.68rem', cursor: 'pointer' } }, tr('View incomplete')),
+                ce('button', { type: 'button', onClick: sendCheckInToIncomplete, style: { minHeight: 40, padding: '0.35rem 0.55rem', border: '1px solid #7c3aed', borderRadius: 6, background: 'white', color: '#6d28d9', fontWeight: 850, fontSize: '0.68rem', cursor: 'pointer' } }, tr('Check in with all')),
+                (onSendToStudents || onSendToStudent) && followUpResourceId ? ce('button', { type: 'button', disabled: !!actionQueueBusyUid, onClick: sendResourceToIncomplete, style: { minHeight: 40, padding: '0.35rem 0.55rem', border: '1px solid #2563eb', borderRadius: 6, background: 'white', color: actionQueueBusyUid ? '#94a3b8' : '#1d4ed8', fontWeight: 850, fontSize: '0.68rem', cursor: actionQueueBusyUid ? 'default' : 'pointer' } }, actionQueueBusyUid === '__incomplete__' ? tr('Sending...') : tr('Send selected resource')) : null
+              )
+            ),
+            resources.length ? ce('label', { style: { display: 'block', marginTop: 6, color: '#78350f', fontSize: '0.66rem', fontWeight: 850 } }, tr('Optional follow-up resource'),
+              ce('select', { value: followUpResourceId, onChange: function (event) { setFollowUpResourceId(event.target.value); }, style: { display: 'block', width: '100%', minHeight: 40, marginTop: 3, padding: '0.35rem 0.5rem', border: '1px solid #fcd34d', borderRadius: 6, background: 'white' } },
+                ce('option', { value: '' }, tr('Choose a resource')),
+                resources.slice(0, 250).map(function (resource) { return ce('option', { key: resource.id, value: resource.id }, resource.title || resource.label || resource.id); })
+              )
+            ) : null
+          ) : null,
           activeFeedbackConfig.enabled ? ce(FeedbackResponseGallery, {
             participants: feedbackParticipants,
             feedbackByUid: feedbackForActive,
@@ -4228,12 +4890,20 @@
             onSendToGroup: onSendToGroup,
           }) : null,
           activePoll.type === 'wordcloud' ? ce('div', { style: { marginTop: 10, background: 'rgba(255,255,255,0.82)', border: '1px solid #fed7aa', borderRadius: 8, padding: '0.65rem', display: 'flex', flexDirection: 'column', gap: 8 } },
+            ce('ol', { 'aria-label': tr('Word cloud workflow'), style: { display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 5, listStyle: 'none', padding: 0, margin: 0 } },
+              [
+                { label: tr('1. Collect'), active: !activePoll.submissionsLocked && !lastSharedResultsAt, done: !!activePoll.submissionsLocked || !!lastSharedResultsAt },
+                { label: tr('2. Review'), active: !!activePoll.submissionsLocked && !lastSharedResultsAt, done: !!lastSharedResultsAt },
+                { label: tr('3. Reveal'), active: !!lastSharedResultsAt, done: false },
+              ].map(function (step) { return ce('li', { key: step.label, 'aria-current': step.active ? 'step' : undefined, style: { minWidth: 0, padding: '0.35rem 0.3rem', borderRadius: 6, background: step.active ? '#9a3412' : step.done ? '#dcfce7' : '#f1f5f9', color: step.active ? 'white' : step.done ? '#166534' : '#64748b', textAlign: 'center', fontSize: '0.67rem', fontWeight: 900 } }, step.label); })
+            ),
             ce('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'center', flexWrap: 'wrap' } },
               ce('div', null,
                 ce('div', { style: { fontSize: '0.74rem', color: '#9a3412', fontWeight: 800, textTransform: 'uppercase' } }, tr('Teacher review')),
                 ce('div', { style: { marginTop: 2, fontSize: '0.75rem', color: '#475569' } }, tr('Hold, approve, or hide each normalized term before revealing the cloud.'))
               ),
               ce('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
+                ce('button', { type: 'button', onClick: suggestWordCloudClusters, disabled: wordCloudClusterBusy || !activePoll.submissionsLocked || approvedWordCloudUniqueCount < 2, title: !activePoll.submissionsLocked ? tr('Pause collection before grouping terms') : undefined, style: { minHeight: 44, padding: '0.35rem 0.65rem', borderRadius: 6, border: '1px solid ' + (activePoll.submissionsLocked && approvedWordCloudUniqueCount >= 2 ? '#7c3aed' : '#cbd5e1'), background: 'white', color: activePoll.submissionsLocked && approvedWordCloudUniqueCount >= 2 ? '#6d28d9' : '#94a3b8', cursor: wordCloudClusterBusy || !activePoll.submissionsLocked || approvedWordCloudUniqueCount < 2 ? 'default' : 'pointer', fontWeight: 800, fontSize: '0.75rem' } }, wordCloudClusterBusy ? tr('Finding groups...') : !activePoll.submissionsLocked ? tr('Pause to group terms') : tr('Suggest similar approved terms')),
                 Object.keys(activeWordCloudAliases).length ? ce('button', {
                   onClick: resetWordCloudAliases,
                   style: { minHeight: 44, padding: '0.35rem 0.65rem', borderRadius: 6, border: '1px solid #94a3b8', background: 'white', color: '#475569', cursor: 'pointer', fontWeight: 800, fontSize: '0.75rem' }
@@ -4245,6 +4915,19 @@
               ce('span', { style: { color: '#166534' } }, tr('Approved:') + ' ' + wordCloudStatusCounts.approved),
               ce('span', { style: { color: '#64748b' } }, tr('Hidden:') + ' ' + wordCloudStatusCounts.hidden)
             ),
+            wordCloudClusterNotice ? ce('p', { role: 'status', 'aria-live': 'polite', style: { margin: 0, color: '#6d28d9', fontSize: '0.7rem', fontWeight: 750 } }, wordCloudClusterNotice) : null,
+            wordCloudClusterSuggestions.length ? ce('div', { role: 'list', 'aria-label': tr('Suggested word cloud term groups'), style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: 6 } },
+              wordCloudClusterSuggestions.map(function (suggestion, suggestionIndex) {
+                return ce('article', { key: suggestion.label + '-' + suggestionIndex, role: 'listitem', style: { padding: '0.5rem', border: '1px solid #c4b5fd', borderRadius: 7, background: '#faf5ff' } },
+                  ce('strong', { style: { display: 'block', color: '#5b21b6', fontSize: '0.72rem' } }, suggestion.label),
+                  ce('span', { style: { display: 'block', marginTop: 2, color: '#64748b', fontSize: '0.66rem', overflowWrap: 'anywhere' } }, suggestion.members.join(' + ')),
+                  ce('div', { style: { display: 'flex', gap: 5, marginTop: 5 } },
+                    ce('button', { type: 'button', onClick: function () { applyWordCloudCluster(suggestion); }, style: { minHeight: 38, flex: 1, border: '1px solid #7c3aed', borderRadius: 5, background: 'white', color: '#6d28d9', fontSize: '0.66rem', fontWeight: 850, cursor: 'pointer' } }, tr('Apply group')),
+                    ce('button', { type: 'button', onClick: function () { setWordCloudClusterSuggestions(function (items) { return items.filter(function (_, index) { return index !== suggestionIndex; }); }); }, 'aria-label': tr('Dismiss suggested group') + ' ' + suggestion.label, style: { minHeight: 38, border: '1px solid #94a3b8', borderRadius: 5, background: 'white', color: '#475569', fontSize: '0.66rem', fontWeight: 850, cursor: 'pointer' } }, tr('Dismiss'))
+                  )
+                );
+              })
+            ) : null,
             summaryForActive.items.length > 0 ? renderWordCloudItems(summaryForActive.items, tr('Approved word cloud preview')) : ce('p', { style: { margin: 0, padding: '0.55rem', borderRadius: 6, background: '#f8fafc', color: '#64748b', fontSize: '0.78rem' } }, wordCloudTermsForActive.length > 0 ? tr('No terms are approved yet. Review the held terms below.') : tr('Waiting for student terms.')),
             wordCloudTermsForActive.length > 0 ? ce('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: 7 } },
               ce('div', { role: 'group', 'aria-label': tr('Filter word cloud moderation'), style: { display: 'flex', gap: 5, flexWrap: 'wrap', gridColumn: '1 / -1' } },
@@ -4292,8 +4975,8 @@
                 }, tr('Hide visible held') + ' (' + visiblePendingWordCloudTerms.length + ')')
               )
             ) : null,
-            visibleWordCloudTerms.length > 0 ? ce('div', { role: 'list', 'aria-label': tr('Word cloud moderation'), style: { display: 'flex', flexDirection: 'column', gap: 5, maxHeight: 280, overflow: 'auto' } },
-              visibleWordCloudTerms.map(function (item) {
+            visibleWordCloudTerms.length > 0 ? ce('div', { role: 'list', 'aria-label': tr('Word cloud moderation'), style: { display: 'flex', flexDirection: 'column', gap: 5, maxHeight: 320, overflow: 'auto' } },
+              visibleWordCloudTerms.slice(0, wordCloudVisibleLimit).map(function (item) {
                 return ce('div', { key: item.value, role: 'listitem', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 8, alignItems: 'center', padding: '0.4rem 0.5rem', background: 'white', border: '1px solid #e2e8f0', borderRadius: 6 } },
                   ce('span', { style: { minWidth: 0, overflowWrap: 'anywhere', fontSize: '0.82rem' } },
                     ce('strong', null, item.label),
@@ -4329,7 +5012,8 @@
                     ce('option', { value: 'hidden' }, tr('Hide'))
                   )
                 );
-              })
+              }),
+              visibleWordCloudTerms.length > wordCloudVisibleLimit ? ce('button', { type: 'button', onClick: function () { setWordCloudVisibleLimit(function (limit) { return limit + 60; }); }, style: { minHeight: 44, border: '1px solid #fed7aa', borderRadius: 6, background: '#fff7ed', color: '#9a3412', fontWeight: 850, cursor: 'pointer' } }, tr('Show 60 more terms') + ' (' + (visibleWordCloudTerms.length - wordCloudVisibleLimit) + ' ' + tr('remaining') + ')') : null
             ) : wordCloudTermsForActive.length > 0 ? ce('p', { role: 'status', style: { margin: 0, padding: '0.55rem', borderRadius: 6, background: '#fff7ed', color: '#9a3412', fontSize: '0.76rem', fontWeight: 750 } }, tr('No submitted terms match this moderation filter.')) : null
           ) : null,
           !activeFeedbackConfig.enabled && activePoll.type !== 'wordcloud' && summaryForActive && summaryForActive.items && summaryForActive.items.length > 0 ? ce('div', { style: { marginTop: 10, background: 'rgba(255,255,255,0.72)', border: '1px solid #dbeafe', borderRadius: 8, padding: '0.55rem', display: 'flex', flexDirection: 'column', gap: 6 } },
@@ -4477,6 +5161,37 @@
             })
           ) : null
         ) : ce('p', { style: { fontSize: '0.8rem', color: '#64748b', marginTop: 0 } }, tr('No active poll. Compose above and broadcast to start.')),
+        ce('section', { 'data-live-workspace-section': 'wrap-up', tabIndex: -1, 'aria-labelledby': 'live-session-wrap-up-title', style: { scrollMarginTop: 76, marginTop: '0.8rem', padding: '0.7rem', border: '1px solid #a7f3d0', borderRadius: 9, background: '#ecfdf5' } },
+          ce('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8, flexWrap: 'wrap' } },
+            ce('div', null,
+              ce('h3', { id: 'live-session-wrap-up-title', style: { margin: 0, color: '#065f46', fontSize: '0.9rem' } }, tr('Session wrap-up')),
+              ce('p', { style: { margin: '0.2rem 0 0', color: '#047857', fontSize: '0.68rem' } }, tr('A content-free readiness check before you end the live session.'))
+            ),
+            ce('button', { type: 'button', onClick: function () { setWrapUpExpanded(function (value) { return !value; }); }, 'aria-expanded': wrapUpExpanded, 'aria-controls': 'live-session-wrap-up-details', style: { minHeight: 40, padding: '0.35rem 0.55rem', border: '1px solid #059669', borderRadius: 6, background: 'white', color: '#047857', fontWeight: 850, fontSize: '0.68rem', cursor: 'pointer' } }, wrapUpExpanded ? tr('Hide wrap-up') : tr('Review and end'))
+          ),
+          ce('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: 6, marginTop: 7 } },
+            [
+              [tr('Duration'), formatLiveElapsed(sessionWrapUp.durationMs)],
+              [tr('Activities'), sessionWrapUp.activityCount],
+              [tr('Poll response rate'), sessionWrapUp.responseRate + '%'],
+              [tr('Needs attention'), sessionWrapUp.unresolvedCount],
+            ].map(function (metric) { return ce('div', { key: metric[0], style: { padding: '0.45rem', border: '1px solid #a7f3d0', borderRadius: 7, background: 'white' } }, ce('strong', { style: { display: 'block', color: '#064e3b', fontSize: '0.9rem' } }, metric[1]), ce('span', { style: { color: '#047857', fontSize: '0.64rem', fontWeight: 750 } }, metric[0])); })
+          ),
+          ce('div', { id: 'live-session-wrap-up-details', hidden: !wrapUpExpanded },
+            sessionWrapUp.unresolvedCount || sessionWrapUp.pendingQuestionCount || sessionWrapUp.incompleteUids.length ? ce('div', { role: 'status', style: { marginTop: 7, padding: '0.5rem', border: '1px solid #fcd34d', borderRadius: 7, background: '#fffbeb', color: '#78350f', fontSize: '0.68rem', lineHeight: 1.45 } },
+              sessionWrapUp.helpRequestCount ? sessionWrapUp.helpRequestCount + ' ' + tr('help requests') + '. ' : '',
+              sessionWrapUp.deliveryFailureCount ? sessionWrapUp.deliveryFailureCount + ' ' + tr('delivery failures') + '. ' : '',
+              sessionWrapUp.pendingQuestionCount ? sessionWrapUp.pendingQuestionCount + ' ' + tr('pending questions') + '. ' : '',
+              sessionWrapUp.incompleteUids.length ? sessionWrapUp.incompleteUids.length + ' ' + tr('students incomplete across polls') + '.' : ''
+            ) : ce('p', { role: 'status', style: { margin: '7px 0 0', color: '#166534', fontSize: '0.7rem', fontWeight: 850 } }, tr('No unresolved live-session follow-ups are visible.')),
+            sessionWrapUp.timeline.length ? ce('ol', { 'aria-label': tr('Live session activity timeline'), style: { margin: '7px 0 0', paddingLeft: '1.25rem', color: '#334155', fontSize: '0.68rem' } }, sessionWrapUp.timeline.slice(0, 8).map(function (item) { return ce('li', { key: item.id, style: { marginBottom: 3 } }, tr(item.kind) + ' · ' + item.responded + '/' + item.invited + ' ' + tr('completed') + ' · ' + tr(item.phase)); })) : null,
+            ce('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 8 } },
+              sessionWrapUp.unresolvedCount ? ce('button', { type: 'button', onClick: function () { setStudentActivityExpanded(true); setStudentActivityFilter('attention'); setStudentActivityQuery(''); jumpToLiveWorkspaceSection('students'); }, style: { minHeight: 42, padding: '0.4rem 0.65rem', border: '1px solid #b45309', borderRadius: 6, background: 'white', color: '#92400e', fontWeight: 850, fontSize: '0.7rem', cursor: 'pointer' } }, tr('Review needs attention')) : null,
+              ce('button', { type: 'button', onClick: openAlloSheetReview, disabled: !activePoll && completedPolls.length === 0, style: { minHeight: 42, padding: '0.4rem 0.65rem', border: '1px solid #2563eb', borderRadius: 6, background: 'white', color: (!activePoll && completedPolls.length === 0) ? '#94a3b8' : '#1d4ed8', fontWeight: 850, fontSize: '0.7rem', cursor: (!activePoll && completedPolls.length === 0) ? 'default' : 'pointer' } }, tr('Review aggregates')),
+              onRequestEndSession ? ce('button', { type: 'button', onClick: onRequestEndSession, style: { minHeight: 42, padding: '0.4rem 0.65rem', border: '1px solid #b91c1c', borderRadius: 6, background: '#b91c1c', color: 'white', fontWeight: 850, fontSize: '0.7rem', cursor: 'pointer' } }, tr('End live session')) : null
+            )
+          )
+        ),
         completedPolls.length ? ce('section', { 'data-live-workspace-section': 'recent', tabIndex: -1, 'aria-labelledby': 'live-recent-polls-title', style: { scrollMarginTop: 76, marginTop: '0.8rem', padding: '0.7rem', border: '1px solid #e2e8f0', borderRadius: 9, background: '#f8fafc' } },
           ce('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'center', flexWrap: 'wrap' } },
             ce('h3', { id: 'live-recent-polls-title', style: { margin: 0, color: '#0f172a', fontSize: '0.9rem' } }, tr('Recent polls')),
@@ -4487,11 +5202,15 @@
               const poll = entry && entry.poll ? entry.poll : {};
               const responseCount = uniqueResponsesForSummary(entry.responses || []).length;
               const audienceCount = Math.max(0, Number(entry.audienceCount) || 0);
+              const completedUidSet = new Set(uniqueResponsesForSummary(entry.responses || []).map(function (row) { return String(row && row.uid || ''); }).filter(Boolean));
+              const connectedUidSet = new Set(guests.map(function (guest) { return String(guest && guest.uid || ''); }).filter(Boolean));
+              const incompleteConnectedCount = (Array.isArray(entry.audienceUids) ? entry.audienceUids : []).map(String).filter(function (uid) { return uid && !completedUidSet.has(uid) && connectedUidSet.has(uid); }).length;
               return ce('div', { key: poll.id || String(entry.endedAt), role: 'listitem', style: { minWidth: 0, padding: '0.55rem', border: '1px solid #cbd5e1', borderRadius: 7, background: 'white' } },
                 ce('div', { style: { color: '#475569', fontSize: '0.65rem', fontWeight: 850, textTransform: 'uppercase' } }, tr(poll.type || 'poll')),
                 ce('div', { title: poll.prompt || '', style: { marginTop: 2, color: '#0f172a', fontSize: '0.76rem', fontWeight: 750, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, poll.prompt || tr('Untitled poll')),
                 ce('div', { style: { marginTop: 4, color: '#64748b', fontSize: '0.68rem', fontVariantNumeric: 'tabular-nums' } }, responseCount + ' / ' + audienceCount + ' ' + tr('responded')),
-                ce('button', { type: 'button', disabled: !!activePoll, onClick: function () { reuseCompletedPoll(entry); }, style: { width: '100%', minHeight: 40, marginTop: 6, padding: '0.35rem 0.55rem', border: '1px solid #2563eb', borderRadius: 6, background: 'white', color: activePoll ? '#94a3b8' : '#1d4ed8', cursor: activePoll ? 'default' : 'pointer', fontWeight: 850, fontSize: '0.7rem' } }, activePoll ? tr('Finish active poll first') : tr('Use again'))
+                ce('button', { type: 'button', disabled: !!activePoll, onClick: function () { reuseCompletedPoll(entry); }, style: { width: '100%', minHeight: 40, marginTop: 6, padding: '0.35rem 0.55rem', border: '1px solid #2563eb', borderRadius: 6, background: 'white', color: activePoll ? '#94a3b8' : '#1d4ed8', cursor: activePoll ? 'default' : 'pointer', fontWeight: 850, fontSize: '0.7rem' } }, activePoll ? tr('Finish active poll first') : tr('Use again')),
+                incompleteConnectedCount ? ce('button', { type: 'button', disabled: !!activePoll, onClick: function () { relaunchCompletedPollForIncomplete(entry); }, style: { width: '100%', minHeight: 40, marginTop: 5, padding: '0.35rem 0.55rem', border: '1px solid #b45309', borderRadius: 6, background: '#fffbeb', color: activePoll ? '#94a3b8' : '#92400e', cursor: activePoll ? 'default' : 'pointer', fontWeight: 850, fontSize: '0.7rem' } }, tr('Relaunch for incomplete') + ' (' + incompleteConnectedCount + ')') : null
               );
             })
           )
@@ -4564,9 +5283,11 @@
     // Off by default: host and guest shells must explicitly opt into Q&A.
     const sessionQaOptIn = props.enableSessionQa === true;
     const enabled = !!(sessionCode && userUid && props.enabled && hostActive !== false);
+    const sessionSupportActivityId = buildLiveSessionSupportActivityId(sessionCode);
     const guestRef = R.useRef(null);
     const pollDialogRef = R.useRef(null);
     const [activePoll, setActivePoll] = R.useState(null);
+    const [pollMinimized, setPollMinimized] = R.useState(false);
     const [submitted, setSubmitted] = R.useState(false);
     const [responseValue, setResponseValue] = R.useState('');
     const [sharedResults, setSharedResults] = R.useState(null);
@@ -4576,9 +5297,13 @@
     const [peerVoteResults, setPeerVoteResults] = R.useState(null);
     const [sessionQaState, setSessionQaState] = R.useState(null);
     const [sessionQaViewOpen, setSessionQaViewOpen] = R.useState(false);
-    const [sessionQaDraft, setSessionQaDraft] = R.useState('');
+    const [sessionQaDraft, setSessionQaDraft] = R.useState(function () {
+      const restored = readLiveSessionQaDraft(sessionCode, userUid);
+      return restored ? restored.text : '';
+    });
     const [sessionQaSortMode, setSessionQaSortMode] = R.useState('latest');
     const [sessionQaNotice, setSessionQaNotice] = R.useState(null);
+    const [supportTrayExpanded, setSupportTrayExpanded] = R.useState(false);
     const [connectionState, setConnectionState] = R.useState('idle');
     const [submitNotice, setSubmitNotice] = R.useState(null);
     const [teacherCheckIn, setTeacherCheckIn] = R.useState(null);
@@ -4589,6 +5314,7 @@
     const studentPollIdRef = R.useRef(null);
     const statusSentRef = R.useRef('');
     const helpRequestedRef = R.useRef(false);
+    const helpActivityIdRef = R.useRef('');
     // Auto-rejoin: bumping joinNonce re-runs the join effect with a fresh
     // PollingGuest (fresh offer/signaling doc). The host accepts re-offers,
     // so this is the student half of the reconnect story.
@@ -4596,6 +5322,8 @@
     const retryCountRef = R.useRef(0);
     const retryTimerRef = R.useRef(null);
     const hostNonceRef = R.useRef(hostNonce);
+    const guestTransportKind = normalizeLiveTransportKind(props.transportKind);
+    const guestTransportLabel = guestTransportKind === 'mailbox' ? tr('Google Mailbox live') : guestTransportKind === 'lan' ? tr('Local network live') : tr('Firebase live');
 
     R.useEffect(function () {
       if (!enabled) return undefined;
@@ -4633,30 +5361,39 @@
           setActivePoll(p);
           setSharedResults(null);
           if (!samePoll) {
+            const savedDraft = p ? readLivePollDraft(sessionCode, userUid, p.id) : null;
             setPeerShowcase(null);
             setPeerVoteSelection('');
             setPeerVoteSubmitted(false);
             setPeerVoteResults(null);
             setSubmitted(false);
-            setResponseValue('');
+            setResponseValue(savedDraft && savedDraft.type === p.type ? savedDraft.value : '');
             setSubmittedResponse('');
             setStudentFeedback(null);
             setTeacherCheckIn(null);
             setHelpRequested(false);
+            helpRequestedRef.current = false;
+            helpActivityIdRef.current = '';
             setCurrentAttempt(1);
             statusSentRef.current = '';
+            setPollMinimized(false);
+            if (savedDraft && savedDraft.type === p.type) setSubmitNotice(tr('Draft restored from this browser.'));
           }
-          setSubmitNotice(null);
+          if (samePoll) setSubmitNotice(p && p.type === 'wordcloud' && p.submissionsLocked ? tr('The teacher paused new terms while reviewing the word cloud. Your draft is still saved.') : null);
         },
         onPollClose: function (payload) {
           setActivePoll(function (current) {
             if (!shouldApplyPollClose(current, payload)) return current;
+            if (current) clearLivePollDraft(sessionCode, userUid, current.id);
             setSubmitted(false);
             setResponseValue('');
             setSubmittedResponse('');
             setStudentFeedback(null);
             setTeacherCheckIn(null);
             setHelpRequested(false);
+            helpRequestedRef.current = false;
+            helpActivityIdRef.current = '';
+            setPollMinimized(false);
             setCurrentAttempt(1);
             studentPollIdRef.current = null;
             statusSentRef.current = '';
@@ -4668,10 +5405,14 @@
           });
         },
         onPollResults: function (summary) {
+          clearLivePollDraft(sessionCode, userUid, (summary && summary.pollId) || studentPollIdRef.current);
           setSharedResults(summary); setActivePoll(null); setSubmitted(false); setResponseValue('');
           setSubmittedResponse(''); setStudentFeedback(null); setCurrentAttempt(1);
           setTeacherCheckIn(null);
           setHelpRequested(false);
+          helpRequestedRef.current = false;
+          helpActivityIdRef.current = '';
+          setPollMinimized(false);
           setPeerShowcase(null); setPeerVoteSelection(''); setPeerVoteSubmitted(false);
           studentPollIdRef.current = null; statusSentRef.current = ''; setSubmitNotice(null);
         },
@@ -4719,10 +5460,10 @@
           });
         },
         onCheckIn: function (packet) {
-          setActivePoll(function (current) {
-            if (current && current.id === packet.activityId) setTeacherCheckIn(Object.assign({}, packet, { status: 'received' }));
-            return current;
-          });
+          if (packet && (packet.activityId === sessionSupportActivityId || packet.activityId === studentPollIdRef.current)) {
+            setTeacherCheckIn(Object.assign({}, packet, { status: 'received' }));
+            setSupportTrayExpanded(true);
+          }
         },
         onHostClosed: function () {
           // Terminal event: the teacher closed the polling panel. Force-clear
@@ -4730,12 +5471,15 @@
           // channel; keep already-shared results readable. Rejoin quietly in
           // the background so we reconnect if the teacher reopens the panel.
           setActivePoll(null);
+          setPollMinimized(false);
           setSubmitted(false);
           setResponseValue('');
           setSubmittedResponse('');
           setStudentFeedback(null);
           setTeacherCheckIn(null);
           setHelpRequested(false);
+          helpRequestedRef.current = false;
+          helpActivityIdRef.current = '';
           setCurrentAttempt(1);
           setPeerShowcase(null);
           setPeerVoteSelection('');
@@ -4743,7 +5487,6 @@
           setPeerVoteResults(null);
           setSessionQaState(null);
           setSessionQaViewOpen(false);
-          setSessionQaDraft('');
           setSessionQaNotice(null);
           studentPollIdRef.current = null;
           statusSentRef.current = '';
@@ -4755,7 +5498,7 @@
           retryCountRef.current = 0;
           setConnectionState('connected');
           setSubmitNotice(null);
-          if (helpRequestedRef.current && studentPollIdRef.current) guest.sendHelpRequest(studentPollIdRef.current, true);
+          if (helpRequestedRef.current && helpActivityIdRef.current) guest.sendHelpRequest(helpActivityIdRef.current, true);
         },
         onDisconnected: function () { setConnectionState('reconnecting'); scheduleRejoin(); },
         onFailed: function () {
@@ -4774,6 +5517,20 @@
     }, [enabled, sessionCode, userUid, codename, joinNonce, hostNonce, sessionQaOptIn]);
 
     R.useEffect(function () { helpRequestedRef.current = helpRequested; }, [helpRequested]);
+
+    R.useEffect(function () {
+      const restored = readLiveSessionQaDraft(sessionCode, userUid);
+      setSessionQaDraft(restored ? restored.text : '');
+    }, [sessionCode, userUid]);
+
+    R.useEffect(function () {
+      writeLiveSessionQaDraft(sessionCode, userUid, sessionQaDraft);
+    }, [sessionCode, userUid, sessionQaDraft]);
+
+    R.useEffect(function () {
+      if (!activePoll || submitted) return;
+      writeLivePollDraft(sessionCode, userUid, activePoll, responseValue);
+    }, [sessionCode, userUid, activePoll, responseValue, submitted]);
 
     R.useEffect(function () {
       if (!activePoll || !isFeedbackPoll(activePoll) || submitted) return;
@@ -4914,6 +5671,7 @@
         const clientQuestionId = 'qa-client-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8);
         if (guestRef.current.sendSessionQaQuestion(normalizedDraft, clientQuestionId)) {
           setSessionQaDraft('');
+          clearLiveSessionQaDraft(sessionCode, userUid);
           setSessionQaNotice(tr('Question sent for teacher review.'));
         } else {
           setSessionQaNotice(tr('Connection lost — reconnecting. Your question was not sent.'));
@@ -5007,14 +5765,98 @@
       );
     };
 
-    const pollDialogVisible = !!(enabled && activePoll && !peerVoteResults && !peerShowcase && !sharedResults && !sessionQaViewOpen);
+    const currentStudentSupportActivityId = activePoll ? activePoll.id : sessionSupportActivityId;
+    const teacherCheckInForCurrentSupport = !!(teacherCheckIn && teacherCheckIn.activityId === currentStudentSupportActivityId);
+    const answerTeacherCheckIn = function (status) {
+      if (!teacherCheckInForCurrentSupport || !guestRef.current || connectionState !== 'connected') {
+        setSubmitNotice(tr('Reconnect to answer the teacher check-in.'));
+        return;
+      }
+      const sent = guestRef.current.sendCheckInAck(teacherCheckIn.id, teacherCheckIn.activityId, status);
+      if (!sent) {
+        setSubmitNotice(tr('Your check-in answer was not sent. Please try again.'));
+        return;
+      }
+      if (status === 'working' && helpRequested) {
+        const helpActivityId = helpActivityIdRef.current || teacherCheckIn.activityId;
+        if (guestRef.current.sendHelpRequest(helpActivityId, false)) {
+          setHelpRequested(false);
+          helpRequestedRef.current = false;
+          helpActivityIdRef.current = '';
+        }
+      }
+      if (status === 'help') {
+        setHelpRequested(true);
+        helpRequestedRef.current = true;
+        helpActivityIdRef.current = teacherCheckIn.activityId;
+      }
+      setTeacherCheckIn(function (current) { return current ? Object.assign({}, current, { status: status }) : current; });
+      setSubmitNotice(null);
+    };
+    const toggleHelpRequest = function () {
+      if (!guestRef.current || connectionState !== 'connected') {
+        setSubmitNotice(tr('Reconnect to update your help request.'));
+        return;
+      }
+      const next = !helpRequested;
+      const activityId = next ? currentStudentSupportActivityId : (helpActivityIdRef.current || currentStudentSupportActivityId);
+      if (!guestRef.current.sendHelpRequest(activityId, next)) {
+        setSubmitNotice(tr('Your help request was not sent. Please try again.'));
+        return;
+      }
+      setHelpRequested(next);
+      helpRequestedRef.current = next;
+      helpActivityIdRef.current = next ? activityId : '';
+      setSubmitNotice(next ? tr('Your teacher can now see that you requested help.') : tr('Your help request was cancelled.'));
+    };
+    const renderLiveSupportTray = function () {
+      const qaAvailable = !!(sessionQaOptIn && sessionQaState && sessionQaState.enabled);
+      const connectionLabel = connectionState === 'connected' ? tr('Connected') : connectionState === 'failed' ? tr('Direct connection unavailable') : connectionState === 'reconnecting' ? tr('Reconnecting') : tr('Connecting');
+      if (!supportTrayExpanded) return ce('aside', { 'aria-label': tr('Live session support'), style: { position: 'fixed', right: 'max(0.75rem, env(safe-area-inset-right))', bottom: 'max(0.75rem, env(safe-area-inset-bottom))', zIndex: 9998, width: 'min(420px, calc(100vw - 1.5rem))', boxSizing: 'border-box', display: 'flex', alignItems: 'center', gap: 7, flexWrap: 'wrap', padding: '0.5rem', border: '1px solid #c4b5fd', borderRadius: 999, background: 'rgba(255,255,255,0.98)', boxShadow: '0 10px 28px rgba(15,23,42,0.22)' } },
+        ce('span', { role: 'status', 'aria-label': connectionLabel, title: guestTransportLabel + ' - ' + connectionLabel, style: { width: 10, height: 10, flex: '0 0 10px', borderRadius: 999, background: connectionState === 'connected' ? '#16a34a' : connectionState === 'failed' ? '#dc2626' : '#f59e0b' } }),
+        ce('strong', { style: { color: '#312e81', fontSize: '0.72rem' } }, activePoll ? (activePoll.submissionsLocked ? tr('Teacher reviewing') : submitted ? tr('Response sent') : tr('Activity ready')) : tr('Live session')),
+        helpRequested ? ce('span', { style: { padding: '0.15rem 0.35rem', borderRadius: 999, background: '#fee2e2', color: '#991b1b', fontSize: '0.61rem', fontWeight: 900 } }, tr('Help requested')) : null,
+        activePoll ? ce('button', { type: 'button', onClick: function () { setPollMinimized(false); }, style: { minHeight: 40, marginLeft: 'auto', padding: '0.3rem 0.55rem', border: '1px solid #2563eb', borderRadius: 999, background: 'white', color: '#1d4ed8', fontWeight: 900, fontSize: '0.66rem', cursor: 'pointer' } }, tr('Open activity')) : null,
+        ce('button', { type: 'button', onClick: function () { setSupportTrayExpanded(true); }, 'aria-expanded': false, style: { minWidth: 40, minHeight: 40, marginLeft: activePoll ? 0 : 'auto', border: '1px solid #7c3aed', borderRadius: 999, background: '#f5f3ff', color: '#6d28d9', fontWeight: 900, fontSize: '0.66rem', cursor: 'pointer' } }, teacherCheckInForCurrentSupport ? tr('Check in') : tr('Support'))
+      );
+      return ce('aside', { 'aria-label': tr('Live session support'), style: { position: 'fixed', right: 'max(0.75rem, env(safe-area-inset-right))', bottom: 'max(0.75rem, env(safe-area-inset-bottom))', zIndex: 9998, width: 'min(360px, calc(100vw - 1.5rem))', boxSizing: 'border-box', padding: '0.75rem', border: '1px solid #c4b5fd', borderRadius: 12, background: 'rgba(255,255,255,0.98)', boxShadow: '0 14px 36px rgba(15,23,42,0.24)' } },
+        ce('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 } },
+          ce('div', null,
+            ce('strong', { style: { display: 'block', color: '#312e81', fontSize: '0.82rem' } }, tr('Live session')),
+            ce('span', { role: 'status', 'aria-live': 'polite', style: { color: connectionState === 'connected' ? '#166534' : connectionState === 'failed' ? '#b91c1c' : '#b45309', fontSize: '0.63rem', fontWeight: 900 } }, guestTransportLabel + ' · ' + connectionLabel)
+          ),
+          ce('button', { type: 'button', onClick: function () { setSupportTrayExpanded(false); }, 'aria-expanded': true, 'aria-label': tr('Collapse live session support'), style: { minWidth: 40, minHeight: 40, border: '1px solid #c4b5fd', borderRadius: 999, background: 'white', color: '#6d28d9', fontWeight: 900, cursor: 'pointer' } }, tr('Collapse'))
+        ),
+        activePoll ? ce('section', { style: { marginTop: 7, padding: '0.55rem', border: '1px solid #bfdbfe', borderRadius: 7, background: '#eff6ff' } },
+          ce('strong', { style: { display: 'block', color: '#1e3a8a', fontSize: '0.73rem' } }, activePoll.submissionsLocked ? tr('Teacher is reviewing') : submitted ? tr('Response sent') : tr('Activity in progress')),
+          ce('span', { style: { display: 'block', marginTop: 2, color: '#475569', fontSize: '0.68rem', lineHeight: 1.35, overflowWrap: 'anywhere' } }, activePoll.prompt),
+          !submitted ? ce('span', { style: { display: 'block', marginTop: 3, color: '#1d4ed8', fontSize: '0.64rem', fontWeight: 800 } }, tr('Your draft is saved only in this browser session.')) : null,
+          ce('button', { type: 'button', onClick: function () { setPollMinimized(false); }, style: { minHeight: 44, width: '100%', marginTop: 6, padding: '0.4rem 0.6rem', border: '1px solid #2563eb', borderRadius: 6, background: 'white', color: '#1d4ed8', fontWeight: 900, cursor: 'pointer' } }, submitted ? tr('Return to activity') : tr('Continue activity'))
+        ) : ce('p', { style: { margin: '0.5rem 0 0', color: '#64748b', fontSize: '0.68rem', lineHeight: 1.35 } }, tr('No poll is open. You can still request private support or respond to a teacher check-in.')),
+        teacherCheckInForCurrentSupport ? ce('section', { role: 'status', 'aria-live': 'assertive', 'aria-label': tr('Private teacher check-in'), style: { marginTop: 7, padding: '0.55rem', border: '2px solid #7c3aed', borderRadius: 7, background: '#f5f3ff', color: '#4c1d95' } },
+          ce('strong', { style: { display: 'block', fontSize: '0.72rem' } }, tr('Your teacher is checking in privately.')),
+          ce('p', { style: { margin: '0.25rem 0 0', fontSize: '0.67rem', lineHeight: 1.35 } }, teacherCheckIn.status === 'received' ? tr('Share only whether you are continuing or would like support.') : teacherCheckIn.status === 'help' ? tr('Your teacher can see that you would like help.') : tr('Your teacher can see that you are working.')),
+          teacherCheckIn.status === 'received' ? ce('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 5, marginTop: 6 } },
+            ce('button', { type: 'button', onClick: function () { answerTeacherCheckIn('working'); }, disabled: connectionState !== 'connected', style: { minHeight: 44, padding: '0.35rem', border: '1px solid #16a34a', borderRadius: 6, background: 'white', color: '#166534', fontWeight: 850 } }, tr("I'm working")),
+            ce('button', { type: 'button', onClick: function () { answerTeacherCheckIn('help'); }, disabled: connectionState !== 'connected', style: { minHeight: 44, padding: '0.35rem', border: '1px solid #dc2626', borderRadius: 6, background: 'white', color: '#b91c1c', fontWeight: 850 } }, tr('I need help'))
+          ) : ce('button', { type: 'button', onClick: function () { setTeacherCheckIn(null); }, style: { minHeight: 44, width: '100%', marginTop: 6, border: '1px solid #7c3aed', borderRadius: 6, background: 'white', color: '#6d28d9', fontWeight: 850, cursor: 'pointer' } }, tr('Dismiss check-in'))
+        ) : null,
+        ce('div', { style: { display: 'grid', gridTemplateColumns: qaAvailable ? '1fr 1fr' : '1fr', gap: 5, marginTop: 7 } },
+          ce('button', { type: 'button', onClick: toggleHelpRequest, disabled: connectionState !== 'connected', 'aria-pressed': helpRequested, style: { minHeight: 44, padding: '0.4rem', border: '1px solid ' + (helpRequested ? '#dc2626' : '#7c3aed'), borderRadius: 6, background: helpRequested ? '#fef2f2' : 'white', color: connectionState === 'connected' ? (helpRequested ? '#b91c1c' : '#6d28d9') : '#94a3b8', fontWeight: 900, cursor: connectionState === 'connected' ? 'pointer' : 'default' } }, helpRequested ? tr('Cancel help request') : tr('Request help')),
+          qaAvailable ? ce('button', { type: 'button', onClick: function () { setSessionQaViewOpen(true); setSessionQaNotice(null); }, style: { minHeight: 44, padding: '0.4rem', border: '1px solid #38bdf8', borderRadius: 6, background: 'white', color: '#075985', fontWeight: 900, cursor: 'pointer' } }, tr('Ask / Q&A')) : null
+        ),
+        submitNotice ? ce('p', { role: 'status', 'aria-live': 'polite', style: { margin: '0.5rem 0 0', color: '#92400e', fontSize: '0.67rem', lineHeight: 1.35 } }, submitNotice) : null
+      );
+    };
+
+    const pollDialogVisible = !!(enabled && activePoll && !pollMinimized && !peerVoteResults && !peerShowcase && !sharedResults && !sessionQaViewOpen);
     useLivePollingDialogFocus(pollDialogRef, pollDialogVisible, function () {}, null);
     if (!enabled) return null;
     if (peerVoteResults) return renderPeerVoteResults(peerVoteResults);
     if (peerShowcase) return renderPeerShowcase(peerShowcase);
     if (sharedResults) return renderResultsSummary(sharedResults);
     if (sessionQaViewOpen && sessionQaOptIn && sessionQaState && sessionQaState.enabled) return renderSessionQaView();
-    if (!activePoll) return sessionQaOptIn && sessionQaState && sessionQaState.enabled ? renderSessionQaLauncher() : null;
+    if (!activePoll || pollMinimized) return renderLiveSupportTray();
 
     const feedbackConfig = normalizeFeedbackConfig(activePoll);
     const ratingScale = activePoll.type === 'rating' ? normalizeRatingScale(activePoll) : null;
@@ -5025,8 +5867,10 @@
         ? !!normalizeWordCloudTerm(responseValue)
         : !!String(responseValue || '').trim();
     const submissionTransportReady = connectionState === 'connected' || connectionState === 'failed';
-    const canSubmit = !submitted && !!guestRef.current && hasResponse && submissionTransportReady;
-    const submitButtonLabel = connectionState === 'failed'
+    const canSubmit = !submitted && activePoll.submissionsLocked !== true && !!guestRef.current && hasResponse && submissionTransportReady;
+    const submitButtonLabel = activePoll.submissionsLocked
+      ? tr('Teacher is reviewing - submissions paused')
+      : connectionState === 'failed'
       ? tr('Download response for teacher')
       : connectionState === 'reconnecting'
         ? tr('Reconnecting - keep editing')
@@ -5045,12 +5889,17 @@
       if (activePoll.type !== 'rating' && !String(payload).trim()) return;
       const finishSubmitted = function () {
         if (feedbackConfig.enabled || activePoll.afterSubmitMode === 'wait') setSubmitted(true);
-        else { setSubmitted(false); setResponseValue(''); setActivePoll(null); studentPollIdRef.current = null; }
+        else { setSubmitted(false); setResponseValue(''); setActivePoll(null); setPollMinimized(false); studentPollIdRef.current = null; }
       };
       const sent = guestRef.current.sendResponse(activePoll.id, payload, feedbackConfig.enabled ? { attempt: currentAttempt } : null);
       if (sent) {
+        clearLivePollDraft(sessionCode, userUid, activePoll.id);
         setSubmittedResponse(payload);
-        if (helpRequested && guestRef.current.sendHelpRequest(activePoll.id, false)) setHelpRequested(false);
+        if (helpRequested && guestRef.current.sendHelpRequest(helpActivityIdRef.current || activePoll.id, false)) {
+          setHelpRequested(false);
+          helpRequestedRef.current = false;
+          helpActivityIdRef.current = '';
+        }
         if (feedbackConfig.enabled) {
           setStudentFeedback(null);
           guestRef.current.sendResponseStatus(activePoll.id, 'submitted', currentAttempt);
@@ -5061,6 +5910,7 @@
       }
       else if (connectionState === 'failed') {
         exportResponseForFallback(activePoll.id, payload, codename);
+        clearLivePollDraft(sessionCode, userUid, activePoll.id);
         if (feedbackConfig.enabled) {
           setSubmittedResponse(payload);
           setSubmitNotice(tr('Your response was exported. A direct connection is required to receive private feedback and revise here.'));
@@ -5073,35 +5923,6 @@
         setSubmitNotice(tr('Connection lost — reconnecting. Your response was not sent; try again in a few seconds.'));
       }
     };
-    const answerTeacherCheckIn = function (status) {
-      if (!teacherCheckIn || !guestRef.current || connectionState !== 'connected') {
-        setSubmitNotice(tr('Reconnect to answer the teacher check-in.'));
-        return;
-      }
-      const sent = guestRef.current.sendCheckInAck(teacherCheckIn.id, teacherCheckIn.activityId, status);
-      if (!sent) {
-        setSubmitNotice(tr('Your check-in answer was not sent. Please try again.'));
-        return;
-      }
-      if (status === 'working' && helpRequested && guestRef.current.sendHelpRequest(teacherCheckIn.activityId, false)) setHelpRequested(false);
-      if (status === 'help') setHelpRequested(true);
-      setTeacherCheckIn(function (current) { return current ? Object.assign({}, current, { status: status }) : current; });
-      setSubmitNotice(null);
-    };
-    const toggleHelpRequest = function () {
-      if (!activePoll || !guestRef.current || connectionState !== 'connected') {
-        setSubmitNotice(tr('Reconnect to update your help request.'));
-        return;
-      }
-      const next = !helpRequested;
-      if (!guestRef.current.sendHelpRequest(activePoll.id, next)) {
-        setSubmitNotice(tr('Your help request was not sent. Please try again.'));
-        return;
-      }
-      setHelpRequested(next);
-      setSubmitNotice(next ? tr('Your teacher can now see that you requested help.') : tr('Your help request was cancelled.'));
-    };
-
     return ce('div', {
       ref: pollDialogRef,
       tabIndex: -1,
@@ -5110,12 +5931,16 @@
     },
       ce('div', { style: { background: 'white', maxWidth: 520, width: '100%', maxHeight: 'calc(100dvh - 2rem)', overflowY: 'auto', boxSizing: 'border-box', borderRadius: 12, padding: '1.25rem', boxShadow: '0 20px 50px rgba(0,0,0,0.3)' } },
         ce('div', { style: { fontSize: '0.75rem', color: '#1e3a8a', fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, feedbackConfig.enabled ? tr('Feedback response') + ' · ' + tr('Attempt') + ' ' + currentAttempt : (activePoll.type === 'rating' && ratingScale ? tr('rating') + ' ' + ratingScale.min + '-' + ratingScale.max : activePoll.type)),
-        ce('h2', { style: { margin: '0 0 0.55rem 0', fontSize: '1.15rem', color: '#0f172a' } }, activePoll.prompt),
+        ce('div', { style: { display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8, marginBottom: '0.55rem' } },
+          ce('h2', { style: { margin: 0, fontSize: '1.15rem', color: '#0f172a', minWidth: 0, overflowWrap: 'anywhere' } }, activePoll.prompt),
+          ce('button', { type: 'button', onClick: function () { setPollMinimized(true); }, 'aria-label': tr('Minimize activity and keep draft'), style: { minHeight: 44, flexShrink: 0, padding: '0.35rem 0.55rem', border: '1px solid #94a3b8', borderRadius: 6, background: 'white', color: '#334155', fontWeight: 850, cursor: 'pointer', fontSize: '0.68rem' } }, tr('Minimize'))
+        ),
         ce('div', { role: 'status', 'aria-live': 'polite', style: { display: 'flex', alignItems: 'center', gap: 6, margin: '0 0 0.75rem', padding: '0.42rem 0.55rem', borderRadius: 7, background: connectionState === 'connected' ? '#f0fdf4' : connectionState === 'failed' ? '#fef2f2' : '#fff7ed', border: '1px solid ' + (connectionState === 'connected' ? '#bbf7d0' : connectionState === 'failed' ? '#fecaca' : '#fed7aa'), color: connectionState === 'connected' ? '#166534' : connectionState === 'failed' ? '#991b1b' : '#9a3412', fontSize: '0.72rem', fontWeight: 800 } },
           ce('span', { 'aria-hidden': 'true' }, connectionState === 'connected' ? '●' : connectionState === 'failed' ? '!' : '↻'),
           connectionState === 'connected' ? tr('Connected - response ready to send') : connectionState === 'failed' ? tr('Direct connection unavailable - download fallback ready') : connectionState === 'reconnecting' ? tr('Reconnecting - your draft stays here') : tr('Connecting - your draft stays here')
         ),
-        teacherCheckIn && teacherCheckIn.activityId === activePoll.id ? ce('section', { role: 'status', 'aria-live': 'assertive', 'aria-label': tr('Private teacher check-in'), style: { margin: '0 0 0.8rem', padding: '0.7rem', border: '2px solid #7c3aed', borderRadius: 9, background: '#f5f3ff', color: '#4c1d95' } },
+        activePoll.submissionsLocked ? ce('div', { role: 'status', 'aria-live': 'polite', style: { margin: '0 0 0.75rem', padding: '0.6rem', border: '1px solid #fcd34d', borderRadius: 7, background: '#fffbeb', color: '#78350f', fontSize: '0.74rem', fontWeight: 800, lineHeight: 1.4 } }, tr('The teacher paused new submissions while reviewing. Your draft stays in this browser, and you can submit if collecting resumes.')) : null,
+        teacherCheckInForCurrentSupport ? ce('section', { role: 'status', 'aria-live': 'assertive', 'aria-label': tr('Private teacher check-in'), style: { margin: '0 0 0.8rem', padding: '0.7rem', border: '2px solid #7c3aed', borderRadius: 9, background: '#f5f3ff', color: '#4c1d95' } },
           ce('strong', { style: { display: 'block', fontSize: '0.78rem' } }, tr('Your teacher is checking in privately.')),
           ce('p', { style: { margin: '0.3rem 0 0', fontSize: '0.74rem', lineHeight: 1.4 } }, teacherCheckIn.status === 'received' ? tr('Let your teacher know whether you are continuing or would like support. Your response content is not shared by this check-in.') : teacherCheckIn.status === 'help' ? tr('Your teacher can now see that you would like help.') : tr('Your teacher can now see that you are working.')),
           teacherCheckIn.status === 'received' ? ce('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 7, marginTop: 8 } },
@@ -5147,31 +5972,34 @@
           activePoll.type === 'wordcloud' ? ce('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 6, marginTop: 8 } },
             ce('button', {
               type: 'button',
+              disabled: activePoll.submissionsLocked === true,
               onClick: function () {
                 setResponseValue(submittedResponse);
                 setSubmitted(false);
                 statusSentRef.current = '';
                 if (guestRef.current) guestRef.current.sendResponseStatus(activePoll.id, 'editing', currentAttempt);
               },
-              style: { minHeight: 44, padding: '0.45rem 0.65rem', borderRadius: 6, border: '1px solid #2563eb', background: 'white', color: '#1d4ed8', cursor: 'pointer', fontWeight: 800 }
+              style: { minHeight: 44, padding: '0.45rem 0.65rem', borderRadius: 6, border: '1px solid #2563eb', background: 'white', color: activePoll.submissionsLocked ? '#94a3b8' : '#1d4ed8', cursor: activePoll.submissionsLocked ? 'default' : 'pointer', fontWeight: 800 }
             }, tr('Revise term')),
             ce('button', {
               type: 'button',
+              disabled: activePoll.submissionsLocked === true,
               onClick: function () {
                 if (!guestRef.current || !guestRef.current.sendResponse(activePoll.id, '', { withdrawn: true })) {
                   setSubmitNotice(tr('Reconnect to withdraw your term.'));
                   return;
                 }
                 guestRef.current.sendResponseStatus(activePoll.id, 'withdrawn', currentAttempt);
+                clearLivePollDraft(sessionCode, userUid, activePoll.id);
                 setSubmitted(false);
                 setResponseValue('');
                 setSubmittedResponse('');
                 setSubmitNotice(tr('Your term was withdrawn. You may submit another.'));
               },
-              style: { minHeight: 44, padding: '0.45rem 0.65rem', borderRadius: 6, border: '1px solid #b91c1c', background: 'white', color: '#b91c1c', cursor: 'pointer', fontWeight: 800 }
+              style: { minHeight: 44, padding: '0.45rem 0.65rem', borderRadius: 6, border: '1px solid #b91c1c', background: 'white', color: activePoll.submissionsLocked ? '#94a3b8' : '#b91c1c', cursor: activePoll.submissionsLocked ? 'default' : 'pointer', fontWeight: 800 }
             }, tr('Withdraw term'))
           ) : null,
-          ce('button', { onClick: function () { setActivePoll(null); setSubmitted(false); setResponseValue(''); studentPollIdRef.current = null; }, style: { marginTop: 8, padding: '0.45rem 0.8rem', borderRadius: 6, border: '1px solid #86efac', background: 'white', color: '#166534', cursor: 'pointer', fontWeight: 800, width: '100%' } }, tr('Hide while waiting'))
+          ce('button', { onClick: function () { setPollMinimized(true); }, style: { marginTop: 8, minHeight: 44, padding: '0.45rem 0.8rem', borderRadius: 6, border: '1px solid #86efac', background: 'white', color: '#166534', cursor: 'pointer', fontWeight: 800, width: '100%' } }, tr('Minimize while waiting'))
         )) :
           activePoll.type === 'rating' ? ce('div', { style: { display: 'flex', gap: 8, justifyContent: 'center', alignItems: 'stretch', flexWrap: 'wrap', margin: '1rem 0' } },
             ratingValues.map(function (n) {
@@ -5189,7 +6017,7 @@
             })
           ) :
           activePoll.type === 'wordcloud' ? ce('div', { style: { margin: '0.5rem 0 1rem 0' } },
-            ce('input', { type: 'text', value: responseValue, maxLength: WORD_CLOUD_MAX_LENGTH, onChange: function (e) { setResponseValue(e.target.value); }, 'aria-label': tr('Your word or short phrase'), placeholder: tr('Enter one word or short phrase'), style: { width: '100%', padding: '0.7rem', border: '1px solid #cbd5e1', borderRadius: 6, fontFamily: 'inherit', boxSizing: 'border-box' } }),
+            ce('input', { type: 'text', value: responseValue, maxLength: WORD_CLOUD_MAX_LENGTH, disabled: activePoll.submissionsLocked === true, onChange: function (e) { setResponseValue(e.target.value); }, 'aria-label': tr('Your word or short phrase'), placeholder: activePoll.submissionsLocked ? tr('Teacher review in progress') : tr('Enter one word or short phrase'), style: { width: '100%', padding: '0.7rem', border: '1px solid #cbd5e1', borderRadius: 6, fontFamily: 'inherit', boxSizing: 'border-box', background: activePoll.submissionsLocked ? '#f8fafc' : 'white' } }),
             ce('p', { style: { margin: '0.35rem 0 0 0', color: '#64748b', fontSize: '0.72rem' } }, tr('Your term is held for teacher review before it can appear in the class word cloud.'))
           ) :
           ce('textarea', { value: responseValue, maxLength: feedbackConfig.enabled ? FEEDBACK_RESPONSE_MAX_LENGTH : undefined, onChange: function (e) { setResponseValue(e.target.value); }, 'aria-label': tr('Your response'), placeholder: feedbackConfig.enabled && currentAttempt > 1 ? tr('Revise your response using the feedback') : tr('Type your response'), rows: 5, style: { width: '100%', padding: '0.6rem', border: '1px solid #cbd5e1', borderRadius: 6, fontFamily: 'inherit', boxSizing: 'border-box', margin: '0 0 1rem 0' } }),
@@ -5234,6 +6062,19 @@
     LIVE_CHECK_IN_ACK_STATUSES: LIVE_CHECK_IN_ACK_STATUSES,
     normalizeLiveHelpRequestPacket: normalizeLiveHelpRequestPacket,
     LIVE_HELP_REQUEST_STATUSES: LIVE_HELP_REQUEST_STATUSES,
+    buildLiveSessionSupportActivityId: buildLiveSessionSupportActivityId,
+    livePollDraftStorageKey: livePollDraftStorageKey,
+    normalizeLivePollDraft: normalizeLivePollDraft,
+    readLivePollDraft: readLivePollDraft,
+    writeLivePollDraft: writeLivePollDraft,
+    clearLivePollDraft: clearLivePollDraft,
+    LIVE_POLL_DRAFT_MAX_CHARS: LIVE_POLL_DRAFT_MAX_CHARS,
+    liveSessionQaDraftStorageKey: liveSessionQaDraftStorageKey,
+    normalizeLiveSessionQaDraft: normalizeLiveSessionQaDraft,
+    readLiveSessionQaDraft: readLiveSessionQaDraft,
+    writeLiveSessionQaDraft: writeLiveSessionQaDraft,
+    clearLiveSessionQaDraft: clearLiveSessionQaDraft,
+    LIVE_QA_DRAFT_MAX_AGE_MS: LIVE_QA_DRAFT_MAX_AGE_MS,
     normalizeRatingScale: normalizeRatingScale,
     buildPollResultsSummary: buildPollResultsSummary,
     buildLivePollingAlloSheetEnvelope: buildLivePollingAlloSheetEnvelope,
@@ -5241,6 +6082,11 @@
     buildWordCloudItems: buildWordCloudItems,
     filterWordCloudModerationItems: filterWordCloudModerationItems,
     WORD_CLOUD_MODERATION_FILTERS: WORD_CLOUD_MODERATION_FILTERS,
+    buildWordCloudClusterPrompt: buildWordCloudClusterPrompt,
+    parseWordCloudClusterSuggestions: parseWordCloudClusterSuggestions,
+    buildWordCloudAliasPatch: buildWordCloudAliasPatch,
+    WORD_CLOUD_CLUSTER_MAX_TERMS: WORD_CLOUD_CLUSTER_MAX_TERMS,
+    WORD_CLOUD_CLUSTER_MAX_SUGGESTIONS: WORD_CLOUD_CLUSTER_MAX_SUGGESTIONS,
     stableWordCloudColor: stableWordCloudColor,
     stableWordCloudSize: stableWordCloudSize,
     buildLiveStudentActivityRows: buildLiveStudentActivityRows,
@@ -5248,6 +6094,18 @@
     filterLiveStudentActivityRows: filterLiveStudentActivityRows,
     LIVE_STUDENT_ACTIVITY_FILTERS: LIVE_STUDENT_ACTIVITY_FILTERS,
     LIVE_STUDENT_ACTIVITY_SORTS: LIVE_STUDENT_ACTIVITY_SORTS,
+    buildLiveTeacherActionQueue: buildLiveTeacherActionQueue,
+    LIVE_TEACHER_ACTION_REASONS: LIVE_TEACHER_ACTION_REASONS,
+    normalizeLiveTeacherActionState: normalizeLiveTeacherActionState,
+    liveTeacherActionStorageKey: liveTeacherActionStorageKey,
+    normalizeLiveTeacherActionStateMap: normalizeLiveTeacherActionStateMap,
+    readLiveTeacherActionState: readLiveTeacherActionState,
+    writeLiveTeacherActionState: writeLiveTeacherActionState,
+    LIVE_TEACHER_ACTION_STATE_MAX_AGE_MS: LIVE_TEACHER_ACTION_STATE_MAX_AGE_MS,
+    normalizeLiveTransportKind: normalizeLiveTransportKind,
+    formatLiveElapsed: formatLiveElapsed,
+    buildLiveTransportHealth: buildLiveTransportHealth,
+    buildLiveSessionWrapUp: buildLiveSessionWrapUp,
     renderWordCloudItems: renderWordCloudItems,
     WORD_CLOUD_MAX_LENGTH: WORD_CLOUD_MAX_LENGTH,
     normalizeFeedbackConfig: normalizeFeedbackConfig,
@@ -5298,8 +6156,8 @@
     HostPanel: HostPanel,
     GuestOverlay: GuestOverlay,
     _meta: {
-      version: '1.13.0',
-      description: 'FERPA-by-design live polling via WebRTC peer-to-peer with validated class, group, or individual audience targeting across rating, multiple choice, free text, Feedback Response, and Word Cloud; teacher-reviewed feedback and revision; teacher-moderated word clouds; moderated anonymous peer showcase voting; opt-in session-wide moderated Q&A; custom rating scales; teacher-selected post-submit behavior; anonymous aggregate result sharing; teacher-authored auto-routing rules that reuse existing session groups; reconnect-safe transport (hostClosed terminal event, re-offer handling, audience-correct state sync on reconnect, guest auto-rejoin); bounded initialPoll composer presets; a roster gate on incoming offers (allowedUids); and a window.__alloRtcConfig TURN override hook.',
+      version: '1.15.0',
+      description: 'FERPA-by-design peer-to-peer live polling with a spacious teacher Command Center, provider-aware health, scalable progress, private claim/snooze/resolve follow-ups, incomplete-student actions, a content-free wrap-up, a collapsible student tray, poll and Q&A draft recovery, and staged Word Cloud collection/review/reveal with teacher-approved AI grouping. Uses provider-neutral session APIs for Firebase and Google Class Mailbox parity.',
     },
   };
 

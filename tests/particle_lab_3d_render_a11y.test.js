@@ -136,11 +136,35 @@ describe('Particle Lab 3D rendered WCAG interaction states', () => {
     expect(details.open).toBe(false);
   });
 
-  it('renders camera alternatives and minimum-size compact controls', () => {
+  it('offers a direct path into the 3D chamber from the hero header', () => {
+    const jump = host.querySelector('a[href="#particle-stage"]');
+    expect(jump).not.toBeNull();
+    expect(jump?.textContent).toContain('Enter 3D chamber');
+    expect(jump?.getAttribute('aria-label')).toBe('Jump to the 3D particle chamber');
+    expect(host.querySelector('#particle-stage')).not.toBeNull();
+  });
+
+  it('keeps the gesture guide folded until a learner asks for it', async () => {
+    const guide = host.querySelector('#particle-chamber-guide');
+    const toggle = host.querySelector('button[aria-label="Expand the chamber controls guide"]');
+    expect(guide).not.toBeNull();
+    expect(guide.textContent).toBe('');
+    expect(toggle).not.toBeNull();
+    await act(async () => { toggle.click(); await settle(); });
+    expect(guide.textContent).toContain('Click: select');
+  });
+
+  it('renders camera alternatives with mobile-sized compact controls', () => {
     const cameraGroup = host.querySelector('[role="group"][aria-label="Camera views"]');
     expect(cameraGroup).not.toBeNull();
     expect(['Hero', 'Top', 'Close', '◎ Showcase camera', '◎ Follow tracer'].every((label) => !!buttonByText(cameraGroup, label))).toBe(true);
-    Array.from(cameraGroup.querySelectorAll('button')).forEach((button) => expect(button.className).toContain('min-h-6'));
+    Array.from(cameraGroup.querySelectorAll('button')).forEach((button) => {
+      expect(button.className).toContain('min-h-11');
+      expect(button.className).toContain('sm:min-h-6');
+    });
+    const speedGroup = host.querySelector('[role="group"][aria-label="Simulation speed"]');
+    expect(speedGroup).not.toBeNull();
+    expect(Array.from(speedGroup.querySelectorAll('button')).every((button) => button.className.includes('min-h-11') && button.className.includes('sm:min-h-6'))).toBe(true);
   });
 
   it('shows the experiment runway and scene key next to the 3D chamber', () => {
@@ -156,6 +180,31 @@ describe('Particle Lab 3D rendered WCAG interaction states', () => {
     expect(host.querySelector('#particle-scene-key')?.getAttribute('aria-label')).toContain('cyan particles');
     expect(host.querySelector('[aria-label="gas particle simulation"]')?.parentElement?.textContent).toContain('measured');
     expect(host.querySelector('[aria-label="gas particle simulation"]')?.parentElement?.textContent).toContain('setpoint 300 K');
+    expect(host.querySelector('#particle-stage-activity')?.textContent).toContain('Simulation paused');
+    expect(host.querySelector('#particle-stage-activity')?.textContent).toContain('Press Run or Space to begin');
+  });
+
+  it('turns the stage activity cue into a live observation prompt when the chamber runs', async () => {
+    const activity = host.querySelector('#particle-stage-activity');
+    const run = Array.from(host.querySelectorAll('button')).find((button) => button.textContent.includes('Run'));
+    expect(activity).not.toBeNull();
+    expect(run).not.toBeUndefined();
+    await act(async () => { run.click(); await settle(); });
+    expect(activity.textContent).toContain('Live simulation');
+    expect(activity.textContent).toContain('Watch collisions and wall impacts');
+    await act(async () => { run.click(); await settle(); });
+    expect(activity.textContent).toContain('Simulation paused');
+  });
+
+  it('switches the live evidence line when a transport protocol is selected', async () => {
+    const protocol = Array.from(host.querySelectorAll('button')).find((button) => button.textContent.includes('Diffusion Race'));
+    expect(protocol).not.toBeUndefined();
+    await act(async () => { protocol.click(); await settle(); });
+    const run = Array.from(host.querySelectorAll('button')).find((button) => button.textContent.includes('Run'));
+    await act(async () => { run.click(); await settle(); });
+    const activity = host.querySelector('#particle-stage-activity');
+    expect(activity.textContent).toContain('Watch A and B mix');
+    expect(activity.textContent).toContain('Mixing');
   });
 
   it('keeps the selected camera view visible and announced', async () => {

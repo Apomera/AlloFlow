@@ -939,7 +939,7 @@ function buildAlloCommands(ctx, opts = {}) {
       c.setShowExportMenu(true);
       return t("cmd.open_export_menu_done", "Export menu opened.");
     } },
-    { id: "open_ai_settings", icon: "\u{1F916}", roles: "teacher", label: t("cmd.open_ai_settings", "Open AI settings"), aliases: ["ai settings", "ai backend", "api key", "model settings"], hint: t("cmd.open_ai_settings_hint", "Configure the AI backend"), run: (c) => {
+    { id: "open_ai_settings", icon: "\u{1F916}", roles: "teacher", label: t("cmd.open_ai_settings", "Open AI settings"), aliases: ["ai settings", "ai backend", "api key", "model settings", "configure Gemini voice", "Gemini cloud services key", "forget Gemini backend key"], hint: t("cmd.open_ai_settings_hint", "Configure the AI backend"), run: (c) => {
       c.setShowAIBackendModal(true);
       return t("cmd.open_ai_settings_done", "AI settings opened.");
     } },
@@ -1367,11 +1367,11 @@ function buildAlloCommands(ctx, opts = {}) {
       c.generateQuiz();
       return t("cmd.generate_quiz_done", "Generating a quiz from this content\u2026");
     }, runAsync: (c) => Promise.resolve(c.generateQuiz()).then(() => t("cmd.generate_quiz_ready", "Quiz ready \u2014 it\u2019s in the output panel.")) },
-    { id: "generate_glossary", icon: "\u{1F4D6}", roles: "teacher", when: (c) => !!c.hasSourceOrAnalysis, label: t("cmd.generate_glossary", "Make a vocabulary glossary"), aliases: ["glossary", "vocabulary", "vocab", "key terms", "word list"], hint: t("cmd.generate_glossary_hint", "Generate a glossary from the current content"), run: (c) => {
+    { id: "generate_glossary", icon: "\u{1F4D6}", roles: "teacher", when: (c) => !!c.hasSourceOrAnalysis, label: t("cmd.generate_glossary", "Make a vocabulary glossary"), aliases: ["glossary", "vocabulary", "vocab", "key terms", "word list", "glossary image style mode"], hint: t("cmd.generate_glossary_hint", "Generate a glossary from the current content"), run: (c) => {
       c.generateGlossary();
       return t("cmd.generate_glossary_done", "Generating a glossary\u2026");
     }, runAsync: (c) => Promise.resolve(c.generateGlossary()).then(() => t("cmd.generate_glossary_ready", "Glossary ready.")) },
-    { id: "generate_simplified", icon: "\u{1F4C9}", roles: "teacher", when: (c) => !!c.hasSourceOrAnalysis, label: t("cmd.generate_simplified", "Simplify this text"), aliases: ["simplify", "simplify this", "make it easier", "lower the reading level", "leveled text", "easier version"], hint: t("cmd.generate_simplified_hint", "Generate a simpler reading level \u2014 say \u201Cto grade N\u201D for a target"), run: (c, params) => {
+    { id: "generate_simplified", icon: "\u{1F4C9}", roles: "teacher", when: (c) => !!c.hasSourceOrAnalysis, label: t("cmd.generate_simplified", "Simplify this text"), aliases: ["simplify", "simplify this", "make it easier", "lower the reading level", "leveled text", "easier version", "simplified instructional role"], hint: t("cmd.generate_simplified_hint", "Generate a simpler reading level \u2014 say \u201Cto grade N\u201D for a target"), run: (c, params) => {
       c.generateSimplified(params && params.grade ? { grade: params.grade } : {});
       return t("cmd.generate_simplified_done", "Generating a simpler version\u2026");
     }, runAsync: (c, params) => Promise.resolve(c.generateSimplified(params && params.grade ? { grade: params.grade } : {})).then(() => t("cmd.generate_simplified_ready", "Simpler version ready.")) },
@@ -4001,10 +4001,19 @@ function createVoiceLoop(getCtx, opts = {}) {
     };
   };
   let voiceLease = null;
+  let activeRecognitionEngine = "";
+  let activeRecognitionEngineLabel = "";
   const updateVoiceSession = (state, message, privacy) => {
     const lease = voiceLease;
     if (!lease || typeof lease.update !== "function" || typeof lease.isActive === "function" && !lease.isActive()) return false;
-    const detail = { state, mode: "commands", label: "Allo voice commands", message: message || "" };
+    const detail = {
+      state,
+      mode: "commands",
+      label: "Allo voice commands",
+      engine: activeRecognitionEngine,
+      engineLabel: activeRecognitionEngineLabel,
+      message: message || ""
+    };
     if (privacy !== void 0) detail.privacy = privacy;
     try {
       return lease.update(detail);
@@ -4698,6 +4707,8 @@ function createVoiceLoop(getCtx, opts = {}) {
       whisperState = null;
     }
     engineName = "webspeech";
+    activeRecognitionEngine = "";
+    activeRecognitionEngineLabel = "";
     standby = false;
     paused = false;
     awake = false;
@@ -4941,6 +4952,8 @@ function createVoiceLoop(getCtx, opts = {}) {
       onStateChange: (status) => {
         if (!active || !status) return;
         engineName = mapEngine(status.engine);
+        activeRecognitionEngine = String(status.engine || "");
+        activeRecognitionEngineLabel = String(status.engineLabel || "");
         standby = engineName === "whisper" && !!standbyWanted;
         updateVoiceSession(status.state || "starting", status.message || "", status.privacy);
         if (status.state === "listening" && !engineAnnouncementMade) {
@@ -4973,6 +4986,8 @@ function createVoiceLoop(getCtx, opts = {}) {
     return true;
   };
   const startWhisperEngine = async (profile) => {
+    activeRecognitionEngine = "browser-whisper";
+    activeRecognitionEngineLabel = "On-device Whisper";
     const asr = await _getWhisperPipeline(profile);
     const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } });
     if (!active) {
@@ -5033,6 +5048,8 @@ function createVoiceLoop(getCtx, opts = {}) {
     }
     try {
       engineName = "webspeech";
+      activeRecognitionEngine = "web-speech";
+      activeRecognitionEngineLabel = "Browser speech service";
       standby = false;
       updateVoiceSession("starting", "Starting browser speech recognition.", "Browser speech may send audio to the browser's speech service.");
       if (standbyWanted) announce("\u201CHey Allo\u201D standby needs the on-device speech model \u2014 say \u201Cdownload voice models\u201D first. Tap-to-talk listening is on instead.");
@@ -5091,6 +5108,8 @@ function createVoiceLoop(getCtx, opts = {}) {
     const c = getCtx();
     const whisperProfile = modelCache.resolveWhisperProfile(c && c.voiceLang);
     if (active) return true;
+    activeRecognitionEngine = "";
+    activeRecognitionEngineLabel = "";
     let acquiredLease = null;
     const coordinator = opts && opts.voiceCoordinator || typeof window !== "undefined" && window.AlloFlowVoice;
     if (coordinator && typeof coordinator.acquireVoiceSession === "function") {
@@ -5316,6 +5335,8 @@ function createVoiceLoop(getCtx, opts = {}) {
       listening: active && !paused && !speaking && (!sharedRecognition || sharedRecognition.getState() === "listening"),
       transcribing: !!(sharedRecognition && sharedRecognition.getState() === "transcribing"),
       engine: engineName,
+      engineId: activeRecognitionEngine,
+      engineLabel: activeRecognitionEngineLabel,
       standby,
       awake,
       routePending: !!routeController,

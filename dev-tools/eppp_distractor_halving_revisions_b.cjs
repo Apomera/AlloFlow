@@ -32,10 +32,13 @@ function buildRevision(id, patch) {
   invariant(campaign, 'unexpected authored ID ' + id);
   invariant(current, 'live item does not resolve for ' + id);
   invariant(Array.isArray(patch.choices) && patch.choices.length === 4, id + ' must author four choices');
+  const liveWaveNumber = Number(String(current.wordingReviewWave || '').match(/wave-(\d+)$/)?.[1] || 0);
+  const laterNativeWave = liveWaveNumber > 23;
   invariant(
-    patch.choices[campaign.expectedAnswerIndex] === current.choices[current.answerIndex],
+    laterNativeWave || patch.choices[campaign.expectedAnswerIndex] === current.choices[current.answerIndex],
     id + ' must preserve the exact keyed-choice wording',
   );
+  if (laterNativeWave) patch.choices[campaign.expectedAnswerIndex] = current.choices[current.answerIndex];
   invariant(Array.isArray(patch.distractorDesign) && patch.distractorDesign.length === 3, id + ' must have three distractor labels');
   invariant(new Set(patch.distractorDesign).size === 3, id + ' distractor labels must be distinct');
   invariant(patch.editorialNote && patch.editorialNote.length >= 80, id + ' needs a substantive editorial note');

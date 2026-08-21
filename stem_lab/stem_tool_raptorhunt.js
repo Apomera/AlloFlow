@@ -177,7 +177,8 @@
     '@media(max-width:760px){.rh-flight-telemetry-strip{top:8px;}.rh-flight-metric{min-width:68px;padding:6px 7px;}.rh-flight-metric:nth-child(6){display:none;}.rh-flight-settings{width:100%;}.rh-flight-settings>summary{width:100%;}.rh-flight-settings-panel{position:static;width:100%;margin-top:8px;}.rh-active-flight-bar{align-items:flex-start;}}',
     '@media(prefers-reduced-motion:reduce){.rh-flight-reticle{transition:none;}.rh-flight-reticle[data-target-state="ready"]{transform:translate(-50%,-50%);}}@media(max-width:760px){.rh-flight-species-profile{grid-template-columns:1fr;gap:9px;}.rh-flight-species-profile-grid{grid-template-columns:repeat(3,minmax(0,1fr));}}@media(max-width:430px){[data-raptor-flight-stage="true"]{height:54vh;min-height:350px;}.rh-flight-btn{font-size:11px;padding:8px 4px;}.rh-flight-target-cue{top:54px;font-size:10px;}.rh-flight-lock-meters{top:98px;width:min(160px,calc(100% - 24px));}.rh-flight-mission-hud{top:91px;font-size:10px;}.rh-flight-wind{font-size:8px;letter-spacing:0;}.rh-flight-altitude-gauge{right:5px;}.rh-flight-altitude-label{font-size:7px;}.rh-flight-altitude-track{height:84px;width:7px;}.rh-flight-altitude-value{font-size:8px;min-width:30px;}.rh-flight-coach-copy{font-size:11px;}.rh-flight-coach-actions .rh-flight-btn{width:auto;min-width:68px;}.rh-flight-species-profile-grid{gap:5px;}.rh-flight-species-profile-stat{padding:6px;}.rh-flight-debrief{grid-template-columns:repeat(2,minmax(0,1fr));}}',
     '@media(max-width:430px){.rh-flight-metric{min-width:61px}.rh-flight-metric:nth-child(4),.rh-flight-metric:nth-child(6){display:none;}.rh-flight-metric-value{font-size:12px;}}',
-    '@media(prefers-reduced-motion:reduce){.rh-flight-btn{transition:none;}.rh-flight-metric[data-raptor-weather="true"]{transition:none;}.rh-flight-energy-fill{transition:none;}.rh-flight-pause{backdrop-filter:none;}}'
+    '@media(prefers-reduced-motion:reduce){.rh-flight-btn{transition:none;}.rh-flight-metric[data-raptor-weather="true"]{transition:none;}.rh-flight-energy-fill{transition:none;}.rh-flight-pause{backdrop-filter:none;}}',
+    '.rh-flight-mission-meter-label{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:7px;color:#cbd5e1;font:900 8px/1 ui-sans-serif,system-ui;letter-spacing:.08em;text-transform:uppercase;}.rh-flight-mission-meter-label-value{color:#fef3c7;font-variant-numeric:tabular-nums;letter-spacing:.04em;}.rh-flight-mission-meter-label[data-progress-state="success"] .rh-flight-mission-meter-label-value{color:#6ee7b7;}.rh-flight-mission-meter-label[data-progress-state="failed"] .rh-flight-mission-meter-label-value{color:#fca5a5;}.rh-flight-mission-phase{display:block;margin-top:4px;color:#a5f3fc;font:800 8px/1.15 ui-sans-serif,system-ui;letter-spacing:.06em;text-transform:uppercase;}.rh-flight-mission-phase[data-phase-state="success"]{color:#6ee7b7;}.rh-flight-mission-phase[data-phase-state="failed"]{color:#fca5a5;}.rh-flight-mission-meter{display:block;height:4px;margin-top:4px;border-radius:999px;background:#0f172a;overflow:hidden;box-shadow:inset 0 0 0 1px rgba(148,163,184,.18);}.rh-flight-mission-meter-fill{display:block;width:0;height:100%;border-radius:inherit;background:linear-gradient(90deg,#fbbf24,#34d399);transition:width .22s ease,background-color .22s ease;}.rh-flight-mission-meter[data-progress-state="success"] .rh-flight-mission-meter-fill{background:#34d399;}.rh-flight-mission-meter[data-progress-state="failed"] .rh-flight-mission-meter-fill{background:#f87171;}'
   ].join('');
   if (document.head) document.head.appendChild(st);
 })();
@@ -12122,6 +12123,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         var missionProgressEl = document.createElement('span');
         missionProgressEl.className = 'rh-flight-mission-progress';
         missionPanel.appendChild(missionProgressEl);
+        var missionPhaseEl = document.createElement('span');
+        missionPhaseEl.className = 'rh-flight-mission-phase';
+        missionPhaseEl.setAttribute('aria-hidden', 'true');
+        missionPanel.appendChild(missionPhaseEl);
+        var missionMeterLabelEl = document.createElement('span');
+        missionMeterLabelEl.className = 'rh-flight-mission-meter-label';
+        missionMeterLabelEl.setAttribute('aria-hidden', 'true');
+        var missionMeterLabelTextEl = document.createElement('span');
+        missionMeterLabelTextEl.textContent = 'Mission completion';
+        var missionMeterLabelValueEl = document.createElement('span');
+        missionMeterLabelValueEl.className = 'rh-flight-mission-meter-label-value';
+        missionMeterLabelEl.appendChild(missionMeterLabelTextEl);
+        missionMeterLabelEl.appendChild(missionMeterLabelValueEl);
+        missionPanel.appendChild(missionMeterLabelEl);
+        var missionMeterEl = document.createElement('span');
+        missionMeterEl.className = 'rh-flight-mission-meter';
+        missionMeterEl.setAttribute('role', 'progressbar');
+        missionMeterEl.setAttribute('aria-label', 'Mission completion');
+        missionMeterEl.setAttribute('aria-valuemin', '0');
+        missionMeterEl.setAttribute('aria-valuemax', '100');
+        missionMeterEl.setAttribute('aria-valuenow', '0');
+        var missionMeterFillEl = document.createElement('span');
+        missionMeterFillEl.className = 'rh-flight-mission-meter-fill';
+        missionMeterFillEl.setAttribute('aria-hidden', 'true');
+        missionMeterEl.appendChild(missionMeterFillEl);
+        missionPanel.appendChild(missionMeterEl);
         var missionFocusEl = document.createElement('span');
         missionFocusEl.className = 'rh-flight-mission-focus';
         missionFocusEl.setAttribute('data-raptor-mission-focus', 'true');
@@ -12227,6 +12254,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           if (mission.id === 'highStoop') return Math.round(raptor.speed * 2.237) + ' / 180 mph - strike while diving';
           return Math.max(0, Math.ceil((mission.timeLimit || 0) - missionElapsed)) + 's remaining';
         }
+        function missionProgressRatio() {
+          if (mission.id === 'open') return null;
+          if (missionOutcome === 'success') return 1;
+          if (mission.id === 'feedChicks') return Math.min(1, missionCalories / Math.max(1, mission.calorieGoal));
+          if (mission.id === 'crossDesert') return Math.min(1, Math.min(1, missionElapsed / Math.max(1, mission.timeLimit)) * 0.65 + (missionCatches > 0 ? 0.35 : 0));
+          if (mission.id === 'silentStrike') return Math.min(1, missionCatches / 3);
+          if (mission.id === 'thermalKettle') return Math.min(1, Math.max(0, raptor.y - terrainHeightAt(raptor.x, raptor.z)) / 500);
+          if (mission.id === 'avoidPredator') return Math.min(1, Math.min(1, missionElapsed / Math.max(1, mission.timeLimit)) * 0.35 + Math.min(1, missionCatches / 2) * 0.65);
+          if (mission.id === 'highStoop') return Math.min(1, Math.max(0, raptor.speed * 2.237) / 180 * (raptor.diving ? 1 : 0.45));
+          return 0;
+        }
+        function missionProgressLabel() {
+          if (missionOutcome === 'success') return 'Mission complete';
+          if (missionOutcome === 'failed') return 'Run ended';
+          if (mission.id === 'feedChicks') return 'Calories delivered';
+          if (mission.id === 'crossDesert') return 'Refuel + endurance';
+          if (mission.id === 'silentStrike') return 'Quiet catches';
+          if (mission.id === 'thermalKettle') return 'Altitude gained';
+          if (mission.id === 'avoidPredator') return 'Survival + catches';
+          if (mission.id === 'highStoop') return 'Dive speed';
+          return 'Free flight';
+        }
+        function missionPhaseText() {
+          var total = missionRouteItems.length;
+          if (!total) return '';
+          var phase = Math.max(0, Math.min(total, missionRoutePhase()));
+          if (missionOutcome === 'success') return total + ' / ' + total + ' phases · complete';
+          if (missionOutcome === 'failed') return phase + ' / ' + total + ' phases · run ended';
+          var current = phase < total && missionRouteItems[phase] ? missionRouteItems[phase].textContent : 'Complete';
+          return 'Phase ' + Math.min(total, phase + 1) + ' / ' + total + ' · ' + current;
+        }
         function missionRoutePhase() {
           if (missionOutcome === 'success') return missionRouteItems.length;
           if (mission.id === 'feedChicks') return missionCalories >= mission.calorieGoal ? 3 : missionCalories > 0 ? 2 : runCatches > 0 ? 1 : 0;
@@ -12261,8 +12319,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         function updateMissionHud() {
           var progressText = mission.name + ': ' + missionProgressText();
           var focusText = missionFocusText();
+          var phaseText = missionPhaseText();
           if (missionProgressEl.textContent !== progressText) missionProgressEl.textContent = progressText;
+          missionPhaseEl.dataset.phaseState = missionOutcome;
+          if (missionPhaseEl.textContent !== phaseText) missionPhaseEl.textContent = phaseText;
           if (missionFocusEl.textContent !== focusText) missionFocusEl.textContent = focusText;
+          var progressRatio = missionProgressRatio();
+          if (progressRatio === null) {
+            missionMeterLabelEl.style.display = 'none';
+            missionMeterEl.style.display = 'none';
+          } else {
+            var progressPct = Math.max(0, Math.min(100, Math.round(progressRatio * 100)));
+            missionMeterLabelEl.style.display = 'flex';
+            missionMeterLabelEl.dataset.progressState = missionOutcome;
+            missionMeterLabelTextEl.textContent = missionProgressLabel();
+            missionMeterLabelValueEl.textContent = progressPct + '%';
+            missionMeterEl.style.display = 'block';
+            missionMeterEl.dataset.progressState = missionOutcome;
+            missionMeterEl.setAttribute('aria-valuenow', String(progressPct));
+            missionMeterEl.setAttribute('aria-valuetext', progressPct + '% complete. ' + missionProgressText());
+            missionMeterFillEl.style.width = progressPct + '%';
+          }
           updateMissionRoute();
         }
         function evaluateMission() {

@@ -23,6 +23,8 @@ const requireCjs = createRequire(import.meta.url);
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const gsSource = fs.readFileSync(path.join(ROOT, 'apps_script', 'session_mailbox', 'Code.gs'), 'utf8');
 const anti = fs.readFileSync(path.join(ROOT, 'AlloFlowANTI.txt'), 'utf8');
+const assignmentCenterSource = fs.readFileSync(path.join(ROOT, 'view_assignment_center_source.jsx'), 'utf8');
+const sharedActivitySource = fs.readFileSync(path.join(ROOT, 'shared_activity_source.jsx'), 'utf8');
 const suiteSource = fs.readFileSync(path.join(ROOT, 'student_analytics_module.js'), 'utf8');
 
 // ── Evaluate the Suite module for its exported internals ──────────────────
@@ -253,12 +255,13 @@ describe('host + Suite wiring pins', () => {
   });
 
   it('the import button exists on survey rows and routes through the Suite internals', () => {
-    expect(anti).toContain('Import results to Research Suite');
+    expect(assignmentCenterSource).toContain('Import results to Research Suite');
     expect(anti).toContain('internals.importMailboxSurveySummary(summary, share.researchMeta || {})');
   });
 
   it('the identity picker states the pairing consequences when a study rides along', () => {
-    expect(anti).toContain('<b>anonymous</b> never pairs');
+    expect(assignmentCenterSource).toContain("tx('share_collect.identity_anon_short', 'anonymous')");
+    expect(assignmentCenterSource).toContain("tx('share_collect.pairing_anon', 'never pairs, so you get group totals only.')");
   });
 
   it('the packet builder honors full positional labels from a Suite import', () => {
@@ -323,12 +326,12 @@ describe('discoverability (Plan 3)', () => {
 
 describe('study info sheet + consent attestation (Plan 4)', () => {
   it('the dialog authors the info sheet and the packet carries it', () => {
-    expect(anti).toContain('About this survey (optional, shown to respondents)');
+    expect(assignmentCenterSource).toContain('About this survey (optional, shown to respondents)');
     expect(anti).toContain("info: sharedActivityType === 'survey' ?");
   });
 
   it('respondents see the info sheet above the questions', () => {
-    expect(anti).toContain("{(summary?.info || effectiveActivity?.info) && (");
+    expect(sharedActivitySource).toContain("{(summary?.info || effectiveActivity?.info) && (");
   });
 
   it('the Suite dispatch drafts a neutral, factual template the teacher edits', () => {

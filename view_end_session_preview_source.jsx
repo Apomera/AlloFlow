@@ -56,6 +56,29 @@ function EndSessionPreview({
           <div className="rounded-xl bg-amber-50 p-3 text-center"><div className="text-2xl font-black text-amber-700">{(endSessionPreview.summary.absentCodenames || []).length}</div><div className="text-[11px] font-bold text-amber-800">Not present</div></div>
           <div className="rounded-xl bg-rose-50 p-3 text-center"><div className="text-2xl font-black text-rose-700">{(endSessionPreview.summary.unmatchedCodenames || []).length}</div><div className="text-[11px] font-bold text-rose-800">Unmatched</div></div>
         </div>
+        {endSessionPreview.summary.organizerActivity && (() => {
+          const organizer = endSessionPreview.summary.organizerActivity;
+          const counts = organizer.statusCounts || {};
+          const labels = [
+            ['complete', 'complete'], ['attempted', 'attempted'], ['working', 'working'],
+            ['ready', 'ready'], ['loading', 'loading'], ['failed', 'failed'], ['waiting', 'waiting'],
+          ].filter(([status]) => Number(counts[status]) > 0);
+          return (
+            <section className="rounded-2xl border border-fuchsia-200 bg-fuchsia-50/60 p-4 mb-4" aria-labelledby="end-session-organizer-title">
+              <div className="flex flex-wrap items-start justify-between gap-2">
+                <div>
+                  <h3 id="end-session-organizer-title" className="text-sm font-black text-fuchsia-950">Visual organizer evidence</h3>
+                  <p className="mt-0.5 text-[11px] text-fuchsia-800">{String(organizer.type || 'organizer').replace(/3d$/i, ' 3D').replace(/_/g, ' ')} activity Â· {organizer.participantCount || 0} matched learner{organizer.participantCount === 1 ? '' : 's'}</p>
+                </div>
+                {(organizer.followUpCodenames || []).length > 0 && <span className="rounded-full border border-amber-300 bg-amber-100 px-2 py-1 text-[10px] font-black text-amber-900">{organizer.followUpCodenames.length} may need launch support</span>}
+              </div>
+              <div className="mt-2 flex flex-wrap gap-1.5" aria-label="Visual organizer activity outcomes">
+                {labels.map(([status, label]) => <span key={status} className="rounded-full border border-fuchsia-200 bg-white px-2 py-1 text-[10px] font-bold text-fuchsia-900">{counts[status]} {label}</span>)}
+              </div>
+              <p className="mt-2 text-[10px] text-slate-600">Saved evidence contains bounded status and score totals onlyâ€”not card text, answers, account IDs, or resource IDs.</p>
+            </section>
+          );
+        })()}
         {endSessionPreview.summary.insightBrief && (
           <section className="rounded-2xl border border-indigo-200 bg-indigo-50/60 p-4 mb-4" aria-labelledby="end-session-insight-title">
             <div className="flex flex-wrap items-start justify-between gap-2">
@@ -161,7 +184,7 @@ function EndSessionPreview({
             <p className="mt-1 text-[11px] text-amber-800">The session can stay open while learners receive the resource. Ending removes temporary connections.</p>
           </div>
         )}
-        <details className="rounded-xl border border-slate-200 p-3 mb-4"><summary className="cursor-pointer text-sm font-bold text-slate-700">What will be saved?</summary><p className="text-xs text-slate-600 mt-2">Date, duration, matched codenames, groups, response counts, and whether a resource was opened. Raw answers, account IDs, mailbox tokens, chat, and real names are not saved.</p></details>
+        <details className="rounded-xl border border-slate-200 p-3 mb-4"><summary className="cursor-pointer text-sm font-bold text-slate-700">What will be saved?</summary><p className="text-xs text-slate-600 mt-2">Date, duration, matched codenames, groups, response counts, organizer status and bounded score totals, and whether a resource was opened. Raw answers, organizer card text, resource IDs, account IDs, mailbox tokens, chat, and real names are not saved.</p></details>
         <label className="block text-xs font-bold text-slate-700 mb-1" htmlFor="end-session-note">Optional teacher note</label>
         <textarea id="end-session-note" value={endSessionNote} onChange={event => setEndSessionNote(event.target.value.slice(0, 500))} rows={3} placeholder="Example: Small-group review of fractions" className="w-full rounded-xl border border-slate-300 p-3 text-sm focus:ring-2 focus:ring-indigo-400 focus:outline-none" />
         <div className="text-[11px] text-slate-500 text-right">{endSessionNote.length}/500</div>

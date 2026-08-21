@@ -3246,6 +3246,155 @@ const sanitizeHtml = (html) => {
     return clean;
 };
 if (typeof window !== 'undefined') { window.sanitizeHtml = sanitizeHtml; }
+
+// Presentation-only adapter for the lazy Directions result view. Raw history,
+// progress stores and navigation-capable resource records stay in the host;
+// the CDN module receives bounded strings plus opaque ids only.
+function _alloBuildDirectionsResultAdapter(options) {
+    const input = options && typeof options === 'object' ? options : {};
+    const clamp = (value, max) => String(value == null ? '' : value).trim().slice(0, max);
+    const validId = (value) => {
+        const id = clamp(value, 201);
+        return id && id.length <= 200 ? id : '';
+    };
+    const item = input.item && typeof input.item === 'object' ? input.item : {};
+    const historyItems = Array.isArray(input.history) ? input.history : [];
+    const normalized = _alloNormalizeDirectionsData(item.data);
+    const progressStore = input.progress && typeof input.progress === 'object' ? input.progress : {};
+    const directionProgress = progressStore[item.id] && typeof progressStore[item.id] === 'object'
+        ? progressStore[item.id]
+        : {};
+    const evaluated = _alloEvaluateObjectives(normalized.objectives, input.signals || {}, directionProgress)
+        .filter(Boolean);
+    const visited = progressStore._visited && typeof progressStore._visited === 'object'
+        ? progressStore._visited
+        : {};
+
+    // Apply the canonical student-safe rule before retaining any backing
+    // record. Invalid/oversized ids are excluded rather than truncated so an
+    // opaque id can never resolve to the wrong resource after crossing the
+    // module boundary.
+    const stationRecords = _alloStudentSafeResources(historyItems)
+        .filter(resource => resource.type !== 'directions' && validId(resource.id))
+        .slice(0, 12);
+    const stationById = new Map(stationRecords.map(resource => [String(resource.id), resource]));
+    const stationViews = stationRecords.map(resource => {
+        const style = _alloStationStyle(resource.type);
+        const typeKey = 'directions.station_' + String(resource.type || '').replace(/-/g, '_');
+        const translated = typeof input.t === 'function' ? input.t(typeKey) : '';
+        const typeLabel = clamp(translated && translated !== typeKey ? translated : style.label, 80) || 'Resource';
+        return {
+            id: String(resource.id),
+            title: clamp(resource.title, 120) || typeLabel,
+            typeLabel,
+            icon: clamp(style.icon, 8) || '\u2022',
+            shape: clamp(style.shape, 16) || 'circle',
+            fill: clamp(style.fill, 16) || '#f8fafc',
+            stroke: clamp(style.stroke, 16) || '#64748b',
+            visited: visited[resource.id] === true,
+        };
+    });
+
+    const goalById = new Map();
+    const goalViews = evaluated.reduce((views, goal) => {
+        if (views.length >= 24) return views;
+        const id = validId(goal.id);
+        if (!id) return views;
+        const sourceGoal = normalized.objectives.find(candidate => candidate && String(candidate.id) === id);
+        if (!sourceGoal) return views;
+        goalById.set(id, sourceGoal);
+        views.push({
+            id,
+            label: clamp(goal.label, 240),
+            kind: clamp(goal.kind, 20),
+            done: goal.done === true,
+            progressText: clamp(goal.progressText, 80),
+            resourceRef: validId(sourceGoal.resourceRef),
+        });
+        return views;
+    }, []);
+
+    const recommendation = _alloRecommendNextStations(stationRecords, visited, normalized.objectives, evaluated);
+    const recommendationView = {
+        nextId: recommendation.next && stationById.has(String(recommendation.next.item.id))
+            ? String(recommendation.next.item.id)
+            : '',
+        nextGoalLabel: clamp(recommendation.next && recommendation.next.goalLabel, 240),
+        alternateIds: recommendation.alternates
+            .map(entry => validId(entry && entry.item && entry.item.id))
+            .filter(id => id && stationById.has(id))
+            .slice(0, 2),
+    };
+
+    const choiceResourceById = new Map(
+        _alloStudentSafeResources(historyItems)
+            .filter(resource => resource.type !== 'directions' && validId(resource.id))
+            .map(resource => [String(resource.id), resource])
+    );
+    const choiceById = new Map();
+    const configuredChoices = normalized.choiceBoard && Array.isArray(normalized.choiceBoard.choices)
+        ? normalized.choiceBoard.choices
+        : [];
+    const choiceItems = configuredChoices.reduce((views, choice) => {
+        if (views.length >= 6) return views;
+        const resourceId = validId(choice && choice.resourceRef);
+        const resource = resourceId ? choiceResourceById.get(resourceId) : null;
+        if (!resource || choiceById.has(resourceId)) return views;
+        const style = _alloStationStyle(resource.type);
+        const typeKey = 'directions.station_' + String(resource.type || '').replace(/-/g, '_');
+        const translated = typeof input.t === 'function' ? input.t(typeKey) : '';
+        const typeLabel = clamp(translated && translated !== typeKey ? translated : style.label, 80) || 'Resource';
+        const boundedChoice = {
+            resource,
+            label: clamp(choice.label, 120) || clamp(resource.title, 120) || typeLabel,
+        };
+        choiceById.set(resourceId, boundedChoice);
+        views.push({
+            resourceId,
+            label: boundedChoice.label,
+            description: clamp(choice.description, 240),
+            icon: clamp(choice.icon || style.icon, 8) || '\u2022',
+            typeIcon: clamp(style.icon, 8) || '\u2022',
+            typeLabel,
+        });
+        return views;
+    }, []);
+    const selectedRef = validId(input.selectedChoiceRef);
+    const selectedChoice = selectedRef ? choiceById.get(selectedRef) : null;
+    const choiceBoardView = normalized.choiceBoard ? {
+        title: clamp(normalized.choiceBoard.title, 120),
+        prompt: clamp(normalized.choiceBoard.prompt, 240),
+        missingCount: Math.max(0, configuredChoices.length - choiceItems.length),
+        selectedRef: selectedChoice ? selectedRef : '',
+        selectedLabel: selectedChoice ? selectedChoice.label : '',
+        items: choiceItems,
+    } : null;
+
+    const defaultTitleKey = 'directions.title';
+    const translatedTitle = typeof input.t === 'function' ? input.t(defaultTitleKey) : '';
+    const title = clamp(item.title, 240)
+        || clamp(translatedTitle && translatedTitle !== defaultTitleKey ? translatedTitle : 'Assignment Directions', 240);
+    const markdown = clamp(normalized.body, 20000);
+    const parsedBody = markdown && typeof input.parseMarkdownToHTML === 'function'
+        ? input.parseMarkdownToHTML(markdown)
+        : '';
+
+    return {
+        viewProps: {
+            t: input.t,
+            title,
+            bodyHtml: sanitizeHtml(String(parsedBody || '')).slice(0, 120000),
+            showQuestMap: input.showQuestMap === true,
+            stationViews,
+            goalViews,
+            choiceBoardView,
+            recommendationView,
+        },
+        stationById,
+        goalById,
+        choiceById,
+    };
+}
 let globalMuteEnabled = safeGetItem('alloflow-global-muted') === 'true';
 let globalCachedKey = "";
 const getGlobalAudioContext = () => {
@@ -5794,8 +5943,11 @@ const _alloSanitizeFullPackCapacity = capacity => {
     : [];
   return {
     aiCalls: _alloDiagnosticBoundedInt(capacity.aiCalls, 100000),
+    resourceCalls: _alloDiagnosticBoundedInt(capacity.resourceCalls, 100000),
     textCalls: _alloDiagnosticBoundedInt(capacity.textCalls, 100000),
     imageCalls: _alloDiagnosticBoundedInt(capacity.imageCalls, 100000),
+    glossaryImageCalls: _alloDiagnosticBoundedInt(capacity.glossaryImageCalls, 100000),
+    imageEditCalls: _alloDiagnosticBoundedInt(capacity.imageEditCalls, 100000),
     estimatedMinutes: _alloDiagnosticBoundedInt(capacity.estimatedMinutes, 10080),
     providerFamily: _alloDiagnosticProviderFamily(capacity.provider),
     modelConfigured: Boolean(String(capacity.model || '').trim()),
@@ -7519,23 +7671,59 @@ const getLiveOrganizerReadiness = (type, resource) => {
     if (type === 'venn') return { ok: true };
     const branches = Array.isArray(resource.data.branches) ? resource.data.branches : [];
     const countItems = (list) => list.reduce((sum, branch) => sum + (Array.isArray(branch?.items) ? branch.items.filter(item => _liveOrganizerText(item)).length : 0), 0);
+    const itemCount = (branch) => Array.isArray(branch?.items) ? branch.items.filter(item => _liveOrganizerText(item)).length : 0;
+    const nonEmptyBranches = branches.filter(branch => itemCount(branch) > 0);
     const totalItems = countItems(branches);
     if (type === 'conceptrecall3d') {
         const conceptArt = resource.data.conceptArt && typeof resource.data.conceptArt === 'object' ? resource.data.conceptArt : {};
-        return Object.keys(conceptArt).length >= 3
+        const conceptIds = new Set(['root']);
+        branches.forEach((branch, branchIndex) => {
+            conceptIds.add(`b${branchIndex}`);
+            (Array.isArray(branch?.items) ? branch.items : []).forEach((_, itemIndex) => conceptIds.add(`b${branchIndex}_i${itemIndex}`));
+        });
+        const usableArtCount = Object.entries(conceptArt).filter(([id, art]) => conceptIds.has(id) && art && typeof art === 'object').length;
+        return usableArtCount >= 3
             ? { ok: true }
             : { ok: false, message: 'Add pictures or sculptures to at least three concepts before starting Concept Recall.' };
     }
     if (type === 'problemsolution') {
         const outcomeIndex = branches.findIndex(branch => /outcome|result|evaluation/i.test(String(branch?.title || '')));
-        const solutionItems = countItems(branches.filter((_, index) => index !== outcomeIndex));
-        return solutionItems >= 6
+        const solutionBranches = branches.filter((_, index) => index !== outcomeIndex);
+        const solutionItems = countItems(solutionBranches);
+        return solutionBranches.length >= 2 && solutionBranches.filter(branch => itemCount(branch) > 0).length >= 2 && solutionItems >= 6
             ? { ok: true }
-            : { ok: false, message: 'Add at least six solution cards before starting the student activity.' };
+            : { ok: false, message: 'Add at least two populated solution paths and six solution cards before starting the student activity.' };
     }
     const exactBranchCounts = { frayer: 4, seethinkwonder: 3, storymap: 5 };
     if (exactBranchCounts[type] && branches.length !== exactBranchCounts[type]) {
         return { ok: false, message: `This organizer needs exactly ${exactBranchCounts[type]} complete sections before it can be played.` };
+    }
+    if (type === 'tchart') {
+        return branches.length === 2 && nonEmptyBranches.length === 2 && totalItems >= 4
+            ? { ok: true }
+            : { ok: false, message: 'Add exactly two populated columns and at least four cards before starting T-Chart Sort.' };
+    }
+    if (type === 'cesort') {
+        const semanticText = (branch) => `${branch?.title || ''} ${branch?.title_en || ''}`.toLowerCase();
+        const semanticRole = (branch) => String(branch?.role || branch?.semanticRole || '').trim().toLowerCase();
+        let causes = branches.filter(branch => ['cause', 'causes'].includes(semanticRole(branch)) || semanticText(branch).includes('cause'));
+        let effects = branches.filter(branch => ['effect', 'effects', 'consequence', 'consequences'].includes(semanticRole(branch)) || semanticText(branch).includes('effect') || semanticText(branch).includes('consequence'));
+        if (causes.length === 0 && effects.length === 0 && branches.length >= 2) {
+            causes = [branches[0]];
+            effects = [branches[1]];
+        }
+        const causeItems = countItems(causes);
+        const effectItems = countItems(effects);
+        return causeItems > 0 && effectItems > 0 && causeItems + effectItems >= 4
+            ? { ok: true }
+            : { ok: false, message: 'Add at least one cause, one effect, and four total cause/effect cards before starting the activity.' };
+    }
+    if (['frayer', 'seethinkwonder', 'storymap'].includes(type) && nonEmptyBranches.length !== branches.length) {
+        return { ok: false, message: 'Add at least one activity card to every required section before starting the student activity.' };
+    }
+    if (['pipeline', 'conceptmap', 'outline', 'fishbone', 'strandchallenge3d', 'palacerecall'].includes(type)
+        && (nonEmptyBranches.length < 2 || totalItems < 4)) {
+        return { ok: false, message: 'Add cards to at least two sections, with four activity cards total, before starting the student activity.' };
     }
     if (branches.length < 2 || totalItems < 4) {
         return { ok: false, message: 'Add at least two sections and four activity cards before starting the student activity.' };
@@ -7575,6 +7763,15 @@ const summarizeLiveOrganizerProgress = ({ roster, interactiveOrganizer } = {}) =
         summary[progress.status] += 1;
     });
     return summary;
+};
+const getRetryableLiveOrganizerUids = ({ roster, interactiveOrganizer } = {}) => {
+    const activityId = String(interactiveOrganizer?.activityId || '');
+    if (!activityId || !roster || typeof roster !== 'object' || Array.isArray(roster)) return [];
+    return Object.entries(roster).slice(0, 250).reduce((uids, [uid, entry]) => {
+        const progress = normalizeLiveOrganizerProgress(entry?.organizerProgress);
+        if (!progress || progress.activityId !== activityId || progress.status === 'failed') uids.push(String(uid).slice(0, 128));
+        return uids;
+    }, []).filter(Boolean);
 };
 const mergeLiveQuizEvidenceResponse = (existing, activityId, uid, questionIndex, response) => {
     const safeActivityId = String(activityId || '').trim().slice(0, 120);
@@ -7833,6 +8030,35 @@ const buildRosterSessionSummary = ({ sessionCode, sessionData, rosterKey, mode, 
     Object.entries(liveCodenameCounts).forEach(([normalized, count]) => {
         if (count !== 1) evidenceRosterByNormalizedName[normalized] = null;
     });
+    const organizerStatuses = new Set(['loading', 'ready', 'failed', 'working', 'attempted', 'complete']);
+    const organizerTypes = new Set(['venn', 'tchart', 'cesort', 'pipeline', 'conceptmap', 'outline', 'fishbone', 'problemsolution', 'frayer', 'seethinkwonder', 'storymap', 'strandchallenge3d', 'conceptrecall3d', 'palacerecall']);
+    const boundedOrganizerNumber = (value, max = 100000) => Math.max(0, Math.min(max, Math.round(Number(value) || 0)));
+    const readOrganizerReceipt = value => {
+        if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+        const activityId = String(value.activityId || '').trim().slice(0, 160);
+        const type = String(value.type || '').trim();
+        const status = organizerStatuses.has(value.status) ? value.status : '';
+        const at = Number(value.at);
+        if (!activityId || !organizerTypes.has(type) || !status || !Number.isFinite(at) || at <= 0) return null;
+        const total = boundedOrganizerNumber(value.total);
+        return { activityId, type, status, score: boundedOrganizerNumber(value.score), correct: Math.min(total || 100000, boundedOrganizerNumber(value.correct)), total, attempts: boundedOrganizerNumber(value.attempts, 10000), at };
+    };
+    const activeOrganizer = sessionData?.interactiveOrganizer && typeof sessionData.interactiveOrganizer === 'object' ? sessionData.interactiveOrganizer : null;
+    let organizerActivityId = organizerTypes.has(String(activeOrganizer?.type || '')) ? String(activeOrganizer?.activityId || '').trim().slice(0, 160) : '';
+    let organizerType = organizerActivityId ? String(activeOrganizer.type) : '';
+    let latestOrganizerAt = 0;
+    if (!organizerActivityId) {
+        Object.values(liveRoster).forEach(liveStudent => {
+            const receipt = readOrganizerReceipt(liveStudent?.organizerProgress);
+            if (receipt && receipt.at > latestOrganizerAt) {
+                organizerActivityId = receipt.activityId;
+                organizerType = receipt.type;
+                latestOrganizerAt = receipt.at;
+            }
+        });
+    }
+    const organizerStatusCounts = { waiting: 0, loading: 0, ready: 0, failed: 0, working: 0, attempted: 0, complete: 0 };
+    const organizerFollowUpCodenames = [];
     const participants = {};
     const unmatchedCodenames = [];
     const addUnmatchedCodename = value => {
@@ -7850,7 +8076,22 @@ const buildRosterSessionSummary = ({ sessionCode, sessionData, rosterKey, mode, 
             return;
         }
         const responseMap = allResponses[uid] && typeof allResponses[uid] === 'object' ? allResponses[uid] : {};
-        participants[rosterName] = { groupId: liveStudent?.groupId || rosterStudents[rosterName] || null, joinedAt: typeof liveStudent?.joinedAt === 'string' ? liveStudent.joinedAt : null, responseCount: Math.max(countValidRosterQuizResponses(responseMap), Number(quizResponseCountsByUid[uid]) || 0), resourcesOpened: liveStudent?.viewingResourceId ? 1 : 0 };
+        const organizerReceipt = readOrganizerReceipt(liveStudent?.organizerProgress);
+        const organizerMatches = !!(organizerActivityId && organizerReceipt?.activityId === organizerActivityId);
+        const organizerStatus = organizerMatches ? organizerReceipt.status : (activeOrganizer && organizerActivityId ? 'waiting' : '');
+        const organizer = organizerStatus ? {
+            type: organizerMatches ? organizerReceipt.type : organizerType,
+            status: organizerStatus,
+            score: organizerMatches ? organizerReceipt.score : 0,
+            correct: organizerMatches ? organizerReceipt.correct : 0,
+            total: organizerMatches ? organizerReceipt.total : 0,
+            attempts: organizerMatches ? organizerReceipt.attempts : 0,
+        } : null;
+        if (organizer) {
+            organizerStatusCounts[organizer.status] += 1;
+            if (organizer.status === 'waiting' || organizer.status === 'failed') organizerFollowUpCodenames.push(rosterName);
+        }
+        participants[rosterName] = { groupId: liveStudent?.groupId || rosterStudents[rosterName] || null, joinedAt: typeof liveStudent?.joinedAt === 'string' ? liveStudent.joinedAt : null, responseCount: Math.max(countValidRosterQuizResponses(responseMap), Number(quizResponseCountsByUid[uid]) || 0), resourcesOpened: liveStudent?.viewingResourceId ? 1 : 0, ...(organizer ? { organizer } : {}) };
     });
     const createdAt = typeof sessionData?.createdAt === 'string' ? sessionData.createdAt : null;
     const startMs = createdAt ? Date.parse(createdAt) : NaN;
@@ -7883,7 +8124,15 @@ const buildRosterSessionSummary = ({ sessionCode, sessionData, rosterKey, mode, 
             liveRevisionCount: totals.liveRevisionCount,
         };
     });
-    const summary = { schemaVersion: 2, id: String(sessionCode || ('session-' + endMs)), startedAt: createdAt, endedAt, durationMinutes, mode: mode === 'mailbox' ? 'mailbox' : 'firebase', resourceTitles, participants, unmatchedCodenames, absentCodenames, classGoals, liveActivities: liveActivityEvidence.activities };
+    const organizerParticipantCount = Object.values(organizerStatusCounts).reduce((sum, count) => sum + count, 0);
+    const organizerActivity = organizerActivityId && organizerParticipantCount > 0 ? {
+        type: organizerType,
+        wasLiveAtEnd: !!activeOrganizer,
+        participantCount: organizerParticipantCount,
+        statusCounts: organizerStatusCounts,
+        followUpCodenames: organizerFollowUpCodenames.slice(0, 250),
+    } : null;
+    const summary = { schemaVersion: 2, id: String(sessionCode || ('session-' + endMs)), startedAt: createdAt, endedAt, durationMinutes, mode: mode === 'mailbox' ? 'mailbox' : 'firebase', resourceTitles, participants, unmatchedCodenames, absentCodenames, classGoals, liveActivities: liveActivityEvidence.activities, ...(organizerActivity ? { organizerActivity } : {}) };
     return { ...summary, insightBrief: buildRosterSessionInsightBrief(summary) };
 };
 const shouldSaveRosterSessionSummary = (summary, note = '') => Boolean(summary && (
@@ -7893,6 +8142,7 @@ const shouldSaveRosterSessionSummary = (summary, note = '') => Boolean(summary &
     || (Array.isArray(summary.unmatchedCodenames) && summary.unmatchedCodenames.length > 0)
     || (Array.isArray(summary.classGoals) && summary.classGoals.length > 0)
     || (Array.isArray(summary.liveActivities) && summary.liveActivities.length > 0)
+    || !!summary.organizerActivity
 ));
 const saveRosterSessionSummary = (rosterKey, summary, note = '', retentionLimit = 30) => {
     if (!rosterKey || !summary?.id) return rosterKey;
@@ -7913,6 +8163,7 @@ const saveRosterSessionSummary = (rosterKey, summary, note = '', retentionLimit 
             liveActivityCount: participant.liveActivityCount || 0,
             liveSubmissionCount: participant.liveSubmissionCount || 0,
             liveRevisionCount: participant.liveRevisionCount || 0,
+            ...(participant.organizer ? { organizer: { ...participant.organizer } } : {}),
         };
         progressHistory[codename] = [...previous.filter(item => item?.sessionId !== savedSummary.id), entry].slice(-Math.max(1, retentionLimit));
     });
@@ -11776,7 +12027,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // safety net for other components.
     if (window.__alloCdnBootstrapped) return;
     window.__alloCdnBootstrapped = true;
-    var pluginCdnVersion = '984a5ed8e';
+    var pluginCdnVersion = '1787288001588';
     var isDesktopBundledApp = typeof window !== 'undefined'
       && /^(localhost|127\.0\.0\.1)$/i.test(window.location.hostname || '')
       && (window.location.pathname || '').startsWith('/app/');
@@ -12025,21 +12276,21 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       };
       document.head.appendChild(s);
     };
+    window.__alloRetryModule = function(name) {
+      var entry = __alloModuleRegistry[String(name || '')];
+      if (!entry || entry.status !== 'failed' || !entry.originalUrl) return false;
+      try { if (entry.script) { entry.script.onload = null; entry.script.onerror = null; entry.script.remove(); } } catch (_) {}
+      try { if (entry.fallbackScript) { entry.fallbackScript.onload = null; entry.fallbackScript.onerror = null; entry.fallbackScript.remove(); } } catch (_) {}
+      entry.script = null;
+      entry.fallbackScript = null;
+      entry.status = 'idle'; // allow the pending-dedup to pass
+      loadModule(name, entry.originalUrl);
+      return true;
+    };
     window.__alloRetryFailedModules = function() {
-      var retried = 0;
-      Object.keys(__alloModuleRegistry).forEach(function(name) {
-        var entry = __alloModuleRegistry[name];
-        if (entry.status === 'failed' && entry.originalUrl) {
-          try { if (entry.script) { entry.script.onload = null; entry.script.onerror = null; entry.script.remove(); } } catch (_) {}
-          try { if (entry.fallbackScript) { entry.fallbackScript.onload = null; entry.fallbackScript.onerror = null; entry.fallbackScript.remove(); } } catch (_) {}
-          entry.script = null;
-          entry.fallbackScript = null;
-          entry.status = 'idle'; // allow the pending-dedup to pass
-          loadModule(name, entry.originalUrl);
-          retried += 1;
-        }
-      });
-      return retried;
+      return Object.keys(__alloModuleRegistry).reduce(function(retried, name) {
+        return retried + (window.__alloRetryModule(name) ? 1 : 0);
+      }, 0);
     };
     // ── Error Reporter — loads FIRST so it can capture errors from every other
     //    module's load + runtime. Surfaces a hidden-by-default red badge that
@@ -12090,32 +12341,32 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       };
       document.head.appendChild(s);
     })();
-    loadModule('AlloData', 'https://alloflow-cdn.pages.dev/allo_data_module.js?v=984a5ed8e');
-    loadModule('MailboxScriptSource', 'https://alloflow-cdn.pages.dev/mailbox_script_source_module.js?v=984a5ed8e');
-    loadModule('ToolCatalog', 'https://alloflow-cdn.pages.dev/tool_catalog_module.js?v=984a5ed8e');
-    loadModule('SubmissionCrypto', 'https://alloflow-cdn.pages.dev/submission_crypto_module.js?v=984a5ed8e');
-    loadModule('AlloCrypto', 'https://alloflow-cdn.pages.dev/allo_crypto_module.js?v=984a5ed8e');
-    loadModule('DeviceAccessCode', 'https://alloflow-cdn.pages.dev/device_access_code_module.js?v=984a5ed8e');
-    loadModule('AlloDeviceVault', 'https://alloflow-cdn.pages.dev/allo_device_vault_module.js?v=984a5ed8e');
-    loadModule('AlloRecoveryVaultIntegration', 'https://alloflow-cdn.pages.dev/allo_recovery_vault_integration_module.js?v=984a5ed8e');
+    loadModule('AlloData', './allo_data_module.js');
+    loadModule('MailboxScriptSource', './mailbox_script_source_module.js');
+    loadModule('ToolCatalog', './tool_catalog_module.js');
+    loadModule('SubmissionCrypto', './submission_crypto_module.js');
+    loadModule('AlloCrypto', './allo_crypto_module.js');
+    loadModule('DeviceAccessCode', './device_access_code_module.js');
+    loadModule('AlloDeviceVault', './allo_device_vault_module.js');
+    loadModule('AlloRecoveryVaultIntegration', './allo_recovery_vault_integration_module.js');
     // Shared quest/goal vocabulary for directions goals, STEAM Lab and SEL Hub
     // quests. Tiny and dependency-free; every consumer degrades gracefully if it
     // has not landed yet, so load order is not load-bearing.
     loadModule('AlloQuestContract', 'https://alloflow-cdn.pages.dev/allo_quest_contract_module.js?v=355fa3d9a');
-    loadModule('SubmissionInbox', 'https://alloflow-cdn.pages.dev/view_submission_inbox_module.js?v=984a5ed8e');
-    loadModule('FirestoreSync', 'https://alloflow-cdn.pages.dev/firestore_sync_module.js?v=cc9eb976');
-    loadModule('SafetyChecker', 'https://alloflow-cdn.pages.dev/safety_checker_module.js?v=984a5ed8e');
-    loadModule('Fluency', 'https://alloflow-cdn.pages.dev/fluency_module.js?v=984a5ed8e');
-    loadModule('LargeFileModule', 'https://alloflow-cdn.pages.dev/large_file_module.js?v=984a5ed8e');
-    loadModule('KeyConceptMapModule', 'https://alloflow-cdn.pages.dev/key_concept_map_module.js?v=984a5ed8e');
-    loadModule('UtilsPure', 'https://alloflow-cdn.pages.dev/utils_pure_module.js?v=984a5ed8e');
-    loadModule('GeminiAPI', 'https://alloflow-cdn.pages.dev/gemini_api_module.js?v=984a5ed8e');
-    loadModule('TTS', 'https://alloflow-cdn.pages.dev/tts_module.js?v=8405ef04');
-    loadModule('Personas', 'https://alloflow-cdn.pages.dev/personas_module.js?v=e4ee2e66');
-    loadModule('Export', 'https://alloflow-cdn.pages.dev/export_module.js?v=eac1e2a4');
-    loadModule('MiscComponents', 'https://alloflow-cdn.pages.dev/misc_components_module.js?v=984a5ed8e');
-    loadModule('RemediationAudio', 'https://alloflow-cdn.pages.dev/remediation_audio_module.js?v=984a5ed8e');
-    loadModule('StemLab', 'https://alloflow-cdn.pages.dev/stem_lab/stem_lab_module.js?v=984a5ed8e');
+    loadModule('SubmissionInbox', './view_submission_inbox_module.js');
+    loadModule('FirestoreSync', './firestore_sync_module.js');
+    loadModule('SafetyChecker', './safety_checker_module.js');
+    loadModule('Fluency', './fluency_module.js');
+    loadModule('LargeFileModule', './large_file_module.js');
+    loadModule('KeyConceptMapModule', './key_concept_map_module.js');
+    loadModule('UtilsPure', './utils_pure_module.js');
+    loadModule('GeminiAPI', './gemini_api_module.js');
+    loadModule('TTS', './tts_module.js');
+    loadModule('Personas', './personas_module.js');
+    loadModule('Export', './export_module.js');
+    loadModule('MiscComponents', './misc_components_module.js');
+    loadModule('RemediationAudio', './remediation_audio_module.js');
+    loadModule('StemLab', './stem_lab/stem_lab_module.js');
     // Word Sounds is the largest CDN module in the app (~744KB) and was loaded
     // eagerly here for EVERY user at boot, including the majority who never open
     // it. It registers exactly one component, WordSoundsModal, and the only
@@ -12128,40 +12379,40 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // The render site already has a "Loading Word Sounds..." fallback with a
     // Close escape, and the module registry re-renders the app when the load
     // lands, so the fallback resolves on its own.
-    window.__alloLazyWordSounds = (function() { var L=false; return function() { if(L)return; L=true; loadModule('WordSoundsModal', 'https://alloflow-cdn.pages.dev/word_sounds_module.js?v=984a5ed8e'); }; })();
-    loadModule('AlloSheetTransferAdapter', 'https://alloflow-cdn.pages.dev/allo_sheet/transfer_adapter.js?v=984a5ed8e');
-    loadModule('StudentAnalytics', 'https://alloflow-cdn.pages.dev/student_analytics_module.js?v=984a5ed8e');
-    loadModule('AlloSheetHostBridge', 'https://alloflow-cdn.pages.dev/allo_sheet/host_bridge.js?v=984a5ed8e');
+    window.__alloLazyWordSounds = (function() { var L=false; return function() { if(L)return; L=true; loadModule('WordSoundsModal', './word_sounds_module.js'); }; })();
+    loadModule('AlloSheetTransferAdapter', './allo_sheet/transfer_adapter.js');
+    loadModule('StudentAnalytics', './student_analytics_module.js');
+    loadModule('AlloSheetHostBridge', './allo_sheet/host_bridge.js');
     (function queueBehaviorLensModules() {
       const startBehaviorLens = function() {
         if (!(window.AlloModules && window.AlloModules.BehaviorLensWorkspace)) return false;
         window.removeEventListener('alloflow:module-registry-changed', startBehaviorLens);
-        loadModule('BehaviorLens', 'https://alloflow-cdn.pages.dev/behavior_lens_module.js?v=984a5ed8e');
+        loadModule('BehaviorLens', './behavior_lens_module.js');
         return true;
       };
       if (!startBehaviorLens()) {
         window.addEventListener('alloflow:module-registry-changed', startBehaviorLens);
-        loadModule('BehaviorLensWorkspace', 'https://alloflow-cdn.pages.dev/behavior_lens_workspace_module.js?v=984a5ed8e');
+        loadModule('BehaviorLensWorkspace', './behavior_lens_workspace_module.js');
       }
     })();
-    loadModule('ReportWriter', 'https://alloflow-cdn.pages.dev/report_writer_module.js?v=984a5ed8e');
-    loadModule('CinematicStudio', 'https://alloflow-cdn.pages.dev/cinematic_studio_module.js?v=984a5ed8e');
-    loadModule('BrandProfile', 'https://alloflow-cdn.pages.dev/brand_profile_module.js?v=984a5ed8e');
+    loadModule('ReportWriter', './report_writer_module.js');
+    loadModule('CinematicStudio', './cinematic_studio_module.js');
+    loadModule('BrandProfile', './brand_profile_module.js');
     // Pyodide is ~10MB on first hit; load lazily so non–Report-Writer users
     // don't pay the cost at boot. Report Writer's generateReport() calls
     // window.__alloLazyPyodide() as soon as the user clicks Generate.
     window.__alloLazyPyodide = (function() { var L=false; return function() { if(L)return; L=true; loadModule('PyodideRuntime', 'https://alloflow-cdn.pages.dev/pyodide_runtime_module.js'); }; })();
-    window.__alloLazySymbolStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SymbolStudio', 'https://alloflow-cdn.pages.dev/symbol_studio_module.js?v=984a5ed8e'); }; })();
+    window.__alloLazySymbolStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SymbolStudio', './symbol_studio_module.js'); }; })();
     window.__alloLazyVideoStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TutorialCompilerModule', 'https://alloflow-cdn.pages.dev/tutorial_compiler_module.js?v=1e5f07c6'); loadModule('VideoStudio', 'https://alloflow-cdn.pages.dev/video_studio_module.js?v=1e5f07c6'); }; })();
-    window.__alloLazyAlloStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloStudio', 'https://alloflow-cdn.pages.dev/studio_module.js?v=984a5ed8e'); }; })();
-    window.__alloLazyAlloHaven = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloHaven', 'https://alloflow-cdn.pages.dev/allohaven_module.js?v=984a5ed8e'); }; })();
+    window.__alloLazyAlloStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloStudio', './studio_module.js'); }; })();
+    window.__alloLazyAlloHaven = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloHaven', './allohaven_module.js'); }; })();
     // Dynamic Assessment Studio (Phase A+B) — clinical tool, lazy-loaded.
     // School-psych workflow: pretest → AI-mediated or clinician-led mediation
     // → posttest with graduated prompt hierarchies + modifiability scoring.
     window.__alloLazyDynamicAssessment = (function() { var L=false; return function() { if(L)return; L=true; loadModule('DynamicAssessment', 'https://alloflow-cdn.pages.dev/dynamic_assessment_module.js'); }; })();
     // Seating Chart (Ring 0+1, July 21 2026) — teacher-only roster tool,
     // lazy-loaded from the Roster panel's Seating Chart button.
-    window.__alloLazySeatingChart = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SeatingChart', 'https://alloflow-cdn.pages.dev/seating_chart_module.js?v=984a5ed8e'); }; })();
+    window.__alloLazySeatingChart = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SeatingChart', './seating_chart_module.js'); }; })();
     // UDL Walkthrough (Aug 3 2026) — admin/coach classroom-visit tool,
     // lazy-loaded from the Educator Hub card.
     window.__alloLazyUdlWalkthrough = (function() { var L=false; return function() { if(L)return; L=true; loadModule('UdlWalkthrough', 'https://alloflow-cdn.pages.dev/udl_walkthrough_module.js?v=uw080306'); }; })();
@@ -12173,111 +12424,113 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // Meeting Documentation is its third tool (needs callGemini).
     window.__alloLazyAdminHub = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AdminHub', 'https://alloflow-cdn.pages.dev/admin_hub_module.js?v=29e9a817'); }; })();
     // Educator Growth & Evaluation (Aug 13 2026) — Act 13 workflow prototype.
-    window.__alloLazyEducatorEvaluation = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EducatorEvaluation', 'https://alloflow-cdn.pages.dev/educator_evaluation_module.js?v=984a5ed8e'); }; })();
+    window.__alloLazyEducatorEvaluation = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EducatorEvaluation', './educator_evaluation_module.js'); }; })();
     // Math Studio (Aug 17 2026) — the former STEM Lab Create tab, math-owned.
-    window.__alloLazyMathCreate = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MathCreate', 'https://alloflow-cdn.pages.dev/math_create_module.js?v=984a5ed8e'); }; })();
+    window.__alloLazyMathCreate = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MathCreate', './math_create_module.js'); }; })();
     window.__alloLazyMeetingDocs = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MeetingDocs', 'https://alloflow-cdn.pages.dev/meeting_docs_module.js?v=md080302'); }; })();
     window.__alloLazySpedTimelines = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SpedTimelines', 'https://alloflow-cdn.pages.dev/sped_timelines_module.js?v=st080301'); }; })();
-    window.__alloLazyDiagnosisEligibility = (function() { var L=false; return function() { if(L)return; L=true; loadModule('DiagnosisEligibility', 'https://alloflow-cdn.pages.dev/stem_lab/stem_tool_eligibility.js?v=984a5ed8e'); }; })();
+    window.__alloLazyDiagnosisEligibility = (function() { var L=false; return function() { if(L)return; L=true; loadModule('DiagnosisEligibility', './stem_lab/stem_tool_eligibility.js'); }; })();
     window.__alloLazyFamilyAnnouncements = (function() { var L=false; return function() { if(L)return; L=true; loadModule('FamilyAnnouncements', 'https://alloflow-cdn.pages.dev/family_announcements_module.js?v=fa080301'); }; })();
     window.__alloLazyMtssTriage = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MtssTriage', 'https://alloflow-cdn.pages.dev/mtss_triage_module.js?v=mt080301'); }; })();
     // Voice infrastructure (Phase 3v) — shared dictation + audio surface.
     // Loaded after AlloHaven so it's available for arcade modes and for
     // the 7+ existing inline SpeechRecognition reimplementations to migrate
     // onto in subsequent commits.
-    loadModule('Voice', 'https://alloflow-cdn.pages.dev/voice_module.js?v=984a5ed8e');
-    loadModule('SelHub', 'https://alloflow-cdn.pages.dev/sel_hub/sel_hub_module.js?v=984a5ed8e');
-    loadModule('CommunityCatalog', 'https://alloflow-cdn.pages.dev/catalog_module.js?v=984a5ed8e');
-    loadModule('ReadingLibrary', 'https://alloflow-cdn.pages.dev/reading_library_module.js?v=984a5ed8e');
-    loadModule('AccessibilityEvidence', 'https://alloflow-cdn.pages.dev/accessibility_evidence_module.js?v=984a5ed8e');
-    loadModule('AccessibilityLab', 'https://alloflow-cdn.pages.dev/accessibility_lab_module.js?v=984a5ed8e');
-    loadModule('AuditRemediator', 'https://alloflow-cdn.pages.dev/audit_remediator_module.js?v=984a5ed8e');
-    loadModule('QuizModeStrategies', 'https://alloflow-cdn.pages.dev/quiz_mode_strategies.js?v=984a5ed8e');
-    loadModule('QuizAIHelpers', 'https://alloflow-cdn.pages.dev/quiz_ai_helpers.js?v=984a5ed8e');
-    loadModule('QuizLiveAggregators', 'https://alloflow-cdn.pages.dev/quiz_live_aggregators.js?v=984a5ed8e');
-    loadModule('GamesBundle', 'https://alloflow-cdn.pages.dev/games_module.js?v=984a5ed8e');
-    loadModule('QuickStartWizard', 'https://alloflow-cdn.pages.dev/quickstart_module.js?v=984a5ed8e');
-    loadModule('AlloBot', 'https://alloflow-cdn.pages.dev/allobot_module.js?v=984a5ed8e');
-    loadModule('TeacherModule', 'https://alloflow-cdn.pages.dev/teacher_module.js?v=984a5ed8e');
-    window.__alloLazyStoryForge = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StoryForge', 'https://alloflow-cdn.pages.dev/story_forge_module.js?v=984a5ed8e'); }; })();
-    window.__alloLazyLitLab = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LitLab', 'https://alloflow-cdn.pages.dev/story_stage_module.js?v=984a5ed8e'); }; })();
-    window.__alloLazyLearningWebExplorer = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LearningWebExplorer', 'https://alloflow-cdn.pages.dev/learning_web_explorer_module.js?v=984a5ed8e'); }; })();
-    window.__alloLazyMindMap = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MindMap', 'https://alloflow-cdn.pages.dev/mind_map_module.js?v=984a5ed8e'); }; })();
-    window.__alloLazyPoetTree = (function() { var L=false; return function() { if(L)return; L=true; loadModule('PoetTree', 'https://alloflow-cdn.pages.dev/poet_tree_module.js?v=984a5ed8e'); }; })();
+    loadModule('Voice', './voice_module.js');
+    loadModule('SelHub', './sel_hub/sel_hub_module.js');
+    loadModule('CommunityCatalog', './catalog_module.js');
+    loadModule('ReadingLibrary', './reading_library_module.js');
+    loadModule('AccessibilityEvidence', './accessibility_evidence_module.js');
+    loadModule('AccessibilityLab', './accessibility_lab_module.js');
+    loadModule('AuditRemediator', './audit_remediator_module.js');
+    loadModule('QuizModeStrategies', './quiz_mode_strategies.js');
+    loadModule('QuizAIHelpers', './quiz_ai_helpers.js');
+    loadModule('QuizLiveAggregators', './quiz_live_aggregators.js');
+    loadModule('GamesBundle', './games_module.js');
+    loadModule('QuickStartWizard', './quickstart_module.js');
+    loadModule('AlloBot', './allobot_module.js');
+    loadModule('TeacherModule', './teacher_module.js');
+    window.__alloLazyStoryForge = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StoryForge', './story_forge_module.js'); }; })();
+    window.__alloLazyLitLab = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LitLab', './story_stage_module.js'); }; })();
+    window.__alloLazyLearningWebExplorer = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LearningWebExplorer', './learning_web_explorer_module.js'); }; })();
+    window.__alloLazyMindMap = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MindMap', './mind_map_module.js'); }; })();
+    window.__alloLazyPoetTree = (function() { var L=false; return function() { if(L)return; L=true; loadModule('PoetTree', './poet_tree_module.js'); }; })();
     window.__alloLazyResearchHub = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ResearchHub', 'https://alloflow-cdn.pages.dev/research_hub_module.js'); loadModule('ResearchLaneScientific', 'https://alloflow-cdn.pages.dev/research_lane_scientific_module.js'); loadModule('ResearchLaneEngineering', 'https://alloflow-cdn.pages.dev/research_lane_engineering_module.js'); loadModule('ResearchLaneHumanities', 'https://alloflow-cdn.pages.dev/research_lane_humanities_module.js'); loadModule('ResearchHubEducator', 'https://alloflow-cdn.pages.dev/research_hub_educator_module.js'); }; })();
-    loadModule('VisualPanelModule', 'https://alloflow-cdn.pages.dev/visual_panel_module.js?v=984a5ed8e');
-    loadModule('WordSoundsSetupModule', 'https://alloflow-cdn.pages.dev/word_sounds_setup_module.js?v=984a5ed8e');
-    loadModule('AdventureModule', 'https://alloflow-cdn.pages.dev/adventure_module.js?v=984a5ed8e');
-    loadModule('StudentInteractionModule', 'https://alloflow-cdn.pages.dev/student_interaction_module.js?v=0be128c6');
-    loadModule('MathFluency', 'https://alloflow-cdn.pages.dev/math_fluency_module.js?v=984a5ed8e');
-    loadModule('UIModalsModule', 'https://alloflow-cdn.pages.dev/ui_modals_module.js?v=984a5ed8e');
-    loadModule('UIFontLibrary', 'https://alloflow-cdn.pages.dev/ui_font_library_module.js?v=984a5ed8e');
-    loadModule('VoiceConfig', 'https://alloflow-cdn.pages.dev/voice_config_module.js?v=984a5ed8e');
-    loadModule('CanvasTips', 'https://alloflow-cdn.pages.dev/canvas_tips_module.js?v=984a5ed8e');
+    loadModule('VisualPanelModule', './visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', './word_sounds_setup_module.js');
+    loadModule('AdventureModule', './adventure_module.js');
+    loadModule('StudentInteractionModule', './student_interaction_module.js');
+    loadModule('MathFluency', './math_fluency_module.js');
+    loadModule('UIModalsModule', './ui_modals_module.js');
+    loadModule('UIFontLibrary', './ui_font_library_module.js');
+    loadModule('VoiceConfig', './voice_config_module.js');
+    loadModule('CanvasTips', './canvas_tips_module.js');
     // ── Lazy-loaded modal modules (May 12 2026) ──
     // Each modal is gated by a wrapped setter that fires its ensure-loader on
     // first true. Until that happens the script is not fetched, cutting ~9
     // requests off cold boot. The embedded loadModule(...) call still matches
     // build.js's URL rewriter regex, so hashes auto-update on deploy.
-    window.__alloLazyKokoroOfferModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('KokoroOfferModal', 'https://alloflow-cdn.pages.dev/view_kokoro_offer_modal_module.js?v=984a5ed8e'); }; })();
+    window.__alloLazyKokoroOfferModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('KokoroOfferModal', './view_kokoro_offer_modal_module.js'); }; })();
     // Process Provenance (Work Story). Stable label pin, like the storage
     // module: this file is not in build.js MODULES, so a hash pin would freeze.
     window.__alloLazyProvenance = (function() { var L=false; return function() { if(L)return; L=true; loadModule('Provenance', 'https://alloflow-cdn.pages.dev/allo_provenance_module.js?v=prov-p1'); }; })();
     // ConfirmDialog stays eager — used by many widgets (delete unit, end session, clear edges, etc.).
-    loadModule('ConfirmDialog', 'https://alloflow-cdn.pages.dev/view_confirm_dialog_module.js?v=984a5ed8e');
+    loadModule('ConfirmDialog', './view_confirm_dialog_module.js');
     // PromptDialog (May 2026 polish pass): polished replacement for window.prompt(); shared by AlloFlowUX.
-    loadModule('PromptDialog', 'https://alloflow-cdn.pages.dev/view_prompt_dialog_module.js?v=984a5ed8e');
-    window.__alloLazyHintsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('HintsModal', 'https://alloflow-cdn.pages.dev/view_hints_modal_module.js?v=984a5ed8e'); }; })();
-    window.__alloLazyXPModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('XPModal', 'https://alloflow-cdn.pages.dev/view_xp_modal_module.js?v=984a5ed8e'); }; })();
-    window.__alloLazyStorybookExportModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StorybookExportModal', 'https://alloflow-cdn.pages.dev/view_storybook_export_modal_module.js?v=059104c5'); }; })();
-    window.__alloLazyInfoModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('InfoModal', 'https://alloflow-cdn.pages.dev/view_info_modal_module.js?v=984a5ed8e'); }; })();
-    window.__alloLazyVideoLibrary = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VideoLibrary', 'https://alloflow-cdn.pages.dev/view_video_library_module.js?v=984a5ed8e'); }; })();
-    window.__alloLazyVideoRefPlayer = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VideoRefPlayer', 'https://alloflow-cdn.pages.dev/view_video_ref_player_module.js?v=984a5ed8e'); }; })();
-    window.__alloLazyEndSessionPreview = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EndSessionPreview', 'https://alloflow-cdn.pages.dev/view_end_session_preview_module.js?v=984a5ed8e'); }; })();
-    window.__alloLazySessionModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SessionModal', 'https://alloflow-cdn.pages.dev/view_session_modal_module.js?v=984a5ed8e'); try { window.__alloLazyEndSessionPreview(); } catch (_) {} }; })();
-    window.__alloLazySocraticChat = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SocraticChat', 'https://alloflow-cdn.pages.dev/view_socratic_chat_module.js?v=0b3560bb'); }; })();
-    window.__alloLazyGlobalLevelUpModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('GlobalLevelUpModal', 'https://alloflow-cdn.pages.dev/view_global_level_up_module.js?v=984a5ed8e'); }; })();
-    loadModule('HeaderBar', 'https://alloflow-cdn.pages.dev/view_header_module.js?v=984a5ed8e');
-    loadModule('GuidedModeBanner', 'https://alloflow-cdn.pages.dev/view_guided_mode_banner_module.js?v=984a5ed8e');
-    loadModule('LiveLessonRun', 'https://alloflow-cdn.pages.dev/view_live_lesson_run_module.js?v=984a5ed8e');
-    loadModule('StudentJoinPanel', 'https://alloflow-cdn.pages.dev/view_student_join_panel_module.js?v=d4463f3d');
-    loadModule('StudentSaveAdventurePanel', 'https://alloflow-cdn.pages.dev/view_student_save_adventure_module.js?v=ae1abf00');
-    loadModule('SidebarTabsNav', 'https://alloflow-cdn.pages.dev/view_sidebar_tabs_nav_module.js?v=984a5ed8e');
-    loadModule('UDLGuideButton', 'https://alloflow-cdn.pages.dev/view_udl_guide_button_module.js?v=984a5ed8e');
-    loadModule('TeacherHistoryTab', 'https://alloflow-cdn.pages.dev/view_teacher_history_tab_module.js?v=984a5ed8e');
-    loadModule('HistoryPanel', 'https://alloflow-cdn.pages.dev/view_history_panel_module.js?v=984a5ed8e');
-    loadModule('FabStack', 'https://alloflow-cdn.pages.dev/view_fab_stack_module.js?v=984a5ed8e');
-    window.__alloLazyStudyTimerModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StudyTimerModal', 'https://alloflow-cdn.pages.dev/view_study_timer_modal_module.js?v=984a5ed8e'); }; })();
-    window.__alloLazyEducatorHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EducatorHubModal', 'https://alloflow-cdn.pages.dev/view_educator_hub_modal_module.js?v=984a5ed8e'); }; })();
-    window.__alloLazyBrandProfileEditor = (function() { var L=false; return function() { if(L)return; L=true; loadModule('BrandProfileEditor', 'https://alloflow-cdn.pages.dev/brand_profile_editor_module.js?v=984a5ed8e'); }; })();
-    window.__alloLazyVisualSupportsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VisualSupportsModal', 'https://alloflow-cdn.pages.dev/view_visual_supports_modal_module.js?v=984a5ed8e'); }; })();
-    window.__alloLazyLearningHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LearningHubModal', 'https://alloflow-cdn.pages.dev/view_learning_hub_modal_module.js?v=984a5ed8e'); }; })();
-    window.__alloLazyOpenGrooveStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('OpenGrooveCore', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_core.js?v=984a5ed8e'); loadModule('OpenGrooveScheduler', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_scheduler.js?v=984a5ed8e'); loadModule('OpenGrooveAudio', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_audio.js?v=984a5ed8e'); loadModule('OpenGrooveStudio', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_module.js?v=984a5ed8e'); }; })();
-    window.__alloLazyTimelineStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TimelineStudio', 'https://alloflow-cdn.pages.dev/timeline_studio_module.js?v=984a5ed8e'); }; })();
-    window.__alloLazyLinguaPractice = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LexicalGraph', 'https://alloflow-cdn.pages.dev/lexical_graph_module.js?v=984a5ed8e'); loadModule('LinguaPractice', 'https://alloflow-cdn.pages.dev/lingua_practice_module.js?v=984a5ed8e'); }; })();
-    window.__alloLazyTestPrepHub = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TestPrepHub', 'https://alloflow-cdn.pages.dev/test_prep_hub_module.js?v=984a5ed8e'); }; })();
-    loadModule('ClozeInteractionPanel', 'https://alloflow-cdn.pages.dev/view_cloze_interaction_panel_module.js?v=984a5ed8e');
-    loadModule('LabelPositions', 'https://alloflow-cdn.pages.dev/label_positions_module.js?v=984a5ed8e');
-    loadModule('UILanguageSelector', 'https://alloflow-cdn.pages.dev/ui_language_selector_module.js?v=984a5ed8e');
+    loadModule('PromptDialog', './view_prompt_dialog_module.js');
+    window.__alloLazyHintsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('HintsModal', './view_hints_modal_module.js'); }; })();
+    window.__alloLazyXPModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('XPModal', './view_xp_modal_module.js'); }; })();
+    window.__alloLazyStorybookExportModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StorybookExportModal', './view_storybook_export_modal_module.js'); }; })();
+    window.__alloLazyInfoModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('InfoModal', './view_info_modal_module.js'); }; })();
+    window.__alloLazyVideoLibrary = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VideoLibrary', './view_video_library_module.js'); }; })();
+    window.__alloLazyVideoRefPlayer = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VideoRefPlayer', './view_video_ref_player_module.js'); }; })();
+    window.__alloLazyEndSessionPreview = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EndSessionPreview', './view_end_session_preview_module.js'); }; })();
+    window.__alloLazyAssignmentCenter = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AssignmentCenter', './view_assignment_center_module.js'); }; })();
+    window.__alloLazyDirectionsResult = (function() { var L=false; return function() { if(L)return; L=true; loadModule('DirectionsResult', './view_directions_result_module.js'); }; })();
+    window.__alloLazySessionModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SessionModal', './view_session_modal_module.js'); try { window.__alloLazyEndSessionPreview(); } catch (_) {} }; })();
+    window.__alloLazySocraticChat = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SocraticChat', './view_socratic_chat_module.js'); }; })();
+    window.__alloLazyGlobalLevelUpModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('GlobalLevelUpModal', './view_global_level_up_module.js'); }; })();
+    loadModule('HeaderBar', './view_header_module.js');
+    loadModule('GuidedModeBanner', './view_guided_mode_banner_module.js');
+    loadModule('LiveLessonRun', './view_live_lesson_run_module.js');
+    loadModule('StudentJoinPanel', './view_student_join_panel_module.js');
+    loadModule('StudentSaveAdventurePanel', './view_student_save_adventure_module.js');
+    loadModule('SidebarTabsNav', './view_sidebar_tabs_nav_module.js');
+    loadModule('UDLGuideButton', './view_udl_guide_button_module.js');
+    loadModule('TeacherHistoryTab', './view_teacher_history_tab_module.js');
+    loadModule('HistoryPanel', './view_history_panel_module.js');
+    loadModule('FabStack', './view_fab_stack_module.js');
+    window.__alloLazyStudyTimerModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StudyTimerModal', './view_study_timer_modal_module.js'); }; })();
+    window.__alloLazyEducatorHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EducatorHubModal', './view_educator_hub_modal_module.js'); }; })();
+    window.__alloLazyBrandProfileEditor = (function() { var L=false; return function() { if(L)return; L=true; loadModule('BrandProfileEditor', './brand_profile_editor_module.js'); }; })();
+    window.__alloLazyVisualSupportsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VisualSupportsModal', './view_visual_supports_modal_module.js'); }; })();
+    window.__alloLazyLearningHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LearningHubModal', './view_learning_hub_modal_module.js'); }; })();
+    window.__alloLazyOpenGrooveStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('OpenGrooveCore', './music_studio/open_groove_core.js'); loadModule('OpenGrooveScheduler', './music_studio/open_groove_scheduler.js'); loadModule('OpenGrooveAudio', './music_studio/open_groove_audio.js'); loadModule('OpenGrooveStudio', './music_studio/open_groove_module.js'); }; })();
+    window.__alloLazyTimelineStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TimelineStudio', './timeline_studio_module.js'); }; })();
+    window.__alloLazyLinguaPractice = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LexicalGraph', './lexical_graph_module.js'); loadModule('LinguaPractice', './lingua_practice_module.js'); }; })();
+    window.__alloLazyTestPrepHub = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TestPrepHub', './test_prep_hub_module.js'); }; })();
+    loadModule('ClozeInteractionPanel', './view_cloze_interaction_panel_module.js');
+    loadModule('LabelPositions', './label_positions_module.js');
+    loadModule('UILanguageSelector', './ui_language_selector_module.js');
     // Fuzzy-match user-typed language strings against known packs (typos, endonyms, variants)
     loadModule('LanguageMatcher', 'https://alloflow-cdn.pages.dev/language_matcher_module.js');
-    loadModule('AudioBanks', 'https://alloflow-cdn.pages.dev/audio_banks_module.js?v=984a5ed8e');
-    loadModule('VerificationPolicy', 'https://alloflow-cdn.pages.dev/verification_policy_module.js?v=984a5ed8e');
-    loadModule('DocBuilderRenderer', 'https://alloflow-cdn.pages.dev/doc_builder_renderer_module.js?v=984a5ed8e');
-    loadModule('PdfAuditView', 'https://alloflow-cdn.pages.dev/view_pdf_audit_module.js?v=984a5ed8e');
-    loadModule('SemanticReview', 'https://alloflow-cdn.pages.dev/semantic_review_module.js?v=984a5ed8e');
-    loadModule('ReviewDocumentSession', 'https://alloflow-cdn.pages.dev/review_document_session_module.js?v=984a5ed8e');
-    loadModule('ExportPreviewView', 'https://alloflow-cdn.pages.dev/view_export_preview_module.js?v=984a5ed8e');
-    loadModule('MiscModals', 'https://alloflow-cdn.pages.dev/view_misc_modals_module.js?v=984a5ed8e');
-    loadModule('GeminiBridge', 'https://alloflow-cdn.pages.dev/view_gemini_bridge_module.js?v=984a5ed8e');
-    loadModule('MiscPanels', 'https://alloflow-cdn.pages.dev/view_misc_panels_module.js?v=984a5ed8e');
-    loadModule('AppStyles', 'https://alloflow-cdn.pages.dev/app_styles_module.js?v=984a5ed8e');
-    loadModule('LiveAac', 'https://alloflow-cdn.pages.dev/live_aac_module.js?v=984a5ed8e');
-    loadModule('SharedActivity', 'https://alloflow-cdn.pages.dev/shared_activity_module.js?v=984a5ed8e');
-    loadModule('GuidedModeConfig', 'https://alloflow-cdn.pages.dev/guided_mode_config_module.js?v=984a5ed8e');
-    loadModule('UIPolish', 'https://alloflow-cdn.pages.dev/ui_polish_module.js?v=984a5ed8e');
-    loadModule('SidebarPanels', 'https://alloflow-cdn.pages.dev/view_sidebar_panels_module.js?v=984a5ed8e');
-    loadModule('ModuleScopeExtras', 'https://alloflow-cdn.pages.dev/module_scope_extras_module.js?v=984a5ed8e');
+    loadModule('AudioBanks', './audio_banks_module.js');
+    loadModule('VerificationPolicy', './verification_policy_module.js');
+    loadModule('DocBuilderRenderer', './doc_builder_renderer_module.js');
+    loadModule('PdfAuditView', './view_pdf_audit_module.js');
+    loadModule('SemanticReview', './semantic_review_module.js');
+    loadModule('ReviewDocumentSession', './review_document_session_module.js');
+    loadModule('ExportPreviewView', './view_export_preview_module.js');
+    loadModule('MiscModals', './view_misc_modals_module.js');
+    loadModule('GeminiBridge', './view_gemini_bridge_module.js');
+    loadModule('MiscPanels', './view_misc_panels_module.js');
+    loadModule('AppStyles', './app_styles_module.js');
+    loadModule('LiveAac', './live_aac_module.js');
+    loadModule('SharedActivity', './shared_activity_module.js');
+    loadModule('GuidedModeConfig', './guided_mode_config_module.js');
+    loadModule('UIPolish', './ui_polish_module.js');
+    loadModule('SidebarPanels', './view_sidebar_panels_module.js');
+    loadModule('ModuleScopeExtras', './module_scope_extras_module.js');
     // ModuleScopeExtras exposes isRtlLang, getSpeechLangCode, ErrorBoundary, etc.
     // Current module builds invoke _upgradeModuleScopeExtras after registration.
     // Keep this short poll only for stale cached module copies that predate the
@@ -12298,13 +12551,13 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       }
       setTimeout(function () { awaitModuleScopeExtras(tries - 1); }, 100);
     })(50);
-    loadModule('ImmersiveReaderModule', 'https://alloflow-cdn.pages.dev/immersive_reader_module.js?v=d02240b3');
-    loadModule('PersonaUIModule', 'https://alloflow-cdn.pages.dev/persona_ui_module.js?v=984a5ed8e');
-    loadModule('DocPipelineModule', 'https://alloflow-cdn.pages.dev/doc_pipeline_module.js?v=984a5ed8e');
+    loadModule('ImmersiveReaderModule', './immersive_reader_module.js');
+    loadModule('PersonaUIModule', './persona_ui_module.js');
+    loadModule('DocPipelineModule', './doc_pipeline_module.js');
     loadModule('PdfValidator', 'https://alloflow-cdn.pages.dev/view_pdf_validator_module.js');
-    loadModule('ContentEngineModule', 'https://alloflow-cdn.pages.dev/content_engine_module.js?v=984a5ed8e');
-    loadModule('TimelineRevisionModule', 'https://alloflow-cdn.pages.dev/timeline_revision_module.js?v=984a5ed8e');
-    loadModule('PromptsLibraryModule', 'https://alloflow-cdn.pages.dev/prompts_library_module.js?v=984a5ed8e');
+    loadModule('ContentEngineModule', './content_engine_module.js');
+    loadModule('TimelineRevisionModule', './timeline_revision_module.js');
+    loadModule('PromptsLibraryModule', './prompts_library_module.js');
     // Capability index (dev-tools/build_tool_index.cjs): what each STEM tool
     // actually DOES, ~110 KB for 139 tools. The lesson-plan prompt ranks and
     // caps against this instead of dumping every tool name, and unlike
@@ -12327,22 +12580,22 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
           .catch(function () {});
       } catch (_) {}
     })();
-    loadModule('TextPipelineHelpersModule', 'https://alloflow-cdn.pages.dev/text_pipeline_helpers_module.js?v=984a5ed8e');
-    loadModule('AdaptiveControllerModule', 'https://alloflow-cdn.pages.dev/adaptive_controller_module.js?v=984a5ed8e');
-    loadModule('StandardsContext', 'https://alloflow-cdn.pages.dev/standards_context_module.js?v=984a5ed8e');
-    loadModule('InstructionalContext', 'https://alloflow-cdn.pages.dev/instructional_context_module.js?v=984a5ed8e');
-    loadModule('GenerationMatrix', 'https://alloflow-cdn.pages.dev/generation_matrix_module.js?v=984a5ed8e');
-    loadModule('StandardsProvider', 'https://alloflow-cdn.pages.dev/standards_provider_module.js?v=984a5ed8e');
+    loadModule('TextPipelineHelpersModule', './text_pipeline_helpers_module.js');
+    loadModule('AdaptiveControllerModule', './adaptive_controller_module.js');
+    loadModule('StandardsContext', './standards_context_module.js');
+    loadModule('InstructionalContext', './instructional_context_module.js');
+    loadModule('GenerationMatrix', './generation_matrix_module.js');
+    loadModule('StandardsProvider', './standards_provider_module.js');
     // Learning Web owns durable cross-view graph snapshots; domain modules keep
     // their richer standards, audit, unit, and lexical records. The engine is
     // eager here because the Alignment Map can render before Throughline opens.
-    loadModule('ConceptGraphEngine', 'https://alloflow-cdn.pages.dev/concept_graph_engine_module.js?v=984a5ed8e');
-    loadModule('LearningWebRegistry', 'https://alloflow-cdn.pages.dev/learning_web_registry_module.js?v=984a5ed8e');
+    loadModule('ConceptGraphEngine', './concept_graph_engine_module.js');
+    loadModule('LearningWebRegistry', './learning_web_registry_module.js');
     // Driving Questions Board. The contract carries the invariants both
     // transports enforce; the view module is inert until a surface mounts it.
-    loadModule('QuestionBoardContract', 'https://alloflow-cdn.pages.dev/question_board_contract_module.js?v=984a5ed8e');
-    loadModule('QuestionBoardView', 'https://alloflow-cdn.pages.dev/question_board_view_module.js?v=984a5ed8e');
-    loadModule('QuestionBoardTransport', 'https://alloflow-cdn.pages.dev/question_board_transport_module.js?v=984a5ed8e');
+    loadModule('QuestionBoardContract', './question_board_contract_module.js');
+    loadModule('QuestionBoardView', './question_board_view_module.js');
+    loadModule('QuestionBoardTransport', './question_board_transport_module.js');
 
     // Reviewed local standards snapshots (Learning Commons v1.11.0, CC BY 4.0).
     // DELIBERATE enablement per LEARNING_COMMONS_SNAPSHOT_IMPORT.md: publishing a
@@ -12354,68 +12607,68 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('StandardsSnapshotMaScienceG5', 'https://alloflow-cdn.pages.dev/standards_snapshots/ma-science-grade-5.js?v=e805fe3c7');
     loadModule('StandardsSnapshotCcssMath', 'https://alloflow-cdn.pages.dev/standards_snapshots/ccss-math.js?v=e805fe3c7');
     loadModule('StandardsSnapshotCcssEla', 'https://alloflow-cdn.pages.dev/standards_snapshots/ccss-ela.js?v=e805fe3c7');
-    loadModule('AgentCoreContracts', 'https://alloflow-cdn.pages.dev/agent_core_contracts_module.js?v=984a5ed8e');
-    loadModule('AgentCoreBlueprintService', 'https://alloflow-cdn.pages.dev/agent_core_blueprint_service_module.js?v=984a5ed8e');
-    loadModule('AgentCoreUIAdapter', 'https://alloflow-cdn.pages.dev/agent_core_ui_adapter_module.js?v=984a5ed8e');
-    loadModule('UdlChatModule', 'https://alloflow-cdn.pages.dev/udl_chat_module.js?v=984a5ed8e');
-    loadModule('AdventureHandlersModule', 'https://alloflow-cdn.pages.dev/adventure_handlers_module.js?v=984a5ed8e');
-    loadModule('GlossaryHelpersModule', 'https://alloflow-cdn.pages.dev/glossary_helpers_module.js?v=984a5ed8e');
-    loadModule('ViewRenderersModule', 'https://alloflow-cdn.pages.dev/view_renderers_module.js?v=984a5ed8e');
-    loadModule('AudioHelpersModule', 'https://alloflow-cdn.pages.dev/audio_helpers_module.js?v=984a5ed8e');
-    loadModule('KaraokeAudioStoreModule', 'https://alloflow-cdn.pages.dev/karaoke_audio_store_module.js?v=398e7a6a');
+    loadModule('AgentCoreContracts', './agent_core_contracts_module.js');
+    loadModule('AgentCoreBlueprintService', './agent_core_blueprint_service_module.js');
+    loadModule('AgentCoreUIAdapter', './agent_core_ui_adapter_module.js');
+    loadModule('UdlChatModule', './udl_chat_module.js');
+    loadModule('AdventureHandlersModule', './adventure_handlers_module.js');
+    loadModule('GlossaryHelpersModule', './glossary_helpers_module.js');
+    loadModule('ViewRenderersModule', './view_renderers_module.js');
+    loadModule('AudioHelpersModule', './audio_helpers_module.js');
+    loadModule('KaraokeAudioStoreModule', './karaoke_audio_store_module.js');
     // Word-by-word karaoke timing (deterministic envelope + valley snapping).
-    loadModule('WordTimingModule', 'https://alloflow-cdn.pages.dev/word_timing_module.js?v=df764e1d');
+    loadModule('WordTimingModule', './word_timing_module.js');
     // Unified live-session content channel (SessionTransport stage 1).
-    loadModule('SessionTransportModule', 'https://alloflow-cdn.pages.dev/session_transport_module.js?v=b57c8bf0');
-    loadModule('ReadAloudAudioServiceModule', 'https://alloflow-cdn.pages.dev/read_aloud_audio_service_module.js?v=74d2bdc6');
-    loadModule('ReadAloudArtifactContractModule', 'https://alloflow-cdn.pages.dev/read_aloud_artifact_contract_module.js?v=501639a2');
-    loadModule('ReadAloudArtifactAudioModule', 'https://alloflow-cdn.pages.dev/read_aloud_artifact_audio_module.js?v=3a046659');
-    loadModule('PersonaSessionArtifactModule', 'https://alloflow-cdn.pages.dev/persona_session_artifact_module.js?v=b41bcb0a');
-    loadModule('GenerationHelpersModule', 'https://alloflow-cdn.pages.dev/generation_helpers_module.js?v=984a5ed8e');
-    loadModule('MiscHandlersModule', 'https://alloflow-cdn.pages.dev/misc_handlers_module.js?v=984a5ed8e');
-    loadModule('PureHelpersModule', 'https://alloflow-cdn.pages.dev/pure_helpers_module.js?v=984a5ed8e');
-    loadModule('MathHelpersModule', 'https://alloflow-cdn.pages.dev/math_helpers_module.js?v=984a5ed8e');
-    loadModule('CmapHandlersModule', 'https://alloflow-cdn.pages.dev/concept_map_handlers_module.js?v=984a5ed8e');
-    loadModule('GenDispatcherModule', 'https://alloflow-cdn.pages.dev/generate_dispatcher_module.js?v=984a5ed8e');
-    loadModule('PhaseKHelpersModule', 'https://alloflow-cdn.pages.dev/phase_k_helpers_module.js?v=709cc2a8');
-    loadModule('AdventureSessionHandlersModule', 'https://alloflow-cdn.pages.dev/adventure_session_handlers_module.js?v=984a5ed8e');
-    loadModule('TextUtilityHelpersModule', 'https://alloflow-cdn.pages.dev/text_utility_helpers_module.js?v=984a5ed8e');
-    loadModule('ViewDbqModule', 'https://alloflow-cdn.pages.dev/view_dbq_module.js?v=984a5ed8e');
-    loadModule('ViewTimelineModule', 'https://alloflow-cdn.pages.dev/view_timeline_module.js?v=984a5ed8e');
-    loadModule('ViewGlossaryModule', 'https://alloflow-cdn.pages.dev/view_glossary_module.js?v=984a5ed8e');
-    loadModule('ViewOutlineModule', 'https://alloflow-cdn.pages.dev/view_outline_module.js?v=984a5ed8e');
-    loadModule('ViewFaqModule', 'https://alloflow-cdn.pages.dev/view_faq_module.js?v=7c43afe4');
-    loadModule('ViewSentenceFramesModule', 'https://alloflow-cdn.pages.dev/view_sentence_frames_module.js?v=984a5ed8e');
-    loadModule('ViewBrainstormModule', 'https://alloflow-cdn.pages.dev/view_brainstorm_module.js?v=984a5ed8e');
-    loadModule('ViewImageModule', 'https://alloflow-cdn.pages.dev/view_image_module.js?v=984a5ed8e');
-    loadModule('ViewAnalysisModule', 'https://alloflow-cdn.pages.dev/view_analysis_module.js?v=984a5ed8e');
-    loadModule('ViewQuizModule', 'https://alloflow-cdn.pages.dev/view_quiz_module.js?v=984a5ed8e');
-    loadModule('ViewSimplifiedModule', 'https://alloflow-cdn.pages.dev/view_simplified_module.js?v=3b31d11b');
-    loadModule('ViewMathModule', 'https://alloflow-cdn.pages.dev/view_math_module.js?v=984a5ed8e');
-    loadModule('ViewLessonPlanModule', 'https://alloflow-cdn.pages.dev/view_lesson_plan_module.js?v=984a5ed8e');
-    loadModule('ViewAlignmentReportModule', 'https://alloflow-cdn.pages.dev/view_alignment_report_module.js?v=984a5ed8e');
-    loadModule('ViewWordSoundsPreviewModule', 'https://alloflow-cdn.pages.dev/view_word_sounds_preview_module.js?v=984a5ed8e');
-    loadModule('ViewGeminiBridgeModule', 'https://alloflow-cdn.pages.dev/view_gemini_bridge_module.js?v=984a5ed8e');
-    loadModule('ViewConceptSortModule', 'https://alloflow-cdn.pages.dev/view_concept_sort_module.js?v=984a5ed8e');
-    loadModule('ViewPersonaChatModule', 'https://alloflow-cdn.pages.dev/view_persona_chat_module.js?v=75192785');
-    loadModule('ViewSpotlightTourModule', 'https://alloflow-cdn.pages.dev/view_spotlight_tour_module.js?v=984a5ed8e');
-    loadModule('ViewProjectSettingsModule', 'https://alloflow-cdn.pages.dev/view_project_settings_module.js?v=984a5ed8e');
-    loadModule('ViewLaunchPadModule', 'https://alloflow-cdn.pages.dev/view_launch_pad_module.js?v=984a5ed8e');
+    loadModule('SessionTransportModule', './session_transport_module.js');
+    loadModule('ReadAloudAudioServiceModule', './read_aloud_audio_service_module.js');
+    loadModule('ReadAloudArtifactContractModule', './read_aloud_artifact_contract_module.js');
+    loadModule('ReadAloudArtifactAudioModule', './read_aloud_artifact_audio_module.js');
+    loadModule('PersonaSessionArtifactModule', './persona_session_artifact_module.js');
+    loadModule('GenerationHelpersModule', './generation_helpers_module.js');
+    loadModule('MiscHandlersModule', './misc_handlers_module.js');
+    loadModule('PureHelpersModule', './pure_helpers_module.js');
+    loadModule('MathHelpersModule', './math_helpers_module.js');
+    loadModule('CmapHandlersModule', './concept_map_handlers_module.js');
+    loadModule('GenDispatcherModule', './generate_dispatcher_module.js');
+    loadModule('PhaseKHelpersModule', './phase_k_helpers_module.js');
+    loadModule('AdventureSessionHandlersModule', './adventure_session_handlers_module.js');
+    loadModule('TextUtilityHelpersModule', './text_utility_helpers_module.js');
+    loadModule('ViewDbqModule', './view_dbq_module.js');
+    loadModule('ViewTimelineModule', './view_timeline_module.js');
+    loadModule('ViewGlossaryModule', './view_glossary_module.js');
+    loadModule('ViewOutlineModule', './view_outline_module.js');
+    loadModule('ViewFaqModule', './view_faq_module.js');
+    loadModule('ViewSentenceFramesModule', './view_sentence_frames_module.js');
+    loadModule('ViewBrainstormModule', './view_brainstorm_module.js');
+    loadModule('ViewImageModule', './view_image_module.js');
+    loadModule('ViewAnalysisModule', './view_analysis_module.js');
+    loadModule('ViewQuizModule', './view_quiz_module.js');
+    loadModule('ViewSimplifiedModule', './view_simplified_module.js');
+    loadModule('ViewMathModule', './view_math_module.js');
+    loadModule('ViewLessonPlanModule', './view_lesson_plan_module.js');
+    loadModule('ViewAlignmentReportModule', './view_alignment_report_module.js');
+    loadModule('ViewWordSoundsPreviewModule', './view_word_sounds_preview_module.js');
+    loadModule('ViewGeminiBridgeModule', './view_gemini_bridge_module.js');
+    loadModule('ViewConceptSortModule', './view_concept_sort_module.js');
+    loadModule('ViewPersonaChatModule', './view_persona_chat_module.js');
+    loadModule('ViewSpotlightTourModule', './view_spotlight_tour_module.js');
+    loadModule('ViewProjectSettingsModule', './view_project_settings_module.js');
+    loadModule('ViewLaunchPadModule', './view_launch_pad_module.js');
     loadModule('OnboardingCoach', 'https://alloflow-cdn.pages.dev/onboarding_coach_module.js');
     loadModule('AlloCommands', 'https://alloflow-cdn.pages.dev/allo_commands_module.js');
     loadModule('OnboardingHelpers', 'https://alloflow-cdn.pages.dev/onboarding_helpers_module.js');
-    loadModule('ViewAdventureModule', 'https://alloflow-cdn.pages.dev/view_adventure_module.js?v=984a5ed8e');
-    loadModule('PhaseNHelpersModule', 'https://alloflow-cdn.pages.dev/phase_n_misc_helpers_module.js?v=984a5ed8e');
-    loadModule('PhaseOHandlersModule', 'https://alloflow-cdn.pages.dev/phase_o_misc_handlers_module.js?v=984a5ed8e');
-    loadModule('ExportHandlersModule', 'https://alloflow-cdn.pages.dev/export_handlers_module.js?v=984a5ed8e');
-    loadModule('AnnotationSuiteModule', 'https://alloflow-cdn.pages.dev/annotation_suite_module.js?v=984a5ed8e');
-    loadModule('NoteTakingTemplatesModule', 'https://alloflow-cdn.pages.dev/note_taking_templates_module.js?v=984a5ed8e');
-    loadModule('AnchorChartsModule', 'https://alloflow-cdn.pages.dev/anchor_charts_module.js?v=984a5ed8e');
-    loadModule('LivePolling', 'https://alloflow-cdn.pages.dev/live_polling_module.js?v=984a5ed8e');
-    loadModule('ConceptPictionaryModule', 'https://alloflow-cdn.pages.dev/concept_pictionary_module.js?v=984a5ed8e');
-    loadModule('ConceptQuestEngineModule', 'https://alloflow-cdn.pages.dev/concept_quest_engine.js?v=984a5ed8e');
-    loadModule('ConceptQuestTeacherModule', 'https://alloflow-cdn.pages.dev/concept_quest_teacher_module.js?v=984a5ed8e');
-    loadModule('EscapeRoomModule', 'https://alloflow-cdn.pages.dev/escape_room_module.js?v=984a5ed8e');
+    loadModule('ViewAdventureModule', './view_adventure_module.js');
+    loadModule('PhaseNHelpersModule', './phase_n_misc_helpers_module.js');
+    loadModule('PhaseOHandlersModule', './phase_o_misc_handlers_module.js');
+    loadModule('ExportHandlersModule', './export_handlers_module.js');
+    loadModule('AnnotationSuiteModule', './annotation_suite_module.js');
+    loadModule('NoteTakingTemplatesModule', './note_taking_templates_module.js');
+    loadModule('AnchorChartsModule', './anchor_charts_module.js');
+    loadModule('LivePolling', './live_polling_module.js');
+    loadModule('ConceptPictionaryModule', './concept_pictionary_module.js');
+    loadModule('ConceptQuestEngineModule', './concept_quest_engine.js');
+    loadModule('ConceptQuestTeacherModule', './concept_quest_teacher_module.js');
+    loadModule('EscapeRoomModule', './escape_room_module.js');
     (function() {
       var s = document.createElement('script');
       s.src = 'https://cdnjs.cloudflare.com/ajax/libs/mathjs/13.2.0/math.min.js';
@@ -18608,6 +18861,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   const [isInteractiveConceptRecall3d, setIsInteractiveConceptRecall3d] = useState(false);
   const [isInteractivePalaceRecall, setIsInteractivePalaceRecall] = useState(false);
   const [interactiveOrganizerSync, setInteractiveOrganizerSync] = useState({ status: 'idle', type: null, activityId: null, error: null });
+  const [interactiveOrganizerRetrying, setInteractiveOrganizerRetrying] = useState(false);
   const activeInteractiveOrganizerTypeRef = useRef(null);
   const lastOrganizerProgressWriteRef = useRef(null);
   const organizerLaunchTimerRef = useRef(null);
@@ -18646,6 +18900,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   // does NOT re-arm because lastSeenInteractiveArmRef tracks the last armedAt
   // the student has already reacted to.
   const lastSeenInteractiveArmRef = useRef(null);
+  const lastSeenInteractiveRetryRef = useRef(null);
   const interactiveOrganizerWriteQueueRef = useRef(Promise.resolve());
   const _interactiveOrganizerSetters = {
     venn: setIsInteractiveVenn,
@@ -18745,6 +19000,32 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       releaseWrite();
     }
   }, [isTeacherMode, activeSessionCode, activeSessionAppId, appId, generatedContent, sessionData?.resources, sessionData?.interactiveOrganizer, normalizeInteractiveVennGameData, isPlayableInteractiveVennData, addToast]);
+  const retryInteractiveOrganizerStudents = useCallback(async (uids) => {
+    const remote = sessionData?.interactiveOrganizer;
+    const retryUids = Array.from(new Set((Array.isArray(uids) ? uids : []).map(uid => String(uid || '').trim().slice(0, 128)).filter(Boolean))).slice(0, 250);
+    if (!isTeacherMode || !activeSessionCode || !remote?.activityId || !retryUids.length) return { ok: false, reason: 'no-targets' };
+    setInteractiveOrganizerRetrying(true);
+    const previousWrite = interactiveOrganizerWriteQueueRef.current;
+    let releaseWrite;
+    interactiveOrganizerWriteQueueRef.current = new Promise(resolve => { releaseWrite = resolve; });
+    await previousWrite.catch(() => {});
+    try {
+      const sessionRef = doc(db, 'artifacts', activeSessionAppId || appId, 'public', 'data', 'sessions', activeSessionCode);
+      const retryAt = Date.now();
+      await window.__alloWriteToSession(sessionRef, {
+        interactiveOrganizer: { ...remote, retryAt, retryUids },
+      });
+      addToast(`Retry sent to ${retryUids.length} student${retryUids.length === 1 ? '' : 's'}.`, 'success');
+      return { ok: true, retryAt, retryUids };
+    } catch (error) {
+      warnLog('interactiveOrganizer targeted retry failed:', error);
+      addToast('Could not retry the activity for those students. The current activity remains live.', 'error');
+      return { ok: false, error };
+    } finally {
+      setInteractiveOrganizerRetrying(false);
+      releaseWrite();
+    }
+  }, [isTeacherMode, activeSessionCode, activeSessionAppId, appId, sessionData?.interactiveOrganizer, addToast]);
   useEffect(() => {
     if (!isTeacherMode) return;
     const remote = sessionData?.interactiveOrganizer;
@@ -18811,11 +19092,17 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       // Teacher cleared (or no arm yet) — clear all student-side flags.
       Object.values(_interactiveOrganizerSetters).forEach(setter => setter(false));
       lastSeenInteractiveArmRef.current = null;
+      lastSeenInteractiveRetryRef.current = null;
       return;
     }
+    const retryUids = Array.isArray(remote.retryUids) ? remote.retryUids : [];
+    const retryToken = user?.uid && retryUids.includes(user.uid) && Number(remote.retryAt) > 0
+      ? `${remote.activityId || ''}:${remote.retryAt}`
+      : null;
+    const isTargetedRetry = !!retryToken && retryToken !== lastSeenInteractiveRetryRef.current;
     // A rerender of the open organizer must not downgrade an already-opened arm
     // from `ready` back to `loading` (or re-arm an activity the student closed).
-    if (remote.armedAt === lastSeenInteractiveArmRef.current) return;
+    if (remote.armedAt === lastSeenInteractiveArmRef.current && !isTargetedRetry) return;
     _clearOrganizerLaunchTimer();
     writeInteractiveOrganizerLaunchStatus('loading');
     // Resource delivery can lag behind the arm. Keep reporting `loading` while the
@@ -18839,6 +19126,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
     const setter = _interactiveOrganizerSetters[remote.type];
     if (setter) {
       lastSeenInteractiveArmRef.current = remote.armedAt;
+      if (isTargetedRetry) lastSeenInteractiveRetryRef.current = retryToken;
       Object.values(_interactiveOrganizerSetters).forEach(candidate => candidate(false));
       if (syncedGameData) setVennGameData(syncedGameData);
       setter(true);
@@ -18859,7 +19147,8 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
     }
   }, [sessionData?.interactiveOrganizer?.type, sessionData?.interactiveOrganizer?.armedAt, isTeacherMode,
       sessionData?.interactiveOrganizer?.resourceId, sessionData?.interactiveOrganizer?.resourceRevision,
-      sessionData?.interactiveOrganizer?.structureType, generatedContent, user?.uid, activeSessionCode, activeSessionAppId, appId,
+      sessionData?.interactiveOrganizer?.structureType, sessionData?.interactiveOrganizer?.retryAt,
+      sessionData?.interactiveOrganizer?.retryUids, generatedContent, user?.uid, activeSessionCode, activeSessionAppId, appId,
       normalizeInteractiveVennGameData, isPlayableInteractiveVennData, writeInteractiveOrganizerLaunchStatus,
       handleInteractiveOrganizerReady, handleInteractiveOrganizerFailed, _clearOrganizerLaunchTimer]);
 
@@ -22389,12 +22678,6 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   const [qrShareSvg, setQrShareSvg] = useState('');
   const [qrShareError, setQrShareError] = useState(false);
   const homeworkQrDialogRef = useRef(null);
-  const recentQrSharesDialogRef = useRef(null);
-  // True only while a press that BEGAN on the backdrop is in flight. Without
-  // it, releasing a text-selection drag outside the panel closes the dialog
-  // and throws away whatever was being typed.
-  const recentQrBackdropPressRef = useRef(false);
-  useFocusTrap(recentQrSharesDialogRef, showRecentQrShares, () => setShowRecentQrShares(false));
   const [pendingQrAssignmentResource, setPendingQrAssignmentResource] = useState(null);
   const buildAlloShareUrl = useCallback((params = {}) => {
       try {
@@ -24791,6 +25074,137 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           addToast('Could not revoke this homework link. Try again while connected.', 'error');
       }
   }, [qrShareModal, mbConfig, appId, addToast]);
+
+  // Assignment Center CDN boundary. Only display-safe values and narrowly
+  // scoped actions cross it; mailbox credentials, pack secrets, raw share
+  // records, persistence and network operations stay in this host.
+  const assignmentCenterActivityView = useMemo(() => {
+      const draft = sharedAssignmentActivity && typeof sharedAssignmentActivity === 'object'
+          ? sharedAssignmentActivity
+          : {};
+      return {
+          enabled: draft.enabled === true,
+          type: ['word_cloud', 'rating', 'availability', 'signup', 'survey'].includes(draft.type) ? draft.type : 'word_cloud',
+          prompt: String(draft.prompt || '').slice(0, 240),
+          optionsText: String(draft.optionsText || '').slice(0, 4000),
+          identityMode: ['real_name', 'codename', 'anonymous'].includes(draft.identityMode) ? draft.identityMode : '',
+          allowMaybe: draft.allowMaybe !== false,
+          multiSelect: draft.multiSelect !== false,
+          maxPerPerson: Math.max(1, Math.min(10, Math.trunc(Number(draft.maxPerPerson) || 1))),
+          surveyInfo: String(draft.surveyInfo || '').slice(0, 600),
+          showSurveyPairingGuidance: !!draft._researchMeta,
+          surveyItems: (Array.isArray(draft.surveyItems) ? draft.surveyItems : []).slice(0, 12).map((item, index) => ({
+              viewKey: 'survey-item-' + index,
+              type: ['likert', 'choice', 'freetext', 'numeric'].includes(item?.type) ? item.type : 'likert',
+              text: String(item?.text || '').slice(0, 240),
+              steps: [3, 4, 5, 7].includes(Number(item?.steps)) ? Number(item.steps) : 5,
+              required: item?.required === true,
+              lowLabel: item?.lowLabel == null ? undefined : String(item.lowLabel).slice(0, 60),
+              highLabel: item?.highLabel == null ? undefined : String(item.highLabel).slice(0, 60),
+              optionsText: String(item?.optionsText || '').slice(0, 4000),
+              min: String(item?.min ?? '').slice(0, 32),
+              max: String(item?.max ?? '').slice(0, 32),
+          })),
+      };
+  }, [sharedAssignmentActivity]);
+  const patchAssignmentCenterActivity = useCallback((patch) => {
+      if (!patch || typeof patch !== 'object' || Array.isArray(patch)) return;
+      const owns = key => Object.prototype.hasOwnProperty.call(patch, key);
+      setSharedAssignmentActivity(previous => {
+          const next = { ...(previous || {}) };
+          if (owns('enabled')) next.enabled = patch.enabled === true;
+          if (owns('type') && ['word_cloud', 'rating', 'availability', 'signup', 'survey'].includes(patch.type)) next.type = patch.type;
+          if (owns('prompt')) next.prompt = String(patch.prompt || '').slice(0, 240);
+          if (owns('optionsText')) next.optionsText = String(patch.optionsText || '').slice(0, 4000);
+          if (owns('identityMode')) next.identityMode = ['real_name', 'codename', 'anonymous'].includes(patch.identityMode) ? patch.identityMode : '';
+          if (owns('allowMaybe')) next.allowMaybe = patch.allowMaybe !== false;
+          if (owns('multiSelect')) next.multiSelect = patch.multiSelect !== false;
+          if (owns('maxPerPerson')) next.maxPerPerson = Math.max(1, Math.min(10, Math.trunc(Number(patch.maxPerPerson) || 1)));
+          if (owns('surveyInfo')) next.surveyInfo = String(patch.surveyInfo || '').slice(0, 600);
+          return next;
+      });
+  }, []);
+  const patchAssignmentCenterSurveyItem = useCallback((index, patch) => {
+      if (!Number.isInteger(index) || index < 0 || index >= 12 || !patch || typeof patch !== 'object' || Array.isArray(patch)) return;
+      const owns = key => Object.prototype.hasOwnProperty.call(patch, key);
+      setSharedAssignmentActivity(previous => {
+          const rows = [...(Array.isArray(previous?.surveyItems) ? previous.surveyItems : [])].slice(0, 12);
+          if (index >= rows.length) return previous;
+          const nextItem = { ...(rows[index] || {}) };
+          if (owns('type') && ['likert', 'choice', 'freetext', 'numeric'].includes(patch.type)) nextItem.type = patch.type;
+          if (owns('text')) nextItem.text = String(patch.text || '').slice(0, 240);
+          if (owns('steps') && [3, 4, 5, 7].includes(Number(patch.steps))) nextItem.steps = Number(patch.steps);
+          if (owns('required')) nextItem.required = patch.required === true;
+          if (owns('lowLabel')) nextItem.lowLabel = String(patch.lowLabel || '').slice(0, 60);
+          if (owns('highLabel')) nextItem.highLabel = String(patch.highLabel || '').slice(0, 60);
+          if (owns('optionsText')) nextItem.optionsText = String(patch.optionsText || '').slice(0, 4000);
+          if (owns('min')) nextItem.min = String(patch.min ?? '').slice(0, 32);
+          if (owns('max')) nextItem.max = String(patch.max ?? '').slice(0, 32);
+          rows[index] = nextItem;
+          return { ...(previous || {}), surveyItems: rows };
+      });
+  }, []);
+  const removeAssignmentCenterSurveyItem = useCallback((index) => {
+      if (!Number.isInteger(index) || index < 0 || index >= 12) return;
+      setSharedAssignmentActivity(previous => ({
+          ...(previous || {}),
+          surveyItems: (Array.isArray(previous?.surveyItems) ? previous.surveyItems : []).filter((_, at) => at !== index).slice(0, 12),
+      }));
+  }, []);
+  const addAssignmentCenterSurveyItem = useCallback(() => {
+      setSharedAssignmentActivity(previous => {
+          const rows = (Array.isArray(previous?.surveyItems) ? previous.surveyItems : []).slice(0, 12);
+          if (rows.length >= 12) return previous;
+          return { ...(previous || {}), surveyItems: [...rows, { type: 'likert', text: '', steps: 5, required: false }] };
+      });
+  }, []);
+  const assignmentCenterRowViews = useMemo(() => {
+      const boundedCount = value => Math.max(0, Math.min(1000000, Math.trunc(Number(value) || 0)));
+      return assignmentCenterRows.map((row, index) => {
+          const share = row?.share || {};
+          const action = assignmentCenterActionByUrl[share.url] || {};
+          const expiresAt = Date.parse(share.expiresAt || '');
+          const hosted = share.type === 'assignment-pack-hosted';
+          const active = row?.lifecycle === 'active';
+          const expired = row?.lifecycle === 'expired';
+          return {
+              viewKey: 'assignment-' + index,
+              title: String(share.title || '').slice(0, 140),
+              lifecycle: ['active', 'expired', 'revoked'].includes(row?.lifecycle) ? row.lifecycle : 'expired',
+              resourceCount: Math.max(1, Math.min(1000, Math.trunc(Number(share.resourceCount) || 1))),
+              expiresLabel: Number.isFinite(expiresAt) ? new Date(expiresAt).toLocaleDateString() : '',
+              activityType: ['word_cloud', 'rating', 'availability', 'signup', 'survey'].includes(share.sharedActivity?.type) ? share.sharedActivity.type : '',
+              hasSharedActivity: !!share.sharedActivity,
+              activityState: ['idle', 'loading', 'ready', 'error'].includes(row?.activityState) ? row.activityState : 'idle',
+              participantCount: boundedCount(row?.activity?.participantCount),
+              pendingCount: boundedCount(row?.activity?.pending),
+              approvedCount: boundedCount(row?.activity?.approved),
+              hiddenCount: boundedCount(row?.activity?.hidden),
+              actionKind: ['extending', 'duplicating', 'revoking'].includes(action.kind) ? action.kind : '',
+              actionError: String(action.error || '').slice(0, 300),
+              canImportResearch: hosted && share.sharedActivity?.type === 'survey',
+              canExtend: hosted && active,
+              canDuplicate: hosted && expired,
+              canRevoke: active && share.type !== 'assignment-pack',
+              showExpiredCopyNote: hosted && expired,
+              onManage: active ? () => openQrShareModal(share) : undefined,
+              onCopyLink: active ? () => copyToClipboard(share.url) : undefined,
+              onImportResearch: hosted && share.sharedActivity?.type === 'survey' ? () => importSurveyShareToResearchSuite(share) : undefined,
+              onExtend: hosted && active ? () => extendAssignmentCenterShare(share) : undefined,
+              onDuplicate: hosted && expired ? () => duplicateAssignmentCenterShare(share) : undefined,
+              onRevoke: active && share.type !== 'assignment-pack' ? () => revokeHomeworkAssignment(share) : undefined,
+              onRemoveRecord: () => setRecentQrShares(previous => previous.filter(item => item.url !== share.url)),
+          };
+      });
+  }, [assignmentCenterRows, assignmentCenterActionByUrl, copyToClipboard, duplicateAssignmentCenterShare, extendAssignmentCenterShare, importSurveyShareToResearchSuite, openQrShareModal, revokeHomeworkAssignment]);
+  const assignmentCenterVisibleRowViews = useMemo(() => {
+      const visibleKeys = new Set(assignmentCenterVisibleRows.map(row => String(row?.key || '')));
+      return assignmentCenterRowViews.filter((_, index) => visibleKeys.has(String(assignmentCenterRows[index]?.key || '')));
+  }, [assignmentCenterRows, assignmentCenterRowViews, assignmentCenterVisibleRows]);
+  const setAssignmentCenterFilterSafe = useCallback((value) => {
+      setAssignmentCenterFilter(['all', 'needs_review', 'active', 'closed', 'errors'].includes(value) ? value : 'all');
+  }, []);
+  const setAssignmentCenterPollAskSafe = useCallback((value) => setPollAsk(String(value || '').slice(0, 160)), []);
   const [includeSourceCitations, setIncludeSourceCitations] = useState(false);
   const [saveOriginalOnAdjust, setSaveOriginalOnAdjust] = useState(false);
 
@@ -38757,6 +39171,12 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           });
   };
   const handleRestoreView = (item, options = {}) => {
+      // True route prewarm: request the presentation module before the state
+      // swap renders its recoverable in-place shell. Directions is deliberately
+      // not part of CORE_BOOT_MODULES, so unrelated cold starts stay lean.
+      if (item && item.type === 'directions') {
+          try { if (window.__alloLazyDirectionsResult) window.__alloLazyDirectionsResult(); } catch (_) {}
+      }
       if (item && item.type === 'aac-board') {
           const localAacPayload = _alloBuildLocalAacPayload(item.data, item.id, Date.now());
           if (!localAacPayload) {
@@ -48723,399 +49143,44 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
             </div>
         ))}
       </div>
-      {showRecentQrShares && (
-        <div className="fixed inset-0 z-[151] flex items-center justify-center bg-slate-950/80 p-4 no-print" role="dialog" aria-modal="true" aria-labelledby="assignment-control-center-title"
-          onPointerDown={(event) => { recentQrBackdropPressRef.current = event.target === event.currentTarget; }}
-          onClick={(event) => {
-            // Close only when the whole gesture happened on the backdrop.
-            if (event.target !== event.currentTarget) return;
-            if (!recentQrBackdropPressRef.current) { recentQrBackdropPressRef.current = false; return; }
-            recentQrBackdropPressRef.current = false;
-            setShowRecentQrShares(false);
-          }}>
-          <div ref={recentQrSharesDialogRef} className="relative max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-2xl bg-white p-5 shadow-2xl" onClick={event => event.stopPropagation()}>
-            <button onClick={() => setShowRecentQrShares(false)} className="absolute right-3 top-3 rounded-full p-2 text-slate-600 hover:bg-slate-100" aria-label={t('share_collect.close_aria') || 'Close Share & Collect'}><X size={20}/></button>
-            <div className="pr-12">
-              <h2 id="assignment-control-center-title" className="text-xl font-black text-slate-900">{t('share_collect.title') || 'Share & Collect'}</h2>
-              <p className="mt-1 text-xs text-slate-600">{t('share_collect.subtitle') || 'Set up a poll, sign-up sheet or class activity, share it by link or QR, and watch the responses arrive. Everything here is saved on this teacher device.'}</p>
-              {/* Set-up lives WITH the results. It used to sit inside the
-                  Documents dropdown, where role="menu" arrow-key handling
-                  fought the textarea and there was no room for the fields. */}
-              <section className="mt-4 rounded-xl border border-sky-200 bg-sky-50 p-4" aria-labelledby="activity-setup-title">
-                <h3 id="activity-setup-title" className="text-sm font-black text-slate-900">{t('share_collect.setup_title') || 'Add a shared activity'}</h3>
-                <p className="mt-1 text-[11px] leading-relaxed text-slate-600">
-                  {t('share_collect.setup_sub') || 'Attached to the next assignment link or QR code you create. People answer without an account.'}
-                </p>
-                <label className="mt-3 block text-[11px] font-black text-slate-700">
-                  {t('share_collect.activity_label') || 'Activity'}
-                  <select
-                    value={sharedAssignmentActivity?.enabled === true ? (sharedAssignmentActivity?.type || 'word_cloud') : ''}
-                    onChange={event => {
-                      const nextType = event.target.value;
-                      // Seeded default prompts are shown to respondents, so they
-                      // follow the teacher's UI language, not the app's build language.
-                      const prompts = {
-                        word_cloud: t('share_collect.prompt_word_cloud') || 'What word or short phrase best captures your thinking?',
-                        rating: t('share_collect.prompt_rating') || 'How would you rate your understanding?',
-                        availability: t('share_collect.prompt_availability') || 'Which of these times could you make?',
-                        signup: t('share_collect.prompt_signup') || 'Choose a time that works for you',
-                        survey: t('share_collect.prompt_survey') || 'How did this week go?',
-                      };
-                      setSharedAssignmentActivity(previous => ({
-                        ...(previous || {}),
-                        // Choosing a type IS the enable. The old separate
-                        // checkbox meant nothing was visible until two
-                        // disclosures had been opened.
-                        enabled: !!nextType,
-                        type: nextType || (previous && previous.type),
-                        prompt: nextType ? (prompts[nextType] || (previous && previous.prompt)) : (previous && previous.prompt),
-                      }));
-                    }}
-                    className="mt-1 w-full rounded-md border border-sky-300 bg-white px-2 py-2 text-sm font-semibold text-slate-800"
-                  >
-                    <option value="">{t('share_collect.type_none') || 'None'}</option>
-                    <option value="word_cloud">{t('share_collect.type_word_cloud') || 'Word Cloud'}</option>
-                    <option value="rating">{t('share_collect.type_rating') || 'Rating scale (not scored)'}</option>
-                    <option value="availability">{t('share_collect.type_availability') || 'Availability poll (find a time)'}</option>
-                    <option value="signup">{t('share_collect.type_signup') || 'Sign-up sheet (claim a slot)'}</option>
-                    <option value="survey">{t('share_collect.type_survey') || 'Survey (multiple questions)'}</option>
-                  </select>
-                </label>
-                {sharedAssignmentActivity?.enabled === true && (<>
-                  <label className="mt-3 block text-[11px] font-black text-slate-700">
-                    {t('share_collect.prompt_label') || 'What people see'}
-                    <input
-                      type="text"
-                      value={String(sharedAssignmentActivity?.prompt || '')}
-                      onChange={event => setSharedAssignmentActivity(previous => ({ ...(previous || {}), prompt: event.target.value.slice(0, 240) }))}
-                      className="mt-1 w-full rounded-md border border-sky-300 bg-white px-2 py-2 text-sm font-semibold text-slate-800"
-                    />
-                  </label>
-                  {(sharedAssignmentActivity?.type === 'availability' || sharedAssignmentActivity?.type === 'signup') && (<>
-                    <div className="mt-3 rounded-lg border border-sky-200 bg-white p-3">
-                      <label className="block text-[11px] font-black text-slate-700">
-                        {t('share_collect.window_label') || 'Describe when it needs to happen (optional)'}
-                        <input
-                          type="text"
-                          value={pollAsk}
-                          onChange={event => setPollAsk(event.target.value.slice(0, 160))}
-                          placeholder={t('share_collect.window_placeholder') || '45 minutes next week, weekday afternoons'}
-                          className="mt-1 w-full rounded-md border border-sky-300 px-2 py-2 text-sm font-semibold text-slate-800"
-                        />
-                      </label>
-                      <button type="button" onClick={suggestPollTimes} disabled={pollAiBusy || !pollAsk.trim()}
-                        className="mt-2 rounded-md bg-sky-700 px-3 py-1.5 text-xs font-black text-white disabled:opacity-50">
-                        {pollAiBusy ? (t('share_collect.thinking') || 'Thinking...') : (t('share_collect.suggest_options') || 'Suggest options')}
-                      </button>
-                      <p className="mt-1 text-[10px] leading-relaxed text-slate-600">{t('share_collect.suggest_note') || 'Suggestions land in the box below for you to edit. Nothing is shared until you create the link.'}</p>
-                    </div>
-                    <label className="mt-3 block text-[11px] font-black text-slate-700">
-                      {t('share_collect.options_label') || 'Options, one per line'}
-                      <textarea
-                        value={String(sharedAssignmentActivity?.optionsText || '')}
-                        onChange={event => setSharedAssignmentActivity(previous => ({ ...(previous || {}), optionsText: event.target.value }))}
-                        rows={6}
-                        placeholder={t('share_collect.options_placeholder') || "Tue Mar 4, 3:15pm\nWed Mar 5, 3:15pm\nThu Mar 6, 3:15pm"}
-                        className="mt-1 w-full rounded-md border border-sky-300 bg-white px-2 py-2 text-sm font-semibold text-slate-800"
-                      />
-                    </label>
-                    <p className="mt-1 text-[10px] leading-relaxed text-slate-600">
-                      {t('share_collect.options_note') || 'Write times however you say them. AlloFlow does not convert time zones, so put the zone in the label if people are in more than one.'}
-                      {sharedAssignmentActivity?.type === 'signup' && (t('share_collect.signup_multiplier_note') || ' Add "x 2" at the end of a line to give that slot two places.')}
-                    </p>
-                    <label className="mt-3 block text-[11px] font-black text-slate-700">
-                      {t('share_collect.identity_voting_label') || 'Who is voting'}
-                      <select
-                        value={String(sharedAssignmentActivity?.identityMode || '')}
-                        onChange={event => setSharedAssignmentActivity(previous => ({ ...(previous || {}), identityMode: event.target.value }))}
-                        className="mt-1 w-full rounded-md border border-sky-300 bg-white px-2 py-2 text-sm font-semibold text-slate-800"
-                      >
-                        <option value="">{t('share_collect.identity_choose') || 'Choose before sharing...'}</option>
-                        <option value="real_name">{t('share_collect.identity_real') || 'Real names (staff, families)'}</option>
-                        <option value="codename">{t('share_collect.identity_codename') || 'Codenames (students)'}</option>
-                        <option value="anonymous">{t('share_collect.identity_anonymous_counts') || 'Anonymous (counts only)'}</option>
-                      </select>
-                    </label>
-                    {!sharedAssignmentActivity?.identityMode && (
-                      <p className="mt-1 text-[10px] font-bold text-amber-700">{t('share_collect.identity_required_vote') || 'Pick who is voting before you share this.'}</p>
-                    )}
-                    {sharedAssignmentActivity?.type === 'signup' ? (
-                      <label className="mt-3 block text-[11px] font-black text-slate-700">
-                        {t('share_collect.slots_per_person') || 'Slots one person may take'}
-                        <input type="number" min={1} max={10}
-                          value={Number(sharedAssignmentActivity?.maxPerPerson) || 1}
-                          onChange={event => setSharedAssignmentActivity(previous => ({ ...(previous || {}), maxPerPerson: Math.max(1, Math.min(10, parseInt(event.target.value, 10) || 1)) }))}
-                          className="mt-1 w-32 rounded-md border border-sky-300 bg-white px-2 py-2 text-sm font-semibold text-slate-800" />
-                      </label>
-                    ) : (<>
-                      <label className="mt-3 flex items-center gap-2 text-[11px] font-bold text-slate-700">
-                        <input type="checkbox" checked={sharedAssignmentActivity?.allowMaybe !== false}
-                          onChange={event => setSharedAssignmentActivity(previous => ({ ...(previous || {}), allowMaybe: event.target.checked }))} />
-                        {t('share_collect.allow_maybe') || 'Allow "maybe" as well as yes and no'}
-                      </label>
-                      <label className="mt-1 flex items-center gap-2 text-[11px] font-bold text-slate-700">
-                        <input type="checkbox" checked={sharedAssignmentActivity?.multiSelect !== false}
-                          onChange={event => setSharedAssignmentActivity(previous => ({ ...(previous || {}), multiSelect: event.target.checked }))} />
-                        {t('share_collect.multi_select') || 'People can pick more than one'}
-                      </label>
-                    </>)}
-                  </>)}
-                  {sharedAssignmentActivity?.type === 'survey' && (<>
-                    <div className="mt-3 space-y-2">
-                      {(sharedAssignmentActivity?.surveyItems || []).map((surveyItem, surveyIndex) => (
-                        <div key={surveyIndex} className="rounded-lg border border-sky-200 bg-white p-2">
-                          <div className="flex items-start gap-2">
-                            <input
-                              type="text"
-                              aria-label={t('share_collect.q_aria', { n: surveyIndex + 1 }) || ('Question ' + (surveyIndex + 1))}
-                              value={String(surveyItem?.text || '')}
-                              onChange={event => setSharedAssignmentActivity(previous => {
-                                const rows = [...((previous || {}).surveyItems || [])];
-                                rows[surveyIndex] = { ...rows[surveyIndex], text: event.target.value.slice(0, 240) };
-                                return { ...(previous || {}), surveyItems: rows };
-                              })}
-                              placeholder={t('share_collect.q_aria', { n: surveyIndex + 1 }) || ('Question ' + (surveyIndex + 1))}
-                              className="flex-1 rounded-md border border-sky-300 px-2 py-1.5 text-xs font-semibold text-slate-800"
-                            />
-                            <button type="button" aria-label={t('share_collect.q_remove_aria', { n: surveyIndex + 1 }) || ('Remove question ' + (surveyIndex + 1))}
-                              onClick={() => setSharedAssignmentActivity(previous => ({
-                                ...(previous || {}),
-                                surveyItems: ((previous || {}).surveyItems || []).filter((_, at) => at !== surveyIndex),
-                              }))}
-                              className="rounded-md border border-rose-200 px-2 py-1 text-xs font-black text-rose-700">✖</button>
-                          </div>
-                          <div className="mt-2 flex flex-wrap items-center gap-2">
-                            <select
-                              aria-label={t('share_collect.q_type_aria', { n: surveyIndex + 1 }) || ('Answer type for question ' + (surveyIndex + 1))}
-                              value={surveyItem?.type || 'likert'}
-                              onChange={event => setSharedAssignmentActivity(previous => {
-                                const rows = [...((previous || {}).surveyItems || [])];
-                                rows[surveyIndex] = { ...rows[surveyIndex], type: event.target.value };
-                                return { ...(previous || {}), surveyItems: rows };
-                              })}
-                              className="rounded-md border border-sky-300 px-2 py-1.5 text-xs font-semibold text-slate-800"
-                            >
-                              <option value="likert">{t('share_collect.q_type_likert') || 'Scale (agree to disagree)'}</option>
-                              <option value="choice">{t('share_collect.q_type_choice') || 'Multiple choice'}</option>
-                              <option value="freetext">{t('share_collect.q_type_freetext') || 'Short answer'}</option>
-                              <option value="numeric">{t('share_collect.q_type_numeric') || 'Number'}</option>
-                            </select>
-                            {(surveyItem?.type || 'likert') === 'likert' && (
-                              <select
-                                aria-label={t('share_collect.q_steps_aria', { n: surveyIndex + 1 }) || ('Scale steps for question ' + (surveyIndex + 1))}
-                                value={Number(surveyItem?.steps) || 5}
-                                onChange={event => setSharedAssignmentActivity(previous => {
-                                  const rows = [...((previous || {}).surveyItems || [])];
-                                  rows[surveyIndex] = { ...rows[surveyIndex], steps: parseInt(event.target.value, 10) };
-                                  return { ...(previous || {}), surveyItems: rows };
-                                })}
-                                className="rounded-md border border-sky-300 px-2 py-1.5 text-xs font-semibold text-slate-800"
-                              >
-                                {[3, 4, 5, 7].map(stepCount => <option key={stepCount} value={stepCount}>{t('share_collect.q_steps_n', { n: stepCount }) || (stepCount + '-point')}</option>)}
-                              </select>
-                            )}
-                            <label className="flex items-center gap-1 text-[11px] font-bold text-slate-700">
-                              <input type="checkbox" checked={surveyItem?.required === true}
-                                onChange={event => setSharedAssignmentActivity(previous => {
-                                  const rows = [...((previous || {}).surveyItems || [])];
-                                  rows[surveyIndex] = { ...rows[surveyIndex], required: event.target.checked };
-                                  return { ...(previous || {}), surveyItems: rows };
-                                })} />
-                              {t('share_collect.q_required') || 'Required'}
-                            </label>
-                          </div>
-                          {(surveyItem?.type || 'likert') === 'likert' && (
-                            <div className="mt-2 grid grid-cols-2 gap-2">
-                              <input type="text" aria-label={t('share_collect.scale_low_aria') || 'Label for the low end'}
-                                value={surveyItem?.lowLabel ?? (t('share_collect.scale_low_default') || 'Strongly disagree')}
-                                onChange={event => setSharedAssignmentActivity(previous => {
-                                  const rows = [...((previous || {}).surveyItems || [])];
-                                  rows[surveyIndex] = { ...rows[surveyIndex], lowLabel: event.target.value.slice(0, 60) };
-                                  return { ...(previous || {}), surveyItems: rows };
-                                })}
-                                className="rounded-md border border-sky-200 px-2 py-1 text-[11px] text-slate-700" />
-                              <input type="text" aria-label={t('share_collect.scale_high_aria') || 'Label for the high end'}
-                                value={surveyItem?.highLabel ?? (t('share_collect.scale_high_default') || 'Strongly agree')}
-                                onChange={event => setSharedAssignmentActivity(previous => {
-                                  const rows = [...((previous || {}).surveyItems || [])];
-                                  rows[surveyIndex] = { ...rows[surveyIndex], highLabel: event.target.value.slice(0, 60) };
-                                  return { ...(previous || {}), surveyItems: rows };
-                                })}
-                                className="rounded-md border border-sky-200 px-2 py-1 text-[11px] text-slate-700" />
-                            </div>
-                          )}
-                          {surveyItem?.type === 'choice' && (
-                            <textarea
-                              aria-label={t('share_collect.q_choices_aria', { n: surveyIndex + 1 }) || ('Choices for question ' + (surveyIndex + 1) + ', one per line')}
-                              value={String(surveyItem?.optionsText || '')}
-                              onChange={event => setSharedAssignmentActivity(previous => {
-                                const rows = [...((previous || {}).surveyItems || [])];
-                                rows[surveyIndex] = { ...rows[surveyIndex], optionsText: event.target.value };
-                                return { ...(previous || {}), surveyItems: rows };
-                              })}
-                              rows={3}
-                              placeholder={t('share_collect.signup_slots_placeholder') || 'Read-aloud\nGlossary\nPictures'}
-                              className="mt-2 w-full rounded-md border border-sky-200 px-2 py-1 text-[11px] text-slate-700"
-                            />
-                          )}
-                          {surveyItem?.type === 'numeric' && (
-                            <div className="mt-2 flex items-center gap-2 text-[11px] font-bold text-slate-700">
-                              <label>{t('share_collect.q_min') || 'Min'} <input type="number" value={surveyItem?.min ?? ''}
-                                onChange={event => setSharedAssignmentActivity(previous => {
-                                  const rows = [...((previous || {}).surveyItems || [])];
-                                  rows[surveyIndex] = { ...rows[surveyIndex], min: event.target.value };
-                                  return { ...(previous || {}), surveyItems: rows };
-                                })}
-                                className="ml-1 w-20 rounded-md border border-sky-200 px-2 py-1" /></label>
-                              <label>{t('share_collect.q_max') || 'Max'} <input type="number" value={surveyItem?.max ?? ''}
-                                onChange={event => setSharedAssignmentActivity(previous => {
-                                  const rows = [...((previous || {}).surveyItems || [])];
-                                  rows[surveyIndex] = { ...rows[surveyIndex], max: event.target.value };
-                                  return { ...(previous || {}), surveyItems: rows };
-                                })}
-                                className="ml-1 w-20 rounded-md border border-sky-200 px-2 py-1" /></label>
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                    {((sharedAssignmentActivity?.surveyItems || []).length < 12) && (
-                      <button type="button"
-                        onClick={() => setSharedAssignmentActivity(previous => ({
-                          ...(previous || {}),
-                          surveyItems: [...((previous || {}).surveyItems || []), { type: 'likert', text: '', steps: 5, required: false }],
-                        }))}
-                        className="mt-2 rounded-md border border-sky-300 bg-white px-3 py-1.5 text-xs font-black text-sky-800">
-                        {t('share_collect.add_question') || '+ Add question'}
-                      </button>
-                    )}
-                    <label className="mt-3 block text-[11px] font-black text-slate-700">
-                      {t('share_collect.about_survey_label') || 'About this survey (optional, shown to respondents)'}
-                      <textarea
-                        value={String(sharedAssignmentActivity?.surveyInfo || '')}
-                        onChange={event => setSharedAssignmentActivity(previous => ({ ...(previous || {}), surveyInfo: event.target.value.slice(0, 600) }))}
-                        rows={3}
-                        maxLength={600}
-                        placeholder={t('share_collect.intro_placeholder') || 'Who is asking, what the answers are for, and that taking part is voluntary.'}
-                        className="mt-1 w-full rounded-md border border-sky-300 bg-white px-2 py-2 text-xs text-slate-800"
-                      />
-                    </label>
-                    <label className="mt-3 block text-[11px] font-black text-slate-700">
-                      {t('share_collect.identity_answer_label') || 'Who is answering'}
-                      <select
-                        value={String(sharedAssignmentActivity?.identityMode || '')}
-                        onChange={event => setSharedAssignmentActivity(previous => ({ ...(previous || {}), identityMode: event.target.value }))}
-                        className="mt-1 w-full rounded-md border border-sky-300 bg-white px-2 py-2 text-sm font-semibold text-slate-800"
-                      >
-                        <option value="">{t('share_collect.identity_choose') || 'Choose before sharing...'}</option>
-                        <option value="real_name">{t('share_collect.identity_real') || 'Real names (staff, families)'}</option>
-                        <option value="codename">{t('share_collect.identity_codename') || 'Codenames (students)'}</option>
-                        <option value="anonymous">{t('share_collect.identity_anonymous_agg') || 'Anonymous (aggregates only)'}</option>
-                      </select>
-                    </label>
-                    {!sharedAssignmentActivity?.identityMode && (
-                      <p className="mt-1 text-[10px] font-bold text-amber-700">{t('share_collect.identity_required_answer') || 'Pick who is answering before you share this.'}</p>
-                    )}
-                    {sharedAssignmentActivity?._researchMeta && (
-                      <p className="mt-1 text-[10px] leading-relaxed text-slate-600">
-                        {t('share_collect.pairing_intro') || 'For pre/mid/post comparisons:'}{' '}
-                        <b>{t('share_collect.identity_real_short') || 'real names'}</b>{' '}{t('share_collect.pairing_real') || 'pair the same person across check-ins;'}{' '}
-                        <b>{t('share_collect.identity_codename_short') || 'codenames'}</b>{' '}{t('share_collect.pairing_codename') || 'pair only when they answer from the same device;'}{' '}
-                        <b>{t('share_collect.identity_anon_short') || 'anonymous'}</b>{' '}{t('share_collect.pairing_anon') || 'never pairs, so you get group totals only.'}
-                      </p>
-                    )}
-                    {Number(mbConfig?.v || 0) > 0 && Number(mbConfig?.v || 0) < 13 && (
-                      <p className="mt-2 rounded-lg border border-amber-300 bg-amber-50 p-2 text-[10px] font-bold text-amber-800">
-                        {t('share_collect.mailbox_v13_note', { v: mbConfig.v }) || ('Your Class Mailbox script is v' + mbConfig.v + '. Surveys need v13. Use the update notice below to copy the new script and redeploy, then reconnect.')}
-                      </p>
-                    )}
-                  </>)}
-                  <button type="button" onClick={() => { if (typeof createHomeworkAssignmentLink === 'function') createHomeworkAssignmentLink(); }}
-                    disabled={sharedAssignmentActivity?.type === 'survey' && (
-                      !((sharedAssignmentActivity?.surveyItems || []).some(surveyItem => String(surveyItem?.text || '').trim()))
-                      || !sharedAssignmentActivity?.identityMode
-                      || (Number(mbConfig?.v || 0) > 0 && Number(mbConfig?.v || 0) < 13)
-                    )}
-                    className="mt-4 w-full rounded-lg bg-sky-700 px-3 py-2 text-sm font-black text-white disabled:cursor-not-allowed disabled:opacity-50">
-                    {t('share_collect.create_link') || 'Create the link and QR code'}
-                  </button>
-                </>)}
-              </section>
-            </div>
-            <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4" aria-label={t('share_collect.status_summary_aria') || 'Assignment status summary'}>
-              <div className="rounded-xl bg-emerald-50 p-3 text-center"><div className="text-lg font-black text-emerald-900">{assignmentCenterRows.filter(row => row.lifecycle === 'active').length}</div><div className="text-[10px] font-black uppercase text-emerald-700">{t('share_collect.stat_active') || 'Active'}</div></div>
-              <div className="rounded-xl bg-amber-50 p-3 text-center"><div className="text-lg font-black text-amber-900">{assignmentCenterRows.reduce((sum, row) => sum + (row.activity?.pending || 0), 0)}</div><div className="text-[10px] font-black uppercase text-amber-700">{t('share_collect.stat_awaiting') || 'Awaiting review'}</div></div>
-              <div className="rounded-xl bg-sky-50 p-3 text-center"><div className="text-lg font-black text-sky-900">{assignmentCenterRows.reduce((sum, row) => sum + (row.activity?.participantCount || 0), 0)}</div><div className="text-[10px] font-black uppercase text-sky-700">{t('share_collect.stat_anon_responses') || 'Anonymous responses'}</div></div>
-              <div className="rounded-xl bg-slate-100 p-3 text-center"><div className="text-lg font-black text-slate-800">{assignmentCenterRows.filter(row => row.lifecycle !== 'active').length}</div><div className="text-[10px] font-black uppercase text-slate-600">{t('share_collect.stat_closed') || 'Closed'}</div></div>
-            </div>
-            <div className="mt-3 rounded-xl border border-indigo-100 bg-indigo-50 px-3 py-2">
-              <p className="text-[11px] text-indigo-900">{t('share_collect.privacy_note') || 'Only aggregate counts and moderation totals are cached or exported; response text, links, private keys, and participant tokens stay out of reports.'}</p>
-              <div className="mt-2 flex flex-wrap items-end gap-2">
-                <label className="text-[10px] font-black uppercase text-indigo-900">{t('share_collect.show_label') || 'Show'}
-                  <select aria-label={t('share_collect.filter_aria') || 'Filter assignments'} value={assignmentCenterFilter} onChange={event => setAssignmentCenterFilter(event.target.value)} className="ml-2 min-h-9 rounded-lg border border-indigo-300 bg-white px-2 text-xs normal-case text-slate-900">
-                    <option value="all">{t('share_collect.filter_all') || 'All assignments'}</option><option value="needs_review">{t('share_collect.filter_needs_review') || 'Needs review'}</option><option value="active">{t('share_collect.stat_active') || 'Active'}</option><option value="closed">{t('share_collect.stat_closed') || 'Closed'}</option><option value="errors">{t('share_collect.filter_errors') || 'Status errors'}</option>
-                  </select>
-                </label>
-                <button type="button" onClick={refreshAssignmentCenter} disabled={assignmentCenterRefreshing} className="min-h-9 rounded-lg border border-indigo-300 bg-white px-3 text-xs font-black text-indigo-900 disabled:opacity-60">{assignmentCenterRefreshing ? (t('share_collect.refreshing') || 'Refreshing…') : (t('share_collect.refresh_status') || 'Refresh status')}</button>
-                <button type="button" onClick={exportAssignmentCenterCsv} disabled={!assignmentCenterRows.length} className="min-h-9 rounded-lg border border-indigo-300 bg-white px-3 text-xs font-black text-indigo-900 disabled:opacity-60">{t('share_collect.export_csv') || 'Export aggregate CSV'}</button>
-              </div>
-            </div>
-            {assignmentCenterRows.some(row => row.share.type === 'assignment-pack-hosted') && Number(mbConfig?.v || 0) < 12 && <p className="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs font-bold text-amber-900">{t('share_collect.mailbox_v12_note') || 'Class Mailbox v12 is required only for deadline changes and fresh copies. Existing assignments and status viewing still work.'}</p>}
-            <div className="mt-4 space-y-3">
-              {assignmentCenterRows.length === 0 && <p className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-center text-sm text-slate-600">{t('share_collect.none_saved') || 'No homework assignments are saved on this device yet.'}</p>}
-              {assignmentCenterRows.length > 0 && assignmentCenterVisibleRows.length === 0 && <p className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-center text-sm text-slate-600">{t('share_collect.none_match') || 'No assignments match this filter.'}</p>}
-              {assignmentCenterVisibleRows.map((row, index) => {
-                const share = row.share;
-                const closed = row.lifecycle !== 'active';
-                const action = assignmentCenterActionByUrl[share.url] || {};
-                const actionBusy = !!action.kind;
-                const hosted = share.type === 'assignment-pack-hosted';
-                const activityLabel = share.sharedActivity?.type === 'rating' ? (t('share_collect.activity_rating') || 'Shared rating') : share.sharedActivity?.type === 'survey' ? (t('share_collect.activity_survey') || 'Shared survey') : share.sharedActivity ? (t('share_collect.activity_wordcloud') || 'Shared Word Cloud') : (t('share_collect.activity_resource') || 'Resource assignment');
-                // The badge used to print row.lifecycle raw, so speakers of every
-                // language saw the internal token ("revoked") rather than a label.
-                const lifecycleLabel = row.lifecycle === 'active' ? (t('share_collect.stat_active') || 'Active')
-                  : row.lifecycle === 'revoked' ? (t('share_collect.lifecycle_revoked') || 'Revoked')
-                  : row.lifecycle === 'expired' ? (t('share_collect.lifecycle_expired') || 'Expired')
-                  : row.lifecycle;
-                return (
-                  <article key={row.key || index} data-assignment-lifecycle={row.lifecycle} className="rounded-xl border border-slate-200 p-3">
-                    <div className="flex flex-wrap items-start justify-between gap-3">
-                      <div className="min-w-0 flex-1">
-                        <h3 className="truncate text-sm font-black text-slate-900">{share.title || (t('share_collect.default_title') || 'AlloFlow homework')}</h3>
-                        <p className="mt-0.5 text-[11px] text-slate-600">{share.resourceCount || 1} {(share.resourceCount || 1) === 1 ? (t('share_collect.resource_one') || 'resource') : (t('share_collect.resource_other') || 'resources')} · {activityLabel} · {row.lifecycle === 'revoked' ? lifecycleLabel : row.lifecycle === 'expired' ? lifecycleLabel : (t('share_collect.expires_on', { date: (share.expiresAt ? new Date(share.expiresAt).toLocaleDateString() : (t('share_collect.expires_later') || 'later')) }) || ('Expires ' + (share.expiresAt ? new Date(share.expiresAt).toLocaleDateString() : 'later')))}</p>
-                      </div>
-                      <span className={'rounded-full px-2 py-1 text-[10px] font-black uppercase ' + (row.lifecycle === 'active' ? 'bg-emerald-100 text-emerald-800' : row.lifecycle === 'revoked' ? 'bg-slate-200 text-slate-800' : 'bg-rose-100 text-rose-800')}>{lifecycleLabel}</span>
-                    </div>
-                    {share.sharedActivity && (
-                      <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4" data-assignment-activity-status={row.activityState}>
-                        {row.activityState === 'ready' ? <>
-                          <div className="rounded-lg bg-sky-50 px-2 py-2 text-center"><div className="font-black text-sky-900">{row.activity.participantCount}</div><div className="text-[10px] text-sky-700">{t('share_collect.stat_responses') || 'Responses'}</div></div>
-                          <div className="rounded-lg bg-amber-50 px-2 py-2 text-center"><div className="font-black text-amber-900">{row.activity.pending}</div><div className="text-[10px] text-amber-700">{t('share_collect.stat_held') || 'Held'}</div></div>
-                          <div className="rounded-lg bg-emerald-50 px-2 py-2 text-center"><div className="font-black text-emerald-900">{row.activity.approved}</div><div className="text-[10px] text-emerald-700">{t('share_collect.stat_approved') || 'Approved'}</div></div>
-                          <div className="rounded-lg bg-slate-50 px-2 py-2 text-center"><div className="font-black text-slate-800">{row.activity.hidden}</div><div className="text-[10px] text-slate-600">{t('share_collect.stat_hidden') || 'Hidden'}</div></div>
-                        </> : <p className="col-span-full rounded-lg bg-slate-50 p-2 text-[11px] text-slate-600">{row.activityState === 'loading' ? (t('share_collect.status_loading') || 'Loading anonymous activity status…') : row.activityState === 'error' ? (t('share_collect.status_error') || 'Status unavailable. Reconnect the Class Mailbox and refresh.') : closed ? (t('share_collect.status_closed') || 'Closed assignment; status is no longer refreshed.') : (t('share_collect.status_refresh') || 'Refresh to check activity status.')}</p>}
-                      </div>
-                    )}
-                    {!share.sharedActivity && <p className="mt-2 rounded-lg bg-slate-50 p-2 text-[11px] text-slate-600">{t('share_collect.resource_only_note') || 'Resource-only privacy mode: this link does not collect student progress or responses.'}</p>}
-                    {action.error && <p className="mt-2 rounded-lg border border-rose-200 bg-rose-50 p-2 text-[11px] font-bold text-rose-800">{action.error}</p>}
-                    <input aria-label={t('share_collect.row_link_aria', { title: share.title || (t('share_collect.default_title_short') || 'homework') }) || `Selectable link for ${share.title || 'homework'}`} readOnly value={share.url} onFocus={event => event.target.select()} className="mt-2 w-full rounded-md border border-slate-200 bg-slate-50 px-2 py-1.5 text-[11px] text-slate-700" />
-                    <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3">
-                      <button disabled={closed || actionBusy} onClick={() => { openQrShareModal(share); setShowRecentQrShares(false); }} className="min-h-10 rounded-lg border border-violet-300 bg-violet-50 px-2 text-xs font-bold text-violet-900 disabled:opacity-50">{t('share_collect.action_manage') || 'Manage'}</button>
-                      <button disabled={closed || actionBusy} onClick={() => copyToClipboard(share.url)} className="min-h-10 rounded-lg border border-slate-300 bg-white px-2 text-xs font-bold text-slate-800 disabled:opacity-50">{t('share_collect.action_copy_link') || 'Copy active link'}</button>
-                      {hosted && share.sharedActivity?.type === 'survey' && <button disabled={actionBusy} onClick={() => importSurveyShareToResearchSuite(share)} className="min-h-10 rounded-lg border border-purple-300 bg-white px-3 text-xs font-bold text-purple-800 hover:bg-purple-50 disabled:opacity-50">{t('share_collect.action_import_research') || 'Import results to Research Suite'}</button>}
-                      {hosted && row.lifecycle === 'active' && <button disabled={actionBusy || Number(mbConfig?.v || 0) < 12} onClick={() => extendAssignmentCenterShare(share)} className="min-h-10 rounded-lg border border-sky-300 bg-sky-50 px-2 text-xs font-bold text-sky-900 disabled:opacity-50">{action.kind === 'extending' ? (t('share_collect.action_extending') || 'Extending…') : (t('share_collect.action_extend_days', { days: homeworkExpiryDays }) || `Extend ${homeworkExpiryDays} days`)}</button>}
-                      {hosted && row.lifecycle === 'expired' && <button disabled={actionBusy || Number(mbConfig?.v || 0) < 12} onClick={() => duplicateAssignmentCenterShare(share)} className="min-h-10 rounded-lg border border-emerald-300 bg-emerald-50 px-2 text-xs font-bold text-emerald-900 disabled:opacity-50">{action.kind === 'duplicating' ? (t('share_collect.action_duplicating') || 'Creating copy…') : (t('share_collect.action_create_copy') || 'Create fresh copy')}</button>}
-                      {row.lifecycle === 'active' && share.type !== 'assignment-pack' && <button disabled={actionBusy} onClick={() => revokeHomeworkAssignment(share)} className="min-h-10 rounded-lg border border-rose-300 bg-rose-50 px-2 text-xs font-bold text-rose-800 disabled:opacity-50">{action.kind === 'revoking' ? (t('share_collect.action_revoking') || 'Revoking…') : (t('share_collect.action_revoke') || 'Revoke now')}</button>}
-                      <button disabled={actionBusy} onClick={() => setRecentQrShares(previous => previous.filter(item => item.url !== share.url))} className="min-h-10 rounded-lg border border-slate-300 bg-white px-2 text-xs font-bold text-slate-700 disabled:opacity-50">{t('share_collect.action_remove_record') || 'Remove record'}</button>
-                    </div>
-                    {hosted && row.lifecycle === 'expired' && <p className="mt-2 text-[10px] text-slate-500">{t('share_collect.expired_copy_note') || 'A fresh copy receives a new private link and empty student activity. Revoked assignments cannot be copied because their hosted data is deleted.'}</p>}
-                  </article>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      )}
+      {showRecentQrShares && <AssignmentCenterModal
+        t={t}
+        isOpen={showRecentQrShares}
+        activityEnabled={assignmentCenterActivityView.enabled}
+        activityType={assignmentCenterActivityView.type}
+        activityPrompt={assignmentCenterActivityView.prompt}
+        activityOptionsText={assignmentCenterActivityView.optionsText}
+        activityIdentityMode={assignmentCenterActivityView.identityMode}
+        activityAllowMaybe={assignmentCenterActivityView.allowMaybe}
+        activityMultiSelect={assignmentCenterActivityView.multiSelect}
+        activityMaxPerPerson={assignmentCenterActivityView.maxPerPerson}
+        surveyItems={assignmentCenterActivityView.surveyItems}
+        surveyInfo={assignmentCenterActivityView.surveyInfo}
+        showSurveyPairingGuidance={assignmentCenterActivityView.showSurveyPairingGuidance}
+        pollAsk={pollAsk}
+        pollSuggestionBusy={pollAiBusy}
+        surveyHostingAvailable={Number(mbConfig?.v || 0) === 0 || Number(mbConfig?.v || 0) >= 13}
+        hostedMutationAvailable={Number(mbConfig?.v || 0) >= 12}
+        showHostedMutationUpgradeNotice={assignmentCenterRows.some(row => row.share.type === 'assignment-pack-hosted') && Number(mbConfig?.v || 0) < 12}
+        mailboxVersion={Math.max(0, Math.min(999, Math.trunc(Number(mbConfig?.v) || 0)))}
+        homeworkExpiryDays={homeworkExpiryDays}
+        rowViews={assignmentCenterRowViews}
+        visibleRowViews={assignmentCenterVisibleRowViews}
+        filter={assignmentCenterFilter}
+        refreshing={assignmentCenterRefreshing}
+        onClose={() => setShowRecentQrShares(false)}
+        onActivityChange={patchAssignmentCenterActivity}
+        onSurveyItemChange={patchAssignmentCenterSurveyItem}
+        onSurveyItemRemove={removeAssignmentCenterSurveyItem}
+        onSurveyItemAdd={addAssignmentCenterSurveyItem}
+        onPollAskChange={setAssignmentCenterPollAskSafe}
+        onSuggestPollTimes={suggestPollTimes}
+        onCreateLink={() => { if (typeof createHomeworkAssignmentLink === 'function') createHomeworkAssignmentLink(); }}
+        onFilterChange={setAssignmentCenterFilterSafe}
+        onRefresh={refreshAssignmentCenter}
+        onExportCsv={exportAssignmentCenterCsv}
+        loadFailed={moduleLoadInfo.failed.includes('AssignmentCenter')}
+      />}
       {qrShareModal && (
         <div className="fixed inset-0 bg-slate-950/80 z-[151] flex items-center justify-center p-4 no-print" role="dialog" aria-modal="true" aria-labelledby="alloflow-homework-qr-title" aria-describedby="alloflow-homework-qr-description" onClick={() => setQrShareModal(null)}>
           <div ref={homeworkQrDialogRef} tabIndex={-1} className="bg-gradient-to-b from-violet-50 to-white rounded-3xl shadow-2xl border border-violet-200 p-6 text-center max-w-md w-full relative max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
@@ -50905,6 +50970,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                     const planSelected = planSummaries.reduce((sum, plan) => sum + (plan.selected?.length || 0), 0);
                     const planSkipped = planSummaries.reduce((sum, plan) => sum + (plan.skipped?.length || 0), 0);
                     const planGenerations = planSummaries.reduce((sum, plan) => sum + (plan.estimatedResourceGenerations || 0), 0);
+                    const planProviderCalls = planSummaries.reduce((sum, plan) => sum + (plan.capacity?.aiCalls || plan.estimatedProviderCalls || plan.estimatedResourceGenerations || 0), 0);
                     const planReused = planSummaries.reduce((sum, plan) => sum + Math.max(0, Number(plan.generationMatrix?.summary?.actions?.reuse) || 0), 0);
                     const planImageCalls = planSummaries.reduce((sum, plan) => sum + (plan.capacity?.imageCalls || 0), 0);
                     const planMinutes = planSummaries.reduce((sum, plan) => sum + (plan.capacity?.estimatedMinutes || 0), 0);
@@ -50997,7 +51063,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                                         {providerSummary && <div className="flex min-w-0 items-center gap-1 text-[9px] font-semibold"><Cpu size={11} aria-hidden="true" /><span className="truncate">{t('fullpack.provider') || 'Provider'}: {providerSummary}</span></div>}
                                     </div>
                                     <div className="mt-2 grid grid-cols-3 gap-1.5" aria-label={t('fullpack.capacity_preview') || 'Capacity preview'}>
-                                        <div className="flex min-w-0 items-center gap-1 rounded-lg border border-current/15 bg-white/70 px-2 py-1.5"><Cpu size={12} aria-hidden="true" className="shrink-0" /><span className="font-black">~{planGenerations}</span><span className="min-w-0 truncate">{t('fullpack.ai_calls') || 'AI calls'}</span></div>
+                                        <div className="flex min-w-0 items-center gap-1 rounded-lg border border-current/15 bg-white/70 px-2 py-1.5"><Cpu size={12} aria-hidden="true" className="shrink-0" /><span className="font-black">~{planProviderCalls}</span><span className="min-w-0 truncate">{t('fullpack.provider_calls') || 'provider calls'}</span></div>
                                         <div className="flex min-w-0 items-center gap-1 rounded-lg border border-current/15 bg-white/70 px-2 py-1.5"><ImageIcon size={12} aria-hidden="true" className="shrink-0" /><span className="font-black">{planImageCalls}</span><span className="min-w-0 truncate">{t('fullpack.image_calls') || 'image calls'}</span></div>
                                         <div className="flex min-w-0 items-center gap-1 rounded-lg border border-current/15 bg-white/70 px-2 py-1.5"><Clock size={12} aria-hidden="true" className="shrink-0" /><span className="font-black">~{Math.max(1, planMinutes)}</span><span className="min-w-0 truncate">{t('fullpack.minutes') || 'minutes'}</span></div>
                                     </div>
@@ -51196,6 +51262,12 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                                                                                 })}
                                                                                 {row.type === 'glossary' && Array.isArray(snapshot.selectedLanguages) && snapshot.selectedLanguages.length > 0 && (
                                                                                     <li className="text-sky-800">{t('fullpack.embedded_translations') || 'Embedded translations'}: {snapshot.selectedLanguages.join(', ')}</li>
+                                                                                )}
+                                                                                {row.type === 'glossary' && Number(row.providerWorkEstimate?.glossaryImageCalls) > 0 && (
+                                                                                    <li data-testid="full-pack-glossary-image-impact" className="text-sky-800">
+                                                                                        {t('fullpack.glossary_visuals') || 'Glossary visuals'}: ~{row.providerWorkEstimate.glossaryImageCalls} {t('fullpack.term_images') || 'term images'}
+                                                                                        {Number(row.providerWorkEstimate?.glossaryImageEditCalls) > 0 ? ` + ${row.providerWorkEstimate.glossaryImageEditCalls} ${t('fullpack.image_cleanup_calls') || 'image cleanup calls'}` : ''}
+                                                                                    </li>
                                                                                 )}
                                                                             </ul>
                                                                         )}
@@ -52205,225 +52277,46 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                     to the resource TYPE on open, and unmatched types rendered a blank content area.
                     Body markdown + live objectives checklist. NO gating: informs + celebrates only. */}
                 {activeView === 'directions' && generatedContent?.type === 'directions' && (() => {
-                    const _dir = _alloNormalizeDirectionsData(generatedContent.data);
-                    const _dirProg = directionsProgress[generatedContent.id] || {};
-                    const _evald = _alloEvaluateObjectives(_dir.objectives, _alloObjectiveSignals, _dirProg);
-                    const _doneCount = _evald.filter(o => o.done).length;
-                    // ── Quest map (knowledge web): pack resources as stations on a trail, goals as
-                    // satellites, completion lighting from the SAME signals as the checklist. The
-                    // checklist stays the accessible PRIMARY; the map is its visual twin (role=img
-                    // with a spoken progress summary), so screen-reader students lose nothing.
-                    const _visitedMap = (directionsProgress._visited && typeof directionsProgress._visited === 'object') ? directionsProgress._visited : {};
-                    const _mapItems = (Array.isArray(history) ? history : []).filter(h => h && h.id && h.type && h.type !== 'directions' && !TEACHER_ONLY_TYPES.includes(h.type)).slice(0, 12);
-                    const _visitedCount = _mapItems.filter(it => _visitedMap[it.id]).length;
-                    const _choiceResources = _alloStudentSafeResources(history).filter(it => it.type !== 'directions');
-                     const _choiceItems = (_dir.choiceBoard && Array.isArray(_dir.choiceBoard.choices) ? _dir.choiceBoard.choices : [])
-                         .map(choice => ({ choice, resource: _choiceResources.find(it => it.id === choice.resourceRef) }))
-                         .filter(item => item.resource);
-                     const _selectedChoiceRef = directionsChoiceSelection[generatedContent.id] || '';
-                     const _selectedChoice = _choiceItems.find(item => item.choice.resourceRef === _selectedChoiceRef) || null;
-                     const _missingChoiceCount = _dir.choiceBoard && Array.isArray(_dir.choiceBoard.choices)
-                         ? Math.max(0, _dir.choiceBoard.choices.length - _choiceItems.length)
-                         : 0;
-                    const _mapW = Math.max(340, 100 + _mapItems.length * 88);
-                    const _nodeX = (i) => 100 + i * 88;
-                    const _nodeY = (i) => 50 + (i % 2) * 26;
-                    const _goalX = (j) => 70 + j * 92;
-                    const _goalRefIdx = (o) => (o.resourceRef ? _mapItems.findIndex(it => it.id === o.resourceRef) : -1);
-                    // Per-type station identity + the recommended next step (both pure, both
-                    // module-scope). Travel: clicking a station opens that resource through the
-                    // SAME handleRestoreView every other lane uses, so special types (STEAM Lab,
-                    // reading library, word-sounds…) still route correctly.
-                    const _stationLabel = (it) => (t('directions.station_' + String(it.type).replace(/-/g, '_')) || _alloStationStyle(it.type).label);
-                    const _rec = _alloRecommendNextStations(_mapItems, _visitedMap, _dir.objectives, _evald);
-                    const _travelTo = (it) => { if (it && it.id) handleRestoreView(it); };
-                    return (
-                        <div className="max-w-2xl mx-auto p-4">
-                            <div className="bg-white rounded-2xl border-2 border-amber-200 shadow-lg p-5">
-                                <div className="flex items-center gap-2 mb-3">
-                                    <ClipboardList size={20} className="text-amber-600" aria-hidden="true" />
-                                    <h1 className="text-lg font-bold text-slate-800 flex-1">{generatedContent.title || (t('directions.title') || 'Assignment Directions')}</h1>
-                                    {_mapItems.length > 0 && (
-                                        <button onClick={() => setShowQuestMap(v => !v)} aria-pressed={showQuestMap} className="text-[11px] font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 hover:border-indigo-400 rounded-lg px-2 py-1 transition-all flex-shrink-0">
-                                            🗺️ {showQuestMap ? (t('directions.map_hide') || 'Hide map') : (t('directions.map_show') || 'Quest map')}
-                                        </button>
-                                    )}
-                                </div>
-                                {showQuestMap && _mapItems.length > 0 && (
-                                    <div className="mb-4 overflow-x-auto rounded-xl border border-indigo-100 bg-gradient-to-br from-indigo-50/60 to-amber-50/40 p-2">
-                                        <svg role="img" aria-label={(t('directions.map_summary') || 'Quest map') + ': ' + _visitedCount + '/' + _mapItems.length + ' ' + (t('directions.map_stations') || 'stations visited') + (_evald.length ? (', ' + _doneCount + '/' + _evald.length + ' ' + (t('takehome.evidence_goals') || 'goals')) : '')}
-                                             viewBox={'0 0 ' + _mapW + ' ' + (_evald.length ? 178 : 118)} style={{ minWidth: _mapW * 0.75 + 'px' }} className="w-full h-auto">
-                                            {/* trail edges: directions → r0 → r1 → … (brighten once BOTH ends are visited) */}
-                                            <line x1="34" y1="62" x2={_nodeX(0)} y2={_nodeY(0)} stroke={_visitedMap[_mapItems[0] && _mapItems[0].id] ? '#059669' : '#cbd5e1'} strokeWidth="2.5" strokeDasharray={_visitedMap[_mapItems[0] && _mapItems[0].id] ? 'none' : '4 3'} />
-                                            {_mapItems.slice(0, -1).map((it, i) => (
-                                                <line key={'e' + it.id} x1={_nodeX(i)} y1={_nodeY(i)} x2={_nodeX(i + 1)} y2={_nodeY(i + 1)}
-                                                      stroke={(_visitedMap[it.id] && _visitedMap[_mapItems[i + 1].id]) ? '#059669' : '#cbd5e1'} strokeWidth="2.5"
-                                                      strokeDasharray={(_visitedMap[it.id] && _visitedMap[_mapItems[i + 1].id]) ? 'none' : '4 3'} />
-                                            ))}
-                                            {/* goal satellite edges: resourceRef'd goals tether to their station, others to the directions node */}
-                                            {_evald.map((o, j) => {
-                                                const ri = _goalRefIdx(_dir.objectives[j] || {});
-                                                const gx = _goalX(j), gy = 150;
-                                                const tx = ri >= 0 ? _nodeX(ri) : 34, ty = ri >= 0 ? _nodeY(ri) + 12 : 74;
-                                                return <line key={'ge' + o.id} x1={gx} y1={gy - 10} x2={tx} y2={ty} stroke={o.done ? '#059669' : '#e2e8f0'} strokeWidth="1.5" strokeDasharray="2 3" />;
-                                            })}
-                                            {/* the directions node (start of the trail) */}
-                                            <circle cx="34" cy="62" r="15" fill="#fef3c7" stroke="#d97706" strokeWidth="2.5" />
-                                            <text x="34" y="67" textAnchor="middle" fontSize="13" aria-hidden="true">{'\uD83D\uDEA9'}</text>
-                                            <text x="34" y="92" textAnchor="middle" fontSize="7.5" fill="#92400e" fontWeight="bold">{(t('directions.map_start') || 'Start here')}</text>
-                                            {/* resource stations: ONE silhouette + emblem + tint per resource type
-                                                (_ALLO_STATION_STYLES), emerald once visited. Clicking a station travels
-                                                there; the SVG stays role=img, so the focusable travel buttons below the
-                                                map (not these shapes) are the keyboard/screen-reader path. */}
-                                            {_mapItems.map((it, i) => {
-                                                const vis = !!_visitedMap[it.id];
-                                                const st = _alloStationStyle(it.type);
-                                                const x = _nodeX(i), y = _nodeY(i);
-                                                const isNext = !!(_rec.next && _rec.next.item.id === it.id);
-                                                const shape = _alloStationShape(st.shape, x, y, 13);
-                                                const skin = { fill: vis ? '#d1fae5' : st.fill, stroke: vis ? '#059669' : st.stroke, strokeWidth: 2.5 };
-                                                return (
-                                                    <g key={it.id} onClick={() => _travelTo(it)} style={{ cursor: 'pointer' }}>
-                                                        {isNext && <circle cx={x} cy={y} r="20" fill="none" stroke="#f59e0b" strokeWidth="2" strokeDasharray="3 3" opacity="0.9" />}
-                                                        {React.createElement(shape.tag, { ...shape.attrs, ...skin })}
-                                                        <text x={x} y={y + 4} textAnchor="middle" fontSize="11" aria-hidden="true">{vis ? '✓' : st.icon}</text>
-                                                        <text x={x} y={y + 26} textAnchor="middle" fontSize="7" fill="#475569">{String(it.title || _stationLabel(it)).slice(0, 14)}</text>
-                                                        <text x={x} y={y + 34} textAnchor="middle" fontSize="6" fill={isNext ? '#b45309' : '#94a3b8'} fontWeight={isNext ? 'bold' : 'normal'}>{isNext ? (t('directions.map_next_pin') || 'NEXT') : _stationLabel(it).slice(0, 16)}</text>
-                                                    </g>
-                                                );
-                                            })}
-                                            {/* goal satellites along the bottom rail */}
-                                            {_evald.map((o, j) => (
-                                                <g key={'g' + o.id}>
-                                                    <rect x={_goalX(j) - 34} y={140} width="68" height="20" rx="10" fill={o.done ? '#d1fae5' : '#ffffff'} stroke={o.done ? '#059669' : '#cbd5e1'} strokeWidth="1.5" />
-                                                    <text x={_goalX(j)} y={153} textAnchor="middle" fontSize="7.5" fill={o.done ? '#065f46' : '#475569'} fontWeight={o.done ? 'bold' : 'normal'}>{(o.done ? '✓ ' : '') + String(o.label).slice(0, 14)}</text>
-                                                </g>
-                                            ))}
-                                        </svg>
-                                    </div>
-                                )}
-                                {/* ── Travel strip: the map's inline links. Real HTML buttons (the SVG is
-                                    role=img), so keyboard and screen-reader students get the same one-tap
-                                    travel the picture offers. Recommends only — nothing is locked or hidden;
-                                    every station stays reachable from "Go to any station" below. */}
-                                {_mapItems.length > 0 && (
-                                    <div className="mb-4">
-                                        {_rec.next ? (
-                                            <div className="flex flex-wrap items-center gap-2">
-                                                <button onClick={() => _travelTo(_rec.next.item)}
-                                                        className="flex items-center gap-2 px-3 py-2 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl text-sm shadow-sm transition-all">
-                                                    <span aria-hidden="true">{_alloStationStyle(_rec.next.item.type).icon}</span>
-                                                    <span>{(t('directions.map_next_label') || 'Go here next') + ': ' + String(_rec.next.item.title || _stationLabel(_rec.next.item)).slice(0, 40)}</span>
-                                                    <ArrowRight size={15} aria-hidden="true" />
-                                                </button>
-                                                {_rec.next.goalLabel && (
-                                                    <span className="text-[11px] text-amber-700 font-semibold">
-                                                        {t('directions.map_next_goal', { goal: _rec.next.goalLabel }) || ('finishes your goal: ' + _rec.next.goalLabel)}
-                                                    </span>
-                                                )}
-                                                {_rec.alternates.map(a => (
-                                                    <button key={'alt' + a.item.id} onClick={() => _travelTo(a.item)}
-                                                            className="flex items-center gap-1 px-2 py-1 bg-white border border-amber-200 hover:border-amber-400 text-amber-800 font-semibold rounded-lg text-[11px] transition-all">
-                                                        <span aria-hidden="true">{_alloStationStyle(a.item.type).icon}</span>
-                                                        <span>{(t('directions.map_also_ready') || 'or') + ' ' + String(a.item.title || _stationLabel(a.item)).slice(0, 26)}</span>
-                                                    </button>
-                                                ))}
-                                            </div>
-                                        ) : (
-                                            <p className="text-xs font-bold text-emerald-700">{t('directions.map_all_visited') || '🎉 You have been to every station on this map.'}</p>
-                                        )}
-                                        <details className="mt-2">
-                                            <summary className="text-[11px] text-indigo-700 font-bold cursor-pointer">{t('directions.map_jump_any') || 'Go to any station'}</summary>
-                                            <ul className="flex flex-wrap gap-1.5 mt-2 list-none p-0 m-0">
-                                                {_mapItems.map(it => (
-                                                    <li key={'jump' + it.id}>
-                                                        <button onClick={() => _travelTo(it)}
-                                                                className={'flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-semibold border transition-all ' + (_visitedMap[it.id] ? 'bg-emerald-50 border-emerald-200 text-emerald-800 hover:border-emerald-400' : 'bg-white border-slate-200 text-slate-700 hover:border-indigo-400')}>
-                                                            <span aria-hidden="true">{_alloStationStyle(it.type).icon}</span>
-                                                            <span>{String(it.title || _stationLabel(it)).slice(0, 30)}</span>
-                                                            <span className="sr-only">{' — ' + _stationLabel(it) + (_visitedMap[it.id] ? (', ' + (t('directions.map_visited_sr') || 'already visited')) : '')}</span>
-                                                        </button>
-                                                    </li>
-                                                ))}
-                                            </ul>
-                                        </details>
-                                    </div>
-                                )}
-                                {_dir.body && <div className="prose prose-sm max-w-none text-slate-700 mb-4" dangerouslySetInnerHTML={{ __html: parseMarkdownToHTML(_dir.body) }} />}
-                                {_missingChoiceCount > 0 && (
-                                    <div role="alert" className="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-900">
-                                        Some activity choices are no longer available in this assignment. Choose from the activities still listed below or ask your teacher for an updated board.
-                                    </div>
-                                )}
-                                {_choiceItems.length >= 2 && (
-                                    <section className="border-t border-indigo-100 pt-4 mb-4" aria-labelledby="directions-choice-board-title">
-                                        <div className="flex flex-wrap items-start gap-2 mb-3">
-                                            <div className="flex-1 min-w-[220px]">
-                                                <h2 id="directions-choice-board-title" className="text-base font-black text-indigo-900">{_dir.choiceBoard.title}</h2>
-                                                <p className="text-xs text-slate-600 mt-1">{_dir.choiceBoard.prompt}</p>
-                                            </div>
-                                            <span className="text-[10px] font-bold uppercase tracking-wide rounded-full px-2 py-1 bg-indigo-50 text-indigo-700 border border-indigo-200">{_choiceItems.length} choices</span>
-                                        </div>
-                                        {_selectedChoice && (
-                                            <p role="status" className="mb-3 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-900">Selected: {_selectedChoice.choice.label}. You can choose another activity below.</p>
-                                        )}
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                            {_choiceItems.map(({ choice, resource }) => {
-                                                const station = _alloStationStyle(resource.type);
-                                                return (
-                                                    <button
-                                                        key={choice.resourceRef}
-                                                        onClick={() => {
-                                                            setDirectionsChoiceSelection(previous => ({ ...previous, [generatedContent.id]: choice.resourceRef }));
-                                                            setDirectionsChoiceOrigin({ directionId: generatedContent.id, resourceId: resource.id, label: choice.label });
-                                                            handleRestoreView(resource);
-                                                        }}
-                                                        aria-label={'Choose activity: ' + choice.label}
-                                                        aria-pressed={_selectedChoiceRef === choice.resourceRef}
-                                                        className={'group flex min-h-24 items-start gap-3 rounded-xl border-2 p-3 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:border-indigo-400 hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-700 ' + (_selectedChoiceRef === choice.resourceRef ? 'border-emerald-400 bg-emerald-50 ring-2 ring-emerald-200' : 'border-indigo-100 bg-gradient-to-br from-indigo-50 to-white')}
-                                                    >
-                                                        <span aria-hidden="true" className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-indigo-600 text-xl text-white shadow-sm">{choice.icon || station.icon || '•'}</span>
-                                                        <span className="min-w-0 flex-1">
-                                                            <span className="block text-sm font-black text-slate-800">{choice.label}</span>
-                                                            <span className="mt-1 block text-[10px] font-bold uppercase tracking-wide text-indigo-700">{station.label}</span>
-                                                            {choice.description && <span className="mt-1 block text-xs leading-5 text-slate-600">{choice.description}</span>}
-                                                            <span className="mt-2 block text-[11px] font-bold text-indigo-700 group-hover:text-indigo-900">Open activity <ArrowRight size={12} className="inline" aria-hidden="true" /></span>
-                                                        </span>
-                                                    </button>
-                                                );
-                                            })}
-                                        </div>
-                                        <p className="mt-2 text-[10px] text-slate-500">Choose one activity to begin. You can return here and choose another card later.</p>
-                                    </section>
-                                )}
-                                {_evald.length > 0 && (
-                                    <div className="border-t border-amber-100 pt-3" role="group" aria-label={t('directions.your_goals') || 'Your goals'}>
-                                        <p className="text-xs font-bold text-amber-700 mb-2" aria-live="polite">{(t('directions.your_goals') || 'Your goals')} · {_doneCount}/{_evald.length}</p>
-                                        <ul className="space-y-2 list-none p-0 m-0">
-                                            {_evald.map(o => (
-                                                <li key={o.id} className="flex items-center gap-2">
-                                                    {o.kind === 'manual' ? (
-                                                        <input type="checkbox" checked={o.done} onChange={() => toggleManualObjective(generatedContent.id, o.id)} aria-label={o.label} className="w-4 h-4 accent-emerald-600 flex-shrink-0" />
-                                                    ) : (
-                                                        o.done
-                                                            ? <CheckCircle2 size={16} className="text-emerald-600 flex-shrink-0" aria-hidden="true" />
-                                                            : <span className="w-4 h-4 rounded-full border-2 border-slate-300 inline-block flex-shrink-0" aria-hidden="true" />
-                                                    )}
-                                                    <span className={'text-sm ' + (o.done ? 'text-emerald-700 line-through decoration-emerald-300' : 'text-slate-700')}>
-                                                        {o.label}
-                                                        {o.kind !== 'manual' && <span className="sr-only">{o.done ? (t('directions.goal_done') || ' — complete') : (t('directions.goal_open') || ' — not yet complete')}</span>}
-                                                    </span>
-                                                    {o.progressText && !o.done && <span className="text-[11px] text-amber-600 font-bold ml-auto flex-shrink-0">{o.progressText}</span>}
-                                                    {o.done && <span className="text-[11px] text-emerald-600 font-bold ml-auto flex-shrink-0" aria-hidden="true">✓</span>}
-                                                </li>
-                                            ))}
-                                        </ul>
-                                        <p className="text-[10px] text-slate-400 mt-3">{t('directions.signals_note') || 'Goals check themselves on this device as you play and earn XP — and your own checkmarks count too.'}</p>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    );
+                    const adapter = _alloBuildDirectionsResultAdapter({
+                        item: generatedContent,
+                        history,
+                        progress: directionsProgress,
+                        signals: _alloObjectiveSignals,
+                        selectedChoiceRef: directionsChoiceSelection[generatedContent.id] || '',
+                        showQuestMap,
+                        parseMarkdownToHTML,
+                        t,
+                    });
+                    const resolveDirectionsId = (value) => {
+                        const id = String(value == null ? '' : value).trim();
+                        return id && id.length <= 200 ? id : '';
+                    };
+                    return <DirectionsResultView
+                        {...adapter.viewProps}
+                        loadFailed={moduleLoadInfo.failed.includes('DirectionsResult')}
+                        onBack={() => setActiveView('input')}
+                        onToggleMap={() => setShowQuestMap(value => !value)}
+                        onTravel={(value) => {
+                            const resource = adapter.stationById.get(resolveDirectionsId(value));
+                            if (resource) handleRestoreView(resource);
+                        }}
+                        onChoose={(value) => {
+                            const choice = adapter.choiceById.get(resolveDirectionsId(value));
+                            if (!choice) return;
+                            const resourceId = String(choice.resource.id);
+                            setDirectionsChoiceSelection(previous => ({ ...previous, [generatedContent.id]: resourceId }));
+                            setDirectionsChoiceOrigin({
+                                directionId: generatedContent.id,
+                                resourceId,
+                                label: choice.label,
+                            });
+                            handleRestoreView(choice.resource);
+                        }}
+                        onToggleManual={(value) => {
+                            const goalId = resolveDirectionsId(value);
+                            if (goalId && adapter.goalById.has(goalId)) toggleManualObjective(generatedContent.id, goalId);
+                        }}
+                    />;
                 })()}
                 {activeView === 'simplified' && window.AlloModules && window.AlloModules.SimplifiedView && React.createElement(window.AlloModules.SimplifiedView, {
                     t, generatedContent, inputText, gradeLevel, leveledTextLanguage,
@@ -53771,6 +53664,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
         const recentHavenRecognition = buildAlloHavenRecognitionAudit(rosterEntries, 8);
         const liveOrganizer = sessionData?.interactiveOrganizer || null;
         const liveOrganizerSummary = summarizeLiveOrganizerProgress({ roster: rosterEntries, interactiveOrganizer: liveOrganizer });
+        const retryableLiveOrganizerUids = getRetryableLiveOrganizerUids({ roster: rosterEntries, interactiveOrganizer: liveOrganizer });
         const signalMeta = (id) => LIVE_SIGNAL_OPTIONS.find(o => o.id === id) || { emoji: '✋', label: id };
         const clearSignal = (uid) => {
           writeToSession(dockSessionRef, { [`roster.${uid}.signal`]: null, [`roster.${uid}.signalAt`]: null }).catch(() => {});
@@ -53864,6 +53758,11 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                             }} style={{border:'1px solid #818cf8',borderRadius:7,background:'white',color:'#3730a3',padding:'0.3rem 0.5rem',fontSize:'0.68rem',fontWeight:900,cursor:organizerResource?'pointer':'not-allowed',opacity:organizerResource?1:0.55}}>
                               Open activity
                             </button>
+                            {retryableLiveOrganizerUids.length > 0 && (
+                              <button type="button" disabled={interactiveOrganizerRetrying} onClick={() => retryInteractiveOrganizerStudents(retryableLiveOrganizerUids)} style={{border:'1px solid #f59e0b',borderRadius:7,background:'#fffbeb',color:'#92400e',padding:'0.3rem 0.5rem',fontSize:'0.68rem',fontWeight:900,cursor:interactiveOrganizerRetrying?'wait':'pointer',opacity:interactiveOrganizerRetrying?0.65:1}}>
+                                {interactiveOrganizerRetrying ? 'Retrying…' : `Retry waiting/failed (${retryableLiveOrganizerUids.length})`}
+                              </button>
+                            )}
                             <button type="button" disabled={interactiveOrganizerSync.status === 'stopping'} onClick={() => broadcastInteractiveOrganizer(null)} style={{border:'1px solid #fca5a5',borderRadius:7,background:'#fff1f2',color:'#b91c1c',padding:'0.3rem 0.5rem',fontSize:'0.68rem',fontWeight:900,cursor:interactiveOrganizerSync.status === 'stopping'?'wait':'pointer',opacity:interactiveOrganizerSync.status === 'stopping'?0.65:1}}>
                               {interactiveOrganizerSync.status === 'stopping' ? 'Stopping…' : 'Stop for students'}
                             </button>
@@ -54672,7 +54571,18 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
           // Class Mailbox session adapter because no backend-specific read is used.
           activitySnapshots: liveActivitySnapshots,
           onSendToStudent: (uid, resourceId) => handleSetStudentResource(uid, resourceId),
+          onSendToStudents: (uids, resourceId) => handleSetStudentsResource(uids, resourceId),
           onSendToGroup: (groupId, resourceId) => handleSetGroupResource(groupId, resourceId),
+          transportKind: (mbLive || _alloMbBridgeActive()) ? 'mailbox' : 'firebase',
+          sessionStartedAt: (() => {
+            const value = sessionData && (sessionData.startedAt || sessionData.createdAt);
+            if (value && typeof value.toMillis === 'function') return value.toMillis();
+            if (typeof value === 'number') return value;
+            const parsed = value ? Date.parse(value) : 0;
+            return Number.isFinite(parsed) ? parsed : 0;
+          })(),
+          onOpenDiagnostics: () => { try { if (window.__alloOpenDiagnosticsLog) window.__alloOpenDiagnosticsLog('session'); } catch (e) {} },
+          onRequestEndSession: requestEndLiveSession,
           onUsePeerShowcaseResponse: livePollPreset && livePollPreset.source === 'adventure-free-response'
             ? (response) => {
                 const action = String(response || '').trim().slice(0, 1200);
@@ -54742,6 +54652,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
           // The guest capability is always ready, but its Q&A launcher remains
           // absent until an opted-in host sends the in-memory enabled state.
           enableSessionQa: true,
+          transportKind: (mbLive || _alloMbBridgeActive()) ? 'mailbox' : 'firebase',
           // Presence gating (Tier-1 livePolling leaf): only dial the WebRTC
           // host while the teacher's polling panel is actually open; a new
           // hostOpenedAt re-arms guests' auto-rejoin budget.
@@ -55964,6 +55875,9 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
         const _vState = (alloVoiceSessionStatus && alloVoiceSessionStatus.owner === 'agent-command') ? String(alloVoiceSessionStatus.state || 'listening') : 'listening';
         const _vPaused = _vState === 'paused';
         const _vBusy = _vState === 'processing' || _vState === 'speaking' || _vState === 'starting';
+        const _vEngineLabel = alloVoiceSessionStatus && alloVoiceSessionStatus.owner === 'agent-command'
+          ? String(alloVoiceSessionStatus.engineLabel || '')
+          : '';
         const _vLabel = _vPaused
           ? (t('voice_control.paused') || 'Microphone paused. Voice control is still on.')
           : _vState === 'processing' ? (t('voice_control.thinking') || 'Thinking. The microphone is closed for a moment.')
@@ -55976,7 +55890,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
           {/* Shape, not just hue: a filled pulsing dot means live, a hollow
               square means the microphone is closed. */}
           <span className={`inline-block w-2.5 h-2.5 ${_vPaused || _vBusy ? 'rounded-[2px] border-2 border-white' : 'rounded-full bg-white animate-ping motion-reduce:animate-none'}`} aria-hidden="true"></span>
-          <span aria-hidden="true">{_vPaused || _vBusy ? '🔇' : '🎙️'}</span> {_vLabel}
+          <span aria-hidden="true">{_vPaused || _vBusy ? '🔇' : '🎙️'}</span> {_vLabel}{_vEngineLabel ? <span className="opacity-90"> · {_vEngineLabel}</span> : null}
           {_MicMeter && !_vPaused && !_vBusy && <_MicMeter active placement="inline" motionDisabled={disableAnimations} />}
           <button onClick={() => { try { if (window.__alloVoiceLoop) window.__alloVoiceLoop.stop(); } catch (_) {} }} className="ml-1 px-2 py-0.5 bg-white/20 border border-white/50 rounded-full hover:bg-white/30" aria-label={t('voice_control.stop_aria') || 'Stop voice control'}>⏹</button>
         </div>
@@ -58242,15 +58156,20 @@ function _AlloRecoverableLazyView(props) {
         ? props.hostedUrl
         : '';
     const titleId = `allo-lazy-${props.registryKey}-title`;
+    const inline = props.inline === true;
+    const outerClassName = inline
+        ? 'max-w-2xl mx-auto p-4'
+        : 'fixed inset-0 flex items-center justify-center p-4';
+    const outerStyle = inline ? undefined : { zIndex: props.zIndex || 210, background: 'rgba(15,23,42,0.72)' };
     return (
-        <div className="fixed inset-0 flex items-center justify-center p-4" style={{ zIndex: props.zIndex || 210, background: 'rgba(15,23,42,0.72)' }} role="presentation">
-            <div ref={fallbackDialogRef} tabIndex={-1} role={failed ? 'alertdialog' : 'dialog'} aria-modal="true" aria-labelledby={titleId} className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 text-center shadow-2xl">
+        <div className={outerClassName} style={outerStyle} role={inline ? undefined : 'presentation'}>
+            <div ref={fallbackDialogRef} tabIndex={-1} role={inline ? (failed ? 'alert' : 'status') : (failed ? 'alertdialog' : 'dialog')} aria-modal={inline ? undefined : true} aria-labelledby={titleId} className="w-full max-w-md mx-auto rounded-2xl border border-slate-200 bg-white p-6 text-center shadow-2xl">
                 <div aria-hidden="true" className={'mx-auto mb-3 text-3xl ' + (failed ? '' : 'animate-pulse')}>{props.icon || '📦'}</div>
                 <h2 id={titleId} className="text-lg font-black text-slate-900">{props.displayName}</h2>
                 <p role={failed ? 'alert' : 'status'} aria-live="polite" className="mt-2 text-sm text-slate-700">{failed ? props.failedMessage : props.loadingMessage}</p>
                 {failed && hostedUrl && <a href={hostedUrl} target="_blank" rel="noopener noreferrer" className="mt-4 inline-flex min-h-11 items-center rounded-xl border border-violet-300 bg-violet-50 px-4 py-2 text-sm font-bold text-violet-900 hover:bg-violet-100">Open hosted video instead</a>}
                 <div className="mt-5 flex flex-wrap justify-center gap-2">
-                    {failed && <button type="button" onClick={retry} className="min-h-11 rounded-xl bg-indigo-700 px-4 py-2 text-sm font-bold text-white hover:bg-indigo-800">Retry loading</button>}
+                    {failed && <button type="button" onClick={retry} className="min-h-11 rounded-xl bg-indigo-700 px-4 py-2 text-sm font-bold text-white hover:bg-indigo-800">{props.retryLabel || 'Retry loading'}</button>}
                     <button type="button" onClick={props.onClose} data-alloflow-close-on-escape="true" className="min-h-11 rounded-xl bg-slate-200 px-4 py-2 text-sm font-bold text-slate-800 hover:bg-slate-300">{props.closeLabel || 'Close'}</button>
                 </div>
             </div>
@@ -58312,6 +58231,91 @@ function VideoRefPlayerOverlay(props) {
 }
 function EndSessionPreview(props) {
     return React.createElement(EndSessionPreviewView, props);
+}
+function DirectionsResultView(props) {
+    return <_AlloRecoverableLazyView
+        registryKey="DirectionsResult"
+        componentName="DirectionsResultView"
+        loaderName="__alloLazyDirectionsResult"
+        displayName="Assignment directions"
+        icon="🧭"
+        loadingMessage="Loading directions. Your assignment and progress are unchanged."
+        failedMessage="Directions could not load. Your assignment and progress are unchanged."
+        retryLabel="Retry loading directions"
+        onClose={props.onBack}
+        closeLabel="Back to your resources"
+        inline={true}
+        loadFailed={props.loadFailed}
+        viewProps={{
+            t: props.t,
+            title: props.title,
+            bodyHtml: props.bodyHtml,
+            showQuestMap: props.showQuestMap,
+            stationViews: props.stationViews,
+            goalViews: props.goalViews,
+            choiceBoardView: props.choiceBoardView,
+            recommendationView: props.recommendationView,
+            onToggleMap: props.onToggleMap,
+            onTravel: props.onTravel,
+            onChoose: props.onChoose,
+            onToggleManual: props.onToggleManual,
+        }}
+    />;
+}
+function AssignmentCenterModalView(props) {
+    return <_AlloRecoverableLazyView
+        registryKey="AssignmentCenter"
+        componentName="AssignmentCenterModal"
+        loaderName="__alloLazyAssignmentCenter"
+        displayName="Share & Collect"
+        icon="🔗"
+        loadingMessage="Loading Share & Collect. Your saved assignments are unchanged."
+        failedMessage="Share & Collect could not load. Your saved assignments are unchanged."
+        onClose={props.onClose}
+        closeLabel="Close"
+        zIndex={151}
+        loadFailed={props.loadFailed}
+        viewProps={{
+            t: props.t,
+            isOpen: props.isOpen,
+            activityEnabled: props.activityEnabled,
+            activityType: props.activityType,
+            activityPrompt: props.activityPrompt,
+            activityOptionsText: props.activityOptionsText,
+            activityIdentityMode: props.activityIdentityMode,
+            activityAllowMaybe: props.activityAllowMaybe,
+            activityMultiSelect: props.activityMultiSelect,
+            activityMaxPerPerson: props.activityMaxPerPerson,
+            surveyItems: props.surveyItems,
+            surveyInfo: props.surveyInfo,
+            showSurveyPairingGuidance: props.showSurveyPairingGuidance,
+            pollAsk: props.pollAsk,
+            pollSuggestionBusy: props.pollSuggestionBusy,
+            surveyHostingAvailable: props.surveyHostingAvailable,
+            hostedMutationAvailable: props.hostedMutationAvailable,
+            showHostedMutationUpgradeNotice: props.showHostedMutationUpgradeNotice,
+            mailboxVersion: props.mailboxVersion,
+            homeworkExpiryDays: props.homeworkExpiryDays,
+            rowViews: props.rowViews,
+            visibleRowViews: props.visibleRowViews,
+            filter: props.filter,
+            refreshing: props.refreshing,
+            onClose: props.onClose,
+            onActivityChange: props.onActivityChange,
+            onSurveyItemChange: props.onSurveyItemChange,
+            onSurveyItemRemove: props.onSurveyItemRemove,
+            onSurveyItemAdd: props.onSurveyItemAdd,
+            onPollAskChange: props.onPollAskChange,
+            onSuggestPollTimes: props.onSuggestPollTimes,
+            onCreateLink: props.onCreateLink,
+            onFilterChange: props.onFilterChange,
+            onRefresh: props.onRefresh,
+            onExportCsv: props.onExportCsv,
+        }}
+    />;
+}
+function AssignmentCenterModal(props) {
+    return React.createElement(AssignmentCenterModalView, props);
 }
 // ── VideoLibraryOverlay extracted to view_video_library_module.js (CDN) ──
 function VideoLibraryOverlay(props) {

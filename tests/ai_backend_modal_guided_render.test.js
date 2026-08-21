@@ -213,6 +213,33 @@ describe('advanced surface', () => {
       validation: { ok: true, backend: 'alloflow-local' },
     });
     expect(document.activeElement).toBe(key);
+
+    await click(byHelpKey('ai_backend_forget_gemini_services_key'));
+    expect(readCfg()).toMatchObject({
+      backend: 'alloflow-local',
+      validation: { ok: true, backend: 'alloflow-local' },
+    });
+    expect(readCfg().geminiApiKey).toBeUndefined();
+    expect(readCfg().apiKey).toBeUndefined();
+    expect(container.querySelector('#ai-backend-gemini-services-key').value).toBe('');
+    expect(container.querySelector('#ai-backend-status').textContent).toContain('forgotten on this device');
+  });
+
+  it('forgets both legacy Gemini key slots and invalidates primary Gemini validation', async () => {
+    window.localStorage.setItem('alloflow_ai_config', JSON.stringify({
+      backend: 'gemini', apiKey: 'legacy-key', geminiApiKey: 'canonical-key',
+      validation: { ok: true, backend: 'gemini' },
+    }));
+    await render();
+    await click(byHelpKey('ai_backend_guided_card_gemini'));
+    expect(container.querySelector('#ai-backend-apikey').value).toBe('canonical-key');
+
+    await click(byHelpKey('ai_backend_forget_gemini_key'));
+    expect(readCfg()).toMatchObject({ backend: 'gemini' });
+    expect(readCfg().apiKey).toBeUndefined();
+    expect(readCfg().geminiApiKey).toBeUndefined();
+    expect(readCfg().validation).toBeUndefined();
+    expect(container.querySelector('#ai-backend-apikey').value).toBe('');
   });
 
   it('never renders a duplicate element id in any mode', async () => {

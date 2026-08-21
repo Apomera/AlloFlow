@@ -301,13 +301,13 @@ html:root[data-allo-theme="easyread"]{--bg:#faf8ef;--panel:#fffefa;--ink:#18202f
 <p>Choose <strong>Preview changes</strong> and inspect the educator, building, finalized, overdue, and walkthrough totals. Nothing changes yet. <strong>Apply this simulated scenario</strong> replaces only the fictional workspace. <strong>Undo last simulation</strong> remains available while the Simulation Studio is mounted; export a sample JSON if you need a durable comparison across reloads.</p>
 
 <h2 id="tour">3. A Tour of the Workspace</h2>
-<p>Evaluators see eight tabs. The <strong>Overview</strong> is the daily home base: what is coming due, how far the roster has progressed, and how the selected educator's final evaluation is composed.</p>
+<p>Evaluators see eight tabs. The <strong>Overview</strong> is the daily home base: what is coming due, which human step needs attention next, how far the roster has progressed, and how the selected educator's final evaluation is composed.</p>
 <figure>
 <img src="educator-evaluation-manual-assets/02-overview.jpg" width="1770" height="1200" loading="lazy" alt="Evaluation overview tab showing a Coming due card with counts for past due, due within 14 days, and due in 15 to 30 days; a Teachers evaluated donut reading 2 of 8 finalized; and a Weight in final evaluation donut showing Observation and Practice 70 percent, Building Level Data 10 percent, Teacher-Specific Data 10 percent, and LEA Selected Measure 10 percent.">
 <figcaption>The Overview tab. The weighting donut always shows the composition that applies to the selected educator's assignment type.</figcaption>
 </figure>
 <ul>
-<li><strong>Overview:</strong> cycle progress, what is coming due, and the weighting for the selected educator.</li>
+<li><strong>Overview:</strong> cycle progress, what is coming due, a <em>Needs your attention</em> queue, and the weighting for the selected educator. The queue includes evaluator-owned work only and orders it by cycle due date. Choose an action to select that educator and open Formal observations, Walkthroughs, SPM / SLO, or final evaluation as appropriate. The roster's <em>Next action</em> column also names educator-owned waiting states, so waiting for prework or acknowledgment is not presented as unfinished evaluator work.</li>
 <li><strong>Trends:</strong> growth over time and de-identified peer context (section 7).</li>
 <li><strong>Staff:</strong> the roster, assignments, and cycle status.</li>
 <li><strong>Walkthroughs:</strong> short, frequent, low-stakes visit notes (section 4).</li>
@@ -359,6 +359,8 @@ html:root[data-allo-theme="easyread"]{--bg:#faf8ef;--panel:#fffefa;--ink:#18202f
 <li><strong>Finalized.</strong> The record locks. Later context appears as appended comments.</li>
 </ol>
 <p>Alongside the tracker, the <strong>evidence map</strong> organizes evidence by domain and shows each domain's weight within Observation and Practice. Component names appear, but rubric-level performance descriptors are not reproduced, because that text is licensed.</p>
+<p><strong>Returning to earlier records:</strong> when an educator has more than one formal observation, use the <em>Observation record</em> selector beside the educator selector. Records are newest first and show their observation date plus <em>Finalized</em> or the current step. Selecting a finalized record opens its locked history; it does not reopen the workflow.</p>
+<blockquote><p><strong>Artifact boundary:</strong> the prework field accepts text and district-authorized, access-controlled references only. None of the three record paths uploads, versions, scans, or retains attachment files. Keep the actual artifact in the district-approved repository, manage its permissions and retention there, and do not paste student-identifying information into the reference.</p></blockquote>
 <h3>The educator statement</h3>
 <p>At any point before finalization, the educator can attach a statement in their own words. It is theirs: no evaluator can edit it, it appears verbatim under "In your own words," and it <strong>leads</strong> the released summary, ahead of any ratings. This mirrors the contractual right to attach a memorandum to a personnel record. Once the record is finalized, the statement is frozen with it.</p>
 
@@ -482,6 +484,15 @@ html:root[data-allo-theme="easyread"]{--bg:#faf8ef;--panel:#fffefa;--ink:#18202f
 
 <h3 id="district-operations">Routine district administration without the script editor</h3>
 <p>An authorized administrator now has a <strong>District operations center</strong> inside <strong>Setup</strong>. It is for recurring work after the one-time repository deployment. Each sensitive operation follows the same pattern: enter the request, review a server-produced summary that changes nothing, check the explicit acknowledgment, then confirm. Reviews are tied to the signed-in administrator and current repository state, expire after ten minutes, and cannot be reused.</p>
+<h4>District workspace configuration</h4>
+<ol>
+<li>Open <strong>Setup &rarr; Workspace setup</strong> while signed in with administrator access. Evaluators and educators see the current values as read-only.</li>
+<li>Edit the organization, default building, academic year, evaluator display name, approved built-in framework profile, optional Maine Professional Practice weight, or AI reflection policy. These edits are only a browser draft at this point.</li>
+<li>Select <strong>Review district configuration</strong>. The server returns a current-versus-proposed table plus the number of active educators, open cycles, and records whose weights or finalization history are already protected.</li>
+<li>Compare every row with the district-approved plan. When a framework or weight changes, the review explicitly states that eligible future work can use the new policy while existing frozen snapshots are not recalculated.</li>
+<li>Check the impact acknowledgment and select <strong>Confirm reviewed configuration</strong>. The server rejects direct configuration changes made through ordinary autosave, stale reviews, expired reviews, reviews created by another administrator, and reused tokens. A successful confirmation creates a server audit event.</li>
+</ol>
+<p><strong>Custom rubric boundary:</strong> the district portal currently persists only its approved built-in framework profiles. Custom rubric JSON import remains available in a private on-device workspace, but it is intentionally unavailable in the portal until the server can validate, version, license-review, and preserve the exact rubric for every affected record. The portal administrator can download the current rubric reference without changing policy.</p>
 <h4>Accounts and evaluator assignments</h4>
 <ol>
 <li>Create the educator profile in <strong>Staff</strong> first. The profile ID is an opaque application ID, not an email or employee number.</li>
@@ -604,6 +615,7 @@ html:root[data-allo-theme="easyread"]{--bg:#faf8ef;--panel:#fffefa;--ink:#18202f
 <li><strong>Names-limited is not anonymous.</strong> Omitting the educator's name does not de-identify narrative evidence, comments, class details, dates, or contextual statements. Review free text before every export or share.</li>
 <li><strong>AlloFlow adds no encryption of its own.</strong> Local records inherit protection from the device account and browser profile. Confirm device encryption and management with IT.</li>
 <li><strong>Retention and discoverability apply everywhere.</strong> Local browser records, downloads, Drive packets, portal repositories, and AI-provider processing must all fit district policy and any collective bargaining agreement.</li>
+<li><strong>Artifact references are not attachments.</strong> The tool stores the reference text but does not upload, copy, scan, version, retain, or change access to the referenced file. The separate district repository remains responsible for file access, retention, legal hold, and deletion.</li>
 <li><strong>Evaluations are personnel records.</strong> FERPA applies when evidence includes identifiable student education information; keep evidence focused on educator practice and remove unnecessary student identifiers.</li>
 <li><strong>Role switching and Educator preview are not authentication.</strong> The local educator preview is read-only and helps an evaluator inspect visibility. Only a managed portal sign-in or a deliberately shared packet grants another person access.</li>
 <li><strong>The district decides the official record.</strong> The tool and helper do not make that decision.</li>
@@ -675,18 +687,14 @@ statement, eligible reflections, record-specific acknowledgment intent, and perm
 <p><strong>The receipt is not a signature.</strong> Each checkbox records acknowledgment intent for that specific record. It does not replace the conference or signature process required by district policy.</p>
 
 <h2 id="rubric">17. Using Your District's Own Rubric</h2>
-<p>The tool ships with three scoring profiles (Pennsylvania Act 13, Portland ME PEPG, and Maine PEPG). If your
-district uses a different instrument altogether, you can supply it.</p>
+<p>The tool ships with three scoring profiles (Pennsylvania Act 13, Portland ME PEPG, and Maine PEPG). In a <strong>private on-device workspace only</strong>, you can relabel and replace the components of the existing four-domain rating structure. This is a compatibility option for local planning, not support for an arbitrary data model and not a district-portal policy control.</p>
 <p>As an evaluator, open <strong>Setup &rarr; Advanced workspace options &rarr; Custom rubric</strong>. <strong>Download current rubric</strong> gives you
 the active one as a JSON file to use as a starting point. Edit the domains, their components, weights, colours and
 rating-band labels, then use <strong>Load a custom rubric</strong>. <strong>Restore the built-in rubric</strong> puts
 it back.</p>
-<p>A rubric is rejected rather than half-applied if any domain is missing an id or a label, or if two domains share an
-id, because a partly-valid rubric would mis-score everyone rated against it. A custom rubric is given a version tag so
-that records can say which rubric produced them.</p>
-<p><strong>Changing a rubric mid-cycle.</strong> Ratings are stored against domain ids. If a new rubric does not
-include a domain that already carries a rating, the tool names the affected educators and asks before applying it.
-Nothing is deleted: restoring the previous rubric brings those ratings back.</p>
+<p>The JSON must contain exactly four unique domain ids: <code>d1</code>, <code>d2</code>, <code>d3</code>, and <code>d4</code>. Each needs a label and a components array. A domain can contain at most 50 unique component codes. A weighted rubric must give every domain a positive weight and total exactly 100 percent; an unweighted rubric is normalized to four equal 25 percent display weights. Bands must use unique thresholds from 0 through 3. Invalid, duplicate, oversized, or partly valid input is rejected as a whole.</p>
+<p>A valid custom rubric and its version tag are now preserved in local browser storage and workspace JSON exports, so reopening the same local workspace does not silently restore the built-in profile. Keep the exact JSON with your backup. The district portal intentionally ignores custom-rubric input until server validation, version custody, and licensing review are available.</p>
+<p><strong>Changing a rubric mid-cycle.</strong> The four stable domain ids keep ratings attached to their slots, while labels and components can change. A finalized overall score remains frozen. Detailed historical interpretation still depends on the exact rubric version, so export a backup before switching and retain every approved rubric JSON under district procedure.</p>
 
 <h2 id="evidence-check">18. Evidence Checks and the Optional AI Second Read</h2>
 <p>When you assign ratings, the tool compares them against the evidence you tagged and reports what it finds: a domain
@@ -774,6 +782,7 @@ does not permit AI in evaluation, leave it off and everything else works unchang
 <li><strong>Revoke cannot be proved:</strong> open the exact packet link in Drive, remove every matching educator permission manually, then run <strong>Filed packets and live access status</strong> again. Escalate to the principal/helper owner; do not ask the educator to send personnel content for diagnosis.</li>
 <li><strong>"This page must be opened from the district Apps Script web-app URL":</strong> the portal bundle was opened outside its deployment. Use the <code>/exec</code> link from your district administrator.</li>
 <li><strong>"The secure workspace could not be opened":</strong> this is the portal refusing to show anything, which is the design rather than a fault. The line underneath names the reason: an account that is not a member, a repository that was never set up, or the page opened outside its Apps Script address. Access is granted by the district, so the fix is with the administrator who deployed the portal, not on the page.</li>
+<li><strong>"This record changed in another session":</strong> stop editing and compare the listed overlapping fields. The page has already loaded the newest district version. Choose <strong>Use district version</strong> to discard the stale attempt, or, when offered, <strong>Reapply only my non-conflicting work</strong>. The latter starts a new version-checked save, keeps every overlapping field from the district copy, and never downloads personnel data.</li>
 <li><strong>The portal looks out of date:</strong> the administrator should review and re-paste all four current package files: <code>Code.gs</code>, <code>Index.html</code>, <code>Portal.html</code>, and <code>appsscript.json</code>. Then create a new deployment version. Apps Script serves the old version until that version is deployed.</li>
 <li><strong>Setup health shows a warning:</strong> follow its specific message. It checks the domain lock, repository files, workspace metadata, owner continuity, release/rollover recovery, membership, assignments, and audit-chain integrity. Do not treat a green row as a substitute for district acceptance testing.</li>
 <li><strong>An operations-center review expired or became stale:</strong> do not retry the old confirmation. Reload the current directory or active workspace, recreate the request, and review the new server-produced impact. Reviews expire after ten minutes, become invalid after relevant repository changes, and are single-use.</li>

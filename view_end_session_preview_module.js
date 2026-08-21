@@ -98,7 +98,32 @@ function EndSessionPreview({
     className: "text-2xl font-black text-rose-700"
   }, (endSessionPreview.summary.unmatchedCodenames || []).length), /*#__PURE__*/React.createElement("div", {
     className: "text-[11px] font-bold text-rose-800"
-  }, "Unmatched"))), endSessionPreview.summary.insightBrief && /*#__PURE__*/React.createElement("section", {
+  }, "Unmatched"))), endSessionPreview.summary.organizerActivity && (() => {
+    const organizer = endSessionPreview.summary.organizerActivity;
+    const counts = organizer.statusCounts || {};
+    const labels = [['complete', 'complete'], ['attempted', 'attempted'], ['working', 'working'], ['ready', 'ready'], ['loading', 'loading'], ['failed', 'failed'], ['waiting', 'waiting']].filter(([status]) => Number(counts[status]) > 0);
+    return /*#__PURE__*/React.createElement("section", {
+      className: "rounded-2xl border border-fuchsia-200 bg-fuchsia-50/60 p-4 mb-4",
+      "aria-labelledby": "end-session-organizer-title"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "flex flex-wrap items-start justify-between gap-2"
+    }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h3", {
+      id: "end-session-organizer-title",
+      className: "text-sm font-black text-fuchsia-950"
+    }, "Visual organizer evidence"), /*#__PURE__*/React.createElement("p", {
+      className: "mt-0.5 text-[11px] text-fuchsia-800"
+    }, String(organizer.type || 'organizer').replace(/3d$/i, ' 3D').replace(/_/g, ' '), " activity \xC2\xB7 ", organizer.participantCount || 0, " matched learner", organizer.participantCount === 1 ? '' : 's')), (organizer.followUpCodenames || []).length > 0 && /*#__PURE__*/React.createElement("span", {
+      className: "rounded-full border border-amber-300 bg-amber-100 px-2 py-1 text-[10px] font-black text-amber-900"
+    }, organizer.followUpCodenames.length, " may need launch support")), /*#__PURE__*/React.createElement("div", {
+      className: "mt-2 flex flex-wrap gap-1.5",
+      "aria-label": "Visual organizer activity outcomes"
+    }, labels.map(([status, label]) => /*#__PURE__*/React.createElement("span", {
+      key: status,
+      className: "rounded-full border border-fuchsia-200 bg-white px-2 py-1 text-[10px] font-bold text-fuchsia-900"
+    }, counts[status], " ", label))), /*#__PURE__*/React.createElement("p", {
+      className: "mt-2 text-[10px] text-slate-600"
+    }, "Saved evidence contains bounded status and score totals only\xE2\u20AC\u201Dnot card text, answers, account IDs, or resource IDs."));
+  })(), endSessionPreview.summary.insightBrief && /*#__PURE__*/React.createElement("section", {
     className: "rounded-2xl border border-indigo-200 bg-indigo-50/60 p-4 mb-4",
     "aria-labelledby": "end-session-insight-title"
   }, /*#__PURE__*/React.createElement("div", {
@@ -243,7 +268,7 @@ function EndSessionPreview({
     className: "cursor-pointer text-sm font-bold text-slate-700"
   }, "What will be saved?"), /*#__PURE__*/React.createElement("p", {
     className: "text-xs text-slate-600 mt-2"
-  }, "Date, duration, matched codenames, groups, response counts, and whether a resource was opened. Raw answers, account IDs, mailbox tokens, chat, and real names are not saved.")), /*#__PURE__*/React.createElement("label", {
+  }, "Date, duration, matched codenames, groups, response counts, organizer status and bounded score totals, and whether a resource was opened. Raw answers, organizer card text, resource IDs, account IDs, mailbox tokens, chat, and real names are not saved.")), /*#__PURE__*/React.createElement("label", {
     className: "block text-xs font-bold text-slate-700 mb-1",
     htmlFor: "end-session-note"
   }, "Optional teacher note"), /*#__PURE__*/React.createElement("textarea", {

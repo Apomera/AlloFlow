@@ -8,9 +8,10 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 
-// Setup moved to the Assignment Control Center, which lives in the monolith.
+// The controller stays in the host; the form is a presentation-only CDN view.
 const SRC = readFileSync('AlloFlowANTI.txt', 'utf8');
 const MIRROR = readFileSync('desktop/web-app/src/AlloFlowANTI.txt', 'utf8');
+const SURFACE = readFileSync('view_assignment_center_source.jsx', 'utf8');
 
 // The handler body, so assertions are about the suggestion path and not the
 // rest of a 1200-line header.
@@ -39,7 +40,7 @@ describe('the model proposes, it does not decide', () => {
   });
 
   it('tells the user the suggestion is a draft', () => {
-    expect(SRC).toMatch(/Nothing is shared until you create the link/);
+    expect(SURFACE).toMatch(/Nothing is shared until you create the link/);
   });
 });
 
@@ -95,7 +96,8 @@ describe('it reaches both copies of the monolith', () => {
     // to one surface and not the other.
     expect(SRC).toContain('const suggestPollTimes = useCallback(');
     expect(MIRROR).toContain('const suggestPollTimes = useCallback(');
-    expect(SRC).toContain('Suggest options');
-    expect(MIRROR).toContain('Suggest options');
+    expect(SURFACE).toContain('Suggest options');
+    expect(SRC).toContain('onSuggestPollTimes={suggestPollTimes}');
+    expect(MIRROR).toContain('onSuggestPollTimes={suggestPollTimes}');
   });
 });

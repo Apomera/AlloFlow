@@ -542,6 +542,14 @@ inputText.substring(0, 6000) + '\n' +
     // envelope. Firestore and the Google Mailbox adapter therefore transport
     // identical state and participant writes without a second backend path.
     var launchConceptQuest = async function() {
+      var translateQuest = function(key, fallback, params) {
+        var fullKey = 'concept_quest.' + key;
+        var translated = t(fullKey, params || {});
+        if (typeof translated === 'string' && translated && translated !== fullKey) return translated;
+        return Object.keys(params || {}).reduce(function(text, name) {
+          return text.replace('{' + name + '}', params[name]);
+        }, fallback);
+      };
       var state = getState();
       var activeSessionCode = state.activeSessionCode;
       var activeSessionAppId = state.activeSessionAppId;
@@ -553,16 +561,17 @@ inputText.substring(0, 6000) + '\n' +
       }
       var questEngine = window.AlloModules && window.AlloModules.ConceptQuestEngine;
       if (!questEngine || typeof questEngine.createSession !== 'function') {
-        addToast('Concept Quest is still loading. Try again in a moment.', 'error');
+        addToast(translateQuest('loading_retry', 'Concept Quest is still loading. Try again in a moment.'), 'error');
         return;
       }
       var data = generatedContent && generatedContent.data || {};
       var questions = Array.isArray(data.questions) ? data.questions : [];
-      var title = data.title || generatedContent && generatedContent.title || 'Concept Quest';
+      var title = data.title || generatedContent && generatedContent.title || translateQuest('title', 'Concept Quest');
       var quest = questEngine.createSession({
-        title: title + ': Concept Quest',
-        objective: 'Navigate together, use lesson concepts as abilities, and defeat the final misconception.',
-        questions: questions
+        title: translateQuest('session_title', '{title}: Concept Quest', { title: title }),
+        objective: translateQuest('objective', 'Navigate together, use lesson concepts as abilities, and defeat the final misconception.'),
+        questions: questions,
+        translate: translateQuest
       });
       var allProgress = createLiveTeamProgress();
       allProgress.questVotes = {};
@@ -598,10 +607,10 @@ inputText.substring(0, 6000) + '\n' +
           });
         });
         playSound('correct');
-        addToast('Concept Quest launched. You are the co-GM.', 'success');
+        addToast(translateQuest('launched', 'Concept Quest launched. You are the co-GM.'), 'success');
       } catch (e) {
         warnLog('Concept Quest launch failed:', e);
-        addToast(t('errors.generation_failed') || 'Concept Quest could not launch.', 'error');
+        addToast(translateQuest('launch_failed', 'Concept Quest could not launch.'), 'error');
       }
     };
 

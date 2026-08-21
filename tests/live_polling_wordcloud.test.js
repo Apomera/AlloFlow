@@ -85,6 +85,36 @@ describe('Word Cloud normalization and aggregation', () => {
   });
 });
 
+describe('Teacher-reviewed Word Cloud grouping', () => {
+  const items = [
+    { value: 'plant energy', label: 'Plant energy', count: 3, status: 'approved' },
+    { value: 'photosynthesis', label: 'Photosynthesis', count: 2, status: 'approved' },
+    { value: 'private held', label: 'Private held', count: 1, status: 'pending' },
+  ];
+
+  it('sends the AI only approved anonymous aggregate terms', () => {
+    const prompt = LivePolling.buildWordCloudClusterPrompt(items);
+    expect(prompt).toContain('Plant energy');
+    expect(prompt).toContain('Photosynthesis');
+    expect(prompt).not.toContain('Private held');
+    expect(prompt).not.toContain('uid');
+    expect(prompt).not.toContain('codename');
+  });
+
+  it('accepts exact approved members, rejects invented terms, and creates a teacher-applied alias patch', () => {
+    const suggestions = LivePolling.parseWordCloudClusterSuggestions({ clusters: [
+      { label: 'Photosynthesis', members: ['Plant energy', 'Photosynthesis', 'Invented term'] },
+      { label: 'Duplicate', members: ['Plant energy', 'Photosynthesis'] },
+    ] }, items);
+    expect(suggestions).toHaveLength(1);
+    expect(suggestions[0]).toMatchObject({ label: 'Photosynthesis', members: ['Plant energy', 'Photosynthesis'], count: 5 });
+    expect(LivePolling.buildWordCloudAliasPatch(items, suggestions[0])).toEqual({
+      'plant energy': 'Photosynthesis',
+      photosynthesis: 'Photosynthesis',
+    });
+  });
+});
+
 describe('Teacher student-activity ledger', () => {
   it('combines the current poll with other live activity receipts and excludes answer content', () => {
     const rows = LivePolling.buildLiveStudentActivityRows({
@@ -154,6 +184,88 @@ describe('Teacher student-activity ledger', () => {
     expect(LivePolling.filterLiveStudentActivityRows(rows, { sort: 'attention' }).map((row) => row.uid)).toEqual(['u1', 'u4', 'u3', 'u2']);
     expect(LivePolling.LIVE_STUDENT_ACTIVITY_SORTS).toEqual(['attention', 'name']);
     expect(JSON.stringify(LivePolling.filterLiveStudentActivityRows(rows, { query: 'map lab' }))).not.toContain('response');
+  });
+
+  it('prioritizes a privacy-safe teacher action queue and supports local review', () => {
+    const rows = [
+      { uid: 'u1', name: 'Ari', connected: true, activity: 'Evidence Sort', status: 'working', supportStatus: 'help', supportUpdatedAt: 500 },
+      { uid: 'u2', name: 'Bo', connected: true, activity: 'Map Lab', status: 'failed', updatedAt: 400 },
+      { uid: 'u3', name: 'Cy', connected: false, activity: 'Word Sounds', status: 'waiting', updatedAt: 300 },
+      { uid: 'u4', name: 'Dee', connected: true, activity: 'Word cloud', status: 'withdrawn', updatedAt: 200 },
+      { uid: 'u5', name: 'Eli', connected: true, activity: 'Rating poll', status: 'waiting', updatedAt: 100 },
+      { uid: 'u6', name: 'Fox', connected: true, activity: 'Rating poll', status: 'submitted', updatedAt: 100, response: 'private answer' },
+    ];
+    const queue = LivePolling.buildLiveTeacherActionQueue(rows);
+    expect(queue.map((item) => item.reason)).toEqual(['help', 'failed', 'offline', 'withdrawn', 'waiting']);
+    expect(queue.map((item) => item.uid)).toEqual(['u1', 'u2', 'u3', 'u4', 'u5']);
+    expect(JSON.stringify(queue)).not.toContain('private answer');
+    expect(LivePolling.buildLiveTeacherActionQueue(rows, { [queue[0].key]: true }).map((item) => item.uid)).toEqual(['u2', 'u3', 'u4', 'u5']);
+    expect(LivePolling.LIVE_TEACHER_ACTION_REASONS).toEqual(['help', 'failed', 'offline', 'withdrawn', 'waiting']);
+  });
+
+  it('keeps claimed items visible, temporarily hides snoozed items, and removes resolved items', () => {
+    const rows = [{ uid: 'u1', name: 'Ari', connected: true, activity: 'Map Lab', status: 'working', supportStatus: 'help', supportUpdatedAt: 1000 }];
+    const open = LivePolling.buildLiveTeacherActionQueue(rows, {}, 4000);
+    expect(open[0]).toMatchObject({ uid: 'u1', waitMs: 3000, actionStatus: 'open' });
+    expect(LivePolling.buildLiveTeacherActionQueue(rows, { [open[0].key]: { status: 'claimed', updatedAt: 2000 } }, 4000)[0]).toMatchObject({ actionStatus: 'claimed' });
+    expect(LivePolling.buildLiveTeacherActionQueue(rows, { [open[0].key]: { status: 'snoozed', updatedAt: 2000, snoozedUntil: 5000 } }, 4000)).toEqual([]);
+    expect(LivePolling.buildLiveTeacherActionQueue(rows, { [open[0].key]: { status: 'resolved', updatedAt: 2000 } }, 4000)).toEqual([]);
+  });
+});
+
+describe('Provider-neutral live session health and wrap-up', () => {
+  it('labels Google Mailbox without requiring Firestore and surfaces only current transport problems', () => {
+    expect(LivePolling.buildLiveTransportHealth({
+      transportKind: 'mailbox', connectedCount: 2, expectedCount: 3, now: 2000,
+      trace: [{ at: 1000, event: 'mailbox:doc-version' }],
+    })).toMatchObject({ providerLabel: 'Google Class Mailbox', status: 'healthy', directCount: 2, missingDirectCount: 1, lastSyncAgeMs: 1000 });
+    expect(LivePolling.buildLiveTransportHealth({
+      transportKind: 'mailbox', connectedCount: 2, expectedCount: 2, now: 3000,
+      trace: [{ at: 1000, event: 'mailbox:doc-version' }, { at: 2500, event: 'mailbox:timeout' }],
+    })).toMatchObject({ status: 'attention', problemEvent: 'mailbox:timeout' });
+  });
+
+  it('builds a content-free cross-activity wrap-up with incomplete and follow-up counts', () => {
+    const summary = LivePolling.buildLiveSessionWrapUp({
+      completedPolls: [{
+        poll: { id: 'p1', type: 'rating', prompt: 'Private prompt', startedAt: 1000 },
+        audienceUids: ['u1', 'u2'], audienceCount: 2,
+        responses: [{ uid: 'u1', response: 'private answer' }], endedAt: 2000,
+      }],
+      activePoll: { id: 'p2', type: 'wordcloud', prompt: 'Another prompt', startedAt: 2500 },
+      activeParticipantUids: ['u3'],
+      activeResponses: [{ uid: 'u3', response: 'private term' }],
+      activitySnapshots: [{ activityId: 'sketch-1', kind: 'sketch_response', audienceUids: ['u4'], participantStatus: { u4: 'complete' }, startedAt: 500 }],
+      actionQueue: [{ uid: 'u2', reason: 'help' }],
+      sessionQaState: { questions: [{ questionId: 'q1', text: 'private question', status: 'pending' }] },
+      sessionStartedAt: 0,
+      now: 5000,
+    });
+    expect(summary).toMatchObject({ activityCount: 3, pollCount: 2, invitedCount: 3, responseCount: 2, responseRate: 67, unresolvedCount: 1, helpRequestCount: 1, pendingQuestionCount: 1 });
+    expect(summary.incompleteUids).toEqual(['u2']);
+    expect(JSON.stringify(summary)).not.toContain('Private prompt');
+    expect(JSON.stringify(summary)).not.toContain('private answer');
+    expect(JSON.stringify(summary)).not.toContain('private term');
+    expect(JSON.stringify(summary)).not.toContain('private question');
+  });
+
+  it('rejects responses while the teacher has paused collection', () => {
+    const host = LivePolling.createHost({ sessionCode: 'ABCD' });
+    host.activePoll = { id: 'wc-paused', type: 'wordcloud', submissionsLocked: true };
+    expect(host._acceptsResponse('u1', 'Learner', { pollId: 'wc-paused', response: 'saved draft' })).toBe(false);
+    host.activePoll = { id: 'wc-paused', type: 'wordcloud', submissionsLocked: false };
+    expect(host._acceptsResponse('u1', 'Learner', { pollId: 'wc-paused', response: 'saved draft' })).toBe(true);
+  });
+
+  it('recovers and expires a browser-session-only Q&A draft', () => {
+    const values = new Map();
+    const storage = { getItem: (key) => values.has(key) ? values.get(key) : null, setItem: (key, value) => values.set(key, value), removeItem: (key) => values.delete(key) };
+    expect(LivePolling.writeLiveSessionQaDraft('ABCD', 'u1', '  How does energy move?  ', storage, 1000)).toBe(true);
+    expect(LivePolling.readLiveSessionQaDraft('ABCD', 'u1', storage, 2000)).toEqual({ text: 'How does energy move?', savedAt: 1000 });
+    expect(LivePolling.readLiveSessionQaDraft('ABCD', 'u1', storage, 1000 + LivePolling.LIVE_QA_DRAFT_MAX_AGE_MS + 1)).toBeNull();
+    LivePolling.writeLiveSessionQaDraft('ABCD', 'u1', 'New question', storage, 3000);
+    expect(LivePolling.clearLiveSessionQaDraft('ABCD', 'u1', storage)).toBe(true);
+    expect(LivePolling.readLiveSessionQaDraft('ABCD', 'u1', storage, 3001)).toBeNull();
   });
 });
 
@@ -263,7 +375,20 @@ describe('Word Cloud reuses the existing live-poll lifecycle', () => {
     expect(pollingSource).toContain("tr('Help requested')");
     expect(pollingSource).toContain("tr('Request help')");
     expect(pollingSource).toContain("tr('Cancel help request')");
+    expect(pollingSource).toContain("tr('Teacher action queue')");
+    expect(pollingSource).toContain("tr('Session wrap-up')");
+    expect(pollingSource).toContain("tr('Relaunch for incomplete')");
+    expect(pollingSource).toContain("tr('Pause and review')");
+    expect(pollingSource).toContain("tr('Suggest similar approved terms')");
+    expect(pollingSource).toContain("tr('Show 50 more students')");
+    expect(pollingSource).toContain("tr('Teacher is reviewing - submissions paused')");
+    expect(pollingSource).toContain("tr('Continue activity')");
+    expect(pollingSource).toContain("tr('Your draft is saved only in this browser session.')");
+    expect(pollingSource).toContain('window.sessionStorage');
+    expect(pollingSource).toContain('onSendToStudent(item.uid, followUpResourceId)');
     expect(shellSource).toContain('activitySnapshots: liveActivitySnapshots');
+    expect(shellSource).toContain('onSendToStudents: (uids, resourceId) => handleSetStudentsResource(uids, resourceId)');
+    expect(shellSource).toContain("transportKind: (mbLive || _alloMbBridgeActive()) ? 'mailbox' : 'firebase'");
     expect(shellSource).toContain("width:'min(1180px, calc(100vw - 2rem))'");
     expect(shellSource).toContain('aria-modal="true"');
     expect(shellSource).toContain('useFocusTrap(liveDockPanelRef, showLiveDock');

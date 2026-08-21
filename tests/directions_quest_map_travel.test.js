@@ -9,6 +9,8 @@ import { resolve } from 'node:path';
 
 const anti = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8');
 const mirror = readFileSync(resolve(process.cwd(), 'desktop/web-app/src/AlloFlowANTI.txt'), 'utf8');
+const directionsViewSource = readFileSync(resolve(process.cwd(), 'view_directions_result_source.jsx'), 'utf8');
+const directionsViewModule = readFileSync(resolve(process.cwd(), 'view_directions_result_module.js'), 'utf8');
 
 // ── eval-slice the REAL helpers (same anchors the objectives suite uses) ──────
 const start = anti.indexOf('function _alloNormalizeDirectionsData(');
@@ -150,38 +152,47 @@ describe('recommend next: visited stations, revisits, and the finished state', (
   });
 });
 
-const viewSlice = () => { const a = anti.indexOf("activeView === 'directions'"); return anti.slice(a, anti.indexOf("activeView === 'simplified'", a)); };
+const viewSlice = () => directionsViewSource;
 
 describe('wiring: the map is a way to MOVE, and it stays accessible', () => {
   it('stations travel through the SAME handleRestoreView every other lane uses', () => {
-    expect(anti).toContain('const _travelTo = (it) => { if (it && it.id) handleRestoreView(it); };');
-    expect(anti).toContain('<g key={it.id} onClick={() => _travelTo(it)} style={{ cursor: \'pointer\' }}>');
+    expect(anti).toContain('onTravel={(value) => {');
+    expect(anti).toContain('handleRestoreView(');
+    expect(directionsViewSource).toContain("<g key={station.id} onClick={() => travelTo(station)}");
   });
   it('the SVG is still role=img with a spoken summary; travel lives in real HTML buttons', () => {
     const view = viewSlice();
-    expect(view).toContain('<svg role="img"');
-    expect(view).toContain("t('directions.map_jump_any') || 'Go to any station'");
-    expect(view).toContain('_rec.next.goalLabel');
+    expect(view).toMatch(/<svg\s+role="img"/);
+    expect(view).toContain("text('mapJumpAny', 'Go to any station')");
+    expect(view).toContain('nextGoalLabel');
+    expect(directionsViewModule).toContain('mapJumpAny');
   });
   it('the travel strip is OUTSIDE the map toggle — hiding the picture keeps the links', () => {
     const view = viewSlice();
-    const mapBlock = view.indexOf('{showQuestMap && _mapItems.length > 0 && (');
-    const stripBlock = view.indexOf('{_mapItems.length > 0 && (', mapBlock + 10);
+    const mapBlock = view.indexOf('{showMap && stations.length > 0 && (');
+    const stripBlock = view.indexOf('{stations.length > 0 && (', mapBlock + 10);
     expect(stripBlock).toBeGreaterThan(mapBlock);
     expect(view.slice(mapBlock, stripBlock)).toContain('</svg>');
   });
   it('NO GATING: no travel button is ever disabled, and every station stays reachable', () => {
     const view = viewSlice();
     expect(view).not.toMatch(/disabled=\{/);
-    expect(view).toContain("{_mapItems.map(it => (\n"); // the jump-to-any list walks the FULL station set
+    expect(view).toMatch(/\{stations\.map\([^=]+=> \(\s*<li/); // the jump-to-any list walks the FULL station set
   });
   it('station names are translatable with the registry label as the fallback', () => {
-    expect(anti).toContain("t('directions.station_' + String(it.type).replace(/-/g, '_')) || _alloStationStyle(it.type).label");
+    expect(anti).toContain("const typeKey = 'directions.station_' + String(resource.type || '').replace(/-/g, '_');");
+    expect(anti).toContain('translated !== typeKey ? translated : style.label');
   });
 });
 
 describe('mirror parity', () => {
   it('desktop/web-app/src mirror carries the identical feature', () => {
-    expect(mirror).toBe(anti);
+    // Desktop rewrites CDN URLs to local paths; pin this feature semantically.
+    for (const shell of [anti, mirror]) {
+      expect(shell).toContain("activeView === 'directions' && generatedContent?.type === 'directions'");
+      expect(shell).toContain('<DirectionsResultView');
+      expect(shell).toContain('_alloStationStyle(resource.type)');
+      expect(shell).toContain('handleRestoreView(');
+    }
   });
 });

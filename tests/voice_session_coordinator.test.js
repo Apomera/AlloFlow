@@ -28,6 +28,8 @@ describe('app-wide voice session coordinator', () => {
     const second = window.AlloFlowVoice.acquireVoiceSession('test-prep', {
       mode: 'hands-free',
       label: 'Hands-free Test Prep',
+      engine: 'gemini-audio',
+      engineLabel: 'Gemini cloud transcription',
     });
 
     expect(firstStopped).toHaveBeenCalledWith('replaced');
@@ -38,6 +40,8 @@ describe('app-wide voice session coordinator', () => {
       owner: 'test-prep',
       mode: 'hands-free',
       label: 'Hands-free Test Prep',
+      engine: 'gemini-audio',
+      engineLabel: 'Gemini cloud transcription',
     });
   });
 
@@ -46,12 +50,19 @@ describe('app-wide voice session coordinator', () => {
     const stopped = vi.fn();
     const unsubscribe = window.AlloFlowVoice.subscribeToVoiceSessionStatus((status) => states.push(status));
     const lease = window.AlloFlowVoice.acquireVoiceSession('agent', { onStop: stopped });
-    lease.update({ state: 'listening', message: 'Listening for a command.' });
+    lease.update({
+      state: 'listening',
+      engine: 'web-speech',
+      engineLabel: 'Browser speech service',
+      message: 'Listening for a command.',
+    });
 
     expect(window.AlloFlowVoice.stopActiveVoiceSession('privacy')).toBe(true);
     expect(stopped).toHaveBeenCalledWith('privacy');
-    expect(states.some((status) => status.state === 'listening' && status.owner === 'agent')).toBe(true);
-    expect(states.at(-1)).toMatchObject({ state: 'idle', owner: null, reason: 'privacy' });
+    expect(states.some((status) => status.state === 'listening'
+      && status.owner === 'agent'
+      && status.engineLabel === 'Browser speech service')).toBe(true);
+    expect(states.at(-1)).toMatchObject({ state: 'idle', owner: null, engine: '', engineLabel: '', reason: 'privacy' });
     unsubscribe();
   });
 

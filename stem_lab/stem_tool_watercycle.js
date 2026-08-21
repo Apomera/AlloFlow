@@ -5657,6 +5657,91 @@ const d = labToolData.waterCycle || {};
                 atmosphereTexturePrecip3d.needsUpdate = true;
                 return atmosphereTexturePrecip3d;
               }
+              function rainShaftRandomPrecip3d(indexPrecip3d, seedPrecip3d) {
+                var rainShaftValuePrecip3d = Math.sin(
+                  (indexPrecip3d + 1) * (17.2387 + seedPrecip3d * 9.173)
+                ) * 43758.5453;
+                return rainShaftValuePrecip3d - Math.floor(rainShaftValuePrecip3d);
+              }
+              function makePrecip3dRainShaftTexture(seedPrecip3d) {
+                var rainShaftCanvasPrecip3d = document.createElement('canvas');
+                rainShaftCanvasPrecip3d.width = 128;
+                rainShaftCanvasPrecip3d.height = 256;
+                var rainShaftContextPrecip3d = rainShaftCanvasPrecip3d.getContext('2d');
+                rainShaftContextPrecip3d.clearRect(0, 0, 128, 256);
+                var rainShaftVeilPrecip3d = rainShaftContextPrecip3d.createLinearGradient(0, 0, 128, 0);
+                rainShaftVeilPrecip3d.addColorStop(0, 'rgba(186,230,253,0)');
+                rainShaftVeilPrecip3d.addColorStop(0.18, 'rgba(186,230,253,.026)');
+                rainShaftVeilPrecip3d.addColorStop(0.5, 'rgba(224,242,254,.09)');
+                rainShaftVeilPrecip3d.addColorStop(0.82, 'rgba(125,211,252,.026)');
+                rainShaftVeilPrecip3d.addColorStop(1, 'rgba(125,211,252,0)');
+                rainShaftContextPrecip3d.fillStyle = rainShaftVeilPrecip3d;
+                rainShaftContextPrecip3d.fillRect(0, 0, 128, 256);
+                rainShaftContextPrecip3d.lineCap = 'round';
+                for (var rainShaftStreakIndexPrecip3d = 0; rainShaftStreakIndexPrecip3d < 44; rainShaftStreakIndexPrecip3d++) {
+                  var rainShaftXPrecip3d = 5 + rainShaftRandomPrecip3d(
+                    rainShaftStreakIndexPrecip3d * 5,
+                    seedPrecip3d
+                  ) * 118;
+                  var rainShaftYPrecip3d = -40 + rainShaftRandomPrecip3d(
+                    rainShaftStreakIndexPrecip3d * 5 + 1,
+                    seedPrecip3d
+                  ) * 224;
+                  var rainShaftLengthPrecip3d = 58 + rainShaftRandomPrecip3d(
+                    rainShaftStreakIndexPrecip3d * 5 + 2,
+                    seedPrecip3d
+                  ) * 132;
+                  var rainShaftAlphaPrecip3d = 0.045 + rainShaftRandomPrecip3d(
+                    rainShaftStreakIndexPrecip3d * 5 + 3,
+                    seedPrecip3d
+                  ) * 0.13;
+                  var rainShaftGradientPrecip3d = rainShaftContextPrecip3d.createLinearGradient(
+                    rainShaftXPrecip3d,
+                    rainShaftYPrecip3d,
+                    rainShaftXPrecip3d + 5,
+                    rainShaftYPrecip3d + rainShaftLengthPrecip3d
+                  );
+                  rainShaftGradientPrecip3d.addColorStop(0, 'rgba(240,249,255,0)');
+                  rainShaftGradientPrecip3d.addColorStop(0.16, 'rgba(224,242,254,' + rainShaftAlphaPrecip3d + ')');
+                  rainShaftGradientPrecip3d.addColorStop(0.7, 'rgba(125,211,252,' + (rainShaftAlphaPrecip3d * 0.68) + ')');
+                  rainShaftGradientPrecip3d.addColorStop(1, 'rgba(14,165,233,0)');
+                  rainShaftContextPrecip3d.strokeStyle = rainShaftGradientPrecip3d;
+                  rainShaftContextPrecip3d.lineWidth = 0.55 + rainShaftRandomPrecip3d(
+                    rainShaftStreakIndexPrecip3d * 5 + 4,
+                    seedPrecip3d
+                  ) * 1.35;
+                  rainShaftContextPrecip3d.beginPath();
+                  rainShaftContextPrecip3d.moveTo(rainShaftXPrecip3d, rainShaftYPrecip3d);
+                  rainShaftContextPrecip3d.lineTo(
+                    rainShaftXPrecip3d + 4.5,
+                    rainShaftYPrecip3d + rainShaftLengthPrecip3d
+                  );
+                  rainShaftContextPrecip3d.stroke();
+                }
+                rainShaftContextPrecip3d.globalCompositeOperation = 'destination-in';
+                var rainShaftEdgeMaskPrecip3d = rainShaftContextPrecip3d.createLinearGradient(0, 0, 128, 0);
+                rainShaftEdgeMaskPrecip3d.addColorStop(0, 'rgba(255,255,255,0)');
+                rainShaftEdgeMaskPrecip3d.addColorStop(0.14, 'rgba(255,255,255,.84)');
+                rainShaftEdgeMaskPrecip3d.addColorStop(0.5, 'rgba(255,255,255,1)');
+                rainShaftEdgeMaskPrecip3d.addColorStop(0.86, 'rgba(255,255,255,.84)');
+                rainShaftEdgeMaskPrecip3d.addColorStop(1, 'rgba(255,255,255,0)');
+                rainShaftContextPrecip3d.fillStyle = rainShaftEdgeMaskPrecip3d;
+                rainShaftContextPrecip3d.fillRect(0, 0, 128, 256);
+                var rainShaftVerticalMaskPrecip3d = rainShaftContextPrecip3d.createLinearGradient(0, 0, 0, 256);
+                rainShaftVerticalMaskPrecip3d.addColorStop(0, 'rgba(255,255,255,0)');
+                rainShaftVerticalMaskPrecip3d.addColorStop(0.12, 'rgba(255,255,255,.92)');
+                rainShaftVerticalMaskPrecip3d.addColorStop(0.84, 'rgba(255,255,255,1)');
+                rainShaftVerticalMaskPrecip3d.addColorStop(1, 'rgba(255,255,255,0)');
+                rainShaftContextPrecip3d.fillStyle = rainShaftVerticalMaskPrecip3d;
+                rainShaftContextPrecip3d.fillRect(0, 0, 128, 256);
+                rainShaftContextPrecip3d.globalCompositeOperation = 'source-over';
+                var rainShaftTexturePrecip3d = new THREE.CanvasTexture(rainShaftCanvasPrecip3d);
+                rainShaftTexturePrecip3d.minFilter = THREE.LinearFilter;
+                rainShaftTexturePrecip3d.magFilter = THREE.LinearFilter;
+                rainShaftTexturePrecip3d.generateMipmaps = false;
+                rainShaftTexturePrecip3d.needsUpdate = true;
+                return rainShaftTexturePrecip3d;
+              }
               var softDotTexturePrecip3d = makePrecip3dParticleTexture('soft');
               var airflowTexturePrecip3d = makePrecip3dParticleTexture('air');
               var rainDropTexturePrecip3d = makePrecip3dParticleTexture('drop');
@@ -5665,6 +5750,11 @@ const d = labToolData.waterCycle || {};
               var positiveChargeTexturePrecip3d = makePrecip3dChargeTexture('positive');
               var negativeChargeTexturePrecip3d = makePrecip3dChargeTexture('negative');
               var atmosphereTexturePrecip3d = makePrecip3dAtmosphereTexture();
+              var rainShaftTexturesPrecip3d = [
+                makePrecip3dRainShaftTexture(0.37),
+                makePrecip3dRainShaftTexture(1.11),
+                makePrecip3dRainShaftTexture(2.29)
+              ];
 
               var horizonPrecip3d = new THREE.Mesh(
                 new THREE.PlaneGeometry(20, 9),
@@ -6023,9 +6113,88 @@ const d = labToolData.waterCycle || {};
               coastTerrainGroupPrecip3d.add(coastFoamMarkersPrecip3d);
               scenePrecip3d.add(coastTerrainGroupPrecip3d);
 
+              function makeSurfaceWetnessTexturePrecip3d() {
+                var wetnessCanvasPrecip3d = document.createElement('canvas');
+                wetnessCanvasPrecip3d.width = 256;
+                wetnessCanvasPrecip3d.height = 256;
+                var wetnessContextPrecip3d = wetnessCanvasPrecip3d.getContext('2d');
+                wetnessContextPrecip3d.clearRect(0, 0, 256, 256);
+                var wetnessFilmPrecip3d = wetnessContextPrecip3d.createRadialGradient(128, 132, 12, 128, 132, 150);
+                wetnessFilmPrecip3d.addColorStop(0, 'rgba(224,242,254,.2)');
+                wetnessFilmPrecip3d.addColorStop(0.56, 'rgba(125,211,252,.12)');
+                wetnessFilmPrecip3d.addColorStop(1, 'rgba(14,165,233,0)');
+                wetnessContextPrecip3d.fillStyle = wetnessFilmPrecip3d;
+                wetnessContextPrecip3d.fillRect(0, 0, 256, 256);
+                for (var wetnessPoolIndexPrecip3d = 0; wetnessPoolIndexPrecip3d < 18; wetnessPoolIndexPrecip3d++) {
+                  var wetnessPoolXPrecip3d = 18 + rainShaftRandomPrecip3d(wetnessPoolIndexPrecip3d * 6, 4.13) * 220;
+                  var wetnessPoolYPrecip3d = 24 + rainShaftRandomPrecip3d(wetnessPoolIndexPrecip3d * 6 + 1, 4.13) * 208;
+                  var wetnessPoolRadiusPrecip3d = 10 + rainShaftRandomPrecip3d(wetnessPoolIndexPrecip3d * 6 + 2, 4.13) * 27;
+                  var wetnessPoolStretchPrecip3d = 0.38 + rainShaftRandomPrecip3d(wetnessPoolIndexPrecip3d * 6 + 3, 4.13) * 0.42;
+                  var wetnessPoolGradientPrecip3d = wetnessContextPrecip3d.createRadialGradient(
+                    wetnessPoolXPrecip3d - wetnessPoolRadiusPrecip3d * 0.18,
+                    wetnessPoolYPrecip3d - wetnessPoolRadiusPrecip3d * 0.2,
+                    1,
+                    wetnessPoolXPrecip3d,
+                    wetnessPoolYPrecip3d,
+                    wetnessPoolRadiusPrecip3d
+                  );
+                  wetnessPoolGradientPrecip3d.addColorStop(0, 'rgba(240,249,255,.34)');
+                  wetnessPoolGradientPrecip3d.addColorStop(0.58, 'rgba(125,211,252,.13)');
+                  wetnessPoolGradientPrecip3d.addColorStop(1, 'rgba(14,165,233,0)');
+                  wetnessContextPrecip3d.save();
+                  wetnessContextPrecip3d.translate(wetnessPoolXPrecip3d, wetnessPoolYPrecip3d);
+                  wetnessContextPrecip3d.rotate(
+                    rainShaftRandomPrecip3d(wetnessPoolIndexPrecip3d * 6 + 4, 4.13) * Math.PI
+                  );
+                  wetnessContextPrecip3d.scale(1, wetnessPoolStretchPrecip3d);
+                  wetnessContextPrecip3d.translate(-wetnessPoolXPrecip3d, -wetnessPoolYPrecip3d);
+                  wetnessContextPrecip3d.fillStyle = wetnessPoolGradientPrecip3d;
+                  wetnessContextPrecip3d.fillRect(
+                    wetnessPoolXPrecip3d - wetnessPoolRadiusPrecip3d,
+                    wetnessPoolYPrecip3d - wetnessPoolRadiusPrecip3d,
+                    wetnessPoolRadiusPrecip3d * 2,
+                    wetnessPoolRadiusPrecip3d * 2
+                  );
+                  wetnessContextPrecip3d.restore();
+                }
+                wetnessContextPrecip3d.lineCap = 'round';
+                for (var wetnessGlintIndexPrecip3d = 0; wetnessGlintIndexPrecip3d < 24; wetnessGlintIndexPrecip3d++) {
+                  var wetnessGlintXPrecip3d = 16 + rainShaftRandomPrecip3d(wetnessGlintIndexPrecip3d * 4, 5.07) * 224;
+                  var wetnessGlintYPrecip3d = 20 + rainShaftRandomPrecip3d(wetnessGlintIndexPrecip3d * 4 + 1, 5.07) * 216;
+                  var wetnessGlintLengthPrecip3d = 5 + rainShaftRandomPrecip3d(wetnessGlintIndexPrecip3d * 4 + 2, 5.07) * 18;
+                  wetnessContextPrecip3d.strokeStyle = 'rgba(240,249,255,' +
+                    (0.08 + rainShaftRandomPrecip3d(wetnessGlintIndexPrecip3d * 4 + 3, 5.07) * 0.14) + ')';
+                  wetnessContextPrecip3d.lineWidth = 0.7;
+                  wetnessContextPrecip3d.beginPath();
+                  wetnessContextPrecip3d.moveTo(wetnessGlintXPrecip3d, wetnessGlintYPrecip3d);
+                  wetnessContextPrecip3d.lineTo(wetnessGlintXPrecip3d + wetnessGlintLengthPrecip3d, wetnessGlintYPrecip3d - 2);
+                  wetnessContextPrecip3d.stroke();
+                }
+                var surfaceWetnessTexturePrecip3d = new THREE.CanvasTexture(wetnessCanvasPrecip3d);
+                surfaceWetnessTexturePrecip3d.minFilter = THREE.LinearFilter;
+                surfaceWetnessTexturePrecip3d.magFilter = THREE.LinearFilter;
+                surfaceWetnessTexturePrecip3d.generateMipmaps = false;
+                surfaceWetnessTexturePrecip3d.needsUpdate = true;
+                return surfaceWetnessTexturePrecip3d;
+              }
+              var surfaceWetnessTexturePrecip3d = makeSurfaceWetnessTexturePrecip3d();
               var surfaceAccumulationGroupPrecip3d = new THREE.Group();
               var puddlePatchesPrecip3d = [];
+              var puddleHighlightsPrecip3d = [];
               var snowPatchesPrecip3d = [];
+              var surfaceWetSheenPrecip3d = new THREE.Mesh(
+                new THREE.PlaneGeometry(6.8, 4.7),
+                new THREE.MeshPhysicalMaterial({
+                  color: 0x38bdf8, map: surfaceWetnessTexturePrecip3d,
+                  roughness: 0.1, metalness: 0.04,
+                  clearcoat: 0.92, clearcoatRoughness: 0.1,
+                  transparent: true, opacity: 0, depthWrite: false,
+                  side: THREE.DoubleSide
+                })
+              );
+              surfaceWetSheenPrecip3d.rotation.x = -Math.PI / 2;
+              surfaceWetSheenPrecip3d.position.set(0, -2.14, 0.48);
+              surfaceAccumulationGroupPrecip3d.add(surfaceWetSheenPrecip3d);
               for (var accumulationPatchIndexPrecip3d = 0; accumulationPatchIndexPrecip3d < 6; accumulationPatchIndexPrecip3d++) {
                 var accumulationPatchXPrecip3d = -1.75 + accumulationPatchIndexPrecip3d * 0.7;
                 var accumulationPatchZPrecip3d = 0.2 + ((accumulationPatchIndexPrecip3d * 37) % 11) / 11 * 1.45;
@@ -6041,6 +6210,35 @@ const d = labToolData.waterCycle || {};
                 puddlePatchPrecip3d.position.set(accumulationPatchXPrecip3d, -2.125, accumulationPatchZPrecip3d);
                 surfaceAccumulationGroupPrecip3d.add(puddlePatchPrecip3d);
                 puddlePatchesPrecip3d.push(puddlePatchPrecip3d);
+
+                var puddleHighlightPointsPrecip3d = [];
+                for (var puddleHighlightPointIndexPrecip3d = 0; puddleHighlightPointIndexPrecip3d < 12; puddleHighlightPointIndexPrecip3d++) {
+                  var puddleHighlightAnglePrecip3d = 0.18 * Math.PI +
+                    puddleHighlightPointIndexPrecip3d / 11 * 0.58 * Math.PI;
+                  puddleHighlightPointsPrecip3d.push(new THREE.Vector3(
+                    Math.cos(puddleHighlightAnglePrecip3d) *
+                      (0.38 + (accumulationPatchIndexPrecip3d % 3) * 0.09) * 1.42,
+                    0,
+                    Math.sin(puddleHighlightAnglePrecip3d) *
+                      (0.38 + (accumulationPatchIndexPrecip3d % 3) * 0.09) *
+                      (0.54 + (accumulationPatchIndexPrecip3d % 2) * 0.1)
+                  ));
+                }
+                var puddleHighlightPrecip3d = new THREE.Line(
+                  new THREE.BufferGeometry().setFromPoints(puddleHighlightPointsPrecip3d),
+                  new THREE.LineBasicMaterial({
+                    color: 0xe0f2fe, transparent: true, opacity: 0,
+                    depthWrite: false, blending: THREE.AdditiveBlending
+                  })
+                );
+                puddleHighlightPrecip3d.position.set(
+                  accumulationPatchXPrecip3d,
+                  -2.095,
+                  accumulationPatchZPrecip3d
+                );
+                puddleHighlightPrecip3d.userData.phase = accumulationPatchIndexPrecip3d * 0.83;
+                surfaceAccumulationGroupPrecip3d.add(puddleHighlightPrecip3d);
+                puddleHighlightsPrecip3d.push(puddleHighlightPrecip3d);
 
                 var snowPatchGeometryPrecip3d = new THREE.CircleGeometry(
                   0.38 + (accumulationPatchIndexPrecip3d % 2) * 0.11, 24
@@ -6119,6 +6317,71 @@ const d = labToolData.waterCycle || {};
                 impactRipplesPrecip3d.push(impactRipplePrecip3d);
               }
               scenePrecip3d.add(impactRippleGroupPrecip3d);
+
+              var surfaceSplashCrownGroupPrecip3d = new THREE.Group();
+              var surfaceSplashSpokesPrecip3d = 5;
+              var surfaceSplashCrownCountPrecip3d = impactRipplesPrecip3d.length;
+              var surfaceSplashLinePositionsPrecip3d = new Float32Array(
+                surfaceSplashCrownCountPrecip3d * surfaceSplashSpokesPrecip3d * 2 * 3
+              );
+              var surfaceSplashTipPositionsPrecip3d = new Float32Array(
+                surfaceSplashCrownCountPrecip3d * surfaceSplashSpokesPrecip3d * 3
+              );
+              var surfaceSplashLineGeometryPrecip3d = new THREE.BufferGeometry();
+              surfaceSplashLineGeometryPrecip3d.setAttribute(
+                'position',
+                new THREE.BufferAttribute(surfaceSplashLinePositionsPrecip3d, 3)
+              );
+              var surfaceSplashLineMaterialPrecip3d = new THREE.LineBasicMaterial({
+                color: 0x7dd3fc, transparent: true, opacity: 0,
+                depthWrite: false, blending: THREE.AdditiveBlending
+              });
+              var surfaceSplashLinesPrecip3d = new THREE.LineSegments(
+                surfaceSplashLineGeometryPrecip3d,
+                surfaceSplashLineMaterialPrecip3d
+              );
+              surfaceSplashCrownGroupPrecip3d.add(surfaceSplashLinesPrecip3d);
+              var surfaceSplashTipGeometryPrecip3d = new THREE.BufferGeometry();
+              surfaceSplashTipGeometryPrecip3d.setAttribute(
+                'position',
+                new THREE.BufferAttribute(surfaceSplashTipPositionsPrecip3d, 3)
+              );
+              var surfaceSplashTipsPrecip3d = new THREE.Points(
+                surfaceSplashTipGeometryPrecip3d,
+                new THREE.PointsMaterial({
+                  color: 0xbae6fd, map: softDotTexturePrecip3d, alphaTest: 0.02,
+                  size: 0.045, transparent: true, opacity: 0,
+                  depthWrite: false, blending: THREE.AdditiveBlending
+                })
+              );
+              surfaceSplashCrownGroupPrecip3d.add(surfaceSplashTipsPrecip3d);
+              scenePrecip3d.add(surfaceSplashCrownGroupPrecip3d);
+
+              var surfacePhaseGlintCountPrecip3d = 64;
+              var surfacePhaseGlintPositionsPrecip3d = new Float32Array(surfacePhaseGlintCountPrecip3d * 3);
+              for (var surfacePhaseGlintIndexPrecip3d = 0; surfacePhaseGlintIndexPrecip3d < surfacePhaseGlintCountPrecip3d; surfacePhaseGlintIndexPrecip3d++) {
+                surfacePhaseGlintPositionsPrecip3d[surfacePhaseGlintIndexPrecip3d * 3] =
+                  -2.4 + ((surfacePhaseGlintIndexPrecip3d * 53) % 127) / 127 * 4.8;
+                surfacePhaseGlintPositionsPrecip3d[surfacePhaseGlintIndexPrecip3d * 3 + 1] =
+                  -2.055 + (surfacePhaseGlintIndexPrecip3d % 3) * 0.004;
+                surfacePhaseGlintPositionsPrecip3d[surfacePhaseGlintIndexPrecip3d * 3 + 2] =
+                  -0.28 + ((surfacePhaseGlintIndexPrecip3d * 37) % 109) / 109 * 2.58;
+              }
+              var surfacePhaseGlintGeometryPrecip3d = new THREE.BufferGeometry();
+              surfacePhaseGlintGeometryPrecip3d.setAttribute(
+                'position',
+                new THREE.BufferAttribute(surfacePhaseGlintPositionsPrecip3d, 3)
+              );
+              surfacePhaseGlintGeometryPrecip3d.setDrawRange(0, 0);
+              var surfacePhaseGlintsPrecip3d = new THREE.Points(
+                surfacePhaseGlintGeometryPrecip3d,
+                new THREE.PointsMaterial({
+                  color: 0xe0f2fe, map: snowFlakeTexturePrecip3d, alphaTest: 0.025,
+                  size: 0.052, transparent: true, opacity: 0,
+                  depthWrite: false, blending: THREE.AdditiveBlending
+                })
+              );
+              scenePrecip3d.add(surfacePhaseGlintsPrecip3d);
 
               var windShearGroupPrecip3d = new THREE.Group();
               var windShearLinesPrecip3d = [];
@@ -6821,6 +7084,70 @@ const d = labToolData.waterCycle || {};
               });
               scenePrecip3d.add(precipitationPhaseGroupPrecip3d);
 
+              var rainShaftGroupPrecip3d = new THREE.Group();
+              var rainShaftSpritesPrecip3d = [];
+              for (var rainShaftSpriteIndexPrecip3d = 0; rainShaftSpriteIndexPrecip3d < 7; rainShaftSpriteIndexPrecip3d++) {
+                var rainShaftMaterialPrecip3d = new THREE.SpriteMaterial({
+                  map: rainShaftTexturesPrecip3d[rainShaftSpriteIndexPrecip3d % rainShaftTexturesPrecip3d.length],
+                  color: rainShaftSpriteIndexPrecip3d % 2 ? 0x7dd3fc : 0xbae6fd,
+                  transparent: true, opacity: 0, depthTest: true, depthWrite: false,
+                  blending: THREE.NormalBlending
+                });
+                var rainShaftSpritePrecip3d = new THREE.Sprite(rainShaftMaterialPrecip3d);
+                rainShaftSpritePrecip3d.position.set(
+                  -1.86 + rainShaftSpriteIndexPrecip3d * 0.62,
+                  -0.52 + Math.sin(rainShaftSpriteIndexPrecip3d * 1.43) * 0.08,
+                  -1.08 + (rainShaftSpriteIndexPrecip3d % 3) * 0.78
+                );
+                rainShaftSpritePrecip3d.scale.set(
+                  1.42 + (rainShaftSpriteIndexPrecip3d % 3) * 0.22,
+                  3.38 + (rainShaftSpriteIndexPrecip3d % 2) * 0.34,
+                  1
+                );
+                rainShaftSpritePrecip3d.userData.baseX = rainShaftSpritePrecip3d.position.x;
+                rainShaftSpritePrecip3d.userData.baseY = rainShaftSpritePrecip3d.position.y;
+                rainShaftSpritePrecip3d.userData.baseScaleX = rainShaftSpritePrecip3d.scale.x;
+                rainShaftSpritePrecip3d.userData.baseScaleY = rainShaftSpritePrecip3d.scale.y;
+                rainShaftSpritePrecip3d.userData.phase = rainShaftSpriteIndexPrecip3d * 0.73;
+                rainShaftSpritePrecip3d.userData.depthWeight = 0.72 +
+                  (rainShaftSpriteIndexPrecip3d % 3) * 0.12;
+                rainShaftSpritePrecip3d.userData.baseOpacity = 0;
+                rainShaftGroupPrecip3d.add(rainShaftSpritePrecip3d);
+                rainShaftSpritesPrecip3d.push(rainShaftSpritePrecip3d);
+              }
+              scenePrecip3d.add(rainShaftGroupPrecip3d);
+
+              var surfaceImpactMistGroupPrecip3d = new THREE.Group();
+              var surfaceImpactMistSpritesPrecip3d = [];
+              for (var surfaceImpactMistIndexPrecip3d = 0; surfaceImpactMistIndexPrecip3d < 9; surfaceImpactMistIndexPrecip3d++) {
+                var surfaceImpactMistMaterialPrecip3d = new THREE.SpriteMaterial({
+                  map: cloudSoftTexturePrecip3d,
+                  color: 0x7dd3fc,
+                  transparent: true, opacity: 0, depthTest: true, depthWrite: false,
+                  blending: THREE.NormalBlending
+                });
+                var surfaceImpactMistSpritePrecip3d = new THREE.Sprite(surfaceImpactMistMaterialPrecip3d);
+                surfaceImpactMistSpritePrecip3d.position.set(
+                  -2.16 + surfaceImpactMistIndexPrecip3d * 0.54,
+                  -1.86 + Math.sin(surfaceImpactMistIndexPrecip3d * 1.61) * 0.035,
+                  -0.72 + (surfaceImpactMistIndexPrecip3d % 3) * 0.64
+                );
+                surfaceImpactMistSpritePrecip3d.scale.set(
+                  0.94 + (surfaceImpactMistIndexPrecip3d % 3) * 0.16,
+                  0.26 + (surfaceImpactMistIndexPrecip3d % 2) * 0.07,
+                  1
+                );
+                surfaceImpactMistSpritePrecip3d.userData.baseX = surfaceImpactMistSpritePrecip3d.position.x;
+                surfaceImpactMistSpritePrecip3d.userData.baseY = surfaceImpactMistSpritePrecip3d.position.y;
+                surfaceImpactMistSpritePrecip3d.userData.baseScaleX = surfaceImpactMistSpritePrecip3d.scale.x;
+                surfaceImpactMistSpritePrecip3d.userData.baseScaleY = surfaceImpactMistSpritePrecip3d.scale.y;
+                surfaceImpactMistSpritePrecip3d.userData.phase = surfaceImpactMistIndexPrecip3d / 9;
+                surfaceImpactMistSpritePrecip3d.userData.baseOpacity = 0;
+                surfaceImpactMistGroupPrecip3d.add(surfaceImpactMistSpritePrecip3d);
+                surfaceImpactMistSpritesPrecip3d.push(surfaceImpactMistSpritePrecip3d);
+              }
+              scenePrecip3d.add(surfaceImpactMistGroupPrecip3d);
+
               // Virga needs a visibly different ending from surface precipitation:
               // large drops become fine fragments, disappear, and re-enter the
               // atmosphere. The gold particles are teaching tracers for otherwise
@@ -7040,6 +7367,33 @@ const d = labToolData.waterCycle || {};
                 canvasEl.dataset.precipitationSurfaceEvidence = surfaceEvidencePrecip3d.length
                   ? surfaceEvidencePrecip3d.join(',') : 'none';
                 canvasEl.dataset.precipitationSurfaceImpacts = surfaceImpactModePrecip3d;
+                canvasEl.dataset.precipitationRainShaftRendering = modelPrecip3d.reachesGround &&
+                  (modelPrecip3d.visualType === 'rain' || modelPrecip3d.visualType === 'freezing-rain' ||
+                    modelPrecip3d.visualType === 'mix') && modelPrecip3d.relativeIntensity > 8
+                  ? 'depth-layered-overlapping-drop-curtains' : 'hidden';
+                canvasEl.dataset.precipitationSurfaceMistRendering = modelPrecip3d.reachesGround &&
+                  modelPrecip3d.visualType !== 'clear' && modelPrecip3d.visualType !== 'virga' &&
+                  modelPrecip3d.relativeIntensity > 6
+                  ? 'phase-aware-impact-spray' : 'hidden';
+                canvasEl.dataset.precipitationSurfaceMaterialRendering = modelPrecip3d.reachesGround &&
+                  Math.max(
+                    accumulationDataPrecip3d.puddling,
+                    accumulationDataPrecip3d.snow,
+                    accumulationDataPrecip3d.glaze,
+                    accumulationDataPrecip3d.hail,
+                    accumulationDataPrecip3d.runoff
+                  ) > 2
+                  ? 'accumulation-driven-wet-sheen-puddle-reflections-and-cold-phase-glints'
+                  : 'hidden';
+                canvasEl.dataset.precipitationSplashCrownRendering = modelPrecip3d.reachesGround &&
+                  (modelPrecip3d.visualType === 'rain' || modelPrecip3d.visualType === 'freezing-rain' ||
+                    modelPrecip3d.visualType === 'hail' || modelPrecip3d.visualType === 'mix') &&
+                  Math.max(
+                    accumulationDataPrecip3d.puddling,
+                    accumulationDataPrecip3d.glaze,
+                    accumulationDataPrecip3d.hail
+                  ) > 2
+                  ? 'radial-impact-crowns-and-ejected-droplets' : 'hidden';
                 canvasEl.dataset.precipitationCameraFocus = activeCameraFocusPrecip3d;
                 canvasEl.dataset.rendered = 'true';
               }
@@ -7252,10 +7606,31 @@ const d = labToolData.waterCycle || {};
                   ? 0x193c34 : cfg3d.terrain === 'coast' ? 0x294912 : 0x1d4a32);
                 var accumulation3d = modelPrecip3d.lifecycle.accumulation;
                 surfaceAccumulationGroupPrecip3d.visible = modelPrecip3d.reachesGround;
+                var surfaceWetnessStrength3d = Math.max(
+                  accumulation3d.puddling,
+                  accumulation3d.runoff * 0.72,
+                  accumulation3d.glaze * 0.58
+                ) / 100;
+                surfaceWetSheenPrecip3d.visible = modelPrecip3d.reachesGround && surfaceWetnessStrength3d > 0.015;
+                surfaceWetSheenPrecip3d.userData.baseOpacity = surfaceWetSheenPrecip3d.visible
+                  ? Math.min(0.42, 0.045 + surfaceWetnessStrength3d * 0.34) : 0;
+                surfaceWetSheenPrecip3d.material.opacity = surfaceWetSheenPrecip3d.userData.baseOpacity;
+                surfaceWetSheenPrecip3d.material.color.setHex(
+                  accumulation3d.glaze > accumulation3d.puddling ? 0xa5f3fc : 0x38bdf8
+                );
+                surfaceWetSheenPrecip3d.material.roughness = accumulation3d.glaze > accumulation3d.puddling
+                  ? 0.055 : 0.11;
                 puddlePatchesPrecip3d.forEach(function(puddlePatch3d, puddlePatchIndex3d) {
                   puddlePatch3d.visible = modelPrecip3d.reachesGround && accumulation3d.puddling > 2;
                   puddlePatch3d.material.opacity = puddlePatch3d.visible
                     ? Math.min(0.56, 0.12 + accumulation3d.puddling / 180 + puddlePatchIndex3d * 0.012) : 0;
+                });
+                puddleHighlightsPrecip3d.forEach(function(puddleHighlight3d, puddleHighlightIndex3d) {
+                  puddleHighlight3d.visible = modelPrecip3d.reachesGround && accumulation3d.puddling > 2;
+                  puddleHighlight3d.userData.baseOpacity = puddleHighlight3d.visible
+                    ? Math.min(0.58, 0.14 + accumulation3d.puddling / 170 + puddleHighlightIndex3d * 0.008)
+                    : 0;
+                  puddleHighlight3d.material.opacity = puddleHighlight3d.userData.baseOpacity;
                 });
                 snowPatchesPrecip3d.forEach(function(snowPatch3d, snowPatchIndex3d) {
                   snowPatch3d.visible = modelPrecip3d.reachesGround && accumulation3d.snow > 2;
@@ -7279,6 +7654,38 @@ const d = labToolData.waterCycle || {};
                   impactRipple3d.material.color.setHex(modelPrecip3d.visualType === 'freezing-rain'
                     ? 0x0891b2 : modelPrecip3d.visualType === 'hail' ? 0x67e8f9 : 0x0284c7);
                 });
+                surfaceSplashCrownGroupPrecip3d.visible = impactRippleGroupPrecip3d.visible;
+                surfaceSplashLineMaterialPrecip3d.opacity = surfaceSplashCrownGroupPrecip3d.visible
+                  ? Math.min(0.58, 0.2 + modelPrecip3d.relativeIntensity / 210) : 0;
+                surfaceSplashTipsPrecip3d.material.opacity = surfaceSplashCrownGroupPrecip3d.visible
+                  ? Math.min(0.76, 0.28 + modelPrecip3d.relativeIntensity / 190) : 0;
+                surfaceSplashLineMaterialPrecip3d.color.setHex(
+                  modelPrecip3d.visualType === 'freezing-rain' ? 0xa5f3fc
+                    : modelPrecip3d.visualType === 'hail' ? 0xe0f2fe : 0x7dd3fc
+                );
+                surfaceSplashTipsPrecip3d.material.color.setHex(
+                  modelPrecip3d.visualType === 'hail' ? 0xf8fafc : 0xbae6fd
+                );
+                var surfacePhaseGlintStrength3d = Math.max(
+                  accumulation3d.snow,
+                  accumulation3d.glaze,
+                  accumulation3d.hail
+                );
+                var surfacePhaseGlintActiveCount3d = Math.max(0, Math.min(
+                  surfacePhaseGlintCountPrecip3d,
+                  Math.round(surfacePhaseGlintCountPrecip3d * surfacePhaseGlintStrength3d / 100)
+                ));
+                surfacePhaseGlintGeometryPrecip3d.setDrawRange(0, surfacePhaseGlintActiveCount3d);
+                surfacePhaseGlintsPrecip3d.visible = modelPrecip3d.reachesGround &&
+                  surfacePhaseGlintActiveCount3d > 0;
+                surfacePhaseGlintsPrecip3d.userData.baseOpacity = surfacePhaseGlintsPrecip3d.visible
+                  ? Math.min(0.82, 0.25 + surfacePhaseGlintStrength3d / 150) : 0;
+                surfacePhaseGlintsPrecip3d.material.opacity = surfacePhaseGlintsPrecip3d.userData.baseOpacity;
+                surfacePhaseGlintsPrecip3d.material.size = 0.045 + surfacePhaseGlintStrength3d / 1800;
+                surfacePhaseGlintsPrecip3d.material.color.setHex(
+                  accumulation3d.glaze >= accumulation3d.snow && accumulation3d.glaze >= accumulation3d.hail
+                    ? 0xa5f3fc : accumulation3d.hail > accumulation3d.snow ? 0xf8fafc : 0xe0f2fe
+                );
                 floorGlowPrecip3d.material.color.setHex(accumulation3d.glaze > accumulation3d.puddling
                   ? 0xa5f3fc : 0x38bdf8);
                 thermalBandsPrecip3d.forEach(function(band3d, bandIndex3d) {
@@ -7307,6 +7714,56 @@ const d = labToolData.waterCycle || {};
                   precipPhaseSystemPrecip3d.lines.visible = precipPhaseSystemPrecip3d.style.lineLength > 0;
                   precipPhaseSystemPrecip3d.lineMaterial.opacity = modelPrecip3d.visualType === 'virga'
                     ? 0.17 : 0.3 + modelPrecip3d.relativeIntensity / 360;
+                });
+                var rainShaftPhaseActivePrecip3d = modelPrecip3d.visualType === 'rain' ||
+                  modelPrecip3d.visualType === 'freezing-rain' || modelPrecip3d.visualType === 'mix';
+                var rainShaftActivePrecip3d = modelPrecip3d.reachesGround && rainShaftPhaseActivePrecip3d &&
+                  modelPrecip3d.relativeIntensity > 8;
+                var rainShaftStrengthPrecip3d = Math.max(0, Math.min(1,
+                  (modelPrecip3d.relativeIntensity - 6) / 94
+                )) * (0.7 + cfg3d.lowLevelHumidity / 100 * 0.3);
+                var rainShaftFocusFactorPrecip3d = cloudFocusActivePrecip3d ? 0.68
+                  : cfg3d.cameraFocus === 'surface' ? 1.14 : 1;
+                rainShaftGroupPrecip3d.visible = rainShaftActivePrecip3d;
+                rainShaftSpritesPrecip3d.forEach(function(rainShaftSprite3d, rainShaftSpriteIndex3d) {
+                  rainShaftSprite3d.visible = rainShaftActivePrecip3d;
+                  rainShaftSprite3d.userData.baseOpacity = rainShaftActivePrecip3d
+                    ? (0.028 + rainShaftStrengthPrecip3d * 0.16) *
+                      rainShaftSprite3d.userData.depthWeight * rainShaftFocusFactorPrecip3d
+                    : 0;
+                  rainShaftSprite3d.material.opacity = rainShaftSprite3d.userData.baseOpacity;
+                  rainShaftSprite3d.material.color.setHex(
+                    modelPrecip3d.visualType === 'freezing-rain'
+                      ? 0xa5f3fc : rainShaftSpriteIndex3d % 2 ? 0x7dd3fc : 0xbae6fd
+                  );
+                  rainShaftSprite3d.scale.set(
+                    rainShaftSprite3d.userData.baseScaleX *
+                      (0.9 + modelPrecip3d.relativeIntensity / 520),
+                    rainShaftSprite3d.userData.baseScaleY * (0.92 + cfg3d.cloudDepth / 68),
+                    1
+                  );
+                });
+                var surfaceImpactMistActivePrecip3d = modelPrecip3d.reachesGround &&
+                  modelPrecip3d.visualType !== 'clear' && modelPrecip3d.visualType !== 'virga' &&
+                  modelPrecip3d.relativeIntensity > 6;
+                var surfaceImpactMistStrengthPrecip3d = Math.max(0, Math.min(1,
+                  modelPrecip3d.relativeIntensity / 100
+                )) * (0.58 + cfg3d.lowLevelHumidity / 100 * 0.42);
+                surfaceImpactMistGroupPrecip3d.visible = surfaceImpactMistActivePrecip3d;
+                surfaceImpactMistSpritesPrecip3d.forEach(function(surfaceImpactMistSprite3d, surfaceImpactMistIndex3d) {
+                  surfaceImpactMistSprite3d.visible = surfaceImpactMistActivePrecip3d;
+                  var surfaceImpactMistPhaseFactor3d = modelPrecip3d.visualType === 'snow' ? 0.72
+                    : modelPrecip3d.visualType === 'hail' ? 1.08 : 1;
+                  surfaceImpactMistSprite3d.userData.baseOpacity = surfaceImpactMistActivePrecip3d
+                    ? (0.032 + surfaceImpactMistStrengthPrecip3d * 0.1) *
+                      surfaceImpactMistPhaseFactor3d * (0.9 + (surfaceImpactMistIndex3d % 3) * 0.05)
+                    : 0;
+                  surfaceImpactMistSprite3d.material.opacity = surfaceImpactMistSprite3d.userData.baseOpacity;
+                  surfaceImpactMistSprite3d.material.color.setHex(
+                    modelPrecip3d.visualType === 'snow' ? 0xe0f2fe
+                      : modelPrecip3d.visualType === 'freezing-rain' ? 0xa5f3fc
+                        : modelPrecip3d.visualType === 'hail' ? 0xbae6fd : 0x7dd3fc
+                  );
                 });
                 var virgaActivePrecip3d = modelPrecip3d.visualType === 'virga';
                 var virgaDrynessPrecip3d = 1 - cfg3d.lowLevelHumidity / 100;
@@ -7706,6 +8163,39 @@ const d = labToolData.waterCycle || {};
                 coastFoamMarkerGeometryPrecip3d.attributes.position.needsUpdate = true;
                 var cloudVolumeTimePrecip3d = motionReducedPrecip3d ? 0 : time3d;
                 var cloudVolumeWindSignPrecip3d = cfg3d.windDirection === 'west' ? -1 : 1;
+                var rainShaftWindLeanPrecip3d = cloudVolumeWindSignPrecip3d *
+                  Math.min(0.18, cfg3d.wind / 260);
+                rainShaftSpritesPrecip3d.forEach(function(rainShaftSprite3d) {
+                  var rainShaftPhase3d = cloudVolumeTimePrecip3d *
+                    (0.16 + cfg3d.wind / 860) + rainShaftSprite3d.userData.phase;
+                  rainShaftSprite3d.position.x = rainShaftSprite3d.userData.baseX +
+                    rainShaftWindLeanPrecip3d * 0.24 +
+                    (motionReducedPrecip3d ? 0 : Math.sin(rainShaftPhase3d) * 0.045);
+                  rainShaftSprite3d.position.y = rainShaftSprite3d.userData.baseY +
+                    (motionReducedPrecip3d ? 0 : Math.cos(rainShaftPhase3d * 0.74) * 0.028);
+                  rainShaftSprite3d.material.rotation = rainShaftWindLeanPrecip3d +
+                    (motionReducedPrecip3d ? 0 : Math.sin(rainShaftPhase3d * 0.41) * 0.018);
+                  rainShaftSprite3d.material.opacity = rainShaftSprite3d.userData.baseOpacity *
+                    (motionReducedPrecip3d ? 1 : 0.88 + Math.sin(rainShaftPhase3d * 0.83) * 0.12);
+                });
+                surfaceImpactMistSpritesPrecip3d.forEach(function(surfaceImpactMistSprite3d) {
+                  var surfaceImpactMistProgress3d = motionReducedPrecip3d ? 0.5
+                    : (cloudVolumeTimePrecip3d * 0.12 + surfaceImpactMistSprite3d.userData.phase) % 1;
+                  var surfaceImpactMistLift3d = Math.sin(surfaceImpactMistProgress3d * Math.PI);
+                  surfaceImpactMistSprite3d.position.x = surfaceImpactMistSprite3d.userData.baseX +
+                    cloudVolumeWindSignPrecip3d * surfaceImpactMistLift3d * 0.065;
+                  surfaceImpactMistSprite3d.position.y = surfaceImpactMistSprite3d.userData.baseY +
+                    surfaceImpactMistLift3d * 0.075;
+                  surfaceImpactMistSprite3d.scale.set(
+                    surfaceImpactMistSprite3d.userData.baseScaleX *
+                      (0.9 + surfaceImpactMistProgress3d * 0.22),
+                    surfaceImpactMistSprite3d.userData.baseScaleY *
+                      (0.84 + surfaceImpactMistLift3d * 0.28),
+                    1
+                  );
+                  surfaceImpactMistSprite3d.material.opacity =
+                    surfaceImpactMistSprite3d.userData.baseOpacity * (0.34 + surfaceImpactMistLift3d * 0.66);
+                });
                 cloudInteriorDepthSpritesPrecip3d.forEach(function(cloudInteriorDepthSprite3d) {
                   var cloudInteriorDepthPhase3d = cloudVolumeTimePrecip3d *
                     (0.075 + cfg3d.wind / 920) + cloudInteriorDepthSprite3d.userData.phase;
@@ -7786,6 +8276,77 @@ const d = labToolData.waterCycle || {};
                   impactRipple3d.material.opacity = impactRippleGroupPrecip3d.visible
                     ? (1 - impactProgress3d) * (0.17 + intensity3d * 0.28) : 0;
                 });
+                puddleHighlightsPrecip3d.forEach(function(puddleHighlight3d) {
+                  puddleHighlight3d.material.opacity = puddleHighlight3d.userData.baseOpacity *
+                    (motionReducedPrecip3d ? 1 : 0.88 + Math.sin(time3d * 0.52 + puddleHighlight3d.userData.phase) * 0.12);
+                });
+                surfaceWetSheenPrecip3d.material.opacity = surfaceWetSheenPrecip3d.userData.baseOpacity *
+                  (motionReducedPrecip3d ? 1 : 0.95 + Math.sin(time3d * 0.3) * 0.05);
+                surfacePhaseGlintsPrecip3d.material.opacity = surfacePhaseGlintsPrecip3d.userData.baseOpacity *
+                  (motionReducedPrecip3d ? 1 : 0.78 + (Math.sin(time3d * 0.92) + 1) * 0.11);
+                var surfaceSplashLineAttributePrecip3d = surfaceSplashLineGeometryPrecip3d.attributes.position;
+                var surfaceSplashTipAttributePrecip3d = surfaceSplashTipGeometryPrecip3d.attributes.position;
+                for (var surfaceSplashCrownIndexPrecip3d = 0;
+                  surfaceSplashCrownIndexPrecip3d < surfaceSplashCrownCountPrecip3d;
+                  surfaceSplashCrownIndexPrecip3d++) {
+                  var surfaceSplashRipplePrecip3d = impactRipplesPrecip3d[surfaceSplashCrownIndexPrecip3d];
+                  var surfaceSplashImpactProgressPrecip3d = motionReducedPrecip3d
+                    ? surfaceSplashRipplePrecip3d.userData.phase
+                    : (surfaceSplashRipplePrecip3d.userData.phase +
+                      time3d * (0.48 + intensity3d * 0.72)) % 1;
+                  var surfaceSplashActivePrecip3d = surfaceSplashCrownGroupPrecip3d.visible &&
+                    surfaceSplashImpactProgressPrecip3d < 0.24;
+                  var surfaceSplashProgressPrecip3d = surfaceSplashActivePrecip3d
+                    ? surfaceSplashImpactProgressPrecip3d / 0.24 : 0;
+                  var surfaceSplashLiftPrecip3d = surfaceSplashActivePrecip3d
+                    ? Math.sin(surfaceSplashProgressPrecip3d * Math.PI) : 0;
+                  for (var surfaceSplashSpokeIndexPrecip3d = 0;
+                    surfaceSplashSpokeIndexPrecip3d < surfaceSplashSpokesPrecip3d;
+                    surfaceSplashSpokeIndexPrecip3d++) {
+                    var surfaceSplashAnglePrecip3d =
+                      surfaceSplashSpokeIndexPrecip3d / surfaceSplashSpokesPrecip3d * Math.PI * 2 +
+                      surfaceSplashCrownIndexPrecip3d * 0.47;
+                    var surfaceSplashRadiusPrecip3d = surfaceSplashActivePrecip3d
+                      ? 0.025 + surfaceSplashProgressPrecip3d * (0.085 + intensity3d * 0.035) : 0;
+                    var surfaceSplashHeightPrecip3d = surfaceSplashLiftPrecip3d *
+                      (0.075 + intensity3d * 0.115) *
+                      (0.82 + (surfaceSplashCrownIndexPrecip3d % 3) * 0.09);
+                    var surfaceSplashBaseXPrecip3d = surfaceSplashRipplePrecip3d.position.x;
+                    var surfaceSplashBaseYPrecip3d = surfaceSplashActivePrecip3d ? -2.065 : -20;
+                    var surfaceSplashBaseZPrecip3d = surfaceSplashRipplePrecip3d.position.z;
+                    var surfaceSplashTipXPrecip3d = surfaceSplashBaseXPrecip3d +
+                      Math.cos(surfaceSplashAnglePrecip3d) * surfaceSplashRadiusPrecip3d;
+                    var surfaceSplashTipYPrecip3d = surfaceSplashBaseYPrecip3d + surfaceSplashHeightPrecip3d;
+                    var surfaceSplashTipZPrecip3d = surfaceSplashBaseZPrecip3d +
+                      Math.sin(surfaceSplashAnglePrecip3d) * surfaceSplashRadiusPrecip3d;
+                    var surfaceSplashLineIndexPrecip3d =
+                      (surfaceSplashCrownIndexPrecip3d * surfaceSplashSpokesPrecip3d +
+                        surfaceSplashSpokeIndexPrecip3d) * 2;
+                    surfaceSplashLineAttributePrecip3d.setXYZ(
+                      surfaceSplashLineIndexPrecip3d,
+                      surfaceSplashBaseXPrecip3d,
+                      surfaceSplashBaseYPrecip3d,
+                      surfaceSplashBaseZPrecip3d
+                    );
+                    surfaceSplashLineAttributePrecip3d.setXYZ(
+                      surfaceSplashLineIndexPrecip3d + 1,
+                      surfaceSplashTipXPrecip3d,
+                      surfaceSplashTipYPrecip3d,
+                      surfaceSplashTipZPrecip3d
+                    );
+                    var surfaceSplashTipIndexPrecip3d =
+                      surfaceSplashCrownIndexPrecip3d * surfaceSplashSpokesPrecip3d +
+                      surfaceSplashSpokeIndexPrecip3d;
+                    surfaceSplashTipAttributePrecip3d.setXYZ(
+                      surfaceSplashTipIndexPrecip3d,
+                      surfaceSplashTipXPrecip3d,
+                      surfaceSplashTipYPrecip3d,
+                      surfaceSplashTipZPrecip3d
+                    );
+                  }
+                }
+                surfaceSplashLineAttributePrecip3d.needsUpdate = true;
+                surfaceSplashTipAttributePrecip3d.needsUpdate = true;
                 var stormEligible3d = modelPrecip3d.lightningEligible && modelPrecip3d.config.showStormAnatomy;
                 var studyStep3d = modelPrecip3d.config.lightningStudyStep;
                 var cadence3d = Math.max(4.8, modelPrecip3d.thunder.delaySeconds + 2.1);
@@ -7933,7 +8494,10 @@ const d = labToolData.waterCycle || {};
                 [cloudSoftTexturePrecip3d, softDotTexturePrecip3d, airflowTexturePrecip3d,
                   rainDropTexturePrecip3d, snowFlakeTexturePrecip3d, hailStoneTexturePrecip3d,
                   positiveChargeTexturePrecip3d, negativeChargeTexturePrecip3d,
-                  atmosphereTexturePrecip3d].concat(cloudDensityTexturesPrecip3d).forEach(function(texture3d) {
+                  atmosphereTexturePrecip3d, surfaceWetnessTexturePrecip3d].concat(
+                    cloudDensityTexturesPrecip3d,
+                    rainShaftTexturesPrecip3d
+                  ).forEach(function(texture3d) {
                   if (texture3d && texture3d.dispose) texture3d.dispose();
                 });
                 renderer3d.dispose();
@@ -8007,12 +8571,23 @@ const d = labToolData.waterCycle || {};
                   ? 'Dry-air lens: falling drops shrink into fine fragments and disappear before reaching the ground. The faint gold dots are teaching tracers for invisible water vapor mixing back into the air; virga produces no surface impacts or accumulation.'
                   : 'Surface-path lens: follow particles through every 0°C crossing. Snowflakes, liquid drops, supercooled drops, and ice pellets now change shape at the glowing phase boundary. The floor shows modeled snow cover, ice glaze, hail, puddling, and runoff as the storm matures.' +
                     (precipModel.reachesGround && ['rain', 'freezing-rain', 'hail', 'mix'].indexOf(precipModel.visualType) !== -1
-                      ? ' Expanding rings reveal individual surface impacts.' : '') +
+                      ? ' A low phase-colored impact haze shows many particles arriving together; brief splash crowns and expanding rings reveal individual impacts.' : '') +
+                    (precipModel.reachesGround && Math.max(
+                      precipModel.lifecycle.accumulation.puddling,
+                      precipModel.lifecycle.accumulation.snow,
+                      precipModel.lifecycle.accumulation.glaze,
+                      precipModel.lifecycle.accumulation.hail
+                    ) > 2
+                      ? ' Wet surfaces gain a reflective film, while snow, ice glaze, and hail produce distinct cold-phase glints.' : '') +
+                    (precipModel.reachesGround && precipModel.visualType === 'snow'
+                      ? ' A faint powder haze marks where snow reaches the surface.' : '') +
                     (precipConfig.terrain === 'mountains' ? ' Moist blue flow rises and condenses on the windward face; amber descending air warms and reveals the dry leeward rain shadow.' : '') +
                     (precipConfig.terrain === 'coast' ? ' The curved beach separates ocean collection from runoff over land.' : ''))
                 : 'Whole-storm lens: layered billow volume, horizontal wind, rising air, phase-change layers, falling particles, and surface accumulation are all tied to the current controls.' +
                   (precipModel.thermalLayers.crossings.length
                     ? ' Watch particle symbols transform as they pass through each glowing 0°C layer.' : '') +
+                  (precipModel.reachesGround && ['rain', 'freezing-rain', 'mix'].indexOf(precipModel.visualType) !== -1
+                    ? ' Translucent fall curtains represent many overlapping drops in depth; the brighter particles are enlarged teaching samples.' : '') +
                   (precipModel.visualType === 'virga'
                     ? ' The amber dry layer shows where drops fragment and evaporate; gold molecular tracers represent the resulting invisible vapor.' : '') +
                   (precipConfig.terrain === 'mountains'

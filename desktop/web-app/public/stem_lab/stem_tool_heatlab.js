@@ -1379,6 +1379,19 @@
       // ── Module 4: heating curve ──────────────────────────────────────
       var energyIn = typeof d.energyIn === 'number' ? d.energyIn : 0;   // kJ per kg
       var wstate = heatWaterState(energyIn);
+      // A temperature-only colour ramp can hide the important flat sections of
+      // the curve, so pair it with phase landmarks and a live marker. The marker
+      // uses a slightly wider display domain than the chart to leave room for the
+      // final steam state without pushing the 100 C landmark against the edge.
+      var CURVE_SCALE_MIN = -20;
+      var CURVE_SCALE_MAX = 125;
+      var curveTempFraction = clamp((wstate.temp - CURVE_SCALE_MIN) / (CURVE_SCALE_MAX - CURVE_SCALE_MIN), 0, 1);
+      var curveScaleGradient = HEAT_RAMP.map(function (stop) {
+        return heatRampColour(stop[0]) + ' ' + (stop[0] * 100).toFixed(0) + '%';
+      }).join(', ');
+      var curveStateNote = (wstate.phase === 'Ice melting' || wstate.phase === 'Water boiling')
+        ? 'Energy is changing the phase, so the temperature is holding steady.'
+        : 'Energy is raising the average molecular motion, so the temperature is rising.';
 
       React.useEffect(function () {
         if (wstate.phase === 'Steam' && !d.curveComplete) upd({ curveComplete: true });
@@ -2262,6 +2275,58 @@
                 'then rises as steam. Currently at ' + fmt(energyIn, 0) + ' kilojoules, ' + wstate.temp.toFixed(0) + ' degrees, ' + wstate.phase + '.',
               style: { width: '100%', height: '100%', display: 'block' }
           })),
+          h('div', {
+            className: 'mt-2 rounded-lg p-2.5',
+            role: 'img',
+            'aria-label': 'Live thermal state scale from minus 20 to 125 degrees Celsius. Current state: ' +
+              wstate.phase + ' at ' + wstate.temp.toFixed(1) + ' degrees Celsius.',
+            style: {
+              background: isDark ? 'rgba(148,163,184,0.08)' : 'rgba(167,139,250,0.07)',
+              border: '1px solid rgba(167,139,250,0.3)'
+            }
+          },
+            h('div', { className: 'flex flex-wrap items-baseline justify-between gap-1' },
+              h('span', { className: 'text-[11px] font-black', style: { color: isDark ? '#e2e8f0' : '#334155' } }, 'Live thermal state'),
+              h('span', { className: 'text-[11px] font-black', style: { color: heatRampColour(curveTempFraction) } },
+                wstate.phase + ' · ' + wstate.temp.toFixed(1) + ' degrees C')
+            ),
+            h('div', { className: 'relative mt-2', 'aria-hidden': 'true' },
+              h('div', {
+                className: 'h-3 rounded-full overflow-hidden',
+                style: { background: 'linear-gradient(90deg, ' + curveScaleGradient + ')' }
+              }),
+              h('span', {
+                className: 'absolute top-1/2',
+                style: {
+                  left: (curveTempFraction * 100).toFixed(2) + '%',
+                  width: '4px', height: '24px',
+                  transform: 'translate(-50%, -50%)',
+                  borderRadius: '999px',
+                  background: isDark ? '#f8fafc' : '#0f172a',
+                  boxShadow: '0 0 0 2px ' + heatRampColour(curveTempFraction),
+                  transition: prefersReducedMotion ? 'none' : 'left 160ms ease-out'
+                }
+              })
+            ),
+            h('div', { className: 'relative h-8 mt-1', 'aria-hidden': 'true' },
+              [{ temp: -20, label: 'Ice', value: '-20 C' },
+               { temp: 0, label: 'Melt', value: '0 C' },
+               { temp: 100, label: 'Boil', value: '100 C' },
+               { temp: 123, label: 'Steam', value: '123 C' }].map(function (mark) {
+                 var left = clamp((mark.temp - CURVE_SCALE_MIN) / (CURVE_SCALE_MAX - CURVE_SCALE_MIN), 0, 1) * 100;
+                 var edge = mark.temp === CURVE_SCALE_MIN ? 'translateX(0)' : mark.temp >= 123 ? 'translateX(-100%)' : 'translateX(-50%)';
+                 return h('div', {
+                   key: mark.label,
+                   className: 'absolute text-center',
+                   style: { left: left.toFixed(2) + '%', transform: edge, minWidth: '3rem' }
+                 },
+                   h('span', { className: 'block text-[10px] font-bold', style: { color: isDark ? '#cbd5e1' : '#475569' } }, mark.label),
+                   h('span', { className: 'block text-[10px]', style: { color: isDark ? '#94a3b8' : '#64748b' } }, mark.value)
+                 );
+               })
+            ),
+            h('p', { className: 'text-[11px] mt-1 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } }, curveStateNote)
+          ),
           slider('heat-energy', 'Energy added', 0, 3100, 10, energyIn,
             function (e) { upd({ energyIn: parseFloat(e.target.value) }); }, fmt(energyIn, 0) + ' kJ', 'ht-heating-status'),
           h('p', {

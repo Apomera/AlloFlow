@@ -1988,6 +1988,17 @@ describe('RoadReady road-local traffic invariants', () => {
     expect(src).toContain('var pendingRel = trafficRelativeRoadPosition(');
     expect(src).not.toContain('var ah = (other2.y - t.y) * myDirSign');
     expect(src).not.toContain('var ahp = (other3.y - t.y) * pendingDirSign');
+    expect(src).toContain('var roadMirrorRelative = function(actor)');
+    expect(src).toContain('var mirrorRoadState = roadMirrorRelative(t);');
+    expect(src).toContain('angle = Math.atan2(mirrorRoadState.lateralDifference, rearAlong);');
+    expect(src).toContain('var sideLateral = isLeft');
+    expect(src).toContain('var roadMirrorAngle = isLeft');
+    expect(src).toContain('var roadMirrorDist = Math.hypot(sideAcross, sideDepth);');
+    expect(src).toContain('var _mainRoadCollisionState = function(actor)');
+    expect(src).toContain('var caIsAhead = (caRoadState.station - cbRoadState.station)');
+    expect(src).toContain('var gapStationDelta = gaFrame && gbFrame');
+    expect(src).toContain('var gapLateralDelta = gaFrame && gbFrame');
+    expect(src).toContain('var mainStationDelta = gapStationDelta;');
     expect(src).toContain('var mmTrailMaxJumpSq = 24 * 24;');
     expect(src).toContain('if (mmTrailDx * mmTrailDx + mmTrailDy * mmTrailDy > mmTrailMaxJumpSq)');
   });

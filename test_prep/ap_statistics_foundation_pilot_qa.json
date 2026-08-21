@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "qaVersion": "ap-statistics-foundation-qa-v2",
+  "reportId": "ap-statistics-foundation-qa",
+  "generatedAt": "2026-08-20T00:00:00.000Z",
+  "packId": "ap-statistics-foundation-pilot",
+  "version": "0.2.0-internal-preview",
+  "automatedAssessment": "pass",
+  "structuralFindings": [],
+  "advisories": [
+    "Automated QA does not establish AP Statistics content validity, fairness, accessibility conformance, rights clearance, production readiness, score meaning, or psychometric quality.",
+    "Independent AP Statistics subject-expert, rights, accessibility, field-testing, and psychometric review remain release-blocking."
+  ],
+  "metrics": {
+    "itemCount": 200,
+    "unitCount": 5,
+    "unitCounts": {
+      "exploring-one-variable-data-and-collecting-data": 40,
+      "probability-random-variables-and-probability-distributions": 40,
+      "inference-for-categorical-data-proportions": 40,
+      "inference-for-quantitative-data-means": 40,
+      "regression-analysis": 40
+    },
+    "declaredTopicCount": 55,
+    "representedTopicCount": 55,
+    "minimumItemsPerTopic": 2,
+    "answerPositionCounts": [
+      50,
+      50,
+      50,
+      50
+    ],
+    "chapterCount": 5,
+    "sectionCount": 15,
+    "knowledgeCheckCount": 15,
+    "flashcardCount": 15,
+    "memoryAidCount": 5,
+    "constructedResponseWorkshopCount": 4
+  },
+  "coverage": {
+    "allDeclaredTopicsRepresented": true,
+    "allUnitsRepresented": true,
+    "nativeLearningRoutes": 200
+  },
+  "inputs": {
+    "packSha256": "e5d2ea422b446739e01083a48315359c31c18bc5960c9949bbaf5fecfa010ba6",
+    "learningLibrarySha256": "5667965755ee21dcfe4bba7d321f22acb3b1497b3915c34d5bba3da13b20bc53",
+    "officialBlueprintUrl": "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+    "reviewedAt": "2026-08-20"
+  },
+  "deploymentParity": {
+    "sourceAndDeployCopiesCheckedByManifestBuilder": true,
+    "status": "pending-manifest-build"
+  },
+  "rightsBoundary": {
+    "officialItemsUsed": false,
+    "officialStimuliUsed": false,
+    "officialRubricsUsed": false,
+    "status": "pending-independent-rights-review"
+  },
+  "reviewBoundary": {
+    "subjectExpert": "pending",
+    "accessibility": "pending",
+    "production": "pending",
+    "psychometric": "not-started",
+    "releaseEligible": false
+  }
+}

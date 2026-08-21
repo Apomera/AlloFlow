@@ -253,4 +253,65 @@ describe('private teacher check-ins', () => {
     expect(LP.normalizeLiveHelpRequestPacket({ activityId: 'poll-help', status: 'response text' })).toBeNull();
     expect(LP.LIVE_HELP_REQUEST_STATUSES).toEqual(['help', 'cleared']);
   });
+
+  it('keeps private help and check-ins available between polls', () => {
+    const acknowledgements = [];
+    const requests = [];
+    const sent = [];
+    const host = LP.createHost({
+      sessionCode: 'ABCD',
+      allowedUids: ['u1'],
+      onCheckInAck: (uid, codename, ack) => acknowledgements.push({ uid, codename, ack }),
+      onHelpRequest: (uid, codename, packet) => requests.push({ uid, codename, packet }),
+    });
+    host.peers.set('u1', { dc: { readyState: 'open', send: (message) => sent.push(JSON.parse(message)) } });
+    const activityId = LP.buildLiveSessionSupportActivityId('ABCD');
+    expect(activityId).toBe('session-support-ABCD');
+
+    const checkIn = host.sendCheckIn('u1', activityId);
+    expect(checkIn).toMatchObject({ activityId });
+    expect(sent.at(-1)).toMatchObject({ type: 'checkIn', payload: { activityId } });
+    expect(host._receiveCheckInAck('u1', 'Blue Fox', { checkInId: checkIn.id, activityId, status: 'working', acknowledgedAt: 50 })).toBe(true);
+    expect(host._receiveHelpRequest('u1', 'Blue Fox', { activityId, status: 'help', requestedAt: 60 })).toBe(true);
+    expect(host._receiveHelpRequest('u2', 'Unknown', { activityId, status: 'help' })).toBe(false);
+    expect(host._receiveHelpRequest('u1', 'Blue Fox', { activityId: 'session-support-other', status: 'help' })).toBe(false);
+    expect(acknowledgements).toHaveLength(1);
+    expect(requests).toEqual([{ uid: 'u1', codename: 'Blue Fox', packet: { activityId, status: 'help', requestedAt: 60 } }]);
+  });
+});
+
+describe('session-only live response drafts', () => {
+  const createStorage = () => {
+    const values = new Map();
+    return {
+      getItem: (key) => values.has(key) ? values.get(key) : null,
+      setItem: (key, value) => values.set(key, String(value)),
+      removeItem: (key) => values.delete(key),
+    };
+  };
+
+  it('restores, bounds, and clears a draft scoped to one session, student, and poll', () => {
+    const storage = createStorage();
+    const poll = { id: 'poll-draft', type: 'freetext' };
+    expect(LP.writeLivePollDraft('ABCD', 'u1', poll, 'x'.repeat(LP.LIVE_POLL_DRAFT_MAX_CHARS + 20), storage)).toBe(true);
+    expect(LP.readLivePollDraft('ABCD', 'u1', poll.id, storage)).toMatchObject({
+      pollId: poll.id,
+      type: 'freetext',
+      value: 'x'.repeat(LP.LIVE_POLL_DRAFT_MAX_CHARS),
+    });
+    expect(LP.readLivePollDraft('ABCD', 'u2', poll.id, storage)).toBeNull();
+    expect(LP.clearLivePollDraft('ABCD', 'u1', poll.id, storage)).toBe(true);
+    expect(LP.readLivePollDraft('ABCD', 'u1', poll.id, storage)).toBeNull();
+  });
+
+  it('removes empty drafts and ignores malformed storage values', () => {
+    const storage = createStorage();
+    const poll = { id: 'poll-rating', type: 'rating' };
+    expect(LP.writeLivePollDraft('ABCD', 'u1', poll, 4, storage)).toBe(true);
+    expect(LP.readLivePollDraft('ABCD', 'u1', poll.id, storage)).toMatchObject({ value: 4, type: 'rating' });
+    expect(LP.writeLivePollDraft('ABCD', 'u1', poll, '', storage)).toBe(true);
+    expect(LP.readLivePollDraft('ABCD', 'u1', poll.id, storage)).toBeNull();
+    storage.setItem(LP.livePollDraftStorageKey('ABCD', 'u1', poll.id), '{not-json');
+    expect(LP.readLivePollDraft('ABCD', 'u1', poll.id, storage)).toBeNull();
+  });
 });

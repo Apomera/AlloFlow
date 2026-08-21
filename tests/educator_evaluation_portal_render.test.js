@@ -19,6 +19,12 @@ const bootstrapFor = (email) => {
   harness.setActiveEmail(email);
   const boot = harness.invoke('bootstrap');
   expect(boot.ok).toBe(true);
+  if (boot.workspace.teachers.some(teacher => teacher.id === 't1')) {
+    boot.workspace.observations.push(
+      { id: 'history-t1-a', teacherId: 't1', createdAt: '2026-02-01T12:00:00.000Z', observedAt: '2026-02-10T12:00:00.000Z', finalizedAt: '2026-02-20T12:00:00.000Z', frameworkVersion: 'pa-act13-classroom-2021', version: 1, prework: {}, ratings: { d1: 2, d2: 2, d3: 2, d4: 2 }, rationales: {}, componentTags: [] },
+      { id: 'history-t1-b', teacherId: 't1', createdAt: '2026-04-01T12:00:00.000Z', observedAt: '2026-04-10T12:00:00.000Z', finalizedAt: '2026-04-20T12:00:00.000Z', frameworkVersion: 'pa-act13-classroom-2021', version: 1, prework: {}, ratings: { d1: 3, d2: 3, d3: 3, d4: 3 }, rationales: {}, componentTags: [] },
+    );
+  }
   return boot;
 };
 
@@ -38,6 +44,7 @@ const harnessPage = (boot) => `<!doctype html>
       'reviewPortalReleasedEvaluationShare','sharePortalReleasedEvaluation','recordReleasedSummaryOpened','getPortalSetupHealth',
       'getPortalAdminOperations','reviewPortalDirectoryChange','performPortalDirectoryChange',
       'reviewPortalCycleSchedule','performPortalCycleSchedule','reviewPortalDistrictExport','performPortalDistrictExport',
+      'reviewPortalWorkspaceConfiguration','performPortalWorkspaceConfiguration',
       'getPortalAnnualArchives','reviewPortalArchiveRestoreRehearsal','performPortalArchiveRestoreRehearsal',
       'reviewPortalAnnualRollover','performPortalAnnualRollover','reconcilePortalAnnualRollover','getPortalCohortStats']) {
       api[name] = function () { setTimeout(() => api._ok && api._ok(resolve(name)), 5); };
@@ -46,6 +53,8 @@ const harnessPage = (boot) => `<!doctype html>
   };
   const replyFor = (name) => {
     if (name === 'getPortalBootstrap') return BOOT;
+    if (name === 'getPortalCohortStats') return { ok: true, suppressed: true, minimum: 10,
+      metric: 'overall', source: 'finalized_formal_observations', selectedMean: 2.5 };
     if (name === 'getPortalAdminOperations') return { ok: true, directory: {
       revision: BOOT.revision, academicYear: BOOT.workspace.config.academicYear,
       educators: BOOT.workspace.teachers.map((teacher) => ({ id: teacher.id, code: teacher.code, name: teacher.name, building: teacher.building, assignment: teacher.assignment, active: teacher.active !== false, dueDate: teacher.dueDate || '', finalized: !!teacher.finalizedAt })),
@@ -56,6 +65,13 @@ const harnessPage = (boot) => `<!doctype html>
       ],
       assignments: [{ teacherId: 't1', evaluatorEmail: '${EVALUATOR}', active: true }],
     } };
+    if (name === 'reviewPortalWorkspaceConfiguration') return { ok: true, review: {
+      token: 'config-review-browser', expiresAt: '2026-08-13T17:25:30.000Z',
+      changes: [{ field: 'organization', label: 'Organization / LEA', current: BOOT.workspace.config.organization, candidate: 'Reviewed Browser District' }],
+      impacts: { activeEducators: BOOT.workspace.teachers.length, openCycles: BOOT.workspace.teachers.filter((teacher) => !teacher.finalizedAt).length, protectedSnapshots: 2, frameworkOrWeightChange: false, finalizedRecordsRetainSnapshots: true },
+    } };
+    if (name === 'performPortalWorkspaceConfiguration') return { ok: true, status: 'completed', recoveryPending: false, revision: BOOT.revision + 1,
+      changes: [{ field: 'organization', label: 'Organization / LEA', current: BOOT.workspace.config.organization, candidate: 'Reviewed Browser District' }] };
     if (name === 'reviewPortalDistrictExport') return { ok: true, review: {
       token: 'export-review-browser', expiresAt: '2026-08-13T17:25:30.000Z', scope: 'status_csv',
       purpose: 'Annual records handoff', teacherId: '', educatorName: '', activeEducators: BOOT.workspace.teachers.length,
@@ -134,6 +150,31 @@ describe('district portal bundle renders', () => {
     await page.close();
   }, 90000);
 
+  it('keeps evaluator policy read-only, exposes formal history, and uses the district cohort service', async () => {
+    const { page, errors } = await render(EVALUATOR, 'evaluator-boundaries');
+    await page.getByRole('heading', { name: 'Needs your attention' }).waitFor();
+    await page.getByRole('button', { name: 'Assign formal observation' }).first().click();
+    expect(await page.getByRole('tab', { name: 'Formal observations' }).getAttribute('aria-selected')).toBe('true');
+    await page.getByRole('tab', { name: 'Setup' }).click();
+    await page.getByText('District configuration is read-only here.').waitFor();
+    expect(await page.getByLabel('Organization / LEA').isDisabled()).toBe(true);
+    expect(await page.getByText(/Advanced workspace options/).count()).toBe(0);
+
+    await page.getByRole('tab', { name: 'Overview' }).click();
+    await page.getByLabel('Selected educator').selectOption('t1');
+    await page.getByRole('tab', { name: 'Formal observations' }).click();
+    const history = page.getByLabel('Observation record');
+    await history.waitFor();
+    expect(await history.locator('option').count()).toBeGreaterThan(1);
+    expect(await history.locator('option').allInnerTexts()).toEqual(expect.arrayContaining([expect.stringContaining('Finalized')]));
+
+    await page.getByRole('tab', { name: 'Trends' }).click();
+    await page.getByText('Suppressed.', { exact: true }).waitFor();
+    expect(await page.getByText(/No local approximation is shown/).count()).toBe(0);
+    expect(errors).toEqual([]);
+    await page.close();
+  }, 90000);
+
   it('mounts for an educator scoped to their own record only', async () => {
     const { page, errors } = await render(TEACHER_ONE, 'teacher');
     const tabs = await page.locator('.ae-tab').allInnerTexts();
@@ -151,7 +192,22 @@ describe('district portal bundle renders', () => {
 
   it('walks an administrator through review and explicit annual-rollover confirmations', async () => {
     const { page, errors } = await render(ADMIN, 'admin-rollover');
+    expect(await page.locator('.ae-local-banner').first().innerText()).toContain('Administrator access');
     await page.getByRole('tab', { name: 'Setup' }).click();
+    await page.getByText('Administrator-only district configuration.').waitFor();
+    expect(await page.getByLabel('Organization / LEA').isEnabled()).toBe(true);
+    expect(await page.getByText(/Advanced workspace options/).count()).toBe(0);
+    expect(await page.getByText('Approved rubric boundary').count()).toBe(1);
+    await page.getByLabel('Organization / LEA').fill('Reviewed Browser District');
+    await page.getByRole('button', { name: 'Review district configuration' }).click();
+    await page.getByText('Review 1 district-wide change.').waitFor();
+    expect(await page.getByText('Reviewed Browser District', { exact: true }).count()).toBeGreaterThan(0);
+    const configConfirm = page.getByRole('button', { name: 'Confirm reviewed configuration' });
+    expect(await configConfirm.isDisabled()).toBe(true);
+    await page.getByText(/I compared every current and proposed value/).click();
+    expect(await configConfirm.isEnabled()).toBe(true);
+    await configConfirm.click();
+    await page.getByText('District configuration updated and audited.').waitFor();
     expect(await page.locator('#ae-rollover-title').innerText()).toMatch(/Annual rollover/);
     expect(await page.getByLabel('Next academic year (YYYY-YY)').inputValue()).toBe('2027-28');
     await page.getByRole('button', { name: 'Review annual rollover' }).click();

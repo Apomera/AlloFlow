@@ -720,6 +720,65 @@ describe('Full Pack Generation Matrix integration', () => {
     });
   });
 
+  it('accounts for glossary term images and optional cleanup calls in the reviewed plan', async () => {
+    let latestRun = null;
+    const deps = makeDeps({
+      glossaryTier2Count: 5,
+      glossaryTier3Count: 3,
+      autoRemoveWords: true,
+      setFullPackRun: next => { latestRun = typeof next === 'function' ? next(latestRun) : next; },
+      autoConfigureSettings: vi.fn(async () => ({ resourcePlan: [{ tool: 'glossary', directive: '' }] })),
+    });
+
+    await GenerationHelpers.handlePlanFullPack(deps);
+
+    expect(latestRun.preflight.selected[0].providerWorkEstimate).toEqual({
+      resourceCalls: 1,
+      providerCalls: 17,
+      textCalls: 1,
+      imageCalls: 16,
+      glossaryImageCalls: 8,
+      glossaryImageEditCalls: 8,
+      requestConcurrency: 3,
+    });
+    expect(latestRun.preflight).toMatchObject({
+      estimatedResourceGenerations: 1,
+      estimatedProviderCalls: 17,
+      capacity: {
+        aiCalls: 17,
+        resourceCalls: 1,
+        imageCalls: 16,
+        glossaryImageCalls: 8,
+        imageEditCalls: 8,
+        requestConcurrency: 3,
+      },
+    });
+    expect(latestRun.preflight.generationMatrix.summary).toMatchObject({
+      expectedCalls: 1,
+      providerCalls: 17,
+      glossaryImageCalls: 8,
+      glossaryImageEditCalls: 8,
+    });
+  });
+
+  it('does not count glossary image work when the reviewed artifact is reused', () => {
+    expect(GenerationHelpers.estimateFullPackRowProviderWork({
+      type: 'glossary',
+      generationVariants: [{
+        action: 'reuse',
+        generationConfig: { fields: { glossaryTier2Count: 5, glossaryTier3Count: 5, autoRemoveWords: true } },
+      }],
+    })).toEqual({
+      resourceCalls: 0,
+      providerCalls: 0,
+      textCalls: 0,
+      imageCalls: 0,
+      glossaryImageCalls: 0,
+      glossaryImageEditCalls: 0,
+      requestConcurrency: 1,
+    });
+  });
+
   it('plans and generates one canonical analysis across all roster groups', async () => {
     vi.useFakeTimers();
     let latestRun = null;
@@ -1090,7 +1149,8 @@ describe('Full Pack Generation Matrix integration', () => {
     });
   });
 
-  it('gates and upgrades a legacy plan to the exact grade-language matrix after a late Matrix load', async () => {
+  it('waits for a late Matrix load and then creates the exact grade-language plan automatically', async () => {
+    vi.useFakeTimers();
     let latestRun = null;
     const deps = makeDeps({
       gradeLevel: '5th Grade',
@@ -1106,38 +1166,32 @@ describe('Full Pack Generation Matrix integration', () => {
       setFullPackRun: next => { latestRun = typeof next === 'function' ? next(latestRun) : next; },
     });
     const matrixModule = window.AlloModules.GenerationMatrix;
-    let reviewed;
     try {
       window.AlloModules.GenerationMatrix = null;
-      await GenerationHelpers.handlePlanFullPack(deps);
-      reviewed = latestRun;
-      expect(reviewed.preflight.sourceFingerprint).toMatch(/^fp-/);
-      expect(reviewed.preflight.generationMatrix.settings.version).toBe(0);
-      reviewed = GenerationHelpers.editFullPackPlanResourceDirective(
-        reviewed,
-        reviewed.preflight.selected[0].uiId,
-        'Educator-reviewed direction preserved across the late load.'
-      );
+      const planning = GenerationHelpers.handlePlanFullPack({ ...deps, generationMatrixWaitMs: 1000 });
+      setTimeout(() => {
+        window.AlloModules.GenerationMatrix = matrixModule;
+        window.dispatchEvent(new Event('alloflow:module-registry-changed'));
+      }, 100);
+      await vi.runAllTimersAsync();
+      await planning;
     } finally {
       window.AlloModules.GenerationMatrix = matrixModule;
+      vi.useRealTimers();
     }
 
-    await expect(GenerationHelpers.handleApproveFullPack(reviewed, deps)).resolves.toBe(false);
-    expect(deps.handleGenerate).not.toHaveBeenCalled();
+    const reviewed = latestRun;
     expect(latestRun.status).toBe('ready');
     expect(latestRun.preflight.generationMatrix.settings.version).toBe(GenerationMatrix.VERSION);
-    expect(latestRun.preflight.selected[0].directive).toBe(
-      'Educator-reviewed direction preserved across the late load.'
-    );
     expect(latestRun.preflight.selected[0].generationVariants.map(cell =>
       `${cell.grade}|${cell.language}`).sort()).toEqual([
       '5th Grade|English', '5th Grade|French', '5th Grade|Spanish',
       '6th Grade|English', '6th Grade|French', '6th Grade|Spanish',
     ]);
     expect(latestRun.preflight.estimatedResourceGenerations).toBe(6);
-    expect(deps.addToast).toHaveBeenCalledWith(expect.stringContaining('exact grade and language variants'), 'info');
+    expect(deps.addToast).toHaveBeenCalledWith(expect.stringContaining('start automatically'), 'info');
 
-    await expect(GenerationHelpers.handleApproveFullPack(latestRun, deps)).resolves.toBe(true);
+    await expect(GenerationHelpers.handleApproveFullPack(reviewed, deps)).resolves.toBe(true);
     expect(deps.handleGenerate).toHaveBeenCalledTimes(6);
     expect(latestRun.status).toBe('completed');
   });
@@ -1150,13 +1204,14 @@ describe('Full Pack Generation Matrix integration', () => {
       differentiationRange: 'Custom',
       differentiationTypes: ['quiz'],
       differentiationCustomGrades: ['6th Grade'],
+      generationMatrixWaitMs: 0,
       getDifferentiationGrades: vi.fn(() => ['5th Grade', '6th Grade']),
       setFullPackRun: next => { latestRun = typeof next === 'function' ? next(latestRun) : next; },
     });
     const matrixModule = window.AlloModules.GenerationMatrix;
     try {
       window.AlloModules.GenerationMatrix = null;
-      await GenerationHelpers.handlePlanFullPack(deps);
+      await GenerationHelpers.handleGenerateFullPack({ __fullPackPreflightOnly: true }, deps);
       const reviewed = latestRun;
       const plannerCalls = deps.autoConfigureSettings.mock.calls.length;
 

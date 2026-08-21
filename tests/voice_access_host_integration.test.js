@@ -10,6 +10,8 @@ describe('main-app Voice Access host integration', () => {
     expect(source).toContain('enableVoiceAccess: enableGlobalVoiceAccess');
     expect(source).toContain('voiceAccessActive: alloVoiceAccessListening');
     expect(source).toContain('onStartVoiceAccess={enableGlobalVoiceAccess}');
+    expect(source).toContain("String(alloVoiceSessionStatus.engineLabel || '')");
+    expect(source).toContain('· {_vEngineLabel}');
   });
 
   it('preserves protected-role validation and exposes semantic navigation', () => {

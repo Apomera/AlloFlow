@@ -57,6 +57,33 @@ describe('Pennsylvania classroom-teacher framework shape', () => {
   });
 });
 
+describe('local custom-rubric contract', () => {
+  const rubric = (overrides = {}) => ({
+    name: 'District Four-Domain Pilot', versionTag: 'district-pilot-v1', domainWeighted: true,
+    domains: ['d1', 'd2', 'd3', 'd4'].map((id, index) => ({ id, code: String(index + 1), label: `Domain ${index + 1}`, weight: 25, color: '#2563eb', components: [[`${index + 1}A`, 'Component']] })),
+    ...overrides,
+  });
+
+  it('accepts the representable four-domain format and preserves it through workspace normalization', () => {
+    const custom = E.aeNormalizeRubric(rubric());
+    expect(custom).toMatchObject({ name: 'District Four-Domain Pilot', versionTag: 'district-pilot-v1', domainWeighted: true });
+    const workspace = E.aeNormalizeWorkspace({ config: { organization: 'Local', frameworkProfile: 'pa_act13', customRubric: rubric() }, teachers: [], walkthroughs: [], observations: [], spms: [], comments: [], audit: [], cycleSnapshots: [] });
+    expect(workspace.config.customRubric).toMatchObject({ versionTag: 'district-pilot-v1' });
+    expect(workspace.config.frameworkVersion).toBe('district-pilot-v1');
+  });
+
+  it('rejects unrepresentable domain ids, incorrect weighted totals, and oversized component lists', () => {
+    expect(E.aeNormalizeRubric(rubric({ domains: rubric().domains.map((domain, index) => index === 0 ? { ...domain, id: 'planning' } : domain) }))).toBeNull();
+    expect(E.aeNormalizeRubric(rubric({ domains: rubric().domains.map((domain, index) => ({ ...domain, weight: index === 0 ? 20 : 25 })) }))).toBeNull();
+    expect(E.aeNormalizeRubric(rubric({ domains: rubric().domains.map((domain, index) => index === 0 ? { ...domain, components: Array.from({ length: 51 }, (_, item) => [`1${item}`, 'Component']) } : domain) }))).toBeNull();
+  });
+
+  it('normalizes an unweighted compatible rubric to equal display weights', () => {
+    const custom = E.aeNormalizeRubric(rubric({ domainWeighted: false, domains: rubric().domains.map((domain) => ({ ...domain, weight: 1 })) }));
+    expect(custom.domains.map((domain) => domain.weight)).toEqual([25, 25, 25, 25]);
+  });
+});
+
 describe('Act 13 weight profiles', () => {
   it('uses 70/10/10/10 when both BLD and TSD are available', () => {
     expect(compactProfile(professional())).toEqual([
@@ -233,6 +260,33 @@ describe('formal-observation workflow step', () => {
       teacherAcknowledgedAt: 'x', finalizedAt: 'x',
     })).toBe(9);
     expect(E.aeStepOfObservation(null)).toBe(0);
+  });
+});
+
+describe('evaluator next-action routing', () => {
+  const teacher = { id: 't1', name: 'Teacher One', active: true, cycleStatus: 'in_progress' };
+  const workspace = (overrides = {}) => ({ teachers: [teacher], observations: [], walkthroughs: [], spms: [], ...overrides });
+
+  it('routes an evaluator-owned formal milestone directly to the formal workflow', () => {
+    expect(E.aeTeacherNextAction(workspace({ observations: [{ id: 'o1', teacherId: 't1', preworkSubmittedAt: 'x' }] }), teacher))
+      .toMatchObject({ tab: 'formal', label: 'Record pre-conference', owner: 'evaluator' });
+  });
+
+  it('surfaces another evaluator task before a formal step that is waiting on the educator', () => {
+    expect(E.aeTeacherNextAction(workspace({
+      observations: [{ id: 'o1', teacherId: 't1' }],
+      spms: [{ id: 's1', teacherId: 't1', status: 'submitted' }],
+    }), teacher)).toMatchObject({ tab: 'spm', label: 'Review submitted SPM / SLO', owner: 'evaluator' });
+  });
+
+  it('labels educator-owned waiting states without treating them as evaluator work', () => {
+    expect(E.aeTeacherNextAction(workspace({ observations: [{ id: 'o1', teacherId: 't1', evidencePublishedAt: 'x' }] }), teacher))
+      .toMatchObject({ tab: 'formal', label: 'Waiting for reflection', owner: 'teacher' });
+  });
+
+  it('offers assignment for an unstarted formal cycle and audit for a released cycle', () => {
+    expect(E.aeTeacherNextAction(workspace(), teacher)).toMatchObject({ tab: 'formal', label: 'Assign formal observation', owner: 'evaluator' });
+    expect(E.aeTeacherNextAction(workspace(), { ...teacher, finalizedAt: 'x' })).toMatchObject({ tab: 'audit', owner: 'complete' });
   });
 });
 

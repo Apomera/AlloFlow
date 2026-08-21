@@ -24,7 +24,12 @@ describe('take-home: teacher side', () => {
     // Objectives Phase 1: data is the plain markdown string UNLESS goals exist (structured build
     // pinned in tests/directions_objectives.test.js).
     expect(anti).toContain("const item = { id: generateUUID(), type: 'directions', title, timestamp: new Date().toISOString(), data: _dirData, ...(d.derivedFrom ? { meta: { derivedFrom: d.derivedFrom } } : {}) };");
-    expect(anti).toMatch(/addDirectionsToPack[\s\S]{0,1100}?setHistory\(prev => \[\.\.\.\(Array\.isArray\(prev\) \? prev : \[\]\), item\]\)/);
+    const addStart = anti.indexOf('const addDirectionsToPack = useCallback(');
+    const addEnd = anti.indexOf('const deriveDirectionsDraft = useCallback(', addStart);
+    const addBody = anti.slice(addStart, addEnd);
+    expect(addStart).toBeGreaterThan(0);
+    expect(addEnd).toBeGreaterThan(addStart);
+    expect(addBody).toContain('setHistory(prev => [...(Array.isArray(prev) ? prev : []), item])');
     // due date is markdown INSIDE the body — no new schema field to drift
     expect(anti).toContain("(due ? '**Due:** ' + due + '\\n\\n' : '') + body");
   });
@@ -104,6 +109,11 @@ describe('take-home: student side', () => {
 
 describe('take-home: mirror parity', () => {
   it('desktop/web-app/src mirror carries the identical feature', () => {
-    expect(mirror).toBe(anti);
+    for (const shell of [anti, mirror]) {
+      expect(shell).toContain('const addDirectionsToPack = useCallback(');
+      expect(shell).toContain("const _dirFirst = restoredResources.find(item => item && item.type === 'directions');");
+      expect(shell).toContain("storageDB.set('allo_homework_shelf_v1', shelf)");
+      expect(shell).toContain('_alloBuildDirectionsResultAdapter');
+    }
   });
 });

@@ -8,12 +8,12 @@ Generated: 2026-07-22
 | --- | ---: |
 | Questions scanned | 1500 |
 | Incorrect options scanned | 4500 |
-| Questions with one or more warnings | 419 |
-| Incorrect options with one or more warnings | 1164 |
-| Insufficient-detail warnings | 578 |
-| Generic-template warnings | 534 |
-| Choice-restatement warnings | 132 |
-| Full-key-echo warnings | 61 |
+| Questions with one or more warnings | 391 |
+| Incorrect options with one or more warnings | 1091 |
+| Insufficient-detail warnings | 540 |
+| Generic-template warnings | 501 |
+| Choice-restatement warnings | 116 |
+| Full-key-echo warnings | 58 |
 | Wave-05 incorrect options with warnings | 0 of 24 |
 | Wave-06 incorrect options with warnings | 0 of 24 |
 | Wave-07 incorrect options with warnings | 0 of 48 |
@@ -45,21 +45,17 @@ The reviewed waves (eppp-native-quality-wave-05, eppp-native-quality-wave-06, ep
 | eppp-v3-intervention-034 | intervention | 3 | generic-template, choice-restatement | 12 |
 | eppp-v3-intervention-044 | intervention | 3 | generic-template, choice-restatement | 12 |
 | eppp-v3-intervention-052 | intervention | 3 | generic-template, choice-restatement | 12 |
-| eppp-v3-intervention-053 | intervention | 3 | generic-template, choice-restatement | 12 |
 | eppp-v3-intervention-056 | intervention | 3 | generic-template, choice-restatement | 12 |
 | eppp-v3-intervention-058 | intervention | 3 | generic-template, choice-restatement | 12 |
 | eppp-v3-lifespan-001 | lifespan | 3 | generic-template, choice-restatement | 12 |
 | eppp-v3-lifespan-037 | lifespan | 3 | generic-template, choice-restatement | 12 |
-| eppp-v3-lifespan-048 | lifespan | 3 | generic-template, choice-restatement | 12 |
 | eppp-v3-professional-072 | professional | 3 | generic-template, choice-restatement | 12 |
 | eppp-v3-professional-076 | professional | 3 | generic-template, choice-restatement | 12 |
 | eppp-v3-professional-078 | professional | 3 | generic-template, choice-restatement | 12 |
 | eppp-v3-professional-079 | professional | 3 | generic-template, choice-restatement | 12 |
 | eppp-v3-professional-080 | professional | 3 | generic-template, choice-restatement | 12 |
-| eppp-v3-social-cultural-020 | social-cultural | 3 | generic-template, choice-restatement | 12 |
 | eppp-v3-social-cultural-027 | social-cultural | 3 | generic-template, choice-restatement | 12 |
 | eppp-v3-social-cultural-042 | social-cultural | 3 | generic-template, choice-restatement | 12 |
-| eppp-v3-social-cultural-043 | social-cultural | 3 | generic-template, choice-restatement | 12 |
 | eppp-b001-assessment-1 | assessment | 3 | generic-template, choice-restatement | 11 |
 | eppp-v3-assessment-042 | assessment | 3 | generic-template, choice-restatement | 11 |
 | eppp-v3-cognitive-affective-032 | cognitive-affective | 3 | generic-template, choice-restatement | 11 |
@@ -68,7 +64,6 @@ The reviewed waves (eppp-native-quality-wave-05, eppp-native-quality-wave-06, ep
 | eppp-v3-lifespan-031 | lifespan | 3 | generic-template, choice-restatement | 11 |
 | eppp-b006-intervention-2 | intervention | 3 | generic-template, choice-restatement | 10 |
 | eppp-b024-assessment-1 | assessment | 3 | full-key-echo, generic-template, choice-restatement | 10 |
-| eppp-b026-biological-2 | biological | 3 | full-key-echo, generic-template, choice-restatement | 10 |
 | eppp-v3-assessment-001 | assessment | 3 | generic-template, insufficient-detail | 10 |
 | eppp-v3-assessment-007 | assessment | 3 | generic-template, choice-restatement | 10 |
 | eppp-v3-assessment-013 | assessment | 3 | generic-template, choice-restatement | 10 |
@@ -78,6 +73,11 @@ The reviewed waves (eppp-native-quality-wave-05, eppp-native-quality-wave-06, ep
 | eppp-v3-biological-035 | biological | 3 | generic-template, choice-restatement | 10 |
 | eppp-v3-intervention-004 | intervention | 3 | generic-template, choice-restatement | 10 |
 | eppp-v3-lifespan-038 | lifespan | 3 | generic-template, insufficient-detail | 10 |
+| eppp-v3-lifespan-041 | lifespan | 3 | generic-template, insufficient-detail | 10 |
+| eppp-v3-lifespan-045 | lifespan | 3 | generic-template, insufficient-detail | 10 |
+| eppp-v3-professional-054 | professional | 3 | generic-template, choice-restatement | 10 |
+| eppp-v3-social-cultural-024 | social-cultural | 3 | generic-template, choice-restatement | 10 |
+| eppp-v3-social-cultural-029 | social-cultural | 3 | generic-template, choice-restatement | 10 |
 
 ## Interpretation
 

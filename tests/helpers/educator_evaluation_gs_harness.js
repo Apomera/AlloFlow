@@ -243,8 +243,18 @@ function makeAppsScriptHarness() {
     if (!sheet) throw new Error('Sheet not found');
     sheet.rows[rowIndex][columnIndex] = value;
   }
+  function replaceWorkspace(workspace) {
+    const fileId = properties.get('EE_WORKSPACE_FILE_ID');
+    const file = driveFiles.get(fileId);
+    const spreadsheet = spreadsheets.get(properties.get('EE_SPREADSHEET_ID'));
+    const sheet = spreadsheet && spreadsheet.getSheetByName('Workspace');
+    if (!file || !sheet || !sheet.rows[1]) throw new Error('Workspace repository is not initialized');
+    const json = JSON.stringify(workspace);
+    file.content = json;
+    sheet.rows[1][3] = createHash('sha256').update(json).digest('base64url');
+  }
   return {
-    invoke, invokeError, rows, appendSheetRow, setSheetCell, sentMail, properties, driveFiles, documents,
+    invoke, invokeError, rows, appendSheetRow, setSheetCell, replaceWorkspace, sentMail, properties, driveFiles, documents,
     setActiveEmail: email => { activeEmail = email; },
     setEffectiveEmail: email => { effectiveEmail = email; },
     setClock: iso => { clock = iso; },
@@ -313,9 +323,8 @@ function repositoryFixture() {
     ],
   };
   let seedBoot = harness.invoke('bootstrap');
-  seedBoot.workspace.config = workspace.config;
-  seedBoot.workspace.audit = workspace.audit;
-  let seeded = harness.invoke('saveWorkspace', { expectedVersion: seedBoot.revision, workspace: seedBoot.workspace, mutation: { event: 'CONFIG_UPDATED' } });
+  const configReview = harness.invoke('reviewPortalWorkspaceConfiguration', { config: workspace.config }).review;
+  let seeded = harness.invoke('performPortalWorkspaceConfiguration', { reviewToken: configReview.token, acknowledgeImpact: true });
   const seedRecord = (collection, record, event, entityType) => {
     seedBoot = harness.invoke('bootstrap');
     seedBoot.workspace[collection].push(record);

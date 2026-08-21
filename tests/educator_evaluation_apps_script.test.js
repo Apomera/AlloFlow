@@ -12,6 +12,20 @@ import { describe, expect, it } from 'vitest';
 import { makeAppsScriptHarness, repositoryFixture, teacher, snapshot, GS_SOURCE, DOMAIN, ADMIN, EVALUATOR, TEACHER_ONE, TEACHER_TWO, FIXED_NOW } from './helpers/educator_evaluation_gs_harness.js';
 
 const teacherIds = workspace => workspace.teachers.map(item => item.id).sort();
+function seedCohortHistory(harness) {
+  const boot = harness.invoke('bootstrap');
+  const formal = (id, teacherId, value, finalizedAt = '2026-06-01T12:00:00.000Z') => ({
+    id, teacherId, createdAt: '2026-05-01T12:00:00.000Z', observedAt: finalizedAt,
+    finalizedAt, frameworkVersion: 'pa-act13-classroom-2021', version: 1,
+    prework: {}, ratings: { d1: value, d2: value, d3: value, d4: value }, rationales: {}, componentTags: [],
+  });
+  boot.workspace.observations.push(formal('cohort-selected-a', 't1', 2), formal('cohort-selected-b', 't1', 3));
+  harness.peerIds.forEach((teacherId, index) => boot.workspace.observations.push(formal(
+    'cohort-' + teacherId, teacherId, index < 5 ? 1 : 3,
+    index === 9 ? '2025-06-01T12:00:00.000Z' : '2026-06-01T12:00:00.000Z',
+  )));
+  harness.replaceWorkspace(boot.workspace);
+}
 function createSubmittedSpm(harness, id = 'spm-t1') {
   harness.setActiveEmail(TEACHER_ONE);
   let boot = harness.invoke('bootstrap');
@@ -261,22 +275,24 @@ describe('Educator Evaluation Apps Script notification and cohort privacy', () =
 
   it('suppresses fewer than ten distinct peers without exposing the count', () => {
     const harness = repositoryFixture();
+    seedCohortHistory(harness);
     harness.setActiveEmail(EVALUATOR);
     const result = harness.invoke('getPortalCohortStats', {
       teacherId: 't1', metric: 'finalScore', from: '2026-01-01', to: '2026-12-31',
     });
-    expect(result).toMatchObject({ ok: true, suppressed: true, minimum: 10, metric: 'finalScore', selectedMean: 2.5 });
+    expect(result).toMatchObject({ ok: true, suppressed: true, minimum: 10, metric: 'finalScore', source: 'finalized_formal_observations', selectedMean: 2.5 });
     expect(result).not.toHaveProperty('peerCount');
     expect(result).not.toHaveProperty('cohortMedian');
   });
 
   it('uses one mean per distinct teacher and reveals a median at ten peers', () => {
     const harness = repositoryFixture();
+    seedCohortHistory(harness);
     harness.setActiveEmail(EVALUATOR);
     const result = harness.invoke('getPortalCohortStats', { teacherId: 't1', metric: 'finalScore' });
     expect(result).toMatchObject({
       ok: true, suppressed: false, minimum: 10, peerCount: 10, selectedMean: 2.5,
-      cohortMedian: 1.9, aggregation: 'median_of_distinct_teacher_means',
+      cohortMedian: 2, source: 'finalized_formal_observations', aggregation: 'median_of_distinct_teacher_means',
     });
   });
 });

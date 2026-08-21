@@ -899,6 +899,16 @@ const MODULES = [
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
+        name: 'AssignmentCenter',
+        filename: 'view_assignment_center_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'DirectionsResult',
+        filename: 'view_directions_result_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
         name: 'SocraticChat',
         filename: 'view_socratic_chat_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
@@ -1764,6 +1774,20 @@ const COMPILE_PAIRS = [
         modPath: path.join(ROOT, 'view_end_session_preview_module.js'),
         publicPath: path.join(ROOT, 'desktop/web-app', 'public', 'view_end_session_preview_module.js'),
         wrap(src) { return require('./_build_view_end_session_preview_module.js').buildEndSessionPreviewModule(src); },
+    },
+    {
+        name: 'AssignmentCenter',
+        srcPath: path.join(ROOT, 'view_assignment_center_source.jsx'),
+        modPath: path.join(ROOT, 'view_assignment_center_module.js'),
+        publicPath: path.join(ROOT, 'desktop/web-app', 'public', 'view_assignment_center_module.js'),
+        wrap(src) { return require('./_build_view_assignment_center_module.js').buildAssignmentCenterModule(src); },
+    },
+    {
+        name: 'DirectionsResult',
+        srcPath: path.join(ROOT, 'view_directions_result_source.jsx'),
+        modPath: path.join(ROOT, 'view_directions_result_module.js'),
+        publicPath: path.join(ROOT, 'desktop/web-app', 'public', 'view_directions_result_module.js'),
+        wrap(src) { return require('./_build_view_directions_result_module.js').buildDirectionsResultModule(src); },
     },
     {
         // ── immersive_reader ── Reading overlays (Focus/Speed/Bionic/Crawl/Karaoke)

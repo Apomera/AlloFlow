@@ -5,6 +5,7 @@ import { TextDecoder, TextEncoder } from 'node:util';
 
 const rootSource = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8');
 const sharedActivitySource = readFileSync(resolve(process.cwd(), 'shared_activity_source.jsx'), 'utf8');
+const assignmentCenterSource = readFileSync(resolve(process.cwd(), 'view_assignment_center_source.jsx'), 'utf8');
 const mirrorSource = readFileSync(resolve(process.cwd(), 'desktop/web-app/src/AlloFlowANTI.txt'), 'utf8');
 const appSource = readFileSync(resolve(process.cwd(), 'desktop/web-app/src/App.jsx'), 'utf8');
 const phaseOSource = readFileSync(resolve(process.cwd(), 'phase_o_misc_handlers_source.jsx'), 'utf8');
@@ -453,7 +454,7 @@ describe('homework QR hardening', () => {
     expect(rootSource).toContain('This homework link was revoked or is no longer available.');
     expect(rootSource).toContain('This homework link has expired.');
     expect(rootSource).toContain('It may be damaged or truncated');    expect(rootSource).toContain("safeGetItem('allo_recent_qr_shares')");
-    expect(rootSource).toContain('showRecentQrShares &&');
+    expect(rootSource).toContain('<AssignmentCenterModal');
     expect(rootSource).toContain('homeworkExpiryDays * 24 * 60 * 60 * 1000');
     expect(rootSource).toContain('Selectable homework link');
     expect(rootSource).toContain('Homework ready ·');
@@ -464,8 +465,8 @@ describe('homework QR hardening', () => {
     // The recent-links list lives in the Share & Collect dialog now (ANTI,
     // @afc130a59) — the header keeps only the link-length control.
     expect(rootSource).toContain('Recent homework links');
-    expect(headerSource).toContain('<option value={1}>1 day</option>');
-    expect(headerSource).toContain('<option value={30}>30 days</option>');
+    expect(headerSource).toContain("<option value={1}>{t('export_menu.expiry_1_day') || '1 day'}</option>");
+    expect(headerSource).toContain("<option value={30}>{t('export_menu.expiry_30_days') || '30 days'}</option>");
     expect(headerPublicModule).toBe(headerModule);
   });
 
@@ -475,11 +476,11 @@ describe('homework QR hardening', () => {
     // survive in their current forms:
     //  - opt-in: no type selected means no activity; choosing a type IS the
     //    enable, and "None" is the first option.
-    expect(rootSource).toContain('<option value="">None</option>');
-    expect(rootSource).toContain('<option value="word_cloud">Word Cloud</option>');
-    expect(rootSource).toContain('<option value="rating">Rating scale (not scored)</option>');
+    expect(assignmentCenterSource).toContain("<option value=\"\">{tx('share_collect.type_none', 'None')}</option>");
+    expect(assignmentCenterSource).toContain("<option value=\"word_cloud\">{tx('share_collect.type_word_cloud', 'Word Cloud')}</option>");
+    expect(assignmentCenterSource).toContain("<option value=\"rating\">{tx('share_collect.type_rating', 'Rating scale (not scored)')}</option>");
     //  - mailbox-hosted, account-free:
-    expect(rootSource).toContain('People answer without an account.');
+    expect(assignmentCenterSource).toContain('People answer without an account.');
     //  - the review-queue radio is gone, but the SAFER DEFAULT it offered is
     //    now unconditional: word clouds publish only via explicit opt-in.
     expect(rootSource).toContain("revealPolicy === 'auto_publish' ? 'auto_publish' : 'teacher_review'");
@@ -495,7 +496,8 @@ describe('homework QR hardening', () => {
     expect(sharedActivitySource).toContain("a: 'getactivitysummary', id: packId, aid: activityId");
     expect(sharedActivitySource).toContain("a: 'moderateactivity'");
     expect(sharedActivitySource).toContain('window.AlloModules?.LivePolling?.renderWordCloudItems');
-    expect(rootSource).toContain("Manage shared {qrShareModal.sharedActivity.type === 'rating' ? 'class rating' : qrShareModal.sharedActivity.type === 'survey' ? 'survey' : 'class Word Cloud'}");
+    expect(rootSource).toContain("{t('share_collect.manage_shared') || 'Manage shared'}");
+    expect(rootSource).toContain("qrShareModal.sharedActivity.type === 'rating' ? 'class rating' : qrShareModal.sharedActivity.type === 'survey' ? 'survey' : 'class Word Cloud'");
     expect(rootSource).toContain('Only the anonymous distribution appears after the participation threshold.');
     expect(rootSource).toContain('!isTeacherMode && sharedHostedActivity &&');
     expect(rootSource).toContain('Students contribute on their own time.');

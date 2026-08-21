@@ -307,6 +307,9 @@ describe('Trajectory Computing Lab', () => {
     expect(html).toContain('Two-desk verification record');
     expect(html).toContain('Aurora Test 3 Completion Report');
     expect(html).toContain('Hand-calculation audit ledger');
+    expect(html).toContain('Accessibility and audit safeguards');
+    expect(html).toContain('Keyboard station tabs support Arrow keys, Home, and End.');
+    expect(html).toContain('machine read-back remain separate checks');
     expect(html).toContain('Print this report');
     expect(html).toContain('Table-precision control');
     expect(html).toContain('Line-printer format card');

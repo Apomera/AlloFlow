@@ -54,8 +54,8 @@ describe('educator evaluation annual rollover lifecycle', () => {
     const harness = repositoryFixture();
     const review = harness.invoke('reviewPortalAnnualRollover', { nextAcademicYear: '2027-28' }).review;
     const boot = harness.invoke('bootstrap');
-    boot.workspace.config.evaluatorInitials = 'RP';
-    harness.invoke('saveWorkspace', { expectedVersion: boot.revision, workspace: boot.workspace, mutation: { event: 'CONFIG_UPDATED' } });
+    const configReview = harness.invoke('reviewPortalWorkspaceConfiguration', { config: { ...boot.workspace.config, evaluatorInitials: 'RP' } }).review;
+    harness.invoke('performPortalWorkspaceConfiguration', { reviewToken: configReview.token, acknowledgeImpact: true });
     const error = harness.invokeError('performPortalAnnualRollover', {
       reviewToken: review.token,
       acknowledgeArchive: true,

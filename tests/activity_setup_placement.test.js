@@ -15,6 +15,7 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 
 const HEADER = readFileSync('view_header_source.jsx', 'utf8');
+const ASSIGNMENT_CENTER = readFileSync('view_assignment_center_source.jsx', 'utf8');
 const COPIES = ['AlloFlowANTI.txt', 'desktop/web-app/src/AlloFlowANTI.txt'];
 
 describe('setup is out of the dropdown menu', () => {
@@ -37,35 +38,26 @@ describe('setup is out of the dropdown menu', () => {
 });
 
 describe('setup lives with the results', () => {
-  for (const f of COPIES) {
-    it(`${f} hosts the form in the Assignment Control Center`, () => {
-      const src = readFileSync(f, 'utf8');
-      // Same dialog that already shows hosted assignments and their status, so
-      // set up, share and read are one place.
-      const dialogAt = src.indexOf('assignment-control-center-title');
-      const formAt = src.indexOf('activity-setup-title');
-      expect(dialogAt, 'control center exists').toBeGreaterThan(0);
-      expect(formAt, 'setup form exists').toBeGreaterThan(0);
-      expect(Math.abs(formAt - dialogAt), 'the form is inside that dialog').toBeLessThan(4000);
-    });
+  it('hosts the form beside results in the extracted Assignment Center view', () => {
+    const dialogAt = ASSIGNMENT_CENTER.indexOf('assignment-control-center-title');
+    const formAt = ASSIGNMENT_CENTER.indexOf('activity-setup-title');
+    expect(dialogAt, 'control center exists').toBeGreaterThan(0);
+    expect(formAt, 'setup form exists').toBeGreaterThan(0);
+    expect(Math.abs(formAt - dialogAt), 'the form is inside that dialog').toBeLessThan(4000);
+  });
 
-    it(`${f} makes choosing a type the enable, with no separate checkbox`, () => {
-      const src = readFileSync(f, 'utf8');
-      // A "None" option replaces the old checkbox, so one control both reveals
-      // and configures rather than two nested disclosures.
-      expect(src).toContain('<option value="">None</option>');
-      expect(src).toContain('enabled: !!nextType,');
-    });
+  it('makes choosing a type the enable, with no separate checkbox', () => {
+    expect(ASSIGNMENT_CENTER).toContain("<option value=\"\">{tx('share_collect.type_none', 'None')}</option>");
+    expect(ASSIGNMENT_CENTER).toContain('enabled: Boolean(nextType),');
+  });
 
-    it(`${f} offers all four activity types in one list`, () => {
-      const src = readFileSync(f, 'utf8');
-      const formAt = src.indexOf('activity-setup-title');
-      const form = src.slice(formAt, formAt + 8000);
-      for (const value of ['word_cloud', 'rating', 'availability', 'signup']) {
-        expect(form, value).toContain(`<option value="${value}">`);
-      }
-    });
-  }
+  it('offers every activity type in one list', () => {
+    const formAt = ASSIGNMENT_CENTER.indexOf('activity-setup-title');
+    const form = ASSIGNMENT_CENTER.slice(formAt, formAt + 9000);
+    for (const value of ['word_cloud', 'rating', 'availability', 'signup', 'survey']) {
+      expect(form, value).toContain(`<option value="${value}">`);
+    }
+  });
 });
 
 describe('there is a front door', () => {
@@ -101,33 +93,22 @@ describe('there is a front door', () => {
 });
 
 describe('the dialog does not close by accident', () => {
-  for (const f of COPIES) {
-    it(`${f} only closes when the whole gesture was on the backdrop`, () => {
-      const src = readFileSync(f, 'utf8');
-      // It holds a FORM now. Drag to select text in the options box, release a
-      // few pixels outside, and a plain backdrop onClick would discard
-      // everything typed. stopPropagation cannot help: the click target really
-      // is the backdrop, and only the press ORIGIN distinguishes the two.
-      expect(src).toContain('const recentQrBackdropPressRef = useRef(false);');
-      expect(src).toContain('recentQrBackdropPressRef.current = event.target === event.currentTarget;');
-      expect(src, 'a bare close-on-any-backdrop-click must not return').not.toContain('aria-labelledby="assignment-control-center-title" onClick={() => setShowRecentQrShares(false)}');
-    });
+  it('only closes when the whole gesture was on the backdrop', () => {
+    expect(ASSIGNMENT_CENTER).toMatch(/BackdropPressRef\s*=\s*React\.useRef\(false\)|backdropPressRef\s*=\s*React\.useRef\(false\)/i);
+    expect(ASSIGNMENT_CENTER).toContain('.current = event.target === event.currentTarget;');
+    expect(ASSIGNMENT_CENTER, 'a bare close-on-any-backdrop-click must not return')
+      .not.toContain('aria-labelledby="assignment-control-center-title" onClick={onClose}');
+  });
 
-    it(`${f} still closes deliberately, by button and by Escape`, () => {
-      const src = readFileSync(f, 'utf8');
-      // Hardening dismissal must not strip the ways out that people expect.
-      expect(src).toContain('aria-label="Close Share & Collect"');
-      expect(src).toContain('useFocusTrap(recentQrSharesDialogRef, showRecentQrShares');
-    });
+  it('still closes deliberately, by button and by host-owned Escape handling', () => {
+    expect(ASSIGNMENT_CENTER).toContain("tx('share_collect.close_aria', 'Close Share & Collect')");
+    expect(ASSIGNMENT_CENTER).toContain('useFocusTrap(dialogRef, isOpen, onClose);');
+  });
 
-    it(`${f} is named for what it does now`, () => {
-      const src = readFileSync(f, 'utf8');
-      // "Assignment Control Center" described an archive of past links, not a
-      // place to set up a poll.
-      expect(src).toContain('>Share & Collect</h2>');
-      expect(src).not.toContain('>Assignment Control Center</h2>');
-    });
-  }
+  it('is named for what it does now', () => {
+    expect(ASSIGNMENT_CENTER).toContain("tx('share_collect.title', 'Share & Collect')");
+    expect(ASSIGNMENT_CENTER).not.toContain('>Assignment Control Center</h2>');
+  });
 });
 
 describe('an activity can be sent on its own', () => {

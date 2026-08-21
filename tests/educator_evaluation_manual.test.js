@@ -194,6 +194,16 @@ describe('educator evaluation user manual', () => {
     expect(MANUAL).toContain('must not be the sole basis for personnel decisions');
   });
 
+  it('documents formal-history navigation, conflict recovery, and the references-only artifact boundary', () => {
+    expect(MANUAL).toContain('Observation record');
+    expect(MANUAL).toContain('Selecting a finalized record opens its locked history');
+    expect(MANUAL).toContain('Artifact references are not attachments');
+    expect(MANUAL).toContain('does not upload, copy, scan, version, retain, or change access');
+    expect(MANUAL).toContain('This record changed in another session');
+    expect(MANUAL).toContain('Reapply only my non-conflicting work');
+    expect(SOURCE).toContain('File upload, file versioning, and artifact retention are not implemented');
+  });
+
   it('documents the Portland matrix rules and examples that the code actually produces', () => {
     expect(MANUAL).toContain('categorical, not an average');
     // Rule wording is the product's own; drift on either side is a bug.
@@ -270,5 +280,16 @@ describe('educator evaluation user manual', () => {
   it('is linked from the workspace Setup tab', () => {
     expect(SOURCE).toContain('https://alloflow-cdn.pages.dev/educator-evaluation-manual');
     expect(SOURCE).toContain('User manual: private, principal-managed, and district portal paths');
+  });
+
+  it('documents direct next-action navigation and reviewed district configuration', () => {
+    for (const phrase of ['Needs your attention', 'Next action', 'Review district configuration',
+      'Confirm reviewed configuration', 'Custom rubric boundary', 'ordinary autosave',
+      'exactly four unique domain ids', 'preserved in local browser storage']) {
+      expect(MANUAL).toContain(phrase);
+    }
+    expect(SOURCE).toContain('Needs your attention');
+    expect(SOURCE).toContain('Review district configuration');
+    expect(SOURCE).toContain('Approved rubric boundary');
   });
 });

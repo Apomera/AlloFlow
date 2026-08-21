@@ -114,6 +114,18 @@ describe('Wheel & Fire pottery lab', () => {
     expect(stressed.stability).toBeLessThan(baseline.stability);
   });
 
+  it('localizes thin-wall risk to the affected ring for focused inspection', () => {
+    const pure = window.__alloPotteryPure;
+    const baseline = pure.makeVessel('stoneware', 'cylinder');
+    const thin = { ...baseline, thickness: [...baseline.thickness] };
+    thin.thickness[18] = 0.22;
+    const baselineRisks = pure.analyzeRingRisks(baseline, { method: 'wheel' });
+    const thinRisks = pure.analyzeRingRisks(thin, { method: 'wheel' });
+    expect(thinRisks[18].risk).toBeGreaterThan(baselineRisks[18].risk);
+    expect(thinRisks[18].status).toMatch(/Watch|High/);
+    expect(pure.analyzeVessel(thin, { method: 'wheel', rpm: 0 }).maxRingRisk).toBeGreaterThan(pure.analyzeVessel(baseline, { method: 'wheel', rpm: 0 }).maxRingRisk);
+  });
+
   it('makes poor coil bonding visible during aggressive drying', () => {
     const pure = window.__alloPotteryPure;
     const vessel = pure.makeVessel('tempered', 'jar');
@@ -134,6 +146,38 @@ describe('Wheel & Fire pottery lab', () => {
     const mature = pure.estimateFiredPorosity('stoneware', 1230, 'electric');
     expect(mature.maturation).toBeGreaterThan(underfired.maturation);
     expect(mature.porosity).toBeLessThan(underfired.porosity);
+  });
+
+  it('separates glaze melt, coverage, fit, and surface-risk signals', () => {
+    const pure = window.__alloPotteryPure;
+    const bisque = makeBisque(pure, 'stoneware');
+    const glazed = pure.glazeVessel(bisque, 'clear', 55);
+    const under = pure.analyzeGlazeOutcome(glazed, { temperature: 900, ramp: 110, soak: 0, kilnType: 'electric' });
+    const target = pure.analyzeGlazeOutcome(glazed, { temperature: 1080, ramp: 110, soak: 15, kilnType: 'electric' });
+    const over = pure.analyzeGlazeOutcome(glazed, { temperature: 1240, ramp: 110, soak: 15, kilnType: 'electric' });
+    expect(target.meltIndexPct).toBeGreaterThan(under.meltIndexPct);
+    expect(over.meltIndexPct).toBeGreaterThan(target.meltIndexPct);
+    expect(pure.analyzeGlazeOutcome({ ...glazed, glazeThickness: 15 }, { temperature: 1080 }).coveragePct).toBeLessThan(target.coveragePct);
+
+    const porcelain = pure.glazeVessel(makeBisque(pure, 'porcelain'), 'tin', 55);
+    const mismatch = pure.analyzeGlazeOutcome(porcelain, { temperature: 1040, ramp: 110, soak: 15 });
+    expect(mismatch.fitScore).toBeLessThan(target.fitScore);
+
+    const fired = pure.fireVessel(glazed, { temperature: 1080, ramp: 110, soak: 15, coolingRate: 90, kilnType: 'electric', atmosphere: 'oxidation' });
+    expect(fired.lastGlazeOutcome).toMatchObject({ glazeId: 'clear', bodyId: 'stoneware' });
+    expect(fired.firingLog[1].glazeOutcome).toMatchObject({ glazeId: 'clear' });
+  });
+
+  it('compares firing schedules without starting a firing cycle', () => {
+    const pure = window.__alloPotteryPure;
+    const glazed = pure.glazeVessel(makeBisque(pure, 'stoneware'), 'clear', 55);
+    const fast = pure.analyzeFiringSchedule(glazed, { temperature: 1220, ramp: 280, soak: 0, coolingRate: 250, kilnType: 'electric', atmosphere: 'oxidation' });
+    const slow = pure.analyzeFiringSchedule(glazed, { temperature: 1220, ramp: 80, soak: 60, coolingRate: 80, kilnType: 'electric', atmosphere: 'oxidation' });
+    expect(slow.heatwork.effectiveTemp).toBeGreaterThan(fast.heatwork.effectiveTemp);
+    expect(fast.rampRiskPct).toBeGreaterThan(slow.rampRiskPct);
+    expect(fast.thermalRiskPct).toBeGreaterThan(slow.thermalRiskPct);
+    expect(slow.glazeOutcome).toMatchObject({ glazeId: 'clear' });
+    expect(glazed.stage).toBe('glazed');
   });
 
   it('derives bounded recipe-study tradeoffs without changing the named body baseline', () => {
@@ -181,15 +225,21 @@ describe('Wheel & Fire pottery lab', () => {
     expect(html).toContain('Material comparison shelf');
     expect(html).toContain('Saved recipe hypotheses');
     expect(html).toContain('Load preview');
+    expect(html).toContain('Local ring stress map');
+    expect(html).toContain('Local ring stress zones');
+    expect(html).toContain('Focus ring');
 
     const journalHtml = renderTool('wheelAndFire', { wheelAndFire: {
       view: 'journal',
       vessel: recipeState,
       materialScenarios: [{ id: 7, label: 'Saved temper trial', clayBody: 'earthenware', materialRecipe: { temperPercent: 16 } }],
-      gallery: [{ id: 8, name: 'Recipe record', vessel: recipeState, materialRecipe: recipeState.materialRecipe, materialScenarios: [{ id: 7 }], method: 'wheel', performanceTests: [] }]
+      firingSchedules: [{ id: 9, label: 'Slow test', temperature: 1220, ramp: 80, soak: 30, coolingRate: 80, kilnType: 'electric' }],
+      gallery: [{ id: 8, name: 'Recipe record', vessel: recipeState, materialRecipe: recipeState.materialRecipe, materialScenarios: [{ id: 7 }], firingSchedules: [{ id: 9 }], method: 'wheel', performanceTests: [] }]
     } });
     expect(journalHtml).toContain('Saved scenarios');
     expect(journalHtml).toContain('1 saved material scenario');
+    expect(journalHtml).toContain('Firing schedules');
+    expect(journalHtml).toContain('1 saved firing schedule');
   });
 
   it('enforces drying, bisque, glazing, and glaze-firing order with modeled defects', () => {
@@ -221,6 +271,11 @@ describe('Wheel & Fire pottery lab', () => {
     expect(html).toContain('Simplified kiln schedule');
     expect(html).toContain('rough cone neighborhood');
     expect(html).toContain('Projected maturation');
+    expect(html).toContain('Glaze outcome preview');
+    expect(html).toContain('Melt window');
+    expect(html).toContain('Fit score');
+    expect(html).toContain('Firing schedule shelf');
+    expect(html).toContain('Save firing scenario');
   });
 
   it('requires fired clay for use tests and models glaze sealing without claiming certification', () => {
@@ -256,6 +311,38 @@ describe('Wheel & Fire pottery lab', () => {
     expect(crackedWater.score).toBeLessThan(intactWater.score);
   });
 
+  it('models accumulated damage across repeated wet-dry cycles', () => {
+    const pure = window.__alloPotteryPure;
+    const fired = makeGlazeFired(pure, 'stoneware');
+    const shortRun = pure.evaluateVesselUse(fired, 'cycles', { cycles: 2 });
+    const longRun = pure.evaluateVesselUse(fired, 'cycles', { cycles: 50 });
+    const gentleProtocol = pure.evaluateVesselUse(fired, 'cycles', { cycles: 24, dryingRate: 10, cycleTemperatureDelta: 20 });
+    const harshProtocol = pure.evaluateVesselUse(fired, 'cycles', { cycles: 24, dryingRate: 100, cycleTemperatureDelta: 220 });
+    expect(shortRun.ready).toBe(true);
+    expect(longRun.damagePct).toBeGreaterThan(shortRun.damagePct);
+    expect(longRun.score).toBeLessThan(shortRun.score);
+    expect(harshProtocol.damagePct).toBeGreaterThan(gentleProtocol.damagePct);
+    expect(harshProtocol.dryingRate).toBe(100);
+    expect(harshProtocol.cycleTemperatureDelta).toBe(220);
+    expect(longRun.summary).toContain('not a durability certification');
+    expect(longRun.cycleCheckpoints).toHaveLength(5);
+    expect(longRun.cycleCheckpoints[0]).toMatchObject({ cycles: 0, damagePct: 0, phase: 'Baseline' });
+    for (let index = 1; index < longRun.cycleCheckpoints.length; index += 1) {
+      expect(longRun.cycleCheckpoints[index].damagePct).toBeGreaterThanOrEqual(longRun.cycleCheckpoints[index - 1].damagePct);
+    }
+    expect(longRun.cycleCheckpoints.at(-1).cycles).toBe(50);
+
+    const html = renderTool('wheelAndFire', { wheelAndFire: { view: 'performance', vessel: fired, performanceTest: 'cycles', testCycles: 24 } });
+    expect(html).toContain('Repeated wet-dry cycles');
+    expect(html).toContain('Wet-dry cycles');
+    expect(html).toContain('Accumulated damage');
+    expect(html).toContain('Drying severity');
+    expect(html).toContain('Cycle temperature swing');
+    expect(html).toContain('Exposure profile');
+    expect(html).toContain('Modeled damage progression');
+    expect(html).toContain('Cycle checkpoints');
+  });
+
   it('provides a comparative permeability proxy and a safety-bounded performance interface', () => {
     const pure = window.__alloPotteryPure;
     const bisque = makeBisque(pure, 'earthenware');
@@ -279,6 +366,7 @@ describe('Wheel & Fire pottery lab', () => {
     expect(html).toContain('Firing evidence log');
     expect(html).toContain('°C eq.');
     expect(html).toContain('Observed model flags');
+    expect(html).toContain('Surface outcome');
   });
 
   it('keeps the deployed plugin mirror byte-for-byte synchronized', () => {

@@ -3,9 +3,9 @@
   "librarySchemaVersion": 1,
   "libraryId": "ap-biology-foundation-pilot-learning-library",
   "packId": "ap-biology-foundation-pilot",
-  "version": "0.8.0-internal-preview",
+  "version": "1.0.0-internal-preview",
   "title": "AP Biology Foundation Pilot Learning Library",
-  "description": "An independently authored AP Biology internal foundation pilot with 400 selected-response items, eight structured unit lessons, chapter retrieval checks, linked study cards, and reasoning aids. It is not released, official, calibrated, or score-predictive.",
+  "description": "An independently authored AP Biology internal foundation pilot with 500 selected-response items, eight structured unit lessons, chapter retrieval checks, linked study cards, and reasoning aids. It is not released, official, calibrated, or score-predictive.",
   "status": "preview",
   "visibility": "internal",
   "released": false,
@@ -18,8 +18,8 @@
     "examFormatReferenceYear": 2026,
     "officialBlueprintUrl": "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
     "officialCourseUrl": "https://apstudents.collegeboard.org/courses/ap-biology",
-    "pilotVersion": "ap-biology-foundation-v8",
-    "pilotNote": "Foundation pilot only: 400 original selected-response items, eight structured unit lessons, and internal remediation routes. This remains an internal enhancement pass; do not treat it as a 500-item release candidate until content, rights, accessibility, and subject-expert gates advance.",
+    "pilotVersion": "ap-biology-foundation-v10",
+    "pilotNote": "Foundation pilot only: 500 original selected-response items, eight structured unit lessons, and internal remediation routes. This remains an internal enhancement pass; do not treat it as an official or release-ready exam bank until content, rights, accessibility, and subject-expert gates advance.",
     "bigIdeas": [
       {
         "id": "BI1",
@@ -74,7 +74,7 @@
         "description": "Make claims, support them with evidence, connect reasoning to theory, and predict system changes."
       }
     ],
-    "learningObjectiveCatalogVersion": "ap-biology-foundation-v8",
+    "learningObjectiveCatalogVersion": "ap-biology-foundation-v10",
     "learningObjectiveCatalog": [
       {
         "id": "ap-bio-lo-1-1",
@@ -6184,7 +6184,7 @@
   "transitionNotice": "Reverify the current AP Biology CED, clarifications, exam format, policies, prerequisite language, laboratory boundaries, and public-use boundaries before any release.",
   "contentMigration": {
     "schemaVersion": 1,
-    "contentVersion": "ap-biology-foundation-v8",
+    "contentVersion": "ap-biology-foundation-v10",
     "sections": 8,
     "completeSections": 8,
     "richLessonPrototypes": 8,

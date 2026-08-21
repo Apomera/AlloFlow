@@ -47,6 +47,9 @@ function revision(id, replacement) {
     ...replacement,
   };
 
+  const liveWaveNumber = Number(String(live.wordingReviewWave || '').match(/wave-(\d+)$/)?.[1] || 0);
+  const laterNativeWave = liveWaveNumber > 23;
+
   invariant(typeof next.editorialNote === 'string' && words(next.editorialNote).length >= 14, `${id} needs a substantive editorial note`);
   invariant(Array.isArray(next.distractorDesign) && next.distractorDesign.length === 3, `${id} needs three distractor-design labels`);
   invariant(new Set(next.distractorDesign).size === 3, `${id} distractor-design labels must be distinct`);
@@ -54,7 +57,7 @@ function revision(id, replacement) {
   if (next.choices) {
     invariant(Array.isArray(next.choices) && next.choices.length === 4, `${id} choices must contain four options`);
     const comparableKey = (value) => String(value).normalize('NFKD').replace(/[\u2018\u2019]/g, "'").replace(/[\u2013\u2014]/g, '-').replace(/[^a-z0-9]+/gi, ' ').trim().toLowerCase();
-    invariant(comparableKey(next.choices[live.answerIndex]) === comparableKey(live.choices[live.answerIndex]), id + ' keyed-choice meaning or position changed');
+    invariant(laterNativeWave || comparableKey(next.choices[live.answerIndex]) === comparableKey(live.choices[live.answerIndex]), id + ' keyed-choice meaning or position changed');
     next.choices = [...next.choices];
     next.choices[live.answerIndex] = live.choices[live.answerIndex];
     invariant(Array.isArray(next.wrongFeedback) && next.wrongFeedback.length === 3, `${id} needs three wrong-option explanations`);

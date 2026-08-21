@@ -797,6 +797,10 @@ const StudentQuizOverlay = React.memo(({ sessionData, generatedContent, user, ac
   const advancedStatus = submittedAdvancedAnswer && typeof submittedAdvancedAnswer.status === 'string'
       ? submittedAdvancedAnswer.status
       : hasAnswered ? 'submitted' : 'no-response';
+  const normalizedBossPhase = String(bossStats?.phaseName || 'watchful').trim().toLowerCase().replace(/\s+/g, '_');
+  const bossPhaseId = ['watchful', 'enraged', 'final_form'].includes(normalizedBossPhase) ? normalizedBossPhase : 'watchful';
+  const bossPhaseLabel = t(`concept_quest.boss_phase_${bossPhaseId}`);
+  const bossGmEventText = bossStats?.gmEventKey ? t(`concept_quest.${bossStats.gmEventKey}`) : bossStats?.gmEvent;
   return (
     <div
         ref={quizRef}
@@ -874,7 +878,7 @@ const StudentQuizOverlay = React.memo(({ sessionData, generatedContent, user, ac
                          )}
                      </div>
                      <div className="w-full">
-                         <div className="mb-2 flex flex-wrap items-center justify-center gap-2 text-xs font-bold"><span className="rounded-full bg-red-950 px-2 py-1 text-red-200">Phase: {bossStats.phaseName || 'Watchful'}</span><span className="rounded-full bg-yellow-950 px-2 py-1 text-yellow-200">Mastery streak: {bossStats.masteryStreak || 0}</span>{bossStats.lastComboBonus > 0 && <span className="rounded-full bg-purple-950 px-2 py-1 text-purple-200">⚡ Combo +{bossStats.lastComboBonus}</span>}</div>
+                         <div className="mb-2 flex flex-wrap items-center justify-center gap-2 text-xs font-bold"><span className="rounded-full bg-red-950 px-2 py-1 text-red-200">{t('concept_quest.boss_phase', { phase: bossPhaseLabel })}</span><span className="rounded-full bg-yellow-950 px-2 py-1 text-yellow-200">{t('concept_quest.boss_mastery_streak', { count: bossStats.masteryStreak || 0 })}</span>{bossStats.lastComboBonus > 0 && <span className="rounded-full bg-purple-950 px-2 py-1 text-purple-200">⚡ {t('concept_quest.boss_combo_bonus', { bonus: bossStats.lastComboBonus })}</span>}</div>
                          <div className="flex justify-between text-xs font-bold text-slate-300 mb-1 uppercase tracking-wider">
                              <span>{bossStats.name || "Boss"} HP</span>
                              <span>{Math.round(bossStats.currentHP)} / {bossStats.maxHP}</span>
@@ -912,8 +916,8 @@ const StudentQuizOverlay = React.memo(({ sessionData, generatedContent, user, ac
                                  {t('quiz.boss.counter_attack_msg', { damage: bossStats.lastClassDamage })}
                              </div>
                          )}
-                         {bossStats.gmEvent && <p role="status" aria-live="polite" className="mt-2 rounded-lg border border-amber-400/40 bg-amber-950/70 p-2 text-center text-xs font-bold text-amber-100">🎲 Teacher GM: {bossStats.gmEvent}</p>}
-                         {phase === 'revealed' && bossStats.roundFeedback && <details className="mt-2 rounded-lg bg-slate-800 p-2 text-left text-xs text-slate-200"><summary className="cursor-pointer font-bold">Round concept recap · {bossStats.roundFeedback.accuracy}% accuracy</summary>{bossStats.roundFeedback.explanation ? <p className="mt-1">{bossStats.roundFeedback.explanation}</p> : <p className="mt-1">Discuss which evidence made the strongest answer work.</p>}</details>}
+                         {bossGmEventText && <p role="status" aria-live="polite" className="mt-2 rounded-lg border border-amber-400/40 bg-amber-950/70 p-2 text-center text-xs font-bold text-amber-100">🎲 {t('concept_quest.boss_teacher_gm', { event: bossGmEventText })}</p>}
+                         {phase === 'revealed' && bossStats.roundFeedback && <details className="mt-2 rounded-lg bg-slate-800 p-2 text-left text-xs text-slate-200"><summary className="cursor-pointer font-bold">{t('concept_quest.boss_round_recap', { accuracy: bossStats.roundFeedback.accuracy })}</summary>{bossStats.roundFeedback.explanation ? <p className="mt-1">{bossStats.roundFeedback.explanation}</p> : <p className="mt-1">{t('concept_quest.boss_discuss_evidence')}</p>}</details>}
                      </div>
                 </div>
             )}

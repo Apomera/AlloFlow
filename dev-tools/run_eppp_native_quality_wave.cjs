@@ -27,10 +27,13 @@ function assertNativeQualityWaveReplayPreimage({ item, action, revision, reviewW
   const matchesFrozenPrompt = item.prompt === revision.expectedPrompt;
   const hasOwnWaveMarker = item.wordingReviewWave === reviewWave;
   const matchesOwnWaveAfterState = hasOwnWaveMarker && item.prompt === revision.prompt;
+  const currentWaveNumber = Number(String(reviewWave).match(/wave-(\d+)$/)?.[1] || 0);
+  const itemWaveNumber = Number(String(item.wordingReviewWave || '').match(/wave-(\d+)$/)?.[1] || 0);
+  const hasLaterNativeWaveMarker = itemWaveNumber > currentWaveNumber;
   const hasCampaignSupersession = hasOwnWaveMarker && (item.qualityReviewHistory || []).some((entry) => (
     entry?.campaignId === 'eppp-distractor-halving-campaign-v1' && entry.mode === 'deep-rewrite'
   ));
-  const matchesRecognizedAfterState = matchesOwnWaveAfterState || hasCampaignSupersession;
+  const matchesRecognizedAfterState = matchesOwnWaveAfterState || hasCampaignSupersession || hasLaterNativeWaveMarker;
   const matchesDocketRank = Boolean(action && action.actionRank === revision.expectedActionRank);
 
   if (!matchesDocketRank && !matchesFrozenPrompt && !matchesRecognizedAfterState) {
@@ -45,6 +48,7 @@ function assertNativeQualityWaveReplayPreimage({ item, action, revision, reviewW
     hasOwnWaveMarker,
     matchesOwnWaveAfterState,
     hasCampaignSupersession,
+    hasLaterNativeWaveMarker,
     matchesDocketRank,
   };
 }

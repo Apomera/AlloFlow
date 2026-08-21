@@ -847,6 +847,10 @@ const StudentQuizOverlay = React.memo(({
   const isCorrect = isRevealed && hasAnswered && correctAnswerIndex >= 0 && selectedOptionIndex === correctAnswerIndex;
   const submittedAdvancedAnswer = getLiveQuizSubmittedAnswer(submittedResponse);
   const advancedStatus = submittedAdvancedAnswer && typeof submittedAdvancedAnswer.status === 'string' ? submittedAdvancedAnswer.status : hasAnswered ? 'submitted' : 'no-response';
+  const normalizedBossPhase = String(bossStats?.phaseName || 'watchful').trim().toLowerCase().replace(/\s+/g, '_');
+  const bossPhaseId = ['watchful', 'enraged', 'final_form'].includes(normalizedBossPhase) ? normalizedBossPhase : 'watchful';
+  const bossPhaseLabel = t(`concept_quest.boss_phase_${bossPhaseId}`);
+  const bossGmEventText = bossStats?.gmEventKey ? t(`concept_quest.${bossStats.gmEventKey}`) : bossStats?.gmEvent;
   return /*#__PURE__*/React.createElement("div", {
     ref: quizRef,
     className: `fixed inset-0 z-[1000] ${styles.bg} flex flex-col animate-in slide-in-from-bottom duration-500 text-white font-sans motion-reduce:animate-none motion-reduce:transition-none`,
@@ -936,11 +940,17 @@ const StudentQuizOverlay = React.memo(({
     className: "mb-2 flex flex-wrap items-center justify-center gap-2 text-xs font-bold"
   }, /*#__PURE__*/React.createElement("span", {
     className: "rounded-full bg-red-950 px-2 py-1 text-red-200"
-  }, "Phase: ", bossStats.phaseName || 'Watchful'), /*#__PURE__*/React.createElement("span", {
+  }, t('concept_quest.boss_phase', {
+    phase: bossPhaseLabel
+  })), /*#__PURE__*/React.createElement("span", {
     className: "rounded-full bg-yellow-950 px-2 py-1 text-yellow-200"
-  }, "Mastery streak: ", bossStats.masteryStreak || 0), bossStats.lastComboBonus > 0 && /*#__PURE__*/React.createElement("span", {
+  }, t('concept_quest.boss_mastery_streak', {
+    count: bossStats.masteryStreak || 0
+  })), bossStats.lastComboBonus > 0 && /*#__PURE__*/React.createElement("span", {
     className: "rounded-full bg-purple-950 px-2 py-1 text-purple-200"
-  }, "⚡ Combo +", bossStats.lastComboBonus)), /*#__PURE__*/React.createElement("div", {
+  }, "⚡ ", t('concept_quest.boss_combo_bonus', {
+    bonus: bossStats.lastComboBonus
+  }))), /*#__PURE__*/React.createElement("div", {
     className: "flex justify-between text-xs font-bold text-slate-300 mb-1 uppercase tracking-wider"
   }, /*#__PURE__*/React.createElement("span", null, bossStats.name || "Boss", " HP"), /*#__PURE__*/React.createElement("span", null, Math.round(bossStats.currentHP), " / ", bossStats.maxHP)), /*#__PURE__*/React.createElement("div", {
     className: "w-full h-6 bg-slate-800 rounded-full overflow-hidden border-2 border-slate-700 relative shadow-inner"
@@ -975,19 +985,23 @@ const StudentQuizOverlay = React.memo(({
     className: "text-orange-400 text-xs font-bold mt-1 animate-pulse motion-reduce:animate-none text-center"
   }, t('quiz.boss.counter_attack_msg', {
     damage: bossStats.lastClassDamage
-  })), bossStats.gmEvent && /*#__PURE__*/React.createElement("p", {
+  })), bossGmEventText && /*#__PURE__*/React.createElement("p", {
     role: "status",
     "aria-live": "polite",
     className: "mt-2 rounded-lg border border-amber-400/40 bg-amber-950/70 p-2 text-center text-xs font-bold text-amber-100"
-  }, "🎲 Teacher GM: ", bossStats.gmEvent), phase === 'revealed' && bossStats.roundFeedback && /*#__PURE__*/React.createElement("details", {
+  }, "🎲 ", t('concept_quest.boss_teacher_gm', {
+    event: bossGmEventText
+  })), phase === 'revealed' && bossStats.roundFeedback && /*#__PURE__*/React.createElement("details", {
     className: "mt-2 rounded-lg bg-slate-800 p-2 text-left text-xs text-slate-200"
   }, /*#__PURE__*/React.createElement("summary", {
     className: "cursor-pointer font-bold"
-  }, "Round concept recap · ", bossStats.roundFeedback.accuracy, "% accuracy"), bossStats.roundFeedback.explanation ? /*#__PURE__*/React.createElement("p", {
+  }, t('concept_quest.boss_round_recap', {
+    accuracy: bossStats.roundFeedback.accuracy
+  })), bossStats.roundFeedback.explanation ? /*#__PURE__*/React.createElement("p", {
     className: "mt-1"
   }, bossStats.roundFeedback.explanation) : /*#__PURE__*/React.createElement("p", {
     className: "mt-1"
-  }, "Discuss which evidence made the strongest answer work.")))), /*#__PURE__*/React.createElement("div", {
+  }, t('concept_quest.boss_discuss_evidence'))))), /*#__PURE__*/React.createElement("div", {
     className: "bg-white/10 backdrop-blur-md p-5 md:p-8 rounded-3xl border border-white/10 shadow-2xl max-w-3xl w-full"
   }, currentQuestion?.imageUrl && /*#__PURE__*/React.createElement("img", {
     src: currentQuestion.imageUrl,

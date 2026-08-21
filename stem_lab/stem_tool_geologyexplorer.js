@@ -1032,7 +1032,7 @@
     }
     return null;
   }
-  function undoPreviewTarget(history, voxelByKey, removed, slice, focusOn, stage, formedAt) {
+  function undoPreviewTarget(history, voxelByKey, removed, slice, focusOn, stage, formedAt, gridDepth) {
     if (!Array.isArray(history) || !history.length || focusOn || !removed) return null;
     var id = null, voxel = null;
     for (var i = history.length - 1; i >= 0; i--) {
@@ -1042,7 +1042,12 @@
     if (!voxel || voxel.key === 'void') return null;
     var cutaway = Number(slice); if (!isFinite(cutaway)) cutaway = 0;
     cutaway = Math.max(0, Math.round(cutaway));
-    if (Number(voxel.z) < cutaway) return null;
+    // The WebGL camera looks toward the positive-z face. When gridDepth is
+    // supplied, a front cutaway removes those high-z sections first. Keep the
+    // legacy no-gridDepth branch for the pure helper's older callers.
+    if (Number.isFinite(Number(gridDepth))) {
+      if (Number(voxel.z) >= Math.max(0, Number(gridDepth) - cutaway)) return null;
+    } else if (Number(voxel.z) < cutaway) return null;
     var formed = formedAt && formedAt[voxel.key]; if (formed == null) formed = 0;
     var maxStage = stage == null ? 99 : Number(stage); if (!isFinite(maxStage)) maxStage = 99;
     return formed <= maxStage ? voxel : null;
@@ -1421,9 +1426,139 @@
     // The labelled viewport container owns the WebGL alternative and keyboard mode.
     cnv.setAttribute('aria-hidden', 'true');
     cnv.style.width = '100%'; cnv.style.height = '100%'; cnv.style.display = 'block';
+    cnv.dataset.geologyMaterialRendering = 'procedural-rock-grain-bump-and-phase-glow';
+    cnv.dataset.geologyAtmosphereRendering = 'scene-colored-depth-motes-and-haze';
+    cnv.dataset.geologyProcessRendering = SCENE.id + '-science-process-tracers';
+    cnv.dataset.geologyExcavationRendering = 'rock-colored-dust-chips-and-exposure-flash';
+    cnv.dataset.geologyCutawayRendering = 'camera-facing-front-section';
+    cnv.dataset.geologySurfaceRendering = SCENE.id === 'crust' ? 'field-landmarks' : 'scene-native-topography';
     container.appendChild(cnv);
+    var motionMedia3d = null, reducedMotion3d = false;
+    function syncGeologyMotion3d(event) {
+      reducedMotion3d = event && typeof event.matches === 'boolean'
+        ? event.matches : !!(motionMedia3d && motionMedia3d.matches);
+      cnv.dataset.geologyReducedMotion = reducedMotion3d ? 'true' : 'false';
+    }
+    try {
+      motionMedia3d = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)');
+      syncGeologyMotion3d(motionMedia3d);
+      if (motionMedia3d && motionMedia3d.addEventListener) motionMedia3d.addEventListener('change', syncGeologyMotion3d);
+      else if (motionMedia3d && motionMedia3d.addListener) motionMedia3d.addListener(syncGeologyMotion3d);
+    } catch (e) {}
     var renderer = new THREE.WebGLRenderer({ canvas: cnv, antialias: true });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    if (THREE.ACESFilmicToneMapping) {
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = SCENE.id === 'geode' ? 1.2 : 1.12;
+    }
+    if (THREE.sRGBEncoding) renderer.outputEncoding = THREE.sRGBEncoding;
+    var geologyHighDetail3d = (container.clientWidth || 600) >= 420 &&
+      (!navigator.hardwareConcurrency || navigator.hardwareConcurrency >= 4);
+    renderer.shadowMap.enabled = geologyHighDetail3d;
+    if (THREE.PCFSoftShadowMap) renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    cnv.dataset.geologyRenderQuality = geologyHighDetail3d ? 'depth-shadows' : 'mobile-efficient';
+
+    function geologyTextureSeed3d(label) {
+      var hash = 2166136261;
+      String(label || 'geology').split('').forEach(function (character) {
+        hash ^= character.charCodeAt(0);
+        hash = Math.imul(hash, 16777619);
+      });
+      return hash >>> 0;
+    }
+    function geologyRandomFactory3d(seed) {
+      var state = (seed >>> 0) || 1;
+      return function () {
+        state = (Math.imul(state, 1664525) + 1013904223) >>> 0;
+        return state / 4294967296;
+      };
+    }
+    function makeGeologySurfaceTexture3d(sceneId3d) {
+      var textureCanvas3d = document.createElement('canvas');
+      textureCanvas3d.width = 256; textureCanvas3d.height = 256;
+      var textureContext3d = textureCanvas3d.getContext('2d');
+      var image3d = textureContext3d.createImageData(256, 256);
+      var random3d = geologyRandomFactory3d(geologyTextureSeed3d(sceneId3d + '-surface'));
+      var layered3d = sceneId3d === 'crust' || sceneId3d === 'subduction' || sceneId3d === 'ridge';
+      for (var textureY3d = 0; textureY3d < 256; textureY3d++) {
+        for (var textureX3d = 0; textureX3d < 256; textureX3d++) {
+          var textureIndex3d = (textureY3d * 256 + textureX3d) * 4;
+          var multiScaleGrain3d = (random3d() - 0.5) * 20 +
+            Math.sin(textureX3d * 0.17 + textureY3d * 0.11) * 4 +
+            Math.sin(textureX3d * 0.043 - textureY3d * 0.071) * 5;
+          var bedding3d = layered3d
+            ? Math.sin(textureY3d * 0.22 + Math.sin(textureX3d * 0.045) * 2.4) * 5 : 0;
+          var textureValue3d = Math.max(196, Math.min(252,
+            Math.round(232 + multiScaleGrain3d + bedding3d)));
+          image3d.data[textureIndex3d] = textureValue3d;
+          image3d.data[textureIndex3d + 1] = textureValue3d;
+          image3d.data[textureIndex3d + 2] = textureValue3d;
+          image3d.data[textureIndex3d + 3] = 255;
+        }
+      }
+      textureContext3d.putImageData(image3d, 0, 0);
+      textureContext3d.lineCap = 'round';
+      var veinCount3d = sceneId3d === 'geode' ? 44 : 24;
+      for (var veinIndex3d = 0; veinIndex3d < veinCount3d; veinIndex3d++) {
+        var veinX3d = random3d() * 256, veinY3d = random3d() * 256;
+        var veinLength3d = 10 + random3d() * (sceneId3d === 'geode' ? 48 : 24);
+        var veinAngle3d = random3d() * Math.PI * 2;
+        textureContext3d.strokeStyle = sceneId3d === 'geode'
+          ? 'rgba(255,255,255,' + (0.14 + random3d() * 0.24) + ')'
+          : 'rgba(46,37,31,' + (0.055 + random3d() * 0.08) + ')';
+        textureContext3d.lineWidth = sceneId3d === 'geode' ? 0.8 + random3d() * 1.4 : 0.55;
+        textureContext3d.beginPath();
+        textureContext3d.moveTo(veinX3d, veinY3d);
+        textureContext3d.lineTo(
+          veinX3d + Math.cos(veinAngle3d) * veinLength3d,
+          veinY3d + Math.sin(veinAngle3d) * veinLength3d
+        );
+        textureContext3d.stroke();
+      }
+      var surfaceTexture3d = new THREE.CanvasTexture(textureCanvas3d);
+      surfaceTexture3d.wrapS = surfaceTexture3d.wrapT = THREE.RepeatWrapping;
+      surfaceTexture3d.repeat.set(sceneId3d === 'geode' ? 1.15 : 1.65, sceneId3d === 'geode' ? 1.15 : 1.65);
+      surfaceTexture3d.minFilter = THREE.LinearMipmapLinearFilter;
+      surfaceTexture3d.magFilter = THREE.LinearFilter;
+      if (renderer.capabilities && renderer.capabilities.getMaxAnisotropy) {
+        surfaceTexture3d.anisotropy = Math.min(4, renderer.capabilities.getMaxAnisotropy());
+      }
+      if (THREE.sRGBEncoding) surfaceTexture3d.encoding = THREE.sRGBEncoding;
+      surfaceTexture3d.needsUpdate = true;
+      return surfaceTexture3d;
+    }
+    function makeGeologyParticleTexture3d(kind3d) {
+      var particleCanvas3d = document.createElement('canvas');
+      particleCanvas3d.width = 64; particleCanvas3d.height = 64;
+      var particleContext3d = particleCanvas3d.getContext('2d');
+      var particleGradient3d = particleContext3d.createRadialGradient(32, 32, 1, 32, 32, 31);
+      if (kind3d === 'chip') {
+        particleGradient3d.addColorStop(0, 'rgba(255,255,255,1)');
+        particleGradient3d.addColorStop(0.42, 'rgba(255,255,255,.92)');
+        particleGradient3d.addColorStop(0.58, 'rgba(255,255,255,.18)');
+      } else if (kind3d === 'dust') {
+        particleGradient3d.addColorStop(0, 'rgba(255,255,255,.74)');
+        particleGradient3d.addColorStop(0.38, 'rgba(255,255,255,.34)');
+        particleGradient3d.addColorStop(1, 'rgba(255,255,255,0)');
+      } else {
+        particleGradient3d.addColorStop(0, 'rgba(255,255,255,1)');
+        particleGradient3d.addColorStop(0.2, 'rgba(255,255,255,.78)');
+        particleGradient3d.addColorStop(0.55, 'rgba(255,255,255,.16)');
+        particleGradient3d.addColorStop(1, 'rgba(255,255,255,0)');
+      }
+      particleContext3d.fillStyle = particleGradient3d;
+      particleContext3d.fillRect(0, 0, 64, 64);
+      var particleTexture3d = new THREE.CanvasTexture(particleCanvas3d);
+      particleTexture3d.minFilter = THREE.LinearFilter;
+      particleTexture3d.magFilter = THREE.LinearFilter;
+      particleTexture3d.generateMipmaps = false;
+      particleTexture3d.needsUpdate = true;
+      return particleTexture3d;
+    }
+    var rockSurfaceTexture3d = makeGeologySurfaceTexture3d(SCENE.id);
+    var geologyGlowTexture3d = makeGeologyParticleTexture3d('glow');
+    var geologyDustTexture3d = makeGeologyParticleTexture3d('dust');
+    var geologyChipTexture3d = makeGeologyParticleTexture3d('chip');
     var scene = new THREE.Scene();
     // subtle vertical-gradient sky (deep blue up top → near-black below) for depth
     var bgCanvas = document.createElement('canvas');
@@ -1458,12 +1593,30 @@
     ensureControls();
     scene.add(new THREE.AmbientLight(0xffffff, 0.42));
     scene.add(new THREE.HemisphereLight(0xbcd4ff, 0x6b5640, 0.55)); // sky-blue from above, warm ground-bounce below → dimensional shading
-    var keyL = new THREE.DirectionalLight(0xfff1d0, 1.0); keyL.position.set(12, 20, 14); scene.add(keyL);
+    var keyL = new THREE.DirectionalLight(0xfff1d0, 1.0); keyL.position.set(12, 20, 14);
+    keyL.castShadow = geologyHighDetail3d;
+    if (keyL.shadow && keyL.shadow.camera) {
+      keyL.shadow.mapSize.set(1024, 1024);
+      keyL.shadow.camera.left = -WORLD.w * 0.85; keyL.shadow.camera.right = WORLD.w * 0.85;
+      keyL.shadow.camera.top = WORLD.h * 0.85; keyL.shadow.camera.bottom = -WORLD.h * 0.85;
+      keyL.shadow.camera.near = 1; keyL.shadow.camera.far = 56;
+      keyL.shadow.bias = -0.0007;
+    }
+    scene.add(keyL);
     var fillL = new THREE.DirectionalLight(0x90b4ff, 0.35); fillL.position.set(-14, 6, -10); scene.add(fillL);
-    var magmaGlow = new THREE.PointLight(0xff5522, 1.8, 44); magmaGlow.position.set(0, -WORLD.h * 0.5, 0); scene.add(magmaGlow);
+    var geologyHeatLightConfig3d = {
+      crust: { color: 0xff5522, intensity: 1.8, flicker: 0.38 },
+      geode: { color: 0x8b5cf6, intensity: 0.72, flicker: 0.08 },
+      deepEarth: { color: 0xff6b2c, intensity: 1.9, flicker: 0.3 },
+      subduction: { color: 0xff6633, intensity: 1.18, flicker: 0.22 },
+      ridge: { color: 0xff7a33, intensity: 1.28, flicker: 0.2 },
+      hotspot: { color: 0xff5a1f, intensity: 1.42, flicker: 0.28 }
+    }[SCENE.id] || { color: 0xff5522, intensity: 1.2, flicker: 0.2 };
+    var magmaGlowBaseColor3d = new THREE.Color(geologyHeatLightConfig3d.color);
+    var magmaGlow = new THREE.PointLight(geologyHeatLightConfig3d.color, geologyHeatLightConfig3d.intensity, 44); magmaGlow.position.set(0, -WORLD.h * 0.5, 0); scene.add(magmaGlow);
     // soft additive heat-glow radiating from beneath the crust (the magma source)
-    var underGlowGeo = new THREE.SphereGeometry(3.6, 16, 12), underGlowMat = new THREE.MeshBasicMaterial({ color: 0xff5a1a, transparent: true, opacity: 0.16, blending: THREE.AdditiveBlending, depthWrite: false });
-    var underGlow = new THREE.Mesh(underGlowGeo, underGlowMat); underGlow.position.set(0, -(NY - 1) / 2 * VOXEL - 1.6, 0); scene.add(underGlow);
+    var underGlowGeo = new THREE.SphereGeometry(3.6, 16, 12), underGlowMat = new THREE.MeshBasicMaterial({ color: geologyHeatLightConfig3d.color, transparent: true, opacity: 0.12, blending: THREE.AdditiveBlending, depthWrite: false });
+    var underGlow = new THREE.Mesh(underGlowGeo, underGlowMat); underGlow.position.set(0, -(NY - 1) / 2 * VOXEL - 1.6, 0); underGlow.visible = SCENE.id === 'crust'; scene.add(underGlow);
 
     var voxels = [];
     for (var y = 0; y < NY; y++) for (var x = 0; x < NX; x++) for (var z = 0; z < NZ; z++) voxels.push({ x: x, y: y, z: z, key: SCENE.gen(x, y, z), j: 0.87 + (((x * 41 + y * 71 + z * 13) % 100) / 100) * 0.26 });
@@ -1474,10 +1627,316 @@
     function worldPos(v) { return [(v.x - (NX - 1) / 2) * VOXEL, ((NY - 1) / 2 - v.y) * VOXEL, (v.z - (NZ - 1) / 2) * VOXEL]; }
 
     var geo = new THREE.BoxGeometry(VOXEL, VOXEL, VOXEL);
-    var mat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.85, metalness: 0.05 });
+    var mat = new THREE.MeshStandardMaterial({
+      color: 0xffffff,
+      map: rockSurfaceTexture3d,
+      bumpMap: rockSurfaceTexture3d,
+      bumpScale: SCENE.id === 'geode' ? 0.028 : 0.052,
+      roughness: SCENE.id === 'geode' ? 0.48 : (SCENE.id === 'deepEarth' ? 0.68 : 0.82),
+      metalness: SCENE.id === 'deepEarth' ? 0.1 : 0.035
+    });
     var mesh = new THREE.InstancedMesh(geo, mat, voxels.length);
     mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+    mesh.castShadow = geologyHighDetail3d;
+    mesh.receiveShadow = geologyHighDetail3d;
     scene.add(mesh);
+
+    var geologyAtmosphereColors3d = {
+      crust: 0xe7c59a,
+      geode: 0xc4b5fd,
+      deepEarth: 0xff8a4c,
+      subduction: 0x7dd3fc,
+      ridge: 0x5eead4,
+      hotspot: 0xfb923c
+    };
+    var geologyAtmosphereColor3d = geologyAtmosphereColors3d[SCENE.id] || 0xcbd5e1;
+    var atmosphereRandom3d = geologyRandomFactory3d(geologyTextureSeed3d(SCENE.id + '-atmosphere'));
+    var atmosphereMoteCount3d = geologyHighDetail3d ? 168 : 88;
+    var atmosphereMotePositions3d = new Float32Array(atmosphereMoteCount3d * 3);
+    var atmosphereMoteBase3d = new Float32Array(atmosphereMoteCount3d * 3);
+    var atmosphereMotePhases3d = new Float32Array(atmosphereMoteCount3d);
+    for (var atmosphereMoteIndex3d = 0; atmosphereMoteIndex3d < atmosphereMoteCount3d; atmosphereMoteIndex3d++) {
+      var atmosphereMoteX3d = (atmosphereRandom3d() - 0.5) * WORLD.w * 1.24;
+      var atmosphereMoteY3d = (atmosphereRandom3d() - 0.5) * WORLD.h * 1.18;
+      var atmosphereMoteZ3d = (atmosphereRandom3d() - 0.5) * WORLD.d * 1.16;
+      atmosphereMotePositions3d[atmosphereMoteIndex3d * 3] = atmosphereMoteX3d;
+      atmosphereMotePositions3d[atmosphereMoteIndex3d * 3 + 1] = atmosphereMoteY3d;
+      atmosphereMotePositions3d[atmosphereMoteIndex3d * 3 + 2] = atmosphereMoteZ3d;
+      atmosphereMoteBase3d[atmosphereMoteIndex3d * 3] = atmosphereMoteX3d;
+      atmosphereMoteBase3d[atmosphereMoteIndex3d * 3 + 1] = atmosphereMoteY3d;
+      atmosphereMoteBase3d[atmosphereMoteIndex3d * 3 + 2] = atmosphereMoteZ3d;
+      atmosphereMotePhases3d[atmosphereMoteIndex3d] = atmosphereRandom3d() * Math.PI * 2;
+    }
+    var atmosphereMoteGeometry3d = new THREE.BufferGeometry();
+    atmosphereMoteGeometry3d.setAttribute('position', new THREE.BufferAttribute(atmosphereMotePositions3d, 3));
+    var atmosphereMoteMaterial3d = new THREE.PointsMaterial({
+      color: geologyAtmosphereColor3d,
+      map: geologyGlowTexture3d,
+      alphaTest: 0.018,
+      size: SCENE.id === 'geode' ? 0.11 : 0.14,
+      transparent: true,
+      opacity: SCENE.id === 'deepEarth' ? 0.24 : 0.2,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending
+    });
+    var atmosphereMotes3d = new THREE.Points(atmosphereMoteGeometry3d, atmosphereMoteMaterial3d);
+    scene.add(atmosphereMotes3d);
+    var geologyHazeSprites3d = [];
+    for (var geologyHazeIndex3d = 0; geologyHazeIndex3d < 3; geologyHazeIndex3d++) {
+      var geologyHazeMaterial3d = new THREE.SpriteMaterial({
+        map: geologyGlowTexture3d,
+        color: geologyAtmosphereColor3d,
+        transparent: true,
+        opacity: 0.035 + geologyHazeIndex3d * 0.014,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending
+      });
+      var geologyHazeSprite3d = new THREE.Sprite(geologyHazeMaterial3d);
+      geologyHazeSprite3d.position.set(
+        (geologyHazeIndex3d - 1) * WORLD.w * 0.27,
+        -WORLD.h * 0.08 + geologyHazeIndex3d * WORLD.h * 0.11,
+        -WORLD.d * 0.54 - geologyHazeIndex3d * 0.18
+      );
+      geologyHazeSprite3d.scale.set(
+        WORLD.w * (0.78 + geologyHazeIndex3d * 0.08),
+        WORLD.h * (0.58 + geologyHazeIndex3d * 0.07),
+        1
+      );
+      geologyHazeSprite3d.userData.baseOpacity = geologyHazeMaterial3d.opacity;
+      geologyHazeSprite3d.userData.phase = geologyHazeIndex3d * 1.7;
+      scene.add(geologyHazeSprite3d);
+      geologyHazeSprites3d.push(geologyHazeSprite3d);
+    }
+
+    var glowVoxelPositions3d = new Float32Array(voxels.length * 3);
+    var glowVoxelColors3d = new Float32Array(voxels.length * 3);
+    var glowVoxelGeometry3d = new THREE.BufferGeometry();
+    glowVoxelGeometry3d.setAttribute('position', new THREE.BufferAttribute(glowVoxelPositions3d, 3));
+    glowVoxelGeometry3d.setAttribute('color', new THREE.BufferAttribute(glowVoxelColors3d, 3));
+    glowVoxelGeometry3d.setDrawRange(0, 0);
+    var glowVoxelMaterial3d = new THREE.PointsMaterial({
+      map: geologyGlowTexture3d,
+      vertexColors: true,
+      alphaTest: 0.015,
+      size: SCENE.id === 'geode' ? VOXEL * 0.72 : VOXEL * 1.08,
+      transparent: true,
+      opacity: SCENE.id === 'deepEarth' ? 0.3 : 0.38,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending
+    });
+    var glowVoxelPoints3d = new THREE.Points(glowVoxelGeometry3d, glowVoxelMaterial3d);
+    glowVoxelPoints3d.visible = false;
+    scene.add(glowVoxelPoints3d);
+    function geologyGlowStrength3d(voxel3d) {
+      var paletteEntry3d = SCENE.palette[voxel3d.key] || ROCKS[voxel3d.key] || {};
+      if (paletteEntry3d.glow) return 1;
+      if (SCENE.id === 'geode' && (voxel3d.key === 'quartz' || voxel3d.key === 'amethyst')) return 0.58;
+      return 0;
+    }
+
+    var geologyProcessCount3d = geologyHighDetail3d ? 112 : 64;
+    var geologyProcessPositions3d = new Float32Array(geologyProcessCount3d * 3);
+    var geologyProcessColors3d = new Float32Array(geologyProcessCount3d * 3);
+    var geologyProcessPhases3d = new Float32Array(geologyProcessCount3d);
+    var geologyProcessRandom3d = geologyRandomFactory3d(geologyTextureSeed3d(SCENE.id + '-process'));
+    var processWarmColor3d = new THREE.Color(0xff8a3d);
+    var processCoolColor3d = new THREE.Color(0x67e8f9);
+    var processCrystalColor3d = new THREE.Color(0xc4b5fd);
+    for (var geologyProcessIndex3d = 0; geologyProcessIndex3d < geologyProcessCount3d; geologyProcessIndex3d++) {
+      geologyProcessPhases3d[geologyProcessIndex3d] = geologyProcessRandom3d();
+      var geologyProcessColor3d = processWarmColor3d;
+      if (SCENE.id === 'subduction') geologyProcessColor3d = geologyProcessIndex3d < geologyProcessCount3d * 0.56
+        ? processCoolColor3d : processWarmColor3d;
+      else if (SCENE.id === 'ridge') geologyProcessColor3d = geologyProcessIndex3d % 3 === 0
+        ? processCoolColor3d : processWarmColor3d;
+      else if (SCENE.id === 'geode') geologyProcessColor3d = geologyProcessIndex3d % 2
+        ? processCrystalColor3d : processCoolColor3d;
+      else if (SCENE.id === 'deepEarth') geologyProcessColor3d = geologyProcessIndex3d % 3
+        ? processWarmColor3d : new THREE.Color(0xffd166);
+      geologyProcessColors3d[geologyProcessIndex3d * 3] = geologyProcessColor3d.r;
+      geologyProcessColors3d[geologyProcessIndex3d * 3 + 1] = geologyProcessColor3d.g;
+      geologyProcessColors3d[geologyProcessIndex3d * 3 + 2] = geologyProcessColor3d.b;
+    }
+    var geologyProcessGeometry3d = new THREE.BufferGeometry();
+    geologyProcessGeometry3d.setAttribute('position', new THREE.BufferAttribute(geologyProcessPositions3d, 3));
+    geologyProcessGeometry3d.setAttribute('color', new THREE.BufferAttribute(geologyProcessColors3d, 3));
+    var geologyProcessMaterial3d = new THREE.PointsMaterial({
+      map: geologyGlowTexture3d,
+      vertexColors: true,
+      alphaTest: 0.018,
+      size: SCENE.id === 'geode' ? 0.14 : 0.17,
+      transparent: true,
+      opacity: 0.72,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending
+    });
+    var geologyProcessPoints3d = new THREE.Points(geologyProcessGeometry3d, geologyProcessMaterial3d);
+    scene.add(geologyProcessPoints3d);
+    function updateGeologyProcessTracers3d(time3d) {
+      var effectiveTime3d = reducedMotion3d ? 0.86 : time3d;
+      // Keep the explanatory motion just above the currently exposed face.
+      // A fixed front-z left tracers floating in empty space after a cutaway.
+      var processFrontZ3d = WORLD.d * 0.5 - sliceZ * VOXEL + 0.12;
+      for (var processIndex3d = 0; processIndex3d < geologyProcessCount3d; processIndex3d++) {
+        var processPhase3d = geologyProcessPhases3d[processIndex3d];
+        var processProgress3d = (processPhase3d + effectiveTime3d * (0.035 + (processIndex3d % 5) * 0.004)) % 1;
+        var processX3d = 0, processY3d = 0, processZ3d = processFrontZ3d;
+        if (SCENE.id === 'deepEarth') {
+          var loopDirection3d = processIndex3d % 2 ? 1 : -1;
+          var loopAngle3d = processProgress3d * Math.PI * 2 * loopDirection3d +
+            (processIndex3d % 4) * Math.PI * 0.5;
+          var loopRadius3d = processIndex3d % 3 === 0 ? WORLD.w * 0.18 : WORLD.w * 0.31;
+          processX3d = Math.cos(loopAngle3d) * loopRadius3d;
+          processY3d = Math.sin(loopAngle3d) * loopRadius3d * 0.78;
+          processZ3d = processFrontZ3d + Math.sin(loopAngle3d * 2) * 0.32;
+        } else if (SCENE.id === 'subduction') {
+          if (processIndex3d < geologyProcessCount3d * 0.56) {
+            processX3d = -WORLD.w * 0.4 + processProgress3d * WORLD.w * 0.69;
+            processY3d = WORLD.h * 0.43 - processProgress3d * WORLD.h * 0.77;
+            processZ3d += Math.sin(processIndex3d * 1.7) * 0.24;
+          } else {
+            processX3d = WORLD.w * 0.1 + Math.sin(processProgress3d * Math.PI) * WORLD.w * 0.055;
+            processY3d = -WORLD.h * 0.27 + processProgress3d * WORLD.h * 0.7;
+            processZ3d += Math.sin(processIndex3d * 1.3) * 0.2;
+          }
+        } else if (SCENE.id === 'ridge') {
+          if (processIndex3d % 3) {
+            var spreadSide3d = processIndex3d % 2 ? 1 : -1;
+            processX3d = spreadSide3d * processProgress3d * WORLD.w * 0.43;
+            processY3d = WORLD.h * 0.18 - processProgress3d * WORLD.h * 0.04;
+          } else {
+            processX3d = Math.sin(processProgress3d * Math.PI * 2 + processIndex3d) * 0.3;
+            processY3d = -WORLD.h * 0.46 + processProgress3d * WORLD.h * 0.67;
+          }
+          processZ3d += Math.sin(processIndex3d * 1.4) * 0.22;
+        } else if (SCENE.id === 'hotspot') {
+          if (processIndex3d < geologyProcessCount3d * 0.72) {
+            processX3d = WORLD.w * 0.2 + Math.sin(processProgress3d * Math.PI * 2 + processIndex3d) * 0.42;
+            processY3d = -WORLD.h * 0.48 + processProgress3d * WORLD.h * 0.88;
+          } else {
+            processX3d = WORLD.w * 0.35 - processProgress3d * WORLD.w * 0.72;
+            processY3d = WORLD.h * 0.42 + Math.sin(processIndex3d) * 0.12;
+          }
+          processZ3d += Math.sin(processIndex3d * 1.1) * 0.24;
+        } else if (SCENE.id === 'geode') {
+          var crystalAngle3d = processProgress3d * Math.PI * 2 + processIndex3d * 0.73;
+          var crystalRadius3d = WORLD.w * (0.12 + (processIndex3d % 4) * 0.012);
+          processX3d = Math.cos(crystalAngle3d) * crystalRadius3d;
+          processY3d = Math.sin(crystalAngle3d) * crystalRadius3d * 0.76;
+          processZ3d = WORLD.d * 0.11 + Math.sin(crystalAngle3d * 1.7) * WORLD.d * 0.11;
+        } else {
+          processX3d = Math.sin(processProgress3d * Math.PI * 4 + processIndex3d) * WORLD.w * 0.055;
+          processY3d = -WORLD.h * 0.47 + processProgress3d * WORLD.h * 0.91;
+          processZ3d += Math.cos(processIndex3d * 1.2) * 0.26;
+        }
+        geologyProcessPositions3d[processIndex3d * 3] = processX3d;
+        geologyProcessPositions3d[processIndex3d * 3 + 1] = processY3d;
+        geologyProcessPositions3d[processIndex3d * 3 + 2] = processZ3d;
+      }
+      geologyProcessGeometry3d.attributes.position.needsUpdate = true;
+    }
+
+    var excavationDustCount3d = geologyHighDetail3d ? 58 : 32;
+    var excavationChipCount3d = geologyHighDetail3d ? 22 : 12;
+    var excavationDustPositions3d = new Float32Array(excavationDustCount3d * 3);
+    var excavationChipPositions3d = new Float32Array(excavationChipCount3d * 3);
+    var excavationDustVelocity3d = new Float32Array(excavationDustCount3d * 3);
+    var excavationChipVelocity3d = new Float32Array(excavationChipCount3d * 3);
+    var excavationDustGeometry3d = new THREE.BufferGeometry();
+    excavationDustGeometry3d.setAttribute('position', new THREE.BufferAttribute(excavationDustPositions3d, 3));
+    var excavationChipGeometry3d = new THREE.BufferGeometry();
+    excavationChipGeometry3d.setAttribute('position', new THREE.BufferAttribute(excavationChipPositions3d, 3));
+    var excavationDustMaterial3d = new THREE.PointsMaterial({
+      color: 0xc4a982, map: geologyDustTexture3d, alphaTest: 0.012,
+      size: 0.42, transparent: true, opacity: 0,
+      depthWrite: false, blending: THREE.NormalBlending
+    });
+    var excavationChipMaterial3d = new THREE.PointsMaterial({
+      color: 0xe2d4c2, map: geologyChipTexture3d, alphaTest: 0.08,
+      size: 0.13, transparent: true, opacity: 0,
+      depthWrite: false
+    });
+    var excavationDustPoints3d = new THREE.Points(excavationDustGeometry3d, excavationDustMaterial3d);
+    var excavationChipPoints3d = new THREE.Points(excavationChipGeometry3d, excavationChipMaterial3d);
+    excavationDustPoints3d.visible = false; excavationChipPoints3d.visible = false;
+    scene.add(excavationDustPoints3d); scene.add(excavationChipPoints3d);
+    var excavationFlashSource3d = new THREE.BoxGeometry(VOXEL * 1.12, VOXEL * 1.12, VOXEL * 1.12);
+    var excavationFlashGeometry3d = new THREE.EdgesGeometry(excavationFlashSource3d);
+    var excavationFlashMaterial3d = new THREE.LineBasicMaterial({
+      color: 0xfef3c7, transparent: true, opacity: 0,
+      depthWrite: false, blending: THREE.AdditiveBlending
+    });
+    var excavationFlashBox3d = new THREE.LineSegments(excavationFlashGeometry3d, excavationFlashMaterial3d);
+    excavationFlashBox3d.visible = false; excavationFlashBox3d.renderOrder = 4;
+    scene.add(excavationFlashBox3d);
+    var excavationBurstLife3d = 0;
+    var excavationRandom3d = geologyRandomFactory3d(geologyTextureSeed3d(SCENE.id + '-excavation'));
+    function spawnExcavationBurst3d(voxel3d) {
+      if (!voxel3d) return;
+      var burstPosition3d = worldPos(voxel3d);
+      var burstColorEntry3d = SCENE.palette[voxel3d.key] || ROCKS[voxel3d.key] || { color: 0xb7a58f };
+      excavationDustMaterial3d.color.setHex(burstColorEntry3d.color || 0xb7a58f);
+      excavationChipMaterial3d.color.setHex(burstColorEntry3d.color || 0xd6c6b0).lerp(new THREE.Color(0xffffff), 0.22);
+      excavationFlashMaterial3d.color.setHex(burstColorEntry3d.color || 0xfef3c7).lerp(new THREE.Color(0xffffff), 0.48);
+      excavationFlashBox3d.position.set(burstPosition3d[0], burstPosition3d[1], burstPosition3d[2]);
+      excavationFlashBox3d.scale.setScalar(1);
+      excavationFlashBox3d.visible = true;
+      excavationBurstLife3d = reducedMotion3d ? 0.34 : 1;
+      for (var dustIndex3d = 0; dustIndex3d < excavationDustCount3d; dustIndex3d++) {
+        excavationDustPositions3d[dustIndex3d * 3] = burstPosition3d[0] + (excavationRandom3d() - 0.5) * 0.26;
+        excavationDustPositions3d[dustIndex3d * 3 + 1] = burstPosition3d[1] + (excavationRandom3d() - 0.5) * 0.26;
+        excavationDustPositions3d[dustIndex3d * 3 + 2] = burstPosition3d[2] + (excavationRandom3d() - 0.5) * 0.26;
+        excavationDustVelocity3d[dustIndex3d * 3] = (excavationRandom3d() - 0.5) * 0.065;
+        excavationDustVelocity3d[dustIndex3d * 3 + 1] = 0.018 + excavationRandom3d() * 0.058;
+        excavationDustVelocity3d[dustIndex3d * 3 + 2] = (excavationRandom3d() - 0.5) * 0.065;
+      }
+      for (var chipIndex3d = 0; chipIndex3d < excavationChipCount3d; chipIndex3d++) {
+        excavationChipPositions3d[chipIndex3d * 3] = burstPosition3d[0];
+        excavationChipPositions3d[chipIndex3d * 3 + 1] = burstPosition3d[1];
+        excavationChipPositions3d[chipIndex3d * 3 + 2] = burstPosition3d[2];
+        excavationChipVelocity3d[chipIndex3d * 3] = (excavationRandom3d() - 0.5) * 0.105;
+        excavationChipVelocity3d[chipIndex3d * 3 + 1] = 0.035 + excavationRandom3d() * 0.09;
+        excavationChipVelocity3d[chipIndex3d * 3 + 2] = (excavationRandom3d() - 0.5) * 0.105;
+      }
+      excavationDustGeometry3d.attributes.position.needsUpdate = true;
+      excavationChipGeometry3d.attributes.position.needsUpdate = true;
+      excavationDustPoints3d.visible = !reducedMotion3d;
+      excavationChipPoints3d.visible = !reducedMotion3d;
+    }
+    function updateExcavationEffects3d() {
+      if (excavationBurstLife3d <= 0) return;
+      excavationBurstLife3d = Math.max(0, excavationBurstLife3d - 0.024);
+      excavationFlashMaterial3d.opacity = excavationBurstLife3d > 0
+        ? (reducedMotion3d ? 0.72 : excavationBurstLife3d * 0.82) : 0;
+      excavationFlashBox3d.scale.setScalar(reducedMotion3d ? 1.04 : 1.02 + (1 - excavationBurstLife3d) * 0.24);
+      if (!reducedMotion3d) {
+        for (var dustUpdateIndex3d = 0; dustUpdateIndex3d < excavationDustCount3d; dustUpdateIndex3d++) {
+          excavationDustPositions3d[dustUpdateIndex3d * 3] += excavationDustVelocity3d[dustUpdateIndex3d * 3];
+          excavationDustPositions3d[dustUpdateIndex3d * 3 + 1] += excavationDustVelocity3d[dustUpdateIndex3d * 3 + 1];
+          excavationDustPositions3d[dustUpdateIndex3d * 3 + 2] += excavationDustVelocity3d[dustUpdateIndex3d * 3 + 2];
+          excavationDustVelocity3d[dustUpdateIndex3d * 3] *= 0.96;
+          excavationDustVelocity3d[dustUpdateIndex3d * 3 + 1] *= 0.95;
+          excavationDustVelocity3d[dustUpdateIndex3d * 3 + 2] *= 0.96;
+        }
+        for (var chipUpdateIndex3d = 0; chipUpdateIndex3d < excavationChipCount3d; chipUpdateIndex3d++) {
+          excavationChipPositions3d[chipUpdateIndex3d * 3] += excavationChipVelocity3d[chipUpdateIndex3d * 3];
+          excavationChipPositions3d[chipUpdateIndex3d * 3 + 1] += excavationChipVelocity3d[chipUpdateIndex3d * 3 + 1];
+          excavationChipPositions3d[chipUpdateIndex3d * 3 + 2] += excavationChipVelocity3d[chipUpdateIndex3d * 3 + 2];
+          excavationChipVelocity3d[chipUpdateIndex3d * 3 + 1] -= 0.007;
+          excavationChipVelocity3d[chipUpdateIndex3d * 3] *= 0.985;
+          excavationChipVelocity3d[chipUpdateIndex3d * 3 + 2] *= 0.985;
+        }
+        excavationDustGeometry3d.attributes.position.needsUpdate = true;
+        excavationChipGeometry3d.attributes.position.needsUpdate = true;
+        excavationDustMaterial3d.opacity = excavationBurstLife3d * 0.46;
+        excavationChipMaterial3d.opacity = Math.min(0.94, excavationBurstLife3d * 1.35);
+      }
+      if (excavationBurstLife3d <= 0) {
+        excavationDustPoints3d.visible = false;
+        excavationChipPoints3d.visible = false;
+        excavationFlashBox3d.visible = false;
+      }
+    }
     var dummy = new THREE.Object3D(), col = new THREE.Color(), WHITE = new THREE.Color(0xffffff);
     var instanceToVoxel = [];
     var sliceZ = 0, excavate = false, highlightKey = null, focusLens = false, waterTableOn = false, showStage = 99;
@@ -1489,12 +1948,100 @@
     var undoPreviewRequested = false, undoPreviewKey = null;
     undoPreviewBox.visible = false; undoPreviewBox.renderOrder = 3; scene.add(undoPreviewBox);
     var treeMeshes = [], lastHover = 0;
+    function makeGeologyWaterTexture3d() {
+      var waterCanvas3d = document.createElement('canvas');
+      waterCanvas3d.width = 256; waterCanvas3d.height = 256;
+      var waterContext3d = waterCanvas3d.getContext('2d');
+      waterContext3d.fillStyle = '#dbeafe';
+      waterContext3d.fillRect(0, 0, 256, 256);
+      var waterRandom3d = geologyRandomFactory3d(geologyTextureSeed3d(SCENE.id + '-water'));
+      for (var waterRippleIndex3d = 0; waterRippleIndex3d < 54; waterRippleIndex3d++) {
+        var waterRippleX3d = waterRandom3d() * 256;
+        var waterRippleY3d = waterRandom3d() * 256;
+        var waterRippleRadius3d = 5 + waterRandom3d() * 27;
+        waterContext3d.strokeStyle = 'rgba(255,255,255,' + (0.16 + waterRandom3d() * 0.26) + ')';
+        waterContext3d.lineWidth = 0.7 + waterRandom3d() * 0.8;
+        waterContext3d.beginPath();
+        waterContext3d.ellipse(waterRippleX3d, waterRippleY3d,
+          waterRippleRadius3d, waterRippleRadius3d * (0.18 + waterRandom3d() * 0.12),
+          waterRandom3d() * 0.18 - 0.09, 0, Math.PI * 2);
+        waterContext3d.stroke();
+      }
+      var waterTexture3d = new THREE.CanvasTexture(waterCanvas3d);
+      waterTexture3d.wrapS = waterTexture3d.wrapT = THREE.RepeatWrapping;
+      waterTexture3d.repeat.set(3.4, 3.4);
+      waterTexture3d.minFilter = THREE.LinearMipmapLinearFilter;
+      waterTexture3d.magFilter = THREE.LinearFilter;
+      if (THREE.sRGBEncoding) waterTexture3d.encoding = THREE.sRGBEncoding;
+      waterTexture3d.needsUpdate = true;
+      return waterTexture3d;
+    }
+    function makeGeologyOceanMaskTexture3d() {
+      var maskCanvas3d = document.createElement('canvas');
+      maskCanvas3d.width = 256; maskCanvas3d.height = 16;
+      var maskContext3d = maskCanvas3d.getContext('2d');
+      var maskImage3d = maskContext3d.createImageData(256, 16);
+      for (var maskX3d = 0; maskX3d < 256; maskX3d++) {
+        var maskVoxelX3d = Math.max(0, Math.min(NX - 1, Math.round(maskX3d / 255 * (NX - 1))));
+        for (var maskY3d = 0; maskY3d < 16; maskY3d++) {
+          var maskVoxelZ3d = Math.max(0, Math.min(NZ - 1, Math.round(maskY3d / 15 * (NZ - 1))));
+          var maskWater3d = SCENE.gen(maskVoxelX3d, 0, maskVoxelZ3d) === 'oceanWater' ? 255 : 0;
+          var maskIndex3d = (maskY3d * 256 + maskX3d) * 4;
+          maskImage3d.data[maskIndex3d] = maskWater3d;
+          maskImage3d.data[maskIndex3d + 1] = maskWater3d;
+          maskImage3d.data[maskIndex3d + 2] = maskWater3d;
+          maskImage3d.data[maskIndex3d + 3] = 255;
+        }
+      }
+      maskContext3d.putImageData(maskImage3d, 0, 0);
+      var oceanMaskTexture3d = new THREE.CanvasTexture(maskCanvas3d);
+      oceanMaskTexture3d.wrapS = oceanMaskTexture3d.wrapT = THREE.ClampToEdgeWrapping;
+      oceanMaskTexture3d.minFilter = THREE.LinearFilter;
+      oceanMaskTexture3d.magFilter = THREE.LinearFilter;
+      oceanMaskTexture3d.generateMipmaps = false;
+      oceanMaskTexture3d.needsUpdate = true;
+      return oceanMaskTexture3d;
+    }
+    var geologyWaterTexture3d = makeGeologyWaterTexture3d();
     var WATER_Y = ((NY - 1) / 2 - 1.8 * NY / 12) * VOXEL; // water table perched in the sandstone, above the shale (depth scales with detail)
-    var waterMesh = new THREE.Mesh(new THREE.PlaneGeometry(WORLD.w, WORLD.d), new THREE.MeshStandardMaterial({ color: 0x3b82f6, transparent: true, opacity: 0.4, roughness: 0.25, metalness: 0.15, side: THREE.DoubleSide }));
+    var waterMesh = new THREE.Mesh(
+      new THREE.PlaneGeometry(WORLD.w, WORLD.d),
+      new THREE.MeshPhysicalMaterial({
+        color: 0x60a5fa, map: geologyWaterTexture3d,
+        transparent: true, opacity: 0.32,
+        roughness: 0.08, metalness: 0.06,
+        clearcoat: 0.96, clearcoatRoughness: 0.08,
+        depthWrite: false, side: THREE.DoubleSide
+      })
+    );
     waterMesh.rotation.x = -Math.PI / 2; waterMesh.position.set(0, WATER_Y, 0); waterMesh.visible = false; waterMesh.renderOrder = 1; scene.add(waterMesh);
 
     // ── Volcano: the EXTRUSIVE counterpart to the intrusive pluton (erupt() animates it) ──
     var surfTopY = ((NY - 1) / 2 + 0.5) * VOXEL;   // world Y of the ground surface
+    var oceanScene3d = SCENE.id === 'subduction' || SCENE.id === 'ridge' || SCENE.id === 'hotspot';
+    var geologyOceanMaskTexture3d = oceanScene3d ? makeGeologyOceanMaskTexture3d() : null;
+    var oceanSurfaceMesh3d = null;
+    if (oceanScene3d) {
+      oceanSurfaceMesh3d = new THREE.Mesh(
+        new THREE.PlaneGeometry(WORLD.w, WORLD.d),
+        new THREE.MeshPhysicalMaterial({
+          color: SCENE.id === 'ridge' ? 0x38bdf8 : 0x2563eb,
+          map: geologyWaterTexture3d,
+          alphaMap: geologyOceanMaskTexture3d,
+          transparent: true, opacity: 0.34,
+          roughness: 0.06, metalness: 0.08,
+          clearcoat: 1, clearcoatRoughness: 0.045,
+          depthWrite: false, side: THREE.DoubleSide
+        })
+      );
+      oceanSurfaceMesh3d.rotation.x = -Math.PI / 2;
+      oceanSurfaceMesh3d.position.set(0, surfTopY + 0.035, 0);
+      oceanSurfaceMesh3d.renderOrder = 1;
+      scene.add(oceanSurfaceMesh3d);
+      cnv.dataset.geologyWaterRendering = 'masked-clearcoat-ocean-surface';
+    } else {
+      cnv.dataset.geologyWaterRendering = 'reflective-groundwater-plane';
+    }
     var ventY = surfTopY + 2.0;          // vent at the top of the cone
     var eruptT = -1, erupted = false;
     var volcano = new THREE.Group();
@@ -1510,11 +2057,11 @@
     var ventLight = new THREE.PointLight(0xff5a1e, 0.0, 22); ventLight.position.set(0, ventY, 0); ventLight.visible = false; volcano.add(ventLight);
     var LAVA_N = 70, lavaPos = new Float32Array(LAVA_N * 3), lavaVel = new Float32Array(LAVA_N * 3);
     var lavaGeo = new THREE.BufferGeometry(); lavaGeo.setAttribute('position', new THREE.BufferAttribute(lavaPos, 3));
-    var lavaMat = new THREE.PointsMaterial({ color: 0xff7326, size: 0.42, transparent: true, opacity: 0.96, depthWrite: false, blending: THREE.AdditiveBlending });
+    var lavaMat = new THREE.PointsMaterial({ color: 0xff7326, map: geologyGlowTexture3d, alphaTest: 0.018, size: 0.42, transparent: true, opacity: 0.96, depthWrite: false, blending: THREE.AdditiveBlending });
     var lavaPts = new THREE.Points(lavaGeo, lavaMat); lavaPts.visible = false; volcano.add(lavaPts);
     var ASH_N = 46, ashPos = new Float32Array(ASH_N * 3), ashVel = new Float32Array(ASH_N * 3);
     var ashGeo = new THREE.BufferGeometry(); ashGeo.setAttribute('position', new THREE.BufferAttribute(ashPos, 3));
-    var ashMat = new THREE.PointsMaterial({ color: 0x6b6b73, size: 0.7, transparent: true, opacity: 0.0, depthWrite: false });
+    var ashMat = new THREE.PointsMaterial({ color: 0x6b6b73, map: geologyDustTexture3d, alphaTest: 0.008, size: 0.86, transparent: true, opacity: 0.0, depthWrite: false });
     var ashPts = new THREE.Points(ashGeo, ashMat); ashPts.visible = false; volcano.add(ashPts);
     scene.add(volcano);
     eng._volcanoDispose = [coneGeo, coneMat, craterGeo, craterMat, flowGeo, flowMat, lavaGeo, lavaMat, ashGeo, ashMat];
@@ -1523,6 +2070,11 @@
     function spawnAsh(i) { ashPos[i * 3] = (rnd() - 0.5) * 0.5; ashPos[i * 3 + 1] = ventY + rnd() * 0.5; ashPos[i * 3 + 2] = (rnd() - 0.5) * 0.5; ashVel[i * 3] = (rnd() - 0.5) * 0.06; ashVel[i * 3 + 1] = 0.07 + rnd() * 0.1; ashVel[i * 3 + 2] = (rnd() - 0.5) * 0.06; }
     function startEruption() {
       if (eruptT >= 0) return;
+      if (reducedMotion3d) {
+        erupted = true; lavaFlow.visible = true;
+        lavaPts.visible = false; ashPts.visible = false; ventLight.visible = false; craterGlow.visible = false;
+        return;
+      }
       eruptT = 0; var i;
       for (i = 0; i < LAVA_N; i++) spawnLava(i);
       for (i = 0; i < ASH_N; i++) spawnAsh(i);
@@ -1551,9 +2103,64 @@
       if (eruptT > 7.2) { eruptT = -1; lavaPts.visible = false; ashPts.visible = false; ventLight.visible = false; craterGlow.visible = false; erupted = true; lavaFlow.visible = true; }
     }
 
-    function visible(v) { if (v.key === 'void') return false; var fa = FORMED_AT[v.key]; if (fa == null) fa = 0; return !removed[vkey(v)] && v.z >= sliceZ && fa <= showStage && focusLensIncludes(v.key, highlightKey, focusLens); }
+    var crystalShardGroup3d = new THREE.Group();
+    var crystalShards3d = [];
+    var crystalShardGeometry3d = null;
+    var crystalShardMaterials3d = [];
+    if (SCENE.id === 'geode') {
+      crystalShardGeometry3d = new THREE.ConeGeometry(VOXEL * 0.18, VOXEL * 0.82, 6, 1, false);
+      crystalShardMaterials3d = [
+        new THREE.MeshPhysicalMaterial({
+          color: 0xe0f2fe, emissive: 0x67e8f9, emissiveIntensity: 0.18,
+          roughness: 0.12, metalness: 0.03,
+          clearcoat: 1, clearcoatRoughness: 0.04,
+          transmission: 0.2, transparent: true, opacity: 0.78,
+          side: THREE.DoubleSide
+        }),
+        new THREE.MeshPhysicalMaterial({
+          color: 0xa78bfa, emissive: 0x7c3aed, emissiveIntensity: 0.22,
+          roughness: 0.16, metalness: 0.04,
+          clearcoat: 1, clearcoatRoughness: 0.05,
+          transmission: 0.16, transparent: true, opacity: 0.82,
+          side: THREE.DoubleSide
+        })
+      ];
+      var crystalShardUp3d = new THREE.Vector3(0, 1, 0);
+      var crystalShardLimit3d = geologyHighDetail3d ? 58 : 34;
+      for (var crystalVoxelIndex3d = 0; crystalVoxelIndex3d < voxels.length && crystalShards3d.length < crystalShardLimit3d; crystalVoxelIndex3d++) {
+        var crystalVoxel3d = voxels[crystalVoxelIndex3d];
+        if ((crystalVoxel3d.key !== 'quartz' && crystalVoxel3d.key !== 'amethyst') ||
+          ((crystalVoxel3d.x * 17 + crystalVoxel3d.y * 11 + crystalVoxel3d.z * 7) % 5 !== 0)) continue;
+        var crystalVoxelPosition3d = worldPos(crystalVoxel3d);
+        var crystalDirection3d = new THREE.Vector3(
+          -crystalVoxelPosition3d[0], -crystalVoxelPosition3d[1], -crystalVoxelPosition3d[2]
+        ).normalize();
+        var crystalShard3d = new THREE.Mesh(
+          crystalShardGeometry3d,
+          crystalVoxel3d.key === 'amethyst' ? crystalShardMaterials3d[1] : crystalShardMaterials3d[0]
+        );
+        crystalShard3d.quaternion.setFromUnitVectors(crystalShardUp3d, crystalDirection3d);
+        crystalShard3d.position.set(
+          crystalVoxelPosition3d[0] + crystalDirection3d.x * VOXEL * 0.42,
+          crystalVoxelPosition3d[1] + crystalDirection3d.y * VOXEL * 0.42,
+          crystalVoxelPosition3d[2] + crystalDirection3d.z * VOXEL * 0.42
+        );
+        var crystalScale3d = 0.72 + ((crystalVoxel3d.x * 13 + crystalVoxel3d.y * 5 + crystalVoxel3d.z * 3) % 9) / 20;
+        crystalShard3d.scale.set(crystalScale3d, 0.88 + crystalScale3d * 0.22, crystalScale3d);
+        crystalShard3d.userData.voxel = crystalVoxel3d;
+        crystalShard3d.castShadow = geologyHighDetail3d;
+        crystalShardGroup3d.add(crystalShard3d);
+        crystalShards3d.push(crystalShard3d);
+      }
+      scene.add(crystalShardGroup3d);
+      cnv.dataset.geologyCrystalRendering = 'inward-growing-refractive-quartz-shards';
+    } else {
+      cnv.dataset.geologyCrystalRendering = 'not-applicable';
+    }
+
+    function visible(v) { if (v.key === 'void') return false; var fa = FORMED_AT[v.key]; if (fa == null) fa = 0; return !removed[vkey(v)] && v.z < NZ - sliceZ && fa <= showStage && focusLensIncludes(v.key, highlightKey, focusLens); }
     function rebuild() {
-      var i = 0; instanceToVoxel.length = 0;
+      var i = 0, glowVoxelCount3d = 0; instanceToVoxel.length = 0;
       // presence pass first → per-voxel ambient occlusion (depth/structure cue)
       var present = {};
       for (var pk = 0; pk < voxels.length; pk++) { var pv = voxels[pk]; if (visible(pv)) present[pv.x + ',' + pv.y + ',' + pv.z] = 1; }
@@ -1572,18 +2179,43 @@
         // the rest recede — so its distribution through the crust pops out.
         if (highlightKey) { if (v.key === highlightKey) col.lerp(WHITE, 0.42); else col.multiplyScalar(0.5); }
         mesh.setColorAt(i, col);
+        var voxelGlowStrength3d = geologyGlowStrength3d(v);
+        if (voxelGlowStrength3d > 0 &&
+          (SCENE.id === 'geode' || ((v.x * 13 + v.y * 7 + v.z * 3) % 2 === 0))) {
+          glowVoxelPositions3d[glowVoxelCount3d * 3] = p[0];
+          glowVoxelPositions3d[glowVoxelCount3d * 3 + 1] = p[1];
+          glowVoxelPositions3d[glowVoxelCount3d * 3 + 2] = p[2];
+          var voxelGlowColor3d = new THREE.Color(
+            (SCENE.palette[v.key] || ROCKS[v.key] || { color: 0xffffff }).color
+          ).lerp(WHITE, SCENE.id === 'geode' ? 0.42 : 0.18);
+          glowVoxelColors3d[glowVoxelCount3d * 3] = voxelGlowColor3d.r * voxelGlowStrength3d;
+          glowVoxelColors3d[glowVoxelCount3d * 3 + 1] = voxelGlowColor3d.g * voxelGlowStrength3d;
+          glowVoxelColors3d[glowVoxelCount3d * 3 + 2] = voxelGlowColor3d.b * voxelGlowStrength3d;
+          glowVoxelCount3d++;
+        }
         instanceToVoxel[i] = v; i++;
       }
       mesh.count = i; mesh.instanceMatrix.needsUpdate = true; if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
-      for (var ti = 0; ti < treeMeshes.length; ti++) { var tu = treeMeshes[ti].userData; treeMeshes[ti].visible = !focusLens && (tu.z >= sliceZ) && !removed[tu.x + ',0,' + tu.z] && (FORMED_AT.soil <= showStage); }
-      volcano.visible = !focusLens && (FORMED_AT.soil <= showStage) && (sliceZ <= 7);
+      glowVoxelGeometry3d.setDrawRange(0, glowVoxelCount3d);
+      glowVoxelGeometry3d.attributes.position.needsUpdate = true;
+      glowVoxelGeometry3d.attributes.color.needsUpdate = true;
+      glowVoxelPoints3d.visible = glowVoxelCount3d > 0;
+      crystalShards3d.forEach(function (crystalShard3d) {
+        crystalShard3d.visible = visible(crystalShard3d.userData.voxel);
+      });
+      for (var ti = 0; ti < treeMeshes.length; ti++) { var tu = treeMeshes[ti].userData; treeMeshes[ti].visible = !focusLens && (tu.z < NZ - sliceZ) && !removed[tu.x + ',0,' + tu.z] && (FORMED_AT.soil <= showStage); }
+      volcano.visible = !!SCENE.features.volcano && !focusLens && (FORMED_AT.soil <= showStage) && (sliceZ <= 7);
+      underGlow.visible = SCENE.id === 'crust' && !focusLens && sliceZ === 0;
       waterMesh.visible = waterTableOn && !focusLens;
+      if (oceanSurfaceMesh3d) oceanSurfaceMesh3d.visible = !focusLens;
       updateUndoPreview();
     }
     rebuild();
 
     // simple low-poly trees on the surface — a "this is the top, down is deep" cue
     (function buildSurface() {
+      // Non-crust scenes encode their real topography in the voxel model.
+      if (SCENE.id !== 'crust') return;
       // trees — varied height + foliage colour + a layered top for a natural look (clear of the central volcano)
       var cells = [[2, 3], [4, 10], [10, 2], [11, 9], [1, 11], [12, 4], [3, 12], [12, 6], [1, 5]];
       var trunkGeo = new THREE.CylinderGeometry(0.08, 0.13, 0.55, 5), trunkMat = new THREE.MeshStandardMaterial({ color: 0x6b4423, roughness: 0.9 });
@@ -1620,7 +2252,7 @@
       if (opts.onExcavateChange) opts.onExcavateChange(excavationHistory.length);
     }
     function updateUndoPreview() {
-      var target = undoPreviewRequested && !fp.active ? undoPreviewTarget(excavationHistory, voxelByKey, removed, sliceZ, focusLens, showStage, FORMED_AT) : null;
+      var target = undoPreviewRequested && !fp.active ? undoPreviewTarget(excavationHistory, voxelByKey, removed, sliceZ, focusLens, showStage, FORMED_AT, NZ) : null;
       undoPreviewKey = target ? vkey(target) : null;
       if (target) { var p = worldPos(target); undoPreviewBox.position.set(p[0], p[1], p[2]); }
       undoPreviewBox.visible = !!target;
@@ -1630,6 +2262,7 @@
     function excavateVoxel(v) {
       if (!v || v.key === 'void') return null;
       var id = vkey(v); if (removed[id]) return null;
+      spawnExcavationBurst3d(v);
       removed[id] = 1; excavationHistory.push(id); rebuild(); notifyExcavationChange();
       if (opts.onUncover && SED_FOSSIL[v.key] && hasFossilAt(v.x, v.y, v.z)) opts.onUncover(v.key);
       var below = shallowest(v.x, v.z);
@@ -1756,10 +2389,38 @@
     function loop() {
       if (eng.disposed) return; raf = requestAnimationFrame(loop); t += 0.016;
       if (container.clientWidth > 0 && (container.clientWidth !== lastW || container.clientHeight !== lastH)) resize(); // keep the canvas fitted to its container (robust in sandboxed iframes / late layout)
-      magmaGlow.intensity = 1.9 + Math.sin(t * 2) * 0.4;
-      magmaGlow.color.setRGB(1, 0.32 + Math.sin(t * 5) * 0.05, 0.13);            // subtle fire flicker
-      underGlow.material.opacity = 0.15 + Math.sin(t * 1.7) * 0.05;              // pulsing deep-heat glow
-      if (waterMesh.visible) waterMesh.material.opacity = 0.34 + Math.sin(t * 1.6) * 0.07; // water shimmer
+      var geologyMotionTime3d = reducedMotion3d ? 0.86 : t;
+      magmaGlow.intensity = geologyHeatLightConfig3d.intensity + Math.sin(geologyMotionTime3d * 2) * geologyHeatLightConfig3d.flicker;
+      magmaGlow.color.copy(magmaGlowBaseColor3d);
+      if (underGlow.visible) underGlow.material.opacity = 0.1 + Math.sin(geologyMotionTime3d * 1.7) * 0.025;
+      if (waterMesh.visible) waterMesh.material.opacity = 0.31 + Math.sin(geologyMotionTime3d * 1.6) * 0.045;
+      if (oceanSurfaceMesh3d && oceanSurfaceMesh3d.visible) {
+        oceanSurfaceMesh3d.material.opacity = 0.32 + Math.sin(geologyMotionTime3d * 1.18) * 0.035;
+      }
+      geologyWaterTexture3d.offset.x = reducedMotion3d ? 0 : (t * 0.009) % 1;
+      geologyWaterTexture3d.offset.y = reducedMotion3d ? 0 : (t * 0.004) % 1;
+      for (var atmosphereUpdateIndex3d = 0; atmosphereUpdateIndex3d < atmosphereMoteCount3d; atmosphereUpdateIndex3d++) {
+        var atmosphereUpdatePhase3d = atmosphereMotePhases3d[atmosphereUpdateIndex3d];
+        atmosphereMotePositions3d[atmosphereUpdateIndex3d * 3] = atmosphereMoteBase3d[atmosphereUpdateIndex3d * 3] +
+          (reducedMotion3d ? 0 : Math.sin(t * 0.13 + atmosphereUpdatePhase3d) * 0.08);
+        atmosphereMotePositions3d[atmosphereUpdateIndex3d * 3 + 1] = atmosphereMoteBase3d[atmosphereUpdateIndex3d * 3 + 1] +
+          (reducedMotion3d ? 0 : Math.cos(t * 0.1 + atmosphereUpdatePhase3d) * 0.075);
+        atmosphereMotePositions3d[atmosphereUpdateIndex3d * 3 + 2] = atmosphereMoteBase3d[atmosphereUpdateIndex3d * 3 + 2] +
+          (reducedMotion3d ? 0 : Math.sin(t * 0.08 + atmosphereUpdatePhase3d * 1.4) * 0.06);
+      }
+      atmosphereMoteGeometry3d.attributes.position.needsUpdate = true;
+      geologyHazeSprites3d.forEach(function (geologyHazeSprite3d) {
+        geologyHazeSprite3d.material.opacity = geologyHazeSprite3d.userData.baseOpacity *
+          (reducedMotion3d ? 1 : 0.9 + Math.sin(t * 0.17 + geologyHazeSprite3d.userData.phase) * 0.1);
+      });
+      updateGeologyProcessTracers3d(geologyMotionTime3d);
+      glowVoxelMaterial3d.opacity = (SCENE.id === 'deepEarth' ? 0.28 : 0.36) *
+        (reducedMotion3d ? 1 : 0.88 + Math.sin(t * 1.1) * 0.12);
+      if (crystalShardMaterials3d.length) {
+        crystalShardMaterials3d[0].emissiveIntensity = reducedMotion3d ? 0.18 : 0.16 + (Math.sin(t * 0.72) + 1) * 0.035;
+        crystalShardMaterials3d[1].emissiveIntensity = reducedMotion3d ? 0.22 : 0.19 + (Math.cos(t * 0.81) + 1) * 0.045;
+      }
+      updateExcavationEffects3d();
       try { updateEruption(); } catch (e) {}
       if (!controls) ensureControls();   // OrbitControls may load a moment after the engine starts
       if (fp.active) { try { applyFP(0.016); } catch (e) {} } else if (controls) controls.update();
@@ -1823,11 +2484,19 @@
       if (controls) { controls.target.copy(TARGET); controls.update(); }
       else camera.lookAt(TARGET);
     };
-    eng.setSlice = function (z) { sliceZ = cutawayReadout(z, NZ).step; waterMesh.scale.y = (NZ - sliceZ) / NZ; waterMesh.position.z = sliceZ / 2 * VOXEL; rebuild(); };
+    eng.setSlice = function (z) {
+      sliceZ = cutawayReadout(z, NZ).step;
+      waterMesh.scale.y = (NZ - sliceZ) / NZ; waterMesh.position.z = -sliceZ / 2 * VOXEL;
+      if (oceanSurfaceMesh3d) {
+        oceanSurfaceMesh3d.scale.y = (NZ - sliceZ) / NZ;
+        oceanSurfaceMesh3d.position.z = -sliceZ / 2 * VOXEL;
+      }
+      rebuild();
+    };
     eng.setExcavate = function (b) { excavate = !!b && !focusLens; return excavate; };
     eng.excavateAt = function (x, z) {
       x = Math.round(Number(x)); z = Math.round(Number(z));
-      if (!excavate || focusLens || !isFinite(x) || !isFinite(z) || x < 0 || x >= NX || z < sliceZ || z >= NZ) return null;
+      if (!excavate || focusLens || !isFinite(x) || !isFinite(z) || x < 0 || x >= NX || z < 0 || z >= NZ - sliceZ) return null;
       var y = shallowest(x, z), voxel = y == null ? null : voxelByKey[x + ',' + y + ',' + z];
       var formedAt = voxel ? FORMED_AT[voxel.key] : null; if (formedAt == null) formedAt = 0;
       return !voxel || formedAt > showStage ? null : excavateVoxel(voxel);
@@ -1840,7 +2509,14 @@
     eng.setFocusLens = function (b) { focusLens = !!b; if (focusLens) { excavate = false; undoPreviewRequested = false; } hoverBox.visible = false; rebuild(); };
     eng.getVisualState = function () { return { focusLens: focusLens, highlightKey: highlightKey, visibleVoxels: mesh.count, sliceZ: sliceZ, excavate: excavate, excavatedCount: excavationHistory.length, undoPreview: undoPreviewBox.visible, undoPreviewKey: undoPreviewKey }; };
     eng.setStage = function (n) { showStage = (n == null) ? 99 : n; rebuild(); };
-    eng.reset = function () { removed = {}; excavationHistory = []; undoPreviewRequested = false; undoPreviewKey = null; sliceZ = 0; waterMesh.scale.y = 1; waterMesh.position.z = 0; rebuild(); notifyExcavationChange(); };
+    eng.reset = function () {
+      removed = {}; excavationHistory = []; undoPreviewRequested = false; undoPreviewKey = null; sliceZ = 0;
+      waterMesh.scale.y = 1; waterMesh.position.z = 0;
+      if (oceanSurfaceMesh3d) { oceanSurfaceMesh3d.scale.y = 1; oceanSurfaceMesh3d.position.z = 0; }
+      excavationBurstLife3d = 0; excavationDustPoints3d.visible = false;
+      excavationChipPoints3d.visible = false; excavationFlashBox3d.visible = false;
+      rebuild(); notifyExcavationChange();
+    };
     eng.setFirstPerson = function (on, o) { if (on) enterFP(o || {}); else exitFP(); };
     eng.fpInput = function (cmd, v) { if (cmd === 'move' && v) fp.input = Object.assign(fp.input, v); else if (cmd === 'look' && v) fp.turn = Object.assign(fp.turn, v); };
     eng.fpActive = function () { return !!fp.active; };
@@ -1852,8 +2528,33 @@
       eng.disposed = true; if (raf) cancelAnimationFrame(raf);
       cnv.removeEventListener('pointerdown', onDown); cnv.removeEventListener('pointerup', onUp); cnv.removeEventListener('webglcontextlost', onLost);
       cnv.removeEventListener('pointermove', onMoveHover); cnv.removeEventListener('pointerleave', onLeaveHover);
+      if (motionMedia3d && motionMedia3d.removeEventListener) motionMedia3d.removeEventListener('change', syncGeologyMotion3d);
+      else if (motionMedia3d && motionMedia3d.removeListener) motionMedia3d.removeListener(syncGeologyMotion3d);
       if (ro) try { ro.disconnect(); } catch (e) {}
-      try { geo.dispose(); mat.dispose(); renderer.dispose(); hoverSourceGeo.dispose(); hoverBox.geometry.dispose(); hoverBox.material.dispose(); undoPreviewSourceGeo.dispose(); undoPreviewBox.geometry.dispose(); undoPreviewBox.material.dispose(); waterMesh.geometry.dispose(); waterMesh.material.dispose(); if (eng._treeGeo) eng._treeGeo.forEach(function (g) { g.dispose(); }); if (eng._treeMat) eng._treeMat.forEach(function (m) { m.dispose(); }); if (eng._volcanoDispose) eng._volcanoDispose.forEach(function (x) { x.dispose(); }); if (bgTex) bgTex.dispose(); underGlowGeo.dispose(); underGlowMat.dispose(); } catch (e) {}
+      try {
+        geo.dispose(); mat.dispose(); renderer.dispose();
+        hoverSourceGeo.dispose(); hoverBox.geometry.dispose(); hoverBox.material.dispose();
+        undoPreviewSourceGeo.dispose(); undoPreviewBox.geometry.dispose(); undoPreviewBox.material.dispose();
+        waterMesh.geometry.dispose(); waterMesh.material.dispose();
+        if (oceanSurfaceMesh3d) { oceanSurfaceMesh3d.geometry.dispose(); oceanSurfaceMesh3d.material.dispose(); }
+        atmosphereMoteGeometry3d.dispose(); atmosphereMoteMaterial3d.dispose();
+        geologyHazeSprites3d.forEach(function (geologyHazeSprite3d) { geologyHazeSprite3d.material.dispose(); });
+        glowVoxelGeometry3d.dispose(); glowVoxelMaterial3d.dispose();
+        geologyProcessGeometry3d.dispose(); geologyProcessMaterial3d.dispose();
+        excavationDustGeometry3d.dispose(); excavationDustMaterial3d.dispose();
+        excavationChipGeometry3d.dispose(); excavationChipMaterial3d.dispose();
+        excavationFlashSource3d.dispose(); excavationFlashGeometry3d.dispose(); excavationFlashMaterial3d.dispose();
+        if (crystalShardGeometry3d) crystalShardGeometry3d.dispose();
+        crystalShardMaterials3d.forEach(function (crystalShardMaterial3d) { crystalShardMaterial3d.dispose(); });
+        if (eng._treeGeo) eng._treeGeo.forEach(function (g) { g.dispose(); });
+        if (eng._treeMat) eng._treeMat.forEach(function (m) { m.dispose(); });
+        if (eng._volcanoDispose) eng._volcanoDispose.forEach(function (x) { x.dispose(); });
+        [bgTex, rockSurfaceTexture3d, geologyGlowTexture3d, geologyDustTexture3d,
+          geologyChipTexture3d, geologyWaterTexture3d, geologyOceanMaskTexture3d].forEach(function (texture3d) {
+          if (texture3d && texture3d.dispose) texture3d.dispose();
+        });
+        underGlowGeo.dispose(); underGlowMat.dispose();
+      } catch (e) {}
       if (cnv.parentNode) cnv.parentNode.removeChild(cnv);
     };
     notifyExcavationChange();

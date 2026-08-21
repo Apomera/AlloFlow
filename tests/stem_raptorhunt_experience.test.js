@@ -236,6 +236,15 @@ describe('Raptor Hunt 3D interaction and responsive visual regressions', () => {
     expect(text).toContain("'data-trend-state': trendState");
     expect(text).toContain("'data-raptor-performance-help': 'true'");
     expect(text).toContain('Low graphics quality enabled for smoother flight');
+    expect(text).toContain('function missionProgressRatio()');
+    expect(text).toContain('function missionProgressLabel()');
+    expect(text).toContain('function missionPhaseText()');
+    expect(text).toContain("'aria-label', 'Mission completion'");
+    expect(text).toContain("missionMeterLabelValueEl.textContent = progressPct + '%'");
+    expect(text).toContain('missionMeterLabelEl.dataset.progressState = missionOutcome');
+    expect(text).toContain('missionPhaseEl.dataset.phaseState = missionOutcome');
+    expect(text).toContain("missionMeterEl.setAttribute('aria-valuetext', progressPct + '% complete. ' + missionProgressText())");
+    expect(text).toContain('missionMeterFillEl.style.width');
     expect(text).toContain("setAttribute('data-raptor-mission-focus', 'true')");
     expect(text).toContain('flightSummary: finalSummary');
     expect(text).toContain('missionMetric: mission.id ===');

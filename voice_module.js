@@ -1126,6 +1126,128 @@
     return Promise.reject(new Error('Unknown engine: ' + engine));
   }
 
+  // Session-memory diagnostics deliberately retain only aggregate reliability
+  // signals. Audio, transcripts, utterance length, and credential/config data
+  // never enter this object and nothing here is persisted or transmitted.
+  function _newHandsFreeDiagnostics() {
+    return {
+      version: 1,
+      resetAt: Date.now(),
+      sessions: 0,
+      turns: 0,
+      noSpeech: 0,
+      errors: 0,
+      fatalErrors: 0,
+      latency: { samples: 0, totalMs: 0, lastMs: 0, maxMs: 0 },
+      errorCategories: { permission: 0, configuration: 0, network: 0, transcription: 0, unknown: 0 },
+      engines: {}
+    };
+  }
+  var handsFreeDiagnostics = _newHandsFreeDiagnostics();
+
+  function _handsFreeDiagnosticEngine(engine) {
+    var id = String(engine || 'unknown').trim() || 'unknown';
+    if (!handsFreeDiagnostics.engines[id]) {
+      handsFreeDiagnostics.engines[id] = {
+        sessions: 0, turns: 0, noSpeech: 0, errors: 0, fatalErrors: 0,
+        latency: { samples: 0, totalMs: 0, lastMs: 0, maxMs: 0 }
+      };
+    }
+    return handsFreeDiagnostics.engines[id];
+  }
+
+  function _recordHandsFreeSession(engine) {
+    handsFreeDiagnostics.sessions += 1;
+    _handsFreeDiagnosticEngine(engine).sessions += 1;
+  }
+
+  function _recordHandsFreeTurn(engine) {
+    handsFreeDiagnostics.turns += 1;
+    _handsFreeDiagnosticEngine(engine).turns += 1;
+  }
+
+  function _recordHandsFreeNoSpeech(engine) {
+    handsFreeDiagnostics.noSpeech += 1;
+    _handsFreeDiagnosticEngine(engine).noSpeech += 1;
+  }
+
+  function _recordHandsFreeLatency(engine, elapsedMs) {
+    var value = Math.max(0, Math.round(Number(elapsedMs) || 0));
+    var buckets = [handsFreeDiagnostics.latency, _handsFreeDiagnosticEngine(engine).latency];
+    buckets.forEach(function (bucket) {
+      bucket.samples += 1;
+      bucket.totalMs += value;
+      bucket.lastMs = value;
+      bucket.maxMs = Math.max(bucket.maxMs, value);
+    });
+  }
+
+  function _classifyHandsFreeError(error, detail) {
+    var message = String(error && (error.message || error.error) || error || '').toLowerCase();
+    if (/(?:permission|not-allowed|service-not-allowed|denied)/.test(message)) return 'permission';
+    if (/(?:api key|not configured|\b401\b|\b403\b|credential)/.test(message)) return 'configuration';
+    if (/(?:network|fetch|offline|timeout|timed out|\b429\b|\b5\d\d\b)/.test(message)) return 'network';
+    if (detail && detail.phase === 'transcribing') return 'transcription';
+    return 'unknown';
+  }
+
+  function _recordHandsFreeError(engine, error, detail) {
+    var bucket = _handsFreeDiagnosticEngine(engine);
+    var category = _classifyHandsFreeError(error, detail);
+    handsFreeDiagnostics.errors += 1;
+    bucket.errors += 1;
+    if (detail && detail.fatal) {
+      handsFreeDiagnostics.fatalErrors += 1;
+      bucket.fatalErrors += 1;
+    }
+    handsFreeDiagnostics.errorCategories[category] += 1;
+  }
+
+  function _copyHandsFreeLatency(bucket) {
+    bucket = bucket || {};
+    var samples = Number(bucket.samples) || 0;
+    var totalMs = Number(bucket.totalMs) || 0;
+    return {
+      samples: samples,
+      lastMs: Number(bucket.lastMs) || 0,
+      maxMs: Number(bucket.maxMs) || 0,
+      averageMs: samples ? Math.round(totalMs / samples) : 0
+    };
+  }
+
+  function getHandsFreeDiagnostics() {
+    var engines = {};
+    Object.keys(handsFreeDiagnostics.engines).forEach(function (id) {
+      var source = handsFreeDiagnostics.engines[id];
+      engines[id] = {
+        sessions: source.sessions,
+        turns: source.turns,
+        noSpeech: source.noSpeech,
+        errors: source.errors,
+        fatalErrors: source.fatalErrors,
+        latencyMs: _copyHandsFreeLatency(source.latency)
+      };
+    });
+    return {
+      version: handsFreeDiagnostics.version,
+      scope: 'session-memory',
+      resetAt: handsFreeDiagnostics.resetAt,
+      sessions: handsFreeDiagnostics.sessions,
+      turns: handsFreeDiagnostics.turns,
+      noSpeech: handsFreeDiagnostics.noSpeech,
+      errors: handsFreeDiagnostics.errors,
+      fatalErrors: handsFreeDiagnostics.fatalErrors,
+      latencyMs: _copyHandsFreeLatency(handsFreeDiagnostics.latency),
+      errorCategories: Object.assign({}, handsFreeDiagnostics.errorCategories),
+      engines: engines
+    };
+  }
+
+  function resetHandsFreeDiagnostics() {
+    handsFreeDiagnostics = _newHandsFreeDiagnostics();
+    return getHandsFreeDiagnostics();
+  }
+
   // Engine-neutral, turn-oriented recognizer used by global Voice Access and
   // hands-free activities. It owns capture and transcription only; callers
   // keep their existing command parser, confirmation policy, and reply path.
@@ -1150,6 +1272,7 @@
     var transcribing = false;
     var queuedSegment = null;
     var errorStreak = 0;
+    var diagnosticsSessionRecorded = false;
 
     function status(nextState, detail) {
       detail = detail || {};
@@ -1225,8 +1348,10 @@
 
     function emitError(error, detail) {
       var err = error instanceof Error ? error : new Error(String(error && error.error || error || 'Speech recognition failed.'));
+      var errorDetail = Object.assign({ fatal: false }, detail || {});
+      _recordHandsFreeError(errorDetail.engine || engineMeta.engine || (engineChoice && engineChoice.resolved), err, errorDetail);
       if (typeof opts.onError === 'function') {
-        try { opts.onError(err, Object.assign({ fatal: false }, detail || {})); } catch (_) {}
+        try { opts.onError(err, errorDetail); } catch (_) {}
       }
       return err;
     }
@@ -1245,7 +1370,7 @@
     }
 
     function failStart(error, message) {
-      var err = emitError(error, { fatal: true });
+      var err = emitError(error, { fatal: true, phase: 'starting', engine: engineChoice && engineChoice.resolved });
       active = false;
       generation += 1;
       cleanupCapture();
@@ -1260,6 +1385,7 @@
       var transcript = _cleanDictationTranscript(value);
       if (!transcript) return false;
       errorStreak = 0;
+      _recordHandsFreeTurn(engineMeta.engine);
       if (typeof opts.onTranscript === 'function') {
         try { opts.onTranscript(transcript, true, recognitionMetadata(metadata)); } catch (_) {}
       }
@@ -1291,11 +1417,14 @@
           engine: 'whisper', tier: engineChoice.tier, lang: engineChoice.lang, pcm: pcm
         });
       }
+      var transcriptionStartedAt = Date.now();
       Promise.resolve(request).then(function (result) {
+        _recordHandsFreeLatency(engineMeta.engine, Date.now() - transcriptionStartedAt);
         if (!active || generation !== myGeneration) return;
         transcribing = false;
         errorStreak = 0;
         var heard = emitTranscript(result && result.transcript, null);
+        if (!heard) _recordHandsFreeNoSpeech(engineMeta.engine);
         if (opts.continuous === false) {
           finish('completed', true);
           return;
@@ -1306,6 +1435,7 @@
         }
         processQueuedSegment(myGeneration);
       }).catch(function (error) {
+        _recordHandsFreeLatency(engineMeta.engine, Date.now() - transcriptionStartedAt);
         if (!active || generation !== myGeneration) return;
         transcribing = false;
         errorStreak += 1;
@@ -1392,6 +1522,10 @@
         if (typeof opts.onStream === 'function') {
           try { opts.onStream(stream); } catch (_) {}
         }
+        if (!diagnosticsSessionRecorded) {
+          diagnosticsSessionRecorded = true;
+          _recordHandsFreeSession(engineMeta.engine);
+        }
         setState('listening', { message: engineMeta.engineLabel + ' is listening.' });
         return true;
       });
@@ -1433,7 +1567,11 @@
         onError: function (error) {
           if (!active || generation !== myGeneration || suppressWebEnd) return;
           var code = String(error && error.error || 'unavailable');
-          if (code === 'aborted' || code === 'no-speech') return;
+          if (code === 'no-speech') {
+            _recordHandsFreeNoSpeech(engineMeta.engine);
+            return;
+          }
+          if (code === 'aborted') return;
           errorStreak += 1;
           var fatal = code === 'not-allowed' || code === 'service-not-allowed' || errorStreak >= 3;
           emitError(error, { fatal: fatal, phase: 'listening', engine: engineMeta.engine });
@@ -1456,6 +1594,10 @@
         }
       });
       if (!webCapture.supported || !webCapture.start()) throw new Error(engineMeta.engineLabel + ' is unavailable.');
+      if (!diagnosticsSessionRecorded) {
+        diagnosticsSessionRecorded = true;
+        _recordHandsFreeSession(engineMeta.engine);
+      }
       setState('listening', { message: engineMeta.engineLabel + ' is listening.' });
       return true;
     }
@@ -1466,10 +1608,17 @@
         engine: opts.engine, tier: opts.tier, lang: opts.lang, callGeminiAudio: opts.callGeminiAudio
       });
       if (!engineChoice.supported) return failStart(new Error(engineChoice.reason || 'Voice input unavailable.'), engineChoice.reason);
+      // Publish the selected engine from the very first `starting` event. The
+      // recognizer's neutral construction state is Off; leaking that label for
+      // one render made the global indicator briefly contradict a valid start.
+      engineMeta = engineChoice.resolved === 'webspeech' || engineChoice.resolved === 'desktop-whisper'
+        ? voiceEngineDescriptor('webspeech', { desktopWhisper: engineChoice.resolved === 'desktop-whisper' })
+        : voiceEngineDescriptor(engineChoice.resolved);
       active = true;
       paused = false;
       outputSuspended = false;
       errorStreak = 0;
+      diagnosticsSessionRecorded = false;
       generation += 1;
       var myGeneration = generation;
       setState('starting', { message: 'Starting voice input...' });
@@ -1559,7 +1708,7 @@
   var activeVoiceSession = null;
   var voiceSessionSerial = 0;
   var voiceSessionStatus = {
-    state: 'idle', owner: null, mode: null, label: '', privacy: '', message: '', reason: ''
+    state: 'idle', owner: null, mode: null, label: '', engine: '', engineLabel: '', privacy: '', message: '', reason: ''
   };
   var voiceSessionObservers = [];
 
@@ -1593,7 +1742,7 @@
     activeVoiceSession = null;
     record.active = false;
     _publishVoiceSessionStatus({
-      state: 'idle', owner: null, mode: null, label: '', privacy: '', message: '', reason: reason || 'released'
+      state: 'idle', owner: null, mode: null, label: '', engine: '', engineLabel: '', privacy: '', message: '', reason: reason || 'released'
     });
     return true;
   }
@@ -1612,7 +1761,7 @@
     // not overwrite that new owner's status with the old owner's idle state.
     if (!activeVoiceSession) {
       _publishVoiceSessionStatus({
-        state: 'idle', owner: null, mode: null, label: '', privacy: '', message: '', reason: reason || 'external'
+        state: 'idle', owner: null, mode: null, label: '', engine: '', engineLabel: '', privacy: '', message: '', reason: reason || 'external'
       });
     }
     return true;
@@ -1629,6 +1778,8 @@
       owner: normalizedOwner,
       mode: String(opts.mode || 'microphone'),
       label: String(opts.label || normalizedOwner),
+      engine: String(opts.engine || ''),
+      engineLabel: String(opts.engineLabel || ''),
       privacy: String(opts.privacy || ''),
       onStop: typeof opts.onStop === 'function' ? opts.onStop : null,
       active: true
@@ -1640,12 +1791,16 @@
       detail = detail || {};
       if (detail.mode !== undefined) record.mode = String(detail.mode || record.mode);
       if (detail.label !== undefined) record.label = String(detail.label || record.label);
+      if (detail.engine !== undefined) record.engine = String(detail.engine || '');
+      if (detail.engineLabel !== undefined) record.engineLabel = String(detail.engineLabel || '');
       if (detail.privacy !== undefined) record.privacy = String(detail.privacy || '');
       _publishVoiceSessionStatus({
         state: String(detail.state || voiceSessionStatus.state || 'starting'),
         owner: record.owner,
         mode: record.mode,
         label: record.label,
+        engine: record.engine,
+        engineLabel: record.engineLabel,
         privacy: record.privacy,
         message: String(detail.message || ''),
         reason: String(detail.reason || '')
@@ -2215,6 +2370,8 @@
     // Phase 3v.5 - shared session arbitration + honest engine status
     createDictationController: createDictationController,
     createHandsFreeRecognizer: createHandsFreeRecognizer,
+    getHandsFreeDiagnostics: getHandsFreeDiagnostics,
+    resetHandsFreeDiagnostics: resetHandsFreeDiagnostics,
     resolveHandsFreeEngine: resolveHandsFreeEngine,
     getGeminiAudioCapability: getGeminiAudioCapability,
     isHandsFreeSupported: isHandsFreeSupported,
@@ -2237,13 +2394,13 @@
       createHandsFreeVad: createHandsFreeVad,
       parseGeminiTranscript: parseGeminiTranscript
     },
-    _phase: '3v.7',
+    _phase: '3v.8',
     _shipped: [
       'initWebSpeechCapture', 'getCapabilities', 'loadPreference', 'savePreference', 'setVoiceEngine', 'normalizeVoiceEngine',
       'recordAudioBlob', 'recordAudioBlob.onStream', 'recordAudioBlob.result.blob',
       'transcribeAudio', 'preloadWhisper', 'isWhisperLoaded', 'isWhisperPrepared', 'getLoadedWhisperTier', 'resolveWhisperProfile', 'subscribeToVoiceProgress',
       'gradeAudioJustification', 'buildJustificationRubricPrompt', 'parseRubricResponse',
-      'createDictationController', 'createHandsFreeRecognizer', 'resolveHandsFreeEngine', 'getGeminiAudioCapability', 'isHandsFreeSupported', 'voiceEngineDescriptor', 'isDictationSupported', 'getActiveDictationStatus', 'subscribeToDictationStatus', 'stopActiveDictation',
+      'createDictationController', 'createHandsFreeRecognizer', 'getHandsFreeDiagnostics', 'resetHandsFreeDiagnostics', 'resolveHandsFreeEngine', 'getGeminiAudioCapability', 'isHandsFreeSupported', 'voiceEngineDescriptor', 'isDictationSupported', 'getActiveDictationStatus', 'subscribeToDictationStatus', 'stopActiveDictation',
       'acquireVoiceSession', 'stopActiveVoiceSession', 'getActiveVoiceSessionStatus', 'subscribeToVoiceSessionStatus'
     ]
   };
@@ -2259,6 +2416,6 @@
   window.AlloModules.Voice = window.AlloFlowVoice;
 
   if (typeof console !== 'undefined') {
-    console.log('[Voice] AlloFlowVoice loaded — phase 3v.6');
+    console.log('[Voice] AlloFlowVoice loaded — phase 3v.8');
   }
 })();

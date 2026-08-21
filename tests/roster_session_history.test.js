@@ -96,6 +96,37 @@ describe('privacy-safe roster session summaries', () => {
     expect(serialized.toLowerCase()).not.toContain('misconception');
   });
 
+  it('preserves privacy-limited visual organizer outcomes in the saved session summary', () => {
+    const activityId = 'organizer:private-resource:tchart:run';
+    const receipt = (status, extra = {}) => ({
+      activityId, type: 'tchart', status, at: 100, score: 0, correct: 0, total: 0, attempts: 0, ...extra,
+    });
+    const summary = helpers.buildRosterSessionSummary({
+      sessionCode: 'ORG123', mode: 'firebase', endedAt: '2026-07-12T10:30:00.000Z',
+      rosterKey: { students: { 'Brave Otter': 'blue', 'Calm Fox': 'green', 'Quiet Owl': 'green' } },
+      sessionData: {
+        createdAt: '2026-07-12T10:00:00.000Z',
+        interactiveOrganizer: { activityId, type: 'tchart', resourceId: 'private-resource' },
+        roster: {
+          privateUidA: { name: 'Brave Otter', organizerProgress: receipt('complete', { score: 80, correct: 4, total: 5, attempts: 1 }) },
+          privateUidB: { name: 'Calm Fox', organizerProgress: receipt('failed') },
+          privateUidC: { name: 'Quiet Owl' },
+        },
+      },
+    });
+    expect(summary.organizerActivity).toEqual({
+      type: 'tchart', wasLiveAtEnd: true, participantCount: 3,
+      statusCounts: { waiting: 1, loading: 0, ready: 0, failed: 1, working: 0, attempted: 0, complete: 1 },
+      followUpCodenames: ['Calm Fox', 'Quiet Owl'],
+    });
+    expect(summary.participants['Brave Otter'].organizer).toEqual({ type: 'tchart', status: 'complete', score: 80, correct: 4, total: 5, attempts: 1 });
+    expect(summary.participants['Quiet Owl'].organizer.status).toBe('waiting');
+    const serialized = JSON.stringify(summary);
+    expect(serialized).not.toContain('privateUid');
+    expect(serialized).not.toContain('private-resource');
+    expect(serialized).not.toContain(activityId);
+  });
+
   it('handles reserved group identifiers without prototype collisions', () => {
     const brief = helpers.buildRosterSessionInsightBrief({
       participants: {
@@ -138,6 +169,8 @@ describe('privacy-safe roster session summaries', () => {
     expect(app).toContain('onRequestEndSession={requestEndLiveSession}');
     expect(modal).toContain("typeof onRequestEndSession === 'function'");
     expect(endSessionPreviewSource).toContain('Insight brief');
+    expect(endSessionPreviewSource).toContain('Visual organizer evidence');
+    expect(endSessionPreviewSource).toContain('organizer card text');
     expect(endSessionPreviewSource).toContain('Connections remain active during this review.');
   });
 

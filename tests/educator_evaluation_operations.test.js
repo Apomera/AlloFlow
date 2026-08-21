@@ -61,6 +61,43 @@ describe('educator evaluation district operations center', () => {
     expect(harness.rows('Audit').some(row => row[2] === 'CYCLE_SCHEDULE_UPDATED')).toBe(true);
   });
 
+  it('requires a server review before changing district configuration and audits the confirmed values', () => {
+    const harness = repositoryFixture();
+    const before = harness.invoke('bootstrap');
+    const bypass = structuredClone(before.workspace);
+    bypass.config.organization = 'Unreviewed District';
+    expect(harness.invokeError('saveWorkspace', { expectedVersion: before.revision, workspace: bypass, mutation: { event: 'CONFIG_UPDATED' } }).code).toBe('review_required');
+
+    const candidate = { ...before.workspace.config, organization: 'Reviewed District', frameworkProfile: 'maine_pepg', pepgPracticeWeight: 75, aiReflectionEnabled: true };
+    const reviewed = harness.invoke('reviewPortalWorkspaceConfiguration', { config: candidate }).review;
+    expect(reviewed.changes).toEqual(expect.arrayContaining([
+      expect.objectContaining({ field: 'organization', current: 'Sample School District', candidate: 'Reviewed District' }),
+      expect.objectContaining({ field: 'frameworkProfile' }),
+      expect.objectContaining({ field: 'aiReflectionEnabled', current: 'Off', candidate: 'Allowed' }),
+    ]));
+    expect(reviewed.impacts).toMatchObject({ activeEducators: expect.any(Number), openCycles: expect.any(Number), frameworkOrWeightChange: true, finalizedRecordsRetainSnapshots: true });
+    expect(harness.invokeError('performPortalWorkspaceConfiguration', { reviewToken: reviewed.token }).code).toBe('acknowledgment_required');
+    const result = harness.invoke('performPortalWorkspaceConfiguration', { reviewToken: reviewed.token, acknowledgeImpact: true });
+    expect(result).toMatchObject({ ok: true, status: 'completed', recoveryPending: false });
+    const after = harness.invoke('bootstrap');
+    expect(after.workspace.config).toMatchObject({ organization: 'Reviewed District', frameworkProfile: 'maine_pepg', frameworkVersion: 'me-pepg-local', pepgPracticeWeight: 75, aiReflectionEnabled: true });
+    expect(after.workspace.audit).toContainEqual(expect.objectContaining({ event: 'CONFIGURATION_UPDATED', entityType: 'workspace_configuration', entityId: 'configuration' }));
+    expect(harness.rows('Audit').some(row => row[2] === 'CONFIGURATION_UPDATED')).toBe(true);
+    expect(harness.invokeError('performPortalWorkspaceConfiguration', { reviewToken: reviewed.token, acknowledgeImpact: true }).code).toBe('review_required');
+  });
+
+  it('limits configuration review to administrators and invalidates it after another workspace commit', () => {
+    const harness = repositoryFixture();
+    const boot = harness.invoke('bootstrap');
+    harness.setActiveEmail(EVALUATOR);
+    expect(harness.invokeError('reviewPortalWorkspaceConfiguration', { config: { ...boot.workspace.config, organization: 'Denied' } }).code).toBe('denied');
+    harness.setActiveEmail(ADMIN);
+    const reviewed = harness.invoke('reviewPortalWorkspaceConfiguration', { config: { ...boot.workspace.config, organization: 'Stale proposal' } }).review;
+    const schedule = harness.invoke('reviewPortalCycleSchedule', { dueDate: '2027-06-20', applyTo: 'all_open' }).review;
+    harness.invoke('performPortalCycleSchedule', { reviewToken: schedule.token, acknowledgeImpact: true });
+    expect(harness.invokeError('performPortalWorkspaceConfiguration', { reviewToken: reviewed.token, acknowledgeImpact: true }).code).toBe('review_stale');
+  });
+
   it('creates a verified private, purpose-bound district export and audit event', () => {
     const harness = repositoryFixture();
     const reviewed = harness.invoke('reviewPortalDistrictExport', { scope: 'educator_record', teacherId: 't1', purpose: 'Reviewed annual HR handoff' }).review;
@@ -114,7 +151,7 @@ describe('educator evaluation district operations center', () => {
     expect(source).toContain('Review schedule impact');
     expect(source).toContain('Create verified private export');
     expect(source).toContain('Load and verify annual archives');
-    for (const method of ['getPortalAdminOperations', 'reviewPortalDirectoryChange', 'performPortalDirectoryChange', 'reviewPortalCycleSchedule', 'performPortalCycleSchedule', 'reviewPortalDistrictExport', 'performPortalDistrictExport', 'getPortalAnnualArchives', 'reviewPortalArchiveRestoreRehearsal', 'performPortalArchiveRestoreRehearsal']) {
+    for (const method of ['getPortalAdminOperations', 'reviewPortalDirectoryChange', 'performPortalDirectoryChange', 'reviewPortalCycleSchedule', 'performPortalCycleSchedule', 'reviewPortalWorkspaceConfiguration', 'performPortalWorkspaceConfiguration', 'reviewPortalDistrictExport', 'performPortalDistrictExport', 'getPortalAnnualArchives', 'reviewPortalArchiveRestoreRehearsal', 'performPortalArchiveRestoreRehearsal']) {
       expect(builder).toContain(`'${method}'`);
     }
   });

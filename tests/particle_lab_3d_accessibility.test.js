@@ -41,6 +41,9 @@ describe('Particle Lab 3D interaction surface accessibility contract', () => {
   });
 
   it('labels the experiment loop, scene key, and active camera state', () => {
+    expect(source).toContain("href: '#particle-stage'");
+    expect(source).toContain("'aria-label': 'Jump to the 3D particle chamber'");
+    expect(source).toContain("id: 'particle-stage'");
     expect(source).toContain("id: 'particle-experiment-runway'");
     expect(source).toContain("'aria-label': 'Experiment loop'");
     expect(source).toContain("id: 'particle-stage-status'");
@@ -72,6 +75,33 @@ describe('Particle Lab 3D interaction surface accessibility contract', () => {
     expect(source).toContain("h('span', null, 'Visual overlays')");
   });
 
+  it('surfaces a concise live activity cue inside the 3D stage', () => {
+    expect(source).toContain('var stageActivityLabel = running');
+    expect(source).toContain('var stageActivityDetail = running');
+    expect(source).toContain("id: 'particle-stage-activity'");
+    expect(source).toContain("role: 'status', 'aria-live': 'polite'");
+    expect(source).toContain('Press Run or Space to begin');
+    expect(source).toContain('Watch collisions and wall impacts');
+    expect(source).toContain("'Watch A and B mix'");
+    expect(source).toContain("'A on solution side '");
+    expect(source).toContain("w-[min(11rem,calc(100%-1.5rem))]");
+    expect(source).toContain("systemProbe || trace || transportMode ? 'bottom-[6rem]'");
+  });
+
+  it('keeps compact controls touchable on small screens while preserving dense desktop layouts', () => {
+    expect(source).toContain("className: 'min-h-11 rounded px-2 py-1 text-[10px] font-black uppercase tracking-wide sm:min-h-6");
+    expect(source).toContain("className: 'min-h-11 rounded px-2 py-1 text-[10px] font-black sm:min-h-6");
+    expect(source).toContain("pointer-events-auto -mr-1 flex min-h-11 min-w-11");
+    expect(source).toContain("sm:min-h-6 sm:min-w-6");
+    expect(source).toContain("top-16 w-[min(11rem,calc(100%-1.5rem))]");
+    expect(source).toContain("sm:top-3 sm:w-auto sm:min-w-[150px]");
+  });
+
+  it('keeps passive summaries out of the live announcement stream', () => {
+    expect(source).toContain("h('span', { role: 'note', className: 'text-xs font-bold '");
+    expect(source).toContain("h('p', { role: 'note', className: 'mt-3 rounded-lg bg-cyan-50");
+  });
+
   it('gives the shortcuts dialog complete focus lifecycle and safe dismissal', () => {
     expect(source).toContain("role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'particle-keys-title'");
     expect(source).toContain("'aria-describedby': 'particle-keys-description'");
@@ -86,7 +116,7 @@ describe('Particle Lab 3D interaction surface accessibility contract', () => {
 
   it('removes persistent 7, 8, and 9 pixel utility text and sizes compact buttons', () => {
     expect(source).not.toMatch(/text-\[(?:7|8|9)px\]/);
-    expect(source).toContain("min-h-6 rounded px-2 py-1 text-[10px]");
+    expect(source).toContain("min-h-11 rounded px-2 py-1 text-[10px]");
     expect(source).toContain("min-h-11 w-full rounded-lg");
   });
 
@@ -121,7 +151,7 @@ describe('Particle Lab 3D interaction surface accessibility contract', () => {
       // Expanded, the card used to run the full width of the stage and sit under the
       // live read-outs on the right. It is now width-capped and foldable.
       expect(tool).toContain('max-w-[min(20rem,calc(100%-1.5rem))]');
-      expect(tool).toContain('var [legendOpen, setLegendOpen] = useState(bucket.legendOpen !== false)');
+      expect(tool).toContain('var [legendOpen, setLegendOpen] = useState(bucket.legendOpen === true)');
       expect(tool).toContain("'aria-controls': 'particle-chamber-guide'");
       expect(tool).toContain("h('div', { id: 'particle-chamber-guide' }");
       expect(tool).toContain('persist({ legendOpen: next })');
@@ -129,7 +159,7 @@ describe('Particle Lab 3D interaction surface accessibility contract', () => {
       // The card is click-through so it never eats an orbit drag; only the toggle
       // itself takes pointer events back.
       expect(tool).toMatch(/pointer-events-none absolute left-3 top-3 z-20 max-w-/);
-      expect(tool).toContain('pointer-events-auto -mr-1 flex min-h-6 min-w-6');
+      expect(tool).toContain('pointer-events-auto -mr-1 flex min-h-11 min-w-11');
       // Every body row is gated, so collapsing really removes them from the tree.
       expect((tool.match(/legendOpen && /g) || []).length).toBeGreaterThanOrEqual(4);
     });

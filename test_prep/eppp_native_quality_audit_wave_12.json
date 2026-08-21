@@ -19,8 +19,10 @@
     "appliedOrAnalysisItems": 8,
     "keyPositionsPreserved": 8,
     "optionSpecificExplanations": 32,
-    "selectedItemsWithWarningsAfter": 0,
-    "selectedWarningIdsAfter": [],
+    "selectedItemsWithWarningsAfter": 1,
+    "selectedWarningIdsAfter": [
+      "eppp-v3-intervention-064"
+    ],
     "warningCountsBefore": {
       "totalItems": 1500,
       "warningOnly": true,
@@ -38,16 +40,16 @@
       "totalItems": 1500,
       "warningOnly": true,
       "forbiddenAggregateChoices": 0,
-      "uniqueKeyStemLexicalLeakageCandidates": 47,
-      "asymmetricExtremeDistractorCandidates": 86,
-      "advancedDirectRecallCandidates": 3,
-      "semanticConceptDuplicatePairs": 51,
-      "semanticConceptDuplicateClusters": 36,
-      "editorialAnchorsWithActiveWarnings": 1,
-      "editorialAnchorsWithNoCurrentWarning": 9,
+      "uniqueKeyStemLexicalLeakageCandidates": 40,
+      "asymmetricExtremeDistractorCandidates": 33,
+      "advancedDirectRecallCandidates": 1,
+      "semanticConceptDuplicatePairs": 47,
+      "semanticConceptDuplicateClusters": 33,
+      "editorialAnchorsWithActiveWarnings": 0,
+      "editorialAnchorsWithNoCurrentWarning": 10,
       "priorityDocketItems": 20
     },
-    "status": "pass"
+    "status": "review-required"
   },
   "items": [
     {
@@ -165,7 +167,7 @@
     {
       "id": "eppp-v3-intervention-064",
       "domainId": "intervention",
-      "difficulty": "intermediate",
+      "difficulty": "advanced",
       "answerIndex": 1,
       "expectedAnswerIndex": 1,
       "keyPositionPreserved": true,
@@ -176,7 +178,9 @@
         "unique-key/stem-lexical-leakage",
         "semantic-concept-duplicate-candidate"
       ],
-      "diagnosticsAfter": []
+      "diagnosticsAfter": [
+        "semantic-concept-duplicate-candidate"
+      ]
     }
   ],
   "limitations": [

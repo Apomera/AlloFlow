@@ -427,11 +427,56 @@ const _resolveFullPackPlanRows = (rows, options = {}) => {
   });
   return Object.assign({}, resolved, { rows: displayRows, settings: resolved.settings || settings });
 };
-const _summarizeFullPackMatrixRows = (rows) => {
+const _boundedFullPackWorkCount = (value) => {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? Math.max(0, Math.min(100, Math.floor(parsed))) : 0;
+};
+const _estimateFullPackRowProviderWork = (row, settings = {}) => {
+  const variants = Array.isArray(row && row.generationVariants) && row.generationVariants.length
+    ? row.generationVariants
+    : [{ action: row && row.generationAction || 'generate' }];
+  const pendingVariants = variants.filter(variant => variant && variant.action !== 'reuse');
+  const resourceCalls = pendingVariants.length;
+  const baseImageCalls = row && row.type === 'image' ? resourceCalls : 0;
+  let glossaryImageCalls = 0;
+  let glossaryImageEditCalls = 0;
+  if (row && row.type === 'glossary' && resourceCalls > 0) {
+    pendingVariants.forEach(variant => {
+      const generationFields = variant?.generationConfig?.fields || row?.generationConfig?.fields || {};
+      const generationOptions = settings?.generationOptions || settings?.toolOptions || {};
+      const tier2Count = _boundedFullPackWorkCount(
+        generationFields.glossaryTier2Count ?? generationOptions.glossaryTier2Count
+      );
+      const tier3Count = _boundedFullPackWorkCount(
+        generationFields.glossaryTier3Count ?? generationOptions.glossaryTier3Count
+      );
+      const termCount = tier2Count + tier3Count;
+      glossaryImageCalls += termCount;
+      const removeWords = generationFields.autoRemoveWords ?? generationOptions.autoRemoveWords;
+      if (removeWords === true) glossaryImageEditCalls += termCount;
+    });
+  }
+  const imageCalls = baseImageCalls + glossaryImageCalls + glossaryImageEditCalls;
+  const providerCalls = resourceCalls + glossaryImageCalls + glossaryImageEditCalls;
+  return {
+    resourceCalls,
+    providerCalls,
+    textCalls: Math.max(0, providerCalls - imageCalls),
+    imageCalls,
+    glossaryImageCalls,
+    glossaryImageEditCalls,
+    requestConcurrency: glossaryImageCalls > 0 ? 3 : 1,
+  };
+};
+const _summarizeFullPackMatrixRows = (rows, settings = {}) => {
   const actions = { reuse: 0, generate: 0, variant: 0, refresh: 0 };
   let variantCount = 0;
   let expectedCalls = 0;
   let imageCalls = 0;
+  let providerCalls = 0;
+  let glossaryImageCalls = 0;
+  let glossaryImageEditCalls = 0;
+  let maxRequestConcurrency = 1;
   (Array.isArray(rows) ? rows : []).forEach(row => {
     const variants = Array.isArray(row && row.generationVariants) && row.generationVariants.length
       ? row.generationVariants
@@ -441,18 +486,26 @@ const _summarizeFullPackMatrixRows = (rows) => {
         ? variant.action : 'generate';
       actions[action] += 1;
       variantCount += 1;
-      if (action !== 'reuse') {
-        expectedCalls += 1;
-        if (row && row.type === 'image') imageCalls += 1;
-      }
+      if (action !== 'reuse') expectedCalls += 1;
     });
+    const work = _estimateFullPackRowProviderWork(row, settings);
+    providerCalls += work.providerCalls;
+    imageCalls += work.imageCalls;
+    glossaryImageCalls += work.glossaryImageCalls;
+    glossaryImageEditCalls += work.glossaryImageEditCalls;
+    maxRequestConcurrency = Math.max(maxRequestConcurrency, work.requestConcurrency);
   });
   return {
     rowCount: Array.isArray(rows) ? rows.length : 0,
     skippedRowCount: 0,
     variantCount,
     expectedCalls,
+    resourceCalls: expectedCalls,
+    providerCalls,
     imageCalls,
+    glossaryImageCalls,
+    glossaryImageEditCalls,
+    maxRequestConcurrency,
     actions,
   };
 };
@@ -930,7 +983,7 @@ const _recordFullPackMetric = (event, payload = {}) => {
   } catch (_) {}
 };
 
-const _estimateFullPackCapacity = (aiCalls, imageCalls, profile = {}) => {
+const _estimateFullPackCapacity = (aiCalls, imageCalls, profile = {}, workload = {}) => {
   const totalCalls = Math.max(0, Number(aiCalls) || 0);
   const visualCalls = Math.max(0, Math.min(totalCalls, Number(imageCalls) || 0));
   const textCalls = Math.max(0, totalCalls - visualCalls);
@@ -963,15 +1016,18 @@ const _estimateFullPackCapacity = (aiCalls, imageCalls, profile = {}) => {
   if (visualCalls > 0 && totalCalls >= 12) { warningCodes.push('image-quota'); warnings.push('Image generation may extend the run and consume additional provider quota.'); }
   return {
     aiCalls: totalCalls,
+    resourceCalls: Math.max(0, Math.min(totalCalls, Number(workload.resourceCalls) || totalCalls)),
     textCalls,
     imageCalls: visualCalls,
+    glossaryImageCalls: Math.max(0, Math.min(visualCalls, Number(workload.glossaryImageCalls) || 0)),
+    imageEditCalls: Math.max(0, Math.min(visualCalls, Number(workload.imageEditCalls) || 0)),
     estimatedMinutes: Math.max(1, Math.ceil(estimatedMs / 60000)),
     provider,
     model: String(profile.model || ''),
     imageProvider: String(profile.imageProvider || 'auto'),
     imageModel: String(profile.imageModel || ''),
     isLocal,
-    requestConcurrency: 1,
+    requestConcurrency: Math.max(1, Math.min(3, Number(workload.requestConcurrency) || 1)),
     estimateBasis: (observedTextMs || observedImageMs) ? 'observed-device-history' : 'provider-defaults',
     observedSamples: { text: textAggregate.samples, image: imageSamples },
     warningCodes,
@@ -1977,7 +2033,7 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
             ? {
                 rows: runnableResources,
                 skipped: [],
-                summary: _summarizeFullPackMatrixRows(runnableResources),
+                summary: _summarizeFullPackMatrixRows(runnableResources, _matrixSettings),
                 settings: _matrixSettings,
               }
             : _resolveFullPackPlanRows(runnableResources, Object.assign({}, _matrixSettings, {
@@ -1996,13 +2052,23 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
         const _matrixSkipped = (Array.isArray(_matrixResolution.skipped) ? _matrixResolution.skipped : [])
             .map(item => Object.assign({}, item, { matrixPolicy: true }));
         _skippedResources = _skippedResources.concat(_matrixSkipped);
+        runnableResources = runnableResources.map(item => Object.assign({}, item, {
+            providerWorkEstimate: _estimateFullPackRowProviderWork(item, _matrixResolution.settings || _matrixSettings),
+        }));
         const _matrixSummary = Object.assign(
-            _summarizeFullPackMatrixRows(runnableResources),
-            _matrixResolution.summary || {}
+            {},
+            _matrixResolution.summary || {},
+            _summarizeFullPackMatrixRows(runnableResources, _matrixResolution.settings || _matrixSettings)
         );
         const _estimatedResourceGenerations = Math.max(0, Number(_matrixSummary.expectedCalls) || 0);
+        const _estimatedProviderCalls = Math.max(_estimatedResourceGenerations, Number(_matrixSummary.providerCalls) || 0);
         const _imageCalls = Math.max(0, Number(_matrixSummary.imageCalls) || 0);
-        const _capacity = _estimateFullPackCapacity(_estimatedResourceGenerations, _imageCalls, aiProviderProfile || {});
+        const _capacity = _estimateFullPackCapacity(_estimatedProviderCalls, _imageCalls, aiProviderProfile || {}, {
+            resourceCalls: _estimatedResourceGenerations,
+            glossaryImageCalls: _matrixSummary.glossaryImageCalls,
+            imageEditCalls: _matrixSummary.glossaryImageEditCalls,
+            requestConcurrency: _matrixSummary.maxRequestConcurrency,
+        });
         const _fullPackPreflight = {
             createdAt: new Date().toISOString(),
             sourceTextChars: batchSourceText.length,
@@ -2032,6 +2098,7 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
                 },
             },
             estimatedResourceGenerations: _estimatedResourceGenerations,
+            estimatedProviderCalls: _estimatedProviderCalls,
             planSchemaVersion: FULL_PACK_PLAN_SCHEMA_VERSION,
             capabilityFingerprint: FULL_PACK_CAPABILITY_FINGERPRINT,
             standardsFingerprint: _activeInstructionalContext.standardsFingerprint,
@@ -3115,7 +3182,59 @@ const handleComplexityAdjustment = async (deps) => {
     }
 };
 
-const handlePlanFullPack = async (deps) => handleGenerateFullPack({ __fullPackPreflightOnly: true }, deps);
+const _waitForGenerationMatrixReady = async (deps = {}) => {
+  if (_getGenerationMatrixModule()) return true;
+  try {
+    if (typeof window !== 'undefined' && typeof window.__alloRetryModule === 'function') {
+      window.__alloRetryModule('GenerationMatrix');
+    }
+  } catch (_) {}
+  const requestedTimeout = Number(deps.generationMatrixWaitMs);
+  const timeoutMs = Number.isFinite(requestedTimeout)
+    ? Math.max(0, Math.min(30000, requestedTimeout))
+    : 30000;
+  return new Promise(resolve => {
+    let settled = false;
+    let timer = null;
+    let poller = null;
+    const finish = value => {
+      if (settled) return;
+      settled = true;
+      if (timer) clearTimeout(timer);
+      if (poller) clearInterval(poller);
+      try { window.removeEventListener('alloflow:module-registry-changed', check); } catch (_) {}
+      resolve(value);
+    };
+    const check = () => { if (_getGenerationMatrixModule()) finish(true); };
+    try { window.addEventListener('alloflow:module-registry-changed', check); } catch (_) {}
+    poller = setInterval(check, 100);
+    timer = setTimeout(() => finish(Boolean(_getGenerationMatrixModule())), timeoutMs);
+    check();
+  });
+};
+
+const handlePlanFullPack = async (deps) => {
+  if (!_getGenerationMatrixModule()) {
+    try {
+      if (deps && typeof deps.addToast === 'function') deps.addToast(
+        'The generation engine is finishing loading. Full Pack planning will start automatically when it is ready.',
+        'info'
+      );
+    } catch (_) {}
+    const ready = await _waitForGenerationMatrixReady(deps || {});
+    if (!ready) {
+      try {
+        if (deps && typeof deps.setIsProcessing === 'function') deps.setIsProcessing(false);
+        if (deps && typeof deps.addToast === 'function') deps.addToast(
+          'The generation engine could not finish loading. No resources were started; retry the failed module, then plan the pack again.',
+          'warning'
+        );
+      } catch (_) {}
+      return false;
+    }
+  }
+  return handleGenerateFullPack({ __fullPackPreflightOnly: true }, deps);
+};
 
 // Pure ready-plan edits used by the Full Pack review UI. The approved path
 // executes preflight.selected, so these edits are authoritative rather than
@@ -3218,9 +3337,15 @@ const _recalculateFullPackPlan = (record, rows, skipped = null) => {
       currentUiLanguage: matrixEnvelope.translation?.currentUiLanguage || matrixEnvelope.settings.currentUiLanguage,
       translationTarget: matrixEnvelope.translation?.target || matrixEnvelope.settings.translationTarget,
     }));
-    selected = _normalizeFullPackPlanRows(record, resolution.rows);
+    selected = _normalizeFullPackPlanRows(record, resolution.rows).map(item => Object.assign({}, item, {
+      providerWorkEstimate: _estimateFullPackRowProviderWork(item, resolution.settings || matrixEnvelope.settings),
+    }));
     resolvedMatrixSettings = resolution.settings || matrixEnvelope.settings;
-    matrixSummary = Object.assign(_summarizeFullPackMatrixRows(selected), resolution.summary || {});
+    matrixSummary = Object.assign(
+      {},
+      resolution.summary || {},
+      _summarizeFullPackMatrixRows(selected, resolvedMatrixSettings)
+    );
     matrixSkipped = (Array.isArray(resolution.skipped) ? resolution.skipped : [])
       .map(item => Object.assign({}, item, { matrixPolicy: true }));
   }
@@ -3228,12 +3353,20 @@ const _recalculateFullPackPlan = (record, rows, skipped = null) => {
     const diff = preflight.differentiation || {};
     const diffTypes = new Set(Array.isArray(diff.types) ? diff.types : []);
     const levelCount = Math.max(1, Number(diff.levelCount) || 1);
-    const aiCalls = selected.reduce((sum, item) => sum + (diffTypes.has(item.type) ? levelCount : 1), 0);
-    const imageCalls = selected.reduce((sum, item) =>
-      sum + (item.type === 'image' ? (diffTypes.has(item.type) ? levelCount : 1) : 0), 0);
-    matrixSummary = Object.assign(_summarizeFullPackMatrixRows(selected), { expectedCalls: aiCalls, imageCalls });
+    const estimationRows = selected.map(item => {
+      if (Array.isArray(item.generationVariants) && item.generationVariants.length > 0) return item;
+      const count = diffTypes.has(item.type) ? levelCount : 1;
+      return Object.assign({}, item, {
+        generationVariants: Array.from({ length: count }, () => ({ action: item.generationAction || 'generate' })),
+      });
+    });
+    selected = selected.map((item, index) => Object.assign({}, item, {
+      providerWorkEstimate: _estimateFullPackRowProviderWork(estimationRows[index], matrixEnvelope?.settings || {}),
+    }));
+    matrixSummary = _summarizeFullPackMatrixRows(estimationRows, matrixEnvelope?.settings || {});
   }
-  const aiCalls = Math.max(0, Number(matrixSummary.expectedCalls) || 0);
+  const resourceCalls = Math.max(0, Number(matrixSummary.expectedCalls) || 0);
+  const aiCalls = Math.max(resourceCalls, Number(matrixSummary.providerCalls) || 0);
   const imageCalls = Math.max(0, Number(matrixSummary.imageCalls) || 0);
   const priorCapacity = preflight.capacity || {};
   const capacity = _estimateFullPackCapacity(aiCalls, imageCalls, {
@@ -3242,6 +3375,11 @@ const _recalculateFullPackPlan = (record, rows, skipped = null) => {
     imageProvider: priorCapacity.imageProvider,
     imageModel: priorCapacity.imageModel,
     isLocal: priorCapacity.isLocal,
+  }, {
+    resourceCalls,
+    glossaryImageCalls: matrixSummary.glossaryImageCalls,
+    imageEditCalls: matrixSummary.glossaryImageEditCalls,
+    requestConcurrency: matrixSummary.maxRequestConcurrency,
   });
   const priorSkipped = skipped === null
     ? (Array.isArray(preflight.skipped) ? preflight.skipped : [])
@@ -3255,7 +3393,8 @@ const _recalculateFullPackPlan = (record, rows, skipped = null) => {
         settings: _cloneFullPackValue(resolvedMatrixSettings || matrixEnvelope.settings),
         summary: _cloneFullPackValue(matrixSummary),
       }) : preflight.generationMatrix,
-      estimatedResourceGenerations: aiCalls,
+      estimatedResourceGenerations: resourceCalls,
+      estimatedProviderCalls: aiCalls,
       capacity,
     }),
   });
@@ -3512,6 +3651,15 @@ const handleApproveFullPack = async (priorRun, deps) => {
     try { if (deps && typeof deps.addToast === 'function') deps.addToast('This Full Pack plan was created by an older generator. Refresh the plan before generating.', 'warning'); } catch (_) {}
     return false;
   }
+  if (_fullPackRunNeedsMatrixUpgrade(run) && !_getGenerationMatrixModule()) {
+    try {
+      if (deps && typeof deps.addToast === 'function') deps.addToast(
+        'The generation engine is finishing loading. This reviewed plan will be checked automatically when it is ready.',
+        'info'
+      );
+    } catch (_) {}
+    await _waitForGenerationMatrixReady(deps || {});
+  }
   const upgradedRun = _upgradeFullPackPlanAfterMatrixLoad(run);
   if (upgradedRun !== run) {
     run = upgradedRun;
@@ -3599,6 +3747,7 @@ window.AlloModules.GenerationHelpers = {
   handleRetryFailedFullPack,
   handleStopFullPack,
   getFullPackGenerationConfigSnapshot: deps => _cloneFullPackValue(_captureFullPackGenerationConfig(deps || {})),
+  estimateFullPackRowProviderWork: (row, settings) => _cloneFullPackValue(_estimateFullPackRowProviderWork(row, settings || {})),
   estimateFullPackCapacity: _estimateFullPackCapacity,
   handleComplexityAdjustment,
 };

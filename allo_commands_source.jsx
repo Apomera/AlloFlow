@@ -865,7 +865,7 @@ function buildAlloCommands(ctx, opts = {}) {
     { id: 'open_class_analytics', opensPanel: 'classAnalytics', icon: '📈', roles: 'teacher', label: t('cmd.open_class_analytics', 'Open class analytics'), aliases: ['analytics', 'class data', 'progress data', 'research suite', 'research dashboard', 'embedded research', 'study', 'irb', 'likert', 'assessment center', 'progress monitoring'], hint: t('cmd.open_class_analytics_hint', 'Whole-class progress'), run: (c) => { c.setShowClassAnalytics(true); return t('cmd.open_class_analytics_done', 'Class analytics opened.'); } },
     { id: 'open_share_collect', opensPanel: 'recentQrShares', icon: '🔗', roles: 'teacher', label: t('cmd.open_share_collect', 'Open Share & Collect'), aliases: ['share and collect', 'share collect', 'polls', 'poll results', 'sign-up sheet', 'signup results', 'survey', 'surveys', 'send survey', 'survey link', 'survey results', 'collect responses', 'availability poll', 'parent survey'], hint: t('cmd.open_share_collect_hint', 'Polls, sign-ups, surveys and their results'), run: (c) => { c.setShowRecentQrShares(true); return t('cmd.open_share_collect_done', 'Share & Collect opened.'); } },
     { id: 'open_export_menu', opensPanel: 'exportMenu', icon: '📤', roles: 'teacher', label: t('cmd.open_export_menu', 'Open the export menu'), aliases: ['export', 'download menu', 'share'], hint: t('cmd.open_export_menu_hint', 'Export the current content'), run: (c) => { c.setShowExportMenu(true); return t('cmd.open_export_menu_done', 'Export menu opened.'); } },
-    { id: 'open_ai_settings', icon: '🤖', roles: 'teacher', label: t('cmd.open_ai_settings', 'Open AI settings'), aliases: ['ai settings', 'ai backend', 'api key', 'model settings'], hint: t('cmd.open_ai_settings_hint', 'Configure the AI backend'), run: (c) => { c.setShowAIBackendModal(true); return t('cmd.open_ai_settings_done', 'AI settings opened.'); } },
+    { id: 'open_ai_settings', icon: '🤖', roles: 'teacher', label: t('cmd.open_ai_settings', 'Open AI settings'), aliases: ['ai settings', 'ai backend', 'api key', 'model settings', 'configure Gemini voice', 'Gemini cloud services key', 'forget Gemini backend key'], hint: t('cmd.open_ai_settings_hint', 'Configure the AI backend'), run: (c) => { c.setShowAIBackendModal(true); return t('cmd.open_ai_settings_done', 'AI settings opened.'); } },
     // The standalone Screen Coach: a separate top-level page, because the site
     // it coaches is not AlloFlow. Posture is decided HERE, from the app's own
     // mode, and is bound to the app's opener session. The URL carries only a
@@ -1148,8 +1148,8 @@ function buildAlloCommands(ctx, opts = {}) {
 
     // ── Create from this content (teacher) + submit (student) — added 2026-06-13 (Slice 2) ──
     { id: 'generate_quiz', icon: '📝', roles: 'teacher', when: (c) => !!c.hasSourceOrAnalysis, label: t('cmd.generate_quiz', 'Make a quiz from this'), aliases: ['make a quiz', 'quiz me on this', 'create a quiz', 'comprehension questions', 'generate quiz'], hint: t('cmd.generate_quiz_hint', 'Generate a quiz from the current content'), run: (c) => { c.generateQuiz(); return t('cmd.generate_quiz_done', 'Generating a quiz from this content…'); }, runAsync: (c) => Promise.resolve(c.generateQuiz()).then(() => t('cmd.generate_quiz_ready', 'Quiz ready — it’s in the output panel.')) },
-    { id: 'generate_glossary', icon: '📖', roles: 'teacher', when: (c) => !!c.hasSourceOrAnalysis, label: t('cmd.generate_glossary', 'Make a vocabulary glossary'), aliases: ['glossary', 'vocabulary', 'vocab', 'key terms', 'word list'], hint: t('cmd.generate_glossary_hint', 'Generate a glossary from the current content'), run: (c) => { c.generateGlossary(); return t('cmd.generate_glossary_done', 'Generating a glossary…'); }, runAsync: (c) => Promise.resolve(c.generateGlossary()).then(() => t('cmd.generate_glossary_ready', 'Glossary ready.')) },
-    { id: 'generate_simplified', icon: '📉', roles: 'teacher', when: (c) => !!c.hasSourceOrAnalysis, label: t('cmd.generate_simplified', 'Simplify this text'), aliases: ['simplify', 'simplify this', 'make it easier', 'lower the reading level', 'leveled text', 'easier version'], hint: t('cmd.generate_simplified_hint', 'Generate a simpler reading level — say “to grade N” for a target'), run: (c, params) => { c.generateSimplified(params && params.grade ? { grade: params.grade } : {}); return t('cmd.generate_simplified_done', 'Generating a simpler version…'); }, runAsync: (c, params) => Promise.resolve(c.generateSimplified(params && params.grade ? { grade: params.grade } : {})).then(() => t('cmd.generate_simplified_ready', 'Simpler version ready.')) },
+    { id: 'generate_glossary', icon: '📖', roles: 'teacher', when: (c) => !!c.hasSourceOrAnalysis, label: t('cmd.generate_glossary', 'Make a vocabulary glossary'), aliases: ['glossary', 'vocabulary', 'vocab', 'key terms', 'word list', 'glossary image style mode'], hint: t('cmd.generate_glossary_hint', 'Generate a glossary from the current content'), run: (c) => { c.generateGlossary(); return t('cmd.generate_glossary_done', 'Generating a glossary…'); }, runAsync: (c) => Promise.resolve(c.generateGlossary()).then(() => t('cmd.generate_glossary_ready', 'Glossary ready.')) },
+    { id: 'generate_simplified', icon: '📉', roles: 'teacher', when: (c) => !!c.hasSourceOrAnalysis, label: t('cmd.generate_simplified', 'Simplify this text'), aliases: ['simplify', 'simplify this', 'make it easier', 'lower the reading level', 'leveled text', 'easier version', 'simplified instructional role'], hint: t('cmd.generate_simplified_hint', 'Generate a simpler reading level — say “to grade N” for a target'), run: (c, params) => { c.generateSimplified(params && params.grade ? { grade: params.grade } : {}); return t('cmd.generate_simplified_done', 'Generating a simpler version…'); }, runAsync: (c, params) => Promise.resolve(c.generateSimplified(params && params.grade ? { grade: params.grade } : {})).then(() => t('cmd.generate_simplified_ready', 'Simpler version ready.')) },
     { id: 'generate_sentence_frames', icon: '🧩', roles: 'teacher', when: (c) => !!c.hasSourceOrAnalysis, label: t('cmd.generate_sentence_frames', 'Make sentence frames'), aliases: ['sentence frames', 'sentence starters', 'scaffolds', 'language support'], hint: t('cmd.generate_sentence_frames_hint', 'Generate sentence frames from the current content'), run: (c) => { c.generateSentenceFrames(); return t('cmd.generate_sentence_frames_done', 'Generating sentence frames…'); }, runAsync: (c) => Promise.resolve(c.generateSentenceFrames()).then(() => t('cmd.generate_sentence_frames_ready', 'Sentence frames ready.')) },
     { id: 'generate_analysis', icon: '🔬', roles: 'teacher', when: (c) => !!c.hasSourceOrAnalysis, label: t('cmd.generate_analysis', 'Analyze this source'), aliases: ['analyze', 'analysis', 'source analysis', 'analyze this'], hint: t('cmd.generate_analysis_hint', 'Run a source analysis on the current content'), run: (c) => { c.generateAnalysis(); return t('cmd.generate_analysis_done', 'Analyzing this source…'); }, runAsync: (c) => Promise.resolve(c.generateAnalysis()).then(() => t('cmd.generate_analysis_ready', 'Source analysis ready.')) },
     { id: 'submit_work', icon: '📨', roles: 'student', when: (c) => !c.isTeacherMode, label: t('cmd.submit_work', 'Submit my work'), aliases: ['submit', 'submit my work', 'hand it in', 'turn in'], hint: t('cmd.submit_work_hint', 'Send your work to your teacher'), run: (c) => { c.submitWork(); return t('cmd.submit_work_done', 'Opening the submit dialog…'); } },
@@ -3513,10 +3513,19 @@ function createVoiceLoop(getCtx, opts = {}) {
     };
   };
   let voiceLease = null;
+  let activeRecognitionEngine = "";
+  let activeRecognitionEngineLabel = "";
   const updateVoiceSession = (state, message, privacy) => {
     const lease = voiceLease;
     if (!lease || typeof lease.update !== "function" || (typeof lease.isActive === "function" && !lease.isActive())) return false;
-    const detail = { state, mode: "commands", label: "Allo voice commands", message: message || "" };
+    const detail = {
+      state,
+      mode: "commands",
+      label: "Allo voice commands",
+      engine: activeRecognitionEngine,
+      engineLabel: activeRecognitionEngineLabel,
+      message: message || ""
+    };
     if (privacy !== undefined) detail.privacy = privacy;
     try { return lease.update(detail); } catch (_) { return false; }
   };
@@ -4099,6 +4108,8 @@ function createVoiceLoop(getCtx, opts = {}) {
       whisperState = null;
     }
     engineName = "webspeech";
+    activeRecognitionEngine = "";
+    activeRecognitionEngineLabel = "";
     standby = false;
     paused = false;
     awake = false;
@@ -4329,6 +4340,8 @@ function createVoiceLoop(getCtx, opts = {}) {
       onStateChange: (status) => {
         if (!active || !status) return;
         engineName = mapEngine(status.engine);
+        activeRecognitionEngine = String(status.engine || "");
+        activeRecognitionEngineLabel = String(status.engineLabel || "");
         standby = engineName === "whisper" && !!standbyWanted;
         updateVoiceSession(status.state || "starting", status.message || "", status.privacy);
         if (status.state === "listening" && !engineAnnouncementMade) {
@@ -4372,6 +4385,8 @@ function createVoiceLoop(getCtx, opts = {}) {
   // reply is speaking, frames are dropped and the segmenter reset so the
   // loop can't transcribe its own voice.
   const startWhisperEngine = async (profile) => {
+    activeRecognitionEngine = "browser-whisper";
+    activeRecognitionEngineLabel = "On-device Whisper";
     const asr = await _getWhisperPipeline(profile);
     const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } });
     if (!active) { try { stream.getTracks().forEach(function (tr) { tr.stop(); }); } catch (_) {} return; }
@@ -4416,6 +4431,8 @@ function createVoiceLoop(getCtx, opts = {}) {
     }
     try {
       engineName = "webspeech";
+      activeRecognitionEngine = "web-speech";
+      activeRecognitionEngineLabel = "Browser speech service";
       standby = false; // NEVER standby on Web Speech: its mic streams to the browser's speech service
       updateVoiceSession("starting", "Starting browser speech recognition.", "Browser speech may send audio to the browser's speech service.");
       if (standbyWanted) announce("“Hey Allo” standby needs the on-device speech model — say “download voice models” first. Tap-to-talk listening is on instead.");
@@ -4474,6 +4491,8 @@ function createVoiceLoop(getCtx, opts = {}) {
     const c = getCtx();
     const whisperProfile = modelCache.resolveWhisperProfile(c && c.voiceLang);
     if (active) return true;
+    activeRecognitionEngine = "";
+    activeRecognitionEngineLabel = "";
     let acquiredLease = null;
     const coordinator = (opts && opts.voiceCoordinator) || (typeof window !== "undefined" && window.AlloFlowVoice);
     if (coordinator && typeof coordinator.acquireVoiceSession === "function") {
@@ -4683,6 +4702,8 @@ function createVoiceLoop(getCtx, opts = {}) {
       listening: active && !paused && !speaking && (!sharedRecognition || sharedRecognition.getState() === "listening"),
       transcribing: !!(sharedRecognition && sharedRecognition.getState() === "transcribing"),
       engine: engineName,
+      engineId: activeRecognitionEngine,
+      engineLabel: activeRecognitionEngineLabel,
       standby,
       awake,
       routePending: !!routeController,

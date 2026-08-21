@@ -1,0 +1,265 @@
+{
+  "reportId": "ap-chemistry-foundation-qa",
+  "schemaVersion": 1,
+  "generatedAt": "2026-08-20T00:00:00.000Z",
+  "packId": "ap-chemistry-foundation-pilot",
+  "version": "0.1.0-internal-preview",
+  "status": "pass",
+  "automatedAssessment": "pass",
+  "structuralFindings": [],
+  "editorialAdvisories": [
+    {
+      "check": "independent-human-review",
+      "asset": "pack",
+      "recordId": "",
+      "message": "Before release, obtain AP Chemistry subject-expert, laboratory-boundary, rights, accessibility, production, field-testing, psychometric, and current-CED review.",
+      "requiresHumanJudgment": true
+    }
+  ],
+  "signals": [
+    {
+      "id": "asset-identity",
+      "status": "pass",
+      "findingCount": 0,
+      "description": "Pack/library identity, version, internal-preview state, and cross-links are consistent."
+    },
+    {
+      "id": "blueprint-and-unit-coverage",
+      "status": "pass",
+      "findingCount": 0,
+      "description": "The nine current AP Chemistry units, public weight ranges, seven big ideas, and six science practices are declared."
+    },
+    {
+      "id": "one-best-answer",
+      "status": "pass",
+      "findingCount": 0,
+      "description": "Every pilot item and chapter check has four distinct choices and one valid key."
+    },
+    {
+      "id": "substantive-feedback",
+      "status": "pass",
+      "findingCount": 0,
+      "description": "Every item has an overall rationale and option-specific feedback of meaningful length."
+    },
+    {
+      "id": "learning-alignment",
+      "status": "pass",
+      "findingCount": 0,
+      "description": "Every item resolves to an internal objective, topic, chapter, lesson route, and science-practice metadata."
+    },
+    {
+      "id": "library-inventory",
+      "status": "pass",
+      "findingCount": 0,
+      "description": "Native chapters, sections, checks, cards, memory aids, and rich prototypes match their declared counts."
+    },
+    {
+      "id": "library-content-structure",
+      "status": "pass",
+      "findingCount": 0,
+      "description": "The native library has navigable, text-first chapter structures, data moments, retrieval, and transfer blocks."
+    },
+    {
+      "id": "source-and-provenance",
+      "status": "pass",
+      "findingCount": 0,
+      "description": "Public blueprint/factual references and independent-original provenance declarations are complete."
+    },
+    {
+      "id": "rights-boundary",
+      "status": "pass",
+      "findingCount": 0,
+      "description": "Restricted content, copied-question, and release flags remain closed pending independent review."
+    },
+    {
+      "id": "accessibility-boundary",
+      "status": "pass",
+      "findingCount": 0,
+      "description": "Text, linear-reading-order, hands-free, and independent accessibility gates are declared."
+    },
+    {
+      "id": "expert-review-boundary",
+      "status": "pass",
+      "findingCount": 0,
+      "description": "AP Chemistry subject-expert and laboratory review remains pending and release-blocking."
+    },
+    {
+      "id": "psychometric-boundary",
+      "status": "pass",
+      "findingCount": 0,
+      "description": "The pilot remains uncalibrated, unreleased, non-predictive, and non-official."
+    },
+    {
+      "id": "prompt-originality",
+      "status": "pass",
+      "findingCount": 0,
+      "description": "No exact or conservative high-similarity duplicate prompt pair exists in the pilot."
+    },
+    {
+      "id": "deployment-parity",
+      "status": "pass",
+      "findingCount": 0,
+      "description": "Source and deployment mirrors are byte-identical after the manifest build."
+    }
+  ],
+  "metrics": {
+    "itemCount": 180,
+    "unitCount": 9,
+    "unitCounts": {
+      "atomic-structure-and-properties": 20,
+      "compound-structure-and-properties": 20,
+      "properties-of-substances-and-mixtures": 20,
+      "chemical-reactions": 20,
+      "kinetics": 20,
+      "thermochemistry": 20,
+      "equilibrium": 20,
+      "acids-and-bases": 20,
+      "thermodynamics-and-electrochemistry": 20
+    },
+    "topicCount": 91,
+    "topicCounts": {
+      "1.1": 2,
+      "1.2": 2,
+      "1.3": 3,
+      "1.4": 2,
+      "1.5": 3,
+      "1.6": 2,
+      "1.7": 3,
+      "1.8": 3,
+      "2.1": 3,
+      "2.2": 2,
+      "2.3": 3,
+      "2.4": 2,
+      "2.5": 3,
+      "2.6": 3,
+      "2.7": 4,
+      "3.1": 2,
+      "3.2": 1,
+      "3.3": 2,
+      "3.4": 2,
+      "3.5": 2,
+      "3.6": 1,
+      "3.7": 2,
+      "3.8": 2,
+      "3.9": 1,
+      "3.10": 2,
+      "3.11": 1,
+      "3.12": 1,
+      "3.13": 1,
+      "4.1": 1,
+      "4.2": 3,
+      "4.3": 2,
+      "4.4": 2,
+      "4.5": 3,
+      "4.6": 3,
+      "4.7": 2,
+      "4.8": 2,
+      "4.9": 2,
+      "5.1": 2,
+      "5.2": 2,
+      "5.3": 3,
+      "5.4": 2,
+      "5.5": 2,
+      "5.6": 2,
+      "5.7": 2,
+      "5.8": 2,
+      "5.9": 1,
+      "5.10": 1,
+      "5.11": 1,
+      "6.1": 2,
+      "6.2": 2,
+      "6.3": 2,
+      "6.4": 4,
+      "6.5": 2,
+      "6.6": 2,
+      "6.7": 2,
+      "6.8": 2,
+      "6.9": 2,
+      "7.1": 1,
+      "7.2": 1,
+      "7.3": 2,
+      "7.4": 2,
+      "7.5": 2,
+      "7.6": 2,
+      "7.7": 2,
+      "7.8": 2,
+      "7.9": 1,
+      "7.10": 2,
+      "7.11": 2,
+      "7.12": 1,
+      "8.1": 1,
+      "8.2": 2,
+      "8.3": 2,
+      "8.4": 2,
+      "8.5": 3,
+      "8.6": 1,
+      "8.7": 2,
+      "8.8": 2,
+      "8.9": 2,
+      "8.10": 2,
+      "8.11": 1,
+      "9.1": 2,
+      "9.2": 2,
+      "9.3": 2,
+      "9.4": 2,
+      "9.5": 2,
+      "9.6": 1,
+      "9.7": 2,
+      "9.8": 3,
+      "9.9": 2,
+      "9.10": 1,
+      "9.11": 1
+    },
+    "practiceCounts": {
+      "SP5": 52,
+      "SP1": 32,
+      "SP3": 24,
+      "SP4": 30,
+      "SP2": 27,
+      "SP6": 15
+    },
+    "answerCounts": {
+      "A": 45,
+      "B": 45,
+      "C": 45,
+      "D": 45
+    },
+    "chapterCount": 9,
+    "sectionCount": 9,
+    "knowledgeCheckCount": 9,
+    "flashcardCount": 9,
+    "memoryAidCount": 9,
+    "richLessonPrototypeCount": 9,
+    "nearDuplicatePairCount": 0
+  },
+  "inputs": {
+    "packSha256": "b10bd4d9516dd5361d5073a6bd38855d56ae8fd57d9abafab3fff2640e36add4",
+    "learningLibrarySha256": "f7309ceb15b34a2d105bc4c6850c218d2b71987844e2cf1c1cd5798a32d44752",
+    "officialBlueprintUrl": "https://apcentral.collegeboard.org/media/pdf/ap-chemistry-course-and-exam-description.pdf",
+    "officialCourseUrl": "https://apstudents.collegeboard.org/courses/ap-chemistry",
+    "factualCrossCheckUrl": "https://openstax.org/details/books/chemistry-2e"
+  },
+  "deploymentParity": [
+    {
+      "asset": "pack",
+      "status": "pass",
+      "blocking": false,
+      "sourceSha256": "b10bd4d9516dd5361d5073a6bd38855d56ae8fd57d9abafab3fff2640e36add4",
+      "deploySha256": "b10bd4d9516dd5361d5073a6bd38855d56ae8fd57d9abafab3fff2640e36add4"
+    },
+    {
+      "asset": "learning-library",
+      "status": "pass",
+      "blocking": false,
+      "sourceSha256": "f7309ceb15b34a2d105bc4c6850c218d2b71987844e2cf1c1cd5798a32d44752",
+      "deploySha256": "f7309ceb15b34a2d105bc4c6850c218d2b71987844e2cf1c1cd5798a32d44752"
+    }
+  ],
+  "releaseBlockers": [
+    "Independent AP Chemistry subject-expert and laboratory-boundary review",
+    "Independent accessibility and production validation",
+    "Rights review and current-CED/policy reverification",
+    "Field testing and psychometric calibration",
+    "No official score, readiness, college-credit, laboratory-competency, or safety inference is supported"
+  ]
+}

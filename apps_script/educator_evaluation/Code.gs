@@ -1058,6 +1058,113 @@ function performPortalCycleSchedule(request) {
   } finally { lock.releaseLock(); }
 }
 
+function workspaceConfigurationCandidate_(current, requestConfig) {
+  current = sanitizeConfig_(current || {});
+  requestConfig = requireObject_(requestConfig || {}, 'configuration');
+  var profile = oneOf_(requestConfig.frameworkProfile || current.frameworkProfile || 'pa_act13', ['pa_act13', 'maine_pepg', 'portland_me'], 'frameworkProfile');
+  function proposed_(field) { return requestConfig[field] === undefined ? current[field] : requestConfig[field]; }
+  return sanitizeConfig_({
+    organization: proposed_('organization'),
+    building: proposed_('building'),
+    academicYear: proposed_('academicYear'),
+    evaluatorName: proposed_('evaluatorName'),
+    evaluatorInitials: proposed_('evaluatorInitials'),
+    frameworkProfile: profile,
+    pepgPracticeWeight: profile === 'maine_pepg' ? proposed_('pepgPracticeWeight') : null,
+    aiReflectionEnabled: proposed_('aiReflectionEnabled'),
+  });
+}
+
+function workspaceConfigurationChanges_(current, candidate) {
+  var fields = [
+    ['organization', 'Organization / LEA'],
+    ['building', 'Default building'],
+    ['academicYear', 'Academic year'],
+    ['evaluatorName', 'Evaluator display name'],
+    ['evaluatorInitials', 'Evaluator initials'],
+    ['frameworkProfile', 'Evaluation framework'],
+    ['pepgPracticeWeight', 'Professional Practice weight'],
+    ['aiReflectionEnabled', 'AI reflection'],
+  ];
+  var profileNames = { pa_act13: 'Pennsylvania Act 13 (Danielson 2021)', maine_pepg: 'Maine PEPG (district plan governs)', portland_me: 'Portland ME (PEPG guidebook)' };
+  function display_(field, value) {
+    if (field === 'frameworkProfile') return profileNames[value] || String(value || 'Not set');
+    if (field === 'aiReflectionEnabled') return value ? 'Allowed' : 'Off';
+    if (field === 'pepgPracticeWeight') return value === null || value === undefined || value === '' ? 'Not set (district plan governs)' : String(value) + '%';
+    return value === null || value === undefined || value === '' ? 'Not set' : String(value);
+  }
+  var changes = [];
+  for (var i = 0; i < fields.length; i++) {
+    var field = fields[i][0];
+    if (!same_(current[field], candidate[field])) changes.push({ field: field, label: fields[i][1], current: display_(field, current[field]), candidate: display_(field, candidate[field]) });
+  }
+  return changes;
+}
+
+function reviewPortalWorkspaceConfiguration(request) {
+  var actor = requireAdmin_();
+  request = requireObject_(request || {}, 'request');
+  var state = readWorkspaceState_();
+  var current = sanitizeConfig_(state.workspace.config || {});
+  var candidate = workspaceConfigurationCandidate_(current, request.config);
+  var changes = workspaceConfigurationChanges_(current, candidate);
+  if (!changes.length) throw eeError_('bad_request', 'Change at least one district setting before review.');
+  var token = newId_('admin-review');
+  CacheService.getScriptCache().put(adminReviewCacheKey_(token), JSON.stringify({
+    actorEmail: actor.email,
+    operation: 'configuration',
+    revision: state.revision,
+    currentHash: hashText_(JSON.stringify(current)),
+    candidate: candidate,
+  }), EE_ADMIN_REVIEW_SECONDS);
+  var teachers = state.workspace.teachers || [];
+  return { ok: true, review: {
+    token: token,
+    expiresAt: new Date(Date.now() + EE_ADMIN_REVIEW_SECONDS * 1000).toISOString(),
+    changes: changes,
+    impacts: {
+      activeEducators: teachers.filter(function (teacher) { return teacher.active !== false; }).length,
+      openCycles: teachers.filter(function (teacher) { return teacher.active !== false && !teacher.finalizedAt; }).length,
+      protectedSnapshots: teachers.filter(function (teacher) { return !!teacher.weightSnapshot || !!teacher.finalizedAt; }).length,
+      frameworkOrWeightChange: changes.some(function (change) { return change.field === 'frameworkProfile' || change.field === 'pepgPracticeWeight'; }),
+      finalizedRecordsRetainSnapshots: true,
+    },
+  } };
+}
+
+function performPortalWorkspaceConfiguration(request) {
+  var actor = requireAdmin_();
+  request = requireObject_(request || {}, 'request');
+  if (request.acknowledgeImpact !== true) throw eeError_('acknowledgment_required', 'Confirm the district-wide configuration impact before applying it.');
+  var lock = LockService.getScriptLock();
+  if (!lock.tryLock(30000)) throw eeError_('busy', 'Repository is busy.');
+  try {
+    var token = safeId_(request.reviewToken || '', false);
+    var cache = CacheService.getScriptCache(), key = adminReviewCacheKey_(token), raw = token ? cache.get(key) : '', review;
+    try { review = raw ? JSON.parse(raw) : null; } catch (parseErr) { review = null; }
+    if (!review || review.actorEmail !== actor.email || review.operation !== 'configuration') throw eeError_('review_required', 'The configuration review expired or was already used. Review the settings again.');
+    var state = readWorkspaceState_();
+    var current = sanitizeConfig_(state.workspace.config || {});
+    if (Number(review.revision) !== Number(state.revision) || review.currentHash !== hashText_(JSON.stringify(current))) {
+      cache.remove(key);
+      throw eeError_('review_stale', 'The workspace changed after review. Reload and review the district settings again.');
+    }
+    var candidate = sanitizeConfig_(review.candidate || {});
+    var changes = workspaceConfigurationChanges_(current, candidate);
+    if (!changes.length) { cache.remove(key); throw eeError_('review_stale', 'The reviewed settings already match the current workspace. Reload before making another change.'); }
+    cache.remove(key);
+    state.workspace.config = candidate;
+    var auditEntry = appendWorkspaceAudit_(state.workspace, { event: 'CONFIGURATION_UPDATED', summary: 'Administrator applied ' + changes.length + ' reviewed district configuration change' + (changes.length === 1 ? '' : 's'), entityType: 'workspace_configuration', entityId: 'configuration', version: 1 }, actor);
+    var nextRevision = state.revision + 1;
+    var commit = writeWorkspaceState_(state.workspace, nextRevision, actor.email), pending = !!commit.pending;
+    if (!pending) {
+      try { appendCanonicalAuditRow_(auditEntry); }
+      catch (auditErr) { PropertiesService.getScriptProperties().setProperty('EE_SECONDARY_RECONCILE_REQUIRED', '1'); }
+    }
+    return { ok: true, status: pending ? 'recovery_pending' : 'completed', recoveryPending: pending, revision: nextRevision, version: nextRevision, changes: changes, workspace: filterWorkspaceForActor_(state.workspace, actor) };
+  } finally { lock.releaseLock(); }
+}
+
 function authorizedExportsFolder_() {
   var props = PropertiesService.getScriptProperties(), id = props.getProperty('EE_AUTHORIZED_EXPORTS_FOLDER_ID');
   if (id) { try { return DriveApp.getFolderById(id); } catch (existingErr) {} }
@@ -1455,38 +1562,58 @@ function reconcilePortalAnnualRollover() {
   throw eeError_('manual_recovery_required', 'The workspace is neither the reviewed old year nor the confirmed new year. District IT must inspect both the active workspace and archive before any retry.');
 }
 
+function historicalObservationScore_(domains, frameworkVersion) {
+  if (!completeDomains_(domains)) return null;
+  var keys = ['d1', 'd2', 'd3', 'd4'];
+  var tag = String(frameworkVersion || '');
+  if (tag.indexOf('me-') === 0) {
+    var total = 0;
+    for (var i = 0; i < keys.length; i++) total += Math.round(Number(domains[keys[i]]) * 100);
+    return total / (keys.length * 100);
+  }
+  var weights = { d1: 20, d2: 30, d3: 30, d4: 20 };
+  var scaled = 0;
+  for (var j = 0; j < keys.length; j++) scaled += Math.round(Number(domains[keys[j]]) * weights[keys[j]] * 100);
+  return scaled / 10000;
+}
+
 function getPortalCohortStats(request) {
   var actor = currentActor_();
   request = requireObject_(request || {}, 'request');
   var teacherId = safeId_(request.teacherId, true);
   requireTeacherAccess_(actor, teacherId);
   if (actor.role === 'teacher') return { ok: true, suppressed: true, minimum: EE_MIN_COHORT, reason: 'teacher_view' };
-  var metric = oneOf_(request.metric || 'finalScore', ['finalScore', 'd1', 'd2', 'd3', 'd4'], 'metric');
+  var metric = oneOf_(request.metric || 'overall', ['overall', 'finalScore', 'd1', 'd2', 'd3', 'd4'], 'metric');
   var from = optionalDate_(request.from);
   var to = optionalDate_(request.to);
   var workspace = readWorkspaceState_().workspace;
   var selected = findById_(workspace.teachers || [], teacherId);
   if (!selected) throw eeError_('not_found', 'Educator record not found.');
   var allowed = accessibleTeacherIds_(actor, workspace);
-  var rows = snapshotObjects_();
+  var teachersById = indexById_(workspace.teachers || []);
+  var rows = workspace.observations || [];
   var byTeacher = {};
   var selectedValues = [];
   for (var i = 0; i < rows.length; i++) {
     var row = rows[i];
-    if (!dateInRange_(row.finalizedAt, from, to)) continue;
-    var value = numberOrNull_(row[metric]);
+    if (!row.finalizedAt || !dateInRange_(row.observedAt || row.finalizedAt, from, to)) continue;
+    var domains = row.ratings || {};
+    var value = metric === 'd1' || metric === 'd2' || metric === 'd3' || metric === 'd4'
+      ? numberOrNull_(domains[metric])
+      : historicalObservationScore_(domains, row.frameworkVersion);
     if (value === null) continue;
     if (row.teacherId === teacherId) { selectedValues.push(value); continue; }
     if (!allowed[row.teacherId]) continue;
-    if (row.building !== selected.building || row.employeeType !== selected.employeeType) continue;
+    var peer = teachersById[row.teacherId];
+    if (!peer || peer.active === false || peer.building !== selected.building || peer.employeeType !== selected.employeeType) continue;
     if (!byTeacher[row.teacherId]) byTeacher[row.teacherId] = [];
     byTeacher[row.teacherId].push(value);
   }
   var peerMeans = [];
   var peerIds = Object.keys(byTeacher);
   for (var j = 0; j < peerIds.length; j++) peerMeans.push(mean_(byTeacher[peerIds[j]]));
-  if (peerMeans.length < EE_MIN_COHORT) return { ok: true, suppressed: true, minimum: EE_MIN_COHORT, metric: metric, selectedMean: selectedValues.length ? round_(mean_(selectedValues), 3) : null };
-  return { ok: true, suppressed: false, minimum: EE_MIN_COHORT, metric: metric, peerCount: peerMeans.length, cohortMedian: round_(median_(peerMeans), 3), selectedMean: selectedValues.length ? round_(mean_(selectedValues), 3) : null, aggregation: 'median_of_distinct_teacher_means' };
+  if (peerMeans.length < EE_MIN_COHORT) return { ok: true, suppressed: true, minimum: EE_MIN_COHORT, metric: metric, source: 'finalized_formal_observations', selectedMean: selectedValues.length ? round_(mean_(selectedValues), 3) : null };
+  return { ok: true, suppressed: false, minimum: EE_MIN_COHORT, metric: metric, source: 'finalized_formal_observations', peerCount: peerMeans.length, cohortMedian: round_(median_(peerMeans), 3), selectedMean: selectedValues.length ? round_(mean_(selectedValues), 3) : null, aggregation: 'median_of_distinct_teacher_means' };
 }
 
 /* --------------------------- identity / access -------------------------- */
@@ -1553,7 +1680,7 @@ function filterWorkspaceForActor_(workspace, actor) {
   copy.observations = filterByTeacher_(copy.observations, ids, false);
   copy.spms = filterByTeacher_(copy.spms, ids, false);
   copy.comments = filterByTeacher_(copy.comments, ids, false);
-  copy.audit = filterByTeacher_(copy.audit, ids, false);
+  copy.audit = (copy.audit || []).filter(function(item) { return !!ids[item.teacherId] || (actor.role === 'admin' && !item.teacherId); });
   copy.cycleSnapshots = filterByTeacher_(copy.cycleSnapshots, ids, false);
   if (actor.role === 'teacher') {
     copy.walkthroughs = copy.walkthroughs.filter(function(item) { return !!item.publishedAt; });
@@ -1621,7 +1748,8 @@ function redactUnsubmittedSpmForEvaluator_(spm) {
 }function mergeWorkspaceForActor_(current, incoming, actor) {
   var merged = clone_(current);
   var allowed = accessibleTeacherIds_(actor, current);
-  if (actor.role === 'admin') merged.config = incoming.config;
+  if (actor.role === 'admin' && !same_(current.config, incoming.config)) throw eeError_('review_required', 'District configuration changes require an administrator review and explicit confirmation in Setup.');
+  merged.config = clone_(current.config);
   mergeTeacherProfiles_(merged, incoming, actor, allowed);
   merged.walkthroughs = mergeRecords_(current.walkthroughs, incoming.walkthroughs, actor, allowed, 'walkthrough', merged.config.frameworkVersion, merged.teachers);
   merged.observations = mergeRecords_(current.observations, incoming.observations, actor, allowed, 'observation', merged.config.frameworkVersion, merged.teachers);
@@ -2194,7 +2322,18 @@ function sanitizeWorkspace_(raw) {
   return result;
 }
 
-function sanitizeConfig_(v) { v = requireObject_(v || {}, 'config'); return { organization: safeString_(v.organization,160,'District'), building: safeString_(v.building,160,''), academicYear: safeString_(v.academicYear,20,''), evaluatorName: safeString_(v.evaluatorName,160,'Evaluator'), evaluatorInitials: safeString_(v.evaluatorInitials,12,''), frameworkVersion: safeString_(v.frameworkVersion,80,'PA Act 13 / Danielson 2021'), frameworkProfile: oneOf_(v.frameworkProfile || 'pa_act13', ['pa_act13', 'maine_pepg', 'portland_me'], 'frameworkProfile'), pepgPracticeWeight: (v.pepgPracticeWeight == null || String(v.pepgPracticeWeight) === '' ? null : clampInt_(v.pepgPracticeWeight, 0, 100, 0)), sampleMode: false }; }
+function sanitizeConfig_(v) {
+  v = requireObject_(v || {}, 'config');
+  var profile = oneOf_(v.frameworkProfile || 'pa_act13', ['pa_act13', 'maine_pepg', 'portland_me'], 'frameworkProfile');
+  return {
+    organization: safeString_(v.organization,160,'District'), building: safeString_(v.building,160,''), academicYear: safeString_(v.academicYear,20,''),
+    evaluatorName: safeString_(v.evaluatorName,160,'Evaluator'), evaluatorInitials: safeString_(v.evaluatorInitials,12,''),
+    frameworkVersion: eeFrameworkTag_({ frameworkProfile: profile }), frameworkProfile: profile,
+    pepgPracticeWeight: profile === 'maine_pepg' && !(v.pepgPracticeWeight == null || String(v.pepgPracticeWeight) === '') ? clampInt_(v.pepgPracticeWeight, 0, 100, 0) : null,
+    aiReflectionEnabled: !!v.aiReflectionEnabled,
+    sampleMode: false,
+  };
+}
 function sanitizeTeacher_(v) { v=requireObject_(v,'teacher'); var ratings=requireObject_(v.ratings||{},'ratings'); return { id:safeId_(v.id,true), code:safeString_(v.code,40,''), name:safeString_(v.name,160,''), building:safeString_(v.building,160,''), assignment:safeString_(v.assignment,240,''), employeeType:v.employeeType==='temporary'?'temporary':'professional', buildingData:!!v.buildingData, teacherSpecificData:!!v.teacherSpecificData, active:v.active!==false, evaluator:safeString_(v.evaluator,160,''), dueDate:optionalDate_(v.dueDate), cycleStatus:oneOf_(v.cycleStatus||'not_started',['not_started','in_progress','awaiting_teacher','awaiting_evaluator','finalized'],'cycleStatus'), lastActivityAt:optionalTimestamp_(v.lastActivityAt), finalizedAt:optionalTimestamp_(v.finalizedAt), cycleLockedAt:optionalTimestamp_(v.cycleLockedAt), frameworkVersion:safeString_(v.frameworkVersion,80,'PA Act 13 / Danielson 2021'), weightSnapshot:sanitizeWeights_(v.weightSnapshot), finalScore:rating_(v.finalScore), ratings:{domains:sanitizeRubricDomains_(ratings.domains),building:rating_(ratings.building),teacher:rating_(ratings.teacher),lea:rating_(ratings.lea)}, releasedDoc:sanitizeReleasedDoc_(v.releasedDoc), educatorStatement:sanitizeEducatorStatement_(v.educatorStatement) }; }
 // releasedDoc: server-owned pointer to the shared released-summary Doc. It must
 // survive sanitizeStoredWorkspace_ (which rebuilds every teacher through
@@ -2269,7 +2408,7 @@ function snapshotObjects_(){var rows=dataRows_(repositorySpreadsheet_().getSheet
 
 function blankWorkspace_(config){config=isPlainObject_(config)?config:{};var baseBuilding=safeString_(config.building,160,'');var evaluator=safeString_(config.adminDisplayName,160,'Principal');var rawTeachers=config.teachers===undefined?[]:config.teachers;if(!Array.isArray(rawTeachers)||rawTeachers.length>1000)throw eeError_('bad_config','Invalid setup teachers list.');var teachers=[];for(var i=0;i<rawTeachers.length;i++){var raw=requireObject_(rawTeachers[i],'setup teacher');teachers.push(sanitizeTeacher_({id:raw.id,code:raw.code,name:raw.name,building:raw.building||baseBuilding,assignment:raw.assignment||'',employeeType:raw.employeeType||'professional',buildingData:raw.buildingData!==false,teacherSpecificData:raw.teacherSpecificData!==false,active:raw.active!==false,evaluator:raw.evaluator||evaluator,dueDate:raw.dueDate||'',cycleStatus:'not_started',frameworkVersion:'PA Act 13 / Danielson 2021',ratings:{domains:{d1:null,d2:null,d3:null,d4:null},building:null,teacher:null,lea:null}}));}assertUniqueIds_(teachers,'educator');return{kind:'alloflow-educator-evaluation-workspace',version:1,config:{organization:safeString_(config.organization,160,'District'),building:baseBuilding,academicYear:safeString_(config.academicYear,20,''),evaluatorName:evaluator,evaluatorInitials:'',frameworkVersion:'PA Act 13 / Danielson 2021',sampleMode:false},teachers:teachers,walkthroughs:[],observations:[],spms:[],comments:[],audit:[],cycleSnapshots:[]};}
 function jsonOutput_(value){return ContentService.createTextOutput(JSON.stringify(value)).setMimeType(ContentService.MimeType.JSON);}
-function publicError_(err){var code=String(err&&err.code||'server_error');var safe={identity_unavailable:1,wrong_domain:1,not_member:1,not_configured:1,denied:1,bad_json:1,bad_request:1,bad_workspace:1,conflict:1,busy:1,not_found:1,immutable:1,invalid_transition:1,too_large:1,not_configured:1};return{ok:false,code:safe[code]?code:'server_error',error:safe[code]?String(err.message).slice(0,240):'The district evaluation service could not complete the request.'};}
+function publicError_(err){var code=String(err&&err.code||'server_error');var safe={identity_unavailable:1,wrong_domain:1,not_member:1,not_configured:1,denied:1,bad_json:1,bad_request:1,bad_workspace:1,conflict:1,busy:1,not_found:1,immutable:1,invalid_transition:1,too_large:1,review_required:1,review_stale:1,acknowledgment_required:1,manual_recovery_required:1};return{ok:false,code:safe[code]?code:'server_error',error:safe[code]?String(err.message).slice(0,240):'The district evaluation service could not complete the request.'};}
 function eeError_(code,message){var err=new Error(message);err.code=code;return err;}
 function isPlainObject_(v){return !!v&&Object.prototype.toString.call(v)==='[object Object]'&&Object.getPrototypeOf(v)===Object.prototype;}
 function requireObject_(v,name){if(!isPlainObject_(v))throw eeError_('bad_request',String(name||'value')+' must be an object.');return v;}

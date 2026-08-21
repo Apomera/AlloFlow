@@ -61,7 +61,7 @@ describe('visual organizer live activity contract', () => {
 
   it('keeps launch receipts monotonic and times out unresolved resource delivery', () => {
     const effectAt = host.indexOf('if (!remote || !remote.type) {', host.indexOf('writeInteractiveOrganizerLaunchStatus'));
-    const alreadyOpenedAt = host.indexOf('if (remote.armedAt === lastSeenInteractiveArmRef.current) return;', effectAt);
+    const alreadyOpenedAt = host.indexOf('if (remote.armedAt === lastSeenInteractiveArmRef.current && !isTargetedRetry) return;', effectAt);
     const loadingAt = host.indexOf("writeInteractiveOrganizerLaunchStatus('loading');", effectAt);
     const resourceCheckAt = host.indexOf("if (remote.resourceId && String(generatedContent?.id || '') !== String(remote.resourceId)) return;", effectAt);
     expect(alreadyOpenedAt).toBeGreaterThan(effectAt);
@@ -118,6 +118,70 @@ describe('visual organizer live activity contract', () => {
         missing: {},
       },
     })).toEqual({ total: 5, pending: 2, loading: 0, ready: 1, failed: 1, working: 0, attempted: 0, complete: 1 });
+  });
+
+  it('requires semantically playable organizer sections rather than only a global card count', () => {
+    const start = host.indexOf('const getLiveOrganizerReadiness =');
+    const end = host.indexOf('const normalizeLiveOrganizerProgress =', start);
+    expect(start).toBeGreaterThan(0);
+    expect(end).toBeGreaterThan(start);
+    const readiness = new Function(
+      'LIVE_ORGANIZER_TYPES',
+      'LIVE_ORGANIZER_STRUCTURE_TYPES',
+      '_liveOrganizerText',
+      `${host.slice(start, end)}\nreturn getLiveOrganizerReadiness;`,
+    )(
+      new Set(['tchart', 'cesort', 'frayer', 'conceptrecall3d']),
+      {
+        tchart: new Set(['T-Chart']),
+        cesort: new Set(['Cause and Effect']),
+        frayer: new Set(['Frayer Model']),
+        conceptrecall3d: new Set(['3D Concept Space']),
+      },
+      value => String(typeof value === 'object' && value ? value.text || value.label || '' : value || '').trim(),
+    );
+    const resource = (structureType, branches, extra = {}) => ({ type: 'outline', data: { structureType, branches, ...extra } });
+    expect(readiness('tchart', resource('T-Chart', [
+      { items: ['A', 'B', 'C', 'D'] }, { items: [] },
+    ])).ok).toBe(false);
+    expect(readiness('tchart', resource('T-Chart', [
+      { items: ['A', 'B'] }, { items: ['C', 'D'] },
+    ])).ok).toBe(true);
+    expect(readiness('cesort', resource('Cause and Effect', [
+      { role: 'cause', items: ['A', 'B', 'C', 'D'] }, { role: 'effect', items: [] },
+    ])).ok).toBe(false);
+    expect(readiness('frayer', resource('Frayer Model', [
+      { items: ['A'] }, { items: ['B'] }, { items: ['C'] }, { items: [] },
+    ])).ok).toBe(false);
+    const conceptSpace = resource('3D Concept Space', [{ items: ['one', 'two'] }], {
+      conceptArt: { root: {}, b0: {}, b0_i0: {}, orphan: {} },
+    });
+    expect(readiness('conceptrecall3d', conceptSpace).ok).toBe(true);
+    expect(readiness('conceptrecall3d', { ...conceptSpace, data: { ...conceptSpace.data, conceptArt: { root: {}, orphan1: {}, orphan2: {} } } }).ok).toBe(false);
+  });
+
+  it('retries only waiting or failed students without cycling the live activity', () => {
+    expect(host).toContain('const getRetryableLiveOrganizerUids = ({ roster, interactiveOrganizer } = {}) => {');
+    expect(host).toContain('interactiveOrganizer: { ...remote, retryAt, retryUids }');
+    expect(host).toContain('Retry waiting/failed (${retryableLiveOrganizerUids.length})');
+    expect(host).toContain('if (remote.armedAt === lastSeenInteractiveArmRef.current && !isTargetedRetry) return;');
+    expect(host).toContain('if (isTargetedRetry) lastSeenInteractiveRetryRef.current = retryToken;');
+    const normalizeStart = host.indexOf('const normalizeLiveOrganizerProgress =');
+    const retryEnd = host.indexOf('const mergeLiveQuizEvidenceResponse =', normalizeStart);
+    const retryable = new Function(
+      'LIVE_ORGANIZER_TYPES',
+      'LIVE_ORGANIZER_GAME_TYPES',
+      `${host.slice(normalizeStart, retryEnd)}\nreturn getRetryableLiveOrganizerUids;`,
+    )(new Set(['tchart']), { tchart: new Set(['tchartSort']) });
+    const activityId = 'organizer:test:tchart:current';
+    const receipt = status => ({ activityId, type: 'tchart', gameType: null, status, score: 0, correct: 0, total: 0, attempts: 0, at: 10 });
+    expect(retryable({
+      interactiveOrganizer: { activityId },
+      roster: {
+        waiting: {}, failed: { organizerProgress: receipt('failed') }, ready: { organizerProgress: receipt('ready') },
+        working: { organizerProgress: receipt('working') }, complete: { organizerProgress: receipt('complete') },
+      },
+    })).toEqual(['waiting', 'failed']);
   });
 
   it('remotely arms 3D Concept Recall separately from Strand Challenge', () => {

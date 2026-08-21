@@ -61,8 +61,9 @@ describe('framework registry (client)', () => {
 
 describe('framework awareness (server)', () => {
   it('config sanitizer carries frameworkProfile and pepgPracticeWeight with null-safe validation', () => {
-    expect(gs).toMatch(/frameworkProfile: oneOf_\(v\.frameworkProfile \|\| 'pa_act13', \['pa_act13', 'maine_pepg', 'portland_me'\]/);
-    expect(gs).toMatch(/v\.pepgPracticeWeight == null \|\| String\(v\.pepgPracticeWeight\) === ''/);
+    expect(gs).toMatch(/var profile = oneOf_\(v\.frameworkProfile \|\| 'pa_act13', \['pa_act13', 'maine_pepg', 'portland_me'\]/);
+    expect(gs).toMatch(/profile === 'maine_pepg' && !\(v\.pepgPracticeWeight == null \|\| String\(v\.pepgPracticeWeight\) === ''\)/);
+    expect(gs).toContain('aiReflectionEnabled: !!v.aiReflectionEnabled');
   });
 
   it('serverWeightProfile_ branches on the profile and threads config at every call site', () => {

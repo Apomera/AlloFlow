@@ -4,8 +4,8 @@
   "reviewedAt": "2026-07-28",
   "reportType": "deterministic-learner-facing-unicode-normalization",
   "sourceFile": "test_prep/eppp_native_items.json",
-  "sourceSha256Before": "099e7a40f735298028cd6806a300e941c3944480fed7c804b885d4a762487b55",
-  "sourceSha256After": "099e7a40f735298028cd6806a300e941c3944480fed7c804b885d4a762487b55",
+  "sourceSha256Before": "f64e3ccbba014265b7ea7f0283ac28609aeaa494a4769231f9af15a4d840ccaf",
+  "sourceSha256After": "f64e3ccbba014265b7ea7f0283ac28609aeaa494a4769231f9af15a4d840ccaf",
   "scope": {
     "totalItems": 1500,
     "learnerFields": [

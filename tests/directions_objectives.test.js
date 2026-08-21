@@ -8,6 +8,8 @@ import { resolve } from 'node:path';
 
 const anti = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8');
 const mirror = readFileSync(resolve(process.cwd(), 'desktop/web-app/src/AlloFlowANTI.txt'), 'utf8');
+const directionsViewSource = readFileSync(resolve(process.cwd(), 'view_directions_result_source.jsx'), 'utf8');
+const directionsViewModule = readFileSync(resolve(process.cwd(), 'view_directions_result_module.js'), 'utf8');
 
 // ── eval-slice the REAL pure helpers ────────────────────────────────────────
 const start = anti.indexOf('function _alloNormalizeDirectionsData(');
@@ -106,12 +108,14 @@ describe('wiring pins', () => {
   });
   it("the 'directions' view branch exists (the type previously rendered a BLANK content area)", () => {
     expect(anti).toContain("activeView === 'directions' && generatedContent?.type === 'directions'");
-    expect(anti).toContain('_alloEvaluateObjectives(_dir.objectives, _alloObjectiveSignals, _dirProg)');
-    expect(anti).toContain('parseMarkdownToHTML(_dir.body)');
-    expect(anti).toContain('directions-choice-board-title');
-    expect(anti).toContain("aria-label={'Choose activity: ' + choice.label}");
-    expect(anti).toContain('aria-pressed={_selectedChoiceRef === choice.resourceRef}');
+    expect(anti).toContain('_alloEvaluateObjectives(normalized.objectives, input.signals || {}, directionProgress)');
+    expect(anti).toContain('input.parseMarkdownToHTML(markdown)');
+    expect(anti).toContain('<DirectionsResultView');
+    expect(directionsViewSource).toContain('directions-choice-board-title');
+    expect(directionsViewSource).toMatch(/aria-label=\{[^\n]*chooseActivity/);
+    expect(directionsViewSource).toMatch(/aria-pressed=\{[^\n]*selected/);
     expect(anti).toContain('Back to directions');
+    expect(directionsViewModule).toContain('directions-choice-board-title');
   });
   it('choice-board authoring validates, previews, and supports optional card descriptions', () => {
     expect(anti).toContain('Select at least two activities before saving the choice board.');
@@ -131,10 +135,8 @@ describe('wiring pins', () => {
     expect(anti).toContain('if (!_directionsProgressLoadedRef.current) return; // never clobber storage with the initial {}');
   });
   it('NO GATING anywhere in Phase 1 — the checklist informs and celebrates only', () => {
-    // the directions view branch must not condition any resource access on objective state
-    const viewIdx = anti.indexOf("activeView === 'directions' && generatedContent?.type === 'directions'");
-    const viewSlice = anti.slice(viewIdx, viewIdx + 4500);
-    expect(viewSlice).not.toMatch(/locked|disabled=\{!.*done|preventDefault/i);
+    // The extracted presentation must not condition travel on objective state.
+    expect(directionsViewSource).not.toMatch(/locked|disabled=\{!.*done|preventDefault/i);
     expect(anti).toContain('nothing is ever locked');
   });
   it('derivation excerpts: student-safe only, bounded, teacher-only contributes NOTHING', () => {
@@ -164,7 +166,9 @@ describe('wiring pins', () => {
   it('P2: the soft gate NUDGES and never blocks — the open proceeds unconditionally', () => {
     const idx = anti.indexOf('Phase 2 SOFT gate');
     expect(idx).toBeGreaterThan(0);
-    const slice = anti.slice(idx, idx + 1600);
+    const nextOpen = anti.indexOf('setGeneratedContent({ ...item,', idx);
+    const slice = anti.slice(idx, nextOpen + 40);
+    expect(nextOpen).toBeGreaterThan(idx);
     expect(slice).toContain('_softGateNudgedRef.current.add(item.id);'); // once per resource
     expect(slice).toContain('You can keep going!');
     expect(slice).not.toMatch(/return;\s*\}\s*\}\s*catch/); // no early-return escape from the open
@@ -175,14 +179,16 @@ describe('wiring pins', () => {
     // visited marking is device-local, reserved-key, set on resource OPEN
     expect(anti).toContain("const vis = (prev._visited && typeof prev._visited === 'object') ? prev._visited : {};");
     // the map is an accessible IMAGE with a spoken progress summary; the checklist remains the interactive primary
-    expect(anti).toMatch(/svg role="img" aria-label=\{\(t\('directions\.map_summary'\)/);
+    expect(directionsViewSource).toMatch(/<svg\s+role="img"/);
+    expect(directionsViewSource).toContain('mapSummary');
     // per-type station design now comes from the shared registry (superseded the old
     // two-shape _isStemStation rule — see directions_quest_map_travel.test.js)
-    expect(anti).not.toContain('_isStemStation');
-    expect(anti).toContain('const st = _alloStationStyle(it.type);');
-    expect(anti).toMatch(/_goalRefIdx\(_dir\.objectives\[j\] \|\| \{\}\)/); // resourceRef'd goals tether to their station
+    expect(directionsViewSource).not.toContain('_isStemStation');
+    expect(anti).toContain('const style = _alloStationStyle(resource.type);');
+    expect(directionsViewSource).toContain('goalResourceIndex(goal)'); // resourceRef'd goals tether to their station
     // map items = student-safe pack only, bounded
-    expect(anti).toContain(".filter(h => h && h.id && h.type && h.type !== 'directions' && !TEACHER_ONLY_TYPES.includes(h.type)).slice(0, 12);");
+    expect(anti).toContain(".filter(resource => resource.type !== 'directions' && validId(resource.id))");
+    expect(anti).toContain('_alloStudentSafeResources(historyItems)');
   });
   it('TRANSLATION: directions branch translates prose + labels ONLY, machinery + meta object survive', () => {
     const pk = readFileSync(resolve(process.cwd(), 'phase_k_helpers_source.jsx'), 'utf8');
@@ -200,6 +206,12 @@ describe('wiring pins', () => {
     expect(pkm).toMatch(/_dLbls\[i\]/);
   });
   it('mirror parity', () => {
-    expect(mirror).toBe(anti);
+    // Desktop rewrites CDN URLs to local paths; pin this feature semantically.
+    for (const shell of [anti, mirror]) {
+      expect(shell).toContain("activeView === 'directions' && generatedContent?.type === 'directions'");
+      expect(shell).toContain('<DirectionsResultView');
+      expect(shell).toContain("storageDB.get('allo_directions_progress_v1')");
+      expect(shell).toContain('_alloEvaluateObjectives(normalized.objectives, input.signals || {}, directionProgress)');
+    }
   });
 });

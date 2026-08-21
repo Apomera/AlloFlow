@@ -1369,6 +1369,20 @@ function AIBackendModalBody(props) {
     { id: "localai", title: "LocalAI", body: t("ai_backend.guided_connect_localai_body") || "Self-hosted server (advanced).", keyProps: { "data-help-key": "ai_backend_guided_connect_localai" }, link: "https://localai.io", steps: [t("ai_backend.guided_connect_localai_step1") || "Follow the LocalAI install guide at localai.io.", t("ai_backend.guided_connect_localai_step2") || "Start the server with at least one text model.", t("ai_backend.guided_connect_localai_step3") || "Press Test Connection below."] },
     { id: "custom", title: t("ai_backend.guided_connect_custom_title") || "Custom endpoint", body: t("ai_backend.guided_connect_custom_body") || "Any OpenAI-compatible server.", keyProps: { "data-help-key": "ai_backend_guided_connect_custom" }, link: "", steps: [t("ai_backend.guided_connect_custom_step1") || "Enter your server address below.", t("ai_backend.guided_connect_custom_step2") || "Add an API key only if your server requires one.", t("ai_backend.guided_connect_custom_step3") || "Press Test Connection below."] }
   ];
+  const forgetGeminiCloudServicesKey = () => {
+    const current = readAIBackendConfig();
+    const geminiIsPrimary = String(current.backend || "gemini") === "gemini";
+    const next = { ...current };
+    delete next.geminiApiKey;
+    if (geminiIsPrimary) delete next.apiKey;
+    writeAIBackendConfig(next, { preserveValidation: !geminiIsPrimary });
+    setConfigRevision((revision) => revision + 1);
+    const status = document.getElementById("ai-backend-status");
+    if (status) {
+      status.textContent = "Gemini cloud-services key forgotten on this device.";
+      status.className = "text-xs font-bold mt-2 text-emerald-800 bg-emerald-50 p-2.5 rounded-xl border border-emerald-100";
+    }
+  };
   const renderUrlField = () => /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5" }, t("ai_backend.server_url_label") || "Server URL"), /* @__PURE__ */ React.createElement(
     "input",
     {
@@ -1404,6 +1418,15 @@ function AIBackendModalBody(props) {
       },
       className: "w-full p-2.5 border-2 border-slate-200 rounded-xl focus:border-violet-500 focus:ring-4 focus:ring-violet-500/20 outline-none text-sm font-medium text-slate-700"
     }
+  ), !isStudentAiSetup && String(readAIBackendConfig().backend || "gemini") === "gemini" && /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      "data-help-key": "ai_backend_forget_gemini_key",
+      onClick: forgetGeminiCloudServicesKey,
+      className: "mt-2 min-h-11 rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-bold text-slate-700 hover:border-rose-300 hover:bg-rose-50 hover:text-rose-800"
+    },
+    "Forget saved Gemini key"
   ));
   const renderGeminiCloudServicesField = () => {
     const cfg = readAIBackendConfig();
@@ -1417,6 +1440,7 @@ function AIBackendModalBody(props) {
         type: "password",
         autoComplete: "off",
         placeholder: "Gemini API key...",
+        key: "gemini-cloud-services-key-" + configRevision,
         defaultValue: cfg.geminiApiKey || "",
         onChange: (event) => {
           const current = readAIBackendConfig();
@@ -1424,6 +1448,15 @@ function AIBackendModalBody(props) {
         },
         className: "w-full p-2.5 border-2 border-sky-200 rounded-xl focus:border-sky-600 focus:ring-4 focus:ring-sky-500/20 outline-none text-sm font-medium text-slate-700 bg-white"
       }
+    ), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        "data-help-key": "ai_backend_forget_gemini_services_key",
+        onClick: forgetGeminiCloudServicesKey,
+        className: "mt-2 min-h-11 rounded-lg border border-sky-300 bg-white px-3 py-2 text-xs font-bold text-sky-900 hover:border-rose-300 hover:bg-rose-50 hover:text-rose-800"
+      },
+      "Forget saved Gemini key"
     ), /* @__PURE__ */ React.createElement("p", { id: "ai-backend-gemini-services-help", className: "mt-1 text-[11px] leading-relaxed text-sky-900" }, "Used only for Gemini cloud features you explicitly select, including Gemini voice transcription. Your primary text AI remains ", GUIDED_BACKEND_LABELS[String(cfg.backend || "")] || String(cfg.backend || "the selected backend"), "."));
   };
   const renderEngineStrip = () => /* @__PURE__ */ React.createElement("div", { id: "ai-backend-engine-strip", style: { display: "none" }, "aria-live": "polite", ref: (node) => {

@@ -322,7 +322,7 @@ git add app/ 2>/dev/null || true
 # were never staged here — so doc_pipeline_module.js etc. lagged a deploy behind
 # on the CDN (only committed sporadically by other sessions). Stage them so the
 # served root module is fresh every deploy.
-git add doc_pipeline_module.js persona_ui_module.js gemini_api_module.js tts_module.js personas_module.js export_module.js brand_profile_editor_module.js 2>/dev/null || true
+git add doc_pipeline_module.js persona_ui_module.js gemini_api_module.js tts_module.js personas_module.js export_module.js brand_profile_editor_module.js view_assignment_center_module.js view_directions_result_module.js 2>/dev/null || true
 POST_COMMITTED=0
 if git diff --cached --quiet; then
   echo "  No post-deploy changes. (Hash refs were already current.)"

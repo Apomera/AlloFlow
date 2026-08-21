@@ -405,6 +405,16 @@ describe('Heat lab renders', () => {
     expect(SRC).toContain('w-full min-w-0 h-11 accent-orange-500');
   });
 
+  it('pairs the heating curve with a live, phase-aware thermal scale', () => {
+    const html = renderTool('heatLab', { _heatLab: { energyIn: 200 } });
+    expect(html).toContain('Live thermal state');
+    expect(html).toContain('Ice melting');
+    expect(html).toContain('Energy is changing the phase');
+    expect(SRC).toContain('curveScaleGradient');
+    expect(SRC).toContain('aria-label\': \'Live thermal state scale from minus 20 to 125 degrees Celsius.');
+    expect(SRC).toContain('prefersReducedMotion ? \'none\' : \'left 160ms ease-out\'');
+  });
+
   it('keeps chart data disclosures independent and explicitly connected', () => {
     const html = renderTool('heatLab', {});
     const collapsedDisclosures = html.match(/aria-expanded=.false./g);

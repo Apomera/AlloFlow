@@ -12,12 +12,12 @@
   "summary": {
     "totalItems": 1500,
     "totalIncorrectOptions": 4500,
-    "itemsWithWarnings": 419,
-    "incorrectOptionsWithWarnings": 1164,
-    "insufficientDetailOptions": 578,
-    "genericTemplateOptions": 534,
-    "choiceRestatementOptions": 132,
-    "fullKeyEchoOptions": 61,
+    "itemsWithWarnings": 391,
+    "incorrectOptionsWithWarnings": 1091,
+    "insufficientDetailOptions": 540,
+    "genericTemplateOptions": 501,
+    "choiceRestatementOptions": 116,
+    "fullKeyEchoOptions": 58,
     "currentWaveIncorrectOptions": 24,
     "currentWaveOptionsWithWarnings": 0,
     "previousWaveIncorrectOptions": 24,
@@ -494,17 +494,6 @@
       "score": 12
     },
     {
-      "id": "eppp-v3-intervention-053",
-      "domainId": "intervention",
-      "difficulty": "foundation",
-      "affectedIncorrectOptions": 3,
-      "codes": [
-        "generic-template",
-        "choice-restatement"
-      ],
-      "score": 12
-    },
-    {
       "id": "eppp-v3-intervention-056",
       "domainId": "intervention",
       "difficulty": "foundation",
@@ -541,17 +530,6 @@
       "id": "eppp-v3-lifespan-037",
       "domainId": "lifespan",
       "difficulty": "intermediate",
-      "affectedIncorrectOptions": 3,
-      "codes": [
-        "generic-template",
-        "choice-restatement"
-      ],
-      "score": 12
-    },
-    {
-      "id": "eppp-v3-lifespan-048",
-      "domainId": "lifespan",
-      "difficulty": "foundation",
       "affectedIncorrectOptions": 3,
       "codes": [
         "generic-template",
@@ -615,17 +593,6 @@
       "score": 12
     },
     {
-      "id": "eppp-v3-social-cultural-020",
-      "domainId": "social-cultural",
-      "difficulty": "foundation",
-      "affectedIncorrectOptions": 3,
-      "codes": [
-        "generic-template",
-        "choice-restatement"
-      ],
-      "score": 12
-    },
-    {
       "id": "eppp-v3-social-cultural-027",
       "domainId": "social-cultural",
       "difficulty": "foundation",
@@ -638,17 +605,6 @@
     },
     {
       "id": "eppp-v3-social-cultural-042",
-      "domainId": "social-cultural",
-      "difficulty": "foundation",
-      "affectedIncorrectOptions": 3,
-      "codes": [
-        "generic-template",
-        "choice-restatement"
-      ],
-      "score": 12
-    },
-    {
-      "id": "eppp-v3-social-cultural-043",
       "domainId": "social-cultural",
       "difficulty": "foundation",
       "affectedIncorrectOptions": 3,
@@ -738,18 +694,6 @@
     {
       "id": "eppp-b024-assessment-1",
       "domainId": "assessment",
-      "difficulty": "foundation",
-      "affectedIncorrectOptions": 3,
-      "codes": [
-        "full-key-echo",
-        "generic-template",
-        "choice-restatement"
-      ],
-      "score": 10
-    },
-    {
-      "id": "eppp-b026-biological-2",
-      "domainId": "biological",
       "difficulty": "foundation",
       "affectedIncorrectOptions": 3,
       "codes": [
@@ -892,28 +836,6 @@
       "score": 10
     },
     {
-      "id": "eppp-v3-research-015",
-      "domainId": "research",
-      "difficulty": "intermediate",
-      "affectedIncorrectOptions": 3,
-      "codes": [
-        "generic-template",
-        "choice-restatement"
-      ],
-      "score": 10
-    },
-    {
-      "id": "eppp-v3-research-030",
-      "domainId": "research",
-      "difficulty": "intermediate",
-      "affectedIncorrectOptions": 3,
-      "codes": [
-        "generic-template",
-        "choice-restatement"
-      ],
-      "score": 10
-    },
-    {
       "id": "eppp-v3-social-cultural-024",
       "domainId": "social-cultural",
       "difficulty": "foundation",
@@ -946,16 +868,6 @@
       "score": 9
     },
     {
-      "id": "eppp-b004-lifespan-2",
-      "domainId": "lifespan",
-      "difficulty": "foundation",
-      "affectedIncorrectOptions": 3,
-      "codes": [
-        "generic-template"
-      ],
-      "score": 9
-    },
-    {
       "id": "eppp-b005-assessment-2",
       "domainId": "assessment",
       "difficulty": "foundation",
@@ -978,16 +890,6 @@
     {
       "id": "eppp-b006-assessment-2",
       "domainId": "assessment",
-      "difficulty": "foundation",
-      "affectedIncorrectOptions": 3,
-      "codes": [
-        "generic-template"
-      ],
-      "score": 9
-    },
-    {
-      "id": "eppp-b006-lifespan-2",
-      "domainId": "lifespan",
       "difficulty": "foundation",
       "affectedIncorrectOptions": 3,
       "codes": [
@@ -1364,31 +1266,99 @@
         "generic-template"
       ],
       "score": 9
+    },
+    {
+      "id": "eppp-v3-cognitive-affective-020",
+      "domainId": "cognitive-affective",
+      "difficulty": "intermediate",
+      "affectedIncorrectOptions": 3,
+      "codes": [
+        "generic-template"
+      ],
+      "score": 9
+    },
+    {
+      "id": "eppp-v3-cognitive-affective-022",
+      "domainId": "cognitive-affective",
+      "difficulty": "foundation",
+      "affectedIncorrectOptions": 3,
+      "codes": [
+        "generic-template"
+      ],
+      "score": 9
+    },
+    {
+      "id": "eppp-v3-cognitive-affective-025",
+      "domainId": "cognitive-affective",
+      "difficulty": "foundation",
+      "affectedIncorrectOptions": 3,
+      "codes": [
+        "generic-template"
+      ],
+      "score": 9
+    },
+    {
+      "id": "eppp-v3-cognitive-affective-029",
+      "domainId": "cognitive-affective",
+      "difficulty": "intermediate",
+      "affectedIncorrectOptions": 3,
+      "codes": [
+        "generic-template"
+      ],
+      "score": 9
+    },
+    {
+      "id": "eppp-v3-cognitive-affective-031",
+      "domainId": "cognitive-affective",
+      "difficulty": "intermediate",
+      "affectedIncorrectOptions": 3,
+      "codes": [
+        "generic-template"
+      ],
+      "score": 9
+    },
+    {
+      "id": "eppp-v3-cognitive-affective-033",
+      "domainId": "cognitive-affective",
+      "difficulty": "intermediate",
+      "affectedIncorrectOptions": 3,
+      "codes": [
+        "generic-template"
+      ],
+      "score": 9
+    },
+    {
+      "id": "eppp-v3-cognitive-affective-056",
+      "domainId": "cognitive-affective",
+      "difficulty": "foundation",
+      "affectedIncorrectOptions": 3,
+      "codes": [
+        "generic-template"
+      ],
+      "score": 9
+    },
+    {
+      "id": "eppp-v3-cognitive-affective-057",
+      "domainId": "cognitive-affective",
+      "difficulty": "intermediate",
+      "affectedIncorrectOptions": 3,
+      "codes": [
+        "generic-template"
+      ],
+      "score": 9
+    },
+    {
+      "id": "eppp-v3-cognitive-affective-058",
+      "domainId": "cognitive-affective",
+      "difficulty": "intermediate",
+      "affectedIncorrectOptions": 3,
+      "codes": [
+        "generic-template"
+      ],
+      "score": 9
     }
   ],
   "optionFindings": [
-    {
-      "id": "eppp-pilot-biological-1",
-      "domainId": "biological",
-      "difficulty": "foundation",
-      "optionIndex": 0,
-      "feedbackLength": 95,
-      "feedbackWordCount": 14,
-      "codes": [
-        "insufficient-detail"
-      ]
-    },
-    {
-      "id": "eppp-pilot-biological-1",
-      "domainId": "biological",
-      "difficulty": "foundation",
-      "optionIndex": 3,
-      "feedbackLength": 97,
-      "feedbackWordCount": 15,
-      "codes": [
-        "insufficient-detail"
-      ]
-    },
     {
       "id": "eppp-pilot-cognitive-1",
       "domainId": "cognitive-affective",
@@ -1429,61 +1399,6 @@
       "optionIndex": 3,
       "feedbackLength": 106,
       "feedbackWordCount": 14,
-      "codes": [
-        "insufficient-detail"
-      ]
-    },
-    {
-      "id": "eppp-pilot-intervention-1",
-      "domainId": "intervention",
-      "difficulty": "foundation",
-      "optionIndex": 0,
-      "feedbackLength": 99,
-      "feedbackWordCount": 14,
-      "codes": [
-        "insufficient-detail"
-      ]
-    },
-    {
-      "id": "eppp-pilot-intervention-1",
-      "domainId": "intervention",
-      "difficulty": "foundation",
-      "optionIndex": 1,
-      "feedbackLength": 90,
-      "feedbackWordCount": 12,
-      "codes": [
-        "insufficient-detail"
-      ]
-    },
-    {
-      "id": "eppp-pilot-professional-1",
-      "domainId": "professional",
-      "difficulty": "foundation",
-      "optionIndex": 1,
-      "feedbackLength": 76,
-      "feedbackWordCount": 10,
-      "codes": [
-        "insufficient-detail"
-      ]
-    },
-    {
-      "id": "eppp-pilot-professional-1",
-      "domainId": "professional",
-      "difficulty": "foundation",
-      "optionIndex": 2,
-      "feedbackLength": 96,
-      "feedbackWordCount": 16,
-      "codes": [
-        "insufficient-detail"
-      ]
-    },
-    {
-      "id": "eppp-pilot-professional-1",
-      "domainId": "professional",
-      "difficulty": "foundation",
-      "optionIndex": 3,
-      "feedbackLength": 96,
-      "feedbackWordCount": 11,
       "codes": [
         "insufficient-detail"
       ]
@@ -1590,39 +1505,6 @@
       ]
     },
     {
-      "id": "eppp-b004-lifespan-2",
-      "domainId": "lifespan",
-      "difficulty": "foundation",
-      "optionIndex": 0,
-      "feedbackLength": 300,
-      "feedbackWordCount": 37,
-      "codes": [
-        "generic-template"
-      ]
-    },
-    {
-      "id": "eppp-b004-lifespan-2",
-      "domainId": "lifespan",
-      "difficulty": "foundation",
-      "optionIndex": 1,
-      "feedbackLength": 299,
-      "feedbackWordCount": 37,
-      "codes": [
-        "generic-template"
-      ]
-    },
-    {
-      "id": "eppp-b004-lifespan-2",
-      "domainId": "lifespan",
-      "difficulty": "foundation",
-      "optionIndex": 2,
-      "feedbackLength": 298,
-      "feedbackWordCount": 37,
-      "codes": [
-        "generic-template"
-      ]
-    },
-    {
       "id": "eppp-b005-assessment-2",
       "domainId": "assessment",
       "difficulty": "foundation",
@@ -1684,39 +1566,6 @@
       "optionIndex": 3,
       "feedbackLength": 374,
       "feedbackWordCount": 47,
-      "codes": [
-        "generic-template"
-      ]
-    },
-    {
-      "id": "eppp-b006-lifespan-2",
-      "domainId": "lifespan",
-      "difficulty": "foundation",
-      "optionIndex": 0,
-      "feedbackLength": 264,
-      "feedbackWordCount": 37,
-      "codes": [
-        "generic-template"
-      ]
-    },
-    {
-      "id": "eppp-b006-lifespan-2",
-      "domainId": "lifespan",
-      "difficulty": "foundation",
-      "optionIndex": 1,
-      "feedbackLength": 267,
-      "feedbackWordCount": 37,
-      "codes": [
-        "generic-template"
-      ]
-    },
-    {
-      "id": "eppp-b006-lifespan-2",
-      "domainId": "lifespan",
-      "difficulty": "foundation",
-      "optionIndex": 2,
-      "feedbackLength": 276,
-      "feedbackWordCount": 38,
       "codes": [
         "generic-template"
       ]
@@ -1817,61 +1666,6 @@
       "optionIndex": 2,
       "feedbackLength": 300,
       "feedbackWordCount": 38,
-      "codes": [
-        "generic-template"
-      ]
-    },
-    {
-      "id": "eppp-b008-professional-1",
-      "domainId": "professional",
-      "difficulty": "foundation",
-      "optionIndex": 0,
-      "feedbackLength": 83,
-      "feedbackWordCount": 16,
-      "codes": [
-        "insufficient-detail"
-      ]
-    },
-    {
-      "id": "eppp-b008-professional-1",
-      "domainId": "professional",
-      "difficulty": "foundation",
-      "optionIndex": 2,
-      "feedbackLength": 123,
-      "feedbackWordCount": 15,
-      "codes": [
-        "insufficient-detail"
-      ]
-    },
-    {
-      "id": "eppp-b008-professional-1",
-      "domainId": "professional",
-      "difficulty": "foundation",
-      "optionIndex": 3,
-      "feedbackLength": 83,
-      "feedbackWordCount": 14,
-      "codes": [
-        "insufficient-detail"
-      ]
-    },
-    {
-      "id": "eppp-b009-intervention-2",
-      "domainId": "intervention",
-      "difficulty": "foundation",
-      "optionIndex": 0,
-      "feedbackLength": 257,
-      "feedbackWordCount": 34,
-      "codes": [
-        "generic-template"
-      ]
-    },
-    {
-      "id": "eppp-b009-intervention-2",
-      "domainId": "intervention",
-      "difficulty": "foundation",
-      "optionIndex": 1,
-      "feedbackLength": 252,
-      "feedbackWordCount": 34,
       "codes": [
         "generic-template"
       ]
@@ -2140,41 +1934,6 @@
       "optionIndex": 3,
       "feedbackLength": 277,
       "feedbackWordCount": 36,
-      "codes": [
-        "full-key-echo"
-      ]
-    },
-    {
-      "id": "eppp-b026-biological-2",
-      "domainId": "biological",
-      "difficulty": "foundation",
-      "optionIndex": 0,
-      "feedbackLength": 390,
-      "feedbackWordCount": 50,
-      "codes": [
-        "full-key-echo"
-      ]
-    },
-    {
-      "id": "eppp-b026-biological-2",
-      "domainId": "biological",
-      "difficulty": "foundation",
-      "optionIndex": 2,
-      "feedbackLength": 435,
-      "feedbackWordCount": 56,
-      "codes": [
-        "generic-template",
-        "choice-restatement",
-        "full-key-echo"
-      ]
-    },
-    {
-      "id": "eppp-b026-biological-2",
-      "domainId": "biological",
-      "difficulty": "foundation",
-      "optionIndex": 3,
-      "feedbackLength": 409,
-      "feedbackWordCount": 53,
       "codes": [
         "full-key-echo"
       ]
@@ -3072,40 +2831,6 @@
       ]
     },
     {
-      "id": "eppp-v2-cognitive-affective-024",
-      "domainId": "cognitive-affective",
-      "difficulty": "intermediate",
-      "optionIndex": 0,
-      "feedbackLength": 92,
-      "feedbackWordCount": 12,
-      "codes": [
-        "insufficient-detail"
-      ]
-    },
-    {
-      "id": "eppp-v2-cognitive-affective-024",
-      "domainId": "cognitive-affective",
-      "difficulty": "intermediate",
-      "optionIndex": 2,
-      "feedbackLength": 69,
-      "feedbackWordCount": 7,
-      "codes": [
-        "insufficient-detail",
-        "choice-restatement"
-      ]
-    },
-    {
-      "id": "eppp-v2-cognitive-affective-024",
-      "domainId": "cognitive-affective",
-      "difficulty": "intermediate",
-      "optionIndex": 3,
-      "feedbackLength": 76,
-      "feedbackWordCount": 9,
-      "codes": [
-        "insufficient-detail"
-      ]
-    },
-    {
       "id": "eppp-v2-cognitive-affective-025",
       "domainId": "cognitive-affective",
       "difficulty": "foundation",
@@ -3612,39 +3337,6 @@
       ]
     },
     {
-      "id": "eppp-v2-cognitive-affective-061",
-      "domainId": "cognitive-affective",
-      "difficulty": "foundation",
-      "optionIndex": 0,
-      "feedbackLength": 41,
-      "feedbackWordCount": 6,
-      "codes": [
-        "insufficient-detail"
-      ]
-    },
-    {
-      "id": "eppp-v2-cognitive-affective-061",
-      "domainId": "cognitive-affective",
-      "difficulty": "foundation",
-      "optionIndex": 1,
-      "feedbackLength": 64,
-      "feedbackWordCount": 10,
-      "codes": [
-        "insufficient-detail"
-      ]
-    },
-    {
-      "id": "eppp-v2-cognitive-affective-061",
-      "domainId": "cognitive-affective",
-      "difficulty": "foundation",
-      "optionIndex": 3,
-      "feedbackLength": 66,
-      "feedbackWordCount": 9,
-      "codes": [
-        "insufficient-detail"
-      ]
-    },
-    {
       "id": "eppp-v2-cognitive-affective-062",
       "domainId": "cognitive-affective",
       "difficulty": "foundation",
@@ -3937,28 +3629,6 @@
       "optionIndex": 3,
       "feedbackLength": 105,
       "feedbackWordCount": 11,
-      "codes": [
-        "insufficient-detail"
-      ]
-    },
-    {
-      "id": "eppp-v2-social-cultural-038",
-      "domainId": "social-cultural",
-      "difficulty": "intermediate",
-      "optionIndex": 2,
-      "feedbackLength": 87,
-      "feedbackWordCount": 14,
-      "codes": [
-        "insufficient-detail"
-      ]
-    },
-    {
-      "id": "eppp-v2-social-cultural-038",
-      "domainId": "social-cultural",
-      "difficulty": "intermediate",
-      "optionIndex": 3,
-      "feedbackLength": 93,
-      "feedbackWordCount": 12,
       "codes": [
         "insufficient-detail"
       ]
@@ -4838,39 +4508,6 @@
       ]
     },
     {
-      "id": "eppp-v2-lifespan-049",
-      "domainId": "lifespan",
-      "difficulty": "foundation",
-      "optionIndex": 0,
-      "feedbackLength": 82,
-      "feedbackWordCount": 14,
-      "codes": [
-        "insufficient-detail"
-      ]
-    },
-    {
-      "id": "eppp-v2-lifespan-049",
-      "domainId": "lifespan",
-      "difficulty": "foundation",
-      "optionIndex": 2,
-      "feedbackLength": 32,
-      "feedbackWordCount": 5,
-      "codes": [
-        "insufficient-detail"
-      ]
-    },
-    {
-      "id": "eppp-v2-lifespan-049",
-      "domainId": "lifespan",
-      "difficulty": "foundation",
-      "optionIndex": 3,
-      "feedbackLength": 95,
-      "feedbackWordCount": 12,
-      "codes": [
-        "insufficient-detail"
-      ]
-    },
-    {
       "id": "eppp-v2-lifespan-051",
       "domainId": "lifespan",
       "difficulty": "intermediate",
@@ -5620,39 +5257,6 @@
       ]
     },
     {
-      "id": "eppp-v2-assessment-053",
-      "domainId": "assessment",
-      "difficulty": "intermediate",
-      "optionIndex": 0,
-      "feedbackLength": 57,
-      "feedbackWordCount": 8,
-      "codes": [
-        "insufficient-detail"
-      ]
-    },
-    {
-      "id": "eppp-v2-assessment-053",
-      "domainId": "assessment",
-      "difficulty": "intermediate",
-      "optionIndex": 2,
-      "feedbackLength": 56,
-      "feedbackWordCount": 7,
-      "codes": [
-        "insufficient-detail"
-      ]
-    },
-    {
-      "id": "eppp-v2-assessment-053",
-      "domainId": "assessment",
-      "difficulty": "intermediate",
-      "optionIndex": 3,
-      "feedbackLength": 70,
-      "feedbackWordCount": 8,
-      "codes": [
-        "insufficient-detail"
-      ]
-    },
-    {
       "id": "eppp-v2-assessment-054",
       "domainId": "assessment",
       "difficulty": "foundation",
@@ -5967,39 +5571,6 @@
       "optionIndex": 2,
       "feedbackLength": 124,
       "feedbackWordCount": 14,
-      "codes": [
-        "insufficient-detail"
-      ]
-    },
-    {
-      "id": "eppp-v2-intervention-004",
-      "domainId": "intervention",
-      "difficulty": "foundation",
-      "optionIndex": 0,
-      "feedbackLength": 96,
-      "feedbackWordCount": 11,
-      "codes": [
-        "insufficient-detail"
-      ]
-    },
-    {
-      "id": "eppp-v2-intervention-004",
-      "domainId": "intervention",
-      "difficulty": "foundation",
-      "optionIndex": 2,
-      "feedbackLength": 112,
-      "feedbackWordCount": 15,
-      "codes": [
-        "insufficient-detail"
-      ]
-    },
-    {
-      "id": "eppp-v2-intervention-004",
-      "domainId": "intervention",
-      "difficulty": "foundation",
-      "optionIndex": 3,
-      "feedbackLength": 76,
-      "feedbackWordCount": 12,
       "codes": [
         "insufficient-detail"
       ]
@@ -7074,39 +6645,6 @@
       ]
     },
     {
-      "id": "eppp-v2-professional-038",
-      "domainId": "professional",
-      "difficulty": "foundation",
-      "optionIndex": 0,
-      "feedbackLength": 51,
-      "feedbackWordCount": 5,
-      "codes": [
-        "insufficient-detail"
-      ]
-    },
-    {
-      "id": "eppp-v2-professional-038",
-      "domainId": "professional",
-      "difficulty": "foundation",
-      "optionIndex": 1,
-      "feedbackLength": 61,
-      "feedbackWordCount": 7,
-      "codes": [
-        "insufficient-detail"
-      ]
-    },
-    {
-      "id": "eppp-v2-professional-038",
-      "domainId": "professional",
-      "difficulty": "foundation",
-      "optionIndex": 2,
-      "feedbackLength": 80,
-      "feedbackWordCount": 11,
-      "codes": [
-        "insufficient-detail"
-      ]
-    },
-    {
       "id": "eppp-v2-professional-044",
       "domainId": "professional",
       "difficulty": "foundation",
@@ -7481,28 +7019,6 @@
       ]
     },
     {
-      "id": "eppp-v2-research-031",
-      "domainId": "research",
-      "difficulty": "intermediate",
-      "optionIndex": 0,
-      "feedbackLength": 103,
-      "feedbackWordCount": 13,
-      "codes": [
-        "insufficient-detail"
-      ]
-    },
-    {
-      "id": "eppp-v2-research-031",
-      "domainId": "research",
-      "difficulty": "intermediate",
-      "optionIndex": 2,
-      "feedbackLength": 99,
-      "feedbackWordCount": 15,
-      "codes": [
-        "insufficient-detail"
-      ]
-    },
-    {
       "id": "eppp-v2-research-032",
       "domainId": "research",
       "difficulty": "intermediate",
@@ -7531,28 +7047,6 @@
       "optionIndex": 3,
       "feedbackLength": 92,
       "feedbackWordCount": 13,
-      "codes": [
-        "insufficient-detail"
-      ]
-    },
-    {
-      "id": "eppp-v2-research-033",
-      "domainId": "research",
-      "difficulty": "intermediate",
-      "optionIndex": 0,
-      "feedbackLength": 111,
-      "feedbackWordCount": 15,
-      "codes": [
-        "insufficient-detail"
-      ]
-    },
-    {
-      "id": "eppp-v2-research-033",
-      "domainId": "research",
-      "difficulty": "intermediate",
-      "optionIndex": 3,
-      "feedbackLength": 118,
-      "feedbackWordCount": 14,
       "codes": [
         "insufficient-detail"
       ]
@@ -7624,28 +7118,6 @@
       ]
     },
     {
-      "id": "eppp-v2-professional-075",
-      "domainId": "professional",
-      "difficulty": "intermediate",
-      "optionIndex": 3,
-      "feedbackLength": 94,
-      "feedbackWordCount": 12,
-      "codes": [
-        "insufficient-detail"
-      ]
-    },
-    {
-      "id": "eppp-v2-professional-077",
-      "domainId": "professional",
-      "difficulty": "intermediate",
-      "optionIndex": 0,
-      "feedbackLength": 92,
-      "feedbackWordCount": 13,
-      "codes": [
-        "insufficient-detail"
-      ]
-    },
-    {
       "id": "eppp-v2-professional-079",
       "domainId": "professional",
       "difficulty": "intermediate",
@@ -7706,28 +7178,6 @@
       "difficulty": "intermediate",
       "optionIndex": 0,
       "feedbackLength": 104,
-      "feedbackWordCount": 13,
-      "codes": [
-        "insufficient-detail"
-      ]
-    },
-    {
-      "id": "eppp-v2-social-cultural-054",
-      "domainId": "social-cultural",
-      "difficulty": "intermediate",
-      "optionIndex": 0,
-      "feedbackLength": 101,
-      "feedbackWordCount": 13,
-      "codes": [
-        "insufficient-detail"
-      ]
-    },
-    {
-      "id": "eppp-v2-social-cultural-054",
-      "domainId": "social-cultural",
-      "difficulty": "intermediate",
-      "optionIndex": 3,
-      "feedbackLength": 98,
       "feedbackWordCount": 13,
       "codes": [
         "insufficient-detail"
@@ -9384,75 +8834,6 @@
       ]
     },
     {
-      "id": "eppp-v3-social-cultural-019",
-      "domainId": "social-cultural",
-      "difficulty": "intermediate",
-      "optionIndex": 0,
-      "feedbackLength": 343,
-      "feedbackWordCount": 43,
-      "codes": [
-        "generic-template"
-      ]
-    },
-    {
-      "id": "eppp-v3-social-cultural-019",
-      "domainId": "social-cultural",
-      "difficulty": "intermediate",
-      "optionIndex": 1,
-      "feedbackLength": 334,
-      "feedbackWordCount": 42,
-      "codes": [
-        "generic-template"
-      ]
-    },
-    {
-      "id": "eppp-v3-social-cultural-019",
-      "domainId": "social-cultural",
-      "difficulty": "intermediate",
-      "optionIndex": 3,
-      "feedbackLength": 339,
-      "feedbackWordCount": 42,
-      "codes": [
-        "generic-template"
-      ]
-    },
-    {
-      "id": "eppp-v3-social-cultural-020",
-      "domainId": "social-cultural",
-      "difficulty": "foundation",
-      "optionIndex": 0,
-      "feedbackLength": 158,
-      "feedbackWordCount": 20,
-      "codes": [
-        "generic-template",
-        "choice-restatement"
-      ]
-    },
-    {
-      "id": "eppp-v3-social-cultural-020",
-      "domainId": "social-cultural",
-      "difficulty": "foundation",
-      "optionIndex": 1,
-      "feedbackLength": 147,
-      "feedbackWordCount": 20,
-      "codes": [
-        "generic-template",
-        "choice-restatement"
-      ]
-    },
-    {
-      "id": "eppp-v3-social-cultural-020",
-      "domainId": "social-cultural",
-      "difficulty": "foundation",
-      "optionIndex": 2,
-      "feedbackLength": 147,
-      "feedbackWordCount": 16,
-      "codes": [
-        "generic-template",
-        "choice-restatement"
-      ]
-    },
-    {
       "id": "eppp-v3-social-cultural-024",
       "domainId": "social-cultural",
       "difficulty": "foundation",
@@ -9520,39 +8901,6 @@
       "codes": [
         "generic-template",
         "choice-restatement"
-      ]
-    },
-    {
-      "id": "eppp-v3-social-cultural-028",
-      "domainId": "social-cultural",
-      "difficulty": "intermediate",
-      "optionIndex": 1,
-      "feedbackLength": 247,
-      "feedbackWordCount": 31,
-      "codes": [
-        "generic-template"
-      ]
-    },
-    {
-      "id": "eppp-v3-social-cultural-028",
-      "domainId": "social-cultural",
-      "difficulty": "intermediate",
-      "optionIndex": 2,
-      "feedbackLength": 242,
-      "feedbackWordCount": 31,
-      "codes": [
-        "generic-template"
-      ]
-    },
-    {
-      "id": "eppp-v3-social-cultural-028",
-      "domainId": "social-cultural",
-      "difficulty": "intermediate",
-      "optionIndex": 3,
-      "feedbackLength": 251,
-      "feedbackWordCount": 32,
-      "codes": [
-        "generic-template"
       ]
     },
     {
@@ -9653,42 +9001,6 @@
       "optionIndex": 2,
       "feedbackLength": 172,
       "feedbackWordCount": 23,
-      "codes": [
-        "generic-template",
-        "choice-restatement"
-      ]
-    },
-    {
-      "id": "eppp-v3-social-cultural-043",
-      "domainId": "social-cultural",
-      "difficulty": "foundation",
-      "optionIndex": 1,
-      "feedbackLength": 186,
-      "feedbackWordCount": 23,
-      "codes": [
-        "generic-template",
-        "choice-restatement"
-      ]
-    },
-    {
-      "id": "eppp-v3-social-cultural-043",
-      "domainId": "social-cultural",
-      "difficulty": "foundation",
-      "optionIndex": 2,
-      "feedbackLength": 193,
-      "feedbackWordCount": 24,
-      "codes": [
-        "generic-template",
-        "choice-restatement"
-      ]
-    },
-    {
-      "id": "eppp-v3-social-cultural-043",
-      "domainId": "social-cultural",
-      "difficulty": "foundation",
-      "optionIndex": 3,
-      "feedbackLength": 190,
-      "feedbackWordCount": 26,
       "codes": [
         "generic-template",
         "choice-restatement"
@@ -10627,42 +9939,6 @@
       "feedbackWordCount": 23,
       "codes": [
         "full-key-echo"
-      ]
-    },
-    {
-      "id": "eppp-v3-lifespan-048",
-      "domainId": "lifespan",
-      "difficulty": "foundation",
-      "optionIndex": 0,
-      "feedbackLength": 174,
-      "feedbackWordCount": 23,
-      "codes": [
-        "generic-template",
-        "choice-restatement"
-      ]
-    },
-    {
-      "id": "eppp-v3-lifespan-048",
-      "domainId": "lifespan",
-      "difficulty": "foundation",
-      "optionIndex": 2,
-      "feedbackLength": 174,
-      "feedbackWordCount": 23,
-      "codes": [
-        "generic-template",
-        "choice-restatement"
-      ]
-    },
-    {
-      "id": "eppp-v3-lifespan-048",
-      "domainId": "lifespan",
-      "difficulty": "foundation",
-      "optionIndex": 3,
-      "feedbackLength": 167,
-      "feedbackWordCount": 23,
-      "codes": [
-        "generic-template",
-        "choice-restatement"
       ]
     },
     {
@@ -12548,42 +11824,6 @@
       ]
     },
     {
-      "id": "eppp-v3-intervention-053",
-      "domainId": "intervention",
-      "difficulty": "foundation",
-      "optionIndex": 0,
-      "feedbackLength": 147,
-      "feedbackWordCount": 19,
-      "codes": [
-        "generic-template",
-        "choice-restatement"
-      ]
-    },
-    {
-      "id": "eppp-v3-intervention-053",
-      "domainId": "intervention",
-      "difficulty": "foundation",
-      "optionIndex": 2,
-      "feedbackLength": 170,
-      "feedbackWordCount": 22,
-      "codes": [
-        "generic-template",
-        "choice-restatement"
-      ]
-    },
-    {
-      "id": "eppp-v3-intervention-053",
-      "domainId": "intervention",
-      "difficulty": "foundation",
-      "optionIndex": 3,
-      "feedbackLength": 184,
-      "feedbackWordCount": 23,
-      "codes": [
-        "generic-template",
-        "choice-restatement"
-      ]
-    },
-    {
       "id": "eppp-v3-intervention-055",
       "domainId": "intervention",
       "difficulty": "foundation",
@@ -12920,40 +12160,6 @@
       ]
     },
     {
-      "id": "eppp-v3-research-015",
-      "domainId": "research",
-      "difficulty": "intermediate",
-      "optionIndex": 0,
-      "feedbackLength": 129,
-      "feedbackWordCount": 17,
-      "codes": [
-        "generic-template"
-      ]
-    },
-    {
-      "id": "eppp-v3-research-015",
-      "domainId": "research",
-      "difficulty": "intermediate",
-      "optionIndex": 2,
-      "feedbackLength": 154,
-      "feedbackWordCount": 26,
-      "codes": [
-        "generic-template",
-        "choice-restatement"
-      ]
-    },
-    {
-      "id": "eppp-v3-research-015",
-      "domainId": "research",
-      "difficulty": "intermediate",
-      "optionIndex": 3,
-      "feedbackLength": 126,
-      "feedbackWordCount": 16,
-      "codes": [
-        "generic-template"
-      ]
-    },
-    {
       "id": "eppp-v3-research-017",
       "domainId": "research",
       "difficulty": "intermediate",
@@ -13114,40 +12320,6 @@
       "optionIndex": 3,
       "feedbackLength": 388,
       "feedbackWordCount": 52,
-      "codes": [
-        "generic-template"
-      ]
-    },
-    {
-      "id": "eppp-v3-research-030",
-      "domainId": "research",
-      "difficulty": "intermediate",
-      "optionIndex": 0,
-      "feedbackLength": 326,
-      "feedbackWordCount": 44,
-      "codes": [
-        "generic-template"
-      ]
-    },
-    {
-      "id": "eppp-v3-research-030",
-      "domainId": "research",
-      "difficulty": "intermediate",
-      "optionIndex": 1,
-      "feedbackLength": 340,
-      "feedbackWordCount": 45,
-      "codes": [
-        "generic-template",
-        "choice-restatement"
-      ]
-    },
-    {
-      "id": "eppp-v3-research-030",
-      "domainId": "research",
-      "difficulty": "intermediate",
-      "optionIndex": 3,
-      "feedbackLength": 321,
-      "feedbackWordCount": 44,
       "codes": [
         "generic-template"
       ]

@@ -125,7 +125,7 @@ function checkReferences(records, asset, minimum = 2) {
 
 requireCondition(
   pack.schemaVersion === 1 && pack.itemSchemaVersion === 2 && pack.id === 'ap-biology-foundation-pilot' &&
-    pack.version === '0.8.0-internal-preview' && pack.status === 'preview' && pack.visibility === 'internal',
+    pack.version === '1.0.0-internal-preview' && pack.status === 'preview' && pack.visibility === 'internal',
   'asset-identity', 'Pack schema, identity, version, or internal-preview state is invalid.'
 );
 requireCondition(
@@ -172,8 +172,8 @@ requireCondition(
 for (const unitId of expectedUnits) {
   const domain = domains.find((candidate) => candidate.id === unitId);
   requireCondition(
-    domain && Number(domain.itemCount) >= 48 && Number(domain.officialWeightMin) > 0 && Number(domain.officialWeightMax) > Number(domain.officialWeightMin),
-    'blueprint-and-unit-coverage', `${unitId} must declare an official weight range and at least forty-eight pilot items.`, { recordId: unitId }
+    domain && Number(domain.itemCount) >= 60 && Number(domain.officialWeightMin) > 0 && Number(domain.officialWeightMax) > Number(domain.officialWeightMin),
+    'blueprint-and-unit-coverage', `${unitId} must declare an official weight range and at least sixty pilot items.`, { recordId: unitId }
   );
 }
 requireCondition(
@@ -193,16 +193,16 @@ const itemIds = new Set();
 const answerCounts = countBy(items, (item) => item.answerIndex);
 const unitCounts = countBy(items, (item) => item.domainId);
 const practiceCounts = countBy(items, (item) => item.practiceId);
-requireCondition(items.length === 400 && new Set(items.map((item) => item.id)).size === 400, 'asset-identity', 'The AP Biology foundation pilot must contain exactly 400 uniquely identified items.');
-requireCondition(expectedUnits.every((unit) => unitCounts[unit] >= 48), 'blueprint-and-unit-coverage', 'Every current AP Biology unit must receive at least forty-eight items.');
+requireCondition(items.length === 500 && new Set(items.map((item) => item.id)).size === 500, 'asset-identity', 'The AP Biology foundation pilot must contain exactly 500 uniquely identified items.');
+requireCondition(expectedUnits.every((unit) => unitCounts[unit] >= 60), 'blueprint-and-unit-coverage', 'Every current AP Biology unit must receive at least sixty items.');
 requireCondition(expectedPractices.every((practice) => practiceCounts[practice] > 0), 'blueprint-and-unit-coverage', 'All six AP Biology science practices must be represented.');
 requireCondition(
-  answerCounts[0] === 100 && answerCounts[1] === 100 && answerCounts[2] === 100 && answerCounts[3] === 100,
-  'one-best-answer', 'Answer keys must be intentionally balanced at 100/100/100/100 across A-D.'
+  answerCounts[0] === 125 && answerCounts[1] === 125 && answerCounts[2] === 125 && answerCounts[3] === 125,
+  'one-best-answer', 'Answer keys must be intentionally balanced at 125/125/125/125 across A-D.'
 );
 requireCondition(
-  Array.isArray(pack.sections) && pack.sections.length === 80 && pack.sections.every((section) => Array.isArray(section.itemIds) && section.itemIds.length === 5),
-  'asset-identity', 'The 400-item pilot must expose eighty complete five-item internal banks.'
+  Array.isArray(pack.sections) && pack.sections.length === 100 && pack.sections.every((section) => Array.isArray(section.itemIds) && section.itemIds.length === 5),
+  'asset-identity', 'The 500-item pilot must expose one hundred complete five-item internal banks.'
 );
 
 const prompts = [];

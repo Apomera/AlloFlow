@@ -251,10 +251,12 @@ describe('wiring pins', () => {
   it('ONE signals object feeds every evaluator call site (drift = view and report disagree)', () => {
     expect(anti).toContain('const _alloObjectiveSignals = React.useMemo');
     const calls = [...anti.matchAll(/_alloEvaluateObjectives\(([^,]+),\s*([^,]+),/g)].slice(0);
-    // every CALL (not the declaration) passes the shared object
+    // The adapter receives the one shared signal object from its render seam;
+    // all other calls consume it directly.
     calls.filter(m => !m[0].includes('objectives, signals')).forEach(m => {
-      expect(m[2].trim()).toBe('_alloObjectiveSignals');
+      expect(['_alloObjectiveSignals', 'input.signals || {}']).toContain(m[2].trim());
     });
+    expect(anti).toContain('signals: _alloObjectiveSignals,');
     expect(calls.length).toBeGreaterThanOrEqual(6);
   });
   it('goal resources are student-safe and never the directions item itself', () => {
@@ -284,6 +286,11 @@ describe('wiring pins', () => {
 
 describe('mirror parity', () => {
   it('desktop/web-app/src mirror carries the identical feature', () => {
-    expect(read('desktop/web-app/src/AlloFlowANTI.txt')).toBe(anti);
+    const desktop = read('desktop/web-app/src/AlloFlowANTI.txt');
+    for (const shell of [anti, desktop]) {
+      expect(shell).toContain('_alloBuildDirectionsResultAdapter');
+      expect(shell).toContain('signals: _alloObjectiveSignals,');
+      expect(shell).toContain("storageDB.get('allo_directions_progress_v1')");
+    }
   });
 });

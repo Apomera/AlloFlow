@@ -1,0 +1,714 @@
+/**
+ * AlloFlow Assignment Center / Share & Collect view.
+ *
+ * This module is intentionally presentation-only. The host supplies a
+ * sanitized activity draft, sanitized row view-models, and callback closures.
+ * Raw assignment records, private link material, mailbox configuration,
+ * persistence, and remote operations stay in AlloFlowContent.
+ */
+
+const assignmentCenterNoop = () => undefined;
+
+function assignmentCenterText(t, key, fallback, params) {
+  if (typeof t === 'function') {
+    try {
+      const value = t(key, params);
+      if (value) return value;
+    } catch (_) {}
+  }
+  return fallback;
+}
+
+function useFocusTrap(dialogRef, isOpen, onEscape) {
+  const onEscapeRef = React.useRef(onEscape);
+  onEscapeRef.current = onEscape;
+
+  React.useEffect(() => {
+    if (!isOpen) return undefined;
+    const dialog = dialogRef.current;
+    if (!dialog) return undefined;
+
+    const previousFocus = document.activeElement;
+    const getFocusable = () => Array.from(dialog.querySelectorAll([
+      'button:not([disabled])',
+      'input:not([disabled])',
+      'select:not([disabled])',
+      'textarea:not([disabled])',
+      '[href]',
+      '[tabindex]:not([tabindex="-1"])',
+    ].join(',')));
+    const focusTimer = setTimeout(() => {
+      try { (getFocusable()[0] || dialog).focus(); } catch (_) {}
+    }, 0);
+    const onKeyDown = event => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        if (typeof onEscapeRef.current === 'function') onEscapeRef.current();
+        return;
+      }
+      if (event.key !== 'Tab') return;
+      const focusable = getFocusable();
+      if (!focusable.length) {
+        event.preventDefault();
+        dialog.focus();
+        return;
+      }
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+
+    dialog.addEventListener('keydown', onKeyDown);
+    return () => {
+      clearTimeout(focusTimer);
+      dialog.removeEventListener('keydown', onKeyDown);
+      try {
+        if (previousFocus && typeof previousFocus.focus === 'function') previousFocus.focus();
+      } catch (_) {}
+    };
+  }, [dialogRef, isOpen]);
+}
+
+function AssignmentCenterModal({
+  t,
+  isOpen = true,
+  activityEnabled = false,
+  activityType = 'word_cloud',
+  activityPrompt = '',
+  activityOptionsText = '',
+  activityIdentityMode = '',
+  activityAllowMaybe = true,
+  activityMultiSelect = true,
+  activityMaxPerPerson = 1,
+  surveyItems = [],
+  surveyInfo = '',
+  showSurveyPairingGuidance = false,
+  pollAsk = '',
+  pollSuggestionBusy = false,
+  surveyHostingAvailable = true,
+  hostedMutationAvailable = true,
+  showHostedMutationUpgradeNotice = false,
+  mailboxVersion = 0,
+  homeworkExpiryDays = 7,
+  // rowViews must contain display-only fields plus callback closures. In
+  // particular, callers must not pass the underlying share record or URL.
+  rowViews = [],
+  visibleRowViews,
+  filter = 'all',
+  refreshing = false,
+  onClose = assignmentCenterNoop,
+  onActivityChange = assignmentCenterNoop,
+  onSurveyItemChange = assignmentCenterNoop,
+  onSurveyItemRemove = assignmentCenterNoop,
+  onSurveyItemAdd = assignmentCenterNoop,
+  onPollAskChange = assignmentCenterNoop,
+  onSuggestPollTimes = assignmentCenterNoop,
+  onCreateLink = assignmentCenterNoop,
+  onFilterChange = assignmentCenterNoop,
+  onRefresh = assignmentCenterNoop,
+  onExportCsv = assignmentCenterNoop,
+}) {
+  const dialogRef = React.useRef(null);
+  const backdropPressRef = React.useRef(false);
+  useFocusTrap(dialogRef, isOpen, onClose);
+
+  if (!isOpen) return null;
+
+  const XIcon = (window.AlloIcons && window.AlloIcons.X) || window.X || (() => null);
+  const safeRows = Array.isArray(rowViews) ? rowViews : [];
+  const safeVisibleRows = Array.isArray(visibleRowViews) ? visibleRowViews : safeRows;
+  const safeSurveyItems = Array.isArray(surveyItems) ? surveyItems : [];
+  const activeCount = safeRows.filter(row => row && row.lifecycle === 'active').length;
+  const awaitingCount = safeRows.reduce((sum, row) => sum + Math.max(0, Number(row && row.pendingCount) || 0), 0);
+  const responseCount = safeRows.reduce((sum, row) => sum + Math.max(0, Number(row && row.participantCount) || 0), 0);
+  const closedCount = safeRows.filter(row => row && row.lifecycle !== 'active').length;
+  const createDisabled = activityType === 'survey' && (
+    !safeSurveyItems.some(item => String((item && item.text) || '').trim())
+    || !activityIdentityMode
+    || !surveyHostingAvailable
+  );
+  const tx = (key, fallback, params) => assignmentCenterText(t, key, fallback, params);
+
+  const handleActivityTypeChange = event => {
+    const nextType = event.target.value;
+    const prompts = {
+      word_cloud: tx('share_collect.prompt_word_cloud', 'What word or short phrase best captures your thinking?'),
+      rating: tx('share_collect.prompt_rating', 'How would you rate your understanding?'),
+      availability: tx('share_collect.prompt_availability', 'Which of these times could you make?'),
+      signup: tx('share_collect.prompt_signup', 'Choose a time that works for you'),
+      survey: tx('share_collect.prompt_survey', 'How did this week go?'),
+    };
+    onActivityChange({
+      enabled: Boolean(nextType),
+      type: nextType || activityType,
+      prompt: nextType ? (prompts[nextType] || activityPrompt) : activityPrompt,
+    });
+  };
+
+  return (
+    <div
+      className="fixed inset-0 z-[151] flex items-center justify-center bg-slate-950/80 p-4 no-print"
+      role="presentation"
+      onPointerDown={event => { backdropPressRef.current = event.target === event.currentTarget; }}
+      onClick={event => {
+        if (event.target !== event.currentTarget) return;
+        const beganOnBackdrop = backdropPressRef.current;
+        backdropPressRef.current = false;
+        if (beganOnBackdrop) onClose();
+      }}
+    >
+      <div
+        ref={dialogRef}
+        tabIndex={-1}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="assignment-control-center-title"
+        className="relative max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-2xl bg-white p-5 shadow-2xl"
+        onClick={event => event.stopPropagation()}
+      >
+        <button
+          type="button"
+          onClick={onClose}
+          className="absolute right-3 top-3 rounded-full p-2 text-slate-600 hover:bg-slate-100"
+          aria-label={tx('share_collect.close_aria', 'Close Share & Collect')}
+        >
+          <XIcon size={20} />
+        </button>
+
+        <div className="pr-12">
+          <h2 id="assignment-control-center-title" className="text-xl font-black text-slate-900">
+            {tx('share_collect.title', 'Share & Collect')}
+          </h2>
+          <p className="mt-1 text-xs text-slate-600">
+            {tx('share_collect.subtitle', 'Set up a poll, sign-up sheet or class activity, share it by link or QR, and watch the responses arrive. Everything here is saved on this teacher device.')}
+          </p>
+
+          <section className="mt-4 rounded-xl border border-sky-200 bg-sky-50 p-4" aria-labelledby="activity-setup-title">
+            <h3 id="activity-setup-title" className="text-sm font-black text-slate-900">
+              {tx('share_collect.setup_title', 'Add a shared activity')}
+            </h3>
+            <p className="mt-1 text-[11px] leading-relaxed text-slate-600">
+              {tx('share_collect.setup_sub', 'Attached to the next assignment link or QR code you create. People answer without an account.')}
+            </p>
+
+            <label className="mt-3 block text-[11px] font-black text-slate-700">
+              {tx('share_collect.activity_label', 'Activity')}
+              <select
+                value={activityEnabled ? activityType : ''}
+                onChange={handleActivityTypeChange}
+                className="mt-1 w-full rounded-md border border-sky-300 bg-white px-2 py-2 text-sm font-semibold text-slate-800"
+              >
+                <option value="">{tx('share_collect.type_none', 'None')}</option>
+                <option value="word_cloud">{tx('share_collect.type_word_cloud', 'Word Cloud')}</option>
+                <option value="rating">{tx('share_collect.type_rating', 'Rating scale (not scored)')}</option>
+                <option value="availability">{tx('share_collect.type_availability', 'Availability poll (find a time)')}</option>
+                <option value="signup">{tx('share_collect.type_signup', 'Sign-up sheet (claim a slot)')}</option>
+                <option value="survey">{tx('share_collect.type_survey', 'Survey (multiple questions)')}</option>
+              </select>
+            </label>
+
+            {activityEnabled && (
+              <>
+                <label className="mt-3 block text-[11px] font-black text-slate-700">
+                  {tx('share_collect.prompt_label', 'What people see')}
+                  <input
+                    type="text"
+                    value={String(activityPrompt || '')}
+                    onChange={event => onActivityChange({ prompt: event.target.value.slice(0, 240) })}
+                    className="mt-1 w-full rounded-md border border-sky-300 bg-white px-2 py-2 text-sm font-semibold text-slate-800"
+                  />
+                </label>
+
+                {(activityType === 'availability' || activityType === 'signup') && (
+                  <>
+                    <div className="mt-3 rounded-lg border border-sky-200 bg-white p-3">
+                      <label className="block text-[11px] font-black text-slate-700">
+                        {tx('share_collect.window_label', 'Describe when it needs to happen (optional)')}
+                        <input
+                          type="text"
+                          value={pollAsk}
+                          onChange={event => onPollAskChange(event.target.value.slice(0, 160))}
+                          placeholder={tx('share_collect.window_placeholder', '45 minutes next week, weekday afternoons')}
+                          className="mt-1 w-full rounded-md border border-sky-300 px-2 py-2 text-sm font-semibold text-slate-800"
+                        />
+                      </label>
+                      <button
+                        type="button"
+                        onClick={onSuggestPollTimes}
+                        disabled={pollSuggestionBusy || !String(pollAsk || '').trim()}
+                        className="mt-2 rounded-md bg-sky-700 px-3 py-1.5 text-xs font-black text-white disabled:opacity-50"
+                      >
+                        {pollSuggestionBusy ? tx('share_collect.thinking', 'Thinking...') : tx('share_collect.suggest_options', 'Suggest options')}
+                      </button>
+                      <p className="mt-1 text-[10px] leading-relaxed text-slate-600">
+                        {tx('share_collect.suggest_note', 'Suggestions land in the box below for you to edit. Nothing is shared until you create the link.')}
+                      </p>
+                    </div>
+                    <label className="mt-3 block text-[11px] font-black text-slate-700">
+                      {tx('share_collect.options_label', 'Options, one per line')}
+                      <textarea
+                        value={String(activityOptionsText || '')}
+                        onChange={event => onActivityChange({ optionsText: event.target.value })}
+                        rows={6}
+                        placeholder={tx('share_collect.options_placeholder', 'Tue Mar 4, 3:15pm\nWed Mar 5, 3:15pm\nThu Mar 6, 3:15pm')}
+                        className="mt-1 w-full rounded-md border border-sky-300 bg-white px-2 py-2 text-sm font-semibold text-slate-800"
+                      />
+                    </label>
+                    <p className="mt-1 text-[10px] leading-relaxed text-slate-600">
+                      {tx('share_collect.options_note', 'Write times however you say them. AlloFlow does not convert time zones, so put the zone in the label if people are in more than one.')}
+                      {activityType === 'signup' && tx('share_collect.signup_multiplier_note', ' Add "x 2" at the end of a line to give that slot two places.')}
+                    </p>
+                    <label className="mt-3 block text-[11px] font-black text-slate-700">
+                      {tx('share_collect.identity_voting_label', 'Who is voting')}
+                      <select
+                        value={String(activityIdentityMode || '')}
+                        onChange={event => onActivityChange({ identityMode: event.target.value })}
+                        className="mt-1 w-full rounded-md border border-sky-300 bg-white px-2 py-2 text-sm font-semibold text-slate-800"
+                      >
+                        <option value="">{tx('share_collect.identity_choose', 'Choose before sharing...')}</option>
+                        <option value="real_name">{tx('share_collect.identity_real', 'Real names (staff, families)')}</option>
+                        <option value="codename">{tx('share_collect.identity_codename', 'Codenames (students)')}</option>
+                        <option value="anonymous">{tx('share_collect.identity_anonymous_counts', 'Anonymous (counts only)')}</option>
+                      </select>
+                    </label>
+                    {!activityIdentityMode && (
+                      <p className="mt-1 text-[10px] font-bold text-amber-700">
+                        {tx('share_collect.identity_required_vote', 'Pick who is voting before you share this.')}
+                      </p>
+                    )}
+                    {activityType === 'signup' ? (
+                      <label className="mt-3 block text-[11px] font-black text-slate-700">
+                        {tx('share_collect.slots_per_person', 'Slots one person may take')}
+                        <input
+                          type="number"
+                          min={1}
+                          max={10}
+                          value={Number(activityMaxPerPerson) || 1}
+                          onChange={event => onActivityChange({ maxPerPerson: Math.max(1, Math.min(10, parseInt(event.target.value, 10) || 1)) })}
+                          className="mt-1 w-32 rounded-md border border-sky-300 bg-white px-2 py-2 text-sm font-semibold text-slate-800"
+                        />
+                      </label>
+                    ) : (
+                      <>
+                        <label className="mt-3 flex items-center gap-2 text-[11px] font-bold text-slate-700">
+                          <input
+                            type="checkbox"
+                            checked={activityAllowMaybe !== false}
+                            onChange={event => onActivityChange({ allowMaybe: event.target.checked })}
+                          />
+                          {tx('share_collect.allow_maybe', 'Allow "maybe" as well as yes and no')}
+                        </label>
+                        <label className="mt-1 flex items-center gap-2 text-[11px] font-bold text-slate-700">
+                          <input
+                            type="checkbox"
+                            checked={activityMultiSelect !== false}
+                            onChange={event => onActivityChange({ multiSelect: event.target.checked })}
+                          />
+                          {tx('share_collect.multi_select', 'People can pick more than one')}
+                        </label>
+                      </>
+                    )}
+                  </>
+                )}
+
+                {activityType === 'survey' && (
+                  <>
+                    <div className="mt-3 space-y-2">
+                      {safeSurveyItems.map((surveyItem, surveyIndex) => (
+                        <div key={surveyItem.viewKey || surveyIndex} className="rounded-lg border border-sky-200 bg-white p-2">
+                          <div className="flex items-start gap-2">
+                            <input
+                              type="text"
+                              aria-label={tx('share_collect.q_aria', 'Question ' + (surveyIndex + 1), { n: surveyIndex + 1 })}
+                              value={String(surveyItem.text || '')}
+                              onChange={event => onSurveyItemChange(surveyIndex, { text: event.target.value.slice(0, 240) })}
+                              placeholder={tx('share_collect.q_aria', 'Question ' + (surveyIndex + 1), { n: surveyIndex + 1 })}
+                              className="flex-1 rounded-md border border-sky-300 px-2 py-1.5 text-xs font-semibold text-slate-800"
+                            />
+                            <button
+                              type="button"
+                              aria-label={tx('share_collect.q_remove_aria', 'Remove question ' + (surveyIndex + 1), { n: surveyIndex + 1 })}
+                              onClick={() => onSurveyItemRemove(surveyIndex)}
+                              className="rounded-md border border-rose-200 px-2 py-1 text-xs font-black text-rose-700"
+                            >
+                              ✖
+                            </button>
+                          </div>
+                          <div className="mt-2 flex flex-wrap items-center gap-2">
+                            <select
+                              aria-label={tx('share_collect.q_type_aria', 'Answer type for question ' + (surveyIndex + 1), { n: surveyIndex + 1 })}
+                              value={surveyItem.type || 'likert'}
+                              onChange={event => onSurveyItemChange(surveyIndex, { type: event.target.value })}
+                              className="rounded-md border border-sky-300 px-2 py-1.5 text-xs font-semibold text-slate-800"
+                            >
+                              <option value="likert">{tx('share_collect.q_type_likert', 'Scale (agree to disagree)')}</option>
+                              <option value="choice">{tx('share_collect.q_type_choice', 'Multiple choice')}</option>
+                              <option value="freetext">{tx('share_collect.q_type_freetext', 'Short answer')}</option>
+                              <option value="numeric">{tx('share_collect.q_type_numeric', 'Number')}</option>
+                            </select>
+                            {(surveyItem.type || 'likert') === 'likert' && (
+                              <select
+                                aria-label={tx('share_collect.q_steps_aria', 'Scale steps for question ' + (surveyIndex + 1), { n: surveyIndex + 1 })}
+                                value={Number(surveyItem.steps) || 5}
+                                onChange={event => onSurveyItemChange(surveyIndex, { steps: parseInt(event.target.value, 10) })}
+                                className="rounded-md border border-sky-300 px-2 py-1.5 text-xs font-semibold text-slate-800"
+                              >
+                                {[3, 4, 5, 7].map(stepCount => (
+                                  <option key={stepCount} value={stepCount}>
+                                    {tx('share_collect.q_steps_n', stepCount + '-point', { n: stepCount })}
+                                  </option>
+                                ))}
+                              </select>
+                            )}
+                            <label className="flex items-center gap-1 text-[11px] font-bold text-slate-700">
+                              <input
+                                type="checkbox"
+                                checked={surveyItem.required === true}
+                                onChange={event => onSurveyItemChange(surveyIndex, { required: event.target.checked })}
+                              />
+                              {tx('share_collect.q_required', 'Required')}
+                            </label>
+                          </div>
+                          {(surveyItem.type || 'likert') === 'likert' && (
+                            <div className="mt-2 grid grid-cols-2 gap-2">
+                              <input
+                                type="text"
+                                aria-label={tx('share_collect.scale_low_aria', 'Label for the low end')}
+                                value={surveyItem.lowLabel ?? tx('share_collect.scale_low_default', 'Strongly disagree')}
+                                onChange={event => onSurveyItemChange(surveyIndex, { lowLabel: event.target.value.slice(0, 60) })}
+                                className="rounded-md border border-sky-200 px-2 py-1 text-[11px] text-slate-700"
+                              />
+                              <input
+                                type="text"
+                                aria-label={tx('share_collect.scale_high_aria', 'Label for the high end')}
+                                value={surveyItem.highLabel ?? tx('share_collect.scale_high_default', 'Strongly agree')}
+                                onChange={event => onSurveyItemChange(surveyIndex, { highLabel: event.target.value.slice(0, 60) })}
+                                className="rounded-md border border-sky-200 px-2 py-1 text-[11px] text-slate-700"
+                              />
+                            </div>
+                          )}
+                          {surveyItem.type === 'choice' && (
+                            <textarea
+                              aria-label={tx('share_collect.q_choices_aria', 'Choices for question ' + (surveyIndex + 1) + ', one per line', { n: surveyIndex + 1 })}
+                              value={String(surveyItem.optionsText || '')}
+                              onChange={event => onSurveyItemChange(surveyIndex, { optionsText: event.target.value })}
+                              rows={3}
+                              placeholder={tx('share_collect.signup_slots_placeholder', 'Read-aloud\nGlossary\nPictures')}
+                              className="mt-2 w-full rounded-md border border-sky-200 px-2 py-1 text-[11px] text-slate-700"
+                            />
+                          )}
+                          {surveyItem.type === 'numeric' && (
+                            <div className="mt-2 flex items-center gap-2 text-[11px] font-bold text-slate-700">
+                              <label>
+                                {tx('share_collect.q_min', 'Min')}
+                                <input
+                                  type="number"
+                                  value={surveyItem.min ?? ''}
+                                  onChange={event => onSurveyItemChange(surveyIndex, { min: event.target.value })}
+                                  className="ml-1 w-20 rounded-md border border-sky-200 px-2 py-1"
+                                />
+                              </label>
+                              <label>
+                                {tx('share_collect.q_max', 'Max')}
+                                <input
+                                  type="number"
+                                  value={surveyItem.max ?? ''}
+                                  onChange={event => onSurveyItemChange(surveyIndex, { max: event.target.value })}
+                                  className="ml-1 w-20 rounded-md border border-sky-200 px-2 py-1"
+                                />
+                              </label>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                    {safeSurveyItems.length < 12 && (
+                      <button
+                        type="button"
+                        onClick={() => onSurveyItemAdd({ type: 'likert', text: '', steps: 5, required: false })}
+                        className="mt-2 rounded-md border border-sky-300 bg-white px-3 py-1.5 text-xs font-black text-sky-800"
+                      >
+                        {tx('share_collect.add_question', '+ Add question')}
+                      </button>
+                    )}
+                    <label className="mt-3 block text-[11px] font-black text-slate-700">
+                      {tx('share_collect.about_survey_label', 'About this survey (optional, shown to respondents)')}
+                      <textarea
+                        value={String(surveyInfo || '')}
+                        onChange={event => onActivityChange({ surveyInfo: event.target.value.slice(0, 600) })}
+                        rows={3}
+                        maxLength={600}
+                        placeholder={tx('share_collect.intro_placeholder', 'Who is asking, what the answers are for, and that taking part is voluntary.')}
+                        className="mt-1 w-full rounded-md border border-sky-300 bg-white px-2 py-2 text-xs text-slate-800"
+                      />
+                    </label>
+                    <label className="mt-3 block text-[11px] font-black text-slate-700">
+                      {tx('share_collect.identity_answer_label', 'Who is answering')}
+                      <select
+                        value={String(activityIdentityMode || '')}
+                        onChange={event => onActivityChange({ identityMode: event.target.value })}
+                        className="mt-1 w-full rounded-md border border-sky-300 bg-white px-2 py-2 text-sm font-semibold text-slate-800"
+                      >
+                        <option value="">{tx('share_collect.identity_choose', 'Choose before sharing...')}</option>
+                        <option value="real_name">{tx('share_collect.identity_real', 'Real names (staff, families)')}</option>
+                        <option value="codename">{tx('share_collect.identity_codename', 'Codenames (students)')}</option>
+                        <option value="anonymous">{tx('share_collect.identity_anonymous_agg', 'Anonymous (aggregates only)')}</option>
+                      </select>
+                    </label>
+                    {!activityIdentityMode && (
+                      <p className="mt-1 text-[10px] font-bold text-amber-700">
+                        {tx('share_collect.identity_required_answer', 'Pick who is answering before you share this.')}
+                      </p>
+                    )}
+                    {showSurveyPairingGuidance && (
+                      <p className="mt-1 text-[10px] leading-relaxed text-slate-600">
+                        {tx('share_collect.pairing_intro', 'For pre/mid/post comparisons:')}{' '}
+                        <b>{tx('share_collect.identity_real_short', 'real names')}</b>{' '}
+                        {tx('share_collect.pairing_real', 'pair the same person across check-ins;')}{' '}
+                        <b>{tx('share_collect.identity_codename_short', 'codenames')}</b>{' '}
+                        {tx('share_collect.pairing_codename', 'pair only when they answer from the same device;')}{' '}
+                        <b>{tx('share_collect.identity_anon_short', 'anonymous')}</b>{' '}
+                        {tx('share_collect.pairing_anon', 'never pairs, so you get group totals only.')}
+                      </p>
+                    )}
+                    {!surveyHostingAvailable && (
+                      <p className="mt-2 rounded-lg border border-amber-300 bg-amber-50 p-2 text-[10px] font-bold text-amber-800">
+                        {tx('share_collect.mailbox_v13_note', 'Your Class Mailbox script needs v13 before it can host surveys. Update, redeploy, then reconnect.', { v: Math.max(0, Math.trunc(Number(mailboxVersion) || 0)) })}
+                      </p>
+                    )}
+                  </>
+                )}
+
+                <button
+                  type="button"
+                  onClick={onCreateLink}
+                  disabled={createDisabled}
+                  className="mt-4 w-full rounded-lg bg-sky-700 px-3 py-2 text-sm font-black text-white disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {tx('share_collect.create_link', 'Create the link and QR code')}
+                </button>
+              </>
+            )}
+          </section>
+        </div>
+
+        <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4" aria-label={tx('share_collect.status_summary_aria', 'Assignment status summary')}>
+          <div className="rounded-xl bg-emerald-50 p-3 text-center">
+            <div className="text-lg font-black text-emerald-900">{activeCount}</div>
+            <div className="text-[10px] font-black uppercase text-emerald-700">{tx('share_collect.stat_active', 'Active')}</div>
+          </div>
+          <div className="rounded-xl bg-amber-50 p-3 text-center">
+            <div className="text-lg font-black text-amber-900">{awaitingCount}</div>
+            <div className="text-[10px] font-black uppercase text-amber-700">{tx('share_collect.stat_awaiting', 'Awaiting review')}</div>
+          </div>
+          <div className="rounded-xl bg-sky-50 p-3 text-center">
+            <div className="text-lg font-black text-sky-900">{responseCount}</div>
+            <div className="text-[10px] font-black uppercase text-sky-700">{tx('share_collect.stat_anon_responses', 'Anonymous responses')}</div>
+          </div>
+          <div className="rounded-xl bg-slate-100 p-3 text-center">
+            <div className="text-lg font-black text-slate-800">{closedCount}</div>
+            <div className="text-[10px] font-black uppercase text-slate-600">{tx('share_collect.stat_closed', 'Closed')}</div>
+          </div>
+        </div>
+
+        <div className="mt-3 rounded-xl border border-indigo-100 bg-indigo-50 px-3 py-2">
+          <p className="text-[11px] text-indigo-900">
+            {tx('share_collect.privacy_note', 'Only aggregate counts and moderation totals are cached or exported; response text, links, private keys, and participant tokens stay out of reports.')}
+          </p>
+          <div className="mt-2 flex flex-wrap items-end gap-2">
+            <label className="text-[10px] font-black uppercase text-indigo-900">
+              {tx('share_collect.show_label', 'Show')}
+              <select
+                aria-label={tx('share_collect.filter_aria', 'Filter assignments')}
+                value={filter}
+                onChange={event => onFilterChange(event.target.value)}
+                className="ml-2 min-h-9 rounded-lg border border-indigo-300 bg-white px-2 text-xs normal-case text-slate-900"
+              >
+                <option value="all">{tx('share_collect.filter_all', 'All assignments')}</option>
+                <option value="needs_review">{tx('share_collect.filter_needs_review', 'Needs review')}</option>
+                <option value="active">{tx('share_collect.stat_active', 'Active')}</option>
+                <option value="closed">{tx('share_collect.stat_closed', 'Closed')}</option>
+                <option value="errors">{tx('share_collect.filter_errors', 'Status errors')}</option>
+              </select>
+            </label>
+            <button
+              type="button"
+              onClick={onRefresh}
+              disabled={refreshing}
+              className="min-h-9 rounded-lg border border-indigo-300 bg-white px-3 text-xs font-black text-indigo-900 disabled:opacity-60"
+            >
+              {refreshing ? tx('share_collect.refreshing', 'Refreshing…') : tx('share_collect.refresh_status', 'Refresh status')}
+            </button>
+            <button
+              type="button"
+              onClick={onExportCsv}
+              disabled={!safeRows.length}
+              className="min-h-9 rounded-lg border border-indigo-300 bg-white px-3 text-xs font-black text-indigo-900 disabled:opacity-60"
+            >
+              {tx('share_collect.export_csv', 'Export aggregate CSV')}
+            </button>
+          </div>
+        </div>
+
+        {showHostedMutationUpgradeNotice && (
+          <p className="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs font-bold text-amber-900">
+            {tx('share_collect.mailbox_v12_note', 'Class Mailbox v12 is required only for deadline changes and fresh copies. Existing assignments and status viewing still work.')}
+          </p>
+        )}
+
+        <div className="mt-4 space-y-3">
+          {!safeRows.length && (
+            <p className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-center text-sm text-slate-600">
+              {tx('share_collect.none_saved', 'No homework assignments are saved on this device yet.')}
+            </p>
+          )}
+          {safeRows.length > 0 && !safeVisibleRows.length && (
+            <p className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-center text-sm text-slate-600">
+              {tx('share_collect.none_match', 'No assignments match this filter.')}
+            </p>
+          )}
+          {safeVisibleRows.map((row, index) => {
+            const view = row || {};
+            const closed = view.lifecycle !== 'active';
+            const actionBusy = Boolean(view.actionKind);
+            const activityLabel = view.activityType === 'rating'
+              ? tx('share_collect.activity_rating', 'Shared rating')
+              : view.activityType === 'survey'
+                ? tx('share_collect.activity_survey', 'Shared survey')
+                : view.hasSharedActivity
+                  ? tx('share_collect.activity_wordcloud', 'Shared Word Cloud')
+                  : tx('share_collect.activity_resource', 'Resource assignment');
+            const lifecycleLabel = view.lifecycle === 'active'
+              ? tx('share_collect.stat_active', 'Active')
+              : view.lifecycle === 'revoked'
+                ? tx('share_collect.lifecycle_revoked', 'Revoked')
+                : view.lifecycle === 'expired'
+                  ? tx('share_collect.lifecycle_expired', 'Expired')
+                  : String(view.lifecycleLabel || view.lifecycle || '');
+            const expiryLabel = view.lifecycle === 'active'
+              ? tx('share_collect.expires_on', 'Expires ' + (view.expiresLabel || tx('share_collect.expires_later', 'later')), { date: view.expiresLabel || tx('share_collect.expires_later', 'later') })
+              : lifecycleLabel;
+            const invoke = callback => { if (typeof callback === 'function') callback(); };
+
+            return (
+              <article key={view.viewKey || index} data-assignment-lifecycle={view.lifecycle} className="rounded-xl border border-slate-200 p-3">
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div className="min-w-0 flex-1">
+                    <h3 className="truncate text-sm font-black text-slate-900">
+                      {view.title || tx('share_collect.default_title', 'AlloFlow homework')}
+                    </h3>
+                    <p className="mt-0.5 text-[11px] text-slate-600">
+                      {Number(view.resourceCount) || 1}{' '}
+                      {(Number(view.resourceCount) || 1) === 1 ? tx('share_collect.resource_one', 'resource') : tx('share_collect.resource_other', 'resources')}
+                      {' · '}{activityLabel}{' · '}{expiryLabel}
+                    </p>
+                  </div>
+                  <span className={'rounded-full px-2 py-1 text-[10px] font-black uppercase ' + (view.lifecycle === 'active' ? 'bg-emerald-100 text-emerald-800' : view.lifecycle === 'revoked' ? 'bg-slate-200 text-slate-800' : 'bg-rose-100 text-rose-800')}>
+                    {lifecycleLabel}
+                  </span>
+                </div>
+
+                {view.hasSharedActivity ? (
+                  <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4" data-assignment-activity-status={view.activityState}>
+                    {view.activityState === 'ready' ? (
+                      <>
+                        <div className="rounded-lg bg-sky-50 px-2 py-2 text-center"><div className="font-black text-sky-900">{Number(view.participantCount) || 0}</div><div className="text-[10px] text-sky-700">{tx('share_collect.stat_responses', 'Responses')}</div></div>
+                        <div className="rounded-lg bg-amber-50 px-2 py-2 text-center"><div className="font-black text-amber-900">{Number(view.pendingCount) || 0}</div><div className="text-[10px] text-amber-700">{tx('share_collect.stat_held', 'Held')}</div></div>
+                        <div className="rounded-lg bg-emerald-50 px-2 py-2 text-center"><div className="font-black text-emerald-900">{Number(view.approvedCount) || 0}</div><div className="text-[10px] text-emerald-700">{tx('share_collect.stat_approved', 'Approved')}</div></div>
+                        <div className="rounded-lg bg-slate-50 px-2 py-2 text-center"><div className="font-black text-slate-800">{Number(view.hiddenCount) || 0}</div><div className="text-[10px] text-slate-600">{tx('share_collect.stat_hidden', 'Hidden')}</div></div>
+                      </>
+                    ) : (
+                      <p className="col-span-full rounded-lg bg-slate-50 p-2 text-[11px] text-slate-600">
+                        {view.activityState === 'loading'
+                          ? tx('share_collect.status_loading', 'Loading anonymous activity status…')
+                          : view.activityState === 'error'
+                            ? tx('share_collect.status_error', 'Status unavailable. Reconnect Class Mailbox and refresh.')
+                            : closed
+                              ? tx('share_collect.status_closed', 'Closed assignment; status is no longer refreshed.')
+                              : tx('share_collect.status_refresh', 'Refresh to check activity status.')}
+                      </p>
+                    )}
+                  </div>
+                ) : (
+                  <p className="mt-2 rounded-lg bg-slate-50 p-2 text-[11px] text-slate-600">
+                    {tx('share_collect.resource_only_note', 'Resource-only privacy mode: this link does not collect student progress or responses.')}
+                  </p>
+                )}
+
+                {view.actionError && (
+                  <p className="mt-2 rounded-lg border border-rose-200 bg-rose-50 p-2 text-[11px] font-bold text-rose-800">
+                    {view.actionError}
+                  </p>
+                )}
+                <input
+                  aria-label={tx('share_collect.row_link_aria', 'Private assignment link for ' + (view.title || tx('share_collect.default_title_short', 'homework')), { title: view.title || tx('share_collect.default_title_short', 'homework') })}
+                  readOnly
+                  value={view.linkLabel || tx('share_collect.private_link_label', 'Private assignment link')}
+                  onFocus={event => event.target.select()}
+                  className="mt-2 w-full rounded-md border border-slate-200 bg-slate-50 px-2 py-1.5 text-[11px] text-slate-700"
+                />
+                <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3">
+                  <button
+                    type="button"
+                    disabled={closed || actionBusy || typeof view.onManage !== 'function'}
+                    onClick={() => { invoke(view.onManage); onClose(); }}
+                    className="min-h-10 rounded-lg border border-violet-300 bg-violet-50 px-2 text-xs font-bold text-violet-900 disabled:opacity-50"
+                  >
+                    {tx('share_collect.action_manage', 'Manage')}
+                  </button>
+                  <button
+                    type="button"
+                    disabled={closed || actionBusy || typeof view.onCopyLink !== 'function'}
+                    onClick={() => invoke(view.onCopyLink)}
+                    className="min-h-10 rounded-lg border border-slate-300 bg-white px-2 text-xs font-bold text-slate-800 disabled:opacity-50"
+                  >
+                    {tx('share_collect.action_copy_link', 'Copy active link')}
+                  </button>
+                  {view.canImportResearch && (
+                    <button type="button" disabled={actionBusy || typeof view.onImportResearch !== 'function'} onClick={() => invoke(view.onImportResearch)} className="min-h-10 rounded-lg border border-purple-300 bg-white px-3 text-xs font-bold text-purple-800 hover:bg-purple-50 disabled:opacity-50">
+                      {tx('share_collect.action_import_research', 'Import results to Research Suite')}
+                    </button>
+                  )}
+                  {view.canExtend && (
+                    <button type="button" disabled={actionBusy || !hostedMutationAvailable || typeof view.onExtend !== 'function'} onClick={() => invoke(view.onExtend)} className="min-h-10 rounded-lg border border-sky-300 bg-sky-50 px-2 text-xs font-bold text-sky-900 disabled:opacity-50">
+                      {view.actionKind === 'extending' ? tx('share_collect.action_extending', 'Extending…') : tx('share_collect.action_extend_days', 'Extend ' + homeworkExpiryDays + ' days', { days: homeworkExpiryDays })}
+                    </button>
+                  )}
+                  {view.canDuplicate && (
+                    <button type="button" disabled={actionBusy || !hostedMutationAvailable || typeof view.onDuplicate !== 'function'} onClick={() => invoke(view.onDuplicate)} className="min-h-10 rounded-lg border border-emerald-300 bg-emerald-50 px-2 text-xs font-bold text-emerald-900 disabled:opacity-50">
+                      {view.actionKind === 'duplicating' ? tx('share_collect.action_duplicating', 'Creating copy…') : tx('share_collect.action_create_copy', 'Create fresh copy')}
+                    </button>
+                  )}
+                  {view.canRevoke && (
+                    <button type="button" disabled={actionBusy || typeof view.onRevoke !== 'function'} onClick={() => invoke(view.onRevoke)} className="min-h-10 rounded-lg border border-rose-300 bg-rose-50 px-2 text-xs font-bold text-rose-800 disabled:opacity-50">
+                      {view.actionKind === 'revoking' ? tx('share_collect.action_revoking', 'Revoking…') : tx('share_collect.action_revoke', 'Revoke now')}
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    disabled={actionBusy || typeof view.onRemoveRecord !== 'function'}
+                    onClick={() => invoke(view.onRemoveRecord)}
+                    className="min-h-10 rounded-lg border border-slate-300 bg-white px-2 text-xs font-bold text-slate-700 disabled:opacity-50"
+                  >
+                    {tx('share_collect.action_remove_record', 'Remove record')}
+                  </button>
+                </div>
+                {view.showExpiredCopyNote && (
+                  <p className="mt-2 text-[10px] text-slate-500">
+                    {tx('share_collect.expired_copy_note', 'A fresh copy receives a new private link and empty student activity. Revoked assignments cannot be copied because their hosted data is deleted.')}
+                  </p>
+                )}
+              </article>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}

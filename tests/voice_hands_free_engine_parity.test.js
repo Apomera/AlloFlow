@@ -29,6 +29,7 @@ beforeEach(() => {
   delete window.webkitSpeechRecognition;
   delete window.__alloLocalSRShim;
   delete window.__alloResolveGeminiAudioCapability;
+  window.AlloFlowVoice.resetHandsFreeDiagnostics();
 });
 
 afterEach(() => {
@@ -125,13 +126,18 @@ describe('engine-neutral transcript contract', () => {
   it('collects every newly finalized Browser Speech segment', () => {
     window.SpeechRecognition = FakeRecognition;
     const heard = [];
+    const states = [];
     const controller = window.AlloFlowVoice.createHandsFreeRecognizer({
       engine: 'webspeech',
       continuous: false,
       onTranscript: (text, isFinal, metadata) => heard.push({ text, isFinal, metadata }),
+      onStateChange: (status) => states.push(status),
     });
 
     expect(controller.start()).toBe(true);
+    expect(states[0]).toMatchObject({
+      state: 'starting', engine: 'web-speech', engineLabel: 'Browser speech service',
+    });
     const first = [{ transcript: 'open ', confidence: 0.91 }];
     first.isFinal = true;
     const second = [{ transcript: 'the hub', confidence: 0.88 }];
@@ -231,6 +237,18 @@ describe('engine-neutral transcript contract', () => {
     await vi.waitFor(() => expect(heard).toEqual(['B']));
     expect(callGeminiAudio).toHaveBeenCalledTimes(2);
     expect(stopTracks[1]).toHaveBeenCalledOnce();
+
+    const diagnostics = window.AlloFlowVoice.getHandsFreeDiagnostics();
+    expect(diagnostics).toMatchObject({
+      scope: 'session-memory', sessions: 1, turns: 1, errors: 1, fatalErrors: 0,
+      errorCategories: { network: 1 },
+    });
+    expect(diagnostics.engines['gemini-audio']).toMatchObject({
+      sessions: 1, turns: 1, errors: 1,
+      latencyMs: { samples: 2 },
+    });
+    expect(JSON.stringify(diagnostics)).not.toContain('temporary network failure');
+    expect(JSON.stringify(diagnostics)).not.toContain('"transcript"');
   });
 
   it('runs a Gemini PCM turn through the same final transcript callback', async () => {
@@ -280,6 +298,20 @@ describe('engine-neutral transcript contract', () => {
       });
       expect(callGeminiAudio.mock.calls[0][1]).toMatch(/^data:audio\/wav;base64,/);
       expect(stopTrack).toHaveBeenCalledOnce();
+      const diagnostics = window.AlloFlowVoice.getHandsFreeDiagnostics();
+      expect(diagnostics).toMatchObject({ sessions: 1, turns: 1, errors: 0 });
+      expect(diagnostics.engines['gemini-audio'].latencyMs.samples).toBe(1);
+      const diagnosticKeys = [];
+      const collectKeys = (value) => {
+        if (!value || typeof value !== 'object') return;
+        Object.entries(value).forEach(([key, child]) => {
+          diagnosticKeys.push(key);
+          collectKeys(child);
+        });
+      };
+      collectKeys(diagnostics);
+      expect(diagnosticKeys).not.toEqual(expect.arrayContaining(['transcript', 'text', 'audio', 'blob', 'pcm']));
+      expect(JSON.stringify(diagnostics)).not.toContain('next question');
     } finally {
       if (previousMediaDevices) Object.defineProperty(navigator, 'mediaDevices', previousMediaDevices);
       else delete navigator.mediaDevices;

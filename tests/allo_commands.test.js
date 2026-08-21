@@ -853,6 +853,53 @@ describe('createVoiceLoop single-flight routing', () => {
       fake.restore();
     }
   });
+
+  it('publishes the shared recognizer engine through the voice-session lease', () => {
+    let recognizerOptions = null;
+    const recognizer = {
+      start: vi.fn(() => true),
+      abort: vi.fn(),
+      getState: vi.fn(() => 'starting'),
+    };
+    const lease = {
+      update: vi.fn(() => true),
+      release: vi.fn(() => true),
+      isActive: vi.fn(() => true),
+    };
+    const voiceService = {
+      createHandsFreeRecognizer: vi.fn((options) => {
+        recognizerOptions = options;
+        return recognizer;
+      }),
+    };
+    const voiceCoordinator = {
+      acquireVoiceSession: vi.fn(() => lease),
+    };
+    const loop = AC.createVoiceLoop(() => ({ setVoiceActive: vi.fn() }), {
+      voiceService,
+      voiceCoordinator,
+    });
+
+    expect(loop.start()).toBe(true);
+    recognizerOptions.onStateChange({
+      state: 'starting',
+      engine: 'gemini-audio',
+      engineLabel: 'Gemini cloud transcription',
+      privacy: 'Audio is sent to Gemini one turn at a time.',
+      message: 'Starting Gemini cloud transcription...',
+    });
+
+    expect(lease.update).toHaveBeenLastCalledWith(expect.objectContaining({
+      state: 'starting',
+      engine: 'gemini-audio',
+      engineLabel: 'Gemini cloud transcription',
+    }));
+    expect(loop.getState()).toMatchObject({
+      engineId: 'gemini-audio',
+      engineLabel: 'Gemini cloud transcription',
+    });
+    loop.stop();
+  });
 });
 describe('runCommandById (executes a confirmed, previewed command)', () => {
   it('runs the command by id', () => {

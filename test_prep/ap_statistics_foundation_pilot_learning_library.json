@@ -1,0 +1,4179 @@
+{
+  "schemaVersion": 1,
+  "librarySchemaVersion": 1,
+  "libraryId": "ap-statistics-foundation-pilot-learning-library",
+  "packId": "ap-statistics-foundation-pilot",
+  "version": "0.2.0-internal-preview",
+  "title": "AP Statistics Foundation Pilot Learning Library",
+  "description": "A text-first, independently authored AP Statistics foundation library with five unit chapters, structured lessons, retrieval checks, study cards, memory aids, and explicitly unscored FRQ-planning workshops. It is not released, official, calibrated, or score-predictive.",
+  "status": "preview",
+  "visibility": "internal",
+  "released": false,
+  "releaseEligible": false,
+  "officialItem": false,
+  "blueprint": {
+    "academicYearReference": "2026-27",
+    "cedEffectiveLabel": "Fall 2026",
+    "cedFrameworkVersion": "V.1",
+    "officialBlueprintUrl": "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+    "officialCourseUrl": "https://apcentral.collegeboard.org/courses/ap-statistics",
+    "pilotVersion": "ap-statistics-foundation-v2",
+    "pilotNote": "A 200-item foundation sampler across the five revised Fall 2026 units, with two hundred original single-choice items, native chapters, and unscored planning workshops.",
+    "skills": [
+      {
+        "id": "practice-1",
+        "label": "Selecting Statistical Methods",
+        "description": "Select an investigative question and an appropriate statistical method for the data and goal.",
+        "subskills": [
+          "1.A",
+          "1.B"
+        ]
+      },
+      {
+        "id": "practice-2",
+        "label": "Analyzing Data",
+        "description": "Identify, represent, calculate, and compare statistical information needed to answer a question.",
+        "subskills": [
+          "2.A",
+          "2.B",
+          "2.C",
+          "2.D",
+          "2.E"
+        ]
+      },
+      {
+        "id": "practice-3",
+        "label": "Using Probability and Simulation",
+        "description": "Calculate or estimate probabilities, parameters, intervals, and inference results.",
+        "subskills": [
+          "3.A",
+          "3.B",
+          "3.C",
+          "3.D",
+          "3.E"
+        ]
+      },
+      {
+        "id": "practice-4",
+        "label": "Statistical Argumentation",
+        "description": "Describe distributions, interpret results, verify conditions, and justify a claim in context.",
+        "subskills": [
+          "4.A",
+          "4.B",
+          "4.C",
+          "4.D",
+          "4.E",
+          "4.F",
+          "4.G"
+        ]
+      }
+    ],
+    "learningObjectiveCatalogVersion": "ap-statistics-foundation-v2",
+    "learningObjectiveCatalog": [
+      {
+        "id": "1.1.A",
+        "label": "Introducing Statistics: What Can We Learn from Data?",
+        "chapterId": "ap-stats-ch-01",
+        "sectionId": "ap-stats-ch-01-section-01",
+        "sectionLabel": "One-Variable Data and Collecting Data",
+        "skillId": "2.A"
+      },
+      {
+        "id": "1.2.A",
+        "label": "Variables",
+        "chapterId": "ap-stats-ch-01",
+        "sectionId": "ap-stats-ch-01-section-01",
+        "sectionLabel": "One-Variable Data and Collecting Data",
+        "skillId": "2.A"
+      },
+      {
+        "id": "1.3.A",
+        "label": "Tabular Representation and Summary Statistics for One Categorical Variable",
+        "chapterId": "ap-stats-ch-01",
+        "sectionId": "ap-stats-ch-01-section-01",
+        "sectionLabel": "One-Variable Data and Collecting Data",
+        "skillId": "2.A"
+      },
+      {
+        "id": "1.4.A",
+        "label": "Graphical Representations for One Categorical Variable",
+        "chapterId": "ap-stats-ch-01",
+        "sectionId": "ap-stats-ch-01-section-01",
+        "sectionLabel": "One-Variable Data and Collecting Data",
+        "skillId": "2.A"
+      },
+      {
+        "id": "1.5.A",
+        "label": "Graphical Representations for One Quantitative Variable",
+        "chapterId": "ap-stats-ch-01",
+        "sectionId": "ap-stats-ch-01-section-02",
+        "sectionLabel": "One-Variable Data and Collecting Data",
+        "skillId": "2.A"
+      },
+      {
+        "id": "1.6.A",
+        "label": "Descriptions for One Quantitative Variable Distributions",
+        "chapterId": "ap-stats-ch-01",
+        "sectionId": "ap-stats-ch-01-section-02",
+        "sectionLabel": "One-Variable Data and Collecting Data",
+        "skillId": "2.A"
+      },
+      {
+        "id": "1.7.A",
+        "label": "Summary Statistics for One Quantitative Variable",
+        "chapterId": "ap-stats-ch-01",
+        "sectionId": "ap-stats-ch-01-section-02",
+        "sectionLabel": "One-Variable Data and Collecting Data",
+        "skillId": "2.A"
+      },
+      {
+        "id": "1.8.A",
+        "label": "Graphical Representations of Summary Statistics for One Quantitative Variable",
+        "chapterId": "ap-stats-ch-01",
+        "sectionId": "ap-stats-ch-01-section-02",
+        "sectionLabel": "One-Variable Data and Collecting Data",
+        "skillId": "2.A"
+      },
+      {
+        "id": "1.9.A",
+        "label": "Comparisons of the Distributions for One Quantitative Variable",
+        "chapterId": "ap-stats-ch-01",
+        "sectionId": "ap-stats-ch-01-section-03",
+        "sectionLabel": "One-Variable Data and Collecting Data",
+        "skillId": "2.A"
+      },
+      {
+        "id": "1.10.A",
+        "label": "The Investigative Question Revisited and Data Collection",
+        "chapterId": "ap-stats-ch-01",
+        "sectionId": "ap-stats-ch-01-section-03",
+        "sectionLabel": "One-Variable Data and Collecting Data",
+        "skillId": "2.A"
+      },
+      {
+        "id": "1.11.A",
+        "label": "Sampling Methods",
+        "chapterId": "ap-stats-ch-01",
+        "sectionId": "ap-stats-ch-01-section-03",
+        "sectionLabel": "One-Variable Data and Collecting Data",
+        "skillId": "2.A"
+      },
+      {
+        "id": "1.12.A",
+        "label": "Sources of Bias in Data Collection",
+        "chapterId": "ap-stats-ch-01",
+        "sectionId": "ap-stats-ch-01-section-03",
+        "sectionLabel": "One-Variable Data and Collecting Data",
+        "skillId": "2.A"
+      },
+      {
+        "id": "1.13.A",
+        "label": "Experimental Design",
+        "chapterId": "ap-stats-ch-01",
+        "sectionId": "ap-stats-ch-01-section-03",
+        "sectionLabel": "One-Variable Data and Collecting Data",
+        "skillId": "2.A"
+      },
+      {
+        "id": "2.1.A",
+        "label": "Tabular and Graphical Representations for the Distributions of Two Categorical Variables",
+        "chapterId": "ap-stats-ch-02",
+        "sectionId": "ap-stats-ch-02-section-01",
+        "sectionLabel": "Probability and Random Variables",
+        "skillId": "3.C"
+      },
+      {
+        "id": "2.2.A",
+        "label": "Summary Statistics for Two Categorical Variables",
+        "chapterId": "ap-stats-ch-02",
+        "sectionId": "ap-stats-ch-02-section-01",
+        "sectionLabel": "Probability and Random Variables",
+        "skillId": "3.C"
+      },
+      {
+        "id": "2.3.A",
+        "label": "Estimating Probabilities Using Simulation",
+        "chapterId": "ap-stats-ch-02",
+        "sectionId": "ap-stats-ch-02-section-01",
+        "sectionLabel": "Probability and Random Variables",
+        "skillId": "3.C"
+      },
+      {
+        "id": "2.4.A",
+        "label": "Introduction to Probability",
+        "chapterId": "ap-stats-ch-02",
+        "sectionId": "ap-stats-ch-02-section-01",
+        "sectionLabel": "Probability and Random Variables",
+        "skillId": "3.C"
+      },
+      {
+        "id": "2.5.A",
+        "label": "Mutually Exclusive Events",
+        "chapterId": "ap-stats-ch-02",
+        "sectionId": "ap-stats-ch-02-section-02",
+        "sectionLabel": "Probability and Random Variables",
+        "skillId": "3.C"
+      },
+      {
+        "id": "2.6.A",
+        "label": "Conditional Probability",
+        "chapterId": "ap-stats-ch-02",
+        "sectionId": "ap-stats-ch-02-section-02",
+        "sectionLabel": "Probability and Random Variables",
+        "skillId": "3.C"
+      },
+      {
+        "id": "2.7.A",
+        "label": "Independent Events and Unions of Events",
+        "chapterId": "ap-stats-ch-02",
+        "sectionId": "ap-stats-ch-02-section-02",
+        "sectionLabel": "Probability and Random Variables",
+        "skillId": "3.C"
+      },
+      {
+        "id": "2.8.A",
+        "label": "Introduction to Random Variables and Probability Distributions",
+        "chapterId": "ap-stats-ch-02",
+        "sectionId": "ap-stats-ch-02-section-02",
+        "sectionLabel": "Probability and Random Variables",
+        "skillId": "3.C"
+      },
+      {
+        "id": "2.9.A",
+        "label": "Parameters of Random Variables",
+        "chapterId": "ap-stats-ch-02",
+        "sectionId": "ap-stats-ch-02-section-03",
+        "sectionLabel": "Probability and Random Variables",
+        "skillId": "3.C"
+      },
+      {
+        "id": "2.10.A",
+        "label": "The Binomial Distribution",
+        "chapterId": "ap-stats-ch-02",
+        "sectionId": "ap-stats-ch-02-section-03",
+        "sectionLabel": "Probability and Random Variables",
+        "skillId": "3.C"
+      },
+      {
+        "id": "2.11.A",
+        "label": "The Normal Distribution",
+        "chapterId": "ap-stats-ch-02",
+        "sectionId": "ap-stats-ch-02-section-03",
+        "sectionLabel": "Probability and Random Variables",
+        "skillId": "3.C"
+      },
+      {
+        "id": "2.12.A",
+        "label": "Sampling Distributions and the Central Limit Theorem",
+        "chapterId": "ap-stats-ch-02",
+        "sectionId": "ap-stats-ch-02-section-03",
+        "sectionLabel": "Probability and Random Variables",
+        "skillId": "3.C"
+      },
+      {
+        "id": "3.1.A",
+        "label": "Estimators",
+        "chapterId": "ap-stats-ch-03",
+        "sectionId": "ap-stats-ch-03-section-01",
+        "sectionLabel": "Inference for Proportions",
+        "skillId": "4.F"
+      },
+      {
+        "id": "3.2.A",
+        "label": "Sampling Distributions for Sample Proportions",
+        "chapterId": "ap-stats-ch-03",
+        "sectionId": "ap-stats-ch-03-section-01",
+        "sectionLabel": "Inference for Proportions",
+        "skillId": "4.F"
+      },
+      {
+        "id": "3.3.A",
+        "label": "Constructing a Confidence Interval for a Population Proportion",
+        "chapterId": "ap-stats-ch-03",
+        "sectionId": "ap-stats-ch-03-section-01",
+        "sectionLabel": "Inference for Proportions",
+        "skillId": "4.F"
+      },
+      {
+        "id": "3.4.A",
+        "label": "Justifying a Claim Based on a Confidence Interval for a Population Proportion",
+        "chapterId": "ap-stats-ch-03",
+        "sectionId": "ap-stats-ch-03-section-01",
+        "sectionLabel": "Inference for Proportions",
+        "skillId": "4.F"
+      },
+      {
+        "id": "3.5.A",
+        "label": "Setting Up a Test for a Population Proportion",
+        "chapterId": "ap-stats-ch-03",
+        "sectionId": "ap-stats-ch-03-section-01",
+        "sectionLabel": "Inference for Proportions",
+        "skillId": "4.F"
+      },
+      {
+        "id": "3.6.A",
+        "label": "p-Values",
+        "chapterId": "ap-stats-ch-03",
+        "sectionId": "ap-stats-ch-03-section-02",
+        "sectionLabel": "Inference for Proportions",
+        "skillId": "4.F"
+      },
+      {
+        "id": "3.7.A",
+        "label": "Carrying Out a Test for a Population Proportion",
+        "chapterId": "ap-stats-ch-03",
+        "sectionId": "ap-stats-ch-03-section-02",
+        "sectionLabel": "Inference for Proportions",
+        "skillId": "4.F"
+      },
+      {
+        "id": "3.8.A",
+        "label": "Potential Errors When Performing Tests",
+        "chapterId": "ap-stats-ch-03",
+        "sectionId": "ap-stats-ch-03-section-02",
+        "sectionLabel": "Inference for Proportions",
+        "skillId": "4.F"
+      },
+      {
+        "id": "3.9.A",
+        "label": "Sampling Distributions for the Difference Between Sample Proportions",
+        "chapterId": "ap-stats-ch-03",
+        "sectionId": "ap-stats-ch-03-section-02",
+        "sectionLabel": "Inference for Proportions",
+        "skillId": "4.F"
+      },
+      {
+        "id": "3.10.A",
+        "label": "Constructing a Confidence Interval for the Difference Between Two Population Proportions",
+        "chapterId": "ap-stats-ch-03",
+        "sectionId": "ap-stats-ch-03-section-02",
+        "sectionLabel": "Inference for Proportions",
+        "skillId": "4.F"
+      },
+      {
+        "id": "3.11.A",
+        "label": "Justifying a Claim Based on a Confidence Interval for the Difference Between Two Population Proportions",
+        "chapterId": "ap-stats-ch-03",
+        "sectionId": "ap-stats-ch-03-section-03",
+        "sectionLabel": "Inference for Proportions",
+        "skillId": "4.F"
+      },
+      {
+        "id": "3.12.A",
+        "label": "Setting Up a Test for the Difference Between Two Population Proportions",
+        "chapterId": "ap-stats-ch-03",
+        "sectionId": "ap-stats-ch-03-section-03",
+        "sectionLabel": "Inference for Proportions",
+        "skillId": "4.F"
+      },
+      {
+        "id": "3.13.A",
+        "label": "Carrying Out a Test for the Difference Between Two Population Proportions",
+        "chapterId": "ap-stats-ch-03",
+        "sectionId": "ap-stats-ch-03-section-03",
+        "sectionLabel": "Inference for Proportions",
+        "skillId": "4.F"
+      },
+      {
+        "id": "3.14.A",
+        "label": "Setting Up a Chi-Square Test for Homogeneity or Independence",
+        "chapterId": "ap-stats-ch-03",
+        "sectionId": "ap-stats-ch-03-section-03",
+        "sectionLabel": "Inference for Proportions",
+        "skillId": "4.F"
+      },
+      {
+        "id": "3.15.A",
+        "label": "Carrying Out a Chi-Square Test for Homogeneity or Independence",
+        "chapterId": "ap-stats-ch-03",
+        "sectionId": "ap-stats-ch-03-section-03",
+        "sectionLabel": "Inference for Proportions",
+        "skillId": "4.F"
+      },
+      {
+        "id": "4.1.A",
+        "label": "Sampling Distributions for Sample Means",
+        "chapterId": "ap-stats-ch-04",
+        "sectionId": "ap-stats-ch-04-section-01",
+        "sectionLabel": "Inference for Means",
+        "skillId": "1.A"
+      },
+      {
+        "id": "4.2.A",
+        "label": "Constructing a Confidence Interval for a Population Mean or Population Mean Difference",
+        "chapterId": "ap-stats-ch-04",
+        "sectionId": "ap-stats-ch-04-section-01",
+        "sectionLabel": "Inference for Means",
+        "skillId": "1.A"
+      },
+      {
+        "id": "4.3.A",
+        "label": "Justifying a Claim Based on a Confidence Interval for a Population Mean or Population Mean Difference",
+        "chapterId": "ap-stats-ch-04",
+        "sectionId": "ap-stats-ch-04-section-01",
+        "sectionLabel": "Inference for Means",
+        "skillId": "1.A"
+      },
+      {
+        "id": "4.4.A",
+        "label": "Setting Up a Test for a Population Mean or Population Mean Difference",
+        "chapterId": "ap-stats-ch-04",
+        "sectionId": "ap-stats-ch-04-section-02",
+        "sectionLabel": "Inference for Means",
+        "skillId": "1.A"
+      },
+      {
+        "id": "4.5.A",
+        "label": "Carrying Out a Test for a Population Mean or Population Mean Difference",
+        "chapterId": "ap-stats-ch-04",
+        "sectionId": "ap-stats-ch-04-section-02",
+        "sectionLabel": "Inference for Means",
+        "skillId": "1.A"
+      },
+      {
+        "id": "4.6.A",
+        "label": "Sampling Distributions for the Difference Between Two Sample Means",
+        "chapterId": "ap-stats-ch-04",
+        "sectionId": "ap-stats-ch-04-section-02",
+        "sectionLabel": "Inference for Means",
+        "skillId": "1.A"
+      },
+      {
+        "id": "4.7.A",
+        "label": "Constructing a Confidence Interval for the Difference Between Two Population Means",
+        "chapterId": "ap-stats-ch-04",
+        "sectionId": "ap-stats-ch-04-section-03",
+        "sectionLabel": "Inference for Means",
+        "skillId": "1.A"
+      },
+      {
+        "id": "4.8.A",
+        "label": "Justifying a Claim Based on a Confidence Interval for the Difference Between Two Population Means",
+        "chapterId": "ap-stats-ch-04",
+        "sectionId": "ap-stats-ch-04-section-03",
+        "sectionLabel": "Inference for Means",
+        "skillId": "1.A"
+      },
+      {
+        "id": "4.9.A",
+        "label": "Setting Up a Test for the Difference Between Two Population Means",
+        "chapterId": "ap-stats-ch-04",
+        "sectionId": "ap-stats-ch-04-section-03",
+        "sectionLabel": "Inference for Means",
+        "skillId": "1.A"
+      },
+      {
+        "id": "4.10.A",
+        "label": "Carrying Out a Test for the Difference Between Two Population Means",
+        "chapterId": "ap-stats-ch-04",
+        "sectionId": "ap-stats-ch-04-section-03",
+        "sectionLabel": "Inference for Means",
+        "skillId": "1.A"
+      },
+      {
+        "id": "5.1.A",
+        "label": "Graphical Representations Between Two Quantitative Variables",
+        "chapterId": "ap-stats-ch-05",
+        "sectionId": "ap-stats-ch-05-section-01",
+        "sectionLabel": "Regression Analysis",
+        "skillId": "2.A"
+      },
+      {
+        "id": "5.2.A",
+        "label": "Correlation",
+        "chapterId": "ap-stats-ch-05",
+        "sectionId": "ap-stats-ch-05-section-02",
+        "sectionLabel": "Regression Analysis",
+        "skillId": "2.A"
+      },
+      {
+        "id": "5.3.A",
+        "label": "Linear Regression Models",
+        "chapterId": "ap-stats-ch-05",
+        "sectionId": "ap-stats-ch-05-section-02",
+        "sectionLabel": "Regression Analysis",
+        "skillId": "2.A"
+      },
+      {
+        "id": "5.4.A",
+        "label": "Interpreting Linear Regression Models",
+        "chapterId": "ap-stats-ch-05",
+        "sectionId": "ap-stats-ch-05-section-03",
+        "sectionLabel": "Regression Analysis",
+        "skillId": "2.A"
+      },
+      {
+        "id": "5.5.A",
+        "label": "Least-Squares Regression",
+        "chapterId": "ap-stats-ch-05",
+        "sectionId": "ap-stats-ch-05-section-03",
+        "sectionLabel": "Regression Analysis",
+        "skillId": "2.A"
+      }
+    ],
+    "unitWeights": [
+      {
+        "id": "exploring-one-variable-data-and-collecting-data",
+        "label": "Unit 1: Exploring One-Variable Data and Collecting Data",
+        "officialWeightRange": [
+          0.2,
+          0.3
+        ]
+      },
+      {
+        "id": "probability-random-variables-and-probability-distributions",
+        "label": "Unit 2: Probability, Random Variables, and Probability Distributions",
+        "officialWeightRange": [
+          0.15,
+          0.25
+        ]
+      },
+      {
+        "id": "inference-for-categorical-data-proportions",
+        "label": "Unit 3: Inference for Categorical Data: Proportions",
+        "officialWeightRange": [
+          0.15,
+          0.25
+        ]
+      },
+      {
+        "id": "inference-for-quantitative-data-means",
+        "label": "Unit 4: Inference for Quantitative Data: Means",
+        "officialWeightRange": [
+          0.1,
+          0.2
+        ]
+      },
+      {
+        "id": "regression-analysis",
+        "label": "Unit 5: Regression Analysis",
+        "officialWeightRange": [
+          0.1,
+          0.2
+        ]
+      }
+    ]
+  },
+  "reviewStandard": "Independent source and editorial review against the public AP Statistics Course and Exam Description and openly available factual references. Independent AP Statistics subject-expert, accessibility, rights, production, field-testing, and psychometric review remain required.",
+  "disclaimer": "Independent, unofficial AP Statistics preparation material for internal foundation-pilot development only. Not affiliated with, endorsed by, or authored by College Board. AP and Advanced Placement are trademarks of College Board. No secure AP Classroom, Question Bank, Progress Check, official question, official rubric, or official stimulus was used or reproduced. This pilot does not provide official scores, score predictions, college-credit predictions, or automated FRQ scores.",
+  "sourceCatalog": [
+    {
+      "id": "ap-statistics-ced-fall-2026",
+      "title": "AP Statistics Course and Exam Description, Effective Fall 2026",
+      "organization": "College Board",
+      "url": "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+      "credibility": "The public Course and Exam Description supplies the revised unit, topic, skill, weighting, and exam-format framework. It is used for blueprint alignment only; no official assessment content is reproduced.",
+      "sourceType": "official-blueprint",
+      "reviewedAt": "2026-08-20"
+    },
+    {
+      "id": "ap-statistics-course-page",
+      "title": "AP Statistics course page",
+      "organization": "College Board",
+      "url": "https://apcentral.collegeboard.org/courses/ap-statistics",
+      "credibility": "The official course page provides current course context and links to the public assessment information.",
+      "sourceType": "official-course-page",
+      "reviewedAt": "2026-08-20"
+    },
+    {
+      "id": "introductory-statistics-2e",
+      "title": "Introductory Statistics 2e",
+      "organization": "OpenStax, Rice University",
+      "url": "https://openstax.org/details/books/introductory-statistics-2e",
+      "credibility": "An openly accessible introductory statistics text used for factual cross-checking and links. No textbook prose, figures, or assessment content is reproduced.",
+      "sourceType": "open-factual-cross-check",
+      "reviewedAt": "2026-08-20"
+    }
+  ],
+  "chapters": [
+    {
+      "id": "ap-stats-ch-01",
+      "title": "Unit 1: Exploring One-Variable Data and Collecting Data",
+      "domainId": "exploring-one-variable-data-and-collecting-data",
+      "domain": "One-Variable Data and Collecting Data",
+      "summary": "Describe distributions, calculate and interpret summaries, compare groups, and choose ethical sampling and experimental designs.",
+      "objectives": [
+        "Explain the concepts and statistical practices in One-Variable Data and Collecting Data."
+      ],
+      "topicCoverage": [
+        "1.1",
+        "1.2",
+        "1.3",
+        "1.4",
+        "1.5",
+        "1.6",
+        "1.7",
+        "1.8",
+        "1.9",
+        "1.10",
+        "1.11",
+        "1.12",
+        "1.13"
+      ],
+      "chapterTakeaways": [
+        "Name the target before calculating.",
+        "Verify conditions and design limits.",
+        "State what the evidence supports in context."
+      ],
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+        "https://apcentral.collegeboard.org/courses/ap-statistics",
+        "https://openstax.org/details/books/introductory-statistics-2e"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Original AP Statistics foundation chapter; independent review remains pending.",
+      "expertReviewStatus": "pending",
+      "accessibilityReviewStatus": "pending-independent-review",
+      "releaseEligible": false,
+      "sectionCount": 3,
+      "knowledgeCheckCount": 3,
+      "referenceCount": 3,
+      "sections": [
+        {
+          "id": "ap-stats-ch-01-section-01",
+          "heading": "Describe before calculating",
+          "content": "Name the variable type, shape, center, spread, and unusual features before choosing a summary.",
+          "keyTerms": [
+            "distribution",
+            "center",
+            "spread"
+          ],
+          "topicCoverage": [
+            "1.1",
+            "1.2",
+            "1.3",
+            "1.4"
+          ],
+          "references": [
+            "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+            "https://apcentral.collegeboard.org/courses/ap-statistics",
+            "https://openstax.org/details/books/introductory-statistics-2e"
+          ],
+          "contentBlocks": [
+            {
+              "type": "paragraph",
+              "text": "Name the variable type, shape, center, spread, and unusual features before choosing a summary. Describe distributions, calculate and interpret summaries, compare groups, and choose ethical sampling and experimental designs.",
+              "runs": [
+                {
+                  "text": "Name the variable type, shape, center, spread, and unusual features before choosing a summary. Describe distributions, calculate and interpret summaries, compare groups, and choose ethical sampling and experimental designs."
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "Reasoning move: identify the target, match the statistical method, verify the relevant conditions, and interpret the result in context.",
+              "runs": [
+                {
+                  "text": "Reasoning move: identify the target, match the statistical method, verify the relevant conditions, and interpret the result in context."
+                }
+              ]
+            },
+            {
+              "type": "list",
+              "ordered": false,
+              "items": [
+                {
+                  "text": "Do not treat a mean as resistant to outliers.",
+                  "runs": [
+                    {
+                      "text": "Do not treat a mean as resistant to outliers."
+                    }
+                  ]
+                },
+                {
+                  "text": "Do not use a histogram for a categorical variable.",
+                  "runs": [
+                    {
+                      "text": "Do not use a histogram for a categorical variable."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "Worked check: Name the variable type, shape, center, spread, and unusual features before choosing a summary. Start by naming the target quantity and the evidence available before calculating.",
+              "runs": [
+                {
+                  "text": "Worked check: Name the variable type, shape, center, spread, and unusual features before choosing a summary. Start by naming the target quantity and the evidence available before calculating."
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "Retrieval practice: answer each prompt before opening the related internal item bank.",
+              "runs": [
+                {
+                  "text": "Retrieval practice: answer each prompt before opening the related internal item bank."
+                }
+              ]
+            },
+            {
+              "type": "list",
+              "ordered": true,
+              "items": [
+                {
+                  "text": "Which parameter, variable, or distribution is the question about?",
+                  "runs": [
+                    {
+                      "text": "Which parameter, variable, or distribution is the question about?"
+                    }
+                  ]
+                },
+                {
+                  "text": "Which calculation, representation, or condition supports the claim?",
+                  "runs": [
+                    {
+                      "text": "Which calculation, representation, or condition supports the claim?"
+                    }
+                  ]
+                },
+                {
+                  "text": "What limitation keeps the conclusion from being broader than the design and evidence?",
+                  "runs": [
+                    {
+                      "text": "What limitation keeps the conclusion from being broader than the design and evidence?"
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "examples": [
+            "Name the statistical target before choosing a formula.",
+            "Link the numerical result to the population, sample, or study design in the prompt."
+          ],
+          "nonExamples": [
+            "Do not treat a mean as resistant to outliers.",
+            "Do not use a histogram for a categorical variable."
+          ],
+          "commonMisconceptions": [
+            "Do not treat a mean as resistant to outliers.",
+            "Do not use a histogram for a categorical variable."
+          ],
+          "workedDataExample": {
+            "headers": [
+              "Study move",
+              "Question to ask"
+            ],
+            "rows": [
+              [
+                "Target",
+                "What variable, parameter, or relationship is being studied?"
+              ],
+              [
+                "Method",
+                "Which procedure or display matches the design?"
+              ],
+              [
+                "Scope",
+                "What can the evidence support, and what remains unknown?"
+              ]
+            ]
+          },
+          "retrievalPrompts": [
+            "Which parameter, variable, or distribution is the question about?",
+            "Which calculation, representation, or condition supports the claim?",
+            "What limitation keeps the conclusion from being broader than the design and evidence?"
+          ],
+          "transferMove": "Transfer the same target-method-condition-conclusion sequence to a new statistical context.",
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "reviewNote": "Original AP Statistics foundation lesson; independent subject-expert, accessibility, rights, production, and psychometric review remain pending.",
+          "expertReviewStatus": "pending",
+          "accessibilityReviewStatus": "pending-independent-review",
+          "contentComplete": true,
+          "releaseEligible": false,
+          "contentEnhancementVersion": "ap-statistics-foundation-v2"
+        },
+        {
+          "id": "ap-stats-ch-01-section-02",
+          "heading": "Collect data with purpose",
+          "content": "Match the sampling method or experimental design to the population, question, and desired conclusion.",
+          "keyTerms": [
+            "sample",
+            "bias",
+            "random assignment"
+          ],
+          "topicCoverage": [
+            "1.5",
+            "1.6",
+            "1.7",
+            "1.8"
+          ],
+          "references": [
+            "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+            "https://apcentral.collegeboard.org/courses/ap-statistics",
+            "https://openstax.org/details/books/introductory-statistics-2e"
+          ],
+          "contentBlocks": [
+            {
+              "type": "paragraph",
+              "text": "Match the sampling method or experimental design to the population, question, and desired conclusion. Describe distributions, calculate and interpret summaries, compare groups, and choose ethical sampling and experimental designs.",
+              "runs": [
+                {
+                  "text": "Match the sampling method or experimental design to the population, question, and desired conclusion. Describe distributions, calculate and interpret summaries, compare groups, and choose ethical sampling and experimental designs."
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "Reasoning move: identify the target, match the statistical method, verify the relevant conditions, and interpret the result in context.",
+              "runs": [
+                {
+                  "text": "Reasoning move: identify the target, match the statistical method, verify the relevant conditions, and interpret the result in context."
+                }
+              ]
+            },
+            {
+              "type": "list",
+              "ordered": false,
+              "items": [
+                {
+                  "text": "Random sampling supports generalization; random assignment supports causation.",
+                  "runs": [
+                    {
+                      "text": "Random sampling supports generalization; random assignment supports causation."
+                    }
+                  ]
+                },
+                {
+                  "text": "A large biased sample is still biased.",
+                  "runs": [
+                    {
+                      "text": "A large biased sample is still biased."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "Worked check: Match the sampling method or experimental design to the population, question, and desired conclusion. Start by naming the target quantity and the evidence available before calculating.",
+              "runs": [
+                {
+                  "text": "Worked check: Match the sampling method or experimental design to the population, question, and desired conclusion. Start by naming the target quantity and the evidence available before calculating."
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "Retrieval practice: answer each prompt before opening the related internal item bank.",
+              "runs": [
+                {
+                  "text": "Retrieval practice: answer each prompt before opening the related internal item bank."
+                }
+              ]
+            },
+            {
+              "type": "list",
+              "ordered": true,
+              "items": [
+                {
+                  "text": "Which parameter, variable, or distribution is the question about?",
+                  "runs": [
+                    {
+                      "text": "Which parameter, variable, or distribution is the question about?"
+                    }
+                  ]
+                },
+                {
+                  "text": "Which calculation, representation, or condition supports the claim?",
+                  "runs": [
+                    {
+                      "text": "Which calculation, representation, or condition supports the claim?"
+                    }
+                  ]
+                },
+                {
+                  "text": "What limitation keeps the conclusion from being broader than the design and evidence?",
+                  "runs": [
+                    {
+                      "text": "What limitation keeps the conclusion from being broader than the design and evidence?"
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "examples": [
+            "Name the statistical target before choosing a formula.",
+            "Link the numerical result to the population, sample, or study design in the prompt."
+          ],
+          "nonExamples": [
+            "Random sampling supports generalization; random assignment supports causation.",
+            "A large biased sample is still biased."
+          ],
+          "commonMisconceptions": [
+            "Random sampling supports generalization; random assignment supports causation.",
+            "A large biased sample is still biased."
+          ],
+          "workedDataExample": {
+            "headers": [
+              "Study move",
+              "Question to ask"
+            ],
+            "rows": [
+              [
+                "Target",
+                "What variable, parameter, or relationship is being studied?"
+              ],
+              [
+                "Method",
+                "Which procedure or display matches the design?"
+              ],
+              [
+                "Scope",
+                "What can the evidence support, and what remains unknown?"
+              ]
+            ]
+          },
+          "retrievalPrompts": [
+            "Which parameter, variable, or distribution is the question about?",
+            "Which calculation, representation, or condition supports the claim?",
+            "What limitation keeps the conclusion from being broader than the design and evidence?"
+          ],
+          "transferMove": "Transfer the same target-method-condition-conclusion sequence to a new statistical context.",
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "reviewNote": "Original AP Statistics foundation lesson; independent subject-expert, accessibility, rights, production, and psychometric review remain pending.",
+          "expertReviewStatus": "pending",
+          "accessibilityReviewStatus": "pending-independent-review",
+          "contentComplete": true,
+          "releaseEligible": false,
+          "contentEnhancementVersion": "ap-statistics-foundation-v2"
+        },
+        {
+          "id": "ap-stats-ch-01-section-03",
+          "heading": "Keep conclusions in scope",
+          "content": "State what the design and data support, and distinguish a statistic from the population parameter it estimates.",
+          "keyTerms": [
+            "parameter",
+            "statistic",
+            "causation"
+          ],
+          "topicCoverage": [
+            "1.9",
+            "1.10",
+            "1.11",
+            "1.12",
+            "1.13"
+          ],
+          "references": [
+            "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+            "https://apcentral.collegeboard.org/courses/ap-statistics",
+            "https://openstax.org/details/books/introductory-statistics-2e"
+          ],
+          "contentBlocks": [
+            {
+              "type": "paragraph",
+              "text": "State what the design and data support, and distinguish a statistic from the population parameter it estimates. Describe distributions, calculate and interpret summaries, compare groups, and choose ethical sampling and experimental designs.",
+              "runs": [
+                {
+                  "text": "State what the design and data support, and distinguish a statistic from the population parameter it estimates. Describe distributions, calculate and interpret summaries, compare groups, and choose ethical sampling and experimental designs."
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "Reasoning move: identify the target, match the statistical method, verify the relevant conditions, and interpret the result in context.",
+              "runs": [
+                {
+                  "text": "Reasoning move: identify the target, match the statistical method, verify the relevant conditions, and interpret the result in context."
+                }
+              ]
+            },
+            {
+              "type": "list",
+              "ordered": false,
+              "items": [
+                {
+                  "text": "An observational study cannot by itself establish cause and effect.",
+                  "runs": [
+                    {
+                      "text": "An observational study cannot by itself establish cause and effect."
+                    }
+                  ]
+                },
+                {
+                  "text": "A sample statistic is not automatically equal to the parameter.",
+                  "runs": [
+                    {
+                      "text": "A sample statistic is not automatically equal to the parameter."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "Worked check: State what the design and data support, and distinguish a statistic from the population parameter it estimates. Start by naming the target quantity and the evidence available before calculating.",
+              "runs": [
+                {
+                  "text": "Worked check: State what the design and data support, and distinguish a statistic from the population parameter it estimates. Start by naming the target quantity and the evidence available before calculating."
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "Retrieval practice: answer each prompt before opening the related internal item bank.",
+              "runs": [
+                {
+                  "text": "Retrieval practice: answer each prompt before opening the related internal item bank."
+                }
+              ]
+            },
+            {
+              "type": "list",
+              "ordered": true,
+              "items": [
+                {
+                  "text": "Which parameter, variable, or distribution is the question about?",
+                  "runs": [
+                    {
+                      "text": "Which parameter, variable, or distribution is the question about?"
+                    }
+                  ]
+                },
+                {
+                  "text": "Which calculation, representation, or condition supports the claim?",
+                  "runs": [
+                    {
+                      "text": "Which calculation, representation, or condition supports the claim?"
+                    }
+                  ]
+                },
+                {
+                  "text": "What limitation keeps the conclusion from being broader than the design and evidence?",
+                  "runs": [
+                    {
+                      "text": "What limitation keeps the conclusion from being broader than the design and evidence?"
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "examples": [
+            "Name the statistical target before choosing a formula.",
+            "Link the numerical result to the population, sample, or study design in the prompt."
+          ],
+          "nonExamples": [
+            "An observational study cannot by itself establish cause and effect.",
+            "A sample statistic is not automatically equal to the parameter."
+          ],
+          "commonMisconceptions": [
+            "An observational study cannot by itself establish cause and effect.",
+            "A sample statistic is not automatically equal to the parameter."
+          ],
+          "workedDataExample": {
+            "headers": [
+              "Study move",
+              "Question to ask"
+            ],
+            "rows": [
+              [
+                "Target",
+                "What variable, parameter, or relationship is being studied?"
+              ],
+              [
+                "Method",
+                "Which procedure or display matches the design?"
+              ],
+              [
+                "Scope",
+                "What can the evidence support, and what remains unknown?"
+              ]
+            ]
+          },
+          "retrievalPrompts": [
+            "Which parameter, variable, or distribution is the question about?",
+            "Which calculation, representation, or condition supports the claim?",
+            "What limitation keeps the conclusion from being broader than the design and evidence?"
+          ],
+          "transferMove": "Transfer the same target-method-condition-conclusion sequence to a new statistical context.",
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "reviewNote": "Original AP Statistics foundation lesson; independent subject-expert, accessibility, rights, production, and psychometric review remain pending.",
+          "expertReviewStatus": "pending",
+          "accessibilityReviewStatus": "pending-independent-review",
+          "contentComplete": true,
+          "releaseEligible": false,
+          "contentEnhancementVersion": "ap-statistics-foundation-v2"
+        }
+      ],
+      "knowledgeChecks": [
+        {
+          "id": "ap-stats-ch-01-section-01-check",
+          "chapterId": "ap-stats-ch-01",
+          "sectionId": "ap-stats-ch-01-section-01",
+          "type": "single-choice",
+          "prompt": "Which study move best supports accurate reasoning in One-Variable Data and Collecting Data?",
+          "choices": [
+            "Identify the target, match the method, check conditions, and state the conclusion in context.",
+            "Choose a procedure because it is the most familiar one.",
+            "Treat a sample statistic as the population parameter.",
+            "Generalize beyond the population and design represented by the data."
+          ],
+          "answerIndex": 0,
+          "rationale": "Reliable AP Statistics reasoning connects the target, method, conditions, evidence, and scope of the conclusion.",
+          "references": [
+            "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+            "https://apcentral.collegeboard.org/courses/ap-statistics",
+            "https://openstax.org/details/books/introductory-statistics-2e"
+          ],
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "reviewNote": "Original retrieval check; independent AP Statistics subject-expert and psychometric review remain pending.",
+          "skillId": "2.A",
+          "topicIds": [
+            "1.1",
+            "1.2",
+            "1.3",
+            "1.4"
+          ]
+        },
+        {
+          "id": "ap-stats-ch-01-section-02-check",
+          "chapterId": "ap-stats-ch-01",
+          "sectionId": "ap-stats-ch-01-section-02",
+          "type": "single-choice",
+          "prompt": "Which study move best supports accurate reasoning in One-Variable Data and Collecting Data?",
+          "choices": [
+            "Identify the target, match the method, check conditions, and state the conclusion in context.",
+            "Choose a procedure because it is the most familiar one.",
+            "Treat a sample statistic as the population parameter.",
+            "Generalize beyond the population and design represented by the data."
+          ],
+          "answerIndex": 0,
+          "rationale": "Reliable AP Statistics reasoning connects the target, method, conditions, evidence, and scope of the conclusion.",
+          "references": [
+            "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+            "https://apcentral.collegeboard.org/courses/ap-statistics",
+            "https://openstax.org/details/books/introductory-statistics-2e"
+          ],
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "reviewNote": "Original retrieval check; independent AP Statistics subject-expert and psychometric review remain pending.",
+          "skillId": "2.A",
+          "topicIds": [
+            "1.5",
+            "1.6",
+            "1.7",
+            "1.8"
+          ]
+        },
+        {
+          "id": "ap-stats-ch-01-section-03-check",
+          "chapterId": "ap-stats-ch-01",
+          "sectionId": "ap-stats-ch-01-section-03",
+          "type": "single-choice",
+          "prompt": "Which study move best supports accurate reasoning in One-Variable Data and Collecting Data?",
+          "choices": [
+            "Identify the target, match the method, check conditions, and state the conclusion in context.",
+            "Choose a procedure because it is the most familiar one.",
+            "Treat a sample statistic as the population parameter.",
+            "Generalize beyond the population and design represented by the data."
+          ],
+          "answerIndex": 0,
+          "rationale": "Reliable AP Statistics reasoning connects the target, method, conditions, evidence, and scope of the conclusion.",
+          "references": [
+            "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+            "https://apcentral.collegeboard.org/courses/ap-statistics",
+            "https://openstax.org/details/books/introductory-statistics-2e"
+          ],
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "reviewNote": "Original retrieval check; independent AP Statistics subject-expert and psychometric review remain pending.",
+          "skillId": "2.A",
+          "topicIds": [
+            "1.9",
+            "1.10",
+            "1.11",
+            "1.12",
+            "1.13"
+          ]
+        }
+      ],
+      "contentComplete": true,
+      "foundationPrototype": true
+    },
+    {
+      "id": "ap-stats-ch-02",
+      "title": "Unit 2: Probability, Random Variables, and Probability Distributions",
+      "domainId": "probability-random-variables-and-probability-distributions",
+      "domain": "Probability and Random Variables",
+      "summary": "Use tables, simulation, probability rules, random variables, binomial models, normal models, and sampling-distribution reasoning to describe uncertainty.",
+      "objectives": [
+        "Explain the concepts and statistical practices in Probability and Random Variables."
+      ],
+      "topicCoverage": [
+        "2.1",
+        "2.2",
+        "2.3",
+        "2.4",
+        "2.5",
+        "2.6",
+        "2.7",
+        "2.8",
+        "2.9",
+        "2.10",
+        "2.11",
+        "2.12"
+      ],
+      "chapterTakeaways": [
+        "Name the target before calculating.",
+        "Verify conditions and design limits.",
+        "State what the evidence supports in context."
+      ],
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+        "https://apcentral.collegeboard.org/courses/ap-statistics",
+        "https://openstax.org/details/books/introductory-statistics-2e"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Original AP Statistics foundation chapter; independent review remains pending.",
+      "expertReviewStatus": "pending",
+      "accessibilityReviewStatus": "pending-independent-review",
+      "releaseEligible": false,
+      "sectionCount": 3,
+      "knowledgeCheckCount": 3,
+      "referenceCount": 3,
+      "sections": [
+        {
+          "id": "ap-stats-ch-02-section-01",
+          "heading": "Represent joint behavior",
+          "content": "Use two-way tables and conditional proportions to compare groups without confusing counts and rates.",
+          "keyTerms": [
+            "two-way table",
+            "conditional proportion",
+            "association"
+          ],
+          "topicCoverage": [
+            "2.1",
+            "2.2",
+            "2.3",
+            "2.4"
+          ],
+          "references": [
+            "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+            "https://apcentral.collegeboard.org/courses/ap-statistics",
+            "https://openstax.org/details/books/introductory-statistics-2e"
+          ],
+          "contentBlocks": [
+            {
+              "type": "paragraph",
+              "text": "Use two-way tables and conditional proportions to compare groups without confusing counts and rates. Use tables, simulation, probability rules, random variables, binomial models, normal models, and sampling-distribution reasoning to describe uncertainty.",
+              "runs": [
+                {
+                  "text": "Use two-way tables and conditional proportions to compare groups without confusing counts and rates. Use tables, simulation, probability rules, random variables, binomial models, normal models, and sampling-distribution reasoning to describe uncertainty."
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "Reasoning move: identify the target, match the statistical method, verify the relevant conditions, and interpret the result in context.",
+              "runs": [
+                {
+                  "text": "Reasoning move: identify the target, match the statistical method, verify the relevant conditions, and interpret the result in context."
+                }
+              ]
+            },
+            {
+              "type": "list",
+              "ordered": false,
+              "items": [
+                {
+                  "text": "A row percentage and a column percentage answer different questions.",
+                  "runs": [
+                    {
+                      "text": "A row percentage and a column percentage answer different questions."
+                    }
+                  ]
+                },
+                {
+                  "text": "Association is not automatically causation.",
+                  "runs": [
+                    {
+                      "text": "Association is not automatically causation."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "Worked check: Use two-way tables and conditional proportions to compare groups without confusing counts and rates. Start by naming the target quantity and the evidence available before calculating.",
+              "runs": [
+                {
+                  "text": "Worked check: Use two-way tables and conditional proportions to compare groups without confusing counts and rates. Start by naming the target quantity and the evidence available before calculating."
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "Retrieval practice: answer each prompt before opening the related internal item bank.",
+              "runs": [
+                {
+                  "text": "Retrieval practice: answer each prompt before opening the related internal item bank."
+                }
+              ]
+            },
+            {
+              "type": "list",
+              "ordered": true,
+              "items": [
+                {
+                  "text": "Which parameter, variable, or distribution is the question about?",
+                  "runs": [
+                    {
+                      "text": "Which parameter, variable, or distribution is the question about?"
+                    }
+                  ]
+                },
+                {
+                  "text": "Which calculation, representation, or condition supports the claim?",
+                  "runs": [
+                    {
+                      "text": "Which calculation, representation, or condition supports the claim?"
+                    }
+                  ]
+                },
+                {
+                  "text": "What limitation keeps the conclusion from being broader than the design and evidence?",
+                  "runs": [
+                    {
+                      "text": "What limitation keeps the conclusion from being broader than the design and evidence?"
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "examples": [
+            "Name the statistical target before choosing a formula.",
+            "Link the numerical result to the population, sample, or study design in the prompt."
+          ],
+          "nonExamples": [
+            "A row percentage and a column percentage answer different questions.",
+            "Association is not automatically causation."
+          ],
+          "commonMisconceptions": [
+            "A row percentage and a column percentage answer different questions.",
+            "Association is not automatically causation."
+          ],
+          "workedDataExample": {
+            "headers": [
+              "Study move",
+              "Question to ask"
+            ],
+            "rows": [
+              [
+                "Target",
+                "What variable, parameter, or relationship is being studied?"
+              ],
+              [
+                "Method",
+                "Which procedure or display matches the design?"
+              ],
+              [
+                "Scope",
+                "What can the evidence support, and what remains unknown?"
+              ]
+            ]
+          },
+          "retrievalPrompts": [
+            "Which parameter, variable, or distribution is the question about?",
+            "Which calculation, representation, or condition supports the claim?",
+            "What limitation keeps the conclusion from being broader than the design and evidence?"
+          ],
+          "transferMove": "Transfer the same target-method-condition-conclusion sequence to a new statistical context.",
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "reviewNote": "Original AP Statistics foundation lesson; independent subject-expert, accessibility, rights, production, and psychometric review remain pending.",
+          "expertReviewStatus": "pending",
+          "accessibilityReviewStatus": "pending-independent-review",
+          "contentComplete": true,
+          "releaseEligible": false,
+          "contentEnhancementVersion": "ap-statistics-foundation-v2"
+        },
+        {
+          "id": "ap-stats-ch-02-section-02",
+          "heading": "Build probability models",
+          "content": "Use complements, unions, intersections, conditional probability, and independence with the correct denominator.",
+          "keyTerms": [
+            "complement",
+            "conditional probability",
+            "independence"
+          ],
+          "topicCoverage": [
+            "2.5",
+            "2.6",
+            "2.7",
+            "2.8"
+          ],
+          "references": [
+            "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+            "https://apcentral.collegeboard.org/courses/ap-statistics",
+            "https://openstax.org/details/books/introductory-statistics-2e"
+          ],
+          "contentBlocks": [
+            {
+              "type": "paragraph",
+              "text": "Use complements, unions, intersections, conditional probability, and independence with the correct denominator. Use tables, simulation, probability rules, random variables, binomial models, normal models, and sampling-distribution reasoning to describe uncertainty.",
+              "runs": [
+                {
+                  "text": "Use complements, unions, intersections, conditional probability, and independence with the correct denominator. Use tables, simulation, probability rules, random variables, binomial models, normal models, and sampling-distribution reasoning to describe uncertainty."
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "Reasoning move: identify the target, match the statistical method, verify the relevant conditions, and interpret the result in context.",
+              "runs": [
+                {
+                  "text": "Reasoning move: identify the target, match the statistical method, verify the relevant conditions, and interpret the result in context."
+                }
+              ]
+            },
+            {
+              "type": "list",
+              "ordered": false,
+              "items": [
+                {
+                  "text": "Mutually exclusive events are not generally independent.",
+                  "runs": [
+                    {
+                      "text": "Mutually exclusive events are not generally independent."
+                    }
+                  ]
+                },
+                {
+                  "text": "The condition after the vertical bar sets the denominator.",
+                  "runs": [
+                    {
+                      "text": "The condition after the vertical bar sets the denominator."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "Worked check: Use complements, unions, intersections, conditional probability, and independence with the correct denominator. Start by naming the target quantity and the evidence available before calculating.",
+              "runs": [
+                {
+                  "text": "Worked check: Use complements, unions, intersections, conditional probability, and independence with the correct denominator. Start by naming the target quantity and the evidence available before calculating."
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "Retrieval practice: answer each prompt before opening the related internal item bank.",
+              "runs": [
+                {
+                  "text": "Retrieval practice: answer each prompt before opening the related internal item bank."
+                }
+              ]
+            },
+            {
+              "type": "list",
+              "ordered": true,
+              "items": [
+                {
+                  "text": "Which parameter, variable, or distribution is the question about?",
+                  "runs": [
+                    {
+                      "text": "Which parameter, variable, or distribution is the question about?"
+                    }
+                  ]
+                },
+                {
+                  "text": "Which calculation, representation, or condition supports the claim?",
+                  "runs": [
+                    {
+                      "text": "Which calculation, representation, or condition supports the claim?"
+                    }
+                  ]
+                },
+                {
+                  "text": "What limitation keeps the conclusion from being broader than the design and evidence?",
+                  "runs": [
+                    {
+                      "text": "What limitation keeps the conclusion from being broader than the design and evidence?"
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "examples": [
+            "Name the statistical target before choosing a formula.",
+            "Link the numerical result to the population, sample, or study design in the prompt."
+          ],
+          "nonExamples": [
+            "Mutually exclusive events are not generally independent.",
+            "The condition after the vertical bar sets the denominator."
+          ],
+          "commonMisconceptions": [
+            "Mutually exclusive events are not generally independent.",
+            "The condition after the vertical bar sets the denominator."
+          ],
+          "workedDataExample": {
+            "headers": [
+              "Study move",
+              "Question to ask"
+            ],
+            "rows": [
+              [
+                "Target",
+                "What variable, parameter, or relationship is being studied?"
+              ],
+              [
+                "Method",
+                "Which procedure or display matches the design?"
+              ],
+              [
+                "Scope",
+                "What can the evidence support, and what remains unknown?"
+              ]
+            ]
+          },
+          "retrievalPrompts": [
+            "Which parameter, variable, or distribution is the question about?",
+            "Which calculation, representation, or condition supports the claim?",
+            "What limitation keeps the conclusion from being broader than the design and evidence?"
+          ],
+          "transferMove": "Transfer the same target-method-condition-conclusion sequence to a new statistical context.",
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "reviewNote": "Original AP Statistics foundation lesson; independent subject-expert, accessibility, rights, production, and psychometric review remain pending.",
+          "expertReviewStatus": "pending",
+          "accessibilityReviewStatus": "pending-independent-review",
+          "contentComplete": true,
+          "releaseEligible": false,
+          "contentEnhancementVersion": "ap-statistics-foundation-v2"
+        },
+        {
+          "id": "ap-stats-ch-02-section-03",
+          "heading": "Model random variation",
+          "content": "Connect probability distributions to expected value, binomial counts, normal models, and sampling distributions.",
+          "keyTerms": [
+            "random variable",
+            "binomial",
+            "normal model"
+          ],
+          "topicCoverage": [
+            "2.9",
+            "2.10",
+            "2.11",
+            "2.12"
+          ],
+          "references": [
+            "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+            "https://apcentral.collegeboard.org/courses/ap-statistics",
+            "https://openstax.org/details/books/introductory-statistics-2e"
+          ],
+          "contentBlocks": [
+            {
+              "type": "paragraph",
+              "text": "Connect probability distributions to expected value, binomial counts, normal models, and sampling distributions. Use tables, simulation, probability rules, random variables, binomial models, normal models, and sampling-distribution reasoning to describe uncertainty.",
+              "runs": [
+                {
+                  "text": "Connect probability distributions to expected value, binomial counts, normal models, and sampling distributions. Use tables, simulation, probability rules, random variables, binomial models, normal models, and sampling-distribution reasoning to describe uncertainty."
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "Reasoning move: identify the target, match the statistical method, verify the relevant conditions, and interpret the result in context.",
+              "runs": [
+                {
+                  "text": "Reasoning move: identify the target, match the statistical method, verify the relevant conditions, and interpret the result in context."
+                }
+              ]
+            },
+            {
+              "type": "list",
+              "ordered": false,
+              "items": [
+                {
+                  "text": "A binomial model needs a fixed number of independent trials.",
+                  "runs": [
+                    {
+                      "text": "A binomial model needs a fixed number of independent trials."
+                    }
+                  ]
+                },
+                {
+                  "text": "The Central Limit Theorem concerns sampling distributions, not every individual observation.",
+                  "runs": [
+                    {
+                      "text": "The Central Limit Theorem concerns sampling distributions, not every individual observation."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "Worked check: Connect probability distributions to expected value, binomial counts, normal models, and sampling distributions. Start by naming the target quantity and the evidence available before calculating.",
+              "runs": [
+                {
+                  "text": "Worked check: Connect probability distributions to expected value, binomial counts, normal models, and sampling distributions. Start by naming the target quantity and the evidence available before calculating."
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "Retrieval practice: answer each prompt before opening the related internal item bank.",
+              "runs": [
+                {
+                  "text": "Retrieval practice: answer each prompt before opening the related internal item bank."
+                }
+              ]
+            },
+            {
+              "type": "list",
+              "ordered": true,
+              "items": [
+                {
+                  "text": "Which parameter, variable, or distribution is the question about?",
+                  "runs": [
+                    {
+                      "text": "Which parameter, variable, or distribution is the question about?"
+                    }
+                  ]
+                },
+                {
+                  "text": "Which calculation, representation, or condition supports the claim?",
+                  "runs": [
+                    {
+                      "text": "Which calculation, representation, or condition supports the claim?"
+                    }
+                  ]
+                },
+                {
+                  "text": "What limitation keeps the conclusion from being broader than the design and evidence?",
+                  "runs": [
+                    {
+                      "text": "What limitation keeps the conclusion from being broader than the design and evidence?"
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "examples": [
+            "Name the statistical target before choosing a formula.",
+            "Link the numerical result to the population, sample, or study design in the prompt."
+          ],
+          "nonExamples": [
+            "A binomial model needs a fixed number of independent trials.",
+            "The Central Limit Theorem concerns sampling distributions, not every individual observation."
+          ],
+          "commonMisconceptions": [
+            "A binomial model needs a fixed number of independent trials.",
+            "The Central Limit Theorem concerns sampling distributions, not every individual observation."
+          ],
+          "workedDataExample": {
+            "headers": [
+              "Study move",
+              "Question to ask"
+            ],
+            "rows": [
+              [
+                "Target",
+                "What variable, parameter, or relationship is being studied?"
+              ],
+              [
+                "Method",
+                "Which procedure or display matches the design?"
+              ],
+              [
+                "Scope",
+                "What can the evidence support, and what remains unknown?"
+              ]
+            ]
+          },
+          "retrievalPrompts": [
+            "Which parameter, variable, or distribution is the question about?",
+            "Which calculation, representation, or condition supports the claim?",
+            "What limitation keeps the conclusion from being broader than the design and evidence?"
+          ],
+          "transferMove": "Transfer the same target-method-condition-conclusion sequence to a new statistical context.",
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "reviewNote": "Original AP Statistics foundation lesson; independent subject-expert, accessibility, rights, production, and psychometric review remain pending.",
+          "expertReviewStatus": "pending",
+          "accessibilityReviewStatus": "pending-independent-review",
+          "contentComplete": true,
+          "releaseEligible": false,
+          "contentEnhancementVersion": "ap-statistics-foundation-v2"
+        }
+      ],
+      "knowledgeChecks": [
+        {
+          "id": "ap-stats-ch-02-section-01-check",
+          "chapterId": "ap-stats-ch-02",
+          "sectionId": "ap-stats-ch-02-section-01",
+          "type": "single-choice",
+          "prompt": "Which study move best supports accurate reasoning in Probability and Random Variables?",
+          "choices": [
+            "Identify the target, match the method, check conditions, and state the conclusion in context.",
+            "Choose a procedure because it is the most familiar one.",
+            "Treat a sample statistic as the population parameter.",
+            "Generalize beyond the population and design represented by the data."
+          ],
+          "answerIndex": 0,
+          "rationale": "Reliable AP Statistics reasoning connects the target, method, conditions, evidence, and scope of the conclusion.",
+          "references": [
+            "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+            "https://apcentral.collegeboard.org/courses/ap-statistics",
+            "https://openstax.org/details/books/introductory-statistics-2e"
+          ],
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "reviewNote": "Original retrieval check; independent AP Statistics subject-expert and psychometric review remain pending.",
+          "skillId": "3.C",
+          "topicIds": [
+            "2.1",
+            "2.2",
+            "2.3",
+            "2.4"
+          ]
+        },
+        {
+          "id": "ap-stats-ch-02-section-02-check",
+          "chapterId": "ap-stats-ch-02",
+          "sectionId": "ap-stats-ch-02-section-02",
+          "type": "single-choice",
+          "prompt": "Which study move best supports accurate reasoning in Probability and Random Variables?",
+          "choices": [
+            "Identify the target, match the method, check conditions, and state the conclusion in context.",
+            "Choose a procedure because it is the most familiar one.",
+            "Treat a sample statistic as the population parameter.",
+            "Generalize beyond the population and design represented by the data."
+          ],
+          "answerIndex": 0,
+          "rationale": "Reliable AP Statistics reasoning connects the target, method, conditions, evidence, and scope of the conclusion.",
+          "references": [
+            "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+            "https://apcentral.collegeboard.org/courses/ap-statistics",
+            "https://openstax.org/details/books/introductory-statistics-2e"
+          ],
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "reviewNote": "Original retrieval check; independent AP Statistics subject-expert and psychometric review remain pending.",
+          "skillId": "3.C",
+          "topicIds": [
+            "2.5",
+            "2.6",
+            "2.7",
+            "2.8"
+          ]
+        },
+        {
+          "id": "ap-stats-ch-02-section-03-check",
+          "chapterId": "ap-stats-ch-02",
+          "sectionId": "ap-stats-ch-02-section-03",
+          "type": "single-choice",
+          "prompt": "Which study move best supports accurate reasoning in Probability and Random Variables?",
+          "choices": [
+            "Identify the target, match the method, check conditions, and state the conclusion in context.",
+            "Choose a procedure because it is the most familiar one.",
+            "Treat a sample statistic as the population parameter.",
+            "Generalize beyond the population and design represented by the data."
+          ],
+          "answerIndex": 0,
+          "rationale": "Reliable AP Statistics reasoning connects the target, method, conditions, evidence, and scope of the conclusion.",
+          "references": [
+            "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+            "https://apcentral.collegeboard.org/courses/ap-statistics",
+            "https://openstax.org/details/books/introductory-statistics-2e"
+          ],
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "reviewNote": "Original retrieval check; independent AP Statistics subject-expert and psychometric review remain pending.",
+          "skillId": "3.C",
+          "topicIds": [
+            "2.9",
+            "2.10",
+            "2.11",
+            "2.12"
+          ]
+        }
+      ],
+      "contentComplete": true,
+      "foundationPrototype": true
+    },
+    {
+      "id": "ap-stats-ch-03",
+      "title": "Unit 3: Inference for Categorical Data: Proportions",
+      "domainId": "inference-for-categorical-data-proportions",
+      "domain": "Inference for Proportions",
+      "summary": "Build and interpret confidence intervals and tests for proportions, compare two proportions, reason about errors and power, and use chi-square procedures for categorical data.",
+      "objectives": [
+        "Explain the concepts and statistical practices in Inference for Proportions."
+      ],
+      "topicCoverage": [
+        "3.1",
+        "3.2",
+        "3.3",
+        "3.4",
+        "3.5",
+        "3.6",
+        "3.7",
+        "3.8",
+        "3.9",
+        "3.10",
+        "3.11",
+        "3.12",
+        "3.13",
+        "3.14",
+        "3.15"
+      ],
+      "chapterTakeaways": [
+        "Name the target before calculating.",
+        "Verify conditions and design limits.",
+        "State what the evidence supports in context."
+      ],
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+        "https://apcentral.collegeboard.org/courses/ap-statistics",
+        "https://openstax.org/details/books/introductory-statistics-2e"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Original AP Statistics foundation chapter; independent review remains pending.",
+      "expertReviewStatus": "pending",
+      "accessibilityReviewStatus": "pending-independent-review",
+      "releaseEligible": false,
+      "sectionCount": 3,
+      "knowledgeCheckCount": 3,
+      "referenceCount": 3,
+      "sections": [
+        {
+          "id": "ap-stats-ch-03-section-01",
+          "heading": "Estimate a proportion",
+          "content": "Choose a confidence interval that matches the parameter and verify randomization, independence, and large-count conditions.",
+          "keyTerms": [
+            "estimator",
+            "confidence interval",
+            "standard error"
+          ],
+          "topicCoverage": [
+            "3.1",
+            "3.2",
+            "3.3",
+            "3.4",
+            "3.5"
+          ],
+          "references": [
+            "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+            "https://apcentral.collegeboard.org/courses/ap-statistics",
+            "https://openstax.org/details/books/introductory-statistics-2e"
+          ],
+          "contentBlocks": [
+            {
+              "type": "paragraph",
+              "text": "Choose a confidence interval that matches the parameter and verify randomization, independence, and large-count conditions. Build and interpret confidence intervals and tests for proportions, compare two proportions, reason about errors and power, and use chi-square procedures for categorical data.",
+              "runs": [
+                {
+                  "text": "Choose a confidence interval that matches the parameter and verify randomization, independence, and large-count conditions. Build and interpret confidence intervals and tests for proportions, compare two proportions, reason about errors and power, and use chi-square procedures for categorical data."
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "Reasoning move: identify the target, match the statistical method, verify the relevant conditions, and interpret the result in context.",
+              "runs": [
+                {
+                  "text": "Reasoning move: identify the target, match the statistical method, verify the relevant conditions, and interpret the result in context."
+                }
+              ]
+            },
+            {
+              "type": "list",
+              "ordered": false,
+              "items": [
+                {
+                  "text": "A confidence interval describes a procedure, not the probability that a fixed parameter moves.",
+                  "runs": [
+                    {
+                      "text": "A confidence interval describes a procedure, not the probability that a fixed parameter moves."
+                    }
+                  ]
+                },
+                {
+                  "text": "Conditions are part of the justification.",
+                  "runs": [
+                    {
+                      "text": "Conditions are part of the justification."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "Worked check: Choose a confidence interval that matches the parameter and verify randomization, independence, and large-count conditions. Start by naming the target quantity and the evidence available before calculating.",
+              "runs": [
+                {
+                  "text": "Worked check: Choose a confidence interval that matches the parameter and verify randomization, independence, and large-count conditions. Start by naming the target quantity and the evidence available before calculating."
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "Retrieval practice: answer each prompt before opening the related internal item bank.",
+              "runs": [
+                {
+                  "text": "Retrieval practice: answer each prompt before opening the related internal item bank."
+                }
+              ]
+            },
+            {
+              "type": "list",
+              "ordered": true,
+              "items": [
+                {
+                  "text": "Which parameter, variable, or distribution is the question about?",
+                  "runs": [
+                    {
+                      "text": "Which parameter, variable, or distribution is the question about?"
+                    }
+                  ]
+                },
+                {
+                  "text": "Which calculation, representation, or condition supports the claim?",
+                  "runs": [
+                    {
+                      "text": "Which calculation, representation, or condition supports the claim?"
+                    }
+                  ]
+                },
+                {
+                  "text": "What limitation keeps the conclusion from being broader than the design and evidence?",
+                  "runs": [
+                    {
+                      "text": "What limitation keeps the conclusion from being broader than the design and evidence?"
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "examples": [
+            "Name the statistical target before choosing a formula.",
+            "Link the numerical result to the population, sample, or study design in the prompt."
+          ],
+          "nonExamples": [
+            "A confidence interval describes a procedure, not the probability that a fixed parameter moves.",
+            "Conditions are part of the justification."
+          ],
+          "commonMisconceptions": [
+            "A confidence interval describes a procedure, not the probability that a fixed parameter moves.",
+            "Conditions are part of the justification."
+          ],
+          "workedDataExample": {
+            "headers": [
+              "Study move",
+              "Question to ask"
+            ],
+            "rows": [
+              [
+                "Target",
+                "What variable, parameter, or relationship is being studied?"
+              ],
+              [
+                "Method",
+                "Which procedure or display matches the design?"
+              ],
+              [
+                "Scope",
+                "What can the evidence support, and what remains unknown?"
+              ]
+            ]
+          },
+          "retrievalPrompts": [
+            "Which parameter, variable, or distribution is the question about?",
+            "Which calculation, representation, or condition supports the claim?",
+            "What limitation keeps the conclusion from being broader than the design and evidence?"
+          ],
+          "transferMove": "Transfer the same target-method-condition-conclusion sequence to a new statistical context.",
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "reviewNote": "Original AP Statistics foundation lesson; independent subject-expert, accessibility, rights, production, and psychometric review remain pending.",
+          "expertReviewStatus": "pending",
+          "accessibilityReviewStatus": "pending-independent-review",
+          "contentComplete": true,
+          "releaseEligible": false,
+          "contentEnhancementVersion": "ap-statistics-foundation-v2"
+        },
+        {
+          "id": "ap-stats-ch-03-section-02",
+          "heading": "Test a claim",
+          "content": "Write hypotheses about population parameters, interpret p-values under the null model, and make decisions using alpha.",
+          "keyTerms": [
+            "null hypothesis",
+            "alternative hypothesis",
+            "p-value"
+          ],
+          "topicCoverage": [
+            "3.6",
+            "3.7",
+            "3.8",
+            "3.9",
+            "3.10"
+          ],
+          "references": [
+            "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+            "https://apcentral.collegeboard.org/courses/ap-statistics",
+            "https://openstax.org/details/books/introductory-statistics-2e"
+          ],
+          "contentBlocks": [
+            {
+              "type": "paragraph",
+              "text": "Write hypotheses about population parameters, interpret p-values under the null model, and make decisions using alpha. Build and interpret confidence intervals and tests for proportions, compare two proportions, reason about errors and power, and use chi-square procedures for categorical data.",
+              "runs": [
+                {
+                  "text": "Write hypotheses about population parameters, interpret p-values under the null model, and make decisions using alpha. Build and interpret confidence intervals and tests for proportions, compare two proportions, reason about errors and power, and use chi-square procedures for categorical data."
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "Reasoning move: identify the target, match the statistical method, verify the relevant conditions, and interpret the result in context.",
+              "runs": [
+                {
+                  "text": "Reasoning move: identify the target, match the statistical method, verify the relevant conditions, and interpret the result in context."
+                }
+              ]
+            },
+            {
+              "type": "list",
+              "ordered": false,
+              "items": [
+                {
+                  "text": "Do not say that a large p-value proves the null.",
+                  "runs": [
+                    {
+                      "text": "Do not say that a large p-value proves the null."
+                    }
+                  ]
+                },
+                {
+                  "text": "Use the parameter in hypotheses, not the sample statistic.",
+                  "runs": [
+                    {
+                      "text": "Use the parameter in hypotheses, not the sample statistic."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "Worked check: Write hypotheses about population parameters, interpret p-values under the null model, and make decisions using alpha. Start by naming the target quantity and the evidence available before calculating.",
+              "runs": [
+                {
+                  "text": "Worked check: Write hypotheses about population parameters, interpret p-values under the null model, and make decisions using alpha. Start by naming the target quantity and the evidence available before calculating."
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "Retrieval practice: answer each prompt before opening the related internal item bank.",
+              "runs": [
+                {
+                  "text": "Retrieval practice: answer each prompt before opening the related internal item bank."
+                }
+              ]
+            },
+            {
+              "type": "list",
+              "ordered": true,
+              "items": [
+                {
+                  "text": "Which parameter, variable, or distribution is the question about?",
+                  "runs": [
+                    {
+                      "text": "Which parameter, variable, or distribution is the question about?"
+                    }
+                  ]
+                },
+                {
+                  "text": "Which calculation, representation, or condition supports the claim?",
+                  "runs": [
+                    {
+                      "text": "Which calculation, representation, or condition supports the claim?"
+                    }
+                  ]
+                },
+                {
+                  "text": "What limitation keeps the conclusion from being broader than the design and evidence?",
+                  "runs": [
+                    {
+                      "text": "What limitation keeps the conclusion from being broader than the design and evidence?"
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "examples": [
+            "Name the statistical target before choosing a formula.",
+            "Link the numerical result to the population, sample, or study design in the prompt."
+          ],
+          "nonExamples": [
+            "Do not say that a large p-value proves the null.",
+            "Use the parameter in hypotheses, not the sample statistic."
+          ],
+          "commonMisconceptions": [
+            "Do not say that a large p-value proves the null.",
+            "Use the parameter in hypotheses, not the sample statistic."
+          ],
+          "workedDataExample": {
+            "headers": [
+              "Study move",
+              "Question to ask"
+            ],
+            "rows": [
+              [
+                "Target",
+                "What variable, parameter, or relationship is being studied?"
+              ],
+              [
+                "Method",
+                "Which procedure or display matches the design?"
+              ],
+              [
+                "Scope",
+                "What can the evidence support, and what remains unknown?"
+              ]
+            ]
+          },
+          "retrievalPrompts": [
+            "Which parameter, variable, or distribution is the question about?",
+            "Which calculation, representation, or condition supports the claim?",
+            "What limitation keeps the conclusion from being broader than the design and evidence?"
+          ],
+          "transferMove": "Transfer the same target-method-condition-conclusion sequence to a new statistical context.",
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "reviewNote": "Original AP Statistics foundation lesson; independent subject-expert, accessibility, rights, production, and psychometric review remain pending.",
+          "expertReviewStatus": "pending",
+          "accessibilityReviewStatus": "pending-independent-review",
+          "contentComplete": true,
+          "releaseEligible": false,
+          "contentEnhancementVersion": "ap-statistics-foundation-v2"
+        },
+        {
+          "id": "ap-stats-ch-03-section-03",
+          "heading": "Compare categorical populations",
+          "content": "Extend proportion reasoning to differences and chi-square procedures for categorical distributions.",
+          "keyTerms": [
+            "difference in proportions",
+            "homogeneity",
+            "independence"
+          ],
+          "topicCoverage": [
+            "3.11",
+            "3.12",
+            "3.13",
+            "3.14",
+            "3.15"
+          ],
+          "references": [
+            "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+            "https://apcentral.collegeboard.org/courses/ap-statistics",
+            "https://openstax.org/details/books/introductory-statistics-2e"
+          ],
+          "contentBlocks": [
+            {
+              "type": "paragraph",
+              "text": "Extend proportion reasoning to differences and chi-square procedures for categorical distributions. Build and interpret confidence intervals and tests for proportions, compare two proportions, reason about errors and power, and use chi-square procedures for categorical data.",
+              "runs": [
+                {
+                  "text": "Extend proportion reasoning to differences and chi-square procedures for categorical distributions. Build and interpret confidence intervals and tests for proportions, compare two proportions, reason about errors and power, and use chi-square procedures for categorical data."
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "Reasoning move: identify the target, match the statistical method, verify the relevant conditions, and interpret the result in context.",
+              "runs": [
+                {
+                  "text": "Reasoning move: identify the target, match the statistical method, verify the relevant conditions, and interpret the result in context."
+                }
+              ]
+            },
+            {
+              "type": "list",
+              "ordered": false,
+              "items": [
+                {
+                  "text": "The test for homogeneity compares populations; independence examines two variables in one population.",
+                  "runs": [
+                    {
+                      "text": "The test for homogeneity compares populations; independence examines two variables in one population."
+                    }
+                  ]
+                },
+                {
+                  "text": "Expected counts come from the null model.",
+                  "runs": [
+                    {
+                      "text": "Expected counts come from the null model."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "Worked check: Extend proportion reasoning to differences and chi-square procedures for categorical distributions. Start by naming the target quantity and the evidence available before calculating.",
+              "runs": [
+                {
+                  "text": "Worked check: Extend proportion reasoning to differences and chi-square procedures for categorical distributions. Start by naming the target quantity and the evidence available before calculating."
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "Retrieval practice: answer each prompt before opening the related internal item bank.",
+              "runs": [
+                {
+                  "text": "Retrieval practice: answer each prompt before opening the related internal item bank."
+                }
+              ]
+            },
+            {
+              "type": "list",
+              "ordered": true,
+              "items": [
+                {
+                  "text": "Which parameter, variable, or distribution is the question about?",
+                  "runs": [
+                    {
+                      "text": "Which parameter, variable, or distribution is the question about?"
+                    }
+                  ]
+                },
+                {
+                  "text": "Which calculation, representation, or condition supports the claim?",
+                  "runs": [
+                    {
+                      "text": "Which calculation, representation, or condition supports the claim?"
+                    }
+                  ]
+                },
+                {
+                  "text": "What limitation keeps the conclusion from being broader than the design and evidence?",
+                  "runs": [
+                    {
+                      "text": "What limitation keeps the conclusion from being broader than the design and evidence?"
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "examples": [
+            "Name the statistical target before choosing a formula.",
+            "Link the numerical result to the population, sample, or study design in the prompt."
+          ],
+          "nonExamples": [
+            "The test for homogeneity compares populations; independence examines two variables in one population.",
+            "Expected counts come from the null model."
+          ],
+          "commonMisconceptions": [
+            "The test for homogeneity compares populations; independence examines two variables in one population.",
+            "Expected counts come from the null model."
+          ],
+          "workedDataExample": {
+            "headers": [
+              "Study move",
+              "Question to ask"
+            ],
+            "rows": [
+              [
+                "Target",
+                "What variable, parameter, or relationship is being studied?"
+              ],
+              [
+                "Method",
+                "Which procedure or display matches the design?"
+              ],
+              [
+                "Scope",
+                "What can the evidence support, and what remains unknown?"
+              ]
+            ]
+          },
+          "retrievalPrompts": [
+            "Which parameter, variable, or distribution is the question about?",
+            "Which calculation, representation, or condition supports the claim?",
+            "What limitation keeps the conclusion from being broader than the design and evidence?"
+          ],
+          "transferMove": "Transfer the same target-method-condition-conclusion sequence to a new statistical context.",
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "reviewNote": "Original AP Statistics foundation lesson; independent subject-expert, accessibility, rights, production, and psychometric review remain pending.",
+          "expertReviewStatus": "pending",
+          "accessibilityReviewStatus": "pending-independent-review",
+          "contentComplete": true,
+          "releaseEligible": false,
+          "contentEnhancementVersion": "ap-statistics-foundation-v2"
+        }
+      ],
+      "knowledgeChecks": [
+        {
+          "id": "ap-stats-ch-03-section-01-check",
+          "chapterId": "ap-stats-ch-03",
+          "sectionId": "ap-stats-ch-03-section-01",
+          "type": "single-choice",
+          "prompt": "Which study move best supports accurate reasoning in Inference for Proportions?",
+          "choices": [
+            "Identify the target, match the method, check conditions, and state the conclusion in context.",
+            "Choose a procedure because it is the most familiar one.",
+            "Treat a sample statistic as the population parameter.",
+            "Generalize beyond the population and design represented by the data."
+          ],
+          "answerIndex": 0,
+          "rationale": "Reliable AP Statistics reasoning connects the target, method, conditions, evidence, and scope of the conclusion.",
+          "references": [
+            "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+            "https://apcentral.collegeboard.org/courses/ap-statistics",
+            "https://openstax.org/details/books/introductory-statistics-2e"
+          ],
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "reviewNote": "Original retrieval check; independent AP Statistics subject-expert and psychometric review remain pending.",
+          "skillId": "4.F",
+          "topicIds": [
+            "3.1",
+            "3.2",
+            "3.3",
+            "3.4",
+            "3.5"
+          ]
+        },
+        {
+          "id": "ap-stats-ch-03-section-02-check",
+          "chapterId": "ap-stats-ch-03",
+          "sectionId": "ap-stats-ch-03-section-02",
+          "type": "single-choice",
+          "prompt": "Which study move best supports accurate reasoning in Inference for Proportions?",
+          "choices": [
+            "Identify the target, match the method, check conditions, and state the conclusion in context.",
+            "Choose a procedure because it is the most familiar one.",
+            "Treat a sample statistic as the population parameter.",
+            "Generalize beyond the population and design represented by the data."
+          ],
+          "answerIndex": 0,
+          "rationale": "Reliable AP Statistics reasoning connects the target, method, conditions, evidence, and scope of the conclusion.",
+          "references": [
+            "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+            "https://apcentral.collegeboard.org/courses/ap-statistics",
+            "https://openstax.org/details/books/introductory-statistics-2e"
+          ],
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "reviewNote": "Original retrieval check; independent AP Statistics subject-expert and psychometric review remain pending.",
+          "skillId": "4.F",
+          "topicIds": [
+            "3.6",
+            "3.7",
+            "3.8",
+            "3.9",
+            "3.10"
+          ]
+        },
+        {
+          "id": "ap-stats-ch-03-section-03-check",
+          "chapterId": "ap-stats-ch-03",
+          "sectionId": "ap-stats-ch-03-section-03",
+          "type": "single-choice",
+          "prompt": "Which study move best supports accurate reasoning in Inference for Proportions?",
+          "choices": [
+            "Identify the target, match the method, check conditions, and state the conclusion in context.",
+            "Choose a procedure because it is the most familiar one.",
+            "Treat a sample statistic as the population parameter.",
+            "Generalize beyond the population and design represented by the data."
+          ],
+          "answerIndex": 0,
+          "rationale": "Reliable AP Statistics reasoning connects the target, method, conditions, evidence, and scope of the conclusion.",
+          "references": [
+            "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+            "https://apcentral.collegeboard.org/courses/ap-statistics",
+            "https://openstax.org/details/books/introductory-statistics-2e"
+          ],
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "reviewNote": "Original retrieval check; independent AP Statistics subject-expert and psychometric review remain pending.",
+          "skillId": "4.F",
+          "topicIds": [
+            "3.11",
+            "3.12",
+            "3.13",
+            "3.14",
+            "3.15"
+          ]
+        }
+      ],
+      "contentComplete": true,
+      "foundationPrototype": true
+    },
+    {
+      "id": "ap-stats-ch-04",
+      "title": "Unit 4: Inference for Quantitative Data: Means",
+      "domainId": "inference-for-quantitative-data-means",
+      "domain": "Inference for Means",
+      "summary": "Use sampling distributions and t procedures to estimate and test population means and differences between means while checking conditions and interpreting results in context.",
+      "objectives": [
+        "Explain the concepts and statistical practices in Inference for Means."
+      ],
+      "topicCoverage": [
+        "4.1",
+        "4.2",
+        "4.3",
+        "4.4",
+        "4.5",
+        "4.6",
+        "4.7",
+        "4.8",
+        "4.9",
+        "4.10"
+      ],
+      "chapterTakeaways": [
+        "Name the target before calculating.",
+        "Verify conditions and design limits.",
+        "State what the evidence supports in context."
+      ],
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+        "https://apcentral.collegeboard.org/courses/ap-statistics",
+        "https://openstax.org/details/books/introductory-statistics-2e"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Original AP Statistics foundation chapter; independent review remains pending.",
+      "expertReviewStatus": "pending",
+      "accessibilityReviewStatus": "pending-independent-review",
+      "releaseEligible": false,
+      "sectionCount": 3,
+      "knowledgeCheckCount": 3,
+      "referenceCount": 3,
+      "sections": [
+        {
+          "id": "ap-stats-ch-04-section-01",
+          "heading": "Understand sampling means",
+          "content": "Use standard errors, normal models, and the Central Limit Theorem to describe sample means and their differences.",
+          "keyTerms": [
+            "sample mean",
+            "standard error",
+            "Central Limit Theorem"
+          ],
+          "topicCoverage": [
+            "4.1",
+            "4.2",
+            "4.3"
+          ],
+          "references": [
+            "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+            "https://apcentral.collegeboard.org/courses/ap-statistics",
+            "https://openstax.org/details/books/introductory-statistics-2e"
+          ],
+          "contentBlocks": [
+            {
+              "type": "paragraph",
+              "text": "Use standard errors, normal models, and the Central Limit Theorem to describe sample means and their differences. Use sampling distributions and t procedures to estimate and test population means and differences between means while checking conditions and interpreting results in context.",
+              "runs": [
+                {
+                  "text": "Use standard errors, normal models, and the Central Limit Theorem to describe sample means and their differences. Use sampling distributions and t procedures to estimate and test population means and differences between means while checking conditions and interpreting results in context."
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "Reasoning move: identify the target, match the statistical method, verify the relevant conditions, and interpret the result in context.",
+              "runs": [
+                {
+                  "text": "Reasoning move: identify the target, match the statistical method, verify the relevant conditions, and interpret the result in context."
+                }
+              ]
+            },
+            {
+              "type": "list",
+              "ordered": false,
+              "items": [
+                {
+                  "text": "The standard deviation of a sample mean is sigma divided by the square root of n.",
+                  "runs": [
+                    {
+                      "text": "The standard deviation of a sample mean is sigma divided by the square root of n."
+                    }
+                  ]
+                },
+                {
+                  "text": "Small samples need attention to shape and outliers.",
+                  "runs": [
+                    {
+                      "text": "Small samples need attention to shape and outliers."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "Worked check: Use standard errors, normal models, and the Central Limit Theorem to describe sample means and their differences. Start by naming the target quantity and the evidence available before calculating.",
+              "runs": [
+                {
+                  "text": "Worked check: Use standard errors, normal models, and the Central Limit Theorem to describe sample means and their differences. Start by naming the target quantity and the evidence available before calculating."
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "Retrieval practice: answer each prompt before opening the related internal item bank.",
+              "runs": [
+                {
+                  "text": "Retrieval practice: answer each prompt before opening the related internal item bank."
+                }
+              ]
+            },
+            {
+              "type": "list",
+              "ordered": true,
+              "items": [
+                {
+                  "text": "Which parameter, variable, or distribution is the question about?",
+                  "runs": [
+                    {
+                      "text": "Which parameter, variable, or distribution is the question about?"
+                    }
+                  ]
+                },
+                {
+                  "text": "Which calculation, representation, or condition supports the claim?",
+                  "runs": [
+                    {
+                      "text": "Which calculation, representation, or condition supports the claim?"
+                    }
+                  ]
+                },
+                {
+                  "text": "What limitation keeps the conclusion from being broader than the design and evidence?",
+                  "runs": [
+                    {
+                      "text": "What limitation keeps the conclusion from being broader than the design and evidence?"
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "examples": [
+            "Name the statistical target before choosing a formula.",
+            "Link the numerical result to the population, sample, or study design in the prompt."
+          ],
+          "nonExamples": [
+            "The standard deviation of a sample mean is sigma divided by the square root of n.",
+            "Small samples need attention to shape and outliers."
+          ],
+          "commonMisconceptions": [
+            "The standard deviation of a sample mean is sigma divided by the square root of n.",
+            "Small samples need attention to shape and outliers."
+          ],
+          "workedDataExample": {
+            "headers": [
+              "Study move",
+              "Question to ask"
+            ],
+            "rows": [
+              [
+                "Target",
+                "What variable, parameter, or relationship is being studied?"
+              ],
+              [
+                "Method",
+                "Which procedure or display matches the design?"
+              ],
+              [
+                "Scope",
+                "What can the evidence support, and what remains unknown?"
+              ]
+            ]
+          },
+          "retrievalPrompts": [
+            "Which parameter, variable, or distribution is the question about?",
+            "Which calculation, representation, or condition supports the claim?",
+            "What limitation keeps the conclusion from being broader than the design and evidence?"
+          ],
+          "transferMove": "Transfer the same target-method-condition-conclusion sequence to a new statistical context.",
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "reviewNote": "Original AP Statistics foundation lesson; independent subject-expert, accessibility, rights, production, and psychometric review remain pending.",
+          "expertReviewStatus": "pending",
+          "accessibilityReviewStatus": "pending-independent-review",
+          "contentComplete": true,
+          "releaseEligible": false,
+          "contentEnhancementVersion": "ap-statistics-foundation-v2"
+        },
+        {
+          "id": "ap-stats-ch-04-section-02",
+          "heading": "Use t procedures",
+          "content": "Select one-sample, matched-pairs, or two-sample t procedures based on the design and quantitative response.",
+          "keyTerms": [
+            "t-distribution",
+            "matched pairs",
+            "degrees of freedom"
+          ],
+          "topicCoverage": [
+            "4.4",
+            "4.5",
+            "4.6"
+          ],
+          "references": [
+            "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+            "https://apcentral.collegeboard.org/courses/ap-statistics",
+            "https://openstax.org/details/books/introductory-statistics-2e"
+          ],
+          "contentBlocks": [
+            {
+              "type": "paragraph",
+              "text": "Select one-sample, matched-pairs, or two-sample t procedures based on the design and quantitative response. Use sampling distributions and t procedures to estimate and test population means and differences between means while checking conditions and interpreting results in context.",
+              "runs": [
+                {
+                  "text": "Select one-sample, matched-pairs, or two-sample t procedures based on the design and quantitative response. Use sampling distributions and t procedures to estimate and test population means and differences between means while checking conditions and interpreting results in context."
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "Reasoning move: identify the target, match the statistical method, verify the relevant conditions, and interpret the result in context.",
+              "runs": [
+                {
+                  "text": "Reasoning move: identify the target, match the statistical method, verify the relevant conditions, and interpret the result in context."
+                }
+              ]
+            },
+            {
+              "type": "list",
+              "ordered": false,
+              "items": [
+                {
+                  "text": "Repeated measures create pairs.",
+                  "runs": [
+                    {
+                      "text": "Repeated measures create pairs."
+                    }
+                  ]
+                },
+                {
+                  "text": "A t procedure is not a substitute for a proportion procedure.",
+                  "runs": [
+                    {
+                      "text": "A t procedure is not a substitute for a proportion procedure."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "Worked check: Select one-sample, matched-pairs, or two-sample t procedures based on the design and quantitative response. Start by naming the target quantity and the evidence available before calculating.",
+              "runs": [
+                {
+                  "text": "Worked check: Select one-sample, matched-pairs, or two-sample t procedures based on the design and quantitative response. Start by naming the target quantity and the evidence available before calculating."
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "Retrieval practice: answer each prompt before opening the related internal item bank.",
+              "runs": [
+                {
+                  "text": "Retrieval practice: answer each prompt before opening the related internal item bank."
+                }
+              ]
+            },
+            {
+              "type": "list",
+              "ordered": true,
+              "items": [
+                {
+                  "text": "Which parameter, variable, or distribution is the question about?",
+                  "runs": [
+                    {
+                      "text": "Which parameter, variable, or distribution is the question about?"
+                    }
+                  ]
+                },
+                {
+                  "text": "Which calculation, representation, or condition supports the claim?",
+                  "runs": [
+                    {
+                      "text": "Which calculation, representation, or condition supports the claim?"
+                    }
+                  ]
+                },
+                {
+                  "text": "What limitation keeps the conclusion from being broader than the design and evidence?",
+                  "runs": [
+                    {
+                      "text": "What limitation keeps the conclusion from being broader than the design and evidence?"
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "examples": [
+            "Name the statistical target before choosing a formula.",
+            "Link the numerical result to the population, sample, or study design in the prompt."
+          ],
+          "nonExamples": [
+            "Repeated measures create pairs.",
+            "A t procedure is not a substitute for a proportion procedure."
+          ],
+          "commonMisconceptions": [
+            "Repeated measures create pairs.",
+            "A t procedure is not a substitute for a proportion procedure."
+          ],
+          "workedDataExample": {
+            "headers": [
+              "Study move",
+              "Question to ask"
+            ],
+            "rows": [
+              [
+                "Target",
+                "What variable, parameter, or relationship is being studied?"
+              ],
+              [
+                "Method",
+                "Which procedure or display matches the design?"
+              ],
+              [
+                "Scope",
+                "What can the evidence support, and what remains unknown?"
+              ]
+            ]
+          },
+          "retrievalPrompts": [
+            "Which parameter, variable, or distribution is the question about?",
+            "Which calculation, representation, or condition supports the claim?",
+            "What limitation keeps the conclusion from being broader than the design and evidence?"
+          ],
+          "transferMove": "Transfer the same target-method-condition-conclusion sequence to a new statistical context.",
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "reviewNote": "Original AP Statistics foundation lesson; independent subject-expert, accessibility, rights, production, and psychometric review remain pending.",
+          "expertReviewStatus": "pending",
+          "accessibilityReviewStatus": "pending-independent-review",
+          "contentComplete": true,
+          "releaseEligible": false,
+          "contentEnhancementVersion": "ap-statistics-foundation-v2"
+        },
+        {
+          "id": "ap-stats-ch-04-section-03",
+          "heading": "Interpret evidence in context",
+          "content": "Translate an interval or test result into a cautious statement about the population mean or mean difference.",
+          "keyTerms": [
+            "confidence level",
+            "significance",
+            "population mean"
+          ],
+          "topicCoverage": [
+            "4.7",
+            "4.8",
+            "4.9",
+            "4.10"
+          ],
+          "references": [
+            "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+            "https://apcentral.collegeboard.org/courses/ap-statistics",
+            "https://openstax.org/details/books/introductory-statistics-2e"
+          ],
+          "contentBlocks": [
+            {
+              "type": "paragraph",
+              "text": "Translate an interval or test result into a cautious statement about the population mean or mean difference. Use sampling distributions and t procedures to estimate and test population means and differences between means while checking conditions and interpreting results in context.",
+              "runs": [
+                {
+                  "text": "Translate an interval or test result into a cautious statement about the population mean or mean difference. Use sampling distributions and t procedures to estimate and test population means and differences between means while checking conditions and interpreting results in context."
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "Reasoning move: identify the target, match the statistical method, verify the relevant conditions, and interpret the result in context.",
+              "runs": [
+                {
+                  "text": "Reasoning move: identify the target, match the statistical method, verify the relevant conditions, and interpret the result in context."
+                }
+              ]
+            },
+            {
+              "type": "list",
+              "ordered": false,
+              "items": [
+                {
+                  "text": "A statistically significant result is not automatically practically important.",
+                  "runs": [
+                    {
+                      "text": "A statistically significant result is not automatically practically important."
+                    }
+                  ]
+                },
+                {
+                  "text": "A conclusion should name the parameter and population.",
+                  "runs": [
+                    {
+                      "text": "A conclusion should name the parameter and population."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "Worked check: Translate an interval or test result into a cautious statement about the population mean or mean difference. Start by naming the target quantity and the evidence available before calculating.",
+              "runs": [
+                {
+                  "text": "Worked check: Translate an interval or test result into a cautious statement about the population mean or mean difference. Start by naming the target quantity and the evidence available before calculating."
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "Retrieval practice: answer each prompt before opening the related internal item bank.",
+              "runs": [
+                {
+                  "text": "Retrieval practice: answer each prompt before opening the related internal item bank."
+                }
+              ]
+            },
+            {
+              "type": "list",
+              "ordered": true,
+              "items": [
+                {
+                  "text": "Which parameter, variable, or distribution is the question about?",
+                  "runs": [
+                    {
+                      "text": "Which parameter, variable, or distribution is the question about?"
+                    }
+                  ]
+                },
+                {
+                  "text": "Which calculation, representation, or condition supports the claim?",
+                  "runs": [
+                    {
+                      "text": "Which calculation, representation, or condition supports the claim?"
+                    }
+                  ]
+                },
+                {
+                  "text": "What limitation keeps the conclusion from being broader than the design and evidence?",
+                  "runs": [
+                    {
+                      "text": "What limitation keeps the conclusion from being broader than the design and evidence?"
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "examples": [
+            "Name the statistical target before choosing a formula.",
+            "Link the numerical result to the population, sample, or study design in the prompt."
+          ],
+          "nonExamples": [
+            "A statistically significant result is not automatically practically important.",
+            "A conclusion should name the parameter and population."
+          ],
+          "commonMisconceptions": [
+            "A statistically significant result is not automatically practically important.",
+            "A conclusion should name the parameter and population."
+          ],
+          "workedDataExample": {
+            "headers": [
+              "Study move",
+              "Question to ask"
+            ],
+            "rows": [
+              [
+                "Target",
+                "What variable, parameter, or relationship is being studied?"
+              ],
+              [
+                "Method",
+                "Which procedure or display matches the design?"
+              ],
+              [
+                "Scope",
+                "What can the evidence support, and what remains unknown?"
+              ]
+            ]
+          },
+          "retrievalPrompts": [
+            "Which parameter, variable, or distribution is the question about?",
+            "Which calculation, representation, or condition supports the claim?",
+            "What limitation keeps the conclusion from being broader than the design and evidence?"
+          ],
+          "transferMove": "Transfer the same target-method-condition-conclusion sequence to a new statistical context.",
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "reviewNote": "Original AP Statistics foundation lesson; independent subject-expert, accessibility, rights, production, and psychometric review remain pending.",
+          "expertReviewStatus": "pending",
+          "accessibilityReviewStatus": "pending-independent-review",
+          "contentComplete": true,
+          "releaseEligible": false,
+          "contentEnhancementVersion": "ap-statistics-foundation-v2"
+        }
+      ],
+      "knowledgeChecks": [
+        {
+          "id": "ap-stats-ch-04-section-01-check",
+          "chapterId": "ap-stats-ch-04",
+          "sectionId": "ap-stats-ch-04-section-01",
+          "type": "single-choice",
+          "prompt": "Which study move best supports accurate reasoning in Inference for Means?",
+          "choices": [
+            "Identify the target, match the method, check conditions, and state the conclusion in context.",
+            "Choose a procedure because it is the most familiar one.",
+            "Treat a sample statistic as the population parameter.",
+            "Generalize beyond the population and design represented by the data."
+          ],
+          "answerIndex": 0,
+          "rationale": "Reliable AP Statistics reasoning connects the target, method, conditions, evidence, and scope of the conclusion.",
+          "references": [
+            "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+            "https://apcentral.collegeboard.org/courses/ap-statistics",
+            "https://openstax.org/details/books/introductory-statistics-2e"
+          ],
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "reviewNote": "Original retrieval check; independent AP Statistics subject-expert and psychometric review remain pending.",
+          "skillId": "1.A",
+          "topicIds": [
+            "4.1",
+            "4.2",
+            "4.3"
+          ]
+        },
+        {
+          "id": "ap-stats-ch-04-section-02-check",
+          "chapterId": "ap-stats-ch-04",
+          "sectionId": "ap-stats-ch-04-section-02",
+          "type": "single-choice",
+          "prompt": "Which study move best supports accurate reasoning in Inference for Means?",
+          "choices": [
+            "Identify the target, match the method, check conditions, and state the conclusion in context.",
+            "Choose a procedure because it is the most familiar one.",
+            "Treat a sample statistic as the population parameter.",
+            "Generalize beyond the population and design represented by the data."
+          ],
+          "answerIndex": 0,
+          "rationale": "Reliable AP Statistics reasoning connects the target, method, conditions, evidence, and scope of the conclusion.",
+          "references": [
+            "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+            "https://apcentral.collegeboard.org/courses/ap-statistics",
+            "https://openstax.org/details/books/introductory-statistics-2e"
+          ],
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "reviewNote": "Original retrieval check; independent AP Statistics subject-expert and psychometric review remain pending.",
+          "skillId": "1.A",
+          "topicIds": [
+            "4.4",
+            "4.5",
+            "4.6"
+          ]
+        },
+        {
+          "id": "ap-stats-ch-04-section-03-check",
+          "chapterId": "ap-stats-ch-04",
+          "sectionId": "ap-stats-ch-04-section-03",
+          "type": "single-choice",
+          "prompt": "Which study move best supports accurate reasoning in Inference for Means?",
+          "choices": [
+            "Identify the target, match the method, check conditions, and state the conclusion in context.",
+            "Choose a procedure because it is the most familiar one.",
+            "Treat a sample statistic as the population parameter.",
+            "Generalize beyond the population and design represented by the data."
+          ],
+          "answerIndex": 0,
+          "rationale": "Reliable AP Statistics reasoning connects the target, method, conditions, evidence, and scope of the conclusion.",
+          "references": [
+            "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+            "https://apcentral.collegeboard.org/courses/ap-statistics",
+            "https://openstax.org/details/books/introductory-statistics-2e"
+          ],
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "reviewNote": "Original retrieval check; independent AP Statistics subject-expert and psychometric review remain pending.",
+          "skillId": "1.A",
+          "topicIds": [
+            "4.7",
+            "4.8",
+            "4.9",
+            "4.10"
+          ]
+        }
+      ],
+      "contentComplete": true,
+      "foundationPrototype": true
+    },
+    {
+      "id": "ap-stats-ch-05",
+      "title": "Unit 5: Regression Analysis",
+      "domainId": "regression-analysis",
+      "domain": "Regression Analysis",
+      "summary": "Describe associations, interpret correlation and regression output, evaluate residuals, and use least-squares models without confusing association with causation.",
+      "objectives": [
+        "Explain the concepts and statistical practices in Regression Analysis."
+      ],
+      "topicCoverage": [
+        "5.1",
+        "5.2",
+        "5.3",
+        "5.4",
+        "5.5"
+      ],
+      "chapterTakeaways": [
+        "Name the target before calculating.",
+        "Verify conditions and design limits.",
+        "State what the evidence supports in context."
+      ],
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+        "https://apcentral.collegeboard.org/courses/ap-statistics",
+        "https://openstax.org/details/books/introductory-statistics-2e"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Original AP Statistics foundation chapter; independent review remains pending.",
+      "expertReviewStatus": "pending",
+      "accessibilityReviewStatus": "pending-independent-review",
+      "releaseEligible": false,
+      "sectionCount": 3,
+      "knowledgeCheckCount": 3,
+      "referenceCount": 3,
+      "sections": [
+        {
+          "id": "ap-stats-ch-05-section-01",
+          "heading": "Read the scatterplot",
+          "content": "Describe direction, form, strength, clusters, outliers, and leverage before fitting a model.",
+          "keyTerms": [
+            "association",
+            "scatterplot",
+            "outlier"
+          ],
+          "topicCoverage": [
+            "5.1"
+          ],
+          "references": [
+            "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+            "https://apcentral.collegeboard.org/courses/ap-statistics",
+            "https://openstax.org/details/books/introductory-statistics-2e"
+          ],
+          "contentBlocks": [
+            {
+              "type": "paragraph",
+              "text": "Describe direction, form, strength, clusters, outliers, and leverage before fitting a model. Describe associations, interpret correlation and regression output, evaluate residuals, and use least-squares models without confusing association with causation.",
+              "runs": [
+                {
+                  "text": "Describe direction, form, strength, clusters, outliers, and leverage before fitting a model. Describe associations, interpret correlation and regression output, evaluate residuals, and use least-squares models without confusing association with causation."
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "Reasoning move: identify the target, match the statistical method, verify the relevant conditions, and interpret the result in context.",
+              "runs": [
+                {
+                  "text": "Reasoning move: identify the target, match the statistical method, verify the relevant conditions, and interpret the result in context."
+                }
+              ]
+            },
+            {
+              "type": "list",
+              "ordered": false,
+              "items": [
+                {
+                  "text": "A strong association can still be nonlinear.",
+                  "runs": [
+                    {
+                      "text": "A strong association can still be nonlinear."
+                    }
+                  ]
+                },
+                {
+                  "text": "Clusters may represent different populations or processes.",
+                  "runs": [
+                    {
+                      "text": "Clusters may represent different populations or processes."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "Worked check: Describe direction, form, strength, clusters, outliers, and leverage before fitting a model. Start by naming the target quantity and the evidence available before calculating.",
+              "runs": [
+                {
+                  "text": "Worked check: Describe direction, form, strength, clusters, outliers, and leverage before fitting a model. Start by naming the target quantity and the evidence available before calculating."
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "Retrieval practice: answer each prompt before opening the related internal item bank.",
+              "runs": [
+                {
+                  "text": "Retrieval practice: answer each prompt before opening the related internal item bank."
+                }
+              ]
+            },
+            {
+              "type": "list",
+              "ordered": true,
+              "items": [
+                {
+                  "text": "Which parameter, variable, or distribution is the question about?",
+                  "runs": [
+                    {
+                      "text": "Which parameter, variable, or distribution is the question about?"
+                    }
+                  ]
+                },
+                {
+                  "text": "Which calculation, representation, or condition supports the claim?",
+                  "runs": [
+                    {
+                      "text": "Which calculation, representation, or condition supports the claim?"
+                    }
+                  ]
+                },
+                {
+                  "text": "What limitation keeps the conclusion from being broader than the design and evidence?",
+                  "runs": [
+                    {
+                      "text": "What limitation keeps the conclusion from being broader than the design and evidence?"
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "examples": [
+            "Name the statistical target before choosing a formula.",
+            "Link the numerical result to the population, sample, or study design in the prompt."
+          ],
+          "nonExamples": [
+            "A strong association can still be nonlinear.",
+            "Clusters may represent different populations or processes."
+          ],
+          "commonMisconceptions": [
+            "A strong association can still be nonlinear.",
+            "Clusters may represent different populations or processes."
+          ],
+          "workedDataExample": {
+            "headers": [
+              "Study move",
+              "Question to ask"
+            ],
+            "rows": [
+              [
+                "Target",
+                "What variable, parameter, or relationship is being studied?"
+              ],
+              [
+                "Method",
+                "Which procedure or display matches the design?"
+              ],
+              [
+                "Scope",
+                "What can the evidence support, and what remains unknown?"
+              ]
+            ]
+          },
+          "retrievalPrompts": [
+            "Which parameter, variable, or distribution is the question about?",
+            "Which calculation, representation, or condition supports the claim?",
+            "What limitation keeps the conclusion from being broader than the design and evidence?"
+          ],
+          "transferMove": "Transfer the same target-method-condition-conclusion sequence to a new statistical context.",
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "reviewNote": "Original AP Statistics foundation lesson; independent subject-expert, accessibility, rights, production, and psychometric review remain pending.",
+          "expertReviewStatus": "pending",
+          "accessibilityReviewStatus": "pending-independent-review",
+          "contentComplete": true,
+          "releaseEligible": false,
+          "contentEnhancementVersion": "ap-statistics-foundation-v2"
+        },
+        {
+          "id": "ap-stats-ch-05-section-02",
+          "heading": "Interpret the line",
+          "content": "Use slope, intercept, predicted values, and residuals with their units and context.",
+          "keyTerms": [
+            "slope",
+            "intercept",
+            "residual"
+          ],
+          "topicCoverage": [
+            "5.2",
+            "5.3"
+          ],
+          "references": [
+            "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+            "https://apcentral.collegeboard.org/courses/ap-statistics",
+            "https://openstax.org/details/books/introductory-statistics-2e"
+          ],
+          "contentBlocks": [
+            {
+              "type": "paragraph",
+              "text": "Use slope, intercept, predicted values, and residuals with their units and context. Describe associations, interpret correlation and regression output, evaluate residuals, and use least-squares models without confusing association with causation.",
+              "runs": [
+                {
+                  "text": "Use slope, intercept, predicted values, and residuals with their units and context. Describe associations, interpret correlation and regression output, evaluate residuals, and use least-squares models without confusing association with causation."
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "Reasoning move: identify the target, match the statistical method, verify the relevant conditions, and interpret the result in context.",
+              "runs": [
+                {
+                  "text": "Reasoning move: identify the target, match the statistical method, verify the relevant conditions, and interpret the result in context."
+                }
+              ]
+            },
+            {
+              "type": "list",
+              "ordered": false,
+              "items": [
+                {
+                  "text": "The intercept may be meaningless outside the observed x-range.",
+                  "runs": [
+                    {
+                      "text": "The intercept may be meaningless outside the observed x-range."
+                    }
+                  ]
+                },
+                {
+                  "text": "Residual equals observed minus predicted.",
+                  "runs": [
+                    {
+                      "text": "Residual equals observed minus predicted."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "Worked check: Use slope, intercept, predicted values, and residuals with their units and context. Start by naming the target quantity and the evidence available before calculating.",
+              "runs": [
+                {
+                  "text": "Worked check: Use slope, intercept, predicted values, and residuals with their units and context. Start by naming the target quantity and the evidence available before calculating."
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "Retrieval practice: answer each prompt before opening the related internal item bank.",
+              "runs": [
+                {
+                  "text": "Retrieval practice: answer each prompt before opening the related internal item bank."
+                }
+              ]
+            },
+            {
+              "type": "list",
+              "ordered": true,
+              "items": [
+                {
+                  "text": "Which parameter, variable, or distribution is the question about?",
+                  "runs": [
+                    {
+                      "text": "Which parameter, variable, or distribution is the question about?"
+                    }
+                  ]
+                },
+                {
+                  "text": "Which calculation, representation, or condition supports the claim?",
+                  "runs": [
+                    {
+                      "text": "Which calculation, representation, or condition supports the claim?"
+                    }
+                  ]
+                },
+                {
+                  "text": "What limitation keeps the conclusion from being broader than the design and evidence?",
+                  "runs": [
+                    {
+                      "text": "What limitation keeps the conclusion from being broader than the design and evidence?"
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "examples": [
+            "Name the statistical target before choosing a formula.",
+            "Link the numerical result to the population, sample, or study design in the prompt."
+          ],
+          "nonExamples": [
+            "The intercept may be meaningless outside the observed x-range.",
+            "Residual equals observed minus predicted."
+          ],
+          "commonMisconceptions": [
+            "The intercept may be meaningless outside the observed x-range.",
+            "Residual equals observed minus predicted."
+          ],
+          "workedDataExample": {
+            "headers": [
+              "Study move",
+              "Question to ask"
+            ],
+            "rows": [
+              [
+                "Target",
+                "What variable, parameter, or relationship is being studied?"
+              ],
+              [
+                "Method",
+                "Which procedure or display matches the design?"
+              ],
+              [
+                "Scope",
+                "What can the evidence support, and what remains unknown?"
+              ]
+            ]
+          },
+          "retrievalPrompts": [
+            "Which parameter, variable, or distribution is the question about?",
+            "Which calculation, representation, or condition supports the claim?",
+            "What limitation keeps the conclusion from being broader than the design and evidence?"
+          ],
+          "transferMove": "Transfer the same target-method-condition-conclusion sequence to a new statistical context.",
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "reviewNote": "Original AP Statistics foundation lesson; independent subject-expert, accessibility, rights, production, and psychometric review remain pending.",
+          "expertReviewStatus": "pending",
+          "accessibilityReviewStatus": "pending-independent-review",
+          "contentComplete": true,
+          "releaseEligible": false,
+          "contentEnhancementVersion": "ap-statistics-foundation-v2"
+        },
+        {
+          "id": "ap-stats-ch-05-section-03",
+          "heading": "Evaluate model limits",
+          "content": "Use r, r-squared, residual patterns, extrapolation checks, and design limits to judge a regression claim.",
+          "keyTerms": [
+            "r-squared",
+            "least squares",
+            "extrapolation"
+          ],
+          "topicCoverage": [
+            "5.4",
+            "5.5"
+          ],
+          "references": [
+            "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+            "https://apcentral.collegeboard.org/courses/ap-statistics",
+            "https://openstax.org/details/books/introductory-statistics-2e"
+          ],
+          "contentBlocks": [
+            {
+              "type": "paragraph",
+              "text": "Use r, r-squared, residual patterns, extrapolation checks, and design limits to judge a regression claim. Describe associations, interpret correlation and regression output, evaluate residuals, and use least-squares models without confusing association with causation.",
+              "runs": [
+                {
+                  "text": "Use r, r-squared, residual patterns, extrapolation checks, and design limits to judge a regression claim. Describe associations, interpret correlation and regression output, evaluate residuals, and use least-squares models without confusing association with causation."
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "Reasoning move: identify the target, match the statistical method, verify the relevant conditions, and interpret the result in context.",
+              "runs": [
+                {
+                  "text": "Reasoning move: identify the target, match the statistical method, verify the relevant conditions, and interpret the result in context."
+                }
+              ]
+            },
+            {
+              "type": "list",
+              "ordered": false,
+              "items": [
+                {
+                  "text": "R-squared is not the probability of causation.",
+                  "runs": [
+                    {
+                      "text": "R-squared is not the probability of causation."
+                    }
+                  ]
+                },
+                {
+                  "text": "A regression line beyond the data range is extrapolation.",
+                  "runs": [
+                    {
+                      "text": "A regression line beyond the data range is extrapolation."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "Worked check: Use r, r-squared, residual patterns, extrapolation checks, and design limits to judge a regression claim. Start by naming the target quantity and the evidence available before calculating.",
+              "runs": [
+                {
+                  "text": "Worked check: Use r, r-squared, residual patterns, extrapolation checks, and design limits to judge a regression claim. Start by naming the target quantity and the evidence available before calculating."
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "Retrieval practice: answer each prompt before opening the related internal item bank.",
+              "runs": [
+                {
+                  "text": "Retrieval practice: answer each prompt before opening the related internal item bank."
+                }
+              ]
+            },
+            {
+              "type": "list",
+              "ordered": true,
+              "items": [
+                {
+                  "text": "Which parameter, variable, or distribution is the question about?",
+                  "runs": [
+                    {
+                      "text": "Which parameter, variable, or distribution is the question about?"
+                    }
+                  ]
+                },
+                {
+                  "text": "Which calculation, representation, or condition supports the claim?",
+                  "runs": [
+                    {
+                      "text": "Which calculation, representation, or condition supports the claim?"
+                    }
+                  ]
+                },
+                {
+                  "text": "What limitation keeps the conclusion from being broader than the design and evidence?",
+                  "runs": [
+                    {
+                      "text": "What limitation keeps the conclusion from being broader than the design and evidence?"
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "examples": [
+            "Name the statistical target before choosing a formula.",
+            "Link the numerical result to the population, sample, or study design in the prompt."
+          ],
+          "nonExamples": [
+            "R-squared is not the probability of causation.",
+            "A regression line beyond the data range is extrapolation."
+          ],
+          "commonMisconceptions": [
+            "R-squared is not the probability of causation.",
+            "A regression line beyond the data range is extrapolation."
+          ],
+          "workedDataExample": {
+            "headers": [
+              "Study move",
+              "Question to ask"
+            ],
+            "rows": [
+              [
+                "Target",
+                "What variable, parameter, or relationship is being studied?"
+              ],
+              [
+                "Method",
+                "Which procedure or display matches the design?"
+              ],
+              [
+                "Scope",
+                "What can the evidence support, and what remains unknown?"
+              ]
+            ]
+          },
+          "retrievalPrompts": [
+            "Which parameter, variable, or distribution is the question about?",
+            "Which calculation, representation, or condition supports the claim?",
+            "What limitation keeps the conclusion from being broader than the design and evidence?"
+          ],
+          "transferMove": "Transfer the same target-method-condition-conclusion sequence to a new statistical context.",
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "reviewNote": "Original AP Statistics foundation lesson; independent subject-expert, accessibility, rights, production, and psychometric review remain pending.",
+          "expertReviewStatus": "pending",
+          "accessibilityReviewStatus": "pending-independent-review",
+          "contentComplete": true,
+          "releaseEligible": false,
+          "contentEnhancementVersion": "ap-statistics-foundation-v2"
+        }
+      ],
+      "knowledgeChecks": [
+        {
+          "id": "ap-stats-ch-05-section-01-check",
+          "chapterId": "ap-stats-ch-05",
+          "sectionId": "ap-stats-ch-05-section-01",
+          "type": "single-choice",
+          "prompt": "Which study move best supports accurate reasoning in Regression Analysis?",
+          "choices": [
+            "Identify the target, match the method, check conditions, and state the conclusion in context.",
+            "Choose a procedure because it is the most familiar one.",
+            "Treat a sample statistic as the population parameter.",
+            "Generalize beyond the population and design represented by the data."
+          ],
+          "answerIndex": 0,
+          "rationale": "Reliable AP Statistics reasoning connects the target, method, conditions, evidence, and scope of the conclusion.",
+          "references": [
+            "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+            "https://apcentral.collegeboard.org/courses/ap-statistics",
+            "https://openstax.org/details/books/introductory-statistics-2e"
+          ],
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "reviewNote": "Original retrieval check; independent AP Statistics subject-expert and psychometric review remain pending.",
+          "skillId": "2.A",
+          "topicIds": [
+            "5.1"
+          ]
+        },
+        {
+          "id": "ap-stats-ch-05-section-02-check",
+          "chapterId": "ap-stats-ch-05",
+          "sectionId": "ap-stats-ch-05-section-02",
+          "type": "single-choice",
+          "prompt": "Which study move best supports accurate reasoning in Regression Analysis?",
+          "choices": [
+            "Identify the target, match the method, check conditions, and state the conclusion in context.",
+            "Choose a procedure because it is the most familiar one.",
+            "Treat a sample statistic as the population parameter.",
+            "Generalize beyond the population and design represented by the data."
+          ],
+          "answerIndex": 0,
+          "rationale": "Reliable AP Statistics reasoning connects the target, method, conditions, evidence, and scope of the conclusion.",
+          "references": [
+            "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+            "https://apcentral.collegeboard.org/courses/ap-statistics",
+            "https://openstax.org/details/books/introductory-statistics-2e"
+          ],
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "reviewNote": "Original retrieval check; independent AP Statistics subject-expert and psychometric review remain pending.",
+          "skillId": "2.A",
+          "topicIds": [
+            "5.2",
+            "5.3"
+          ]
+        },
+        {
+          "id": "ap-stats-ch-05-section-03-check",
+          "chapterId": "ap-stats-ch-05",
+          "sectionId": "ap-stats-ch-05-section-03",
+          "type": "single-choice",
+          "prompt": "Which study move best supports accurate reasoning in Regression Analysis?",
+          "choices": [
+            "Identify the target, match the method, check conditions, and state the conclusion in context.",
+            "Choose a procedure because it is the most familiar one.",
+            "Treat a sample statistic as the population parameter.",
+            "Generalize beyond the population and design represented by the data."
+          ],
+          "answerIndex": 0,
+          "rationale": "Reliable AP Statistics reasoning connects the target, method, conditions, evidence, and scope of the conclusion.",
+          "references": [
+            "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+            "https://apcentral.collegeboard.org/courses/ap-statistics",
+            "https://openstax.org/details/books/introductory-statistics-2e"
+          ],
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "reviewNote": "Original retrieval check; independent AP Statistics subject-expert and psychometric review remain pending.",
+          "skillId": "2.A",
+          "topicIds": [
+            "5.4",
+            "5.5"
+          ]
+        }
+      ],
+      "contentComplete": true,
+      "foundationPrototype": true
+    }
+  ],
+  "diagrams": [],
+  "diagramPlacements": [],
+  "flashcards": [
+    {
+      "id": "ap-stats-ch-01-section-01-card",
+      "chapterId": "ap-stats-ch-01",
+      "sectionId": "ap-stats-ch-01-section-01",
+      "domainId": "exploring-one-variable-data-and-collecting-data",
+      "domain": "One-Variable Data and Collecting Data",
+      "front": "Describe before calculating: what is the core study move?",
+      "back": "Name the variable type, shape, center, spread, and unusual features before choosing a summary.",
+      "tags": [
+        "distribution",
+        "center",
+        "spread"
+      ],
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+        "https://apcentral.collegeboard.org/courses/ap-statistics",
+        "https://openstax.org/details/books/introductory-statistics-2e"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Original foundation study card; independent AP Statistics subject-expert validation remains pending."
+    },
+    {
+      "id": "ap-stats-ch-01-section-02-card",
+      "chapterId": "ap-stats-ch-01",
+      "sectionId": "ap-stats-ch-01-section-02",
+      "domainId": "exploring-one-variable-data-and-collecting-data",
+      "domain": "One-Variable Data and Collecting Data",
+      "front": "Collect data with purpose: what is the core study move?",
+      "back": "Match the sampling method or experimental design to the population, question, and desired conclusion.",
+      "tags": [
+        "sample",
+        "bias",
+        "random assignment"
+      ],
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+        "https://apcentral.collegeboard.org/courses/ap-statistics",
+        "https://openstax.org/details/books/introductory-statistics-2e"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Original foundation study card; independent AP Statistics subject-expert validation remains pending."
+    },
+    {
+      "id": "ap-stats-ch-01-section-03-card",
+      "chapterId": "ap-stats-ch-01",
+      "sectionId": "ap-stats-ch-01-section-03",
+      "domainId": "exploring-one-variable-data-and-collecting-data",
+      "domain": "One-Variable Data and Collecting Data",
+      "front": "Keep conclusions in scope: what is the core study move?",
+      "back": "State what the design and data support, and distinguish a statistic from the population parameter it estimates.",
+      "tags": [
+        "parameter",
+        "statistic",
+        "causation"
+      ],
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+        "https://apcentral.collegeboard.org/courses/ap-statistics",
+        "https://openstax.org/details/books/introductory-statistics-2e"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Original foundation study card; independent AP Statistics subject-expert validation remains pending."
+    },
+    {
+      "id": "ap-stats-ch-02-section-01-card",
+      "chapterId": "ap-stats-ch-02",
+      "sectionId": "ap-stats-ch-02-section-01",
+      "domainId": "probability-random-variables-and-probability-distributions",
+      "domain": "Probability and Random Variables",
+      "front": "Represent joint behavior: what is the core study move?",
+      "back": "Use two-way tables and conditional proportions to compare groups without confusing counts and rates.",
+      "tags": [
+        "two-way table",
+        "conditional proportion",
+        "association"
+      ],
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+        "https://apcentral.collegeboard.org/courses/ap-statistics",
+        "https://openstax.org/details/books/introductory-statistics-2e"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Original foundation study card; independent AP Statistics subject-expert validation remains pending."
+    },
+    {
+      "id": "ap-stats-ch-02-section-02-card",
+      "chapterId": "ap-stats-ch-02",
+      "sectionId": "ap-stats-ch-02-section-02",
+      "domainId": "probability-random-variables-and-probability-distributions",
+      "domain": "Probability and Random Variables",
+      "front": "Build probability models: what is the core study move?",
+      "back": "Use complements, unions, intersections, conditional probability, and independence with the correct denominator.",
+      "tags": [
+        "complement",
+        "conditional probability",
+        "independence"
+      ],
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+        "https://apcentral.collegeboard.org/courses/ap-statistics",
+        "https://openstax.org/details/books/introductory-statistics-2e"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Original foundation study card; independent AP Statistics subject-expert validation remains pending."
+    },
+    {
+      "id": "ap-stats-ch-02-section-03-card",
+      "chapterId": "ap-stats-ch-02",
+      "sectionId": "ap-stats-ch-02-section-03",
+      "domainId": "probability-random-variables-and-probability-distributions",
+      "domain": "Probability and Random Variables",
+      "front": "Model random variation: what is the core study move?",
+      "back": "Connect probability distributions to expected value, binomial counts, normal models, and sampling distributions.",
+      "tags": [
+        "random variable",
+        "binomial",
+        "normal model"
+      ],
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+        "https://apcentral.collegeboard.org/courses/ap-statistics",
+        "https://openstax.org/details/books/introductory-statistics-2e"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Original foundation study card; independent AP Statistics subject-expert validation remains pending."
+    },
+    {
+      "id": "ap-stats-ch-03-section-01-card",
+      "chapterId": "ap-stats-ch-03",
+      "sectionId": "ap-stats-ch-03-section-01",
+      "domainId": "inference-for-categorical-data-proportions",
+      "domain": "Inference for Proportions",
+      "front": "Estimate a proportion: what is the core study move?",
+      "back": "Choose a confidence interval that matches the parameter and verify randomization, independence, and large-count conditions.",
+      "tags": [
+        "estimator",
+        "confidence interval",
+        "standard error"
+      ],
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+        "https://apcentral.collegeboard.org/courses/ap-statistics",
+        "https://openstax.org/details/books/introductory-statistics-2e"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Original foundation study card; independent AP Statistics subject-expert validation remains pending."
+    },
+    {
+      "id": "ap-stats-ch-03-section-02-card",
+      "chapterId": "ap-stats-ch-03",
+      "sectionId": "ap-stats-ch-03-section-02",
+      "domainId": "inference-for-categorical-data-proportions",
+      "domain": "Inference for Proportions",
+      "front": "Test a claim: what is the core study move?",
+      "back": "Write hypotheses about population parameters, interpret p-values under the null model, and make decisions using alpha.",
+      "tags": [
+        "null hypothesis",
+        "alternative hypothesis",
+        "p-value"
+      ],
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+        "https://apcentral.collegeboard.org/courses/ap-statistics",
+        "https://openstax.org/details/books/introductory-statistics-2e"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Original foundation study card; independent AP Statistics subject-expert validation remains pending."
+    },
+    {
+      "id": "ap-stats-ch-03-section-03-card",
+      "chapterId": "ap-stats-ch-03",
+      "sectionId": "ap-stats-ch-03-section-03",
+      "domainId": "inference-for-categorical-data-proportions",
+      "domain": "Inference for Proportions",
+      "front": "Compare categorical populations: what is the core study move?",
+      "back": "Extend proportion reasoning to differences and chi-square procedures for categorical distributions.",
+      "tags": [
+        "difference in proportions",
+        "homogeneity",
+        "independence"
+      ],
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+        "https://apcentral.collegeboard.org/courses/ap-statistics",
+        "https://openstax.org/details/books/introductory-statistics-2e"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Original foundation study card; independent AP Statistics subject-expert validation remains pending."
+    },
+    {
+      "id": "ap-stats-ch-04-section-01-card",
+      "chapterId": "ap-stats-ch-04",
+      "sectionId": "ap-stats-ch-04-section-01",
+      "domainId": "inference-for-quantitative-data-means",
+      "domain": "Inference for Means",
+      "front": "Understand sampling means: what is the core study move?",
+      "back": "Use standard errors, normal models, and the Central Limit Theorem to describe sample means and their differences.",
+      "tags": [
+        "sample mean",
+        "standard error",
+        "Central Limit Theorem"
+      ],
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+        "https://apcentral.collegeboard.org/courses/ap-statistics",
+        "https://openstax.org/details/books/introductory-statistics-2e"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Original foundation study card; independent AP Statistics subject-expert validation remains pending."
+    },
+    {
+      "id": "ap-stats-ch-04-section-02-card",
+      "chapterId": "ap-stats-ch-04",
+      "sectionId": "ap-stats-ch-04-section-02",
+      "domainId": "inference-for-quantitative-data-means",
+      "domain": "Inference for Means",
+      "front": "Use t procedures: what is the core study move?",
+      "back": "Select one-sample, matched-pairs, or two-sample t procedures based on the design and quantitative response.",
+      "tags": [
+        "t-distribution",
+        "matched pairs",
+        "degrees of freedom"
+      ],
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+        "https://apcentral.collegeboard.org/courses/ap-statistics",
+        "https://openstax.org/details/books/introductory-statistics-2e"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Original foundation study card; independent AP Statistics subject-expert validation remains pending."
+    },
+    {
+      "id": "ap-stats-ch-04-section-03-card",
+      "chapterId": "ap-stats-ch-04",
+      "sectionId": "ap-stats-ch-04-section-03",
+      "domainId": "inference-for-quantitative-data-means",
+      "domain": "Inference for Means",
+      "front": "Interpret evidence in context: what is the core study move?",
+      "back": "Translate an interval or test result into a cautious statement about the population mean or mean difference.",
+      "tags": [
+        "confidence level",
+        "significance",
+        "population mean"
+      ],
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+        "https://apcentral.collegeboard.org/courses/ap-statistics",
+        "https://openstax.org/details/books/introductory-statistics-2e"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Original foundation study card; independent AP Statistics subject-expert validation remains pending."
+    },
+    {
+      "id": "ap-stats-ch-05-section-01-card",
+      "chapterId": "ap-stats-ch-05",
+      "sectionId": "ap-stats-ch-05-section-01",
+      "domainId": "regression-analysis",
+      "domain": "Regression Analysis",
+      "front": "Read the scatterplot: what is the core study move?",
+      "back": "Describe direction, form, strength, clusters, outliers, and leverage before fitting a model.",
+      "tags": [
+        "association",
+        "scatterplot",
+        "outlier"
+      ],
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+        "https://apcentral.collegeboard.org/courses/ap-statistics",
+        "https://openstax.org/details/books/introductory-statistics-2e"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Original foundation study card; independent AP Statistics subject-expert validation remains pending."
+    },
+    {
+      "id": "ap-stats-ch-05-section-02-card",
+      "chapterId": "ap-stats-ch-05",
+      "sectionId": "ap-stats-ch-05-section-02",
+      "domainId": "regression-analysis",
+      "domain": "Regression Analysis",
+      "front": "Interpret the line: what is the core study move?",
+      "back": "Use slope, intercept, predicted values, and residuals with their units and context.",
+      "tags": [
+        "slope",
+        "intercept",
+        "residual"
+      ],
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+        "https://apcentral.collegeboard.org/courses/ap-statistics",
+        "https://openstax.org/details/books/introductory-statistics-2e"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Original foundation study card; independent AP Statistics subject-expert validation remains pending."
+    },
+    {
+      "id": "ap-stats-ch-05-section-03-card",
+      "chapterId": "ap-stats-ch-05",
+      "sectionId": "ap-stats-ch-05-section-03",
+      "domainId": "regression-analysis",
+      "domain": "Regression Analysis",
+      "front": "Evaluate model limits: what is the core study move?",
+      "back": "Use r, r-squared, residual patterns, extrapolation checks, and design limits to judge a regression claim.",
+      "tags": [
+        "r-squared",
+        "least squares",
+        "extrapolation"
+      ],
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+        "https://apcentral.collegeboard.org/courses/ap-statistics",
+        "https://openstax.org/details/books/introductory-statistics-2e"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Original foundation study card; independent AP Statistics subject-expert validation remains pending."
+    }
+  ],
+  "memoryAids": [
+    {
+      "id": "ap-stats-ch-01-memory",
+      "chapterId": "ap-stats-ch-01",
+      "type": "reasoning cue",
+      "title": "One-Variable Data and Collecting Data: target to conclusion",
+      "content": "Target → method → conditions → result → scope. Keep every conclusion attached to the variable, population, and design represented by the data.",
+      "tags": [
+        "distribution",
+        "center",
+        "spread",
+        "sample",
+        "bias",
+        "random assignment",
+        "parameter",
+        "statistic"
+      ],
+      "domain": "One-Variable Data and Collecting Data",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+        "https://apcentral.collegeboard.org/courses/ap-statistics",
+        "https://openstax.org/details/books/introductory-statistics-2e"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Original foundation retrieval aid; AP Statistics and accessibility validation remain pending."
+    },
+    {
+      "id": "ap-stats-ch-02-memory",
+      "chapterId": "ap-stats-ch-02",
+      "type": "reasoning cue",
+      "title": "Probability and Random Variables: target to conclusion",
+      "content": "Target → method → conditions → result → scope. Keep every conclusion attached to the variable, population, and design represented by the data.",
+      "tags": [
+        "two-way table",
+        "conditional proportion",
+        "association",
+        "complement",
+        "conditional probability",
+        "independence",
+        "random variable",
+        "binomial"
+      ],
+      "domain": "Probability and Random Variables",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+        "https://apcentral.collegeboard.org/courses/ap-statistics",
+        "https://openstax.org/details/books/introductory-statistics-2e"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Original foundation retrieval aid; AP Statistics and accessibility validation remain pending."
+    },
+    {
+      "id": "ap-stats-ch-03-memory",
+      "chapterId": "ap-stats-ch-03",
+      "type": "reasoning cue",
+      "title": "Inference for Proportions: target to conclusion",
+      "content": "Target → method → conditions → result → scope. Keep every conclusion attached to the variable, population, and design represented by the data.",
+      "tags": [
+        "estimator",
+        "confidence interval",
+        "standard error",
+        "null hypothesis",
+        "alternative hypothesis",
+        "p-value",
+        "difference in proportions",
+        "homogeneity"
+      ],
+      "domain": "Inference for Proportions",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+        "https://apcentral.collegeboard.org/courses/ap-statistics",
+        "https://openstax.org/details/books/introductory-statistics-2e"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Original foundation retrieval aid; AP Statistics and accessibility validation remain pending."
+    },
+    {
+      "id": "ap-stats-ch-04-memory",
+      "chapterId": "ap-stats-ch-04",
+      "type": "reasoning cue",
+      "title": "Inference for Means: target to conclusion",
+      "content": "Target → method → conditions → result → scope. Keep every conclusion attached to the variable, population, and design represented by the data.",
+      "tags": [
+        "sample mean",
+        "standard error",
+        "Central Limit Theorem",
+        "t-distribution",
+        "matched pairs",
+        "degrees of freedom",
+        "confidence level",
+        "significance"
+      ],
+      "domain": "Inference for Means",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+        "https://apcentral.collegeboard.org/courses/ap-statistics",
+        "https://openstax.org/details/books/introductory-statistics-2e"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Original foundation retrieval aid; AP Statistics and accessibility validation remain pending."
+    },
+    {
+      "id": "ap-stats-ch-05-memory",
+      "chapterId": "ap-stats-ch-05",
+      "type": "reasoning cue",
+      "title": "Regression Analysis: target to conclusion",
+      "content": "Target → method → conditions → result → scope. Keep every conclusion attached to the variable, population, and design represented by the data.",
+      "tags": [
+        "association",
+        "scatterplot",
+        "outlier",
+        "slope",
+        "intercept",
+        "residual",
+        "r-squared",
+        "least squares"
+      ],
+      "domain": "Regression Analysis",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+        "https://apcentral.collegeboard.org/courses/ap-statistics",
+        "https://openstax.org/details/books/introductory-statistics-2e"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Original foundation retrieval aid; AP Statistics and accessibility validation remain pending."
+    }
+  ],
+  "constructedResponseWorkshops": [
+    {
+      "id": "ap-stats-workshop-study-design",
+      "type": "unscored-planning-workshop",
+      "title": "Study design planning workshop",
+      "prompt": "Plan a sampling or experimental study for a question about student transportation. Identify the population, observational units, variables, sampling or assignment method, and the conclusion the design could support.",
+      "selfCheck": [
+        "Name the target population and parameter.",
+        "Explain how randomization enters the design.",
+        "State whether the design supports generalization, causation, or both."
+      ],
+      "unscored": true,
+      "scoreMeaning": "No score is produced. This is a planning and self-check resource, not automated FRQ scoring.",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+        "https://apcentral.collegeboard.org/courses/ap-statistics/exam"
+      ],
+      "reviewStatus": "source-reviewed-editorial-draft",
+      "reviewNote": "Original workshop; independent AP Statistics subject-expert and accessibility review remain pending.",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-stats-workshop-data-description",
+      "type": "unscored-planning-workshop",
+      "title": "Data description planning workshop",
+      "prompt": "Plan a concise description of a one-variable distribution and a comparison of two groups. Specify the display, center, spread, and unusual features you would report.",
+      "selfCheck": [
+        "Match each display to the variable type.",
+        "Use resistant summaries when outliers or skewness matter.",
+        "Compare groups using the same units and summaries."
+      ],
+      "unscored": true,
+      "scoreMeaning": "No score is produced. This is a planning and self-check resource, not automated FRQ scoring.",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+        "https://apcentral.collegeboard.org/courses/ap-statistics/exam"
+      ],
+      "reviewStatus": "source-reviewed-editorial-draft",
+      "reviewNote": "Original workshop; independent AP Statistics subject-expert and accessibility review remain pending.",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-stats-workshop-proportions",
+      "type": "unscored-planning-workshop",
+      "title": "Proportion inference planning workshop",
+      "prompt": "Plan a confidence interval or hypothesis test for a population proportion using a public-opinion question. Write the parameter, conditions, method, and contextual interpretation.",
+      "selfCheck": [
+        "Use p for the population proportion.",
+        "Check randomization, independence, and large counts.",
+        "Interpret the interval or p-value without claiming proof."
+      ],
+      "unscored": true,
+      "scoreMeaning": "No score is produced. This is a planning and self-check resource, not automated FRQ scoring.",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+        "https://apcentral.collegeboard.org/courses/ap-statistics/exam"
+      ],
+      "reviewStatus": "source-reviewed-editorial-draft",
+      "reviewNote": "Original workshop; independent AP Statistics subject-expert and accessibility review remain pending.",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-stats-workshop-means-regression",
+      "type": "unscored-planning-workshop",
+      "title": "Means and regression planning workshop",
+      "prompt": "Plan an inference or regression response about a quantitative outcome. Identify the target, method, assumptions, evidence, and limits of the conclusion.",
+      "selfCheck": [
+        "Distinguish paired from independent samples.",
+        "Use residuals and r-squared as model evidence, not causal proof.",
+        "Keep extrapolation and lurking variables visible."
+      ],
+      "unscored": true,
+      "scoreMeaning": "No score is produced. This is a planning and self-check resource, not automated FRQ scoring.",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+        "https://apcentral.collegeboard.org/courses/ap-statistics/exam"
+      ],
+      "reviewStatus": "source-reviewed-editorial-draft",
+      "reviewNote": "Original workshop; independent AP Statistics subject-expert and accessibility review remain pending.",
+      "releaseEligible": false
+    }
+  ],
+  "summary": {
+    "chapters": 5,
+    "sections": 15,
+    "knowledgeChecks": 15,
+    "flashcards": 15,
+    "memoryAids": 5,
+    "diagrams": 0,
+    "diagramPlacements": 0,
+    "constructedResponseWorkshops": 4,
+    "richLessonPrototypes": 5,
+    "sourceReviewedChapters": 5,
+    "sourceReviewedFlashcards": 15,
+    "sourceReviewedMemoryAids": 5,
+    "releaseEligibleRecords": 0
+  },
+  "accessibility": {
+    "contentForm": "text-first, linear lessons, single-choice items, and plain-text planning workshops",
+    "essentialVisualItems": 0,
+    "diagramsRequiredForComprehension": false,
+    "diagramFallbackMode": "ordered-text-equivalent",
+    "independentReviewStatus": "pending",
+    "productionScreenReaderValidationStatus": "pending",
+    "productionVoiceValidationStatus": "pending"
+  },
+  "rightsPolicy": {
+    "secureCollegeBoardContentUsed": false,
+    "copiedOrRephrasedCollegeBoardQuestions": false,
+    "copiedCollegeBoardRubricText": false,
+    "sourceProseOrFiguresReproduced": false,
+    "diagramSpecificationsOriginal": true,
+    "authoringBasis": "Independent original wording informed by public blueprint metadata and factual sources.",
+    "publicSourceUse": "Blueprint alignment and factual verification only; no source prose, figures, or assessment content reproduced.",
+    "openStaxUse": "Factual cross-checking and links only; no textbook prose, figures, or assessment content reproduced.",
+    "status": "pending-independent-rights-review"
+  },
+  "releaseGates": {
+    "internalStructuralValidation": "pending-build-qa",
+    "independentRightsReview": "pending",
+    "independentAccessibilityReview": "pending",
+    "apStatisticsSubjectExpertReview": "pending",
+    "productionValidation": "pending",
+    "fieldTesting": "not-started",
+    "psychometricCalibration": "not-started",
+    "cedAndPolicyReverification": "required-before-release",
+    "releaseEligible": false
+  },
+  "expertReviewGate": {
+    "requiredRole": "Independent educator or faculty reviewer with current AP Statistics course and assessment expertise",
+    "status": "pending",
+    "releaseBlocked": true
+  },
+  "transitionNotice": "Reverify the current AP Statistics CED, course revisions, digital exam format, calculator and reference-material policies, and public-use boundaries before any release or expansion.",
+  "contentMigration": {
+    "schemaVersion": 1,
+    "contentVersion": "ap-statistics-foundation-v2",
+    "sections": 15,
+    "completeSections": 15,
+    "richLessonPrototypes": 5,
+    "status": "foundation-prototype",
+    "note": "All five unit chapters and fifteen structured sections are navigable; independent review remains pending."
+  }
+}

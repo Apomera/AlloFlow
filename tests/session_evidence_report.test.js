@@ -427,7 +427,7 @@ describe('session evidence report contract', () => {
     const docPaths = [];
     const sender = new Function(
       'activeSessionCode', 'sessionData', 'doc', 'db', 'appId', 'activeSessionAppId', 'updateDoc',
-      'addToast', 't', 'warnLog', 'buildStudentResourcePatchBatches',
+      'addToast', 't', 'warnLog', 'buildStudentResourcePatchBatches', 'generatedContent', 'history', 'requestWordSoundsAudioConfirmation',
       senderSource + '\nreturn handleSetStudentsResource;'
     )(
       'SESSION', { roster }, (...parts) => { docPaths.push(parts); return { path: 'session' }; }, {}, 'default-app', 'resumed-host-app',
@@ -436,7 +436,7 @@ describe('session evidence report contract', () => {
         if (patches.length === 2) throw new Error('second batch failed');
       },
       (message, tone) => toasts.push({ message, tone }),
-      () => '', () => {}, helpers.buildStudentResourcePatchBatches
+      () => '', () => {}, helpers.buildStudentResourcePatchBatches, null, [], () => false
     );
 
     await expect(sender(uids, 'support-resource')).resolves.toEqual({ sent: 25, failed: 7 });
@@ -492,6 +492,7 @@ describe('session evidence report contract', () => {
           liveActivityCount: 3,
           liveSubmissionCount: 2,
           liveRevisionCount: 1,
+          organizer: { type: 'tchart', status: 'complete', score: 80, correct: 4, total: 5, attempts: 1 },
           privateUid: 'PRIVATE_EXPORT_SENTINEL',
           rawAnswer: 'PRIVATE_EXPORT_SENTINEL',
         },
@@ -514,10 +515,11 @@ describe('session evidence report contract', () => {
     });
 
     expect(csv.split('\r\n')[0]).toBe(
-      'record_type,session_id,ended_at,duration_minutes,transport,codename,group_id,quiz_responses,activity_opportunities,activity_submissions,revisions,follow_up,activity_kind,invited,submitted,approved,hidden,feedback_sent,votes_cast'
+      'record_type,session_id,ended_at,duration_minutes,transport,codename,group_id,quiz_responses,activity_opportunities,activity_submissions,revisions,follow_up,organizer_type,organizer_status,organizer_score,organizer_correct,organizer_total,organizer_attempts,activity_kind,invited,submitted,approved,hidden,feedback_sent,votes_cast'
     );
     expect(csv).toContain('"Brave ""Otter"", Jr."');
     expect(csv).toContain('participant,SESSION-1');
+    expect(csv).toContain('tchart,complete,80,4,5,1');
     expect(csv).toContain('activity,SESSION-1');
     expect(csv).toContain('feedback_response,3,2,1,1,1,2');
     expect(csv).not.toContain('PRIVATE_EXPORT_SENTINEL');

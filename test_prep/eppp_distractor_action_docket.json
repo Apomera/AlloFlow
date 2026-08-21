@@ -4,9 +4,9 @@
   "generatedAt": "2026-07-28",
   "docketCycle": "eppp-distractor-action-cycle-02",
   "sourceBank": "test_prep/eppp_native_items.json",
-  "sourceBankSha256": "e93ed96cc1e314a4ab8b6cd1ea95b465b7a60d5afab7537f1961cb20b556d55c",
+  "sourceBankSha256": "f64e3ccbba014265b7ea7f0283ac28609aeaa494a4769231f9af15a4d840ccaf",
   "sourceDiagnostics": "test_prep/eppp_distractor_quality_diagnostics.json",
-  "sourceDiagnosticsSha256": "ad3dfa8517d17c0e1531a43787eeab3e2fce6fee0e2ae9c2d1254a5d3256cc77",
+  "sourceDiagnosticsSha256": "379f443af6f73a7f64e5587068d03871caf9882f129c913d0be6541233da9342",
   "sourceAdjudications": [
     {
       "reviewWave": "eppp-distractor-review-wave-01",
@@ -426,25 +426,6 @@
       "status": "editorial-review-needed"
     },
     {
-      "id": "eppp-v2-cognitive-affective-026",
-      "domainId": "cognitive-affective",
-      "difficulty": "intermediate",
-      "practiceBank": 6,
-      "itemInBank": 76,
-      "score": 6,
-      "diagnostics": [
-        "asymmetric-extreme-distractors"
-      ],
-      "duplicateCandidateLinks": 0,
-      "prompt": "Complete the statement: The flashbulb memory concept (Brown & Kulik) suggests that:",
-      "keyedChoice": "Highly emotional events create exceptionally vivid memories though research shows they may not be more accurate",
-      "editorialNote": "Combined warning score places this item in the next bounded editorial-review docket.",
-      "rank": 2,
-      "originalDiagnosticRank": 2,
-      "actionRank": 2,
-      "status": "editorial-review-needed"
-    },
-    {
       "id": "eppp-v2-cognitive-affective-037",
       "domainId": "cognitive-affective",
       "difficulty": "foundation",
@@ -458,9 +439,9 @@
       "prompt": "Complete the statement: Cognitive dissonance (Festinger) is reduced by:",
       "keyedChoice": "Changing behavior or beliefs for consistency",
       "editorialNote": "Combined warning score places this item in the next bounded editorial-review docket.",
-      "rank": 3,
-      "originalDiagnosticRank": 3,
-      "actionRank": 3,
+      "rank": 2,
+      "originalDiagnosticRank": 2,
+      "actionRank": 2,
       "status": "editorial-review-needed"
     },
     {
@@ -477,9 +458,9 @@
       "prompt": "Complete the statement: Context-dependent memory means:",
       "keyedChoice": "Better recall in the same environmental context",
       "editorialNote": "Combined warning score places this item in the next bounded editorial-review docket.",
-      "rank": 4,
-      "originalDiagnosticRank": 4,
-      "actionRank": 4,
+      "rank": 3,
+      "originalDiagnosticRank": 3,
+      "actionRank": 3,
       "status": "editorial-review-needed"
     },
     {
@@ -496,47 +477,9 @@
       "prompt": "Complete the statement: Schema theory proposes that:",
       "keyedChoice": "Organized mental frameworks for interpreting information",
       "editorialNote": "Combined warning score places this item in the next bounded editorial-review docket.",
-      "rank": 5,
-      "originalDiagnosticRank": 5,
-      "actionRank": 5,
-      "status": "editorial-review-needed"
-    },
-    {
-      "id": "eppp-v2-cognitive-affective-061",
-      "domainId": "cognitive-affective",
-      "difficulty": "foundation",
-      "practiceBank": 7,
-      "itemInBank": 11,
-      "score": 6,
-      "diagnostics": [
-        "asymmetric-extreme-distractors"
-      ],
-      "duplicateCandidateLinks": 0,
-      "prompt": "Complete the statement: Inductive reasoning moves from:",
-      "keyedChoice": "SPECIFIC observations to broader GENERALIZATIONS",
-      "editorialNote": "Combined warning score places this item in the next bounded editorial-review docket.",
-      "rank": 6,
-      "originalDiagnosticRank": 6,
-      "actionRank": 6,
-      "status": "editorial-review-needed"
-    },
-    {
-      "id": "eppp-v2-professional-038",
-      "domainId": "professional",
-      "difficulty": "foundation",
-      "practiceBank": 10,
-      "itemInBank": 36,
-      "score": 6,
-      "diagnostics": [
-        "asymmetric-extreme-distractors"
-      ],
-      "duplicateCandidateLinks": 0,
-      "prompt": "Complete the statement: Authorship credit on publications should be based on:",
-      "keyedChoice": "Substantial professional contributions to the design, analysis, interpretation, or writing of the work",
-      "editorialNote": "Combined warning score places this item in the next bounded editorial-review docket.",
-      "rank": 7,
-      "originalDiagnosticRank": 7,
-      "actionRank": 7,
+      "rank": 4,
+      "originalDiagnosticRank": 4,
+      "actionRank": 4,
       "status": "editorial-review-needed"
     },
     {
@@ -553,9 +496,9 @@
       "prompt": "Which statement most accurately defines The ethical principle of Justice in the APA Ethics Code?",
       "keyedChoice": "Fairness and equal access to the benefits of established psychological contributions",
       "editorialNote": "Combined warning score places this item in the next bounded editorial-review docket.",
-      "rank": 8,
-      "originalDiagnosticRank": 8,
-      "actionRank": 8,
+      "rank": 5,
+      "originalDiagnosticRank": 5,
+      "actionRank": 5,
       "status": "editorial-review-needed"
     },
     {
@@ -572,9 +515,9 @@
       "prompt": "Complete the statement: The APA General Principle of 'Fidelity and Responsibility' explicitly encourages psychologists to:",
       "keyedChoice": "Establish relationships of trust, uphold professional standards, and contribute a portion of professional time for little or no compensation",
       "editorialNote": "Combined warning score places this item in the next bounded editorial-review docket.",
-      "rank": 9,
-      "originalDiagnosticRank": 9,
-      "actionRank": 9,
+      "rank": 6,
+      "originalDiagnosticRank": 6,
+      "actionRank": 6,
       "status": "editorial-review-needed"
     },
     {
@@ -591,9 +534,9 @@
       "prompt": "In clinical supervision, what does parallel process mean?",
       "keyedChoice": "Client dynamics are repeated in supervision",
       "editorialNote": "Combined warning score places this item in the next bounded editorial-review docket.",
-      "rank": 10,
-      "originalDiagnosticRank": 10,
-      "actionRank": 10,
+      "rank": 7,
+      "originalDiagnosticRank": 7,
+      "actionRank": 7,
       "status": "editorial-review-needed"
     },
     {
@@ -610,9 +553,9 @@
       "prompt": "When ending therapy, psychologists should?",
       "keyedChoice": "Provide pretermination counseling and indicated referrals",
       "editorialNote": "Combined warning score places this item in the next bounded editorial-review docket.",
-      "rank": 11,
-      "originalDiagnosticRank": 11,
-      "actionRank": 11,
+      "rank": 8,
+      "originalDiagnosticRank": 8,
+      "actionRank": 8,
       "status": "editorial-review-needed"
     },
     {
@@ -629,47 +572,9 @@
       "prompt": "Under the APA Ethics Code, when is a formal response to another psychologist’s apparent ethical violation most clearly indicated?",
       "keyedChoice": "For substantial harm not suitably resolved informally",
       "editorialNote": "Combined warning score places this item in the next bounded editorial-review docket.",
-      "rank": 12,
-      "originalDiagnosticRank": 12,
-      "actionRank": 12,
-      "status": "editorial-review-needed"
-    },
-    {
-      "id": "eppp-v2-professional-075",
-      "domainId": "professional",
-      "difficulty": "intermediate",
-      "practiceBank": 10,
-      "itemInBank": 90,
-      "score": 6,
-      "diagnostics": [
-        "asymmetric-extreme-distractors"
-      ],
-      "duplicateCandidateLinks": 0,
-      "prompt": "A psychologist notices that personal distress may be interfering with competent work. Which response best follows the APA Ethics Code?",
-      "keyedChoice": "Obtain consultation or assistance and determine whether duties should be limited, suspended, or ended.",
-      "editorialNote": "Combined warning score places this item in the next bounded editorial-review docket.",
-      "rank": 13,
-      "originalDiagnosticRank": 13,
-      "actionRank": 13,
-      "status": "editorial-review-needed"
-    },
-    {
-      "id": "eppp-v2-professional-077",
-      "domainId": "professional",
-      "difficulty": "intermediate",
-      "practiceBank": 10,
-      "itemInBank": 92,
-      "score": 6,
-      "diagnostics": [
-        "asymmetric-extreme-distractors"
-      ],
-      "duplicateCandidateLinks": 0,
-      "prompt": "Which practice best supports ethically valid informed consent for psychological services?",
-      "keyedChoice": "Understandable disclosure of service terms and confidentiality limits",
-      "editorialNote": "Combined warning score places this item in the next bounded editorial-review docket.",
-      "rank": 14,
-      "originalDiagnosticRank": 14,
-      "actionRank": 14,
+      "rank": 9,
+      "originalDiagnosticRank": 9,
+      "actionRank": 9,
       "status": "editorial-review-needed"
     },
     {
@@ -686,9 +591,9 @@
       "prompt": "Complete the statement: A between-subjects design:",
       "keyedChoice": "Assigns DIFFERENT participants to each condition",
       "editorialNote": "Combined warning score places this item in the next bounded editorial-review docket.",
-      "rank": 15,
-      "originalDiagnosticRank": 15,
-      "actionRank": 15,
+      "rank": 10,
+      "originalDiagnosticRank": 10,
+      "actionRank": 10,
       "status": "editorial-review-needed"
     },
     {
@@ -705,66 +610,9 @@
       "prompt": "Complete the statement: Relative deprivation theory proposes that social unrest results from:",
       "keyedChoice": "People's PERCEPTION that they are worse off compared to others, not objective conditions",
       "editorialNote": "Combined warning score places this item in the next bounded editorial-review docket.",
-      "rank": 16,
-      "originalDiagnosticRank": 16,
-      "actionRank": 16,
-      "status": "editorial-review-needed"
-    },
-    {
-      "id": "eppp-v2-social-cultural-038",
-      "domainId": "social-cultural",
-      "difficulty": "intermediate",
-      "practiceBank": 7,
-      "itemInBank": 53,
-      "score": 6,
-      "diagnostics": [
-        "asymmetric-extreme-distractors"
-      ],
-      "duplicateCandidateLinks": 0,
-      "prompt": "Complete the statement: Social identity theory (Tajfel) proposes that:",
-      "keyedChoice": "Group membership shapes self-concept and in-group bias",
-      "editorialNote": "Combined warning score places this item in the next bounded editorial-review docket.",
-      "rank": 17,
-      "originalDiagnosticRank": 17,
-      "actionRank": 17,
-      "status": "editorial-review-needed"
-    },
-    {
-      "id": "eppp-v2-social-cultural-054",
-      "domainId": "social-cultural",
-      "difficulty": "intermediate",
-      "practiceBank": 10,
-      "itemInBank": 99,
-      "score": 6,
-      "diagnostics": [
-        "asymmetric-extreme-distractors"
-      ],
-      "duplicateCandidateLinks": 0,
-      "prompt": "Leader–member exchange theory focuses most directly on which feature of leadership?",
-      "keyedChoice": "The quality of the distinct working relationship a leader develops with each follower.",
-      "editorialNote": "Combined warning score places this item in the next bounded editorial-review docket.",
-      "rank": 18,
-      "originalDiagnosticRank": 18,
-      "actionRank": 18,
-      "status": "editorial-review-needed"
-    },
-    {
-      "id": "eppp-v3-assessment-047",
-      "domainId": "assessment",
-      "difficulty": "intermediate",
-      "practiceBank": 13,
-      "itemInBank": 77,
-      "score": 6,
-      "diagnostics": [
-        "asymmetric-extreme-distractors"
-      ],
-      "duplicateCandidateLinks": 0,
-      "prompt": "In neuropsychological assessment, double dissociation provides evidence that:",
-      "keyedChoice": "Two functions depend on different neural systems",
-      "editorialNote": "Combined warning score places this item in the next bounded editorial-review docket.",
-      "rank": 19,
-      "originalDiagnosticRank": 19,
-      "actionRank": 19,
+      "rank": 11,
+      "originalDiagnosticRank": 11,
+      "actionRank": 11,
       "status": "editorial-review-needed"
     },
     {
@@ -780,6 +628,158 @@
       "duplicateCandidateLinks": 0,
       "prompt": "The difference between aptitude and achievement tests is:",
       "keyedChoice": "Aptitude forecasts learning potential; achievement assesses acquired learning",
+      "editorialNote": "Combined warning score places this item in the next bounded editorial-review docket.",
+      "rank": 12,
+      "originalDiagnosticRank": 12,
+      "actionRank": 12,
+      "status": "editorial-review-needed"
+    },
+    {
+      "id": "eppp-v3-assessment-075",
+      "domainId": "assessment",
+      "difficulty": "intermediate",
+      "practiceBank": 14,
+      "itemInBank": 5,
+      "score": 6,
+      "diagnostics": [
+        "asymmetric-extreme-distractors"
+      ],
+      "duplicateCandidateLinks": 0,
+      "prompt": "Ceiling and floor effects in testing occur when:",
+      "keyedChoice": "Scores cluster at the upper or lower limit of the instrument",
+      "editorialNote": "Combined warning score places this item in the next bounded editorial-review docket.",
+      "rank": 13,
+      "originalDiagnosticRank": 13,
+      "actionRank": 13,
+      "status": "editorial-review-needed"
+    },
+    {
+      "id": "eppp-v3-cognitive-affective-047",
+      "domainId": "cognitive-affective",
+      "difficulty": "intermediate",
+      "practiceBank": 11,
+      "itemInBank": 97,
+      "score": 6,
+      "diagnostics": [
+        "asymmetric-extreme-distractors"
+      ],
+      "duplicateCandidateLinks": 0,
+      "prompt": "The Stroop effect demonstrates:",
+      "keyedChoice": "Automatic word reading interfering with controlled color naming",
+      "editorialNote": "Combined warning score places this item in the next bounded editorial-review docket.",
+      "rank": 14,
+      "originalDiagnosticRank": 14,
+      "actionRank": 14,
+      "status": "editorial-review-needed"
+    },
+    {
+      "id": "eppp-v3-cognitive-affective-053",
+      "domainId": "cognitive-affective",
+      "difficulty": "foundation",
+      "practiceBank": 12,
+      "itemInBank": 3,
+      "score": 6,
+      "diagnostics": [
+        "asymmetric-extreme-distractors"
+      ],
+      "duplicateCandidateLinks": 0,
+      "prompt": "Levels of processing theory (Craik & Lockhart) predicts:",
+      "keyedChoice": "Semantic analysis producing more durable memory than shallow analysis",
+      "editorialNote": "Combined warning score places this item in the next bounded editorial-review docket.",
+      "rank": 15,
+      "originalDiagnosticRank": 15,
+      "actionRank": 15,
+      "status": "editorial-review-needed"
+    },
+    {
+      "id": "eppp-v3-cognitive-affective-063",
+      "domainId": "cognitive-affective",
+      "difficulty": "intermediate",
+      "practiceBank": 12,
+      "itemInBank": 13,
+      "score": 6,
+      "diagnostics": [
+        "asymmetric-extreme-distractors"
+      ],
+      "duplicateCandidateLinks": 0,
+      "prompt": "Interference theory proposes that forgetting occurs because:",
+      "keyedChoice": "Competing information disrupts access to the target memory",
+      "editorialNote": "Combined warning score places this item in the next bounded editorial-review docket.",
+      "rank": 16,
+      "originalDiagnosticRank": 16,
+      "actionRank": 16,
+      "status": "editorial-review-needed"
+    },
+    {
+      "id": "eppp-v3-intervention-061",
+      "domainId": "intervention",
+      "difficulty": "foundation",
+      "practiceBank": 14,
+      "itemInBank": 71,
+      "score": 6,
+      "diagnostics": [
+        "asymmetric-extreme-distractors"
+      ],
+      "duplicateCandidateLinks": 0,
+      "prompt": "Psychoeducation in therapy involves:",
+      "keyedChoice": "Teaching clients and families about symptoms, treatment, coping, and self-management",
+      "editorialNote": "Combined warning score places this item in the next bounded editorial-review docket.",
+      "rank": 17,
+      "originalDiagnosticRank": 17,
+      "actionRank": 17,
+      "status": "editorial-review-needed"
+    },
+    {
+      "id": "eppp-v3-professional-004",
+      "domainId": "professional",
+      "difficulty": "foundation",
+      "practiceBank": 15,
+      "itemInBank": 24,
+      "score": 6,
+      "diagnostics": [
+        "asymmetric-extreme-distractors"
+      ],
+      "duplicateCandidateLinks": 0,
+      "prompt": "According to APA ethics, competence to practice requires:",
+      "keyedChoice": "Relevant education, training, supervised experience, consultation, study, or experience",
+      "editorialNote": "Combined warning score places this item in the next bounded editorial-review docket.",
+      "rank": 18,
+      "originalDiagnosticRank": 18,
+      "actionRank": 18,
+      "status": "editorial-review-needed"
+    },
+    {
+      "id": "eppp-v3-professional-005",
+      "domainId": "professional",
+      "difficulty": "foundation",
+      "practiceBank": 15,
+      "itemInBank": 25,
+      "score": 6,
+      "diagnostics": [
+        "asymmetric-extreme-distractors"
+      ],
+      "duplicateCandidateLinks": 0,
+      "prompt": "APA General Principle E indicates that psychologists should:",
+      "keyedChoice": "Strive to contribute some professional time for little or no compensation",
+      "editorialNote": "Combined warning score places this item in the next bounded editorial-review docket.",
+      "rank": 19,
+      "originalDiagnosticRank": 19,
+      "actionRank": 19,
+      "status": "editorial-review-needed"
+    },
+    {
+      "id": "eppp-v3-professional-007",
+      "domainId": "professional",
+      "difficulty": "intermediate",
+      "practiceBank": 15,
+      "itemInBank": 27,
+      "score": 6,
+      "diagnostics": [
+        "asymmetric-extreme-distractors"
+      ],
+      "duplicateCandidateLinks": 0,
+      "prompt": "When ethical standards conflict with law, psychologists should:",
+      "keyedChoice": "Clarify the conflict and take reasonable steps to resolve it ethically",
       "editorialNote": "Combined warning score places this item in the next bounded editorial-review docket.",
       "rank": 20,
       "originalDiagnosticRank": 20,

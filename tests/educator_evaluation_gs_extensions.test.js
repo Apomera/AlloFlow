@@ -13,6 +13,13 @@ const saveAs = (harness, email, mutate, mutation) => {
   return harness.invoke('saveWorkspace', { expectedVersion: boot.revision, workspace: boot.workspace, mutation });
 };
 
+const configureAsAdmin = (harness, patch) => {
+  harness.setActiveEmail(ADMIN);
+  const boot = harness.invoke('bootstrap');
+  const review = harness.invoke('reviewPortalWorkspaceConfiguration', { config: { ...boot.workspace.config, ...patch } }).review;
+  return harness.invoke('performPortalWorkspaceConfiguration', { reviewToken: review.token, acknowledgeImpact: true });
+};
+
 const rateAndRelease = (harness, teacherId, domains, extra = {}) => {
   const rate = saveAs(harness, EVALUATOR, (workspace) => {
     const record = workspace.teachers.find((item) => item.id === teacherId);
@@ -102,10 +109,7 @@ describe('era-aware release scoring', () => {
 
   it('Maine profile releases with the equal average and stamps the me-pepg era tag', () => {
     const harness = repositoryFixture();
-    const configured = saveAs(harness, ADMIN, (workspace) => {
-      workspace.config.frameworkProfile = 'maine_pepg';
-      workspace.config.pepgPracticeWeight = null; // practice-only: legitimate since 2019
-    }, { event: 'CONFIG_UPDATED', entityType: 'workspace', entityId: 'workspace', version: 1 });
+    const configured = configureAsAdmin(harness, { frameworkProfile: 'maine_pepg', pepgPracticeWeight: null }); // practice-only: legitimate since 2019
     expect(configured.ok).toBe(true);
     // peer-01 has NO current-cycle activity, so its weights freeze under the
     // Maine profile at release time: equal-average 2.50, era tag me-pepg-local
@@ -120,10 +124,7 @@ describe('era-aware release scoring', () => {
 
   it('a mid-cycle profile change NEVER rewrites weights already frozen under the old framework', () => {
     const harness = repositoryFixture();
-    saveAs(harness, ADMIN, (workspace) => {
-      workspace.config.frameworkProfile = 'maine_pepg';
-      workspace.config.pepgPracticeWeight = null;
-    }, { event: 'CONFIG_UPDATED', entityType: 'workspace', entityId: 'workspace', version: 1 });
+    configureAsAdmin(harness, { frameworkProfile: 'maine_pepg', pepgPracticeWeight: null });
     // t1 already has cycle activity from the fixture, so its PA 70/10/10/10
     // snapshot is frozen: practice averages equally (2.50) but composes through
     // the FROZEN weights — 2.50*0.7 + 2*0.1 + 2*0.1 + 2*0.1 = 2.35

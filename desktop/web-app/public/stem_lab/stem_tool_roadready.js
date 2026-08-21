@@ -11049,6 +11049,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             var local = mainRoadLocalPoint(_collisionWorld, actor.x, actor.y);
             return { station: local.longitudinal, lateral: local.lateral };
           };
+          var _mainRoadCollisionState = function(actor) {
+            if (!_collisionWorld || !_collisionWorld.spline || !actor ||
+                actor.crossStreet || actor._turning) return null;
+            return trafficRoadCoordinates(_collisionWorld, actor);
+          };
           var _shiftMainRoadCollisionActor = function(actor, stationDelta, lateralDelta) {
             var frame = _mainRoadCollisionFrame(actor);
             if (!frame) return false;
@@ -11096,12 +11101,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   ca.y -= signY * penY * 0.5;
                   cb.y += signY * penY * 0.5;
                 }
-                // Identify trailing car by direction of travel and clamp its
-                // speed to the leader's so it physically cannot keep closing.
-                var aDirY = Math.sin(ca.heading) > 0 ? 1 : -1;
-                var aIsAhead = (ca.y - cb.y) * aDirY > 0;
-                if (aIsAhead) cb.speed = Math.min(cb.speed, ca.speed * 0.95);
-                else ca.speed = Math.min(ca.speed, cb.speed * 0.95);
+                // Identify the trailing car in the authored road frame. Raw world Y
+                // reverses ordering on a bend and used to brake the wrong vehicle.
+                var caRoadState = _mainRoadCollisionState(ca);
+                var cbRoadState = _mainRoadCollisionState(cb);
+                var sameRoadDirection = caRoadState && cbRoadState &&
+                  caRoadState.corridorKey === cbRoadState.corridorKey &&
+                  caRoadState.direction === cbRoadState.direction;
+                if (sameRoadDirection) {
+                  var caIsAhead = (caRoadState.station - cbRoadState.station) *
+                    caRoadState.direction > 0;
+                  if (caIsAhead) cb.speed = Math.min(cb.speed, ca.speed * 0.95);
+                  else ca.speed = Math.min(ca.speed, cb.speed * 0.95);
+                } else if (ca.crossStreet && cb.crossStreet) {
+                  // Preserve the rotated cross-street fallback when no main-road
+                  // spline frame is available.
+                  var caDirX = Math.cos(ca.heading) >= 0 ? 1 : -1;
+                  var caIsAheadX = (ca.x - cb.x) * caDirX > 0;
+                  if (caIsAheadX) cb.speed = Math.min(cb.speed, ca.speed * 0.95);
+                  else ca.speed = Math.min(ca.speed, cb.speed * 0.95);
+                }
               } else {
                 // Lateral overlap — push apart along X (lane-change collision).
                 // The lane-snap pass on next frame will pull both back toward
@@ -11131,45 +11150,66 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               if (ga.crossStreet !== gb.crossStreet) continue;
               var gapDx = gb.x - ga.x;
               var gapDy = gb.y - ga.y;
-              var gapSq = gapDx * gapDx + gapDy * gapDy;
+              var gaFrame = !ga.crossStreet ? _mainRoadCollisionFrame(ga) : null;
+              var gbFrame = !gb.crossStreet ? _mainRoadCollisionFrame(gb) : null;
+              var gapStationDelta = gaFrame && gbFrame ? gbFrame.station - gaFrame.station : gapDy;
+              var gapLateralDelta = gaFrame && gbFrame ? gbFrame.lateral - gaFrame.lateral : gapDx;
+              var gapSq = gaFrame && gbFrame
+                ? gapStationDelta * gapStationDelta + gapLateralDelta * gapLateralDelta
+                : gapDx * gapDx + gapDy * gapDy;
               if (gapSq >= minGapSq) continue;
               if (!ga.crossStreet) {
-                var sameMainDir = Math.sign(Math.sin(ga.heading)) === Math.sign(Math.sin(gb.heading));
+                var gaRoadState = _mainRoadCollisionState(ga);
+                var gbRoadState = _mainRoadCollisionState(gb);
+                var sameMainDir = gaRoadState && gbRoadState
+                  ? gaRoadState.corridorKey === gbRoadState.corridorKey &&
+                    gaRoadState.direction === gbRoadState.direction
+                  : Math.sign(Math.sin(ga.heading)) === Math.sign(Math.sin(gb.heading));
                 if (sameMainDir) {
-                  var neededY = Math.sqrt(Math.max(0, minGapSq - gapDx * gapDx)) + 0.05;
-                  var haveY = Math.abs(gapDy);
-                  var pushY = neededY - haveY;
-                  if (pushY > 0) {
-                    var gaFrame = _mainRoadCollisionFrame(ga);
-                    var gbFrame = _mainRoadCollisionFrame(gb);
-                    var gapStationDelta = gaFrame && gbFrame ? gbFrame.station - gaFrame.station : gapDy;
-                    var gapSignY = gapStationDelta >= 0 ? 1 : -1;
-                    var shiftedGapAlongRoad = _shiftMainRoadCollisionActor(ga, -gapSignY * pushY * 0.5, 0) &&
-                      _shiftMainRoadCollisionActor(gb, gapSignY * pushY * 0.5, 0);
+                  var mainStationDelta = gapStationDelta;
+                  var mainLateralDelta = gapLateralDelta;
+                  var neededAlong = Math.sqrt(Math.max(0,
+                    minGapSq - mainLateralDelta * mainLateralDelta)) + 0.05;
+                  var haveAlong = Math.abs(mainStationDelta);
+                  var pushAlong = neededAlong - haveAlong;
+                  if (pushAlong > 0) {
+                    var gapSignAlong = mainStationDelta >= 0 ? 1 : -1;
+                    var shiftedGapAlongRoad = _shiftMainRoadCollisionActor(
+                      ga, -gapSignAlong * pushAlong * 0.5, 0) &&
+                      _shiftMainRoadCollisionActor(
+                        gb, gapSignAlong * pushAlong * 0.5, 0);
                     if (!shiftedGapAlongRoad) {
-                      ga.y -= gapSignY * pushY * 0.5;
-                      gb.y += gapSignY * pushY * 0.5;
+                      ga.y -= gapSignAlong * pushAlong * 0.5;
+                      gb.y += gapSignAlong * pushAlong * 0.5;
                     }
-                    var gapDirY = Math.sin(ga.heading) > 0 ? 1 : -1;
-                    var gaAhead = (ga.y - gb.y) * gapDirY > 0;
-                    if (gaAhead) gb.speed = Math.min(gb.speed, ga.speed * 0.9);
-                    else ga.speed = Math.min(ga.speed, gb.speed * 0.9);
+                    if (gaRoadState && gbRoadState) {
+                      var gaAhead = (gaRoadState.station - gbRoadState.station) *
+                        gaRoadState.direction > 0;
+                      if (gaAhead) gb.speed = Math.min(gb.speed, ga.speed * 0.9);
+                      else ga.speed = Math.min(ga.speed, gb.speed * 0.9);
+                    } else {
+                      var gapDirY = Math.sin(ga.heading) > 0 ? 1 : -1;
+                      var gaAheadFallback = (ga.y - gb.y) * gapDirY > 0;
+                      if (gaAheadFallback) gb.speed = Math.min(gb.speed, ga.speed * 0.9);
+                      else ga.speed = Math.min(ga.speed, gb.speed * 0.9);
+                    }
                   }
                 } else {
-                  var neededSideX = Math.sqrt(Math.max(0, minGapSq - gapDy * gapDy)) + 0.05;
-                  var haveSideX = Math.abs(gapDx);
-                  var pushSideX = neededSideX - haveSideX;
-                  if (pushSideX > 0) {
-                    var gaSideFrame = _mainRoadCollisionFrame(ga);
-                    var gbSideFrame = _mainRoadCollisionFrame(gb);
-                    var gapLateralDelta = gaSideFrame && gbSideFrame
-                      ? gbSideFrame.lateral - gaSideFrame.lateral : gapDx;
-                    var sideSignX = gapLateralDelta >= 0 ? 1 : -1;
-                    var shiftedGapAcrossRoad = _shiftMainRoadCollisionActor(ga, 0, -sideSignX * pushSideX * 0.5) &&
-                      _shiftMainRoadCollisionActor(gb, 0, sideSignX * pushSideX * 0.5);
+                  var oppositeStationDelta = gapStationDelta;
+                  var oppositeLateralDelta = gapLateralDelta;
+                  var neededAcross = Math.sqrt(Math.max(0,
+                    minGapSq - oppositeStationDelta * oppositeStationDelta)) + 0.05;
+                  var haveAcross = Math.abs(oppositeLateralDelta);
+                  var pushAcross = neededAcross - haveAcross;
+                  if (pushAcross > 0) {
+                    var sideSignAcross = oppositeLateralDelta >= 0 ? 1 : -1;
+                    var shiftedGapAcrossRoad = _shiftMainRoadCollisionActor(
+                      ga, 0, -sideSignAcross * pushAcross * 0.5) &&
+                      _shiftMainRoadCollisionActor(
+                        gb, 0, sideSignAcross * pushAcross * 0.5);
                     if (!shiftedGapAcrossRoad) {
-                      ga.x -= sideSignX * pushSideX * 0.5;
-                      gb.x += sideSignX * pushSideX * 0.5;
+                      ga.x -= sideSignAcross * pushAcross * 0.5;
+                      gb.x += sideSignAcross * pushAcross * 0.5;
                     }
                   }
                 }
@@ -22404,6 +22444,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           var veh = currentVehicle;
           var speedMph = Math.round(Math.abs(car.speed) * MS_TO_MPH);
           var hudPostedLimitMph = playerPostedLimitMph(infiniteWorldRef.current, car, scn);
+          // Mirror pips should follow the authored road frame on bends. Raw
+          // X/Y angles make a same-lane car look like it moved sideways when
+          // the centerline curves; finite and cross-street actors keep the
+          // existing world-space fallback below.
+          var roadMirrorRelative = function(actor) {
+            if (!actor || actor.crossStreet || !infiniteWorldRef.current ||
+                !infiniteWorldRef.current.spline) return null;
+            return roadRelativeTarget(infiniteWorldRef.current, car, actor);
+          };
           var stats = statsRef.current;
           // Dawn/dusk sun glare — the lesson copy explicitly warns "Low-angle sun glare,
           // visibility is tricky." Until now the scenario only had an orange sky; the
@@ -23399,12 +23448,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           gfx.beginPath(); gfx.moveTo(mirrorX, mirrorY + mirrorH / 2); gfx.lineTo(mirrorX + mirrorW, mirrorY + mirrorH / 2); gfx.stroke();
           // Traffic pips
           trafficRef.current.forEach(function(t) {
+            var mirrorRoadState = roadMirrorRelative(t);
             var dx = t.x - car.x, dy = t.y - car.y;
             var dist = Math.hypot(dx, dy);
+            var angle;
+            if (mirrorRoadState && mirrorRoadState.ahead < -0.5) {
+              // In the rear-facing frame, negative road-ahead is depth and
+              // lateralDifference is the driver's right/left placement.
+              var rearAlong = -mirrorRoadState.ahead;
+              dist = Math.hypot(rearAlong, mirrorRoadState.lateralDifference);
+              angle = Math.atan2(mirrorRoadState.lateralDifference, rearAlong);
+            } else {
+              if (dist > 15 || dist < 0.5) return;
+              angle = Math.atan2(dy, dx) - rearAngle;
+              while (angle > Math.PI) angle -= 2 * Math.PI;
+              while (angle < -Math.PI) angle += 2 * Math.PI;
+            }
             if (dist > 15 || dist < 0.5) return;
-            var angle = Math.atan2(dy, dx) - rearAngle;
-            while (angle > Math.PI) angle -= 2 * Math.PI;
-            while (angle < -Math.PI) angle += 2 * Math.PI;
             if (Math.abs(angle) > Math.PI / 4) return;
             var mx = mirrorX + mirrorW / 2 + (angle / (Math.PI / 4)) * (mirrorW / 2);
             // Ground vertical: farther cars appear closer to horizon
@@ -23464,6 +23524,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             // Right mirror: shows 0 to +π (car's right side, behind-to-side)
             var mirrorDir = isLeft ? (car.heading - Math.PI / 2) : (car.heading + Math.PI / 2);
             trafficRef.current.forEach(function(t) {
+              var mirrorRoadState = roadMirrorRelative(t);
+              if (mirrorRoadState) {
+                // +lateral is driver's right. Keep each mirror's own side,
+                // while allowing near-zero lateral traffic so a same-lane
+                // follower still appears at the outer edge of the glass.
+                var sideLateral = isLeft
+                  ? -mirrorRoadState.lateralDifference
+                  : mirrorRoadState.lateralDifference;
+                if (sideLateral < -0.8) return;
+                var sideDepth = mirrorRoadState.ahead;
+                var sideAcross = Math.max(0.25, sideLateral);
+                var roadMirrorDist = Math.hypot(sideAcross, sideDepth);
+                if (roadMirrorDist > 10 || roadMirrorDist < 0.5) return;
+                var roadMirrorAngle = isLeft
+                  ? Math.atan2(sideDepth, sideAcross)
+                  : Math.atan2(-sideDepth, sideAcross);
+                if (roadMirrorAngle > Math.PI / 3 || roadMirrorAngle < -Math.PI / 2) return;
+                var roadMirrorNorm = (roadMirrorAngle + Math.PI / 2) / (Math.PI * 0.83);
+                var roadMirrorX = smX + (isLeft ? (1 - roadMirrorNorm) : roadMirrorNorm) * smW;
+                var roadMirrorY = smY + smH / 2 + (1 - roadMirrorDist / 10) * (smH / 2 - 3);
+                var roadMirrorSize = Math.max(4, 14 / roadMirrorDist);
+                gfx.fillStyle = t.color;
+                gfx.fillRect(roadMirrorX - roadMirrorSize / 2, roadMirrorY - roadMirrorSize / 2,
+                  roadMirrorSize, roadMirrorSize * 0.6);
+                if (t._slowFor >= 1) {
+                  gfx.fillStyle = 'rgba(239,68,68,0.8)';
+                  gfx.fillRect(roadMirrorX - 1, roadMirrorY + roadMirrorSize * 0.1, 2, 1.5);
+                }
+                return;
+              }
               var dx = t.x - car.x, dy = t.y - car.y;
               var dist = Math.hypot(dx, dy);
               if (dist > 10 || dist < 0.5) return;

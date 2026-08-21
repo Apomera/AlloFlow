@@ -296,6 +296,36 @@
       "portfolioCategories": [
         "k12-college-readiness"
       ]
+    },
+    {
+      "id": "ap-us-government-foundation-pilot",
+      "sourcePath": "test_prep/ap_us_government_foundation_pilot.json",
+      "pipelineFamily": "ap-native",
+      "loadMode": "lazy",
+      "visibility": "internal",
+      "portfolioCategories": [
+        "k12-college-readiness"
+      ]
+    },
+    {
+      "id": "ap-statistics-foundation-pilot",
+      "sourcePath": "test_prep/ap_statistics_foundation_pilot.json",
+      "pipelineFamily": "ap-native",
+      "loadMode": "lazy",
+      "visibility": "internal",
+      "portfolioCategories": [
+        "k12-college-readiness"
+      ]
+    },
+    {
+      "id": "ap-chemistry-foundation-pilot",
+      "sourcePath": "test_prep/ap_chemistry_foundation_pilot.json",
+      "pipelineFamily": "ap-native",
+      "loadMode": "lazy",
+      "visibility": "internal",
+      "portfolioCategories": [
+        "k12-college-readiness"
+      ]
     }
   ]
 }

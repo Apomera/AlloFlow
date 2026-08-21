@@ -1039,6 +1039,16 @@
             return h('li', { key: check.label }, (check.pass ? '\u2713 ' : '\u25CB ') + check.label);
           })),
           renderAuditTrail(report.auditTrail),
+          h('details', { className: 'tc-safeguards' },
+            h('summary', null, 'Accessibility and audit safeguards'),
+            h('p', { className: 'tc-lede' }, 'Safeguards recorded for this lesson report:'),
+            h('ul', { className: 'tc-teacher-list' },
+              h('li', null, 'Keyboard station tabs support Arrow keys, Home, and End.'),
+              h('li', null, 'Visible focus rings and 24-pixel checkbox and radio targets support keyboard and switch access.'),
+              h('li', null, 'The ordered operator audit chain and fixed-input reproducibility note preserve process evidence without personal identifiers.'),
+              h('li', null, 'The line-printer preview and machine read-back remain separate checks so learners can inspect output independently.')
+            )
+          ),
           h('p', null, h('strong', null, 'Role separation: '), report.assignment.message),
           renderLedger(d.worksheet || {}, 'Hand-calculation audit ledger'),
           report.tableApproximation && h('p', null, h('strong', null, 'Table-precision control: '), 'The four-place reference estimate was ' + round(report.tableApproximation.range, 1) + ' m, a ' + round(Math.abs(report.tableApproximation.difference), 2) + ' m difference. Prediction ' + (report.tableApproximation.correct ? 'supported.' : 'needs revision.')),

@@ -11,6 +11,7 @@ import { fileURLToPath } from 'node:url';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const anti = fs.readFileSync(path.join(ROOT, 'AlloFlowANTI.txt'), 'utf8');
 const sharedActivitySource = fs.readFileSync(path.join(ROOT, 'shared_activity_source.jsx'), 'utf8');
+const assignmentCenterSource = fs.readFileSync(path.join(ROOT, 'view_assignment_center_source.jsx'), 'utf8');
 const gsSource = fs.readFileSync(path.join(ROOT, 'apps_script', 'session_mailbox', 'Code.gs'), 'utf8');
 const headerSource = fs.readFileSync(path.join(ROOT, 'view_header_source.jsx'), 'utf8');
 
@@ -772,7 +773,7 @@ describe('ANTI wiring pins', () => {
         // Re-anchored 2026-08-17 (X8): the option label was extracted to
         // t('share_collect.type_rating') during the wave-2 i18n sweep; the
         // rating option itself is what this pin guards.
-        expect(anti).toContain('<option value="rating">{t(\'share_collect.type_rating\') || \'Rating scale (not scored)\'}</option>');
+        expect(assignmentCenterSource).toContain('<option value="rating">{tx(\'share_collect.type_rating\', \'Rating scale (not scored)\')}</option>');
         expect(anti).toContain('const ratingMin = Math.max(1, Math.min(9,');
         expect(anti).toContain('const ratingMax = Math.max(ratingMin + 1, Math.min(10,');
     });

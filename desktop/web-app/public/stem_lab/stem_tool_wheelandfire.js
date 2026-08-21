@@ -29,6 +29,8 @@
       '.wheel-fire-shell button:focus-visible,.wheel-fire-shell input:focus-visible,.wheel-fire-shell select:focus-visible,.wheel-fire-shell textarea:focus-visible,.wheel-fire-shell svg:focus-visible,.wheel-fire-shell summary:focus-visible{outline:3px solid #0f766e;outline-offset:3px}',
       '.wheel-fire-main{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(280px,.8fr);gap:14px}',
       '.wheel-fire-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}',
+      '.wheel-fire-cycle-bar{height:10px;border-radius:999px;overflow:hidden;background:#e2e8f0}',
+      '.wheel-fire-cycle-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,#fbbf24,#dc2626);transition:width .25s ease}',
       '.wheel-fire-culture-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,245px),1fr));gap:10px}',
       '.wheel-fire-stage-line{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:4px}',
       '.wheel-fire-spin{transform-origin:center;animation:wheelFireSpin 1.4s linear infinite}',
@@ -154,6 +156,7 @@
     copy.defects = copyArray(vessel && vessel.defects);
     copy.firingLog = copyArray(vessel && vessel.firingLog);
     copy.materialRecipe = normalizeRecipe(vessel && vessel.materialRecipe);
+    copy.lastGlazeOutcome = vessel && vessel.lastGlazeOutcome ? Object.assign({}, vessel.lastGlazeOutcome, { heatwork: vessel.lastGlazeOutcome.heatwork ? Object.assign({}, vessel.lastGlazeOutcome.heatwork) : null }) : null;
     return copy;
   }
   function profileForPreset(preset) {
@@ -209,6 +212,7 @@
       maturation: 0,
       firedPorosity: null,
       lastHeatwork: null,
+      lastGlazeOutcome: null,
       firingLog: [],
       lastOutcome: 'Clay is wet and workable.'
     };
@@ -228,6 +232,7 @@
     next.maturation = clamp(finite(next.maturation, 0), 0, 1);
     next.firedPorosity = typeof next.firedPorosity === 'number' && isFinite(next.firedPorosity) ? clamp(next.firedPorosity, 0.005, 0.45) : null;
     next.materialRecipe = normalizeRecipe(next.materialRecipe);
+    next.lastGlazeOutcome = next.lastGlazeOutcome && typeof next.lastGlazeOutcome === 'object' ? Object.assign({}, next.lastGlazeOutcome, { heatwork: next.lastGlazeOutcome.heatwork ? Object.assign({}, next.lastGlazeOutcome.heatwork) : null }) : null;
     next.stage = STAGES.indexOf(next.stage) >= 0 ? next.stage : 'wet';
     for (var i = 0; i < RING_COUNT; i++) {
       next.radii[i] = clamp(next.radii[i], 1.2, 12.5);
@@ -295,6 +300,96 @@
       porosity: clamp(body.porosity + (1 - maturation) * 0.18 + openPenalty, 0.005, 0.42)
     };
   }
+  function analyzeGlazeOutcome(vessel, settings) {
+    vessel = normalizeVessel(vessel);
+    settings = settings || {};
+    var body = materialProfile(vessel);
+    var glaze = glazeById(vessel.glazeId);
+    var kilnType = settings.kilnType || 'electric';
+    var atmosphere = kilnType === 'electric' ? 'oxidation' : (settings.atmosphere || 'oxidation');
+    var heatwork = estimateHeatwork({ temperature: finite(settings.temperature, glaze.maturity), ramp: settings.ramp, soak: settings.soak });
+    var effectiveTemp = heatwork.effectiveTemp;
+    var meltIndex = clamp((effectiveTemp - (glaze.maturity - 110)) / 180, 0, 1.35);
+    var underfire = clamp((glaze.maturity - 70 - effectiveTemp) / 100, 0, 1);
+    var overfire = clamp((effectiveTemp - (glaze.maturity + 55)) / 100, 0, 1);
+    var coverage = clamp(finite(vessel.glazeThickness, 50), 5, 100) / 100;
+    var thinCoverage = clamp((0.28 - coverage) / 0.28, 0, 1);
+    var thickCoverage = clamp((coverage - 0.78) / 0.22, 0, 1);
+    var fitGap = glaze.expansion - body.expansion;
+    var fitRisk = clamp((Math.abs(fitGap) - 0.035) / 0.105, 0, 1);
+    var runRisk = clamp(thickCoverage * 0.62 + overfire * 0.72 + (kilnType === 'open' ? 0.08 : 0), 0, 1);
+    var pinholeRisk = clamp(underfire * 0.48 + thickCoverage * 0.28 + Math.max(0, finite(settings.ramp, 110) - 170) / 130 * 0.16, 0, 1);
+    var crawlingRisk = clamp(thickCoverage * 0.34 + overfire * 0.18 + fitRisk * 0.16, 0, 1);
+    var surfaceScore = clamp(100 - underfire * 48 - overfire * 34 - fitRisk * 28 - thinCoverage * 22 - runRisk * 18 - pinholeRisk * 12 - crawlingRisk * 12, 0, 100);
+    var fitScore = clamp(100 - fitRisk * 100, 0, 100);
+    var status = surfaceScore >= 78 ? 'More controlled modeled surface outcome' : (surfaceScore >= 52 ? 'Mixed modeled surface outcome' : 'High modeled surface variability');
+    var summary = 'Heatwork near cone ' + heatwork.cone + '; modeled glaze-body expansion gap ' + fitGap.toFixed(2) + '. ' + (underfire > 0.45 ? 'Heatwork is below the glaze window.' : (overfire > 0.45 ? 'Heatwork is above the glaze window.' : 'Heatwork overlaps the glaze window.'));
+    return {
+      glazeId: glaze.id,
+      glazeName: glaze.name,
+      bodyId: body.id,
+      bodyName: body.name,
+      temperature: finite(settings.temperature, glaze.maturity),
+      effectiveTemperature: effectiveTemp,
+      heatwork: heatwork,
+      atmosphere: atmosphere,
+      coveragePct: coverage * 100,
+      meltIndexPct: meltIndex * 100,
+      fitGap: fitGap,
+      fitScore: fitScore,
+      runRiskPct: runRisk * 100,
+      pinholeRiskPct: pinholeRisk * 100,
+      crawlingRiskPct: crawlingRisk * 100,
+      surfaceScore: surfaceScore,
+      status: status,
+      summary: summary
+    };
+  }
+  function analyzeFiringSchedule(vessel, settings) {
+    vessel = normalizeVessel(vessel);
+    settings = settings || {};
+    var body = materialProfile(vessel);
+    var target = clamp(finite(settings.temperature, body.maturity), 600, 1350);
+    var ramp = clamp(finite(settings.ramp, 110), 30, 300);
+    var soak = clamp(finite(settings.soak, 10), 0, 90);
+    var coolingRate = clamp(finite(settings.coolingRate, 100), 30, 300);
+    var kilnType = settings.kilnType || 'electric';
+    var atmosphere = kilnType === 'electric' ? 'oxidation' : (settings.atmosphere || 'oxidation');
+    var heatwork = estimateHeatwork({ temperature: target, ramp: ramp, soak: soak });
+    var fired = estimateFiredPorosity(body, heatwork.effectiveTemp, kilnType);
+    var thermalRisk = clamp((coolingRate * body.thermalSensitivity) / 140 * 100, 0, 100);
+    var rampRisk = clamp((ramp - 150) / 150 * 100, 0, 100);
+    var maturityDistance = Math.abs(heatwork.effectiveTemp - body.maturity);
+    var maturityRisk = clamp(maturityDistance / 230 * 100, 0, 100);
+    var scheduleScore = clamp(100 - thermalRisk * 0.32 - rampRisk * 0.22 - maturityRisk * 0.46 - (kilnType === 'open' ? 8 : 0), 0, 100);
+    var glazeOutcome = null;
+    if (settings.glazeId || vessel.glazeId) {
+      var glazeVessel = copyVessel(vessel);
+      glazeVessel.stage = 'glazed';
+      glazeVessel.glazeId = settings.glazeId || vessel.glazeId;
+      glazeVessel.glazeThickness = clamp(finite(settings.glazeThickness, vessel.glazeThickness || 50), 5, 100);
+      glazeOutcome = analyzeGlazeOutcome(glazeVessel, { temperature: target, ramp: ramp, soak: soak, kilnType: kilnType, atmosphere: atmosphere });
+    }
+    var status = scheduleScore >= 78 ? 'More controlled modeled schedule' : (scheduleScore >= 52 ? 'Mixed modeled schedule' : 'High modeled schedule risk');
+    return {
+      temperature: target,
+      ramp: ramp,
+      soak: soak,
+      coolingRate: coolingRate,
+      kilnType: kilnType,
+      atmosphere: atmosphere,
+      heatwork: heatwork,
+      maturationPct: fired.maturation * 100,
+      porosityPct: fired.porosity * 100,
+      thermalRiskPct: thermalRisk,
+      rampRiskPct: rampRisk,
+      maturityRiskPct: maturityRisk,
+      score: scheduleScore,
+      status: status,
+      glazeOutcome: glazeOutcome,
+      summary: 'Effective heatwork ' + Math.round(heatwork.effectiveTemp) + '°C equivalent near cone ' + heatwork.cone + '; modeled body porosity ' + (fired.porosity * 100).toFixed(1) + '%.'
+    };
+  }
   function compareMaterialProfiles(vesselOrBody, recipe, settings) {
     settings = settings || {};
     var source = typeof vesselOrBody === 'string' ? makeVessel(vesselOrBody, 'bowl') : normalizeVessel(vesselOrBody);
@@ -325,6 +420,44 @@
       firedPorosity: recipeFired
     };
   }
+  function analyzeRingRisks(vessel, settings) {
+    vessel = normalizeVessel(vessel);
+    settings = settings || {};
+    var body = materialProfile(vessel);
+    var ringHeight = vessel.heightCm / Math.max(1, RING_COUNT - 1);
+    var wetWeakness = clamp((vessel.moisture - 0.72) / 0.28, 0, 1);
+    var risks = [];
+    for (var i = 0; i < RING_COUNT; i++) {
+      var wall = vessel.thickness[i];
+      var radius = vessel.radii[i];
+      var previousRadius = vessel.radii[Math.max(0, i - 1)];
+      var nextRadius = vessel.radii[Math.min(RING_COUNT - 1, i + 1)];
+      var outwardSlope = Math.max(0, radius - previousRadius) / Math.max(0.1, ringHeight);
+      var overhang = clamp((outwardSlope - 0.48) / 1.2, 0, 1);
+      var thin = clamp((0.48 - wall) / 0.48, 0, 1);
+      var thick = clamp((wall - 2.6) / 2.6, 0, 1);
+      var neighborWall = (vessel.thickness[Math.max(0, i - 1)] + vessel.thickness[Math.min(RING_COUNT - 1, i + 1)]) / 2;
+      var irregularity = clamp(Math.abs(wall - neighborWall) / Math.max(0.18, neighborWall) * 0.55, 0, 1);
+      var coilJoint = settings.method === 'coil' ? clamp(1 - vessel.coilBond, 0, 1) : clamp(1 - vessel.coilBond, 0, 1) * 0.18;
+      var risk = clamp(
+        thin * 0.62 + overhang * 0.22 + thick * 0.14 + irregularity * 0.12 + wetWeakness * 0.08 +
+        (1 - vessel.compression) * 0.08 + coilJoint * 0.16 + (1 - body.plasticity) * 0.08 + (vessel.collapsed ? 0.7 : 0),
+        0, 1
+      );
+      risks.push({
+        index: i,
+        wallCm: wall,
+        radiusCm: radius,
+        outwardSlope: outwardSlope,
+        thinRisk: thin,
+        overhangRisk: overhang,
+        irregularity: irregularity,
+        risk: risk,
+        status: risk >= 0.67 ? 'High local risk' : (risk >= 0.4 ? 'Watch this ring' : 'Lower local risk')
+      });
+    }
+    return risks;
+  }
   function analyzeVessel(vessel, settings) {
     vessel = normalizeVessel(vessel);
     settings = settings || {};
@@ -351,6 +484,9 @@
     stability = clamp(stability, 0, 100);
     var capacity = vesselCapacity(vessel);
     var body = materialProfile(vessel);
+    var ringRisks = analyzeRingRisks(vessel, settings);
+    var criticalRing = ringRisks[0];
+    for (var riskIndex = 1; riskIndex < ringRisks.length; riskIndex++) if (ringRisks[riskIndex].risk > criticalRing.risk) criticalRing = ringRisks[riskIndex];
     var volume = vesselVolume(vessel);
     var shape = slenderness > 1.7 ? 'tall vessel' : (vessel.radii[RING_COUNT - 1] < maxRadius * 0.62 ? 'necked jar' : (vessel.heightCm < maxRadius * 2 ? 'bowl form' : 'cylinder form'));
     return {
@@ -368,6 +504,8 @@
       overhangRisk: overhangRisk * 100,
       compression: vessel.compression * 100,
       coilBond: vessel.coilBond * 100,
+      criticalRing: criticalRing.index,
+      maxRingRisk: criticalRing.risk * 100,
       shape: shape,
       status: vessel.collapsed ? 'Collapsed' : (stability >= 75 ? 'Stable' : (stability >= 48 ? 'Watch closely' : 'High collapse risk'))
     };
@@ -517,6 +655,7 @@
     var firedState = estimateFiredPorosity(body, heatwork.effectiveTemp, kilnType);
     var defects = copyArray(next.defects);
     var outcome = [];
+    var glazeOutcome = null;
     if (next.stage === 'bone-dry') {
       if (next.moisture > 0.04) defects.push('steam crack');
       if (ramp > 190) defects.push('thermal crack');
@@ -533,6 +672,7 @@
       outcome.push('Bisque firing completed at ' + Math.round(target) + '°C with modeled heatwork near cone ' + heatwork.cone + '.');
     } else if (next.stage === 'glazed') {
       var glaze = glazeById(next.glazeId);
+      glazeOutcome = analyzeGlazeOutcome(next, { temperature: target, ramp: ramp, soak: soak, kilnType: kilnType, atmosphere: atmosphere });
       var delta = heatwork.effectiveTemp - body.maturity;
       if (delta < -90) defects.push('underfired body');
       if (delta > 80) defects.push('overfired body');
@@ -556,9 +696,10 @@
       next.lastOutcome = 'This firing step is not available at the current stage.';
       return next;
     }
+    next.lastGlazeOutcome = glazeOutcome;
     next.defects = defects.filter(function (value, index, array) { return array.indexOf(value) === index; });
-    next.firingLog.push({ stage: next.stage, temperature: Math.round(target), effectiveTemperature: Math.round(heatwork.effectiveTemp), cone: heatwork.cone, ramp: Math.round(ramp), soak: Math.round(soak), coolingRate: Math.round(coolingRate), kilnType: kilnType, atmosphere: atmosphere, materialRecipe: normalizeRecipe(next.materialRecipe), maturation: next.maturation, porosity: next.firedPorosity, defects: copyArray(next.defects) });
-    next.lastOutcome = outcome.join(' ') + (next.defects.length ? ' Inspect: ' + next.defects.join(', ') + '.' : ' No modeled defects were triggered.');
+    next.firingLog.push({ stage: next.stage, temperature: Math.round(target), effectiveTemperature: Math.round(heatwork.effectiveTemp), cone: heatwork.cone, ramp: Math.round(ramp), soak: Math.round(soak), coolingRate: Math.round(coolingRate), kilnType: kilnType, atmosphere: atmosphere, materialRecipe: normalizeRecipe(next.materialRecipe), glazeOutcome: glazeOutcome, maturation: next.maturation, porosity: next.firedPorosity, defects: copyArray(next.defects) });
+    next.lastOutcome = outcome.join(' ') + (glazeOutcome ? ' ' + glazeOutcome.summary : '') + (next.defects.length ? ' Inspect: ' + next.defects.join(', ') + '.' : ' No modeled defects were triggered.');
     return next;
   }
   function glazeVessel(vessel, glazeId, thickness) {
@@ -573,7 +714,7 @@
   function evaluateVesselUse(vessel, testType, settings) {
     vessel = normalizeVessel(vessel);
     settings = settings || {};
-    testType = ['water', 'thermal', 'load', 'permeability'].indexOf(testType) >= 0 ? testType : 'water';
+    testType = ['water', 'thermal', 'load', 'permeability', 'cycles'].indexOf(testType) >= 0 ? testType : 'water';
     var ready = vessel.stage === 'bisque' || vessel.stage === 'glaze-fired';
     if (!ready) return { type: testType, ready: false, score: 0, status: 'Fire the piece first', summary: 'Functional tests require a bisque-fired or glaze-fired vessel.' };
     var stats = analyzeVessel(vessel, { rpm: 0, method: 'coil' });
@@ -611,6 +752,46 @@
       var marginKg = estimatedCapacityKg - appliedLoadKg;
       var loadRisk = clamp(appliedLoadKg / Math.max(0.1, estimatedCapacityKg) * 70 + defectPenalty * 45, 0, 100);
       return Object.assign(base, { loadKg: appliedLoadKg, estimatedCapacityKg: estimatedCapacityKg, marginKg: marginKg, riskPct: loadRisk, score: 100 - loadRisk, status: marginKg >= 2 ? 'Modeled load margin remains' : (marginKg >= 0 ? 'Near the modeled limit' : 'Modeled load exceeds capacity'), summary: 'Estimated teaching-model capacity ' + estimatedCapacityKg.toFixed(1) + ' kg; applied load ' + appliedLoadKg.toFixed(1) + ' kg.' });
+    }
+    if (testType === 'cycles') {
+      var cycles = clamp(finite(settings.cycles, 12), 1, 60);
+      var dryingRate = clamp(finite(settings.dryingRate, 45), 5, 100);
+      var cycleTemperatureDelta = clamp(finite(settings.cycleTemperatureDelta, 80), 10, 220);
+      var dryingFactor = 0.72 + dryingRate / 100 * 0.78;
+      var thermalFactor = 0.78 + cycleTemperatureDelta / 100 * body.thermalSensitivity * 0.95;
+      var exposureFactor = dryingFactor * thermalFactor;
+      var cycleSeverity = (effectivePorosity * 0.42 + defectPenalty * 0.68 + body.thermalSensitivity * 0.055) * exposureFactor;
+      var geometryFactor = 1 + Math.max(0, stats.maxWallCm - 2.2) * 0.05 + (100 - stats.uniformity) * 0.002;
+      var defectAmplifier = 1 + defectPenalty * 1.4;
+      function damageAtCycle(cycleCount) {
+        var count = Math.max(0, cycleCount);
+        var linearWear = count * cycleSeverity * 12;
+        var acceleratedWear = Math.pow(count / 12, 1.35) * cycleSeverity * 18;
+        return clamp((linearWear + acceleratedWear) * geometryFactor * defectAmplifier, 0, 100);
+      }
+      function cycleStatus(damage) {
+        return damage < 22 ? 'Lower modeled cycle damage' : (damage < 52 ? 'Accumulating modeled wear' : 'High modeled cycle damage');
+      }
+      var checkpointRatios = [0, 0.25, 0.5, 0.75, 1];
+      var cycleCheckpoints = [];
+      checkpointRatios.forEach(function (ratio, index) {
+        var checkpointCycle = index === checkpointRatios.length - 1 ? cycles : Math.max(0, Math.round(cycles * ratio));
+        if (cycleCheckpoints.length && cycleCheckpoints[cycleCheckpoints.length - 1].cycles === checkpointCycle) return;
+        var checkpointDamage = damageAtCycle(checkpointCycle);
+        cycleCheckpoints.push({
+          cycles: checkpointCycle, damagePct: checkpointDamage, resiliencePct: 100 - checkpointDamage,
+          phase: index === 0 ? 'Baseline' : (index === 1 ? 'Early reuse' : (index === 2 ? 'Mid reuse' : (index === 3 ? 'Late reuse' : 'Endpoint'))),
+          status: cycleStatus(checkpointDamage)
+        });
+      });
+      var cycleStress = damageAtCycle(cycles);
+      var cycleScore = 100 - cycleStress;
+      return Object.assign(base, {
+        cycles: cycles, dryingRate: dryingRate, cycleTemperatureDelta: cycleTemperatureDelta, exposureFactor: exposureFactor,
+        damagePct: cycleStress, score: cycleScore, cycleCheckpoints: cycleCheckpoints,
+        status: cycleStatus(cycleStress),
+        summary: 'After ' + Math.round(cycles) + ' wet-dry cycles at ' + Math.round(dryingRate) + '% drying severity and a ' + Math.round(cycleTemperatureDelta) + ' C temperature swing, the teaching model estimates ' + Math.round(cycleStress) + '% accumulated damage. The progression is a comparative heuristic, not a durability certification.'
+      });
     }
     var permeabilityIndex = clamp(effectivePorosity * 265 + defectPenalty * 28, 0, 100);
     return Object.assign(base, { permeabilityIndex: permeabilityIndex, score: 100 - permeabilityIndex, status: permeabilityIndex < 22 ? 'Low permeability proxy' : (permeabilityIndex < 62 ? 'Moderate permeability proxy' : 'High permeability proxy'), summary: 'Modeled permeability index ' + Math.round(permeabilityIndex) + '/100. This is a comparative material proxy, not a food-storage or fermentation safety determination.' });
@@ -650,7 +831,10 @@
     vesselCapacity: vesselCapacity,
     estimateHeatwork: estimateHeatwork,
     estimateFiredPorosity: estimateFiredPorosity,
+    analyzeGlazeOutcome: analyzeGlazeOutcome,
+    analyzeFiringSchedule: analyzeFiringSchedule,
     compareMaterialProfiles: compareMaterialProfiles,
+    analyzeRingRisks: analyzeRingRisks,
     analyzeVessel: analyzeVessel,
     applyTool: applyTool,
     dryVessel: dryVessel,
@@ -885,7 +1069,25 @@
         var recipeComparison = compareMaterialProfiles(vessel, draftRecipe, { temperature: finite(data.kilnTemp, namedBody.maturity), ramp: finite(data.ramp, 110), soak: finite(data.soak, 10), kilnType: data.kilnType || 'electric' });
         namedBody = recipeComparison.baseline;
         var previewBody = recipeComparison.profile;
+        var ringRisks = analyzeRingRisks(vessel, settings);
+        var ringZoneDefs = [
+          { label: 'Foot', start: 0, end: 5 },
+          { label: 'Lower wall', start: 6, end: 11 },
+          { label: 'Belly', start: 12, end: 17 },
+          { label: 'Shoulder', start: 18, end: 23 },
+          { label: 'Upper wall', start: 24, end: 29 },
+          { label: 'Rim', start: 30, end: 35 }
+        ];
+        var ringZones = ringZoneDefs.map(function (zone) {
+          var entries = ringRisks.slice(zone.start, zone.end + 1);
+          var peak = entries[0];
+          var total = 0;
+          entries.forEach(function (entry) { total += entry.risk; if (entry.risk > peak.risk) peak = entry; });
+          return Object.assign({}, zone, { peak: peak, averageRisk: total / Math.max(1, entries.length) });
+        });
         function signed(value, digits) { var rounded = Number(value).toFixed(digits); return (value >= 0 ? '+' : '') + rounded; }
+        function riskTone(risk) { return risk >= 0.67 ? 'border-red-300 bg-red-50 text-red-950' : (risk >= 0.4 ? 'border-amber-300 bg-amber-50 text-amber-950' : 'border-emerald-300 bg-emerald-50 text-emerald-950'); }
+        function focusRing(index) { patchData({ view: 'shape', workRing: index }); announce('Focused ring ' + (index + 1) + ' in the Shape section.'); }
         function updateRecipe(key, value) { var next = Object.assign({}, recipeDraft); next[key] = value; patchData({ recipeDraft: next }); }
         function applyRecipe() {
           var next = copyVessel(vessel);
@@ -937,6 +1139,25 @@
               metricCard('Overhang load', percent(stats.overhangRisk), 'Outward wall slope'),
               metricCard('Collapse risk', percent(stats.risk), 'Deterministic model')
             )
+          ),
+          h('div', { className: 'rounded-xl border border-rose-300 bg-rose-50 p-3 space-y-3' },
+            h('div', null,
+              h('h3', { className: 'font-black text-rose-950' }, 'Local ring stress map'),
+              h('p', { className: 'text-xs text-rose-950 mt-1' }, 'This geometry-based teaching map highlights where thin walls, outward slopes, uneven thickness, moisture, low compression, and weak coil joints combine. It is a comparative risk cue, not a measured stress field.'),
+              h('p', { className: 'text-[11px] font-bold text-rose-900 mt-1' }, 'Highest current ring: ' + (stats.criticalRing + 1) + ' of ' + RING_COUNT + ' · ' + Math.round(stats.maxRingRisk) + '% local modeled risk')
+            ),
+            h('div', { className: 'grid grid-cols-2 md:grid-cols-3 gap-2', role: 'list', 'aria-label': 'Local ring stress zones' }, ringZones.map(function (zone) {
+              var peak = zone.peak;
+              return h('div', { key: zone.label, role: 'listitem', className: 'min-w-0' },
+                h('button', { type: 'button', onClick: function () { focusRing(peak.index); }, title: 'Focus ring ' + (peak.index + 1) + ' in the Shape section', 'aria-label': zone.label + '. Peak at ring ' + (peak.index + 1) + '. ' + peak.status + '. ' + Math.round(peak.risk * 100) + ' percent local risk.', className: 'w-full rounded-lg border p-2 text-left ' + riskTone(peak.risk) },
+                  h('span', { className: 'block text-xs font-black' }, zone.label),
+                  h('span', { className: 'block text-[10px] font-bold mt-1' }, 'Ring ' + (peak.index + 1) + ' · ' + Math.round(peak.risk * 100) + '%'),
+                  h('span', { className: 'block h-2 rounded-full bg-black/10 mt-2 overflow-hidden', role: 'meter', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': Math.round(peak.risk * 100), 'aria-label': zone.label + ' local risk' }, h('span', { className: 'block h-full rounded-full bg-current', style: { width: Math.max(4, Math.round(peak.risk * 100)) + '%' } })),
+                  h('span', { className: 'block text-[10px] mt-1' }, peak.wallCm.toFixed(2) + ' cm wall · ' + peak.status)
+                )
+              );
+            })),
+            h('p', { className: 'text-[11px] text-rose-950' }, 'Select a zone to jump to its peak ring. Then change one shaping control and return here to see whether the local risk moved.')
           ),
           h('div', { className: 'rounded-xl border border-amber-300 bg-amber-50 p-3 space-y-3' },
             h('div', null,
@@ -1124,9 +1345,30 @@
         var glazeThickness = clamp(finite(data.glazeThickness, 50), 5, 100);
         var heatwork = estimateHeatwork({ temperature: kilnTemp, ramp: ramp, soak: soak });
         var projectedFiring = estimateFiredPorosity(body, heatwork.effectiveTemp, kilnType);
+        var glazePreviewVessel = copyVessel(vessel);
+        glazePreviewVessel.glazeId = glazeId;
+        glazePreviewVessel.glazeThickness = glazeThickness;
+        var glazePreview = analyzeGlazeOutcome(glazePreviewVessel, { temperature: kilnTemp, ramp: ramp, soak: soak, kilnType: kilnType, atmosphere: atmosphere });
+        var firingSchedules = copyArray(data.firingSchedules);
+        var scheduleLabel = String(data.scheduleLabel || '').slice(0, 48);
+        var currentSchedule = analyzeFiringSchedule(vessel, { temperature: kilnTemp, ramp: ramp, soak: soak, coolingRate: coolingRate, kilnType: kilnType, atmosphere: atmosphere, glazeId: glazeId, glazeThickness: glazeThickness });
         function advanceDrying() { var next = dryVessel(vessel, { humidity: humidity, dryingRate: dryingRate }); commitVessel(next, next.lastOutcome); }
         function fire() { var next = fireVessel(vessel, { temperature: kilnTemp, ramp: ramp, soak: soak, coolingRate: coolingRate, kilnType: kilnType, atmosphere: atmosphere }); commitVessel(next, next.lastOutcome); }
         function applyGlaze() { var next = glazeVessel(vessel, glazeId, glazeThickness); commitVessel(next, next.lastOutcome); }
+        function saveFiringSchedule() {
+          var label = scheduleLabel.trim() || 'Firing schedule ' + (firingSchedules.length + 1);
+          var schedule = { id: Date.now(), label: label, temperature: kilnTemp, ramp: ramp, soak: soak, coolingRate: coolingRate, kilnType: kilnType, atmosphere: atmosphere, glazeId: glazeId, glazeThickness: glazeThickness, savedAt: new Date().toISOString() };
+          patchData({ firingSchedules: [schedule].concat(firingSchedules).slice(0, 8), scheduleLabel: '' });
+          announce(label + ' saved to the firing comparison shelf.');
+        }
+        function loadFiringSchedule(schedule) {
+          patchData({ kilnTemp: schedule.temperature, ramp: schedule.ramp, soak: schedule.soak, coolingRate: schedule.coolingRate, kilnType: schedule.kilnType, atmosphere: schedule.atmosphere, glazeId: schedule.glazeId || glazeId, glazeThickness: schedule.glazeThickness || glazeThickness });
+          announce((schedule.label || 'Firing schedule') + ' loaded into the kiln controls. No firing was started.');
+        }
+        function removeFiringSchedule(id) {
+          patchData({ firingSchedules: firingSchedules.filter(function (schedule) { return schedule.id !== id; }) });
+          announce('Firing schedule removed from the comparison shelf.');
+        }
         function firingCurve() {
           var peakY = 168 - (kilnTemp - 600) / 750 * 124;
           var soakWidth = 18 + soak / 90 * 72;
@@ -1171,10 +1413,42 @@
               rangeControl('wheel-fire-ramp', 'Heating ramp', ramp, 30, 300, '°C/h', function (value) { patchData({ ramp: value }); }),
               rangeControl('wheel-fire-soak', 'Peak soak', soak, 0, 90, ' min', function (value) { patchData({ soak: value }); }),
               rangeControl('wheel-fire-cooling', 'Cooling rate', coolingRate, 30, 300, '°C/h', function (value) { patchData({ coolingRate: value }); }),
+              h('label', { className: 'block text-xs font-bold text-slate-700' }, 'Schedule label', h('input', { maxLength: 48, value: scheduleLabel, onChange: function (event) { patchData({ scheduleLabel: event.target.value }); }, placeholder: 'e.g. slow stoneware test', className: 'block w-full mt-1 rounded-lg border border-slate-400 p-2 font-normal' })),
+              h('button', { type: 'button', onClick: saveFiringSchedule, className: 'w-full rounded-lg border border-orange-400 bg-orange-50 text-orange-950 px-3 py-2 text-xs font-black' }, 'Save firing scenario'),
               firingCurve(),
               vessel.stage === 'bone-dry' ? h('button', { type: 'button', onClick: fire, className: 'w-full rounded-lg bg-orange-800 text-white px-3 py-2 text-xs font-black' }, 'Run bisque firing') : null,
               vessel.stage === 'glazed' ? h('button', { type: 'button', onClick: fire, className: 'w-full rounded-lg bg-red-700 text-white px-3 py-2 text-xs font-black' }, 'Run glaze firing') : null
             )
+          ),
+          h('div', { className: 'rounded-xl border border-orange-300 bg-orange-50 p-3 space-y-3' },
+            h('div', null,
+              h('h3', { className: 'font-black text-orange-950' }, 'Firing schedule shelf'),
+              h('p', { className: 'text-xs text-orange-950 mt-1' }, 'Save alternate schedules as hypotheses. Loading a schedule changes controls only; firing still requires the explicit run button and the current lifecycle stage.'),
+              h('p', { className: 'text-[11px] font-bold text-orange-900 mt-1' }, 'Current schedule: ' + currentSchedule.status + ' · ' + Math.round(currentSchedule.score) + '/100 · ' + currentSchedule.summary)
+            ),
+            firingSchedules.length ? h('div', { className: 'overflow-x-auto rounded-lg border border-orange-200 bg-white' },
+              h('table', { className: 'w-full text-xs border-collapse' },
+                h('caption', { className: 'text-left p-3 font-black text-orange-950' }, 'Saved firing hypotheses'),
+                h('thead', null, h('tr', { className: 'bg-orange-100' }, ['Schedule', 'Kiln', 'Target', 'Effective', 'Cone', 'Score', 'Porosity', 'Glaze surface', 'Actions'].map(function (label) { return h('th', { key: label, scope: 'col', className: 'text-left p-2 border-b border-orange-200' }, label); }))),
+                h('tbody', null, firingSchedules.map(function (schedule) {
+                  var scheduleComparison = analyzeFiringSchedule(vessel, schedule);
+                  return h('tr', { key: schedule.id },
+                    h('th', { scope: 'row', className: 'text-left align-top p-2 border-b border-orange-100' }, schedule.label || 'Unnamed schedule'),
+                    h('td', { className: 'align-top p-2 border-b border-orange-100' }, schedule.kilnType || 'electric'),
+                    h('td', { className: 'align-top p-2 border-b border-orange-100' }, Math.round(scheduleComparison.temperature) + '°C'),
+                    h('td', { className: 'align-top p-2 border-b border-orange-100' }, Math.round(scheduleComparison.heatwork.effectiveTemp) + '°C'),
+                    h('td', { className: 'align-top p-2 border-b border-orange-100' }, scheduleComparison.heatwork.cone),
+                    h('td', { className: 'align-top p-2 border-b border-orange-100' }, Math.round(scheduleComparison.score) + '/100'),
+                    h('td', { className: 'align-top p-2 border-b border-orange-100' }, scheduleComparison.porosityPct.toFixed(1) + '%'),
+                    h('td', { className: 'align-top p-2 border-b border-orange-100' }, scheduleComparison.glazeOutcome ? Math.round(scheduleComparison.glazeOutcome.surfaceScore) + '/100' : 'body only'),
+                    h('td', { className: 'align-top p-2 border-b border-orange-100' }, h('div', { className: 'flex flex-wrap gap-1' },
+                      h('button', { type: 'button', onClick: function () { loadFiringSchedule(schedule); }, className: 'rounded border border-orange-300 px-2 py-1 font-bold text-orange-900' }, 'Load schedule'),
+                      h('button', { type: 'button', onClick: function () { removeFiringSchedule(schedule.id); }, className: 'rounded border border-red-300 px-2 py-1 font-bold text-red-800' }, 'Remove')
+                    ))
+                  );
+                }))
+              )
+            ) : h('p', { className: 'rounded-lg border border-dashed border-orange-300 bg-white p-4 text-center text-xs text-orange-900' }, 'Save a schedule to compare heatwork and firing outcomes across trials.')
           ),
           h('div', { className: 'rounded-xl border border-violet-300 bg-violet-50 p-3 grid md:grid-cols-2 gap-3' },
             h('div', null,
@@ -1196,10 +1470,29 @@
               )
             )
           ),
+          h('div', { className: 'rounded-xl border border-fuchsia-300 bg-fuchsia-50 p-3 space-y-3' },
+            h('div', null,
+              h('h3', { className: 'font-black text-fuchsia-950' }, 'Glaze outcome preview'),
+              h('p', { className: 'text-xs text-fuchsia-950 mt-1' }, 'This preview uses the selected glaze, thickness, body, atmosphere, and heatwork settings. It separates surface variables so a learner can change one control and compare the predicted result.'),
+              h('p', { className: 'text-[11px] font-bold text-fuchsia-900 mt-1' }, glazePreview.glazeName + ' on ' + glazePreview.bodyName + ' · ' + glazePreview.atmosphere)
+            ),
+            h('div', { className: 'wheel-fire-stats' },
+              metricCard('Melt window', Math.round(glazePreview.meltIndexPct) + '%', glazePreview.status),
+              metricCard('Coverage', Math.round(glazePreview.coveragePct) + '%', glazePreview.coveragePct < 28 ? 'Thin coverage' : (glazePreview.coveragePct > 78 ? 'Heavy coverage' : 'Mid-range application')),
+              metricCard('Fit score', Math.round(glazePreview.fitScore) + '/100', 'Gap ' + glazePreview.fitGap.toFixed(2)),
+              metricCard('Surface score', Math.round(glazePreview.surfaceScore) + '/100', 'Comparative model')
+            ),
+            h('div', { className: 'grid grid-cols-3 gap-2 text-[11px] text-fuchsia-950' },
+              h('div', { className: 'rounded-lg border border-fuchsia-200 bg-white p-2' }, h('strong', null, 'Run risk '), Math.round(glazePreview.runRiskPct) + '%'),
+              h('div', { className: 'rounded-lg border border-fuchsia-200 bg-white p-2' }, h('strong', null, 'Pinhole risk '), Math.round(glazePreview.pinholeRiskPct) + '%'),
+              h('div', { className: 'rounded-lg border border-fuchsia-200 bg-white p-2' }, h('strong', null, 'Crawling risk '), Math.round(glazePreview.crawlingRiskPct) + '%')
+            ),
+            h('p', { role: 'status', 'aria-live': 'polite', className: 'rounded-lg border border-fuchsia-200 bg-white p-2 text-xs text-fuchsia-950' }, glazePreview.summary)
+          ),
           vessel.firingLog.length ? h('div', { className: 'overflow-x-auto rounded-xl border border-orange-300 bg-white' },
             h('table', { className: 'w-full text-xs border-collapse' },
               h('caption', { className: 'text-left p-3 font-black text-orange-950' }, 'Firing evidence log'),
-              h('thead', null, h('tr', { className: 'bg-orange-50' }, ['Stage', 'Target', 'Heatwork', 'Cone', 'Soak', 'Cooling', 'Atmosphere', 'Observed model flags'].map(function (label) { return h('th', { key: label, scope: 'col', className: 'text-left p-2 border-b border-orange-200' }, label); }))),
+              h('thead', null, h('tr', { className: 'bg-orange-50' }, ['Stage', 'Target', 'Heatwork', 'Cone', 'Soak', 'Cooling', 'Atmosphere', 'Observed model flags', 'Surface outcome'].map(function (label) { return h('th', { key: label, scope: 'col', className: 'text-left p-2 border-b border-orange-200' }, label); }))),
               h('tbody', null, vessel.firingLog.map(function (entry, index) { return h('tr', { key: entry.stage + '-' + index },
                 h('td', { className: 'p-2 border-b' }, entry.stage),
                 h('td', { className: 'p-2 border-b' }, finite(entry.temperature, 0) + '°C'),
@@ -1208,7 +1501,8 @@
                 h('td', { className: 'p-2 border-b' }, finite(entry.soak, 0) + ' min'),
                 h('td', { className: 'p-2 border-b' }, finite(entry.coolingRate, 0) + '°C/h'),
                 h('td', { className: 'p-2 border-b' }, entry.atmosphere || '—'),
-                h('td', { className: 'p-2 border-b' }, copyArray(entry.defects).length ? copyArray(entry.defects).join(', ') : 'none')
+                h('td', { className: 'p-2 border-b' }, copyArray(entry.defects).length ? copyArray(entry.defects).join(', ') : 'none'),
+                h('td', { className: 'p-2 border-b' }, entry.glazeOutcome ? entry.glazeOutcome.status + ' - ' + Math.round(finite(entry.glazeOutcome.surfaceScore, 0)) + '/100' : 'n/a')
               ); }))
             )
           ) : null,
@@ -1221,10 +1515,13 @@
         var durationHours = clamp(finite(data.testDurationHours, 4), 1, 24);
         var temperatureDelta = clamp(finite(data.testTemperatureDelta, 80), 10, 220);
         var loadKg = clamp(finite(data.testLoadKg, 5), 0.5, 30);
-        var testSettings = { durationHours: durationHours, temperatureDelta: temperatureDelta, loadKg: loadKg };
+        var cycles = clamp(finite(data.testCycles, 12), 1, 60);
+        var cycleDryingRate = clamp(finite(data.testCycleDryingRate, 45), 5, 100);
+        var cycleTemperatureDelta = clamp(finite(data.testCycleTemperatureDelta, 80), 10, 220);
+        var testSettings = { durationHours: durationHours, temperatureDelta: temperatureDelta, loadKg: loadKg, cycles: cycles, dryingRate: cycleDryingRate, cycleTemperatureDelta: cycleTemperatureDelta };
         var preview = evaluateVesselUse(vessel, testType, testSettings);
         var performanceLog = copyArray(data.performanceLog);
-        var labels = { water: 'Water retention', thermal: 'Thermal change', load: 'Static load', permeability: 'Permeability proxy' };
+        var labels = { water: 'Water retention', thermal: 'Thermal change', load: 'Static load', permeability: 'Permeability proxy', cycles: 'Repeated wet-dry cycles' };
         function runPerformanceTest() {
           if (!preview.ready) { announce('Fire the piece before running a function test.'); return; }
           var entry = Object.assign({ id: Date.now(), label: labels[testType], stage: vessel.stage, clayBody: vessel.clayBody, materialRecipe: normalizeRecipe(vessel.materialRecipe) }, preview);
@@ -1243,9 +1540,39 @@
           if (testType === 'thermal') cards.push(metricCard('Stress risk', Math.round(preview.riskPct) + '%', Math.round(preview.temperatureDelta) + '°C change'));
           if (testType === 'load') cards.push(metricCard('Capacity proxy', preview.estimatedCapacityKg.toFixed(1) + ' kg', 'Margin ' + preview.marginKg.toFixed(1) + ' kg'));
           if (testType === 'permeability') cards.push(metricCard('Permeability', Math.round(preview.permeabilityIndex) + '/100', 'Comparative proxy'));
+          if (testType === 'cycles') {
+            cards.push(metricCard('Accumulated damage', Math.round(preview.damagePct) + '%', Math.round(preview.cycles) + ' wet-dry cycles'));
+            cards.push(metricCard('Exposure profile', Math.round(preview.dryingRate) + '% dry / ' + Math.round(preview.cycleTemperatureDelta) + ' C', 'Modeled protocol severity'));
+          }
           return h('div', { className: 'space-y-3' },
             h('div', { className: 'wheel-fire-stats' }, cards),
             h('div', { role: 'status', 'aria-live': 'polite', className: 'rounded-xl border border-cyan-300 bg-cyan-50 p-3 text-sm text-cyan-950' }, h('strong', null, preview.status + ': '), preview.summary)
+          );
+        }
+        function cycleProgression() {
+          if (testType !== 'cycles' || !preview.ready || !preview.cycleCheckpoints || !preview.cycleCheckpoints.length) return null;
+          var points = preview.cycleCheckpoints;
+          return h('section', { className: 'rounded-xl border border-amber-300 bg-amber-50 p-3 space-y-3', 'aria-labelledby': 'wheel-fire-cycle-progression-title' },
+            h('div', null,
+              h('h3', { id: 'wheel-fire-cycle-progression-title', className: 'font-black text-amber-950' }, 'Modeled damage progression'),
+              h('p', { className: 'text-xs text-amber-950 mt-1' }, 'The curve is intentionally comparative: accumulated wear can accelerate as material pathways, defects, and geometry compound across reuse.')
+            ),
+            h('div', { className: 'space-y-2', 'aria-label': 'Visual damage progression' }, points.map(function (point) {
+              return h('div', { key: point.phase + '-' + point.cycles },
+                h('div', { className: 'flex items-center justify-between text-xs font-bold text-slate-700' },
+                  h('span', null, point.phase + ' Â· ' + Math.round(point.cycles) + ' cycles'),
+                  h('span', null, Math.round(point.damagePct) + '% damage')
+                ),
+                h('div', { className: 'wheel-fire-cycle-bar', 'aria-hidden': 'true' }, h('div', { className: 'wheel-fire-cycle-fill', style: { width: Math.max(0, Math.min(100, point.damagePct)).toFixed(1) + '%' } }))
+              );
+            })),
+            h('div', { className: 'overflow-x-auto rounded-lg border border-amber-200 bg-white' },
+              h('table', { className: 'w-full text-xs border-collapse' },
+                h('caption', { className: 'text-left p-2 font-black text-amber-950' }, 'Cycle checkpoints'),
+                h('thead', null, h('tr', { className: 'bg-amber-100' }, ['Checkpoint', 'Cycles', 'Damage', 'Resilience remaining', 'Interpretation'].map(function (label) { return h('th', { key: label, scope: 'col', className: 'text-left p-2 border-b border-amber-200' }, label); }))),
+                h('tbody', null, points.map(function (point) { return h('tr', { key: 'row-' + point.phase + '-' + point.cycles }, h('td', { className: 'p-2 border-b font-bold' }, point.phase), h('td', { className: 'p-2 border-b' }, Math.round(point.cycles)), h('td', { className: 'p-2 border-b' }, Math.round(point.damagePct) + '%'), h('td', { className: 'p-2 border-b' }, Math.round(point.resiliencePct) + '%'), h('td', { className: 'p-2 border-b' }, point.status)); }))
+              )
+            )
           );
         }
         return h('section', { id: 'wheel-fire-panel-performance', role: 'tabpanel', 'aria-labelledby': 'wheel-fire-tab-performance', className: 'space-y-3' },
@@ -1266,10 +1593,14 @@
               testType === 'thermal' ? rangeControl('wheel-fire-test-delta', 'Temperature change', temperatureDelta, 10, 220, '°C', function (value) { patchData({ testTemperatureDelta: value }); }) : null,
               testType === 'load' ? rangeControl('wheel-fire-test-load', 'Applied static load', loadKg, 0.5, 30, ' kg', function (value) { patchData({ testLoadKg: value }); }) : null,
               testType === 'permeability' ? h('p', { className: 'text-xs text-slate-600' }, 'This proxy compares open pore pathways and modeled glaze sealing. It does not simulate fermentation, gas species, microbes, or food chemistry.') : null,
+              testType === 'cycles' ? rangeControl('wheel-fire-test-cycles', 'Wet-dry cycles', cycles, 1, 60, ' cycles', function (value) { patchData({ testCycles: value }); }) : null,
+              testType === 'cycles' ? rangeControl('wheel-fire-test-drying', 'Drying severity', cycleDryingRate, 5, 100, ' %', function (value) { patchData({ testCycleDryingRate: value }); }) : null,
+              testType === 'cycles' ? rangeControl('wheel-fire-test-cycle-temp', 'Cycle temperature swing', cycleTemperatureDelta, 10, 220, ' C', function (value) { patchData({ testCycleTemperatureDelta: value }); }) : null,
+              testType === 'cycles' ? h('p', { className: 'text-xs text-slate-600' }, 'This compares repeated filling, drying, and thermal/environmental stress. Adjust the protocol to compare gentle and harsh reuse conditions. It does not simulate microbes, food chemistry, or real fracture mechanics.') : null,
               h('button', { type: 'button', disabled: !preview.ready, onClick: runPerformanceTest, className: 'w-full rounded-lg bg-blue-800 text-white px-3 py-2 text-xs font-black disabled:opacity-40' }, 'Run and log ' + labels[testType].toLowerCase()),
               h('p', { className: 'text-[11px] text-slate-600' }, preview.ready ? 'Change one variable or load another fired piece, then repeat the same test.' : 'Complete at least a bisque firing before testing.')
             ),
-            h('div', null, resultMetrics())
+            h('div', null, resultMetrics(), cycleProgression())
           ),
           performanceLog.length ? h('div', { className: 'overflow-x-auto rounded-xl border border-blue-300 bg-white' },
             h('table', { className: 'w-full text-xs border-collapse' },
@@ -1286,7 +1617,7 @@
         function savePiece() {
           var name = String(data.pieceName || '').trim().slice(0, 48);
           if (!name) { announce('Name the piece before saving it.'); return; }
-          var entry = { id: Date.now(), name: name, vessel: copyVessel(vessel), materialRecipe: normalizeRecipe(vessel.materialRecipe), materialScenarios: copyArray(data.materialScenarios).slice(0, 8), method: method, studyLabel: data.studyLabel || '', statement: data.artistStatement || '', performanceTests: copyArray(data.performanceLog).slice(0, 4), savedAt: new Date().toISOString() };
+          var entry = { id: Date.now(), name: name, vessel: copyVessel(vessel), materialRecipe: normalizeRecipe(vessel.materialRecipe), materialScenarios: copyArray(data.materialScenarios).slice(0, 8), firingSchedules: copyArray(data.firingSchedules).slice(0, 8), method: method, studyLabel: data.studyLabel || '', statement: data.artistStatement || '', performanceTests: copyArray(data.performanceLog).slice(0, 4), savedAt: new Date().toISOString() };
           patchData({ gallery: [entry].concat(saved).slice(0, 8), pieceName: '' });
           announce(name + ' saved to the pottery journal.');
         }
@@ -1312,7 +1643,8 @@
                 h('div', null, h('dt', { className: 'font-bold' }, 'Recipe study'), h('dd', null, journalRecipe ? (journalRecipe.label || 'Unnamed assumptions') : 'Named body baseline')),
                 h('div', null, h('dt', { className: 'font-bold' }, 'Study credit'), h('dd', null, data.studyLabel || 'Original studio exploration')),
                 h('div', null, h('dt', { className: 'font-bold' }, 'Function tests'), h('dd', null, copyArray(data.performanceLog).length)),
-                h('div', null, h('dt', { className: 'font-bold' }, 'Saved scenarios'), h('dd', null, copyArray(data.materialScenarios).length))
+                h('div', null, h('dt', { className: 'font-bold' }, 'Saved scenarios'), h('dd', null, copyArray(data.materialScenarios).length)),
+                h('div', null, h('dt', { className: 'font-bold' }, 'Firing schedules'), h('dd', null, copyArray(data.firingSchedules).length))
               )
             )
           ),
@@ -1325,10 +1657,11 @@
               entryRecipe ? h('p', { className: 'text-[11px] font-bold text-amber-800 mt-1' }, 'Material: ' + (entryRecipe.label || 'Unnamed recipe study')) : h('p', { className: 'text-[11px] font-bold text-amber-800 mt-1' }, 'Material: Named body baseline'),
               entry.studyLabel ? h('p', { className: 'text-[11px] font-bold text-fuchsia-800 mt-1' }, 'Process credit: ' + entry.studyLabel) : null,
               copyArray(entry.materialScenarios).length ? h('p', { className: 'text-[11px] font-bold text-indigo-800 mt-1' }, copyArray(entry.materialScenarios).length + ' saved material scenario' + (copyArray(entry.materialScenarios).length === 1 ? '' : 's')) : null,
+              copyArray(entry.firingSchedules).length ? h('p', { className: 'text-[11px] font-bold text-orange-800 mt-1' }, copyArray(entry.firingSchedules).length + ' saved firing schedule' + (copyArray(entry.firingSchedules).length === 1 ? '' : 's')) : null,
               copyArray(entry.performanceTests).length ? h('p', { className: 'text-[11px] font-bold text-blue-800 mt-1' }, copyArray(entry.performanceTests).length + ' saved function test' + (copyArray(entry.performanceTests).length === 1 ? '' : 's')) : null,
               entry.statement ? h('p', { className: 'text-xs text-slate-700 mt-2' }, entry.statement) : null,
               h('div', { className: 'flex gap-2 mt-3' },
-                h('button', { type: 'button', onClick: function () { commitVessel(copyVessel(entry.vessel), entry.name + ' loaded from the journal.', { method: entry.method, studyLabel: entry.studyLabel || '', performanceLog: copyArray(entry.performanceTests), materialScenarios: copyArray(entry.materialScenarios), recipeDraft: normalizeRecipe(entry.materialRecipe || (entry.vessel && entry.vessel.materialRecipe)) }); }, className: 'rounded-lg border border-emerald-300 px-2 py-1 text-xs font-bold text-emerald-900' }, 'Load'),
+                h('button', { type: 'button', onClick: function () { commitVessel(copyVessel(entry.vessel), entry.name + ' loaded from the journal.', { method: entry.method, studyLabel: entry.studyLabel || '', performanceLog: copyArray(entry.performanceTests), materialScenarios: copyArray(entry.materialScenarios), firingSchedules: copyArray(entry.firingSchedules), recipeDraft: normalizeRecipe(entry.materialRecipe || (entry.vessel && entry.vessel.materialRecipe)) }); }, className: 'rounded-lg border border-emerald-300 px-2 py-1 text-xs font-bold text-emerald-900' }, 'Load'),
                 h('button', { type: 'button', onClick: function () { patchData({ gallery: saved.filter(function (piece) { return piece.id !== entry.id; }) }); announce(entry.name + ' removed from the journal.'); }, className: 'rounded-lg border border-red-300 px-2 py-1 text-xs font-bold text-red-800' }, 'Delete')
               )
             );

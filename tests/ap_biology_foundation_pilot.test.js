@@ -31,7 +31,7 @@ const qa = readJson(qaPath);
 describe('AP Biology internal foundation pilot', () => {
   it('crosswalks the current eight-unit blueprint without presenting itself as official', () => {
     expect(pack.id).toBe('ap-biology-foundation-pilot');
-    expect(pack.version).toBe('0.8.0-internal-preview');
+    expect(pack.version).toBe('1.0.0-internal-preview');
     expect(pack.status).toBe('preview');
     expect(pack.visibility).toBe('internal');
     expect(pack.released).toBe(false);
@@ -47,17 +47,17 @@ describe('AP Biology internal foundation pilot', () => {
     expect(pack.blueprint.sciencePractices).toHaveLength(6);
   });
 
-  it('contains a balanced 400-item pilot across all units and science practices', () => {
+  it('contains a balanced 500-item pilot across all units and science practices', () => {
     const unitCounts = countsBy(pack.items.map((item) => item.domainId));
     const practiceCounts = countsBy(pack.items.map((item) => item.practiceId));
     const answerCounts = countsBy(pack.items.map((item) => String(item.answerIndex)));
 
-    expect(pack.items).toHaveLength(400);
-    expect(new Set(pack.items.map((item) => item.id)).size).toBe(400);
-    expect(Object.values(unitCounts).every((count) => count >= 48)).toBe(true);
+    expect(pack.items).toHaveLength(500);
+    expect(new Set(pack.items.map((item) => item.id)).size).toBe(500);
+    expect(Object.values(unitCounts).every((count) => count >= 60)).toBe(true);
     expect(Object.keys(practiceCounts).sort()).toEqual(['SP1', 'SP2', 'SP3', 'SP4', 'SP5', 'SP6']);
-    expect(answerCounts).toEqual({ 0: 100, 1: 100, 2: 100, 3: 100 });
-    expect(pack.sections).toHaveLength(80);
+    expect(answerCounts).toEqual({ 0: 125, 1: 125, 2: 125, 3: 125 });
+    expect(pack.sections).toHaveLength(100);
     expect(pack.sections.every((section) => section.itemIds.length === 5)).toBe(true);
     expect(pack.items.every((item) => item.choices.length === 4 && item.choiceRationales.length === 4)).toBe(true);
     expect(pack.items.every((item) => item.provenance === 'native-original' && item.releaseEligible === false)).toBe(true);
@@ -98,12 +98,12 @@ describe('AP Biology internal foundation pilot', () => {
   it('passes deterministic QA and binds byte-identical deployment mirrors', () => {
     expect(qa.automatedAssessment).toBe('pass');
     expect(qa.structuralFindings).toEqual([]);
-    expect(qa.metrics).toMatchObject({ itemCount: 400, unitCount: 8, chapterCount: 8, richLessonPrototypeCount: 8 });
+    expect(qa.metrics).toMatchObject({ itemCount: 500, unitCount: 8, chapterCount: 8, richLessonPrototypeCount: 8 });
     for (const parity of qa.deploymentParity) expect(parity.status).toBe('pass');
 
     const manifest = readJson(manifestPath);
     const entry = manifest.entries.find((candidate) => candidate.id === pack.id);
-    expect(entry).toMatchObject({ loadMode: 'lazy', visibility: 'internal', itemCount: 400, domainCount: 8 });
+    expect(entry).toMatchObject({ loadMode: 'lazy', visibility: 'internal', itemCount: 500, domainCount: 8 });
     expect(entry.sha256).toBe(sha256(packPath));
     expect(entry.nativeQaSha256).toBe(sha256(qaPath));
   });

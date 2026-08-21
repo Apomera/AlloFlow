@@ -40,13 +40,13 @@
       "totalItems": 1500,
       "warningOnly": true,
       "forbiddenAggregateChoices": 0,
-      "uniqueKeyStemLexicalLeakageCandidates": 47,
-      "asymmetricExtremeDistractorCandidates": 86,
-      "advancedDirectRecallCandidates": 3,
-      "semanticConceptDuplicatePairs": 51,
-      "semanticConceptDuplicateClusters": 36,
-      "editorialAnchorsWithActiveWarnings": 1,
-      "editorialAnchorsWithNoCurrentWarning": 9,
+      "uniqueKeyStemLexicalLeakageCandidates": 40,
+      "asymmetricExtremeDistractorCandidates": 33,
+      "advancedDirectRecallCandidates": 1,
+      "semanticConceptDuplicatePairs": 47,
+      "semanticConceptDuplicateClusters": 33,
+      "editorialAnchorsWithActiveWarnings": 0,
+      "editorialAnchorsWithNoCurrentWarning": 10,
       "priorityDocketItems": 20
     },
     "status": "review-required"
@@ -106,7 +106,7 @@
     {
       "id": "eppp-v3-intervention-031",
       "domainId": "intervention",
-      "difficulty": "intermediate",
+      "difficulty": "advanced",
       "answerIndex": 2,
       "expectedAnswerIndex": 2,
       "keyPositionPreserved": true,
@@ -122,7 +122,7 @@
     {
       "id": "eppp-v3-professional-041",
       "domainId": "professional",
-      "difficulty": "intermediate",
+      "difficulty": "advanced",
       "answerIndex": 0,
       "expectedAnswerIndex": 0,
       "keyPositionPreserved": true,
@@ -138,7 +138,7 @@
     {
       "id": "eppp-v3-professional-074",
       "domainId": "professional",
-      "difficulty": "intermediate",
+      "difficulty": "advanced",
       "answerIndex": 1,
       "expectedAnswerIndex": 1,
       "keyPositionPreserved": true,

@@ -8493,11 +8493,11 @@ function QuizView(props) {
     onClick: launchConceptQuest,
     disabled: isPresentationMode || isReviewGame,
     className: "flex items-center gap-2 rounded-full border border-indigo-300 bg-gradient-to-r from-indigo-700 to-purple-700 px-3 py-1.5 text-xs font-bold text-white shadow-sm hover:from-indigo-600 hover:to-purple-600 disabled:opacity-50",
-    title: "Launch an eight-room cooperative concept dungeon with teacher co-GM controls",
-    "aria-label": "Launch Concept Quest"
+    title: t('concept_quest.launch_tooltip'),
+    "aria-label": t('concept_quest.launch_aria')
   }, /*#__PURE__*/React.createElement(Gamepad2, {
     size: 14
-  }), " Concept Quest"), isTeacherMode && !isIndependentMode && /*#__PURE__*/React.createElement("button", {
+  }), " ", t('concept_quest.title')), isTeacherMode && !isIndependentMode && /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: handleExportQTI,
     className: "flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-white text-teal-600 border border-teal-200 hover:bg-teal-50 transition-all motion-reduce:transition-none shadow-sm",

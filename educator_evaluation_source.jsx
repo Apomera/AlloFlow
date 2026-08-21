@@ -569,42 +569,63 @@ let AE_COMPONENTS = aeBuildComponents(AE_DEFAULT_DOMAINS);
 function aeNormalizeRubric(raw) {
   if (!raw || typeof raw !== 'object') return null;
   const domainsRaw = Array.isArray(raw.domains) ? raw.domains : null;
-  if (!domainsRaw || !domainsRaw.length) return null;
+  if (!domainsRaw || domainsRaw.length !== 4) return null;
+  const requiredIds = new Set(['d1', 'd2', 'd3', 'd4']);
   const seen = {};
   const domains = [];
   for (let i = 0; i < domainsRaw.length; i++) {
     const entry = domainsRaw[i] || {};
-    const id = String(entry.id == null ? '' : entry.id).trim();
-    const label = String(entry.label == null ? '' : entry.label).trim();
-    if (!id || !label || seen[id]) return null;
+    const id = String(entry.id == null ? '' : entry.id).trim().toLowerCase();
+    const label = String(entry.label == null ? '' : entry.label).trim().slice(0, 160);
+    if (!requiredIds.has(id) || !label || seen[id]) return null;
     seen[id] = true;
     const weightNumber = Number(entry.weight);
-    const components = Array.isArray(entry.components)
-      ? entry.components.filter((pair) => Array.isArray(pair) && pair.length >= 2)
-        .map((pair) => [String(pair[0]), String(pair[1])])
-      : [];
+    if (!Array.isArray(entry.components) || entry.components.length > 50) return null;
+    const componentCodes = new Set();
+    const components = [];
+    for (let componentIndex = 0; componentIndex < entry.components.length; componentIndex++) {
+      const pair = entry.components[componentIndex];
+      if (!Array.isArray(pair) || pair.length < 2) return null;
+      const code = String(pair[0] == null ? '' : pair[0]).trim().slice(0, 12);
+      const componentLabel = String(pair[1] == null ? '' : pair[1]).trim().slice(0, 240);
+      if (!code || !componentLabel || componentCodes.has(code.toLowerCase())) return null;
+      componentCodes.add(code.toLowerCase()); components.push([code, componentLabel]);
+    }
     domains.push({
       id,
-      code: String(entry.code == null ? String(i + 1) : entry.code),
+      code: String(entry.code == null ? String(i + 1) : entry.code).trim().slice(0, 12) || String(i + 1),
       label,
-      weight: Number.isFinite(weightNumber) && weightNumber >= 0 ? weightNumber : 0,
+      weight: Number.isFinite(weightNumber) && weightNumber > 0 ? weightNumber : 0,
       color: /^#[0-9a-fA-F]{3,8}$/.test(String(entry.color || '')) ? String(entry.color) : '#2563eb',
       components,
     });
   }
-  const bands = Array.isArray(raw.bands)
-    ? raw.bands.filter((band) => band && Number.isFinite(Number(band.min)) && String(band.label || '').trim())
-      .map((band) => ({ min: Number(band.min), label: String(band.label).trim() }))
-      .sort((a, b) => b.min - a.min)
-    : [];
-  const name = String(raw.name == null ? '' : raw.name).trim() || 'Custom rubric';
+  if (Object.keys(seen).length !== requiredIds.size) return null;
+  const domainWeighted = !!raw.domainWeighted;
+  if (domainWeighted) {
+    const total = domains.reduce((sum, domain) => sum + domain.weight, 0);
+    if (domains.some((domain) => domain.weight <= 0) || Math.abs(total - 100) > 0.001) return null;
+  } else domains.forEach((domain) => { domain.weight = 25; });
+  if (raw.bands != null && !Array.isArray(raw.bands)) return null;
+  if (Array.isArray(raw.bands) && raw.bands.length > 8) return null;
+  const bands = [];
+  const bandMins = new Set();
+  (raw.bands || []).forEach((band) => {
+    const min = Number(band && band.min); const label = String((band && band.label) || '').trim().slice(0, 80);
+    if (!Number.isFinite(min) || min < 0 || min > 3 || !label || bandMins.has(min)) return;
+    bandMins.add(min); bands.push({ min, label });
+  });
+  if (Array.isArray(raw.bands) && bands.length !== raw.bands.length) return null;
+  bands.sort((a, b) => b.min - a.min);
+  const name = String(raw.name == null ? '' : raw.name).trim().slice(0, 160) || 'Custom rubric';
+  const rawVersion = String(raw.versionTag == null ? '' : raw.versionTag).trim().slice(0, 80);
+  if (rawVersion && !/^[A-Za-z0-9][A-Za-z0-9._:-]*$/.test(rawVersion)) return null;
   return {
     name,
-    versionTag: String(raw.versionTag == null ? '' : raw.versionTag).trim()
-      || ('custom-' + name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')),
-    practiceLabel: String(raw.practiceLabel == null ? '' : raw.practiceLabel).trim() || 'Professional Practice',
-    practiceShort: String(raw.practiceShort == null ? '' : raw.practiceShort).trim() || 'PP',
-    domainWeighted: !!raw.domainWeighted,
+    versionTag: rawVersion || ('custom-' + name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')).slice(0, 80),
+    practiceLabel: String(raw.practiceLabel == null ? '' : raw.practiceLabel).trim().slice(0, 120) || 'Professional Practice',
+    practiceShort: String(raw.practiceShort == null ? '' : raw.practiceShort).trim().slice(0, 20) || 'PP',
+    domainWeighted,
     bands: bands.length ? bands : null,
     domains,
   };
@@ -864,8 +885,60 @@ function aeSaveOnboardingChoice(choice) {
 
 function aeClone(value) { return JSON.parse(JSON.stringify(value)); }
 
+function aeSameValue(left, right) { return JSON.stringify(left) === JSON.stringify(right); }
+
 function aePlainObject(value) {
   return !!value && typeof value === 'object' && !Array.isArray(value);
+}
+
+// Merge a stale optimistic edit against the newly fetched district record.
+// Server state wins every overlapping field; only independently changed
+// fields and newly-created id-addressable records are eligible for replay.
+function aeThreeWayMerge(base, local, remote, path) {
+  const rootPath = path || 'workspace';
+  const conflicts = [];
+  let appliedCount = 0;
+  const copy = (value) => value === undefined ? undefined : aeClone(value);
+  const merge = (before, attempted, current, currentPath) => {
+    if (aeSameValue(attempted, before)) return copy(current);
+    if (aeSameValue(current, before)) { appliedCount += 1; return copy(attempted); }
+    if (aeSameValue(attempted, current)) return copy(current);
+    if (aePlainObject(before) && aePlainObject(attempted) && aePlainObject(current)) {
+      const result = {};
+      const keys = Array.from(new Set(Object.keys(before).concat(Object.keys(attempted), Object.keys(current))));
+      keys.forEach((key) => { result[key] = merge(before[key], attempted[key], current[key], currentPath + '.' + key); });
+      return result;
+    }
+    const idArray = (value) => Array.isArray(value) && value.every((item) => aePlainObject(item) && aeSafeId(item.id, ''));
+    if (idArray(before) && idArray(attempted) && idArray(current)) {
+      const beforeById = new Map(before.map((item) => [item.id, item]));
+      const attemptedById = new Map(attempted.map((item) => [item.id, item]));
+      const currentById = new Map(current.map((item) => [item.id, item]));
+      const result = current.map((item) => {
+        const id = item.id;
+        if (!attemptedById.has(id)) {
+          if (beforeById.has(id) && aeSameValue(item, beforeById.get(id))) conflicts.push({ path: currentPath + '[' + id + ']', attempted: undefined, current: copy(item) });
+          return copy(item);
+        }
+        return merge(beforeById.get(id), attemptedById.get(id), item, currentPath + '[' + id + ']');
+      });
+      attempted.forEach((item) => {
+        if (currentById.has(item.id)) return;
+        if (!beforeById.has(item.id)) { result.push(copy(item)); appliedCount += 1; return; }
+        conflicts.push({ path: currentPath + '[' + item.id + ']', attempted: copy(item), current: undefined });
+      });
+      return result;
+    }
+    conflicts.push({ path: currentPath, attempted: copy(attempted), current: copy(current) });
+    return copy(current);
+  };
+  return { workspace: merge(base, local, remote, rootPath), conflicts, appliedCount };
+}
+
+function aeConflictValue(value) {
+  if (value === undefined) return '(removed)';
+  const text = typeof value === 'string' ? value : JSON.stringify(value);
+  return aeString(text, 180, '(empty)') || '(empty)';
 }
 
 function aeString(value, maxLength, fallback) {
@@ -930,15 +1003,19 @@ function aeSafeWeightSnapshot(value) {
 function aeNormalizeWorkspace(value) {
   if (!aePlainObject(value)) return null;
   const rawConfig = aePlainObject(value.config) ? value.config : {};
+  const frameworkProfile = AE_FRAMEWORKS[rawConfig.frameworkProfile] ? rawConfig.frameworkProfile : 'pa_act13';
+  const customRubric = aeNormalizeRubric(rawConfig.customRubric);
   const config = {
     organization: aeString(rawConfig.organization, 160, 'Sample School'),
     building: aeString(rawConfig.building, 160, 'Main Building'),
     academicYear: aeString(rawConfig.academicYear, 20, aeSchoolYear()),
     evaluatorName: aeString(rawConfig.evaluatorName, 160, 'Principal'),
     evaluatorInitials: aeString(rawConfig.evaluatorInitials, 12, 'AP'),
-    frameworkVersion: AE_FRAMEWORK,
-    frameworkProfile: AE_FRAMEWORKS[rawConfig.frameworkProfile] ? rawConfig.frameworkProfile : 'pa_act13',
+    frameworkVersion: customRubric ? customRubric.versionTag : AE_FRAMEWORKS[frameworkProfile].versionTag,
+    frameworkProfile,
     pepgPracticeWeight: (() => { const raw = rawConfig.pepgPracticeWeight; if (raw == null || String(raw) === '') return null; const n = Number(raw); return Number.isFinite(n) && n >= 0 && n <= 100 ? Math.round(n) : null; })(),
+    aiReflectionEnabled: aeBoolean(rawConfig.aiReflectionEnabled, false),
+    customRubric,
     sampleMode: aeBoolean(rawConfig.sampleMode, false),
     setupPath: rawConfig.setupPath == null || rawConfig.setupPath === '' ? '' : (['local', 'principal_share', 'district_portal'].includes(rawConfig.setupPath) ? rawConfig.setupPath : 'local'),
     shareHelperUrl: /^https:\/\/script\.google\.com\/macros\/s\/[A-Za-z0-9_-]+\/exec(?:[?#].*)?$/.test(aeString(rawConfig.shareHelperUrl, 500, '')) ? aeString(rawConfig.shareHelperUrl, 500, '') : '',
@@ -1484,7 +1561,8 @@ function aeObservationScoreFor(ratings, frameworkVersion) {
   const domains = (ratings && ratings.domains) || {};
   if (AE_DOMAINS.some((domain) => aeNumberOrNull(domains[domain.id]) === null)) return null;
   const tag = String(frameworkVersion || '');
-  const weighted = !tag.startsWith('me-');
+  const currentCustom = AE_ACTIVE_FW.id === 'custom' && tag === AE_ACTIVE_FW.versionTag;
+  const weighted = currentCustom ? !!AE_ACTIVE_FW.domainWeighted : !tag.startsWith('me-');
   if (!weighted) {
     const total = AE_DOMAINS.reduce((sum, domain) => sum + Math.round(aeNumberOrNull(domains[domain.id]) * 100), 0);
     return total / (AE_DOMAINS.length * 100);
@@ -1558,6 +1636,39 @@ function aeStepOfObservation(observation) {
   if (observation.preConferenceAt) return 2;
   if (observation.preworkSubmittedAt) return 1;
   return 0;
+}
+
+function aeTeacherNextAction(workspace, teacher) {
+  if (!workspace || !teacher) return { tab: 'overview', label: 'Choose an educator', detail: 'No educator selected', owner: 'none' };
+  if (teacher.finalizedAt || teacher.cycleStatus === 'finalized') return { tab: 'audit', label: 'Review released record', detail: 'Cycle finalized', owner: 'complete' };
+  const observations = (workspace.observations || []).filter((item) => item.teacherId === teacher.id && !item.finalizedAt)
+    .sort((a, b) => String(b.createdAt || b.observedAt || '').localeCompare(String(a.createdAt || a.observedAt || '')));
+  const evaluatorObservationLabels = {
+    1: 'Record pre-conference', 2: 'Record observation', 3: 'Publish observation evidence',
+    5: 'Record post-conference', 6: 'Complete ratings and sign', 8: 'Finalize observation',
+  };
+  const waitingObservationLabels = { 0: 'Waiting for prework', 4: 'Waiting for reflection', 7: 'Waiting for educator acknowledgment' };
+  const evaluatorObservation = observations.find((item) => evaluatorObservationLabels[aeStepOfObservation(item)]);
+  if (evaluatorObservation) {
+    const step = aeStepOfObservation(evaluatorObservation);
+    return { tab: 'formal', label: evaluatorObservationLabels[step], detail: 'Formal observation step ' + (step + 1) + ' of 10', owner: 'evaluator' };
+  }
+  const spm = (workspace.spms || []).find((item) => item.teacherId === teacher.id && item.status !== 'locked');
+  if (spm && spm.status === 'submitted') return { tab: 'spm', label: 'Review submitted SPM / SLO', detail: 'Educator proposal is ready', owner: 'evaluator' };
+  if (spm && spm.status === 'results_submitted') return { tab: 'spm', label: 'Rate submitted SPM / SLO results', detail: 'Results and reflection are ready', owner: 'evaluator' };
+  const privateWalkthrough = (workspace.walkthroughs || []).find((item) => item.teacherId === teacher.id && !item.publishedAt);
+  if (privateWalkthrough) return { tab: 'walkthroughs', label: 'Finish walkthrough draft', detail: 'Private evidence draft', owner: 'evaluator' };
+  const waitingObservation = observations.find((item) => waitingObservationLabels[aeStepOfObservation(item)]);
+  if (waitingObservation) {
+    const step = aeStepOfObservation(waitingObservation);
+    return { tab: 'formal', label: waitingObservationLabels[step], detail: 'Formal observation step ' + (step + 1) + ' of 10', owner: 'teacher' };
+  }
+  if (spm && ['draft', 'returned'].includes(spm.status)) return { tab: 'spm', label: 'Waiting for SPM / SLO submission', detail: spm.status === 'returned' ? 'Revision requested' : 'Educator draft', owner: 'teacher' };
+  if (spm && spm.status === 'approved') return { tab: 'spm', label: 'Waiting for SPM / SLO results', detail: 'Goal approved', owner: 'teacher' };
+  const unacknowledgedWalkthrough = (workspace.walkthroughs || []).find((item) => item.teacherId === teacher.id && item.publishedAt && !item.teacherAcknowledgedAt);
+  if (unacknowledgedWalkthrough) return { tab: 'walkthroughs', label: 'Waiting for walkthrough acknowledgment', detail: 'Published evidence available', owner: 'teacher' };
+  if (!(workspace.observations || []).some((item) => item.teacherId === teacher.id)) return { tab: 'formal', label: 'Assign formal observation', detail: 'Formal cycle not started', owner: 'evaluator' };
+  return { tab: 'overview', label: 'Complete final evaluation', detail: 'Review ratings and release status', owner: 'evaluator' };
 }
 
 function aeRecalculateCycleStatus(workspace, teacherId) {
@@ -1974,6 +2085,12 @@ function AeOverview({ workspace, selectedTeacher, setSelectedTeacherId, role, up
     soon: openWithDue.filter((teacher) => teacher.dueDate >= today && teacher.dueDate <= plusDays(14)).length,
     month: openWithDue.filter((teacher) => teacher.dueDate > plusDays(14) && teacher.dueDate <= plusDays(30)).length,
   };
+  const nextActions = new Map(activeTeachers.map((teacher) => [teacher.id, aeTeacherNextAction(workspace, teacher)]));
+  const evaluatorQueue = activeTeachers.map((teacher) => ({ teacher, action: nextActions.get(teacher.id) }))
+    .filter((item) => item.action.owner === 'evaluator')
+    .sort((a, b) => String(a.teacher.dueDate || '9999-12-31').localeCompare(String(b.teacher.dueDate || '9999-12-31')) || a.teacher.name.localeCompare(b.teacher.name))
+    .slice(0, 6);
+  const openNextAction = (teacher, action) => { setSelectedTeacherId(teacher.id); setTab(action.tab); };
   return <div className="ae-page">
     <div className="ae-heading"><div><h2>{isEvaluator ? 'Evaluation overview' : 'My evaluation'}</h2><p>Completion means the final rating record has been finalized—not that a walkthrough occurred.</p></div>
       {isEvaluator && <label className="ae-field" style={{ minWidth: 230, margin: 0 }}><span>Selected educator</span><select className="ae-select" value={selectedTeacher ? selectedTeacher.id : ''} onChange={(event) => setSelectedTeacherId(event.target.value)}>
@@ -1986,6 +2103,9 @@ function AeOverview({ workspace, selectedTeacher, setSelectedTeacherId, role, up
         <div className="ae-span-4 ae-stat" style={{ borderLeftColor: workload.soon ? '#b45309' : undefined }}><strong>{workload.soon}</strong><span>due within 14 days</span></div>
         <div className="ae-span-4 ae-stat"><strong>{workload.month}</strong><span>due in 15–30 days</span></div>
       </div></section>}
+      {isEvaluator && <section className="ae-card ae-span-12" aria-labelledby="ae-next-actions-title"><div className="ae-record-head"><div><h3 id="ae-next-actions-title">Needs your attention</h3><p className="ae-sub">Your next evaluator-owned steps, ordered by cycle due date. Open an action to select the educator and go directly to the right workflow.</p></div><span className="ae-chip ae-chip-neutral">{evaluatorQueue.length} shown</span></div>
+        {evaluatorQueue.length === 0 ? <div className="ae-empty" style={{ marginTop: 12 }}><strong>No evaluator-owned steps are waiting.</strong><p>Use the roster below to see educator-owned steps and completed cycles.</p></div> : <div className="ae-table-wrap" style={{ marginTop: 12 }}><table className="ae-table"><caption className="ae-live">Evaluator next-action queue</caption><thead><tr><th scope="col">Educator</th><th scope="col">Next step</th><th scope="col">Why</th><th scope="col">Cycle due</th></tr></thead><tbody>{evaluatorQueue.map(({ teacher, action }) => <tr key={teacher.id}><td><strong>{teacher.name}</strong><br/><span className="ae-sub">{teacher.code} · {teacher.building}</span></td><td><button type="button" className="ae-row-btn" onClick={() => openNextAction(teacher, action)}>{action.label}</button></td><td>{action.detail}</td><td>{aeDate(teacher.dueDate)}</td></tr>)}</tbody></table></div>}
+      </section>}
       {isEvaluator && <section className="ae-card ae-span-5" aria-labelledby="ae-completion-title"><h3 id="ae-completion-title">Teachers evaluated</h3><p className="ae-sub">Active educators due in {workspace.config.academicYear}</p>
         {summary.total === 0 ? <div className="ae-empty" style={{ marginTop: 12 }}><strong>No educators yet</strong><p>Add your roster in Staff — completion tracking begins with your first educator.</p></div> : <>
         <AeDonut segments={completionSegments} centerTop={summary.finalized + ' / ' + summary.total} centerBottom="finalized" label={summary.finalized + ' of ' + summary.total + ' eligible teachers finalized; ' + summary.open + ' not finalized'} />
@@ -2005,12 +2125,13 @@ function AeOverview({ workspace, selectedTeacher, setSelectedTeacherId, role, up
         </>}
       </section>
       {isEvaluator && <section className="ae-card ae-span-12"><div className="ae-record-head"><div><h3>Roster status</h3><p className="ae-sub">Select a row to open the educator’s working record.</p></div><button type="button" className="ae-btn" onClick={() => setTab('staff')}>Manage staff</button></div>
-        {activeTeachers.length === 0 ? <div className="ae-empty">No educators yet. Add your roster in Staff.</div> : <div className="ae-table-wrap" style={{ marginTop: 12 }}><table className="ae-table"><thead><tr><th>Educator</th><th>Assignment</th><th>Evaluator</th><th>Formal observation</th><th>Walkthroughs</th><th>SPM / SLO</th><th>Final record</th><th>Next due</th></tr></thead><tbody>
+        {activeTeachers.length === 0 ? <div className="ae-empty">No educators yet. Add your roster in Staff.</div> : <div className="ae-table-wrap" style={{ marginTop: 12 }}><table className="ae-table"><thead><tr><th>Educator</th><th>Next action</th><th>Assignment</th><th>Evaluator</th><th>Formal observation</th><th>Walkthroughs</th><th>SPM / SLO</th><th>Final record</th><th>Next due</th></tr></thead><tbody>
           {activeTeachers.map((teacher) => {
             const obs = workspace.observations.filter((item) => item.teacherId === teacher.id);
             const walks = workspace.walkthroughs.filter((item) => item.teacherId === teacher.id && item.publishedAt);
             const spm = workspace.spms.find((item) => item.teacherId === teacher.id);
-            return <tr key={teacher.id}><td><button className="ae-row-btn" type="button" onClick={() => setSelectedTeacherId(teacher.id)}>{teacher.name}</button><br/><span className="ae-sub">{teacher.code} · {teacher.building}</span></td><td>{teacher.assignment || '—'}</td><td>{teacher.evaluator || '—'}</td><td>{obs.length ? (obs.some((item) => item.finalizedAt) ? 'Finalized' : 'In progress') : 'Not started'}</td><td>{walks.length}</td><td>{spm ? spm.status.replace(/_/g, ' ') : 'Not started'}</td><td><AeStatus status={aeTeacherStatus(teacher)} /></td><td>{aeDate(teacher.dueDate)}</td></tr>;
+            const action = nextActions.get(teacher.id);
+            return <tr key={teacher.id}><td><button className="ae-row-btn" type="button" onClick={() => setSelectedTeacherId(teacher.id)}>{teacher.name}</button><br/><span className="ae-sub">{teacher.code} · {teacher.building}</span></td><td><button className="ae-row-btn" type="button" onClick={() => openNextAction(teacher, action)}>{action.label}</button><br/><span className="ae-sub">{action.detail}</span></td><td>{teacher.assignment || '—'}</td><td>{teacher.evaluator || '—'}</td><td>{obs.length ? (obs.some((item) => item.finalizedAt) ? 'Finalized' : 'In progress') : 'Not started'}</td><td>{walks.length}</td><td>{spm ? spm.status.replace(/_/g, ' ') : 'Not started'}</td><td><AeStatus status={aeTeacherStatus(teacher)} /></td><td>{aeDate(teacher.dueDate)}</td></tr>;
           })}
         </tbody></table></div>}
       </section>}
@@ -2044,11 +2165,12 @@ function AeTrendChart({ points, metric, label }) {
   </div>;
 }
 
-function AeTrends({ workspace, selectedTeacher, setSelectedTeacherId, role, isRemote = false }) {
+function AeTrends({ workspace, selectedTeacher, setSelectedTeacherId, role, isRemote = false, repository = null }) {
   const isEvaluator = role === 'evaluator';
   const [metric, setMetric] = React.useState('overall');
   const [from, setFrom] = React.useState('');
   const [to, setTo] = React.useState('');
+  const [remoteCohort, setRemoteCohort] = React.useState({ status: 'idle', data: null, error: '' });
   const metricLabels = { overall: 'Overall ' + AE_ACTIVE_FW.practiceShort, d1: 'Planning & Preparation', d2: 'Classroom Environment', d3: 'Instruction', d4: 'Professional Responsibilities' };
   const filters = { from, to, source: 'formal_observation' };
   const points = selectedTeacher ? aeTeacherTrendPoints(workspace, selectedTeacher.id, filters) : [];
@@ -2061,7 +2183,32 @@ function AeTrends({ workspace, selectedTeacher, setSelectedTeacherId, role, isRe
   const snapshots = selectedTeacher ? (workspace.cycleSnapshots || []).filter((item) => item.teacherId === selectedTeacher.id && inRange(item.finalizedAt)) : [];
   const ackHours = walkthroughs.filter((item) => item.teacherAcknowledgedAt).map((item) => (new Date(item.teacherAcknowledgedAt).getTime() - new Date(item.publishedAt).getTime()) / 3600000).filter((value) => Number.isFinite(value) && value >= 0).sort((a, b) => a - b);
   const medianAck = ackHours.length ? (ackHours.length % 2 ? ackHours[Math.floor(ackHours.length / 2)] : (ackHours[ackHours.length / 2 - 1] + ackHours[ackHours.length / 2]) / 2) : null;
-  const cohort = selectedTeacher ? aeWorkspaceCohortMetric(workspace, selectedTeacher.id, metric, filters) : { suppressed: true, minimum: AE_MIN_TREND_COHORT, median: null, selectedMean: null };
+  React.useEffect(() => {
+    let canceled = false;
+    if (!isRemote || !isEvaluator || !selectedTeacher) { setRemoteCohort({ status: 'idle', data: null, error: '' }); return () => { canceled = true; }; }
+    if (!repository || typeof repository.getCohortStats !== 'function') {
+      setRemoteCohort({ status: 'error', data: null, error: 'Authoritative peer context is unavailable in this portal build.' });
+      return () => { canceled = true; };
+    }
+    setRemoteCohort({ status: 'loading', data: null, error: '' });
+    repository.getCohortStats({ teacherId: selectedTeacher.id, metric, from, to }).then((result) => {
+      if (canceled) return;
+      if (!result || result.ok === false) throw new Error((result && (result.error || result.message)) || 'The district cohort service did not return a result.');
+      setRemoteCohort({ status: 'ready', error: '', data: {
+        suppressed: result.suppressed !== false,
+        minimum: Math.max(1, Number(result.minimum) || AE_MIN_TREND_COHORT),
+        median: result.suppressed === false && Number.isFinite(Number(result.cohortMedian)) ? Number(result.cohortMedian) : null,
+        selectedMean: Number.isFinite(Number(result.selectedMean)) ? Number(result.selectedMean) : null,
+        peerCount: result.suppressed === false && Number.isInteger(Number(result.peerCount)) ? Number(result.peerCount) : null,
+      } });
+    }).catch((error) => {
+      if (!canceled) setRemoteCohort({ status: 'error', data: null, error: String((error && error.message) || error || 'Authoritative peer context is unavailable.') });
+    });
+    return () => { canceled = true; };
+  }, [isRemote, isEvaluator, selectedTeacher && selectedTeacher.id, metric, from, to, repository]);
+  const cohort = isRemote
+    ? (remoteCohort.data || { suppressed: true, minimum: AE_MIN_TREND_COHORT, median: null, selectedMean: null })
+    : (selectedTeacher ? aeWorkspaceCohortMetric(workspace, selectedTeacher.id, metric, filters) : { suppressed: true, minimum: AE_MIN_TREND_COHORT, median: null, selectedMean: null });
   const activity = {};
   walkthroughs.forEach((item) => { const month = item.publishedAt.slice(0, 7); activity[month] = activity[month] || { walkthroughs: 0, formals: 0 }; activity[month].walkthroughs += 1; });
   observations.forEach((item) => { const month = item.finalizedAt.slice(0, 7); activity[month] = activity[month] || { walkthroughs: 0, formals: 0 }; activity[month].formals += 1; });
@@ -2079,7 +2226,7 @@ function AeTrends({ workspace, selectedTeacher, setSelectedTeacherId, role, isRe
       <section className="ae-card ae-span-12"><div className="ae-record-head"><div><h3>{selectedTeacher.name} · longitudinal snapshot</h3><p className="ae-sub">{workspace.config.academicYear} current workflow plus separately reported immutable prior-cycle releases.</p></div><AeStatus status={aeTeacherStatus(selectedTeacher)}/></div><div className="ae-grid" style={{ marginTop: 12 }}><div className="ae-span-4 ae-stat"><strong>{walkthroughs.length}</strong><span>published walkthroughs</span></div><div className="ae-span-4 ae-stat"><strong>{observations.length}</strong><span>finalized formal observations</span></div><div className="ae-span-4 ae-stat"><strong>{snapshots.length}</strong><span>released cycle snapshots in range</span></div></div>{medianAck !== null && <p className="ae-sub" style={{ marginTop: 10 }}>Median walkthrough acknowledgment: {medianAck < 48 ? medianAck.toFixed(1) + ' hours' : (medianAck / 24).toFixed(1) + ' days'} (n={ackHours.length}).</p>}</section>
       <section className="ae-card ae-span-12"><h3>Annual cycle releases</h3><p className="ae-sub">All-factor final evaluation scores are listed separately and are not mixed into formal-observation O&amp;P trajectories or peer comparisons.</p>{snapshots.length ? <div className="ae-table-wrap" style={{ marginTop: 10 }}><table className="ae-table"><caption className="ae-live">Annual cycle release scores</caption><thead><tr><th scope="col">Academic year</th><th scope="col">Released</th><th scope="col">Final evaluation score</th></tr></thead><tbody>{snapshots.map((snapshot) => <tr key={snapshot.id}><td>{snapshot.academicYear || 'Unspecified year'}</td><td>{aeDate(snapshot.finalizedAt)}</td><td>{snapshot.finalScore == null ? '—' : Number(snapshot.finalScore).toFixed(2)}</td></tr>)}</tbody></table></div> : <div className="ae-empty">No released annual cycle snapshots in this date range.</div>}</section>
       <section className={'ae-card ' + (isEvaluator ? 'ae-span-8' : 'ae-span-12')}><h3>Formal-observation {metricLabels[metric]} over time</h3><AeTrendChart points={points} metric={metric} label={metricLabels[metric]}/></section>
-      {isEvaluator && <section className="ae-card ae-span-4"><h3>De-identified peer context</h3><p className="ae-sub">Same building and employee type; selected educator excluded. Each peer contributes one mean across finalized formal observations before the cohort median.</p>{cohort.suppressed ? <div className="ae-note ae-warn" style={{ marginTop: 12 }}><strong>Suppressed.</strong><br/>Fewer than {AE_MIN_TREND_COHORT} eligible peers contributed to this metric and date range. The exact small-group count is not exposed.</div> : <div style={{ marginTop: 14 }}><div className="ae-stat"><strong>{cohort.selectedMean == null ? '—' : cohort.selectedMean.toFixed(2)}</strong><span>selected educator mean</span></div><div className="ae-stat" style={{ marginTop: 10, borderLeftColor: '#0f766e' }}><strong>{cohort.median.toFixed(2)}</strong><span>peer cohort median · n={cohort.peerCount}</span></div></div>}<div className="ae-note" style={{ marginTop: 14 }}>No ranking, percentile, peer names, automated judgment, or personnel recommendation is produced.</div></section>}
+      {isEvaluator && <section className="ae-card ae-span-4"><h3>De-identified peer context</h3><p className="ae-sub">Same building and employee type; selected educator excluded. Each peer contributes one mean across finalized formal observations before the cohort median.</p>{isRemote && remoteCohort.status === 'loading' ? <div className="ae-note" role="status" style={{ marginTop: 12 }}>Loading permission-filtered district aggregate…</div> : (isRemote && remoteCohort.status === 'error' ? <div className="ae-note ae-warn" role="alert" style={{ marginTop: 12 }}><strong>Peer context unavailable.</strong><br/>{remoteCohort.error} No local approximation is shown.</div> : (cohort.suppressed ? <div className="ae-note ae-warn" style={{ marginTop: 12 }}><strong>Suppressed.</strong><br/>Fewer than {cohort.minimum || AE_MIN_TREND_COHORT} eligible peers contributed to this metric and date range. The exact small-group count is not exposed.</div> : <div style={{ marginTop: 14 }}><div className="ae-stat"><strong>{cohort.selectedMean == null ? '—' : cohort.selectedMean.toFixed(2)}</strong><span>selected educator mean</span></div><div className="ae-stat" style={{ marginTop: 10, borderLeftColor: '#0f766e' }}><strong>{cohort.median.toFixed(2)}</strong><span>peer cohort median · n={cohort.peerCount}</span></div></div>))}<div className="ae-note" style={{ marginTop: 14 }}>No ranking, percentile, peer names, automated judgment, or personnel recommendation is produced.</div></section>}
       <section className="ae-card ae-span-12"><h3>Observation activity by month</h3><p className="ae-sub">Volume indicates documentation activity, not teaching quality.</p>{months.length ? <div className="ae-table-wrap" style={{ marginTop: 10 }}><table className="ae-table"><caption className="ae-live">Monthly observation activity</caption><thead><tr><th scope="col">Month</th><th scope="col">Published walkthroughs</th><th scope="col">Finalized formal observations</th></tr></thead><tbody>{months.map((month) => <tr key={month}><th scope="row">{month}</th><td>{activity[month].walkthroughs}</td><td>{activity[month].formals}</td></tr>)}</tbody></table></div> : <div className="ae-empty">No published/finalized observation activity in this date range.</div>}</section>
     </div>}
   </div>;
@@ -2187,18 +2334,29 @@ function AeFormalRecordSummary({ observation, role }) {
     {canSeeEvidence && <Item label="Published observation evidence" value={observation.evidence}/>}
     {canSeeReflection && <Item label="Teacher reflection" value={observation.reflection}/>}
     {canSeeConference && <Item label="Post-conference discussion and follow-up" value={observation.postConferenceNotes}/>}
-    <div className="ae-note ae-warn" style={{ marginTop: 12 }}>This workspace stores text and district-authorized document references only. Secure file upload, versioning, and retention arrive with the district portal.</div>
+    <div className="ae-note ae-warn" style={{ marginTop: 12 }}><strong>References only in every workspace path.</strong><br/>File upload, file versioning, and artifact retention are not implemented, including in the district portal. Keep artifacts in the district-approved repository and enter only access-controlled references without student-identifying text.</div>
   </div>;
 }
 function AeFormalObservations({ workspace, selectedTeacher, setSelectedTeacherId, role, createObservation, updateObservation, updateTeacher, addComment, readOnlyPreview = false }) {
   const [openId, setOpenId] = React.useState('');
   const teachers = workspace.teachers.filter((teacher) => teacher.active !== false);
   const records = workspace.observations.filter((record) => role !== 'teacher' || (selectedTeacher && record.teacherId === selectedTeacher.id));
-  const active = (selectedTeacher && records.find((record) => record.id === openId && record.teacherId === selectedTeacher.id)) || (selectedTeacher && records.find((record) => record.teacherId === selectedTeacher.id)) || null;
-  React.useEffect(() => { if (active && !openId) setOpenId(active.id); }, [active && active.id]);
+  const observationTime = (record) => Date.parse(record.finalizedAt || record.observedAt || record.createdAt || '') || 0;
+  const recordsFor = (teacherId) => records.filter((record) => record.teacherId === teacherId).slice().sort((left, right) => observationTime(right) - observationTime(left) || right.id.localeCompare(left.id));
+  const teacherRecords = selectedTeacher ? recordsFor(selectedTeacher.id) : [];
+  const active = teacherRecords.find((record) => record.id === openId) || teacherRecords[0] || null;
+  const teacherRecordKey = teacherRecords.map((record) => record.id).join('|');
+  React.useEffect(() => {
+    const nextId = teacherRecords.some((record) => record.id === openId) ? openId : ((teacherRecords[0] && teacherRecords[0].id) || '');
+    if (nextId !== openId) setOpenId(nextId);
+  }, [selectedTeacher && selectedTeacher.id, teacherRecordKey, openId]);
+  const observationLabel = (record) => {
+    const date = aeDate(record.observedAt || record.finalizedAt || record.createdAt);
+    return date + ' · ' + (record.finalizedAt ? 'Finalized' : ('Step ' + (aeStepOfObservation(record) + 1) + ' of 10'));
+  };
   const patch = (changes, event, summary) => updateObservation(active.id, changes, event, summary);
   return <div className="ae-page"><div className="ae-heading"><div><h2>Formal comprehensive observations</h2><p>Prework, conferences, observed evidence, reflection, human ratings, acknowledgment, and finalization remain distinct.</p></div>{role === 'evaluator' && <button type="button" className="ae-btn ae-btn-primary" disabled={!selectedTeacher || records.some((record) => record.teacherId === selectedTeacher.id && !record.finalizedAt)} onClick={() => setOpenId(createObservation(selectedTeacher.id))}>+ Assign formal observation</button>}</div>
-    {role === 'evaluator' ? <div className="ae-toolbar"><label className="ae-field" style={{ minWidth: 260, margin: 0 }}><span>Educator</span><select className="ae-select" value={selectedTeacher ? selectedTeacher.id : ''} onChange={(event) => { setSelectedTeacherId(event.target.value); const found = records.find((record) => record.teacherId === event.target.value); setOpenId(found ? found.id : ''); }}><option value="">Choose an educator</option>{teachers.map((teacher) => <option key={teacher.id} value={teacher.id}>{teacher.name} · {teacher.code}</option>)}</select></label></div> : selectedTeacher && <div className="ae-note">Viewing records for {selectedTeacher.name} · {selectedTeacher.code}</div>}
+    {role === 'evaluator' ? <div className="ae-toolbar"><label className="ae-field" style={{ minWidth: 260, margin: 0 }}><span>Educator</span><select className="ae-select" value={selectedTeacher ? selectedTeacher.id : ''} onChange={(event) => { const teacherId = event.target.value; setSelectedTeacherId(teacherId); const found = recordsFor(teacherId)[0]; setOpenId(found ? found.id : ''); }}><option value="">Choose an educator</option>{teachers.map((teacher) => <option key={teacher.id} value={teacher.id}>{teacher.name} · {teacher.code}</option>)}</select></label>{selectedTeacher && teacherRecords.length > 0 && <label className="ae-field" style={{ minWidth: 280, margin: 0 }}><span>Observation record</span><select className="ae-select" value={active ? active.id : ''} onChange={(event) => setOpenId(event.target.value)}>{teacherRecords.map((record) => <option key={record.id} value={record.id}>{observationLabel(record)}</option>)}</select></label>}</div> : selectedTeacher && <div className="ae-toolbar"><div className="ae-note">Viewing records for {selectedTeacher.name} · {selectedTeacher.code}</div>{teacherRecords.length > 0 && <label className="ae-field" style={{ minWidth: 280, margin: 0 }}><span>Observation record</span><select className="ae-select" value={active ? active.id : ''} onChange={(event) => setOpenId(event.target.value)}>{teacherRecords.map((record) => <option key={record.id} value={record.id}>{observationLabel(record)}</option>)}</select></label>}</div>}
     {!active ? <div className="ae-card ae-empty">{selectedTeacher ? 'No formal observation has been assigned for this educator.' : 'Choose an educator to begin.'}</div> : (() => {
       const teacher = workspace.teachers.find((item) => item.id === active.teacherId);
       const step = aeStepOfObservation(active);
@@ -2764,9 +2922,69 @@ function AeAnnualRollover({ workspace, repository, onReload }) {
   </section>;
 }
 
+function aeWorkspaceConfigurationDraft(config) {
+  const source = config || {};
+  return {
+    organization: source.organization || '', building: source.building || '', academicYear: source.academicYear || '',
+    evaluatorName: source.evaluatorName || '', evaluatorInitials: source.evaluatorInitials || '',
+    frameworkProfile: AE_FRAMEWORKS[source.frameworkProfile] ? source.frameworkProfile : 'pa_act13',
+    pepgPracticeWeight: source.pepgPracticeWeight == null || source.pepgPracticeWeight === '' ? null : Number(source.pepgPracticeWeight),
+    aiReflectionEnabled: !!source.aiReflectionEnabled,
+  };
+}
+
+function AeReviewedWorkspaceConfiguration({ workspace, repository, onReload }) {
+  const sourceDraft = aeWorkspaceConfigurationDraft(workspace.config);
+  const sourceKey = JSON.stringify(sourceDraft);
+  const [draft, setDraft] = React.useState(sourceDraft);
+  const [state, setState] = React.useState({ status: 'idle', review: null, result: null, error: '' });
+  const [acknowledged, setAcknowledged] = React.useState(false);
+  React.useEffect(() => { setDraft(aeWorkspaceConfigurationDraft(workspace.config)); }, [sourceKey]);
+  const locked = ['reviewed', 'performing'].includes(state.status);
+  const changed = JSON.stringify(draft) !== sourceKey;
+  const set = (field, value) => setDraft((current) => {
+    const next = { ...current, [field]: value };
+    if (field === 'frameworkProfile' && value !== 'maine_pepg') next.pepgPracticeWeight = null;
+    return next;
+  });
+  const resetDraft = () => { setDraft(aeWorkspaceConfigurationDraft(workspace.config)); setAcknowledged(false); setState({ status: 'idle', review: null, result: null, error: '' }); };
+  const beginReview = async () => {
+    if (!repository || typeof repository.reviewConfiguration !== 'function') { setState({ status: 'error', review: null, result: null, error: 'This portal build does not expose reviewed district configuration. Ask district IT to deploy the current package.' }); return; }
+    setAcknowledged(false); setState({ status: 'reviewing', review: null, result: null, error: '' });
+    try {
+      const response = await repository.reviewConfiguration({ config: draft });
+      if (!response || response.ok === false || !response.review || !response.review.token) throw new Error((response && (response.error || response.message)) || 'The district configuration review could not be prepared.');
+      setState({ status: 'reviewed', review: response.review, result: null, error: '' });
+    } catch (error) { setState({ status: 'error', review: null, result: null, error: error && error.message ? error.message : 'The district configuration review could not be prepared.' }); }
+  };
+  const confirm = async () => {
+    if (!state.review || !repository || typeof repository.performConfiguration !== 'function') return;
+    setState((current) => ({ ...current, status: 'performing', error: '' }));
+    try {
+      const response = await repository.performConfiguration({ reviewToken: state.review.token, acknowledgeImpact: true });
+      if (!response || response.ok === false) throw new Error((response && (response.error || response.message)) || 'The reviewed district configuration could not be applied.');
+      setState({ status: 'completed', review: null, result: response, error: '' }); setAcknowledged(false);
+    } catch (error) { setState((current) => ({ ...current, status: 'reviewed', error: error && error.message ? error.message : 'The reviewed district configuration could not be applied.' })); }
+  };
+  return <section className="ae-card ae-span-6" aria-labelledby="ae-reviewed-config-title">
+    <h3 id="ae-reviewed-config-title">Workspace setup</h3>
+    <div className="ae-note ae-warn" style={{ marginBottom: 12 }}><strong>Administrator-only district configuration.</strong><br/>These settings apply across the portal. Edit a draft, review the server-produced before-and-after list, then explicitly confirm. Finalized records and frozen cycle snapshots keep their original framework and weights.</div>
+    <fieldset disabled={locked} style={{ border: 0, padding: 0, margin: 0 }}>
+      <label className="ae-field"><span>Organization / LEA</span><input className="ae-input" value={draft.organization} maxLength={160} onChange={(event) => set('organization', event.target.value)}/></label>
+      <div className="ae-form-grid"><label className="ae-field"><span>Building</span><input className="ae-input" value={draft.building} maxLength={160} onChange={(event) => set('building', event.target.value)}/></label><label className="ae-field"><span>Academic year</span><input className="ae-input" value={draft.academicYear} maxLength={20} onChange={(event) => set('academicYear', event.target.value)}/></label><label className="ae-field"><span>Evaluator name</span><input className="ae-input" value={draft.evaluatorName} maxLength={160} onChange={(event) => set('evaluatorName', event.target.value)}/></label><label className="ae-field"><span>Evaluator initials</span><input className="ae-input" value={draft.evaluatorInitials} maxLength={12} onChange={(event) => set('evaluatorInitials', event.target.value)}/></label><label className="ae-field ae-field-wide"><span>Evaluation framework</span><select className="ae-select" value={draft.frameworkProfile} onChange={(event) => set('frameworkProfile', event.target.value)}>{Object.keys(AE_FRAMEWORKS).map((id) => <option key={id} value={id}>{AE_FRAMEWORKS[id].name}</option>)}</select></label>{draft.frameworkProfile === 'maine_pepg' && <label className="ae-field ae-field-wide"><span>Professional Practice weight (%) - optional</span><input className="ae-input" type="number" min="0" max="100" step="1" value={draft.pepgPracticeWeight == null ? '' : draft.pepgPracticeWeight} onChange={(event) => set('pepgPracticeWeight', event.target.value === '' ? null : Number(event.target.value))} placeholder="Example: 75; Student Learning and Growth gets the rest"/></label>}</div>
+      <div className="ae-field ae-field-wide"><span>AI reflection policy (optional)</span><label className="ae-check"><input type="checkbox" checked={draft.aiReflectionEnabled} onChange={(event) => set('aiReflectionEnabled', event.target.checked)}/><span>Allow evaluators to send selected evidence notes and ratings to the configured AI provider for advisory reflection. Nothing is auto-scored or written into the record.</span></label></div>
+    </fieldset>
+    <div className="ae-actions"><button type="button" className="ae-btn ae-btn-primary" disabled={!changed || ['reviewing', 'performing'].includes(state.status) || locked} onClick={beginReview}>{state.status === 'reviewing' ? 'Preparing review…' : 'Review district configuration'}</button><button type="button" className="ae-btn" disabled={!changed || locked} onClick={resetDraft}>Reset draft</button></div>
+    {state.error && <div className="ae-note ae-danger" role="alert" style={{ marginTop: 12 }}>{state.error}</div>}
+    {state.review && <div className="ae-note ae-warn" style={{ marginTop: 12 }}><strong>Review {state.review.changes.length} district-wide change{state.review.changes.length === 1 ? '' : 's'}.</strong><div className="ae-table-wrap" style={{ marginTop: 10 }}><table className="ae-table"><caption className="ae-live">District configuration changes awaiting confirmation</caption><thead><tr><th scope="col">Setting</th><th scope="col">Current</th><th scope="col">Proposed</th></tr></thead><tbody>{state.review.changes.map((change) => <tr key={change.field}><th scope="row">{change.label}</th><td>{change.current}</td><td><strong>{change.candidate}</strong></td></tr>)}</tbody></table></div><p>{state.review.impacts.activeEducators} active educator{state.review.impacts.activeEducators === 1 ? '' : 's'} and {state.review.impacts.openCycles} open cycle{state.review.impacts.openCycles === 1 ? '' : 's'} use this portal. {state.review.impacts.protectedSnapshots} cycle record{state.review.impacts.protectedSnapshots === 1 ? '' : 's'} already have protected weights or finalization history.</p>{state.review.impacts.frameworkOrWeightChange && <p><strong>Framework or weight policy is changing for eligible future work.</strong> Existing frozen snapshots are not recalculated.</p>}<label className="ae-check"><input type="checkbox" checked={acknowledged} onChange={(event) => setAcknowledged(event.target.checked)}/><span>I compared every current and proposed value, confirmed the approved district plan, and understand the portal-wide impact.</span></label><div className="ae-actions"><button type="button" className="ae-btn ae-btn-primary" disabled={!acknowledged || state.status === 'performing'} onClick={confirm}>{state.status === 'performing' ? 'Applying reviewed configuration…' : 'Confirm reviewed configuration'}</button><button type="button" className="ae-btn" disabled={state.status === 'performing'} onClick={resetDraft}>Cancel</button></div><p className="ae-help">Review expires {aeDateTime(state.review.expiresAt)}. Any intervening workspace change makes it stale.</p></div>}
+    {state.result && <div className={'ae-note ' + (state.result.recoveryPending ? 'ae-warn' : 'ae-ok')} role="status" style={{ marginTop: 12 }}><strong>{state.result.recoveryPending ? 'Configuration accepted; repository recovery is pending.' : 'District configuration updated and audited.'}</strong>{state.result.recoveryPending ? ' Reload and run Setup health before relying on the new settings.' : ' Reload once to display the confirmed values everywhere.'}{typeof onReload === 'function' && <div className="ae-actions" style={{ marginTop: 8 }}><button type="button" className="ae-btn" onClick={onReload}>Reload confirmed settings</button></div>}</div>}
+  </section>;
+}
+
 function AeAbout({ workspace, updateConfig, role, isRemote = false, currentUser = null, repository = null, standalone = false, portalUrl = '', exportRubric, importRubric, clearRubric, onApplySimulation, onReload = null }) {
   const set = (field, value) => updateConfig(field, value);
   const rubricFileRef = React.useRef(null);
+  const canConfigure = role === 'evaluator' && (!isRemote || !!(currentUser && currentUser.role === 'admin'));
   return <div className="ae-page">
     {/* One panel serves both roles, but the tab that opens it is labelled
         "Setup" for an evaluator and "About" for an educator — so the heading
@@ -2776,9 +2994,10 @@ function AeAbout({ workspace, updateConfig, role, isRemote = false, currentUser 
     <div className="ae-grid">
       {!isRemote && role === 'evaluator' && <AeSetupPaths workspace={workspace} updateConfig={updateConfig}/>}
       {!isRemote && role === 'evaluator' && workspace.config.sampleMode && <AeSimulationStudio workspace={workspace} onApply={onApplySimulation}/>}
-      <section className="ae-card ae-span-6"><h3>Workspace setup</h3><fieldset disabled={isRemote || role !== 'evaluator'} style={{ border: 0, padding: 0, margin: 0 }}><label className="ae-field"><span>Organization / LEA</span><input className="ae-input" value={workspace.config.organization} onChange={(event) => set('organization', event.target.value)}/></label><div className="ae-form-grid"><label className="ae-field"><span>Building</span><input className="ae-input" value={workspace.config.building} onChange={(event) => set('building', event.target.value)}/></label><label className="ae-field"><span>Academic year</span><input className="ae-input" value={workspace.config.academicYear} onChange={(event) => set('academicYear', event.target.value)}/></label><label className="ae-field"><span>Evaluator name</span><input className="ae-input" value={workspace.config.evaluatorName} onChange={(event) => set('evaluatorName', event.target.value)}/></label><label className="ae-field"><span>Evaluator initials</span><input className="ae-input" value={workspace.config.evaluatorInitials} onChange={(event) => set('evaluatorInitials', event.target.value)}/></label><label className="ae-field ae-field-wide"><span>Evaluation framework</span><select className="ae-select" value={workspace.config.frameworkProfile || 'pa_act13'} onChange={(event) => set('frameworkProfile', event.target.value)}>{Object.keys(AE_FRAMEWORKS).map((id) => <option key={id} value={id}>{AE_FRAMEWORKS[id].name}</option>)}</select></label>{workspace.config.frameworkProfile === 'maine_pepg' && <label className="ae-field ae-field-wide"><span>Professional Practice weight (%) — optional; SLG measures are a district choice under the 2019 amendments</span><input className="ae-input" type="number" min="0" max="100" step="1" value={workspace.config.pepgPracticeWeight == null ? '' : workspace.config.pepgPracticeWeight} onChange={(event) => set('pepgPracticeWeight', event.target.value)} placeholder="e.g. 75 — Student Learning & Growth gets the rest"/></label>}</div></fieldset>{isRemote && <div className="ae-note ae-warn" style={{ marginBottom: 12 }}>Portal configuration is read-only. An authorized district administrator or IT must use the reviewed setup process to change repository configuration.</div>}<div className="ae-note">{AE_ACTIVE_FW.id === 'pa_act13' ? 'Framework snapshot: Pennsylvania Act 13 classroom-teacher framework, June 2021. Full performance-level rubric text is not bundled.' : (AE_ACTIVE_FW.id === 'portland_me' ? 'Framework: Portland PEPG guidebook profile — the current district plan governs. Summative Professional Practice uses the guidebook’s categorical decision matrix, not a numeric average. Confirm the guidebook version and evidence expectations before official use.' : 'Framework: Maine PEPG — the district plan governs. Rating-level labels shown are Maine State Model defaults; confirm labels, cut points, and category weights against your district’s PEPG plan. Full rubric text is not bundled.')}</div></section>
+      {isRemote && canConfigure ? <AeReviewedWorkspaceConfiguration workspace={workspace} repository={repository} onReload={onReload}/> : <section className="ae-card ae-span-6"><h3>Workspace setup</h3><fieldset disabled={!canConfigure} style={{ border: 0, padding: 0, margin: 0 }}><label className="ae-field"><span>Organization / LEA</span><input className="ae-input" value={workspace.config.organization} onChange={(event) => set('organization', event.target.value)}/></label><div className="ae-form-grid"><label className="ae-field"><span>Building</span><input className="ae-input" value={workspace.config.building} onChange={(event) => set('building', event.target.value)}/></label><label className="ae-field"><span>Academic year</span><input className="ae-input" value={workspace.config.academicYear} onChange={(event) => set('academicYear', event.target.value)}/></label><label className="ae-field"><span>Evaluator name</span><input className="ae-input" value={workspace.config.evaluatorName} onChange={(event) => set('evaluatorName', event.target.value)}/></label><label className="ae-field"><span>Evaluator initials</span><input className="ae-input" value={workspace.config.evaluatorInitials} onChange={(event) => set('evaluatorInitials', event.target.value)}/></label><label className="ae-field ae-field-wide"><span>Evaluation framework</span><select className="ae-select" value={workspace.config.frameworkProfile || 'pa_act13'} onChange={(event) => set('frameworkProfile', event.target.value)}>{Object.keys(AE_FRAMEWORKS).map((id) => <option key={id} value={id}>{AE_FRAMEWORKS[id].name}</option>)}</select></label>{workspace.config.frameworkProfile === 'maine_pepg' && <label className="ae-field ae-field-wide"><span>Professional Practice weight (%) — optional; SLG measures are a district choice under the 2019 amendments</span><input className="ae-input" type="number" min="0" max="100" step="1" value={workspace.config.pepgPracticeWeight == null ? '' : workspace.config.pepgPracticeWeight} onChange={(event) => set('pepgPracticeWeight', event.target.value)} placeholder="e.g. 75 — Student Learning & Growth gets the rest"/></label>}</div></fieldset>{isRemote && <div className="ae-note ae-warn" style={{ marginBottom: 12 }}><strong>District configuration is read-only here.</strong><br/>An authorized portal administrator must review and explicitly confirm any organization, year, framework, weight, or AI-policy change.</div>}<div className="ae-note">{AE_ACTIVE_FW.id === 'pa_act13' ? 'Framework snapshot: Pennsylvania Act 13 classroom-teacher framework, June 2021. Full performance-level rubric text is not bundled.' : (AE_ACTIVE_FW.id === 'portland_me' ? 'Framework: Portland PEPG guidebook profile — the current district plan governs. Summative Professional Practice uses the guidebook’s categorical decision matrix, not a numeric average. Confirm the guidebook version and evidence expectations before official use.' : 'Framework: Maine PEPG — the district plan governs. Rating-level labels shown are Maine State Model defaults; confirm labels, cut points, and category weights against your district’s PEPG plan. Full rubric text is not bundled.')}</div></section>}
       <section className="ae-card ae-span-6"><h3>Official references</h3>{AE_ACTIVE_FW.id === 'pa_act13' ? <ul><li><a className="ae-link" target="_blank" rel="noreferrer" href="https://www.pa.gov/agencies/education/programs-and-services/educators/educator-effectiveness">Pennsylvania Department of Education · Educator Effectiveness</a></li><li><a className="ae-link" target="_blank" rel="noreferrer" href="https://www.pacodeandbulletin.gov/secure/pacode/data/022/chapter19/s19.2a.html">22 Pa. Code § 19.2a · Classroom teachers</a></li><li><a className="ae-link" target="_blank" rel="noreferrer" href="https://www.pdesas.org/Page/Viewer/ViewPage/75">PDE/SAS Act 13 Toolkit</a></li><li><a className="ae-link" target="_blank" rel="noreferrer" href="https://danielsongroup.org/the-framework-for-teaching/">Danielson Group · Framework access and licensing</a></li></ul> : <ul><li><a className="ae-link" target="_blank" rel="noreferrer" href="https://www.maine.gov/doe/educators/educatoreval/educator">Maine DOE · Educator Effectiveness (PEPG)</a></li><li><a className="ae-link" target="_blank" rel="noreferrer" href="https://legislature.maine.gov/statutes/20-A/title20-Ach508sec0.html">20-A M.R.S.A. ch. 508 · Educator Effectiveness</a></li><li><a className="ae-link" target="_blank" rel="noreferrer" href="https://www.law.cornell.edu/regulations/maine/department-05/division-071/chapter-180">DOE Rule Chapter 180 · PEPG Systems</a></li><li><a className="ae-link" target="_blank" rel="noreferrer" href="https://danielsongroup.org/the-framework-for-teaching/">Danielson Group · Framework access and licensing</a></li></ul>}{AE_ACTIVE_FW.id === 'pa_act13' ? <div className="ae-note ae-warn">The older 50% observation model is not the default current Act 13 classroom-teacher composition. This workspace uses assignment-aware 70/10/10/10, 80% O&amp;P where Building Level Data is unavailable, and 100% O&amp;P for temporary classroom teachers.</div> : <div className="ae-note ae-warn">Maine PEPG systems are LOCAL: the district plan — built with a steering committee that must have a teacher majority chosen by the bargaining unit, revising by consensus — defines the rubric, rating levels, category weights, and process. Since the 2019 amendments, student learning &amp; growth measures are a district choice, not a state mandate. This workspace mirrors that plan; it never substitutes for it. Enter the plan’s Professional Practice / Student Learning &amp; Growth split above.</div>}</section>
-      {role === 'evaluator' && <section className="ae-card ae-span-12"><details><summary>Advanced workspace options · AI reflection and custom rubric</summary><div style={{ paddingTop: 12 }}>{/* Off by default: this is the only feature that sends evaluation text off the device. */}<div className="ae-field ae-field-wide"><span>AI reflection (optional)</span><label style={{ display: 'flex', gap: 12, alignItems: 'flex-start', marginTop: 6 }}><input type="checkbox" style={{ width: 24, height: 24, flex: '0 0 auto' }} checked={!!workspace.config.aiReflectionEnabled} onChange={(event) => updateConfig('aiReflectionEnabled', event.target.checked)} /><span className="ae-help" style={{ margin: 0 }}>Let an evaluator ask a model to check whether the evidence they wrote supports the ratings they assigned, and what other readings it allows. <strong>This sends the selected educator's evidence notes and ratings to your configured AI provider.</strong> The reply is advisory, shown to the evaluator only, and never written into the record. Leave this off if policy does not permit AI in evaluation.</span></label></div><div className="ae-field ae-field-wide"><span>Custom rubric</span><p className="ae-help">Using <strong>{AE_ACTIVE_FW.name}</strong> <code>{AE_ACTIVE_FW.versionTag}</code>. Load district-approved domains and components as JSON.</p><div className="ae-btn-row"><button type="button" className="ae-btn" onClick={exportRubric}>Download current rubric</button><button type="button" className="ae-btn" onClick={() => rubricFileRef.current && rubricFileRef.current.click()}>Load a custom rubric</button><input ref={rubricFileRef} type="file" accept="application/json,.json" hidden tabIndex={-1} aria-label="Choose custom evaluation rubric JSON" onChange={(event) => { const file = event.target.files && event.target.files[0]; if (file) importRubric(file); event.target.value = ''; }}/>{workspace.config.customRubric && <button type="button" className="ae-btn" onClick={clearRubric}>Restore the built-in rubric</button>}</div></div></div></details></section>}
+      {canConfigure && !isRemote && <section className="ae-card ae-span-12"><details><summary>Advanced workspace options · AI reflection and custom rubric</summary><div style={{ paddingTop: 12 }}>{/* Off by default: this is the only feature that sends evaluation text off the device. */}<div className="ae-field ae-field-wide"><span>AI reflection (optional)</span><label style={{ display: 'flex', gap: 12, alignItems: 'flex-start', marginTop: 6 }}><input type="checkbox" style={{ width: 24, height: 24, flex: '0 0 auto' }} checked={!!workspace.config.aiReflectionEnabled} onChange={(event) => updateConfig('aiReflectionEnabled', event.target.checked)} /><span className="ae-help" style={{ margin: 0 }}>Let an evaluator ask a model to check whether the evidence they wrote supports the ratings they assigned, and what other readings it allows. <strong>This sends the selected educator's evidence notes and ratings to your configured AI provider.</strong> The reply is advisory, shown to the evaluator only, and never written into the record. Leave this off if policy does not permit AI in evaluation.</span></label></div><div className="ae-field ae-field-wide"><span>Custom rubric</span><p className="ae-help">Using <strong>{AE_ACTIVE_FW.name}</strong> <code>{AE_ACTIVE_FW.versionTag}</code>. Load district-approved domains and components as JSON.</p><div className="ae-btn-row"><button type="button" className="ae-btn" onClick={exportRubric}>Download current rubric</button><button type="button" className="ae-btn" onClick={() => rubricFileRef.current && rubricFileRef.current.click()}>Load a custom rubric</button><input ref={rubricFileRef} type="file" accept="application/json,.json" hidden tabIndex={-1} aria-label="Choose custom evaluation rubric JSON" onChange={(event) => { const file = event.target.files && event.target.files[0]; if (file) importRubric(file); event.target.value = ''; }}/>{workspace.config.customRubric && <button type="button" className="ae-btn" onClick={clearRubric}>Restore the built-in rubric</button>}</div></div></div></details></section>}
+      {isRemote && canConfigure && <section className="ae-card ae-span-12"><h3>Approved rubric boundary</h3><p className="ae-sub">The district portal persists the approved built-in framework profiles shown above. Custom rubric JSON import is available only in a private on-device workspace and is intentionally unavailable here until the server can validate, version, license-review, and preserve that rubric for every affected record.</p><div className="ae-actions"><button type="button" className="ae-btn" onClick={exportRubric}>Download current rubric reference</button></div></section>}
       {(isRemote || (!isRemote && workspace.config.setupPath === 'local')) && <AeShareQr isRemote={isRemote} standalone={standalone} portalUrl={portalUrl}/>}
       {isRemote && currentUser && currentUser.role === 'admin' && repository && typeof repository.getSetupHealth === 'function' && <AeSetupHealth repository={repository}/>}
       {isRemote && currentUser && currentUser.role === 'admin' && repository && typeof repository.getAdminOperations === 'function' && <AeDistrictOperations workspace={workspace} repository={repository} onReload={onReload}/>}
@@ -2786,6 +3005,17 @@ function AeAbout({ workspace, updateConfig, role, isRemote = false, currentUser 
       {isRemote && <section className="ae-card ae-span-12"><h3>District-hosted portal boundary</h3><div className="ae-grid"><div className="ae-span-4"><h4>Verified identity</h4><p className="ae-sub">Signed in as {currentUser && currentUser.email ? currentUser.email : 'a managed district user'}. The server—not an emailed link—determines role and record assignments.</p></div><div className="ae-span-4"><h4>Repository and audit</h4><p className="ae-sub">The district repository validates authorized mutations, versions saves, filters reads, and records server-side audit events.</p></div><div className="ae-span-4"><h4>District responsibilities</h4><p className="ae-sub">The LEA still controls deployment, membership, assignments, retention, legal hold, incident response, approved forms, and licensed content.</p></div></div><div className="ae-note ae-warn"><strong>Google Workspace does not make a custom app automatically FERPA compliant.</strong> Use real records only after LEA authorization and review.</div></section>}
     </div>
   </div>;
+}
+function AeRemoteConflictReview({ conflict, onUseDistrict, onReplay }) {
+  if (!conflict) return null;
+  const collisions = Array.isArray(conflict.conflicts) ? conflict.conflicts : [];
+  return <div style={{ padding: '12px 20px 0' }}><section className="ae-card ae-danger" role="alert" aria-labelledby="ae-conflict-title">
+    <h3 id="ae-conflict-title">This record changed in another session</h3>
+    <p>The newest district version is loaded now. Your attempted work is held only in this page while you review it; nothing will overwrite the district record automatically.</p>
+    {conflict.appliedCount > 0 && <div className="ae-note ae-ok" style={{ marginTop: 10 }}><strong>{conflict.appliedCount} non-conflicting change{conflict.appliedCount === 1 ? '' : 's'} can be safely replayed.</strong><br/>Any overlapping fields listed below will remain at the current district value.</div>}
+    {collisions.length > 0 && <div style={{ marginTop: 12 }}><h4>Overlapping changes kept from the district version</h4><dl className="ae-review-facts">{collisions.slice(0, 12).map((item, index) => <React.Fragment key={item.path + index}><dt>{item.path}</dt><dd><strong>District now:</strong> {aeConflictValue(item.current)}<br/><strong>Your attempt:</strong> {aeConflictValue(item.attempted)}</dd></React.Fragment>)}</dl>{collisions.length > 12 && <p className="ae-sub">{collisions.length - 12} additional overlapping fields are also being kept from the district version.</p>}</div>}
+    <div className="ae-actions" style={{ marginTop: 14 }}><button type="button" className="ae-btn" onClick={onUseDistrict}>Use district version</button>{conflict.appliedCount > 0 && <button type="button" className="ae-btn ae-btn-primary" onClick={onReplay}>Reapply only my non-conflicting work</button>}</div>
+  </section></div>;
 }
 function aeRemoteScopedWorkspace(value, currentUser) {
   const normalized = aeNormalizeWorkspace(value);
@@ -2833,6 +3063,7 @@ function EducatorEvaluationPanel(props) {
   const [pendingImport, setPendingImport] = React.useState(null);
   const [importUndo, setImportUndo] = React.useState(null);
   const [remoteState, setRemoteState] = React.useState(() => ({ status: isRemote ? 'loading' : 'local', error: '', currentUser: null, deployment: null, inFlight: false }));
+  const [remoteConflict, setRemoteConflict] = React.useState(null);
   const [notificationState, setNotificationState] = React.useState({ status: 'idle', error: '' });
   const [releaseShareState, setReleaseShareState] = React.useState({ status: 'idle', error: '', review: null, result: null });
   const dialogRef = React.useRef(null);
@@ -2926,6 +3157,7 @@ function EducatorEvaluationPanel(props) {
       remoteRevisionRef.current = Number.isInteger(revision) && revision >= 0 ? revision : 0;
       workspaceRef.current = normalized;
       setWorkspace(normalized);
+      setRemoteConflict(null);
       setRole(nextRole);
       setSelectedTeacherId(nextTeacherId);
       setTab(allowedViews.includes(requestedView) ? requestedView : 'overview');
@@ -3095,16 +3327,37 @@ function EducatorEvaluationPanel(props) {
       if (job.generation === remoteSaveGenerationRef.current) {
         setRemoteState((current) => ({ ...current, status: 'saved', error: '', inFlight: false }));
       }
-    }).catch((error) => {
+    }).catch(async (error) => {
       remoteInFlightRef.current = false;
       if (!remoteMountedRef.current || job.generation !== remoteSaveGenerationRef.current) return;
+      if (error && error.code === 'conflict') {
+        try {
+          const payload = await repository.bootstrap();
+          if (!payload || payload.ok === false) throw new Error((payload && (payload.error || payload.message)) || 'The current district record could not be retrieved.');
+          const currentUser = aePlainObject(payload.currentUser) ? payload.currentUser : remoteUserRef.current;
+          const latest = aeRemoteScopedWorkspace(payload.workspace, currentUser);
+          const revision = Number(payload.revision);
+          if (!latest || !Number.isInteger(revision) || revision < 0) throw new Error('The district portal returned an invalid current record.');
+          const merged = aeThreeWayMerge(job.baseWorkspace || job.workspace, job.workspace, latest);
+          remoteRevisionRef.current = revision;
+          remoteUserRef.current = currentUser;
+          workspaceRef.current = latest;
+          setWorkspace(latest);
+          setRemoteConflict({ latestWorkspace: latest, mergedWorkspace: merged.workspace, mutation: job.mutation, conflicts: merged.conflicts, appliedCount: merged.appliedCount });
+          setRemoteState((current) => ({ ...current, status: 'conflict', error: 'Another authorized session saved this record first.', currentUser, deployment: aePlainObject(payload.deployment) ? payload.deployment : current.deployment, inFlight: false }));
+          notify('Another authorized session saved first. The current district version is loaded; review whether to reapply only your non-conflicting work.', 'error');
+          return;
+        } catch (recoveryError) {
+          error = recoveryError;
+        }
+      }
       const message = String((error && error.message) || error || 'The district portal could not save this change.');
       setRemoteState((current) => ({ ...current, status: 'error', error: message, inFlight: false }));
       notify(message, 'error');
     });
   }, [isRemote, repository, notify]);
 
-  const queueRemoteSave = React.useCallback((snapshot, audit) => {
+  const queueRemoteSave = React.useCallback((snapshot, audit, baseSnapshot) => {
     if (!isRemote) return;
     const generation = ++remoteSaveGenerationRef.current;
     const mutation = audit ? {
@@ -3112,7 +3365,8 @@ function EducatorEvaluationPanel(props) {
       summary: aeString(audit.summary, 240, ''), entityType: aeString(audit.entityType, 60, ''),
       entityId: aeSafeId(audit.entityId, ''), version: Math.max(1, parseInt(audit.version, 10) || 1),
     } : null;
-    const job = { workspace: aeClone(snapshot), mutation, generation };
+    const carriedBase = remotePendingRef.current && remotePendingRef.current.baseWorkspace;
+    const job = { workspace: aeClone(snapshot), baseWorkspace: aeClone(carriedBase || baseSnapshot || workspaceRef.current), mutation, generation };
     const debounced = mutation && ['DRAFT_SAVED', 'PROFILE_UPDATED', 'CONFIG_UPDATED', 'RATING_UPDATED'].includes(mutation.event);
     if (debounced) {
       remotePendingRef.current = job;
@@ -3137,15 +3391,18 @@ function EducatorEvaluationPanel(props) {
       notify('Read-only educator preview: switch back to Evaluator, use an educator response packet, or open the authenticated district portal to make changes.', 'info');
       return;
     }
-    if (isRemote && (remoteInFlightRef.current || remoteState.status === 'error')) {
-      const waitMessage = remoteState.status === 'error'
+    if (isRemote && (remoteInFlightRef.current || remoteState.status === 'error' || remoteState.status === 'conflict' || remoteConflict)) {
+      const waitMessage = remoteState.status === 'conflict' || remoteConflict
+        ? 'Review the concurrent-edit comparison before making another change.'
+        : (remoteState.status === 'error'
         ? 'Reload the district copy before making another change.'
-        : 'Please wait for the current district save to finish before making another change.';
+        : 'Please wait for the current district save to finish before making another change.');
       announce(waitMessage);
       notify(waitMessage, 'error');
       return;
     }
-    const next = aeClone(workspaceRef.current);
+    const base = aeClone(workspaceRef.current);
+    const next = aeClone(base);
     mutator(next);
     const durableAudit = audit && !['DRAFT_SAVED', 'PROFILE_UPDATED', 'CONFIG_UPDATED'].includes(audit.event);
     if (durableAudit && !isRemote) {
@@ -3154,7 +3411,7 @@ function EducatorEvaluationPanel(props) {
     workspaceRef.current = next;
     setWorkspace(next);
     setImportUndo(null);
-    if (isRemote) queueRemoteSave(next, audit);
+    if (isRemote) queueRemoteSave(next, audit, base);
     if (message) {
       announce(message);
       notify(message, 'success');
@@ -3162,7 +3419,7 @@ function EducatorEvaluationPanel(props) {
         requestAnimationFrame(() => { const panel = document.getElementById('ae-panel'); if (panel) panel.focus(); });
       }
     }
-  }, [role, selectedTeacherId, announce, isRemote, queueRemoteSave, remoteState.status, localTeacherPreview, notify]);
+  }, [role, selectedTeacherId, announce, isRemote, queueRemoteSave, remoteState.status, remoteConflict, localTeacherPreview, notify]);
 
   const updateTeacher = (id, mutator, event, summary) => commit((next) => {
     const teacher = next.teachers.find((item) => item.id === id);
@@ -3593,7 +3850,7 @@ function EducatorEvaluationPanel(props) {
       try { rubric = aeNormalizeRubric(JSON.parse(String(reader.result || ''))); }
       catch (error) { notify('Rubric import failed: that file is not valid JSON.', 'error'); return; }
       if (!rubric) {
-        notify('Rubric import failed: every domain needs a unique id and a label.', 'error');
+        notify('Rubric import failed: use exactly d1, d2, d3, and d4; include bounded unique components; weighted domains must total 100%.', 'error');
         return;
       }
       applyRubric(rubric, 'Rubric loaded: ' + rubric.name);
@@ -3747,7 +4004,27 @@ function EducatorEvaluationPanel(props) {
     ['overview', 'Overview'], ['trends', 'Trends'], ['staff', 'Staff'], ['walkthroughs', 'Walkthroughs'], ['formal', 'Formal observations'], ['spm', 'SPM / SLO'], ['audit', 'Reports & audit'], ['about', 'Setup'],
   ];
   React.useEffect(() => { if (!tabs.some((item) => item[0] === tab)) setTab('overview'); }, [role]);
-  const blockRemoteMutation = (event) => { if (!isRemote || (!remoteState.inFlight && remoteState.status !== 'error')) return; event.preventDefault(); event.stopPropagation(); };
+  const useDistrictConflictVersion = () => {
+    if (!remoteConflict) return;
+    setRemoteConflict(null);
+    setRemoteState((current) => ({ ...current, status: 'saved', error: '', inFlight: false }));
+    announce('Current district version kept');
+    notify('Current district version kept. Your conflicting attempt was not applied.', 'success');
+  };
+  const replayRemoteConflict = () => {
+    if (!remoteConflict || remoteConflict.appliedCount < 1) return;
+    const replay = aeRemoteScopedWorkspace(remoteConflict.mergedWorkspace, remoteUserRef.current);
+    if (!replay) { notify('The safe replay could not be validated. Keep the district version and re-enter the change manually.', 'error'); return; }
+    const baseWorkspace = aeClone(remoteConflict.latestWorkspace);
+    const mutation = remoteConflict.mutation;
+    const generation = ++remoteSaveGenerationRef.current;
+    workspaceRef.current = replay;
+    setWorkspace(replay);
+    setRemoteConflict(null);
+    announce('Reapplying non-conflicting work');
+    enqueueRemoteSave({ workspace: aeClone(replay), baseWorkspace, mutation, generation });
+  };
+  const blockRemoteMutation = (event) => { if (!isRemote || (!remoteState.inFlight && remoteState.status !== 'error' && remoteState.status !== 'conflict')) return; event.preventDefault(); event.stopPropagation(); };
   const tabKey = (event, index) => { if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return; event.preventDefault(); let next = index; if (event.key === 'ArrowRight') next = (index + 1) % tabs.length; if (event.key === 'ArrowLeft') next = (index - 1 + tabs.length) % tabs.length; if (event.key === 'Home') next = 0; if (event.key === 'End') next = tabs.length - 1; setTab(tabs[next][0]); requestAnimationFrame(() => { const el = document.getElementById('ae-tab-' + tabs[next][0]); if (el) el.focus(); }); };
 
   const retryLocalRecovery = () => {
@@ -3832,9 +4109,9 @@ function EducatorEvaluationPanel(props) {
    which is the point of putting it in the header (2026-08-17). */
 href="https://alloflow-cdn.pages.dev/educator-evaluation-manual" target="_blank" rel="noopener noreferrer" aria-label="User manual (opens in a new tab)" title="How to run a full evaluation cycle, set up the district portal, and read the released summary">Manual</a>{!standalone && <button type="button" className="ae-close" onClick={onClose} aria-label="Close Educator Growth and Evaluation">×</button>}</div>
     </header>
-    {isRemote ? <div className={'ae-local-banner ae-remote-banner ' + (remoteState.status === 'error' ? 'ae-sync-error' : '')} role={remoteState.status === 'error' ? 'alert' : 'status'} aria-live="polite">
+    {isRemote ? <div className={'ae-local-banner ae-remote-banner ' + (['error', 'conflict'].includes(remoteState.status) ? 'ae-sync-error' : '')} role={['error', 'conflict'].includes(remoteState.status) ? 'alert' : 'status'} aria-live="polite">
       <strong>District Google account</strong>{' '}
-      <span>{remoteState.currentUser && remoteState.currentUser.email} · {role === 'teacher' ? 'Educator access' : 'Evaluator access'} · {remoteState.status === 'saving' ? 'Saving to district repository…' : (remoteState.status === 'error' ? 'Last change is not confirmed: ' + remoteState.error : 'Saved to district repository')}</span>
+      <span>{remoteState.currentUser && remoteState.currentUser.email} · {role === 'teacher' ? 'Educator access' : (remoteState.currentUser && remoteState.currentUser.role === 'admin' ? 'Administrator access' : 'Evaluator access')} · {remoteState.status === 'saving' ? 'Saving to district repository…' : (remoteState.status === 'conflict' ? 'Concurrent edit needs review' : (remoteState.status === 'error' ? 'Last change is not confirmed: ' + remoteState.error : 'Saved to district repository'))}</span>
       {remoteState.status === 'saved' && <button type="button" className="ae-btn" onClick={loadRemoteWorkspace}>Refresh</button>}
       {remoteState.status === 'error' && <button type="button" className="ae-btn" onClick={loadRemoteWorkspace}>Reload district copy</button>}
       {typeof repository.sendNotification === 'function' && <button type="button" className="ae-btn" disabled={!selectedTeacher || notificationState.status === 'sending' || remoteState.status === 'saving'} onClick={sendPortalNotice}>{notificationState.status === 'sending' ? 'Sending notice…' : (role === 'teacher' ? 'Email evaluator a portal notice' : 'Email educator a portal notice')}</button>}
@@ -3849,6 +4126,7 @@ href="https://alloflow-cdn.pages.dev/educator-evaluation-manual" target="_blank"
       {localSaveState.status === 'error' && <><button type="button" className="ae-btn" onClick={retryLocalSave}>Retry save</button><button type="button" className="ae-btn" onClick={() => { const recovery = Object.assign({}, workspaceRef.current, { kind: AE_EXPORT_KIND, exportedAt: aeNow(), recoveryReason: 'Emergency backup after local save failure' }); aeDownload('alloflow-emergency-backup-' + aeToday() + '.json', 'application/json', JSON.stringify(recovery, null, 2)); notify('Emergency workspace backup downloaded.', 'success'); }}>Download emergency backup</button></>}
     </div>}
     {localTeacherPreview && <div className="ae-local-banner ae-preview-banner" role="status"><strong>Read-only educator preview</strong><span>Use this perspective to inspect what an educator can see. Changes are blocked because local role switching is not authentication.</span></div>}
+    {isRemote && remoteConflict && <AeRemoteConflictReview conflict={remoteConflict} onUseDistrict={useDistrictConflictVersion} onReplay={replayRemoteConflict}/>}
     {operationNotice.text && <div className={'ae-operation-notice ' + (operationNotice.type === 'error' ? 'ae-operation-error' : (operationNotice.type === 'success' ? 'ae-operation-success' : ''))} role={operationNotice.type === 'error' ? 'alert' : 'status'} aria-live="polite"><span>{operationNotice.text}</span><button type="button" className="ae-btn ae-btn-quiet" onClick={() => setOperationNotice({ text: '', type: 'info', id: operationNotice.id })}>Dismiss</button></div>}
     {Number.isInteger(tourStep) && <AeGuidedTour
       step={tourStep}
@@ -3856,9 +4134,9 @@ href="https://alloflow-cdn.pages.dev/educator-evaluation-manual" target="_blank"
       onFinish={() => { setTourStep(null); notify('Guided sample tour closed. You can replay it from the header.', 'success'); }}
     />}
     <nav className="ae-tabs" role="tablist" aria-label="Evaluation workspace sections">{tabs.map(([id, label], index) => <button type="button" role="tab" key={id} id={'ae-tab-' + id} aria-selected={tab === id} aria-controls="ae-panel" tabIndex={tab === id ? 0 : -1} className="ae-tab" onClick={() => setTab(id)} onKeyDown={(event) => tabKey(event, index)}>{label}</button>)}</nav>
-    <main className="ae-main" id="ae-panel" role="tabpanel" tabIndex={-1} aria-labelledby={'ae-tab-' + tab} aria-busy={remoteState.inFlight ? 'true' : undefined} aria-disabled={isRemote && remoteState.status === 'error' ? 'true' : undefined} onClickCapture={blockRemoteMutation} onChangeCapture={blockRemoteMutation} onInputCapture={blockRemoteMutation} onSubmitCapture={blockRemoteMutation}>
+    <main className="ae-main" id="ae-panel" role="tabpanel" tabIndex={-1} aria-labelledby={'ae-tab-' + tab} aria-busy={remoteState.inFlight ? 'true' : undefined} aria-disabled={isRemote && ['error', 'conflict'].includes(remoteState.status) ? 'true' : undefined} onClickCapture={blockRemoteMutation} onChangeCapture={blockRemoteMutation} onInputCapture={blockRemoteMutation} onSubmitCapture={blockRemoteMutation}>
       {tab === 'overview' && <AeOverview workspace={workspace} selectedTeacher={selectedTeacher} setSelectedTeacherId={setSelectedTeacherId} role={role} aiReflectionEnabled={aiReflectionEnabled} askForReflection={askForReflection} reflection={reflection} updateTeacher={updateTeacher} setTab={setTab} readOnlyPreview={localTeacherPreview}/>}
-      {tab === 'trends' && <AeTrends workspace={workspace} selectedTeacher={selectedTeacher} setSelectedTeacherId={setSelectedTeacherId} role={role} isRemote={isRemote}/>}
+      {tab === 'trends' && <AeTrends workspace={workspace} selectedTeacher={selectedTeacher} setSelectedTeacherId={setSelectedTeacherId} role={role} isRemote={isRemote} repository={repository}/>}
       {tab === 'staff' && <AeStaff workspace={workspace} selectedTeacher={selectedTeacher} setSelectedTeacherId={setSelectedTeacherId} role={role} updateTeacher={updateTeacher} addTeacher={addTeacher} isRemote={isRemote} canAddStaff={!isRemote || !!(remoteState.currentUser && remoteState.currentUser.role === 'admin')}/>}
       {tab === 'walkthroughs' && <AeWalkthroughs workspace={workspace} selectedTeacher={selectedTeacher} setSelectedTeacherId={setSelectedTeacherId} role={role} createWalkthrough={createWalkthrough} publishWalkthrough={publishWalkthrough} addComment={addComment} acknowledgeWalkthrough={acknowledgeWalkthrough} isRemote={isRemote} readOnlyPreview={localTeacherPreview}/>}
       {tab === 'formal' && <AeFormalObservations workspace={workspace} selectedTeacher={selectedTeacher} setSelectedTeacherId={setSelectedTeacherId} role={role} createObservation={createObservation} updateObservation={updateObservation} updateTeacher={updateTeacher} addComment={addComment} readOnlyPreview={localTeacherPreview}/>}

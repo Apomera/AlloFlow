@@ -5,6 +5,7 @@ import path from 'node:path';
 const ROOT = path.resolve(__dirname, '..');
 const anti = fs.readFileSync(path.join(ROOT, 'AlloFlowANTI.txt'), 'utf8');
 const sharedActivitySource = fs.readFileSync(path.join(ROOT, 'shared_activity_source.jsx'), 'utf8');
+const assignmentCenterSource = fs.readFileSync(path.join(ROOT, 'view_assignment_center_source.jsx'), 'utf8');
 const copies = [
   anti,
   fs.readFileSync(path.join(ROOT, 'desktop/web-app/src/App.jsx'), 'utf8'),
@@ -85,20 +86,26 @@ describe('Assignment Control Center', () => {
     expect(hardened).not.toContain('Invalid');
   });
 
-  it('ships one derived control-center UI in every maintained shell', () => {
+  it('keeps the derived control-center presentation in its CDN source', () => {
+    expect(assignmentCenterSource).toContain('assignment-control-center-title');
+    expect(assignmentCenterSource).toContain('data-assignment-lifecycle={view.lifecycle}');
+    expect(assignmentCenterSource).toContain('Resource-only privacy mode: this link does not collect student progress or responses.');
+    expect(assignmentCenterSource).toContain('Export aggregate CSV');
+    expect(assignmentCenterSource).toContain("view.lifecycle === 'expired'");
+    expect(assignmentCenterSource).toContain('Revoked assignments cannot be copied because their hosted data is deleted.');
+  });
+
+  it('keeps one controller and lazy view bridge in every maintained shell', () => {
     copies.forEach(source => {
-      expect(source).toContain('Assignment Control Center');
+      expect(source).toContain("loadModule('AssignmentCenter'");
+      expect(source).toContain('<AssignmentCenterModal');
       expect(source).toContain("a: 'getactivityadmin'");
-      expect(source).toContain('data-assignment-lifecycle={row.lifecycle}');
-      expect(source).toContain('Resource-only privacy mode: this link does not collect student progress or responses.');
       expect(source).toContain("? { ...item, revokedAt: new Date().toISOString() }");
       expect(source).toContain("parsed.filter(item => item?.url).slice(0, 12)");
       expect(source).toContain("a: 'extendpack'");
       expect(source).toContain("a: 'clonepack'");
-      expect(source).toContain('Export aggregate CSV');
-      expect(source).toContain('revokeHomeworkAssignment(share)');
-      expect(source).toContain("row.lifecycle === 'expired'");
-      expect(source).toContain('Revoked assignments cannot be copied because their hosted data is deleted.');
+      expect(source).toContain('const revokeHomeworkAssignment = useCallback');
+      expect(source).not.toContain('data-assignment-lifecycle={view.lifecycle}');
     });
   });
 });
