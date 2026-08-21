@@ -163,9 +163,16 @@ window.StemLab = window.StemLab || {
 
           const W = 440, H = 320, pad = 45;
 
-          const xR = { xMin: (d.range && d.range.xMin) || -10, xMax: (d.range && d.range.xMax) || 10 };
+          const rawRange = d.range || {};
+          const finiteBound = (key, fallback) => Number.isFinite(rawRange[key]) ? rawRange[key] : fallback;
+          let xMin = finiteBound('xMin', -10), xMax = finiteBound('xMax', 10);
+          let yMin = finiteBound('yMin', -10), yMax = finiteBound('yMax', 10);
+          if (!(xMax > xMin)) { xMin = -10; xMax = 10; }
+          if (!(yMax > yMin)) { yMin = -10; yMax = 10; }
 
-          const yR = { yMin: (d.range && d.range.yMin) || -10, yMax: (d.range && d.range.yMax) || 10 };
+          const xR = { xMin: xMin, xMax: xMax };
+
+          const yR = { yMin: yMin, yMax: yMax };
 
           const toSX = x => pad + ((x - xR.xMin) / (xR.xMax - xR.xMin)) * (W - 2 * pad);
 
@@ -220,7 +227,8 @@ window.StemLab = window.StemLab || {
           const evalDeriv = x => (evalF(x + 0.001) - evalF(x - 0.001)) / 0.002;
 
           // Tangent line at trace point
-          var traceX = d.traceX || 0;
+          var traceCandidate = Number.isFinite(d.traceX) ? d.traceX : Math.max(xR.xMin, Math.min(xR.xMax, 0));
+          var traceX = Math.max(xR.xMin, Math.min(xR.xMax, traceCandidate));
           var traceY = evalF(traceX);
           var traceSlope = evalDeriv(traceX);
           var tangentInRange = traceY >= yR.yMin && traceY <= yR.yMax;
@@ -552,7 +560,7 @@ window.StemLab = window.StemLab || {
               React.createElement("p", { className: "mb-2 px-1 text-[10px] font-black uppercase tracking-[0.16em] text-slate-500" }, "Choose a function family"),
               React.createElement("div", { className: "grid grid-cols-2 gap-1.5 sm:grid-cols-3 lg:grid-cols-5", role: "group", "aria-label": "Function families" },
                 TYPES.map(function(tp) { return React.createElement("button", { key: tp.id, onClick: function() { setFnType(tp.id); },
-                  className: "min-h-[2.5rem] px-3 py-2 rounded-lg text-xs font-bold transition-all focus:outline-none focus:ring-2 focus:ring-indigo-400 " + (d.type === tp.id ? 'bg-indigo-600 text-white shadow-md' : 'bg-slate-100 text-slate-700 hover:bg-indigo-50')
+                  className: "min-h-[2.5rem] min-w-0 whitespace-normal break-words px-2 py-2 rounded-lg text-xs font-bold transition-all focus:outline-none focus:ring-2 focus:ring-indigo-400 " + (d.type === tp.id ? 'bg-indigo-600 text-white shadow-md' : 'bg-slate-100 text-slate-700 hover:bg-indigo-50')
                 }, tp.emoji + " " + tp.label); })
               )
             ),
@@ -777,7 +785,7 @@ window.StemLab = window.StemLab || {
             // ── Tangent Line Trace Slider ──
             React.createElement("div", { className: "bg-pink-50 rounded-lg p-2 border border-pink-200 mt-1" },
               React.createElement("div", { className: "flex items-center gap-2" },
-                React.createElement("span", { className: "text-xs font-bold text-pink-600" }, "\uD83D\uDCCC Trace: x = " + traceX.toFixed(1)),
+                React.createElement("span", { className: "text-xs font-bold text-pink-700" }, "\uD83D\uDCCC Trace: x = " + traceX.toFixed(1)),
                 React.createElement("input", { type: "range", min: xR.xMin, max: xR.xMax, step: 0.1, value: traceX, onChange: e => upd('traceX', parseFloat(e.target.value)), className: "flex-1 accent-pink-500", 'aria-label': __alloT('stem.funcgrapher.trace_x_position', 'Trace x position') }),
                 tangentInRange && React.createElement("span", { className: "text-[11px] font-mono text-pink-700" }, "f(" + traceX.toFixed(1) + ") = " + traceY.toFixed(2) + ", slope = " + traceSlope.toFixed(2))
               )
@@ -825,7 +833,7 @@ window.StemLab = window.StemLab || {
                   __alloT('stem.funcgrapher.where_the_function_crosses_the_y_axis_', "Where the function crosses the y-axis. This is the value of f(0) — simply plug in x = 0.")
                 ),
                 React.createElement("div", { className: "bg-white rounded-lg p-2 border border-emerald-100" },
-                  React.createElement("span", { className: "font-bold text-pink-600" }, __alloT('stem.funcgrapher.slope_tangent_line', "\uD83D\uDCCC Slope & Tangent Line: ")),
+                  React.createElement("span", { className: "font-bold text-pink-700" }, __alloT('stem.funcgrapher.slope_tangent_line', "\uD83D\uDCCC Slope & Tangent Line: ")),
                   __alloT('stem.funcgrapher.the_slope_tells_you_how_steep_the_func', "The slope tells you how steep the function is at any point. The tangent line touches the curve at exactly one point. Use the trace slider to explore!")
                 ),
                 React.createElement("div", { className: "bg-white rounded-lg p-2 border border-emerald-100" },
@@ -1470,7 +1478,7 @@ window.StemLab = window.StemLab || {
                 ),
                 aiError && React.createElement("p", { className: "text-[11px] text-rose-600", role: "alert" }, aiError),
                 aiText && React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed bg-white rounded-lg p-2 border border-purple-100" }, aiText),
-                !aiText && !aiLoading && !aiError && React.createElement("p", { className: "text-[11px] italic text-slate-500" }, __alloT('stem.funcgrapher.click_explain_for_the_ai_tutor_to_desc', "Click \u201CExplain\u201D for the AI tutor to describe this function at your chosen reading level."))
+                !aiText && !aiLoading && !aiError && React.createElement("p", { className: "text-[11px] italic text-slate-600" }, __alloT('stem.funcgrapher.click_explain_for_the_ai_tutor_to_desc', "Click \u201CExplain\u201D for the AI tutor to describe this function at your chosen reading level."))
               );
             })(),
 
@@ -1481,7 +1489,7 @@ window.StemLab = window.StemLab || {
                 React.createElement('h4', { className: 'text-sm font-bold text-indigo-700' }, __alloT('stem.funcgrapher.function_zoo_six_common_function_shape', 'Function Zoo \u2014 Six common function shapes'))
               ),
               React.createElement('div', { className: 'rounded-xl overflow-hidden border border-indigo-200', style: { background: '#020210', aspectRatio: '16/6' } },
-                React.createElement('p', { id: 'funcgrapher-zoo-description', className: srOnly }, 'Six coordinate plots compare common function shapes: linear is a straight rising line, quadratic is a U-shaped curve, cubic is an S-shaped curve, exponential rises increasingly quickly, logarithmic rises increasingly slowly, and sine repeats in a wave.'),
+                React.createElement('p', { id: 'funcgrapher-zoo-description', className: typeof srOnly === 'string' ? srOnly : 'sr-only', style: srOnly && typeof srOnly === 'object' ? srOnly : undefined }, 'Six coordinate plots compare common function shapes: linear is a straight rising line, quadratic is a U-shaped curve, cubic is an S-shaped curve, exponential rises increasingly quickly, logarithmic rises increasingly slowly, and sine repeats in a wave.'),
                 React.createElement('canvas', {
                   role: 'img',
                   'aria-label': 'Function Zoo comparison of six common function shapes',
@@ -1580,6 +1588,7 @@ window.StemLab = window.StemLab || {
                 short:    { label: __alloT('stem.funcgrapher.short_wave', '〰️ Short wave'), color: '#0891b2', bg: '#ecfeff', border: '#67e8f9' },
                 normal:   { label: __alloT('stem.funcgrapher.standard', '🟢 Standard'), color: '#059669', bg: '#ecfdf5', border: '#86efac' }
               }[state];
+              sm.color = { tallFast: '#b91c1c', tall: '#92400e', fast: '#6d28d9', short: '#155e75', normal: '#047857' }[state];
               return h('div', { className: 'mt-3 p-3 rounded-xl bg-white border border-violet-300 space-y-2' },
                 h('h3', { className: 'text-sm font-black text-violet-700' }, __alloT('stem.funcgrapher.wave_parameter_discovery', '🌊 Wave parameter discovery')),
                 h('p', { className: 'text-[11px] text-slate-700' }, __alloT('stem.funcgrapher.sliders_for_amplitude_frequency_phase_', 'Sliders for amplitude, frequency, phase. Discrete 5-state classification. No score, no reveal.')),

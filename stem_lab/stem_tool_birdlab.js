@@ -7185,7 +7185,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
     var bodyRx = w * 0.34, bodyRy = hh * 0.30;
     var cx = 23, baseY = 32;
     var cy = baseY - hh * 0.34;
-    return h('svg', { viewBox: '0 0 46 34', width: 46, height: 34 },
+    return h('svg', { viewBox: '0 0 46 34', width: 46, height: 34, 'aria-hidden': 'true' },
       h('g', { fill: '#4c4a57' },
         // tail, body, head, bill, one leg — the minimum that reads as a bird
         h('path', { d: 'M' + (cx - bodyRx * 0.7) + ' ' + cy + ' L' + (cx - bodyRx - w * 0.30) + ' ' + (cy + hh * 0.22)
@@ -16069,6 +16069,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                 // buttons rendered INSIDE this SVG (see below), so they share the
                 // same viewBox transform as the birds and stay glued to them.
                 h('svg', {
+                  role: 'group',
+                  'aria-label': 'Interactive bird habitat scene',
                   viewBox: sceneViewBox,
                   className: 'absolute inset-0 w-full h-full',
                   preserveAspectRatio: activeSceneLens.id === 'wide' ? 'xMidYMid meet' : 'xMidYMid slice',
@@ -24463,7 +24465,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           h('p', { className: 'text-sm text-slate-700 italic mb-4' }, __alloT('stem.birdlab.click_any_labeled_part_of_the_feather_', 'Click any labeled part of the feather to learn its name and function. Feathers are the most complex structure ever evolved.')),
           h('div', { className: 'grid grid-cols-1 lg:grid-cols-2 gap-6' },
             h('div', { className: 'bg-gradient-to-b from-sky-100 to-amber-50 rounded-xl p-6 shadow' },
-              h('svg', { viewBox: '0 0 400 420', style: { width: '100%', maxHeight: 500 } },
+              h('svg', { role: 'group', 'aria-label': 'Interactive feather anatomy diagram', viewBox: '0 0 400 420', style: { width: '100%', maxHeight: 500 } },
                 h('defs', null,
                   h('linearGradient', { id: 'featherShaft', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
                     h('stop', { offset: '0%', stopColor: '#fef3c7' }),
@@ -25669,7 +25671,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           h('p', { className: 'text-sm text-slate-700 italic mb-4' }, __alloT('stem.birdlab.the_body_parts_birders_use_for_id_clic', 'The body parts birders use for ID. Click each region of the bird to learn its name + when it matters.')),
           h('div', { className: 'grid grid-cols-1 lg:grid-cols-2 gap-6' },
             h('div', { className: 'bg-gradient-to-b from-sky-100 to-amber-50 rounded-xl p-6 shadow' },
-              h('svg', { viewBox: '0 0 280 360', style: { width: '100%', maxHeight: 500 } },
+              h('svg', { role: 'group', 'aria-label': 'Interactive bird topography diagram', viewBox: '0 0 280 360', style: { width: '100%', maxHeight: 500 } },
                 // Body
                 h('ellipse', { cx: 165, cy: 220, rx: 80, ry: 60, fill: '#92400e' }),
                 // Head

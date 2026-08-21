@@ -31299,7 +31299,17 @@
       "best": "最高",
       "menu_73": "← メニュー",
       "menu_74": "← メニュー",
-      "menu_75": "← メニュー"
+      "menu_75": "← メニュー",
+      "explore_the_road": "道路を探索",
+      "lane_change_without_signal": "ウインカーなしの車線変更",
+      "drove_in_oncoming_lane": "対向車線を走行",
+      "high_beams": "ハイビーム",
+      "left_signal": "左ウインカー",
+      "right_signal": "右ウインカー",
+      "braking": "ブレーキ",
+      "traction_loss": "トラクション低下",
+      "fog_low_beams_ok": "霧 — ロービームでOK",
+      "welcome_to_roadready": "RoadReadyへようこそ"
     },
     "schoolbehaviortoolkit": {
       "replacement_behaviors": "代替行動",

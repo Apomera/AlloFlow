@@ -29151,7 +29151,17 @@
       "best": "Καλύτερος",
       "menu_73": "← Μενού",
       "menu_74": "← Μενού",
-      "menu_75": "← Μενού"
+      "menu_75": "← Μενού",
+      "explore_the_road": "Εξερεύνησε τον δρόμο",
+      "lane_change_without_signal": "Αλλαγή λωρίδας χωρίς φλας",
+      "drove_in_oncoming_lane": "Οδήγηση στο αντίθετο ρεύμα",
+      "high_beams": "Μεγάλη σκάλα",
+      "left_signal": "Αριστερό φλας",
+      "right_signal": "Δεξί φλας",
+      "braking": "Φρενάρισμα",
+      "traction_loss": "Απώλεια πρόσφυσης",
+      "fog_low_beams_ok": "Ομίχλη — τα μεσαία φώτα είναι εντάξει",
+      "welcome_to_roadready": "Καλώς ήρθες στο RoadReady"
     },
     "schoolbehaviortoolkit": {
       "replacement_behaviors": "Replacement συμπεριφορά",

@@ -1508,6 +1508,11 @@ it('renders the immersive guided investigation tour and evidence note', () => {
     expect(html).toContain('Canvas visual key');
     expect(html).toContain('Selected station pulses amber');
     expect(html).toContain('Radar: light to intense');
+    expect(html).toContain('data-weather-snapshot-rail="true"');
+    expect(html).toContain('Live atmospheric snapshot');
+    expect(html).toContain('Dew-point gap');
+    expect(html).toContain('data-weather-moisture-meter="true"');
+    expect(html).toContain('Moisture closeness to saturation');
     expect(html).toContain('id="weather-map-description"');
     expect(html).toContain('Approaching Cold Front weather map at model hour 0.');
     expect(html).toContain('Visible layers include pressure contours, fronts, radar intensity and sweep, and directional wind tracers.');

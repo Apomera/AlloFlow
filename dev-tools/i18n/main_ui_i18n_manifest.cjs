@@ -122,6 +122,13 @@ const ENGLISH_ADDITIONS = {
   },
 };
 
+// Source-derived additions for the extracted Assignment Center and Directions
+// views. Keeping this catalog separate makes every new literal visible to the
+// normal main-UI parity gate without hand-copying a second key list.
+const { EXTRACTED_VIEW_ADDITIONS, EXTRACTED_VIEW_KEYS } = require('./extracted_view_i18n_catalog.cjs');
+Object.assign(ENGLISH_ADDITIONS, EXTRACTED_VIEW_ADDITIONS);
+const EXTRACTED_VIEW_KEY_SET = new Set(EXTRACTED_VIEW_KEYS);
+
 const LANGUAGE_CODES = {
   acholi: 'ach', amharic: 'am', arabic: 'ar', bengali: 'bn', burmese: 'my',
   chinese_simplified: 'zh-CN', chinese_traditional: 'zh-TW', chin_falam: 'cfm', chin_hakha: 'cnh',
@@ -138,7 +145,8 @@ const LANGUAGE_CODES = {
 };
 
 function isMainUiKey(key) {
-  return key.startsWith('readinglib_')
+  return EXTRACTED_VIEW_KEY_SET.has(key)
+    || key.startsWith('readinglib_')
     || key.startsWith('sidebar.tool_finder_')
     || key.startsWith('export_menu.')
     || key.startsWith('student_tools.')

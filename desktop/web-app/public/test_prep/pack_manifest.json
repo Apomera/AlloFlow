@@ -66,13 +66,13 @@
         "computer-delivered-selected-response"
       ],
       "packUrl": "./test_prep/eppp_part_one_pack.json",
-      "sha256": "c751047bd45e1e147beb74af4e2fbafc23cc5dbccde433835704bbddf860654d",
+      "sha256": "4e7bddd8538bf0a553f0daa85b91f06db9fcb33f34cc696c33ef7c1a8ff9b4be",
       "learningLibraryUrl": "https://alloflow-cdn.pages.dev/test_prep/eppp_learning_library.json",
       "learningLibraryQaUrl": "https://alloflow-cdn.pages.dev/test_prep/eppp_learning_library_qa.json",
       "nativeQaUrl": "https://alloflow-cdn.pages.dev/test_prep/eppp_native_qa.json",
       "learningLibrarySha256": "43544c9975e50d7d4c70c89a1d8ff241cb626682c1dd227a541a2c35343a1195",
       "learningLibraryQaSha256": "63b0544e41b62cada5effb60354dfe0de646c81b5fe1e001fedda01128657c35",
-      "nativeQaSha256": "e34df55df85b2464459eb724c2c002e15fb5bae38beb4b223085d6759cf69a7a"
+      "nativeQaSha256": "981e177c05e1cd9ccc8b6b76a71d517414d4ba5e7e63139660547a99385787bc"
     },
     {
       "id": "eppp-integrated-2027-preview",
@@ -940,15 +940,15 @@
       ],
       "title": "AP U.S. Government and Politics Independent Foundation Pilot",
       "shortTitle": "AP U.S. Government Foundation Pilot",
-      "description": "An independently authored 200-question AP U.S. Government and Politics foundation pilot spanning all five current units and all 60 current public framework topic IDs. Every topic has at least two practice angles, with expanded constitutional, institutional, source, data, argumentation, and item-linked study-route coverage for internal QA and study-route testing.",
+      "description": "An independently authored 260-question AP U.S. Government and Politics foundation pilot spanning all five current units and all 60 current public framework topic IDs. Every topic has at least three practice angles, including a transfer/application layer, with expanded constitutional, institutional, source, data, argumentation, and item-linked study-route coverage for internal QA and study-route testing.",
       "disclaimer": "Independent, unofficial AP U.S. Government and Politics preparation material for internal foundation-pilot development only. Not affiliated with, endorsed by, or authored by College Board. This pilot does not provide official scores, score predictions, college-credit predictions, or a substitute for civics instruction.",
       "credentialOwner": "College Board",
       "status": "preview",
-      "version": "0.4.0-internal-preview",
+      "version": "0.6.0-internal-preview",
       "blueprintLabel": "AP U.S. Government and Politics Course and Exam Description, effective Fall 2026, Course Framework V.1",
       "blueprintEffective": "Fall 2026 CED; current official public reference reviewed 2026-08-20.",
       "officialBlueprintUrl": "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description.pdf",
-      "itemCount": 200,
+      "itemCount": 260,
       "domainCount": 5,
       "itemSchemaVersion": 2,
       "responseTypes": [
@@ -958,12 +958,12 @@
         "fully-digital"
       ],
       "packUrl": "./test_prep/ap_us_government_foundation_pilot.json",
-      "sha256": "ceb0991c6116609727f75a3960edbfc58399a5eb1cd6f80ae5f2a47619f6f402",
+      "sha256": "d104d5a47b3e798a0cb1c1fd47b887f12f398f6cbf31b8be6d0b7867cb8f691a",
       "learningLibraryUrl": "./test_prep/ap_us_government_foundation_pilot_learning_library.json",
       "learningLibraryQaUrl": "",
       "nativeQaUrl": "./test_prep/ap_us_government_foundation_pilot_qa.json",
-      "learningLibrarySha256": "90fcaa36282dd2ee796684c4655e13d8f65907b4833b57faabbe2eac108430c2",
-      "nativeQaSha256": "84d26499dc32a71b3c1d3b9e4cbb8a99b5c958984d4c83393457b97fbd6b07a0"
+      "learningLibrarySha256": "f5b57a381db9d3f5e3d82afb8607714a2a4b365395b9bda105ba751e5bc6b30f",
+      "nativeQaSha256": "e6d467a98fcbefb2e288efdd6ed2dc9a3baa890e8a552c04d0b578bd5a7130f8"
     },
     {
       "id": "ap-statistics-foundation-pilot",
@@ -974,15 +974,15 @@
       ],
       "title": "AP Statistics Independent Foundation Pilot",
       "shortTitle": "AP Statistics Foundation Pilot",
-      "description": "An independently authored 200-question AP Statistics foundation pilot spanning the five revised Fall 2026 units. It tests the blueprint crosswalk, statistical-practice metadata, native learning routes, and unscored response planning before any official or release-ready expansion.",
+      "description": "An independently authored 240-question AP Statistics foundation pilot spanning the five revised Fall 2026 units. It tests the blueprint crosswalk, statistical-practice metadata, native learning routes, and unscored response planning before any official or release-ready expansion.",
       "disclaimer": "Independent, unofficial AP Statistics preparation material for internal foundation-pilot development only. Not affiliated with, endorsed by, or authored by College Board. This pilot does not provide official scores, score predictions, college-credit predictions, or automated FRQ scores.",
       "credentialOwner": "College Board",
       "status": "preview",
-      "version": "0.2.0-internal-preview",
+      "version": "0.3.0-internal-preview",
       "blueprintLabel": "AP Statistics Course and Exam Description, effective Fall 2026, Course Framework V.1",
       "blueprintEffective": "Fall 2026 CED; current official public reference reviewed 2026-08-20.",
       "officialBlueprintUrl": "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
-      "itemCount": 200,
+      "itemCount": 240,
       "domainCount": 5,
       "itemSchemaVersion": 2,
       "responseTypes": [
@@ -992,12 +992,12 @@
         "fully-digital"
       ],
       "packUrl": "./test_prep/ap_statistics_foundation_pilot.json",
-      "sha256": "e5d2ea422b446739e01083a48315359c31c18bc5960c9949bbaf5fecfa010ba6",
+      "sha256": "2e6f11afd9fb5e3fb35242521ea16507e37bcbbe26d08267996d5039b6c720b1",
       "learningLibraryUrl": "./test_prep/ap_statistics_foundation_pilot_learning_library.json",
       "learningLibraryQaUrl": "",
       "nativeQaUrl": "./test_prep/ap_statistics_foundation_pilot_qa.json",
-      "learningLibrarySha256": "5667965755ee21dcfe4bba7d321f22acb3b1497b3915c34d5bba3da13b20bc53",
-      "nativeQaSha256": "45091633d3af5e65fd7327ae7712e12aac28d9fb6a286df5d982a4de605fcdd5"
+      "learningLibrarySha256": "df48a9230bb841e630665f4e877e86e520952f91f345040c113d37d972515864",
+      "nativeQaSha256": "3be0b3c45c5124aaebc9b46074fb2e27bc65f37c78036caee664a6d3ffb07ece"
     },
     {
       "id": "ap-chemistry-foundation-pilot",
@@ -1008,15 +1008,15 @@
       ],
       "title": "AP Chemistry Independent Foundation Pilot",
       "shortTitle": "AP Chemistry Foundation Pilot",
-      "description": "An independently authored 180-question AP Chemistry foundation pilot spanning all nine current units. It tests the blueprint crosswalk, six chemistry science practices, quantitative routines, model analysis, laboratory reasoning, structured native chapters, and internal QA before any full-bank expansion.",
+      "description": "An independently authored 360-question AP Chemistry foundation pilot spanning all nine current units. It tests the blueprint crosswalk, six chemistry science practices, quantitative routines, model analysis, laboratory reasoning, structured native chapters, and internal QA before any release-ready expansion.",
       "disclaimer": "Independent, unofficial AP Chemistry preparation material for internal foundation-pilot development only. Not affiliated with, endorsed by, or authored by College Board. This pilot does not provide official scores, score predictions, college-credit predictions, laboratory competency, or a substitute for supervised laboratory work.",
       "credentialOwner": "College Board",
       "status": "preview",
-      "version": "0.1.0-internal-preview",
+      "version": "0.2.0-internal-preview",
       "blueprintLabel": "AP Chemistry Course and Exam Description, effective Fall 2024, Course Framework V.1",
       "blueprintEffective": "Fall 2024 CED; current official public reference reviewed 2026-08-20.",
       "officialBlueprintUrl": "https://apcentral.collegeboard.org/media/pdf/ap-chemistry-course-and-exam-description.pdf",
-      "itemCount": 180,
+      "itemCount": 360,
       "domainCount": 9,
       "itemSchemaVersion": 2,
       "responseTypes": [
@@ -1026,12 +1026,12 @@
         "hybrid-digital"
       ],
       "packUrl": "./test_prep/ap_chemistry_foundation_pilot.json",
-      "sha256": "b10bd4d9516dd5361d5073a6bd38855d56ae8fd57d9abafab3fff2640e36add4",
+      "sha256": "1117547827309db37c42841bbc76565e08c2c3c8e518fb817c763c7cd7a132c6",
       "learningLibraryUrl": "./test_prep/ap_chemistry_foundation_pilot_learning_library.json",
       "learningLibraryQaUrl": "",
       "nativeQaUrl": "./test_prep/ap_chemistry_foundation_pilot_qa.json",
-      "learningLibrarySha256": "f7309ceb15b34a2d105bc4c6850c218d2b71987844e2cf1c1cd5798a32d44752",
-      "nativeQaSha256": "f3e369ce24ac25f0645856ad28f8ea3b3576f5a057f3b50f30b934eec9f6477b"
+      "learningLibrarySha256": "b241c61b8576dece90922a7cb6813184e0c9d2e4519cd6b5542e04cca819d472",
+      "nativeQaSha256": "e11086d0b24b47c7be7c3ba362219dcf9b5b9223a117a9e2151a86709626e452"
     }
   ]
 }

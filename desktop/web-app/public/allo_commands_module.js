@@ -20,6 +20,18 @@ const _mkT = (rawT) => (k, f) => {
   }
   return r && r !== k ? r : f || k;
 };
+const tx = (ctx, key, fallback, params) => {
+  let result = null;
+  try {
+    result = ctx && typeof ctx.t === "function" ? ctx.t(key, params) : null;
+  } catch (_) {
+  }
+  result = result && result !== key ? String(result) : String(fallback || "");
+  if (params && typeof params === "object") Object.keys(params).forEach((name) => {
+    result = result.replace(new RegExp("\\{" + name + "\\}", "g"), String(params[name]));
+  });
+  return result;
+};
 const READING_STOPWORDS = new Set("a an and are as at be book books by can for from get give help i in into is it me my of on or read reading readings recommend right show some source sources story stories suggest text texts the to want what with learn about please".split(" "));
 const READING_LANGUAGE_HINTS = {
   english: "English",
@@ -728,7 +740,7 @@ function validatePlan(ctx, rawSteps, opts = {}) {
     items.push({
       index: i,
       commandId: step.commandId || "",
-      label: cmd && cmd.label || step.commandId || "Unknown command",
+      label: cmd && cmd.label || step.commandId || tx(ctx, "cmd.unknown", "Unknown command"),
       params: _contractPlanParams(step.params, contract),
       why: typeof step.why === "string" ? step.why.slice(0, 120) : "",
       status,
@@ -1099,9 +1111,9 @@ function buildAlloCommands(ctx, opts = {}) {
         return hit ? t("cmd.apply_lesson_template_done", "Started from ") + '"' + hit.name + '".' : t("cmd.apply_lesson_template_missing", "I could not find a template called ") + '"' + asked + '".';
       }
     },
-    { id: "open_command_blueprints", icon: "\u{1F9E9}", roles: "teacher", label: "Saved Command Blueprints", aliases: ["command blueprints", "saved command blueprints", "saved workflows", "workflow library", "saved plans", "command workflow library"], hint: "Open, review, and rerun saved multi-step command workflows", run: (c) => {
+    { id: "open_command_blueprints", icon: "\u{1F9E9}", roles: "teacher", label: t("cmd.open_command_blueprints", "Saved Command Blueprints"), aliases: ["command blueprints", "saved command blueprints", "saved workflows", "workflow library", "saved plans", "command workflow library"], hint: t("cmd.open_command_blueprints_hint", "Open, review, and rerun saved multi-step command workflows"), run: (c) => {
       c.openCommandBlueprintLibrary();
-      return "Saved Command Blueprints opened in AlloBot.";
+      return t("cmd.open_command_blueprints_done", "Saved Command Blueprints opened in AlloBot.");
     } },
     { id: "create_activity_rubric", icon: "\u{1F4D0}", roles: "teacher", requiresCapabilities: ["activityRubricGenerator"], label: t("cmd.create_activity_rubric", "Create a rubric for this activity"), aliases: ["create rubric", "make a rubric", "generate rubric", "rubric for this activity"], hint: t("cmd.create_activity_rubric_hint", "Generate observable, student-friendly success criteria"), run: (c) => {
       c.generateCurrentRubric();
@@ -1980,7 +1992,7 @@ function createNamedFieldCommandAdapter(options = {}) {
   const editField = (ctx, id, operation, value) => {
     if (typeof spec.editField === "function") return spec.editField(ctx || {}, id, operation, value);
     if (ctx && typeof ctx.editVoiceEditableField === "function") return ctx.editVoiceEditableField(id, operation, value);
-    return { ok: false, message: "That field cannot be edited by voice here." };
+    return { ok: false, message: tx(ctx, "voice_fields.edit_unavailable", "That field cannot be edited by voice here.") };
   };
   const fieldFor = (ctx, id) => resolveVoiceEditableField(getRawFields(ctx), id, getSelectedId(ctx)).field;
   const targetFailure = (ctx, reference) => {
@@ -2001,22 +2013,22 @@ function createNamedFieldCommandAdapter(options = {}) {
       return { fieldCount: fields.length, selectedFieldId: selected ? selected.id : "", selectedFieldLabel: selected ? selected.label : "" };
     },
     getCommands: (ctx) => [
-      { id: NAMED_FIELD_COMMAND_IDS.list, label: "List editable fields", risk: "none", confirmation: "never" },
-      { id: NAMED_FIELD_COMMAND_IDS.select, label: "Select an editable field", params: ["field"], risk: "none", confirmation: "never" },
-      { id: NAMED_FIELD_COMMAND_IDS.set, label: "Dictate into an editable field", params: ["field", "value"], risk: "state-change", confirmation: "low-confidence", confirmMessage: (_liveCtx, params) => {
+      { id: NAMED_FIELD_COMMAND_IDS.list, label: tx(ctx, "voice_fields.list", "List editable fields"), risk: "none", confirmation: "never" },
+      { id: NAMED_FIELD_COMMAND_IDS.select, label: tx(ctx, "voice_fields.select", "Select an editable field"), params: ["field"], risk: "none", confirmation: "never" },
+      { id: NAMED_FIELD_COMMAND_IDS.set, label: tx(ctx, "voice_fields.dictate", "Dictate into an editable field"), params: ["field", "value"], risk: "state-change", confirmation: "low-confidence", confirmMessage: (_liveCtx, params) => {
         const field = fieldFor(ctx, params && params.field);
-        return "Update " + (field ? field.label : "that field") + "? The dictated text will not be repeated. Say yes to confirm, or no to cancel.";
+        return tx(ctx, "voice_fields.confirm_update", "Update {field}? The dictated text will not be repeated. Say yes to confirm, or no to cancel.", { field: field ? field.label : "that field" });
       } },
-      { id: NAMED_FIELD_COMMAND_IDS.append, label: "Append to an editable field", params: ["field", "value"], risk: "state-change", confirmation: "low-confidence", confirmMessage: (_liveCtx, params) => {
+      { id: NAMED_FIELD_COMMAND_IDS.append, label: tx(ctx, "voice_fields.append", "Append to an editable field"), params: ["field", "value"], risk: "state-change", confirmation: "low-confidence", confirmMessage: (_liveCtx, params) => {
         const field = fieldFor(ctx, params && params.field);
-        return "Append to " + (field ? field.label : "that field") + "? The dictated text will not be repeated. Say yes to confirm, or no to cancel.";
+        return tx(ctx, "voice_fields.confirm_append", "Append to {field}? The dictated text will not be repeated. Say yes to confirm, or no to cancel.", { field: field ? field.label : "that field" });
       } },
-      { id: NAMED_FIELD_COMMAND_IDS.clear, label: "Clear an editable field", params: ["field"], risk: "destructive", confirmation: "always", confirmMessage: (_liveCtx, params) => {
+      { id: NAMED_FIELD_COMMAND_IDS.clear, label: tx(ctx, "voice_fields.clear", "Clear an editable field"), params: ["field"], risk: "destructive", confirmation: "always", confirmMessage: (_liveCtx, params) => {
         const field = fieldFor(ctx, params && params.field);
-        return "Clear " + (field ? field.label : "that field") + "? Its current value will not be read aloud. Say yes to confirm, or no to cancel.";
+        return tx(ctx, "voice_fields.confirm_clear", "Clear {field}? Its current value will not be read aloud. Say yes to confirm, or no to cancel.", { field: field ? field.label : "that field" });
       } },
-      { id: NAMED_FIELD_COMMAND_IDS.read, label: "Read an editable field", params: ["field"], risk: "none", confirmation: "never" },
-      { id: NAMED_FIELD_COMMAND_IDS.targetHelp, label: "Identify an editable field", params: ["field"], risk: "none", confirmation: "never" }
+      { id: NAMED_FIELD_COMMAND_IDS.read, label: tx(ctx, "voice_fields.read", "Read an editable field"), params: ["field"], risk: "none", confirmation: "never" },
+      { id: NAMED_FIELD_COMMAND_IDS.targetHelp, label: tx(ctx, "voice_fields.identify", "Identify an editable field"), params: ["field"], risk: "none", confirmation: "never" }
     ],
     help: (ctx) => normalizeVoiceEditableFields(getRawFields(ctx)).map((field, index) => index + 1 + ", " + field.label),
     parse: (text, ctx) => {
@@ -2116,17 +2128,17 @@ function createTutorialCommandAdapter(options = {}) {
     getCommands: (ctx) => {
       const state = getState(ctx);
       const commands = [
-        { id: "tutorial_describe", label: "Describe the tutorial step", risk: "none", confirmation: "never" },
-        { id: "tutorial_list_actions", label: "List tutorial actions", risk: "none", confirmation: "never" },
-        { id: "tutorial_previous", label: "Go to the previous tutorial step", risk: "state-change", confirmation: "never" },
-        { id: "tutorial_exit", label: "Exit the tutorial", risk: "state-change", confirmation: "never" }
+        { id: "tutorial_describe", label: tx(ctx, "tutorial.describe_step", "Describe the tutorial step"), risk: "none", confirmation: "never" },
+        { id: "tutorial_list_actions", label: tx(ctx, "tutorial.list_actions", "List tutorial actions"), risk: "none", confirmation: "never" },
+        { id: "tutorial_previous", label: tx(ctx, "tutorial.previous", "Go to the previous tutorial step"), risk: "state-change", confirmation: "never" },
+        { id: "tutorial_exit", label: tx(ctx, "tutorial.exit", "Exit the tutorial"), risk: "state-change", confirmation: "never" }
       ];
-      if (state.kind === "classic") commands.push({ id: "tutorial_next", label: "Go to the next tutorial step", risk: "state-change", confirmation: "never" });
+      if (state.kind === "classic") commands.push({ id: "tutorial_next", label: tx(ctx, "tutorial.next", "Go to the next tutorial step"), risk: "state-change", confirmation: "never" });
       if (state.kind === "guided") {
-        commands.push({ id: "tutorial_next", label: "Go to the next guided step", risk: "state-change", confirmation: "never" });
-        commands.push({ id: "tutorial_focus", label: "Focus the current guided tool", risk: "state-change", confirmation: "never" });
-        commands.push({ id: "tutorial_skip", label: "Skip the current guided step", risk: "state-change", confirmation: "low-confidence" });
-        commands.push({ id: "tutorial_review_latest", label: "Review the latest guided resource", risk: "state-change", confirmation: "never" });
+        commands.push({ id: "tutorial_next", label: tx(ctx, "tutorial.guided_next", "Go to the next guided step"), risk: "state-change", confirmation: "never" });
+        commands.push({ id: "tutorial_focus", label: tx(ctx, "tutorial.guided_focus", "Focus the current guided tool"), risk: "state-change", confirmation: "never" });
+        commands.push({ id: "tutorial_skip", label: tx(ctx, "tutorial.guided_skip", "Skip the current guided step"), risk: "state-change", confirmation: "low-confidence" });
+        commands.push({ id: "tutorial_review_latest", label: tx(ctx, "tutorial.guided_review_latest", "Review the latest guided resource"), risk: "state-change", confirmation: "never" });
       }
       return commands;
     },
@@ -2279,16 +2291,16 @@ function createGeneratedResourceCommandAdapter(options = {}) {
         hasFeedback: !!(state.current && state.current.hasFeedback)
       };
     },
-    getCommands: () => [
-      { id: "resource_list", label: "List available resources", risk: "none", confirmation: "never" },
-      { id: "resource_open", label: "Open a resource", params: ["position", "title"], risk: "state-change", confirmation: "never" },
-      { id: "resource_describe", label: "Describe the current resource", risk: "none", confirmation: "never" },
-      { id: "resource_read", label: "Read the current resource", risk: "none", confirmation: "never" },
-      { id: "resource_read_media", label: "Read media descriptions", risk: "none", confirmation: "never" },
-      { id: "resource_next", label: "Open the next resource", risk: "state-change", confirmation: "never" },
-      { id: "resource_previous", label: "Open the previous resource", risk: "state-change", confirmation: "never" },
-      { id: "resource_feedback", label: "Review feedback for this resource", risk: "none", confirmation: "never" },
-      { id: "resource_exit", label: "Exit the current resource", risk: "state-change", confirmation: "never" }
+    getCommands: (ctx) => [
+      { id: "resource_list", label: tx(ctx, "resources.list", "List available resources"), risk: "none", confirmation: "never" },
+      { id: "resource_open", label: tx(ctx, "resources.open", "Open a resource"), params: ["position", "title"], risk: "state-change", confirmation: "never" },
+      { id: "resource_describe", label: tx(ctx, "resources.describe", "Describe the current resource"), risk: "none", confirmation: "never" },
+      { id: "resource_read", label: tx(ctx, "resources.read", "Read the current resource"), risk: "none", confirmation: "never" },
+      { id: "resource_read_media", label: tx(ctx, "resources.read_media", "Read media descriptions"), risk: "none", confirmation: "never" },
+      { id: "resource_next", label: tx(ctx, "resources.next", "Open the next resource"), risk: "state-change", confirmation: "never" },
+      { id: "resource_previous", label: tx(ctx, "resources.previous", "Open the previous resource"), risk: "state-change", confirmation: "never" },
+      { id: "resource_feedback", label: tx(ctx, "resources.feedback", "Review feedback for this resource"), risk: "none", confirmation: "never" },
+      { id: "resource_exit", label: tx(ctx, "resources.exit", "Exit the current resource"), risk: "state-change", confirmation: "never" }
     ],
     help: () => ["list resources", "open resource 2", "open resource called Water Cycle", "describe resource", "read resource", "read media descriptions", "next resource", "previous resource", "exit resource"],
     parse: (raw, ctx) => {
@@ -3750,7 +3762,25 @@ function createVadSegmenter(opts) {
 var TRANSFORMERS_URL = "https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.3.1";
 var _whisperPipelinePromise = null;
 var _whisperPipelineModelId = null;
+function isIosCanvasVoiceSurface() {
+  try {
+    if (typeof window === "undefined" || window._isCanvasEnv !== true) return false;
+    if (window.AlloFlowVoice && typeof window.AlloFlowVoice.isIosCanvasVoiceSurface === "function") {
+      return !!window.AlloFlowVoice.isIosCanvasVoiceSurface();
+    }
+    if (window._isIOSCanvasEnv === true) return true;
+    var nav = typeof navigator !== "undefined" ? navigator : window.navigator;
+    var ua = String(nav && nav.userAgent || "");
+    var platform = String(nav && nav.platform || "");
+    return /iP(?:hone|ad|od)/i.test(ua) || platform === "MacIntel" && Number(nav && nav.maxTouchPoints) > 1;
+  } catch (_) {
+    return false;
+  }
+}
 function _getWhisperPipeline(profileOrLanguage) {
+  if (isIosCanvasVoiceSurface()) {
+    return Promise.reject(new Error("On-device Whisper is paused inside Gemini Canvas on iPhone or iPad to prevent the Canvas from restarting."));
+  }
   var profile = _coerceWhisperProfile(profileOrLanguage);
   if (!profile.supported || !profile.modelId) return Promise.reject(new Error("Whisper does not support " + profile.requestedLanguage + "."));
   if (!_whisperPipelinePromise || _whisperPipelineModelId !== profile.modelId) {
@@ -3917,6 +3947,7 @@ const micLevelMonitor = /* @__PURE__ */ (function() {
         if (refs === 0) teardown();
       };
       if (refs > 1 || analyser || starting) return release;
+      if (isIosCanvasVoiceSurface()) return release;
       const provided = acquireOpts && acquireOpts.stream;
       if (provided) {
         wire(provided, false);
@@ -4009,7 +4040,7 @@ function createVoiceLoop(getCtx, opts = {}) {
     const detail = {
       state,
       mode: "commands",
-      label: "Allo voice commands",
+      label: tx(getCtx(), "voice.commands_label", "Allo voice commands"),
       engine: activeRecognitionEngine,
       engineLabel: activeRecognitionEngineLabel,
       message: message || ""
@@ -4171,6 +4202,7 @@ function createVoiceLoop(getCtx, opts = {}) {
   const startBargeWatch = () => {
     stopBargeWatch();
     if (!active || paused) return;
+    if (isIosCanvasVoiceSurface()) return;
     const generation = bargeGeneration;
     const nav = typeof navigator !== "undefined" ? navigator : null;
     const Ctx = typeof window !== "undefined" ? window.AudioContext || window.webkitAudioContext : null;
@@ -4316,7 +4348,7 @@ function createVoiceLoop(getCtx, opts = {}) {
     if (!c || c.voiceSpeakReplies === false || voiceOutputMuted(c) || voiceReplyVolumeIsZero(c)) {
       if (c && voiceReplyVolumeIsZero(c) && typeof c.addToast === "function") {
         try {
-          c.addToast("Spoken reply volume is set to zero. Raise Voice volume in Settings to hear hands-free answers.", "warning");
+          c.addToast(tx(c, "voice.reply_volume_zero", "Spoken reply volume is set to zero. Raise Voice volume in Settings to hear hands-free answers."), "warning");
         } catch (_) {
         }
       }
@@ -4437,7 +4469,7 @@ function createVoiceLoop(getCtx, opts = {}) {
             browserFailureReported = true;
             if (c && typeof c.addToast === "function") {
               try {
-                c.addToast("I couldn't play the spoken reply. Check the app voice volume and your device audio output.", "warning");
+                c.addToast(tx(c, "voice.reply_playback_failed", "I couldn't play the spoken reply. Check the app voice volume and your device audio output."), "warning");
               } catch (_) {
               }
             }
@@ -4604,7 +4636,7 @@ function createVoiceLoop(getCtx, opts = {}) {
         }
       }
       clearPendingConfirmation();
-      if (active) announce("Confirmation timed out. Nothing was changed.");
+      if (active) announce(tx(getCtx(), "voice.confirmation_timed_out", "Confirmation timed out. Nothing was changed."));
     }, CONFIRMATION_TIMEOUT_MS);
   };
   const voiceCommandPrompt = (ctx, result) => {
@@ -4619,12 +4651,12 @@ function createVoiceLoop(getCtx, opts = {}) {
       const cmd = menu.find((item) => item.id === step.commandId);
       return index + 1 + ", " + (cmd && cmd.label ? cmd.label : step.commandId.replace(/_/g, " "));
     });
-    const detailPrompt = "This " + steps.length + " step plan is: " + names.join("; ") + ". Say yes to run this plan or no to cancel.";
+    const detailPrompt = tx(ctx, "voice.plan_detail", "This {count} step plan is: {steps}. Say yes to run this plan or no to cancel.", { count: steps.length, steps: names.join("; ") });
     if (steps.length <= 8) return { prompt: detailPrompt.replace(/^This/, "I prepared a"), detailPrompt };
     const opening = names.slice(0, 4).join("; ");
     const closing = names.slice(-2).join("; ");
     return {
-      prompt: "I prepared a long-horizon " + steps.length + " step lesson workflow. It starts with " + opening + "; continues through " + (steps.length - 6) + " reviewed steps; and finishes with " + closing + ". Say yes to run it, no to cancel, or repeat details for the complete sequence.",
+      prompt: tx(ctx, "voice.plan_long_prompt", "I prepared a long-horizon {count} step lesson workflow. It starts with {opening}; continues through {middle} reviewed steps; and finishes with {closing}. Say yes to run it, no to cancel, or repeat details for the complete sequence.", { count: steps.length, opening, middle: steps.length - 6, closing }),
       detailPrompt
     };
   };
@@ -4767,7 +4799,7 @@ function createVoiceLoop(getCtx, opts = {}) {
         }
         if (pending.kind === "kernel-command" && (!repeated || !repeated.confirmationRequired)) {
           clearPendingConfirmation();
-          announce(repeated && repeated.narration || "That confirmation expired. Please ask again.");
+          announce(repeated && repeated.narration || tx(getCtx(), "voice.confirmation_expired", "That confirmation expired. Please ask again."));
           return;
         }
         armPendingConfirmation(pending);
@@ -4782,7 +4814,7 @@ function createVoiceLoop(getCtx, opts = {}) {
           }
         }
         clearPendingConfirmation();
-        announce(pending.offered ? "Okay, I will leave that alone." : "Cancelled. Nothing was changed.");
+        announce(pending.offered ? tx(getCtx(), "voice.confirmation_left_alone", "Okay, I will leave that alone.") : tx(getCtx(), "voice.cancelled_no_change", "Cancelled. Nothing was changed."));
         return;
       }
       if (/^(?:yes|confirm(?: it)?|do it|go ahead|proceed)(?: please)?[.!]?$/i.test(text)) {
@@ -4791,51 +4823,51 @@ function createVoiceLoop(getCtx, opts = {}) {
           const result = commandKernel.confirm("yes", { channel: "voice" });
           const resolved = result && typeof result.then === "function" ? await result : result;
           if (!active) return;
-          if (!resolved || !resolved.handled || resolved.ok === false) announce(resolved && resolved.narration || "That action is no longer available here, so nothing was changed.");
-          else announce(resolved.narration || "Done.", !resolved.suppressVoiceReply);
+          if (!resolved || !resolved.handled || resolved.ok === false) announce(resolved && resolved.narration || tx(getCtx(), "voice.action_unavailable", "That action is no longer available here, so nothing was changed."));
+          else announce(resolved.narration || tx(getCtx(), "router.done", "Done."), !resolved.suppressVoiceReply);
           return;
         }
         if (pending.kind === "command") {
           const result = runCommandById(getCtx(), pending.commandId, pending.params, { confirmed: true, via: "voice-confirm" });
           const resolved = result && typeof result.then === "function" ? await result : result;
           if (!active) return;
-          if (!resolved || !resolved.handled) announce("That action is no longer available here, so nothing was changed.");
-          else announce(resolved.narration || "Done.");
+          if (!resolved || !resolved.handled) announce(tx(getCtx(), "voice.action_unavailable", "That action is no longer available here, so nothing was changed."));
+          else announce(resolved.narration || tx(getCtx(), "router.done", "Done."));
           return;
         }
         if (pending.kind === "plan") {
           const fresh = getCtx();
           const report = validatePlan(fresh, pending.steps, { allowInteractive: false, maxSteps: COMMAND_PLAN_MAX_STEPS });
           if (!report.ok) {
-            announce("That plan is no longer available in the current app state, so no steps ran.");
+            announce(tx(getCtx(), "voice.plan_unavailable", "That plan is no longer available in the current app state, so no steps ran."));
             return;
           }
           cancelRoute();
           const currentRouteSerial2 = ++routeSerial;
           const controller2 = typeof AbortController === "function" ? new AbortController() : null;
           routeController = controller2;
-          announce("Starting the confirmed plan.");
+          announce(tx(getCtx(), "voice.starting_confirmed_plan", "Starting the confirmed plan."));
           const result = await runPlan(() => getCtx(), pending.steps, {
             signal: controller2 ? controller2.signal : null,
             maxSteps: COMMAND_PLAN_MAX_STEPS,
             onStep: (index, phase, cmd) => {
               const number = index + 1;
               const label = cmd && cmd.label || "lesson step";
-              updateVoiceSession("processing", "Step " + number + " of " + pending.steps.length + ": " + label + ".");
-              if (phase === "done" && (number % 4 === 0 || number === pending.steps.length)) announce("Lesson workflow checkpoint: " + number + " of " + pending.steps.length + " steps complete.");
+              updateVoiceSession("processing", tx(getCtx(), "voice.plan_step_progress", "Step {current} of {total}: {label}.", { current: number, total: pending.steps.length, label }));
+              if (phase === "done" && (number % 4 === 0 || number === pending.steps.length)) announce(tx(getCtx(), "voice.plan_checkpoint", "Lesson workflow checkpoint: {current} of {total} steps complete.", { current: number, total: pending.steps.length }));
             }
           });
           if (!active || currentRouteSerial2 !== routeSerial) return;
           routeController = null;
-          if (result && result.ok) announce("Plan finished. " + pending.steps.length + " steps completed.");
+          if (result && result.ok) announce(tx(getCtx(), "voice.plan_finished", "Plan finished. {count} steps completed.", { count: pending.steps.length }));
           else {
             const remaining = result && Array.isArray(result.remainingSteps) ? result.remainingSteps : [];
             if (remaining.length && !result.timedOut) {
-              const resumePrompt = "The lesson workflow paused with " + remaining.length + " step" + (remaining.length === 1 ? "" : "s") + " remaining. Say yes to resume the exact remaining sequence, no to cancel, or repeat details.";
+              const resumePrompt = tx(getCtx(), "voice.plan_resume_prompt", "The lesson workflow paused with {count} step{plural} remaining. Say yes to resume the exact remaining sequence, no to cancel, or repeat details.", { count: remaining.length, plural: remaining.length === 1 ? "" : "s" });
               const resumePrompts = voicePlanPrompt(getCtx(), remaining);
               armPendingConfirmation({ kind: "plan", steps: remaining, prompt: resumePrompt, detailPrompt: resumePrompts.detailPrompt });
-              announce((result && result.reason || "The plan stopped before it finished.") + " " + resumePrompt);
-            } else announce(result && result.reason || "The plan stopped before it finished.");
+              announce((result && result.reason || tx(getCtx(), "voice.plan_stopped", "The plan stopped before it finished.")) + " " + resumePrompt);
+            } else announce(result && result.reason || tx(getCtx(), "voice.plan_stopped", "The plan stopped before it finished."));
           }
           return;
         }
@@ -4849,7 +4881,7 @@ function createVoiceLoop(getCtx, opts = {}) {
         }
         clearPendingConfirmation();
       } else {
-        announce("I am waiting for confirmation. Say yes to continue, no to cancel, or repeat details.");
+        announce(tx(getCtx(), "voice.waiting_for_confirmation", "I am waiting for confirmation. Say yes to continue, no to cancel, or repeat details."));
         return;
       }
     }
@@ -4864,7 +4896,7 @@ function createVoiceLoop(getCtx, opts = {}) {
             awake = false;
             awakeTimer = null;
           }, 12e3);
-          announce("Listening.");
+          announce(tx(getCtx(), "voice.listening", "Listening."));
           return;
         }
         text = wk.command;
@@ -4959,12 +4991,12 @@ function createVoiceLoop(getCtx, opts = {}) {
         if (status.state === "listening" && !engineAnnouncementMade) {
           engineAnnouncementMade = true;
           if (engineName === "gemini") {
-            announce("Gemini cloud transcription is active. Spoken audio is sent to Gemini one turn at a time.");
+            announce(tx(getCtx(), "voice.gemini_transcription_active", "Gemini cloud transcription is active. Spoken audio is sent to Gemini one turn at a time."));
           } else if (engineName === "whisper") {
-            announce(standby ? "On-device listening is waiting for hey Allo. Audio stays on this device." : "On-device Whisper is active. Audio stays on this device.");
+            announce(standby ? tx(getCtx(), "voice.whisper_waiting_for_wake", "On-device listening is waiting for hey Allo. Audio stays on this device.") : tx(getCtx(), "voice.whisper_active", "On-device Whisper is active. Audio stays on this device."));
           } else {
-            if (standbyWanted) announce("Hey Allo standby is available only with on-device Whisper. Regular listening is on instead.");
-            else announce("Browser speech recognition is active.");
+            if (standbyWanted) announce(tx(getCtx(), "voice.standby_requires_whisper", "Hey Allo standby is available only with on-device Whisper. Regular listening is on instead."));
+            else announce(tx(getCtx(), "voice.browser_speech_active", "Browser speech recognition is active."));
           }
         }
       },
@@ -5043,7 +5075,7 @@ function createVoiceLoop(getCtx, opts = {}) {
   const beginWebSpeech = (c, standbyWanted) => {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SR) {
-      stop("Voice control isn\u2019t available in this browser.");
+      stop(tx(getCtx(), "voice.browser_unavailable", "Voice control isn't available in this browser."));
       return;
     }
     try {
@@ -5052,7 +5084,7 @@ function createVoiceLoop(getCtx, opts = {}) {
       activeRecognitionEngineLabel = "Browser speech service";
       standby = false;
       updateVoiceSession("starting", "Starting browser speech recognition.", "Browser speech may send audio to the browser's speech service.");
-      if (standbyWanted) announce("\u201CHey Allo\u201D standby needs the on-device speech model \u2014 say \u201Cdownload voice models\u201D first. Tap-to-talk listening is on instead.");
+      if (standbyWanted) announce(tx(getCtx(), "voice.standby_model_required", "\u201CHey Allo\u201D standby needs the on-device speech model \u2014 say \u201Cdownload voice models\u201D first. Tap-to-talk listening is on instead."));
       rec = new SR();
       rec.continuous = true;
       rec.interimResults = true;
@@ -5084,7 +5116,7 @@ function createVoiceLoop(getCtx, opts = {}) {
       rec.onerror = (ev) => {
         errStreak++;
         if (ev && (ev.error === "not-allowed" || ev.error === "service-not-allowed")) {
-          stop("Microphone permission was denied \u2014 voice control stopped.");
+          stop(tx(getCtx(), "voice.microphone_permission_denied", "Microphone permission was denied \u2014 voice control stopped."));
           return;
         }
         if (errStreak >= 3) stop("Voice control stopped after repeated microphone errors.");
@@ -5101,7 +5133,7 @@ function createVoiceLoop(getCtx, opts = {}) {
       rec.start();
       startMicMeter(null);
     } catch (e) {
-      stop("Voice control could not start: " + (e && e.message || "unknown"));
+      stop(tx(getCtx(), "voice.control_start_failed", "Voice control could not start: {error}", { error: e && e.message || "unknown" }));
     }
   };
   const start = () => {
@@ -5116,9 +5148,9 @@ function createVoiceLoop(getCtx, opts = {}) {
       try {
         acquiredLease = coordinator.acquireVoiceSession("agent-command", {
           mode: "commands",
-          label: "Allo voice commands",
+          label: tx(c, "voice.commands_label", "Allo voice commands"),
           state: "starting",
-          message: "Starting voice control.",
+          message: tx(c, "voice.starting_control", "Starting voice control."),
           onStop: (reason) => {
             if (voiceLease === acquiredLease) voiceLease = null;
             stop(null, { skipVoiceLeaseRelease: true, voiceReason: reason || "replaced" });
@@ -5130,7 +5162,7 @@ function createVoiceLoop(getCtx, opts = {}) {
       }
     }
     active = true;
-    updateVoiceSession("starting", "Starting voice control.");
+    updateVoiceSession("starting", tx(c, "voice.starting_control", "Starting voice control."));
     errStreak = 0;
     awake = false;
     try {
@@ -5157,12 +5189,12 @@ function createVoiceLoop(getCtx, opts = {}) {
     try {
       if (_modelPolicy() === "auto") {
         if (!whisperProfile.supported) {
-          announce("The selected language is not supported by on-device Whisper; browser speech will be used when available.");
+          announce(tx(c, "voice.language_not_supported_whisper", "The selected language is not supported by on-device Whisper; browser speech will be used when available."));
         } else modelCache.hasWhisper(whisperProfile).then(function(has) {
           if (has) return;
-          announce("Downloading the " + (whisperProfile.key === "multilingual" ? "multilingual " : "") + "on-device speech model in the background (one time).");
+          announce(tx(c, "voice.downloading_model_background", "Downloading the {languagePrefix}on-device speech model in the background (one time).", { languagePrefix: whisperProfile.key === "multilingual" ? "multilingual " : "" }));
           return modelCache.prefetchWhisper(whisperProfile).then(function(r) {
-            announce("On-device speech model ready \u2014 " + Math.max(1, Math.round(r.bytes / 1048576)) + " MB cached on this device.");
+            announce(tx(c, "voice.model_ready_cached", "On-device speech model ready \u2014 {size} MB cached on this device.", { size: Math.max(1, Math.round(r.bytes / 1048576)) }));
           });
         }).catch(function(_) {
         });
@@ -5173,7 +5205,7 @@ function createVoiceLoop(getCtx, opts = {}) {
     const probeTimer = setTimeout(function() {
       if (engineChosen || !active) return;
       engineChosen = true;
-      announce("Using browser speech: the on-device model did not answer in time.");
+      announce(tx(c, "voice.browser_fallback_timeout", "Using browser speech: the on-device model did not answer in time."));
       beginWebSpeech(c, false);
     }, 2500);
     if (_voiceEnginePref() === "webspeech") {
@@ -5201,8 +5233,8 @@ function createVoiceLoop(getCtx, opts = {}) {
       standby = standbyWanted;
       return startWhisperEngine(whisperProfile).then(function() {
         if (!active) return;
-        updateVoiceSession("listening", standby ? "On-device recognition is waiting for Hey Allo." : "On-device recognition is listening.", "Audio stays on this device.");
-        announce(standby ? "On-device listening in standby \u2014 say \u201Chey Allo\u201D before a command. Audio never leaves this device." : "On-device recognition active \u2014 audio stays on this device.");
+        updateVoiceSession("listening", standby ? tx(c, "voice.whisper_waiting_for_wake", "On-device recognition is waiting for Hey Allo.") : tx(c, "voice.whisper_listening", "On-device recognition is listening."), tx(c, "voice.audio_local", "Audio stays on this device."));
+        announce(standby ? tx(c, "voice.whisper_standby_active", "On-device listening in standby \u2014 say \u201Chey Allo\u201D before a command. Audio never leaves this device.") : tx(c, "voice.whisper_active", "On-device recognition active \u2014 audio stays on this device."));
       });
     }).catch(function(e) {
       clearTimeout(probeTimer);
@@ -5210,7 +5242,7 @@ function createVoiceLoop(getCtx, opts = {}) {
       engineChosen = true;
       if (!active) return;
       whisperState = null;
-      announce("On-device engine could not start (" + (e && e.message || "unknown") + ") \u2014 using browser speech instead.");
+      announce(tx(c, "voice.whisper_start_failed", "On-device engine could not start ({error}) \u2014 using browser speech instead.", { error: e && e.message || "unknown" }));
       beginWebSpeech(c, false);
     });
     return true;
@@ -5224,11 +5256,11 @@ function createVoiceLoop(getCtx, opts = {}) {
     paused = true;
     stopMicMeter();
     clearPauseResumeTimer();
-    updateVoiceSession("paused", "Microphone paused.");
+    updateVoiceSession("paused", tx(getCtx(), "voice.microphone_paused", "Microphone paused."));
     cancelRoute();
     if (sharedRecognition && typeof sharedRecognition.pause === "function") {
       try {
-        sharedRecognition.pause({ releaseMic: true, message: "Microphone paused." });
+        sharedRecognition.pause({ releaseMic: true, message: tx(getCtx(), "voice.microphone_paused", "Microphone paused.") });
       } catch (_) {
       }
     } else try {
@@ -5266,9 +5298,9 @@ function createVoiceLoop(getCtx, opts = {}) {
         resume();
       };
       pauseResumeTimer = setTimeout(finishTimedPause, autoResumeMs);
-      announce("Paused for " + durationLabel + ". The microphone is off and will turn back on automatically.");
+      announce(tx(getCtx(), "voice.paused_for_duration", "Paused for {duration}. The microphone is off and will turn back on automatically.", { duration: durationLabel }));
     } else {
-      announce("Paused \u2014 the microphone is off. Resume when you're ready.");
+      announce(tx(getCtx(), "voice.paused_microphone_off", "Paused \u2014 the microphone is off. Resume when you're ready."));
     }
     return true;
   };
@@ -5282,8 +5314,8 @@ function createVoiceLoop(getCtx, opts = {}) {
         if (!resumed) throw new Error("Microphone could not resume.");
       } catch (e) {
         paused = true;
-        updateVoiceSession("paused", "Microphone could not resume.");
-        announce("Could not turn the microphone back on: " + (e && e.message || "unknown"));
+        updateVoiceSession("paused", tx(getCtx(), "voice.microphone_resume_failed", "Microphone could not resume."));
+        announce(tx(getCtx(), "voice.microphone_turn_on_failed", "Could not turn the microphone back on: {error}", { error: e && e.message || "unknown" }));
         return false;
       }
     } else if (engineName === "whisper" && whisperState) {
@@ -5304,8 +5336,8 @@ function createVoiceLoop(getCtx, opts = {}) {
         whisperState.src = src2;
       } catch (e) {
         paused = true;
-        updateVoiceSession("paused", "Microphone could not resume.");
-        announce("Could not turn the microphone back on: " + (e && e.message || "unknown"));
+        updateVoiceSession("paused", tx(getCtx(), "voice.microphone_resume_failed", "Microphone could not resume."));
+        announce(tx(getCtx(), "voice.microphone_turn_on_failed", "Could not turn the microphone back on: {error}", { error: e && e.message || "unknown" }));
         return false;
       }
     } else {
@@ -5316,7 +5348,7 @@ function createVoiceLoop(getCtx, opts = {}) {
     }
     if (!sharedRecognition) startMicMeter(engineName === "whisper" && whisperState ? whisperState.stream : null);
     updateVoiceSession("listening", "Listening for a command.");
-    announce("Listening again.");
+    announce(tx(getCtx(), "voice.listening_again", "Listening again."));
     return true;
   };
   return {
@@ -5798,7 +5830,7 @@ const AlloCommandPalette = ({ ctx }) => {
     }
     const favorites = favoriteCommandIds.map((id) => browseCommands.find((command) => command.id === id)).filter(Boolean);
     if (favorites.length) {
-      out.push({ kind: "header", label: "Favorites" });
+      out.push({ kind: "header", label: t("palette.group.favorites", "Favorites") });
       favorites.forEach((command) => {
         promotedIds.add(command.id);
         out.push({ kind: "cmd", c: command });
@@ -5829,7 +5861,7 @@ const AlloCommandPalette = ({ ctx }) => {
     }
     const frequent = getLocalCommandInsights().map((item) => browseCommands.find((command) => command.id === item.commandId)).filter((command) => command && !promotedIds.has(command.id)).slice(0, 5);
     if (frequent.length) {
-      out.push({ kind: "header", label: "Frequently used" });
+      out.push({ kind: "header", label: t("palette.group.frequent", "Frequently used") });
       frequent.forEach((command) => {
         promotedIds.add(command.id);
         out.push({ kind: "cmd", c: command });
@@ -6102,12 +6134,12 @@ const AlloCommandPalette = ({ ctx }) => {
         onClick: toggleSelectedFavorite,
         disabled: !selectedCommand || selectedCommand.available === false,
         "aria-pressed": selectedIsFavorite,
-        "aria-label": (selectedIsFavorite ? "Remove selected command from favorites" : "Pin selected command to favorites") + (selectedCommand ? ": " + selectedCommand.label : ""),
-        title: selectedIsFavorite ? "Remove from favorites" : "Pin to favorites",
+        "aria-label": (selectedIsFavorite ? t("palette.remove_selected_favorite", "Remove selected command from favorites") : t("palette.pin_selected_favorite", "Pin selected command to favorites")) + (selectedCommand ? ": " + selectedCommand.label : ""),
+        title: selectedIsFavorite ? t("palette.remove_favorite", "Remove from favorites") : t("palette.pin_favorite", "Pin to favorites"),
         className: "inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg text-lg text-amber-600 hover:bg-amber-50 disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-600"
       },
       /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, selectedIsFavorite ? "\u2605" : "\u2606")
-    ), /* @__PURE__ */ React.createElement("kbd", { className: "text-[10px] text-slate-500 border border-slate-300 rounded px-1.5 py-0.5" }, "Esc"), /* @__PURE__ */ React.createElement(
+    ), /* @__PURE__ */ React.createElement("kbd", { className: "text-[10px] text-slate-500 border border-slate-300 rounded px-1.5 py-0.5" }, t("palette.escape_key", "Esc")), /* @__PURE__ */ React.createElement(
       "button",
       {
         type: "button",
@@ -6192,7 +6224,7 @@ const AlloCommandProgress = ({ ctx }) => {
     if (!result || !result.handled) setItems((previous) => previous.map((entry) => entry.progressKey === item.progressKey ? Object.assign({}, entry, { narration: t("cmd.failed", "That command is no longer available here."), cancellable: false }) : entry));
   }, [ctx, t]);
   if (!items.length) return null;
-  return /* @__PURE__ */ React.createElement("section", { "aria-label": "Command progress", "data-help-ignore": "true", className: "fixed bottom-4 right-4 z-[11900] flex w-[min(24rem,calc(100vw-2rem))] flex-col gap-2 no-print" }, items.map((item) => {
+  return /* @__PURE__ */ React.createElement("section", { "aria-label": t("palette.command_progress", "Command progress"), "data-help-ignore": "true", className: "fixed bottom-4 right-4 z-[11900] flex w-[min(24rem,calc(100vw-2rem))] flex-col gap-2 no-print" }, items.map((item) => {
     const pending = item.status === "pending";
     const failed = item.status === "error";
     const cancelled = item.status === "cancelled";
@@ -6208,7 +6240,7 @@ const AlloCommandProgress = ({ ctx }) => {
         "aria-atomic": "true",
         className: `rounded-xl border p-3 shadow-xl ${failed ? "border-rose-300 bg-rose-50 text-rose-950" : cancelled ? "border-amber-300 bg-amber-50 text-amber-950" : item.status === "success" ? "border-emerald-300 bg-emerald-50 text-emerald-950" : "border-indigo-300 bg-white text-slate-900"}`
       },
-      /* @__PURE__ */ React.createElement("div", { className: "flex items-start gap-3" }, /* @__PURE__ */ React.createElement("span", { className: `mt-0.5 text-lg ${pending ? "animate-pulse" : ""}`, "aria-hidden": "true" }, pending ? "\u23F3" : failed ? "\u26A0\uFE0F" : cancelled ? "\u23F9\uFE0F" : "\u2705"), /* @__PURE__ */ React.createElement("div", { className: "min-w-0 flex-1" }, /* @__PURE__ */ React.createElement("p", { className: "text-xs font-bold" }, item.label || item.commandId), /* @__PURE__ */ React.createElement("p", { className: "mt-0.5 text-xs leading-5" }, item.narration || (pending ? t("cmd.working", "Working...") : cancelled ? t("cmd.cancelled", "Cancellation requested.") : t("router.done", "Done."))), /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex flex-wrap gap-2" }, pending && item.cancellable && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => cancel(item), "aria-label": cancelLabel, className: "min-h-9 rounded-lg border border-amber-500 bg-amber-50 px-3 text-xs font-bold text-amber-900 hover:bg-amber-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-700" }, "Cancel"), failed && item.retryable && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => retry(item), "aria-label": retryLabel, className: "min-h-9 rounded-lg bg-rose-700 px-3 text-xs font-bold text-white hover:bg-rose-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-700" }, "Retry"))), !pending && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => dismiss(item.progressKey), "aria-label": "Dismiss progress for " + (item.label || item.commandId), className: "inline-flex min-h-9 min-w-9 items-center justify-center rounded-lg text-lg hover:bg-black/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\xD7")))
+      /* @__PURE__ */ React.createElement("div", { className: "flex items-start gap-3" }, /* @__PURE__ */ React.createElement("span", { className: `mt-0.5 text-lg ${pending ? "animate-pulse" : ""}`, "aria-hidden": "true" }, pending ? "\u23F3" : failed ? "\u26A0\uFE0F" : cancelled ? "\u23F9\uFE0F" : "\u2705"), /* @__PURE__ */ React.createElement("div", { className: "min-w-0 flex-1" }, /* @__PURE__ */ React.createElement("p", { className: "text-xs font-bold" }, item.label || item.commandId), /* @__PURE__ */ React.createElement("p", { className: "mt-0.5 text-xs leading-5" }, item.narration || (pending ? t("cmd.working", "Working...") : cancelled ? t("cmd.cancelled", "Cancellation requested.") : t("router.done", "Done."))), /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex flex-wrap gap-2" }, pending && item.cancellable && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => cancel(item), "aria-label": cancelLabel, className: "min-h-9 rounded-lg border border-amber-500 bg-amber-50 px-3 text-xs font-bold text-amber-900 hover:bg-amber-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-700" }, t("cmd.cancel", "Cancel")), failed && item.retryable && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => retry(item), "aria-label": retryLabel, className: "min-h-9 rounded-lg bg-rose-700 px-3 text-xs font-bold text-white hover:bg-rose-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-700" }, t("cmd.retry", "Retry")))), !pending && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => dismiss(item.progressKey), "aria-label": t("palette.dismiss_progress", "Dismiss progress for {label}").replace("{label}", item.label || item.commandId), className: "inline-flex min-h-9 min-w-9 items-center justify-center rounded-lg text-lg hover:bg-black/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\xD7")))
     );
   }));
 };

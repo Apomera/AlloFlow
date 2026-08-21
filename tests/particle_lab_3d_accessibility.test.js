@@ -88,13 +88,53 @@ describe('Particle Lab 3D interaction surface accessibility contract', () => {
     expect(source).toContain("systemProbe || trace || transportMode ? 'bottom-[6rem]'");
   });
 
+  it('turns temperature settling into a compact accessible progress cue', () => {
+    expect(source).toContain('var temperatureProgress = clamp');
+    expect(source).toContain("role: 'progressbar', 'aria-label': 'Temperature settling toward setpoint'");
+    expect(source).toContain("'aria-valuetext': stats.temperature + ' K measured; setpoint ' + temperature + ' K'");
+    expect(source).toContain('transition-[width] duration-500');
+  });
+
+  it('provides a keyboard-friendly evidence timeline for recent measurements', () => {
+    expect(source).toContain("var [historyCursor, setHistoryCursor] = useState(-1)");
+    expect(source).toContain("id: 'particle-evidence-timeline'");
+    expect(source).toContain("id: 'particle-evidence-scrubber'");
+    expect(source).toContain("'aria-label': 'Evidence timeline sample'");
+    expect(source).toContain("'aria-label': 'Evidence markers'");
+    expect(source).toContain("'aria-label': 'Follow the latest measurement sample'");
+    expect(source).toContain("label: 'Collision burst'");
+    expect(source).toContain("label: 'Transport milestone'");
+    expect(source).toContain("label: 'Run start'");
+    expect(source).toContain('evidenceDeltaLabel = hasEvidence');
+    expect(source).toContain('Since run start: ΔT ');
+    expect(source).toContain('function selectTimelineIndex(nextIndex)');
+    expect(source).toContain('Following the latest measurement sample.');
+    expect(source).toContain('selectedX = metric.values.length > 1');
+    expect(source).toContain("historyCursor >= 0 && metric.values.length > 1 && h('line'");
+  });
+
+  it('turns the experiment loop into a guided next-action control', () => {
+    expect(source).toContain('var hasEvidence = history.some');
+    expect(source).toContain("var nextAction = !prediction.trim()");
+    expect(source).toContain("id: 'particle-prediction-input'");
+    expect(source).toContain("id: 'particle-observation-input'");
+    expect(source).toContain("id: 'particle-conclusion-input'");
+    expect(source).toContain('function focusGuidedTarget(targetId)');
+    expect(source).toContain('Guided experiment next action');
+    expect(source).toContain("nextAction.kind === 'run'");
+    expect(source).toContain("behavior: prefersReducedMotion ? 'auto' : 'smooth'");
+    expect(source).toContain("!hasEvidence ? { label: running ? 'Watch the chamber' : 'Run the experiment'");
+  });
+
   it('keeps compact controls touchable on small screens while preserving dense desktop layouts', () => {
     expect(source).toContain("className: 'min-h-11 rounded px-2 py-1 text-[10px] font-black uppercase tracking-wide sm:min-h-6");
     expect(source).toContain("className: 'min-h-11 rounded px-2 py-1 text-[10px] font-black sm:min-h-6");
     expect(source).toContain("pointer-events-auto -mr-1 flex min-h-11 min-w-11");
     expect(source).toContain("sm:min-h-6 sm:min-w-6");
-    expect(source).toContain("top-16 w-[min(11rem,calc(100%-1.5rem))]");
+    expect(source).toContain("top-16 w-[min(9.5rem,calc(100%-1.5rem))]");
     expect(source).toContain("sm:top-3 sm:w-auto sm:min-w-[150px]");
+    expect(source).toContain("left-3 top-24 w-[7.75rem]");
+    expect(source).toContain("sm:left-auto sm:right-3 sm:top-24 sm:w-[150px]");
   });
 
   it('keeps passive summaries out of the live announcement stream', () => {

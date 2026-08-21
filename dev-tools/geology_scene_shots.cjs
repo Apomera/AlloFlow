@@ -68,6 +68,8 @@ const shots = [
   { name: '05-ridge-spreading', scene: 'ridge', slice: 4 },
   { name: '06-hotspot-plume', scene: 'hotspot', slice: 4 },
   { name: '07-geode-dark', scene: 'geode', slice: 7, dark: true },
+  { name: '08-hotspot-island-chain-top', scene: 'hotspot', slice: 0, view: 'top' },
+  { name: '09-subduction-arc-surface', scene: 'subduction', slice: 0 },
 ];
 
 function viewportClip(page) {
@@ -96,6 +98,7 @@ function viewportClip(page) {
     await page.evaluate(({ scene, dark }) => window.__mountGeology({ scene, res: 'standard' }, dark), shot);
     await page.waitForFunction(() => !!window.__alloGeologyEngine && !!document.querySelector('canvas[data-geology-material-rendering]'));
     await page.evaluate((slice) => window.__alloGeologyEngine.setSlice(slice), shot.slice);
+    if (shot.view) await page.evaluate((view) => window.__alloGeologyEngine.setView(view), shot.view);
     await page.waitForTimeout(1200);
     const state = await page.evaluate(() => {
       const canvas = document.querySelector('canvas[data-geology-material-rendering]');
@@ -105,9 +108,17 @@ function viewportClip(page) {
         material: canvas && canvas.dataset.geologyMaterialRendering,
         atmosphere: canvas && canvas.dataset.geologyAtmosphereRendering,
         process: canvas && canvas.dataset.geologyProcessRendering,
+        processGuide: canvas && canvas.dataset.geologyProcessGuideRendering,
         cutaway: canvas && canvas.dataset.geologyCutawayRendering,
         surface: canvas && canvas.dataset.geologySurfaceRendering,
+        landform: canvas && canvas.dataset.geologyLandformRendering,
+        landformCount: canvas && canvas.dataset.geologyLandformCount,
         water: canvas && canvas.dataset.geologyWaterRendering,
+        waterMotion: canvas && canvas.dataset.geologyWaterMotionRendering,
+        surfaceEffect: canvas && canvas.dataset.geologySurfaceEffectRendering,
+        surfaceEffectCount: canvas && canvas.dataset.geologySurfaceEffectCount,
+        volcanicAtmosphere: canvas && canvas.dataset.geologyVolcanicAtmosphereRendering,
+        volcanicAtmosphereCount: canvas && canvas.dataset.geologyVolcanicAtmosphereCount,
         crystals: canvas && canvas.dataset.geologyCrystalRendering,
         quality: canvas && canvas.dataset.geologyRenderQuality,
         visual: window.__alloGeologyEngine.getVisualState(),
@@ -129,7 +140,7 @@ function viewportClip(page) {
   await mobile.waitForFunction(() => !!window.__alloGeologyEngine && !!document.querySelector('canvas[data-geology-material-rendering]'));
   await mobile.evaluate(() => window.__alloGeologyEngine.setSlice(2));
   await mobile.waitForTimeout(1000);
-  await mobile.screenshot({ path: path.join(OUT, '08-subduction-mobile.png'), fullPage: true, animations: 'disabled' });
+  await mobile.screenshot({ path: path.join(OUT, '10-subduction-mobile.png'), fullPage: true, animations: 'disabled' });
   const mobileState = await mobile.evaluate(() => ({
     documentWidth: document.documentElement.scrollWidth,
     viewportWidth: window.innerWidth,
@@ -138,7 +149,7 @@ function viewportClip(page) {
   if (mobileState.documentWidth > mobileState.viewportWidth + 1) {
     throw new Error('mobile horizontal overflow: ' + JSON.stringify(mobileState));
   }
-  console.log('08-subduction-mobile ' + JSON.stringify(mobileState));
+  console.log('10-subduction-mobile ' + JSON.stringify(mobileState));
 
   await browser.close();
   if (errors.length) {

@@ -46,39 +46,39 @@
       "semanticConceptDuplicateClusters": 35
     },
     "metricsAfter": {
-      "uniqueKeyStemLexicalLeakageCandidates": 47,
-      "asymmetricExtremeDistractorCandidates": 87,
-      "advancedDirectRecallCandidates": 3,
-      "semanticConceptDuplicatePairs": 47,
-      "semanticConceptDuplicateClusters": 32
+      "uniqueKeyStemLexicalLeakageCandidates": 0,
+      "asymmetricExtremeDistractorCandidates": 27,
+      "advancedDirectRecallCandidates": 0,
+      "semanticConceptDuplicatePairs": 0,
+      "semanticConceptDuplicateClusters": 0
     },
     "ceilingStatus": {
       "uniqueKeyStemLexicalLeakageCandidates": {
-        "value": 47,
+        "value": 0,
         "ceiling": 70,
         "met": true,
         "bufferedTarget": 65
       },
       "asymmetricExtremeDistractorCandidates": {
-        "value": 87,
+        "value": 27,
         "ceiling": 147,
         "met": true,
         "bufferedTarget": 140
       },
       "advancedDirectRecallCandidates": {
-        "value": 3,
+        "value": 0,
         "ceiling": 9,
         "met": true,
         "bufferedTarget": 7
       },
       "semanticConceptDuplicatePairs": {
-        "value": 47,
+        "value": 0,
         "ceiling": 120,
         "met": true,
         "bufferedTarget": 110
       },
       "semanticConceptDuplicateClusters": {
-        "value": 32,
+        "value": 0,
         "ceiling": 60,
         "met": true,
         "bufferedTarget": 55

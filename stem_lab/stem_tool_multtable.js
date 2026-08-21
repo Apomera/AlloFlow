@@ -1051,7 +1051,7 @@ window.StemLab = window.StemLab || {
                 (multTableHidden ? 'bg-pink-700 text-white border-pink-500 shadow-sm' : 'text-slate-600 bg-slate-100 border-slate-200 hover:bg-slate-200'),
               title: t('stem.multtable.toggle_hidden_mode_h_2', 'Toggle hidden mode (H)')
             }, multTableHidden ? '\uD83D\uDE48 Hidden' : '\uD83D\uDC41 Visible'),
-            h('div', { className: 'text-xs font-bold text-emerald-600' }, exploreScore.correct + '/' + exploreScore.total),
+            h('div', { className: 'text-xs font-bold text-emerald-700' }, exploreScore.correct + '/' + exploreScore.total),
             // Streak badge
             (_mt.streak || 0) >= 2 && h('div', { 
               className: 'text-xs font-bold text-orange-800 bg-orange-50 border border-orange-200 px-2 py-0.5 rounded-full animate-pulse motion-reduce:animate-none'
@@ -1113,7 +1113,7 @@ window.StemLab = window.StemLab || {
               role: 'tab', 'aria-selected': active,
               tabIndex: active ? 0 : -1,
               className: 'min-h-[2.5rem] min-w-max flex-1 whitespace-nowrap py-2 px-3 rounded-lg text-xs font-bold transition-all focus:outline-none focus:ring-2 focus:ring-pink-400 ' +
-                (active ? 'bg-white text-pink-800 shadow-sm' : 'text-pink-600 hover:text-pink-800')
+                (active ? 'bg-white text-pink-800 shadow-sm' : 'text-pink-700 hover:text-pink-800')
             }, tb.icon + ' ' + tb.label);
           })
         ),
@@ -1220,7 +1220,7 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'flex items-center justify-between' },
               h('span', { className: 'text-sm font-bold text-amber-800' },
                 'Speed Run \u2014 ' + Math.floor(_mt.timeLeft / 60) + ':' + String(_mt.timeLeft % 60).padStart(2, '0')),
-              h('span', { className: 'text-xs font-bold text-emerald-600' },
+              h('span', { className: 'text-xs font-bold text-emerald-700' },
                 '\u2705 ' + _mt.score + '/' + _mt.total)
             ),
             h('div', { className: 'w-full h-2 bg-amber-200 rounded-full mt-1 overflow-hidden' },
@@ -1459,7 +1459,7 @@ window.StemLab = window.StemLab || {
                 h('th', { scope: 'col', className: 'w-8 h-8 text-[11px] font-bold text-pink-400' }, '\u00D7'),
                 Array.from({ length: maxNum }).map(function(_, c) {
                   var isColHL = multTableHover && multTableHover.c === c + 1;
-                  return h('th', { scope: 'col', key: c, className: 'w-8 h-8 text-xs font-bold ' + (isColHL ? 'text-pink-700 bg-pink-100' : 'text-pink-500') }, c + 1);
+                  return h('th', { scope: 'col', key: c, className: 'w-8 h-8 text-xs font-bold ' + (isColHL ? 'text-pink-800 bg-pink-100' : 'text-pink-700') }, c + 1);
                 })
               )
             ),
@@ -1467,7 +1467,7 @@ window.StemLab = window.StemLab || {
               Array.from({ length: maxNum }).map(function(_, r) {
                 var isRowHL = multTableHover && multTableHover.r === r + 1;
                 return h('tr', { key: r },
-                  h('td', { className: 'w-8 h-8 text-xs font-bold ' + (isRowHL ? 'text-pink-700 bg-pink-100' : 'text-pink-500') }, r + 1),
+                  h('td', { className: 'w-8 h-8 text-xs font-bold ' + (isRowHL ? 'text-pink-800 bg-pink-100' : 'text-pink-700') }, r + 1),
                   Array.from({ length: maxNum }).map(function(_, c) {
                     var val = (r + 1) * (c + 1);
                     var isHovered = multTableHover && (multTableHover.r === r + 1 || multTableHover.c === c + 1);
@@ -1647,6 +1647,7 @@ window.StemLab = window.StemLab || {
             building:   { label: '🟡 Building (60-' + (iq.threshold-1) + '%)', color: '#d97706', bg: '#fffbeb', border: '#fcd34d' },
             mastered:   { label: '🟢 Mastered (≥' + iq.threshold + '%)', color: '#059669', bg: '#ecfdf5', border: '#86efac' }
           }[state];
+          sm.color = { struggling: '#b91c1c', building: '#92400e', mastered: '#047857' }[state];
           return h('div', { className: 'mt-3 p-3 rounded-xl bg-white border border-indigo-300 space-y-2' },
             h('h3', { className: 'text-sm font-black text-indigo-700' }, t('stem.multtable.fact_mastery_discovery', '🎯 Fact mastery discovery')),
             h('p', { className: 'text-[11px] text-slate-700' }, t('stem.multtable.sliders_for_mastery_threshold_and_sele', 'Sliders for mastery threshold and selected factor. Discrete 3-state outcome. No score, no reveal.')),

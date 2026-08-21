@@ -3,9 +3,9 @@
   "librarySchemaVersion": 1,
   "libraryId": "ap-statistics-foundation-pilot-learning-library",
   "packId": "ap-statistics-foundation-pilot",
-  "version": "0.2.0-internal-preview",
+  "version": "0.3.0-internal-preview",
   "title": "AP Statistics Foundation Pilot Learning Library",
-  "description": "A text-first, independently authored AP Statistics foundation library with five unit chapters, structured lessons, retrieval checks, study cards, memory aids, and explicitly unscored FRQ-planning workshops. It is not released, official, calibrated, or score-predictive.",
+  "description": "A text-first, independently authored AP Statistics foundation library with five unit chapters, section-linked practice routes, guided study routes, retrieval checks, study cards, memory aids, and explicitly unscored FRQ-planning workshops. It is not released, official, calibrated, or score-predictive.",
   "status": "preview",
   "visibility": "internal",
   "released": false,
@@ -17,8 +17,8 @@
     "cedFrameworkVersion": "V.1",
     "officialBlueprintUrl": "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
     "officialCourseUrl": "https://apcentral.collegeboard.org/courses/ap-statistics",
-    "pilotVersion": "ap-statistics-foundation-v2",
-    "pilotNote": "A 200-item foundation sampler across the five revised Fall 2026 units, with two hundred original single-choice items, native chapters, and unscored planning workshops.",
+    "pilotVersion": "ap-statistics-foundation-v3",
+    "pilotNote": "A 240-item foundation sampler across the five revised Fall 2026 units, with two hundred forty original single-choice items, fifteen section-linked practice routes, four guided study routes, native chapters, and nine unscored constructed-response planning workshops.",
     "skills": [
       {
         "id": "practice-1",
@@ -68,7 +68,7 @@
         ]
       }
     ],
-    "learningObjectiveCatalogVersion": "ap-statistics-foundation-v2",
+    "learningObjectiveCatalogVersion": "ap-statistics-foundation-v3",
     "learningObjectiveCatalog": [
       {
         "id": "1.1.A",
@@ -626,7 +626,7 @@
       "accessibilityReviewStatus": "pending-independent-review",
       "releaseEligible": false,
       "sectionCount": 3,
-      "knowledgeCheckCount": 3,
+      "knowledgeCheckCount": 6,
       "referenceCount": 3,
       "sections": [
         {
@@ -644,6 +644,67 @@
             "1.3",
             "1.4"
           ],
+          "practiceRoute": {
+            "itemIds": [
+              "ap-statistics-foundation-pilot-item-001",
+              "ap-statistics-foundation-pilot-item-002",
+              "ap-statistics-foundation-pilot-item-003",
+              "ap-statistics-foundation-pilot-item-004",
+              "ap-statistics-foundation-pilot-item-101",
+              "ap-statistics-foundation-pilot-item-102",
+              "ap-statistics-foundation-pilot-item-103",
+              "ap-statistics-foundation-pilot-item-104",
+              "ap-statistics-foundation-pilot-item-201",
+              "ap-statistics-foundation-pilot-item-202"
+            ],
+            "foundationItemIds": [
+              "ap-statistics-foundation-pilot-item-001",
+              "ap-statistics-foundation-pilot-item-002",
+              "ap-statistics-foundation-pilot-item-003",
+              "ap-statistics-foundation-pilot-item-004"
+            ],
+            "depthItemIds": [
+              "ap-statistics-foundation-pilot-item-101",
+              "ap-statistics-foundation-pilot-item-102",
+              "ap-statistics-foundation-pilot-item-103",
+              "ap-statistics-foundation-pilot-item-104"
+            ],
+            "transferItemIds": [
+              "ap-statistics-foundation-pilot-item-201",
+              "ap-statistics-foundation-pilot-item-202"
+            ],
+            "topicCounts": {
+              "1.1": 3,
+              "1.2": 2,
+              "1.3": 2,
+              "1.4": 3
+            },
+            "topicItemIds": {
+              "1.1": [
+                "ap-statistics-foundation-pilot-item-001",
+                "ap-statistics-foundation-pilot-item-101",
+                "ap-statistics-foundation-pilot-item-201"
+              ],
+              "1.2": [
+                "ap-statistics-foundation-pilot-item-002",
+                "ap-statistics-foundation-pilot-item-102"
+              ],
+              "1.3": [
+                "ap-statistics-foundation-pilot-item-003",
+                "ap-statistics-foundation-pilot-item-103"
+              ],
+              "1.4": [
+                "ap-statistics-foundation-pilot-item-004",
+                "ap-statistics-foundation-pilot-item-104",
+                "ap-statistics-foundation-pilot-item-202"
+              ]
+            },
+            "itemCount": 10,
+            "foundationItemCount": 4,
+            "depthItemCount": 4,
+            "transferItemCount": 2,
+            "studyMove": "Complete one foundation item, explain the statistical target in your own words, then use a depth item and a transfer item to apply the same reasoning in a new context."
+          },
           "references": [
             "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
             "https://apcentral.collegeboard.org/courses/ap-statistics",
@@ -783,7 +844,7 @@
           "accessibilityReviewStatus": "pending-independent-review",
           "contentComplete": true,
           "releaseEligible": false,
-          "contentEnhancementVersion": "ap-statistics-foundation-v2"
+          "contentEnhancementVersion": "ap-statistics-foundation-v3"
         },
         {
           "id": "ap-stats-ch-01-section-02",
@@ -800,6 +861,76 @@
             "1.7",
             "1.8"
           ],
+          "practiceRoute": {
+            "itemIds": [
+              "ap-statistics-foundation-pilot-item-005",
+              "ap-statistics-foundation-pilot-item-006",
+              "ap-statistics-foundation-pilot-item-007",
+              "ap-statistics-foundation-pilot-item-008",
+              "ap-statistics-foundation-pilot-item-020",
+              "ap-statistics-foundation-pilot-item-105",
+              "ap-statistics-foundation-pilot-item-106",
+              "ap-statistics-foundation-pilot-item-107",
+              "ap-statistics-foundation-pilot-item-108",
+              "ap-statistics-foundation-pilot-item-158",
+              "ap-statistics-foundation-pilot-item-159",
+              "ap-statistics-foundation-pilot-item-203",
+              "ap-statistics-foundation-pilot-item-204"
+            ],
+            "foundationItemIds": [
+              "ap-statistics-foundation-pilot-item-005",
+              "ap-statistics-foundation-pilot-item-006",
+              "ap-statistics-foundation-pilot-item-007",
+              "ap-statistics-foundation-pilot-item-008",
+              "ap-statistics-foundation-pilot-item-020"
+            ],
+            "depthItemIds": [
+              "ap-statistics-foundation-pilot-item-105",
+              "ap-statistics-foundation-pilot-item-106",
+              "ap-statistics-foundation-pilot-item-107",
+              "ap-statistics-foundation-pilot-item-108",
+              "ap-statistics-foundation-pilot-item-158",
+              "ap-statistics-foundation-pilot-item-159"
+            ],
+            "transferItemIds": [
+              "ap-statistics-foundation-pilot-item-203",
+              "ap-statistics-foundation-pilot-item-204"
+            ],
+            "topicCounts": {
+              "1.5": 2,
+              "1.6": 4,
+              "1.7": 4,
+              "1.8": 3
+            },
+            "topicItemIds": {
+              "1.5": [
+                "ap-statistics-foundation-pilot-item-005",
+                "ap-statistics-foundation-pilot-item-105"
+              ],
+              "1.6": [
+                "ap-statistics-foundation-pilot-item-006",
+                "ap-statistics-foundation-pilot-item-106",
+                "ap-statistics-foundation-pilot-item-158",
+                "ap-statistics-foundation-pilot-item-203"
+              ],
+              "1.7": [
+                "ap-statistics-foundation-pilot-item-007",
+                "ap-statistics-foundation-pilot-item-020",
+                "ap-statistics-foundation-pilot-item-107",
+                "ap-statistics-foundation-pilot-item-159"
+              ],
+              "1.8": [
+                "ap-statistics-foundation-pilot-item-008",
+                "ap-statistics-foundation-pilot-item-108",
+                "ap-statistics-foundation-pilot-item-204"
+              ]
+            },
+            "itemCount": 13,
+            "foundationItemCount": 5,
+            "depthItemCount": 6,
+            "transferItemCount": 2,
+            "studyMove": "Complete one foundation item, explain the statistical target in your own words, then use a depth item and a transfer item to apply the same reasoning in a new context."
+          },
           "references": [
             "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
             "https://apcentral.collegeboard.org/courses/ap-statistics",
@@ -939,7 +1070,7 @@
           "accessibilityReviewStatus": "pending-independent-review",
           "contentComplete": true,
           "releaseEligible": false,
-          "contentEnhancementVersion": "ap-statistics-foundation-v2"
+          "contentEnhancementVersion": "ap-statistics-foundation-v3"
         },
         {
           "id": "ap-stats-ch-01-section-03",
@@ -957,6 +1088,115 @@
             "1.12",
             "1.13"
           ],
+          "practiceRoute": {
+            "itemIds": [
+              "ap-statistics-foundation-pilot-item-009",
+              "ap-statistics-foundation-pilot-item-010",
+              "ap-statistics-foundation-pilot-item-011",
+              "ap-statistics-foundation-pilot-item-012",
+              "ap-statistics-foundation-pilot-item-013",
+              "ap-statistics-foundation-pilot-item-014",
+              "ap-statistics-foundation-pilot-item-015",
+              "ap-statistics-foundation-pilot-item-016",
+              "ap-statistics-foundation-pilot-item-017",
+              "ap-statistics-foundation-pilot-item-018",
+              "ap-statistics-foundation-pilot-item-019",
+              "ap-statistics-foundation-pilot-item-109",
+              "ap-statistics-foundation-pilot-item-110",
+              "ap-statistics-foundation-pilot-item-111",
+              "ap-statistics-foundation-pilot-item-112",
+              "ap-statistics-foundation-pilot-item-113",
+              "ap-statistics-foundation-pilot-item-160",
+              "ap-statistics-foundation-pilot-item-161",
+              "ap-statistics-foundation-pilot-item-162",
+              "ap-statistics-foundation-pilot-item-163",
+              "ap-statistics-foundation-pilot-item-164",
+              "ap-statistics-foundation-pilot-item-205",
+              "ap-statistics-foundation-pilot-item-206",
+              "ap-statistics-foundation-pilot-item-207",
+              "ap-statistics-foundation-pilot-item-208"
+            ],
+            "foundationItemIds": [
+              "ap-statistics-foundation-pilot-item-009",
+              "ap-statistics-foundation-pilot-item-010",
+              "ap-statistics-foundation-pilot-item-011",
+              "ap-statistics-foundation-pilot-item-012",
+              "ap-statistics-foundation-pilot-item-013",
+              "ap-statistics-foundation-pilot-item-014",
+              "ap-statistics-foundation-pilot-item-015",
+              "ap-statistics-foundation-pilot-item-016",
+              "ap-statistics-foundation-pilot-item-017",
+              "ap-statistics-foundation-pilot-item-018",
+              "ap-statistics-foundation-pilot-item-019"
+            ],
+            "depthItemIds": [
+              "ap-statistics-foundation-pilot-item-109",
+              "ap-statistics-foundation-pilot-item-110",
+              "ap-statistics-foundation-pilot-item-111",
+              "ap-statistics-foundation-pilot-item-112",
+              "ap-statistics-foundation-pilot-item-113",
+              "ap-statistics-foundation-pilot-item-160",
+              "ap-statistics-foundation-pilot-item-161",
+              "ap-statistics-foundation-pilot-item-162",
+              "ap-statistics-foundation-pilot-item-163",
+              "ap-statistics-foundation-pilot-item-164"
+            ],
+            "transferItemIds": [
+              "ap-statistics-foundation-pilot-item-205",
+              "ap-statistics-foundation-pilot-item-206",
+              "ap-statistics-foundation-pilot-item-207",
+              "ap-statistics-foundation-pilot-item-208"
+            ],
+            "topicCounts": {
+              "1.9": 5,
+              "1.10": 5,
+              "1.11": 5,
+              "1.12": 5,
+              "1.13": 5
+            },
+            "topicItemIds": {
+              "1.9": [
+                "ap-statistics-foundation-pilot-item-009",
+                "ap-statistics-foundation-pilot-item-019",
+                "ap-statistics-foundation-pilot-item-109",
+                "ap-statistics-foundation-pilot-item-160",
+                "ap-statistics-foundation-pilot-item-205"
+              ],
+              "1.10": [
+                "ap-statistics-foundation-pilot-item-010",
+                "ap-statistics-foundation-pilot-item-018",
+                "ap-statistics-foundation-pilot-item-110",
+                "ap-statistics-foundation-pilot-item-161",
+                "ap-statistics-foundation-pilot-item-206"
+              ],
+              "1.11": [
+                "ap-statistics-foundation-pilot-item-011",
+                "ap-statistics-foundation-pilot-item-012",
+                "ap-statistics-foundation-pilot-item-111",
+                "ap-statistics-foundation-pilot-item-162",
+                "ap-statistics-foundation-pilot-item-207"
+              ],
+              "1.12": [
+                "ap-statistics-foundation-pilot-item-013",
+                "ap-statistics-foundation-pilot-item-014",
+                "ap-statistics-foundation-pilot-item-112",
+                "ap-statistics-foundation-pilot-item-163",
+                "ap-statistics-foundation-pilot-item-208"
+              ],
+              "1.13": [
+                "ap-statistics-foundation-pilot-item-015",
+                "ap-statistics-foundation-pilot-item-016",
+                "ap-statistics-foundation-pilot-item-017",
+                "ap-statistics-foundation-pilot-item-113",
+                "ap-statistics-foundation-pilot-item-164"
+              ]
+            },
+            "itemCount": 25,
+            "foundationItemCount": 11,
+            "depthItemCount": 10,
+            "transferItemCount": 4,
+            "studyMove": "Complete one foundation item, explain the statistical target in your own words, then use a depth item and a transfer item to apply the same reasoning in a new context."
+          },
           "references": [
             "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
             "https://apcentral.collegeboard.org/courses/ap-statistics",
@@ -1096,7 +1336,7 @@
           "accessibilityReviewStatus": "pending-independent-review",
           "contentComplete": true,
           "releaseEligible": false,
-          "contentEnhancementVersion": "ap-statistics-foundation-v2"
+          "contentEnhancementVersion": "ap-statistics-foundation-v3"
         }
       ],
       "knowledgeChecks": [
@@ -1187,6 +1427,94 @@
             "1.12",
             "1.13"
           ]
+        },
+        {
+          "id": "ap-stats-ch-01-section-01-transfer-check",
+          "chapterId": "ap-stats-ch-01",
+          "sectionId": "ap-stats-ch-01-section-01",
+          "type": "single-choice",
+          "prompt": "Which summary pair is usually most resistant to outliers?",
+          "choices": [
+            "Median and IQR",
+            "Mean and range",
+            "Mean and standard deviation",
+            "Maximum and minimum"
+          ],
+          "answerIndex": 0,
+          "rationale": "Median and IQR are resistant summaries, so they are less affected by extreme observations.",
+          "references": [
+            "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+            "https://apcentral.collegeboard.org/courses/ap-statistics",
+            "https://openstax.org/details/books/introductory-statistics-2e"
+          ],
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "reviewNote": "Original transfer retrieval check; independent AP Statistics subject-expert and psychometric review remain pending.",
+          "skillId": "2.A",
+          "topicIds": [
+            "1.1",
+            "1.2",
+            "1.3",
+            "1.4"
+          ]
+        },
+        {
+          "id": "ap-stats-ch-01-section-02-transfer-check",
+          "chapterId": "ap-stats-ch-01",
+          "sectionId": "ap-stats-ch-01-section-02",
+          "type": "single-choice",
+          "prompt": "Which design feature supports a generalization to a sampled population?",
+          "choices": [
+            "Random sampling",
+            "Random assignment only",
+            "A large convenience sample",
+            "A placebo alone"
+          ],
+          "answerIndex": 0,
+          "rationale": "Random sampling gives members of the target population a known chance of selection and supports generalization when the sample is representative.",
+          "references": [
+            "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+            "https://apcentral.collegeboard.org/courses/ap-statistics",
+            "https://openstax.org/details/books/introductory-statistics-2e"
+          ],
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "reviewNote": "Original transfer retrieval check; independent AP Statistics subject-expert and psychometric review remain pending.",
+          "skillId": "2.A",
+          "topicIds": [
+            "1.5",
+            "1.6",
+            "1.7",
+            "1.8"
+          ]
+        },
+        {
+          "id": "ap-stats-ch-01-section-03-transfer-check",
+          "chapterId": "ap-stats-ch-01",
+          "sectionId": "ap-stats-ch-01-section-03",
+          "type": "single-choice",
+          "prompt": "What can an observational study not establish by itself?",
+          "choices": [
+            "That one variable caused another",
+            "That the sample has measured variability",
+            "That the variables can be described",
+            "That a statistic can estimate a parameter"
+          ],
+          "answerIndex": 0,
+          "rationale": "Without imposed treatments and appropriate assignment, an observational study does not by itself establish causation.",
+          "references": [
+            "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+            "https://apcentral.collegeboard.org/courses/ap-statistics",
+            "https://openstax.org/details/books/introductory-statistics-2e"
+          ],
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "reviewNote": "Original transfer retrieval check; independent AP Statistics subject-expert and psychometric review remain pending.",
+          "skillId": "2.A",
+          "topicIds": [
+            "1.9",
+            "1.10",
+            "1.11",
+            "1.12",
+            "1.13"
+          ]
         }
       ],
       "contentComplete": true,
@@ -1231,7 +1559,7 @@
       "accessibilityReviewStatus": "pending-independent-review",
       "releaseEligible": false,
       "sectionCount": 3,
-      "knowledgeCheckCount": 3,
+      "knowledgeCheckCount": 6,
       "referenceCount": 3,
       "sections": [
         {
@@ -1249,6 +1577,76 @@
             "2.3",
             "2.4"
           ],
+          "practiceRoute": {
+            "itemIds": [
+              "ap-statistics-foundation-pilot-item-021",
+              "ap-statistics-foundation-pilot-item-022",
+              "ap-statistics-foundation-pilot-item-023",
+              "ap-statistics-foundation-pilot-item-024",
+              "ap-statistics-foundation-pilot-item-114",
+              "ap-statistics-foundation-pilot-item-115",
+              "ap-statistics-foundation-pilot-item-116",
+              "ap-statistics-foundation-pilot-item-117",
+              "ap-statistics-foundation-pilot-item-166",
+              "ap-statistics-foundation-pilot-item-167",
+              "ap-statistics-foundation-pilot-item-209",
+              "ap-statistics-foundation-pilot-item-210",
+              "ap-statistics-foundation-pilot-item-211"
+            ],
+            "foundationItemIds": [
+              "ap-statistics-foundation-pilot-item-021",
+              "ap-statistics-foundation-pilot-item-022",
+              "ap-statistics-foundation-pilot-item-023",
+              "ap-statistics-foundation-pilot-item-024"
+            ],
+            "depthItemIds": [
+              "ap-statistics-foundation-pilot-item-114",
+              "ap-statistics-foundation-pilot-item-115",
+              "ap-statistics-foundation-pilot-item-116",
+              "ap-statistics-foundation-pilot-item-117",
+              "ap-statistics-foundation-pilot-item-166",
+              "ap-statistics-foundation-pilot-item-167"
+            ],
+            "transferItemIds": [
+              "ap-statistics-foundation-pilot-item-209",
+              "ap-statistics-foundation-pilot-item-210",
+              "ap-statistics-foundation-pilot-item-211"
+            ],
+            "topicCounts": {
+              "2.1": 3,
+              "2.2": 2,
+              "2.3": 4,
+              "2.4": 4
+            },
+            "topicItemIds": {
+              "2.1": [
+                "ap-statistics-foundation-pilot-item-021",
+                "ap-statistics-foundation-pilot-item-114",
+                "ap-statistics-foundation-pilot-item-209"
+              ],
+              "2.2": [
+                "ap-statistics-foundation-pilot-item-022",
+                "ap-statistics-foundation-pilot-item-115"
+              ],
+              "2.3": [
+                "ap-statistics-foundation-pilot-item-023",
+                "ap-statistics-foundation-pilot-item-116",
+                "ap-statistics-foundation-pilot-item-166",
+                "ap-statistics-foundation-pilot-item-210"
+              ],
+              "2.4": [
+                "ap-statistics-foundation-pilot-item-024",
+                "ap-statistics-foundation-pilot-item-117",
+                "ap-statistics-foundation-pilot-item-167",
+                "ap-statistics-foundation-pilot-item-211"
+              ]
+            },
+            "itemCount": 13,
+            "foundationItemCount": 4,
+            "depthItemCount": 6,
+            "transferItemCount": 3,
+            "studyMove": "Complete one foundation item, explain the statistical target in your own words, then use a depth item and a transfer item to apply the same reasoning in a new context."
+          },
           "references": [
             "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
             "https://apcentral.collegeboard.org/courses/ap-statistics",
@@ -1388,7 +1786,7 @@
           "accessibilityReviewStatus": "pending-independent-review",
           "contentComplete": true,
           "releaseEligible": false,
-          "contentEnhancementVersion": "ap-statistics-foundation-v2"
+          "contentEnhancementVersion": "ap-statistics-foundation-v3"
         },
         {
           "id": "ap-stats-ch-02-section-02",
@@ -1405,6 +1803,79 @@
             "2.7",
             "2.8"
           ],
+          "practiceRoute": {
+            "itemIds": [
+              "ap-statistics-foundation-pilot-item-025",
+              "ap-statistics-foundation-pilot-item-026",
+              "ap-statistics-foundation-pilot-item-027",
+              "ap-statistics-foundation-pilot-item-028",
+              "ap-statistics-foundation-pilot-item-029",
+              "ap-statistics-foundation-pilot-item-118",
+              "ap-statistics-foundation-pilot-item-119",
+              "ap-statistics-foundation-pilot-item-120",
+              "ap-statistics-foundation-pilot-item-121",
+              "ap-statistics-foundation-pilot-item-168",
+              "ap-statistics-foundation-pilot-item-169",
+              "ap-statistics-foundation-pilot-item-170",
+              "ap-statistics-foundation-pilot-item-212",
+              "ap-statistics-foundation-pilot-item-213"
+            ],
+            "foundationItemIds": [
+              "ap-statistics-foundation-pilot-item-025",
+              "ap-statistics-foundation-pilot-item-026",
+              "ap-statistics-foundation-pilot-item-027",
+              "ap-statistics-foundation-pilot-item-028",
+              "ap-statistics-foundation-pilot-item-029"
+            ],
+            "depthItemIds": [
+              "ap-statistics-foundation-pilot-item-118",
+              "ap-statistics-foundation-pilot-item-119",
+              "ap-statistics-foundation-pilot-item-120",
+              "ap-statistics-foundation-pilot-item-121",
+              "ap-statistics-foundation-pilot-item-168",
+              "ap-statistics-foundation-pilot-item-169",
+              "ap-statistics-foundation-pilot-item-170"
+            ],
+            "transferItemIds": [
+              "ap-statistics-foundation-pilot-item-212",
+              "ap-statistics-foundation-pilot-item-213"
+            ],
+            "topicCounts": {
+              "2.5": 3,
+              "2.6": 4,
+              "2.7": 4,
+              "2.8": 3
+            },
+            "topicItemIds": {
+              "2.5": [
+                "ap-statistics-foundation-pilot-item-025",
+                "ap-statistics-foundation-pilot-item-118",
+                "ap-statistics-foundation-pilot-item-168"
+              ],
+              "2.6": [
+                "ap-statistics-foundation-pilot-item-026",
+                "ap-statistics-foundation-pilot-item-119",
+                "ap-statistics-foundation-pilot-item-169",
+                "ap-statistics-foundation-pilot-item-212"
+              ],
+              "2.7": [
+                "ap-statistics-foundation-pilot-item-027",
+                "ap-statistics-foundation-pilot-item-028",
+                "ap-statistics-foundation-pilot-item-120",
+                "ap-statistics-foundation-pilot-item-170"
+              ],
+              "2.8": [
+                "ap-statistics-foundation-pilot-item-029",
+                "ap-statistics-foundation-pilot-item-121",
+                "ap-statistics-foundation-pilot-item-213"
+              ]
+            },
+            "itemCount": 14,
+            "foundationItemCount": 5,
+            "depthItemCount": 7,
+            "transferItemCount": 2,
+            "studyMove": "Complete one foundation item, explain the statistical target in your own words, then use a depth item and a transfer item to apply the same reasoning in a new context."
+          },
           "references": [
             "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
             "https://apcentral.collegeboard.org/courses/ap-statistics",
@@ -1544,7 +2015,7 @@
           "accessibilityReviewStatus": "pending-independent-review",
           "contentComplete": true,
           "releaseEligible": false,
-          "contentEnhancementVersion": "ap-statistics-foundation-v2"
+          "contentEnhancementVersion": "ap-statistics-foundation-v3"
         },
         {
           "id": "ap-stats-ch-02-section-03",
@@ -1561,6 +2032,100 @@
             "2.11",
             "2.12"
           ],
+          "practiceRoute": {
+            "itemIds": [
+              "ap-statistics-foundation-pilot-item-030",
+              "ap-statistics-foundation-pilot-item-031",
+              "ap-statistics-foundation-pilot-item-032",
+              "ap-statistics-foundation-pilot-item-033",
+              "ap-statistics-foundation-pilot-item-034",
+              "ap-statistics-foundation-pilot-item-035",
+              "ap-statistics-foundation-pilot-item-036",
+              "ap-statistics-foundation-pilot-item-037",
+              "ap-statistics-foundation-pilot-item-038",
+              "ap-statistics-foundation-pilot-item-039",
+              "ap-statistics-foundation-pilot-item-040",
+              "ap-statistics-foundation-pilot-item-122",
+              "ap-statistics-foundation-pilot-item-123",
+              "ap-statistics-foundation-pilot-item-124",
+              "ap-statistics-foundation-pilot-item-125",
+              "ap-statistics-foundation-pilot-item-171",
+              "ap-statistics-foundation-pilot-item-172",
+              "ap-statistics-foundation-pilot-item-173",
+              "ap-statistics-foundation-pilot-item-214",
+              "ap-statistics-foundation-pilot-item-215",
+              "ap-statistics-foundation-pilot-item-216"
+            ],
+            "foundationItemIds": [
+              "ap-statistics-foundation-pilot-item-030",
+              "ap-statistics-foundation-pilot-item-031",
+              "ap-statistics-foundation-pilot-item-032",
+              "ap-statistics-foundation-pilot-item-033",
+              "ap-statistics-foundation-pilot-item-034",
+              "ap-statistics-foundation-pilot-item-035",
+              "ap-statistics-foundation-pilot-item-036",
+              "ap-statistics-foundation-pilot-item-037",
+              "ap-statistics-foundation-pilot-item-038",
+              "ap-statistics-foundation-pilot-item-039",
+              "ap-statistics-foundation-pilot-item-040"
+            ],
+            "depthItemIds": [
+              "ap-statistics-foundation-pilot-item-122",
+              "ap-statistics-foundation-pilot-item-123",
+              "ap-statistics-foundation-pilot-item-124",
+              "ap-statistics-foundation-pilot-item-125",
+              "ap-statistics-foundation-pilot-item-171",
+              "ap-statistics-foundation-pilot-item-172",
+              "ap-statistics-foundation-pilot-item-173"
+            ],
+            "transferItemIds": [
+              "ap-statistics-foundation-pilot-item-214",
+              "ap-statistics-foundation-pilot-item-215",
+              "ap-statistics-foundation-pilot-item-216"
+            ],
+            "topicCounts": {
+              "2.9": 5,
+              "2.10": 7,
+              "2.11": 5,
+              "2.12": 4
+            },
+            "topicItemIds": {
+              "2.9": [
+                "ap-statistics-foundation-pilot-item-030",
+                "ap-statistics-foundation-pilot-item-031",
+                "ap-statistics-foundation-pilot-item-122",
+                "ap-statistics-foundation-pilot-item-171",
+                "ap-statistics-foundation-pilot-item-214"
+              ],
+              "2.10": [
+                "ap-statistics-foundation-pilot-item-032",
+                "ap-statistics-foundation-pilot-item-033",
+                "ap-statistics-foundation-pilot-item-034",
+                "ap-statistics-foundation-pilot-item-035",
+                "ap-statistics-foundation-pilot-item-123",
+                "ap-statistics-foundation-pilot-item-172",
+                "ap-statistics-foundation-pilot-item-215"
+              ],
+              "2.11": [
+                "ap-statistics-foundation-pilot-item-036",
+                "ap-statistics-foundation-pilot-item-037",
+                "ap-statistics-foundation-pilot-item-038",
+                "ap-statistics-foundation-pilot-item-124",
+                "ap-statistics-foundation-pilot-item-173"
+              ],
+              "2.12": [
+                "ap-statistics-foundation-pilot-item-039",
+                "ap-statistics-foundation-pilot-item-040",
+                "ap-statistics-foundation-pilot-item-125",
+                "ap-statistics-foundation-pilot-item-216"
+              ]
+            },
+            "itemCount": 21,
+            "foundationItemCount": 11,
+            "depthItemCount": 7,
+            "transferItemCount": 3,
+            "studyMove": "Complete one foundation item, explain the statistical target in your own words, then use a depth item and a transfer item to apply the same reasoning in a new context."
+          },
           "references": [
             "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
             "https://apcentral.collegeboard.org/courses/ap-statistics",
@@ -1700,7 +2265,7 @@
           "accessibilityReviewStatus": "pending-independent-review",
           "contentComplete": true,
           "releaseEligible": false,
-          "contentEnhancementVersion": "ap-statistics-foundation-v2"
+          "contentEnhancementVersion": "ap-statistics-foundation-v3"
         }
       ],
       "knowledgeChecks": [
@@ -1790,6 +2355,93 @@
             "2.11",
             "2.12"
           ]
+        },
+        {
+          "id": "ap-stats-ch-02-section-01-transfer-check",
+          "chapterId": "ap-stats-ch-02",
+          "sectionId": "ap-stats-ch-02-section-01",
+          "type": "single-choice",
+          "prompt": "What should be compared across groups in a two-way categorical table?",
+          "choices": [
+            "Conditional percentages using the group total as denominator",
+            "Only the grand total",
+            "The mean of category labels",
+            "The largest raw count without group size"
+          ],
+          "answerIndex": 0,
+          "rationale": "Conditional percentages put groups on a comparable basis even when their sizes differ.",
+          "references": [
+            "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+            "https://apcentral.collegeboard.org/courses/ap-statistics",
+            "https://openstax.org/details/books/introductory-statistics-2e"
+          ],
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "reviewNote": "Original transfer retrieval check; independent AP Statistics subject-expert and psychometric review remain pending.",
+          "skillId": "3.C",
+          "topicIds": [
+            "2.1",
+            "2.2",
+            "2.3",
+            "2.4"
+          ]
+        },
+        {
+          "id": "ap-stats-ch-02-section-02-transfer-check",
+          "chapterId": "ap-stats-ch-02",
+          "sectionId": "ap-stats-ch-02-section-02",
+          "type": "single-choice",
+          "prompt": "In P(A given B), which group supplies the denominator?",
+          "choices": [
+            "Outcomes in event B",
+            "All outcomes outside B",
+            "Outcomes in event A only",
+            "The number of variables"
+          ],
+          "answerIndex": 0,
+          "rationale": "Conditioning on B restricts the sample space to event B.",
+          "references": [
+            "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+            "https://apcentral.collegeboard.org/courses/ap-statistics",
+            "https://openstax.org/details/books/introductory-statistics-2e"
+          ],
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "reviewNote": "Original transfer retrieval check; independent AP Statistics subject-expert and psychometric review remain pending.",
+          "skillId": "3.C",
+          "topicIds": [
+            "2.5",
+            "2.6",
+            "2.7",
+            "2.8"
+          ]
+        },
+        {
+          "id": "ap-stats-ch-02-section-03-transfer-check",
+          "chapterId": "ap-stats-ch-02",
+          "sectionId": "ap-stats-ch-02-section-03",
+          "type": "single-choice",
+          "prompt": "Which condition is required for a binomial model?",
+          "choices": [
+            "A fixed number of independent trials with the same success probability",
+            "A changing success probability on every trial",
+            "More than two outcomes on each trial",
+            "A continuous response measured in units"
+          ],
+          "answerIndex": 0,
+          "rationale": "The fixed-trial, two-outcome, independent, constant-probability conditions define a binomial setting.",
+          "references": [
+            "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+            "https://apcentral.collegeboard.org/courses/ap-statistics",
+            "https://openstax.org/details/books/introductory-statistics-2e"
+          ],
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "reviewNote": "Original transfer retrieval check; independent AP Statistics subject-expert and psychometric review remain pending.",
+          "skillId": "3.C",
+          "topicIds": [
+            "2.9",
+            "2.10",
+            "2.11",
+            "2.12"
+          ]
         }
       ],
       "contentComplete": true,
@@ -1837,7 +2489,7 @@
       "accessibilityReviewStatus": "pending-independent-review",
       "releaseEligible": false,
       "sectionCount": 3,
-      "knowledgeCheckCount": 3,
+      "knowledgeCheckCount": 6,
       "referenceCount": 3,
       "sections": [
         {
@@ -1856,6 +2508,85 @@
             "3.4",
             "3.5"
           ],
+          "practiceRoute": {
+            "itemIds": [
+              "ap-statistics-foundation-pilot-item-041",
+              "ap-statistics-foundation-pilot-item-042",
+              "ap-statistics-foundation-pilot-item-043",
+              "ap-statistics-foundation-pilot-item-044",
+              "ap-statistics-foundation-pilot-item-045",
+              "ap-statistics-foundation-pilot-item-046",
+              "ap-statistics-foundation-pilot-item-047",
+              "ap-statistics-foundation-pilot-item-126",
+              "ap-statistics-foundation-pilot-item-127",
+              "ap-statistics-foundation-pilot-item-128",
+              "ap-statistics-foundation-pilot-item-129",
+              "ap-statistics-foundation-pilot-item-130",
+              "ap-statistics-foundation-pilot-item-217",
+              "ap-statistics-foundation-pilot-item-218",
+              "ap-statistics-foundation-pilot-item-219"
+            ],
+            "foundationItemIds": [
+              "ap-statistics-foundation-pilot-item-041",
+              "ap-statistics-foundation-pilot-item-042",
+              "ap-statistics-foundation-pilot-item-043",
+              "ap-statistics-foundation-pilot-item-044",
+              "ap-statistics-foundation-pilot-item-045",
+              "ap-statistics-foundation-pilot-item-046",
+              "ap-statistics-foundation-pilot-item-047"
+            ],
+            "depthItemIds": [
+              "ap-statistics-foundation-pilot-item-126",
+              "ap-statistics-foundation-pilot-item-127",
+              "ap-statistics-foundation-pilot-item-128",
+              "ap-statistics-foundation-pilot-item-129",
+              "ap-statistics-foundation-pilot-item-130"
+            ],
+            "transferItemIds": [
+              "ap-statistics-foundation-pilot-item-217",
+              "ap-statistics-foundation-pilot-item-218",
+              "ap-statistics-foundation-pilot-item-219"
+            ],
+            "topicCounts": {
+              "3.1": 3,
+              "3.2": 2,
+              "3.3": 4,
+              "3.4": 3,
+              "3.5": 3
+            },
+            "topicItemIds": {
+              "3.1": [
+                "ap-statistics-foundation-pilot-item-041",
+                "ap-statistics-foundation-pilot-item-126",
+                "ap-statistics-foundation-pilot-item-217"
+              ],
+              "3.2": [
+                "ap-statistics-foundation-pilot-item-042",
+                "ap-statistics-foundation-pilot-item-127"
+              ],
+              "3.3": [
+                "ap-statistics-foundation-pilot-item-043",
+                "ap-statistics-foundation-pilot-item-044",
+                "ap-statistics-foundation-pilot-item-128",
+                "ap-statistics-foundation-pilot-item-218"
+              ],
+              "3.4": [
+                "ap-statistics-foundation-pilot-item-045",
+                "ap-statistics-foundation-pilot-item-046",
+                "ap-statistics-foundation-pilot-item-129"
+              ],
+              "3.5": [
+                "ap-statistics-foundation-pilot-item-047",
+                "ap-statistics-foundation-pilot-item-130",
+                "ap-statistics-foundation-pilot-item-219"
+              ]
+            },
+            "itemCount": 15,
+            "foundationItemCount": 7,
+            "depthItemCount": 5,
+            "transferItemCount": 3,
+            "studyMove": "Complete one foundation item, explain the statistical target in your own words, then use a depth item and a transfer item to apply the same reasoning in a new context."
+          },
           "references": [
             "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
             "https://apcentral.collegeboard.org/courses/ap-statistics",
@@ -1995,7 +2726,7 @@
           "accessibilityReviewStatus": "pending-independent-review",
           "contentComplete": true,
           "releaseEligible": false,
-          "contentEnhancementVersion": "ap-statistics-foundation-v2"
+          "contentEnhancementVersion": "ap-statistics-foundation-v3"
         },
         {
           "id": "ap-stats-ch-03-section-02",
@@ -2013,6 +2744,94 @@
             "3.9",
             "3.10"
           ],
+          "practiceRoute": {
+            "itemIds": [
+              "ap-statistics-foundation-pilot-item-048",
+              "ap-statistics-foundation-pilot-item-049",
+              "ap-statistics-foundation-pilot-item-050",
+              "ap-statistics-foundation-pilot-item-051",
+              "ap-statistics-foundation-pilot-item-052",
+              "ap-statistics-foundation-pilot-item-053",
+              "ap-statistics-foundation-pilot-item-131",
+              "ap-statistics-foundation-pilot-item-132",
+              "ap-statistics-foundation-pilot-item-133",
+              "ap-statistics-foundation-pilot-item-134",
+              "ap-statistics-foundation-pilot-item-135",
+              "ap-statistics-foundation-pilot-item-178",
+              "ap-statistics-foundation-pilot-item-179",
+              "ap-statistics-foundation-pilot-item-180",
+              "ap-statistics-foundation-pilot-item-181",
+              "ap-statistics-foundation-pilot-item-220",
+              "ap-statistics-foundation-pilot-item-221",
+              "ap-statistics-foundation-pilot-item-222"
+            ],
+            "foundationItemIds": [
+              "ap-statistics-foundation-pilot-item-048",
+              "ap-statistics-foundation-pilot-item-049",
+              "ap-statistics-foundation-pilot-item-050",
+              "ap-statistics-foundation-pilot-item-051",
+              "ap-statistics-foundation-pilot-item-052",
+              "ap-statistics-foundation-pilot-item-053"
+            ],
+            "depthItemIds": [
+              "ap-statistics-foundation-pilot-item-131",
+              "ap-statistics-foundation-pilot-item-132",
+              "ap-statistics-foundation-pilot-item-133",
+              "ap-statistics-foundation-pilot-item-134",
+              "ap-statistics-foundation-pilot-item-135",
+              "ap-statistics-foundation-pilot-item-178",
+              "ap-statistics-foundation-pilot-item-179",
+              "ap-statistics-foundation-pilot-item-180",
+              "ap-statistics-foundation-pilot-item-181"
+            ],
+            "transferItemIds": [
+              "ap-statistics-foundation-pilot-item-220",
+              "ap-statistics-foundation-pilot-item-221",
+              "ap-statistics-foundation-pilot-item-222"
+            ],
+            "topicCounts": {
+              "3.6": 4,
+              "3.7": 3,
+              "3.8": 5,
+              "3.9": 2,
+              "3.10": 4
+            },
+            "topicItemIds": {
+              "3.6": [
+                "ap-statistics-foundation-pilot-item-048",
+                "ap-statistics-foundation-pilot-item-131",
+                "ap-statistics-foundation-pilot-item-178",
+                "ap-statistics-foundation-pilot-item-220"
+              ],
+              "3.7": [
+                "ap-statistics-foundation-pilot-item-049",
+                "ap-statistics-foundation-pilot-item-132",
+                "ap-statistics-foundation-pilot-item-179"
+              ],
+              "3.8": [
+                "ap-statistics-foundation-pilot-item-050",
+                "ap-statistics-foundation-pilot-item-051",
+                "ap-statistics-foundation-pilot-item-133",
+                "ap-statistics-foundation-pilot-item-180",
+                "ap-statistics-foundation-pilot-item-221"
+              ],
+              "3.9": [
+                "ap-statistics-foundation-pilot-item-052",
+                "ap-statistics-foundation-pilot-item-134"
+              ],
+              "3.10": [
+                "ap-statistics-foundation-pilot-item-053",
+                "ap-statistics-foundation-pilot-item-135",
+                "ap-statistics-foundation-pilot-item-181",
+                "ap-statistics-foundation-pilot-item-222"
+              ]
+            },
+            "itemCount": 18,
+            "foundationItemCount": 6,
+            "depthItemCount": 9,
+            "transferItemCount": 3,
+            "studyMove": "Complete one foundation item, explain the statistical target in your own words, then use a depth item and a transfer item to apply the same reasoning in a new context."
+          },
           "references": [
             "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
             "https://apcentral.collegeboard.org/courses/ap-statistics",
@@ -2152,7 +2971,7 @@
           "accessibilityReviewStatus": "pending-independent-review",
           "contentComplete": true,
           "releaseEligible": false,
-          "contentEnhancementVersion": "ap-statistics-foundation-v2"
+          "contentEnhancementVersion": "ap-statistics-foundation-v3"
         },
         {
           "id": "ap-stats-ch-03-section-03",
@@ -2170,6 +2989,85 @@
             "3.14",
             "3.15"
           ],
+          "practiceRoute": {
+            "itemIds": [
+              "ap-statistics-foundation-pilot-item-054",
+              "ap-statistics-foundation-pilot-item-055",
+              "ap-statistics-foundation-pilot-item-056",
+              "ap-statistics-foundation-pilot-item-057",
+              "ap-statistics-foundation-pilot-item-058",
+              "ap-statistics-foundation-pilot-item-059",
+              "ap-statistics-foundation-pilot-item-060",
+              "ap-statistics-foundation-pilot-item-136",
+              "ap-statistics-foundation-pilot-item-137",
+              "ap-statistics-foundation-pilot-item-138",
+              "ap-statistics-foundation-pilot-item-139",
+              "ap-statistics-foundation-pilot-item-140",
+              "ap-statistics-foundation-pilot-item-182",
+              "ap-statistics-foundation-pilot-item-223",
+              "ap-statistics-foundation-pilot-item-224"
+            ],
+            "foundationItemIds": [
+              "ap-statistics-foundation-pilot-item-054",
+              "ap-statistics-foundation-pilot-item-055",
+              "ap-statistics-foundation-pilot-item-056",
+              "ap-statistics-foundation-pilot-item-057",
+              "ap-statistics-foundation-pilot-item-058",
+              "ap-statistics-foundation-pilot-item-059",
+              "ap-statistics-foundation-pilot-item-060"
+            ],
+            "depthItemIds": [
+              "ap-statistics-foundation-pilot-item-136",
+              "ap-statistics-foundation-pilot-item-137",
+              "ap-statistics-foundation-pilot-item-138",
+              "ap-statistics-foundation-pilot-item-139",
+              "ap-statistics-foundation-pilot-item-140",
+              "ap-statistics-foundation-pilot-item-182"
+            ],
+            "transferItemIds": [
+              "ap-statistics-foundation-pilot-item-223",
+              "ap-statistics-foundation-pilot-item-224"
+            ],
+            "topicCounts": {
+              "3.11": 2,
+              "3.12": 2,
+              "3.13": 2,
+              "3.14": 4,
+              "3.15": 5
+            },
+            "topicItemIds": {
+              "3.11": [
+                "ap-statistics-foundation-pilot-item-054",
+                "ap-statistics-foundation-pilot-item-136"
+              ],
+              "3.12": [
+                "ap-statistics-foundation-pilot-item-055",
+                "ap-statistics-foundation-pilot-item-137"
+              ],
+              "3.13": [
+                "ap-statistics-foundation-pilot-item-056",
+                "ap-statistics-foundation-pilot-item-138"
+              ],
+              "3.14": [
+                "ap-statistics-foundation-pilot-item-057",
+                "ap-statistics-foundation-pilot-item-058",
+                "ap-statistics-foundation-pilot-item-139",
+                "ap-statistics-foundation-pilot-item-223"
+              ],
+              "3.15": [
+                "ap-statistics-foundation-pilot-item-059",
+                "ap-statistics-foundation-pilot-item-060",
+                "ap-statistics-foundation-pilot-item-140",
+                "ap-statistics-foundation-pilot-item-182",
+                "ap-statistics-foundation-pilot-item-224"
+              ]
+            },
+            "itemCount": 15,
+            "foundationItemCount": 7,
+            "depthItemCount": 6,
+            "transferItemCount": 2,
+            "studyMove": "Complete one foundation item, explain the statistical target in your own words, then use a depth item and a transfer item to apply the same reasoning in a new context."
+          },
           "references": [
             "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
             "https://apcentral.collegeboard.org/courses/ap-statistics",
@@ -2309,7 +3207,7 @@
           "accessibilityReviewStatus": "pending-independent-review",
           "contentComplete": true,
           "releaseEligible": false,
-          "contentEnhancementVersion": "ap-statistics-foundation-v2"
+          "contentEnhancementVersion": "ap-statistics-foundation-v3"
         }
       ],
       "knowledgeChecks": [
@@ -2402,6 +3300,96 @@
             "3.14",
             "3.15"
           ]
+        },
+        {
+          "id": "ap-stats-ch-03-section-01-transfer-check",
+          "chapterId": "ap-stats-ch-03",
+          "sectionId": "ap-stats-ch-03-section-01",
+          "type": "single-choice",
+          "prompt": "Which procedure matches one population proportion when conditions are met?",
+          "choices": [
+            "A one-proportion z interval",
+            "A one-sample t interval for a mean",
+            "A two-sample t test",
+            "A chi-square test for a quantitative mean"
+          ],
+          "answerIndex": 0,
+          "rationale": "One population proportion is the target of a one-proportion z interval.",
+          "references": [
+            "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+            "https://apcentral.collegeboard.org/courses/ap-statistics",
+            "https://openstax.org/details/books/introductory-statistics-2e"
+          ],
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "reviewNote": "Original transfer retrieval check; independent AP Statistics subject-expert and psychometric review remain pending.",
+          "skillId": "4.F",
+          "topicIds": [
+            "3.1",
+            "3.2",
+            "3.3",
+            "3.4",
+            "3.5"
+          ]
+        },
+        {
+          "id": "ap-stats-ch-03-section-02-transfer-check",
+          "chapterId": "ap-stats-ch-03",
+          "sectionId": "ap-stats-ch-03-section-02",
+          "type": "single-choice",
+          "prompt": "Under what assumption is a p-value interpreted?",
+          "choices": [
+            "The null hypothesis is true",
+            "The alternative is proven true",
+            "The sample statistic equals the parameter",
+            "The confidence level is zero"
+          ],
+          "answerIndex": 0,
+          "rationale": "A p-value measures how extreme the result would be under the null model.",
+          "references": [
+            "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+            "https://apcentral.collegeboard.org/courses/ap-statistics",
+            "https://openstax.org/details/books/introductory-statistics-2e"
+          ],
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "reviewNote": "Original transfer retrieval check; independent AP Statistics subject-expert and psychometric review remain pending.",
+          "skillId": "4.F",
+          "topicIds": [
+            "3.6",
+            "3.7",
+            "3.8",
+            "3.9",
+            "3.10"
+          ]
+        },
+        {
+          "id": "ap-stats-ch-03-section-03-transfer-check",
+          "chapterId": "ap-stats-ch-03",
+          "sectionId": "ap-stats-ch-03-section-03",
+          "type": "single-choice",
+          "prompt": "What does a chi-square procedure use to measure discrepancy?",
+          "choices": [
+            "Observed counts compared with expected counts",
+            "Means compared with standard deviations",
+            "Slopes compared with intercepts",
+            "Sample sizes compared with confidence levels"
+          ],
+          "answerIndex": 0,
+          "rationale": "Chi-square statistics summarize observed-versus-expected count discrepancies under a categorical null model.",
+          "references": [
+            "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+            "https://apcentral.collegeboard.org/courses/ap-statistics",
+            "https://openstax.org/details/books/introductory-statistics-2e"
+          ],
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "reviewNote": "Original transfer retrieval check; independent AP Statistics subject-expert and psychometric review remain pending.",
+          "skillId": "4.F",
+          "topicIds": [
+            "3.11",
+            "3.12",
+            "3.13",
+            "3.14",
+            "3.15"
+          ]
         }
       ],
       "contentComplete": true,
@@ -2444,7 +3432,7 @@
       "accessibilityReviewStatus": "pending-independent-review",
       "releaseEligible": false,
       "sectionCount": 3,
-      "knowledgeCheckCount": 3,
+      "knowledgeCheckCount": 6,
       "referenceCount": 3,
       "sections": [
         {
@@ -2461,6 +3449,79 @@
             "4.2",
             "4.3"
           ],
+          "practiceRoute": {
+            "itemIds": [
+              "ap-statistics-foundation-pilot-item-061",
+              "ap-statistics-foundation-pilot-item-062",
+              "ap-statistics-foundation-pilot-item-063",
+              "ap-statistics-foundation-pilot-item-064",
+              "ap-statistics-foundation-pilot-item-065",
+              "ap-statistics-foundation-pilot-item-066",
+              "ap-statistics-foundation-pilot-item-141",
+              "ap-statistics-foundation-pilot-item-142",
+              "ap-statistics-foundation-pilot-item-143",
+              "ap-statistics-foundation-pilot-item-174",
+              "ap-statistics-foundation-pilot-item-183",
+              "ap-statistics-foundation-pilot-item-184",
+              "ap-statistics-foundation-pilot-item-185",
+              "ap-statistics-foundation-pilot-item-225",
+              "ap-statistics-foundation-pilot-item-226"
+            ],
+            "foundationItemIds": [
+              "ap-statistics-foundation-pilot-item-061",
+              "ap-statistics-foundation-pilot-item-062",
+              "ap-statistics-foundation-pilot-item-063",
+              "ap-statistics-foundation-pilot-item-064",
+              "ap-statistics-foundation-pilot-item-065",
+              "ap-statistics-foundation-pilot-item-066"
+            ],
+            "depthItemIds": [
+              "ap-statistics-foundation-pilot-item-141",
+              "ap-statistics-foundation-pilot-item-142",
+              "ap-statistics-foundation-pilot-item-143",
+              "ap-statistics-foundation-pilot-item-174",
+              "ap-statistics-foundation-pilot-item-183",
+              "ap-statistics-foundation-pilot-item-184",
+              "ap-statistics-foundation-pilot-item-185"
+            ],
+            "transferItemIds": [
+              "ap-statistics-foundation-pilot-item-225",
+              "ap-statistics-foundation-pilot-item-226"
+            ],
+            "topicCounts": {
+              "4.1": 6,
+              "4.2": 5,
+              "4.3": 4
+            },
+            "topicItemIds": {
+              "4.1": [
+                "ap-statistics-foundation-pilot-item-061",
+                "ap-statistics-foundation-pilot-item-062",
+                "ap-statistics-foundation-pilot-item-141",
+                "ap-statistics-foundation-pilot-item-174",
+                "ap-statistics-foundation-pilot-item-183",
+                "ap-statistics-foundation-pilot-item-225"
+              ],
+              "4.2": [
+                "ap-statistics-foundation-pilot-item-063",
+                "ap-statistics-foundation-pilot-item-064",
+                "ap-statistics-foundation-pilot-item-142",
+                "ap-statistics-foundation-pilot-item-184",
+                "ap-statistics-foundation-pilot-item-226"
+              ],
+              "4.3": [
+                "ap-statistics-foundation-pilot-item-065",
+                "ap-statistics-foundation-pilot-item-066",
+                "ap-statistics-foundation-pilot-item-143",
+                "ap-statistics-foundation-pilot-item-185"
+              ]
+            },
+            "itemCount": 15,
+            "foundationItemCount": 6,
+            "depthItemCount": 7,
+            "transferItemCount": 2,
+            "studyMove": "Complete one foundation item, explain the statistical target in your own words, then use a depth item and a transfer item to apply the same reasoning in a new context."
+          },
           "references": [
             "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
             "https://apcentral.collegeboard.org/courses/ap-statistics",
@@ -2600,7 +3661,7 @@
           "accessibilityReviewStatus": "pending-independent-review",
           "contentComplete": true,
           "releaseEligible": false,
-          "contentEnhancementVersion": "ap-statistics-foundation-v2"
+          "contentEnhancementVersion": "ap-statistics-foundation-v3"
         },
         {
           "id": "ap-stats-ch-04-section-02",
@@ -2616,6 +3677,85 @@
             "4.5",
             "4.6"
           ],
+          "practiceRoute": {
+            "itemIds": [
+              "ap-statistics-foundation-pilot-item-067",
+              "ap-statistics-foundation-pilot-item-068",
+              "ap-statistics-foundation-pilot-item-069",
+              "ap-statistics-foundation-pilot-item-070",
+              "ap-statistics-foundation-pilot-item-071",
+              "ap-statistics-foundation-pilot-item-072",
+              "ap-statistics-foundation-pilot-item-073",
+              "ap-statistics-foundation-pilot-item-080",
+              "ap-statistics-foundation-pilot-item-144",
+              "ap-statistics-foundation-pilot-item-145",
+              "ap-statistics-foundation-pilot-item-146",
+              "ap-statistics-foundation-pilot-item-186",
+              "ap-statistics-foundation-pilot-item-187",
+              "ap-statistics-foundation-pilot-item-188",
+              "ap-statistics-foundation-pilot-item-227",
+              "ap-statistics-foundation-pilot-item-228",
+              "ap-statistics-foundation-pilot-item-229"
+            ],
+            "foundationItemIds": [
+              "ap-statistics-foundation-pilot-item-067",
+              "ap-statistics-foundation-pilot-item-068",
+              "ap-statistics-foundation-pilot-item-069",
+              "ap-statistics-foundation-pilot-item-070",
+              "ap-statistics-foundation-pilot-item-071",
+              "ap-statistics-foundation-pilot-item-072",
+              "ap-statistics-foundation-pilot-item-073",
+              "ap-statistics-foundation-pilot-item-080"
+            ],
+            "depthItemIds": [
+              "ap-statistics-foundation-pilot-item-144",
+              "ap-statistics-foundation-pilot-item-145",
+              "ap-statistics-foundation-pilot-item-146",
+              "ap-statistics-foundation-pilot-item-186",
+              "ap-statistics-foundation-pilot-item-187",
+              "ap-statistics-foundation-pilot-item-188"
+            ],
+            "transferItemIds": [
+              "ap-statistics-foundation-pilot-item-227",
+              "ap-statistics-foundation-pilot-item-228",
+              "ap-statistics-foundation-pilot-item-229"
+            ],
+            "topicCounts": {
+              "4.4": 5,
+              "4.5": 7,
+              "4.6": 5
+            },
+            "topicItemIds": {
+              "4.4": [
+                "ap-statistics-foundation-pilot-item-067",
+                "ap-statistics-foundation-pilot-item-068",
+                "ap-statistics-foundation-pilot-item-144",
+                "ap-statistics-foundation-pilot-item-186",
+                "ap-statistics-foundation-pilot-item-227"
+              ],
+              "4.5": [
+                "ap-statistics-foundation-pilot-item-069",
+                "ap-statistics-foundation-pilot-item-070",
+                "ap-statistics-foundation-pilot-item-071",
+                "ap-statistics-foundation-pilot-item-080",
+                "ap-statistics-foundation-pilot-item-145",
+                "ap-statistics-foundation-pilot-item-187",
+                "ap-statistics-foundation-pilot-item-228"
+              ],
+              "4.6": [
+                "ap-statistics-foundation-pilot-item-072",
+                "ap-statistics-foundation-pilot-item-073",
+                "ap-statistics-foundation-pilot-item-146",
+                "ap-statistics-foundation-pilot-item-188",
+                "ap-statistics-foundation-pilot-item-229"
+              ]
+            },
+            "itemCount": 17,
+            "foundationItemCount": 8,
+            "depthItemCount": 6,
+            "transferItemCount": 3,
+            "studyMove": "Complete one foundation item, explain the statistical target in your own words, then use a depth item and a transfer item to apply the same reasoning in a new context."
+          },
           "references": [
             "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
             "https://apcentral.collegeboard.org/courses/ap-statistics",
@@ -2755,7 +3895,7 @@
           "accessibilityReviewStatus": "pending-independent-review",
           "contentComplete": true,
           "releaseEligible": false,
-          "contentEnhancementVersion": "ap-statistics-foundation-v2"
+          "contentEnhancementVersion": "ap-statistics-foundation-v3"
         },
         {
           "id": "ap-stats-ch-04-section-03",
@@ -2772,6 +3912,85 @@
             "4.9",
             "4.10"
           ],
+          "practiceRoute": {
+            "itemIds": [
+              "ap-statistics-foundation-pilot-item-074",
+              "ap-statistics-foundation-pilot-item-075",
+              "ap-statistics-foundation-pilot-item-076",
+              "ap-statistics-foundation-pilot-item-077",
+              "ap-statistics-foundation-pilot-item-078",
+              "ap-statistics-foundation-pilot-item-079",
+              "ap-statistics-foundation-pilot-item-147",
+              "ap-statistics-foundation-pilot-item-148",
+              "ap-statistics-foundation-pilot-item-149",
+              "ap-statistics-foundation-pilot-item-150",
+              "ap-statistics-foundation-pilot-item-189",
+              "ap-statistics-foundation-pilot-item-190",
+              "ap-statistics-foundation-pilot-item-191",
+              "ap-statistics-foundation-pilot-item-230",
+              "ap-statistics-foundation-pilot-item-231",
+              "ap-statistics-foundation-pilot-item-232"
+            ],
+            "foundationItemIds": [
+              "ap-statistics-foundation-pilot-item-074",
+              "ap-statistics-foundation-pilot-item-075",
+              "ap-statistics-foundation-pilot-item-076",
+              "ap-statistics-foundation-pilot-item-077",
+              "ap-statistics-foundation-pilot-item-078",
+              "ap-statistics-foundation-pilot-item-079"
+            ],
+            "depthItemIds": [
+              "ap-statistics-foundation-pilot-item-147",
+              "ap-statistics-foundation-pilot-item-148",
+              "ap-statistics-foundation-pilot-item-149",
+              "ap-statistics-foundation-pilot-item-150",
+              "ap-statistics-foundation-pilot-item-189",
+              "ap-statistics-foundation-pilot-item-190",
+              "ap-statistics-foundation-pilot-item-191"
+            ],
+            "transferItemIds": [
+              "ap-statistics-foundation-pilot-item-230",
+              "ap-statistics-foundation-pilot-item-231",
+              "ap-statistics-foundation-pilot-item-232"
+            ],
+            "topicCounts": {
+              "4.7": 4,
+              "4.8": 3,
+              "4.9": 4,
+              "4.10": 5
+            },
+            "topicItemIds": {
+              "4.7": [
+                "ap-statistics-foundation-pilot-item-074",
+                "ap-statistics-foundation-pilot-item-147",
+                "ap-statistics-foundation-pilot-item-189",
+                "ap-statistics-foundation-pilot-item-230"
+              ],
+              "4.8": [
+                "ap-statistics-foundation-pilot-item-075",
+                "ap-statistics-foundation-pilot-item-148",
+                "ap-statistics-foundation-pilot-item-231"
+              ],
+              "4.9": [
+                "ap-statistics-foundation-pilot-item-076",
+                "ap-statistics-foundation-pilot-item-077",
+                "ap-statistics-foundation-pilot-item-149",
+                "ap-statistics-foundation-pilot-item-190"
+              ],
+              "4.10": [
+                "ap-statistics-foundation-pilot-item-078",
+                "ap-statistics-foundation-pilot-item-079",
+                "ap-statistics-foundation-pilot-item-150",
+                "ap-statistics-foundation-pilot-item-191",
+                "ap-statistics-foundation-pilot-item-232"
+              ]
+            },
+            "itemCount": 16,
+            "foundationItemCount": 6,
+            "depthItemCount": 7,
+            "transferItemCount": 3,
+            "studyMove": "Complete one foundation item, explain the statistical target in your own words, then use a depth item and a transfer item to apply the same reasoning in a new context."
+          },
           "references": [
             "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
             "https://apcentral.collegeboard.org/courses/ap-statistics",
@@ -2911,7 +4130,7 @@
           "accessibilityReviewStatus": "pending-independent-review",
           "contentComplete": true,
           "releaseEligible": false,
-          "contentEnhancementVersion": "ap-statistics-foundation-v2"
+          "contentEnhancementVersion": "ap-statistics-foundation-v3"
         }
       ],
       "knowledgeChecks": [
@@ -2999,6 +4218,91 @@
             "4.9",
             "4.10"
           ]
+        },
+        {
+          "id": "ap-stats-ch-04-section-01-transfer-check",
+          "chapterId": "ap-stats-ch-04",
+          "sectionId": "ap-stats-ch-04-section-01",
+          "type": "single-choice",
+          "prompt": "Where is the sampling distribution of a sample mean centered?",
+          "choices": [
+            "At the population mean",
+            "At the sample standard deviation",
+            "At zero for every population",
+            "At the sample size"
+          ],
+          "answerIndex": 0,
+          "rationale": "The expected value of the sample mean is the population mean.",
+          "references": [
+            "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+            "https://apcentral.collegeboard.org/courses/ap-statistics",
+            "https://openstax.org/details/books/introductory-statistics-2e"
+          ],
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "reviewNote": "Original transfer retrieval check; independent AP Statistics subject-expert and psychometric review remain pending.",
+          "skillId": "1.A",
+          "topicIds": [
+            "4.1",
+            "4.2",
+            "4.3"
+          ]
+        },
+        {
+          "id": "ap-stats-ch-04-section-02-transfer-check",
+          "chapterId": "ap-stats-ch-04",
+          "sectionId": "ap-stats-ch-04-section-02",
+          "type": "single-choice",
+          "prompt": "When is a paired t procedure appropriate?",
+          "choices": [
+            "When each unit contributes a meaningful within-pair difference",
+            "When two unrelated groups have categorical responses",
+            "When no response variable is measured",
+            "When the sample is selected voluntarily only"
+          ],
+          "answerIndex": 0,
+          "rationale": "Paired analysis uses one difference per matched unit or repeated measurement.",
+          "references": [
+            "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+            "https://apcentral.collegeboard.org/courses/ap-statistics",
+            "https://openstax.org/details/books/introductory-statistics-2e"
+          ],
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "reviewNote": "Original transfer retrieval check; independent AP Statistics subject-expert and psychometric review remain pending.",
+          "skillId": "1.A",
+          "topicIds": [
+            "4.4",
+            "4.5",
+            "4.6"
+          ]
+        },
+        {
+          "id": "ap-stats-ch-04-section-03-transfer-check",
+          "chapterId": "ap-stats-ch-04",
+          "sectionId": "ap-stats-ch-04-section-03",
+          "type": "single-choice",
+          "prompt": "If a confidence interval for a mean difference includes zero, what remains plausible?",
+          "choices": [
+            "No population mean difference",
+            "Only a positive difference",
+            "A guaranteed causal effect",
+            "That every individual difference is zero"
+          ],
+          "answerIndex": 0,
+          "rationale": "A zero difference remains plausible when zero lies in the interval, although equality is not proven.",
+          "references": [
+            "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+            "https://apcentral.collegeboard.org/courses/ap-statistics",
+            "https://openstax.org/details/books/introductory-statistics-2e"
+          ],
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "reviewNote": "Original transfer retrieval check; independent AP Statistics subject-expert and psychometric review remain pending.",
+          "skillId": "1.A",
+          "topicIds": [
+            "4.7",
+            "4.8",
+            "4.9",
+            "4.10"
+          ]
         }
       ],
       "contentComplete": true,
@@ -3036,7 +4340,7 @@
       "accessibilityReviewStatus": "pending-independent-review",
       "releaseEligible": false,
       "sectionCount": 3,
-      "knowledgeCheckCount": 3,
+      "knowledgeCheckCount": 6,
       "referenceCount": 3,
       "sections": [
         {
@@ -3051,6 +4355,49 @@
           "topicCoverage": [
             "5.1"
           ],
+          "practiceRoute": {
+            "itemIds": [
+              "ap-statistics-foundation-pilot-item-081",
+              "ap-statistics-foundation-pilot-item-082",
+              "ap-statistics-foundation-pilot-item-100",
+              "ap-statistics-foundation-pilot-item-151",
+              "ap-statistics-foundation-pilot-item-156",
+              "ap-statistics-foundation-pilot-item-192",
+              "ap-statistics-foundation-pilot-item-233"
+            ],
+            "foundationItemIds": [
+              "ap-statistics-foundation-pilot-item-081",
+              "ap-statistics-foundation-pilot-item-082",
+              "ap-statistics-foundation-pilot-item-100"
+            ],
+            "depthItemIds": [
+              "ap-statistics-foundation-pilot-item-151",
+              "ap-statistics-foundation-pilot-item-156",
+              "ap-statistics-foundation-pilot-item-192"
+            ],
+            "transferItemIds": [
+              "ap-statistics-foundation-pilot-item-233"
+            ],
+            "topicCounts": {
+              "5.1": 7
+            },
+            "topicItemIds": {
+              "5.1": [
+                "ap-statistics-foundation-pilot-item-081",
+                "ap-statistics-foundation-pilot-item-082",
+                "ap-statistics-foundation-pilot-item-100",
+                "ap-statistics-foundation-pilot-item-151",
+                "ap-statistics-foundation-pilot-item-156",
+                "ap-statistics-foundation-pilot-item-192",
+                "ap-statistics-foundation-pilot-item-233"
+              ]
+            },
+            "itemCount": 7,
+            "foundationItemCount": 3,
+            "depthItemCount": 3,
+            "transferItemCount": 1,
+            "studyMove": "Complete one foundation item, explain the statistical target in your own words, then use a depth item and a transfer item to apply the same reasoning in a new context."
+          },
           "references": [
             "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
             "https://apcentral.collegeboard.org/courses/ap-statistics",
@@ -3190,7 +4537,7 @@
           "accessibilityReviewStatus": "pending-independent-review",
           "contentComplete": true,
           "releaseEligible": false,
-          "contentEnhancementVersion": "ap-statistics-foundation-v2"
+          "contentEnhancementVersion": "ap-statistics-foundation-v3"
         },
         {
           "id": "ap-stats-ch-05-section-02",
@@ -3205,6 +4552,82 @@
             "5.2",
             "5.3"
           ],
+          "practiceRoute": {
+            "itemIds": [
+              "ap-statistics-foundation-pilot-item-083",
+              "ap-statistics-foundation-pilot-item-084",
+              "ap-statistics-foundation-pilot-item-085",
+              "ap-statistics-foundation-pilot-item-086",
+              "ap-statistics-foundation-pilot-item-087",
+              "ap-statistics-foundation-pilot-item-094",
+              "ap-statistics-foundation-pilot-item-096",
+              "ap-statistics-foundation-pilot-item-097",
+              "ap-statistics-foundation-pilot-item-152",
+              "ap-statistics-foundation-pilot-item-153",
+              "ap-statistics-foundation-pilot-item-157",
+              "ap-statistics-foundation-pilot-item-165",
+              "ap-statistics-foundation-pilot-item-193",
+              "ap-statistics-foundation-pilot-item-194",
+              "ap-statistics-foundation-pilot-item-195",
+              "ap-statistics-foundation-pilot-item-234",
+              "ap-statistics-foundation-pilot-item-235"
+            ],
+            "foundationItemIds": [
+              "ap-statistics-foundation-pilot-item-083",
+              "ap-statistics-foundation-pilot-item-084",
+              "ap-statistics-foundation-pilot-item-085",
+              "ap-statistics-foundation-pilot-item-086",
+              "ap-statistics-foundation-pilot-item-087",
+              "ap-statistics-foundation-pilot-item-094",
+              "ap-statistics-foundation-pilot-item-096",
+              "ap-statistics-foundation-pilot-item-097"
+            ],
+            "depthItemIds": [
+              "ap-statistics-foundation-pilot-item-152",
+              "ap-statistics-foundation-pilot-item-153",
+              "ap-statistics-foundation-pilot-item-157",
+              "ap-statistics-foundation-pilot-item-165",
+              "ap-statistics-foundation-pilot-item-193",
+              "ap-statistics-foundation-pilot-item-194",
+              "ap-statistics-foundation-pilot-item-195"
+            ],
+            "transferItemIds": [
+              "ap-statistics-foundation-pilot-item-234",
+              "ap-statistics-foundation-pilot-item-235"
+            ],
+            "topicCounts": {
+              "5.2": 7,
+              "5.3": 10
+            },
+            "topicItemIds": {
+              "5.2": [
+                "ap-statistics-foundation-pilot-item-083",
+                "ap-statistics-foundation-pilot-item-084",
+                "ap-statistics-foundation-pilot-item-096",
+                "ap-statistics-foundation-pilot-item-152",
+                "ap-statistics-foundation-pilot-item-157",
+                "ap-statistics-foundation-pilot-item-193",
+                "ap-statistics-foundation-pilot-item-234"
+              ],
+              "5.3": [
+                "ap-statistics-foundation-pilot-item-085",
+                "ap-statistics-foundation-pilot-item-086",
+                "ap-statistics-foundation-pilot-item-087",
+                "ap-statistics-foundation-pilot-item-094",
+                "ap-statistics-foundation-pilot-item-097",
+                "ap-statistics-foundation-pilot-item-153",
+                "ap-statistics-foundation-pilot-item-165",
+                "ap-statistics-foundation-pilot-item-194",
+                "ap-statistics-foundation-pilot-item-195",
+                "ap-statistics-foundation-pilot-item-235"
+              ]
+            },
+            "itemCount": 17,
+            "foundationItemCount": 8,
+            "depthItemCount": 7,
+            "transferItemCount": 2,
+            "studyMove": "Complete one foundation item, explain the statistical target in your own words, then use a depth item and a transfer item to apply the same reasoning in a new context."
+          },
           "references": [
             "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
             "https://apcentral.collegeboard.org/courses/ap-statistics",
@@ -3344,7 +4767,7 @@
           "accessibilityReviewStatus": "pending-independent-review",
           "contentComplete": true,
           "releaseEligible": false,
-          "contentEnhancementVersion": "ap-statistics-foundation-v2"
+          "contentEnhancementVersion": "ap-statistics-foundation-v3"
         },
         {
           "id": "ap-stats-ch-05-section-03",
@@ -3359,6 +4782,103 @@
             "5.4",
             "5.5"
           ],
+          "practiceRoute": {
+            "itemIds": [
+              "ap-statistics-foundation-pilot-item-088",
+              "ap-statistics-foundation-pilot-item-089",
+              "ap-statistics-foundation-pilot-item-090",
+              "ap-statistics-foundation-pilot-item-091",
+              "ap-statistics-foundation-pilot-item-092",
+              "ap-statistics-foundation-pilot-item-093",
+              "ap-statistics-foundation-pilot-item-095",
+              "ap-statistics-foundation-pilot-item-098",
+              "ap-statistics-foundation-pilot-item-099",
+              "ap-statistics-foundation-pilot-item-154",
+              "ap-statistics-foundation-pilot-item-155",
+              "ap-statistics-foundation-pilot-item-175",
+              "ap-statistics-foundation-pilot-item-176",
+              "ap-statistics-foundation-pilot-item-177",
+              "ap-statistics-foundation-pilot-item-196",
+              "ap-statistics-foundation-pilot-item-197",
+              "ap-statistics-foundation-pilot-item-198",
+              "ap-statistics-foundation-pilot-item-199",
+              "ap-statistics-foundation-pilot-item-200",
+              "ap-statistics-foundation-pilot-item-236",
+              "ap-statistics-foundation-pilot-item-237",
+              "ap-statistics-foundation-pilot-item-238",
+              "ap-statistics-foundation-pilot-item-239",
+              "ap-statistics-foundation-pilot-item-240"
+            ],
+            "foundationItemIds": [
+              "ap-statistics-foundation-pilot-item-088",
+              "ap-statistics-foundation-pilot-item-089",
+              "ap-statistics-foundation-pilot-item-090",
+              "ap-statistics-foundation-pilot-item-091",
+              "ap-statistics-foundation-pilot-item-092",
+              "ap-statistics-foundation-pilot-item-093",
+              "ap-statistics-foundation-pilot-item-095",
+              "ap-statistics-foundation-pilot-item-098",
+              "ap-statistics-foundation-pilot-item-099"
+            ],
+            "depthItemIds": [
+              "ap-statistics-foundation-pilot-item-154",
+              "ap-statistics-foundation-pilot-item-155",
+              "ap-statistics-foundation-pilot-item-175",
+              "ap-statistics-foundation-pilot-item-176",
+              "ap-statistics-foundation-pilot-item-177",
+              "ap-statistics-foundation-pilot-item-196",
+              "ap-statistics-foundation-pilot-item-197",
+              "ap-statistics-foundation-pilot-item-198",
+              "ap-statistics-foundation-pilot-item-199",
+              "ap-statistics-foundation-pilot-item-200"
+            ],
+            "transferItemIds": [
+              "ap-statistics-foundation-pilot-item-236",
+              "ap-statistics-foundation-pilot-item-237",
+              "ap-statistics-foundation-pilot-item-238",
+              "ap-statistics-foundation-pilot-item-239",
+              "ap-statistics-foundation-pilot-item-240"
+            ],
+            "topicCounts": {
+              "5.4": 10,
+              "5.5": 14
+            },
+            "topicItemIds": {
+              "5.4": [
+                "ap-statistics-foundation-pilot-item-088",
+                "ap-statistics-foundation-pilot-item-089",
+                "ap-statistics-foundation-pilot-item-090",
+                "ap-statistics-foundation-pilot-item-095",
+                "ap-statistics-foundation-pilot-item-154",
+                "ap-statistics-foundation-pilot-item-175",
+                "ap-statistics-foundation-pilot-item-196",
+                "ap-statistics-foundation-pilot-item-197",
+                "ap-statistics-foundation-pilot-item-236",
+                "ap-statistics-foundation-pilot-item-237"
+              ],
+              "5.5": [
+                "ap-statistics-foundation-pilot-item-091",
+                "ap-statistics-foundation-pilot-item-092",
+                "ap-statistics-foundation-pilot-item-093",
+                "ap-statistics-foundation-pilot-item-098",
+                "ap-statistics-foundation-pilot-item-099",
+                "ap-statistics-foundation-pilot-item-155",
+                "ap-statistics-foundation-pilot-item-176",
+                "ap-statistics-foundation-pilot-item-177",
+                "ap-statistics-foundation-pilot-item-198",
+                "ap-statistics-foundation-pilot-item-199",
+                "ap-statistics-foundation-pilot-item-200",
+                "ap-statistics-foundation-pilot-item-238",
+                "ap-statistics-foundation-pilot-item-239",
+                "ap-statistics-foundation-pilot-item-240"
+              ]
+            },
+            "itemCount": 24,
+            "foundationItemCount": 9,
+            "depthItemCount": 10,
+            "transferItemCount": 5,
+            "studyMove": "Complete one foundation item, explain the statistical target in your own words, then use a depth item and a transfer item to apply the same reasoning in a new context."
+          },
           "references": [
             "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
             "https://apcentral.collegeboard.org/courses/ap-statistics",
@@ -3498,7 +5018,7 @@
           "accessibilityReviewStatus": "pending-independent-review",
           "contentComplete": true,
           "releaseEligible": false,
-          "contentEnhancementVersion": "ap-statistics-foundation-v2"
+          "contentEnhancementVersion": "ap-statistics-foundation-v3"
         }
       ],
       "knowledgeChecks": [
@@ -3581,14 +5101,1000 @@
             "5.4",
             "5.5"
           ]
+        },
+        {
+          "id": "ap-stats-ch-05-section-01-transfer-check",
+          "chapterId": "ap-stats-ch-05",
+          "sectionId": "ap-stats-ch-05-section-01",
+          "type": "single-choice",
+          "prompt": "What does clear curvature in a scatterplot suggest?",
+          "choices": [
+            "A linear model may miss the form of the relationship",
+            "The correlation must be exactly one",
+            "The response is categorical",
+            "The sample has no outliers"
+          ],
+          "answerIndex": 0,
+          "rationale": "Curvature indicates that a straight-line form may not adequately describe the association.",
+          "references": [
+            "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+            "https://apcentral.collegeboard.org/courses/ap-statistics",
+            "https://openstax.org/details/books/introductory-statistics-2e"
+          ],
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "reviewNote": "Original transfer retrieval check; independent AP Statistics subject-expert and psychometric review remain pending.",
+          "skillId": "2.A",
+          "topicIds": [
+            "5.1"
+          ]
+        },
+        {
+          "id": "ap-stats-ch-05-section-02-transfer-check",
+          "chapterId": "ap-stats-ch-05",
+          "sectionId": "ap-stats-ch-05-section-02",
+          "type": "single-choice",
+          "prompt": "How is a residual calculated?",
+          "choices": [
+            "Observed response minus predicted response",
+            "Predicted response minus explanatory variable",
+            "Observed response divided by sample size",
+            "Slope minus intercept"
+          ],
+          "answerIndex": 0,
+          "rationale": "Residual = y - y-hat, so it measures vertical deviation from the fitted line.",
+          "references": [
+            "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+            "https://apcentral.collegeboard.org/courses/ap-statistics",
+            "https://openstax.org/details/books/introductory-statistics-2e"
+          ],
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "reviewNote": "Original transfer retrieval check; independent AP Statistics subject-expert and psychometric review remain pending.",
+          "skillId": "2.A",
+          "topicIds": [
+            "5.2",
+            "5.3"
+          ]
+        },
+        {
+          "id": "ap-stats-ch-05-section-03-transfer-check",
+          "chapterId": "ap-stats-ch-05",
+          "sectionId": "ap-stats-ch-05-section-03",
+          "type": "single-choice",
+          "prompt": "What does r-squared not establish?",
+          "choices": [
+            "Causation",
+            "The proportion of response variation explained by the fitted model",
+            "A summary of linear model fit",
+            "A value between 0 and 1 for the usual regression setting"
+          ],
+          "answerIndex": 0,
+          "rationale": "R-squared describes explained variation but is not a probability of causation.",
+          "references": [
+            "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+            "https://apcentral.collegeboard.org/courses/ap-statistics",
+            "https://openstax.org/details/books/introductory-statistics-2e"
+          ],
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "reviewNote": "Original transfer retrieval check; independent AP Statistics subject-expert and psychometric review remain pending.",
+          "skillId": "2.A",
+          "topicIds": [
+            "5.4",
+            "5.5"
+          ]
         }
       ],
       "contentComplete": true,
       "foundationPrototype": true
     }
   ],
-  "diagrams": [],
-  "diagramPlacements": [],
+  "practiceRouting": {
+    "mode": "section-linked-item-routes",
+    "sectionCount": 15,
+    "itemCount": 240,
+    "uniqueItemCount": 240,
+    "foundationItemCount": 100,
+    "depthItemCount": 100,
+    "transferItemCount": 40,
+    "sectionsWithDepth": 15,
+    "sectionsWithTransfer": 15,
+    "topicDrillMapCount": 55
+  },
+  "studyRoutes": [
+    {
+      "id": "ap-stats-route-unit-warm-up",
+      "title": "Unit warm-up: one foundation item per section",
+      "mode": "guided-foundation",
+      "learnerPurpose": "Preview the core reasoning move in every native lesson section before deeper practice.",
+      "estimatedMinutes": 25,
+      "itemIds": [
+        "ap-statistics-foundation-pilot-item-001",
+        "ap-statistics-foundation-pilot-item-005",
+        "ap-statistics-foundation-pilot-item-009",
+        "ap-statistics-foundation-pilot-item-021",
+        "ap-statistics-foundation-pilot-item-025",
+        "ap-statistics-foundation-pilot-item-030",
+        "ap-statistics-foundation-pilot-item-041",
+        "ap-statistics-foundation-pilot-item-048",
+        "ap-statistics-foundation-pilot-item-054",
+        "ap-statistics-foundation-pilot-item-061",
+        "ap-statistics-foundation-pilot-item-067",
+        "ap-statistics-foundation-pilot-item-074",
+        "ap-statistics-foundation-pilot-item-081",
+        "ap-statistics-foundation-pilot-item-083",
+        "ap-statistics-foundation-pilot-item-088"
+      ],
+      "stepOrder": [
+        "Name the target.",
+        "Choose the matching representation or procedure.",
+        "State the conclusion in context."
+      ],
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+        "https://apcentral.collegeboard.org/courses/ap-statistics",
+        "https://openstax.org/details/books/introductory-statistics-2e"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Original guided study route; independent AP Statistics subject-expert, accessibility, production, and psychometric review remain pending.",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-stats-route-mixed-transfer",
+      "title": "Mixed transfer: new context, same reasoning",
+      "mode": "guided-transfer",
+      "learnerPurpose": "Practice transferring AP Statistics reasoning across unfamiliar contexts and unit boundaries.",
+      "estimatedMinutes": 45,
+      "itemIds": [
+        "ap-statistics-foundation-pilot-item-201",
+        "ap-statistics-foundation-pilot-item-202",
+        "ap-statistics-foundation-pilot-item-203",
+        "ap-statistics-foundation-pilot-item-204",
+        "ap-statistics-foundation-pilot-item-205",
+        "ap-statistics-foundation-pilot-item-206",
+        "ap-statistics-foundation-pilot-item-207",
+        "ap-statistics-foundation-pilot-item-208",
+        "ap-statistics-foundation-pilot-item-209",
+        "ap-statistics-foundation-pilot-item-210",
+        "ap-statistics-foundation-pilot-item-211",
+        "ap-statistics-foundation-pilot-item-212",
+        "ap-statistics-foundation-pilot-item-213",
+        "ap-statistics-foundation-pilot-item-214",
+        "ap-statistics-foundation-pilot-item-215",
+        "ap-statistics-foundation-pilot-item-216",
+        "ap-statistics-foundation-pilot-item-217",
+        "ap-statistics-foundation-pilot-item-218",
+        "ap-statistics-foundation-pilot-item-219",
+        "ap-statistics-foundation-pilot-item-220",
+        "ap-statistics-foundation-pilot-item-221",
+        "ap-statistics-foundation-pilot-item-222",
+        "ap-statistics-foundation-pilot-item-223",
+        "ap-statistics-foundation-pilot-item-224",
+        "ap-statistics-foundation-pilot-item-225",
+        "ap-statistics-foundation-pilot-item-226",
+        "ap-statistics-foundation-pilot-item-227",
+        "ap-statistics-foundation-pilot-item-228",
+        "ap-statistics-foundation-pilot-item-229",
+        "ap-statistics-foundation-pilot-item-230",
+        "ap-statistics-foundation-pilot-item-231",
+        "ap-statistics-foundation-pilot-item-232",
+        "ap-statistics-foundation-pilot-item-233",
+        "ap-statistics-foundation-pilot-item-234",
+        "ap-statistics-foundation-pilot-item-235",
+        "ap-statistics-foundation-pilot-item-236",
+        "ap-statistics-foundation-pilot-item-237",
+        "ap-statistics-foundation-pilot-item-238",
+        "ap-statistics-foundation-pilot-item-239",
+        "ap-statistics-foundation-pilot-item-240"
+      ],
+      "stepOrder": [
+        "Identify the statistical target.",
+        "Ignore irrelevant context details.",
+        "Justify the method and scope of the conclusion."
+      ],
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+        "https://apcentral.collegeboard.org/courses/ap-statistics",
+        "https://openstax.org/details/books/introductory-statistics-2e"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Original guided study route; independent AP Statistics subject-expert, accessibility, production, and psychometric review remain pending.",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-stats-route-inference-decisions",
+      "title": "Inference decisions: proportions and means",
+      "mode": "guided-inference",
+      "learnerPurpose": "Compare categorical and quantitative inference choices while keeping parameters and conditions visible.",
+      "estimatedMinutes": 55,
+      "itemIds": [
+        "ap-statistics-foundation-pilot-item-041",
+        "ap-statistics-foundation-pilot-item-042",
+        "ap-statistics-foundation-pilot-item-043",
+        "ap-statistics-foundation-pilot-item-044",
+        "ap-statistics-foundation-pilot-item-045",
+        "ap-statistics-foundation-pilot-item-046",
+        "ap-statistics-foundation-pilot-item-047",
+        "ap-statistics-foundation-pilot-item-048",
+        "ap-statistics-foundation-pilot-item-049",
+        "ap-statistics-foundation-pilot-item-050",
+        "ap-statistics-foundation-pilot-item-051",
+        "ap-statistics-foundation-pilot-item-052",
+        "ap-statistics-foundation-pilot-item-053",
+        "ap-statistics-foundation-pilot-item-054",
+        "ap-statistics-foundation-pilot-item-055",
+        "ap-statistics-foundation-pilot-item-056",
+        "ap-statistics-foundation-pilot-item-057",
+        "ap-statistics-foundation-pilot-item-058",
+        "ap-statistics-foundation-pilot-item-059",
+        "ap-statistics-foundation-pilot-item-060",
+        "ap-statistics-foundation-pilot-item-061",
+        "ap-statistics-foundation-pilot-item-062",
+        "ap-statistics-foundation-pilot-item-063",
+        "ap-statistics-foundation-pilot-item-064",
+        "ap-statistics-foundation-pilot-item-065",
+        "ap-statistics-foundation-pilot-item-066",
+        "ap-statistics-foundation-pilot-item-067",
+        "ap-statistics-foundation-pilot-item-068",
+        "ap-statistics-foundation-pilot-item-069",
+        "ap-statistics-foundation-pilot-item-070",
+        "ap-statistics-foundation-pilot-item-071",
+        "ap-statistics-foundation-pilot-item-072",
+        "ap-statistics-foundation-pilot-item-073",
+        "ap-statistics-foundation-pilot-item-074",
+        "ap-statistics-foundation-pilot-item-075",
+        "ap-statistics-foundation-pilot-item-076",
+        "ap-statistics-foundation-pilot-item-077",
+        "ap-statistics-foundation-pilot-item-078",
+        "ap-statistics-foundation-pilot-item-079",
+        "ap-statistics-foundation-pilot-item-080",
+        "ap-statistics-foundation-pilot-item-126",
+        "ap-statistics-foundation-pilot-item-127",
+        "ap-statistics-foundation-pilot-item-128",
+        "ap-statistics-foundation-pilot-item-129",
+        "ap-statistics-foundation-pilot-item-130",
+        "ap-statistics-foundation-pilot-item-131",
+        "ap-statistics-foundation-pilot-item-132",
+        "ap-statistics-foundation-pilot-item-133",
+        "ap-statistics-foundation-pilot-item-134",
+        "ap-statistics-foundation-pilot-item-135",
+        "ap-statistics-foundation-pilot-item-136",
+        "ap-statistics-foundation-pilot-item-137",
+        "ap-statistics-foundation-pilot-item-138",
+        "ap-statistics-foundation-pilot-item-139",
+        "ap-statistics-foundation-pilot-item-140",
+        "ap-statistics-foundation-pilot-item-141",
+        "ap-statistics-foundation-pilot-item-142",
+        "ap-statistics-foundation-pilot-item-143",
+        "ap-statistics-foundation-pilot-item-144",
+        "ap-statistics-foundation-pilot-item-145",
+        "ap-statistics-foundation-pilot-item-146",
+        "ap-statistics-foundation-pilot-item-147",
+        "ap-statistics-foundation-pilot-item-148",
+        "ap-statistics-foundation-pilot-item-149",
+        "ap-statistics-foundation-pilot-item-150",
+        "ap-statistics-foundation-pilot-item-174",
+        "ap-statistics-foundation-pilot-item-178",
+        "ap-statistics-foundation-pilot-item-179",
+        "ap-statistics-foundation-pilot-item-180",
+        "ap-statistics-foundation-pilot-item-181",
+        "ap-statistics-foundation-pilot-item-182",
+        "ap-statistics-foundation-pilot-item-183",
+        "ap-statistics-foundation-pilot-item-184",
+        "ap-statistics-foundation-pilot-item-185",
+        "ap-statistics-foundation-pilot-item-186",
+        "ap-statistics-foundation-pilot-item-187",
+        "ap-statistics-foundation-pilot-item-188",
+        "ap-statistics-foundation-pilot-item-189",
+        "ap-statistics-foundation-pilot-item-190",
+        "ap-statistics-foundation-pilot-item-191",
+        "ap-statistics-foundation-pilot-item-217",
+        "ap-statistics-foundation-pilot-item-218",
+        "ap-statistics-foundation-pilot-item-219",
+        "ap-statistics-foundation-pilot-item-220",
+        "ap-statistics-foundation-pilot-item-221",
+        "ap-statistics-foundation-pilot-item-222",
+        "ap-statistics-foundation-pilot-item-223",
+        "ap-statistics-foundation-pilot-item-224",
+        "ap-statistics-foundation-pilot-item-225",
+        "ap-statistics-foundation-pilot-item-226",
+        "ap-statistics-foundation-pilot-item-227",
+        "ap-statistics-foundation-pilot-item-228",
+        "ap-statistics-foundation-pilot-item-229",
+        "ap-statistics-foundation-pilot-item-230",
+        "ap-statistics-foundation-pilot-item-231",
+        "ap-statistics-foundation-pilot-item-232"
+      ],
+      "stepOrder": [
+        "Name the parameter.",
+        "Check design and conditions.",
+        "Select the interval or test.",
+        "Interpret the evidence without overclaiming."
+      ],
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+        "https://apcentral.collegeboard.org/courses/ap-statistics",
+        "https://openstax.org/details/books/introductory-statistics-2e"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Original guided study route; independent AP Statistics subject-expert, accessibility, production, and psychometric review remain pending.",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-stats-route-final-review",
+      "title": "Final review: foundation plus transfer checkpoints",
+      "mode": "guided-cumulative-review",
+      "learnerPurpose": "Run a compact cumulative review that touches every section and alternates direct recall with transfer.",
+      "estimatedMinutes": 40,
+      "itemIds": [
+        "ap-statistics-foundation-pilot-item-001",
+        "ap-statistics-foundation-pilot-item-202",
+        "ap-statistics-foundation-pilot-item-005",
+        "ap-statistics-foundation-pilot-item-204",
+        "ap-statistics-foundation-pilot-item-009",
+        "ap-statistics-foundation-pilot-item-208",
+        "ap-statistics-foundation-pilot-item-021",
+        "ap-statistics-foundation-pilot-item-211",
+        "ap-statistics-foundation-pilot-item-025",
+        "ap-statistics-foundation-pilot-item-213",
+        "ap-statistics-foundation-pilot-item-030",
+        "ap-statistics-foundation-pilot-item-216",
+        "ap-statistics-foundation-pilot-item-041",
+        "ap-statistics-foundation-pilot-item-219",
+        "ap-statistics-foundation-pilot-item-048",
+        "ap-statistics-foundation-pilot-item-222",
+        "ap-statistics-foundation-pilot-item-054",
+        "ap-statistics-foundation-pilot-item-224",
+        "ap-statistics-foundation-pilot-item-061",
+        "ap-statistics-foundation-pilot-item-226",
+        "ap-statistics-foundation-pilot-item-067",
+        "ap-statistics-foundation-pilot-item-229",
+        "ap-statistics-foundation-pilot-item-074",
+        "ap-statistics-foundation-pilot-item-232",
+        "ap-statistics-foundation-pilot-item-081",
+        "ap-statistics-foundation-pilot-item-233",
+        "ap-statistics-foundation-pilot-item-083",
+        "ap-statistics-foundation-pilot-item-235",
+        "ap-statistics-foundation-pilot-item-088",
+        "ap-statistics-foundation-pilot-item-240"
+      ],
+      "stepOrder": [
+        "Answer without notes.",
+        "Review the rationale and misconception boundary.",
+        "Record the topic or skill that needs another pass."
+      ],
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+        "https://apcentral.collegeboard.org/courses/ap-statistics",
+        "https://openstax.org/details/books/introductory-statistics-2e"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Original guided study route; independent AP Statistics subject-expert, accessibility, production, and psychometric review remain pending.",
+      "releaseEligible": false
+    }
+  ],
+  "diagrams": [
+    {
+      "id": "ap-stats-diagram-u1-design-scope",
+      "chapterId": "ap-stats-ch-01",
+      "domainId": "exploring-one-variable-data-and-collecting-data",
+      "title": "From investigative question to conclusion scope",
+      "diagramType": "statistical-reasoning-flow",
+      "learnerPurpose": "Use the study design to decide what a statistical conclusion can support.",
+      "caption": "An original reasoning path for connecting the question, data collection, and scope of a conclusion. It is a study aid, not an official College Board figure.",
+      "unscored": true,
+      "officialItem": false,
+      "releaseEligible": false,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "expertReviewStatus": "pending",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+        "https://apcentral.collegeboard.org/courses/ap-statistics",
+        "https://openstax.org/details/books/introductory-statistics-2e"
+      ],
+      "rights": {
+        "originalSpecification": true,
+        "officialFigureReproduced": false,
+        "sourceFigureReproduced": false,
+        "thirdPartyArtworkIncluded": false
+      },
+      "accessibility": {
+        "essentialVisualContent": false,
+        "shortAlt": "Five-step statistical reasoning flow for One-Variable Data and Collecting Data, from the target question to an appropriately limited conclusion.",
+        "longDescription": "Read from left to right. The One-Variable Data and Collecting Data flow has five labeled steps: Question, Data source, Design check, Analysis, Conclusion scope. Each arrow names the reasoning relationship between adjacent steps.",
+        "textEquivalent": [
+          "Step 1: Question. Name the population, variables, and relationship or comparison of interest.",
+          "Step 2: Data source. Identify the sample, sampling method, observational study, or experiment.",
+          "Step 3: Design check. Look for bias, random sampling, random assignment, and ethical or practical limits.",
+          "Step 4: Analysis. Describe distributions or compare groups with summaries and displays that match the variables.",
+          "Step 5: Conclusion scope. State whether the evidence supports description, generalization, causation, or a narrower claim."
+        ],
+        "readingOrder": [
+          "question",
+          "data-source",
+          "design-check",
+          "analysis",
+          "scope"
+        ],
+        "colorIndependent": true,
+        "shapeIndependentLabels": true,
+        "fallbackMode": "ordered-text-equivalent",
+        "independentReviewStatus": "pending"
+      },
+      "spec": {
+        "format": "alloflow-diagram-v1",
+        "layout": "left-to-right",
+        "nodes": [
+          {
+            "id": "question",
+            "label": "Question",
+            "detail": "Name the population, variables, and relationship or comparison of interest."
+          },
+          {
+            "id": "data-source",
+            "label": "Data source",
+            "detail": "Identify the sample, sampling method, observational study, or experiment."
+          },
+          {
+            "id": "design-check",
+            "label": "Design check",
+            "detail": "Look for bias, random sampling, random assignment, and ethical or practical limits."
+          },
+          {
+            "id": "analysis",
+            "label": "Analysis",
+            "detail": "Describe distributions or compare groups with summaries and displays that match the variables."
+          },
+          {
+            "id": "scope",
+            "label": "Conclusion scope",
+            "detail": "State whether the evidence supports description, generalization, causation, or a narrower claim."
+          }
+        ],
+        "edges": [
+          {
+            "id": "question-to-data-source",
+            "from": "question",
+            "to": "data-source",
+            "label": "determines"
+          },
+          {
+            "id": "data-source-to-design-check",
+            "from": "data-source",
+            "to": "design-check",
+            "label": "requires"
+          },
+          {
+            "id": "design-check-to-analysis",
+            "from": "design-check",
+            "to": "analysis",
+            "label": "frames"
+          },
+          {
+            "id": "analysis-to-scope",
+            "from": "analysis",
+            "to": "scope",
+            "label": "supports"
+          }
+        ],
+        "renderingHints": {
+          "connectorStyle": "arrow",
+          "allowHorizontalScroll": true,
+          "minimumTextSize": "user-scalable"
+        }
+      }
+    },
+    {
+      "id": "ap-stats-diagram-u2-probability-model",
+      "chapterId": "ap-stats-ch-02",
+      "domainId": "probability-random-variables-and-probability-distributions",
+      "title": "From random process to probability model",
+      "diagramType": "statistical-reasoning-flow",
+      "learnerPurpose": "Choose a probability rule or model and interpret its long-run meaning.",
+      "caption": "An original decision flow for defining events, checking model conditions, and interpreting probability. It is a study aid, not an official College Board figure.",
+      "unscored": true,
+      "officialItem": false,
+      "releaseEligible": false,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "expertReviewStatus": "pending",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+        "https://apcentral.collegeboard.org/courses/ap-statistics",
+        "https://openstax.org/details/books/introductory-statistics-2e"
+      ],
+      "rights": {
+        "originalSpecification": true,
+        "officialFigureReproduced": false,
+        "sourceFigureReproduced": false,
+        "thirdPartyArtworkIncluded": false
+      },
+      "accessibility": {
+        "essentialVisualContent": false,
+        "shortAlt": "Five-step statistical reasoning flow for Probability and Random Variables, from the target question to an appropriately limited conclusion.",
+        "longDescription": "Read from left to right. The Probability and Random Variables flow has five labeled steps: Define the event, Choose a rule or model, Check conditions, Calculate or simulate, Interpret long run. Each arrow names the reasoning relationship between adjacent steps.",
+        "textEquivalent": [
+          "Step 1: Define the event. Specify the outcomes, event notation, or random variable and its units.",
+          "Step 2: Choose a rule or model. Match the situation to a table, complement, union, conditional probability, binomial, or normal model.",
+          "Step 3: Check conditions. Verify the denominator, independence, fixed trials, constant probability, or normal-model assumptions.",
+          "Step 4: Calculate or simulate. Use a probability rule, distribution, technology, or repeated simulation to obtain evidence.",
+          "Step 5: Interpret long run. Describe the probability as a long-run proportion, not a guarantee for one individual outcome."
+        ],
+        "readingOrder": [
+          "define",
+          "choose-rule",
+          "conditions",
+          "calculate",
+          "interpret"
+        ],
+        "colorIndependent": true,
+        "shapeIndependentLabels": true,
+        "fallbackMode": "ordered-text-equivalent",
+        "independentReviewStatus": "pending"
+      },
+      "spec": {
+        "format": "alloflow-diagram-v1",
+        "layout": "left-to-right",
+        "nodes": [
+          {
+            "id": "define",
+            "label": "Define the event",
+            "detail": "Specify the outcomes, event notation, or random variable and its units."
+          },
+          {
+            "id": "choose-rule",
+            "label": "Choose a rule or model",
+            "detail": "Match the situation to a table, complement, union, conditional probability, binomial, or normal model."
+          },
+          {
+            "id": "conditions",
+            "label": "Check conditions",
+            "detail": "Verify the denominator, independence, fixed trials, constant probability, or normal-model assumptions."
+          },
+          {
+            "id": "calculate",
+            "label": "Calculate or simulate",
+            "detail": "Use a probability rule, distribution, technology, or repeated simulation to obtain evidence."
+          },
+          {
+            "id": "interpret",
+            "label": "Interpret long run",
+            "detail": "Describe the probability as a long-run proportion, not a guarantee for one individual outcome."
+          }
+        ],
+        "edges": [
+          {
+            "id": "define-to-rule",
+            "from": "define",
+            "to": "choose-rule",
+            "label": "frames"
+          },
+          {
+            "id": "rule-to-conditions",
+            "from": "choose-rule",
+            "to": "conditions",
+            "label": "must satisfy"
+          },
+          {
+            "id": "conditions-to-calculate",
+            "from": "conditions",
+            "to": "calculate",
+            "label": "allows"
+          },
+          {
+            "id": "calculate-to-interpret",
+            "from": "calculate",
+            "to": "interpret",
+            "label": "estimates"
+          }
+        ],
+        "renderingHints": {
+          "connectorStyle": "arrow",
+          "allowHorizontalScroll": true,
+          "minimumTextSize": "user-scalable"
+        }
+      }
+    },
+    {
+      "id": "ap-stats-diagram-u3-proportion-inference",
+      "chapterId": "ap-stats-ch-03",
+      "domainId": "inference-for-categorical-data-proportions",
+      "title": "Proportion inference: claim to contextual conclusion",
+      "diagramType": "statistical-reasoning-flow",
+      "learnerPurpose": "Keep a proportion interval or test connected to its parameter, conditions, and claim.",
+      "caption": "An original inference path for one or two proportions and categorical-data claims. It is a study aid, not an official College Board figure.",
+      "unscored": true,
+      "officialItem": false,
+      "releaseEligible": false,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "expertReviewStatus": "pending",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+        "https://apcentral.collegeboard.org/courses/ap-statistics",
+        "https://openstax.org/details/books/introductory-statistics-2e"
+      ],
+      "rights": {
+        "originalSpecification": true,
+        "officialFigureReproduced": false,
+        "sourceFigureReproduced": false,
+        "thirdPartyArtworkIncluded": false
+      },
+      "accessibility": {
+        "essentialVisualContent": false,
+        "shortAlt": "Five-step statistical reasoning flow for Inference for Proportions, from the target question to an appropriately limited conclusion.",
+        "longDescription": "Read from left to right. The Inference for Proportions flow has five labeled steps: Parameter and claim, Conditions, Interval or test, Numerical evidence, Contextual conclusion. Each arrow names the reasoning relationship between adjacent steps.",
+        "textEquivalent": [
+          "Step 1: Parameter and claim. Define the population proportion or difference in population proportions in context.",
+          "Step 2: Conditions. Check randomization, independence or the 10 percent condition, and large-count requirements.",
+          "Step 3: Interval or test. Select the matching one- or two-proportion procedure, then identify the null model when testing.",
+          "Step 4: Numerical evidence. Report the interval, test statistic, p-value, or significance decision with correct direction.",
+          "Step 5: Contextual conclusion. State what the evidence suggests about the population parameter and acknowledge remaining uncertainty."
+        ],
+        "readingOrder": [
+          "parameter",
+          "conditions",
+          "procedure",
+          "evidence",
+          "conclusion"
+        ],
+        "colorIndependent": true,
+        "shapeIndependentLabels": true,
+        "fallbackMode": "ordered-text-equivalent",
+        "independentReviewStatus": "pending"
+      },
+      "spec": {
+        "format": "alloflow-diagram-v1",
+        "layout": "left-to-right",
+        "nodes": [
+          {
+            "id": "parameter",
+            "label": "Parameter and claim",
+            "detail": "Define the population proportion or difference in population proportions in context."
+          },
+          {
+            "id": "conditions",
+            "label": "Conditions",
+            "detail": "Check randomization, independence or the 10 percent condition, and large-count requirements."
+          },
+          {
+            "id": "procedure",
+            "label": "Interval or test",
+            "detail": "Select the matching one- or two-proportion procedure, then identify the null model when testing."
+          },
+          {
+            "id": "evidence",
+            "label": "Numerical evidence",
+            "detail": "Report the interval, test statistic, p-value, or significance decision with correct direction."
+          },
+          {
+            "id": "conclusion",
+            "label": "Contextual conclusion",
+            "detail": "State what the evidence suggests about the population parameter and acknowledge remaining uncertainty."
+          }
+        ],
+        "edges": [
+          {
+            "id": "parameter-to-conditions",
+            "from": "parameter",
+            "to": "conditions",
+            "label": "requires"
+          },
+          {
+            "id": "conditions-to-procedure",
+            "from": "conditions",
+            "to": "procedure",
+            "label": "justifies"
+          },
+          {
+            "id": "procedure-to-evidence",
+            "from": "procedure",
+            "to": "evidence",
+            "label": "produces"
+          },
+          {
+            "id": "evidence-to-conclusion",
+            "from": "evidence",
+            "to": "conclusion",
+            "label": "informs"
+          }
+        ],
+        "renderingHints": {
+          "connectorStyle": "arrow",
+          "allowHorizontalScroll": true,
+          "minimumTextSize": "user-scalable"
+        }
+      }
+    },
+    {
+      "id": "ap-stats-diagram-u4-mean-t-procedure",
+      "chapterId": "ap-stats-ch-04",
+      "domainId": "inference-for-quantitative-data-means",
+      "title": "Mean inference: design to t-procedure",
+      "diagramType": "statistical-reasoning-flow",
+      "learnerPurpose": "Select the correct mean procedure by first identifying the design and target.",
+      "caption": "An original decision flow for one-sample, paired, and two-sample t reasoning. It is a study aid, not an official College Board figure.",
+      "unscored": true,
+      "officialItem": false,
+      "releaseEligible": false,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "expertReviewStatus": "pending",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+        "https://apcentral.collegeboard.org/courses/ap-statistics",
+        "https://openstax.org/details/books/introductory-statistics-2e"
+      ],
+      "rights": {
+        "originalSpecification": true,
+        "officialFigureReproduced": false,
+        "sourceFigureReproduced": false,
+        "thirdPartyArtworkIncluded": false
+      },
+      "accessibility": {
+        "essentialVisualContent": false,
+        "shortAlt": "Five-step statistical reasoning flow for Inference for Means, from the target question to an appropriately limited conclusion.",
+        "longDescription": "Read from left to right. The Inference for Means flow has five labeled steps: Identify the design, Define the mean target, Choose the t procedure, Check shape and df, Interpret in units. Each arrow names the reasoning relationship between adjacent steps.",
+        "textEquivalent": [
+          "Step 1: Identify the design. Decide whether the data are one sample, paired measurements, or two independent groups.",
+          "Step 2: Define the mean target. Name the population mean or the population mean difference and set the direction of any difference.",
+          "Step 3: Choose the t procedure. Match the design to a one-sample, matched-pairs, or two-sample t interval or test.",
+          "Step 4: Check shape and df. Check randomization, independence, sample size, outliers, approximate normality, and the degrees of freedom.",
+          "Step 5: Interpret in units. Use the interval or p-value to state evidence about the population mean in the setting described."
+        ],
+        "readingOrder": [
+          "design",
+          "target",
+          "t-procedure",
+          "conditions",
+          "result"
+        ],
+        "colorIndependent": true,
+        "shapeIndependentLabels": true,
+        "fallbackMode": "ordered-text-equivalent",
+        "independentReviewStatus": "pending"
+      },
+      "spec": {
+        "format": "alloflow-diagram-v1",
+        "layout": "left-to-right",
+        "nodes": [
+          {
+            "id": "design",
+            "label": "Identify the design",
+            "detail": "Decide whether the data are one sample, paired measurements, or two independent groups."
+          },
+          {
+            "id": "target",
+            "label": "Define the mean target",
+            "detail": "Name the population mean or the population mean difference and set the direction of any difference."
+          },
+          {
+            "id": "t-procedure",
+            "label": "Choose the t procedure",
+            "detail": "Match the design to a one-sample, matched-pairs, or two-sample t interval or test."
+          },
+          {
+            "id": "conditions",
+            "label": "Check shape and df",
+            "detail": "Check randomization, independence, sample size, outliers, approximate normality, and the degrees of freedom."
+          },
+          {
+            "id": "result",
+            "label": "Interpret in units",
+            "detail": "Use the interval or p-value to state evidence about the population mean in the setting described."
+          }
+        ],
+        "edges": [
+          {
+            "id": "design-to-target",
+            "from": "design",
+            "to": "target",
+            "label": "defines"
+          },
+          {
+            "id": "target-to-t-procedure",
+            "from": "target",
+            "to": "t-procedure",
+            "label": "selects"
+          },
+          {
+            "id": "t-procedure-to-conditions",
+            "from": "t-procedure",
+            "to": "conditions",
+            "label": "requires"
+          },
+          {
+            "id": "conditions-to-result",
+            "from": "conditions",
+            "to": "result",
+            "label": "supports"
+          }
+        ],
+        "renderingHints": {
+          "connectorStyle": "arrow",
+          "allowHorizontalScroll": true,
+          "minimumTextSize": "user-scalable"
+        }
+      }
+    },
+    {
+      "id": "ap-stats-diagram-u5-regression-diagnostics",
+      "chapterId": "ap-stats-ch-05",
+      "domainId": "regression-analysis",
+      "title": "Regression reasoning: association to responsible prediction",
+      "diagramType": "statistical-reasoning-flow",
+      "learnerPurpose": "Use the scatterplot and residual evidence to judge a regression model and its limits.",
+      "caption": "An original regression flow for describing form, checking fit, and limiting claims. It is a study aid, not an official College Board figure.",
+      "unscored": true,
+      "officialItem": false,
+      "releaseEligible": false,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "expertReviewStatus": "pending",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+        "https://apcentral.collegeboard.org/courses/ap-statistics",
+        "https://openstax.org/details/books/introductory-statistics-2e"
+      ],
+      "rights": {
+        "originalSpecification": true,
+        "officialFigureReproduced": false,
+        "sourceFigureReproduced": false,
+        "thirdPartyArtworkIncluded": false
+      },
+      "accessibility": {
+        "essentialVisualContent": false,
+        "shortAlt": "Five-step statistical reasoning flow for Regression Analysis, from the target question to an appropriately limited conclusion.",
+        "longDescription": "Read from left to right. The Regression Analysis flow has five labeled steps: Scatterplot, Fit the line, Inspect residuals, Make a prediction, State model limits. Each arrow names the reasoning relationship between adjacent steps.",
+        "textEquivalent": [
+          "Step 1: Scatterplot. Describe direction, form, strength, clusters, outliers, and influential observations.",
+          "Step 2: Fit the line. Use the least-squares line, slope, intercept, predicted values, and r or r-squared with units.",
+          "Step 3: Inspect residuals. Look for random scatter around zero, curvature, changing spread, outliers, and high leverage.",
+          "Step 4: Make a prediction. Predict within the observed x-range and report the expected response in context.",
+          "Step 5: State model limits. Flag extrapolation, lurking variables, nonlinearity, and the absence of random assignment before making a causal claim."
+        ],
+        "readingOrder": [
+          "scatterplot",
+          "fit",
+          "residuals",
+          "prediction",
+          "limits"
+        ],
+        "colorIndependent": true,
+        "shapeIndependentLabels": true,
+        "fallbackMode": "ordered-text-equivalent",
+        "independentReviewStatus": "pending"
+      },
+      "spec": {
+        "format": "alloflow-diagram-v1",
+        "layout": "left-to-right",
+        "nodes": [
+          {
+            "id": "scatterplot",
+            "label": "Scatterplot",
+            "detail": "Describe direction, form, strength, clusters, outliers, and influential observations."
+          },
+          {
+            "id": "fit",
+            "label": "Fit the line",
+            "detail": "Use the least-squares line, slope, intercept, predicted values, and r or r-squared with units."
+          },
+          {
+            "id": "residuals",
+            "label": "Inspect residuals",
+            "detail": "Look for random scatter around zero, curvature, changing spread, outliers, and high leverage."
+          },
+          {
+            "id": "prediction",
+            "label": "Make a prediction",
+            "detail": "Predict within the observed x-range and report the expected response in context."
+          },
+          {
+            "id": "limits",
+            "label": "State model limits",
+            "detail": "Flag extrapolation, lurking variables, nonlinearity, and the absence of random assignment before making a causal claim."
+          }
+        ],
+        "edges": [
+          {
+            "id": "scatterplot-to-fit",
+            "from": "scatterplot",
+            "to": "fit",
+            "label": "motivates"
+          },
+          {
+            "id": "fit-to-residuals",
+            "from": "fit",
+            "to": "residuals",
+            "label": "must be checked by"
+          },
+          {
+            "id": "residuals-to-prediction",
+            "from": "residuals",
+            "to": "prediction",
+            "label": "qualifies"
+          },
+          {
+            "id": "prediction-to-limits",
+            "from": "prediction",
+            "to": "limits",
+            "label": "needs"
+          }
+        ],
+        "renderingHints": {
+          "connectorStyle": "arrow",
+          "allowHorizontalScroll": true,
+          "minimumTextSize": "user-scalable"
+        }
+      }
+    }
+  ],
+  "diagramPlacements": [
+    {
+      "id": "ap-stats-diagram-u1-design-scope-placement",
+      "diagramId": "ap-stats-diagram-u1-design-scope",
+      "chapterId": "ap-stats-ch-01",
+      "sectionId": "ap-stats-ch-01-section-02",
+      "position": "after-section-content",
+      "learnerPurpose": "Use the study design to decide what a statistical conclusion can support.",
+      "requiredForComprehension": false,
+      "unscored": true,
+      "fallbackMode": "diagram-text-equivalent",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "accessibilityReviewStatus": "pending-independent-review",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-stats-diagram-u2-probability-model-placement",
+      "diagramId": "ap-stats-diagram-u2-probability-model",
+      "chapterId": "ap-stats-ch-02",
+      "sectionId": "ap-stats-ch-02-section-02",
+      "position": "after-section-content",
+      "learnerPurpose": "Choose a probability rule or model and interpret its long-run meaning.",
+      "requiredForComprehension": false,
+      "unscored": true,
+      "fallbackMode": "diagram-text-equivalent",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "accessibilityReviewStatus": "pending-independent-review",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-stats-diagram-u3-proportion-inference-placement",
+      "diagramId": "ap-stats-diagram-u3-proportion-inference",
+      "chapterId": "ap-stats-ch-03",
+      "sectionId": "ap-stats-ch-03-section-02",
+      "position": "after-section-content",
+      "learnerPurpose": "Keep a proportion interval or test connected to its parameter, conditions, and claim.",
+      "requiredForComprehension": false,
+      "unscored": true,
+      "fallbackMode": "diagram-text-equivalent",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "accessibilityReviewStatus": "pending-independent-review",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-stats-diagram-u4-mean-t-procedure-placement",
+      "diagramId": "ap-stats-diagram-u4-mean-t-procedure",
+      "chapterId": "ap-stats-ch-04",
+      "sectionId": "ap-stats-ch-04-section-02",
+      "position": "after-section-content",
+      "learnerPurpose": "Select the correct mean procedure by first identifying the design and target.",
+      "requiredForComprehension": false,
+      "unscored": true,
+      "fallbackMode": "diagram-text-equivalent",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "accessibilityReviewStatus": "pending-independent-review",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-stats-diagram-u5-regression-diagnostics-placement",
+      "diagramId": "ap-stats-diagram-u5-regression-diagnostics",
+      "chapterId": "ap-stats-ch-05",
+      "sectionId": "ap-stats-ch-05-section-02",
+      "position": "after-section-content",
+      "learnerPurpose": "Use the scatterplot and residual evidence to judge a regression model and its limits.",
+      "requiredForComprehension": false,
+      "unscored": true,
+      "fallbackMode": "diagram-text-equivalent",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "accessibilityReviewStatus": "pending-independent-review",
+      "releaseEligible": false
+    }
+  ],
   "flashcards": [
     {
       "id": "ap-stats-ch-01-section-01-card",
@@ -3904,6 +6410,321 @@
       ],
       "reviewStatus": "source-reviewed-editorial-pass",
       "reviewNote": "Original foundation study card; independent AP Statistics subject-expert validation remains pending."
+    },
+    {
+      "id": "ap-stats-card-u1-summaries",
+      "chapterId": "ap-stats-ch-01",
+      "sectionId": "ap-stats-ch-01-section-01",
+      "domainId": "exploring-one-variable-data-and-collecting-data",
+      "domain": "One-Variable Data and Collecting Data",
+      "front": "When should you prefer median and IQR?",
+      "back": "Prefer median and IQR when the distribution is strongly skewed or contains outliers because they are resistant summaries.",
+      "tags": [
+        "median",
+        "IQR",
+        "resistant"
+      ],
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+        "https://apcentral.collegeboard.org/courses/ap-statistics",
+        "https://openstax.org/details/books/introductory-statistics-2e"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Original formula and decision card; independent AP Statistics subject-expert validation remains pending."
+    },
+    {
+      "id": "ap-stats-card-u1-zscores",
+      "chapterId": "ap-stats-ch-01",
+      "sectionId": "ap-stats-ch-01-section-02",
+      "domainId": "exploring-one-variable-data-and-collecting-data",
+      "domain": "One-Variable Data and Collecting Data",
+      "front": "What does a z-score measure?",
+      "back": "A z-score measures how many standard deviations an observation is from the mean: z = (x - mean) / standard deviation.",
+      "tags": [
+        "z-score",
+        "standard deviation",
+        "standardize"
+      ],
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+        "https://apcentral.collegeboard.org/courses/ap-statistics",
+        "https://openstax.org/details/books/introductory-statistics-2e"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Original formula and decision card; independent AP Statistics subject-expert validation remains pending."
+    },
+    {
+      "id": "ap-stats-card-u1-design",
+      "chapterId": "ap-stats-ch-01",
+      "sectionId": "ap-stats-ch-01-section-03",
+      "domainId": "exploring-one-variable-data-and-collecting-data",
+      "domain": "One-Variable Data and Collecting Data",
+      "front": "Which design supports which conclusion?",
+      "back": "Random sampling supports generalization to a population; random assignment supports a cause-and-effect conclusion.",
+      "tags": [
+        "random sampling",
+        "random assignment",
+        "scope"
+      ],
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+        "https://apcentral.collegeboard.org/courses/ap-statistics",
+        "https://openstax.org/details/books/introductory-statistics-2e"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Original formula and decision card; independent AP Statistics subject-expert validation remains pending."
+    },
+    {
+      "id": "ap-stats-card-u2-conditional",
+      "chapterId": "ap-stats-ch-02",
+      "sectionId": "ap-stats-ch-02-section-01",
+      "domainId": "probability-random-variables-and-probability-distributions",
+      "domain": "Probability and Random Variables",
+      "front": "What is the denominator in P(A given B)?",
+      "back": "The denominator is the probability or count for condition B. Conditional probability restricts attention to the B group.",
+      "tags": [
+        "conditional probability",
+        "denominator",
+        "intersection"
+      ],
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+        "https://apcentral.collegeboard.org/courses/ap-statistics",
+        "https://openstax.org/details/books/introductory-statistics-2e"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Original formula and decision card; independent AP Statistics subject-expert validation remains pending."
+    },
+    {
+      "id": "ap-stats-card-u2-binomial",
+      "chapterId": "ap-stats-ch-02",
+      "sectionId": "ap-stats-ch-02-section-02",
+      "domainId": "probability-random-variables-and-probability-distributions",
+      "domain": "Probability and Random Variables",
+      "front": "What conditions define a binomial model?",
+      "back": "Use a fixed number of trials, two outcomes per trial, independent trials, and a constant probability of success.",
+      "tags": [
+        "binomial",
+        "independence",
+        "constant probability"
+      ],
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+        "https://apcentral.collegeboard.org/courses/ap-statistics",
+        "https://openstax.org/details/books/introductory-statistics-2e"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Original formula and decision card; independent AP Statistics subject-expert validation remains pending."
+    },
+    {
+      "id": "ap-stats-card-u2-clt",
+      "chapterId": "ap-stats-ch-02",
+      "sectionId": "ap-stats-ch-02-section-03",
+      "domainId": "probability-random-variables-and-probability-distributions",
+      "domain": "Probability and Random Variables",
+      "front": "What does the Central Limit Theorem describe?",
+      "back": "For sufficiently large random samples, the sampling distribution of a sample mean can be approximately normal even when the population is not normal.",
+      "tags": [
+        "Central Limit Theorem",
+        "sample mean",
+        "sampling distribution"
+      ],
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+        "https://apcentral.collegeboard.org/courses/ap-statistics",
+        "https://openstax.org/details/books/introductory-statistics-2e"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Original formula and decision card; independent AP Statistics subject-expert validation remains pending."
+    },
+    {
+      "id": "ap-stats-card-u3-interval",
+      "chapterId": "ap-stats-ch-03",
+      "sectionId": "ap-stats-ch-03-section-01",
+      "domainId": "inference-for-categorical-data-proportions",
+      "domain": "Inference for Proportions",
+      "front": "What belongs in a confidence-interval interpretation?",
+      "back": "Name the confidence procedure, the population parameter, and the interval of plausible values. Do not describe a fixed parameter as randomly moving.",
+      "tags": [
+        "confidence interval",
+        "parameter",
+        "interpretation"
+      ],
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+        "https://apcentral.collegeboard.org/courses/ap-statistics",
+        "https://openstax.org/details/books/introductory-statistics-2e"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Original formula and decision card; independent AP Statistics subject-expert validation remains pending."
+    },
+    {
+      "id": "ap-stats-card-u3-pvalue",
+      "chapterId": "ap-stats-ch-03",
+      "sectionId": "ap-stats-ch-03-section-02",
+      "domainId": "inference-for-categorical-data-proportions",
+      "domain": "Inference for Proportions",
+      "front": "What does a p-value mean?",
+      "back": "Assuming the null hypothesis is true, it is the probability of a result at least as extreme as the observed result.",
+      "tags": [
+        "p-value",
+        "null hypothesis",
+        "extreme"
+      ],
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+        "https://apcentral.collegeboard.org/courses/ap-statistics",
+        "https://openstax.org/details/books/introductory-statistics-2e"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Original formula and decision card; independent AP Statistics subject-expert validation remains pending."
+    },
+    {
+      "id": "ap-stats-card-u3-chisquare",
+      "chapterId": "ap-stats-ch-03",
+      "sectionId": "ap-stats-ch-03-section-03",
+      "domainId": "inference-for-categorical-data-proportions",
+      "domain": "Inference for Proportions",
+      "front": "What does a chi-square statistic compare?",
+      "back": "It aggregates squared observed-minus-expected differences, scaled by expected counts, under a categorical null model.",
+      "tags": [
+        "chi-square",
+        "observed",
+        "expected"
+      ],
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+        "https://apcentral.collegeboard.org/courses/ap-statistics",
+        "https://openstax.org/details/books/introductory-statistics-2e"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Original formula and decision card; independent AP Statistics subject-expert validation remains pending."
+    },
+    {
+      "id": "ap-stats-card-u4-t",
+      "chapterId": "ap-stats-ch-04",
+      "sectionId": "ap-stats-ch-04-section-01",
+      "domainId": "inference-for-quantitative-data-means",
+      "domain": "Inference for Means",
+      "front": "Why are t procedures used for means?",
+      "back": "The population standard deviation is usually unknown and is estimated with the sample standard deviation, adding uncertainty.",
+      "tags": [
+        "t-distribution",
+        "mean",
+        "standard error"
+      ],
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+        "https://apcentral.collegeboard.org/courses/ap-statistics",
+        "https://openstax.org/details/books/introductory-statistics-2e"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Original formula and decision card; independent AP Statistics subject-expert validation remains pending."
+    },
+    {
+      "id": "ap-stats-card-u4-paired",
+      "chapterId": "ap-stats-ch-04",
+      "sectionId": "ap-stats-ch-04-section-02",
+      "domainId": "inference-for-quantitative-data-means",
+      "domain": "Inference for Means",
+      "front": "When should measurements be paired?",
+      "back": "Use paired analysis when the same unit contributes both measurements or when observations are deliberately matched; analyze within-pair differences.",
+      "tags": [
+        "matched pairs",
+        "differences",
+        "design"
+      ],
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+        "https://apcentral.collegeboard.org/courses/ap-statistics",
+        "https://openstax.org/details/books/introductory-statistics-2e"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Original formula and decision card; independent AP Statistics subject-expert validation remains pending."
+    },
+    {
+      "id": "ap-stats-card-u4-conclusion",
+      "chapterId": "ap-stats-ch-04",
+      "sectionId": "ap-stats-ch-04-section-03",
+      "domainId": "inference-for-quantitative-data-means",
+      "domain": "Inference for Means",
+      "front": "What should a mean-inference conclusion include?",
+      "back": "State the population mean or mean difference, the direction of evidence, the statistical result, and the design limits in context.",
+      "tags": [
+        "mean",
+        "evidence",
+        "scope"
+      ],
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+        "https://apcentral.collegeboard.org/courses/ap-statistics",
+        "https://openstax.org/details/books/introductory-statistics-2e"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Original formula and decision card; independent AP Statistics subject-expert validation remains pending."
+    },
+    {
+      "id": "ap-stats-card-u5-residuals",
+      "chapterId": "ap-stats-ch-05",
+      "sectionId": "ap-stats-ch-05-section-01",
+      "domainId": "regression-analysis",
+      "domain": "Regression Analysis",
+      "front": "What is a residual?",
+      "back": "A residual is observed response minus predicted response: residual = y - y-hat. Positive residuals lie above the fitted line.",
+      "tags": [
+        "residual",
+        "predicted",
+        "observed"
+      ],
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+        "https://apcentral.collegeboard.org/courses/ap-statistics",
+        "https://openstax.org/details/books/introductory-statistics-2e"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Original formula and decision card; independent AP Statistics subject-expert validation remains pending."
+    },
+    {
+      "id": "ap-stats-card-u5-rsquared",
+      "chapterId": "ap-stats-ch-05",
+      "sectionId": "ap-stats-ch-05-section-02",
+      "domainId": "regression-analysis",
+      "domain": "Regression Analysis",
+      "front": "What does r-squared measure?",
+      "back": "R-squared is the proportion of observed response variation explained by the fitted linear model with the explanatory variable.",
+      "tags": [
+        "r-squared",
+        "variation",
+        "linear model"
+      ],
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+        "https://apcentral.collegeboard.org/courses/ap-statistics",
+        "https://openstax.org/details/books/introductory-statistics-2e"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Original formula and decision card; independent AP Statistics subject-expert validation remains pending."
+    },
+    {
+      "id": "ap-stats-card-u5-limits",
+      "chapterId": "ap-stats-ch-05",
+      "sectionId": "ap-stats-ch-05-section-03",
+      "domainId": "regression-analysis",
+      "domain": "Regression Analysis",
+      "front": "What limits a regression prediction?",
+      "back": "Watch for extrapolation, nonlinear residual patterns, high-leverage points, lurking variables, and the absence of random assignment for causal claims.",
+      "tags": [
+        "extrapolation",
+        "leverage",
+        "causation"
+      ],
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+        "https://apcentral.collegeboard.org/courses/ap-statistics",
+        "https://openstax.org/details/books/introductory-statistics-2e"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Original formula and decision card; independent AP Statistics subject-expert validation remains pending."
     }
   ],
   "memoryAids": [
@@ -4031,6 +6852,106 @@
       ],
       "reviewStatus": "source-reviewed-editorial-pass",
       "reviewNote": "Original foundation retrieval aid; AP Statistics and accessibility validation remain pending."
+    },
+    {
+      "id": "ap-stats-clinic-u1-sampling-assignment",
+      "chapterId": "ap-stats-ch-01",
+      "type": "mistake clinic",
+      "title": "Sampling versus assignment",
+      "content": "Random sampling answers who the data can represent. Random assignment answers whether a treatment difference can support causation. A large sample does not substitute for either design feature.",
+      "tags": [
+        "sampling",
+        "assignment",
+        "causation"
+      ],
+      "domain": "One-Variable Data and Collecting Data",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+        "https://apcentral.collegeboard.org/courses/ap-statistics",
+        "https://openstax.org/details/books/introductory-statistics-2e"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Original misconception clinic; independent AP Statistics subject-expert and accessibility validation remain pending."
+    },
+    {
+      "id": "ap-stats-clinic-u2-probability",
+      "chapterId": "ap-stats-ch-02",
+      "type": "mistake clinic",
+      "title": "Conditional probability versus independence",
+      "content": "Conditional probability changes the denominator to the condition group. Independence means the condition does not change the probability. Mutually exclusive positive-probability events are not independent.",
+      "tags": [
+        "conditional probability",
+        "independence",
+        "mutually exclusive"
+      ],
+      "domain": "Probability and Random Variables",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+        "https://apcentral.collegeboard.org/courses/ap-statistics",
+        "https://openstax.org/details/books/introductory-statistics-2e"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Original misconception clinic; independent AP Statistics subject-expert and accessibility validation remain pending."
+    },
+    {
+      "id": "ap-stats-clinic-u3-evidence",
+      "chapterId": "ap-stats-ch-03",
+      "type": "mistake clinic",
+      "title": "P-value versus probability of the null",
+      "content": "A p-value is calculated under the null model; it is not the probability that the null is true. A large p-value means the data are not unusual under the null, not that the null has been proven.",
+      "tags": [
+        "p-value",
+        "null hypothesis",
+        "evidence"
+      ],
+      "domain": "Inference for Proportions",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+        "https://apcentral.collegeboard.org/courses/ap-statistics",
+        "https://openstax.org/details/books/introductory-statistics-2e"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Original misconception clinic; independent AP Statistics subject-expert and accessibility validation remain pending."
+    },
+    {
+      "id": "ap-stats-clinic-u4-paired",
+      "chapterId": "ap-stats-ch-04",
+      "type": "mistake clinic",
+      "title": "Paired versus independent means",
+      "content": "Use paired analysis when each unit contributes a meaningful difference. Use a two-sample method for independent groups. Do not discard pairing by comparing the two lists as unrelated samples.",
+      "tags": [
+        "paired data",
+        "mean difference",
+        "t procedure"
+      ],
+      "domain": "Inference for Means",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+        "https://apcentral.collegeboard.org/courses/ap-statistics",
+        "https://openstax.org/details/books/introductory-statistics-2e"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Original misconception clinic; independent AP Statistics subject-expert and accessibility validation remain pending."
+    },
+    {
+      "id": "ap-stats-clinic-u5-regression",
+      "chapterId": "ap-stats-ch-05",
+      "type": "mistake clinic",
+      "title": "Association versus regression limits",
+      "content": "A strong r or r-squared does not establish causation. Inspect residuals, leverage, and extrapolation, and keep the study design attached to every regression conclusion.",
+      "tags": [
+        "association",
+        "r-squared",
+        "extrapolation"
+      ],
+      "domain": "Regression Analysis",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+        "https://apcentral.collegeboard.org/courses/ap-statistics",
+        "https://openstax.org/details/books/introductory-statistics-2e"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Original misconception clinic; independent AP Statistics subject-expert and accessibility validation remain pending."
     }
   ],
   "constructedResponseWorkshops": [
@@ -4113,21 +7034,125 @@
       "reviewStatus": "source-reviewed-editorial-draft",
       "reviewNote": "Original workshop; independent AP Statistics subject-expert and accessibility review remain pending.",
       "releaseEligible": false
+    },
+    {
+      "id": "ap-stats-workshop-unit1-design",
+      "type": "unscored-planning-workshop",
+      "title": "Unit 1 design response planner",
+      "prompt": "Plan a complete response about a student wellness study. Identify the investigative question, variable types, sampling or assignment method, likely bias, and the strongest conclusion the design supports.",
+      "selfCheck": [
+        "Name the population and observational units.",
+        "Separate random sampling from random assignment.",
+        "State whether the design supports generalization, causation, or neither."
+      ],
+      "unscored": true,
+      "scoreMeaning": "No score is produced. This is a planning and self-check resource, not automated FRQ scoring.",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+        "https://apcentral.collegeboard.org/courses/ap-statistics/exam"
+      ],
+      "reviewStatus": "source-reviewed-editorial-draft",
+      "reviewNote": "Original workshop; independent AP Statistics subject-expert and accessibility review remain pending.",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-stats-workshop-unit2-probability",
+      "type": "unscored-planning-workshop",
+      "title": "Unit 2 probability model planner",
+      "prompt": "Plan a response about a simulated game. Define the events or random variable, write the probability rule or model conditions, and explain how repeated simulation estimates long-run behavior.",
+      "selfCheck": [
+        "Define the denominator for any conditional probability.",
+        "Check fixed trials, independence, and constant probability for a binomial model.",
+        "Distinguish an expected value from an individual guaranteed result."
+      ],
+      "unscored": true,
+      "scoreMeaning": "No score is produced. This is a planning and self-check resource, not automated FRQ scoring.",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+        "https://apcentral.collegeboard.org/courses/ap-statistics/exam"
+      ],
+      "reviewStatus": "source-reviewed-editorial-draft",
+      "reviewNote": "Original workshop; independent AP Statistics subject-expert and accessibility review remain pending.",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-stats-workshop-unit3-proportions",
+      "type": "unscored-planning-workshop",
+      "title": "Unit 3 proportions response planner",
+      "prompt": "Plan an evidence-based response comparing support for a proposal in two populations. State the parameter, hypotheses or interval, conditions, numerical evidence, and contextual conclusion.",
+      "selfCheck": [
+        "Use population parameters in hypotheses.",
+        "Connect the p-value or interval to the null model and design.",
+        "Avoid treating a large p-value as proof of equality."
+      ],
+      "unscored": true,
+      "scoreMeaning": "No score is produced. This is a planning and self-check resource, not automated FRQ scoring.",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+        "https://apcentral.collegeboard.org/courses/ap-statistics/exam"
+      ],
+      "reviewStatus": "source-reviewed-editorial-draft",
+      "reviewNote": "Original workshop; independent AP Statistics subject-expert and accessibility review remain pending.",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-stats-workshop-unit4-means",
+      "type": "unscored-planning-workshop",
+      "title": "Unit 4 means response planner",
+      "prompt": "Plan a response about a quantitative outcome measured under two conditions. Decide whether the data are paired or independent, identify the mean target, check conditions, and interpret the result in units.",
+      "selfCheck": [
+        "Define the order of any mean difference.",
+        "Use t procedures only after checking the design and distribution conditions.",
+        "Keep statistical significance separate from practical importance."
+      ],
+      "unscored": true,
+      "scoreMeaning": "No score is produced. This is a planning and self-check resource, not automated FRQ scoring.",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+        "https://apcentral.collegeboard.org/courses/ap-statistics/exam"
+      ],
+      "reviewStatus": "source-reviewed-editorial-draft",
+      "reviewNote": "Original workshop; independent AP Statistics subject-expert and accessibility review remain pending.",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-stats-workshop-unit5-regression",
+      "type": "unscored-planning-workshop",
+      "title": "Unit 5 regression response planner",
+      "prompt": "Plan a regression response for a quantitative predictor and outcome. Describe the scatterplot, interpret slope and r-squared, examine residuals, and identify extrapolation or causal limits.",
+      "selfCheck": [
+        "Use units when interpreting slope and residuals.",
+        "Treat r-squared as explained variation, not a causal probability.",
+        "Flag high leverage, nonlinearity, and predictions outside the observed range."
+      ],
+      "unscored": true,
+      "scoreMeaning": "No score is produced. This is a planning and self-check resource, not automated FRQ scoring.",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+        "https://apcentral.collegeboard.org/courses/ap-statistics/exam"
+      ],
+      "reviewStatus": "source-reviewed-editorial-draft",
+      "reviewNote": "Original workshop; independent AP Statistics subject-expert and accessibility review remain pending.",
+      "releaseEligible": false
     }
   ],
   "summary": {
     "chapters": 5,
     "sections": 15,
-    "knowledgeChecks": 15,
-    "flashcards": 15,
-    "memoryAids": 5,
-    "diagrams": 0,
-    "diagramPlacements": 0,
-    "constructedResponseWorkshops": 4,
+    "knowledgeChecks": 30,
+    "flashcards": 30,
+    "memoryAids": 10,
+    "practiceRoutes": 15,
+    "studyRoutes": 4,
+    "diagrams": 5,
+    "diagramPlacements": 5,
+    "constructedResponseWorkshops": 9,
     "richLessonPrototypes": 5,
     "sourceReviewedChapters": 5,
-    "sourceReviewedFlashcards": 15,
-    "sourceReviewedMemoryAids": 5,
+    "sourceReviewedFlashcards": 30,
+    "sourceReviewedMemoryAids": 10,
+    "sourceReviewedDiagrams": 5,
+    "sourceReviewedDiagramPlacements": 5,
     "releaseEligibleRecords": 0
   },
   "accessibility": {
@@ -4169,7 +7194,7 @@
   "transitionNotice": "Reverify the current AP Statistics CED, course revisions, digital exam format, calculator and reference-material policies, and public-use boundaries before any release or expansion.",
   "contentMigration": {
     "schemaVersion": 1,
-    "contentVersion": "ap-statistics-foundation-v2",
+    "contentVersion": "ap-statistics-foundation-v3",
     "sections": 15,
     "completeSections": 15,
     "richLessonPrototypes": 5,

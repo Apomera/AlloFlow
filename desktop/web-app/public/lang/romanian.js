@@ -28999,7 +28999,17 @@
       "best": "Cel mai bun",
       "menu_73": "← Meniu",
       "menu_74": "← Meniu",
-      "menu_75": "← Meniu"
+      "menu_75": "← Meniu",
+      "explore_the_road": "Explorează drumul",
+      "lane_change_without_signal": "Schimbare de bandă fără semnalizare",
+      "drove_in_oncoming_lane": "Ai condus pe contrasens",
+      "high_beams": "Lumini de drum",
+      "left_signal": "Semnal stânga",
+      "right_signal": "Semnal dreapta",
+      "braking": "Frânare",
+      "traction_loss": "Pierderea tracțiunii",
+      "fog_low_beams_ok": "Ceață — faza scurtă este în regulă",
+      "welcome_to_roadready": "Bine ai venit la RoadReady"
     },
     "schoolbehaviortoolkit": {
       "replacement_behaviors": "Replacement comportament",

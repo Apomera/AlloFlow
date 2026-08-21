@@ -28814,7 +28814,17 @@
       "best": "ਸਭ ਤੋਂ ਵਧੀਆ",
       "menu_73": "← ਮੀਨੂ",
       "menu_74": "← ਮੀਨੂ",
-      "menu_75": "← ਮੀਨੂ"
+      "menu_75": "← ਮੀਨੂ",
+      "explore_the_road": "ਸੜਕ ਦੀ ਪੜਚੋਲ ਕਰੋ",
+      "lane_change_without_signal": "ਸਿਗਨਲ ਤੋਂ ਬਿਨਾਂ ਲੇਨ ਬਦਲਣਾ",
+      "drove_in_oncoming_lane": "ਉਲਟੀ ਲੇਨ ਵਿੱਚ ਗੱਡੀ ਚਲਾਈ",
+      "high_beams": "ਹਾਈ ਬੀਮ",
+      "left_signal": "ਖੱਬਾ ਸਿਗਨਲ",
+      "right_signal": "ਸੱਜਾ ਸਿਗਨਲ",
+      "braking": "ਬ੍ਰੇਕ ਲਗਾਉਣਾ",
+      "traction_loss": "ਪਕੜ ਖਤਮ ਹੋਣਾ",
+      "fog_low_beams_ok": "ਧੁੰਦ — ਲੋ ਬੀਮ ਠੀਕ ਹਨ",
+      "welcome_to_roadready": "RoadReady ਵਿੱਚ ਜੀ ਆਇਆਂ ਨੂੰ"
     },
     "schoolbehaviortoolkit": {
       "replacement_behaviors": "Replacement ਵਿਵਹਾਰ",

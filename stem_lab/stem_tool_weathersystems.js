@@ -7249,6 +7249,16 @@ var geographyGroup = new THREE.Group();
         var showAdvanced = band === '6-8' || band === '9-12';
         var appearance = sceneAppearance(state, current);
         var mapDescription = scenario.name + ' weather map at model hour ' + state.simHour + '. ' + current.cloudCover + ' percent cloud cover, ' + current.precipPotential + ' percent precipitation potential, wind from ' + cardinal(current.windDir) + ' at ' + current.windSpeed + ' kilometers per hour. The scene is painted as ' + appearance.skyLabel + ' over ' + appearance.groundLabel + (appearance.sunVisible ? ', with the sun visible' : ', with the sun hidden by cloud') + '. Visible layers include pressure contours' + (state.fronts ? ', fronts' : '') + (state.radar ? ', radar intensity and sweep' : '') + (state.windLayer ? ', and directional wind tracers' : '') + '. Station markers show each station name with its current temperature. Selected station: ' + station.name + '.';
+        var moistureGap = round(Math.max(0, current.temperature - current.dewPoint), 1);
+        var moistureCloseness = clamp(100 - moistureGap * 6, 0, 100);
+        var moistureLabel = moistureGap <= 2 ? 'near saturation' : moistureGap <= 5 ? 'moist air' : 'drier air';
+        var mapSnapshot = [
+          { label: 'Air temp', value: current.temperature + '\u00B0C', note: 'surface air' },
+          { label: 'Dew-point gap', value: moistureGap + '\u00B0C', note: moistureLabel, meter: moistureCloseness },
+          { label: 'Pressure', value: current.pressure + ' hPa', note: 'modeled field' },
+          { label: 'Wind', value: cardinal(current.windDir) + ' ' + current.windSpeed + ' km/h', note: 'direction + speed' },
+          { label: 'Precip potential', value: current.precipPotential + '%', note: current.precipType === 'none' ? 'no type triggered' : current.precipType }
+        ];
         return h('div', { className: 'grid gap-4 p-4 lg:grid-cols-[285px_minmax(0,1fr)]' },
           h('aside', { className: 'space-y-3' },
             scenarioPicker(),
@@ -7298,6 +7308,37 @@ var geographyGroup = new THREE.Group();
                 h('span', null, '\u2192 Wind marks show direction'),
                 h('span', null, '\uD83D\uDFE9\uD83D\uDFE8\uD83D\uDFE5 Radar: light to intense'),
                 h('span', null, '\uD83C\uDF24\uFE0F Sky and ground colour follow the model: ' + appearance.skyLabel + ' over ' + appearance.groundLabel)
+              ),
+              h('div', {
+                className: 'border-t px-3 py-3 ' + (dark ? 'border-slate-700 bg-slate-950/45' : 'border-sky-100 bg-white/70'),
+                role: 'group',
+                'aria-label': 'Live atmospheric snapshot for ' + station.name + ' at model hour ' + state.simHour,
+                'data-weather-snapshot-rail': true
+              },
+                h('div', { className: 'mb-2 flex flex-wrap items-center justify-between gap-2' },
+                  h('p', { className: 'text-[11px] font-black uppercase tracking-wide ' + skyAccentClass }, 'Live atmospheric snapshot'),
+                  h('span', { className: 'text-[10px] font-bold ' + mutedClass }, 'T+' + state.simHour + ' h · ' + station.name)
+                ),
+                h('div', { className: 'grid grid-cols-2 gap-2 sm:grid-cols-5' }, mapSnapshot.map(function (metric) {
+                  return h('div', {
+                    key: metric.label,
+                    className: 'min-w-0 rounded-lg border px-2.5 py-2 ' + (dark ? 'border-slate-700 bg-slate-900/70' : 'border-sky-100 bg-white')
+                  },
+                    h('p', { className: 'truncate text-[10px] font-black uppercase tracking-wide ' + skyAccentClass }, metric.label),
+                    h('p', { className: 'mt-1 truncate text-sm font-black tabular-nums' }, metric.value),
+                    h('p', { className: 'mt-0.5 truncate text-[10px] ' + mutedClass }, metric.note),
+                    metric.meter == null ? null : h('div', {
+                      className: 'mt-1.5 h-1.5 overflow-hidden rounded-full ' + (dark ? 'bg-slate-800' : 'bg-sky-100'),
+                      role: 'progressbar',
+                      'aria-label': 'Moisture closeness to saturation',
+                      'aria-valuemin': 0,
+                      'aria-valuemax': 100,
+                      'aria-valuenow': Math.round(metric.meter),
+                      'aria-valuetext': metric.value + '; ' + metric.note,
+                      'data-weather-moisture-meter': true
+                    }, h('div', { className: 'h-full rounded-full bg-gradient-to-r from-sky-400 to-cyan-300', style: { width: metric.meter + '%' } }))
+                  );
+                }))
               ),
               h('div', { className: 'grid gap-2 p-3 sm:grid-cols-4' },
                 STATIONS.map(function (item) {

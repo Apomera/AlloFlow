@@ -77,6 +77,37 @@ const createGeminiAPI = (deps) => {
       return name + (code ? ' code=' + code : '') + ' category=' + category;
     };
 
+    // A document-remediation call already has a breaker-aware retry owner in
+    // doc_pipeline. Its transport telemetry carries that ownership plus the
+    // current outer-attempt deadline. Keep the HTTP/model work inside that
+    // wall: one inner attempt per model is enough when the outer layer owns the
+    // retry, while ordinary callers retain the historical two-attempt policy.
+    const _providerTransportPlan = (telemetry, defaultAttempts, defaultTimeoutMs) => {
+      const pipelineManaged = !!(telemetry && telemetry.retryOwner === 'doc-pipeline');
+      let deadlineTs = 0;
+      try {
+        deadlineTs = telemetry && typeof telemetry.getDeadlineTs === 'function'
+          ? Number(telemetry.getDeadlineTs()) || 0
+          : Number(telemetry && telemetry.deadlineTs) || 0;
+      } catch (_) { deadlineTs = 0; }
+      const remainingMs = deadlineTs > 0 ? Math.max(0, deadlineTs - Date.now()) : Infinity;
+      const usableMs = Number.isFinite(remainingMs) ? Math.max(0, remainingMs - 2000) : Infinity;
+      return {
+        pipelineManaged,
+        attempts: pipelineManaged ? 1 : defaultAttempts,
+        timeoutMs: Number.isFinite(usableMs)
+          ? Math.max(1000, Math.min(defaultTimeoutMs, usableMs))
+          : defaultTimeoutMs,
+        canStart: !Number.isFinite(usableMs) || usableMs >= 1000,
+        canFallback: !Number.isFinite(usableMs) || usableMs >= 5000,
+      };
+    };
+    const _providerDeadlineError = () => {
+      const error = new Error('Timed out: outer provider deadline has no room for another transport attempt.');
+      error.code = 'ALLO_PROVIDER_DEADLINE';
+      return error;
+    };
+
     // ── Error classification ──────────────────────────────────────────────
     // Distinguish four real failure modes that users used to all see as
     // "Daily Usage Limit Reached":
@@ -92,6 +123,10 @@ const createGeminiAPI = (deps) => {
     const _classifyGeminiError = (err) => {
       const msg = (err && err.message) ? String(err.message) : '';
       const lower = msg.toLowerCase();
+      // Different Canvas/provider adapters do not all format HTTP failures the
+      // same way. Prefer the structured status when one is present, while
+      // retaining the message checks for older fetch wrappers.
+      const status = Number(err && (err.status || err.statusCode)) || 0;
       // Refusal (safety / blocked / finishReason) — keep this FIRST so other
       // string heuristics don't mislabel a content block as quota/auth.
       if (
@@ -108,7 +143,7 @@ const createGeminiAPI = (deps) => {
       // OR per-day quota (resolves at midnight Pacific). We can't reliably
       // distinguish them from the error message alone, so word the user-facing
       // message to admit both possibilities rather than claiming "daily."
-      if (msg.includes('429') || lower.includes('resource_exhausted') || lower.includes('quota exceeded')) {
+      if (status === 429 || msg.includes('429') || lower.includes('resource_exhausted') || lower.includes('quota exceeded')) {
         // Look for explicit "per minute" / "per day" hints in the body to
         // narrow the wording when possible.
         const perMinHint = lower.includes('per minute') || lower.includes('rpm') || lower.includes('per-minute');
@@ -125,6 +160,8 @@ const createGeminiAPI = (deps) => {
       }
       // Auth: HTTP 401 + the documented Gemini codes.
       if (
+        status === 401 ||
+        status === 403 ||
         msg.includes('401') ||
         lower.includes('unauthenticated') ||
         lower.includes('api key not valid') ||
@@ -149,6 +186,7 @@ const createGeminiAPI = (deps) => {
       }
       // Config: model not found / unsupported / 404 / INVALID_ARGUMENT.
       if (
+        status === 404 ||
         msg.includes('404') ||
         lower.includes('model not found') ||
         lower.includes('not found for api') ||
@@ -165,6 +203,8 @@ const createGeminiAPI = (deps) => {
       // landing in user error reports 15x per remediation while the pipeline
       // succeeded; user-testing finding 2026-06-10).
       if (
+        (status >= 500 && status <= 599) ||
+        status === 408 ||
         msg.match(/HTTP 5\d\d/) ||
         lower.includes('failed to fetch') ||
         lower.includes('networkerror') ||
@@ -557,16 +597,14 @@ const createGeminiAPI = (deps) => {
         let _modelUsed = GEMINI_MODELS.default;
         try {
           if (_innerTelemetry && typeof _innerTelemetry.onModel === 'function') _innerTelemetry.onModel(GEMINI_MODELS.default);
-          // ── Nested budgets (2026-08-16) ────────────────────────────────────────────────────
-          // The stub-freeze fix (AlloFlowANTI late-binding) woke this inner retry layer up in
-          // Canvas for the first time — and its former defaults (5 × 120s) can never fit inside
-          // doc_pipeline's 180s outer timeout: a 429-storm call would be killed mid-inner-ladder
-          // and misfiled as a timeout, the exact R1 classification bug one layer down. Budgets
-          // now nest by arithmetic: text = 2 × 80s (+1s backoff ≈ 161s < 180s outer); vision =
-          // 2 × 50s (+1s ≈ 101s < 120s outer). Callers with no outer timeout (grammar, glossary,
-          // personas) are governed by the same numbers, which is fine — 2 attempts is still a
-          // retry, and no request should outlive 80s unobserved.
-          response = await fetchWithExponentialBackoff(_buildUrl(GEMINI_MODELS.default), _fetchOpts, 2, 80000, _innerTelemetry);
+          // Pipeline calls have one breaker-aware outer retry owner. Running the
+          // full inner retry ladder as well meant primary + fallback could exceed
+          // the 180s wall and survive underneath the next outer retry. The plan
+          // keeps legacy callers at two attempts but gives pipeline-owned calls
+          // one bounded attempt per model, with the live outer deadline applied.
+          const _primaryPlan = _providerTransportPlan(_innerTelemetry, 2, 80000);
+          if (!_primaryPlan.canStart) throw _providerDeadlineError();
+          response = await fetchWithExponentialBackoff(_buildUrl(GEMINI_MODELS.default), _fetchOpts, _primaryPlan.attempts, _primaryPlan.timeoutMs, _innerTelemetry);
         } catch (primaryErr) {
           if (primaryErr?.name === 'AbortError') {
             // Respect caller's abort — don't fall back to the secondary model
@@ -579,12 +617,18 @@ const createGeminiAPI = (deps) => {
           // (404), or transient network/5xx. Auth (401) does NOT fall back
           // because the fallback model uses the same key.
           const cls = _classifyGeminiError(primaryErr);
-          const shouldFallback = (cls.kind === 'quota' || cls.kind === 'config' || cls.kind === 'transient');
+          const _fallbackPlan = _providerTransportPlan(_innerTelemetry, 2, 80000);
+          // A pipeline-owned 429 belongs to the outer shared breaker. Trying a
+          // second model first hides the rate-limit from that breaker and spends
+          // another request in the same throttled window.
+          const shouldFallback = (cls.kind === 'quota' || cls.kind === 'config' || cls.kind === 'transient')
+            && !(_fallbackPlan.pipelineManaged && cls.kind === 'quota')
+            && _fallbackPlan.canFallback;
           if (shouldFallback && GEMINI_MODELS.fallback && GEMINI_MODELS.fallback !== GEMINI_MODELS.default) {
             console.warn(`[callGemini] Primary model (${GEMINI_MODELS.default}) ${cls.kind} — falling back to ${GEMINI_MODELS.fallback}`);
             try {
               if (_innerTelemetry && typeof _innerTelemetry.onModel === 'function') _innerTelemetry.onModel(GEMINI_MODELS.fallback);
-              response = await fetchWithExponentialBackoff(_buildUrl(GEMINI_MODELS.fallback), _fetchOpts, 2, 80000, _innerTelemetry); // nested budget — see the note above
+              response = await fetchWithExponentialBackoff(_buildUrl(GEMINI_MODELS.fallback), _fetchOpts, _fallbackPlan.attempts, _fallbackPlan.timeoutMs, _innerTelemetry);
               _modelUsed = GEMINI_MODELS.fallback;
             } catch (fbErr) {
               // Both models failed — the original error is more informative
@@ -884,18 +928,23 @@ const createGeminiAPI = (deps) => {
           // Use the same backoff wrapper callGemini uses — this gives Vision
           // the same 429/5xx retry behavior + signal propagation.
           if (_innerTelemetry && typeof _innerTelemetry.onModel === 'function') _innerTelemetry.onModel(primaryModel);
-          response = await fetchWithExponentialBackoff(_visionUrl(primaryModel), _fetchOpts, 2, 50000, _innerTelemetry); // nested budget: 2 × 50s fits the 120s vision outer timeout — see callGemini's note
+          const _primaryPlan = _providerTransportPlan(_innerTelemetry, 2, 50000);
+          if (!_primaryPlan.canStart) throw _providerDeadlineError();
+          response = await fetchWithExponentialBackoff(_visionUrl(primaryModel), _fetchOpts, _primaryPlan.attempts, _primaryPlan.timeoutMs, _innerTelemetry);
           _throwIfVisionAborted();
         } catch (primaryErr) {
           _throwIfVisionAborted();
           if (primaryErr?.name === 'AbortError') throw primaryErr;
           const cls = _classifyGeminiError(primaryErr);
-          const shouldFallback = (cls.kind === 'quota' || cls.kind === 'config' || cls.kind === 'transient');
+          const _fallbackPlan = _providerTransportPlan(_innerTelemetry, 2, 50000);
+          const shouldFallback = (cls.kind === 'quota' || cls.kind === 'config' || cls.kind === 'transient')
+            && !(_fallbackPlan.pipelineManaged && cls.kind === 'quota')
+            && _fallbackPlan.canFallback;
           if (shouldFallback && fallbackModel && fallbackModel !== primaryModel) {
             console.warn(`[Vision] ${primaryModel} ${cls.kind} — falling back to ${fallbackModel}`);
             try {
               if (_innerTelemetry && typeof _innerTelemetry.onModel === 'function') _innerTelemetry.onModel(fallbackModel);
-              response = await fetchWithExponentialBackoff(_visionUrl(fallbackModel), _fetchOpts, 2, 50000, _innerTelemetry); // nested budget — see callGemini's note
+              response = await fetchWithExponentialBackoff(_visionUrl(fallbackModel), _fetchOpts, _fallbackPlan.attempts, _fallbackPlan.timeoutMs, _innerTelemetry);
               _throwIfVisionAborted();
               modelUsed = fallbackModel;
             } catch (fbErr) {

@@ -154,7 +154,10 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           vizZoom: d.vizZoom !== undefined ? d.vizZoom : 1,
           vizX0: d.vizX0 !== undefined ? d.vizX0 : 0,
           vizFtcX: d.vizFtcX !== undefined ? d.vizFtcX : -1,
+          vizMotionT: d.vizMotionT !== undefined ? d.vizMotionT : 0,
           vizOptimX: d.vizOptimX !== undefined ? d.vizOptimX : null,
+          vizSlopeX: d.vizSlopeX !== undefined ? d.vizSlopeX : 0,
+          vizSlopeY: d.vizSlopeY !== undefined ? d.vizSlopeY : 0,
           vizRiemannMode: d.vizRiemannMode || 'midpoint',
           vizUserInteracted: d.vizUserInteracted || {},
           vizSlopeSeeds: d.vizSlopeSeeds || [],
@@ -195,7 +198,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             try { resizeObs = new ResizeObserver(resize); resizeObs.observe(cv); } catch(e) {}
 
             // Canvas click interaction — maps pointer X/Y into plot coords per view
-            function onClick(ev) {
+            function updateFromPointer(ev) {
               var ls = _vizLiveState.current;
               if (ls.tab !== 'visualize') return;
               var r = cv.getBoundingClientRect();
@@ -210,6 +213,13 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                   var newX0 = -3 + ((px - Lx) / (Rx - Lx)) * 6;
                   upd('vizX0', Math.max(-3, Math.min(3, newX0)));
                   upd('vizUserInteracted', Object.assign({}, ls.vizUserInteracted, { x0: true }));
+                }
+              } else if (v === 'motion') {
+                var Lxm = 60, Rxm = W - 20;
+                if (px >= Lxm && px <= Rxm) {
+                  var motionT = ((px - Lxm) / (Rxm - Lxm)) * 6;
+                  upd('vizMotionT', Math.max(0, Math.min(6, motionT)));
+                  upd('vizUserInteracted', Object.assign({}, ls.vizUserInteracted, { motion: true }));
                 }
               } else if (v === 'ftc') {
                 var gap = 12;
@@ -244,7 +254,17 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                 }
               }
             }
-            cv.addEventListener('click', onClick);
+            function onPointerDown(ev) {
+              try { cv.setPointerCapture(ev.pointerId); } catch (e) {}
+              updateFromPointer(ev);
+            }
+            function onPointerMove(ev) {
+              var view = _vizLiveState.current.vizView;
+              if (view === 'slope' || (ev.pointerType === 'mouse' && ev.buttons !== 1)) return;
+              updateFromPointer(ev);
+            }
+            cv.addEventListener('pointerdown', onPointerDown);
+            cv.addEventListener('pointermove', onPointerMove);
 
             function calcReducedMotion() {
               try { return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); }
@@ -296,7 +316,8 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
               _vizLoopRunning.current = false;
               if (_vizAnimId.current) cancelAnimationFrame(_vizAnimId.current);
               if (resizeObs) { try { resizeObs.disconnect(); } catch(e) {} }
-              cv.removeEventListener('click', onClick);
+              cv.removeEventListener('pointerdown', onPointerDown);
+              cv.removeEventListener('pointermove', onPointerMove);
             };
           }
           tryInit();
@@ -374,11 +395,12 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           c.font = 'italic 10px "Inter", sans-serif'; c.fillStyle = '#94a3b8';
           c.fillText('As you zoom, ANY smooth curve becomes a straight line. That line\u2019s slope = f\u2032(x\u2080).', W/2, 36);
 
-          var userX0 = ls.vizUserInteracted && ls.vizUserInteracted.x0;
+          var userX0 = ls.vizUserInteracted && (ls.vizUserInteracted.x0 || ls.vizUserInteracted.zoom);
           var x0 = userX0 ? ls.vizX0 : Math.sin(t / 90) * 2;
           // Zoom factor: slow sine ping-pong 1x .. 100x so users see motion even without interacting
           var autoZoom = 1 + 100 * (1 - Math.cos(t / 90)) / 2;
-          var zoom = ls.vizZoom && ls.vizZoom > 1 ? ls.vizZoom : autoZoom;
+          var userZoom = ls.vizUserInteracted && ls.vizUserInteracted.zoom;
+          var zoom = userZoom ? Math.max(1, Math.min(100, ls.vizZoom)) : autoZoom;
           var halfW_x = 3 / zoom;
           var xR = { min: x0 - halfW_x, max: x0 + halfW_x };
 
@@ -682,7 +704,9 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
 
           // Live time scrubs back and forth 0..6
           var phase = (t / 60) % 12;
-          var tNow = phase < 6 ? phase : 12 - phase; // ping-pong
+          var autoTime = phase < 6 ? phase : 12 - phase; // ping-pong
+          var userMotion = ls.vizUserInteracted && ls.vizUserInteracted.motion;
+          var tNow = userMotion ? Math.max(0, Math.min(6, ls.vizMotionT)) : autoTime;
 
           var gap = 10;
           var panelY0 = 46;
@@ -2776,6 +2800,44 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             (function() {
               var vizView = d.vizView || 'zoom';
               var vizFn   = d.vizFn   || 'quadratic';
+              var vizUserInteracted = d.vizUserInteracted || {};
+              var clampViz = function(value, min, max, fallback) {
+                var numeric = Number.isFinite(value) ? value : fallback;
+                return Math.max(min, Math.min(max, numeric));
+              };
+              var vizZoom = clampViz(d.vizZoom, 1, 100, 1);
+              var vizX0 = clampViz(d.vizX0, -3, 3, 0);
+              var vizMotionT = clampViz(d.vizMotionT, 0, 6, 0);
+              var vizFtcX = clampViz(d.vizFtcX, -2.95, 2.95, -1);
+              var vizOptimX = clampViz(d.vizOptimX, 0.05, 5.8, 2.4);
+              var vizSlopeX = clampViz(d.vizSlopeX, -3, 3, 0);
+              var vizSlopeY = clampViz(d.vizSlopeY, -2.5, 2.5, 0);
+
+              function setVizControl(key, value, interactionKey) {
+                upd(key, value);
+                if (interactionKey) upd('vizUserInteracted', Object.assign({}, vizUserInteracted, { [interactionKey]: true }));
+              }
+
+              function vizRangeControl(id, label, min, max, step, value, key, interactionKey, valueText) {
+                return h('label', { htmlFor: id, className: 'flex min-w-[180px] flex-1 items-center gap-2 text-[11px] font-bold text-slate-700' },
+                  h('span', { className: 'whitespace-nowrap' }, label),
+                  h('input', {
+                    id: id, type: 'range', min: min, max: max, step: step, value: value,
+                    'aria-label': label,
+                    'aria-valuetext': valueText,
+                    onChange: function(e) { setVizControl(key, parseFloat(e.target.value), interactionKey); },
+                    className: 'min-w-0 flex-1 accent-indigo-600'
+                  }),
+                  h('span', { className: 'w-12 text-right font-mono text-indigo-700' }, valueText)
+                );
+              }
+
+              function addSlopeSeedFromControls() {
+                var seeds = (d.vizSlopeSeeds || []).slice(-3);
+                seeds.push({ x: vizSlopeX, y: vizSlopeY });
+                upd('vizSlopeSeeds', seeds);
+                if (announceToSR) announceToSR('Solution curve added at x ' + vizSlopeX + ', y ' + vizSlopeY + '.');
+              }
               var VIEWS = [
                 { id: 'zoom',    icon: '\uD83D\uDD0D', label: 'Zoom',          desc: 'Zoom to Linearity \u2014 what is a derivative? (Shift+1)' },
                 { id: 'tangent', icon: '\uD83D\uDCCD', label: 'Tangent',       desc: 'Tangent explorer \u2014 derivative as a function (Shift+2)' },
@@ -2837,7 +2899,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                 // Function picker (shown only for views that use it)
                 (vizView === 'zoom' || vizView === 'tangent' || vizView === 'ftc' || vizView === 'riemann') &&
                 h('div', { className: 'flex gap-1 flex-wrap text-[11px] mb-2' },
-                  h('span', { className: 'text-slate-300 font-semibold self-center mr-1' }, 'f(x) ='),
+                  h('span', { className: 'text-slate-600 font-semibold self-center mr-1' }, 'f(x) ='),
                   Object.keys(CALC_FUNCS).map(function(fid) {
                     var active = vizFn === fid;
                     return h('button', {
@@ -2848,6 +2910,21 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                         : 'bg-white border-slate-200 text-slate-600 hover:border-indigo-400')
                     }, CALC_FUNCS[fid].label);
                   })
+                ),
+                ['zoom', 'tangent', 'motion', 'ftc', 'slope', 'optim'].indexOf(vizView) >= 0 &&
+                h('div', { role: 'group', 'aria-label': 'Visualization controls', className: 'mb-2 flex flex-wrap items-center gap-3 rounded-xl border border-indigo-200 bg-indigo-50 p-3' },
+                  vizView === 'zoom' && vizRangeControl('calc-viz-x0', 'Point x₀', -3, 3, 0.05, vizX0, 'vizX0', 'x0', vizX0.toFixed(2)),
+                  vizView === 'zoom' && vizRangeControl('calc-viz-zoom', 'Zoom', 1, 100, 1, vizZoom, 'vizZoom', 'zoom', vizZoom.toFixed(0) + '×'),
+                  vizView === 'tangent' && vizRangeControl('calc-viz-tangent-x', 'Tangent x₀', -3, 3, 0.05, vizX0, 'vizX0', 'x0', vizX0.toFixed(2)),
+                  vizView === 'motion' && vizRangeControl('calc-viz-motion-time', 'Time t', 0, 6, 0.05, vizMotionT, 'vizMotionT', 'motion', vizMotionT.toFixed(2) + ' s'),
+                  vizView === 'ftc' && vizRangeControl('calc-viz-ftc-x', 'Accumulated-area x', -2.95, 2.95, 0.05, vizFtcX, 'vizFtcX', 'ftc', vizFtcX.toFixed(2)),
+                  vizView === 'optim' && vizRangeControl('calc-viz-optim-x', 'Cut size x', 0.05, 5.8, 0.05, vizOptimX, 'vizOptimX', 'optim', vizOptimX.toFixed(2) + ' in'),
+                  vizView === 'slope' && vizRangeControl('calc-viz-slope-x', 'Seed x', -3, 3, 0.1, vizSlopeX, 'vizSlopeX', null, vizSlopeX.toFixed(1)),
+                  vizView === 'slope' && vizRangeControl('calc-viz-slope-y', 'Seed y', -2.5, 2.5, 0.1, vizSlopeY, 'vizSlopeY', null, vizSlopeY.toFixed(1)),
+                  vizView === 'slope' && h('button', {
+                    onClick: addSlopeSeedFromControls,
+                    className: 'rounded-lg bg-indigo-700 px-3 py-2 text-[11px] font-bold text-white hover:bg-indigo-800'
+                  }, 'Add solution curve')
                 ),
                 // Canvas wrapper (fullscreen target)
                 h('div', {
@@ -2861,11 +2938,12 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                     'aria-label': 'Calculus visualization canvas: ' + (VIEWS.find(function(v){return v.id===vizView;}) || {}).desc,
                     style: {
                       width: '100%', height: '100%', display: 'block',
-                      cursor: (vizView === 'zoom' || vizView === 'tangent' || vizView === 'ftc' || vizView === 'optim' || vizView === 'slope') ? 'pointer' : 'default'
+                      cursor: (vizView === 'zoom' || vizView === 'tangent' || vizView === 'motion' || vizView === 'ftc' || vizView === 'optim' || vizView === 'slope') ? 'pointer' : 'default',
+                      touchAction: (vizView === 'zoom' || vizView === 'tangent' || vizView === 'motion' || vizView === 'ftc' || vizView === 'optim' || vizView === 'slope') ? 'none' : 'auto'
                     }
                   }),
                   // Reset interaction button — shown only on interactive views
-                  (vizView === 'zoom' || vizView === 'tangent' || vizView === 'ftc' || vizView === 'optim' || vizView === 'slope') &&
+                  (vizView === 'zoom' || vizView === 'tangent' || vizView === 'motion' || vizView === 'ftc' || vizView === 'optim' || vizView === 'slope') &&
                   h('button', {
                     onClick: function() {
                       upd('vizUserInteracted', {});
@@ -2889,15 +2967,15 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                 ),
                 // Per-view explainer strip
                 h('div', { className: 'mt-2 text-[11px] text-slate-600 leading-relaxed' },
-                  vizView === 'zoom'    && 'Drag the zoom slider. Watch any smooth curve become a straight line up close. That local slope IS the derivative.',
-                  vizView === 'tangent' && 'Drag the x-marker below. As you scan, the tangent line swings; f\u2032(x) traces itself on the right panel.',
-                  vizView === 'motion'  && 'Drag the position curve. Velocity = slope; acceleration = slope of velocity. Three panels update live.',
+                  vizView === 'zoom'    && 'Use the point and zoom sliders, or drag across the canvas. Any smooth curve becomes a straight line up close; that local slope IS the derivative.',
+                  vizView === 'tangent' && 'Use the tangent x\u2080 slider, or drag across the canvas. The tangent line swings while f\u2032(x) traces itself on the right panel.',
+                  vizView === 'motion'  && 'Use the time slider, or drag across the canvas. Velocity = slope; acceleration = slope of velocity. Three panels update together.',
                   vizView === 'riemann' && 'Watch n grow from 1 \u2192 256. All four Riemann methods converge to the true area \u2014 but at different speeds.',
-                  vizView === 'ftc'     && 'THE payoff: drag x. Accumulated area A(x) is plotted on the right \u2014 its slope at every x is exactly f(x). That\u2019s the Fundamental Theorem.',
-                  vizView === 'slope'   && 'Each arrow is the slope dy/dx at that point. Click anywhere to drop a solution curve that flows along the field.',
+                  vizView === 'ftc'     && 'THE payoff: use the accumulated-area slider or drag across the canvas. A(x) is plotted on the right, and its slope at every x is exactly f(x).',
+                  vizView === 'slope'   && 'Each arrow is dy/dx at that point. Choose seed coordinates and add a solution curve, or tap the canvas.',
                   vizView === 'chain'   && 'Inner gear du/dx turns an outer gear df/du. Composed rate = product: df/dx = df/du \u00D7 du/dx.',
                   vizView === 'taylor'  && 'A Taylor polynomial is an infinite sum of powers that reconstructs a function. Watch degree climb 0 \u2192 13.',
-                  vizView === 'optim'   && 'Cut squares of side x from each corner of a sheet. Volume V(x) peaks where V\u2032(x) = 0.',
+                  vizView === 'optim'   && 'Use the cut-size slider or drag across the right graph. Volume V(x) peaks where V\u2032(x) = 0.',
                   vizView === 'related' && "A ladder slides. Bottom moves at 2 ft/s; top\u2019s speed depends on where we are. Geometry links the rates.",
                   vizView === 'vor'     && 'Spin f(x) around the x-axis. The disks stack into a solid. V = \u03C0 \u222B f(x)\u00B2 dx.',
                   vizView === 'eps'     && "For every tolerance \u03B5, find a \u03B4 small enough that f(x) stays inside \u03B5 whenever x is within \u03B4 of x\u2080."
@@ -3018,7 +3096,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
               ),
               aiError && h('p', { className: 'text-[11px] text-rose-600', role: 'alert' }, aiError),
               aiText && h('p', { className: 'text-xs text-slate-700 leading-relaxed bg-white rounded-lg p-2 border border-purple-100' }, aiText),
-              !aiText && !aiLoading && !aiError && h('p', { className: 'text-[11px] italic text-slate-300' }, 'Click \u201CExplain\u201D for the AI tutor to describe what you\u2019re computing right now.')
+              !aiText && !aiLoading && !aiError && h('p', { className: 'text-[11px] italic text-slate-600' }, 'Click \u201CExplain\u201D for the AI tutor to describe what you\u2019re computing right now.')
             );
           })()
 

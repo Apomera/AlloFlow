@@ -311,4 +311,24 @@ it('cuts the reply when the user actually talks over it', async () => {
       loop.stop();
     } finally { h.restore(); }
   });
+
+  it('does not arm an auxiliary barge-in capture inside iPhone Canvas', async () => {
+    window._isCanvasEnv = true;
+    window._isIOSCanvasEnv = true;
+    const h = harness();
+    try {
+      const loop = AC.createVoiceLoop(() => ({ t: (k, fb) => fb, fontBigger: vi.fn(() => 18), addToast: vi.fn(), setVoiceActive: vi.fn() }));
+      loop.start();
+      h.instances[0].onresult(finalEvent('make the text bigger'));
+      await flush();
+
+      expect(h.speak, 'the reply still plays').toHaveBeenCalled();
+      expect(h.getUserMedia, 'no meter or barge-in stream may be added').not.toHaveBeenCalled();
+      loop.stop();
+    } finally {
+      h.restore();
+      delete window._isCanvasEnv;
+      delete window._isIOSCanvasEnv;
+    }
+  });
 });

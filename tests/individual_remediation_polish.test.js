@@ -25,7 +25,8 @@ const anti = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8') /*
 // ── R1: extract the real verdict fn ──
 const _vs = dp.indexOf('function _alloDistributionVerdict(r, opts) {');
 const _ve = dp.indexOf('\n}', dp.indexOf('headline: level ===', _vs)) + 2;
-const verdict = new Function(dp.slice(_vs, _ve) + '\nreturn _alloDistributionVerdict;')();
+const _pipelineDefaultsPrelude = 'var PIPELINE_DEFAULTS = { targetScore: 95 };\n';
+const verdict = new Function(_pipelineDefaultsPrelude + dp.slice(_vs, _ve) + '\nreturn _alloDistributionVerdict;')();
 const _os = dp.indexOf('function _alloRemediationOutcome(r, opts) {');
 const _oe = dp.indexOf('function _alloDistributionVerdict(r, opts) {', _os);
 // _alloRemediationOutcome gained a call to _alloUsableAxeAudit, which is
@@ -33,22 +34,23 @@ const _oe = dp.indexOf('function _alloDistributionVerdict(r, opts) {', _os);
 // so the extracted function threw "_alloUsableAxeAudit is not defined". Slice
 // the helper in too rather than stubbing it, so the real usability rule (a
 // finite score and a non-negative violation count) is what the tests exercise.
-// Both _alloUsable* guards sit together at the top of the file, so one slice
-// covers the pair.
-const _ua = dp.indexOf('function _alloUsableCompleteAiAudit(audit) {');
+// Include the full-coverage predicate as well: usable AI evidence delegates to
+// it, so extracting only the two final guards no longer represents production.
+const _ua = dp.indexOf('function _alloAiAuditHasFullCoverage(audit) {');
 const _uae = dp.indexOf('function _alloLiveAbortSignalOrNull', _ua);
 if (_ua === -1 || _uae < _ua) throw new Error('extraction markers for the _alloUsable* audit guards missing');
 if (!/_alloUsableAxeAudit/.test(dp.slice(_ua, _uae))) throw new Error('_alloUsableAxeAudit no longer sits beside _alloUsableCompleteAiAudit');
-const remediationOutcome = new Function(dp.slice(_ua, _uae) + '\n' + dp.slice(_os, _oe) + '\nreturn _alloRemediationOutcome;')();
+const remediationOutcome = new Function(_pipelineDefaultsPrelude + dp.slice(_ua, _uae) + '\n' + dp.slice(_os, _oe) + '\nreturn _alloRemediationOutcome;')();
 
 describe('remediation outcome is separate from verification completeness', () => {
-  it('calls a target-reaching, axe-clean, AI-complete run successful even when verification needs review', () => {
+  it('does not call a target-reaching run successful while canonical verification still needs review', () => {
     expect(remediationOutcome({
       afterScore: 96,
-      axeAudit: { totalViolations: 0 },
+      axeAudit: { score: 100, totalViolations: 0 },
+      verificationAudit: { score: 96, issues: [], chunksRequested: 1, chunksAudited: 1 },
       _aiVerificationIncomplete: false,
       verificationState: 'review-required',
-    }, { targetScore: 95 }).state).toBe('success');
+    }, { targetScore: 95 }).state).toBe('incomplete');
   });
 
   it('keeps unknown residuals, a missed target, and incomplete AI out of the success numerator', () => {

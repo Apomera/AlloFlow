@@ -20,6 +20,7 @@
     "test:watch": "vitest",
     "build:evaluation-portal": "node _build_educator_evaluation_apps_script.js",
     "verify:evaluation-portal": "node _build_educator_evaluation_apps_script.js --check",
+    "capture:evaluation-manual": "node dev-tools/capture_educator_evaluation_manual.cjs",
     "test:ci:shard": "node dev-tools/run_unit_shard.cjs",
     "test:coverage": "vitest run --coverage",
     "build:adventure": "node _build_adventure_module.js",

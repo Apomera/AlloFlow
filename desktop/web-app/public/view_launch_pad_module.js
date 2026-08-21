@@ -45,6 +45,7 @@
   var setPendingRole = props.setPendingRole;
   var setIsGateOpen = props.setIsGateOpen;
   var setShowAIBackendModal = props.setShowAIBackendModal;
+  var launchPadRef = React.useRef(null);
   // Resolve language before the voice setup hooks: model readiness is
   // profile-specific, so changing Spanish -> English must re-check the cache.
   var _langCtx = useContext(window.AlloLanguageContext) || {};
@@ -58,6 +59,10 @@
     } catch (_) {}
     return currentUiLanguage || 'en-US';
   }
+  var iosCanvas = false;
+  try {
+    iosCanvas = window._isIOSCanvasEnv === true || !!(window.AlloFlowVoice && window.AlloFlowVoice.isIosCanvasVoiceSurface && window.AlloFlowVoice.isIosCanvasVoiceSurface());
+  } catch (_) {}
   var _voiceSetup = useState(function () {
     var whisperReady = false;
     var kokoroReady = false;
@@ -71,14 +76,14 @@
     } catch (_) {}
     return {
       whisper: {
-        phase: whisperReady ? 'ready' : 'idle',
+        phase: iosCanvas ? 'unsupported' : whisperReady ? 'ready' : 'idle',
         progress: null
       },
       kokoro: {
-        phase: kokoroReady ? 'ready' : 'idle',
+        phase: iosCanvas ? 'unsupported' : kokoroReady ? 'ready' : 'idle',
         progress: null
       },
-      message: whisperReady || kokoroReady ? 'Previously downloaded offline voice tools are ready.' : ''
+      message: iosCanvas ? 'On iPhone or iPad Canvas, use Gemini or Browser speech and the browser read-aloud voice to keep this session stable.' : whisperReady || kokoroReady ? 'Previously downloaded offline voice tools are ready.' : ''
     };
   });
   var voiceSetup = _voiceSetup[0];
@@ -99,6 +104,18 @@
       if (cancelled) return;
       setVoiceSetup(function (previous) {
         var next = Object.assign({}, previous);
+        if (iosCanvas) {
+          next.whisper = {
+            phase: 'unsupported',
+            progress: null
+          };
+          next.kokoro = {
+            phase: 'unsupported',
+            progress: null
+          };
+          next.message = 'On iPhone or iPad Canvas, use Gemini or Browser speech and the browser read-aloud voice to keep this session stable.';
+          return next;
+        }
         var whisperReady = !!whisper;
         var kokoroReady = !!kokoro || previous.kokoro.phase === 'ready';
         if (previous.whisper.phase !== 'loading') {
@@ -206,7 +223,7 @@
     }
   }
   async function downloadKokoroFromLaunchPad() {
-    if (voiceSetup.kokoro.phase === 'loading' || voiceSetup.kokoro.phase === 'ready') return;
+    if (voiceSetup.kokoro.phase === 'loading' || voiceSetup.kokoro.phase === 'ready' || voiceSetup.kokoro.phase === 'unsupported') return;
     if (typeof window.__loadKokoroTTS !== 'function') {
       updateVoiceSetup('kokoro', {
         phase: 'error',
@@ -586,6 +603,39 @@
       cancelled = true;
     };
   }, []);
+  React.useEffect(function () {
+    if (typeof document === 'undefined') return;
+    var root = launchPadRef.current;
+    if (!root) return;
+    var previousActive = document.activeElement;
+    var siblings = root.parentElement ? Array.prototype.slice.call(root.parentElement.children).filter(function (child) {
+      return child !== root;
+    }) : [];
+    var previousState = siblings.map(function (element) {
+      return {
+        element: element,
+        ariaHidden: element.getAttribute('aria-hidden'),
+        inert: element.hasAttribute('inert')
+      };
+    });
+    // The launch pad is a full-screen pathway chooser. Keep the workspace
+    // behind it out of the focus order and accessibility tree while it is up.
+    siblings.forEach(function (element) {
+      element.setAttribute('inert', '');
+      element.setAttribute('aria-hidden', 'true');
+    });
+    var focusTarget = root.querySelector('button:not([disabled]), summary, [href], input, select, textarea');
+    if (focusTarget && typeof focusTarget.focus === 'function') focusTarget.focus();
+    return function () {
+      previousState.forEach(function (state) {
+        if (state.inert) state.element.setAttribute('inert', '');else state.element.removeAttribute('inert');
+        if (state.ariaHidden === null) state.element.removeAttribute('aria-hidden');else state.element.setAttribute('aria-hidden', state.ariaHidden);
+      });
+      if (previousActive && previousActive !== document.body && previousActive.isConnected && typeof previousActive.focus === 'function') {
+        previousActive.focus();
+      }
+    };
+  }, []);
   // Always show both names when they differ, matching the header picker. The
   // separator avoids nested parentheses for regional language variants.
   var LP_PROVENANCE_SUFFIX = {
@@ -669,6 +719,7 @@
     }, iconProps.fallback || '\u25c7');
   }
   return /*#__PURE__*/React.createElement("div", {
+    ref: launchPadRef,
     className: "lp-root",
     "data-alloflow-launch-pad": "true",
     role: "region",
@@ -893,9 +944,9 @@
         transition: 'background 0.15s'
       }
     }, selected ? '✓ ' : '  ', lpLangLabel(lang)));
-  }))))), /*#__PURE__*/React.createElement("main", {
+  }))))), /*#__PURE__*/React.createElement("div", {
     className: "lp-shell"
-  }, /*#__PURE__*/React.createElement("header", {
+  }, /*#__PURE__*/React.createElement("div", {
     className: "lp-logo-block"
   }, /*#__PURE__*/React.createElement("img", {
     className: "lp-brand-mark",
@@ -1207,7 +1258,7 @@
     "aria-busy": voiceSetup.whisper.phase === 'loading',
     disabled: voiceSetup.whisper.phase === 'loading' || voiceSetup.whisper.phase === 'ready' || voiceSetup.whisper.phase === 'unsupported',
     onClick: downloadWhisperFromLaunchPad
-  }, voiceSetup.whisper.phase === 'ready' ? '✓ Whisper ready' : voiceSetup.whisper.phase === 'unsupported' ? 'Whisper unavailable for this language' : voiceSetup.whisper.phase === 'loading' ? voiceSetup.whisper.progress == null ? 'Preparing Whisper…' : 'Downloading Whisper · ' + voiceSetup.whisper.progress + '%' : voiceSetup.whisper.phase === 'error' ? 'Retry Whisper download' : 'Download Whisper')), /*#__PURE__*/React.createElement("div", {
+  }, voiceSetup.whisper.phase === 'ready' ? '✓ Whisper ready' : voiceSetup.whisper.phase === 'unsupported' ? iosCanvas ? 'Use Gemini on iPhone Canvas' : 'Whisper unavailable for this language' : voiceSetup.whisper.phase === 'loading' ? voiceSetup.whisper.progress == null ? 'Preparing Whisper…' : 'Downloading Whisper · ' + voiceSetup.whisper.progress + '%' : voiceSetup.whisper.phase === 'error' ? 'Retry Whisper download' : 'Download Whisper')), /*#__PURE__*/React.createElement("div", {
     className: "lp-voice-option"
   }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("strong", {
     className: "lp-voice-option-title"
@@ -1228,9 +1279,9 @@
     className: "lp-download-button",
     "aria-describedby": "launch-pad-kokoro-desc",
     "aria-busy": voiceSetup.kokoro.phase === 'loading',
-    disabled: voiceSetup.kokoro.phase === 'loading' || voiceSetup.kokoro.phase === 'ready',
+    disabled: voiceSetup.kokoro.phase === 'loading' || voiceSetup.kokoro.phase === 'ready' || voiceSetup.kokoro.phase === 'unsupported',
     onClick: downloadKokoroFromLaunchPad
-  }, voiceSetup.kokoro.phase === 'ready' ? '✓ Kokoro ready' : voiceSetup.kokoro.phase === 'loading' ? voiceSetup.kokoro.progress == null ? 'Preparing Kokoro…' : 'Downloading Kokoro · ' + voiceSetup.kokoro.progress + '%' : voiceSetup.kokoro.phase === 'error' ? 'Retry Kokoro download' : 'Download Kokoro'))), /*#__PURE__*/React.createElement("p", {
+  }, voiceSetup.kokoro.phase === 'ready' ? '✓ Kokoro ready' : voiceSetup.kokoro.phase === 'unsupported' ? 'Uses browser voice on iPhone Canvas' : voiceSetup.kokoro.phase === 'loading' ? voiceSetup.kokoro.progress == null ? 'Preparing Kokoro…' : 'Downloading Kokoro · ' + voiceSetup.kokoro.progress + '%' : voiceSetup.kokoro.phase === 'error' ? 'Retry Kokoro download' : 'Download Kokoro'))), /*#__PURE__*/React.createElement("p", {
     role: "status",
     "aria-live": "polite",
     "aria-atomic": "true",
@@ -1242,7 +1293,7 @@
       lineHeight: 1.5,
       margin: '10px 0 0'
     }
-  }, voiceSetup.message)))), /*#__PURE__*/React.createElement("footer", {
+  }, voiceSetup.message)))), /*#__PURE__*/React.createElement("div", {
     className: "lp-launch-footer"
   }, /*#__PURE__*/React.createElement("p", {
     style: {

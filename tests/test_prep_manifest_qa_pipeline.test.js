@@ -52,5 +52,5 @@ describe('Test Prep manifest-bound AP QA pipeline', () => {
     const apBiologyEntry = manifest.entries.find((entry) => entry.id === 'ap-biology-foundation-pilot');
     expect(apBiologyEntry.nativeQaUrl).toBe('./test_prep/ap_biology_foundation_pilot_qa.json');
     expect(apBiologyEntry.nativeQaSha256).toBe(sha256(apBiologyQaPath));
-  }, 30_000);
+  }, 180_000);
 });

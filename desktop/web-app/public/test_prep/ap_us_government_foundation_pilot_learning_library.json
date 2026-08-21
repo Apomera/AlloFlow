@@ -3,9 +3,9 @@
   "librarySchemaVersion": 1,
   "libraryId": "ap-us-government-foundation-pilot-learning-library",
   "packId": "ap-us-government-foundation-pilot",
-  "version": "0.4.0-internal-preview",
+  "version": "0.6.0-internal-preview",
   "title": "AP U.S. Government and Politics Foundation Pilot Learning Library",
-  "description": "A text-first, independently authored AP U.S. Government and Politics foundation library with five unit chapters, structured lessons, item-linked study routes, retrieval checks, study cards, and reasoning aids. It is not released, official, calibrated, or score-predictive.",
+  "description": "A text-first, independently authored AP U.S. Government and Politics foundation library with five unit chapters, structured lessons, item-linked study routes, retrieval checks, study cards, reasoning aids, and five explicitly unscored response-planning workshops. It is not released, official, calibrated, or score-predictive.",
   "status": "preview",
   "visibility": "internal",
   "released": false,
@@ -17,8 +17,8 @@
     "cedFrameworkVersion": "V.1",
     "officialBlueprintUrl": "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description.pdf",
     "officialCourseUrl": "https://apcentral.collegeboard.org/courses/ap-united-states-government-and-politics",
-    "pilotVersion": "ap-us-government-foundation-v4",
-    "pilotNote": "A 200-item foundation across all five units and all 60 current public framework topic IDs, with at least two practice angles per topic, item-linked study routes for all fifteen lesson sections, and topic-level drill maps. It is a study and architecture foundation, not a complete exam simulation.",
+    "pilotVersion": "ap-us-government-foundation-v6",
+    "pilotNote": "A 260-item foundation across all five units and all 60 current public framework topic IDs, with at least three practice angles per topic, item-linked study routes for all fifteen lesson sections, topic-level drill maps, and five explicitly unscored response-planning workshops. It is a study and architecture foundation, not a complete exam simulation.",
     "bigIdeas": [
       {
         "id": "BI1",
@@ -106,7 +106,7 @@
         ]
       }
     ],
-    "learningObjectiveCatalogVersion": "ap-us-government-foundation-v4",
+    "learningObjectiveCatalogVersion": "ap-us-government-foundation-v6",
     "learningObjectiveCatalog": [
       {
         "id": "ap-usg-lo-1-1",
@@ -3243,6 +3243,8 @@
       "reviewedAt": "2026-08-20"
     }
   ],
+  "workshopLabel": "Unscored AP Government response-planning workshops",
+  "workshopPracticeNote": "These explicitly unscored workshops use original synthetic scenarios, data, and source descriptions for planning and self-check. AlloFlow does not score written responses, apply an official College Board rubric, estimate an AP score, or predict credit or placement.",
   "chapters": [
     {
       "id": "ap-usg-ch-01",
@@ -3310,7 +3312,10 @@
               "ap-usg-u1-103",
               "ap-usg-u1-110",
               "ap-usg-u1-111",
-              "ap-usg-u1-112"
+              "ap-usg-u1-112",
+              "ap-usg-u1-201",
+              "ap-usg-u1-202",
+              "ap-usg-u1-203"
             ],
             "foundationItemIds": [
               "ap-usg-u1-001",
@@ -3328,35 +3333,44 @@
               "ap-usg-u1-111",
               "ap-usg-u1-112"
             ],
+            "transferItemIds": [
+              "ap-usg-u1-201",
+              "ap-usg-u1-202",
+              "ap-usg-u1-203"
+            ],
             "topicCounts": {
-              "1.1": 4,
-              "1.2": 4,
-              "1.3": 4
+              "1.1": 5,
+              "1.2": 5,
+              "1.3": 5
             },
             "topicItemIds": {
               "1.1": [
                 "ap-usg-u1-001",
                 "ap-usg-u1-010",
                 "ap-usg-u1-101",
-                "ap-usg-u1-110"
+                "ap-usg-u1-110",
+                "ap-usg-u1-201"
               ],
               "1.2": [
                 "ap-usg-u1-002",
                 "ap-usg-u1-011",
                 "ap-usg-u1-102",
-                "ap-usg-u1-111"
+                "ap-usg-u1-111",
+                "ap-usg-u1-202"
               ],
               "1.3": [
                 "ap-usg-u1-003",
                 "ap-usg-u1-012",
                 "ap-usg-u1-103",
-                "ap-usg-u1-112"
+                "ap-usg-u1-112",
+                "ap-usg-u1-203"
               ]
             },
-            "itemCount": 12,
+            "itemCount": 15,
             "foundationItemCount": 6,
             "depthItemCount": 6,
-            "studyMove": "Complete one foundation item, explain the mechanism in your own words, then use a depth item to transfer the reasoning to a new context."
+            "transferItemCount": 3,
+            "studyMove": "Complete one foundation item, explain the mechanism in your own words, then use a depth item and a transfer item to apply the reasoning in new contexts."
           },
           "references": [
             "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description.pdf",
@@ -3684,7 +3698,7 @@
           "accessibilityReviewStatus": "pending-independent-review",
           "contentComplete": true,
           "releaseEligible": false,
-          "contentEnhancementVersion": "ap-usg-foundation-v4"
+          "contentEnhancementVersion": "ap-usg-foundation-v6"
         },
         {
           "id": "ap-usg-ch-01-section-02",
@@ -3713,7 +3727,10 @@
               "ap-usg-u1-106",
               "ap-usg-u1-113",
               "ap-usg-u1-114",
-              "ap-usg-u1-115"
+              "ap-usg-u1-115",
+              "ap-usg-u1-204",
+              "ap-usg-u1-205",
+              "ap-usg-u1-206"
             ],
             "foundationItemIds": [
               "ap-usg-u1-004",
@@ -3731,35 +3748,44 @@
               "ap-usg-u1-114",
               "ap-usg-u1-115"
             ],
+            "transferItemIds": [
+              "ap-usg-u1-204",
+              "ap-usg-u1-205",
+              "ap-usg-u1-206"
+            ],
             "topicCounts": {
-              "1.4": 4,
-              "1.5": 4,
-              "1.6": 4
+              "1.4": 5,
+              "1.5": 5,
+              "1.6": 5
             },
             "topicItemIds": {
               "1.4": [
                 "ap-usg-u1-004",
                 "ap-usg-u1-013",
                 "ap-usg-u1-104",
-                "ap-usg-u1-113"
+                "ap-usg-u1-113",
+                "ap-usg-u1-204"
               ],
               "1.5": [
                 "ap-usg-u1-005",
                 "ap-usg-u1-014",
                 "ap-usg-u1-105",
-                "ap-usg-u1-114"
+                "ap-usg-u1-114",
+                "ap-usg-u1-205"
               ],
               "1.6": [
                 "ap-usg-u1-006",
                 "ap-usg-u1-015",
                 "ap-usg-u1-106",
-                "ap-usg-u1-115"
+                "ap-usg-u1-115",
+                "ap-usg-u1-206"
               ]
             },
-            "itemCount": 12,
+            "itemCount": 15,
             "foundationItemCount": 6,
             "depthItemCount": 6,
-            "studyMove": "Complete one foundation item, explain the mechanism in your own words, then use a depth item to transfer the reasoning to a new context."
+            "transferItemCount": 3,
+            "studyMove": "Complete one foundation item, explain the mechanism in your own words, then use a depth item and a transfer item to apply the reasoning in new contexts."
           },
           "references": [
             "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description.pdf",
@@ -4087,7 +4113,7 @@
           "accessibilityReviewStatus": "pending-independent-review",
           "contentComplete": true,
           "releaseEligible": false,
-          "contentEnhancementVersion": "ap-usg-foundation-v4"
+          "contentEnhancementVersion": "ap-usg-foundation-v6"
         },
         {
           "id": "ap-usg-ch-01-section-03",
@@ -4116,7 +4142,10 @@
               "ap-usg-u1-109",
               "ap-usg-u1-116",
               "ap-usg-u1-117",
-              "ap-usg-u1-118"
+              "ap-usg-u1-118",
+              "ap-usg-u1-207",
+              "ap-usg-u1-208",
+              "ap-usg-u1-209"
             ],
             "foundationItemIds": [
               "ap-usg-u1-007",
@@ -4134,35 +4163,44 @@
               "ap-usg-u1-117",
               "ap-usg-u1-118"
             ],
+            "transferItemIds": [
+              "ap-usg-u1-207",
+              "ap-usg-u1-208",
+              "ap-usg-u1-209"
+            ],
             "topicCounts": {
-              "1.7": 4,
-              "1.8": 4,
-              "1.9": 4
+              "1.7": 5,
+              "1.8": 5,
+              "1.9": 5
             },
             "topicItemIds": {
               "1.7": [
                 "ap-usg-u1-007",
                 "ap-usg-u1-016",
                 "ap-usg-u1-107",
-                "ap-usg-u1-116"
+                "ap-usg-u1-116",
+                "ap-usg-u1-207"
               ],
               "1.8": [
                 "ap-usg-u1-008",
                 "ap-usg-u1-017",
                 "ap-usg-u1-108",
-                "ap-usg-u1-117"
+                "ap-usg-u1-117",
+                "ap-usg-u1-208"
               ],
               "1.9": [
                 "ap-usg-u1-009",
                 "ap-usg-u1-018",
                 "ap-usg-u1-109",
-                "ap-usg-u1-118"
+                "ap-usg-u1-118",
+                "ap-usg-u1-209"
               ]
             },
-            "itemCount": 12,
+            "itemCount": 15,
             "foundationItemCount": 6,
             "depthItemCount": 6,
-            "studyMove": "Complete one foundation item, explain the mechanism in your own words, then use a depth item to transfer the reasoning to a new context."
+            "transferItemCount": 3,
+            "studyMove": "Complete one foundation item, explain the mechanism in your own words, then use a depth item and a transfer item to apply the reasoning in new contexts."
           },
           "references": [
             "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description.pdf",
@@ -4490,7 +4528,7 @@
           "accessibilityReviewStatus": "pending-independent-review",
           "contentComplete": true,
           "releaseEligible": false,
-          "contentEnhancementVersion": "ap-usg-foundation-v4"
+          "contentEnhancementVersion": "ap-usg-foundation-v6"
         }
       ],
       "knowledgeChecks": [
@@ -4649,7 +4687,12 @@
               "ap-usg-u2-135",
               "ap-usg-u2-136",
               "ap-usg-u2-137",
-              "ap-usg-u2-138"
+              "ap-usg-u2-138",
+              "ap-usg-u2-210",
+              "ap-usg-u2-211",
+              "ap-usg-u2-212",
+              "ap-usg-u2-213",
+              "ap-usg-u2-214"
             ],
             "foundationItemIds": [
               "ap-usg-u2-019",
@@ -4675,49 +4718,62 @@
               "ap-usg-u2-137",
               "ap-usg-u2-138"
             ],
+            "transferItemIds": [
+              "ap-usg-u2-210",
+              "ap-usg-u2-211",
+              "ap-usg-u2-212",
+              "ap-usg-u2-213",
+              "ap-usg-u2-214"
+            ],
             "topicCounts": {
-              "2.1": 4,
-              "2.2": 4,
-              "2.3": 4,
-              "2.4": 4,
-              "2.5": 4
+              "2.1": 5,
+              "2.2": 5,
+              "2.3": 5,
+              "2.4": 5,
+              "2.5": 5
             },
             "topicItemIds": {
               "2.1": [
                 "ap-usg-u2-019",
                 "ap-usg-u2-034",
                 "ap-usg-u2-119",
-                "ap-usg-u2-134"
+                "ap-usg-u2-134",
+                "ap-usg-u2-210"
               ],
               "2.2": [
                 "ap-usg-u2-020",
                 "ap-usg-u2-035",
                 "ap-usg-u2-120",
-                "ap-usg-u2-135"
+                "ap-usg-u2-135",
+                "ap-usg-u2-211"
               ],
               "2.3": [
                 "ap-usg-u2-021",
                 "ap-usg-u2-036",
                 "ap-usg-u2-121",
-                "ap-usg-u2-136"
+                "ap-usg-u2-136",
+                "ap-usg-u2-212"
               ],
               "2.4": [
                 "ap-usg-u2-022",
                 "ap-usg-u2-037",
                 "ap-usg-u2-122",
-                "ap-usg-u2-137"
+                "ap-usg-u2-137",
+                "ap-usg-u2-213"
               ],
               "2.5": [
                 "ap-usg-u2-023",
                 "ap-usg-u2-038",
                 "ap-usg-u2-123",
-                "ap-usg-u2-138"
+                "ap-usg-u2-138",
+                "ap-usg-u2-214"
               ]
             },
-            "itemCount": 20,
+            "itemCount": 25,
             "foundationItemCount": 10,
             "depthItemCount": 10,
-            "studyMove": "Complete one foundation item, explain the mechanism in your own words, then use a depth item to transfer the reasoning to a new context."
+            "transferItemCount": 5,
+            "studyMove": "Complete one foundation item, explain the mechanism in your own words, then use a depth item and a transfer item to apply the reasoning in new contexts."
           },
           "references": [
             "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description.pdf",
@@ -5045,7 +5101,7 @@
           "accessibilityReviewStatus": "pending-independent-review",
           "contentComplete": true,
           "releaseEligible": false,
-          "contentEnhancementVersion": "ap-usg-foundation-v4"
+          "contentEnhancementVersion": "ap-usg-foundation-v6"
         },
         {
           "id": "ap-usg-ch-02-section-02",
@@ -5084,7 +5140,12 @@
               "ap-usg-u2-140",
               "ap-usg-u2-141",
               "ap-usg-u2-142",
-              "ap-usg-u2-143"
+              "ap-usg-u2-143",
+              "ap-usg-u2-215",
+              "ap-usg-u2-216",
+              "ap-usg-u2-217",
+              "ap-usg-u2-218",
+              "ap-usg-u2-219"
             ],
             "foundationItemIds": [
               "ap-usg-u2-024",
@@ -5110,49 +5171,62 @@
               "ap-usg-u2-142",
               "ap-usg-u2-143"
             ],
+            "transferItemIds": [
+              "ap-usg-u2-215",
+              "ap-usg-u2-216",
+              "ap-usg-u2-217",
+              "ap-usg-u2-218",
+              "ap-usg-u2-219"
+            ],
             "topicCounts": {
-              "2.6": 4,
-              "2.7": 4,
-              "2.8": 4,
-              "2.9": 4,
-              "2.10": 4
+              "2.6": 5,
+              "2.7": 5,
+              "2.8": 5,
+              "2.9": 5,
+              "2.10": 5
             },
             "topicItemIds": {
               "2.6": [
                 "ap-usg-u2-024",
                 "ap-usg-u2-039",
                 "ap-usg-u2-124",
-                "ap-usg-u2-139"
+                "ap-usg-u2-139",
+                "ap-usg-u2-215"
               ],
               "2.7": [
                 "ap-usg-u2-025",
                 "ap-usg-u2-040",
                 "ap-usg-u2-125",
-                "ap-usg-u2-140"
+                "ap-usg-u2-140",
+                "ap-usg-u2-216"
               ],
               "2.8": [
                 "ap-usg-u2-026",
                 "ap-usg-u2-041",
                 "ap-usg-u2-126",
-                "ap-usg-u2-141"
+                "ap-usg-u2-141",
+                "ap-usg-u2-217"
               ],
               "2.9": [
                 "ap-usg-u2-027",
                 "ap-usg-u2-042",
                 "ap-usg-u2-127",
-                "ap-usg-u2-142"
+                "ap-usg-u2-142",
+                "ap-usg-u2-218"
               ],
               "2.10": [
                 "ap-usg-u2-028",
                 "ap-usg-u2-043",
                 "ap-usg-u2-128",
-                "ap-usg-u2-143"
+                "ap-usg-u2-143",
+                "ap-usg-u2-219"
               ]
             },
-            "itemCount": 20,
+            "itemCount": 25,
             "foundationItemCount": 10,
             "depthItemCount": 10,
-            "studyMove": "Complete one foundation item, explain the mechanism in your own words, then use a depth item to transfer the reasoning to a new context."
+            "transferItemCount": 5,
+            "studyMove": "Complete one foundation item, explain the mechanism in your own words, then use a depth item and a transfer item to apply the reasoning in new contexts."
           },
           "references": [
             "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description.pdf",
@@ -5480,7 +5554,7 @@
           "accessibilityReviewStatus": "pending-independent-review",
           "contentComplete": true,
           "releaseEligible": false,
-          "contentEnhancementVersion": "ap-usg-foundation-v4"
+          "contentEnhancementVersion": "ap-usg-foundation-v6"
         },
         {
           "id": "ap-usg-ch-02-section-03",
@@ -5519,7 +5593,12 @@
               "ap-usg-u2-145",
               "ap-usg-u2-146",
               "ap-usg-u2-147",
-              "ap-usg-u2-148"
+              "ap-usg-u2-148",
+              "ap-usg-u2-220",
+              "ap-usg-u2-221",
+              "ap-usg-u2-222",
+              "ap-usg-u2-223",
+              "ap-usg-u2-224"
             ],
             "foundationItemIds": [
               "ap-usg-u2-029",
@@ -5545,49 +5624,62 @@
               "ap-usg-u2-147",
               "ap-usg-u2-148"
             ],
+            "transferItemIds": [
+              "ap-usg-u2-220",
+              "ap-usg-u2-221",
+              "ap-usg-u2-222",
+              "ap-usg-u2-223",
+              "ap-usg-u2-224"
+            ],
             "topicCounts": {
-              "2.11": 4,
-              "2.12": 4,
-              "2.13": 4,
-              "2.14": 4,
-              "2.15": 4
+              "2.11": 5,
+              "2.12": 5,
+              "2.13": 5,
+              "2.14": 5,
+              "2.15": 5
             },
             "topicItemIds": {
               "2.11": [
                 "ap-usg-u2-029",
                 "ap-usg-u2-044",
                 "ap-usg-u2-129",
-                "ap-usg-u2-144"
+                "ap-usg-u2-144",
+                "ap-usg-u2-220"
               ],
               "2.12": [
                 "ap-usg-u2-030",
                 "ap-usg-u2-045",
                 "ap-usg-u2-130",
-                "ap-usg-u2-145"
+                "ap-usg-u2-145",
+                "ap-usg-u2-221"
               ],
               "2.13": [
                 "ap-usg-u2-031",
                 "ap-usg-u2-046",
                 "ap-usg-u2-131",
-                "ap-usg-u2-146"
+                "ap-usg-u2-146",
+                "ap-usg-u2-222"
               ],
               "2.14": [
                 "ap-usg-u2-032",
                 "ap-usg-u2-047",
                 "ap-usg-u2-132",
-                "ap-usg-u2-147"
+                "ap-usg-u2-147",
+                "ap-usg-u2-223"
               ],
               "2.15": [
                 "ap-usg-u2-033",
                 "ap-usg-u2-048",
                 "ap-usg-u2-133",
-                "ap-usg-u2-148"
+                "ap-usg-u2-148",
+                "ap-usg-u2-224"
               ]
             },
-            "itemCount": 20,
+            "itemCount": 25,
             "foundationItemCount": 10,
             "depthItemCount": 10,
-            "studyMove": "Complete one foundation item, explain the mechanism in your own words, then use a depth item to transfer the reasoning to a new context."
+            "transferItemCount": 5,
+            "studyMove": "Complete one foundation item, explain the mechanism in your own words, then use a depth item and a transfer item to apply the reasoning in new contexts."
           },
           "references": [
             "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description.pdf",
@@ -5915,7 +6007,7 @@
           "accessibilityReviewStatus": "pending-independent-review",
           "contentComplete": true,
           "releaseEligible": false,
-          "contentEnhancementVersion": "ap-usg-foundation-v4"
+          "contentEnhancementVersion": "ap-usg-foundation-v6"
         }
       ],
       "knowledgeChecks": [
@@ -6061,7 +6153,11 @@
               "ap-usg-u3-150",
               "ap-usg-u3-151",
               "ap-usg-u3-152",
-              "ap-usg-u3-162"
+              "ap-usg-u3-162",
+              "ap-usg-u3-225",
+              "ap-usg-u3-226",
+              "ap-usg-u3-227",
+              "ap-usg-u3-228"
             ],
             "foundationItemIds": [
               "ap-usg-u3-049",
@@ -6077,36 +6173,47 @@
               "ap-usg-u3-152",
               "ap-usg-u3-162"
             ],
+            "transferItemIds": [
+              "ap-usg-u3-225",
+              "ap-usg-u3-226",
+              "ap-usg-u3-227",
+              "ap-usg-u3-228"
+            ],
             "topicCounts": {
-              "3.1": 2,
-              "3.2": 2,
-              "3.3": 4,
-              "3.4": 2
+              "3.1": 3,
+              "3.2": 3,
+              "3.3": 5,
+              "3.4": 3
             },
             "topicItemIds": {
               "3.1": [
                 "ap-usg-u3-049",
-                "ap-usg-u3-149"
+                "ap-usg-u3-149",
+                "ap-usg-u3-225"
               ],
               "3.2": [
                 "ap-usg-u3-050",
-                "ap-usg-u3-150"
+                "ap-usg-u3-150",
+                "ap-usg-u3-226"
               ],
               "3.3": [
                 "ap-usg-u3-051",
                 "ap-usg-u3-062",
                 "ap-usg-u3-151",
-                "ap-usg-u3-162"
+                "ap-usg-u3-162",
+                "ap-usg-u3-227"
               ],
               "3.4": [
                 "ap-usg-u3-052",
-                "ap-usg-u3-152"
+                "ap-usg-u3-152",
+                "ap-usg-u3-228"
               ]
             },
-            "itemCount": 10,
+            "itemCount": 14,
             "foundationItemCount": 5,
             "depthItemCount": 5,
-            "studyMove": "Complete one foundation item, explain the mechanism in your own words, then use a depth item to transfer the reasoning to a new context."
+            "transferItemCount": 4,
+            "studyMove": "Complete one foundation item, explain the mechanism in your own words, then use a depth item and a transfer item to apply the reasoning in new contexts."
           },
           "references": [
             "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description.pdf",
@@ -6434,7 +6541,7 @@
           "accessibilityReviewStatus": "pending-independent-review",
           "contentComplete": true,
           "releaseEligible": false,
-          "contentEnhancementVersion": "ap-usg-foundation-v4"
+          "contentEnhancementVersion": "ap-usg-foundation-v6"
         },
         {
           "id": "ap-usg-ch-03-section-02",
@@ -6461,7 +6568,11 @@
               "ap-usg-u3-154",
               "ap-usg-u3-155",
               "ap-usg-u3-156",
-              "ap-usg-u3-163"
+              "ap-usg-u3-163",
+              "ap-usg-u3-229",
+              "ap-usg-u3-230",
+              "ap-usg-u3-231",
+              "ap-usg-u3-232"
             ],
             "foundationItemIds": [
               "ap-usg-u3-053",
@@ -6476,35 +6587,46 @@
               "ap-usg-u3-156",
               "ap-usg-u3-163"
             ],
+            "transferItemIds": [
+              "ap-usg-u3-229",
+              "ap-usg-u3-230",
+              "ap-usg-u3-231",
+              "ap-usg-u3-232"
+            ],
             "topicCounts": {
-              "3.5": 2,
-              "3.6": 2,
-              "3.7": 2,
-              "3.8": 3
+              "3.5": 3,
+              "3.6": 3,
+              "3.7": 3,
+              "3.8": 4
             },
             "topicItemIds": {
               "3.5": [
                 "ap-usg-u3-053",
-                "ap-usg-u3-153"
+                "ap-usg-u3-153",
+                "ap-usg-u3-229"
               ],
               "3.6": [
                 "ap-usg-u3-054",
-                "ap-usg-u3-154"
+                "ap-usg-u3-154",
+                "ap-usg-u3-230"
               ],
               "3.7": [
                 "ap-usg-u3-055",
-                "ap-usg-u3-155"
+                "ap-usg-u3-155",
+                "ap-usg-u3-231"
               ],
               "3.8": [
                 "ap-usg-u3-056",
                 "ap-usg-u3-156",
-                "ap-usg-u3-163"
+                "ap-usg-u3-163",
+                "ap-usg-u3-232"
               ]
             },
-            "itemCount": 9,
+            "itemCount": 13,
             "foundationItemCount": 4,
             "depthItemCount": 5,
-            "studyMove": "Complete one foundation item, explain the mechanism in your own words, then use a depth item to transfer the reasoning to a new context."
+            "transferItemCount": 4,
+            "studyMove": "Complete one foundation item, explain the mechanism in your own words, then use a depth item and a transfer item to apply the reasoning in new contexts."
           },
           "references": [
             "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description.pdf",
@@ -6832,7 +6954,7 @@
           "accessibilityReviewStatus": "pending-independent-review",
           "contentComplete": true,
           "releaseEligible": false,
-          "contentEnhancementVersion": "ap-usg-foundation-v4"
+          "contentEnhancementVersion": "ap-usg-foundation-v6"
         },
         {
           "id": "ap-usg-ch-03-section-03",
@@ -6862,7 +6984,12 @@
               "ap-usg-u3-158",
               "ap-usg-u3-159",
               "ap-usg-u3-160",
-              "ap-usg-u3-161"
+              "ap-usg-u3-161",
+              "ap-usg-u3-233",
+              "ap-usg-u3-234",
+              "ap-usg-u3-235",
+              "ap-usg-u3-236",
+              "ap-usg-u3-237"
             ],
             "foundationItemIds": [
               "ap-usg-u3-057",
@@ -6879,40 +7006,53 @@
               "ap-usg-u3-160",
               "ap-usg-u3-161"
             ],
+            "transferItemIds": [
+              "ap-usg-u3-233",
+              "ap-usg-u3-234",
+              "ap-usg-u3-235",
+              "ap-usg-u3-236",
+              "ap-usg-u3-237"
+            ],
             "topicCounts": {
-              "3.9": 2,
-              "3.10": 3,
-              "3.11": 2,
-              "3.12": 2,
-              "3.13": 2
+              "3.9": 3,
+              "3.10": 4,
+              "3.11": 3,
+              "3.12": 3,
+              "3.13": 3
             },
             "topicItemIds": {
               "3.9": [
                 "ap-usg-u3-057",
-                "ap-usg-u3-157"
+                "ap-usg-u3-157",
+                "ap-usg-u3-233"
               ],
               "3.10": [
                 "ap-usg-u3-058",
                 "ap-usg-u3-063",
-                "ap-usg-u3-158"
+                "ap-usg-u3-158",
+                "ap-usg-u3-234"
               ],
               "3.11": [
                 "ap-usg-u3-059",
-                "ap-usg-u3-159"
+                "ap-usg-u3-159",
+                "ap-usg-u3-235"
               ],
               "3.12": [
                 "ap-usg-u3-060",
-                "ap-usg-u3-160"
+                "ap-usg-u3-160",
+                "ap-usg-u3-236"
               ],
               "3.13": [
                 "ap-usg-u3-061",
-                "ap-usg-u3-161"
+                "ap-usg-u3-161",
+                "ap-usg-u3-237"
               ]
             },
-            "itemCount": 11,
+            "itemCount": 16,
             "foundationItemCount": 6,
             "depthItemCount": 5,
-            "studyMove": "Complete one foundation item, explain the mechanism in your own words, then use a depth item to transfer the reasoning to a new context."
+            "transferItemCount": 5,
+            "studyMove": "Complete one foundation item, explain the mechanism in your own words, then use a depth item and a transfer item to apply the reasoning in new contexts."
           },
           "references": [
             "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description.pdf",
@@ -7240,7 +7380,7 @@
           "accessibilityReviewStatus": "pending-independent-review",
           "contentComplete": true,
           "releaseEligible": false,
-          "contentEnhancementVersion": "ap-usg-foundation-v4"
+          "contentEnhancementVersion": "ap-usg-foundation-v6"
         }
       ],
       "knowledgeChecks": [
@@ -7378,7 +7518,10 @@
               "ap-usg-u4-066",
               "ap-usg-u4-164",
               "ap-usg-u4-165",
-              "ap-usg-u4-166"
+              "ap-usg-u4-166",
+              "ap-usg-u4-238",
+              "ap-usg-u4-239",
+              "ap-usg-u4-240"
             ],
             "foundationItemIds": [
               "ap-usg-u4-064",
@@ -7390,29 +7533,38 @@
               "ap-usg-u4-165",
               "ap-usg-u4-166"
             ],
+            "transferItemIds": [
+              "ap-usg-u4-238",
+              "ap-usg-u4-239",
+              "ap-usg-u4-240"
+            ],
             "topicCounts": {
-              "4.1": 2,
-              "4.2": 2,
-              "4.3": 2
+              "4.1": 3,
+              "4.2": 3,
+              "4.3": 3
             },
             "topicItemIds": {
               "4.1": [
                 "ap-usg-u4-064",
-                "ap-usg-u4-164"
+                "ap-usg-u4-164",
+                "ap-usg-u4-238"
               ],
               "4.2": [
                 "ap-usg-u4-065",
-                "ap-usg-u4-165"
+                "ap-usg-u4-165",
+                "ap-usg-u4-239"
               ],
               "4.3": [
                 "ap-usg-u4-066",
-                "ap-usg-u4-166"
+                "ap-usg-u4-166",
+                "ap-usg-u4-240"
               ]
             },
-            "itemCount": 6,
+            "itemCount": 9,
             "foundationItemCount": 3,
             "depthItemCount": 3,
-            "studyMove": "Complete one foundation item, explain the mechanism in your own words, then use a depth item to transfer the reasoning to a new context."
+            "transferItemCount": 3,
+            "studyMove": "Complete one foundation item, explain the mechanism in your own words, then use a depth item and a transfer item to apply the reasoning in new contexts."
           },
           "references": [
             "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description.pdf",
@@ -7740,7 +7892,7 @@
           "accessibilityReviewStatus": "pending-independent-review",
           "contentComplete": true,
           "releaseEligible": false,
-          "contentEnhancementVersion": "ap-usg-foundation-v4"
+          "contentEnhancementVersion": "ap-usg-foundation-v6"
         },
         {
           "id": "ap-usg-ch-04-section-02",
@@ -7767,7 +7919,10 @@
               "ap-usg-u4-168",
               "ap-usg-u4-169",
               "ap-usg-u4-174",
-              "ap-usg-u4-175"
+              "ap-usg-u4-175",
+              "ap-usg-u4-241",
+              "ap-usg-u4-242",
+              "ap-usg-u4-243"
             ],
             "foundationItemIds": [
               "ap-usg-u4-067",
@@ -7783,33 +7938,42 @@
               "ap-usg-u4-174",
               "ap-usg-u4-175"
             ],
+            "transferItemIds": [
+              "ap-usg-u4-241",
+              "ap-usg-u4-242",
+              "ap-usg-u4-243"
+            ],
             "topicCounts": {
-              "4.4": 2,
-              "4.5": 4,
-              "4.6": 4
+              "4.4": 3,
+              "4.5": 5,
+              "4.6": 5
             },
             "topicItemIds": {
               "4.4": [
                 "ap-usg-u4-067",
-                "ap-usg-u4-167"
+                "ap-usg-u4-167",
+                "ap-usg-u4-241"
               ],
               "4.5": [
                 "ap-usg-u4-068",
                 "ap-usg-u4-074",
                 "ap-usg-u4-168",
-                "ap-usg-u4-174"
+                "ap-usg-u4-174",
+                "ap-usg-u4-242"
               ],
               "4.6": [
                 "ap-usg-u4-069",
                 "ap-usg-u4-075",
                 "ap-usg-u4-169",
-                "ap-usg-u4-175"
+                "ap-usg-u4-175",
+                "ap-usg-u4-243"
               ]
             },
-            "itemCount": 10,
+            "itemCount": 13,
             "foundationItemCount": 5,
             "depthItemCount": 5,
-            "studyMove": "Complete one foundation item, explain the mechanism in your own words, then use a depth item to transfer the reasoning to a new context."
+            "transferItemCount": 3,
+            "studyMove": "Complete one foundation item, explain the mechanism in your own words, then use a depth item and a transfer item to apply the reasoning in new contexts."
           },
           "references": [
             "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description.pdf",
@@ -8137,7 +8301,7 @@
           "accessibilityReviewStatus": "pending-independent-review",
           "contentComplete": true,
           "releaseEligible": false,
-          "contentEnhancementVersion": "ap-usg-foundation-v4"
+          "contentEnhancementVersion": "ap-usg-foundation-v6"
         },
         {
           "id": "ap-usg-ch-04-section-03",
@@ -8163,7 +8327,11 @@
               "ap-usg-u4-170",
               "ap-usg-u4-171",
               "ap-usg-u4-172",
-              "ap-usg-u4-173"
+              "ap-usg-u4-173",
+              "ap-usg-u4-244",
+              "ap-usg-u4-245",
+              "ap-usg-u4-246",
+              "ap-usg-u4-247"
             ],
             "foundationItemIds": [
               "ap-usg-u4-070",
@@ -8177,34 +8345,45 @@
               "ap-usg-u4-172",
               "ap-usg-u4-173"
             ],
+            "transferItemIds": [
+              "ap-usg-u4-244",
+              "ap-usg-u4-245",
+              "ap-usg-u4-246",
+              "ap-usg-u4-247"
+            ],
             "topicCounts": {
-              "4.7": 2,
-              "4.8": 2,
-              "4.9": 2,
-              "4.10": 2
+              "4.7": 3,
+              "4.8": 3,
+              "4.9": 3,
+              "4.10": 3
             },
             "topicItemIds": {
               "4.7": [
                 "ap-usg-u4-070",
-                "ap-usg-u4-170"
+                "ap-usg-u4-170",
+                "ap-usg-u4-244"
               ],
               "4.8": [
                 "ap-usg-u4-071",
-                "ap-usg-u4-171"
+                "ap-usg-u4-171",
+                "ap-usg-u4-245"
               ],
               "4.9": [
                 "ap-usg-u4-072",
-                "ap-usg-u4-172"
+                "ap-usg-u4-172",
+                "ap-usg-u4-246"
               ],
               "4.10": [
                 "ap-usg-u4-073",
-                "ap-usg-u4-173"
+                "ap-usg-u4-173",
+                "ap-usg-u4-247"
               ]
             },
-            "itemCount": 8,
+            "itemCount": 12,
             "foundationItemCount": 4,
             "depthItemCount": 4,
-            "studyMove": "Complete one foundation item, explain the mechanism in your own words, then use a depth item to transfer the reasoning to a new context."
+            "transferItemCount": 4,
+            "studyMove": "Complete one foundation item, explain the mechanism in your own words, then use a depth item and a transfer item to apply the reasoning in new contexts."
           },
           "references": [
             "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description.pdf",
@@ -8532,7 +8711,7 @@
           "accessibilityReviewStatus": "pending-independent-review",
           "contentComplete": true,
           "releaseEligible": false,
-          "contentEnhancementVersion": "ap-usg-foundation-v4"
+          "contentEnhancementVersion": "ap-usg-foundation-v6"
         }
       ],
       "knowledgeChecks": [
@@ -8684,7 +8863,11 @@
               "ap-usg-u5-188",
               "ap-usg-u5-189",
               "ap-usg-u5-190",
-              "ap-usg-u5-191"
+              "ap-usg-u5-191",
+              "ap-usg-u5-248",
+              "ap-usg-u5-249",
+              "ap-usg-u5-250",
+              "ap-usg-u5-251"
             ],
             "foundationItemIds": [
               "ap-usg-u5-076",
@@ -8706,42 +8889,53 @@
               "ap-usg-u5-190",
               "ap-usg-u5-191"
             ],
+            "transferItemIds": [
+              "ap-usg-u5-248",
+              "ap-usg-u5-249",
+              "ap-usg-u5-250",
+              "ap-usg-u5-251"
+            ],
             "topicCounts": {
-              "5.1": 4,
-              "5.2": 4,
-              "5.3": 4,
-              "5.4": 4
+              "5.1": 5,
+              "5.2": 5,
+              "5.3": 5,
+              "5.4": 5
             },
             "topicItemIds": {
               "5.1": [
                 "ap-usg-u5-076",
                 "ap-usg-u5-089",
                 "ap-usg-u5-176",
-                "ap-usg-u5-188"
+                "ap-usg-u5-188",
+                "ap-usg-u5-248"
               ],
               "5.2": [
                 "ap-usg-u5-077",
                 "ap-usg-u5-090",
                 "ap-usg-u5-177",
-                "ap-usg-u5-189"
+                "ap-usg-u5-189",
+                "ap-usg-u5-249"
               ],
               "5.3": [
                 "ap-usg-u5-078",
                 "ap-usg-u5-091",
                 "ap-usg-u5-178",
-                "ap-usg-u5-190"
+                "ap-usg-u5-190",
+                "ap-usg-u5-250"
               ],
               "5.4": [
                 "ap-usg-u5-079",
                 "ap-usg-u5-092",
                 "ap-usg-u5-179",
-                "ap-usg-u5-191"
+                "ap-usg-u5-191",
+                "ap-usg-u5-251"
               ]
             },
-            "itemCount": 16,
+            "itemCount": 20,
             "foundationItemCount": 8,
             "depthItemCount": 8,
-            "studyMove": "Complete one foundation item, explain the mechanism in your own words, then use a depth item to transfer the reasoning to a new context."
+            "transferItemCount": 4,
+            "studyMove": "Complete one foundation item, explain the mechanism in your own words, then use a depth item and a transfer item to apply the reasoning in new contexts."
           },
           "references": [
             "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description.pdf",
@@ -9069,7 +9263,7 @@
           "accessibilityReviewStatus": "pending-independent-review",
           "contentComplete": true,
           "releaseEligible": false,
-          "contentEnhancementVersion": "ap-usg-foundation-v4"
+          "contentEnhancementVersion": "ap-usg-foundation-v6"
         },
         {
           "id": "ap-usg-ch-05-section-02",
@@ -9103,7 +9297,11 @@
               "ap-usg-u5-192",
               "ap-usg-u5-193",
               "ap-usg-u5-194",
-              "ap-usg-u5-195"
+              "ap-usg-u5-195",
+              "ap-usg-u5-252",
+              "ap-usg-u5-253",
+              "ap-usg-u5-254",
+              "ap-usg-u5-255"
             ],
             "foundationItemIds": [
               "ap-usg-u5-080",
@@ -9125,42 +9323,53 @@
               "ap-usg-u5-194",
               "ap-usg-u5-195"
             ],
+            "transferItemIds": [
+              "ap-usg-u5-252",
+              "ap-usg-u5-253",
+              "ap-usg-u5-254",
+              "ap-usg-u5-255"
+            ],
             "topicCounts": {
-              "5.5": 4,
-              "5.6": 4,
-              "5.7": 4,
-              "5.8": 4
+              "5.5": 5,
+              "5.6": 5,
+              "5.7": 5,
+              "5.8": 5
             },
             "topicItemIds": {
               "5.5": [
                 "ap-usg-u5-080",
                 "ap-usg-u5-093",
                 "ap-usg-u5-180",
-                "ap-usg-u5-192"
+                "ap-usg-u5-192",
+                "ap-usg-u5-252"
               ],
               "5.6": [
                 "ap-usg-u5-081",
                 "ap-usg-u5-094",
                 "ap-usg-u5-181",
-                "ap-usg-u5-193"
+                "ap-usg-u5-193",
+                "ap-usg-u5-253"
               ],
               "5.7": [
                 "ap-usg-u5-082",
                 "ap-usg-u5-095",
                 "ap-usg-u5-182",
-                "ap-usg-u5-194"
+                "ap-usg-u5-194",
+                "ap-usg-u5-254"
               ],
               "5.8": [
                 "ap-usg-u5-083",
                 "ap-usg-u5-096",
                 "ap-usg-u5-183",
-                "ap-usg-u5-195"
+                "ap-usg-u5-195",
+                "ap-usg-u5-255"
               ]
             },
-            "itemCount": 16,
+            "itemCount": 20,
             "foundationItemCount": 8,
             "depthItemCount": 8,
-            "studyMove": "Complete one foundation item, explain the mechanism in your own words, then use a depth item to transfer the reasoning to a new context."
+            "transferItemCount": 4,
+            "studyMove": "Complete one foundation item, explain the mechanism in your own words, then use a depth item and a transfer item to apply the reasoning in new contexts."
           },
           "references": [
             "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description.pdf",
@@ -9488,7 +9697,7 @@
           "accessibilityReviewStatus": "pending-independent-review",
           "contentComplete": true,
           "releaseEligible": false,
-          "contentEnhancementVersion": "ap-usg-foundation-v4"
+          "contentEnhancementVersion": "ap-usg-foundation-v6"
         },
         {
           "id": "ap-usg-ch-05-section-03",
@@ -9525,7 +9734,12 @@
               "ap-usg-u5-197",
               "ap-usg-u5-198",
               "ap-usg-u5-199",
-              "ap-usg-u5-200"
+              "ap-usg-u5-200",
+              "ap-usg-u5-256",
+              "ap-usg-u5-257",
+              "ap-usg-u5-258",
+              "ap-usg-u5-259",
+              "ap-usg-u5-260"
             ],
             "foundationItemIds": [
               "ap-usg-u5-084",
@@ -9549,47 +9763,60 @@
               "ap-usg-u5-199",
               "ap-usg-u5-200"
             ],
+            "transferItemIds": [
+              "ap-usg-u5-256",
+              "ap-usg-u5-257",
+              "ap-usg-u5-258",
+              "ap-usg-u5-259",
+              "ap-usg-u5-260"
+            ],
             "topicCounts": {
-              "5.9": 4,
-              "5.10": 4,
-              "5.11": 4,
-              "5.12": 3,
-              "5.13": 3
+              "5.9": 5,
+              "5.10": 5,
+              "5.11": 5,
+              "5.12": 4,
+              "5.13": 4
             },
             "topicItemIds": {
               "5.9": [
                 "ap-usg-u5-084",
                 "ap-usg-u5-097",
                 "ap-usg-u5-184",
-                "ap-usg-u5-196"
+                "ap-usg-u5-196",
+                "ap-usg-u5-256"
               ],
               "5.10": [
                 "ap-usg-u5-085",
                 "ap-usg-u5-098",
                 "ap-usg-u5-185",
-                "ap-usg-u5-197"
+                "ap-usg-u5-197",
+                "ap-usg-u5-257"
               ],
               "5.11": [
                 "ap-usg-u5-086",
                 "ap-usg-u5-099",
                 "ap-usg-u5-186",
-                "ap-usg-u5-198"
+                "ap-usg-u5-198",
+                "ap-usg-u5-258"
               ],
               "5.12": [
                 "ap-usg-u5-087",
                 "ap-usg-u5-100",
-                "ap-usg-u5-199"
+                "ap-usg-u5-199",
+                "ap-usg-u5-259"
               ],
               "5.13": [
                 "ap-usg-u5-088",
                 "ap-usg-u5-187",
-                "ap-usg-u5-200"
+                "ap-usg-u5-200",
+                "ap-usg-u5-260"
               ]
             },
-            "itemCount": 18,
+            "itemCount": 23,
             "foundationItemCount": 9,
             "depthItemCount": 9,
-            "studyMove": "Complete one foundation item, explain the mechanism in your own words, then use a depth item to transfer the reasoning to a new context."
+            "transferItemCount": 5,
+            "studyMove": "Complete one foundation item, explain the mechanism in your own words, then use a depth item and a transfer item to apply the reasoning in new contexts."
           },
           "references": [
             "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description.pdf",
@@ -9917,7 +10144,7 @@
           "accessibilityReviewStatus": "pending-independent-review",
           "contentComplete": true,
           "releaseEligible": false,
-          "contentEnhancementVersion": "ap-usg-foundation-v4"
+          "contentEnhancementVersion": "ap-usg-foundation-v6"
         }
       ],
       "knowledgeChecks": [
@@ -9998,11 +10225,13 @@
   "practiceRouting": {
     "mode": "section-linked-item-routes",
     "sectionCount": 15,
-    "itemCount": 200,
-    "uniqueItemCount": 200,
+    "itemCount": 260,
+    "uniqueItemCount": 260,
     "foundationItemCount": 100,
     "depthItemCount": 100,
+    "transferItemCount": 60,
     "sectionsWithDepth": 15,
+    "sectionsWithTransfer": 15,
     "topicDrillMapCount": 60
   },
   "diagrams": [],
@@ -10441,7 +10670,417 @@
       "reviewNote": "Original foundation retrieval aid; AP U.S. Government and accessibility validation remain pending."
     }
   ],
-  "constructedResponseWorkshops": [],
+  "constructedResponseWorkshops": [
+    {
+      "id": "ap-usg-workshop-concept-application",
+      "taskType": "Concept application planning",
+      "title": "Explain the constitutional mechanism before the conclusion",
+      "prompt": "Plan a concise response to a new policy scenario. Identify the governing constitutional principle, apply the principle to the facts, and explain one limit on the conclusion. This is a planning exercise, not an official AP prompt or scored response.",
+      "stimulus": "Original synthetic scenario: A state creates a public-safety grant for counties that adopt a shared emergency-alert system. The national government offers additional funds if counties meet accessibility and privacy standards. A county argues that the conditions interfere with state authority, while a civil-liberties organization argues that the standards are necessary to protect residents. The scenario is intentionally simplified so the planning focus stays on federalism, individual rights, and conditional spending.",
+      "taskParts": [
+        "Name the constitutional or institutional principle that best organizes the dispute.",
+        "Apply that principle to the grant condition and the competing state and individual interests.",
+        "State one fact that would change or limit the strength of the conclusion."
+      ],
+      "planningFrame": [
+        {
+          "label": "Principle",
+          "guidance": "Define the relevant power, right, or structural relationship in one sentence."
+        },
+        {
+          "label": "Evidence",
+          "guidance": "Point to the grant condition, the county objection, and the public-safety rationale."
+        },
+        {
+          "label": "Reasoning",
+          "guidance": "Explain why the principle supports or limits the government action rather than merely naming it."
+        },
+        {
+          "label": "Boundary",
+          "guidance": "Identify a missing fact such as the statutory authority, condition scope, or privacy safeguard."
+        }
+      ],
+      "successCriteria": [
+        "The response names a precise principle instead of using a broad label alone.",
+        "The application connects the principle to facts from the synthetic scenario.",
+        "The reasoning distinguishes shared authority from complete state or national control.",
+        "The limitation identifies evidence that could change the analysis."
+      ],
+      "commonPitfalls": [
+        "Treating federalism as a complete wall between state and national policy.",
+        "Assuming a funding condition is valid or invalid without examining its connection and scope.",
+        "Listing a constitutional clause without explaining the mechanism it creates.",
+        "Turning a planning response into a prediction of an official score or court outcome."
+      ],
+      "sampleOutline": [
+        "Claim: shared authority can permit a connected condition while rights protections constrain implementation.",
+        "Application: connect the funding terms, state objection, and privacy safeguards to the principle.",
+        "Limit: explain which missing legal or factual detail would require a narrower conclusion."
+      ],
+      "unitIds": [
+        1,
+        3
+      ],
+      "topicIds": [
+        "1.7",
+        "1.9",
+        "3.6"
+      ],
+      "type": "unscored-planning-workshop",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description.pdf",
+        "https://apcentral.collegeboard.org/courses/ap-united-states-government-and-politics"
+      ],
+      "unscored": true,
+      "automatedScoring": false,
+      "scorePrediction": false,
+      "officialItem": false,
+      "syntheticStimulus": true,
+      "expertReviewStatus": "pending",
+      "releaseEligible": false,
+      "rights": {
+        "secureCollegeBoardContentUsed": false,
+        "copiedOrRephrasedOfficialPrompt": false,
+        "copiedOfficialRubric": false,
+        "originalStimulus": true
+      },
+      "accessibility": {
+        "stimulusFormat": "plain text",
+        "essentialVisualContent": false,
+        "readingOrder": "linear",
+        "independentReviewStatus": "pending"
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Original synthetic planning workshop; not an official College Board prompt, rubric, score, or prediction. Independent AP U.S. Government subject-expert and accessibility review remain pending."
+    },
+    {
+      "id": "ap-usg-workshop-data-analysis",
+      "taskType": "Quantitative analysis planning",
+      "title": "Describe a political data pattern without overclaiming",
+      "prompt": "Plan a response to a small original data display. Describe the pattern, compare the groups or time points, and explain what the display cannot establish. Keep the claim proportional to the evidence and do not treat the exercise as a scored quantitative-analysis response.",
+      "stimulus": "Original synthetic data display: In a statewide survey, support for a proposed transit measure is 61 percent among respondents who report voting in every recent election, 48 percent among occasional voters, and 42 percent among people who report not voting recently. The sample reports a margin of error of plus or minus 3 percentage points. The survey is observational and does not measure whether voting caused the difference in support.",
+      "taskParts": [
+        "State one pattern or comparison directly supported by the displayed percentages.",
+        "Use the margin of error and the survey design to qualify the comparison.",
+        "Explain one conclusion the display cannot establish and identify evidence that would help."
+      ],
+      "planningFrame": [
+        {
+          "label": "Read",
+          "guidance": "Identify the variables, groups, units, and comparison the display actually provides."
+        },
+        {
+          "label": "Compare",
+          "guidance": "Describe the direction and size of the observed difference without inventing a cause."
+        },
+        {
+          "label": "Uncertainty",
+          "guidance": "Use the stated margin of error as sampling context, not as a guarantee that all error is removed."
+        },
+        {
+          "label": "Limit",
+          "guidance": "Separate association from causation and name a possible confounding factor or measurement concern."
+        }
+      ],
+      "successCriteria": [
+        "The response uses the displayed values accurately and keeps the comparison in context.",
+        "The margin of error is described as sampling uncertainty rather than proof of a result.",
+        "The response distinguishes a relationship in survey data from a causal explanation.",
+        "The limitation is specific enough to guide a follow-up study or source check."
+      ],
+      "commonPitfalls": [
+        "Claiming that voting behavior caused the difference in policy support.",
+        "Treating the margin of error as a measure of every possible source of bias.",
+        "Using the survey to describe every citizen when the population and sampling frame are unspecified.",
+        "Reporting percentages without naming the comparison or the direction of the pattern."
+      ],
+      "sampleOutline": [
+        "Pattern: frequent voters show higher reported support than occasional or nonrecent voters in this sample.",
+        "Qualification: the margin of error and observational design limit what the comparison can show.",
+        "Limit: information about sampling, question wording, demographics, or a longitudinal design would support a stronger explanation."
+      ],
+      "unitIds": [
+        4,
+        5
+      ],
+      "topicIds": [
+        "4.5",
+        "4.6",
+        "5.2"
+      ],
+      "type": "unscored-planning-workshop",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description.pdf",
+        "https://apcentral.collegeboard.org/courses/ap-united-states-government-and-politics"
+      ],
+      "unscored": true,
+      "automatedScoring": false,
+      "scorePrediction": false,
+      "officialItem": false,
+      "syntheticStimulus": true,
+      "expertReviewStatus": "pending",
+      "releaseEligible": false,
+      "rights": {
+        "secureCollegeBoardContentUsed": false,
+        "copiedOrRephrasedOfficialPrompt": false,
+        "copiedOfficialRubric": false,
+        "originalStimulus": true
+      },
+      "accessibility": {
+        "stimulusFormat": "plain text",
+        "essentialVisualContent": false,
+        "readingOrder": "linear",
+        "independentReviewStatus": "pending"
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Original synthetic planning workshop; not an official College Board prompt, rubric, score, or prediction. Independent AP U.S. Government subject-expert and accessibility review remain pending."
+    },
+    {
+      "id": "ap-usg-workshop-case-comparison",
+      "taskType": "Case-comparison planning",
+      "title": "Compare constitutional reasoning across two synthetic cases",
+      "prompt": "Plan a comparison of two original case summaries. Identify the constitutional question, explain one meaningful similarity or difference in the reasoning, and connect the comparison to a broader liberty-and-order conflict. The cases are synthetic and are not substitutes for required case study or expert review.",
+      "stimulus": "Original synthetic case summaries: Case A concerns a city rule requiring a permit for large demonstrations, with objective limits on time and location and several alternative public spaces. Case B concerns a rule that denies permits only to demonstrations criticizing the mayor. In both cases the city cites traffic and safety, but the second rule uses the message of the demonstration as part of the decision.",
+      "taskParts": [
+        "State the shared constitutional issue raised by both case summaries.",
+        "Explain one legally meaningful difference in the government action or standard.",
+        "Use the comparison to make a broader claim about liberty, order, or viewpoint neutrality."
+      ],
+      "planningFrame": [
+        {
+          "label": "Issue",
+          "guidance": "Identify the right or constitutional principle common to both cases."
+        },
+        {
+          "label": "Fact",
+          "guidance": "Select the fact that changes the legal or political significance of the two rules."
+        },
+        {
+          "label": "Comparison",
+          "guidance": "Explain the consequence of the difference instead of merely saying the cases are different."
+        },
+        {
+          "label": "Transfer",
+          "guidance": "State how the comparison helps analyze a new public-order dispute."
+        }
+      ],
+      "successCriteria": [
+        "The comparison is based on a material fact, such as content neutrality or official discretion.",
+        "The response explains why the fact matters to the constitutional analysis.",
+        "The broader claim recognizes that public safety does not erase individual rights.",
+        "The response avoids inventing holdings, quotations, or official case names."
+      ],
+      "commonPitfalls": [
+        "Treating any permit requirement as automatically unconstitutional.",
+        "Ignoring the difference between a neutral time-place rule and viewpoint discrimination.",
+        "Summarizing both cases without explaining the consequence of the comparison.",
+        "Presenting a synthetic case as if it were an official Supreme Court decision."
+      ],
+      "sampleOutline": [
+        "Shared issue: government regulation of public expression must be evaluated against speech protections.",
+        "Key difference: Case A uses neutral criteria and alternatives, while Case B selects messages for adverse treatment.",
+        "Broader claim: order-based regulation is stronger when it controls effects rather than viewpoints."
+      ],
+      "unitIds": [
+        2,
+        3
+      ],
+      "topicIds": [
+        "3.3",
+        "3.6",
+        "2.15"
+      ],
+      "type": "unscored-planning-workshop",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description.pdf",
+        "https://apcentral.collegeboard.org/courses/ap-united-states-government-and-politics"
+      ],
+      "unscored": true,
+      "automatedScoring": false,
+      "scorePrediction": false,
+      "officialItem": false,
+      "syntheticStimulus": true,
+      "expertReviewStatus": "pending",
+      "releaseEligible": false,
+      "rights": {
+        "secureCollegeBoardContentUsed": false,
+        "copiedOrRephrasedOfficialPrompt": false,
+        "copiedOfficialRubric": false,
+        "originalStimulus": true
+      },
+      "accessibility": {
+        "stimulusFormat": "plain text",
+        "essentialVisualContent": false,
+        "readingOrder": "linear",
+        "independentReviewStatus": "pending"
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Original synthetic planning workshop; not an official College Board prompt, rubric, score, or prediction. Independent AP U.S. Government subject-expert and accessibility review remain pending."
+    },
+    {
+      "id": "ap-usg-workshop-source-analysis",
+      "taskType": "Foundational-document source planning",
+      "title": "Build a source-based claim from synthetic civic texts",
+      "prompt": "Plan a source-based response using two short, original civic texts. Identify each author's claim and audience, connect the texts to a constitutional or democratic principle, and explain one limitation of using the texts as evidence. No official document language is reproduced in this workshop.",
+      "stimulus": "Original synthetic source set: Source A is a town-meeting statement arguing that public officials should remain close to local voters and that distant institutions may overlook community needs. Source B is a legislative memorandum arguing that divided institutions and an extended republic can prevent a temporary majority from controlling every decision. Both sources support representative government but emphasize different risks: distance from the people and concentration of power.",
+      "taskParts": [
+        "Identify the central claim and likely audience of each synthetic source.",
+        "Explain how the sources reflect competing concerns about representation, liberty, or institutional design.",
+        "State one limitation of the sources as evidence and describe what additional evidence would help."
+      ],
+      "planningFrame": [
+        {
+          "label": "Author",
+          "guidance": "Infer the speaker or institutional position from the text description, not from an assumed historical identity."
+        },
+        {
+          "label": "Claim",
+          "guidance": "State what each source wants the reader to believe about democratic design."
+        },
+        {
+          "label": "Connection",
+          "guidance": "Link the claims to a principle such as popular sovereignty, faction control, or representation."
+        },
+        {
+          "label": "Limit",
+          "guidance": "Consider audience, purpose, missing voices, or the gap between institutional design and practice."
+        }
+      ],
+      "successCriteria": [
+        "The response distinguishes source claim, audience, and purpose.",
+        "The comparison identifies a real tension rather than forcing the sources into agreement.",
+        "The constitutional connection is explained with a mechanism and not just a vocabulary label.",
+        "The limitation names missing context or perspective and proposes useful additional evidence."
+      ],
+      "commonPitfalls": [
+        "Treating a source summary as proof of every fact about the historical period.",
+        "Assuming that two sources about democracy must have identical priorities.",
+        "Naming a foundational principle without connecting it to the source claim.",
+        "Using outside facts that overwhelm rather than clarify the source analysis."
+      ],
+      "sampleOutline": [
+        "Source A emphasizes local accountability and warns that distance can weaken representation.",
+        "Source B emphasizes institutional checks and warns that concentrated majorities can threaten liberty.",
+        "Synthesis: both value self-government but propose different safeguards, so audience and purpose shape the argument."
+      ],
+      "unitIds": [
+        1
+      ],
+      "topicIds": [
+        "1.1",
+        "1.3",
+        "1.5"
+      ],
+      "type": "unscored-planning-workshop",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description.pdf",
+        "https://apcentral.collegeboard.org/courses/ap-united-states-government-and-politics"
+      ],
+      "unscored": true,
+      "automatedScoring": false,
+      "scorePrediction": false,
+      "officialItem": false,
+      "syntheticStimulus": true,
+      "expertReviewStatus": "pending",
+      "releaseEligible": false,
+      "rights": {
+        "secureCollegeBoardContentUsed": false,
+        "copiedOrRephrasedOfficialPrompt": false,
+        "copiedOfficialRubric": false,
+        "originalStimulus": true
+      },
+      "accessibility": {
+        "stimulusFormat": "plain text",
+        "essentialVisualContent": false,
+        "readingOrder": "linear",
+        "independentReviewStatus": "pending"
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Original synthetic planning workshop; not an official College Board prompt, rubric, score, or prediction. Independent AP U.S. Government subject-expert and accessibility review remain pending."
+    },
+    {
+      "id": "ap-usg-workshop-argumentation",
+      "taskType": "Argumentation planning",
+      "title": "Make a qualified policy claim with evidence and a counterpoint",
+      "prompt": "Plan an argument about whether a proposed participation reform would broaden democratic access. Develop a defensible claim, select evidence from the synthetic record, explain the mechanism connecting evidence to the claim, and address a plausible counterpoint. The workshop does not score argument essays or predict AP results.",
+      "stimulus": "Original synthetic policy record: A state proposes automatic voter registration at eligible-agency visits, expands early voting, and requires public reporting about wait times. Supporters argue that the reforms reduce administrative barriers. Critics argue that access changes alone cannot solve unequal information, work schedules, transportation, or trust in institutions. A pilot report shows registration increased, but turnout changed unevenly across counties.",
+      "taskParts": [
+        "Write a qualified claim about the extent to which the reform could broaden participation.",
+        "Select two pieces of evidence and explain the mechanism connecting each to the claim.",
+        "Address the strongest counterpoint and state what additional evidence would resolve the disagreement."
+      ],
+      "planningFrame": [
+        {
+          "label": "Claim",
+          "guidance": "Answer the extent question with a position that allows for benefits and limits."
+        },
+        {
+          "label": "Evidence",
+          "guidance": "Use the registration result, turnout variation, and policy details as distinct evidence."
+        },
+        {
+          "label": "Mechanism",
+          "guidance": "Explain how an administrative change could affect opportunity without guaranteeing participation."
+        },
+        {
+          "label": "Counterpoint",
+          "guidance": "Recognize barriers the reform does not address and explain how they qualify the claim."
+        }
+      ],
+      "successCriteria": [
+        "The claim is defensible and qualified rather than absolute.",
+        "Evidence is specific to the synthetic record and followed by reasoning.",
+        "The response distinguishes registration, access, and turnout as different outcomes.",
+        "The counterpoint changes the scope of the claim instead of appearing as an unrelated fact."
+      ],
+      "commonPitfalls": [
+        "Claiming that easier registration automatically produces equal turnout.",
+        "Using the pilot result without noting differences across counties.",
+        "Listing multiple reforms without explaining how each could affect participation.",
+        "Treating a counterpoint as something to dismiss rather than a limit to address."
+      ],
+      "sampleOutline": [
+        "Claim: access reforms can broaden opportunity, but their participation effect depends on implementation and remaining barriers.",
+        "Evidence and mechanism: registration and early voting reduce administrative friction, while reporting identifies unequal implementation.",
+        "Qualification: uneven turnout and nonadministrative barriers require complementary outreach and further evaluation."
+      ],
+      "unitIds": [
+        4,
+        5
+      ],
+      "topicIds": [
+        "5.1",
+        "5.2",
+        "4.8"
+      ],
+      "type": "unscored-planning-workshop",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description.pdf",
+        "https://apcentral.collegeboard.org/courses/ap-united-states-government-and-politics"
+      ],
+      "unscored": true,
+      "automatedScoring": false,
+      "scorePrediction": false,
+      "officialItem": false,
+      "syntheticStimulus": true,
+      "expertReviewStatus": "pending",
+      "releaseEligible": false,
+      "rights": {
+        "secureCollegeBoardContentUsed": false,
+        "copiedOrRephrasedOfficialPrompt": false,
+        "copiedOfficialRubric": false,
+        "originalStimulus": true
+      },
+      "accessibility": {
+        "stimulusFormat": "plain text",
+        "essentialVisualContent": false,
+        "readingOrder": "linear",
+        "independentReviewStatus": "pending"
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Original synthetic planning workshop; not an official College Board prompt, rubric, score, or prediction. Independent AP U.S. Government subject-expert and accessibility review remain pending."
+    }
+  ],
   "summary": {
     "chapters": 5,
     "sections": 15,
@@ -10450,16 +11089,18 @@
     "memoryAids": 5,
     "diagrams": 0,
     "diagramPlacements": 0,
-    "constructedResponseWorkshops": 0,
+    "constructedResponseWorkshops": 5,
     "richLessonPrototypes": 5,
     "sourceReviewedChapters": 5,
     "sourceReviewedFlashcards": 15,
     "sourceReviewedMemoryAids": 5,
+    "sourceReviewedConstructedResponseWorkshops": 5,
     "releaseEligibleRecords": 0
   },
   "accessibility": {
-    "contentForm": "text-first, linear lessons and single-choice items",
+    "contentForm": "text-first, linear lessons, single-choice items, and plain-text planning workshops",
     "essentialVisualItems": 0,
+    "workshopStimuliUsePlainText": true,
     "diagramsRequiredForComprehension": false,
     "diagramFallbackMode": "ordered-text-equivalent",
     "independentReviewStatus": "pending",
@@ -10475,6 +11116,7 @@
     "authoringBasis": "Independent original wording informed by public blueprint metadata and factual sources.",
     "publicSourceUse": "Blueprint alignment and factual verification only; no source prose, figures, or assessment content reproduced.",
     "openStaxUse": "Factual cross-checking and links only; no textbook prose, figures, or assessment content reproduced.",
+    "workshopStudiesAreSynthetic": true,
     "status": "pending-independent-rights-review"
   },
   "releaseGates": {
@@ -10496,11 +11138,11 @@
   "transitionNotice": "Reverify the current AP U.S. Government and Politics CED, exam format, cases, required foundational documents, policies, and public-use boundaries before any release or expansion.",
   "contentMigration": {
     "schemaVersion": 1,
-    "contentVersion": "ap-us-government-foundation-v4",
+    "contentVersion": "ap-us-government-foundation-v6",
     "sections": 15,
     "completeSections": 15,
     "richLessonPrototypes": 5,
     "status": "foundation-prototype",
-    "note": "All five unit chapters and fifteen structured sections are navigable; the companion 200-item bank adds a second practice angle for every current topic; independent review remains pending."
+    "note": "All five unit chapters and fifteen structured sections are navigable; the companion 260-item bank adds a third transfer/application angle for every current topic, and five synthetic response-planning workshops remain explicitly unscored; independent review remains pending."
   }
 }

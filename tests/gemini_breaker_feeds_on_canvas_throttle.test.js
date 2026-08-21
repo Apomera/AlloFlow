@@ -71,6 +71,30 @@ describe('the breaker is fed by a Canvas throttle', () => {
       vi.restoreAllMocks();
     }
   }, 60000);
+
+  it('clears the throttle streak when the bounded inline retry recovers', async () => {
+    vi.spyOn(Math, 'random').mockReturnValue(0);
+    try {
+      let calls = 0;
+      const p = makePipeline(async () => {
+        calls++;
+        if (calls === 1) throw canvasThrottleError();
+        return JSON.stringify({ score: 100, issues: [], passes: [] });
+      });
+
+      await p.auditOutputAccessibility('<main><h1>x</h1><p>y</p></main>', {
+        owner: { runId: 'r2-recovered', operation: 'audit', chunkId: 'whole', passNumber: 1 },
+      });
+
+      expect(calls).toBe(2);
+      const state = p.geminiThrottleInfo();
+      expect(state.authStreak).toBe(0);
+      expect(state.storming).toBe(false);
+    } finally {
+      vi.restoreAllMocks();
+    }
+  }, 60000);
+
   it('suppresses repeated generic failures for one signature without masking distinct failures', async () => {
     vi.spyOn(Math, 'random').mockReturnValue(0);
     try {

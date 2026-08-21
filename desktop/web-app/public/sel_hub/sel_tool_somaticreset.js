@@ -205,10 +205,10 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('somaticReset')))
     { id: 'circle', label: 'Breathing circle', symbol: '\u25EF', description: 'Expands and softens with the optional breath rhythm.' },
     { id: 'ripples', label: 'Soft ripples', symbol: '\u223F', description: 'Three rings spread gently from a steady center.' },
     { id: 'glow', label: 'Focus glow', symbol: '\u25C9', description: 'A quiet center point brightens and softens.' },
-    { id: 'wave', label: 'Flowing wave', symbol: '\u2248', description: 'Layered lines rise and settle with the breath rhythm.' },
-    { id: 'flower', label: 'Petal bloom', symbol: '\u273F', description: 'Petals open and close around a steady center.' },
-    { id: 'horizon', label: 'Grounding horizon', symbol: '\u25E1', description: 'A sun rises and settles over a quiet horizon.' },
-    { id: 'path', label: 'Breath path', symbol: '\u2194', description: 'A directional point follows the optional breath rhythm along a clear line.' },
+    { id: 'wave', label: 'Flowing wave', symbol: '\u2248', description: 'Layered waves pair IN · RISE with a solid line and round marker, then OUT · SETTLE with a dotted line and diamond marker; pause bars keep stationary state clear.' },
+    { id: 'flower', label: 'Petal bloom', symbol: '\u273F', description: 'Petals pair IN · OPEN with solid outlines and a round center, then OUT · SOFTEN with dotted outlines and a diamond center; pause bars keep stationary state clear.' },
+    { id: 'horizon', label: 'Grounding horizon', symbol: '\u25E1', description: 'A sun pairs IN · RISE with a solid outline and circle center, then OUT · SETTLE with a dotted outline and diamond center; pause bars keep stationary state clear.' },
+    { id: 'path', label: 'Breath path', symbol: '\u2194', description: 'A directional point travels between a diamond OUT target and round IN target; an outline strengthens toward the next phase handoff.' },
     { id: 'orbit', label: 'Breath orbit', symbol: '\u25CC', description: 'Direct IN and OUT labels pair with solid inhale and dotted exhale patterns across the arcs and center ring; the center changes to pause bars when the session pauses; an outlined diamond or ring shows the next phase handoff; round and diamond markers move clockwise, with shape-coded marks for each optional count.' },
     { id: 'none', label: 'No visual', symbol: '\u2014', description: 'Uses only the timer and optional sound cue.' }
   ];
@@ -813,7 +813,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('somaticReset')))
 
       function secondaryButton(extra) {
         return Object.assign({
-          border: '1px solid ' + colors.border,
+          borderWidth: 1,
+          borderStyle: 'solid',
+          borderColor: colors.border,
           background: colors.input,
           color: colors.text,
           borderRadius: 10,
@@ -1530,6 +1532,27 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('somaticReset')))
           }, h('span', { 'aria-hidden': 'true', style: { color: colors.accent, fontSize: compact ? 25 : 36 } }, '\u25C9'));
         } else if (currentVisual.id === 'wave') {
           var waveAmplitude = 12 + amount * 24;
+          var waveCanMove = usesPace && effectiveMotion !== 'still';
+          var waveMoving = waveCanMove && (isRunning || previewing);
+          var wavePhase = waveMoving ? activeBreathPhase : 'steady';
+          var waveDirection = wavePhase === 'in' ? 'right' : (wavePhase === 'out' ? 'left' : 'steady');
+          var waveLinePattern = wavePhase === 'out' ? 'dotted' : (wavePhase === 'in' ? 'solid' : 'steady');
+          var waveSessionState = previewing
+            ? 'preview'
+            : (isRunning ? (waveMoving ? 'moving' : 'steady') : (hasStarted ? 'paused' : 'ready'));
+          var waveMarkerShape = waveMoving
+            ? (wavePhase === 'out' ? 'diamond' : 'circle')
+            : (waveSessionState === 'paused' ? 'pause-bars' : 'dot');
+          var waveCueText = waveMoving
+            ? (wavePhase === 'in' ? 'IN · RISE' : 'OUT · SETTLE')
+            : (waveSessionState === 'paused' ? 'PAUSED' : (waveSessionState === 'steady' ? 'STEADY' : 'READY'));
+          var waveCueState = waveMoving ? wavePhase : waveSessionState;
+          var wavePhaseProgress = wavePhase === 'in'
+            ? Math.min(1, Math.max(0, activeBreathAmount))
+            : (wavePhase === 'out' ? Math.min(1, Math.max(0, 1 - activeBreathAmount)) : 0);
+          var wavePatternTransition = waveMoving && motionStrength > 0
+            ? 'stroke-width 260ms ease-in-out, opacity 260ms ease-in-out'
+            : 'none';
           var waveDotX = 40 + amount * 160;
           var waveDotY = 86 + Math.sin((waveDotX / 240) * Math.PI * 2) * waveAmplitude;
           function wavePath(baseY, amplitude, phase) {
@@ -1544,22 +1567,181 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('somaticReset')))
             viewBox: '0 0 240 170',
             'aria-hidden': 'true',
             focusable: 'false',
+            'data-breath-wave': 'true',
+            'data-wave-phase': wavePhase,
+            'data-wave-direction': waveDirection,
+            'data-wave-line-pattern': waveLinePattern,
+            'data-wave-marker-shape': waveMarkerShape,
+            'data-wave-session-state': waveSessionState,
+            'data-wave-phase-progress': waveMoving ? Math.round(wavePhaseProgress * 100) : 'steady',
+            'data-wave-cadence': usesPace ? protocol.cadence.join('-') : 'natural',
             style: { width: frameCss, height: 'auto', overflow: 'visible', transform: 'scale(' + (0.96 + amount * 0.05).toFixed(3) + ')', transition: visualTransition }
           },
+            usesPace && h('text', {
+              x: 120,
+              y: 18,
+              textAnchor: 'middle',
+              fill: waveMoving ? colors.accent : colors.muted,
+              fontSize: compact ? 18 : 14,
+              fontWeight: waveMoving ? 500 : 400,
+              letterSpacing: compact ? 1.1 : 0.9,
+              opacity: waveMoving ? 1 : 0.78,
+              style: {
+                textDecoration: waveMoving ? 'underline' : 'none',
+                transition: wavePatternTransition
+              },
+              'data-wave-phase-cue': 'true',
+              'data-wave-cue-state': waveCueState,
+              'data-wave-cue-shape': waveMarkerShape,
+              'data-wave-cue-emphasis': waveMoving ? 'underlined' : 'plain'
+            }, waveCueText),
             h('path', { d: wavePath(62, waveAmplitude * 0.58, 0.6), fill: 'none', stroke: colors.border, strokeWidth: 2, strokeLinecap: 'round', opacity: 0.8 }),
-            h('path', { d: wavePath(86, waveAmplitude, 0), fill: 'none', stroke: colors.accent, strokeWidth: compact ? 3 : 4, strokeLinecap: 'round' }),
+            h('path', {
+              d: wavePath(86, waveAmplitude, 0),
+              fill: 'none',
+              stroke: colors.accent,
+              strokeWidth: waveMoving ? (compact ? 3.5 : 5) : (compact ? 3 : 4),
+              strokeLinecap: 'round',
+              strokeDasharray: waveLinePattern === 'dotted' ? (compact ? '3 7' : '4 8') : undefined,
+              opacity: waveMoving ? 1 : 0.78,
+              style: { transition: wavePatternTransition },
+              'data-wave-main-line': 'true',
+              'data-wave-main-pattern': waveLinePattern,
+              'data-wave-main-state': waveMoving ? 'active' : 'steady'
+            }),
             h('path', { d: wavePath(112, waveAmplitude * 0.7, -0.7), fill: 'none', stroke: colors.muted, strokeWidth: 2, strokeLinecap: 'round', opacity: 0.7 }),
-            h('circle', { cx: waveDotX.toFixed(2), cy: waveDotY.toFixed(2), r: compact ? 4 : 6, fill: colors.soft, stroke: colors.accent, strokeWidth: 2, style: { transition: visualTransition } })
+            h('g', {
+              'data-wave-marker': 'true',
+              'data-wave-marker-phase': wavePhase,
+              'data-wave-marker-direction': waveDirection,
+              'data-wave-marker-shape': waveMarkerShape,
+              style: { transition: visualTransition }
+            },
+              waveMoving && h('path', {
+                d: waveDirection === 'right'
+                  ? 'M ' + (waveDotX - 15).toFixed(2) + ' ' + (waveDotY - 4).toFixed(2) + ' L ' + (waveDotX - 9).toFixed(2) + ' ' + waveDotY.toFixed(2) + ' L ' + (waveDotX - 15).toFixed(2) + ' ' + (waveDotY + 4).toFixed(2)
+                  : 'M ' + (waveDotX + 15).toFixed(2) + ' ' + (waveDotY - 4).toFixed(2) + ' L ' + (waveDotX + 9).toFixed(2) + ' ' + waveDotY.toFixed(2) + ' L ' + (waveDotX + 15).toFixed(2) + ' ' + (waveDotY + 4).toFixed(2),
+                fill: 'none',
+                stroke: colors.accent,
+                strokeWidth: compact ? 1.5 : 2,
+                strokeLinecap: 'round',
+                strokeLinejoin: 'round',
+                'data-wave-direction-cue': waveDirection
+              }),
+              h('circle', {
+                cx: waveDotX.toFixed(2),
+                cy: waveDotY.toFixed(2),
+                r: compact ? 11 : 14,
+                fill: colors.soft,
+                opacity: 0.68,
+                style: { transition: visualTransition }
+              }),
+              waveMarkerShape === 'diamond'
+                ? h('rect', {
+                    x: (waveDotX - (compact ? 4 : 5)).toFixed(2),
+                    y: (waveDotY - (compact ? 4 : 5)).toFixed(2),
+                    width: compact ? 8 : 10,
+                    height: compact ? 8 : 10,
+                    rx: 2,
+                    fill: colors.panelAlt,
+                    stroke: colors.accent,
+                    strokeWidth: compact ? 2 : 2.5,
+                    transform: 'rotate(45 ' + waveDotX.toFixed(2) + ' ' + waveDotY.toFixed(2) + ')',
+                    'data-wave-marker-core': 'diamond'
+                  })
+                : h('circle', {
+                    cx: waveDotX.toFixed(2),
+                    cy: waveDotY.toFixed(2),
+                    r: compact ? 5 : 6,
+                    fill: colors.panelAlt,
+                    stroke: waveMarkerShape === 'pause-bars' ? colors.muted : colors.accent,
+                    strokeWidth: compact ? 2 : 2.5,
+                    'data-wave-marker-core': waveMarkerShape === 'circle' ? 'circle' : 'ring'
+                  }),
+              waveMarkerShape === 'pause-bars'
+                ? h('g', { 'data-wave-pause-bars': 'true' },
+                    h('line', {
+                      x1: (waveDotX - 2.5).toFixed(2),
+                      y1: (waveDotY - 4).toFixed(2),
+                      x2: (waveDotX - 2.5).toFixed(2),
+                      y2: (waveDotY + 4).toFixed(2),
+                      stroke: colors.accent,
+                      strokeWidth: compact ? 2 : 2.5,
+                      strokeLinecap: 'round'
+                    }),
+                    h('line', {
+                      x1: (waveDotX + 2.5).toFixed(2),
+                      y1: (waveDotY - 4).toFixed(2),
+                      x2: (waveDotX + 2.5).toFixed(2),
+                      y2: (waveDotY + 4).toFixed(2),
+                      stroke: colors.accent,
+                      strokeWidth: compact ? 2 : 2.5,
+                      strokeLinecap: 'round'
+                    })
+                  )
+                : (waveMarkerShape === 'dot' && h('circle', {
+                    cx: waveDotX.toFixed(2),
+                    cy: waveDotY.toFixed(2),
+                    r: compact ? 1.8 : 2.2,
+                    fill: colors.accent,
+                    'data-wave-center-dot': 'true'
+                  }))
+            )
           );
         } else if (currentVisual.id === 'flower') {
+          var flowerCanMove = usesPace && effectiveMotion !== 'still';
+          var flowerMoving = flowerCanMove && (isRunning || previewing);
+          var flowerPhase = flowerMoving ? activeBreathPhase : 'steady';
+          var flowerPetalPattern = flowerPhase === 'out' ? 'dotted' : (flowerPhase === 'in' ? 'solid' : 'steady');
+          var flowerSessionState = previewing
+            ? 'preview'
+            : (isRunning ? (flowerMoving ? 'moving' : 'steady') : (hasStarted ? 'paused' : 'ready'));
+          var flowerCenterShape = flowerMoving
+            ? (flowerPhase === 'out' ? 'diamond' : 'circle')
+            : (flowerSessionState === 'paused' ? 'pause-bars' : 'dot');
+          var flowerCueText = flowerMoving
+            ? (flowerPhase === 'in' ? 'IN · OPEN' : 'OUT · SOFTEN')
+            : (flowerSessionState === 'paused' ? 'PAUSED' : (flowerSessionState === 'steady' ? 'STEADY' : 'READY'));
+          var flowerCueState = flowerMoving ? flowerPhase : flowerSessionState;
+          var flowerPhaseProgress = flowerPhase === 'in'
+            ? Math.min(1, Math.max(0, activeBreathAmount))
+            : (flowerPhase === 'out' ? Math.min(1, Math.max(0, 1 - activeBreathAmount)) : 0);
+          var flowerPatternTransition = flowerMoving && motionStrength > 0
+            ? 'stroke-width 260ms ease-in-out, opacity 260ms ease-in-out'
+            : 'none';
           var petalY = 89 - amount * 20;
           var petalLength = 29 + amount * 15;
           visualBody = h('svg', {
             viewBox: '0 0 240 240',
             'aria-hidden': 'true',
             focusable: 'false',
-            style: { width: frameCss, height: 'auto', transform: 'scale(' + (0.94 + amount * 0.06).toFixed(3) + ')', transition: visualTransition }
+            'data-breath-flower': 'true',
+            'data-flower-phase': flowerPhase,
+            'data-flower-petal-pattern': flowerPetalPattern,
+            'data-flower-center-shape': flowerCenterShape,
+            'data-flower-session-state': flowerSessionState,
+            'data-flower-phase-progress': flowerMoving ? Math.round(flowerPhaseProgress * 100) : 'steady',
+            'data-flower-cadence': usesPace ? protocol.cadence.join('-') : 'natural',
+            style: { width: frameCss, height: 'auto', overflow: 'visible', transform: 'scale(' + (0.94 + amount * 0.06).toFixed(3) + ')', transition: visualTransition }
           },
+            usesPace && h('text', {
+              x: 120,
+              y: 18,
+              textAnchor: 'middle',
+              fill: flowerMoving ? colors.accent : colors.muted,
+              fontSize: compact ? 18 : 14,
+              fontWeight: flowerMoving ? 500 : 400,
+              letterSpacing: compact ? 1.1 : 0.9,
+              opacity: flowerMoving ? 1 : 0.78,
+              style: {
+                textDecoration: flowerMoving ? 'underline' : 'none',
+                transition: flowerPatternTransition
+              },
+              'data-flower-phase-cue': 'true',
+              'data-flower-cue-state': flowerCueState,
+              'data-flower-cue-shape': flowerCenterShape,
+              'data-flower-cue-emphasis': flowerMoving ? 'underlined' : 'plain'
+            }, flowerCueText),
             [0, 1, 2, 3, 4, 5, 6, 7].map(function(index) {
               return h('ellipse', {
                 key: index,
@@ -1570,32 +1752,246 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('somaticReset')))
                 transform: 'rotate(' + index * 45 + ' 120 120)',
                 fill: colors.soft,
                 stroke: colors.accent,
-                strokeWidth: compact ? 1.5 : 2,
-                opacity: 0.58 + amount * 0.3,
-                style: { transition: visualTransition }
+                strokeWidth: flowerMoving ? (compact ? 2.25 : 3) : (compact ? 1.5 : 2),
+                strokeDasharray: flowerPetalPattern === 'dotted' ? (compact ? '3 7' : '4 8') : undefined,
+                strokeLinecap: 'round',
+                opacity: flowerMoving ? 0.72 + amount * 0.24 : 0.58 + amount * 0.3,
+                style: { transition: visualTransition },
+                'data-flower-petal': index,
+                'data-flower-petal-pattern': flowerPetalPattern,
+                'data-flower-petal-state': flowerMoving ? 'active' : 'steady'
               });
             }),
-            h('circle', { cx: 120, cy: 120, r: 18 + amount * 6, fill: colors.panelAlt, stroke: colors.accent, strokeWidth: compact ? 2 : 3, style: { transition: visualTransition } }),
-            h('circle', { cx: 120, cy: 120, r: compact ? 4 : 6, fill: colors.accent })
+            h('circle', {
+              cx: 120,
+              cy: 120,
+              r: 18 + amount * 6,
+              fill: colors.panelAlt,
+              stroke: flowerMoving ? colors.accent : colors.muted,
+              strokeWidth: flowerMoving ? (compact ? 2.5 : 3.5) : (compact ? 2 : 3),
+              opacity: flowerMoving ? 1 : 0.82,
+              style: { transition: visualTransition },
+              'data-flower-center-ring': 'true'
+            }),
+            h('g', {
+              'data-flower-center': 'true',
+              'data-flower-center-shape': flowerCenterShape,
+              'data-flower-center-state': flowerMoving ? 'active' : flowerSessionState
+            },
+              flowerCenterShape === 'diamond'
+                ? h('rect', {
+                    x: compact ? 115.5 : 114.5,
+                    y: compact ? 115.5 : 114.5,
+                    width: compact ? 9 : 11,
+                    height: compact ? 9 : 11,
+                    rx: 2,
+                    fill: colors.panelAlt,
+                    stroke: colors.accent,
+                    strokeWidth: compact ? 2 : 2.5,
+                    transform: 'rotate(45 120 120)',
+                    'data-flower-marker-core': 'diamond'
+                  })
+                : (flowerCenterShape === 'circle'
+                    ? h('circle', {
+                        cx: 120,
+                        cy: 120,
+                        r: compact ? 5 : 6,
+                        fill: colors.panelAlt,
+                        stroke: colors.accent,
+                        strokeWidth: compact ? 2 : 2.5,
+                        'data-flower-marker-core': 'circle'
+                      })
+                    : (flowerCenterShape === 'pause-bars'
+                        ? h('g', { 'data-flower-pause-bars': 'true' },
+                            h('line', {
+                              x1: 116.5,
+                              y1: compact ? 115.5 : 114.5,
+                              x2: 116.5,
+                              y2: compact ? 124.5 : 125.5,
+                              stroke: colors.accent,
+                              strokeWidth: compact ? 2 : 2.5,
+                              strokeLinecap: 'round'
+                            }),
+                            h('line', {
+                              x1: 123.5,
+                              y1: compact ? 115.5 : 114.5,
+                              x2: 123.5,
+                              y2: compact ? 124.5 : 125.5,
+                              stroke: colors.accent,
+                              strokeWidth: compact ? 2 : 2.5,
+                              strokeLinecap: 'round'
+                            })
+                          )
+                        : h('circle', {
+                            cx: 120,
+                            cy: 120,
+                            r: compact ? 3 : 4,
+                            fill: colors.accent,
+                            'data-flower-center-dot': 'true'
+                          })))
+            )
           );
         } else if (currentVisual.id === 'horizon') {
+          var horizonCanMove = usesPace && effectiveMotion !== 'still';
+          var horizonMoving = horizonCanMove && (isRunning || previewing);
+          var horizonPhase = horizonMoving ? activeBreathPhase : 'steady';
+          var horizonLinePattern = horizonPhase === 'out' ? 'dotted' : (horizonPhase === 'in' ? 'solid' : 'steady');
+          var horizonSessionState = previewing
+            ? 'preview'
+            : (isRunning ? (horizonMoving ? 'moving' : 'steady') : (hasStarted ? 'paused' : 'ready'));
+          var horizonCenterShape = horizonMoving
+            ? (horizonPhase === 'out' ? 'diamond' : 'circle')
+            : (horizonSessionState === 'paused' ? 'pause-bars' : 'dot');
+          var horizonCueText = horizonMoving
+            ? (horizonPhase === 'in' ? 'IN · RISE' : 'OUT · SETTLE')
+            : (horizonSessionState === 'paused' ? 'PAUSED' : (horizonSessionState === 'steady' ? 'STEADY' : 'READY'));
+          var horizonCueState = horizonMoving ? horizonPhase : horizonSessionState;
+          var horizonPhaseProgress = horizonPhase === 'in'
+            ? Math.min(1, Math.max(0, activeBreathAmount))
+            : (horizonPhase === 'out' ? Math.min(1, Math.max(0, 1 - activeBreathAmount)) : 0);
+          var horizonPatternTransition = horizonMoving && motionStrength > 0
+            ? 'stroke-width 260ms ease-in-out, opacity 260ms ease-in-out'
+            : 'none';
           var sunY = 108 - amount * 45;
+          var sunRadius = 21 + amount * 6;
           visualBody = h('svg', {
             viewBox: '0 0 240 170',
             'aria-hidden': 'true',
             focusable: 'false',
-            style: { width: frameCss, height: 'auto', overflow: 'visible' }
+            'data-breath-horizon': 'true',
+            'data-horizon-phase': horizonPhase,
+            'data-horizon-line-pattern': horizonLinePattern,
+            'data-horizon-center-shape': horizonCenterShape,
+            'data-horizon-session-state': horizonSessionState,
+            'data-horizon-phase-progress': horizonMoving ? Math.round(horizonPhaseProgress * 100) : 'steady',
+            'data-horizon-cadence': usesPace ? protocol.cadence.join('-') : 'natural',
+            style: { width: frameCss, height: 'auto', overflow: 'visible', transition: visualTransition }
           },
-            h('circle', { cx: 120, cy: sunY, r: 21 + amount * 6, fill: colors.soft, stroke: colors.accent, strokeWidth: compact ? 2 : 3, style: { transition: visualTransition } }),
+            usesPace && h('text', {
+              x: 120,
+              y: 18,
+              textAnchor: 'middle',
+              fill: horizonMoving ? colors.accent : colors.muted,
+              fontSize: compact ? 18 : 14,
+              fontWeight: horizonMoving ? 500 : 400,
+              letterSpacing: compact ? 1.1 : 0.9,
+              opacity: horizonMoving ? 1 : 0.78,
+              style: {
+                textDecoration: horizonMoving ? 'underline' : 'none',
+                transition: horizonPatternTransition
+              },
+              'data-horizon-phase-cue': 'true',
+              'data-horizon-cue-state': horizonCueState,
+              'data-horizon-cue-shape': horizonCenterShape,
+              'data-horizon-cue-emphasis': horizonMoving ? 'underlined' : 'plain'
+            }, horizonCueText),
+            h('circle', {
+              cx: 120,
+              cy: sunY,
+              r: sunRadius,
+              fill: colors.soft,
+              stroke: horizonMoving ? colors.accent : colors.muted,
+              strokeWidth: horizonMoving ? (compact ? 2.5 : 3.5) : (compact ? 2 : 3),
+              strokeDasharray: horizonLinePattern === 'dotted' ? (compact ? '3 7' : '4 8') : undefined,
+              opacity: horizonMoving ? 1 : 0.82,
+              style: { transition: visualTransition },
+              'data-horizon-sun': 'true',
+              'data-horizon-sun-pattern': horizonLinePattern
+            }),
+            h('g', {
+              'data-horizon-sun-marker': 'true',
+              'data-horizon-marker-shape': horizonCenterShape,
+              'data-horizon-marker-state': horizonMoving ? 'active' : horizonSessionState
+            },
+              horizonCenterShape === 'diamond'
+                ? h('rect', {
+                    x: 115.5,
+                    y: sunY - 4.5,
+                    width: 9,
+                    height: 9,
+                    rx: 2,
+                    fill: colors.panelAlt,
+                    stroke: colors.accent,
+                    strokeWidth: compact ? 2 : 2.5,
+                    transform: 'rotate(45 120 ' + sunY.toFixed(2) + ')',
+                    'data-horizon-marker-core': 'diamond'
+                  })
+                : (horizonCenterShape === 'circle'
+                    ? h('circle', {
+                        cx: 120,
+                        cy: sunY,
+                        r: compact ? 5 : 6,
+                        fill: colors.panelAlt,
+                        stroke: colors.accent,
+                        strokeWidth: compact ? 2 : 2.5,
+                        'data-horizon-marker-core': 'circle'
+                      })
+                    : (horizonCenterShape === 'pause-bars'
+                        ? h('g', { 'data-horizon-pause-bars': 'true' },
+                            h('line', {
+                              x1: 116.5,
+                              y1: (sunY - 4.5).toFixed(2),
+                              x2: 116.5,
+                              y2: (sunY + 4.5).toFixed(2),
+                              stroke: colors.accent,
+                              strokeWidth: compact ? 2 : 2.5,
+                              strokeLinecap: 'round'
+                            }),
+                            h('line', {
+                              x1: 123.5,
+                              y1: (sunY - 4.5).toFixed(2),
+                              x2: 123.5,
+                              y2: (sunY + 4.5).toFixed(2),
+                              stroke: colors.accent,
+                              strokeWidth: compact ? 2 : 2.5,
+                              strokeLinecap: 'round'
+                            })
+                          )
+                        : h('circle', {
+                            cx: 120,
+                            cy: sunY,
+                            r: compact ? 3 : 4,
+                            fill: colors.accent,
+                            'data-horizon-marker-core': 'dot'
+                          })))
+            ),
             h('path', { d: 'M 0 116 Q 58 94 120 116 T 240 116 L 240 170 L 0 170 Z', fill: colors.panelAlt, stroke: colors.border, strokeWidth: 2 }),
-            h('path', { d: 'M 0 128 Q 60 112 120 128 T 240 128', fill: 'none', stroke: colors.accent, strokeWidth: compact ? 2 : 3, strokeLinecap: 'round', opacity: 0.82 }),
+            h('path', {
+              d: 'M 0 128 Q 60 112 120 128 T 240 128',
+              fill: 'none',
+              stroke: horizonMoving ? colors.accent : colors.muted,
+              strokeWidth: horizonMoving ? (compact ? 2.5 : 3.5) : (compact ? 2 : 3),
+              strokeDasharray: horizonLinePattern === 'dotted' ? (compact ? '3 7' : '4 8') : undefined,
+              strokeLinecap: 'round',
+              opacity: horizonMoving ? 1 : 0.68,
+              style: { transition: horizonPatternTransition },
+              'data-horizon-main-line': 'true',
+              'data-horizon-main-pattern': horizonLinePattern,
+              'data-horizon-main-state': horizonMoving ? 'active' : 'steady'
+            }),
             h('path', { d: 'M 18 144 Q 70 132 120 144 T 222 144', fill: 'none', stroke: colors.muted, strokeWidth: 2, strokeLinecap: 'round', opacity: 0.68 })
           );
         } else if (currentVisual.id === 'path') {
           var pathDotX = 28 + amount * 184;
-          var pathDirection = usesPace && (isRunning || previewing) && effectiveMotion !== 'still'
+          var pathCanMove = usesPace && effectiveMotion !== 'still';
+          var pathMoving = pathCanMove && (isRunning || previewing);
+          var pathDirection = pathMoving
             ? (activeBreathPhase === 'in' ? 'right' : 'left')
             : 'steady';
+          var pathPhase = pathMoving ? activeBreathPhase : 'steady';
+          var pathDestination = pathPhase === 'in' ? 'inhale' : (pathPhase === 'out' ? 'exhale' : 'steady');
+          var pathPhaseProgress = pathPhase === 'in'
+            ? Math.min(1, Math.max(0, activeBreathAmount))
+            : (pathPhase === 'out' ? Math.min(1, Math.max(0, 1 - activeBreathAmount)) : 0);
+          var pathInState = pathPhase === 'in' ? 'destination' : (pathPhase === 'out' ? 'passed' : 'steady');
+          var pathOutState = pathPhase === 'out' ? 'destination' : (pathPhase === 'in' ? 'waiting' : 'steady');
+          var pathInLabelState = pathPhase === 'in' ? 'active' : (pathPhase === 'out' ? 'inactive' : 'steady');
+          var pathOutLabelState = pathPhase === 'out' ? 'active' : (pathPhase === 'in' ? 'inactive' : 'steady');
+          var pathTrailStartX = pathDirection === 'left' ? 212 : 28;
+          var pathDestinationOpacity = pathMoving ? 0.3 + pathPhaseProgress * 0.5 : 0;
+          var pathEndpointTransition = pathMoving && motionStrength > 0
+            ? 'opacity 260ms ease-in-out, stroke-width 260ms ease-in-out'
+            : 'none';
           var pathMarker = pathDirection === 'right'
             ? 'M -4 -5 L 5 0 L -4 5 Z'
             : 'M 4 -5 L -5 0 L 4 5 Z';
@@ -1606,22 +2002,142 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('somaticReset')))
             'data-breath-path': 'true',
             'data-path-position': Math.round(amount * 100),
             'data-path-direction': pathDirection,
+            'data-path-phase': pathPhase,
+            'data-path-destination': pathDestination,
+            'data-path-phase-progress': pathMoving ? Math.round(pathPhaseProgress * 100) : 'steady',
+            'data-path-cadence': usesPace ? protocol.cadence.join('-') : 'natural',
             style: { width: frameCss, height: 'auto', overflow: 'visible' }
           },
             h('line', { x1: 28, y1: 50, x2: 212, y2: 50, stroke: colors.border, strokeWidth: compact ? 5 : 6, strokeLinecap: 'round' }),
-            h('line', { x1: 28, y1: 50, x2: pathDotX.toFixed(2), y2: 50, stroke: colors.accent, strokeWidth: compact ? 3 : 4, strokeLinecap: 'round', style: { transition: visualTransition } }),
-            h('circle', { cx: 28, cy: 50, r: compact ? 5 : 6, fill: colors.panel, stroke: colors.muted, strokeWidth: 2 }),
-            h('circle', { cx: 212, cy: 50, r: compact ? 5 : 6, fill: colors.panel, stroke: colors.muted, strokeWidth: 2 }),
-            h('circle', { cx: pathDotX.toFixed(2), cy: 50, r: compact ? 13 : 16, fill: colors.soft, opacity: 0.72, style: { transition: visualTransition } }),
-            h('circle', { cx: pathDotX.toFixed(2), cy: 50, r: compact ? 7 : 9, fill: colors.panelAlt, stroke: colors.accent, strokeWidth: compact ? 2 : 3, style: { transition: visualTransition } }),
-            pathDirection === 'steady'
-              ? h('circle', { cx: pathDotX.toFixed(2), cy: 50, r: compact ? 2.5 : 3, fill: colors.accent, style: { transition: visualTransition } })
-              : h('path', {
-                  d: pathMarker,
-                  transform: 'translate(' + pathDotX.toFixed(2) + ' 50)',
-                  fill: colors.accent,
-                  style: { transition: visualTransition }
-                })
+            pathMoving && h('line', {
+              x1: pathTrailStartX,
+              y1: 50,
+              x2: pathDotX.toFixed(2),
+              y2: 50,
+              stroke: colors.accent,
+              strokeWidth: compact ? 3 : 4,
+              strokeLinecap: 'round',
+              style: { transition: visualTransition },
+              'data-path-trail': pathPhase,
+              'data-path-trail-origin': pathPhase === 'in' ? 'out' : 'in'
+            }),
+            usesPace
+              ? h('g', { 'data-path-endpoints': 'paced' },
+                  h('g', {
+                    'data-path-endpoint': 'out',
+                    'data-path-endpoint-shape': 'diamond',
+                    'data-path-endpoint-state': pathOutState
+                  },
+                    pathOutState === 'destination' && h('rect', {
+                      x: 28 - (compact ? 9 : 11),
+                      y: 50 - (compact ? 9 : 11),
+                      width: compact ? 18 : 22,
+                      height: compact ? 18 : 22,
+                      rx: compact ? 2.5 : 3,
+                      fill: 'none',
+                      stroke: colors.accent,
+                      strokeWidth: compact ? 1.5 : 2,
+                      opacity: pathDestinationOpacity,
+                      transform: 'rotate(45 28 50)',
+                      style: { transition: pathEndpointTransition },
+                      'data-path-destination-halo': 'out'
+                    }),
+                    h('rect', {
+                      x: 28 - (compact ? 4 : 5),
+                      y: 50 - (compact ? 4 : 5),
+                      width: compact ? 8 : 10,
+                      height: compact ? 8 : 10,
+                      rx: 2,
+                      fill: colors.panel,
+                      stroke: pathOutState === 'destination' ? colors.accent : colors.muted,
+                      strokeWidth: pathOutState === 'destination' ? (compact ? 2 : 2.5) : (compact ? 1.5 : 2),
+                      transform: 'rotate(45 28 50)',
+                      style: { transition: pathEndpointTransition }
+                    })
+                  ),
+                  h('g', {
+                    'data-path-endpoint': 'in',
+                    'data-path-endpoint-shape': 'circle',
+                    'data-path-endpoint-state': pathInState
+                  },
+                    pathInState === 'destination' && h('circle', {
+                      cx: 212,
+                      cy: 50,
+                      r: compact ? 12 : 15,
+                      fill: 'none',
+                      stroke: colors.accent,
+                      strokeWidth: compact ? 1.5 : 2,
+                      opacity: pathDestinationOpacity,
+                      style: { transition: pathEndpointTransition },
+                      'data-path-destination-halo': 'in'
+                    }),
+                    h('circle', {
+                      cx: 212,
+                      cy: 50,
+                      r: compact ? 5 : 6,
+                      fill: colors.panel,
+                      stroke: pathInState === 'destination' ? colors.accent : colors.muted,
+                      strokeWidth: pathInState === 'destination' ? (compact ? 2 : 2.5) : (compact ? 1.5 : 2),
+                      style: { transition: pathEndpointTransition }
+                    })
+                  ),
+                  h('g', { 'data-path-phase-labels': 'true' },
+                    h('text', {
+                      x: 28,
+                      y: 84,
+                      textAnchor: 'middle',
+                      fill: pathOutLabelState === 'active' ? colors.accent : colors.muted,
+                      fontSize: compact ? 18 : 14,
+                      fontWeight: pathOutLabelState === 'active' ? 500 : 400,
+                      letterSpacing: compact ? 1.2 : 1,
+                      opacity: pathOutLabelState === 'active' ? 1 : (pathOutLabelState === 'inactive' ? 0.48 : 0.78),
+                      style: {
+                        textDecoration: pathOutLabelState === 'active' ? 'underline' : 'none',
+                        transition: pathEndpointTransition
+                      },
+                      'data-path-phase-label': 'out',
+                      'data-path-label-state': pathOutLabelState,
+                      'data-path-label-emphasis': pathOutLabelState === 'active' ? 'underlined' : 'plain'
+                    }, 'OUT'),
+                    h('text', {
+                      x: 212,
+                      y: 84,
+                      textAnchor: 'middle',
+                      fill: pathInLabelState === 'active' ? colors.accent : colors.muted,
+                      fontSize: compact ? 18 : 14,
+                      fontWeight: pathInLabelState === 'active' ? 500 : 400,
+                      letterSpacing: compact ? 1.2 : 1,
+                      opacity: pathInLabelState === 'active' ? 1 : (pathInLabelState === 'inactive' ? 0.48 : 0.78),
+                      style: {
+                        textDecoration: pathInLabelState === 'active' ? 'underline' : 'none',
+                        transition: pathEndpointTransition
+                      },
+                      'data-path-phase-label': 'in',
+                      'data-path-label-state': pathInLabelState,
+                      'data-path-label-emphasis': pathInLabelState === 'active' ? 'underlined' : 'plain'
+                    }, 'IN')
+                  )
+                )
+              : h('g', { 'data-path-endpoints': 'natural' },
+                  h('circle', { cx: 28, cy: 50, r: compact ? 4 : 5, fill: colors.panel, stroke: colors.muted, strokeWidth: 1.5 }),
+                  h('circle', { cx: 212, cy: 50, r: compact ? 4 : 5, fill: colors.panel, stroke: colors.muted, strokeWidth: 1.5 })
+                ),
+            h('g', {
+              'data-path-marker': 'true',
+              'data-path-marker-direction': pathDirection,
+              'data-path-marker-shape': pathDirection === 'steady' ? 'dot' : 'arrow'
+            },
+              h('circle', { cx: pathDotX.toFixed(2), cy: 50, r: compact ? 13 : 16, fill: colors.soft, opacity: 0.72, style: { transition: visualTransition } }),
+              h('circle', { cx: pathDotX.toFixed(2), cy: 50, r: compact ? 7 : 9, fill: colors.panelAlt, stroke: colors.accent, strokeWidth: compact ? 2 : 3, style: { transition: visualTransition } }),
+              pathDirection === 'steady'
+                ? h('circle', { cx: pathDotX.toFixed(2), cy: 50, r: compact ? 2.5 : 3, fill: colors.accent, style: { transition: visualTransition } })
+                : h('path', {
+                    d: pathMarker,
+                    transform: 'translate(' + pathDotX.toFixed(2) + ' 50)',
+                    fill: colors.accent,
+                    style: { transition: visualTransition }
+                  })
+            )
           );
         } else if (currentVisual.id === 'orbit') {
           var orbitCenter = 120;
@@ -2264,7 +2780,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('somaticReset')))
                 type: 'button',
                 onClick: function() { setToolState({ response: option.id }); },
                 'aria-pressed': selected,
-                style: secondaryButton(selected ? { border: '2px solid ' + colors.accent, background: colors.soft, color: colors.accent } : { minHeight: 54 })
+                style: secondaryButton(selected ? { borderWidth: 2, borderColor: colors.accent, background: colors.soft, color: colors.accent } : { minHeight: 54 })
               }, h('span', { 'aria-hidden': 'true', style: { marginRight: 6 } }, option.icon), option.label);
             }))
           ),

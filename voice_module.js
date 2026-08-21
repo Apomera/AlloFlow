@@ -49,6 +49,42 @@
   var VOICE_PREF_KEY = 'alloflow_voice_pref';
   var LEGACY_VOICE_ENGINE_KEY = 'allo_voice_engine';
 
+  // iOS WebKit is materially more fragile when a sandboxed Canvas iframe owns
+  // several Web Audio graphs or a large local WASM model alongside a live mic.
+  // Keep this runtime-based so iPadOS's desktop-style user agent is covered too.
+  function isIosCanvasVoiceSurface() {
+    try {
+      if (typeof window === 'undefined' || window._isCanvasEnv !== true) return false;
+      if (window._isIOSCanvasEnv === true) return true;
+      var nav = typeof navigator !== 'undefined' ? navigator : window.navigator;
+      if (!nav) return false;
+      var ua = String(nav.userAgent || '');
+      var platform = String(nav.platform || '');
+      return /iP(?:hone|ad|od)/i.test(ua) || (platform === 'MacIntel' && Number(nav.maxTouchPoints) > 1);
+    } catch (_) {
+      return false;
+    }
+  }
+
+  // Voice sessions publish status objects outside React, so they cannot use a
+  // component-scoped translator. Resolve the shell translator lazily and keep
+  // a deterministic English fallback for pre-render and standalone hosts.
+  var translateVoiceText = function (key, fallback, params) {
+    var result = null;
+    try {
+      if (typeof window !== 'undefined' && typeof window.__alloT === 'function') {
+        result = window.__alloT(key, params);
+      }
+    } catch (_) {}
+    result = result && result !== key ? String(result) : String(fallback || '');
+    if (params && typeof params === 'object') {
+      Object.keys(params).forEach(function (name) {
+        result = result.replace(new RegExp('\\{' + name + '\\}', 'g'), String(params[name]));
+      });
+    }
+    return result;
+  };
+
   function normalizeVoiceEngine(value) {
     var engine = String(value || '').trim().toLowerCase();
     if (engine === 'best' || engine === 'local' || engine === 'on-device' || engine === 'browser-whisper') return 'whisper';
@@ -239,6 +275,7 @@
     var lang = opts.lang || prefs.lang || 'en-US';
     var caps = getCapabilities();
     var pcmCapable = caps.getUserMedia && caps.audioContext;
+    var iosCanvas = isIosCanvasVoiceSurface();
     var geminiAudioCapability = getGeminiAudioCapability(opts);
     var geminiCapable = pcmCapable && typeof opts.callGeminiAudio === 'function' && geminiAudioCapability.available;
     var result = { requested: requested, resolved: 'off', supported: false, reason: '', tier: tier, lang: lang, capabilities: caps };
@@ -254,7 +291,12 @@
     }
     if (requested === 'whisper') {
       result.resolved = 'whisper'; result.supported = pcmCapable && caps.dynamicImport;
-      result.reason = result.supported ? '' : 'On-device Whisper needs microphone, Web Audio, and modern module support.';
+      if (iosCanvas) {
+        result.supported = false;
+        result.reason = 'On-device Whisper is paused inside Gemini Canvas on iPhone or iPad to prevent the Canvas from restarting. Choose Gemini or Browser speech.';
+      } else {
+        result.reason = result.supported ? '' : 'On-device Whisper needs microphone, Web Audio, and modern module support.';
+      }
       return result;
     }
     if (requested === 'gemini') {
@@ -264,16 +306,18 @@
         : 'Gemini transcription needs microphone access and a configured Gemini audio bridge.');
       return result;
     }
-    if (isWhisperPrepared(tier, { lang: lang }) && pcmCapable && caps.dynamicImport) {
+    if (!iosCanvas && isWhisperPrepared(tier, { lang: lang }) && pcmCapable && caps.dynamicImport) {
       result.resolved = 'whisper'; result.supported = true; return result;
     }
     if (caps.webSpeech) { result.resolved = 'webspeech'; result.supported = true; return result; }
-    if (pcmCapable && caps.dynamicImport) {
+    if (!iosCanvas && pcmCapable && caps.dynamicImport) {
       // The user explicitly started Auto voice input on a device without Web
       // Speech. Preparing a local model is the only privacy-compatible path.
       result.resolved = 'whisper'; result.supported = true; return result;
     }
-    result.reason = 'Speech-to-text is not available on this device.';
+    result.reason = iosCanvas
+      ? 'On-device Whisper is paused inside Gemini Canvas on iPhone or iPad. Choose Gemini transcription or Browser speech.'
+      : 'Speech-to-text is not available on this device.';
     return result;
   }
 
@@ -810,6 +854,11 @@
   function loadWhisperModel(tier, opts) {
     tier = tier || 'tiny';
     opts = opts || {};
+    if (isIosCanvasVoiceSurface()) {
+      var iosCanvasError = new Error('On-device Whisper is paused inside Gemini Canvas on iPhone or iPad to prevent the Canvas from restarting.');
+      iosCanvasError.name = 'NotSupportedError';
+      return Promise.reject(iosCanvasError);
+    }
     var profile = resolveWhisperProfile(opts.lang, tier);
     if (!profile.supported) return Promise.reject(new Error('Whisper does not support ' + profile.requestedLanguage + '.'));
     if (whisperPipeline && whisperLoadedModelId === profile.modelId) {
@@ -1273,6 +1322,7 @@
     var queuedSegment = null;
     var errorStreak = 0;
     var diagnosticsSessionRecorded = false;
+    var pcmOutputTransition = Promise.resolve();
 
     function status(nextState, detail) {
       detail = detail || {};
@@ -1330,6 +1380,23 @@
       vad = null;
     }
 
+    // On iPhone/iPad Canvas, stop processing mic frames while reply audio owns
+    // the output turn without stopping the stream and triggering a permission-
+    // prone reacquisition. Serialize transitions so a quick reply cannot let an
+    // older suspend resolve after its matching resume.
+    function transitionPcmContextForOutput(shouldSuspend) {
+      if (!isIosCanvasVoiceSurface() || !audioContext) return false;
+      var context = audioContext;
+      pcmOutputTransition = Promise.resolve(pcmOutputTransition).catch(function () {}).then(function () {
+        if (audioContext !== context || !active || paused || outputSuspended !== shouldSuspend) return false;
+        var method = shouldSuspend ? 'suspend' : 'resume';
+        var targetState = shouldSuspend ? 'suspended' : 'running';
+        if (context.state === 'closed' || context.state === targetState || typeof context[method] !== 'function') return true;
+        return context[method]();
+      }).catch(function () { return false; });
+      return true;
+    }
+
     function closeWebCapture() {
       var capture = webCapture;
       webCapture = null;
@@ -1363,7 +1430,7 @@
       outputSuspended = false;
       generation += 1;
       cleanupCapture();
-      setState('idle', { reason: reason || 'stopped', message: reason === 'completed' ? 'Voice turn completed.' : 'Voice input stopped.' });
+      setState('idle', { reason: reason || 'stopped', message: reason === 'completed' ? translateVoiceText('voice.turn_completed', 'Voice turn completed.') : translateVoiceText('voice.input_stopped', 'Voice input stopped.') });
       if (notifyEnd !== false && typeof opts.onEnd === 'function') {
         try { opts.onEnd({ reason: reason || 'stopped' }); } catch (_) {}
       }
@@ -1405,7 +1472,7 @@
       transcribing = true;
       var pcm = downsamplePcm(segment, inputSampleRate, 16000);
       if (opts.continuous === false) closePcmGraph();
-      setState('transcribing', { message: 'Transcribing with ' + engineMeta.engineLabel + '...' });
+      setState('transcribing', { message: translateVoiceText('voice.transcribing_with', 'Transcribing with {engine}...', { engine: engineMeta.engineLabel }) });
       var request;
       if (engineChoice.resolved === 'gemini') {
         var wav = pcmToWavDataUri(pcm, 16000);
@@ -1429,7 +1496,7 @@
           finish('completed', true);
           return;
         }
-        setState('listening', { message: engineMeta.engineLabel + ' is listening.' });
+        setState('listening', { message: translateVoiceText('voice.engine_listening', '{engine} is listening.', { engine: engineMeta.engineLabel }) });
         if (!heard && typeof opts.onNoSpeech === 'function') {
           try { opts.onNoSpeech(); } catch (_) {}
         }
@@ -1445,7 +1512,7 @@
           active = false;
           generation += 1;
           cleanupCapture();
-          setState('error', { reason: 'transcription-failed', message: engineMeta.engineLabel + ' stopped after a transcription error.', error: error });
+          setState('error', { reason: 'transcription-failed', message: translateVoiceText('voice.engine_transcription_failed', '{engine} stopped after a transcription error.', { engine: engineMeta.engineLabel }), error: error });
           if (typeof opts.onEnd === 'function') {
             try { opts.onEnd({ reason: 'transcription-failed', error: error }); } catch (_) {}
           }
@@ -1455,7 +1522,7 @@
           // Single-turn capture closes its stream while the turn is sent for
           // transcription. A recoverable failure must therefore reacquire the
           // mic; merely changing the status to "listening" strands the user.
-          setState('recovering', { reason: 'transcription-retry', message: 'Transcription failed. Reopening the microphone.' });
+           setState('recovering', { reason: 'transcription-retry', message: translateVoiceText('voice.transcription_retry_reopen', 'Transcription failed. Reopening the microphone.') });
           openPcmCapture(myGeneration).catch(function (resumeError) {
             if (!active || generation !== myGeneration) return;
             emitError(resumeError, { fatal: true, phase: 'resume', engine: engineMeta.engine });
@@ -1464,7 +1531,7 @@
             cleanupCapture();
             setState('error', {
               reason: 'resume-failed',
-              message: 'The microphone could not reopen after a transcription error.',
+              message: translateVoiceText('voice.microphone_reopen_failed', 'The microphone could not reopen after a transcription error.'),
               error: resumeError
             });
             if (typeof opts.onEnd === 'function') {
@@ -1473,7 +1540,7 @@
           });
           return;
         }
-        setState('listening', { reason: 'transcription-retry', message: 'Transcription failed. Listening for another turn.' });
+        setState('listening', { reason: 'transcription-retry', message: translateVoiceText('voice.transcription_retry_listening', 'Transcription failed. Listening for another turn.') });
         processQueuedSegment(myGeneration);
       });
     }
@@ -1526,7 +1593,7 @@
           diagnosticsSessionRecorded = true;
           _recordHandsFreeSession(engineMeta.engine);
         }
-        setState('listening', { message: engineMeta.engineLabel + ' is listening.' });
+        setState('listening', { message: translateVoiceText('voice.engine_listening', '{engine} is listening.', { engine: engineMeta.engineLabel }) });
         return true;
       });
     }
@@ -1537,7 +1604,7 @@
         ? loadWhisperModel(engineChoice.tier, { lang: engineChoice.lang })
         : Promise.resolve(true);
       setState('starting', {
-        message: engineChoice.resolved === 'whisper' ? 'Preparing on-device Whisper...' : 'Starting Gemini cloud transcription...'
+        message: engineChoice.resolved === 'whisper' ? translateVoiceText('voice.preparing_whisper', 'Preparing on-device Whisper...') : translateVoiceText('voice.starting_gemini', 'Starting Gemini cloud transcription...')
       });
       return Promise.resolve(prepare).then(function () {
         if (!active || generation !== myGeneration) return false;
@@ -1582,7 +1649,7 @@
             setState('error', {
               reason: code,
               message: code === 'not-allowed' || code === 'service-not-allowed'
-                ? 'Microphone permission was not granted.' : engineMeta.engineLabel + ' stopped after repeated errors.',
+                ? translateVoiceText('voice.microphone_permission_denied', 'Microphone permission was not granted.') : translateVoiceText('voice.engine_repeated_errors', '{engine} stopped after repeated errors.', { engine: engineMeta.engineLabel }),
               error: error
             });
           }
@@ -1593,12 +1660,12 @@
           if (opts.continuous === false) finish('completed', true);
         }
       });
-      if (!webCapture.supported || !webCapture.start()) throw new Error(engineMeta.engineLabel + ' is unavailable.');
+      if (!webCapture.supported || !webCapture.start()) throw new Error(translateVoiceText('voice.engine_unavailable', '{engine} is unavailable.', { engine: engineMeta.engineLabel }));
       if (!diagnosticsSessionRecorded) {
         diagnosticsSessionRecorded = true;
         _recordHandsFreeSession(engineMeta.engine);
       }
-      setState('listening', { message: engineMeta.engineLabel + ' is listening.' });
+      setState('listening', { message: translateVoiceText('voice.engine_listening', '{engine} is listening.', { engine: engineMeta.engineLabel }) });
       return true;
     }
 
@@ -1621,7 +1688,7 @@
       diagnosticsSessionRecorded = false;
       generation += 1;
       var myGeneration = generation;
-      setState('starting', { message: 'Starting voice input...' });
+      setState('starting', { message: translateVoiceText('voice.starting_voice_input', 'Starting voice input...') });
       try {
         if (engineChoice.resolved === 'webspeech' || engineChoice.resolved === 'desktop-whisper') return startWeb(myGeneration);
         Promise.resolve(startPcm(myGeneration)).catch(function (error) {
@@ -1641,7 +1708,7 @@
       if (webCapture) closeWebCapture();
       if (pauseOpts.releaseMic !== false) closePcmGraph();
       else if (vad) vad.reset();
-      setState('paused', { message: pauseOpts.message || 'Microphone paused.' });
+      setState('paused', { message: pauseOpts.message || translateVoiceText('voice.microphone_paused', 'Microphone paused.') });
       return true;
     }
 
@@ -1656,7 +1723,7 @@
       return openPcmCapture(myGeneration).catch(function (error) {
         paused = true;
         emitError(error, { fatal: false, phase: 'resume' });
-        setState('paused', { reason: 'resume-failed', message: 'Microphone could not resume.', error: error });
+        setState('paused', { reason: 'resume-failed', message: translateVoiceText('voice.microphone_resume_failed', 'Microphone could not resume.'), error: error });
         return false;
       });
     }
@@ -1666,6 +1733,7 @@
       outputSuspended = true;
       if (vad) vad.reset();
       if (webCapture) closeWebCapture();
+      transitionPcmContextForOutput(true);
       return true;
     }
 
@@ -1675,7 +1743,8 @@
       if (engineChoice.resolved === 'webspeech' || engineChoice.resolved === 'desktop-whisper') {
         try { startWeb(generation); } catch (error) { failStart(error, 'Voice input could not resume after playback.'); return false; }
       } else {
-        setState('listening', { message: engineMeta.engineLabel + ' is listening.' });
+        transitionPcmContextForOutput(false);
+        setState('listening', { message: translateVoiceText('voice.engine_listening', '{engine} is listening.', { engine: engineMeta.engineLabel }) });
       }
       return true;
     }
@@ -1901,7 +1970,7 @@
         voiceSessionLease.update({
           state: nextState,
           mode: 'dictation',
-          label: engineMeta.engineLabel || opts.label || 'Dictation',
+          label: engineMeta.engineLabel || opts.label || translateVoiceText('voice.dictation_label', 'Dictation'),
           privacy: engineMeta.privacy || '',
           message: payload.message,
           reason: payload.reason
@@ -1999,7 +2068,7 @@
       var err = error instanceof Error ? error : new Error((error && error.error) || fallbackMessage || 'Dictation unavailable');
       releaseActive();
       setState('error', {
-        message: fallbackMessage || err.message || 'Dictation unavailable.',
+        message: fallbackMessage || err.message || translateVoiceText('voice.dictation_unavailable', 'Dictation unavailable.'),
         reason: (error && error.error) || 'error',
         error: err
       });
@@ -2011,13 +2080,13 @@
 
     function startRecordedEngine(requestedEngine, meta, myGeneration) {
       engineMeta = meta;
-      setState('starting', { message: 'Starting microphone...' });
+      setState('starting', { message: translateVoiceText('voice.starting_microphone', 'Starting microphone...') });
       session = recordAudioBlob({
         maxDurationMs: typeof opts.maxDurationMs === 'number' ? opts.maxDurationMs : 60000,
         onStream: function (stream) {
           if (generation === myGeneration && activeDictationController === controller) {
             acquireMicMeter(stream);
-            setState('listening', { message: meta.engineLabel + ' is listening. Stop when you are finished.' });
+            setState('listening', { message: translateVoiceText('voice.engine_listening_stop_hint', '{engine} is listening. Stop when you are finished.', { engine: meta.engineLabel }) });
           }
         }
       });
@@ -2028,7 +2097,7 @@
         // waiting for releaseActive(), or the bars keep twitching at 0 through
         // the whole transcription step and read as "still listening".
         releaseMicMeter();
-        setState('transcribing', { message: 'Transcribing with ' + meta.engineLabel + '...' });
+        setState('transcribing', { message: translateVoiceText('voice.transcribing_with', 'Transcribing with {engine}...', { engine: meta.engineLabel }) });
         return transcribeAudio(audio.base64, {
           engine: requestedEngine,
           tier: opts.tier || loadPreference().whisperTier,
@@ -2042,7 +2111,7 @@
         // recognition or pronunciation confidence for Whisper or Gemini.
         emitTranscript(result.transcript, true, null);
         releaseActive();
-        setState('idle', { message: result.transcript ? 'Dictation added.' : 'No speech detected.', reason: 'completed' });
+        setState('idle', { message: result.transcript ? translateVoiceText('voice.dictation_added', 'Dictation added.') : translateVoiceText('voice.no_speech_detected', 'No speech detected.'), reason: 'completed' });
         if (typeof opts.onEnd === 'function') opts.onEnd({ reason: 'completed' });
       }).catch(function (error) {
         if (generation !== myGeneration) return;
@@ -2057,7 +2126,7 @@
     }
     function startWebSpeech(meta, myGeneration) {
       engineMeta = meta;
-      setState('starting', { message: 'Starting microphone...' });
+      setState('starting', { message: translateVoiceText('voice.starting_microphone', 'Starting microphone...') });
       session = initWebSpeechCapture({
         lang: opts.lang || loadPreference().lang || 'en-US',
         continuous: opts.continuous !== false,
@@ -2073,7 +2142,7 @@
           if (code === 'no-speech') {
             if (!opts.restartOnEnd) {
               releaseActive();
-              setState('idle', { message: 'No speech detected.', reason: 'no-speech' });
+              setState('idle', { message: translateVoiceText('voice.no_speech_detected', 'No speech detected.'), reason: 'no-speech' });
             }
             return;
           }
@@ -2090,16 +2159,16 @@
           if (opts.restartOnEnd && !stoppedByUser) return;
           releaseActive();
           setState('idle', {
-            message: stoppedByUser ? 'Dictation stopped.' : 'Dictation finished.',
+            message: stoppedByUser ? translateVoiceText('voice.dictation_stopped', 'Dictation stopped.') : translateVoiceText('voice.dictation_finished', 'Dictation finished.'),
             reason: stoppedByUser ? 'stopped' : 'completed'
           });
           if (typeof opts.onEnd === 'function') opts.onEnd({ reason: stoppedByUser ? 'stopped' : 'completed' });
         }
       });
-      if (!session.supported || !session.start()) return fail(new Error('Speech recognition unavailable'), meta.engineLabel + ' is unavailable.');
+      if (!session.supported || !session.start()) return fail(new Error('Speech recognition unavailable'), translateVoiceText('voice.engine_unavailable', '{engine} is unavailable.', { engine: meta.engineLabel }));
       // No stream to hand over here: only piggyback on an already-live monitor.
       acquireMicMeter(null);
-      setState('listening', { message: meta.engineLabel + ' is listening.' });
+      setState('listening', { message: translateVoiceText('voice.engine_listening', '{engine} is listening.', { engine: meta.engineLabel }) });
       return true;
     }
 
@@ -2110,9 +2179,9 @@
       }
       voiceSessionLease = acquireVoiceSession(opts.owner || 'dictation', {
         mode: 'dictation',
-        label: opts.label || 'Dictation',
+        label: opts.label || translateVoiceText('voice.dictation_label', 'Dictation'),
         state: 'starting',
-        message: 'Starting microphone...',
+        message: translateVoiceText('voice.starting_microphone', 'Starting microphone...'),
         onStop: function (reason) {
           // The coordinator clears the lease before this callback. Avoid
           // releasing whatever session replaced us.
@@ -2154,7 +2223,7 @@
         try { session.stop(); } catch (e) { fail(e, 'Could not stop dictation.'); }
       }
       if (engineMeta.engine === 'browser-whisper' || engineMeta.engine === 'gemini-audio') {
-        setState('transcribing', { message: 'Transcribing with ' + engineMeta.engineLabel + '...' });
+      setState('transcribing', { message: translateVoiceText('voice.transcribing_with', 'Transcribing with {engine}...', { engine: engineMeta.engineLabel }) });
       }
     }
 
@@ -2373,6 +2442,7 @@
     getHandsFreeDiagnostics: getHandsFreeDiagnostics,
     resetHandsFreeDiagnostics: resetHandsFreeDiagnostics,
     resolveHandsFreeEngine: resolveHandsFreeEngine,
+    isIosCanvasVoiceSurface: isIosCanvasVoiceSurface,
     getGeminiAudioCapability: getGeminiAudioCapability,
     isHandsFreeSupported: isHandsFreeSupported,
     voiceEngineDescriptor: voiceEngineDescriptor,
@@ -2394,13 +2464,13 @@
       createHandsFreeVad: createHandsFreeVad,
       parseGeminiTranscript: parseGeminiTranscript
     },
-    _phase: '3v.8',
+    _phase: '3v.9',
     _shipped: [
       'initWebSpeechCapture', 'getCapabilities', 'loadPreference', 'savePreference', 'setVoiceEngine', 'normalizeVoiceEngine',
       'recordAudioBlob', 'recordAudioBlob.onStream', 'recordAudioBlob.result.blob',
       'transcribeAudio', 'preloadWhisper', 'isWhisperLoaded', 'isWhisperPrepared', 'getLoadedWhisperTier', 'resolveWhisperProfile', 'subscribeToVoiceProgress',
       'gradeAudioJustification', 'buildJustificationRubricPrompt', 'parseRubricResponse',
-      'createDictationController', 'createHandsFreeRecognizer', 'getHandsFreeDiagnostics', 'resetHandsFreeDiagnostics', 'resolveHandsFreeEngine', 'getGeminiAudioCapability', 'isHandsFreeSupported', 'voiceEngineDescriptor', 'isDictationSupported', 'getActiveDictationStatus', 'subscribeToDictationStatus', 'stopActiveDictation',
+      'createDictationController', 'createHandsFreeRecognizer', 'getHandsFreeDiagnostics', 'resetHandsFreeDiagnostics', 'resolveHandsFreeEngine', 'isIosCanvasVoiceSurface', 'getGeminiAudioCapability', 'isHandsFreeSupported', 'voiceEngineDescriptor', 'isDictationSupported', 'getActiveDictationStatus', 'subscribeToDictationStatus', 'stopActiveDictation',
       'acquireVoiceSession', 'stopActiveVoiceSession', 'getActiveVoiceSessionStatus', 'subscribeToVoiceSessionStatus'
     ]
   };
@@ -2416,6 +2486,6 @@
   window.AlloModules.Voice = window.AlloFlowVoice;
 
   if (typeof console !== 'undefined') {
-    console.log('[Voice] AlloFlowVoice loaded — phase 3v.8');
+    console.log('[Voice] AlloFlowVoice loaded — phase 3v.9');
   }
 })();

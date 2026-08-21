@@ -1,0 +1,395 @@
+{
+  "schemaVersion": 1,
+  "reviewWave": "eppp-native-quality-wave-49",
+  "reviewedAt": "2026-08-21",
+  "scope": "A final EPPP cleanup pass that removes all option-feedback warnings, semantic duplicate pairs, and unique-key stem lexical leakage while preserving answer positions.",
+  "summary": {
+    "totalItems": 1500,
+    "rewrittenItems": 52,
+    "feedbackOptionsRepaired": 0,
+    "duplicatePairsBefore": 39,
+    "lexicalFindingsBefore": 13,
+    "feedbackWarningsBefore": {
+      "totalItems": 1500,
+      "totalIncorrectOptions": 4500,
+      "itemsWithWarnings": 367,
+      "incorrectOptionsWithWarnings": 1031,
+      "insufficientDetailOptions": 499,
+      "genericTemplateOptions": 482,
+      "choiceRestatementOptions": 111,
+      "fullKeyEchoOptions": 58,
+      "priorityDocketItems": 100
+    },
+    "distractorWarningsBefore": {
+      "totalItems": 1500,
+      "warningOnly": true,
+      "forbiddenAggregateChoices": 0,
+      "uniqueKeyStemLexicalLeakageCandidates": 13,
+      "asymmetricExtremeDistractorCandidates": 25,
+      "advancedDirectRecallCandidates": 0,
+      "semanticConceptDuplicatePairs": 39,
+      "semanticConceptDuplicateClusters": 27,
+      "editorialAnchorsWithActiveWarnings": 0,
+      "editorialAnchorsWithNoCurrentWarning": 10,
+      "priorityDocketItems": 20
+    },
+    "feedbackWarningsAfter": {
+      "totalItems": 1500,
+      "totalIncorrectOptions": 4500,
+      "itemsWithWarnings": 0,
+      "incorrectOptionsWithWarnings": 0,
+      "insufficientDetailOptions": 0,
+      "genericTemplateOptions": 0,
+      "choiceRestatementOptions": 0,
+      "fullKeyEchoOptions": 0,
+      "currentWaveIncorrectOptions": 24,
+      "currentWaveOptionsWithWarnings": 0,
+      "previousWaveIncorrectOptions": 24,
+      "previousWaveOptionsWithWarnings": 0,
+      "latestWaveIncorrectOptions": 48,
+      "latestWaveOptionsWithWarnings": 0,
+      "activeWaveIncorrectOptions": 48,
+      "activeWaveOptionsWithWarnings": 0,
+      "wave09IncorrectOptions": 48,
+      "wave09OptionsWithWarnings": 0,
+      "wave10IncorrectOptions": 48,
+      "wave10OptionsWithWarnings": 0,
+      "wave11IncorrectOptions": 48,
+      "wave11OptionsWithWarnings": 0,
+      "priorityDocketItems": 0
+    },
+    "distractorWarningsAfter": {
+      "totalItems": 1500,
+      "warningOnly": true,
+      "forbiddenAggregateChoices": 0,
+      "uniqueKeyStemLexicalLeakageCandidates": 0,
+      "asymmetricExtremeDistractorCandidates": 27,
+      "advancedDirectRecallCandidates": 0,
+      "semanticConceptDuplicatePairs": 0,
+      "semanticConceptDuplicateClusters": 0,
+      "editorialAnchorsWithActiveWarnings": 0,
+      "editorialAnchorsWithNoCurrentWarning": 10,
+      "priorityDocketItems": 20
+    },
+    "selectedDistractorWarningsAfter": 0,
+    "selectedFeedbackWarningsAfter": 0,
+    "status": "pass"
+  },
+  "items": [
+    {
+      "id": "eppp-v3-cognitive-affective-010",
+      "domainId": "cognitive-affective",
+      "answerIndex": 3,
+      "wordingCleanupWave": "eppp-native-quality-wave-49"
+    },
+    {
+      "id": "eppp-v3-assessment-013",
+      "domainId": "assessment",
+      "answerIndex": 2,
+      "wordingCleanupWave": "eppp-native-quality-wave-49"
+    },
+    {
+      "id": "eppp-b027-professional-2",
+      "domainId": "professional",
+      "answerIndex": 2,
+      "wordingCleanupWave": "eppp-native-quality-wave-49"
+    },
+    {
+      "id": "eppp-v3-lifespan-053",
+      "domainId": "lifespan",
+      "answerIndex": 2,
+      "wordingCleanupWave": "eppp-native-quality-wave-49"
+    },
+    {
+      "id": "eppp-v3-biological-011",
+      "domainId": "biological",
+      "answerIndex": 0,
+      "wordingCleanupWave": "eppp-native-quality-wave-49"
+    },
+    {
+      "id": "eppp-v2-assessment-046",
+      "domainId": "assessment",
+      "answerIndex": 2,
+      "wordingCleanupWave": "eppp-native-quality-wave-49"
+    },
+    {
+      "id": "eppp-v3-lifespan-016",
+      "domainId": "lifespan",
+      "answerIndex": 1,
+      "wordingCleanupWave": "eppp-native-quality-wave-49"
+    },
+    {
+      "id": "eppp-v2-professional-079",
+      "domainId": "professional",
+      "answerIndex": 1,
+      "wordingCleanupWave": "eppp-native-quality-wave-49"
+    },
+    {
+      "id": "eppp-v3-cognitive-affective-009",
+      "domainId": "cognitive-affective",
+      "answerIndex": 2,
+      "wordingCleanupWave": "eppp-native-quality-wave-49"
+    },
+    {
+      "id": "eppp-v3-assessment-001",
+      "domainId": "assessment",
+      "answerIndex": 2,
+      "wordingCleanupWave": "eppp-native-quality-wave-49"
+    },
+    {
+      "id": "eppp-v3-assessment-054",
+      "domainId": "assessment",
+      "answerIndex": 3,
+      "wordingCleanupWave": "eppp-native-quality-wave-49"
+    },
+    {
+      "id": "eppp-v3-professional-010",
+      "domainId": "professional",
+      "answerIndex": 1,
+      "wordingCleanupWave": "eppp-native-quality-wave-49"
+    },
+    {
+      "id": "eppp-b024-assessment-4",
+      "domainId": "assessment",
+      "answerIndex": 3,
+      "wordingCleanupWave": "eppp-native-quality-wave-49"
+    },
+    {
+      "id": "eppp-v3-intervention-004",
+      "domainId": "intervention",
+      "answerIndex": 1,
+      "wordingCleanupWave": "eppp-native-quality-wave-49"
+    },
+    {
+      "id": "eppp-v3-assessment-014",
+      "domainId": "assessment",
+      "answerIndex": 3,
+      "wordingCleanupWave": "eppp-native-quality-wave-49"
+    },
+    {
+      "id": "eppp-v3-social-cultural-048",
+      "domainId": "social-cultural",
+      "answerIndex": 2,
+      "wordingCleanupWave": "eppp-native-quality-wave-49"
+    },
+    {
+      "id": "eppp-v2-intervention-033",
+      "domainId": "intervention",
+      "answerIndex": 2,
+      "wordingCleanupWave": "eppp-native-quality-wave-49"
+    },
+    {
+      "id": "eppp-v2-assessment-021",
+      "domainId": "assessment",
+      "answerIndex": 1,
+      "wordingCleanupWave": "eppp-native-quality-wave-49"
+    },
+    {
+      "id": "eppp-v3-research-017",
+      "domainId": "research",
+      "answerIndex": 3,
+      "wordingCleanupWave": "eppp-native-quality-wave-49"
+    },
+    {
+      "id": "eppp-v2-assessment-051",
+      "domainId": "assessment",
+      "answerIndex": 3,
+      "wordingCleanupWave": "eppp-native-quality-wave-49"
+    },
+    {
+      "id": "eppp-v3-assessment-031",
+      "domainId": "assessment",
+      "answerIndex": 0,
+      "wordingCleanupWave": "eppp-native-quality-wave-49"
+    },
+    {
+      "id": "eppp-v3-assessment-057",
+      "domainId": "assessment",
+      "answerIndex": 2,
+      "wordingCleanupWave": "eppp-native-quality-wave-49"
+    },
+    {
+      "id": "eppp-v3-cognitive-affective-011",
+      "domainId": "cognitive-affective",
+      "answerIndex": 0,
+      "wordingCleanupWave": "eppp-native-quality-wave-49"
+    },
+    {
+      "id": "eppp-v2-lifespan-032",
+      "domainId": "lifespan",
+      "answerIndex": 0,
+      "wordingCleanupWave": "eppp-native-quality-wave-49"
+    },
+    {
+      "id": "eppp-v3-research-013",
+      "domainId": "research",
+      "answerIndex": 2,
+      "wordingCleanupWave": "eppp-native-quality-wave-49"
+    },
+    {
+      "id": "eppp-v3-intervention-072",
+      "domainId": "intervention",
+      "answerIndex": 1,
+      "wordingCleanupWave": "eppp-native-quality-wave-49"
+    },
+    {
+      "id": "eppp-v2-intervention-071",
+      "domainId": "intervention",
+      "answerIndex": 0,
+      "wordingCleanupWave": "eppp-native-quality-wave-49"
+    },
+    {
+      "id": "eppp-b028-intervention-1",
+      "domainId": "intervention",
+      "answerIndex": 2,
+      "wordingCleanupWave": "eppp-native-quality-wave-49"
+    },
+    {
+      "id": "eppp-v3-assessment-077",
+      "domainId": "assessment",
+      "answerIndex": 2,
+      "wordingCleanupWave": "eppp-native-quality-wave-49"
+    },
+    {
+      "id": "eppp-v2-assessment-054",
+      "domainId": "assessment",
+      "answerIndex": 2,
+      "wordingCleanupWave": "eppp-native-quality-wave-49"
+    },
+    {
+      "id": "eppp-v2-intervention-024",
+      "domainId": "intervention",
+      "answerIndex": 1,
+      "wordingCleanupWave": "eppp-native-quality-wave-49"
+    },
+    {
+      "id": "eppp-v2-assessment-002",
+      "domainId": "assessment",
+      "answerIndex": 2,
+      "wordingCleanupWave": "eppp-native-quality-wave-49"
+    },
+    {
+      "id": "eppp-v3-biological-046",
+      "domainId": "biological",
+      "answerIndex": 1,
+      "wordingCleanupWave": "eppp-native-quality-wave-49"
+    },
+    {
+      "id": "eppp-v2-professional-008",
+      "domainId": "professional",
+      "answerIndex": 1,
+      "wordingCleanupWave": "eppp-native-quality-wave-49"
+    },
+    {
+      "id": "eppp-v2-professional-011",
+      "domainId": "professional",
+      "answerIndex": 0,
+      "wordingCleanupWave": "eppp-native-quality-wave-49"
+    },
+    {
+      "id": "eppp-v2-professional-072",
+      "domainId": "professional",
+      "answerIndex": 1,
+      "wordingCleanupWave": "eppp-native-quality-wave-49"
+    },
+    {
+      "id": "eppp-v2-professional-076",
+      "domainId": "professional",
+      "answerIndex": 2,
+      "wordingCleanupWave": "eppp-native-quality-wave-49"
+    },
+    {
+      "id": "eppp-v2-professional-080",
+      "domainId": "professional",
+      "answerIndex": 2,
+      "wordingCleanupWave": "eppp-native-quality-wave-49"
+    },
+    {
+      "id": "eppp-v3-assessment-055",
+      "domainId": "assessment",
+      "answerIndex": 0,
+      "wordingCleanupWave": "eppp-native-quality-wave-49"
+    },
+    {
+      "id": "eppp-v3-cognitive-affective-039",
+      "domainId": "cognitive-affective",
+      "answerIndex": 2,
+      "wordingCleanupWave": "eppp-native-quality-wave-49"
+    },
+    {
+      "id": "eppp-v3-cognitive-affective-051",
+      "domainId": "cognitive-affective",
+      "answerIndex": 1,
+      "wordingCleanupWave": "eppp-native-quality-wave-49"
+    },
+    {
+      "id": "eppp-v3-cognitive-affective-061",
+      "domainId": "cognitive-affective",
+      "answerIndex": 2,
+      "wordingCleanupWave": "eppp-native-quality-wave-49"
+    },
+    {
+      "id": "eppp-v3-cognitive-affective-062",
+      "domainId": "cognitive-affective",
+      "answerIndex": 3,
+      "wordingCleanupWave": "eppp-native-quality-wave-49"
+    },
+    {
+      "id": "eppp-v3-lifespan-056",
+      "domainId": "lifespan",
+      "answerIndex": 1,
+      "wordingCleanupWave": "eppp-native-quality-wave-49"
+    },
+    {
+      "id": "eppp-v3-lifespan-059",
+      "domainId": "lifespan",
+      "answerIndex": 0,
+      "wordingCleanupWave": "eppp-native-quality-wave-49"
+    },
+    {
+      "id": "eppp-v3-professional-079",
+      "domainId": "professional",
+      "answerIndex": 2,
+      "wordingCleanupWave": "eppp-native-quality-wave-49"
+    },
+    {
+      "id": "eppp-b015-intervention-1",
+      "domainId": "intervention",
+      "answerIndex": 1,
+      "wordingCleanupWave": "eppp-native-quality-wave-49"
+    },
+    {
+      "id": "eppp-v3-intervention-034",
+      "domainId": "intervention",
+      "answerIndex": 1,
+      "wordingCleanupWave": "eppp-native-quality-wave-49"
+    },
+    {
+      "id": "eppp-v2-intervention-034",
+      "domainId": "intervention",
+      "answerIndex": 3,
+      "wordingCleanupWave": "eppp-native-quality-wave-49"
+    },
+    {
+      "id": "eppp-v2-intervention-061",
+      "domainId": "intervention",
+      "answerIndex": 2,
+      "wordingCleanupWave": "eppp-native-quality-wave-49"
+    },
+    {
+      "id": "eppp-b027-intervention-4",
+      "domainId": "intervention",
+      "answerIndex": 3,
+      "wordingCleanupWave": "eppp-native-quality-wave-49"
+    },
+    {
+      "id": "eppp-v2-assessment-063",
+      "domainId": "assessment",
+      "answerIndex": 3,
+      "wordingCleanupWave": "eppp-native-quality-wave-49"
+    }
+  ],
+  "limitations": [
+    "Heuristic diagnostics and deterministic rationale-grounded drafts do not replace independent licensed-psychologist or psychometric review."
+  ]
+}

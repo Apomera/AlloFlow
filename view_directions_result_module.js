@@ -133,7 +133,7 @@ function DirectionsResultView({
     mapShow: 'directions.map_show',
     mapSummary: 'directions.map_summary',
     stationsVisited: 'directions.map_stations',
-    goals: 'takehome.evidence_goals',
+    goals: 'directions.goals',
     mapStart: 'directions.map_start',
     mapNextPin: 'directions.map_next_pin',
     mapNextLabel: 'directions.map_next_label',
@@ -145,7 +145,14 @@ function DirectionsResultView({
     yourGoals: 'directions.your_goals',
     goalDone: 'directions.goal_done',
     goalOpen: 'directions.goal_open',
-    signalsNote: 'directions.signals_note'
+    signalsNote: 'directions.signals_note',
+    missingChoices: 'directions.missing_choices',
+    choices: 'directions.choices',
+    selectedPrefix: 'directions.selected_prefix',
+    selectedSuffix: 'directions.selected_suffix',
+    chooseActivity: 'directions.choose_activity',
+    openActivity: 'directions.open_activity',
+    choiceHint: 'directions.choice_hint'
   };
   const text = (key, fallback, maxLength, params) => directionsResultTranslation(t, translationKeys[key] || key, fallback, params, maxLength);
 

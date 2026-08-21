@@ -29462,7 +29462,17 @@
       "back_3": "← Quay lại",
       "certificate_of_completion": "GIẤY CHỨNG NHẬN HOÀN THÀNH",
       "date_2": "Ngày",
-      "best": "Tốt nhất"
+      "best": "Tốt nhất",
+      "explore_the_road": "Khám phá con đường",
+      "lane_change_without_signal": "Chuyển làn không bật xi-nhan",
+      "drove_in_oncoming_lane": "Đã lái vào làn ngược chiều",
+      "high_beams": "Đèn pha",
+      "left_signal": "Xi-nhan trái",
+      "right_signal": "Xi-nhan phải",
+      "braking": "Phanh",
+      "traction_loss": "Mất độ bám đường",
+      "fog_low_beams_ok": "Sương mù — đèn cốt là được",
+      "welcome_to_roadready": "Chào mừng đến với RoadReady"
     },
     "schoolbehaviortoolkit": {
       "replacement_behaviors": "Các Hành vi Thay thế",

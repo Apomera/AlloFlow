@@ -28939,7 +28939,17 @@
       "back_3": "← Indietro",
       "certificate_of_completion": "CERTIFICATO DI COMPLETAMENTO",
       "date_2": "Data",
-      "best": "Migliore"
+      "best": "Migliore",
+      "explore_the_road": "Esplora la strada",
+      "lane_change_without_signal": "Cambio di corsia senza segnalazione",
+      "drove_in_oncoming_lane": "Hai guidato nella corsia opposta",
+      "high_beams": "Abbaglianti",
+      "left_signal": "Freccia sinistra",
+      "right_signal": "Freccia destra",
+      "braking": "Frenata",
+      "traction_loss": "Perdita di trazione",
+      "fog_low_beams_ok": "Nebbia — anabbaglianti OK",
+      "welcome_to_roadready": "Benvenuto in RoadReady"
     },
     "schoolbehaviortoolkit": {
       "replacement_behaviors": "Replacement comportamento",

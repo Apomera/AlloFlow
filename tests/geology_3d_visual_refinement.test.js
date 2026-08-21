@@ -30,7 +30,12 @@ describe('Geology Explorer 3D visual refinement', () => {
 
   it('gives water, crystals, and excavation distinct physical feedback', () => {
     expect(source).toContain('makeGeologyOceanMaskTexture3d');
+    expect(source).toContain('makeGeologyCausticTexture3d');
     expect(source).toContain("cnv.dataset.geologyWaterRendering = 'masked-clearcoat-ocean-surface'");
+    expect(source).toContain("'segmented-wave-displacement-and-caustic-depth-cues'");
+    expect(source).toContain('function updateGeologyOceanSurface3d');
+    expect(source).toContain('oceanSurfaceBasePositions3d');
+    expect(source).toContain('geologyCausticTexture3d.offset.x');
     expect(source).toContain("cnv.dataset.geologyCrystalRendering = 'inward-growing-refractive-quartz-shards'");
     expect(source).toContain('spawnExcavationBurst3d(v);');
     expect(source).toContain("cnv.dataset.geologyExcavationRendering = 'rock-colored-dust-chips-and-exposure-flash'");
@@ -52,6 +57,40 @@ describe('Geology Explorer 3D visual refinement', () => {
 
   it('keeps process tracers attached to the exposed cut face', () => {
     expect(source).toContain('WORLD.d * 0.5 - sliceZ * VOXEL + 0.12');
+  });
+
+  it('adds persistent directional ribbons and arrowheads behind moving process tracers', () => {
+    expect(source).toContain("cnv.dataset.geologyProcessGuideRendering = 'directional-ribbons-and-arrowheads'");
+    expect(source).toContain('function addGeologyProcessGuide3d');
+    expect(source).toContain('new THREE.TubeGeometry');
+    expect(source).toContain('geologyProcessGuideArrowGeometry3d');
+    expect(source).toContain('function updateGeologyProcessGuideDepth3d');
+  });
+
+  it('builds scene-native tectonic surface relief and clips it with the cutaway', () => {
+    expect(source).toContain('function addRuggedGeologyCone3d');
+    expect(source).toContain('new THREE.CylinderGeometry');
+    expect(source).toContain("landformStyle3d === 'shield-island'");
+    expect(source).toContain("landformGeometry3d.setAttribute('color'");
+    expect(source).toContain('calderaRatio3d');
+    expect(source).toContain('coastVariation3d');
+    expect(source).toContain("-3.02, -1.38, 0.78, 0.4");
+    expect(source).toContain("'trench-and-volcanic-arc-relief'");
+    expect(source).toContain("'luminous-rift-axis-relief'");
+    expect(source).toContain("'age-progressive-shield-island-relief'");
+    expect(source).toContain('function updateGeologyLandformCutaway3d');
+    expect(source).toContain('geologyLandformGeometries3d.forEach');
+  });
+
+  it('adds restrained coastal foam and vent atmosphere that follow the modeled surface', () => {
+    expect(source).toContain('function addGeologyFoamRibbon3d');
+    expect(source).toContain("'animated-wave-caustics-and-coastal-foam'");
+    expect(source).toContain('function updateGeologySurfaceEffects3d');
+    expect(source).toContain('function addGeologyVolcanicAtmosphere3d');
+    expect(source).toContain("'animated-steam-plume-and-incandescent-crater-rim'");
+    expect(source).toContain('function updateGeologyVolcanicAtmosphere3d');
+    expect(source).toContain('geologySurfaceEffectGeometries3d.forEach');
+    expect(source).toContain('geologyVolcanicAtmosphereMaterials3d.forEach');
   });
 
   it('freezes ambient motion and cleans up its listener for reduced-motion users', () => {

@@ -29167,7 +29167,17 @@
       "best": "Plej bona",
       "menu_73": "← Menuo",
       "menu_74": "← Menuo",
-      "menu_75": "← Menuo"
+      "menu_75": "← Menuo",
+      "explore_the_road": "Esploru la vojon",
+      "lane_change_without_signal": "Ŝanĝo de leno sen turnsignalo",
+      "drove_in_oncoming_lane": "Veturis en kontraŭa leno",
+      "high_beams": "Altaj lumoj",
+      "left_signal": "Maldekstra turnsignalo",
+      "right_signal": "Dekstra turnsignalo",
+      "braking": "Bremsado",
+      "traction_loss": "Perdo de tirforto",
+      "fog_low_beams_ok": "Nebulo — mallumaj lumoj taŭgas",
+      "welcome_to_roadready": "Bonvenon al RoadReady"
     },
     "schoolbehaviortoolkit": {
       "replacement_behaviors": "Anstataŭigaj Kondutoj",

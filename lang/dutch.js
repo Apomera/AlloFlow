@@ -29047,7 +29047,17 @@
       "back_3": "← Terug",
       "certificate_of_completion": "CERTIFICAAT VAN VOLTOOIING",
       "date_2": "Datum",
-      "best": "Beste"
+      "best": "Beste",
+      "explore_the_road": "Verken de weg",
+      "lane_change_without_signal": "Van rijstrook gewisseld zonder richtingaanwijzer",
+      "drove_in_oncoming_lane": "Op de rijstrook voor tegemoetkomend verkeer gereden",
+      "high_beams": "Grootlicht",
+      "left_signal": "Linker richtingaanwijzer",
+      "right_signal": "Rechter richtingaanwijzer",
+      "braking": "Remmen",
+      "traction_loss": "Tractie verloren",
+      "fog_low_beams_ok": "Mist — dimlicht is prima",
+      "welcome_to_roadready": "Welkom bij RoadReady"
     },
     "schoolbehaviortoolkit": {
       "replacement_behaviors": "Vervangend gedrag",

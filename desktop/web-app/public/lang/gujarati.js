@@ -28886,7 +28886,17 @@
       "best": "શ્રેષ્ઠ",
       "menu_73": "← મેનુ",
       "menu_74": "← મેનુ",
-      "menu_75": "← મેનુ"
+      "menu_75": "← મેનુ",
+      "explore_the_road": "રસ્તાનું અન્વેષણ કરો",
+      "lane_change_without_signal": "સિગ્નલ આપ્યા વિના લેન બદલવી",
+      "drove_in_oncoming_lane": "સામેની લેનમાં વાહન ચલાવ્યું",
+      "high_beams": "હાઇ બીમ",
+      "left_signal": "ડાબો સિગ્નલ",
+      "right_signal": "જમણો સિગ્નલ",
+      "braking": "બ્રેક લગાવવી",
+      "traction_loss": "પકડ ગુમાવવી",
+      "fog_low_beams_ok": "ધુમ્મસ — લો બીમ યોગ્ય છે",
+      "welcome_to_roadready": "RoadReady માં આપનું સ્વાગત છે"
     },
     "schoolbehaviortoolkit": {
       "replacement_behaviors": "વૈકલ્પિક વર્તનો",

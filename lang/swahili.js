@@ -28861,7 +28861,17 @@
       "best": "Bora",
       "menu_73": "← Menyu",
       "menu_74": "← Menyu",
-      "menu_75": "← Menyu"
+      "menu_75": "← Menyu",
+      "explore_the_road": "Chunguza barabara",
+      "lane_change_without_signal": "Kubadilisha njia bila ishara",
+      "drove_in_oncoming_lane": "Uliendesha kwenye njia ya magari yanayokuja",
+      "high_beams": "Taa za juu",
+      "left_signal": "Ishara ya kushoto",
+      "right_signal": "Ishara ya kulia",
+      "braking": "Kufunga breki",
+      "traction_loss": "Kupoteza mshiko",
+      "fog_low_beams_ok": "Ukungu — taa za chini zinaruhusiwa",
+      "welcome_to_roadready": "Karibu RoadReady"
     },
     "schoolbehaviortoolkit": {
       "replacement_behaviors": "Replacement tabia",

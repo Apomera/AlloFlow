@@ -29522,7 +29522,17 @@
       "best": "最佳",
       "menu_73": "← 菜单",
       "menu_74": "← 菜单",
-      "menu_75": "← 菜单"
+      "menu_75": "← 菜单",
+      "explore_the_road": "探索道路",
+      "lane_change_without_signal": "未打转向灯变道",
+      "drove_in_oncoming_lane": "驶入对向车道",
+      "high_beams": "远光灯",
+      "left_signal": "左转向灯",
+      "right_signal": "右转向灯",
+      "braking": "刹车",
+      "traction_loss": "失去牵引力",
+      "fog_low_beams_ok": "雾天——近光灯可以",
+      "welcome_to_roadready": "欢迎使用 RoadReady"
     },
     "schoolbehaviortoolkit": {
       "replacement_behaviors": "替代行为",

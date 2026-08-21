@@ -29973,7 +29973,17 @@
       "best": "ดีที่สุด",
       "menu_73": "← เมนู",
       "menu_74": "← เมนู",
-      "menu_75": "← เมนู"
+      "menu_75": "← เมนู",
+      "explore_the_road": "สำรวจถนน",
+      "lane_change_without_signal": "เปลี่ยนเลนโดยไม่เปิดไฟเลี้ยว",
+      "drove_in_oncoming_lane": "ขับรถเข้าเลนสวนทาง",
+      "high_beams": "ไฟสูง",
+      "left_signal": "ไฟเลี้ยวซ้าย",
+      "right_signal": "ไฟเลี้ยวขวา",
+      "braking": "การเบรก",
+      "traction_loss": "สูญเสียการยึดเกาะถนน",
+      "fog_low_beams_ok": "หมอก — ใช้ไฟต่ำได้",
+      "welcome_to_roadready": "ยินดีต้อนรับสู่ RoadReady"
     },
     "schoolbehaviortoolkit": {
       "replacement_behaviors": "พฤติกรรมทดแทน",

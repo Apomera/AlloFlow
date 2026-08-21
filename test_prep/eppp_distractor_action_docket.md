@@ -15,23 +15,23 @@ Generated: 2026-07-28
 
 | Action rank | Raw rank | Item | Domain | Diagnostics | Editorial reason |
 | ---: | ---: | --- | --- | --- | --- |
-| 1 | 1 | eppp-v2-cognitive-affective-025 | cognitive-affective | asymmetric-extreme-distractors | Combined warning score places this item in the next bounded editorial-review docket. |
+| 1 | 1 | eppp-v2-professional-008 | professional | asymmetric-extreme-distractors | Combined warning score places this item in the next bounded editorial-review docket. |
 | 2 | 2 | eppp-v2-cognitive-affective-037 | cognitive-affective | asymmetric-extreme-distractors | Combined warning score places this item in the next bounded editorial-review docket. |
-| 3 | 3 | eppp-v2-cognitive-affective-042 | cognitive-affective | asymmetric-extreme-distractors | Combined warning score places this item in the next bounded editorial-review docket. |
-| 4 | 4 | eppp-v2-cognitive-affective-047 | cognitive-affective | asymmetric-extreme-distractors | Combined warning score places this item in the next bounded editorial-review docket. |
-| 5 | 5 | eppp-v2-professional-044 | professional | asymmetric-extreme-distractors | Combined warning score places this item in the next bounded editorial-review docket. |
-| 6 | 6 | eppp-v2-professional-046 | professional | asymmetric-extreme-distractors | Combined warning score places this item in the next bounded editorial-review docket. |
-| 7 | 7 | eppp-v2-professional-052 | professional | asymmetric-extreme-distractors | Combined warning score places this item in the next bounded editorial-review docket. |
-| 8 | 8 | eppp-v2-professional-071 | professional | asymmetric-extreme-distractors | Combined warning score places this item in the next bounded editorial-review docket. |
-| 9 | 9 | eppp-v2-professional-074 | professional | asymmetric-extreme-distractors | Combined warning score places this item in the next bounded editorial-review docket. |
-| 10 | 10 | eppp-v2-research-011 | research | asymmetric-extreme-distractors | Combined warning score places this item in the next bounded editorial-review docket. |
-| 11 | 11 | eppp-v2-social-cultural-029 | social-cultural | asymmetric-extreme-distractors | Combined warning score places this item in the next bounded editorial-review docket. |
-| 12 | 12 | eppp-v3-assessment-069 | assessment | asymmetric-extreme-distractors | Combined warning score places this item in the next bounded editorial-review docket. |
-| 13 | 13 | eppp-v3-assessment-075 | assessment | asymmetric-extreme-distractors | Combined warning score places this item in the next bounded editorial-review docket. |
-| 14 | 14 | eppp-v3-cognitive-affective-047 | cognitive-affective | asymmetric-extreme-distractors | Combined warning score places this item in the next bounded editorial-review docket. |
-| 15 | 15 | eppp-v3-cognitive-affective-053 | cognitive-affective | asymmetric-extreme-distractors | Combined warning score places this item in the next bounded editorial-review docket. |
-| 16 | 16 | eppp-v3-cognitive-affective-063 | cognitive-affective | asymmetric-extreme-distractors | Combined warning score places this item in the next bounded editorial-review docket. |
-| 17 | 17 | eppp-v3-intervention-061 | intervention | asymmetric-extreme-distractors | Combined warning score places this item in the next bounded editorial-review docket. |
-| 18 | 18 | eppp-v3-professional-004 | professional | asymmetric-extreme-distractors | Combined warning score places this item in the next bounded editorial-review docket. |
-| 19 | 19 | eppp-v3-professional-005 | professional | asymmetric-extreme-distractors | Combined warning score places this item in the next bounded editorial-review docket. |
-| 20 | 20 | eppp-v3-professional-007 | professional | asymmetric-extreme-distractors | Combined warning score places this item in the next bounded editorial-review docket. |
+| 3 | 3 | eppp-v2-professional-011 | professional | asymmetric-extreme-distractors | Combined warning score places this item in the next bounded editorial-review docket. |
+| 4 | 4 | eppp-v2-professional-044 | professional | asymmetric-extreme-distractors | Combined warning score places this item in the next bounded editorial-review docket. |
+| 5 | 5 | eppp-v2-professional-046 | professional | asymmetric-extreme-distractors | Combined warning score places this item in the next bounded editorial-review docket. |
+| 6 | 6 | eppp-v2-professional-071 | professional | asymmetric-extreme-distractors | Combined warning score places this item in the next bounded editorial-review docket. |
+| 7 | 7 | eppp-v2-professional-074 | professional | asymmetric-extreme-distractors | Combined warning score places this item in the next bounded editorial-review docket. |
+| 8 | 8 | eppp-v3-assessment-069 | assessment | asymmetric-extreme-distractors | Combined warning score places this item in the next bounded editorial-review docket. |
+| 9 | 9 | eppp-v3-assessment-075 | assessment | asymmetric-extreme-distractors | Combined warning score places this item in the next bounded editorial-review docket. |
+| 10 | 10 | eppp-v3-cognitive-affective-047 | cognitive-affective | asymmetric-extreme-distractors | Combined warning score places this item in the next bounded editorial-review docket. |
+| 11 | 11 | eppp-v3-cognitive-affective-053 | cognitive-affective | asymmetric-extreme-distractors | Combined warning score places this item in the next bounded editorial-review docket. |
+| 12 | 12 | eppp-v3-cognitive-affective-063 | cognitive-affective | asymmetric-extreme-distractors | Combined warning score places this item in the next bounded editorial-review docket. |
+| 13 | 13 | eppp-v3-intervention-061 | intervention | asymmetric-extreme-distractors | Combined warning score places this item in the next bounded editorial-review docket. |
+| 14 | 14 | eppp-v3-professional-004 | professional | asymmetric-extreme-distractors | Combined warning score places this item in the next bounded editorial-review docket. |
+| 15 | 15 | eppp-v3-professional-005 | professional | asymmetric-extreme-distractors | Combined warning score places this item in the next bounded editorial-review docket. |
+| 16 | 16 | eppp-v3-professional-007 | professional | asymmetric-extreme-distractors | Combined warning score places this item in the next bounded editorial-review docket. |
+| 17 | 17 | eppp-v3-professional-008 | professional | asymmetric-extreme-distractors | Combined warning score places this item in the next bounded editorial-review docket. |
+| 18 | 18 | eppp-v3-professional-012 | professional | asymmetric-extreme-distractors | Combined warning score places this item in the next bounded editorial-review docket. |
+| 19 | 19 | eppp-v3-professional-016 | professional | asymmetric-extreme-distractors | Combined warning score places this item in the next bounded editorial-review docket. |
+| 20 | 20 | eppp-v3-professional-018 | professional | asymmetric-extreme-distractors | Combined warning score places this item in the next bounded editorial-review docket. |

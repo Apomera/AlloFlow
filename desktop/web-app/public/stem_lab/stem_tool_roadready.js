@@ -11441,7 +11441,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               var playerLaneOff = emPlayerFrame ? emPlayerFrame.lateral : 0;
               var emSpawnStation = emPlayerFrame
                 ? emPlayerFrame.longitudinal - emTravelSign * emSpawnDistance
-                : car.y + emSpawnDistance;
+                : car.y - emTravelSign * emSpawnDistance;
               var emThetaAtSpawn = emSpawnSpline ? emSpawnSpline.headingAt(emSpawnStation) : 0;
               var emSpawnPoint = emSpawnSpline
                 ? mainRoadWorldPoint(infiniteWorldRef.current, emSpawnStation,
@@ -11531,9 +11531,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             em.x -= (em.x - emiTargetPoint.x) * emiLerp;
             em.y -= (em.y - emiTargetPoint.y) * emiLerp;
           } else {
-            em.y -= em.speed * dt;
+            // Finite/straight fallback: follow the player's travel direction so
+            // a southbound driver also gets an emergency vehicle from behind.
+            var emFallbackSign = Math.sin(em.heading) > 0 ? 1 : -1;
+            em.y += emFallbackSign * em.speed * dt;
           }
           em.life -= dt;
+          // Keep pass/response timing in the same road frame as the streamed
+          // spline. Raw world Y fires immediately for southbound cars and late
+          // for northbound cars, then flips again on a bend.
+          var emRoadAhead = 0;
+          var emRoadLateral = 0;
+          if (car) {
+            var emPlayerTravelSign = Math.sin(car.heading) > 0 ? 1 : -1;
+            emRoadAhead = (em.y - car.y) * emPlayerTravelSign;
+            emRoadLateral = -Math.sin(car.heading) * (em.x - car.x) +
+              Math.cos(car.heading) * (em.y - car.y);
+            if (emiSpline) {
+              var emNowFrame = mainRoadLocalPoint(infiniteWorldRef.current, em.x, em.y);
+              var carNowFrame = mainRoadLocalPoint(infiniteWorldRef.current, car.x, car.y);
+              emRoadAhead = (emNowFrame.longitudinal - carNowFrame.longitudinal) *
+                emPlayerTravelSign;
+              emRoadLateral = emNowFrame.lateral - carNowFrame.lateral;
+            }
+          }
           // Siren warble
           try {
             if (audioRef.current._sirenOsc) {
@@ -11547,8 +11568,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               var cosH = Math.cos(car.heading);
               var sinH = Math.sin(car.heading);
               // Forward axis = (cosH, sinH); lateral = (-sinH, cosH).
-              var lateral = -sinH * relX + cosH * relY;
-              var forward = cosH * relX + sinH * relY;
+              var lateral = emRoadLateral || (-sinH * relX + cosH * relY);
+              var forward = emRoadAhead || (cosH * relX + sinH * relY);
               var dist = Math.hypot(relX, relY);
               var panTarget = Math.max(-1, Math.min(1, lateral / 6));
               if (audioRef.current._sirenPan) audioRef.current._sirenPan.pan.setTargetAtTime(panTarget, audioRef.current.ctx.currentTime, 0.08);
@@ -11561,12 +11582,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               var dopScale = forward > 0 ? 1.05 : 0.92;
               audioRef.current._sirenOsc.frequency.setTargetAtTime(wob * dopScale, audioRef.current.ctx.currentTime, 0.06);
               // Fade out as it passes
-              if (em.y < car.y - 5) audioRef.current._sirenGain.gain.setTargetAtTime(0.01, audioRef.current.ctx.currentTime, 0.3);
+              if (emRoadAhead > 5) audioRef.current._sirenGain.gain.setTargetAtTime(0.01, audioRef.current.ctx.currentTime, 0.3);
             }
           } catch (e) {}
           // Check if player pulled right and stopped
           // Wider detection window (6 units = ~60 feet) and timeout if it passes completely
-          if (!em.checked && em.y < car.y + 6) {
+          if (!em.checked && emRoadAhead > -6) {
             em.checked = true;
             // "Pulled right" = perpendicular offset from spline ≥ 1.5 in the driver's RIGHT direction.
             // For NB (heading negative, default in Free Explore) RIGHT = +X = positive perp offset.
@@ -11608,7 +11629,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             }
           }
           // Remove when done
-          if (em.life <= 0 || em.y < car.y - 20) {
+          if (em.life <= 0 || emRoadAhead > 20) {
             try {
               if (audioRef.current._sirenGain) audioRef.current._sirenGain.gain.setTargetAtTime(0, audioRef.current.ctx.currentTime, 0.05);
               safeTimeout(function() { try { if (audioRef.current._sirenOsc) { audioRef.current._sirenOsc.stop(); audioRef.current._sirenOsc = null; } } catch(e){} }, 200);
@@ -11658,14 +11679,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               cy.y += Math.sin(cy.heading) * cy.speed * dt;
               cy.x += Math.cos(cy.heading) * cy.speed * dt;
             }
-            if (cySpline) {
-              if (Math.abs(cy.y - carRef.current.y) > MAP_SIZE * 0.6) {
+            if (cySpline && !cy.crossStreet) {
+              var cyPlayerFrame = mainRoadLocalPoint(
+                infiniteWorldRef.current, carRef.current.x, carRef.current.y);
+              var cyPlayerStation = cyPlayerFrame.longitudinal;
+              var cyCurrentStation = typeof cy._roadStation === 'number'
+                ? cy._roadStation
+                : mainRoadLocalPoint(infiniteWorldRef.current, cy.x, cy.y).longitudinal;
+              if (Math.abs(cyCurrentStation - cyPlayerStation) > MAP_SIZE * 0.6) {
                 var cyRespawnSide = Math.random() < 0.5 ? -1 : 1;
-                cy.y = carRef.current.y + cyRespawnSide * (18 + Math.random() * MAP_SIZE * 0.35);
+                cy._roadStation = cyPlayerStation + cyRespawnSide *
+                  (18 + Math.random() * MAP_SIZE * 0.35);
                 var cyRespawnDir = Math.sin(cy.heading) >= 0 ? 1 : -1;
                 cy._bikeLane = bicycleLaneOffsetFor(
-                  roadProfileAt(infiniteWorldRef.current, cy.y, null), cyRespawnDir);
-                cy._roadStation = cy.y;
+                  roadProfileAt(infiniteWorldRef.current, cy._roadStation, null), cyRespawnDir);
                 var cyRespawnPoint = mainRoadWorldPoint(infiniteWorldRef.current, cy._roadStation, cy._bikeLane);
                 cy.x = cyRespawnPoint.x;
                 cy.y = cyRespawnPoint.y;
@@ -16244,9 +16271,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               if (!t.crossStreet) {
                 var aiwSp = infiniteWorldRef.current && infiniteWorldRef.current.spline;
                 if (aiwSp) {
+                  var aiRoadStation = typeof t._roadStation === 'number'
+                    ? t._roadStation
+                    : mainRoadLocalPoint(infiniteWorldRef.current, t.x, t.y).longitudinal;
+                  var aiRoadHeading = aiwSp.headingAt(aiRoadStation);
                   var targetH = (t.heading > 0)
-                    ? (Math.PI / 2 - aiwSp.headingAt(t.y))
-                    : (-Math.PI / 2 - aiwSp.headingAt(t.y));
+                    ? (Math.PI / 2 - aiRoadHeading)
+                    : (-Math.PI / 2 - aiRoadHeading);
                   var hDelta = targetH - t.heading;
                   while (hDelta > Math.PI) hDelta -= 2 * Math.PI;
                   while (hDelta < -Math.PI) hDelta += 2 * Math.PI;

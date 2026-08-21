@@ -333,6 +333,16 @@
     { id: 'downdraft', label: 'Sinking edges', color: '#7dd3fc', desc: 'Cooled dense fluid falls back down the sides. This is the return half of the loop, and it is why the middle can keep rising.' },
     { id: 'tank',      label: 'Tank walls',    color: '#94a3b8', desc: 'The container. Change its shape and the roll changes with it — convection cells take the form the boundary allows.' }
   ];
+  // A compact left-to-right key sits under the viewer. It gives the learner a
+  // stable mental model while the camera is moving, and remains useful when the
+  // host cannot provide WebGL and the 2D fallback is all they can see.
+  var HEAT_3D_FLOW = [
+    { id: 'heater',    label: 'Heat in',  hint: 'warm + expand' },
+    { id: 'plume',     label: 'Rise',     hint: 'buoyancy' },
+    { id: 'ceiling',   label: 'Cool',     hint: 'release heat' },
+    { id: 'downdraft', label: 'Sink',     hint: 'denser fluid' },
+    { id: 'tank',      label: 'Contain',  hint: 'shape the loop' }
+  ];
 
   function heatBuildScene(THREE, api) {
     // Every variable is declared before it is used. A declaration sitting below
@@ -1473,6 +1483,27 @@
       // ── 3D bay: keep the host viewer in step with theme and selection ──
       var pick3d = d.pick3d || null;
       var part3d = HEAT_3D_PARTS.filter(function (p) { return p.id === pick3d; })[0] || null;
+      var heatFlowNodes = [];
+      HEAT_3D_FLOW.forEach(function (step, i) {
+        var flowPart = HEAT_3D_PARTS.filter(function (p) { return p.id === step.id; })[0] || HEAT_3D_PARTS[0];
+        var flowOn = pick3d === step.id;
+        heatFlowNodes.push(h('div', {
+          key: 'heat-flow-' + step.id,
+          role: 'listitem',
+          'aria-current': flowOn ? 'step' : undefined,
+          'aria-label': step.label + ': ' + step.hint + (flowOn ? ', selected in the 3D view' : ''),
+          className: 'flex-1 min-w-[5.5rem] rounded-lg px-2 py-1.5 text-center',
+          style: flowOn
+            ? { background: flowPart.color, color: '#0b1020', border: '1px solid ' + flowPart.color }
+            : { background: isDark ? 'rgba(148,163,184,0.1)' : 'rgba(255,255,255,0.78)', color: isDark ? '#e2e8f0' : '#334155', border: '1px solid ' + (isDark ? 'rgba(148,163,184,0.25)' : 'rgba(100,116,139,0.2)') }
+        },
+          h('span', { className: 'block text-[10px] font-black' }, step.label),
+          h('span', { className: 'block text-[10px]', style: { color: flowOn ? '#0b1020' : (isDark ? '#94a3b8' : '#64748b') } }, step.hint)
+        ));
+        if (i < HEAT_3D_FLOW.length - 1) {
+          heatFlowNodes.push(h('span', { key: 'heat-flow-arrow-' + i, 'aria-hidden': 'true', className: 'text-[13px] font-black', style: { color: isDark ? '#94a3b8' : '#64748b' } }, '→'));
+        }
+      });
       React.useEffect(function () {
         HEAT_VIEWER.sync({
           selected: pick3d,
@@ -2275,6 +2306,33 @@
                 'then rises as steam. Currently at ' + fmt(energyIn, 0) + ' kilojoules, ' + wstate.temp.toFixed(0) + ' degrees, ' + wstate.phase + '.',
               style: { width: '100%', height: '100%', display: 'block' }
           })),
+          h('div', { className: 'mt-2 rounded-xl border p-3', 'data-heat-3d-snapshot': 'true', role: 'group', 'aria-label': '3D convection model snapshot', style: { borderColor: 'rgba(251,146,60,0.32)', background: isDark ? 'linear-gradient(135deg, rgba(15,23,42,0.92), rgba(124,45,18,0.28))' : 'linear-gradient(135deg, rgba(255,247,237,0.96), rgba(224,242,254,0.72))' } },
+            h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
+              h('div', null,
+                h('div', { className: 'text-[10px] font-black uppercase tracking-[0.18em]', style: { color: isDark ? '#fdba74' : '#c2410c' } }, 'Model snapshot'),
+                h('div', { className: 'mt-0.5 text-[11px] font-bold', style: { color: isDark ? '#e2e8f0' : '#334155' } }, part3d ? 'Inspecting ' + part3d.label : 'Full convection loop')
+              ),
+              h('span', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'rounded-full border px-2 py-1 text-[10px] font-black uppercase tracking-wide', style: view3dStatus === 'ready' ? { borderColor: 'rgba(52,211,153,0.45)', background: 'rgba(52,211,153,0.12)', color: isDark ? '#bbf7d0' : '#166534' } : { borderColor: 'rgba(251,146,60,0.42)', background: 'rgba(251,146,60,0.12)', color: isDark ? '#fed7aa' : '#9a3412' } }, view3dStatus === 'ready' ? 'Interactive 3D ready' : (HEAT_3D_MISSING === 'host' ? '2D fallback guide available' : (view3dStatus === 'loading' ? 'Loading 3D model' : '2D fallback guide available')))
+            ),
+            h('div', { className: 'mt-2 grid gap-2 sm:grid-cols-3' },
+              h('div', { className: 'rounded-lg border p-2', style: { borderColor: isDark ? 'rgba(251,146,60,0.25)' : 'rgba(251,146,60,0.28)', background: isDark ? 'rgba(251,146,60,0.08)' : 'rgba(255,255,255,0.62)' } },
+                h('div', { className: 'text-[10px] font-black uppercase tracking-wide', style: { color: isDark ? '#fdba74' : '#c2410c' } }, 'Focus'),
+                h('div', { className: 'mt-0.5 text-[11px] font-black', style: { color: isDark ? '#f8fafc' : '#0f172a' } }, part3d ? part3d.label : 'Full loop'),
+                h('div', { className: 'mt-0.5 text-[10px] leading-relaxed', style: { color: isDark ? '#cbd5e1' : '#475569' } }, part3d ? 'Selected hotspot in the tank.' : 'Choose a stage to inspect its evidence.')
+              ),
+              h('div', { className: 'rounded-lg border p-2', style: { borderColor: isDark ? 'rgba(251,146,60,0.25)' : 'rgba(251,146,60,0.28)', background: isDark ? 'rgba(14,165,233,0.08)' : 'rgba(255,255,255,0.62)' } },
+                h('div', { className: 'text-[10px] font-black uppercase tracking-wide', style: { color: isDark ? '#7dd3fc' : '#0369a1' } }, 'Causal direction'),
+                h('div', { className: 'mt-0.5 text-[11px] font-black', style: { color: isDark ? '#f8fafc' : '#0f172a' } }, 'Heat in â†’ rise â†’ cool â†’ sink'),
+                h('div', { className: 'mt-0.5 text-[10px] leading-relaxed', style: { color: isDark ? '#cbd5e1' : '#475569' } }, 'Buoyancy closes the loop.')
+              ),
+              h('div', { className: 'rounded-lg border p-2', style: { borderColor: isDark ? 'rgba(251,146,60,0.25)' : 'rgba(251,146,60,0.28)', background: isDark ? 'rgba(167,139,250,0.08)' : 'rgba(255,255,255,0.62)' } },
+                h('div', { className: 'text-[10px] font-black uppercase tracking-wide', style: { color: isDark ? '#c4b5fd' : '#6d28d9' } }, 'Boundary cue'),
+                h('div', { className: 'mt-0.5 text-[11px] font-black', style: { color: isDark ? '#f8fafc' : '#0f172a' } }, 'Tank walls shape the roll'),
+                h('div', { className: 'mt-0.5 text-[10px] leading-relaxed', style: { color: isDark ? '#cbd5e1' : '#475569' } }, 'The return flow brings dense fluid back to the heater.')
+              )
+            )
+          ),
+
           h('div', {
             className: 'mt-2 rounded-lg p-2.5',
             role: 'img',
@@ -2471,10 +2529,10 @@
         // ── 3D convection tank ──
         sec('convection3d', '#fb923c',
           heading('#fb923c', '🧊 8. Turn it over: convection in 3D'),
-          h('p', { className: 'text-[11px] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
+          h('p', { id: 'ht-convection3d-description', className: 'text-[11px] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
             'A flat arrow diagram makes convection look like a circle. It is not — it is a closed roll wrapping all the way round the tank. Drag to rotate, or use the buttons and arrow keys.'),
 
-          h('div', { className: 'relative rounded-xl overflow-hidden border', style: { borderColor: 'rgba(251,146,60,0.4)', height: '300px', background: isDark ? '#0b1220' : '#dfe6ef' } },
+          h('div', { role: 'group', 'aria-label': 'Interactive 3D convection tank', 'aria-describedby': 'ht-convection3d-description', className: 'relative rounded-xl overflow-hidden border', style: { borderColor: 'rgba(251,146,60,0.4)', height: '300px', background: isDark ? '#0b1220' : '#dfe6ef' } },
             h('div', { ref: heat3dAttach, style: { position: 'absolute', inset: 0 } }),
             view3dStatus !== 'ready' ? h('div', {
               role: 'status',
@@ -2487,6 +2545,17 @@
                     ? 'The 3D tank needs a newer host module than this build has. Everything else on this page still works — the 2D convection mode above shows the same loop in cross-section.'
                     : 'The 3D tank could not start on this device, usually because WebGL is unavailable or blocked. The 2D convection mode above shows the same loop in cross-section.'))
             ) : null
+          ),
+
+          h('div', {
+            className: 'mt-2 rounded-lg p-2.5',
+            role: 'group',
+            'aria-label': 'Convection flow path: heat enters, warm fluid rises, the ceiling cools it, dense fluid sinks, and the tank walls shape the loop.',
+            style: { background: isDark ? 'rgba(148,163,184,0.08)' : 'rgba(251,146,60,0.07)', border: '1px solid rgba(251,146,60,0.28)' }
+          },
+            h('div', { role: 'list', className: 'flex flex-wrap items-center gap-1.5' }, heatFlowNodes),
+            h('p', { className: 'text-[11px] mt-2 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
+              'Read the loop left to right: heat in → rise → cool → sink → the boundary turns the flow back around.')
           ),
 
           h('div', { role: 'group', 'aria-label': '3D view controls', className: 'flex flex-wrap gap-1 mt-2' },

@@ -16,6 +16,15 @@ if (!cssFile) throw new Error('Compiled application stylesheet was not found.');
 const cssSource = fs.readFileSync(path.join(cssDirectory, cssFile), 'utf8');
 
 const CASES = [
+  { name: 'arithmetic studio', file: 'stem_lab/stem_tool_arithmetic.js', id: 'arithmeticStudio', state: {} },
+  { name: 'number line invalid-range recovery', file: 'stem_lab/stem_tool_numberline.js', id: 'numberline', state: { _numberline: { tab: 'explore', range: { min: 7, max: 7 } } } },
+  { name: 'area model word challenge', file: 'stem_lab/stem_tool_areamodel.js', id: 'areamodel', state: { _areamodel: { viewMode: 'word', wordDims: { a: 4, b: 6 }, challenge: { a: 4, b: 6, answer: 24, question: 'Four groups of six. How many?', mode: 'word' }, answer: '', feedback: null } } },
+  { name: 'fraction wall', file: 'stem_lab/stem_tool_fractions.js', id: 'fractionViz', state: { _fractions: { tab: 'wall', wallHighlight: { n: 1, d: 2 } } } },
+  { name: 'base ten manipulatives', file: 'stem_lab/stem_tool_manipulatives.js', id: 'base10', state: {} },
+  { name: 'multiplication table', file: 'stem_lab/stem_tool_multtable.js', id: 'multtable', state: {} },
+  { name: 'ratio lab', file: 'stem_lab/stem_tool_ratios.js', id: 'ratioLab', state: {} },
+  { name: 'money math', file: 'stem_lab/stem_tool_money.js', id: 'moneyMath', state: {} },
+  { name: 'unit converter', file: 'stem_lab/stem_tool_unitconvert.js', id: 'unitConvert', state: {} },
   { name: 'area tile explorer', file: 'stem_lab/stem_tool_areaperimeter.js', id: 'areaPerimeter', state: { _areaPerimeter: { mode: 'explore', width: 8, height: 6 } } },
   { name: 'area composite', file: 'stem_lab/stem_tool_areaperimeter.js', id: 'areaPerimeter', state: { _areaPerimeter: { mode: 'composite' } } },
   { name: 'area challenge', file: 'stem_lab/stem_tool_areaperimeter.js', id: 'areaPerimeter', state: { _areaPerimeter: { mode: 'challenge' } } },
@@ -24,6 +33,11 @@ const CASES = [
   { name: 'time challenge', file: 'stem_lab/stem_tool_timeschedule.js', id: 'timeSchedule', state: { _timeSchedule: { tab: 'challenge' } } },
   { name: 'time schedule dark', file: 'stem_lab/stem_tool_timeschedule.js', id: 'timeSchedule', state: { _timeSchedule: { tab: 'schedule' } }, overrides: { isDark: true } },
   { name: 'time challenge contrast', file: 'stem_lab/stem_tool_timeschedule.js', id: 'timeSchedule', state: { _timeSchedule: { tab: 'challenge' } }, overrides: { isContrast: true } },
+  { name: 'function grapher zero-bound viewport', file: 'stem_lab/stem_tool_funcgrapher.js', id: 'funcGrapher', state: { funcGrapher: { type: 'linear', a: 1, b: 0, c: 0, showDeriv: false, showArea: false, traceX: 0, showTable: false, showLearn: false, compare: false, compareType: 'linear', compareA: 1, compareB: 0, compareC: 0, range: { xMin: 0, xMax: 10, yMin: -5, yMax: 5 } } } },
+  { name: 'inequality grapher', file: 'stem_lab/stem_tool_inequality.js', id: 'inequality', state: {} },
+  { name: 'calculus visualization controls', file: 'stem_lab/stem_tool_calculus.js', id: 'calculus', state: { calculus: { tab: 'visualize', vizView: 'zoom' } } },
+  { name: 'algebra solver', file: 'stem_lab/stem_tool_algebracas.js', id: 'algebraCAS', state: {} },
+  { name: 'graphing calculator trace', file: 'stem_lab/stem_tool_graphcalc.js', id: 'graphCalc', state: { graphCalc: { traceMode: true, traceX: 0, showWindow: true, window: { xmin: -10, xmax: 10, ymin: -10, ymax: 10 } } } },
 ];
 
 function renderCase(testCase) {
@@ -32,7 +46,7 @@ function renderCase(testCase) {
   return renderTool(testCase.id, testCase.state, testCase.overrides);
 }
 
-describe('Basic math tools WCAG regression in a real browser', () => {
+describe('Math fundamentals and advanced math WCAG regression in a real browser', () => {
   let browser;
 
   beforeAll(async () => {
@@ -40,12 +54,13 @@ describe('Basic math tools WCAG regression in a real browser', () => {
   });
 
   afterAll(async () => {
-    await browser.close();
+    if (browser) await browser.close();
   }, 30000);
 
   for (const testCase of CASES) {
     it(testCase.name + ' passes WCAG A/AA and 320px reflow checks', async () => {
       const page = await browser.newPage({ viewport: { width: 320, height: 760 } });
+      await page.emulateMedia({ reducedMotion: 'reduce' });
       await page.setContent(
         '<!doctype html><html lang="en"><head><meta name="viewport" content="width=device-width,initial-scale=1"><style>' +
           cssSource +
@@ -53,21 +68,53 @@ describe('Basic math tools WCAG regression in a real browser', () => {
         { waitUntil: 'domcontentloaded' },
       );
       await page.addScriptTag({ content: axeSource });
+      await page.evaluate(() => {
+        for (const animation of document.getAnimations()) animation.cancel();
+      });
 
       const audit = await page.evaluate(async () => axe.run('#tool-root', {
         runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'] },
       }));
-      const reflow = await page.evaluate(() => ({
-        scrollWidth: document.documentElement.scrollWidth,
-        clientWidth: document.documentElement.clientWidth,
-      }));
+      const reflow = await page.evaluate(() => {
+        const clientWidth = document.documentElement.clientWidth;
+        const scrollWidth = document.documentElement.scrollWidth;
+        const offenders = scrollWidth > clientWidth
+          ? [...document.querySelectorAll('#tool-root, #tool-root *')]
+              .map((element) => {
+                const box = element.getBoundingClientRect();
+                return {
+                  element: element.tagName.toLowerCase() + (element.id ? '#' + element.id : '') +
+                    (typeof element.className === 'string' && element.className ? '.' + element.className.trim().replace(/\s+/g, '.') : ''),
+                  left: Math.round(box.left),
+                  right: Math.round(box.right),
+                  width: Math.round(box.width),
+                  scrollWidth: element.scrollWidth,
+                };
+              })
+              .filter((item) => item.right > clientWidth + 1 || item.left < -1 || item.width > clientWidth + 1 || item.scrollWidth > item.width + 1)
+              .sort((a, b) => Math.max(b.right, b.scrollWidth) - Math.max(a.right, a.scrollWidth))
+              .slice(0, 8)
+          : [];
+        return { scrollWidth, clientWidth, offenders };
+      });
 
       expect(audit.violations.map((violation) => ({
         id: violation.id,
         impact: violation.impact,
-        targets: violation.nodes.map((node) => ({ target: node.target, summary: node.failureSummary })),
+        targets: violation.nodes.map((node) => ({
+          target: node.target,
+          html: node.html,
+          contrast: node.any && node.any[0] && node.any[0].data
+            ? {
+                foreground: node.any[0].data.fgColor,
+                background: node.any[0].data.bgColor,
+                ratio: node.any[0].data.contrastRatio,
+                expected: node.any[0].data.expectedContrastRatio,
+              }
+            : undefined,
+        })),
       }))).toEqual([]);
-      expect(reflow.scrollWidth).toBeLessThanOrEqual(reflow.clientWidth);
+      expect(reflow.scrollWidth, JSON.stringify(reflow.offenders, null, 2)).toBeLessThanOrEqual(reflow.clientWidth);
 
       if (testCase.name === 'area tile explorer') {
         const targets = await page.locator('[data-ap-tile]').evaluateAll((tiles) => tiles.map((tile) => {
@@ -88,6 +135,28 @@ describe('Basic math tools WCAG regression in a real browser', () => {
           return { outline: style.outlineStyle, shadow: style.boxShadow };
         });
         expect(focusStyle.outline !== 'none' || focusStyle.shadow !== 'none').toBe(true);
+      }
+
+      if (testCase.name === 'fraction wall') {
+        const segments = page.locator('[data-fraction-wall-segment]');
+        expect(await segments.count()).toBe(51);
+        expect(await page.locator('[data-unit-fraction="1/4"][data-highlighted-length="true"]').count()).toBe(2);
+        await page.locator('[data-fraction="2/4"]').focus();
+        expect(await page.locator('[data-fraction="2/4"]').evaluate((element) => element === document.activeElement)).toBe(true);
+      }
+
+      if (testCase.name === 'area model word challenge') {
+        expect(await page.getByText('4 groups of 6 = ?', { exact: true }).count()).toBe(1);
+        expect(await page.locator('.text-2xl.font-bold.text-emerald-900').count()).toBe(0);
+      }
+
+      if (testCase.name === 'graphing calculator trace') {
+        expect(await page.locator('#graphcalc-trace-x').count()).toBe(1);
+      }
+
+      if (testCase.name === 'calculus visualization controls') {
+        expect(await page.locator('#calc-viz-zoom').count()).toBe(1);
+        expect(await page.locator('#calc-viz-x0').count()).toBe(1);
       }
 
       await page.close();

@@ -563,6 +563,63 @@
     };
     return labels[key] || (key ? key.replace(/_/g, ' ') : 'No live activity');
   };
+  const LIVE_STUDENT_SIGNAL_ACTIVE_MS = 95000;
+  const LIVE_STUDENT_SIGNAL_RECENT_MS = 200000;
+  const normalizeLiveActivityTimestamp = (value) => {
+    if (typeof value === 'number' && Number.isFinite(value)) return Math.max(0, value);
+    if (value && typeof value.toMillis === 'function') {
+      try {
+        const millis = Number(value.toMillis());
+        if (Number.isFinite(millis)) return Math.max(0, millis);
+      } catch (err) {}
+    }
+    if (value && typeof value === 'object' && Number.isFinite(Number(value.seconds))) {
+      const millis = (Number(value.seconds) * 1000) + Math.floor((Number(value.nanoseconds) || 0) / 1000000);
+      return Math.max(0, millis);
+    }
+    const numeric = Number(value);
+    return Number.isFinite(numeric) ? Math.max(0, numeric) : 0;
+  };
+  const classifyLiveStudentSignal = (config) => {
+    const source = config && typeof config === 'object' ? config : {};
+    const now = normalizeLiveActivityTimestamp(source.now) || Date.now();
+    const lastSeenAt = normalizeLiveActivityTimestamp(source.lastSeenAt);
+    const lastSignalAt = normalizeLiveActivityTimestamp(source.lastSignalAt);
+    const directConnected = source.directConnected === true;
+    const lastSeenAgeMs = lastSeenAt ? Math.max(0, now - lastSeenAt) : null;
+    const signalAgeMs = lastSignalAt ? Math.max(0, now - lastSignalAt) : null;
+    const presenceStatus = directConnected || (lastSeenAgeMs !== null && lastSeenAgeMs < LIVE_STUDENT_SIGNAL_ACTIVE_MS)
+      ? 'active'
+      : lastSeenAgeMs !== null && lastSeenAgeMs < LIVE_STUDENT_SIGNAL_RECENT_MS
+        ? 'recent'
+        : lastSeenAgeMs !== null
+          ? 'offline'
+          : 'unknown';
+    const signalStatus = signalAgeMs !== null && signalAgeMs < LIVE_STUDENT_SIGNAL_ACTIVE_MS
+      ? 'active'
+      : signalAgeMs !== null && signalAgeMs < LIVE_STUDENT_SIGNAL_RECENT_MS
+        ? 'recent'
+        : !directConnected && presenceStatus === 'offline'
+          ? 'offline'
+          : signalAgeMs !== null
+            ? 'quiet'
+            : directConnected
+              ? 'active'
+              : 'unknown';
+    return {
+      presenceStatus: presenceStatus,
+      signalStatus: signalStatus,
+      signalAgeMs: signalAgeMs,
+      lastSeenAgeMs: lastSeenAgeMs,
+      sessionPresent: directConnected || presenceStatus === 'active' || presenceStatus === 'recent' || signalStatus === 'active' || signalStatus === 'recent',
+    };
+  };
+  const liveStudentRowIsOffline = (row) => {
+    if (!row || typeof row !== 'object') return true;
+    if (row.presenceStatus === 'offline') return true;
+    if (row.presenceStatus === 'active' || row.presenceStatus === 'recent') return false;
+    return !row.connected;
+  };
   const buildLiveStudentActivityRows = (config) => {
     const source = config && typeof config === 'object' ? config : {};
     const roster = source.roster && typeof source.roster === 'object' ? source.roster : {};
@@ -583,10 +640,50 @@
     return Array.from(uidSet).slice(0, 250).map((uid) => {
       const rosterEntry = roster[uid] && typeof roster[uid] === 'object' ? roster[uid] : {};
       const guest = guests.find((item) => item && String(item.uid) === uid) || {};
+      const directConnected = !!guest.uid;
+      const lastSeenAt = normalizeLiveActivityTimestamp(rosterEntry.lastSeen);
+      const viewingAt = normalizeLiveActivityTimestamp(rosterEntry.viewingAt);
+      const practiceProgressAt = normalizeLiveActivityTimestamp(rosterEntry.wsProgress && rosterEntry.wsProgress.at);
+      const progressCorrect = Math.max(0, Number(rosterEntry.wsProgress && rosterEntry.wsProgress.correct) || 0);
+      const progressTotal = Math.max(0, Number(rosterEntry.wsProgress && rosterEntry.wsProgress.total) || 0);
       let activity = 'No live activity';
-      let status = guest.uid ? 'ready' : 'offline';
+      let status = directConnected ? 'ready' : 'offline';
       let updatedAt = 0;
-      let progressDetail = '';
+      let studentSignalAt = 0;
+      let progressDetail = progressTotal ? progressCorrect + '/' + progressTotal : '';
+      const finalizeRow = function () {
+        const normalizedUpdatedAt = normalizeLiveActivityTimestamp(updatedAt);
+        const lastSignalAt = Math.max(lastSeenAt, viewingAt, practiceProgressAt, normalizeLiveActivityTimestamp(studentSignalAt));
+        const signal = classifyLiveStudentSignal({
+          now: source.now,
+          directConnected: directConnected,
+          lastSeenAt: lastSeenAt,
+          lastSignalAt: lastSignalAt,
+        });
+        const displayStatus = status === 'offline' && signal.sessionPresent ? 'ready' : status;
+        return {
+          uid: uid,
+          name: normalizeBoundedText(guest.codename || rosterEntry.name || 'Student', 80) || 'Student',
+          groupId: normalizeBoundedText(rosterEntry.groupId, LIVE_POLLING_AUDIENCE_ID_MAX_LENGTH) || '',
+          connected: directConnected,
+          directConnected: directConnected,
+          sessionPresent: signal.sessionPresent,
+          presenceStatus: signal.presenceStatus,
+          signalStatus: signal.signalStatus,
+          signalAgeMs: signal.signalAgeMs,
+          lastSeenAt: lastSeenAt,
+          lastSignalAt: lastSignalAt,
+          activity: activity,
+          status: displayStatus,
+          progressDetail: progressDetail,
+          progressCorrect: progressTotal ? Math.min(progressCorrect, progressTotal) : progressCorrect,
+          progressTotal: progressTotal,
+          progressPercent: progressTotal ? Math.min(100, Math.round((progressCorrect / progressTotal) * 100)) : null,
+          practiceProgressAt: practiceProgressAt,
+          viewingAt: viewingAt,
+          updatedAt: normalizedUpdatedAt,
+        };
+      };
       if (activePoll && audience.indexOf(uid) >= 0) {
         const entry = responses.find((item) => item && String(item.uid) === uid);
         const rawStatus = responseStatuses[uid];
@@ -596,6 +693,7 @@
             : rawStatus === 'drafting' || rawStatus === 'editing' ? 'working'
               : rawStatus === 'withdrawn' ? 'withdrawn' : 'waiting';
         updatedAt = Number((entry && entry.timestamp) || activePoll.startedAt) || 0;
+        studentSignalAt = normalizeLiveActivityTimestamp(entry && entry.timestamp);
       } else {
         const snapshotForUid = function (item) {
           const participants = item.participantStatus && typeof item.participantStatus === 'object' ? item.participantStatus : {};
@@ -615,6 +713,7 @@
           activity = liveActivityKindLabel(activeSnapshot.kind || activeSnapshot.family);
           status = ['waiting', 'working', 'submitted', 'revised', 'complete', 'withdrawn'].indexOf(candidateStatus) >= 0 ? candidateStatus : 'waiting';
           updatedAt = Number(activeSnapshot.updatedAt) || 0;
+          if (status !== 'waiting') studentSignalAt = updatedAt;
         } else if (targetId) {
           activity = normalizeBoundedText(resource && (resource.title || resource.label), 96)
             || (resource ? liveActivityKindLabel(resource.type) : 'Assigned resource')
@@ -629,33 +728,93 @@
           updatedAt = Number(rosterEntry.viewingAt || rosterEntry.resourceAt || group.resourceAt) || 0;
         } else {
           const snapshot = snapshots.find(snapshotForUid);
-          if (!snapshot) return {
-            uid: uid,
-            name: normalizeBoundedText(guest.codename || rosterEntry.name || 'Student', 80) || 'Student',
-            groupId: normalizeBoundedText(rosterEntry.groupId, LIVE_POLLING_AUDIENCE_ID_MAX_LENGTH) || '',
-            connected: !!guest.uid,
-            activity: activity,
-            status: status,
-            progressDetail: progressDetail,
-            updatedAt: updatedAt,
-          };
+          if (!snapshot) return finalizeRow();
           const candidateStatus = snapshot.participantStatus && snapshot.participantStatus[uid];
           activity = liveActivityKindLabel(snapshot.kind || snapshot.family);
           status = ['waiting', 'working', 'submitted', 'revised', 'complete', 'withdrawn'].indexOf(candidateStatus) >= 0 ? candidateStatus : 'waiting';
           updatedAt = Number(snapshot.updatedAt) || 0;
+          if (status !== 'waiting') studentSignalAt = updatedAt;
         }
       }
-      return {
-        uid: uid,
-        name: normalizeBoundedText(guest.codename || rosterEntry.name || 'Student', 80) || 'Student',
-        groupId: normalizeBoundedText(rosterEntry.groupId, LIVE_POLLING_AUDIENCE_ID_MAX_LENGTH) || '',
-        connected: !!guest.uid,
-        activity: activity,
-        status: status,
-        progressDetail: progressDetail,
-        updatedAt: updatedAt,
-      };
+      return finalizeRow();
     }).sort((a, b) => a.name.localeCompare(b.name));
+  };
+  const summarizeLiveStudentEngagementRows = (rows) => {
+    const summary = { active: 0, recent: 0, quiet: 0, offline: 0, unknown: 0 };
+    (Array.isArray(rows) ? rows : []).forEach(function (row) {
+      const status = row && ['active', 'recent', 'quiet', 'offline', 'unknown'].indexOf(row.signalStatus) >= 0
+        ? row.signalStatus
+        : row && row.connected ? 'active' : 'unknown';
+      summary[status] += 1;
+    });
+    return summary;
+  };
+  const buildLiveStudentActivityDetail = (row, config) => {
+    if (!row || typeof row !== 'object' || !row.uid) return null;
+    const source = config && typeof config === 'object' ? config : {};
+    const groups = source.groups && typeof source.groups === 'object' ? source.groups : {};
+    const group = row.groupId && groups[row.groupId] && typeof groups[row.groupId] === 'object' ? groups[row.groupId] : {};
+    const now = normalizeLiveActivityTimestamp(source.now) || Date.now();
+    const signal = classifyLiveStudentSignal({
+      now: now,
+      directConnected: row.directConnected === true || row.connected === true,
+      lastSeenAt: row.lastSeenAt,
+      lastSignalAt: row.lastSignalAt,
+    });
+    const timeline = [];
+    const seenTimelineKeys = new Set();
+    const pushTimeline = function (at, label, detail, kind) {
+      const safeAt = normalizeLiveActivityTimestamp(at);
+      const safeLabel = normalizeBoundedText(label, 96);
+      const safeDetail = normalizeBoundedText(detail, 120);
+      if (!safeAt || !safeLabel) return;
+      const key = [safeAt, safeLabel, safeDetail].join(':');
+      if (seenTimelineKeys.has(key)) return;
+      seenTimelineKeys.add(key);
+      timeline.push({ id: key, at: safeAt, label: safeLabel, detail: safeDetail, kind: normalizeBoundedText(kind, 24) || 'activity' });
+    };
+    const snapshots = (Array.isArray(source.activitySnapshots) ? source.activitySnapshots : [])
+      .filter(function (item) {
+        if (!item || typeof item !== 'object') return false;
+        const participants = item.participantStatus && typeof item.participantStatus === 'object' ? item.participantStatus : {};
+        const audience = Array.isArray(item.audienceUids) ? item.audienceUids.map(String) : [];
+        return Object.prototype.hasOwnProperty.call(participants, String(row.uid)) || audience.indexOf(String(row.uid)) >= 0;
+      })
+      .slice(-40);
+    snapshots.forEach(function (item) {
+      const participantStatus = item.participantStatus && item.participantStatus[String(row.uid)];
+      const status = ['waiting', 'working', 'submitted', 'revised', 'complete', 'withdrawn'].indexOf(participantStatus) >= 0 ? participantStatus : item.phase;
+      pushTimeline(item.updatedAt || item.startedAt, liveActivityKindLabel(item.kind || item.family), status || 'activity update', 'activity');
+    });
+    pushTimeline(row.updatedAt, liveActivityKindLabel(row.activity), row.status, 'activity');
+    if (row.progressTotal) pushTimeline(row.practiceProgressAt || row.updatedAt, 'Practice progress', row.progressCorrect + '/' + row.progressTotal + ' completed', 'progress');
+    if (row.viewingAt) pushTimeline(row.viewingAt, 'Resource activity', liveActivityKindLabel(row.activity), 'resource');
+    if (row.lastSeenAt) pushTimeline(row.lastSeenAt, 'Session presence signal', '', 'presence');
+    const checkIn = source.checkIn && typeof source.checkIn === 'object' ? source.checkIn : null;
+    if (checkIn) {
+      const checkInStatus = ['sent', 'received', 'working', 'help', 'cancelled'].indexOf(checkIn.status) >= 0 ? checkIn.status : '';
+      if (checkInStatus) pushTimeline(checkIn.acknowledgedAt || checkIn.sentAt, 'Teacher check-in', checkInStatus, 'support');
+    }
+    timeline.sort(function (a, b) { return b.at - a.at; });
+    return {
+      uid: String(row.uid),
+      name: normalizeBoundedText(row.name || 'Student', 80) || 'Student',
+      groupId: normalizeBoundedText(row.groupId, LIVE_POLLING_AUDIENCE_ID_MAX_LENGTH) || '',
+      groupName: normalizeBoundedText(group.name || row.groupId, 80) || '',
+      activity: normalizeBoundedText(row.activity || 'No live activity', 96) || 'No live activity',
+      status: normalizeBoundedText(row.status || 'waiting', 24) || 'waiting',
+      progressDetail: normalizeBoundedText(row.progressDetail, 48),
+      progressCorrect: Math.max(0, Number(row.progressCorrect) || 0),
+      progressTotal: Math.max(0, Number(row.progressTotal) || 0),
+      progressPercent: Number.isFinite(Number(row.progressPercent)) ? Math.max(0, Math.min(100, Number(row.progressPercent))) : null,
+      directConnected: row.directConnected === true || row.connected === true,
+      sessionPresent: row.sessionPresent === true || signal.sessionPresent,
+      presenceStatus: row.presenceStatus || signal.presenceStatus,
+      signalStatus: row.signalStatus || signal.signalStatus,
+      signalAgeMs: row.signalAgeMs == null ? signal.signalAgeMs : Math.max(0, Number(row.signalAgeMs) || 0),
+      lastSignalAt: normalizeLiveActivityTimestamp(row.lastSignalAt),
+      timeline: timeline.slice(0, 8),
+    };
   };
   const LIVE_STUDENT_ACTIVITY_FILTERS = ['all', 'help', 'in-progress', 'finished', 'attention', 'offline'];
   const LIVE_STUDENT_ACTIVITY_SORTS = ['attention', 'name'];
@@ -663,7 +822,7 @@
     const selected = LIVE_STUDENT_ACTIVITY_FILTERS.indexOf(filter) >= 0 ? filter : 'all';
     if (selected === 'all') return true;
     if (selected === 'help') return row.supportStatus === 'help';
-    if (selected === 'offline') return !row.connected;
+    if (selected === 'offline') return liveStudentRowIsOffline(row);
     if (selected === 'in-progress') return ['working', 'opened', 'ready'].indexOf(row.status) >= 0;
     if (selected === 'finished') return ['submitted', 'revised', 'complete'].indexOf(row.status) >= 0;
     return row.supportStatus === 'help' || ['failed', 'withdrawn', 'waiting'].indexOf(row.status) >= 0;
@@ -693,8 +852,8 @@
     const attentionRank = { failed: 0, withdrawn: 1, waiting: 2, working: 3, opened: 4, ready: 4, submitted: 5, revised: 5, complete: 5 };
     return filtered.slice().sort(function (a, b) {
       if (sort === 'attention') {
-        const aRank = a.supportStatus === 'help' ? -2 : !a.connected ? -1 : (Object.prototype.hasOwnProperty.call(attentionRank, a.status) ? attentionRank[a.status] : 3);
-        const bRank = b.supportStatus === 'help' ? -2 : !b.connected ? -1 : (Object.prototype.hasOwnProperty.call(attentionRank, b.status) ? attentionRank[b.status] : 3);
+        const aRank = a.supportStatus === 'help' ? -2 : liveStudentRowIsOffline(a) ? -1 : (Object.prototype.hasOwnProperty.call(attentionRank, a.status) ? attentionRank[a.status] : 3);
+        const bRank = b.supportStatus === 'help' ? -2 : liveStudentRowIsOffline(b) ? -1 : (Object.prototype.hasOwnProperty.call(attentionRank, b.status) ? attentionRank[b.status] : 3);
         if (aRank !== bRank) return aRank - bRank;
       }
       return String(a.name || '').localeCompare(String(b.name || ''));
@@ -720,7 +879,7 @@
       let reason = '';
       if (row.supportStatus === 'help') reason = 'help';
       else if (row.status === 'failed') reason = 'failed';
-      else if (!row.connected) reason = 'offline';
+      else if (liveStudentRowIsOffline(row)) reason = 'offline';
       else if (row.status === 'withdrawn') reason = 'withdrawn';
       else if (row.status === 'waiting') reason = 'waiting';
       if (!reason) return queue;
@@ -3128,6 +3287,8 @@
     const endPollCancelRef = R.useRef(null);
     const alloSheetDialogRef = R.useRef(null);
     const alloSheetInitialRef = R.useRef(null);
+    const studentActivityDialogRef = R.useRef(null);
+    const studentActivityCloseRef = R.useRef(null);
     const [pendingGroupName, setPendingGroupName] = R.useState(null);
     const [pendingEndAction, setPendingEndAction] = R.useState(null);
     const [guests, setGuests] = R.useState([]);
@@ -3170,6 +3331,7 @@
     const [studentActivityQuery, setStudentActivityQuery] = R.useState('');
     const [studentActivityExpanded, setStudentActivityExpanded] = R.useState(true);
     const [studentActivityVisibleLimit, setStudentActivityVisibleLimit] = R.useState(50);
+    const [selectedStudentActivityUid, setSelectedStudentActivityUid] = R.useState(null);
     const [composerExpanded, setComposerExpanded] = R.useState(true);
     // routingByPoll: { pollId: { uid: groupId } } — used both to suppress
     // duplicate routing on re-submission and to compute aggregates.
@@ -3668,6 +3830,7 @@
       if (activePoll) setPendingEndAction('panel');
       else onClose();
     };
+    const closeStudentActivityDetail = function () { setSelectedStudentActivityUid(null); };
     const cancelPendingEnd = function () { setPendingEndAction(null); };
     const confirmPendingEnd = function () {
       const closePanelAfter = pendingEndAction === 'panel';
@@ -3915,6 +4078,7 @@
     useLivePollingDialogFocus(alloSheetDialogRef, alloSheetReviewOpen, closeAlloSheetReview, alloSheetInitialRef);
     useLivePollingDialogFocus(groupNameDialogRef, pendingGroupName !== null, cancelPendingGroupName, groupNameCancelRef);
     useLivePollingDialogFocus(endPollDialogRef, pendingEndAction !== null, cancelPendingEnd, endPollCancelRef);
+    useLivePollingDialogFocus(studentActivityDialogRef, selectedStudentActivityUid !== null, closeStudentActivityDetail, studentActivityCloseRef);
 
     if (!isOpen) return null;
     const activeParticipantUidSet = new Set(activeParticipantUids.map(function (uid) { return String(uid); }));
@@ -3975,27 +4139,45 @@
       activeParticipantUids: activeParticipantUids,
       responses: activeResponses,
       responseStatuses: feedbackStatusForActive,
+      now: healthNow,
     });
     const sessionSupportActivityId = buildLiveSessionSupportActivityId(sessionCode);
     const currentSupportActivityId = activePoll ? activePoll.id : sessionSupportActivityId;
     const studentActivityRows = rawStudentActivityRows.map(function (row) {
       const signal = checkInsByUid[row.uid];
-      const supportStatus = signal && signal.activityId === currentSupportActivityId && signal.status === 'help' ? 'help' : '';
-      return supportStatus ? Object.assign({}, row, {
+      const signalMatches = !!(signal && signal.activityId === currentSupportActivityId);
+      const supportStatus = signalMatches && signal.status === 'help' ? 'help' : '';
+      if (!signalMatches) return row;
+      const supportUpdatedAt = normalizeLiveActivityTimestamp(signal.acknowledgedAt || signal.sentAt);
+      const lastSignalAt = Math.max(row.lastSignalAt || 0, supportUpdatedAt);
+      const liveSignal = classifyLiveStudentSignal({ now: healthNow, directConnected: row.directConnected, lastSeenAt: row.lastSeenAt, lastSignalAt: lastSignalAt });
+      return Object.assign({}, row, {
         supportStatus: supportStatus,
-        supportUpdatedAt: Number(signal.acknowledgedAt || signal.sentAt) || 0,
-      }) : row;
+        supportUpdatedAt: supportUpdatedAt,
+        lastSignalAt: lastSignalAt,
+        signalStatus: liveSignal.signalStatus,
+        signalAgeMs: liveSignal.signalAgeMs,
+        sessionPresent: liveSignal.sessionPresent,
+      });
     });
     const studentActivityCounts = studentActivityRows.reduce(function (out, row) {
       out[row.status] = (out[row.status] || 0) + 1;
       return out;
     }, {});
     const studentActivitySummary = summarizeLiveStudentActivityRows(studentActivityRows);
+    const studentEngagementSummary = summarizeLiveStudentEngagementRows(studentActivityRows);
     const visibleStudentActivityRows = filterLiveStudentActivityRows(studentActivityRows, {
       filter: studentActivityFilter,
       sort: studentActivitySort,
       query: studentActivityQuery,
       groups: sessionGroups,
+    });
+    const selectedStudentActivityRow = selectedStudentActivityUid === null ? null : studentActivityRows.find(function (row) { return String(row.uid) === String(selectedStudentActivityUid); }) || null;
+    const selectedStudentActivityDetail = buildLiveStudentActivityDetail(selectedStudentActivityRow, {
+      groups: sessionGroups,
+      activitySnapshots: activitySnapshots,
+      checkIn: selectedStudentActivityRow ? checkInsByUid[selectedStudentActivityRow.uid] : null,
+      now: healthNow,
     });
     const externalTeacherActionState = normalizeLiveTeacherActionStateMap(props.teacherActionState, healthNow);
     const effectiveTeacherActionState = Object.assign({}, reviewedActionKeys, externalTeacherActionState);
@@ -4050,8 +4232,7 @@
     const focusTeacherActionStudents = function (item) {
       if (!item) return;
       setStudentActivityExpanded(true);
-      setStudentActivityFilter(item.reason === 'help' ? 'help' : item.reason === 'offline' ? 'offline' : 'attention');
-      setStudentActivityQuery(item.name || '');
+      setSelectedStudentActivityUid(String(item.uid));
     };
     const sendTeacherActionResource = async function (item) {
       if (!item || !onSendToStudent || !followUpResourceId || actionQueueBusyUid) return;
@@ -4387,6 +4568,93 @@
       if (hostRef.current) hostRef.current.featureSessionQaQuestion(questionId);
     };
 
+    const renderStudentActivityDetail = function () {
+      if (selectedStudentActivityUid === null) return null;
+      const detail = selectedStudentActivityDetail;
+      const row = selectedStudentActivityRow;
+      const signalStatus = detail && ['active', 'recent', 'quiet', 'offline'].indexOf(detail.signalStatus) >= 0 ? detail.signalStatus : 'unknown';
+      const signalPresentation = {
+        active: { label: tr('Active now'), color: '#166534', background: '#dcfce7' },
+        recent: { label: tr('Recent signal'), color: '#0f766e', background: '#ccfbf1' },
+        quiet: { label: tr('Quiet 3+ min'), color: '#92400e', background: '#fef3c7' },
+        offline: { label: tr('Likely offline'), color: '#991b1b', background: '#fee2e2' },
+        unknown: { label: tr('No signal yet'), color: '#475569', background: '#f1f5f9' },
+      }[signalStatus];
+      const directConnected = !!(detail && detail.directConnected);
+      const currentCheckIn = row && checkInsByUid[row.uid];
+      const checkInPending = !!(currentCheckIn && currentCheckIn.activityId === currentSupportActivityId && currentCheckIn.status === 'sent');
+      const canCheckIn = !!(row && directConnected && (!activePoll || (activeParticipantUidSet.has(String(row.uid)) && ['submitted', 'revised', 'complete'].indexOf(row.status) < 0)));
+      return ce('div', {
+        role: 'presentation',
+        onMouseDown: function (event) { if (event.target === event.currentTarget) closeStudentActivityDetail(); },
+        style: { position: 'fixed', inset: 0, zIndex: 10004, background: 'rgba(15,23,42,0.72)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0.75rem' }
+      },
+        ce('div', {
+          ref: studentActivityDialogRef,
+          tabIndex: -1,
+          role: 'dialog',
+          'aria-modal': 'true',
+          'aria-labelledby': 'live-student-detail-title',
+          'aria-describedby': 'live-student-detail-privacy',
+          style: { width: '100%', maxWidth: 860, maxHeight: 'calc(100dvh - 1.5rem)', overflowY: 'auto', boxSizing: 'border-box', background: 'white', borderRadius: 14, padding: '1.1rem', boxShadow: '0 24px 64px rgba(0,0,0,0.42)' }
+        },
+          ce('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 10 } },
+            ce('div', { style: { minWidth: 0 } },
+              ce('div', { style: { color: '#4338ca', fontSize: '0.68rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.03em' } }, tr('Privacy-safe student activity view')),
+              ce('h2', { id: 'live-student-detail-title', style: { margin: '0.18rem 0 0', color: '#0f172a', fontSize: '1.2rem', overflowWrap: 'anywhere' } }, detail ? detail.name : tr('Student unavailable')),
+              detail && detail.groupName ? ce('span', { style: { display: 'block', marginTop: 2, color: '#64748b', fontSize: '0.72rem', fontWeight: 750 } }, detail.groupName) : null
+            ),
+            ce('button', { ref: studentActivityCloseRef, type: 'button', onClick: closeStudentActivityDetail, 'aria-label': tr('Close student activity view'), style: { minWidth: 44, minHeight: 44, border: '1px solid #cbd5e1', borderRadius: 7, background: 'white', color: '#334155', fontWeight: 850, cursor: 'pointer' } }, tr('Close'))
+          ),
+          ce('div', { id: 'live-student-detail-privacy', role: 'note', style: { marginTop: 10, padding: '0.65rem 0.75rem', border: '1px solid #c7d2fe', borderRadius: 8, background: '#eef2ff', color: '#3730a3', fontSize: '0.74rem', lineHeight: 1.45 } },
+            ce('strong', null, tr('This is an activity view, not a live screen.')), ' ',
+            tr('It shows only AlloFlow progress and session signals. Answer text, private drafts, and screen pixels are not captured.')
+          ),
+          detail ? ce(R.Fragment, null,
+            ce('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(155px, 1fr))', gap: 8, marginTop: 10 } },
+              ce('section', { 'aria-label': tr('Student connection'), style: { padding: '0.65rem', border: '1px solid #e2e8f0', borderRadius: 8, background: '#f8fafc' } },
+                ce('span', { style: { display: 'block', color: '#64748b', fontSize: '0.64rem', fontWeight: 850, textTransform: 'uppercase' } }, tr('Connection')),
+                ce('strong', { style: { display: 'block', marginTop: 3, color: directConnected || detail.sessionPresent ? '#166534' : '#64748b', fontSize: '0.85rem' } }, directConnected ? tr('Direct live connection') : detail.sessionPresent ? tr('Present via session signal') : tr('No current presence signal'))
+              ),
+              ce('section', { 'aria-label': tr('Student activity signal'), style: { padding: '0.65rem', border: '1px solid #e2e8f0', borderRadius: 8, background: '#f8fafc' } },
+                ce('span', { style: { display: 'block', color: '#64748b', fontSize: '0.64rem', fontWeight: 850, textTransform: 'uppercase' } }, tr('Activity signal')),
+                ce('span', { style: { display: 'inline-block', marginTop: 4, padding: '0.2rem 0.45rem', borderRadius: 999, background: signalPresentation.background, color: signalPresentation.color, fontSize: '0.72rem', fontWeight: 900 } }, signalPresentation.label),
+                detail.signalAgeMs !== null ? ce('span', { style: { display: 'block', marginTop: 3, color: '#64748b', fontSize: '0.65rem' } }, formatLiveElapsed(detail.signalAgeMs) + ' ' + tr('ago')) : null
+              ),
+              ce('section', { 'aria-label': tr('Student current activity'), style: { padding: '0.65rem', border: '1px solid #e2e8f0', borderRadius: 8, background: '#f8fafc' } },
+                ce('span', { style: { display: 'block', color: '#64748b', fontSize: '0.64rem', fontWeight: 850, textTransform: 'uppercase' } }, tr('Current activity')),
+                ce('strong', { style: { display: 'block', marginTop: 3, color: '#0f172a', fontSize: '0.82rem', overflowWrap: 'anywhere' } }, tr(detail.activity)),
+                ce('span', { style: { display: 'block', marginTop: 2, color: '#475569', fontSize: '0.68rem', fontWeight: 800 } }, tr(detail.status))
+              ),
+              ce('section', { 'aria-label': tr('Student progress'), style: { padding: '0.65rem', border: '1px solid #e2e8f0', borderRadius: 8, background: '#f8fafc' } },
+                ce('span', { style: { display: 'block', color: '#64748b', fontSize: '0.64rem', fontWeight: 850, textTransform: 'uppercase' } }, tr('Progress')),
+                ce('strong', { style: { display: 'block', marginTop: 3, color: '#0f172a', fontSize: '0.85rem' } }, detail.progressDetail ? detail.progressDetail + ' ' + tr('completed') : tr(detail.status)),
+                detail.progressPercent !== null ? ce('div', { role: 'progressbar', 'aria-label': tr('Activity completion'), 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': detail.progressPercent, style: { height: 8, marginTop: 6, borderRadius: 999, background: '#e2e8f0', overflow: 'hidden' } }, ce('div', { style: { width: detail.progressPercent + '%', height: '100%', background: '#4f46e5' } })) : null
+              )
+            ),
+            ce('section', { 'aria-labelledby': 'live-student-detail-timeline-title', style: { marginTop: 10, padding: '0.75rem', border: '1px solid #dbeafe', borderRadius: 9, background: '#f8fafc' } },
+              ce('h3', { id: 'live-student-detail-timeline-title', style: { margin: 0, color: '#1e3a8a', fontSize: '0.86rem' } }, tr('Recent activity milestones')),
+              ce('p', { style: { margin: '0.2rem 0 0', color: '#64748b', fontSize: '0.66rem' } }, tr('Content-free status changes from this live session.')),
+              detail.timeline.length ? ce('ol', { style: { margin: '0.65rem 0 0', padding: 0, listStyle: 'none', display: 'grid', gap: 6 } }, detail.timeline.map(function (item) {
+                return ce('li', { key: item.id, style: { display: 'grid', gridTemplateColumns: 'minmax(88px, auto) 1fr', gap: 8, alignItems: 'start', padding: '0.48rem 0.55rem', border: '1px solid #e2e8f0', borderRadius: 7, background: 'white' } },
+                  ce('time', { dateTime: new Date(item.at).toISOString(), style: { color: '#64748b', fontSize: '0.64rem', fontWeight: 800, fontVariantNumeric: 'tabular-nums' } }, formatLiveElapsed(Math.max(0, healthNow - item.at)) + ' ' + tr('ago')),
+                  ce('span', { style: { color: '#1e293b', fontSize: '0.72rem' } }, ce('strong', null, tr(item.label)), item.detail ? ce('span', { style: { display: 'block', marginTop: 1, color: '#64748b', fontSize: '0.66rem' } }, tr(item.detail)) : null)
+                );
+              })) : ce('p', { style: { margin: '0.65rem 0 0', color: '#64748b', fontSize: '0.72rem' } }, tr('No activity milestones have arrived yet.'))
+            ),
+            ce('div', { style: { display: 'flex', gap: 7, flexWrap: 'wrap', marginTop: 10 } },
+              canCheckIn ? ce('button', { type: 'button', disabled: checkInPending, onClick: function () { sendTeacherCheckIn(row); }, style: { minHeight: 44, padding: '0.45rem 0.7rem', border: '1px solid #2563eb', borderRadius: 7, background: 'white', color: checkInPending ? '#94a3b8' : '#1d4ed8', fontWeight: 850, cursor: checkInPending ? 'default' : 'pointer' } }, checkInPending ? tr('Check-in sent') : tr('Send private check-in')) : null,
+              ce('button', { type: 'button', onClick: function () { setStudentActivityExpanded(true); setStudentActivityFilter('all'); setStudentActivityQuery(detail.name); closeStudentActivityDetail(); }, style: { minHeight: 44, padding: '0.45rem 0.7rem', border: '1px solid #64748b', borderRadius: 7, background: 'white', color: '#334155', fontWeight: 850, cursor: 'pointer' } }, tr('Show in roster'))
+            ),
+            ce('aside', { style: { marginTop: 10, padding: '0.65rem 0.75rem', border: '1px solid #fde68a', borderRadius: 8, background: '#fffbeb', color: '#78350f', fontSize: '0.7rem', lineHeight: 1.45 } },
+              ce('strong', null, tr('Literal screen sharing is not enabled.')), ' ',
+              tr('A future screen-share mode would require each student to knowingly choose and authorize a screen, visible capture controls, and a separate consent-aware media connection.')
+            )
+          ) : ce('p', { role: 'status', style: { margin: '1rem 0 0', color: '#64748b' } }, tr('This student is no longer in the live roster. Close this view and refresh the roster.'))
+        )
+      );
+    };
+
     const renderAlloSheetReview = function () {
       if (!alloSheetReviewOpen) return null;
       const current = currentAlloSheetSnapshot();
@@ -4431,7 +4699,7 @@
     return ce(R.Fragment, null,
       ce('div', {
         role: 'presentation',
-        style: { position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.55)', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }
+        style: { position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.55)', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0.5rem' }
       },
         ce('div', {
           ref: hostDialogRef,
@@ -4440,9 +4708,9 @@
           'aria-modal': 'true',
           'aria-labelledby': 'live-polling-host-title',
           'aria-describedby': 'live-polling-host-description',
-          'aria-hidden': (pendingGroupName !== null || pendingEndAction !== null || alloSheetReviewOpen) ? 'true' : undefined,
-          inert: (pendingGroupName !== null || pendingEndAction !== null || alloSheetReviewOpen) ? '' : undefined,
-          style: { background: 'white', maxWidth: 1180, width: '96vw', maxHeight: '94vh', overflow: 'auto', borderRadius: 14, padding: '1.25rem', boxShadow: '0 20px 50px rgba(0,0,0,0.3)' }
+          'aria-hidden': (pendingGroupName !== null || pendingEndAction !== null || alloSheetReviewOpen || selectedStudentActivityUid !== null) ? 'true' : undefined,
+          inert: (pendingGroupName !== null || pendingEndAction !== null || alloSheetReviewOpen || selectedStudentActivityUid !== null) ? '' : undefined,
+          style: { background: 'white', boxSizing: 'border-box', maxWidth: 1480, width: 'calc(100vw - 1rem)', height: 'calc(100dvh - 1rem)', maxHeight: 'calc(100dvh - 1rem)', overflow: 'auto', borderRadius: 14, padding: '1.25rem', boxShadow: '0 20px 50px rgba(0,0,0,0.3)' }
         },
         ce('div', { 'data-live-host-toolbar': '', style: { position: 'sticky', top: '-1.25rem', zIndex: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, flexWrap: 'wrap', margin: '-1.25rem -1.25rem 0.75rem', padding: '0.9rem 1.25rem', background: 'rgba(255,255,255,0.97)', borderBottom: '1px solid #e2e8f0', borderRadius: '14px 14px 0 0', boxShadow: '0 4px 12px rgba(15,23,42,0.06)' } },
           ce('h2', { id: 'live-polling-host-title', style: { margin: 0, fontSize: '1.15rem', color: '#0f172a' } }, tr('Live Polling —') + ' ', ce('span', { style: { fontFamily: 'monospace', color: '#1e3a8a' } }, sessionCode), activePoll ? ce('span', { style: { display: 'inline-block', marginLeft: 8, padding: '0.18rem 0.42rem', borderRadius: 999, background: '#dcfce7', color: '#166534', fontSize: '0.66rem', verticalAlign: 'middle' } }, tr('Poll live')) : null),
@@ -4502,6 +4770,26 @@
               style: { minHeight: 40, padding: '0.38rem 0.62rem', border: '1px solid #93c5fd', borderRadius: 7, background: 'white', color: '#1d4ed8', fontWeight: 850, cursor: 'pointer', fontSize: '0.72rem' }
             }, studentActivityExpanded ? tr('Hide details') : tr('Show details'))
           ),
+          studentActivityRows.length ? ce('section', { 'aria-label': tr('Progress and engagement signals'), style: { marginTop: 9, padding: '0.65rem', border: '1px solid #bae6fd', borderRadius: 9, background: '#f8fafc' } },
+            ce('div', { style: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' } },
+              ce('strong', { style: { color: '#0f172a', fontSize: '0.76rem' } }, tr('Progress and engagement signals')),
+              ce('span', { style: { color: '#64748b', fontSize: '0.64rem' } }, tr('Signals show session activity, not effort or attention.'))
+            ),
+            ce('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(118px, 1fr))', gap: 6, marginTop: 6 } },
+              [
+                { id: 'active', label: tr('Active signal'), color: '#166534', background: '#f0fdf4', border: '#bbf7d0' },
+                { id: 'recent', label: tr('Recent signal'), color: '#0f766e', background: '#f0fdfa', border: '#99f6e4' },
+                { id: 'quiet', label: tr('Quiet 3+ min'), color: '#92400e', background: '#fffbeb', border: '#fde68a' },
+                { id: 'offline', label: tr('Likely offline'), color: '#991b1b', background: '#fef2f2', border: '#fecaca' },
+                { id: 'unknown', label: tr('No signal yet'), color: '#475569', background: '#f8fafc', border: '#cbd5e1' },
+              ].map(function (metric) {
+                return ce('div', { key: metric.id, style: { padding: '0.45rem 0.55rem', border: '1px solid ' + metric.border, borderRadius: 7, background: metric.background } },
+                  ce('strong', { style: { display: 'block', color: metric.color, fontSize: '1rem', lineHeight: 1, fontVariantNumeric: 'tabular-nums' } }, studentEngagementSummary[metric.id] || 0),
+                  ce('span', { style: { display: 'block', marginTop: 3, color: metric.color, fontSize: '0.65rem', fontWeight: 800 } }, metric.label)
+                );
+              })
+            )
+          ) : null,
           teacherActionQueue.length ? ce('section', { 'aria-labelledby': 'live-teacher-action-queue-title', style: { marginTop: 9, padding: '0.7rem', border: '1px solid #c4b5fd', borderRadius: 9, background: '#faf5ff' } },
             ce('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8, flexWrap: 'wrap' } },
               ce('div', null,
@@ -4603,24 +4891,49 @@
               )
             )
           ) : null,
-          visibleStudentActivityRows.length ? ce('div', { role: 'region', 'aria-label': tr('Scrollable live student activity table'), tabIndex: 0, style: { marginTop: 8, maxHeight: 250, overflow: 'auto', border: '1px solid #dbeafe', borderRadius: 8, background: 'white' } },
-            ce('table', { 'aria-label': tr('Live student activity status'), style: { width: '100%', minWidth: 760, borderCollapse: 'collapse', fontSize: '0.75rem' } },
+          visibleStudentActivityRows.length ? ce('div', { role: 'region', 'aria-label': tr('Scrollable live student activity table'), tabIndex: 0, style: { marginTop: 8, maxHeight: 'min(42dvh, 520px)', overflow: 'auto', border: '1px solid #dbeafe', borderRadius: 8, background: 'white' } },
+            ce('table', { 'aria-label': tr('Live student activity status'), style: { width: '100%', minWidth: 1040, borderCollapse: 'collapse', fontSize: '0.75rem' } },
               ce('thead', null, ce('tr', { style: { position: 'sticky', top: 0, zIndex: 1, background: '#f8fafc', color: '#334155', textAlign: 'left' } },
                 ce('th', { scope: 'col', style: { padding: '0.45rem 0.55rem', borderBottom: '1px solid #e2e8f0' } }, tr('Student')),
                 ce('th', { scope: 'col', style: { padding: '0.45rem 0.55rem', borderBottom: '1px solid #e2e8f0' } }, tr('Connection')),
+                ce('th', { scope: 'col', style: { padding: '0.45rem 0.55rem', borderBottom: '1px solid #e2e8f0' } }, tr('Activity signal')),
                 ce('th', { scope: 'col', style: { padding: '0.45rem 0.55rem', borderBottom: '1px solid #e2e8f0' } }, tr('Current activity')),
                 ce('th', { scope: 'col', style: { padding: '0.45rem 0.55rem', borderBottom: '1px solid #e2e8f0' } }, tr('Progress')),
-                ce('th', { scope: 'col', style: { padding: '0.45rem 0.55rem', borderBottom: '1px solid #e2e8f0' } }, tr('Teacher check-in'))
+                ce('th', { scope: 'col', style: { padding: '0.45rem 0.55rem', borderBottom: '1px solid #e2e8f0' } }, tr('Teacher check-in')),
+                ce('th', { scope: 'col', style: { padding: '0.45rem 0.55rem', borderBottom: '1px solid #e2e8f0' } }, tr('Student view'))
               )),
               ce('tbody', null, visibleStudentActivityRows.slice(0, studentActivityVisibleLimit).map(function (row) {
                 const group = row.groupId && sessionGroups[row.groupId];
                 const checkIn = checkInsByUid[row.uid];
                 const checkInForCurrentSupport = !!(checkIn && checkIn.activityId === currentSupportActivityId);
                 const checkInPending = checkInForCurrentSupport && checkIn.status === 'sent';
-                const canCheckIn = !!(row.connected && (!activePoll || (activeParticipantUidSet.has(String(row.uid)) && ['submitted', 'revised', 'complete'].indexOf(row.status) < 0)));
+                const hasDirectConnection = row.directConnected === true || (row.directConnected == null && row.connected === true);
+                const canCheckIn = !!(hasDirectConnection && (!activePoll || (activeParticipantUidSet.has(String(row.uid)) && ['submitted', 'revised', 'complete'].indexOf(row.status) < 0)));
+                const signalStatus = ['active', 'recent', 'quiet', 'offline'].indexOf(row.signalStatus) >= 0 ? row.signalStatus : 'unknown';
+                const signalPresentation = {
+                  active: { label: tr('Active now'), color: '#166534', background: '#dcfce7' },
+                  recent: { label: tr('Recent'), color: '#0f766e', background: '#ccfbf1' },
+                  quiet: { label: tr('Quiet'), color: '#92400e', background: '#fef3c7' },
+                  offline: { label: tr('Likely offline'), color: '#991b1b', background: '#fee2e2' },
+                  unknown: { label: tr('No signal yet'), color: '#475569', background: '#f1f5f9' },
+                }[signalStatus];
+                const connectionLabel = hasDirectConnection
+                  ? tr('Direct live')
+                  : row.presenceStatus === 'active'
+                    ? tr('In session')
+                    : row.presenceStatus === 'recent'
+                      ? tr('Recently present')
+                      : liveStudentRowIsOffline(row)
+                        ? tr('Offline')
+                        : tr('No presence signal');
+                const connectionColor = hasDirectConnection || row.presenceStatus === 'active' ? '#166534' : row.presenceStatus === 'recent' ? '#92400e' : '#64748b';
                 return ce('tr', { key: row.uid },
                   ce('th', { scope: 'row', style: { padding: '0.45rem 0.55rem', borderBottom: '1px solid #f1f5f9', color: '#0f172a', textAlign: 'left' } }, row.name, group ? ce('span', { style: { display: 'block', color: '#64748b', fontSize: '0.65rem', fontWeight: 600 } }, group.name || row.groupId) : null),
-                  ce('td', { style: { padding: '0.45rem 0.55rem', borderBottom: '1px solid #f1f5f9', color: row.connected ? '#166534' : '#64748b', fontWeight: 750 } }, row.connected ? tr('Connected') : tr('Offline')),
+                  ce('td', { style: { padding: '0.45rem 0.55rem', borderBottom: '1px solid #f1f5f9', color: connectionColor, fontWeight: 750 } }, connectionLabel),
+                  ce('td', { style: { padding: '0.45rem 0.55rem', borderBottom: '1px solid #f1f5f9' } },
+                    ce('span', { style: { display: 'inline-block', padding: '0.18rem 0.42rem', borderRadius: 999, background: signalPresentation.background, color: signalPresentation.color, fontWeight: 850 } }, signalPresentation.label),
+                    row.signalAgeMs !== null && row.signalAgeMs !== undefined ? ce('span', { style: { display: 'block', marginTop: 2, color: '#64748b', fontSize: '0.63rem', fontVariantNumeric: 'tabular-nums' } }, formatLiveElapsed(row.signalAgeMs) + ' ' + tr('ago')) : null
+                  ),
                   ce('td', { style: { padding: '0.45rem 0.55rem', borderBottom: '1px solid #f1f5f9', color: '#334155' } }, tr(row.activity)),
                   ce('td', { style: { padding: '0.45rem 0.55rem', borderBottom: '1px solid #f1f5f9' } },
                     ce('span', { style: { display: 'inline-block', padding: '0.18rem 0.42rem', borderRadius: 999, background: row.status === 'submitted' || row.status === 'revised' || row.status === 'complete' || row.status === 'opened' ? '#dcfce7' : row.status === 'working' ? '#fef3c7' : row.status === 'withdrawn' || row.status === 'failed' ? '#fee2e2' : '#f1f5f9', color: row.status === 'submitted' || row.status === 'revised' || row.status === 'complete' || row.status === 'opened' ? '#166534' : row.status === 'working' ? '#92400e' : row.status === 'withdrawn' || row.status === 'failed' ? '#991b1b' : '#475569', fontWeight: 850 } }, tr(row.status)),
@@ -4635,6 +4948,18 @@
                     }, checkInPending ? tr('Check-in sent') : checkInForCurrentSupport && checkIn.status === 'help' ? tr('Needs help - check again') : tr('Check in')) : ce('span', { style: { color: '#94a3b8', fontSize: '0.67rem' } }, row.connected ? tr('No check-in needed') : tr('Reconnect needed')),
                     checkInForCurrentSupport && checkIn.status === 'working' ? ce('span', { role: 'status', style: { display: 'block', marginTop: 3, color: '#166534', fontSize: '0.65rem', fontWeight: 850 } }, tr('Student says they are working')) : null,
                     checkInForCurrentSupport && checkIn.status === 'help' ? ce('span', { role: 'status', style: { display: 'block', marginTop: 3, color: '#b91c1c', fontSize: '0.65rem', fontWeight: 850 } }, tr('Student asked for help')) : null
+                  ),
+                  ce('td', { style: { padding: '0.35rem 0.55rem', borderBottom: '1px solid #f1f5f9' } },
+                    ce('button', {
+                      type: 'button',
+                      onClick: function () { setSelectedStudentActivityUid(String(row.uid)); },
+                      'aria-label': tr('Open activity view for') + ' ' + row.name + ' - ' + tr('not a live screen'),
+                      title: tr('Activity view - not a live screen'),
+                      style: { minHeight: 40, display: 'inline-flex', alignItems: 'center', gap: 6, padding: '0.3rem 0.55rem', border: '1px solid #6366f1', borderRadius: 6, background: 'white', color: '#4338ca', cursor: 'pointer', fontWeight: 850, fontSize: '0.68rem', whiteSpace: 'nowrap' }
+                    },
+                      ce('span', { 'aria-hidden': 'true', style: { width: 18, height: 12, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', boxSizing: 'border-box', border: '2px solid currentColor', borderRadius: '50%' } }, ce('span', { style: { width: 5, height: 5, borderRadius: '50%', background: 'currentColor' } })),
+                      tr('Activity view')
+                    )
                   )
                 );
               }))
@@ -5217,6 +5542,9 @@
         ) : null
       )
     ),
+
+    renderStudentActivityDetail(),
+    renderAlloSheetReview(),
 
     pendingEndAction !== null ? ce('div', {
       role: 'presentation',
@@ -6089,9 +6417,15 @@
     WORD_CLOUD_CLUSTER_MAX_SUGGESTIONS: WORD_CLOUD_CLUSTER_MAX_SUGGESTIONS,
     stableWordCloudColor: stableWordCloudColor,
     stableWordCloudSize: stableWordCloudSize,
+    normalizeLiveActivityTimestamp: normalizeLiveActivityTimestamp,
+    classifyLiveStudentSignal: classifyLiveStudentSignal,
     buildLiveStudentActivityRows: buildLiveStudentActivityRows,
+    buildLiveStudentActivityDetail: buildLiveStudentActivityDetail,
     summarizeLiveStudentActivityRows: summarizeLiveStudentActivityRows,
+    summarizeLiveStudentEngagementRows: summarizeLiveStudentEngagementRows,
     filterLiveStudentActivityRows: filterLiveStudentActivityRows,
+    LIVE_STUDENT_SIGNAL_ACTIVE_MS: LIVE_STUDENT_SIGNAL_ACTIVE_MS,
+    LIVE_STUDENT_SIGNAL_RECENT_MS: LIVE_STUDENT_SIGNAL_RECENT_MS,
     LIVE_STUDENT_ACTIVITY_FILTERS: LIVE_STUDENT_ACTIVITY_FILTERS,
     LIVE_STUDENT_ACTIVITY_SORTS: LIVE_STUDENT_ACTIVITY_SORTS,
     buildLiveTeacherActionQueue: buildLiveTeacherActionQueue,
@@ -6156,8 +6490,8 @@
     HostPanel: HostPanel,
     GuestOverlay: GuestOverlay,
     _meta: {
-      version: '1.15.0',
-      description: 'FERPA-by-design peer-to-peer live polling with a spacious teacher Command Center, provider-aware health, scalable progress, private claim/snooze/resolve follow-ups, incomplete-student actions, a content-free wrap-up, a collapsible student tray, poll and Q&A draft recovery, and staged Word Cloud collection/review/reveal with teacher-approved AI grouping. Uses provider-neutral session APIs for Firebase and Google Class Mailbox parity.',
+      version: '1.16.0',
+      description: 'FERPA-by-design peer-to-peer live polling with a near-fullscreen teacher Command Center, provider-aware presence and engagement signals, scalable progress, privacy-safe per-student activity views, private claim/snooze/resolve follow-ups, incomplete-student actions, a content-free wrap-up, poll and Q&A draft recovery, and staged Word Cloud collection/review/reveal with teacher-approved AI grouping. Uses provider-neutral session APIs for Firebase and Google Class Mailbox parity.',
     },
   };
 

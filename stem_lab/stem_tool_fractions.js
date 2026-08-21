@@ -3596,9 +3596,7 @@ window.StemLab = window.StemLab || {
     // ═══ TAB: FRACTION WALL ═══
     var renderFractionWall = function() {
       var wallDenoms = [1, 2, 3, 4, 5, 6, 8, 10, 12];
-      var stripH = 32;
-      var wallW = 400;
-      var colors = ['#6366f1', '#3b82f6', '#06b6d4', '#14b8a6', '#22c55e', '#eab308', '#f97316', '#ef4444', '#ec4899'];
+      var colors = ['#4338ca', '#1d4ed8', '#0e7490', '#0f766e', '#15803d', '#a16207', '#c2410c', '#b91c1c', '#be185d'];
 
       var handleWallClick = function(num, den) {
         sfxClick();
@@ -3641,48 +3639,77 @@ window.StemLab = window.StemLab || {
         return sH[0] === sC[0] && sH[1] === sC[1];
       };
 
+      // A fraction wall is a length model: n/d fills the first n unit
+      // pieces. One 1/d-wide tile must never be presented as though it is n/d.
+      var highlightedNumeratorFor = function(den) {
+        if (!wallHighlight) return 0;
+        var scaled = wallHighlight.n * den / wallHighlight.d;
+        var rounded = Math.round(scaled);
+        return Math.abs(scaled - rounded) < 1e-9 && rounded >= 0 && rounded <= den ? rounded : 0;
+      };
+
+      var wallStatus = 'No fraction endpoint selected.';
+      if (wallCompareA && wallCompareB) {
+        var statusA = simplify(wallCompareA.n, wallCompareA.d);
+        var statusB = simplify(wallCompareB.n, wallCompareB.d);
+        var statusEquivalent = statusA[0] === statusB[0] && statusA[1] === statusB[1];
+        wallStatus = wallCompareA.n + '/' + wallCompareA.d +
+          (statusEquivalent ? ' is equivalent to ' : ' is not equivalent to ') +
+          wallCompareB.n + '/' + wallCompareB.d + '.';
+      } else if (wallCompareA) {
+        wallStatus = 'First endpoint: ' + wallCompareA.n + '/' + wallCompareA.d + '. Choose a second endpoint to compare.';
+      } else if (wallHighlight) {
+        wallStatus = 'Highlighted lengths are equivalent to ' + wallHighlight.n + '/' + wallHighlight.d + '.';
+      }
+
       return h('div', { className: 'space-y-4' },
         h('div', { className: 'bg-indigo-50 rounded-xl p-3 border border-indigo-200' },
-          h('p', { className: 'text-xs font-bold text-indigo-700' }, __alloT('stem.fractions.click_any_piece_to_highlight_equivalen', '\uD83E\uDDF1 Click any piece to highlight equivalent fractions. Click two pieces to check if they are equivalent!')),
+          h('p', { className: 'text-xs font-bold text-indigo-700' }, __alloT('stem.fractions.click_any_piece_to_highlight_equivalen', '\uD83E\uDDF1 Each tile is one equal part. Select the nth tile to choose n/d; the wall fills from the left to show the fraction\'s full length. Select two endpoints to compare them.')),
           (_f.wallPairsFound || 0) > 0 && h('p', { className: 'text-xs text-indigo-600 mt-1' }, '\u2705 Equivalent pairs found: ' + (_f.wallPairsFound || 0))
         ),
         // The wall
         h('div', { className: 'bg-white rounded-xl border-2 border-indigo-200 p-3 overflow-x-auto' },
-          h('svg', { role: 'img', 'aria-label': __alloT('stem.fractions.wall_img_label', 'Fraction wall comparing equivalent fractions'), viewBox: '0 0 ' + wallW + ' ' + (wallDenoms.length * (stripH + 2) + 10), width: '100%' },
+          h('div', { role: 'group', 'aria-label': __alloT('stem.fractions.wall_img_label', 'Interactive fraction wall comparing equivalent fraction lengths'), className: 'space-y-1', style: { minWidth: '360px' } },
             wallDenoms.map(function(den, rowIdx) {
               var pieces2 = [];
-              var segW = (wallW - 40) / den;
+              var highlightNumerator = highlightedNumeratorFor(den);
               for (var i = 0; i < den; i++) {
                 var num = i + 1;
-                var hl = isHighlighted(num, den);
+                var endpointHighlighted = isHighlighted(num, den);
+                var fillsHighlightedLength = highlightNumerator > 0 && num <= highlightNumerator;
                 var isSelected = (wallCompareA && wallCompareA.n === num && wallCompareA.d === den) ||
                                  (wallCompareB && wallCompareB.n === num && wallCompareB.d === den);
-                pieces2.push(h('g', { key: rowIdx + '-' + i },
-                  h('rect', {
-                    x: 30 + i * segW, y: 5 + rowIdx * (stripH + 2),
-                    width: segW - 1, height: stripH,
-                    fill: hl ? '#fbbf24' : isSelected ? '#c084fc' : colors[rowIdx % colors.length],
-                    stroke: hl ? '#d97706' : '#475569', strokeWidth: hl ? 2 : 0.5,
-                    rx: 3,
-                    className: 'cursor-pointer',
-                    style: { opacity: hl ? 1 : 0.75, transition: 'all 0.2s' },
-                    onClick: (function(n, d) { return function() { handleWallClick(n, d); }; })(num, den) // var-closure bug: every piece clicked as the LAST of its row
-                  }),
-                  segW > 25 && h('text', {
-                    x: 30 + i * segW + segW / 2, y: 5 + rowIdx * (stripH + 2) + stripH / 2 + 4,
-                    textAnchor: 'middle', fill: 'white',
-                    style: { fontSize: Math.min(12, segW * 0.35) + 'px', fontWeight: 'bold', pointerEvents: 'none' }
-                  }, num + '/' + den)
-                ));
+                pieces2.push(h('button', {
+                  key: rowIdx + '-' + i,
+                  type: 'button',
+                  onClick: (function(n, d) { return function() { handleWallClick(n, d); }; })(num, den),
+                  disabled: !!wallCompareB,
+                  'aria-label': 'Select ' + num + '/' + den + '; endpoint after ' + num + ' of ' + den + ' equal parts',
+                  'aria-pressed': endpointHighlighted ? 'true' : 'false',
+                  title: 'Select ' + num + '/' + den,
+                  'data-fraction-wall-segment': 'true',
+                  'data-fraction': num + '/' + den,
+                  'data-unit-fraction': '1/' + den,
+                  'data-highlighted-length': fillsHighlightedLength ? 'true' : 'false',
+                  className: 'h-8 min-w-0 p-0 text-[9px] font-bold focus:outline-none focus:ring-2 focus:ring-indigo-900 focus:ring-offset-1 disabled:cursor-wait',
+                  style: {
+                    background: fillsHighlightedLength ? '#fbbf24' : isSelected ? '#7e22ce' : colors[rowIdx % colors.length],
+                    color: fillsHighlightedLength ? '#0f172a' : '#ffffff',
+                    border: (endpointHighlighted || isSelected) ? '3px solid #6d28d9' : '1px solid #475569',
+                    borderRadius: '3px',
+                    opacity: 1,
+                    cursor: wallCompareB ? 'wait' : 'pointer'
+                  }
+                }, den <= 8 ? '1/' + den : ''));
               }
-              // Row label
-              pieces2.push(h('text', {
-                key: 'label-' + rowIdx, x: 14, y: 5 + rowIdx * (stripH + 2) + stripH / 2 + 4,
-                textAnchor: 'middle', fill: '#94a3b8',
-                style: { fontSize: '11px', fontWeight: 'bold' }
-              }, '/' + den));
-              return h('g', { key: 'row' + rowIdx }, pieces2);
+              return h('div', { key: 'row' + rowIdx, className: 'flex items-center gap-2' },
+                h('span', { className: 'w-8 shrink-0 text-right text-[11px] font-bold text-slate-600', 'aria-hidden': 'true' }, '/' + den),
+                h('div', { className: 'grid flex-1 gap-px', style: { gridTemplateColumns: 'repeat(' + den + ', minmax(0, 1fr))' } }, pieces2)
+              );
             })
+          ),
+          h('p', { role: 'status', 'aria-live': 'polite', className: 'mt-2 text-xs font-bold text-indigo-700' },
+            wallStatus
           )
         ),
         // Quick equivalent finder
@@ -3696,7 +3723,10 @@ window.StemLab = window.StemLab || {
             ].map(function(f) {
               return h('button', { key: f.l,
                 onClick: function() { sfxClick(); upd({ wallHighlight: { n: f.n, d: f.d }, wallCompareA: null, wallCompareB: null }); },
-                className: 'px-3 py-1.5 rounded-lg text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 transition-all'
+                disabled: !!wallCompareB,
+                'data-fraction-wall-preset': 'true',
+                'aria-pressed': isHighlighted(f.n, f.d) ? 'true' : 'false',
+                className: 'px-3 py-1.5 rounded-lg text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 transition-all disabled:cursor-wait disabled:opacity-60'
               }, f.l);
             })
           ),
@@ -11185,7 +11215,7 @@ window.StemLab = window.StemLab || {
         h('div', { className: 'ml-auto flex items-center gap-3' },
           streak > 0 && h('span', { className: 'text-xs font-bold text-orange-600' }, '\uD83D\uDD25 ' + streak),
           bestStreak > 0 && h('span', { className: 'text-[11px] text-slate-600' }, 'Best: ' + bestStreak),
-          h('span', { className: 'text-xs font-bold text-rose-600' }, score.correct + '/' + score.total)
+          h('span', { className: 'text-xs font-bold text-rose-700' }, score.correct + '/' + score.total)
         )
       ),
 

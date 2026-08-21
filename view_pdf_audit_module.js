@@ -361,6 +361,12 @@ function _viewSafeCssFontFamily(value, fallback) {
 function _viewAuditCanStartRemediation(audit) {
   return !!(audit && audit.score !== -1);
 }
+function _viewUsableCompleteAiAudit(audit) {
+  if (!audit || !Number.isFinite(audit.score) || audit._partialAudit === true || audit._scoreDegraded === true || audit.synthesized === true) return false;
+  const requested = Number(audit.chunksRequested);
+  const audited = Number(audit.chunksAudited);
+  return Number.isSafeInteger(requested) && requested > 0 && Number.isSafeInteger(audited) && audited === requested;
+}
 function _viewAuditFallbackResult(snapshot, file) {
   return snapshot || { _choosing: true, fileName: file && file.name, fileSize: file && file.size || 0 };
 }
@@ -6490,7 +6496,7 @@ function PdfAuditView(props) {
         _docPipeline && typeof _docPipeline.runEqualAccessAudit === "function" ? _safeAudit(() => _docPipeline.runEqualAccessAudit(newHtml, { signal: _reauditSignal })) : Promise.resolve(null)
       ]);
       if (!_reauditIsCurrent()) return { ok: false, score: null, stale: true, verificationState: "unavailable" };
-      const _wvOk = !!(_wv && Number.isFinite(_wv.score) && !_wv._partialAudit && !_wv._scoreDegraded && !_wv.synthesized);
+      const _wvOk = _viewUsableCompleteAiAudit(_wv);
       const _waOk = !!(_wa && Number.isFinite(_wa.score));
       const _weaOk = !!(_wea && Number.isFinite(_wea.score));
       const _wdet = _waOk ? _weaOk ? Math.min(_wa.score, _wea.score) : _wa.score : _weaOk ? _wea.score : null;
@@ -7613,7 +7619,7 @@ function PdfAuditView(props) {
           _safeAudit(() => runAxeAudit(html)),
           _docPipeline && typeof _docPipeline.runEqualAccessAudit === "function" ? _safeAudit(() => _docPipeline.runEqualAccessAudit(html)) : Promise.resolve(null)
         ]);
-        const aiScore = aiResult && Number.isFinite(aiResult.score) && !aiResult._partialAudit && !aiResult._scoreDegraded && !aiResult.synthesized ? aiResult.score : null;
+        const aiScore = _viewUsableCompleteAiAudit(aiResult) ? aiResult.score : null;
         if (!_viewDocumentJobIsCurrent(_webAuditToken)) {
           if (_finishViewDocumentJob(_webAuditToken)) setWebJobBusy("");
           return;
@@ -7694,7 +7700,7 @@ function PdfAuditView(props) {
           _safeAudit(() => runAxeAudit(html)),
           _docPipeline && typeof _docPipeline.runEqualAccessAudit === "function" ? _safeAudit(() => _docPipeline.runEqualAccessAudit(html)) : Promise.resolve(null)
         ]);
-        const _bAi = baseAi && Number.isFinite(baseAi.score) && !baseAi._partialAudit && !baseAi._scoreDegraded && !baseAi.synthesized ? baseAi.score : null;
+        const _bAi = _viewUsableCompleteAiAudit(baseAi) ? baseAi.score : null;
         const _bAxe = baseAxe && Number.isFinite(baseAxe.score) ? baseAxe.score : null;
         const _bEa = baseEa && Number.isFinite(baseEa.score) ? baseEa.score : null;
         const _bDet = _bAxe !== null ? _bEa !== null ? Math.min(_bAxe, _bEa) : _bAxe : _bEa;
@@ -7728,7 +7734,7 @@ function PdfAuditView(props) {
           _safeAudit(() => runAxeAudit(fixed)),
           _docPipeline && typeof _docPipeline.runEqualAccessAudit === "function" ? _safeAudit(() => _docPipeline.runEqualAccessAudit(fixed)) : Promise.resolve(null)
         ]);
-        const _finalAiScore = finalAi && Number.isFinite(finalAi.score) && !finalAi._partialAudit && !finalAi._scoreDegraded && !finalAi.synthesized ? finalAi.score : null;
+        const _finalAiScore = _viewUsableCompleteAiAudit(finalAi) ? finalAi.score : null;
         const _finalAxeScore = finalAxe && Number.isFinite(finalAxe.score) ? finalAxe.score : null;
         const _finalEaScore = finalEa && Number.isFinite(finalEa.score) ? finalEa.score : null;
         const _finalDetScore = _finalAxeScore !== null ? _finalEaScore !== null ? Math.min(_finalAxeScore, _finalEaScore) : _finalAxeScore : _finalEaScore;
@@ -8401,15 +8407,28 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
           addToast(t("toasts.auto_continue_no_axe") || "\u26A0 Auto-continue to target unavailable for this run \u2014 the axe-core checker could not load (network/CDN). The score shown is AI-only; re-run online for the full loop.", "warning");
         }
         let _loopTries = 0, _prevScore = -1;
-        const _aiThrottledClean = !!(r && r._aiVerificationIncomplete && r.axeAudit && r.axeAudit.totalViolations === 0);
+        const _handsCanonicalComplete = (x) => !!(x && x.verificationState === "complete" && x.afterScoreVerified === true && !x.requiresManualReview);
+        const _handsNeedsContinuation = (x) => !!(x && x.axeAudit && (x._aiVerificationIncomplete || (x.afterScore || 0) < pdfTargetScore || x.axeAudit.totalViolations > 0));
+        const _handsProgressState = (x) => ({
+          score: x && Number.isFinite(x.afterScore) ? x.afterScore : null,
+          canonical: _handsCanonicalComplete(x),
+          aiIncomplete: !!(x && x._aiVerificationIncomplete),
+          chunksAudited: x && x.verificationAudit && Number.isFinite(Number(x.verificationAudit.chunksAudited)) ? Number(x.verificationAudit.chunksAudited) : null,
+          axeViolations: x && x.axeAudit && Number.isFinite(Number(x.axeAudit.totalViolations)) ? Number(x.axeAudit.totalViolations) : null,
+          eaFailures: x && x.secondEngineAudit && Number.isFinite(Number(x.secondEngineAudit.failViolations)) ? Number(x.secondEngineAudit.failViolations) : null,
+          aiIssues: x && x.verificationAudit && Array.isArray(x.verificationAudit.issues) ? x.verificationAudit.issues.length : null
+        });
+        const _handsEvidenceProgressed = (before, after) => !!(before && after && (!before.canonical && after.canonical || before.aiIncomplete && !after.aiIncomplete || after.chunksAudited !== null && (before.chunksAudited === null || after.chunksAudited > before.chunksAudited) || after.axeViolations !== null && before.axeViolations !== null && after.axeViolations < before.axeViolations || after.eaFailures !== null && before.eaFailures !== null && after.eaFailures < before.eaFailures || after.aiIssues !== null && before.aiIssues !== null && after.aiIssues < before.aiIssues || after.score !== null && (before.score === null || after.score > before.score)));
+        let _previousEvidence = _handsProgressState(r);
+        const _aiThrottleRecoveryNeeded = !!(r && r._aiVerificationIncomplete && r.axeAudit);
         _handsLog("continue-decision", {
           result: _handsShape(r, _res ? "pipeline-return" : "state-ref"),
-          aiThrottledClean: _aiThrottledClean,
-          willLoop: !!(!_aiThrottledClean && r && r.axeAudit && ((r.afterScore || 0) < pdfTargetScore || r.axeAudit.totalViolations > 0)),
-          blockedBy: _aiThrottledClean ? "ai-throttled-clean (shipping structural result)" : !r ? "no result" : !r.axeAudit ? "no axeAudit on the result \u2014 auto-continue unavailable" : null
+          aiThrottleRecoveryNeeded: _aiThrottleRecoveryNeeded,
+          willLoop: _handsNeedsContinuation(r),
+          blockedBy: !r ? "no result" : !r.axeAudit ? "no axeAudit on the result \u2014 auto-continue unavailable" : null
         });
-        if (_aiThrottledClean) addToast(t("toasts.ai_throttled_shipped") || "\u26A0 The AI service is throttled, so the AI semantic score is incomplete \u2014 but the structural/automated checks are clean. Shipped the structural result; re-run in a few minutes for a full AI-verified score.", "warning");
-        while (!_aiThrottledClean && r && r.axeAudit && ((r.afterScore || 0) < pdfTargetScore || r.axeAudit.totalViolations > 0) && _loopTries < _HANDSOFF_MAX && !_stopped() && _oneClickDocumentIsCurrent()) {
+        if (_aiThrottleRecoveryNeeded) addToast("\u23F8 Canvas is temporarily throttling the AI audit. Hands-off mode will pause, complete the missing audit coverage, and then continue toward " + pdfTargetScore + "/100 automatically.", "info");
+        while (_handsNeedsContinuation(r) && _loopTries < _HANDSOFF_MAX && !_stopped() && _oneClickDocumentIsCurrent()) {
           let _loopOutcome;
           try {
             _loopOutcome = await runAutoFixLoop(8);
@@ -8425,6 +8444,11 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
           if (_stopped()) break;
           r = pdfFixResultRef.current;
           const _s = r ? r.afterScore || 0 : 0;
+          const _nextEvidence = _handsProgressState(r);
+          const _evidenceProgressed = _handsEvidenceProgressed(_previousEvidence, _nextEvidence);
+          const _targetReached = !!(r && _s >= pdfTargetScore && _handsCanonicalComplete(r));
+          const _stillRecoveringThrottle = !!(r && r._aiVerificationIncomplete);
+          const _plateau = !_evidenceProgressed && !_stillRecoveringThrottle;
           _handsLog("loop-round", {
             round: _loopTries + 1,
             max: _HANDSOFF_MAX,
@@ -8432,10 +8456,13 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
             previousScore: _prevScore,
             target: pdfTargetScore,
             aiVerificationIncomplete: !!(r && r._aiVerificationIncomplete),
-            stopping: !r || _s >= pdfTargetScore || _s <= _prevScore,
-            stopReason: !r ? "no result" : _s >= pdfTargetScore ? "target reached" : _s <= _prevScore ? "no improvement over the previous round" : null
+            canonicalComplete: _handsCanonicalComplete(r),
+            evidenceProgressed: _evidenceProgressed,
+            stopping: !r || _targetReached || _plateau,
+            stopReason: !r ? "no result" : _targetReached ? "verified target reached" : _plateau ? "no verified evidence progress" : null
           });
-          if (!r || _s >= pdfTargetScore || _s <= _prevScore) break;
+          if (!r || _targetReached || _plateau) break;
+          _previousEvidence = _nextEvidence;
           _prevScore = _s;
           _loopTries++;
           addToast("\u{1F501} " + (t("toasts.handsoff_retry_loop") || "Hands-off mode \u2014 below target; retrying the loop") + " (" + _loopTries + "/" + _HANDSOFF_MAX + ", " + _s + "/100, target " + pdfTargetScore + ")\u2026", "info");
@@ -8443,7 +8470,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
         }
         if (!_oneClickDocumentIsCurrent()) return;
         const _finCur = pdfFixResultRef.current;
-        if (!_aiThrottledClean && !_stopped() && _finCur && _finCur.accessibleHtml && (_loopTries > 0 || _finCur._aiVerificationIncomplete)) {
+        if (!_stopped() && _finCur && _finCur.accessibleHtml && (_loopTries > 0 || _finCur._aiVerificationIncomplete)) {
           addToast("\u{1F50D} " + (t("toasts.handsoff_final_audit") || "Finalizing \u2014 running one full audit so the score covers the whole document\u2026"), "info");
           try {
             await _reauditAndScore(_finCur.accessibleHtml, null);

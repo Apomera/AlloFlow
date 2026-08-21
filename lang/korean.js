@@ -29043,7 +29043,17 @@
       "best": "최고",
       "menu_73": "← 메뉴",
       "menu_74": "← 메뉴",
-      "menu_75": "← 메뉴"
+      "menu_75": "← 메뉴",
+      "explore_the_road": "도로 탐색",
+      "lane_change_without_signal": "방향지시등 없이 차선 변경",
+      "drove_in_oncoming_lane": "반대 차로 주행",
+      "high_beams": "상향등",
+      "left_signal": "왼쪽 방향지시등",
+      "right_signal": "오른쪽 방향지시등",
+      "braking": "제동",
+      "traction_loss": "접지력 상실",
+      "fog_low_beams_ok": "안개 — 하향등이면 괜찮습니다",
+      "welcome_to_roadready": "RoadReady에 오신 것을 환영합니다"
     },
     "schoolbehaviortoolkit": {
       "replacement_behaviors": "Replacement 행동",

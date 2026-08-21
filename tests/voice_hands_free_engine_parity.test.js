@@ -29,6 +29,8 @@ beforeEach(() => {
   delete window.webkitSpeechRecognition;
   delete window.__alloLocalSRShim;
   delete window.__alloResolveGeminiAudioCapability;
+  delete window._isCanvasEnv;
+  delete window._isIOSCanvasEnv;
   window.AlloFlowVoice.resetHandsFreeDiagnostics();
 });
 
@@ -38,12 +40,32 @@ afterEach(() => {
   delete window.AudioContext;
   delete window.webkitAudioContext;
   delete window.__alloResolveGeminiAudioCapability;
+  delete window._isCanvasEnv;
+  delete window._isIOSCanvasEnv;
   if (originalMediaDevices) Object.defineProperty(navigator, 'mediaDevices', originalMediaDevices);
   else delete navigator.mediaDevices;
   vi.restoreAllMocks();
 });
 
 describe('one voice-input preference and privacy policy', () => {
+  it('does not activate the local Whisper runtime inside iPhone Canvas', async () => {
+    window._isCanvasEnv = true;
+    window._isIOSCanvasEnv = true;
+    Object.defineProperty(navigator, 'mediaDevices', {
+      configurable: true,
+      value: { getUserMedia: vi.fn() },
+    });
+    window.AudioContext = function AudioContext() {};
+
+    expect(window.AlloFlowVoice.isIosCanvasVoiceSurface()).toBe(true);
+    expect(window.AlloFlowVoice.resolveHandsFreeEngine({ engine: 'whisper' })).toMatchObject({
+      resolved: 'whisper', supported: false,
+    });
+    await expect(window.AlloFlowVoice.preloadWhisper('tiny')).rejects.toMatchObject({
+      name: 'NotSupportedError',
+    });
+  });
+
   it('migrates the original global setting and normalizes old aliases', () => {
     localStorage.setItem('allo_voice_engine', 'webspeech');
     expect(window.AlloFlowVoice.loadPreference().engine).toBe('webspeech');
@@ -111,6 +133,54 @@ describe('one voice-input preference and privacy policy', () => {
 });
 
 describe('engine-neutral transcript contract', () => {
+  it('suspends and resumes one Gemini PCM graph without reacquiring the mic on iPhone Canvas', async () => {
+    window._isCanvasEnv = true;
+    window._isIOSCanvasEnv = true;
+    const stopTrack = vi.fn();
+    const getUserMedia = vi.fn(async () => ({ getTracks: () => [{ stop: stopTrack }] }));
+    let context = null;
+    class StableIosAudioContext {
+      constructor() {
+        this.sampleRate = 16000;
+        this.destination = {};
+        this.state = 'suspended';
+        this.resume = vi.fn(async () => { this.state = 'running'; });
+        this.suspend = vi.fn(async () => { this.state = 'suspended'; });
+        this.close = vi.fn(async () => { this.state = 'closed'; });
+        context = this;
+      }
+      createMediaStreamSource() { return { connect: vi.fn(), disconnect: vi.fn() }; }
+      createScriptProcessor() { return { onaudioprocess: null, connect: vi.fn(), disconnect: vi.fn() }; }
+      createGain() { return { gain: { value: 1 }, connect: vi.fn(), disconnect: vi.fn() }; }
+    }
+    window.AudioContext = StableIosAudioContext;
+    Object.defineProperty(navigator, 'mediaDevices', {
+      configurable: true,
+      value: { getUserMedia },
+    });
+
+    const controller = window.AlloFlowVoice.createHandsFreeRecognizer({
+      engine: 'gemini', continuous: true,
+      callGeminiAudio: vi.fn(async () => '{"transcript":"ok","noSpeech":false}'),
+    });
+    expect(controller.start()).toBe(true);
+    await vi.waitFor(() => expect(context && context.state).toBe('running'));
+    context.resume.mockClear();
+
+    expect(controller.suspendForOutput()).toBe(true);
+    await vi.waitFor(() => expect(context.suspend).toHaveBeenCalledOnce());
+    expect(getUserMedia).toHaveBeenCalledOnce();
+    expect(stopTrack, 'the permission-bearing stream remains open').not.toHaveBeenCalled();
+
+    expect(controller.resumeAfterOutput()).toBe(true);
+    await vi.waitFor(() => expect(context.resume).toHaveBeenCalledOnce());
+    expect(getUserMedia, 'resume reuses the same stream').toHaveBeenCalledOnce();
+    expect(stopTrack).not.toHaveBeenCalled();
+
+    controller.stop();
+    expect(stopTrack).toHaveBeenCalledOnce();
+  });
+
   it('keeps short single-letter turns instead of filtering them as noise', () => {
     const vad = window.AlloFlowVoice._handsFreePure.createHandsFreeVad({ sampleRate: 16000 });
     const voiced = new Float32Array(960).fill(0.08); // 60 ms

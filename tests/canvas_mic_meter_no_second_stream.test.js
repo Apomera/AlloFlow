@@ -14,7 +14,7 @@
 // The meter is suppressed on Canvas ONLY where it would open its own stream.
 // A caller that already holds one still gets a live meter, because reusing an
 // existing stream costs no prompt.
-import { describe, it, expect, beforeAll, afterAll, vi } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll, afterEach, vi } from 'vitest';
 import { loadAlloModule } from './setup.js';
 
 describe('Canvas: the level meter must not open a second microphone stream', () => {
@@ -28,6 +28,11 @@ describe('Canvas: the level meter must not open a second microphone stream', () 
     });
     loadAlloModule('allo_commands_module.js');
     AC = window.AlloModules.AlloCommands;
+  });
+  afterEach(() => {
+    delete window._isIOSCanvasEnv;
+    delete window.AudioContext;
+    delete window.webkitAudioContext;
   });
   afterAll(() => { vi.unstubAllGlobals(); delete window._isCanvasEnv; });
 
@@ -63,6 +68,23 @@ describe('Canvas: the level meter must not open a second microphone stream', () 
     const release = AC.micLevelMonitor.acquire({ stream: provided });
     expect(getUserMedia).not.toHaveBeenCalled();
     expect(AC.micLevelMonitor.isActive()).toBe(true);
+    release();
+  });
+
+  it('does not create an auxiliary audio graph for a provided stream on iPhone Canvas', () => {
+    installMediaStack();
+    window._isCanvasEnv = true;
+    window._isIOSCanvasEnv = true;
+    const AudioContext = vi.fn(function () {
+      return { createAnalyser: vi.fn(), createMediaStreamSource: vi.fn(), close: vi.fn() };
+    });
+    window.AudioContext = AudioContext;
+    const provided = { getTracks: () => [] };
+
+    const release = AC.micLevelMonitor.acquire({ stream: provided });
+
+    expect(getUserMedia).not.toHaveBeenCalled();
+    expect(AudioContext, 'the meter must not add a second Web Audio graph').not.toHaveBeenCalled();
     release();
   });
 });

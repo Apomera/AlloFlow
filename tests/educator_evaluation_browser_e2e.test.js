@@ -141,8 +141,21 @@ describe('Educator Evaluation — browser e2e', () => {
     await page.close();
   }, 60000);
 
-  it('local educator preview: growth-lens copy and visibly read-only educator controls', async () => {
+  it('real local educator preview: growth-lens copy and visibly read-only educator controls', async () => {
     const { page, errors } = await openWorkspace();
+    // Convert the fictional fixture into the real-local boundary without
+    // changing its records. This keeps a populated educator record available
+    // while proving sample rehearsal is the only mutable role-switch path.
+    await page.evaluate(() => {
+      const key = Object.keys(localStorage).find((item) => item.includes('_workspace_v1'));
+      const workspace = key ? JSON.parse(localStorage.getItem(key)) : null;
+      if (key && workspace) {
+        workspace.config.sampleMode = false;
+        localStorage.setItem(key, JSON.stringify(workspace));
+      }
+    });
+    await page.reload();
+    await page.waitForSelector('.ae-tabs');
     await selectTeacher(page, 'Teacher 03 · T-03');
     await page.getByRole('button', { name: 'Educator preview', exact: true }).click();
     await page.waitForTimeout(400);
@@ -155,6 +168,73 @@ describe('Educator Evaluation — browser e2e', () => {
     expect(errors).toEqual([]);
     await page.close();
   }, 60000);
+
+  it('fictional rehearsal completes one evaluation from assignment through final release', async () => {
+    const { page, errors } = await openWorkspace();
+    const exitTour = page.getByRole('button', { name: 'Exit tour', exact: true });
+    if (await exitTour.count()) await exitTour.click();
+
+    await page.getByRole('button', { name: 'Start rehearsal with Teacher 08', exact: true }).click();
+    await page.getByRole('button', { name: '+ Assign formal observation', exact: true }).click();
+    expect(await page.locator('.ae-step-current').innerText()).toBe('Assigned');
+    await page.getByRole('button', { name: 'Continue as Fictional educator', exact: true }).click();
+    expect(await page.getByText('Interactive fictional educator rehearsal', { exact: true }).count()).toBe(1);
+    await page.getByLabel('Lesson / unit plan summary', { exact: true }).fill('Fictional Grade 6 inquiry lesson on evidence-based claims.');
+    await page.getByLabel('Expected student learning outcomes', { exact: true }).fill('Students will cite two observations and explain how each supports a claim.');
+    await page.getByLabel('Resources and planned supports', { exact: true }).fill('Sentence frames, visual exemplars, and flexible discussion groups.');
+    await page.getByLabel('Assessment / evidence of learning', { exact: true }).fill('Exit response scored against a two-point evidence checklist.');
+    await page.getByLabel(/Secure artifact references \/ links/).fill('Fictional district repository reference: PRACTICE-LESSON-08.');
+    await page.getByRole('button', { name: 'Submit pre-observation materials', exact: true }).click();
+
+    await page.getByRole('button', { name: 'Continue as Evaluator', exact: true }).click();
+    await page.getByLabel('Pre-conference notes', { exact: true }).fill('Reviewed the evidence goal, planned supports, and exit-response success criteria.');
+    await page.getByRole('button', { name: 'Mark pre-conference complete', exact: true }).click();
+    await page.getByRole('button', { name: 'Start observation', exact: true }).click();
+    await page.getByLabel(/Time-stamped factual evidence/).fill('10:04 - Learning outcome was posted and restated by two students.\n10:18 - Seven groups cited observations; the educator used a sentence frame with one group.\n10:36 - Twenty-one of twenty-four fictional exit responses included two cited observations.');
+    const firstDomain = page.locator('.ae-domain').filter({ hasText: 'Planning and Preparation' }).first();
+    await firstDomain.locator('summary').click();
+    await firstDomain.locator('input[type="checkbox"]').first().check();
+    await page.getByText('I reviewed the evidence and removed student-identifying information.', { exact: true }).locator('..').locator('input[type="checkbox"]').check();
+    await page.getByRole('button', { name: 'Publish evidence to teacher', exact: true }).click();
+
+    await page.getByRole('button', { name: 'Continue as Fictional educator', exact: true }).click();
+    await page.getByLabel('Reflection / self-assessment', { exact: true }).fill('The sentence frame increased participation. Next time I will model one stronger counterexample before group work.');
+    await page.getByRole('button', { name: 'Submit reflection', exact: true }).click();
+    await page.getByRole('button', { name: 'Continue as Evaluator', exact: true }).click();
+    await page.getByLabel('Post-conference discussion and follow-up', { exact: true }).fill('Celebrated evidence use and agreed to collect one follow-up exit-response sample after modeling counterexamples.');
+    await page.getByRole('button', { name: 'Mark post-conference complete', exact: true }).click();
+    const observationRatings = page.locator('.ae-rating-grid select');
+    const observationRationales = page.locator('.ae-rating-grid textarea');
+    for (let index = 0; index < 4; index += 1) {
+      await observationRatings.nth(index).selectOption(index === 2 ? '3' : '2');
+      await observationRationales.nth(index).fill('Fictional evidence and conference record support this human-selected practice rating.');
+    }
+    await page.getByRole('button', { name: 'Sign evaluator assessment', exact: true }).click();
+
+    await page.getByRole('button', { name: 'Continue as Fictional educator', exact: true }).click();
+    await page.getByText('I received this record and had an opportunity to discuss it. I understand acknowledgment does not mean agreement.', { exact: true }).locator('..').locator('input[type="checkbox"]').check();
+    await page.getByRole('button', { name: 'Acknowledge receipt', exact: true }).click();
+    await page.getByRole('button', { name: 'Continue as Evaluator', exact: true }).click();
+    await page.getByRole('button', { name: 'Finalize formal observation', exact: true }).click();
+    await page.getByRole('button', { name: 'Continue to annual rating preview', exact: true }).click();
+
+    const annual = page.locator('#ae-annual-rating-composer');
+    const annualDomains = annual.locator('.ae-rating-grid select');
+    for (let index = 0; index < 4; index += 1) await annualDomains.nth(index).selectOption(index === 2 ? '3' : '2');
+    const annualMeasures = annual.locator('input[type="number"]');
+    const annualMeasureCount = await annualMeasures.count();
+    expect(annualMeasureCount).toBeGreaterThan(0);
+    for (let index = 0; index < annualMeasureCount; index += 1) await annualMeasures.nth(index).fill(String(2.4 + (index * 0.1)));
+    await annual.getByText(/I confirm the official final rating form/).locator('..').locator('input[type="checkbox"]').check();
+    await annual.getByRole('button', { name: 'Record final release', exact: true }).click();
+    expect(await page.getByText('Rehearsal complete', { exact: true }).count()).toBeGreaterThan(0);
+
+    await page.getByRole('button', { name: 'Review completed fictional cycle', exact: true }).click();
+    const auditText = await page.locator('main').innerText();
+    for (const event of ['ASSIGNED', 'EVIDENCE PUBLISHED', 'SIGNED', 'ACKNOWLEDGED', 'FINALIZED', 'RELEASED']) expect(auditText).toContain(event);
+    expect(errors).toEqual([]);
+    await page.close();
+  }, 120000);
 
   it('growth snapshot downloads formative content with no ratings vocabulary', async () => {
     const { page, errors } = await openWorkspace();

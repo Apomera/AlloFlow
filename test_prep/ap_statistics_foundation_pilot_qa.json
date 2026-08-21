@@ -1,10 +1,10 @@
 {
   "schemaVersion": 1,
-  "qaVersion": "ap-statistics-foundation-qa-v2",
+  "qaVersion": "ap-statistics-foundation-qa-v3",
   "reportId": "ap-statistics-foundation-qa",
   "generatedAt": "2026-08-20T00:00:00.000Z",
   "packId": "ap-statistics-foundation-pilot",
-  "version": "0.2.0-internal-preview",
+  "version": "0.3.0-internal-preview",
   "automatedAssessment": "pass",
   "structuralFindings": [],
   "advisories": [
@@ -12,39 +12,45 @@
     "Independent AP Statistics subject-expert, rights, accessibility, field-testing, and psychometric review remain release-blocking."
   ],
   "metrics": {
-    "itemCount": 200,
+    "itemCount": 240,
     "unitCount": 5,
     "unitCounts": {
-      "exploring-one-variable-data-and-collecting-data": 40,
-      "probability-random-variables-and-probability-distributions": 40,
-      "inference-for-categorical-data-proportions": 40,
-      "inference-for-quantitative-data-means": 40,
-      "regression-analysis": 40
+      "exploring-one-variable-data-and-collecting-data": 48,
+      "probability-random-variables-and-probability-distributions": 48,
+      "inference-for-categorical-data-proportions": 48,
+      "inference-for-quantitative-data-means": 48,
+      "regression-analysis": 48
     },
     "declaredTopicCount": 55,
     "representedTopicCount": 55,
     "minimumItemsPerTopic": 2,
     "answerPositionCounts": [
-      50,
-      50,
-      50,
-      50
+      60,
+      60,
+      60,
+      60
     ],
     "chapterCount": 5,
     "sectionCount": 15,
-    "knowledgeCheckCount": 15,
-    "flashcardCount": 15,
-    "memoryAidCount": 5,
-    "constructedResponseWorkshopCount": 4
+    "knowledgeCheckCount": 30,
+    "flashcardCount": 30,
+    "memoryAidCount": 10,
+    "practiceRouteCount": 15,
+    "studyRouteCount": 4,
+    "practiceRoutedItemCount": 240,
+    "studyRouteReferenceCount": 181,
+    "diagramCount": 5,
+    "diagramPlacementCount": 5,
+    "constructedResponseWorkshopCount": 9
   },
   "coverage": {
     "allDeclaredTopicsRepresented": true,
     "allUnitsRepresented": true,
-    "nativeLearningRoutes": 200
+    "nativeLearningRoutes": 240
   },
   "inputs": {
-    "packSha256": "e5d2ea422b446739e01083a48315359c31c18bc5960c9949bbaf5fecfa010ba6",
-    "learningLibrarySha256": "5667965755ee21dcfe4bba7d321f22acb3b1497b3915c34d5bba3da13b20bc53",
+    "packSha256": "2e6f11afd9fb5e3fb35242521ea16507e37bcbbe26d08267996d5039b6c720b1",
+    "learningLibrarySha256": "df48a9230bb841e630665f4e877e86e520952f91f345040c113d37d972515864",
     "officialBlueprintUrl": "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
     "reviewedAt": "2026-08-20"
   },

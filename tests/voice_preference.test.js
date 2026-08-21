@@ -51,6 +51,19 @@ describe('saved narration voice survives a refresh', () => {
       expect(app, f).not.toMatch(/_kokoroCached && progress && typeof progress\.stage === 'string' && \/download\/i\.test\(progress\.stage\)/);
     }
   });
+
+  it('does not activate the Kokoro WASM runtime inside iPhone Canvas', () => {
+    for (const f of COPIES) {
+      const app = read(f);
+      expect(app, f).toContain('const _isIOSCanvasEnv = (() => {');
+      const loader = app.slice(app.indexOf('window.__loadKokoroTTS = async'), app.indexOf('// â”€â”€ Local SpeechRecognition shim'));
+      expect(loader, f).toContain("window.__kokoroTTSUnavailableReason = 'ios-canvas'");
+      expect(loader.indexOf('if (_isIOSCanvasEnv)')).toBeLessThan(loader.indexOf('window._kokoroTTS?.ready'));
+    }
+    const directLoader = read('kokoro_tts_loader.js');
+    expect(directLoader).toContain('function isIosCanvasRuntime()');
+    expect(directLoader.indexOf('if (isIosCanvasRuntime())')).toBeLessThan(directLoader.indexOf('window.__kokoroTTSLoading'));
+  });
 });
 
 describe('voice output diagnostics', () => {

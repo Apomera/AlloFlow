@@ -28964,7 +28964,17 @@
       "back_3": "← Wstecz",
       "certificate_of_completion": "CERTYFIKAT UKOŃCZENIA",
       "date_2": "Data",
-      "best": "Najlepszy"
+      "best": "Najlepszy",
+      "explore_the_road": "Poznaj drogę",
+      "lane_change_without_signal": "Zmiana pasa bez kierunkowskazu",
+      "drove_in_oncoming_lane": "Jazda pasem pod prąd",
+      "high_beams": "Światła drogowe",
+      "left_signal": "Lewy kierunkowskaz",
+      "right_signal": "Prawy kierunkowskaz",
+      "braking": "Hamowanie",
+      "traction_loss": "Utrata przyczepności",
+      "fog_low_beams_ok": "Mgła — światła mijania są w porządku",
+      "welcome_to_roadready": "Witaj w RoadReady"
     },
     "schoolbehaviortoolkit": {
       "replacement_behaviors": "Zachowanie zastępcze",

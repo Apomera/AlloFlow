@@ -28662,7 +28662,17 @@
       "best": "Optimum",
       "menu_73": "← Index",
       "menu_74": "← Index",
-      "menu_75": "← Index"
+      "menu_75": "← Index",
+      "explore_the_road": "Viam explora",
+      "lane_change_without_signal": "Mutatio viārum sine signo",
+      "drove_in_oncoming_lane": "In viam adversam evehisti",
+      "high_beams": "Lūmina longa",
+      "left_signal": "Signum sinistrum",
+      "right_signal": "Signum dextrum",
+      "braking": "Frenatio",
+      "traction_loss": "Amissio tractionis",
+      "fog_low_beams_ok": "Nebula — lūmina humilia satis sunt",
+      "welcome_to_roadready": "Salvē ad RoadReady"
     },
     "schoolbehaviortoolkit": {
       "replacement_behaviors": "Replacement mōrēs"

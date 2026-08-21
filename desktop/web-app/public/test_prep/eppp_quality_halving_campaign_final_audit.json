@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "campaignId": "eppp-quality-halving-final-verification-v1",
-  "generatedAt": "2026-07-30T00:19:55.334Z",
+  "generatedAt": "2026-08-21T15:53:54.861Z",
   "reportType": "read-only-cross-artifact-eppp-quality-halving-verification",
   "status": "pass",
   "reviewStatus": "Automated repository gates passed; no independent human, psychometric, expert, or licensed-psychologist validation is claimed.",
@@ -41,19 +41,19 @@
   },
   "currentMetrics": {
     "distractor": {
-      "uniqueKeyStemLexicalLeakageCandidates": 55,
-      "asymmetricExtremeDistractorCandidates": 120,
-      "advancedDirectRecallCandidates": 7,
-      "semanticConceptDuplicatePairs": 82,
-      "semanticConceptDuplicateClusters": 46
+      "uniqueKeyStemLexicalLeakageCandidates": 0,
+      "asymmetricExtremeDistractorCandidates": 27,
+      "advancedDirectRecallCandidates": 0,
+      "semanticConceptDuplicatePairs": 0,
+      "semanticConceptDuplicateClusters": 0
     },
     "feedback": {
-      "itemsWithWarnings": 617,
-      "incorrectOptionsWithWarnings": 1740,
-      "insufficientDetailOptions": 644,
-      "genericTemplateOptions": 1035,
-      "choiceRestatementOptions": 421,
-      "fullKeyEchoOptions": 260
+      "itemsWithWarnings": 0,
+      "incorrectOptionsWithWarnings": 0,
+      "insufficientDetailOptions": 0,
+      "genericTemplateOptions": 0,
+      "choiceRestatementOptions": 0,
+      "fullKeyEchoOptions": 0
     }
   },
   "ceilingStatus": {
@@ -61,31 +61,31 @@
       "uniqueKeyStemLexicalLeakageCandidates": {
         "baseline": 141,
         "ceiling": 70,
-        "value": 55,
+        "value": 0,
         "met": true
       },
       "asymmetricExtremeDistractorCandidates": {
         "baseline": 295,
         "ceiling": 147,
-        "value": 120,
+        "value": 27,
         "met": true
       },
       "advancedDirectRecallCandidates": {
         "baseline": 18,
         "ceiling": 9,
-        "value": 7,
+        "value": 0,
         "met": true
       },
       "semanticConceptDuplicatePairs": {
         "baseline": 240,
         "ceiling": 120,
-        "value": 82,
+        "value": 0,
         "met": true
       },
       "semanticConceptDuplicateClusters": {
         "baseline": 120,
         "ceiling": 60,
-        "value": 46,
+        "value": 0,
         "met": true
       }
     },
@@ -93,37 +93,37 @@
       "itemsWithWarnings": {
         "baseline": 1309,
         "ceiling": 654,
-        "value": 617,
+        "value": 0,
         "met": true
       },
       "incorrectOptionsWithWarnings": {
         "baseline": 3789,
         "ceiling": 1894,
-        "value": 1740,
+        "value": 0,
         "met": true
       },
       "insufficientDetailOptions": {
         "baseline": 1357,
         "ceiling": 678,
-        "value": 644,
+        "value": 0,
         "met": true
       },
       "genericTemplateOptions": {
         "baseline": 2354,
         "ceiling": 1177,
-        "value": 1035,
+        "value": 0,
         "met": true
       },
       "choiceRestatementOptions": {
         "baseline": 1665,
         "ceiling": 832,
-        "value": 421,
+        "value": 0,
         "met": true
       },
       "fullKeyEchoOptions": {
         "baseline": 1436,
         "ceiling": 718,
-        "value": 260,
+        "value": 0,
         "met": true
       }
     }
@@ -160,16 +160,16 @@
     }
   },
   "artifactSha256": {
-    "bank": "bba4cf58cc215e3ae634dcd64c88a5d2ceffa9b24f2439d636749b99fc7530ee",
-    "catalog": "c75fc0c3c81f637a943d707e1000b3fe2c5e13331c0798a2f36c6c40429dea99",
-    "distractorDiagnostics": "463e30073cce6b02ec333282a290225d6203dec65965f37fad55b29443b4044b",
-    "feedbackDiagnostics": "b49e78002ac973f81667afbd9d91063eae919db3768541d09c2301700c846bca",
-    "qa": "ce09c34c824f446c5899fd87a311349a55038bcf73162493c25136c59651cf8d",
-    "distractorAudit": "7211b273e983778a664f9fa702544c08e008df3319956f43823cdbf47425edb2",
-    "feedbackAudit": "fb650e081a2686cb25f5ed96838b1f7ff17d4c3a20848caddf0a90a2e57fdc3c",
-    "runtime": "177cad765d7db65477fd63d283adb66aea5d9858d7434686f07479fecfad866f",
-    "pack": "4cd675514a6ce2c427897e2678c6e2617ec4d89468f03e2bd801cd90db5b765a",
-    "manifest": "4d58884513683f7405742ead4abfa6f95999a62dab313eb0d35c00fb0e7ea041"
+    "bank": "635ef27ea526a6bd6e4c4626514ab6ab1ce1e77ab00d097782657c8048d81f42",
+    "catalog": "2fc4a0822c34a195ef581ad87ecc69d9aa172bbde748246162d9bf8033629d57",
+    "distractorDiagnostics": "ab56651e7834987a3295213146912102765773426e275d0813b868e850bb0f2c",
+    "feedbackDiagnostics": "d85db15826839bb9c93891e27e2b05847689aef690db14d5d9838434385e5744",
+    "qa": "981e177c05e1cd9ccc8b6b76a71d517414d4ba5e7e63139660547a99385787bc",
+    "distractorAudit": "18210a3e4aee99386a43077686588db76bd20577a50af0ef19c68f88813bed41",
+    "feedbackAudit": "cb0996abf92ca04c94062a497c08c57a06f10f2650afb0c306236ec3caaad3df",
+    "runtime": "ca80b76cf7527c097f925f60fb8a05907eb8b0d1fbaab93b4de6ec1fb1764027",
+    "pack": "4e7bddd8538bf0a553f0daa85b91f06db9fcb33f34cc696c33ef7c1a8ff9b4be",
+    "manifest": "2926014bde96fa276efd8823a645c487da736c55b39b977c849da323c1c09944"
   },
   "limitations": [
     "These gates verify repository invariants and heuristic metric ceilings; they are not psychometric calibration or evidence of exam-score validity.",

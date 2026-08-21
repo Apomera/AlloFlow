@@ -28706,7 +28706,17 @@
       "best": "उत्तम",
       "menu_73": "← मेनु",
       "menu_74": "← मेनु",
-      "menu_75": "← मेनु"
+      "menu_75": "← मेनु",
+      "explore_the_road": "सडक अन्वेषण गर्नुहोस्",
+      "lane_change_without_signal": "संकेत नदिई लेन परिवर्तन",
+      "drove_in_oncoming_lane": "विपरीत लेनमा गाडी चलाउनुभयो",
+      "high_beams": "हाइ बीम",
+      "left_signal": "बायाँ संकेत",
+      "right_signal": "दायाँ संकेत",
+      "braking": "ब्रेक लगाउनु",
+      "traction_loss": "पकड गुम्नु",
+      "fog_low_beams_ok": "कुहिरो — लो बीम ठीक छ",
+      "welcome_to_roadready": "RoadReady मा स्वागत छ"
     },
     "schoolbehaviortoolkit": {
       "replacement_behaviors": "Replacement व्यवहार",

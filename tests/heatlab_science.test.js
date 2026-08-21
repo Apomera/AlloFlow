@@ -415,6 +415,22 @@ describe('Heat lab renders', () => {
     expect(SRC).toContain('prefersReducedMotion ? \'none\' : \'left 160ms ease-out\'');
   });
 
+  it('gives the 3D convection tank a readable flow path and fallback description', () => {
+    const html = renderTool('heatLab', { _heatLab: { pick3d: 'plume' } });
+    expect(html).toContain('Convection flow path');
+    expect(html).toContain('Heat in');
+    expect(html).toContain('warm + expand');
+    expect(html).toContain('selected in the 3D view');
+    expect(html).toContain('Interactive 3D convection tank');
+    expect(html).toContain('data-heat-3d-snapshot="true"');
+    expect(html).toContain('Model snapshot');
+    expect(html).toContain('Causal direction');
+    expect(html).toContain('Tank walls shape the roll');
+    expect(SRC).toContain('var HEAT_3D_FLOW = [');
+    expect(SRC).toContain('ht-convection3d-description');
+    expect(SRC).toContain('role: \'listitem\'');
+  });
+
   it('keeps chart data disclosures independent and explicitly connected', () => {
     const html = renderTool('heatLab', {});
     const collapsedDisclosures = html.match(/aria-expanded=.false./g);

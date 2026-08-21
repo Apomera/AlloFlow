@@ -28710,7 +28710,17 @@
       "back_3": "← Kembali",
       "certificate_of_completion": "SERTIFIKAT PENYELESAIAN",
       "date_2": "Tanggal",
-      "best": "Terbaik"
+      "best": "Terbaik",
+      "explore_the_road": "Jelajahi jalan",
+      "lane_change_without_signal": "Berpindah lajur tanpa lampu sein",
+      "drove_in_oncoming_lane": "Mengemudi di lajur berlawanan",
+      "high_beams": "Lampu jauh",
+      "left_signal": "Sein kiri",
+      "right_signal": "Sein kanan",
+      "braking": "Pengereman",
+      "traction_loss": "Hilang traksi",
+      "fog_low_beams_ok": "Kabut — lampu dekat boleh",
+      "welcome_to_roadready": "Selamat datang di RoadReady"
     },
     "schoolbehaviortoolkit": {
       "replacement_behaviors": "Replacement perilaku",

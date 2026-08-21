@@ -1116,8 +1116,8 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                   h('p', { className: 'text-[10px] font-bold text-cyan-700 uppercase tracking-wider text-center mb-1.5' }, t('stem.unitconvert.dimensional_analysis', '\uD83D\uDD2C Dimensional Analysis')),
                   h('div', { className: 'flex items-center justify-center gap-2 font-mono text-sm' },
                     h('span', { className: 'font-bold text-cyan-900' }, d.value),
-                    h('span', { className: 'text-cyan-600 line-through decoration-2 decoration-amber-500' }, d.fromUnit),
-                    h('span', { className: 'text-cyan-600 font-bold' }, '\u00D7'),
+                    h('span', { className: 'text-cyan-800 line-through decoration-2 decoration-amber-500' }, d.fromUnit),
+                    h('span', { className: 'text-cyan-800 font-bold' }, '\u00D7'),
                     h('div', { className: 'inline-flex flex-col items-center' },
                       h('div', { className: 'flex items-baseline gap-1' },
                         h('span', { className: 'text-cyan-900 font-bold' }, topNum),
@@ -1129,11 +1129,11 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                         h('span', { className: 'text-cyan-700 line-through decoration-2 decoration-amber-500' }, botUnit)
                       )
                     ),
-                    h('span', { className: 'text-cyan-600 font-bold' }, '='),
+                    h('span', { className: 'text-cyan-800 font-bold' }, '='),
                     h('span', { className: 'font-bold text-emerald-700' }, fmtResult),
                     h('span', { className: 'text-emerald-700' }, d.toUnit)
                   ),
-                  h('p', { className: 'text-[10px] text-cyan-600 italic text-center mt-1.5' },
+                  h('p', { className: 'text-[10px] text-cyan-800 italic text-center mt-1.5' },
                     'The "' + d.fromUnit + '" cancels on the diagonal \u2014 only "' + d.toUnit + '" remains.')
                 );
               })(),
@@ -1205,7 +1205,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                 var normF = rawFrom / maxV * 100, normT = rawTo / maxV * 100;
                 return h('div', { className: 'space-y-2' },
                   h('div', null,
-                    h('p', { className: 'text-[11px] font-bold text-cyan-600 mb-1' }, d.value + ' ' + d.fromUnit),
+                    h('p', { className: 'text-[11px] font-bold text-cyan-800 mb-1' }, d.value + ' ' + d.fromUnit),
                     h('div', { className: 'h-5 rounded-full overflow-hidden bg-slate-200' },
                       h('div', { role: 'progressbar', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': Math.round(normF), 'aria-label': 'From value: ' + d.value + ' ' + d.fromUnit, className: 'h-full bg-gradient-to-r from-cyan-400 to-cyan-600 rounded-full transition-all duration-500', style: { width: normF + '%' } })
                     )
@@ -1250,7 +1250,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
 
             // Real-world reference
             refText && h('div', { className: 'mt-3 bg-amber-50 rounded-xl border border-amber-200 p-3 text-center' },
-              h('p', { className: 'text-[11px] font-bold text-amber-600 uppercase tracking-wider mb-1' }, t('stem.unitconvert.real_world_reference', '\uD83C\uDF0D Real-World Reference')),
+              h('p', { className: 'text-[11px] font-bold text-amber-800 uppercase tracking-wider mb-1' }, t('stem.unitconvert.real_world_reference', '\uD83C\uDF0D Real-World Reference')),
               h('p', { className: 'text-sm font-bold text-amber-800' }, refText)
             ),
 
@@ -1311,7 +1311,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
               h('div', { className: 'space-y-1' },
                 d.history.map(function(item, i) {
                   return h('div', { key: i, className: 'flex items-center gap-2 text-xs bg-white rounded-lg px-2 py-1.5 border' },
-                    h('span', { className: 'text-cyan-600 font-bold' }, item.from),
+                    h('span', { className: 'text-cyan-800 font-bold' }, item.from),
                     h('span', { className: 'text-slate-600' }, '\u2192'),
                     h('span', { className: 'text-indigo-600 font-bold' }, item.to)
                   );
@@ -1351,7 +1351,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                   h('span', { className: 'text-xs font-bold text-slate-600' }, d.fromUnit),
                   h('button', { 'aria-label': t('stem.unitconvert.change', 'Change'),
                     onClick: function() { upd('tab', 'convert'); },
-                    className: 'text-xs text-cyan-600 hover:underline font-bold'
+                    className: 'text-xs text-cyan-800 hover:underline font-bold'
                   }, t('stem.unitconvert.change_2', 'Change \u2192'))
                 )
               ),
@@ -1383,7 +1383,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                       h('td', { className: 'px-4 py-2 text-right' },
                         !isFrom && h('button', { 'aria-label': 'Use',
                           onClick: function() { upd('toUnit', u); upd('tab', 'convert'); },
-                          className: 'text-[11px] font-bold text-cyan-600 hover:underline'
+                          className: 'text-[11px] font-bold text-cyan-800 hover:underline'
                         }, t('stem.unitconvert.use', 'Use \u2192'))
                       )
                     );
@@ -1392,7 +1392,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
               )
             ),
             refText && h('div', { className: 'mt-3 bg-amber-50 rounded-xl border border-amber-200 p-3 text-center' },
-              h('p', { className: 'text-[11px] font-bold text-amber-600 uppercase mb-1' }, t('stem.unitconvert.reference', '\uD83C\uDF0D Reference')),
+              h('p', { className: 'text-[11px] font-bold text-amber-800 uppercase mb-1' }, t('stem.unitconvert.reference', '\uD83C\uDF0D Reference')),
               h('p', { className: 'text-sm font-bold text-amber-800' }, refText)
             )
           ),

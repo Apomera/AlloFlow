@@ -167,6 +167,98 @@
     }
     .tool-note strong { color: #e0e7ff; }
 
+    .browser-access {
+      margin-top: 1.25rem;
+      padding-top: 1.25rem;
+      border-top: 1px solid rgba(148, 163, 184, 0.2);
+      text-align: left;
+    }
+    .browser-access h2 {
+      margin: 0;
+      color: #f8fafc;
+      font-size: 1rem;
+      line-height: 1.35;
+    }
+    .browser-access-intro {
+      margin: 0.4rem 0 0.85rem;
+      color: #cbd5e1;
+      font-size: 0.8125rem;
+      line-height: 1.55;
+    }
+    .browser-app-btn {
+      display: inline-flex;
+      min-height: 2.75rem;
+      width: 100%;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.7rem 1rem;
+      border: 1px solid rgba(56, 189, 248, 0.6);
+      border-radius: 0.625rem;
+      background: rgba(14, 165, 233, 0.16);
+      color: #e0f2fe;
+      font-size: 0.9rem;
+      font-weight: 700;
+      text-decoration: none;
+      transition: background 120ms ease, border-color 120ms ease, transform 120ms ease;
+    }
+    .browser-app-btn:hover {
+      background: rgba(14, 165, 233, 0.26);
+      border-color: #7dd3fc;
+      transform: translateY(-1px);
+    }
+    .browser-app-btn:active { transform: translateY(0); }
+    .browser-app-btn:focus-visible {
+      outline: 3px solid #bae6fd;
+      outline-offset: 3px;
+    }
+    .browser-ai-note {
+      margin: 0.7rem 0 0;
+      color: #94a3b8;
+      font-size: 0.75rem;
+      line-height: 1.5;
+    }
+    .browser-ai-note strong { color: #cbd5e1; }
+    .ai-access-details {
+      margin-top: 0.65rem;
+      border: 1px solid rgba(148, 163, 184, 0.24);
+      border-radius: 0.5rem;
+      background: rgba(148, 163, 184, 0.06);
+      color: #cbd5e1;
+      font-size: 0.75rem;
+    }
+    .ai-access-details summary {
+      min-height: 2.75rem;
+      padding: 0.72rem 0.75rem;
+      cursor: pointer;
+      color: #cbd5e1;
+      font-weight: 600;
+    }
+    .ai-access-details summary:hover { color: #f1f5f9; }
+    .ai-access-details summary:focus-visible {
+      outline: 3px solid #bae6fd;
+      outline-offset: 2px;
+      border-radius: 0.375rem;
+    }
+    .ai-access-details-content {
+      padding: 0 0.75rem 0.8rem;
+      color: #94a3b8;
+      line-height: 1.55;
+    }
+    .ai-access-details-content p { margin: 0 0 0.55rem; }
+    .ai-access-details-content p:last-child { margin-bottom: 0; }
+    .ai-access-details-content a {
+      color: #bae6fd;
+      font-weight: 600;
+      text-underline-offset: 2px;
+    }
+    .ai-access-details-content a:hover { color: #e0f2fe; }
+    .ai-access-details-content a:focus-visible {
+      outline: 2px solid #bae6fd;
+      outline-offset: 2px;
+      border-radius: 0.125rem;
+    }
+
     .copy-feedback {
       font-size: 0.75rem;
       color: #6ee7b7;
@@ -245,7 +337,7 @@
       .brand { font-size: 1.75rem; }
     }
     @media (prefers-reduced-motion: reduce) {
-      .launch-btn { transition: none; }
+      .launch-btn, .browser-app-btn { transition: none; }
     }
   </style>
 </head>
@@ -281,6 +373,42 @@
       </nav>
     </div>
     <div id="copy-feedback" class="copy-feedback" role="status" aria-live="polite"></div>
+
+    <section class="browser-access" aria-labelledby="browser-access-title">
+      <h2 id="browser-access-title">Don&rsquo;t have Google Education or Gemini access?</h2>
+      <p class="browser-access-intro">
+        Open the browser app to join a session or open a shared AlloFlow file.
+        No Google account or AI key is required for these activities.
+      </p>
+      <a id="browser-app-btn" class="browser-app-btn" href="https://alloflow-cdn.pages.dev/app/"
+         target="_blank" rel="noopener noreferrer"
+         aria-label="Open the AlloFlow browser app in a new tab">
+        Open browser app
+        <span aria-hidden="true">&rarr;</span>
+      </a>
+      <p class="browser-ai-note">
+        <strong>AI is optional.</strong> Creating with AI in the browser app requires a provider key.
+      </p>
+      <details class="ai-access-details">
+        <summary>About optional AI access for contributors</summary>
+        <div class="ai-access-details-content">
+          <p>
+            In the browser app, open <strong>AI Settings</strong> and choose Google Gemini.
+            The guided setup shows how to create and paste a developer API key.
+          </p>
+          <p>
+            Google currently offers a free developer tier for some models and regions;
+            availability and limits can change. Follow school or district policy, and avoid
+            personal keys on shared devices.
+          </p>
+          <p>
+            <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer">Get a Gemini API key</a>
+            <span aria-hidden="true"> &middot; </span>
+            <a href="https://ai.google.dev/gemini-api/docs/pricing" target="_blank" rel="noopener noreferrer">Check current free-tier details</a>
+          </p>
+        </div>
+      </details>
+    </section>
 
     <footer>
       <span>AlloFlow <span id="version-label">v1.2</span></span>
@@ -337,8 +465,10 @@
 
       const FALLBACK_CANVAS_URL = "https://share.gemini.google/i3KFjQxCs1j1";
       const FALLBACK_VERSION = "1.2";
+      const BROWSER_APP_URL = "https://alloflow-cdn.pages.dev/app/";
 
       const launchBtn = document.getElementById('launch-btn');
+      const browserAppBtn = document.getElementById('browser-app-btn');
       const statusPill = document.getElementById('status-pill');
       const statusText = document.getElementById('status-text');
       const versionLabel = document.getElementById('version-label');
@@ -348,6 +478,22 @@
 
       let currentCanvasUrl = FALLBACK_CANVAS_URL;
       let currentVersion = FALLBACK_VERSION;
+
+      // Preserve the visitor's entry context when switching shells. Student joins and
+      // mailbox handoffs use the query string; self-contained shared files use the
+      // fragment so their contents are never sent to the launcher or app server.
+      function applyBrowserAppHandoff() {
+        if (!browserAppBtn) return;
+        try {
+          const browserUrl = new URL(BROWSER_APP_URL);
+          browserUrl.search = window.location.search || '';
+          browserUrl.hash = window.location.hash || '';
+          browserAppBtn.setAttribute('href', browserUrl.toString());
+        } catch (error) {
+          browserAppBtn.setAttribute('href', BROWSER_APP_URL);
+        }
+      }
+      applyBrowserAppHandoff();
 
       function setStatus(state, text) {
         statusPill.setAttribute('data-state', state);

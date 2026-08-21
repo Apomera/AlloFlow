@@ -29059,7 +29059,17 @@
       "best": "മികച്ചത്",
       "menu_73": "← മെനു",
       "menu_74": "← മെനു",
-      "menu_75": "← മെനു"
+      "menu_75": "← മെനു",
+      "explore_the_road": "റോഡ് പര്യവേക്ഷണം ചെയ്യുക",
+      "lane_change_without_signal": "സിഗ്നൽ നൽകാതെ ലെയിൻ മാറ്റം",
+      "drove_in_oncoming_lane": "എതിർ ലെയിനിൽ വാഹനം ഓടിച്ചു",
+      "high_beams": "ഹൈ ബീം",
+      "left_signal": "ഇടത് സിഗ്നൽ",
+      "right_signal": "വലത് സിഗ്നൽ",
+      "braking": "ബ്രേക്കിംഗ്",
+      "traction_loss": "ട്രാക്ഷൻ നഷ്ടം",
+      "fog_low_beams_ok": "മൂടൽമഞ്ഞ് — ലോ ബീം ശരിയാണ്",
+      "welcome_to_roadready": "RoadReady-ലേക്ക് സ്വാഗതം"
     },
     "schoolbehaviortoolkit": {
       "replacement_behaviors": "പകരം പെരുമാറ്റങ്ങൾ",

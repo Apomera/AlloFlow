@@ -8,12 +8,12 @@ Generated: 2026-07-22
 | --- | ---: |
 | Questions scanned | 1500 |
 | Incorrect options scanned | 4500 |
-| Questions with one or more warnings | 391 |
-| Incorrect options with one or more warnings | 1091 |
-| Insufficient-detail warnings | 540 |
-| Generic-template warnings | 501 |
-| Choice-restatement warnings | 116 |
-| Full-key-echo warnings | 58 |
+| Questions with one or more warnings | 0 |
+| Incorrect options with one or more warnings | 0 |
+| Insufficient-detail warnings | 0 |
+| Generic-template warnings | 0 |
+| Choice-restatement warnings | 0 |
+| Full-key-echo warnings | 0 |
 | Wave-05 incorrect options with warnings | 0 of 24 |
 | Wave-06 incorrect options with warnings | 0 of 24 |
 | Wave-07 incorrect options with warnings | 0 of 48 |
@@ -28,56 +28,7 @@ The reviewed waves (eppp-native-quality-wave-05, eppp-native-quality-wave-06, ep
 
 | Item | Domain | Incorrect options affected | Warning types | Score |
 | --- | --- | ---: | --- | ---: |
-| eppp-v3-assessment-025 | assessment | 3 | generic-template, choice-restatement | 12 |
-| eppp-v3-assessment-038 | assessment | 3 | generic-template, choice-restatement | 12 |
-| eppp-v3-assessment-043 | assessment | 3 | generic-template, choice-restatement | 12 |
-| eppp-v3-assessment-045 | assessment | 3 | generic-template, choice-restatement | 12 |
-| eppp-v3-assessment-049 | assessment | 3 | generic-template, choice-restatement | 12 |
-| eppp-v3-assessment-052 | assessment | 3 | generic-template, choice-restatement | 12 |
-| eppp-v3-assessment-072 | assessment | 3 | generic-template, choice-restatement | 12 |
-| eppp-v3-biological-007 | biological | 3 | generic-template, choice-restatement | 12 |
-| eppp-v3-biological-011 | biological | 3 | generic-template, choice-restatement | 12 |
-| eppp-v3-biological-014 | biological | 3 | generic-template, choice-restatement | 12 |
-| eppp-v3-biological-015 | biological | 3 | generic-template, choice-restatement | 12 |
-| eppp-v3-biological-031 | biological | 3 | generic-template, choice-restatement | 12 |
-| eppp-v3-biological-042 | biological | 3 | generic-template, choice-restatement | 12 |
-| eppp-v3-intervention-024 | intervention | 3 | generic-template, choice-restatement | 12 |
-| eppp-v3-intervention-034 | intervention | 3 | generic-template, choice-restatement | 12 |
-| eppp-v3-intervention-044 | intervention | 3 | generic-template, choice-restatement | 12 |
-| eppp-v3-intervention-052 | intervention | 3 | generic-template, choice-restatement | 12 |
-| eppp-v3-intervention-056 | intervention | 3 | generic-template, choice-restatement | 12 |
-| eppp-v3-intervention-058 | intervention | 3 | generic-template, choice-restatement | 12 |
-| eppp-v3-lifespan-001 | lifespan | 3 | generic-template, choice-restatement | 12 |
-| eppp-v3-lifespan-037 | lifespan | 3 | generic-template, choice-restatement | 12 |
-| eppp-v3-professional-072 | professional | 3 | generic-template, choice-restatement | 12 |
-| eppp-v3-professional-076 | professional | 3 | generic-template, choice-restatement | 12 |
-| eppp-v3-professional-078 | professional | 3 | generic-template, choice-restatement | 12 |
-| eppp-v3-professional-079 | professional | 3 | generic-template, choice-restatement | 12 |
-| eppp-v3-professional-080 | professional | 3 | generic-template, choice-restatement | 12 |
-| eppp-v3-social-cultural-027 | social-cultural | 3 | generic-template, choice-restatement | 12 |
-| eppp-v3-social-cultural-042 | social-cultural | 3 | generic-template, choice-restatement | 12 |
-| eppp-b001-assessment-1 | assessment | 3 | generic-template, choice-restatement | 11 |
-| eppp-v3-assessment-042 | assessment | 3 | generic-template, choice-restatement | 11 |
-| eppp-v3-cognitive-affective-032 | cognitive-affective | 3 | generic-template, choice-restatement | 11 |
-| eppp-v3-intervention-026 | intervention | 3 | generic-template, choice-restatement | 11 |
-| eppp-v3-intervention-040 | intervention | 3 | generic-template, insufficient-detail | 11 |
-| eppp-v3-lifespan-031 | lifespan | 3 | generic-template, choice-restatement | 11 |
-| eppp-b006-intervention-2 | intervention | 3 | generic-template, choice-restatement | 10 |
-| eppp-b024-assessment-1 | assessment | 3 | full-key-echo, generic-template, choice-restatement | 10 |
-| eppp-v3-assessment-001 | assessment | 3 | generic-template, insufficient-detail | 10 |
-| eppp-v3-assessment-007 | assessment | 3 | generic-template, choice-restatement | 10 |
-| eppp-v3-assessment-013 | assessment | 3 | generic-template, choice-restatement | 10 |
-| eppp-v3-assessment-014 | assessment | 3 | generic-template, choice-restatement | 10 |
-| eppp-v3-assessment-015 | assessment | 3 | generic-template, choice-restatement | 10 |
-| eppp-v3-biological-013 | biological | 3 | generic-template, insufficient-detail | 10 |
-| eppp-v3-biological-035 | biological | 3 | generic-template, choice-restatement | 10 |
-| eppp-v3-intervention-004 | intervention | 3 | generic-template, choice-restatement | 10 |
-| eppp-v3-lifespan-038 | lifespan | 3 | generic-template, insufficient-detail | 10 |
-| eppp-v3-lifespan-041 | lifespan | 3 | generic-template, insufficient-detail | 10 |
-| eppp-v3-lifespan-045 | lifespan | 3 | generic-template, insufficient-detail | 10 |
-| eppp-v3-professional-054 | professional | 3 | generic-template, choice-restatement | 10 |
-| eppp-v3-social-cultural-024 | social-cultural | 3 | generic-template, choice-restatement | 10 |
-| eppp-v3-social-cultural-029 | social-cultural | 3 | generic-template, choice-restatement | 10 |
+
 
 ## Interpretation
 

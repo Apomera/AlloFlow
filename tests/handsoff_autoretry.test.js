@@ -49,8 +49,12 @@ describe('hands-off auto-retry — Make Accessible retries bounded, progress-gat
     expect(onclick).toContain('&& !_stopped()'); // in the while conditions
     expect(onclick).toContain('if (_stopped()) break;'); // after the await
   });
-  it('progress-gates the loop retry (stop the moment a retry stops improving) and resumes the loop', () => {
-    expect(onclick).toContain('_s <= _prevScore');
+  it('progress-gates complete evidence but keeps bounded throttle recovery alive', () => {
+    expect(onclick).toContain('const _handsEvidenceProgressed = (before, after) =>');
+    expect(onclick).toContain('const _targetReached = !!(r && _s >= pdfTargetScore && _handsCanonicalComplete(r));');
+    expect(onclick).toContain('const _stillRecoveringThrottle = !!(r && r._aiVerificationIncomplete);');
+    expect(onclick).toContain('const _plateau = !_evidenceProgressed && !_stillRecoveringThrottle;');
+    expect(onclick).not.toContain('if (!r || _s >= pdfTargetScore || _s <= _prevScore) break;');
     expect(onclick).toContain('await runAutoFixLoop(8)');
   });
   it('captures the fix return value + polls for the result (A3-MED — no single-250ms ref-timing race) + autosaves', () => {

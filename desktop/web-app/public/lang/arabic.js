@@ -29055,7 +29055,17 @@
       "best": "الأفضل",
       "menu_73": "← القائمة",
       "menu_74": "← القائمة",
-      "menu_75": "← القائمة"
+      "menu_75": "← القائمة",
+      "explore_the_road": "استكشف الطريق",
+      "lane_change_without_signal": "تغيير المسار دون إشارة",
+      "drove_in_oncoming_lane": "القيادة في المسار المقابل",
+      "high_beams": "المصابيح العالية",
+      "left_signal": "الإشارة اليسرى",
+      "right_signal": "الإشارة اليمنى",
+      "braking": "الكبح",
+      "traction_loss": "فقدان الجر",
+      "fog_low_beams_ok": "ضباب — المصابيح المنخفضة مناسبة",
+      "welcome_to_roadready": "مرحبًا بك في RoadReady"
     },
     "schoolbehaviortoolkit": {
       "replacement_behaviors": "السلوكيات البديلة",

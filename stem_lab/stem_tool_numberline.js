@@ -134,7 +134,12 @@ window.StemLab = window.StemLab || {
 
           // ── State defaults ──
           var tab = _n.tab || 'explore';
-          var range = _n.range || { min: 0, max: 20 };
+          var rawRange = _n.range || { min: 0, max: 20 };
+          var range = {
+            min: Number.isFinite(rawRange.min) ? rawRange.min : 0,
+            max: Number.isFinite(rawRange.max) ? rawRange.max : 20
+          };
+          if (!(range.max > range.min)) range = { min: 0, max: 20 };
           var markers = _n.markers || [];
           var challenge = _n.challenge || null;
           var answer = _n.answer || '';
@@ -198,6 +203,21 @@ window.StemLab = window.StemLab || {
 
           var randInt = function(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; };
           var pick = function(arr) { return arr[Math.floor(Math.random() * arr.length)]; };
+
+          var updateExploreRangeBound = function(key, rawValue) {
+            if (String(rawValue).trim() === '') return;
+            var value = Number(rawValue);
+            if (!Number.isFinite(value)) return;
+            var nextRange = { min: range.min, max: range.max };
+            nextRange[key] = value;
+            if (!(nextRange.max > nextRange.min)) {
+              var message = t('stem.numberline.invalid_range', 'Minimum value must be less than maximum value.');
+              if (addToast) addToast(message, 'warning');
+              if (announceToSR) announceToSR(message);
+              return;
+            }
+            upd({ range: nextRange });
+          };
 
           // ═══ BADGE SYSTEM ═══
           var BADGES = [
@@ -635,8 +655,8 @@ window.StemLab = window.StemLab || {
                 h('div', { className: 'bg-blue-50 rounded-lg p-3 border border-blue-100' },
                   h('label', { className: 'block text-xs text-blue-700 mb-1 font-bold' }, t('stem.numberline.min_value', 'Min Value')),
                   h('input', {
-                    type: 'number', value: range.min,
-                    onChange: function(e) { upd({ range: { min: parseInt(e.target.value) || 0, max: range.max } }); },
+                    type: 'number', step: 'any', value: range.min,
+                    onChange: function(e) { updateExploreRangeBound('min', e.target.value); },
                     'aria-label': t('stem.numberline.minimum_value', 'Minimum value'),
                     className: 'w-full px-3 py-1.5 text-sm border border-blue-600 rounded-lg'
                   })
@@ -644,8 +664,8 @@ window.StemLab = window.StemLab || {
                 h('div', { className: 'bg-blue-50 rounded-lg p-3 border border-blue-100' },
                   h('label', { className: 'block text-xs text-blue-700 mb-1 font-bold' }, t('stem.numberline.max_value', 'Max Value')),
                   h('input', {
-                    type: 'number', value: range.max,
-                    onChange: function(e) { upd({ range: { min: range.min, max: parseInt(e.target.value) || 20 } }); },
+                    type: 'number', step: 'any', value: range.max,
+                    onChange: function(e) { updateExploreRangeBound('max', e.target.value); },
                     'aria-label': t('stem.numberline.maximum_value', 'Maximum value'),
                     className: 'w-full px-3 py-1.5 text-sm border border-blue-600 rounded-lg'
                   })
@@ -687,6 +707,12 @@ window.StemLab = window.StemLab || {
                     if (!valEl || !valEl.value) return;
                     var v = parseFloat(valEl.value);
                     if (isNaN(v)) return;
+                    if (v < range.min || v > range.max) {
+                      var markerMessage = 'Marker value must be between ' + range.min + ' and ' + range.max + '.';
+                      if (addToast) addToast(markerMessage, 'warning');
+                      if (announceToSR) announceToSR(markerMessage);
+                      return;
+                    }
                     sfxClick();
                     upd({ markers: markers.concat([{ value: v, label: labelEl ? labelEl.value : '', color: colorEl ? colorEl.value : '#ef4444' }]) });
                     if (valEl) valEl.value = '';
@@ -1909,15 +1935,15 @@ window.StemLab = window.StemLab || {
                     ),
                     h('div', { className: 'grid grid-cols-3 gap-2 text-center sm:min-w-[210px]' },
                       h('div', { className: 'rounded-xl bg-slate-50 border border-slate-200 px-2 py-2' },
-                        h('p', { className: 'text-xs text-slate-500 font-bold' }, t('stem.numberline.range', 'Range')),
+                        h('p', { className: 'text-xs text-slate-600 font-bold' }, t('stem.numberline.range', 'Range')),
                         h('p', { className: 'text-sm font-black text-slate-900 font-mono' }, range.min + '..' + range.max)
                       ),
                       h('div', { className: 'rounded-xl bg-slate-50 border border-slate-200 px-2 py-2' },
-                        h('p', { className: 'text-xs text-slate-500 font-bold' }, t('stem.numberline.accuracy', 'Accuracy')),
+                        h('p', { className: 'text-xs text-slate-600 font-bold' }, t('stem.numberline.accuracy', 'Accuracy')),
                         h('p', { className: 'text-sm font-black text-slate-900' }, accuracy)
                       ),
                       h('div', { className: 'rounded-xl bg-slate-50 border border-slate-200 px-2 py-2' },
-                        h('p', { className: 'text-xs text-slate-500 font-bold' }, t('stem.numberline.badges', 'Badges')),
+                        h('p', { className: 'text-xs text-slate-600 font-bold' }, t('stem.numberline.badges', 'Badges')),
                         h('p', { className: 'text-sm font-black text-slate-900' }, earnedBadges + '/' + BADGES.length)
                       )
                     )
@@ -2039,7 +2065,7 @@ window.StemLab = window.StemLab || {
                   onKeyDown: function(e) { numberlineTabKeyDown(e, tabIndex); },
                   role: 'tab', 'aria-selected': tab === t2.id, tabIndex: tab === t2.id ? 0 : -1,
                   className: 'min-h-[42px] py-2 px-2 rounded-lg text-xs font-bold transition-all ' +
-                    (tab === t2.id ? 'bg-white text-blue-800 shadow-sm' : 'text-blue-500 hover:text-blue-700')
+                    (tab === t2.id ? 'bg-white text-blue-800 shadow-sm' : 'text-blue-700 hover:text-blue-800')
                 }, t2.icon + ' ' + t2.label);
               })
             ),

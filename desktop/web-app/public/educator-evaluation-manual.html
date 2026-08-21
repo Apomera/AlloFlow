@@ -206,8 +206,8 @@ html:root[data-allo-theme="easyread"]{--bg:#faf8ef;--panel:#fffefa;--ink:#18202f
 
 <p class="docmeta">
 <span>21 sections</span><span class="dot" aria-hidden="true"></span>
-<span>about 30 minutes end to end</span><span class="dot" aria-hidden="true"></span>
-<span>reviewed August 20, 2026</span><span class="dot" aria-hidden="true"></span>
+<span>about 35 minutes end to end</span><span class="dot" aria-hidden="true"></span>
+<span>reviewed August 21, 2026</span><span class="dot" aria-hidden="true"></span>
 <span>prints to about 20 pages</span>
 </p>
 
@@ -254,8 +254,8 @@ html:root[data-allo-theme="easyread"]{--bg:#faf8ef;--panel:#fffefa;--ink:#18202f
 <tr><th scope="row">Who it is for</th><td>One evaluator drafting, simulating, and exporting on one device.</td><td>One principal who needs a small Drive handoff without a district-wide repository.</td><td>A district that wants authenticated, shared, two-way records.</td></tr>
 <tr><th scope="row">Setup needed</th><td>None.</td><td>The principal copies three files into their own private Apps Script project, with district approval.</td><td>A district administrator deploys and configures the repository, membership, and assignments.</td></tr>
 <tr><th scope="row">Where working data lives</th><td>In this browser profile on this device. A deliberate export creates a separate file wherever you save or send it.</td><td>Exported HTML packets in the principal's district Drive, plus the principal's local source workspace until it is handed off.</td><td>The district deployment account's repository and released-summary folders inside its Google Workspace tenant.</td></tr>
-<tr><th scope="row">Educator access</th><td>No authentication; role switching is only a preview.</td><td>A reviewed viewer/commenter permission to one exported packet; it may expire or be revoked.</td><td>Each educator signs in and sees only their assigned record.</td></tr>
-<tr><th scope="row">Controls</th><td>Visible save state, staged import review, automatic pre-import backup, manual exports, and read-only educator preview.</td><td>Validated one-educator packet, verified-account domain boundary, immutable final review, live permission re-read, optional expiration, and proof-based revoke.</td><td>Managed identity, roles, assignments, mutation validation, server audit, two-party workflow, reviewed administrator changes, private audited exports, and archive rehearsal.</td></tr>
+<tr><th scope="row">Educator access</th><td>No authentication. Real local records expose a read-only Educator preview. Only the explicitly fictional sample makes perspective changes interactive for rehearsal.</td><td>A reviewed viewer/commenter permission to one exported packet; it may expire or be revoked.</td><td>Each educator signs in and sees only their assigned record.</td></tr>
+<tr><th scope="row">Controls</th><td>Visible save state, staged import review, automatic pre-import backup, manual exports, read-only preview for real records, and an interactive coach limited to fictional data.</td><td>Validated one-educator packet, verified-account domain boundary, immutable final review, live permission re-read, optional expiration, and proof-based revoke.</td><td>Managed identity, roles, assignments, mutation validation, server audit, two-party workflow, reviewed administrator changes, private audited exports, and archive rehearsal.</td></tr>
 <tr><th scope="row">Official record</th><td>No.</td><td>No; the Drive folder needs a deliberate records handoff.</td><td>The district still decides which authorized personnel system is official.</td></tr>
 </table>
 </div>
@@ -274,6 +274,21 @@ html:root[data-allo-theme="easyread"]{--bg:#faf8ef;--panel:#fffefa;--ink:#18202f
 <li><strong>Start observing.</strong> Log walkthroughs as you do them, and assign formal observations when the cycle calls for them. Trends build themselves.</li>
 </ol>
 <p>In the private path, edits are saved to this browser profile after a short delay. Watch the persistent <strong>Saving</strong>, <strong>Saved on this device</strong>, or <strong>Changes are not saved</strong> status. A blocked, full, or unavailable browser store is reported instead of being treated as success; download an emergency backup before closing. Exports, Drive sharing, the district portal, and optional AI reflection are deliberate transmissions described in section 11.</p>
+<h3>Rehearse one complete fictional evaluation</h3>
+<p>Before entering a real name or record, use the built-in rehearsal to experience every evaluator-owned and educator-owned step from assignment through final release.</p>
+<ol>
+<li><strong>Enter simulated data.</strong> On first launch choose <strong>Start a guided sample tour</strong>. Finish the six-screen tour or choose <strong>Exit tour</strong>. Confirm that the top banner says <strong>Simulated data</strong> and the role control says <strong>Fictional educator</strong>, not Educator preview.</li>
+<li><strong>Open the stable practice cycle.</strong> On Overview, find <strong>Practice one complete fictional evaluation</strong> and choose <strong>Start rehearsal with Teacher 08</strong>. The card tracks formal steps completed, fictional final release, and the next owner.</li>
+<li><strong>Assign and follow the owner prompts.</strong> Choose <strong>+ Assign formal observation</strong>. The <strong>Full-cycle rehearsal coach</strong> then names the next owner and offers <strong>Continue as Fictional educator</strong> or <strong>Continue as Evaluator</strong> when a perspective change is required.</li>
+<li><strong>Complete the formal cycle in order.</strong> Submit fictional prework; record the pre-conference; start the observation; enter factual, de-identified evidence; tag a component; complete the privacy check; and publish. Then submit the fictional educator reflection, record the post-conference, enter a human-selected rating and rationale for every domain, sign, acknowledge receipt as the fictional educator, and finalize as evaluator.</li>
+<li><strong>Complete the annual release.</strong> Choose <strong>Continue to annual rating preview</strong>, enter the four human domain ratings and any required local-measure inputs, read the confirmation, and choose <strong>Record final release</strong>. In simulated data this records a fictional release only; it does not create or update a district personnel record.</li>
+<li><strong>Verify the chain.</strong> Back on Overview, the card should read <strong>10 / 10</strong>, <strong>Recorded</strong>, and <strong>Rehearsal complete</strong>. Choose <strong>Review completed fictional cycle</strong> and confirm the timeline includes assignment, evidence publication, evaluator signature, educator acknowledgment, finalization, and release.</li>
+</ol>
+<div class="warn"><strong>Fictional-data boundary:</strong> interactive perspective switching exists only while the workspace is explicitly simulated. In real local work, <strong>Educator preview</strong> remains read-only because a role switch is not authentication; the educator responds through a deliberately shared packet or the authenticated district portal. Never paste real personnel or student-identifying information into the rehearsal.</div>
+<figure>
+<img src="educator-evaluation-manual-assets/14-rehearsal-complete.jpg" width="1770" height="1200" loading="lazy" alt="Evaluation Overview after the fictional Teacher 08 rehearsal is finished. The practice card reads Rehearsal complete, 10 of 10 formal steps complete, final release Recorded, and next owner Done, with a Review completed fictional cycle button beneath the completion message.">
+<figcaption>A finished end-to-end rehearsal. The completion card is both a progress check and a direct route to the fictional audit chain.</figcaption>
+</figure>
 <h3>Changing the fictional scenario</h3>
 <p>In a simulated workspace, open <strong>Setup &rarr; Simulation Studio</strong>. It is intentionally absent from real workspaces. The language interpreter is a local rules parser, not an AI service: no request or record leaves the browser.</p>
 <figure>
@@ -303,8 +318,8 @@ html:root[data-allo-theme="easyread"]{--bg:#faf8ef;--panel:#fffefa;--ink:#18202f
 <h2 id="tour">3. A Tour of the Workspace</h2>
 <p>Evaluators see eight tabs. The <strong>Overview</strong> is the daily home base: what is coming due, which human step needs attention next, how far the roster has progressed, and how the selected educator's final evaluation is composed.</p>
 <figure>
-<img src="educator-evaluation-manual-assets/02-overview.jpg" width="1770" height="1200" loading="lazy" alt="Evaluation overview tab showing a Coming due card with counts for past due, due within 14 days, and due in 15 to 30 days; a Teachers evaluated donut reading 2 of 8 finalized; and a Weight in final evaluation donut showing Observation and Practice 70 percent, Building Level Data 10 percent, Teacher-Specific Data 10 percent, and LEA Selected Measure 10 percent.">
-<figcaption>The Overview tab. The weighting donut always shows the composition that applies to the selected educator's assignment type.</figcaption>
+<img src="educator-evaluation-manual-assets/02-overview.jpg" width="1770" height="1200" loading="lazy" alt="Evaluation Overview in simulated data. A Practice one complete fictional evaluation card shows zero of ten steps, final release not recorded, next owner Evaluator, and a Start rehearsal with Teacher 08 button. Below it, Coming due and Needs your attention show dated work and direct next-step links.">
+<figcaption>The current Overview begins with the fictional full-cycle practice card, then the due-date bands and evaluator-owned next-action queue.</figcaption>
 </figure>
 <ul>
 <li><strong>Overview:</strong> cycle progress, what is coming due, a <em>Needs your attention</em> queue, and the weighting for the selected educator. The queue includes evaluator-owned work only and orders it by cycle due date. Choose an action to select that educator and open Formal observations, Walkthroughs, SPM / SLO, or final evaluation as appropriate. The roster's <em>Next action</em> column also names educator-owned waiting states, so waiting for prework or acknowledgment is not presented as unfinished evaluator work.</li>
@@ -343,8 +358,8 @@ html:root[data-allo-theme="easyread"]{--bg:#faf8ef;--panel:#fffefa;--ink:#18202f
 <h2 id="cycle">5. The Formal Observation Cycle</h2>
 <p>Formal observations walk a ten-step tracker in order, and the tool will not let steps be skipped silently. The tracker across the top of the record always shows where you are.</p>
 <figure>
-<img src="educator-evaluation-manual-assets/04-formal-observation.jpg" width="1770" height="1200" loading="lazy" alt="Formal comprehensive observations tab showing a record for Teacher 03 badged Step 8 of 10, with a progress tracker whose ten points read Assigned, Prework, Pre-conference, Observation, Evidence review, Reflection, Post-conference, Ratings, Acknowledged, and Finalized. The first seven points are complete, Ratings is the current step, and the panel beside it reports that the evaluator signed on August 13 and the record is awaiting teacher acknowledgment, which does not indicate agreement. An evidence map lists Domain 1 Planning and Preparation at 20 percent, Domain 2 Classroom Environment at 30 percent, and Domain 3 Instruction at 30 percent.">
-<figcaption>The ten-step tracker partway through a cycle. Completed steps are filled in, the current step is highlighted, and later steps stay dim until they are reached.</figcaption>
+<img src="educator-evaluation-manual-assets/04-formal-observation.jpg" width="1770" height="1200" loading="lazy" alt="Formal comprehensive observations in the fictional sample, showing Teacher 03 at Step 8 of 10. The ten-point tracker has completed steps through Post-conference, Ratings is current, and a Full-cycle rehearsal coach identifies Fictional educator as next owner and offers Continue as Fictional educator before acknowledgment.">
+<figcaption>The tracker and rehearsal coach partway through a fictional cycle. The coach identifies who owns the next step; later tracker points stay dim until their prerequisites are complete.</figcaption>
 </figure>
 <ol>
 <li><strong>Assigned.</strong> The observation is created for an educator and stamped with the framework snapshot in force.</li>
@@ -359,6 +374,7 @@ html:root[data-allo-theme="easyread"]{--bg:#faf8ef;--panel:#fffefa;--ink:#18202f
 <li><strong>Finalized.</strong> The record locks. Later context appears as appended comments.</li>
 </ol>
 <p>Alongside the tracker, the <strong>evidence map</strong> organizes evidence by domain and shows each domain's weight within Observation and Practice. Component names appear, but rubric-level performance descriptors are not reproduced, because that text is licensed.</p>
+<p>In simulated data, the <strong>Full-cycle rehearsal coach</strong> can change between evaluator and Fictional educator so one principal can practice both sides. That control does not appear as an editable educator role for real local records. Real two-person work requires an educator response packet or authenticated portal account.</p>
 <p><strong>Returning to earlier records:</strong> when an educator has more than one formal observation, use the <em>Observation record</em> selector beside the educator selector. Records are newest first and show their observation date plus <em>Finalized</em> or the current step. Selecting a finalized record opens its locked history; it does not reopen the workflow.</p>
 <blockquote><p><strong>Artifact boundary:</strong> the prework field accepts text and district-authorized, access-controlled references only. None of the three record paths uploads, versions, scans, or retains attachment files. Keep the actual artifact in the district-approved repository, manage its permissions and retention there, and do not paste student-identifying information into the reference.</p></blockquote>
 <h3>The educator statement</h3>
@@ -418,10 +434,10 @@ html:root[data-allo-theme="easyread"]{--bg:#faf8ef;--panel:#fffefa;--ink:#18202f
 <p>Every record is stamped with the framework and weights that were in force when it was created. If your district changes frameworks, or you switch profiles to compare, the tool recalculates nothing retroactively: a record scored under Pennsylvania Act 13 keeps its Act 13 math forever, and a Maine record keeps its Maine math. This is why a trend line stays trustworthy across a policy change, and it is also why two records in the same list can be scored differently on purpose.</p>
 
 <h2 id="educator">8. For Educators Being Evaluated</h2>
-<p>In the district portal, an educator signing in with their district account gets their own set of tabs, scoped to them alone. Colleagues' records are never visible.</p>
+<p>There are two deliberately different educator perspectives. In a private on-device workspace, <strong>Educator preview</strong> lets the evaluator inspect visibility but cannot change a real record. In the district portal, an educator signing in with their managed district account gets editable educator-owned steps and their own set of tabs, scoped to them alone. Colleagues' records are never visible.</p>
 <figure>
-<img src="educator-evaluation-manual-assets/08-teacher-view.jpg" width="1770" height="1200" loading="lazy" alt="Teacher view showing tabs My evaluation, My trends, My evidence, Formal observation, SPM / SLO, Timeline, and About. The My evaluation tab shows Teacher 03 badged Awaiting teacher, a weighting donut reading Observation and Practice 70 percent with three 10 percent measures, and a card titled Your statement for the record whose text box is open for writing, explaining that the statement appears verbatim in the released summary and that no one else can edit it.">
-<figcaption>The educator's own view. The statement box is theirs to write, and no evaluator can edit it.</figcaption>
+<img src="educator-evaluation-manual-assets/08-teacher-view.jpg" width="1770" height="1200" loading="lazy" alt="Read-only Educator preview in a real private on-device workspace. A blue banner states that changes are blocked because local role switching is not authentication. Teacher 03's My evaluation page is visible, but the statement field and Save statement button are disabled and direct the educator to a response packet or authenticated portal.">
+<figcaption>The local Educator preview is a visibility check, not educator access. Real-record fields stay disabled because a local perspective switch does not authenticate another person.</figcaption>
 </figure>
 <ul>
 <li><strong>My evaluation:</strong> how the final evaluation is weighted, current status, and the statement card.</li>

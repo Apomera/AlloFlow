@@ -25,6 +25,28 @@
 (function () {
     'use strict';
 
+    // Loading the 82M model and ONNX/WASM runtime beside a live microphone can
+    // exhaust or destabilize an iOS WebKit Canvas process. The shell normally
+    // blocks this first; keep the loader safe when it is injected directly too.
+    function isIosCanvasRuntime() {
+        try {
+            const href = String(window.location && window.location.href || '');
+            const host = String(window.location && window.location.hostname || '');
+            const canvas = window._isCanvasEnv === true || href.startsWith('blob:') ||
+                /(?:googleusercontent|scf\.usercontent|code-server|idx\.google|run\.app)/i.test(host);
+            if (!canvas) return false;
+            if (window._isIOSCanvasEnv === true) return true;
+            const nav = window.navigator || {};
+            return /iP(?:hone|ad|od)/i.test(String(nav.userAgent || '')) ||
+                (String(nav.platform || '') === 'MacIntel' && Number(nav.maxTouchPoints) > 1);
+        } catch (_) { return false; }
+    }
+    if (isIosCanvasRuntime()) {
+        window.__kokoroTTSUnavailableReason = 'ios-canvas';
+        console.warn('[Kokoro TTS] Disabled inside Gemini Canvas on iPhone/iPad to protect the Canvas session');
+        return;
+    }
+
     // ─── Duplicate-load guard ────────────────────────────────────────────
     // React StrictMode runs useEffect twice, injecting two <script> tags.
     // Both scripts can execute before either sets window._kokoroTTS (line ~687).

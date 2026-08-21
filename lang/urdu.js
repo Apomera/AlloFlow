@@ -28751,7 +28751,17 @@
       "best": "أفضل",
       "menu_73": "← مینو",
       "menu_74": "← مینو",
-      "menu_75": "← مینو"
+      "menu_75": "← مینو",
+      "explore_the_road": "سڑک کا جائزہ لیں",
+      "lane_change_without_signal": "اشارہ دیے بغیر لین تبدیل کرنا",
+      "drove_in_oncoming_lane": "مخالف لین میں گاڑی چلائی",
+      "high_beams": "ہائی بیم",
+      "left_signal": "بایاں اشارہ",
+      "right_signal": "دایاں اشارہ",
+      "braking": "بریک لگانا",
+      "traction_loss": "گرفت ختم ہونا",
+      "fog_low_beams_ok": "دھند — لو بیم مناسب ہیں",
+      "welcome_to_roadready": "RoadReady میں خوش آمدید"
     },
     "schoolbehaviortoolkit": {
       "replacement_behaviors": "متبادل رویے"

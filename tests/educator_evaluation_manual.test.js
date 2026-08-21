@@ -9,6 +9,8 @@ const MANUAL = fs.readFileSync(path.join(ROOT, 'educator-evaluation-manual.html'
 const MIRROR = fs.readFileSync(path.join(PUBLIC, 'educator-evaluation-manual.html'), 'utf8');
 const SOURCE = fs.readFileSync(path.join(ROOT, 'educator_evaluation_source.jsx'), 'utf8');
 const GS_SOURCE = fs.readFileSync(path.join(ROOT, 'apps_script', 'educator_evaluation', 'Code.gs'), 'utf8');
+const CAPTURE_SCRIPT = fs.readFileSync(path.join(ROOT, 'dev-tools', 'capture_educator_evaluation_manual.cjs'), 'utf8');
+const PACKAGE = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
 // The manual's own voice is the prose only: not the quoted Code.gs summary, and
 // not script blocks, whose comments are code written by whoever owns them.
 const PROSE = MANUAL
@@ -262,6 +264,35 @@ describe('educator evaluation user manual', () => {
     expect(MANUAL).toContain('requested-to-applied correction');
     expect(MANUAL).toContain('Preview changes');
     expect(MANUAL).toContain('Undo last simulation');
+  });
+
+  it('walks one fictional evaluation from assignment through audited release', () => {
+    expect(MANUAL).toContain('Start rehearsal with Teacher 08');
+    expect(SOURCE).toMatch(/t\("educator_evaluation\.start_rehearsal_with_m2qc5g", 'Start rehearsal with '\) \+ teacher\.name/);
+    for (const phrase of ['Practice one complete fictional evaluation', 'Full-cycle rehearsal coach',
+      'Continue as Fictional educator', 'Continue as Evaluator',
+      'Record final release', 'Review completed fictional cycle', 'Rehearsal complete']) {
+      expect(MANUAL).toContain(phrase);
+      expect(SOURCE).toContain(phrase);
+    }
+    expect(MANUAL).toContain('interactive perspective switching exists only while the workspace is explicitly simulated');
+    expect(MANUAL).toContain('remains read-only because a role switch is not authentication');
+    expect(MANUAL).toContain('Never paste real personnel or student-identifying information into the rehearsal');
+    expect(SOURCE).toContain('Interactive fictional educator rehearsal');
+    expect(SOURCE).toContain('localFictionalRehearsal');
+    expect(SOURCE).toContain('localTeacherPreview');
+  });
+
+  it('has a repeatable current-UI screenshot pipeline, including both portal roles and the completed rehearsal', () => {
+    expect(PACKAGE.scripts['capture:evaluation-manual']).toBe('node dev-tools/capture_educator_evaluation_manual.cjs');
+    expect(CAPTURE_SCRIPT).toContain('educator_evaluation_standalone.js');
+    expect(CAPTURE_SCRIPT).toContain('completeRehearsal');
+    for (const name of ['01-first-launch.jpg', '02-overview.jpg', '04-formal-observation.jpg',
+      '08-teacher-view.jpg', '11-portal-evaluator.jpg', '11-portal-teacher.jpg',
+      '12-simulation-studio.jpg', '13-principal-helper.jpg', '14-rehearsal-complete.jpg']) {
+      expect(CAPTURE_SCRIPT).toContain(name);
+      expect(imageSrcs).toContain(`educator-evaluation-manual-assets/${name}`);
+    }
   });
 
   it('keeps the principal-helper setup and operational sequence aligned to the product', () => {

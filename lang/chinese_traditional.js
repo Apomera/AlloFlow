@@ -29421,7 +29421,17 @@
       "best": "最佳",
       "menu_73": "← 菜單",
       "menu_74": "← 菜單",
-      "menu_75": "← 菜單"
+      "menu_75": "← 菜單",
+      "explore_the_road": "探索道路",
+      "lane_change_without_signal": "未打方向燈變換車道",
+      "drove_in_oncoming_lane": "駛入對向車道",
+      "high_beams": "遠光燈",
+      "left_signal": "左方向燈",
+      "right_signal": "右方向燈",
+      "braking": "煞車",
+      "traction_loss": "失去抓地力",
+      "fog_low_beams_ok": "霧天——近光燈可以",
+      "welcome_to_roadready": "歡迎使用 RoadReady"
     },
     "schoolbehaviortoolkit": {
       "replacement_behaviors": "替代行為",

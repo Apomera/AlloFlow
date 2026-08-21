@@ -1186,7 +1186,7 @@ window.StemLab = window.StemLab || {
         h('div', { className: 'flex flex-wrap items-center justify-end gap-2' },
           streak >= 3 && h('span', { className: 'text-xs font-bold text-orange-500' }, '\uD83D\uDD25 ' + streak),
           h('div', { className: 'flex gap-1.5' },
-            h('span', { className: 'text-xs font-bold text-emerald-600 self-center' }, score.correct + '/' + score.total),
+            h('span', { className: 'text-xs font-bold text-emerald-700 self-center' }, score.correct + '/' + score.total),
             h('button', { 'aria-label': __alloT('stem.manipulatives.badges', 'Badges'), onClick: function() { upd({ showBadgesPanel: !showBadgesPanel }); }, className: 'text-[11px] font-bold px-2 py-0.5 rounded-full border transition-all ' + (showBadgesPanel ? 'bg-amber-100 border-amber-600 text-amber-700' : 'bg-slate-100 border-slate-200 text-slate-600') }, '\uD83C\uDFC5 ' + Object.keys(earnedBadges).length + '/' + badgeDefs.length),
             h('button', { onClick: function() { upd({ soundEnabled: !soundEnabled }); }, 'aria-label': soundEnabled ? 'Mute sound' : 'Enable sound', className: 'text-sm px-1' }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07'),
             callGemini && h('button', { 'aria-label': aiLoading ? 'AI Tutor thinking' : 'Ask AI Tutor', 'aria-busy': aiLoading, onClick: askAI, disabled: aiLoading, className: 'text-[11px] font-bold px-2 py-0.5 rounded-full border transition-all ' + (aiLoading ? 'bg-pink-100 border-pink-700 text-pink-700' : 'bg-pink-50 border-pink-700 text-pink-700 hover:bg-pink-100') }, aiLoading ? '\u23F3' : '\uD83E\uDD16 Tutor')
@@ -1378,23 +1378,23 @@ window.StemLab = window.StemLab || {
             ),
             // Place value columns
             h('div', { className: 'grid grid-cols-4 gap-3' },
-              placeCol('Thousands', '\u25A0', 'thousands', '#db2777', '#f472b6', 56, 56, 10, 10),
-              placeCol('Hundreds', '\u25AC', 'hundreds', '#2563eb', '#60a5fa', 48, 48, 10, 10),
-              placeCol('Tens', '\u2503', 'tens', '#059669', '#34d399', 10, 48, 1, 10),
-              placeCol('Ones', '\u25AA', 'ones', '#ea580c', '#fb923c', 10, 10, 1, 1)
+              placeCol('Thousands', '\u25A0', 'thousands', '#be185d', '#f472b6', 56, 56, 10, 10),
+              placeCol('Hundreds', '\u25AC', 'hundreds', '#1d4ed8', '#60a5fa', 48, 48, 10, 10),
+              placeCol('Tens', '\u2503', 'tens', '#047857', '#34d399', 10, 48, 1, 10),
+              placeCol('Ones', '\u25AA', 'ones', '#c2410c', '#fb923c', 10, 10, 1, 1)
             ),
             // Regrouping
             h('div', { className: 'bg-gradient-to-r from-violet-50 to-fuchsia-50 rounded-xl border border-violet-200 p-3 mt-1' },
               h('p', { className: 'text-[11px] font-bold text-violet-700 uppercase tracking-wider mb-2 text-center' }, __alloT('stem.manipulatives.regroup_ungroup', '\u21C4 Regroup / Ungroup')),
               h('div', { className: 'flex flex-wrap gap-2 justify-center' },
-                regroupBtn('10 \u25AA \u2192 1 \u2503', 'ones', 'tens', b10.ones >= 10, '#ea580c', '#059669'),
-                regroupBtn('1 \u2503 \u2192 10 \u25AA', 'tens', 'ones', b10.tens >= 1, '#059669', '#ea580c'),
+                regroupBtn('10 \u25AA \u2192 1 \u2503', 'ones', 'tens', b10.ones >= 10, '#c2410c', '#047857'),
+                regroupBtn('1 \u2503 \u2192 10 \u25AA', 'tens', 'ones', b10.tens >= 1, '#047857', '#c2410c'),
                 h('span', { className: 'w-px h-6 bg-violet-200 mx-1 self-center' }),
-                regroupBtn('10 \u2503 \u2192 1 \u25AC', 'tens', 'hundreds', b10.tens >= 10, '#059669', '#2563eb'),
-                regroupBtn('1 \u25AC \u2192 10 \u2503', 'hundreds', 'tens', b10.hundreds >= 1, '#2563eb', '#059669'),
+                regroupBtn('10 \u2503 \u2192 1 \u25AC', 'tens', 'hundreds', b10.tens >= 10, '#047857', '#1d4ed8'),
+                regroupBtn('1 \u25AC \u2192 10 \u2503', 'hundreds', 'tens', b10.hundreds >= 1, '#1d4ed8', '#047857'),
                 h('span', { className: 'w-px h-6 bg-violet-200 mx-1 self-center' }),
-                regroupBtn('10 \u25AC \u2192 1 \u25A0', 'hundreds', 'thousands', b10.hundreds >= 10, '#2563eb', '#db2777'),
-                regroupBtn('1 \u25A0 \u2192 10 \u25AC', 'thousands', 'hundreds', b10.thousands >= 1, '#db2777', '#2563eb')
+                regroupBtn('10 \u25AC \u2192 1 \u25A0', 'hundreds', 'thousands', b10.hundreds >= 10, '#1d4ed8', '#be185d'),
+                regroupBtn('1 \u25A0 \u2192 10 \u25AC', 'thousands', 'hundreds', b10.thousands >= 1, '#be185d', '#1d4ed8')
               ),
               h('p', { className: 'text-[11px] text-violet-400 text-center mt-1.5 italic' }, __alloT('stem.manipulatives.10_of_one_place_value_always_equals_1_', '\uD83D\uDCA1 10 of one place value always equals 1 of the next!'))
             )
@@ -1403,13 +1403,13 @@ window.StemLab = window.StemLab || {
           // Difficulty selector
           h('div', { className: 'flex gap-1.5 items-center flex-wrap' },
             h('span', { className: 'text-[11px] font-bold text-slate-600' }, 'Difficulty:'),
-            [{ id: 'ones', label: '1\u20139', color: '#ea580c' }, { id: 'tens', label: '10\u201399', color: '#059669' }, { id: 'hundreds', label: '100\u2013999', color: '#2563eb' }, { id: 'thousands', label: '1K\u20139K', color: '#db2777' }, { id: 'any', label: 'Any', color: 'var(--allo-stem-text-soft, #94a3b8)' }].map(function(dl) {
+            [{ id: 'ones', label: '1\u20139', color: '#c2410c' }, { id: 'tens', label: '10\u201399', color: '#047857' }, { id: 'hundreds', label: '100\u2013999', color: '#1d4ed8' }, { id: 'thousands', label: '1K\u20139K', color: '#be185d' }, { id: 'any', label: 'Any', color: '#475569' }].map(function(dl) {
               return h('button', { 'aria-label': __alloT('stem.manipulatives.expanded_form', 'Expanded Form'), key: dl.id, onClick: function() { upd({ diffLevel: dl.id }); },
                 className: 'px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all ' + (diffLevel === dl.id ? 'text-white shadow' : 'bg-white border border-slate-400 text-slate-600 hover:bg-slate-50'),
                 style: diffLevel === dl.id ? { backgroundColor: dl.color } : {}
               }, dl.label);
             }),
-            h('label', { className: 'flex items-center gap-1 text-[11px] font-bold text-orange-600 cursor-pointer ml-auto' },
+            h('label', { className: 'flex items-center gap-1 text-[11px] font-bold text-orange-800 cursor-pointer ml-auto' },
               h('input', { type: 'checkbox', checked: showExpanded, onChange: function() { upd({ showExpanded: !showExpanded }); }, className: 'accent-orange-600' }), __alloT('stem.manipulatives.expanded_form_2', 'Expanded Form'))
           ),
 

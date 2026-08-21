@@ -322,7 +322,7 @@ onSpeak: function(formats) {
           'aria-label': 'Open accessible math keyboard',
           title: 'Open accessible math keyboard',
           onClick: function() { openAccessibleMathInput(currentValue, onValue, title); },
-          style: { padding: '8px 11px', borderRadius: '10px', background: 'transparent', border: '1px solid currentColor', color: '#a78bfa', fontWeight: '700', fontSize: '11px', cursor: 'pointer', whiteSpace: 'nowrap' }
+          style: { maxWidth: '100%', padding: '8px 11px', borderRadius: '10px', background: 'transparent', border: '1px solid currentColor', color: '#6d28d9', fontWeight: '700', fontSize: '11px', cursor: 'pointer', whiteSpace: 'nowrap' }
         }, '\u2328 Math keyboard');
       };
 
@@ -666,12 +666,12 @@ onSpeak: function(formats) {
                 return h('button', { key: m.id, onClick: function() { updMulti({ mode: m.id, result: null }); }, title: m.desc, 'aria-pressed': mode === m.id, style: btnStyle(mode === m.id) }, m.label);
               })
             ),
-            h('div', { style: { display: 'flex', gap: '6px', marginBottom: '8px' } },
+            h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '8px' } },
               h('input', { type: 'text', value: expression, onChange: function(e) { upd('expression', e.target.value); },
                 onKeyDown: function(e) { if (e.key === 'Enter') handleSolve(); },
                 placeholder: 'e.g. ' + ((EXAMPLES[mode] || [])[0] || '2x + 5 = 13'),
                 'aria-label': t('stem.algebraCAS.algebra_expression_input', 'Algebra expression input'),
-                style: { flex: '1', padding: '8px 12px', borderRadius: '10px', background: CARD, border: '1px solid ' + BORDER, color: TEXT, outline: 'none', fontFamily: 'monospace', fontSize: '13px' },
+                style: { flex: '1 1 160px', minWidth: 0, padding: '8px 12px', borderRadius: '10px', background: CARD, border: '1px solid ' + BORDER, color: TEXT, outline: 'none', fontFamily: 'monospace', fontSize: '13px' },
                 onFocus: function(e) { e.target.style.boxShadow = '0 0 0 2px #7c3aed'; }, onBlur: function(e) { e.target.style.boxShadow = 'none'; } }),
               mathInputButton(expression, function(value) { upd('expression', value); }, 'Enter an algebra expression'),
               h('button', { 'aria-label': 'TRY:', onClick: handleSolve, disabled: isLoading || !expression.trim(),
@@ -737,13 +737,13 @@ onSpeak: function(formats) {
                 h('div', { style: { fontSize: '18px', fontFamily: 'monospace', fontWeight: '700', textAlign: 'center', padding: '10px 0' } }, practiceQ.problem),
                 h('p', { style: { fontSize: '11px', textAlign: 'center', color: MUTED } }, '\uD83D\uDCA1 Hint: ' + practiceQ.hint)
               ),
-              !practiceFeedback ? h('div', { style: { display: 'flex', gap: '6px', marginBottom: '8px' } },
+              !practiceFeedback ? h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '8px' } },
                 h('input', { type: 'text', value: practiceAnswer,
                   onChange: function(e) { upd('practiceAnswer', e.target.value); },
                   onKeyDown: function(e) { if (e.key === 'Enter') handlePracticeCheck(); },
                   placeholder: t('stem.algebraCAS.your_answer', 'Your answer...'),
                   'aria-label': t('stem.algebraCAS.practice_answer_input', 'Practice answer input'),
-                  style: { flex: '1', padding: '8px 12px', borderRadius: '10px', background: CARD, border: '1px solid ' + BORDER, color: TEXT, outline: 'none', fontFamily: 'monospace', fontSize: '13px' },
+                  style: { flex: '1 1 160px', minWidth: 0, padding: '8px 12px', borderRadius: '10px', background: CARD, border: '1px solid ' + BORDER, color: TEXT, outline: 'none', fontFamily: 'monospace', fontSize: '13px' },
                   onFocus: function(e) { e.target.style.boxShadow = '0 0 0 2px #7c3aed'; }, onBlur: function(e) { e.target.style.boxShadow = 'none'; } }),
                 mathInputButton(practiceAnswer, function(value) { upd('practiceAnswer', value); }, 'Enter your practice answer'),
                 h('button', { onClick: handlePracticeCheck, disabled: isLoading || !practiceAnswer.trim(),

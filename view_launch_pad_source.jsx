@@ -22,6 +22,7 @@ function LaunchPadView(props) {
   var setPendingRole = props.setPendingRole;
   var setIsGateOpen = props.setIsGateOpen;
   var setShowAIBackendModal = props.setShowAIBackendModal;
+  var launchPadRef = React.useRef(null);
   // Resolve language before the voice setup hooks: model readiness is
   // profile-specific, so changing Spanish -> English must re-check the cache.
   var _langCtx = useContext(window.AlloLanguageContext) || {};
@@ -35,15 +36,19 @@ function LaunchPadView(props) {
     } catch (_) {}
     return currentUiLanguage || 'en-US';
   }
+  var iosCanvas = false;
+  try {
+    iosCanvas = window._isIOSCanvasEnv === true || !!(window.AlloFlowVoice && window.AlloFlowVoice.isIosCanvasVoiceSurface && window.AlloFlowVoice.isIosCanvasVoiceSurface());
+  } catch (_) {}
   var _voiceSetup = useState(function() {
     var whisperReady = false;
     var kokoroReady = false;
     try { whisperReady = !!(window.AlloFlowVoice && window.AlloFlowVoice.isWhisperLoaded && window.AlloFlowVoice.isWhisperLoaded('tiny', { lang: selectedVoiceLanguageTag() })); } catch (_) {}
     try { kokoroReady = !!(window._kokoroTTS && window._kokoroTTS.ready); } catch (_) {}
     return {
-      whisper: { phase: whisperReady ? 'ready' : 'idle', progress: null },
-      kokoro: { phase: kokoroReady ? 'ready' : 'idle', progress: null },
-      message: whisperReady || kokoroReady ? 'Previously downloaded offline voice tools are ready.' : ''
+      whisper: { phase: iosCanvas ? 'unsupported' : (whisperReady ? 'ready' : 'idle'), progress: null },
+      kokoro: { phase: iosCanvas ? 'unsupported' : (kokoroReady ? 'ready' : 'idle'), progress: null },
+      message: iosCanvas ? 'On iPhone or iPad Canvas, use Gemini or Browser speech and the browser read-aloud voice to keep this session stable.' : (whisperReady || kokoroReady ? 'Previously downloaded offline voice tools are ready.' : '')
     };
   });
   var voiceSetup = _voiceSetup[0];
@@ -64,6 +69,12 @@ function LaunchPadView(props) {
       if (cancelled) return;
       setVoiceSetup(function(previous) {
         var next = Object.assign({}, previous);
+        if (iosCanvas) {
+          next.whisper = { phase: 'unsupported', progress: null };
+          next.kokoro = { phase: 'unsupported', progress: null };
+          next.message = 'On iPhone or iPad Canvas, use Gemini or Browser speech and the browser read-aloud voice to keep this session stable.';
+          return next;
+        }
         var whisperReady = !!whisper;
         var kokoroReady = !!kokoro || previous.kokoro.phase === 'ready';
         if (previous.whisper.phase !== 'loading') {
@@ -152,7 +163,7 @@ function LaunchPadView(props) {
     }
   }
   async function downloadKokoroFromLaunchPad() {
-    if (voiceSetup.kokoro.phase === 'loading' || voiceSetup.kokoro.phase === 'ready') return;
+    if (voiceSetup.kokoro.phase === 'loading' || voiceSetup.kokoro.phase === 'ready' || voiceSetup.kokoro.phase === 'unsupported') return;
     if (typeof window.__loadKokoroTTS !== 'function') {
       updateVoiceSetup('kokoro', { phase: 'error', progress: null }, 'Kokoro setup is not available yet. Enter AlloFlow, then try again from read-aloud settings.');
       return;
@@ -334,6 +345,41 @@ function LaunchPadView(props) {
     })();
     return function() { cancelled = true; };
   }, []);
+  React.useEffect(function() {
+    if (typeof document === 'undefined') return;
+    var root = launchPadRef.current;
+    if (!root) return;
+    var previousActive = document.activeElement;
+    var siblings = root.parentElement
+      ? Array.prototype.slice.call(root.parentElement.children).filter(function(child) { return child !== root; })
+      : [];
+    var previousState = siblings.map(function(element) {
+      return {
+        element: element,
+        ariaHidden: element.getAttribute('aria-hidden'),
+        inert: element.hasAttribute('inert'),
+      };
+    });
+    // The launch pad is a full-screen pathway chooser. Keep the workspace
+    // behind it out of the focus order and accessibility tree while it is up.
+    siblings.forEach(function(element) {
+      element.setAttribute('inert', '');
+      element.setAttribute('aria-hidden', 'true');
+    });
+    var focusTarget = root.querySelector('button:not([disabled]), summary, [href], input, select, textarea');
+    if (focusTarget && typeof focusTarget.focus === 'function') focusTarget.focus();
+    return function() {
+      previousState.forEach(function(state) {
+        if (state.inert) state.element.setAttribute('inert', '');
+        else state.element.removeAttribute('inert');
+        if (state.ariaHidden === null) state.element.removeAttribute('aria-hidden');
+        else state.element.setAttribute('aria-hidden', state.ariaHidden);
+      });
+      if (previousActive && previousActive !== document.body && previousActive.isConnected && typeof previousActive.focus === 'function') {
+        previousActive.focus();
+      }
+    };
+  }, []);
   // Always show both names when they differ, matching the header picker. The
   // separator avoids nested parentheses for regional language variants.
   var LP_PROVENANCE_SUFFIX = {
@@ -401,7 +447,7 @@ function LaunchPadView(props) {
     return <span className={iconProps.className || ''} aria-hidden="true">{iconProps.fallback || '\u25c7'}</span>;
   }
   return (
-        <div className="lp-root" data-alloflow-launch-pad="true" role="region" aria-label="Choose how to use AlloFlow" style={{
+        <div ref={launchPadRef} className="lp-root" data-alloflow-launch-pad="true" role="region" aria-label="Choose how to use AlloFlow" style={{
           position: 'fixed', inset: 0, zIndex: 2147483000,
           display: 'flex', flexDirection: 'column', alignItems: 'center',
           backgroundColor: '#080d1d',
@@ -579,12 +625,12 @@ function LaunchPadView(props) {
             )}
           </div>
           </div>
-          <main className="lp-shell">
-          <header className="lp-logo-block">
+          <div className="lp-shell">
+          <div className="lp-logo-block">
             <img className="lp-brand-mark" src="rainbow-book.jpg" alt="" aria-hidden="true" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
             <h1 style={{ fontSize: 'clamp(32px, 5vw, 41px)', lineHeight: 1, fontWeight: 900, background: 'linear-gradient(100deg,#fff7d6,#fcd34d 42%,#fb923c)', WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent', margin: '0 0 10px', letterSpacing: '-1.45px' }}>AlloFlow</h1>
             <p style={{ fontSize: '10px', color: '#aebbd2', fontWeight: 780, letterSpacing: '2.25px', textTransform: 'uppercase', margin: 0 }}>{copy('launch_pad.subtitle', 'Adaptive Levels, Layers, & Outputs')}</p>
-          </header>
+          </div>
           <section className="lp-choice-section" aria-labelledby="launch-pad-choice-title">
             <div className="lp-section-intro">
               <p className="lp-eyebrow">{copy('launch_pad.workspace_eyebrow', 'Choose your workspace')}</p>
@@ -704,21 +750,21 @@ function LaunchPadView(props) {
               <div className="lp-voice-grid">
                 <div className="lp-voice-option">
                   <div><strong className="lp-voice-option-title"><LaunchPadIcon name="Mic" size={15} />Whisper speech recognition</strong><span id="launch-pad-whisper-desc" style={{ display: 'block', color: '#e0e7ff', fontSize: '10px', lineHeight: 1.5, marginTop: '3px' }}>Improves private, offline-capable voice input after the model is ready.</span></div>
-                  <button type="button" className="lp-download-button" aria-describedby="launch-pad-whisper-desc" aria-busy={voiceSetup.whisper.phase === 'loading'} disabled={voiceSetup.whisper.phase === 'loading' || voiceSetup.whisper.phase === 'ready' || voiceSetup.whisper.phase === 'unsupported'} onClick={downloadWhisperFromLaunchPad}>{voiceSetup.whisper.phase === 'ready' ? '✓ Whisper ready' : voiceSetup.whisper.phase === 'unsupported' ? 'Whisper unavailable for this language' : voiceSetup.whisper.phase === 'loading' ? (voiceSetup.whisper.progress == null ? 'Preparing Whisper…' : 'Downloading Whisper · ' + voiceSetup.whisper.progress + '%') : voiceSetup.whisper.phase === 'error' ? 'Retry Whisper download' : 'Download Whisper'}</button>
+                  <button type="button" className="lp-download-button" aria-describedby="launch-pad-whisper-desc" aria-busy={voiceSetup.whisper.phase === 'loading'} disabled={voiceSetup.whisper.phase === 'loading' || voiceSetup.whisper.phase === 'ready' || voiceSetup.whisper.phase === 'unsupported'} onClick={downloadWhisperFromLaunchPad}>{voiceSetup.whisper.phase === 'ready' ? '✓ Whisper ready' : voiceSetup.whisper.phase === 'unsupported' ? (iosCanvas ? 'Use Gemini on iPhone Canvas' : 'Whisper unavailable for this language') : voiceSetup.whisper.phase === 'loading' ? (voiceSetup.whisper.progress == null ? 'Preparing Whisper…' : 'Downloading Whisper · ' + voiceSetup.whisper.progress + '%') : voiceSetup.whisper.phase === 'error' ? 'Retry Whisper download' : 'Download Whisper'}</button>
                 </div>
                 <div className="lp-voice-option">
                   <div><strong className="lp-voice-option-title"><LaunchPadIcon name="Volume2" size={15} />Kokoro read-aloud</strong><span id="launch-pad-kokoro-desc" style={{ display: 'block', color: '#e0e7ff', fontSize: '10px', lineHeight: 1.5, marginTop: '3px' }}>Downloads the local voice model (about 88 MB) for natural English narration.</span></div>
-                  <button type="button" className="lp-download-button" aria-describedby="launch-pad-kokoro-desc" aria-busy={voiceSetup.kokoro.phase === 'loading'} disabled={voiceSetup.kokoro.phase === 'loading' || voiceSetup.kokoro.phase === 'ready'} onClick={downloadKokoroFromLaunchPad}>{voiceSetup.kokoro.phase === 'ready' ? '✓ Kokoro ready' : voiceSetup.kokoro.phase === 'loading' ? (voiceSetup.kokoro.progress == null ? 'Preparing Kokoro…' : 'Downloading Kokoro · ' + voiceSetup.kokoro.progress + '%') : voiceSetup.kokoro.phase === 'error' ? 'Retry Kokoro download' : 'Download Kokoro'}</button>
+                  <button type="button" className="lp-download-button" aria-describedby="launch-pad-kokoro-desc" aria-busy={voiceSetup.kokoro.phase === 'loading'} disabled={voiceSetup.kokoro.phase === 'loading' || voiceSetup.kokoro.phase === 'ready' || voiceSetup.kokoro.phase === 'unsupported'} onClick={downloadKokoroFromLaunchPad}>{voiceSetup.kokoro.phase === 'ready' ? '✓ Kokoro ready' : voiceSetup.kokoro.phase === 'unsupported' ? 'Uses browser voice on iPhone Canvas' : voiceSetup.kokoro.phase === 'loading' ? (voiceSetup.kokoro.progress == null ? 'Preparing Kokoro…' : 'Downloading Kokoro · ' + voiceSetup.kokoro.progress + '%') : voiceSetup.kokoro.phase === 'error' ? 'Retry Kokoro download' : 'Download Kokoro'}</button>
                 </div>
               </div>
               <p role="status" aria-live="polite" aria-atomic="true" style={{ minHeight: '16px', color: voiceSetup.whisper.phase === 'error' || voiceSetup.kokoro.phase === 'error' ? '#fecaca' : '#bbf7d0', fontSize: '10px', fontWeight: 700, lineHeight: 1.5, margin: '10px 0 0' }}>{voiceSetup.message}</p>
             </div>
             </details>
           </section>
-          <footer className="lp-launch-footer">
+          <div className="lp-launch-footer">
             <p style={{ margin: 0, textAlign: 'center', fontSize: '11px', color: '#94a3b8', fontWeight: 550 }}>{switchHint}</p>
-          </footer>
-          </main>
+          </div>
+          </div>
         </div>
   );
 }

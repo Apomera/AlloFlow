@@ -27,6 +27,17 @@ const expectedUnits = [
   'acids-and-bases',
   'thermodynamics-and-electrochemistry',
 ];
+const expectedUnitCounts = {
+  'atomic-structure-and-properties': 40,
+  'compound-structure-and-properties': 40,
+  'properties-of-substances-and-mixtures': 40,
+  'chemical-reactions': 40,
+  kinetics: 40,
+  thermochemistry: 40,
+  equilibrium: 40,
+  'acids-and-bases': 40,
+  'thermodynamics-and-electrochemistry': 40,
+};
 const expectedPractices = ['SP1', 'SP2', 'SP3', 'SP4', 'SP5', 'SP6'];
 const allowedHosts = new Set(['apcentral.collegeboard.org', 'apstudents.collegeboard.org', 'openstax.org']);
 const signalDefinitions = [
@@ -122,7 +133,7 @@ function requireCondition(condition, check, message, detail) {
 
 requireCondition(
   pack.schemaVersion === 1 && pack.itemSchemaVersion === 2 && pack.id === 'ap-chemistry-foundation-pilot' &&
-    pack.version === '0.1.0-internal-preview' && pack.status === 'preview' && pack.visibility === 'internal',
+    pack.version === '0.2.0-internal-preview' && pack.status === 'preview' && pack.visibility === 'internal',
   'asset-identity', 'Pack schema, identity, version, or internal-preview state is invalid.'
 );
 requireCondition(
@@ -174,8 +185,8 @@ requireCondition(
 for (const unitId of expectedUnits) {
   const domain = domains.find((candidate) => candidate.id === unitId);
   requireCondition(
-    domain && Number(domain.itemCount) === 20 && Number(domain.officialWeightMin) > 0 && Number(domain.officialWeightMax) > Number(domain.officialWeightMin),
-    'blueprint-and-unit-coverage', `${unitId} must declare its official weight range and exactly twenty foundation items.`, { recordId: unitId }
+    domain && Number(domain.itemCount) === expectedUnitCounts[unitId] && Number(domain.officialWeightMin) > 0 && Number(domain.officialWeightMax) > Number(domain.officialWeightMin),
+    'blueprint-and-unit-coverage', `${unitId} must declare its official weight range and its expected foundation-item count.`, { recordId: unitId }
   );
 }
 requireCondition(
@@ -196,16 +207,16 @@ const answerCounts = countBy(items, (item) => item.answerIndex);
 const unitCounts = countBy(items, (item) => item.domainId);
 const practiceCounts = countBy(items, (item) => item.practiceId);
 const topicCounts = countBy(items, (item) => item.topicIds?.[0]);
-requireCondition(items.length === 180 && new Set(items.map((item) => item.id)).size === 180, 'asset-identity', 'The AP Chemistry foundation pilot must contain exactly 180 uniquely identified items.');
-requireCondition(expectedUnits.every((unit) => unitCounts[unit] === 20), 'blueprint-and-unit-coverage', 'Every current AP Chemistry unit must receive exactly twenty items.');
+requireCondition(items.length === 360 && new Set(items.map((item) => item.id)).size === 360, 'asset-identity', 'The AP Chemistry foundation pilot must contain exactly 360 uniquely identified items.');
+requireCondition(expectedUnits.every((unit) => unitCounts[unit] === expectedUnitCounts[unit]), 'blueprint-and-unit-coverage', 'Every current AP Chemistry unit must receive its expected item count.');
 requireCondition(expectedPractices.every((practice) => practiceCounts[practice] > 0), 'blueprint-and-unit-coverage', 'All six AP Chemistry science practices must be represented.');
 requireCondition(
-  answerCounts[0] === 45 && answerCounts[1] === 45 && answerCounts[2] === 45 && answerCounts[3] === 45,
-  'one-best-answer', 'Answer keys must be intentionally balanced at 45/45/45/45 across A-D.'
+  answerCounts[0] === 90 && answerCounts[1] === 90 && answerCounts[2] === 90 && answerCounts[3] === 90,
+  'one-best-answer', 'Answer keys must be intentionally balanced at 90/90/90/90 across A-D.'
 );
 requireCondition(
-  Array.isArray(pack.sections) && pack.sections.length === 36 && pack.sections.every((section) => Array.isArray(section.itemIds) && section.itemIds.length === 5 && section.itemIds.every((id) => items.some((item) => item.id === id))),
-  'asset-identity', 'The 180-item pilot must expose thirty-six complete five-item internal banks.'
+  Array.isArray(pack.sections) && pack.sections.length === 72 && pack.sections.every((section) => Array.isArray(section.itemIds) && section.itemIds.length === 5 && section.itemIds.every((id) => items.some((item) => item.id === id))),
+  'asset-identity', 'The 360-item pilot must expose seventy-two complete five-item internal banks.'
 );
 requireCondition(
   [...topicCoverage.keys()].every((topicId) => topicCounts[topicId] > 0),

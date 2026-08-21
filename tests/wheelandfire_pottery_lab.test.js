@@ -234,12 +234,15 @@ describe('Wheel & Fire pottery lab', () => {
       vessel: recipeState,
       materialScenarios: [{ id: 7, label: 'Saved temper trial', clayBody: 'earthenware', materialRecipe: { temperPercent: 16 } }],
       firingSchedules: [{ id: 9, label: 'Slow test', temperature: 1220, ramp: 80, soak: 30, coolingRate: 80, kilnType: 'electric' }],
-      gallery: [{ id: 8, name: 'Recipe record', vessel: recipeState, materialRecipe: recipeState.materialRecipe, materialScenarios: [{ id: 7 }], firingSchedules: [{ id: 9 }], method: 'wheel', performanceTests: [] }]
+      cycleProtocols: [{ id: 10, label: 'Slow rinse', cycles: 12, dryingRate: 20, cycleTemperatureDelta: 30 }],
+      gallery: [{ id: 8, name: 'Recipe record', vessel: recipeState, materialRecipe: recipeState.materialRecipe, materialScenarios: [{ id: 7 }], firingSchedules: [{ id: 9 }], cycleProtocols: [{ id: 10 }], method: 'wheel', performanceTests: [] }]
     } });
     expect(journalHtml).toContain('Saved scenarios');
     expect(journalHtml).toContain('1 saved material scenario');
     expect(journalHtml).toContain('Firing schedules');
     expect(journalHtml).toContain('1 saved firing schedule');
+    expect(journalHtml).toContain('Reuse protocols');
+    expect(journalHtml).toContain('1 saved reuse protocol');
   });
 
   it('enforces drying, bisque, glazing, and glaze-firing order with modeled defects', () => {
@@ -318,13 +321,38 @@ describe('Wheel & Fire pottery lab', () => {
     const longRun = pure.evaluateVesselUse(fired, 'cycles', { cycles: 50 });
     const gentleProtocol = pure.evaluateVesselUse(fired, 'cycles', { cycles: 24, dryingRate: 10, cycleTemperatureDelta: 20 });
     const harshProtocol = pure.evaluateVesselUse(fired, 'cycles', { cycles: 24, dryingRate: 100, cycleTemperatureDelta: 220 });
+    const protocolComparison = pure.compareCycleProtocols(fired);
+    const sensitivitySweep = pure.compareCycleSensitivity(fired, { cycles: 24, dryingRate: 45, cycleTemperatureDelta: 80 });
     expect(shortRun.ready).toBe(true);
     expect(longRun.damagePct).toBeGreaterThan(shortRun.damagePct);
     expect(longRun.score).toBeLessThan(shortRun.score);
+    expect(longRun.damageRange.low).toBeLessThanOrEqual(longRun.damagePct);
+    expect(longRun.damageRange.high).toBeGreaterThanOrEqual(longRun.damagePct);
+    expect(longRun.uncertaintyPct).toBeGreaterThanOrEqual(8);
+    expect(longRun.summary).toContain('uncalibrated sensitivity band');
+    expect(longRun.uncertaintyDrivers).toHaveLength(5);
+    expect(longRun.uncertaintyDrivers.map((driver) => driver.label)).toContain('Open pore pathways');
+    expect(longRun.uncertaintyDrivers.reduce((sum, driver) => sum + driver.relativePct, 0)).toBeCloseTo(100, 5);
     expect(harshProtocol.damagePct).toBeGreaterThan(gentleProtocol.damagePct);
     expect(harshProtocol.dryingRate).toBe(100);
     expect(harshProtocol.cycleTemperatureDelta).toBe(220);
+    expect(pure.CYCLE_PROTOCOLS).toHaveLength(3);
+    expect(protocolComparison.map((protocol) => protocol.label)).toEqual(['Gentle care', 'Everyday service', 'Harsh contrast']);
+    expect(protocolComparison[2].result.damagePct).toBeGreaterThan(protocolComparison[0].result.damagePct);
+    expect(protocolComparison[1].result.primaryDriver).toBeTruthy();
+    expect(sensitivitySweep.map((axis) => axis.label)).toEqual(['Cycle count', 'Drying severity', 'Temperature swing']);
+    sensitivitySweep.forEach((axis) => {
+      expect(axis.points).toHaveLength(3);
+      expect(axis.points[1].label).toBe('Current');
+      expect(axis.points[0].result.damagePct).toBeLessThanOrEqual(axis.points[1].result.damagePct);
+      expect(axis.points[2].result.damagePct).toBeGreaterThanOrEqual(axis.points[1].result.damagePct);
+      expect(axis.points[1].result.damageRange.low).toBeLessThanOrEqual(axis.points[1].result.damagePct);
+    });
     expect(longRun.summary).toContain('not a durability certification');
+    expect(longRun.summary).toContain('leading modeled driver');
+    expect(longRun.cycleDrivers).toHaveLength(3);
+    expect(longRun.cycleDrivers.reduce((sum, driver) => sum + driver.relativePct, 0)).toBeCloseTo(100, 5);
+    expect(longRun.primaryDriver).toBeTruthy();
     expect(longRun.cycleCheckpoints).toHaveLength(5);
     expect(longRun.cycleCheckpoints[0]).toMatchObject({ cycles: 0, damagePct: 0, phase: 'Baseline' });
     for (let index = 1; index < longRun.cycleCheckpoints.length; index += 1) {
@@ -336,11 +364,33 @@ describe('Wheel & Fire pottery lab', () => {
     expect(html).toContain('Repeated wet-dry cycles');
     expect(html).toContain('Wet-dry cycles');
     expect(html).toContain('Accumulated damage');
+    expect(html).toContain('Modeled damage range');
+    expect(html).toContain('Uncalibrated sensitivity band');
+    expect(html).toContain('Read the sensitivity band');
+    expect(html).toContain('What widens the band?');
+    expect(html).toContain('Band width');
+    expect(html).toContain('Base model spread');
+    expect(html).toContain('What changes if one input changes?');
+    expect(html).toContain('One-variable sensitivity sweep');
+    expect(html).toContain('Counterfactual cycle comparison');
+    expect(html).toContain('The cells show point damage followed by the uncalibrated band');
+    expect(html).toContain('Temperature swing');
     expect(html).toContain('Drying severity');
     expect(html).toContain('Cycle temperature swing');
     expect(html).toContain('Exposure profile');
     expect(html).toContain('Modeled damage progression');
+    expect(html).toContain('Modeled driver breakdown');
+    expect(html).toContain('Open pore pathways');
     expect(html).toContain('Cycle checkpoints');
+    expect(html).toContain('Compare reuse protocols');
+    expect(html).toContain('Reuse protocol comparison');
+    expect(html).toContain('Gentle care');
+    expect(html).toContain('Harsh contrast');
+    expect(html).toContain('Apply');
+    expect(html).toContain('Saved reuse protocol shelf');
+    expect(html).toContain('Protocol label');
+    expect(html).toContain('Save current protocol');
+    expect(html).toContain('No custom protocols saved yet.');
   });
 
   it('provides a comparative permeability proxy and a safety-bounded performance interface', () => {
@@ -357,6 +407,8 @@ describe('Wheel & Fire pottery lab', () => {
     expect(html).toContain('FDA ceramicware guidance');
     expect(html).toContain('Health Canada glazed-ceramics guidance');
     expect(html).toContain('Run and log water retention');
+    expect(html).toContain('Observed note (optional)');
+    expect(html).toContain('Field notes document an observation');
   });
 
   it('renders the stored firing schedule as evidence', () => {

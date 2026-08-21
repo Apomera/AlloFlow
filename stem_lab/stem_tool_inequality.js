@@ -948,6 +948,7 @@ window.StemLab = window.StemLab || {
             excluded: { label: '❌ ' + __alloT('stem.inequality.test_excluded', 'x EXCLUDED (coef·x > bound)'), color: '#dc2626', bg: '#fef2f2', border: '#fca5a5' },
             boundary: { label: '⚖️ ' + __alloT('stem.inequality.test_boundary', 'AT boundary (coef·x ≈ bound)'), color: '#d97706', bg: '#fffbeb', border: '#fcd34d' }
           }[state];
+          sm.color = { included: '#047857', excluded: '#b91c1c', boundary: '#92400e' }[state];
           return h('div', { className: 'mt-3 p-3 rounded-xl bg-white border border-fuchsia-300 space-y-2' },
             h('h3', { className: 'text-sm font-black text-fuchsia-700' }, '🎚️ ' + __alloT('stem.inequality.test_discovery_title', 'Inequality test discovery')),
             h('p', { className: 'text-[11px] text-slate-700' }, __alloT('stem.inequality.test_discovery_desc', 'Sliders for x, coefficient, bound. Test whether coef·x < bound. 3 discrete states. No score, no reveal.')),
@@ -998,7 +999,7 @@ window.StemLab = window.StemLab || {
 
         // ── Test-a-Value panel ──
         h('div', { className: 'mt-3 bg-sky-50 rounded-lg p-3 border border-sky-200' },
-          h('p', { className: 'text-[11px] font-bold text-sky-600 uppercase tracking-wider mb-2' }, '\uD83E\uDDEA ' + __alloT('stem.inequality.test_a_value', 'Test a Value')),
+          h('p', { className: 'text-[11px] font-bold text-sky-700 uppercase tracking-wider mb-2' }, '\uD83E\uDDEA ' + __alloT('stem.inequality.test_a_value', 'Test a Value')),
           h('div', { className: 'flex items-center gap-2' },
             h('input', {
               type: 'number', step: 'any', value: testVal, placeholder: __alloT('stem.inequality.enter_a_number', 'Enter a number\u2026'),
@@ -1025,13 +1026,13 @@ window.StemLab = window.StemLab || {
         h('div', { className: 'mt-3' },
           h('button', { 'aria-label': __alloT('stem.inequality.toggle_tips', 'Toggle tips (C)'),
             onClick: function() { upd('showCoach', !showCoach); },
-            className: 'text-[11px] font-bold text-amber-600 hover:text-amber-700 transition-all',
+            className: 'text-[11px] font-bold text-amber-800 hover:text-amber-900 transition-all',
             title: __alloT('stem.inequality.toggle_tips', 'Toggle tips (C)')
           }, (showCoach ? '\u25BC' : '\u25B6') + ' \uD83D\uDCA1 ' + __alloT('stem.inequality.learning_tips', 'Learning Tips')),
           showCoach && h('div', { className: 'mt-2 bg-amber-50 rounded-lg p-3 border border-amber-200 space-y-2' },
             COACH_TIPS.map(function(ct, i) {
               return h('div', { key: i, className: 'flex items-start gap-2' },
-                h('span', { className: 'text-sm font-bold text-amber-600 w-5 text-center flex-shrink-0' }, ct.icon),
+                h('span', { className: 'text-sm font-bold text-amber-800 w-5 text-center flex-shrink-0' }, ct.icon),
                 h('p', { className: 'text-xs text-amber-800' }, ct.tip));
             })
           )
@@ -1112,7 +1113,7 @@ window.StemLab = window.StemLab || {
           d.quiz && d.quiz.answered && h('div', { className: 'p-3 rounded-xl ' + (d.quiz.correct ? 'bg-emerald-50 border border-emerald-200' : 'bg-red-50 border border-red-200'), role: 'status' },
             h('p', { className: 'text-sm font-bold ' + (d.quiz.correct ? 'text-emerald-700' : 'text-red-700') },
               d.quiz.correct ? '\u2705 ' + __alloT('stem.inequality.correct_excl', 'Correct!') : '\u274C ' + __alloT('stem.inequality.not_quite_answer_is', 'Not quite \u2014 the answer is ') + d.quiz.a.replace(/</g, '\u003c').replace(/>=/g, '\u2265').replace(/<=/g, '\u2264'),
-              d.quiz.streak > 2 && d.quiz.correct && h('span', { className: 'ml-2 text-xs text-amber-600' }, '\uD83D\uDD25 ' + d.quiz.streak + __alloT('stem.inequality.in_a_row_suffix', ' in a row!')),
+              d.quiz.streak > 2 && d.quiz.correct && h('span', { className: 'ml-2 text-xs text-amber-800' }, '\uD83D\uDD25 ' + d.quiz.streak + __alloT('stem.inequality.in_a_row_suffix', ' in a row!')),
               !d.quiz.correct && h('button', { 'aria-label': __alloT('stem.inequality.explain', 'Explain'),
                 onClick: askAI,
                 className: 'ml-2 text-xs font-bold px-2 py-0.5 rounded bg-purple-100 text-purple-700 hover:bg-purple-200'
@@ -1133,8 +1134,8 @@ window.StemLab = window.StemLab || {
 
         // ── Step-by-Step Solver ──
         h('div', { className: 'mt-3 bg-teal-50 rounded-lg p-3 border border-teal-200' },
-          h('p', { className: 'text-[11px] font-bold text-teal-600 uppercase tracking-wider mb-2' }, '\uD83E\uDDE0 ' + __alloT('stem.inequality.step_by_step_solver', 'Step-by-Step Solver')),
-          h('p', { className: 'text-[11px] text-teal-500 italic mb-2' }, __alloT('stem.inequality.solver_hint_example', 'Enter an inequality like 3x - 7 \u2265 5 or -2x + 4 < 10')),
+          h('p', { className: 'text-[11px] font-bold text-teal-800 uppercase tracking-wider mb-2' }, '\uD83E\uDDE0 ' + __alloT('stem.inequality.step_by_step_solver', 'Step-by-Step Solver')),
+          h('p', { className: 'text-[11px] text-teal-800 italic mb-2' }, __alloT('stem.inequality.solver_hint_example', 'Enter an inequality like 3x - 7 \u2265 5 or -2x + 4 < 10')),
           h('div', { className: 'flex items-center gap-2 mb-2' },
             h('input', {
               type: 'text', value: solverExpr, placeholder: '3x - 7 \u2265 5',
@@ -1165,7 +1166,7 @@ window.StemLab = window.StemLab || {
             }, '\uD83D\uDCC8 ' + __alloT('stem.inequality.graph_it', 'Graph It')),
             solverSteps && h('button', { 'aria-label': __alloT('stem.inequality.reset', 'Reset'),
               onClick: function() { upd({ solverSteps: null, solverRevealIdx: 0 }); },
-              className: 'px-2 py-1 text-[11px] font-bold text-teal-500 hover:text-teal-700'
+              className: 'px-2 py-1 text-[11px] font-bold text-teal-800 hover:text-teal-900'
             }, '\u21BA ' + __alloT('stem.inequality.reset', 'Reset'))
           ),
           solverSteps && h('div', { className: 'space-y-1.5' },

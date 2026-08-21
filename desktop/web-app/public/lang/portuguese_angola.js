@@ -28880,7 +28880,17 @@
       "back_3": "← Voltar",
       "certificate_of_completion": "CERTIFICADO DE CONCLUSÃO",
       "date_2": "Data",
-      "best": "Melhor"
+      "best": "Melhor",
+      "explore_the_road": "Explore a estrada",
+      "lane_change_without_signal": "Mudança de faixa sem sinalização",
+      "drove_in_oncoming_lane": "Conduziu na faixa contrária",
+      "high_beams": "Máximos",
+      "left_signal": "Pisca esquerdo",
+      "right_signal": "Pisca direito",
+      "braking": "Travagem",
+      "traction_loss": "Perda de tração",
+      "fog_low_beams_ok": "Nevoeiro — médios OK",
+      "welcome_to_roadready": "Bem-vindo ao RoadReady"
     },
     "schoolbehaviortoolkit": {
       "replacement_behaviors": "Comportamentos Alternativos",

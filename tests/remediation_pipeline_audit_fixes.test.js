@@ -853,6 +853,12 @@ describe('M15 — the breaker outcome is recorded before the slot is released', 
     expect(dp).toContain('var _noteGeminiOutcome = function (res, err) {');
     expect(dp).toContain('if (_outcomeNoted) return;');
     expect((dp.match(/_noteGeminiOutcome\(/g) || []).length).toBeGreaterThanOrEqual(5);
+    const attemptStart = dp.indexOf('var _attempt = function(n) {');
+    const onceGuard = dp.indexOf('var _outcomeNoted = false;', attemptStart);
+    const timeoutStart = dp.indexOf('var timeoutMs = n === 0', attemptStart);
+    expect(onceGuard).toBeGreaterThan(attemptStart);
+    expect(onceGuard).toBeLessThan(timeoutStart);
+    expect(dp.indexOf('var _outcomeNoted = false;')).toBe(onceGuard);
   });
 
   it('an aborted or permanent failure still feeds the breaker nothing', () => {

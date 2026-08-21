@@ -29014,7 +29014,17 @@
       "best": "أفضل",
       "menu_73": "← منو",
       "menu_74": "← منو",
-      "menu_75": "← منو"
+      "menu_75": "← منو",
+      "explore_the_road": "جاده را کاوش کنید",
+      "lane_change_without_signal": "تغییر مسیر بدون راهنما",
+      "drove_in_oncoming_lane": "رانندگی در مسیر مقابل",
+      "high_beams": "نوربالا",
+      "left_signal": "راهنمای چپ",
+      "right_signal": "راهنمای راست",
+      "braking": "ترمزگیری",
+      "traction_loss": "از دست دادن کشش",
+      "fog_low_beams_ok": "مه — نورپایین مناسب است",
+      "welcome_to_roadready": "به RoadReady خوش آمدید"
     },
     "schoolbehaviortoolkit": {
       "replacement_behaviors": "رفتارهای جایگزین",

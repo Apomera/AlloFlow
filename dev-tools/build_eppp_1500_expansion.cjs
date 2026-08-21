@@ -33,14 +33,14 @@ const runReplayScript=scriptPath=>{
 const runDistractorHalvingCampaign=()=>runReplayScript('./repair_eppp_distractor_halving_campaign.cjs').run({apply:true});
 const runFeedbackHalvingCampaign=()=>runReplayScript('./repair_eppp_feedback_halving_campaign.cjs').runCampaign(root,{write:true});
 const runCurrentQualityReplay=()=>{
-  runReplayScript('./repair_eppp_native_quality_wave_46.cjs');
+  runReplayScript('./repair_eppp_native_quality_wave_49.cjs');
   runReplayScript('./normalize_eppp_native_unicode.cjs').run({write:true});
   runReplayScript('./audit_eppp_distractor_quality.cjs');
   runReplayScript('./audit_eppp_option_feedback.cjs');
   runReplayScript('./build_eppp_distractor_action_docket.cjs');
 };
 const runLatestEditorialReplay=()=>{
-  if (existingBank.some((item) => item.wordingReviewWave === 'eppp-native-quality-wave-46')) {
+  if (existingBank.some((item) => item.wordingCleanupWave === 'eppp-native-quality-wave-49')) {
     runCurrentQualityReplay();
     return;
   }
@@ -93,6 +93,9 @@ const runLatestEditorialReplay=()=>{
   runReplayScript('./repair_eppp_native_quality_wave_44.cjs');
   runReplayScript('./repair_eppp_native_quality_wave_45.cjs');
   runReplayScript('./repair_eppp_native_quality_wave_46.cjs');
+  runReplayScript('./repair_eppp_native_quality_wave_47.cjs');
+  runReplayScript('./repair_eppp_native_quality_wave_48.cjs');
+  runReplayScript('./repair_eppp_native_quality_wave_49.cjs');
   runReplayScript('./normalize_eppp_native_unicode.cjs').run({write:true});
   runReplayScript('./audit_eppp_distractor_quality.cjs');
   runReplayScript('./audit_eppp_option_feedback.cjs');

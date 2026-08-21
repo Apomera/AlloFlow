@@ -206,6 +206,17 @@ describe('Trajectory Computing Lab', () => {
     expect(report.workflow).toBe('Paired independent cross-check');
     expect(report.auditTrail).toHaveLength(6);
     expect(report.checks.every((check) => check.pass)).toBe(true);
+    expect(report.safeguards).toEqual(expect.objectContaining({ passed: 5, total: 5 }));
+    expect(report.safeguards.checks.every((check) => check.pass)).toBe(true);
+    const partialReport = core.createCompletionReport({
+      workPattern: 'pair',
+      auditTrail: [{ station: 'briefing', nextStage: 'worksheet' }],
+      reproducibilityResult: { correct: 2, total: 4, pass: false },
+      printPreviewResult: { pass: false },
+      batchReadbackResult: { correct: 1, total: 4, pass: false },
+    });
+    expect(partialReport.safeguards.passed).toBe(0);
+    expect(partialReport.safeguards.checks.find((check) => check.id === 'audit-chain').detail).toBe('1 of 6 expected handoffs recorded.');
     expect(report).not.toHaveProperty('studentName');
   });
 
@@ -225,6 +236,12 @@ describe('Trajectory Computing Lab', () => {
       expect(html).toContain('role="tablist"');
       expect(html).toContain('Audit progress');
       expect(html).toContain('role="progressbar"');
+      expect(html).toContain('class="tc-skip-link"');
+      expect(html).toContain('href="#tc-main-content"');
+      expect(html).toContain('id="tc-main-content"');
+      expect(html).toContain('id="tc-tabs-help"');
+      expect(html).toContain('aria-describedby="tc-tabs-help"');
+      expect(html).toContain('Press Home for the briefing or End for the last unlocked station.');
       expect(html).toContain('Back to all STEAM Lab tools');
       expect(html).not.toContain('undefined');
       expect(html).not.toContain('NaN');
@@ -245,6 +262,8 @@ describe('Trajectory Computing Lab', () => {
     expect(programReadyHtml).toContain('Check format card');
     expect(programReadyHtml).toContain('Inspect the line-printer preview.');
     expect(programReadyHtml).toContain('Confirm preview and release deck');
+    expect(programReadyHtml).toContain('Next on the desk:');
+    expect(programReadyHtml).toContain('match the FORMAT card');
 
     const completed = renderTool(ID, {
       _trajectoryComputing: {
@@ -308,6 +327,9 @@ describe('Trajectory Computing Lab', () => {
     expect(html).toContain('Aurora Test 3 Completion Report');
     expect(html).toContain('Hand-calculation audit ledger');
     expect(html).toContain('Accessibility and audit safeguards');
+    expect(html).toContain('Accessibility and audit safeguards (5/5 verified)');
+    expect(html).toContain('5 of 5 evidence safeguards verified in this report.');
+    expect(html).toContain('Verified: Ordered operator audit chain');
     expect(html).toContain('Keyboard station tabs support Arrow keys, Home, and End.');
     expect(html).toContain('machine read-back remain separate checks');
     expect(html).toContain('Print this report');
@@ -339,6 +361,7 @@ describe('Trajectory Computing Lab', () => {
     expect(toolSource).toContain("event.key === 'ArrowRight'");
     expect(toolSource).toContain("event.key === 'Home'");
     expect(toolSource).toContain("'aria-live': 'polite'");
+    expect(toolSource).toContain('.tc-skip-link:focus');
     expect(toolSource).toContain('input[type=checkbox],[data-trajectory-lab] input[type=radio]{width:24px');
   });
 

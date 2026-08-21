@@ -4,9 +4,9 @@
   "generatedAt": "2026-07-28",
   "docketCycle": "eppp-distractor-action-cycle-02",
   "sourceBank": "test_prep/eppp_native_items.json",
-  "sourceBankSha256": "f64e3ccbba014265b7ea7f0283ac28609aeaa494a4769231f9af15a4d840ccaf",
+  "sourceBankSha256": "635ef27ea526a6bd6e4c4626514ab6ab1ce1e77ab00d097782657c8048d81f42",
   "sourceDiagnostics": "test_prep/eppp_distractor_quality_diagnostics.json",
-  "sourceDiagnosticsSha256": "379f443af6f73a7f64e5587068d03871caf9882f129c913d0be6541233da9342",
+  "sourceDiagnosticsSha256": "ab56651e7834987a3295213146912102765773426e275d0813b868e850bb0f2c",
   "sourceAdjudications": [
     {
       "reviewWave": "eppp-distractor-review-wave-01",
@@ -407,18 +407,18 @@
   "staleAdjudications": [],
   "actionItems": [
     {
-      "id": "eppp-v2-cognitive-affective-025",
-      "domainId": "cognitive-affective",
-      "difficulty": "foundation",
-      "practiceBank": 6,
-      "itemInBank": 75,
-      "score": 6,
+      "id": "eppp-v2-professional-008",
+      "domainId": "professional",
+      "difficulty": "intermediate",
+      "practiceBank": 10,
+      "itemInBank": 6,
+      "score": 8,
       "diagnostics": [
         "asymmetric-extreme-distractors"
       ],
       "duplicateCandidateLinks": 0,
-      "prompt": "Complete the statement: The serial position effect predicts that in a list-learning task, words remembered best will be:",
-      "keyedChoice": "Those at the beginning and end of the list",
+      "prompt": "During a medical crisis, a psychologist gives brief necessary support before usual paperwork can be completed. Which ethical requirement may be temporarily modified?",
+      "keyedChoice": "The standard consent process when immediate care is needed",
       "editorialNote": "Combined warning score places this item in the next bounded editorial-review docket.",
       "rank": 1,
       "originalDiagnosticRank": 1,
@@ -445,41 +445,22 @@
       "status": "editorial-review-needed"
     },
     {
-      "id": "eppp-v2-cognitive-affective-042",
-      "domainId": "cognitive-affective",
+      "id": "eppp-v2-professional-011",
+      "domainId": "professional",
       "difficulty": "foundation",
-      "practiceBank": 6,
-      "itemInBank": 92,
+      "practiceBank": 10,
+      "itemInBank": 9,
       "score": 6,
       "diagnostics": [
         "asymmetric-extreme-distractors"
       ],
       "duplicateCandidateLinks": 0,
-      "prompt": "Complete the statement: Context-dependent memory means:",
-      "keyedChoice": "Better recall in the same environmental context",
+      "prompt": "An audit reveals a client has paid too much for several months. What is the psychologist's first ethical response?",
+      "keyedChoice": "Disclose and correct the overcharge, then return the excess payment",
       "editorialNote": "Combined warning score places this item in the next bounded editorial-review docket.",
       "rank": 3,
       "originalDiagnosticRank": 3,
       "actionRank": 3,
-      "status": "editorial-review-needed"
-    },
-    {
-      "id": "eppp-v2-cognitive-affective-047",
-      "domainId": "cognitive-affective",
-      "difficulty": "foundation",
-      "practiceBank": 6,
-      "itemInBank": 97,
-      "score": 6,
-      "diagnostics": [
-        "asymmetric-extreme-distractors"
-      ],
-      "duplicateCandidateLinks": 0,
-      "prompt": "Complete the statement: Schema theory proposes that:",
-      "keyedChoice": "Organized mental frameworks for interpreting information",
-      "editorialNote": "Combined warning score places this item in the next bounded editorial-review docket.",
-      "rank": 4,
-      "originalDiagnosticRank": 4,
-      "actionRank": 4,
       "status": "editorial-review-needed"
     },
     {
@@ -496,9 +477,9 @@
       "prompt": "Which statement most accurately defines The ethical principle of Justice in the APA Ethics Code?",
       "keyedChoice": "Fairness and equal access to the benefits of established psychological contributions",
       "editorialNote": "Combined warning score places this item in the next bounded editorial-review docket.",
-      "rank": 5,
-      "originalDiagnosticRank": 5,
-      "actionRank": 5,
+      "rank": 4,
+      "originalDiagnosticRank": 4,
+      "actionRank": 4,
       "status": "editorial-review-needed"
     },
     {
@@ -515,28 +496,9 @@
       "prompt": "Complete the statement: The APA General Principle of 'Fidelity and Responsibility' explicitly encourages psychologists to:",
       "keyedChoice": "Establish relationships of trust, uphold professional standards, and contribute a portion of professional time for little or no compensation",
       "editorialNote": "Combined warning score places this item in the next bounded editorial-review docket.",
-      "rank": 6,
-      "originalDiagnosticRank": 6,
-      "actionRank": 6,
-      "status": "editorial-review-needed"
-    },
-    {
-      "id": "eppp-v2-professional-052",
-      "domainId": "professional",
-      "difficulty": "intermediate",
-      "practiceBank": 10,
-      "itemInBank": 50,
-      "score": 6,
-      "diagnostics": [
-        "asymmetric-extreme-distractors"
-      ],
-      "duplicateCandidateLinks": 0,
-      "prompt": "In clinical supervision, what does parallel process mean?",
-      "keyedChoice": "Client dynamics are repeated in supervision",
-      "editorialNote": "Combined warning score places this item in the next bounded editorial-review docket.",
-      "rank": 7,
-      "originalDiagnosticRank": 7,
-      "actionRank": 7,
+      "rank": 5,
+      "originalDiagnosticRank": 5,
+      "actionRank": 5,
       "status": "editorial-review-needed"
     },
     {
@@ -553,9 +515,9 @@
       "prompt": "When ending therapy, psychologists should?",
       "keyedChoice": "Provide pretermination counseling and indicated referrals",
       "editorialNote": "Combined warning score places this item in the next bounded editorial-review docket.",
-      "rank": 8,
-      "originalDiagnosticRank": 8,
-      "actionRank": 8,
+      "rank": 6,
+      "originalDiagnosticRank": 6,
+      "actionRank": 6,
       "status": "editorial-review-needed"
     },
     {
@@ -572,47 +534,9 @@
       "prompt": "Under the APA Ethics Code, when is a formal response to another psychologist’s apparent ethical violation most clearly indicated?",
       "keyedChoice": "For substantial harm not suitably resolved informally",
       "editorialNote": "Combined warning score places this item in the next bounded editorial-review docket.",
-      "rank": 9,
-      "originalDiagnosticRank": 9,
-      "actionRank": 9,
-      "status": "editorial-review-needed"
-    },
-    {
-      "id": "eppp-v2-research-011",
-      "domainId": "research",
-      "difficulty": "foundation",
-      "practiceBank": 9,
-      "itemInBank": 84,
-      "score": 6,
-      "diagnostics": [
-        "asymmetric-extreme-distractors"
-      ],
-      "duplicateCandidateLinks": 0,
-      "prompt": "Complete the statement: A between-subjects design:",
-      "keyedChoice": "Assigns DIFFERENT participants to each condition",
-      "editorialNote": "Combined warning score places this item in the next bounded editorial-review docket.",
-      "rank": 10,
-      "originalDiagnosticRank": 10,
-      "actionRank": 10,
-      "status": "editorial-review-needed"
-    },
-    {
-      "id": "eppp-v2-social-cultural-029",
-      "domainId": "social-cultural",
-      "difficulty": "intermediate",
-      "practiceBank": 7,
-      "itemInBank": 44,
-      "score": 6,
-      "diagnostics": [
-        "asymmetric-extreme-distractors"
-      ],
-      "duplicateCandidateLinks": 0,
-      "prompt": "Complete the statement: Relative deprivation theory proposes that social unrest results from:",
-      "keyedChoice": "People's PERCEPTION that they are worse off compared to others, not objective conditions",
-      "editorialNote": "Combined warning score places this item in the next bounded editorial-review docket.",
-      "rank": 11,
-      "originalDiagnosticRank": 11,
-      "actionRank": 11,
+      "rank": 7,
+      "originalDiagnosticRank": 7,
+      "actionRank": 7,
       "status": "editorial-review-needed"
     },
     {
@@ -629,9 +553,9 @@
       "prompt": "The difference between aptitude and achievement tests is:",
       "keyedChoice": "Aptitude forecasts learning potential; achievement assesses acquired learning",
       "editorialNote": "Combined warning score places this item in the next bounded editorial-review docket.",
-      "rank": 12,
-      "originalDiagnosticRank": 12,
-      "actionRank": 12,
+      "rank": 8,
+      "originalDiagnosticRank": 8,
+      "actionRank": 8,
       "status": "editorial-review-needed"
     },
     {
@@ -648,9 +572,9 @@
       "prompt": "Ceiling and floor effects in testing occur when:",
       "keyedChoice": "Scores cluster at the upper or lower limit of the instrument",
       "editorialNote": "Combined warning score places this item in the next bounded editorial-review docket.",
-      "rank": 13,
-      "originalDiagnosticRank": 13,
-      "actionRank": 13,
+      "rank": 9,
+      "originalDiagnosticRank": 9,
+      "actionRank": 9,
       "status": "editorial-review-needed"
     },
     {
@@ -667,9 +591,9 @@
       "prompt": "The Stroop effect demonstrates:",
       "keyedChoice": "Automatic word reading interfering with controlled color naming",
       "editorialNote": "Combined warning score places this item in the next bounded editorial-review docket.",
-      "rank": 14,
-      "originalDiagnosticRank": 14,
-      "actionRank": 14,
+      "rank": 10,
+      "originalDiagnosticRank": 10,
+      "actionRank": 10,
       "status": "editorial-review-needed"
     },
     {
@@ -686,9 +610,9 @@
       "prompt": "Levels of processing theory (Craik & Lockhart) predicts:",
       "keyedChoice": "Semantic analysis producing more durable memory than shallow analysis",
       "editorialNote": "Combined warning score places this item in the next bounded editorial-review docket.",
-      "rank": 15,
-      "originalDiagnosticRank": 15,
-      "actionRank": 15,
+      "rank": 11,
+      "originalDiagnosticRank": 11,
+      "actionRank": 11,
       "status": "editorial-review-needed"
     },
     {
@@ -705,9 +629,9 @@
       "prompt": "Interference theory proposes that forgetting occurs because:",
       "keyedChoice": "Competing information disrupts access to the target memory",
       "editorialNote": "Combined warning score places this item in the next bounded editorial-review docket.",
-      "rank": 16,
-      "originalDiagnosticRank": 16,
-      "actionRank": 16,
+      "rank": 12,
+      "originalDiagnosticRank": 12,
+      "actionRank": 12,
       "status": "editorial-review-needed"
     },
     {
@@ -724,9 +648,9 @@
       "prompt": "Psychoeducation in therapy involves:",
       "keyedChoice": "Teaching clients and families about symptoms, treatment, coping, and self-management",
       "editorialNote": "Combined warning score places this item in the next bounded editorial-review docket.",
-      "rank": 17,
-      "originalDiagnosticRank": 17,
-      "actionRank": 17,
+      "rank": 13,
+      "originalDiagnosticRank": 13,
+      "actionRank": 13,
       "status": "editorial-review-needed"
     },
     {
@@ -743,9 +667,9 @@
       "prompt": "According to APA ethics, competence to practice requires:",
       "keyedChoice": "Relevant education, training, supervised experience, consultation, study, or experience",
       "editorialNote": "Combined warning score places this item in the next bounded editorial-review docket.",
-      "rank": 18,
-      "originalDiagnosticRank": 18,
-      "actionRank": 18,
+      "rank": 14,
+      "originalDiagnosticRank": 14,
+      "actionRank": 14,
       "status": "editorial-review-needed"
     },
     {
@@ -762,9 +686,9 @@
       "prompt": "APA General Principle E indicates that psychologists should:",
       "keyedChoice": "Strive to contribute some professional time for little or no compensation",
       "editorialNote": "Combined warning score places this item in the next bounded editorial-review docket.",
-      "rank": 19,
-      "originalDiagnosticRank": 19,
-      "actionRank": 19,
+      "rank": 15,
+      "originalDiagnosticRank": 15,
+      "actionRank": 15,
       "status": "editorial-review-needed"
     },
     {
@@ -780,6 +704,82 @@
       "duplicateCandidateLinks": 0,
       "prompt": "When ethical standards conflict with law, psychologists should:",
       "keyedChoice": "Clarify the conflict and take reasonable steps to resolve it ethically",
+      "editorialNote": "Combined warning score places this item in the next bounded editorial-review docket.",
+      "rank": 16,
+      "originalDiagnosticRank": 16,
+      "actionRank": 16,
+      "status": "editorial-review-needed"
+    },
+    {
+      "id": "eppp-v3-professional-008",
+      "domainId": "professional",
+      "difficulty": "foundation",
+      "practiceBank": 15,
+      "itemInBank": 28,
+      "score": 6,
+      "diagnostics": [
+        "asymmetric-extreme-distractors"
+      ],
+      "duplicateCandidateLinks": 0,
+      "prompt": "The ethical concept of 'justice' in the APA Ethics Code relates to:",
+      "keyedChoice": "Promoting fair access and guarding against bias or unjust practices",
+      "editorialNote": "Combined warning score places this item in the next bounded editorial-review docket.",
+      "rank": 17,
+      "originalDiagnosticRank": 17,
+      "actionRank": 17,
+      "status": "editorial-review-needed"
+    },
+    {
+      "id": "eppp-v3-professional-012",
+      "domainId": "professional",
+      "difficulty": "foundation",
+      "practiceBank": 15,
+      "itemInBank": 32,
+      "score": 6,
+      "diagnostics": [
+        "asymmetric-extreme-distractors"
+      ],
+      "duplicateCandidateLinks": 0,
+      "prompt": "The principle of 'beneficence and nonmaleficence' in psychology ethics means:",
+      "keyedChoice": "Psychologists must do no harm and strive to benefit those with whom they work",
+      "editorialNote": "Combined warning score places this item in the next bounded editorial-review docket.",
+      "rank": 18,
+      "originalDiagnosticRank": 18,
+      "actionRank": 18,
+      "status": "editorial-review-needed"
+    },
+    {
+      "id": "eppp-v3-professional-016",
+      "domainId": "professional",
+      "difficulty": "foundation",
+      "practiceBank": 15,
+      "itemInBank": 36,
+      "score": 6,
+      "diagnostics": [
+        "asymmetric-extreme-distractors"
+      ],
+      "duplicateCandidateLinks": 0,
+      "prompt": "An ethical psychologist who realizes they lack competence in a client's presenting issue should:",
+      "keyedChoice": "Obtain appropriate consultation or training, or arrange a suitable referral",
+      "editorialNote": "Combined warning score places this item in the next bounded editorial-review docket.",
+      "rank": 19,
+      "originalDiagnosticRank": 19,
+      "actionRank": 19,
+      "status": "editorial-review-needed"
+    },
+    {
+      "id": "eppp-v3-professional-018",
+      "domainId": "professional",
+      "difficulty": "foundation",
+      "practiceBank": 15,
+      "itemInBank": 38,
+      "score": 6,
+      "diagnostics": [
+        "asymmetric-extreme-distractors"
+      ],
+      "duplicateCandidateLinks": 0,
+      "prompt": "Cultural competence in psychology requires:",
+      "keyedChoice": "Self-awareness, knowledge of diverse worldviews, and culturally responsive intervention skills",
       "editorialNote": "Combined warning score places this item in the next bounded editorial-review docket.",
       "rank": 20,
       "originalDiagnosticRank": 20,

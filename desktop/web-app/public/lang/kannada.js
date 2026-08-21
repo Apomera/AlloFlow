@@ -29026,7 +29026,17 @@
       "best": "ಅತ್ಯುತ್ತಮ",
       "menu_73": "← ಮೆನು",
       "menu_74": "← ಮೆನು",
-      "menu_75": "← ಮೆನು"
+      "menu_75": "← ಮೆನು",
+      "explore_the_road": "ರಸ್ತೆಯನ್ನು ಅನ್ವೇಷಿಸಿ",
+      "lane_change_without_signal": "ಸಿಗ್ನಲ್ ನೀಡದೆ ಲೇನ್ ಬದಲಾವಣೆ",
+      "drove_in_oncoming_lane": "ಎದುರು ಲೇನ್‌ನಲ್ಲಿ ಚಾಲನೆ",
+      "high_beams": "ಹೈ ಬೀಮ್",
+      "left_signal": "ಎಡ ಸಿಗ್ನಲ್",
+      "right_signal": "ಬಲ ಸಿಗ್ನಲ್",
+      "braking": "ಬ್ರೇಕ್ ಹಾಕುವುದು",
+      "traction_loss": "ಟ್ರಾಕ್ಷನ್ ನಷ್ಟ",
+      "fog_low_beams_ok": "ಮಂಜು — ಲೋ ಬೀಮ್‌ಗಳು ಸರಿಯಿವೆ",
+      "welcome_to_roadready": "RoadReadyಗೆ ಸ್ವಾಗತ"
     },
     "schoolbehaviortoolkit": {
       "replacement_behaviors": "ಬದಲಿ ವರ್ತನೆಗಳು",

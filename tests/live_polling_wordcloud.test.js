@@ -161,6 +161,59 @@ describe('Teacher student-activity ledger', () => {
     expect(JSON.stringify(rows)).not.toContain('viewingResourceAt');
   });
 
+  it('uses provider-neutral heartbeats for live presence and engagement without requiring a direct channel', () => {
+    const now = 1000000;
+    const rows = LivePolling.buildLiveStudentActivityRows({
+      roster: {
+        u1: { name: 'Ari', lastSeen: now - 60000 },
+        u2: { name: 'Bo', lastSeen: now - 150000 },
+        u3: { name: 'Cy', lastSeen: now - 300000 },
+      },
+      guests: [],
+      now,
+    });
+
+    expect(rows).toEqual([
+      expect.objectContaining({ uid: 'u1', connected: false, sessionPresent: true, presenceStatus: 'active', signalStatus: 'active', status: 'ready' }),
+      expect.objectContaining({ uid: 'u2', connected: false, sessionPresent: true, presenceStatus: 'recent', signalStatus: 'recent', status: 'ready' }),
+      expect.objectContaining({ uid: 'u3', connected: false, sessionPresent: false, presenceStatus: 'offline', signalStatus: 'offline', status: 'offline' }),
+    ]);
+    expect(LivePolling.summarizeLiveStudentEngagementRows(rows)).toEqual({ active: 1, recent: 1, quiet: 0, offline: 1, unknown: 0 });
+    expect(LivePolling.buildLiveTeacherActionQueue(rows, {}, now).map((item) => item.uid)).toEqual(['u3']);
+  });
+
+  it('builds a bounded activity-only student view with no answers, prompts, drafts, or screen data', () => {
+    const now = 2000000;
+    const row = LivePolling.buildLiveStudentActivityRows({
+      roster: { u1: { name: 'Ari', groupId: 'g1', lastSeen: now - 1000, wsProgress: { correct: 7, total: 8, done: false, at: now - 2000 } } },
+      activitySnapshots: [{
+        family: 'polling', kind: 'free_text', updatedAt: now - 3000,
+        audienceUids: ['u1'], participantStatus: { u1: 'working' },
+        prompt: 'private teacher prompt', response: 'private learner answer', draft: 'private draft',
+      }],
+      now,
+    })[0];
+    const detail = LivePolling.buildLiveStudentActivityDetail(row, {
+      groups: { g1: { name: 'Blue Pod' } },
+      activitySnapshots: [{
+        family: 'polling', kind: 'free_text', updatedAt: now - 3000,
+        audienceUids: ['u1'], participantStatus: { u1: 'working' },
+        prompt: 'private teacher prompt', response: 'private learner answer', draft: 'private draft', screen: 'pixel data',
+      }],
+      checkIn: { status: 'help', sentAt: now - 500, message: 'private message' },
+      now,
+    });
+
+    expect(detail).toMatchObject({ name: 'Ari', groupName: 'Blue Pod', progressDetail: '7/8', progressPercent: 88, signalStatus: 'active' });
+    expect(detail.timeline.length).toBeGreaterThan(0);
+    const serialized = JSON.stringify(detail);
+    expect(serialized).not.toContain('private teacher prompt');
+    expect(serialized).not.toContain('private learner answer');
+    expect(serialized).not.toContain('private draft');
+    expect(serialized).not.toContain('private message');
+    expect(serialized).not.toContain('pixel data');
+  });
+
   it('summarizes and filters the privacy-safe roster by progress, connection, activity, and group', () => {
     const rows = [
       { uid: 'u1', name: 'Ari', groupId: 'g1', connected: true, activity: 'Evidence Sort', status: 'working', supportStatus: 'help', progressDetail: '' },
@@ -359,7 +412,11 @@ describe('Word Cloud reuses the existing live-poll lifecycle', () => {
     expect(pollingSource).toContain("{ withdrawn: true }");
     expect(pollingSource).toContain("tr('Revise term')");
     expect(pollingSource).toContain("tr('Withdraw term')");
-    expect(pollingSource).toContain("maxWidth: 1180");
+    expect(pollingSource).toContain("maxWidth: 1480");
+    expect(pollingSource).toContain("tr('Progress and engagement signals')");
+    expect(pollingSource).toContain("tr('Activity view - not a live screen')");
+    expect(pollingSource).toContain('renderStudentActivityDetail()');
+    expect(pollingSource).toContain('renderAlloSheetReview()');
     expect(pollingSource).toContain("tr('Needs attention')");
     expect(pollingSource).toContain("'aria-pressed': selected");
     expect(pollingSource).toContain("tr('Find a student, activity, or group')");

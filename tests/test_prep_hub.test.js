@@ -131,7 +131,7 @@ describe('Test Prep Hub exam-pack contract', () => {
     const allianceItem = packTwo.find((item) => item.id === 'eppp-b008-intervention-1');
 
     expect(custodyItem).toBeTruthy();
-    expect(custodyItem.choices[custodyItem.answerIndex]).toContain('conflicting forensic and therapeutic roles');
+    expect(custodyItem.choices[custodyItem.answerIndex]).toContain('Combining forensic and treatment roles');
     expect(custodyItem.choiceRationales[custodyItem.answerIndex]).toContain('conflicting obligations');
     expect(allianceItem).toBeTruthy();
     expect(allianceItem.choices[allianceItem.answerIndex]).toContain('consistent correlate of treatment outcome');
@@ -446,4 +446,3 @@ describe('Test Prep Hub host contract', () => {
     expect(hubSource).toContain('legacyUrl: testPrepNormalizeRepoAssetUrl(input.legacyUrl)');
   });
 });
-

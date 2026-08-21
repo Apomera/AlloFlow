@@ -10254,6 +10254,34 @@ var evidenceRoute = [
                 );
               })),
               el(DinoFieldStation3DStable, { species: dn, focusMode: focusMode, reconstructionMode: activeHypothesis.id, showSkeleton: showSkeleton, showBody: showBody, showHuman: showHuman, showEvidence: showEvidence, bodyOpacity: bodyOpacitySetting, onBodyOpacityChange: function (nextOpacity) { upd('field3dBodyOpacity', nextOpacity); }, autoRotate: autoRotate, orientationCueVisible: orientationCueVisible, onOrientationDismiss: dismissOrientationCue, onScanTargetChange: setScanTarget, scanActive: workflowStarted, onLogScanTarget: logScanTarget, scanTarget: scanTarget.id, scanLabel: scanTarget.label, loggedAnchors: scanLogged, loggedAnchorKey: scanLoggedKey, loggedCount: scanLoggedCount, scanTotal: scanTargets.length, pathLoggedCount: scanPathCount, pathTotal: scanPathLinks.length, assemblyPlaced: assemblyPlaced, assemblyPlacedKey: assemblyPlacedKey, assemblyPlacedCount: assemblyPlacedCount, assemblyTotal: assemblyPieces.length, assemblyFocus: assemblyFocus.id, assemblyUnlocked: assemblyUnlocked, claimEvidenceFocus: claimEvidencePiece ? claimEvidencePiece.id : null, claimEvidenceLabel: claimEvidencePiece ? claimEvidencePiece.label : null, claimEvidenceAnchor: claimEvidenceAnchor ? claimEvidenceAnchor.id : null, claimEvidenceAnchorLabel: claimEvidenceAnchor ? claimEvidenceAnchor.label : null, claimEvidenceTrailLabel: claimEvidenceTrailLabel, dietColor: dColor(dn.diet) }),
+              el('div', { key: 'evidenceContext', className: 'dinolab-field-context-strip', 'data-dinolab-evidence-strip': 'true', role: 'group', 'aria-label': 'Reconstruction evidence context', style: { marginTop: 10, padding: 10, borderRadius: 11, border: '1px solid rgba(94,234,212,0.28)', background: 'linear-gradient(135deg, rgba(15,23,42,0.88), rgba(20,184,166,0.08))', boxShadow: '0 8px 24px rgba(2,6,23,0.18)' } },
+                el('div', { key: 'contextHeader', style: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap', marginBottom: 8 } },
+                  el('div', { style: { color: T.text, fontSize: 12, fontWeight: 900, letterSpacing: '0.04em', textTransform: 'uppercase' } }, 'Evidence context'),
+                  el('div', { style: { color: T.soft, fontSize: 11.5, lineHeight: 1.35 } }, claimEvidenceTrailLabel ? 'Linked trail: ' + claimEvidenceTrailLabel : 'Keep observations separate from inference as you explore')
+                ),
+                el('div', { key: 'contextGrid', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 7 } }, [
+                  el('div', { key: 'evidence', style: { minWidth: 0, padding: '8px 9px', borderRadius: 9, border: '1px solid rgba(20,184,166,0.34)', background: 'rgba(20,184,166,0.10)' } },
+                    el('div', { style: { color: '#5eead4', fontSize: 10.5, fontWeight: 900, letterSpacing: '0.03em', textTransform: 'uppercase', marginBottom: 3 } }, 'Evidence trail'),
+                    el('div', { style: { color: T.text, fontSize: 12.5, fontWeight: 900, lineHeight: 1.3 } }, scanLoggedCount + '/' + scanTargets.length + ' anchors'),
+                    el('div', { style: { color: T.soft, fontSize: 11, lineHeight: 1.35, marginTop: 2 } }, scanPathCount + '/' + scanPathLinks.length + ' links connected' + (claimEvidenceText ? ' | ' + claimEvidenceText : ''))
+                  ),
+                  el('div', { key: 'profile', style: { minWidth: 0, padding: '8px 9px', borderRadius: 9, border: '1px solid rgba(167,139,250,0.34)', background: 'rgba(167,139,250,0.10)' } },
+                    el('div', { style: { color: '#c4b5fd', fontSize: 10.5, fontWeight: 900, letterSpacing: '0.03em', textTransform: 'uppercase', marginBottom: 3 } }, 'Reconstruction profile | ' + cap(reconstructionProfile.coverage) + ' coverage'),
+                    el('div', { style: { color: T.text, fontSize: 12.5, fontWeight: 900, lineHeight: 1.3 } }, activeHypothesis.label),
+                    el('div', { style: { color: T.soft, fontSize: 11, lineHeight: 1.35, marginTop: 2 } }, reconstructionProfile.coverageNote)
+                  ),
+                  el('div', { key: 'habitat', style: { minWidth: 0, padding: '8px 9px', borderRadius: 9, border: '1px solid rgba(56,189,248,0.34)', background: 'rgba(56,189,248,0.09)' } },
+                    el('div', { style: { color: '#7dd3fc', fontSize: 10.5, fontWeight: 900, letterSpacing: '0.03em', textTransform: 'uppercase', marginBottom: 3 } }, 'Environment hypothesis'),
+                    el('div', { style: { color: T.text, fontSize: 12.5, fontWeight: 900, lineHeight: 1.3 } }, habitat.label),
+                    el('div', { style: { color: T.soft, fontSize: 11, lineHeight: 1.35, marginTop: 2 } }, dn.formation + ' Formation / ' + dn.region)
+                  ),
+                  el('div', { key: 'question', style: { minWidth: 0, padding: '8px 9px', borderRadius: 9, border: '1px solid rgba(245,158,11,0.34)', background: 'rgba(245,158,11,0.09)' } },
+                    el('div', { style: { color: '#fbbf24', fontSize: 10.5, fontWeight: 900, letterSpacing: '0.03em', textTransform: 'uppercase', marginBottom: 3 } }, 'Open question'),
+                    el('div', { style: { color: T.text, fontSize: 11.5, fontWeight: 800, lineHeight: 1.4 } }, dn.uncertain),
+                    el('div', { style: { color: T.soft, fontSize: 10.5, lineHeight: 1.35, marginTop: 2 } }, 'A visible boundary for the next claim')
+                  )
+                ])
+              ),
               el('div', { className: 'dinolab-field-next', hidden: focusMode, role: 'region', 'aria-label': 'Current field task', style: { marginTop: 10, display: 'flex', gap: 12, alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', padding: 12, borderRadius: 10, border: '1px solid rgba(20,184,166,0.34)', background: 'rgba(20,184,166,0.08)' } },
                 el('div', { style: { flex: '1 1 300px' } },
                   el('div', { style: { fontSize: 12.5, fontWeight: 900, color: T.text, marginBottom: 2 } }, !workflowStarted ? 'Begin at the model' : (activeWorkflowStep === 'scan' ? 'Scan ' + scanTarget.label : (activeWorkflowStep === 'assemble' ? 'Assemble the fossil tray' : 'Turn evidence into a claim'))),

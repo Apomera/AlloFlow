@@ -29241,7 +29241,17 @@
       "best": "En İyi",
       "menu_73": "← Menü",
       "menu_74": "← Menü",
-      "menu_75": "← Menü"
+      "menu_75": "← Menü",
+      "explore_the_road": "Yolu keşfet",
+      "lane_change_without_signal": "Sinyal vermeden şerit değiştirme",
+      "drove_in_oncoming_lane": "Karşı şeritte sürüş",
+      "high_beams": "Uzun farlar",
+      "left_signal": "Sol sinyal",
+      "right_signal": "Sağ sinyal",
+      "braking": "Frenleme",
+      "traction_loss": "Yol tutuşu kaybı",
+      "fog_low_beams_ok": "Sis — kısa farlar uygun",
+      "welcome_to_roadready": "RoadReady'e hoş geldin"
     },
     "schoolbehaviortoolkit": {
       "replacement_behaviors": "Yerine Geçen Davranışlar",

@@ -79,6 +79,13 @@ function sampleWorkspaceFixture() {
   return workspace;
 }
 
+function mountRealLocalFixture() {
+  const workspace = sampleWorkspaceFixture();
+  workspace.config.sampleMode = false;
+  localStorage.setItem('allo_educator_evaluation_workspace_v1', JSON.stringify(workspace));
+  return mountPanel({ startMode: null });
+}
+
 async function flushRemote() {
   await act(async () => {
     await Promise.resolve();
@@ -141,6 +148,22 @@ describe('EducatorEvaluationPanel', () => {
     expect(stored.teachers).toHaveLength(8);
   }, 15000);
 
+  it('accepts the host translator for the localized onboarding shell while preserving fallback copy', () => {
+    const container = mountPanel({
+      startMode: null,
+      t: (key) => {
+        if (key === 'educator_evaluation.choose_how_to_start_educator_evaluation_1ttmet2') return 'Localized evaluation start';
+        if (key === 'educator_evaluation.finalized_4cmc2p') return 'Localized finalized';
+        return undefined;
+      },
+    });
+
+    expect(container.textContent).toContain('Localized evaluation start');
+    expect(container.textContent).toContain('Start real work locally');
+    clickButton(container, 'Start a guided sample tour');
+    expect(container.textContent).toContain('Localized finalized');
+  });
+
   it('can start with a blank on-device workspace instead of simulated records', () => {
     const container = mountPanel({ startMode: null });
     clickButton(container, 'Start real work locally');
@@ -195,7 +218,7 @@ describe('EducatorEvaluationPanel', () => {
   });
 
   it('scopes teacher view to one educator and removes organization-wide controls', () => {
-    const container = mountPanel();
+    const container = mountRealLocalFixture();
     clickButton(container, 'Educator preview');
 
     expect(container.querySelector('.ae-role button[aria-pressed="true"]').textContent).toBe('Educator preview');
@@ -242,7 +265,7 @@ describe('EducatorEvaluationPanel', () => {
   });
 
   it('makes educator-owned controls visibly read-only in a local educator preview', () => {
-    const container = mountPanel();
+    const container = mountRealLocalFixture();
     click(container.querySelector('#ae-tab-staff'));
     clickButton(container, 'Teacher 03');
     clickButton(container, 'Educator preview');

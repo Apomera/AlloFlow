@@ -4883,7 +4883,7 @@ function _computeStructuralFidelityNotes(srcText, outHtml, srcCounts) {
 // verification engine is added or temporarily unavailable.
 function _alloRemediationOutcome(r, opts) {
   r = r || {};
-  var target = (opts && typeof opts.targetScore === 'number') ? opts.targetScore : 90;
+  var target = (opts && typeof opts.targetScore === 'number') ? opts.targetScore : PIPELINE_DEFAULTS.targetScore;
   var score = typeof r.afterScore === 'number' && Number.isFinite(r.afterScore) ? r.afterScore : null;
   var axeCompleted = _alloUsableAxeAudit(r.axeAudit);
   var residual = axeCompleted ? Math.max(0, r.axeAudit.totalViolations) : null;
@@ -4925,7 +4925,7 @@ function _alloRemediationOutcome(r, opts) {
 // PURE + deterministic (unit-tested); the view renders it as a visible strip, never tooltip-only.
 function _alloDistributionVerdict(r, opts) {
   if (!r) return null;
-  var target = (opts && typeof opts.targetScore === 'number') ? opts.targetScore : 90;
+  var target = (opts && typeof opts.targetScore === 'number') ? opts.targetScore : PIPELINE_DEFAULTS.targetScore;
   var review = [];
   var cautions = [];
   var notes = Array.isArray(r.fidelityNotes) ? r.fidelityNotes.filter(Boolean) : [];
@@ -7713,8 +7713,16 @@ var createDocPipeline = function(deps) {
     // Ledger the INTENT once per call, not per attempt: a retry re-sends the same bytes, and the
     // question this answers is "what does one run ask Canvas to carry", which is what gets metered.
     _alloNotePayload(_callStats, requestProfile);
-    var _outcomeNoted = false;
+    // A Canvas auth/quota-burst failure is one logical throttle even when this
+    // call uses its bounded inline retry. We still allow a later successful
+    // attempt to report recovery; we only suppress duplicate auth failures.
+    var _logicalAuthFailureNoted = false;
     var _attempt = function(n) {
+      // The once-guard is per TRANSPORT ATTEMPT, not per logical call. Attempt 0 may
+      // fail and feed the breaker before attempt 1 succeeds; that recovery success
+      // must still clear the streak/cooldown. Keeping this flag outside _attempt
+      // made every recovered retry look like a terminal throttle to the shared gate.
+      var _outcomeNoted = false;
       var timeoutMs = n === 0 ? initialMs : (retryMs || initialMs);
       var _attemptQueuedAt = ((typeof Date !== 'undefined' && Date.now) ? Date.now() : 0);
       // ── M15 (audit 2026-07-26): record the breaker outcome BEFORE the slot is released ──────
@@ -7752,6 +7760,10 @@ var createDocPipeline = function(deps) {
           var _burst = _perm && _isBurstQuotaErr(err);
           if (_burst) { _perm = false; _canvasAuth = true; }
           if (_perm) return; // real auth/quota/config: permanent, and never fed the breaker
+          if (_canvasAuth) {
+            if (_logicalAuthFailureNoted) return;
+            _logicalAuthFailureNoted = true;
+          }
           // R2 note (2026-08-16): per-attempt counting means one logical call can feed the
           // transient breaker twice (attempt 0 + its retry). An attempt to gate this to the
           // final attempt was made and REVERTED the same day: the outer catch documents the
@@ -7784,6 +7796,11 @@ var createDocPipeline = function(deps) {
         }
       };
       return _geminiGate(function() {
+        // Thread the outer attempt's real wall-clock deadline to the Gemini
+        // transport telemetry. The API adapter uses it to keep primary/fallback
+        // HTTP work inside this timeout instead of starting a request that can
+        // only outlive the race and overlap the next retry.
+        if (requestProfile) requestProfile.deadlineTs = (((typeof Date !== 'undefined' && Date.now) ? Date.now() : 0) + Math.max(1000, timeoutMs - 2000));
         if (_callLedger) {
           _callLedger.attempts = Math.max(_callLedger.attempts || 0, n + 1);
           if (n === 0 && !_ledgerFirstTransportAt) _ledgerFirstTransportAt = performance.now();
@@ -7957,7 +7974,12 @@ var createDocPipeline = function(deps) {
     var _ledgerModel = null;
     var _rawCallArgs = Array.prototype.slice.call(args, 0, 6);
     _rawCallArgs.push(typeof args[6] === 'boolean' ? args[6] : false);
-    _rawCallArgs.push({
+    var _transportTelemetry = {
+      // The document pipeline owns retry/backoff at the breaker-aware outer
+      // layer. Tell the Gemini adapter not to build another full retry ladder
+      // underneath it, and expose this attempt's deadline for fallback gating.
+      retryOwner: 'doc-pipeline',
+      getDeadlineTs: function () { return Number(_requestProfile.deadlineTs) || 0; },
       onAuthRung: function (rung) {
         var ledger = _requestProfile.ledger;
         if (ledger) ledger.authRungs = Math.max(ledger.authRungs || 0, Number(rung) || 0);
@@ -8009,7 +8031,8 @@ var createDocPipeline = function(deps) {
           }
         }
       },
-    });
+    };
+    _rawCallArgs.push(_transportTelemetry);
     var _htpText = _hostTransportProfile();
     return _geminiCall(function() { return _rawCallGemini.apply(null, _rawCallArgs); }, _localTextCall ? 420000 : ((_htpText && _htpText.textInitialMs) || 180000), _localTextCall ? 300000 : ((_htpText && _htpText.textRetryMs) || 180000), 'callGemini', function(start) {
       _pipeLog('API-start', 'callGemini #' + callNum + ' transport start' + (start.attempt ? ' (retry ' + start.attempt + ')' : '') + ' after ' + start.queuedMs + 'ms queued', null, _callOwner);
@@ -8133,6 +8156,8 @@ var createDocPipeline = function(deps) {
     };
     var _visionLedgerModel = null;
     var _visionTelemetry = {
+      retryOwner: 'doc-pipeline',
+      getDeadlineTs: function () { return Number(_requestProfile.deadlineTs) || 0; },
       onModel: function (model) {
         _visionLedgerModel = model == null ? null : String(model).slice(0, 120);
         var ledger = _requestProfile.ledger;
@@ -28255,7 +28280,7 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
               ? 'partial-final-audit-throttled'
               : (finalAudit._partialAudit ? 'partial-final-audit' : 'final-audit-no-score');
           }
-          warnLog(`[PDF Fix] Final audit: score ${finalAudit.score}, ${(finalAudit.issues || []).length} remaining issues, ${(finalAudit.passes || []).length} passes` + (finalAudit._partialAudit ? ` — ⚠ PARTIAL (${finalAudit.chunksAudited}/${finalAudit.chunksRequested} sections audited under Canvas throttle; headline score covers audited content only — re-run for a full-coverage score)` : ''));
+          warnLog(`[PDF Fix] Final AI semantic audit: ${finalAudit._partialAudit ? 'non-authoritative partial score ' : 'AI layer score '}${finalAudit.score}, ${(finalAudit.issues || []).length} remaining issues, ${(finalAudit.passes || []).length} passes` + (finalAudit._partialAudit ? ` — ⚠ PARTIAL (${finalAudit.chunksAudited}/${finalAudit.chunksRequested} sections audited under Canvas throttle; this number is not the final headline — re-run for full coverage)` : ''));
         } else if (!_finalAuditIncompleteReason) {
           _finalAuditIncompleteReason = 'final-audit-empty';
           _finalAuditThrottled = _finalAuditThrottleActive();
@@ -29527,7 +29552,7 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       if (_verificationHtmlBinding) _alloAttachVerificationHtmlSnapshot(_result, accessibleHtml);
 
       _throwIfRunCancelled();
-      _pipeStepEnd(4, autoFixPasses + ' fix passes, score: ' + (verification ? verification.score : '?') + '/100', _runTelemetry);
+      _pipeStepEnd(4, autoFixPasses + ' fix passes, final headline score: ' + (Number.isFinite(finalAfterScore) ? finalAfterScore : '?') + '/100', _runTelemetry);
       // Payload ledger: the metered dimension, printed where anyone reading a field log will see it.
       try {
         const _ledger = _alloFormatPayloadLedger(_runStats.payload);
@@ -29545,7 +29570,15 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         retries: _runStats.retries,
         fixPasses: autoFixPasses,
         beforeScore: beforeScore,
-        afterScore: verification ? verification.score : null,
+        // This is the same canonical weakest-layer headline stored on the
+        // result and rendered in the UI. Keep the layer scores alongside it so
+        // diagnostics never compare a raw AI score with a governing headline.
+        afterScore: Number.isFinite(finalAfterScore) ? finalAfterScore : null,
+        aiScore: _finalAiEvidenceAvailable && verification && Number.isFinite(verification.score) ? verification.score : null,
+        deterministicScore: Number.isFinite(deterministicScore) ? deterministicScore : null,
+        scoreSource: _finalAiEvidenceAvailable ? (_deterministicEvidenceAvailable ? 'min' : 'content-only') : (_deterministicEvidenceAvailable ? 'deterministic-only' : 'unavailable'),
+        targetScore: _runTargetScore,
+        afterScoreVerified: _verificationState.afterScoreVerified === true,
         axeViolations: axeResults ? axeResults.totalViolations : null,
         htmlSize: Math.round(accessibleHtml.length / 1000) + 'KB',
       }, _runTelemetry);

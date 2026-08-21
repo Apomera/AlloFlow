@@ -28718,7 +28718,17 @@
       "best": "সেরা",
       "menu_73": "← মেনু",
       "menu_74": "← মেনু",
-      "menu_75": "← মেনু"
+      "menu_75": "← মেনু",
+      "explore_the_road": "রাস্তা অন্বেষণ করুন",
+      "lane_change_without_signal": "সিগন্যাল ছাড়া লেন পরিবর্তন",
+      "drove_in_oncoming_lane": "বিপরীত লেনে গাড়ি চালানো",
+      "high_beams": "হাই বিম",
+      "left_signal": "বাঁ দিকের সিগন্যাল",
+      "right_signal": "ডান দিকের সিগন্যাল",
+      "braking": "ব্রেক করা",
+      "traction_loss": "ট্র্যাকশন হারানো",
+      "fog_low_beams_ok": "কুয়াশা — লো বিম ঠিক আছে",
+      "welcome_to_roadready": "RoadReady-এ স্বাগতম"
     },
     "schoolbehaviortoolkit": {
       "replacement_behaviors": "Replacement আচরণ",

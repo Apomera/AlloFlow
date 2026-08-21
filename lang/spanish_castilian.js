@@ -31356,7 +31356,17 @@
       "best": "Mejor",
       "menu_73": "← Menú",
       "menu_74": "← Menú",
-      "menu_75": "← Menú"
+      "menu_75": "← Menú",
+      "explore_the_road": "Explora la carretera",
+      "lane_change_without_signal": "Cambio de carril sin señal",
+      "drove_in_oncoming_lane": "Condujiste por el carril contrario",
+      "high_beams": "Luces largas",
+      "left_signal": "Intermitente izquierdo",
+      "right_signal": "Intermitente derecho",
+      "braking": "Frenado",
+      "traction_loss": "Pérdida de tracción",
+      "fog_low_beams_ok": "Niebla — luces bajas correctas",
+      "welcome_to_roadready": "Bienvenido a RoadReady"
     },
     "schoolbehaviortoolkit": {
       "replacement_behaviors": "Conductas de Reemplazo",

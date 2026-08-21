@@ -12,13 +12,13 @@ const packPath = path.join(root, 'test_prep', 'ap_statistics_foundation_pilot.js
 const libraryPath = path.join(root, 'test_prep', 'ap_statistics_foundation_pilot_learning_library.json');
 
 const PACK_ID = 'ap-statistics-foundation-pilot';
-const VERSION = '0.2.0-internal-preview';
+const VERSION = '0.3.0-internal-preview';
 const VERIFIED_AT = '2026-08-20';
 const CED_URL = 'https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852';
 const COURSE_URL = 'https://apcentral.collegeboard.org/courses/ap-statistics';
 const EXAM_URL = 'https://apcentral.collegeboard.org/courses/ap-statistics/exam';
 const OPENSTAX_URL = 'https://openstax.org/details/books/introductory-statistics-2e';
-const LIBRARY_VERSION = 'ap-statistics-foundation-v2';
+const LIBRARY_VERSION = 'ap-statistics-foundation-v3';
 
 function assert(condition, message) {
   if (!condition) throw new Error('[AP Statistics foundation builder] ' + message);
@@ -426,12 +426,68 @@ const expandedItemSpecs = [
   q(5, '5.5', '4.B', 'Why is predicting for x = 250 risky when the observed x-values range from 10 to 80?', 'The prediction is extrapolation far beyond the observed range.', ['The residual must be zero.', 'The response becomes categorical.', 'The correlation is automatically one.'], 'A model may not preserve its pattern outside the observed range, so extrapolation is risky.', { cognitiveProcess: 'justify' }),
 ];
 
+const transferItemSpecs = [
+  // Transfer set: apply the same reasoning to new contexts.
+  q(1, '1.1', '1.A', 'A school wants to know whether its students are satisfied with the lunch schedule. Which question is statistical?', 'What proportion of students would report being satisfied with the lunch schedule?', ['Is one named student satisfied?', 'What color are the cafeteria tables?', 'Did the principal choose the schedule?'], 'The question anticipates variability across students and asks about a population proportion.', { cognitiveProcess: 'identify' }),
+  q(1, '1.4', '3.A', 'A display compares the percentages of two grade levels choosing four transportation methods. Which display is most appropriate?', 'A segmented bar chart with one bar for each grade level.', ['A histogram of grade labels.', 'A scatterplot with no quantitative variables.', 'A boxplot of transportation categories.'], 'A segmented bar chart compares conditional category percentages across groups.', { cognitiveProcess: 'select' }),
+  q(1, '1.6', '4.A', 'A distribution has mean 38 and median 31. Which shape is most plausible?', 'The distribution is skewed right.', ['The distribution is necessarily symmetric.', 'The distribution is skewed left with no exceptions.', 'The distribution has no variability.'], 'A high right tail can pull the mean above the median.', { cognitiveProcess: 'infer' }),
+  q(1, '1.8', '3.A', 'A boxplot has Q1 = 20 and Q3 = 32. At which value does the upper 1.5-IQR fence occur?', '50', ['38', '44', '64'], 'The IQR is 12, so the upper fence is 32 + 1.5(12) = 50.', { cognitiveProcess: 'calculate' }),
+  q(1, '1.9', '4.A', 'Two distributions measure wait time in minutes and seconds. What is required for a fair comparison of their centers?', 'Use the same units before comparing numerical summaries.', ['Compare the raw numerical values without conversion.', 'Compare only the sample sizes.', 'Convert both variables to categories.'], 'A change of units changes numerical centers, so summaries must be expressed on a common scale.', { cognitiveProcess: 'justify' }),
+  q(1, '1.10', '2.B', 'A researcher asks every member of a small club about a policy. What kind of data collection is this for the club?', 'A census of the club.', ['A simple random sample of the club.', 'A voluntary response sample from the city.', 'A randomized experiment.'], 'A census collects data from every member of the defined population.', { cognitiveProcess: 'classify' }),
+  q(1, '1.11', '2.A', 'A district separates schools by size and randomly samples students from every size group. Which design is used?', 'A stratified random sample.', ['A cluster sample of one school.', 'A convenience sample.', 'A census of the district.'], 'Strata are formed first, and random samples are taken from each stratum.', { cognitiveProcess: 'identify' }),
+  q(1, '1.12', '4.B', 'A sampling frame omits students who attend only evening classes. Which concern is most direct?', 'Undercoverage bias.', ['Type I error.', 'Placebo effect.', 'Random assignment.'], 'Members omitted from the sampling frame have little or no chance to be selected.', { cognitiveProcess: 'identify' }),
+
+  q(2, '2.1', '4.A', 'If the conditional percentage of late arrivals is nearly the same for bus riders and walkers, what does that suggest?', 'The two categorical variables may have weak association in the sample.', ['The variables must be perfectly dependent.', 'The sample mean is zero.', 'The categories are quantitative measurements.'], 'Similar conditional distributions suggest little association, although sampling variation remains possible.', { cognitiveProcess: 'infer' }),
+  q(2, '2.3', '3.C', 'A simulation estimates a probability as 0.41. What does repeating the simulation many more times generally do?', 'It tends to make the estimate more stable around the modeled probability.', ['It guarantees the next repetition is a success.', 'It changes the event being modeled.', 'It makes the probability exceed 1.'], 'More repetitions reduce random simulation error but do not guarantee an individual result.', { cognitiveProcess: 'explain' }),
+  q(2, '2.4', '3.C', 'If P(A) = 0.72, what is P(not A)?', '0.28', ['0.72', '1.28', '0.07'], 'The complement rule gives 1 - 0.72 = 0.28.', { cognitiveProcess: 'calculate', difficulty: 'foundational' }),
+  q(2, '2.6', '3.C', 'If P(B) = 0.50 and P(A | B) = 0.30, what is P(A and B)?', '0.15', ['0.20', '0.80', '1.67'], 'The multiplication rule gives P(A and B) = P(B)P(A | B) = 0.50(0.30) = 0.15.', { cognitiveProcess: 'calculate' }),
+  q(2, '2.8', '3.B', 'A probability distribution assigns probabilities 0.10, 0.25, and 0.65 to three outcomes. What is the expected value if the outcomes are 1, 2, and 4?', '3.20', ['1.00', '2.50', '4.00'], 'The expected value is 1(0.10) + 2(0.25) + 4(0.65) = 3.20.', { cognitiveProcess: 'calculate' }),
+  q(2, '2.9', '4.D', 'A game has expected payout 5 points and standard deviation 2 points. What does the standard deviation describe?', 'The typical distance of payouts from the long-run average of 5 points.', ['The probability of winning is 2.', 'Every payout is between 3 and 7 points.', 'The most common payout is exactly 5 points.'], 'Standard deviation measures spread around the expected value; it does not set a guaranteed range or identify the mode.', { cognitiveProcess: 'interpret' }),
+  q(2, '2.10', '3.C', 'For X ~ Binomial(12, 0.25), which expression represents P(X at least 1)?', '1 - (0.75)^12', ['(0.25)^12', '12(0.25)', '1 - (0.25)^12'], 'At least one success is the complement of zero successes, whose probability is (0.75)^12.', { cognitiveProcess: 'select' }),
+  q(2, '2.12', '4.C', 'A population is strongly skewed, but random samples have size 100. Which statement is most reasonable about the sample mean?', 'Its sampling distribution may be approximately normal because of the Central Limit Theorem.', ['Every observation in the population becomes normal.', 'The sample mean has no variability.', 'The population shape is changed by sampling.'], 'For sufficiently large random samples, the sampling distribution of the mean can be approximately normal even when the population is skewed.', { cognitiveProcess: 'justify' }),
+
+  q(3, '3.1', '4.B', 'Two estimators are both unbiased. Estimator A has smaller standard deviation. What is supported?', 'Estimator A is less variable while both estimators are centered at the parameter in the long run.', ['Estimator A equals the parameter in every sample.', 'Estimator B is necessarily biased.', 'Both estimators have zero sampling variability.'], 'Unbiasedness concerns center, while standard deviation compares sampling variability.', { cognitiveProcess: 'compare' }),
+  q(3, '3.3', '3.E', 'A researcher wants a narrower confidence interval without changing confidence level. Which design change is generally effective?', 'Increase the sample size.', ['Use a more extreme confidence level.', 'Replace the sample with volunteers.', 'Increase the standard error.'], 'A larger sample reduces standard error and generally narrows the interval.', { cognitiveProcess: 'select' }),
+  q(3, '3.5', '2.E', 'A claim says that more than 55% of customers prefer option A. Which alternative is appropriate?', 'Ha: p > 0.55', ['Ha: p = 0.55', 'Ha: p < 0.55', 'Ha: p-hat > 0.55 for every sample'], 'The alternative states the population proportion claim and uses the parameter p.', { cognitiveProcess: 'select' }),
+  q(3, '3.6', '4.F', 'A p-value is 0.20. Which statement is correct?', 'Results at least as extreme as the observed result are not especially unusual under the null model.', ['There is a 20% probability the null hypothesis is true.', 'The alternative hypothesis is impossible.', 'The sample proportion is wrong by 20 percentage points.'], 'The p-value describes extremeness under the null model, not the probability that a hypothesis is true.', { cognitiveProcess: 'interpret' }),
+  q(3, '3.8', '2.D', 'Which situation represents a Type I error?', 'A test rejects a true null hypothesis.', ['A test fails to reject a false null hypothesis.', 'A sample statistic equals its parameter.', 'A confidence interval contains the parameter.'], 'Type I error is a false positive: rejecting a null that is actually true.', { cognitiveProcess: 'identify' }),
+  q(3, '3.10', '2.C', 'A two-proportion confidence interval is centered at 0.08. What does the center represent?', 'The observed difference between the two sample proportions.', ['The difference between the population proportions known without error.', 'The pooled sample size.', 'The chi-square statistic.'], 'The interval estimate is centered at the observed sample difference, which estimates the population difference.', { cognitiveProcess: 'interpret' }),
+  q(3, '3.14', '2.C', 'For a chi-square procedure, why are very small expected counts a concern?', 'The chi-square approximation to the sampling distribution may be unreliable.', ['Small expected counts prove independence.', 'They make the variables quantitative.', 'They guarantee a small p-value.'], 'Chi-square procedures rely on conditions that keep the expected counts sufficiently large for the approximation.', { cognitiveProcess: 'justify' }),
+  q(3, '3.15', '3.C', 'A chi-square test has 5 categories for one categorical variable. What are the degrees of freedom for a goodness-of-fit setting?', '4', ['5', '6', '10'], 'For a one-way goodness-of-fit test with 5 categories and no estimated parameters, df = 5 - 1 = 4.', { cognitiveProcess: 'calculate', difficulty: 'foundational' }),
+
+  q(4, '4.1', '4.C', 'A population has mean 70 and standard deviation 16. For samples of size 64, what is the approximate sampling distribution of x-bar?', 'Approximately normal with mean 70 and standard deviation 2.', ['Normal with mean 64 and standard deviation 16.', 'Approximately normal with mean 0 and standard deviation 70.', 'Uniform with mean 70 and standard deviation 16.'], 'The sample mean is centered at 70 and has standard error 16/square root of 64 = 2.', { cognitiveProcess: 'describe' }),
+  q(4, '4.2', '4.C', 'For a one-sample t interval based on n = 18 observations, what degrees of freedom are used?', '17', ['18', '16', '36'], 'A one-sample t procedure uses n - 1 degrees of freedom, so df = 17.', { cognitiveProcess: 'calculate', difficulty: 'foundational' }),
+  q(4, '4.4', '2.E', 'A test asks whether the mean battery life is 10 hours. Which null hypothesis is appropriate?', 'H0: mu = 10', ['H0: mu > 10', 'H0: x-bar = 10 in every sample', 'H0: s = 10'], 'The null uses equality and the population mean parameter.', { cognitiveProcess: 'select' }),
+  q(4, '4.5', '4.G', 'A test has p = 0.003 and alpha = 0.01. What is the decision?', 'Reject the null hypothesis.', ['Fail to reject the null because p is positive.', 'Accept the null as proven true.', 'Reject the null only if p is greater than alpha.'], 'Because p is less than alpha, the result is statistically significant at the 1% level.', { cognitiveProcess: 'justify' }),
+  q(4, '4.6', '3.D', 'In a paired study, what parameter is estimated by the mean of the within-person differences?', 'The population mean difference between the two paired conditions.', ['The sum of the two population means.', 'The proportion of participants who improve.', 'The correlation coefficient only.'], 'Pairing creates one quantitative difference per unit, and the mean difference targets its population mean.', { cognitiveProcess: 'identify' }),
+  q(4, '4.7', '2.C', 'A confidence interval for mu1 - mu2 is (2.5, 6.5). What does the interval suggest?', 'The first population mean is greater than the second.', ['The second population mean is greater.', 'The population means are exactly equal.', 'The individual data values all lie between 2.5 and 6.5.'], 'The interval is entirely positive, so zero is not a plausible difference under the stated procedure.', { cognitiveProcess: 'justify' }),
+  q(4, '4.8', '4.F', 'A 95% confidence interval is narrower than a 99% interval from the same data. Which statement is true?', 'The 95% interval uses a smaller critical value.', ['The 95% interval contains more individual observations by definition.', 'The population mean changes with confidence level.', 'The 99% interval has no sampling variability.'], 'Higher confidence requires a larger critical value and therefore a wider interval when other inputs are fixed.', { cognitiveProcess: 'explain' }),
+  q(4, '4.10', '4.G', 'A test of a mean difference produces p = 0.04 at alpha = 0.05. Which wording is best?', 'There is statistically significant evidence of a mean difference in the direction of the alternative.', ['There is a 4% chance the null is true.', 'The sample means will differ by exactly the same amount forever.', 'The result proves causation regardless of design.'], 'A p-value below alpha supports a conclusion against the null, stated with the direction and design limits.', { cognitiveProcess: 'justify' }),
+
+  q(5, '5.1', '4.A', 'A scatterplot shows a tight cloud around a downward-sloping line. Which description is most appropriate?', 'A strong negative linear association.', ['A weak positive nonlinear association.', 'No association because the slope is negative.', 'A categorical distribution.'], 'A tight downward linear pattern indicates a strong negative association.', { cognitiveProcess: 'describe', difficulty: 'foundational' }),
+  q(5, '5.2', '3.B', 'If all response values are multiplied by 3, what happens to the correlation with the explanatory variable?', 'It remains the same if the multiplier is positive.', ['It triples.', 'It becomes zero.', 'It changes sign.'], 'Correlation is unchanged by positive linear rescaling of either variable.', { cognitiveProcess: 'explain' }),
+  q(5, '5.3', '3.B', 'A regression slope is 1.8 response units per explanatory unit. What is the predicted change for a 5-unit increase in x?', '9 response units.', ['1.8 response units.', '3.2 response units.', '90 response units.'], 'The predicted change is slope times change in x: 1.8(5) = 9.', { cognitiveProcess: 'calculate' }),
+  q(5, '5.4', '4.D', 'A regression line has intercept 6. What does the intercept represent?', 'The predicted response when the explanatory variable equals zero, if that value is meaningful in context.', ['The correlation coefficient.', 'The residual for every observation.', 'The predicted response at the sample mean only.'], 'The intercept is the model prediction at x = 0, but interpretation requires x = 0 to be meaningful and within scope.', { cognitiveProcess: 'interpret' }),
+  q(5, '5.4', '4.B', 'A residual plot fans outward as x increases. What condition may be violated?', 'Constant variance of the residuals.', ['The response must be categorical.', 'The correlation must equal zero.', 'The sample must be a census.'], 'A funnel shape suggests that the spread of residuals changes across x.', { cognitiveProcess: 'identify' }),
+  q(5, '5.5', '4.D', 'A model has r-squared = 0.49. Which statement is appropriate?', 'The linear model explains about 49% of the observed variation in the response.', ['The correlation must be 0.49 regardless of direction.', 'The model is correct for 49% of individuals.', 'There is a 49% chance of causation.'], 'R-squared is the proportion of response variation explained by the fitted linear model, not a probability or accuracy rate.', { cognitiveProcess: 'interpret' }),
+  q(5, '5.5', '4.B', 'Why does a least-squares line use squared residuals?', 'Squaring prevents positive and negative residuals from canceling.', ['Squaring makes every residual positive before fitting.', 'It forces the line through every point.', 'It removes the need to inspect the scatterplot.'], 'The squared residual criterion measures total error without cancellation and defines the least-squares fit.', { cognitiveProcess: 'explain' }),
+  q(5, '5.5', '4.G', 'A regression model is used to predict a response for an x-value just beyond the observed range. What should be stated?', 'The prediction is a mild extrapolation and should be treated cautiously.', ['The prediction is guaranteed accurate because it is close.', 'The response must be zero.', 'The model proves a causal effect.'], 'Any prediction outside the observed range is extrapolation, even if the distance beyond the range is small.', { cognitiveProcess: 'justify' }),
+];
+
+assert(transferItemSpecs.length === 40, 'Expected 40 AP Statistics transfer specifications, found ' + transferItemSpecs.length + '.');
 assert(expandedItemSpecs.length === 100, 'Expected 100 AP Statistics expansion specifications, found ' + expandedItemSpecs.length + '.');
-assert(itemSpecs.length + expandedItemSpecs.length === 200, 'Expected 200 AP Statistics item specifications, found ' + (itemSpecs.length + expandedItemSpecs.length) + '.');
+assert(itemSpecs.length + expandedItemSpecs.length + transferItemSpecs.length === 240, 'Expected 240 AP Statistics item specifications, found ' + (itemSpecs.length + expandedItemSpecs.length + transferItemSpecs.length) + '.');
 
 const unitByNumber = new Map(units.map((unit) => [unit.number, unit]));
 const topicByKey = new Map(units.flatMap((unit) => unit.topics.map((topic) => [unit.number + '.' + topic.id, { ...topic, unit }])));
 const allTopics = units.flatMap((unit) => unit.topics.map((topic) => ({ ...topic, unitId: unit.id, unitNumber: unit.number })));
+const expectedItemCountsByUnit = {
+  'exploring-one-variable-data-and-collecting-data': 48,
+  'probability-random-variables-and-probability-distributions': 48,
+  'inference-for-categorical-data-proportions': 48,
+  'inference-for-quantitative-data-means': 48,
+  'regression-analysis': 48,
+};
 
 function rotateChoices(answer, distractors, targetIndex) {
   const choices = new Array(4);
@@ -571,13 +627,191 @@ const sectionThemes = [
   ],
 ];
 
+const diagramSpecs = [
+  {
+    unitNumber: 1,
+    id: 'ap-stats-diagram-u1-design-scope',
+    title: 'From investigative question to conclusion scope',
+    learnerPurpose: 'Use the study design to decide what a statistical conclusion can support.',
+    caption: 'An original reasoning path for connecting the question, data collection, and scope of a conclusion.',
+    nodes: [
+      { id: 'question', label: 'Question', detail: 'Name the population, variables, and relationship or comparison of interest.' },
+      { id: 'data-source', label: 'Data source', detail: 'Identify the sample, sampling method, observational study, or experiment.' },
+      { id: 'design-check', label: 'Design check', detail: 'Look for bias, random sampling, random assignment, and ethical or practical limits.' },
+      { id: 'analysis', label: 'Analysis', detail: 'Describe distributions or compare groups with summaries and displays that match the variables.' },
+      { id: 'scope', label: 'Conclusion scope', detail: 'State whether the evidence supports description, generalization, causation, or a narrower claim.' },
+    ],
+    edges: [
+      { id: 'question-to-data-source', from: 'question', to: 'data-source', label: 'determines' },
+      { id: 'data-source-to-design-check', from: 'data-source', to: 'design-check', label: 'requires' },
+      { id: 'design-check-to-analysis', from: 'design-check', to: 'analysis', label: 'frames' },
+      { id: 'analysis-to-scope', from: 'analysis', to: 'scope', label: 'supports' },
+    ],
+  },
+  {
+    unitNumber: 2,
+    id: 'ap-stats-diagram-u2-probability-model',
+    title: 'From random process to probability model',
+    learnerPurpose: 'Choose a probability rule or model and interpret its long-run meaning.',
+    caption: 'An original decision flow for defining events, checking model conditions, and interpreting probability.',
+    nodes: [
+      { id: 'define', label: 'Define the event', detail: 'Specify the outcomes, event notation, or random variable and its units.' },
+      { id: 'choose-rule', label: 'Choose a rule or model', detail: 'Match the situation to a table, complement, union, conditional probability, binomial, or normal model.' },
+      { id: 'conditions', label: 'Check conditions', detail: 'Verify the denominator, independence, fixed trials, constant probability, or normal-model assumptions.' },
+      { id: 'calculate', label: 'Calculate or simulate', detail: 'Use a probability rule, distribution, technology, or repeated simulation to obtain evidence.' },
+      { id: 'interpret', label: 'Interpret long run', detail: 'Describe the probability as a long-run proportion, not a guarantee for one individual outcome.' },
+    ],
+    edges: [
+      { id: 'define-to-rule', from: 'define', to: 'choose-rule', label: 'frames' },
+      { id: 'rule-to-conditions', from: 'choose-rule', to: 'conditions', label: 'must satisfy' },
+      { id: 'conditions-to-calculate', from: 'conditions', to: 'calculate', label: 'allows' },
+      { id: 'calculate-to-interpret', from: 'calculate', to: 'interpret', label: 'estimates' },
+    ],
+  },
+  {
+    unitNumber: 3,
+    id: 'ap-stats-diagram-u3-proportion-inference',
+    title: 'Proportion inference: claim to contextual conclusion',
+    learnerPurpose: 'Keep a proportion interval or test connected to its parameter, conditions, and claim.',
+    caption: 'An original inference path for one or two proportions and categorical-data claims.',
+    nodes: [
+      { id: 'parameter', label: 'Parameter and claim', detail: 'Define the population proportion or difference in population proportions in context.' },
+      { id: 'conditions', label: 'Conditions', detail: 'Check randomization, independence or the 10 percent condition, and large-count requirements.' },
+      { id: 'procedure', label: 'Interval or test', detail: 'Select the matching one- or two-proportion procedure, then identify the null model when testing.' },
+      { id: 'evidence', label: 'Numerical evidence', detail: 'Report the interval, test statistic, p-value, or significance decision with correct direction.' },
+      { id: 'conclusion', label: 'Contextual conclusion', detail: 'State what the evidence suggests about the population parameter and acknowledge remaining uncertainty.' },
+    ],
+    edges: [
+      { id: 'parameter-to-conditions', from: 'parameter', to: 'conditions', label: 'requires' },
+      { id: 'conditions-to-procedure', from: 'conditions', to: 'procedure', label: 'justifies' },
+      { id: 'procedure-to-evidence', from: 'procedure', to: 'evidence', label: 'produces' },
+      { id: 'evidence-to-conclusion', from: 'evidence', to: 'conclusion', label: 'informs' },
+    ],
+  },
+  {
+    unitNumber: 4,
+    id: 'ap-stats-diagram-u4-mean-t-procedure',
+    title: 'Mean inference: design to t-procedure',
+    learnerPurpose: 'Select the correct mean procedure by first identifying the design and target.',
+    caption: 'An original decision flow for one-sample, paired, and two-sample t reasoning.',
+    nodes: [
+      { id: 'design', label: 'Identify the design', detail: 'Decide whether the data are one sample, paired measurements, or two independent groups.' },
+      { id: 'target', label: 'Define the mean target', detail: 'Name the population mean or the population mean difference and set the direction of any difference.' },
+      { id: 't-procedure', label: 'Choose the t procedure', detail: 'Match the design to a one-sample, matched-pairs, or two-sample t interval or test.' },
+      { id: 'conditions', label: 'Check shape and df', detail: 'Check randomization, independence, sample size, outliers, approximate normality, and the degrees of freedom.' },
+      { id: 'result', label: 'Interpret in units', detail: 'Use the interval or p-value to state evidence about the population mean in the setting described.' },
+    ],
+    edges: [
+      { id: 'design-to-target', from: 'design', to: 'target', label: 'defines' },
+      { id: 'target-to-t-procedure', from: 'target', to: 't-procedure', label: 'selects' },
+      { id: 't-procedure-to-conditions', from: 't-procedure', to: 'conditions', label: 'requires' },
+      { id: 'conditions-to-result', from: 'conditions', to: 'result', label: 'supports' },
+    ],
+  },
+  {
+    unitNumber: 5,
+    id: 'ap-stats-diagram-u5-regression-diagnostics',
+    title: 'Regression reasoning: association to responsible prediction',
+    learnerPurpose: 'Use the scatterplot and residual evidence to judge a regression model and its limits.',
+    caption: 'An original regression flow for describing form, checking fit, and limiting claims.',
+    nodes: [
+      { id: 'scatterplot', label: 'Scatterplot', detail: 'Describe direction, form, strength, clusters, outliers, and influential observations.' },
+      { id: 'fit', label: 'Fit the line', detail: 'Use the least-squares line, slope, intercept, predicted values, and r or r-squared with units.' },
+      { id: 'residuals', label: 'Inspect residuals', detail: 'Look for random scatter around zero, curvature, changing spread, outliers, and high leverage.' },
+      { id: 'prediction', label: 'Make a prediction', detail: 'Predict within the observed x-range and report the expected response in context.' },
+      { id: 'limits', label: 'State model limits', detail: 'Flag extrapolation, lurking variables, nonlinearity, and the absence of random assignment before making a causal claim.' },
+    ],
+    edges: [
+      { id: 'scatterplot-to-fit', from: 'scatterplot', to: 'fit', label: 'motivates' },
+      { id: 'fit-to-residuals', from: 'fit', to: 'residuals', label: 'must be checked by' },
+      { id: 'residuals-to-prediction', from: 'residuals', to: 'prediction', label: 'qualifies' },
+      { id: 'prediction-to-limits', from: 'prediction', to: 'limits', label: 'needs' },
+    ],
+  },
+];
+
+function makeDiagram(spec) {
+  const unit = units[spec.unitNumber - 1];
+  const chapterId = 'ap-stats-ch-' + String(unit.number).padStart(2, '0');
+  const textEquivalent = spec.nodes.map((node, index) => `Step ${index + 1}: ${node.label}. ${node.detail}`);
+  return {
+    id: spec.id,
+    chapterId,
+    domainId: unit.id,
+    title: spec.title,
+    diagramType: 'statistical-reasoning-flow',
+    learnerPurpose: spec.learnerPurpose,
+    caption: spec.caption + ' It is a study aid, not an official College Board figure.',
+    unscored: true,
+    officialItem: false,
+    releaseEligible: false,
+    reviewStatus: 'source-reviewed-editorial-pass',
+    expertReviewStatus: 'pending',
+    references: [CED_URL, COURSE_URL, OPENSTAX_URL],
+    rights: { originalSpecification: true, officialFigureReproduced: false, sourceFigureReproduced: false, thirdPartyArtworkIncluded: false },
+    accessibility: {
+      essentialVisualContent: false,
+      shortAlt: `Five-step statistical reasoning flow for ${unit.shortLabel}, from the target question to an appropriately limited conclusion.`,
+      longDescription: `Read from left to right. The ${unit.shortLabel} flow has five labeled steps: ${spec.nodes.map((node) => node.label).join(', ')}. Each arrow names the reasoning relationship between adjacent steps.`,
+      textEquivalent,
+      readingOrder: spec.nodes.map((node) => node.id),
+      colorIndependent: true,
+      shapeIndependentLabels: true,
+      fallbackMode: 'ordered-text-equivalent',
+      independentReviewStatus: 'pending',
+    },
+    spec: {
+      format: 'alloflow-diagram-v1',
+      layout: 'left-to-right',
+      nodes: spec.nodes,
+      edges: spec.edges,
+      renderingHints: { connectorStyle: 'arrow', allowHorizontalScroll: true, minimumTextSize: 'user-scalable' },
+    },
+  };
+}
+
+const allItemSpecs = itemSpecs.concat(expandedItemSpecs, transferItemSpecs);
+
+function practiceSliceForIndex(index) {
+  if (index < itemSpecs.length) return 'foundation-slice';
+  if (index < itemSpecs.length + expandedItemSpecs.length) return 'depth-slice';
+  return 'transfer-slice';
+}
+
 function buildLibrary(objectiveCatalog) {
+  const routedItemCandidates = allItemSpecs.map((spec, index) => ({
+    id: PACK_ID + '-item-' + String(index + 1).padStart(3, '0'),
+    unitNumber: spec.unit,
+    topicId: spec.topicId,
+    sectionId: objectiveFor(spec).sectionId,
+    practiceSlice: practiceSliceForIndex(index),
+  }));
   const chapters = units.map((unit, unitIndex) => {
     const chapterId = 'ap-stats-ch-' + String(unit.number).padStart(2, '0');
     const sections = sectionThemes[unitIndex].map((seed, sectionIndex) => {
       const start = Math.floor(sectionIndex * unit.topics.length / 3);
       const end = Math.max(start + 1, Math.floor((sectionIndex + 1) * unit.topics.length / 3));
       const topicCoverage = unit.topics.slice(start, end).map((topic) => topic.id);
+      const sectionPracticeItems = routedItemCandidates.filter((candidate) => candidate.sectionId === chapterId + '-section-' + String(sectionIndex + 1).padStart(2, '0'));
+      const practiceRoute = {
+        itemIds: sectionPracticeItems.map((candidate) => candidate.id),
+        foundationItemIds: sectionPracticeItems.filter((candidate) => candidate.practiceSlice === 'foundation-slice').map((candidate) => candidate.id),
+        depthItemIds: sectionPracticeItems.filter((candidate) => candidate.practiceSlice === 'depth-slice').map((candidate) => candidate.id),
+        transferItemIds: sectionPracticeItems.filter((candidate) => candidate.practiceSlice === 'transfer-slice').map((candidate) => candidate.id),
+        topicCounts: topicCoverage.reduce((counts, topicId) => {
+          counts[topicId] = sectionPracticeItems.filter((candidate) => candidate.topicId === topicId).length;
+          return counts;
+        }, {}),
+        topicItemIds: topicCoverage.reduce((topicItems, topicId) => {
+          topicItems[topicId] = sectionPracticeItems.filter((candidate) => candidate.topicId === topicId).map((candidate) => candidate.id);
+          return topicItems;
+        }, {}),
+        itemCount: sectionPracticeItems.length,
+        foundationItemCount: sectionPracticeItems.filter((candidate) => candidate.practiceSlice === 'foundation-slice').length,
+        depthItemCount: sectionPracticeItems.filter((candidate) => candidate.practiceSlice === 'depth-slice').length,
+        transferItemCount: sectionPracticeItems.filter((candidate) => candidate.practiceSlice === 'transfer-slice').length,
+        studyMove: 'Complete one foundation item, explain the statistical target in your own words, then use a depth item and a transfer item to apply the same reasoning in a new context.',
+      };
       const retrievalPrompts = [
         'Which parameter, variable, or distribution is the question about?',
         'Which calculation, representation, or condition supports the claim?',
@@ -597,6 +831,7 @@ function buildLibrary(objectiveCatalog) {
         content: seed[1],
         keyTerms: seed[2],
         topicCoverage,
+        practiceRoute,
         references: [CED_URL, COURSE_URL, OPENSTAX_URL],
         contentBlocks,
         examples: ['Name the statistical target before choosing a formula.', 'Link the numerical result to the population, sample, or study design in the prompt.'],
@@ -618,7 +853,24 @@ function buildLibrary(objectiveCatalog) {
       };
     });
     const objective = objectiveCatalog.find((entry) => entry.chapterId === chapterId);
-    const knowledgeChecks = sections.map((section, sectionIndex) => ({
+    const transferCheckSeeds = [
+      ['Which summary pair is usually most resistant to outliers?', ['Median and IQR', 'Mean and range', 'Mean and standard deviation', 'Maximum and minimum'], 'Median and IQR are resistant summaries, so they are less affected by extreme observations.'],
+      ['Which design feature supports a generalization to a sampled population?', ['Random sampling', 'Random assignment only', 'A large convenience sample', 'A placebo alone'], 'Random sampling gives members of the target population a known chance of selection and supports generalization when the sample is representative.'],
+      ['What can an observational study not establish by itself?', ['That one variable caused another', 'That the sample has measured variability', 'That the variables can be described', 'That a statistic can estimate a parameter'], 'Without imposed treatments and appropriate assignment, an observational study does not by itself establish causation.'],
+      ['What should be compared across groups in a two-way categorical table?', ['Conditional percentages using the group total as denominator', 'Only the grand total', 'The mean of category labels', 'The largest raw count without group size'], 'Conditional percentages put groups on a comparable basis even when their sizes differ.'],
+      ['In P(A given B), which group supplies the denominator?', ['Outcomes in event B', 'All outcomes outside B', 'Outcomes in event A only', 'The number of variables'], 'Conditioning on B restricts the sample space to event B.'],
+      ['Which condition is required for a binomial model?', ['A fixed number of independent trials with the same success probability', 'A changing success probability on every trial', 'More than two outcomes on each trial', 'A continuous response measured in units'], 'The fixed-trial, two-outcome, independent, constant-probability conditions define a binomial setting.'],
+      ['Which procedure matches one population proportion when conditions are met?', ['A one-proportion z interval', 'A one-sample t interval for a mean', 'A two-sample t test', 'A chi-square test for a quantitative mean'], 'One population proportion is the target of a one-proportion z interval.'],
+      ['Under what assumption is a p-value interpreted?', ['The null hypothesis is true', 'The alternative is proven true', 'The sample statistic equals the parameter', 'The confidence level is zero'], 'A p-value measures how extreme the result would be under the null model.'],
+      ['What does a chi-square procedure use to measure discrepancy?', ['Observed counts compared with expected counts', 'Means compared with standard deviations', 'Slopes compared with intercepts', 'Sample sizes compared with confidence levels'], 'Chi-square statistics summarize observed-versus-expected count discrepancies under a categorical null model.'],
+      ['Where is the sampling distribution of a sample mean centered?', ['At the population mean', 'At the sample standard deviation', 'At zero for every population', 'At the sample size'], 'The expected value of the sample mean is the population mean.'],
+      ['When is a paired t procedure appropriate?', ['When each unit contributes a meaningful within-pair difference', 'When two unrelated groups have categorical responses', 'When no response variable is measured', 'When the sample is selected voluntarily only'], 'Paired analysis uses one difference per matched unit or repeated measurement.'],
+      ['If a confidence interval for a mean difference includes zero, what remains plausible?', ['No population mean difference', 'Only a positive difference', 'A guaranteed causal effect', 'That every individual difference is zero'], 'A zero difference remains plausible when zero lies in the interval, although equality is not proven.'],
+      ['What does clear curvature in a scatterplot suggest?', ['A linear model may miss the form of the relationship', 'The correlation must be exactly one', 'The response is categorical', 'The sample has no outliers'], 'Curvature indicates that a straight-line form may not adequately describe the association.'],
+      ['How is a residual calculated?', ['Observed response minus predicted response', 'Predicted response minus explanatory variable', 'Observed response divided by sample size', 'Slope minus intercept'], 'Residual = y - y-hat, so it measures vertical deviation from the fitted line.'],
+      ['What does r-squared not establish?', ['Causation', 'The proportion of response variation explained by the fitted model', 'A summary of linear model fit', 'A value between 0 and 1 for the usual regression setting'], 'R-squared describes explained variation but is not a probability of causation.'],
+    ];
+    const foundationalKnowledgeChecks = sections.map((section, sectionIndex) => ({
       id: section.id + '-check',
       chapterId,
       sectionId: section.id,
@@ -638,6 +890,25 @@ function buildLibrary(objectiveCatalog) {
       skillId: objective ? objective.skillId || '2.A' : '2.A',
       topicIds: sections[sectionIndex].topicCoverage,
     }));
+    const transferKnowledgeChecks = sections.map((section, sectionIndex) => {
+      const seed = transferCheckSeeds[unitIndex * 3 + sectionIndex];
+      return {
+        id: section.id + '-transfer-check',
+        chapterId,
+        sectionId: section.id,
+        type: 'single-choice',
+        prompt: seed[0],
+        choices: seed[1],
+        answerIndex: 0,
+        rationale: seed[2],
+        references: [CED_URL, COURSE_URL, OPENSTAX_URL],
+        reviewStatus: 'source-reviewed-editorial-pass',
+        reviewNote: 'Original transfer retrieval check; independent AP Statistics subject-expert and psychometric review remain pending.',
+        skillId: objective ? objective.skillId || '2.A' : '2.A',
+        topicIds: sections[sectionIndex].topicCoverage,
+      };
+    });
+    const knowledgeChecks = foundationalKnowledgeChecks.concat(transferKnowledgeChecks);
     return {
       id: chapterId,
       title: unit.label,
@@ -663,7 +934,7 @@ function buildLibrary(objectiveCatalog) {
     };
   });
 
-  const flashcards = chapters.flatMap((chapter) => chapter.sections.map((section) => ({
+  const foundationFlashcards = chapters.flatMap((chapter) => chapter.sections.map((section) => ({
     id: section.id + '-card',
     chapterId: chapter.id,
     sectionId: section.id,
@@ -676,7 +947,41 @@ function buildLibrary(objectiveCatalog) {
     reviewStatus: 'source-reviewed-editorial-pass',
     reviewNote: 'Original foundation study card; independent AP Statistics subject-expert validation remains pending.',
   })));
-  const memoryAids = chapters.map((chapter) => ({
+  const formulaCards = [
+    ['ap-stats-card-u1-summaries', 1, 1, 'When should you prefer median and IQR?', 'Prefer median and IQR when the distribution is strongly skewed or contains outliers because they are resistant summaries.', ['median', 'IQR', 'resistant']],
+    ['ap-stats-card-u1-zscores', 1, 2, 'What does a z-score measure?', 'A z-score measures how many standard deviations an observation is from the mean: z = (x - mean) / standard deviation.', ['z-score', 'standard deviation', 'standardize']],
+    ['ap-stats-card-u1-design', 1, 3, 'Which design supports which conclusion?', 'Random sampling supports generalization to a population; random assignment supports a cause-and-effect conclusion.', ['random sampling', 'random assignment', 'scope']],
+    ['ap-stats-card-u2-conditional', 2, 1, 'What is the denominator in P(A given B)?', 'The denominator is the probability or count for condition B. Conditional probability restricts attention to the B group.', ['conditional probability', 'denominator', 'intersection']],
+    ['ap-stats-card-u2-binomial', 2, 2, 'What conditions define a binomial model?', 'Use a fixed number of trials, two outcomes per trial, independent trials, and a constant probability of success.', ['binomial', 'independence', 'constant probability']],
+    ['ap-stats-card-u2-clt', 2, 3, 'What does the Central Limit Theorem describe?', 'For sufficiently large random samples, the sampling distribution of a sample mean can be approximately normal even when the population is not normal.', ['Central Limit Theorem', 'sample mean', 'sampling distribution']],
+    ['ap-stats-card-u3-interval', 3, 1, 'What belongs in a confidence-interval interpretation?', 'Name the confidence procedure, the population parameter, and the interval of plausible values. Do not describe a fixed parameter as randomly moving.', ['confidence interval', 'parameter', 'interpretation']],
+    ['ap-stats-card-u3-pvalue', 3, 2, 'What does a p-value mean?', 'Assuming the null hypothesis is true, it is the probability of a result at least as extreme as the observed result.', ['p-value', 'null hypothesis', 'extreme']],
+    ['ap-stats-card-u3-chisquare', 3, 3, 'What does a chi-square statistic compare?', 'It aggregates squared observed-minus-expected differences, scaled by expected counts, under a categorical null model.', ['chi-square', 'observed', 'expected']],
+    ['ap-stats-card-u4-t', 4, 1, 'Why are t procedures used for means?', 'The population standard deviation is usually unknown and is estimated with the sample standard deviation, adding uncertainty.', ['t-distribution', 'mean', 'standard error']],
+    ['ap-stats-card-u4-paired', 4, 2, 'When should measurements be paired?', 'Use paired analysis when the same unit contributes both measurements or when observations are deliberately matched; analyze within-pair differences.', ['matched pairs', 'differences', 'design']],
+    ['ap-stats-card-u4-conclusion', 4, 3, 'What should a mean-inference conclusion include?', 'State the population mean or mean difference, the direction of evidence, the statistical result, and the design limits in context.', ['mean', 'evidence', 'scope']],
+    ['ap-stats-card-u5-residuals', 5, 1, 'What is a residual?', 'A residual is observed response minus predicted response: residual = y - y-hat. Positive residuals lie above the fitted line.', ['residual', 'predicted', 'observed']],
+    ['ap-stats-card-u5-rsquared', 5, 2, 'What does r-squared measure?', 'R-squared is the proportion of observed response variation explained by the fitted linear model with the explanatory variable.', ['r-squared', 'variation', 'linear model']],
+    ['ap-stats-card-u5-limits', 5, 3, 'What limits a regression prediction?', 'Watch for extrapolation, nonlinear residual patterns, high-leverage points, lurking variables, and the absence of random assignment for causal claims.', ['extrapolation', 'leverage', 'causation']],
+  ].map(([id, unitNumber, sectionNumber, front, back, tags]) => {
+    const chapter = chapters[unitNumber - 1];
+    const section = chapter.sections[sectionNumber - 1];
+    return {
+      id,
+      chapterId: chapter.id,
+      sectionId: section.id,
+      domainId: chapter.domainId,
+      domain: chapter.domain,
+      front,
+      back,
+      tags,
+      references: section.references,
+      reviewStatus: 'source-reviewed-editorial-pass',
+      reviewNote: 'Original formula and decision card; independent AP Statistics subject-expert validation remains pending.',
+    };
+  });
+  const flashcards = foundationFlashcards.concat(formulaCards);
+  const foundationMemoryAids = chapters.map((chapter) => ({
     id: chapter.id + '-memory',
     chapterId: chapter.id,
     type: 'reasoning cue',
@@ -688,11 +993,38 @@ function buildLibrary(objectiveCatalog) {
     reviewStatus: 'source-reviewed-editorial-pass',
     reviewNote: 'Original foundation retrieval aid; AP Statistics and accessibility validation remain pending.',
   }));
+  const mistakeClinics = [
+    ['ap-stats-clinic-u1-sampling-assignment', 1, 'Sampling versus assignment', 'Random sampling answers who the data can represent. Random assignment answers whether a treatment difference can support causation. A large sample does not substitute for either design feature.', ['sampling', 'assignment', 'causation']],
+    ['ap-stats-clinic-u2-probability', 2, 'Conditional probability versus independence', 'Conditional probability changes the denominator to the condition group. Independence means the condition does not change the probability. Mutually exclusive positive-probability events are not independent.', ['conditional probability', 'independence', 'mutually exclusive']],
+    ['ap-stats-clinic-u3-evidence', 3, 'P-value versus probability of the null', 'A p-value is calculated under the null model; it is not the probability that the null is true. A large p-value means the data are not unusual under the null, not that the null has been proven.', ['p-value', 'null hypothesis', 'evidence']],
+    ['ap-stats-clinic-u4-paired', 4, 'Paired versus independent means', 'Use paired analysis when each unit contributes a meaningful difference. Use a two-sample method for independent groups. Do not discard pairing by comparing the two lists as unrelated samples.', ['paired data', 'mean difference', 't procedure']],
+    ['ap-stats-clinic-u5-regression', 5, 'Association versus regression limits', 'A strong r or r-squared does not establish causation. Inspect residuals, leverage, and extrapolation, and keep the study design attached to every regression conclusion.', ['association', 'r-squared', 'extrapolation']],
+  ].map(([id, unitNumber, title, content, tags]) => {
+    const chapter = chapters[unitNumber - 1];
+    return {
+      id,
+      chapterId: chapter.id,
+      type: 'mistake clinic',
+      title,
+      content,
+      tags,
+      domain: chapter.domain,
+      references: chapter.references,
+      reviewStatus: 'source-reviewed-editorial-pass',
+      reviewNote: 'Original misconception clinic; independent AP Statistics subject-expert and accessibility validation remain pending.',
+    };
+  });
+  const memoryAids = foundationMemoryAids.concat(mistakeClinics);
   const workshops = [
     ['ap-stats-workshop-study-design', 'Study design planning workshop', 'Plan a sampling or experimental study for a question about student transportation. Identify the population, observational units, variables, sampling or assignment method, and the conclusion the design could support.', ['Name the target population and parameter.', 'Explain how randomization enters the design.', 'State whether the design supports generalization, causation, or both.']],
     ['ap-stats-workshop-data-description', 'Data description planning workshop', 'Plan a concise description of a one-variable distribution and a comparison of two groups. Specify the display, center, spread, and unusual features you would report.', ['Match each display to the variable type.', 'Use resistant summaries when outliers or skewness matter.', 'Compare groups using the same units and summaries.']],
     ['ap-stats-workshop-proportions', 'Proportion inference planning workshop', 'Plan a confidence interval or hypothesis test for a population proportion using a public-opinion question. Write the parameter, conditions, method, and contextual interpretation.', ['Use p for the population proportion.', 'Check randomization, independence, and large counts.', 'Interpret the interval or p-value without claiming proof.']],
     ['ap-stats-workshop-means-regression', 'Means and regression planning workshop', 'Plan an inference or regression response about a quantitative outcome. Identify the target, method, assumptions, evidence, and limits of the conclusion.', ['Distinguish paired from independent samples.', 'Use residuals and r-squared as model evidence, not causal proof.', 'Keep extrapolation and lurking variables visible.']],
+    ['ap-stats-workshop-unit1-design', 'Unit 1 design response planner', 'Plan a complete response about a student wellness study. Identify the investigative question, variable types, sampling or assignment method, likely bias, and the strongest conclusion the design supports.', ['Name the population and observational units.', 'Separate random sampling from random assignment.', 'State whether the design supports generalization, causation, or neither.']],
+    ['ap-stats-workshop-unit2-probability', 'Unit 2 probability model planner', 'Plan a response about a simulated game. Define the events or random variable, write the probability rule or model conditions, and explain how repeated simulation estimates long-run behavior.', ['Define the denominator for any conditional probability.', 'Check fixed trials, independence, and constant probability for a binomial model.', 'Distinguish an expected value from an individual guaranteed result.']],
+    ['ap-stats-workshop-unit3-proportions', 'Unit 3 proportions response planner', 'Plan an evidence-based response comparing support for a proposal in two populations. State the parameter, hypotheses or interval, conditions, numerical evidence, and contextual conclusion.', ['Use population parameters in hypotheses.', 'Connect the p-value or interval to the null model and design.', 'Avoid treating a large p-value as proof of equality.']],
+    ['ap-stats-workshop-unit4-means', 'Unit 4 means response planner', 'Plan a response about a quantitative outcome measured under two conditions. Decide whether the data are paired or independent, identify the mean target, check conditions, and interpret the result in units.', ['Define the order of any mean difference.', 'Use t procedures only after checking the design and distribution conditions.', 'Keep statistical significance separate from practical importance.']],
+    ['ap-stats-workshop-unit5-regression', 'Unit 5 regression response planner', 'Plan a regression response for a quantitative predictor and outcome. Describe the scatterplot, interpret slope and r-squared, examine residuals, and identify extrapolation or causal limits.', ['Use units when interpreting slope and residuals.', 'Treat r-squared as explained variation, not a causal probability.', 'Flag high leverage, nonlinearity, and predictions outside the observed range.']],
   ].map(([id, title, prompt, selfCheck]) => ({
     id,
     type: 'unscored-planning-workshop',
@@ -706,6 +1038,83 @@ function buildLibrary(objectiveCatalog) {
     reviewNote: 'Original workshop; independent AP Statistics subject-expert and accessibility review remain pending.',
     releaseEligible: false,
   }));
+  const practiceRoutes = chapters.flatMap((chapter) => chapter.sections.map((section) => section.practiceRoute));
+  const routedItemIds = practiceRoutes.flatMap((route) => route.itemIds);
+  const practiceRouting = {
+    mode: 'section-linked-item-routes',
+    sectionCount: practiceRoutes.length,
+    itemCount: routedItemIds.length,
+    uniqueItemCount: new Set(routedItemIds).size,
+    foundationItemCount: practiceRoutes.reduce((sum, route) => sum + route.foundationItemCount, 0),
+    depthItemCount: practiceRoutes.reduce((sum, route) => sum + route.depthItemCount, 0),
+    transferItemCount: practiceRoutes.reduce((sum, route) => sum + route.transferItemCount, 0),
+    sectionsWithDepth: practiceRoutes.filter((route) => route.depthItemCount > 0).length,
+    sectionsWithTransfer: practiceRoutes.filter((route) => route.transferItemCount > 0).length,
+    topicDrillMapCount: practiceRoutes.reduce((sum, route) => sum + Object.keys(route.topicItemIds).length, 0),
+  };
+  const sectionWarmupItemIds = chapters.flatMap((chapter) => chapter.sections.map((section) => section.practiceRoute.foundationItemIds[0])).filter(Boolean);
+  const mixedTransferItemIds = routedItemCandidates.filter((candidate) => candidate.practiceSlice === 'transfer-slice').map((candidate) => candidate.id);
+  const inferenceDecisionItemIds = routedItemCandidates.filter((candidate) => candidate.unitNumber === 3 || candidate.unitNumber === 4).map((candidate) => candidate.id);
+  const finalReviewItemIds = Array.from(new Set(chapters.flatMap((chapter) => chapter.sections.flatMap((section) => [section.practiceRoute.foundationItemIds[0], section.practiceRoute.transferItemIds[section.practiceRoute.transferItemIds.length - 1]]).filter(Boolean))));
+  const studyRoutes = [
+    {
+      id: 'ap-stats-route-unit-warm-up',
+      title: 'Unit warm-up: one foundation item per section',
+      mode: 'guided-foundation',
+      learnerPurpose: 'Preview the core reasoning move in every native lesson section before deeper practice.',
+      estimatedMinutes: 25,
+      itemIds: sectionWarmupItemIds,
+      stepOrder: ['Name the target.', 'Choose the matching representation or procedure.', 'State the conclusion in context.'],
+    },
+    {
+      id: 'ap-stats-route-mixed-transfer',
+      title: 'Mixed transfer: new context, same reasoning',
+      mode: 'guided-transfer',
+      learnerPurpose: 'Practice transferring AP Statistics reasoning across unfamiliar contexts and unit boundaries.',
+      estimatedMinutes: 45,
+      itemIds: mixedTransferItemIds,
+      stepOrder: ['Identify the statistical target.', 'Ignore irrelevant context details.', 'Justify the method and scope of the conclusion.'],
+    },
+    {
+      id: 'ap-stats-route-inference-decisions',
+      title: 'Inference decisions: proportions and means',
+      mode: 'guided-inference',
+      learnerPurpose: 'Compare categorical and quantitative inference choices while keeping parameters and conditions visible.',
+      estimatedMinutes: 55,
+      itemIds: inferenceDecisionItemIds,
+      stepOrder: ['Name the parameter.', 'Check design and conditions.', 'Select the interval or test.', 'Interpret the evidence without overclaiming.'],
+    },
+    {
+      id: 'ap-stats-route-final-review',
+      title: 'Final review: foundation plus transfer checkpoints',
+      mode: 'guided-cumulative-review',
+      learnerPurpose: 'Run a compact cumulative review that touches every section and alternates direct recall with transfer.',
+      estimatedMinutes: 40,
+      itemIds: finalReviewItemIds,
+      stepOrder: ['Answer without notes.', 'Review the rationale and misconception boundary.', 'Record the topic or skill that needs another pass.'],
+    },
+  ].map((route) => ({
+    ...route,
+    references: [CED_URL, COURSE_URL, OPENSTAX_URL],
+    reviewStatus: 'source-reviewed-editorial-pass',
+    reviewNote: 'Original guided study route; independent AP Statistics subject-expert, accessibility, production, and psychometric review remain pending.',
+    releaseEligible: false,
+  }));
+  const diagrams = diagramSpecs.map(makeDiagram);
+  const diagramPlacements = diagrams.map((diagram) => ({
+    id: diagram.id + '-placement',
+    diagramId: diagram.id,
+    chapterId: diagram.chapterId,
+    sectionId: diagram.chapterId + '-section-02',
+    position: 'after-section-content',
+    learnerPurpose: diagram.learnerPurpose,
+    requiredForComprehension: false,
+    unscored: true,
+    fallbackMode: 'diagram-text-equivalent',
+    reviewStatus: 'source-reviewed-editorial-pass',
+    accessibilityReviewStatus: 'pending-independent-review',
+    releaseEligible: false,
+  }));
 
   return {
     schemaVersion: 1,
@@ -714,7 +1123,7 @@ function buildLibrary(objectiveCatalog) {
     packId: PACK_ID,
     version: VERSION,
     title: 'AP Statistics Foundation Pilot Learning Library',
-    description: 'A text-first, independently authored AP Statistics foundation library with five unit chapters, structured lessons, retrieval checks, study cards, memory aids, and explicitly unscored FRQ-planning workshops. It is not released, official, calibrated, or score-predictive.',
+    description: 'A text-first, independently authored AP Statistics foundation library with five unit chapters, section-linked practice routes, guided study routes, retrieval checks, study cards, memory aids, and explicitly unscored FRQ-planning workshops. It is not released, official, calibrated, or score-predictive.',
     status: 'preview',
     visibility: 'internal',
     released: false,
@@ -727,7 +1136,7 @@ function buildLibrary(objectiveCatalog) {
       officialBlueprintUrl: CED_URL,
       officialCourseUrl: COURSE_URL,
       pilotVersion: LIBRARY_VERSION,
-      pilotNote: 'A 200-item foundation sampler across the five revised Fall 2026 units, with two hundred original single-choice items, native chapters, and unscored planning workshops.',
+      pilotNote: 'A 240-item foundation sampler across the five revised Fall 2026 units, with two hundred forty original single-choice items, fifteen section-linked practice routes, four guided study routes, native chapters, and nine unscored constructed-response planning workshops.',
       skills,
       learningObjectiveCatalogVersion: LIBRARY_VERSION,
       learningObjectiveCatalog: objectiveCatalog,
@@ -737,8 +1146,10 @@ function buildLibrary(objectiveCatalog) {
     disclaimer: 'Independent, unofficial AP Statistics preparation material for internal foundation-pilot development only. Not affiliated with, endorsed by, or authored by College Board. AP and Advanced Placement are trademarks of College Board. No secure AP Classroom, Question Bank, Progress Check, official question, official rubric, or official stimulus was used or reproduced. This pilot does not provide official scores, score predictions, college-credit predictions, or automated FRQ scores.',
     sourceCatalog,
     chapters,
-    diagrams: [],
-    diagramPlacements: [],
+    practiceRouting,
+    studyRoutes,
+    diagrams,
+    diagramPlacements,
     flashcards,
     memoryAids,
     constructedResponseWorkshops: workshops,
@@ -748,13 +1159,17 @@ function buildLibrary(objectiveCatalog) {
       knowledgeChecks: chapters.reduce((sum, chapter) => sum + chapter.knowledgeChecks.length, 0),
       flashcards: flashcards.length,
       memoryAids: memoryAids.length,
-      diagrams: 0,
-      diagramPlacements: 0,
+      practiceRoutes: practiceRoutes.length,
+      studyRoutes: studyRoutes.length,
+      diagrams: diagrams.length,
+      diagramPlacements: diagramPlacements.length,
       constructedResponseWorkshops: workshops.length,
       richLessonPrototypes: chapters.length,
       sourceReviewedChapters: chapters.length,
       sourceReviewedFlashcards: flashcards.length,
       sourceReviewedMemoryAids: memoryAids.length,
+      sourceReviewedDiagrams: diagrams.length,
+      sourceReviewedDiagramPlacements: diagramPlacements.length,
       releaseEligibleRecords: 0,
     },
     accessibility: {
@@ -807,7 +1222,7 @@ function buildLibrary(objectiveCatalog) {
 }
 
 function buildPack(library, objectiveCatalog) {
-  const items = itemSpecs.concat(expandedItemSpecs).map(makeItem);
+  const items = itemSpecs.concat(expandedItemSpecs, transferItemSpecs).map(makeItem);
   const domains = units.map((unit) => ({
     id: unit.id,
     label: unit.label,
@@ -816,7 +1231,7 @@ function buildPack(library, objectiveCatalog) {
     officialWeightMax: unit.officialWeightMax,
     itemCount: items.filter((item) => item.domainId === unit.id).length,
   }));
-  const sections = Array.from({ length: 40 }, (_, index) => ({
+  const sections = Array.from({ length: 48 }, (_, index) => ({
     id: 'ap-stats-foundation-bank-' + String(index + 1).padStart(2, '0'),
     label: 'Bank ' + String(index + 1).padStart(2, '0') + ': five-item internal foundation sampler',
     timeMinutes: null,
@@ -836,7 +1251,7 @@ function buildPack(library, objectiveCatalog) {
     id: PACK_ID,
     title: 'AP Statistics Independent Foundation Pilot',
     shortTitle: 'AP Statistics Foundation Pilot',
-    description: 'An independently authored 200-question AP Statistics foundation pilot spanning the five revised Fall 2026 units. It tests the blueprint crosswalk, statistical-practice metadata, native learning routes, and unscored response planning before any official or release-ready expansion.',
+    description: 'An independently authored 240-question AP Statistics foundation pilot spanning the five revised Fall 2026 units. It tests the blueprint crosswalk, statistical-practice metadata, native learning routes, and unscored response planning before any official or release-ready expansion.',
     disclaimer: 'Independent, unofficial AP Statistics preparation material for internal foundation-pilot development only. Not affiliated with, endorsed by, or authored by College Board. This pilot does not provide official scores, score predictions, college-credit predictions, or automated FRQ scores.',
     credentialOwner: 'College Board',
     version: VERSION,
@@ -846,12 +1261,12 @@ function buildPack(library, objectiveCatalog) {
     releaseEligible: false,
     officialItem: false,
     calibrated: false,
-    previewBadge: 'Internal foundation pilot - 200 original draft items',
+    previewBadge: 'Internal foundation pilot - 240 original draft items',
     accent: 'teal',
     itemSchemaVersion: 2,
     responseTypes: ['single-choice'],
     examModes: ['fully-digital'],
-    contentReview: 'Two hundred original source-aligned draft multiple-choice items distributed across the five revised Fall 2026 units and all fifty-five public framework topics, with at least two items per topic. Native study routes cover five chapters and fifteen structured sections; four planning workshops are explicitly unscored. Independent AP Statistics subject-expert review, rights review, accessibility review, production validation, field testing, and psychometric calibration remain pending.',
+    contentReview: 'Two hundred forty original source-aligned draft multiple-choice items distributed evenly across the five revised Fall 2026 units and all fifty-five public framework topics, with transfer depth beyond the two-item topic floor. Native study routes cover five chapters, fifteen section-linked practice routes, and four guided cumulative routes; nine constructed-response planning workshops are explicitly unscored. Independent AP Statistics subject-expert review, rights review, accessibility review, production validation, field testing, and psychometric calibration remain pending.',
     blueprintLabel: 'AP Statistics Course and Exam Description, effective Fall 2026, Course Framework V.1',
     blueprintEffective: 'Fall 2026 CED; current official public reference reviewed 2026-08-20.',
     officialBlueprintUrl: CED_URL,
@@ -890,7 +1305,7 @@ function buildPack(library, objectiveCatalog) {
       officialFrameworkTopicIds: allTopics.map((topic) => topic.id),
       officialUnitCount: units.length,
       unitWeights: units.map((unit) => ({ id: unit.id, label: unit.label, officialWeightRange: [unit.officialWeightMin, unit.officialWeightMax] })),
-      pilotAlignment: '200-item text-first foundation sampler across all five revised units and all fifty-five public framework topic IDs; forty five-item internal banks; at least two items per topic; four unscored planning workshops; no official stimulus sets or FRQ scoring.',
+      pilotAlignment: '240-item text-first foundation sampler across all five revised units and all fifty-five public framework topic IDs; forty-eight five-item internal banks; transfer practice beyond the two-item topic floor; nine unscored constructed-response planning workshops; no official stimulus sets or FRQ scoring.',
       lastVerifiedAt: VERIFIED_AT,
       sourceDigest: 'pending-build-generation',
       skills,
@@ -932,9 +1347,9 @@ function main() {
   }));
   const library = buildLibrary(objectiveCatalog);
   const pack = buildPack(library, objectiveCatalog);
-  assert(pack.items.length === 200, 'AP Statistics pack must contain 200 items.');
-  assert(new Set(pack.items.map((item) => item.id)).size === 200, 'AP Statistics item IDs must be unique.');
-  assert(pack.domains.length === 5 && pack.domains.every((domain) => domain.itemCount === 40), 'Each AP Statistics unit must receive forty items: ' + JSON.stringify(pack.domains.map((domain) => ({ id: domain.id, itemCount: domain.itemCount }))));
+  assert(pack.items.length === 240, 'AP Statistics pack must contain 240 items.');
+  assert(new Set(pack.items.map((item) => item.id)).size === 240, 'AP Statistics item IDs must be unique.');
+  assert(pack.domains.length === Object.keys(expectedItemCountsByUnit).length && pack.domains.every((domain) => domain.itemCount === expectedItemCountsByUnit[domain.id]), 'Each AP Statistics unit must match its expected item count: ' + JSON.stringify(pack.domains.map((domain) => ({ id: domain.id, itemCount: domain.itemCount, expected: expectedItemCountsByUnit[domain.id] }))));
   assert(library.chapters.length === 5 && library.summary.sections === 15, 'AP Statistics library inventory is incorrect.');
   writeJson(packPath, pack);
   writeJson(libraryPath, library);

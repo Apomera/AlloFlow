@@ -5305,6 +5305,12 @@
                 color: 'rose', ready: true
               },
               {
+                id: 'sourcebook', icon: '\u25A7', label: 'Sourcebook',
+                desc: 'Find open textures and visual assets for educational materials or artwork, with source and reuse information.',
+                color: 'teal', ready: true,
+                aliases: ['textures', 'visual assets', 'open images', 'contour maps', 'blueprints', 'wood grain', 'scientific diagrams', 'archival materials']
+              },
+              {
                 id: 'wheelAndFire', icon: '\uD83C\uDFFA', label: 'Wheel & Fire: Pottery Lab',
                 desc: 'Shape clay by wheel or hand, investigate wall and coil stability, control kiln heatwork, test fired performance, and compare pottery technologies in specific cultural contexts.',
                 color: 'amber', ready: true
@@ -6993,7 +6999,7 @@
             // constraints, with a deliberately un-modelled contested tier.
             cityLab: true,
             // Art & Music
-            artStudio: true, wheelAndFire: true, creative: true, gameStudio: true, freeForms: true,
+            artStudio: true, sourcebook: true, wheelAndFire: true, creative: true, gameStudio: true, freeForms: true,
             // Earth & Space
             astronomy: true, coasterLab: true, galaxy: true, moonMission: true, plateTectonics: true, spaceColony: true, spaceExplorer: true, spaceStation: true,
             // Data & Logic

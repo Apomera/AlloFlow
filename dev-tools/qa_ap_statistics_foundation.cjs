@@ -21,6 +21,13 @@ function sha256(filePath) {
 }
 
 const findings = [];
+const expectedUnitCounts = {
+  'exploring-one-variable-data-and-collecting-data': 48,
+  'probability-random-variables-and-probability-distributions': 48,
+  'inference-for-categorical-data-proportions': 48,
+  'inference-for-quantitative-data-means': 48,
+  'regression-analysis': 48,
+};
 const topics = new Set((pack.domains || []).flatMap((domain) => {
   const unit = (pack.blueprint && pack.blueprint.officialFrameworkTopicIds || []).filter((id) => String(id).startsWith(String(domain.id).slice(0, 1)));
   return unit;
@@ -40,20 +47,55 @@ const representedTopicIds = new Set((pack.items || []).flatMap((item) => item.to
 const declaredTopicIds = new Set(pack.blueprint && pack.blueprint.officialFrameworkTopicIds || []);
 const topicCounts = Object.fromEntries((pack.items || []).flatMap((item) => item.topicIds || []).map((topicId) => [topicId, ((pack.items || []).filter((candidate) => (candidate.topicIds || []).includes(topicId))).length]));
 for (const topicId of declaredTopicIds) if (!representedTopicIds.has(topicId)) findings.push({ code: 'missing-topic', topicId });
-for (const [unitId, count] of Object.entries(unitCounts)) if (count !== 40) findings.push({ code: 'unit-balance', unitId, actual: count, expected: 40 });
+for (const [unitId, count] of Object.entries(unitCounts)) if (count !== expectedUnitCounts[unitId]) findings.push({ code: 'unit-balance', unitId, actual: count, expected: expectedUnitCounts[unitId] });
 for (const topicId of declaredTopicIds) if ((topicCounts[topicId] || 0) < 2) findings.push({ code: 'topic-depth', topicId, actual: topicCounts[topicId] || 0, expectedMinimum: 2 });
-if (answerCounts.some((count) => count !== 50)) findings.push({ code: 'answer-balance', actual: answerCounts, expected: [50, 50, 50, 50] });
+if (answerCounts.some((count) => count !== 60)) findings.push({ code: 'answer-balance', actual: answerCounts, expected: [60, 60, 60, 60] });
 if (pack.id !== 'ap-statistics-foundation-pilot') findings.push({ code: 'pack-identity' });
-  if ((pack.items || []).length !== 200) findings.push({ code: 'item-count', actual: (pack.items || []).length });
+  if ((pack.items || []).length !== 240) findings.push({ code: 'item-count', actual: (pack.items || []).length });
 if ((pack.domains || []).length !== 5) findings.push({ code: 'unit-count', actual: (pack.domains || []).length });
 if ((library.chapters || []).length !== 5) findings.push({ code: 'chapter-count', actual: (library.chapters || []).length });
 if ((library.summary && library.summary.sections) !== 15) findings.push({ code: 'section-count', actual: library.summary && library.summary.sections });
+if ((library.flashcards || []).length !== 30) findings.push({ code: 'flashcard-count', actual: (library.flashcards || []).length, expected: 30 });
+if ((library.summary && library.summary.knowledgeChecks) !== 30) findings.push({ code: 'knowledge-check-count', actual: library.summary && library.summary.knowledgeChecks, expected: 30 });
+if ((library.memoryAids || []).length !== 10) findings.push({ code: 'memory-aid-count', actual: (library.memoryAids || []).length, expected: 10 });
+if ((library.constructedResponseWorkshops || []).length !== 9) findings.push({ code: 'workshop-count', actual: (library.constructedResponseWorkshops || []).length, expected: 9 });
 if ((library.constructedResponseWorkshops || []).some((workshop) => workshop.unscored !== true)) findings.push({ code: 'workshop-score-boundary' });
+const diagrams = library.diagrams || [];
+const diagramPlacements = library.diagramPlacements || [];
+const practiceRoutes = (library.chapters || []).flatMap((chapter) => (chapter.sections || []).map((section) => section.practiceRoute).filter(Boolean));
+const studyRoutes = library.studyRoutes || [];
+const packItemIds = new Set((pack.items || []).map((item) => item.id));
+if (diagrams.length !== 5) findings.push({ code: 'diagram-count', actual: diagrams.length, expected: 5 });
+if (diagramPlacements.length !== 5) findings.push({ code: 'diagram-placement-count', actual: diagramPlacements.length, expected: 5 });
+if (practiceRoutes.length !== 15) findings.push({ code: 'practice-route-count', actual: practiceRoutes.length, expected: 15 });
+if (studyRoutes.length !== 4) findings.push({ code: 'study-route-count', actual: studyRoutes.length, expected: 4 });
+const routedItemIds = practiceRoutes.flatMap((route) => route.itemIds || []);
+if (routedItemIds.length !== pack.items.length || new Set(routedItemIds).size !== pack.items.length || routedItemIds.some((itemId) => !packItemIds.has(itemId))) findings.push({ code: 'practice-route-item-coverage', actual: { routed: routedItemIds.length, unique: new Set(routedItemIds).size, pack: pack.items.length } });
+for (const route of practiceRoutes) {
+  if (!route.foundationItemIds?.length || !route.depthItemIds?.length || !route.transferItemIds?.length) findings.push({ code: 'practice-route-depth', actual: route });
+  if (!route.topicItemIds || Object.keys(route.topicItemIds).length === 0) findings.push({ code: 'practice-route-topic-map', actual: route });
+}
+for (const route of studyRoutes) {
+  if (!route.itemIds?.length || route.itemIds.some((itemId) => !packItemIds.has(itemId)) || route.releaseEligible !== false) findings.push({ code: 'study-route-boundary', routeId: route.id });
+}
+for (const diagram of diagrams) {
+  if (!diagram.unscored || diagram.officialItem || diagram.releaseEligible) findings.push({ code: 'diagram-score-boundary', diagramId: diagram.id });
+  if (!diagram.accessibility || !Array.isArray(diagram.accessibility.textEquivalent) || diagram.accessibility.textEquivalent.length < 3) findings.push({ code: 'diagram-text-equivalent', diagramId: diagram.id });
+  if (!diagram.accessibility || diagram.accessibility.fallbackMode !== 'ordered-text-equivalent') findings.push({ code: 'diagram-fallback-mode', diagramId: diagram.id });
+  if (!diagram.spec || !Array.isArray(diagram.spec.nodes) || diagram.spec.nodes.length < 3 || !Array.isArray(diagram.spec.edges) || diagram.spec.edges.length !== diagram.spec.nodes.length - 1) findings.push({ code: 'diagram-flow-shape', diagramId: diagram.id });
+}
+const diagramIds = new Set(diagrams.map((diagram) => diagram.id));
+const sectionIds = new Set((library.chapters || []).flatMap((chapter) => (chapter.sections || []).map((section) => section.id)));
+for (const placement of diagramPlacements) {
+  if (!diagramIds.has(placement.diagramId)) findings.push({ code: 'diagram-placement-target', placementId: placement.id });
+  if (!sectionIds.has(placement.sectionId)) findings.push({ code: 'diagram-placement-section', placementId: placement.id });
+  if (placement.fallbackMode !== 'diagram-text-equivalent' || placement.requiredForComprehension !== false) findings.push({ code: 'diagram-placement-boundary', placementId: placement.id });
+}
 if (pack.releaseEligible !== false || library.releaseEligible !== false) findings.push({ code: 'release-boundary' });
 
 const report = {
   schemaVersion: 1,
-  qaVersion: 'ap-statistics-foundation-qa-v2',
+  qaVersion: 'ap-statistics-foundation-qa-v3',
   reportId: 'ap-statistics-foundation-qa',
   generatedAt: '2026-08-20T00:00:00.000Z',
   packId: pack.id,
@@ -77,6 +119,12 @@ const report = {
     knowledgeCheckCount: library.summary.knowledgeChecks,
     flashcardCount: library.summary.flashcards,
     memoryAidCount: library.summary.memoryAids,
+    practiceRouteCount: practiceRoutes.length,
+    studyRouteCount: studyRoutes.length,
+    practiceRoutedItemCount: routedItemIds.length,
+    studyRouteReferenceCount: studyRoutes.reduce((sum, route) => sum + route.itemIds.length, 0),
+    diagramCount: diagrams.length,
+    diagramPlacementCount: diagramPlacements.length,
     constructedResponseWorkshopCount: library.constructedResponseWorkshops.length,
   },
   coverage: {

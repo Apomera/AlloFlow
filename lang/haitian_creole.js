@@ -30613,7 +30613,17 @@
       "best": "Pi Bon",
       "menu_73": "← Meni",
       "menu_74": "← Meni",
-      "menu_75": "← Meni"
+      "menu_75": "← Meni",
+      "explore_the_road": "Eksplore wout la",
+      "lane_change_without_signal": "Chanje liy san siyal",
+      "drove_in_oncoming_lane": "Ou te kondwi nan liy opoze a",
+      "high_beams": "Gwo limyè",
+      "left_signal": "Siyal agoch",
+      "right_signal": "Siyal adwat",
+      "braking": "Frenaj",
+      "traction_loss": "Pèt traksyon",
+      "fog_low_beams_ok": "Bwouya — limyè ba yo bon",
+      "welcome_to_roadready": "Byenveni nan RoadReady"
     },
     "schoolbehaviortoolkit": {
       "replacement_behaviors": "Konpòtman Ranplasman",

@@ -285,7 +285,54 @@
           { expr: '', color: '#34d399' }, { expr: '', color: '#fbbf24' },
           { expr: '', color: '#a78bfa' }, { expr: '', color: '#fb923c' }
         ];
-        var win = d.window || { xmin: -10, xmax: 10, ymin: -10, ymax: 10 };
+        var DEFAULT_WINDOW = { xmin: -10, xmax: 10, ymin: -10, ymax: 10 };
+        function finiteOr(value, fallback) { return Number.isFinite(value) ? value : fallback; }
+        function normalizeWindow(raw) {
+          raw = raw || {};
+          var normalized = {
+            xmin: finiteOr(raw.xmin, DEFAULT_WINDOW.xmin),
+            xmax: finiteOr(raw.xmax, DEFAULT_WINDOW.xmax),
+            ymin: finiteOr(raw.ymin, DEFAULT_WINDOW.ymin),
+            ymax: finiteOr(raw.ymax, DEFAULT_WINDOW.ymax)
+          };
+          if (!(normalized.xmax > normalized.xmin)) {
+            normalized.xmin = DEFAULT_WINDOW.xmin;
+            normalized.xmax = DEFAULT_WINDOW.xmax;
+          }
+          if (!(normalized.ymax > normalized.ymin)) {
+            normalized.ymin = DEFAULT_WINDOW.ymin;
+            normalized.ymax = DEFAULT_WINDOW.ymax;
+          }
+          return normalized;
+        }
+        function clampTo(value, min, max) { return Math.max(min, Math.min(max, value)); }
+        var win = normalizeWindow(d.window);
+        var traceX = clampTo(Number.isFinite(d.traceX) ? d.traceX : 0, win.xmin, win.xmax);
+        var derivX = clampTo(Number.isFinite(d.derivX) ? d.derivX : 0, win.xmin, win.xmax);
+        var graphStep = Math.max((win.xmax - win.xmin) / 200, 0.000001);
+
+        function applyWindow(nextWindow) {
+          var safeWindow = normalizeWindow(nextWindow);
+          var patch = { window: safeWindow };
+          if (d.traceMode || d.traceX != null) patch.traceX = clampTo(traceX, safeWindow.xmin, safeWindow.xmax);
+          if (d.showDeriv || d.derivX != null) patch.derivX = clampTo(derivX, safeWindow.xmin, safeWindow.xmax);
+          updMulti(patch);
+        }
+
+        function updateWindowBound(key, rawValue) {
+          if (String(rawValue).trim() === '') return;
+          var value = Number(rawValue);
+          if (!Number.isFinite(value)) return;
+          var nextWindow = Object.assign({}, win);
+          nextWindow[key] = value;
+          if (!(nextWindow.xmax > nextWindow.xmin) || !(nextWindow.ymax > nextWindow.ymin)) {
+            var message = 'Window minimums must be less than their matching maximums.';
+            if (addToast) addToast(message, 'warning');
+            if (announceToSR) announceToSR(message);
+            return;
+          }
+          applyWindow(nextWindow);
+        }
         var showTable = d.showTable || false;
         var showWindow = d.showWindow || false;
         var showChallenge = d.showChallenge || false;
@@ -600,7 +647,7 @@
           // Derivative tangent
           if (d.showDeriv && funcs[0] && funcs[0].expr) {
             try {
-              var dc = math.compile(gcCleanExpr(funcs[0].expr)); var dx = d.derivX != null ? d.derivX : 0;
+              var dc = math.compile(gcCleanExpr(funcs[0].expr)); var dx = derivX;
               var dsc = Object.assign({ x: dx }, sA);
               var slope = (dc.evaluate(Object.assign({}, dsc, { x: dx + 0.0001 })) - dc.evaluate(Object.assign({}, dsc, { x: dx - 0.0001 }))) / 0.0002;
               var yAtX = dc.evaluate(dsc);
@@ -616,19 +663,19 @@
           }
 
           // Trace crosshair
-          if (d.traceMode && d.traceX != null) {
-            var trX = toPixelX(d.traceX);
+          if (d.traceMode) {
+            var trX = toPixelX(traceX);
             c.strokeStyle = 'rgba(251,191,36,0.5)'; c.lineWidth = 1; c.setLineDash([3, 3]);
             c.beginPath(); c.moveTo(trX, 0); c.lineTo(trX, H); c.stroke(); c.setLineDash([]);
             c.font = 'bold 10px monospace';
             funcs.forEach(function(fn) {
               if (!fn.expr || !fn.expr.trim()) return;
               try {
-                var trY = math.compile(gcCleanExpr(fn.expr)).evaluate(Object.assign({ x: d.traceX }, sA));
+                var trY = math.compile(gcCleanExpr(fn.expr)).evaluate(Object.assign({ x: traceX }, sA));
                 if (typeof trY === 'number' && isFinite(trY)) {
                   c.beginPath(); c.arc(trX, toPixelY(trY), 4, 0, Math.PI * 2); c.fillStyle = fn.color; c.fill();
                   c.fillStyle = '#fbbf24'; c.textAlign = 'left';
-                  c.fillText('(' + Number(d.traceX.toPrecision(4)) + ', ' + Number(trY.toPrecision(4)) + ')', trX + 8, toPixelY(trY) - 6);
+                  c.fillText('(' + Number(traceX.toPrecision(4)) + ', ' + Number(trY.toPrecision(4)) + ')', trX + 8, toPixelY(trY) - 6);
                 }
               } catch (e) { /* skip */ }
             });
@@ -656,19 +703,21 @@
           if (addToast) addToast('\uD83D\uDCF8 Snapshot saved!', 'success');
         }
 
-        var gcText = 'var(--gc-text)';
-        var gcMuted = 'var(--gc-muted)';
-        var gcPanel = 'var(--gc-panel)';
-        var gcDeeper = 'var(--gc-deeper)';
-        var gcCard = 'var(--gc-card)';
-        var gcCardStrong = 'var(--gc-card-strong)';
-        var gcBorder = 'var(--gc-border)';
-        var gcAccent = 'var(--gc-accent)';
-        var gcAccentSoft = 'var(--gc-accent-soft)';
-        var gcAccentBorder = 'var(--gc-accent-border)';
-        var gcButtonBg = 'var(--gc-button-bg)';
-        var gcButtonText = 'var(--gc-button-text)';
-        var gcDanger = 'var(--gc-danger)';
+        // Keep server-rendered/snapshotted markup legible even when the
+        // runtime-injected token stylesheet is not present yet.
+        var gcText = 'var(--gc-text, #f8fafc)';
+        var gcMuted = 'var(--gc-muted, #cbd5e1)';
+        var gcPanel = 'var(--gc-panel, #111827)';
+        var gcDeeper = 'var(--gc-deeper, #0f172a)';
+        var gcCard = 'var(--gc-card, #1e293b)';
+        var gcCardStrong = 'var(--gc-card-strong, #312e81)';
+        var gcBorder = 'var(--gc-border, #64748b)';
+        var gcAccent = 'var(--gc-accent, #c7d2fe)';
+        var gcAccentSoft = 'var(--gc-accent-soft, #312e81)';
+        var gcAccentBorder = 'var(--gc-accent-border, #a5b4fc)';
+        var gcButtonBg = 'var(--gc-button-bg, #1e293b)';
+        var gcButtonText = 'var(--gc-button-text, #f8fafc)';
+        var gcDanger = 'var(--gc-danger, #fecaca)';
         function gcButtonStyle(active, accent) {
           return {
             background: active ? gcAccentSoft : gcButtonBg,
@@ -676,6 +725,31 @@
             border: '1px solid ' + (active ? (accent || gcAccentBorder) : gcBorder)
           };
         }
+
+        function updateTraceFromPointer(e) {
+          if (!d.traceMode) return;
+          var canvas = e.currentTarget;
+          var rect = canvas.getBoundingClientRect();
+          if (!rect.width || !canvas._toMathX) return;
+          var px = (e.clientX - rect.left) / rect.width * (canvas.width / (window.devicePixelRatio || 1));
+          upd('traceX', clampTo(canvas._toMathX(px), win.xmin, win.xmax));
+        }
+
+        var traceValues = [];
+        if (d.traceMode && window.math) {
+          var traceScope = { x: traceX };
+          if (d.sliderA != null) traceScope.a = d.sliderA;
+          if (d.sliderB != null) traceScope.b = d.sliderB;
+          if (d.sliderC != null) traceScope.c = d.sliderC;
+          funcs.forEach(function(fn, index) {
+            if (!fn.expr || !fn.expr.trim()) return;
+            try {
+              var value = window.math.compile(gcCleanExpr(fn.expr)).evaluate(traceScope);
+              if (typeof value === 'number' && isFinite(value)) traceValues.push('y' + (index + 1) + ' = ' + Number(value.toPrecision(5)));
+            } catch (e) { /* invalid functions are already reported by their equation field */ }
+          });
+        }
+        var traceSummary = 'Trace x = ' + Number(traceX.toPrecision(5)) + (traceValues.length ? '; ' + traceValues.join('; ') : '; enter a function to read its y value');
 
         /* ═══════════════════════════════════════════════════
            UI RENDER
@@ -733,13 +807,13 @@
               // Tool buttons
               h('div', { style: { padding: '8px 12px', borderTop: '1px solid ' + gcBorder, display: 'flex', flexWrap: 'wrap', gap: '4px' } },
                 h('button', { onClick: function() { upd('showTable', !showTable); if (!showTable) upd('_usedTable', true); }, style: Object.assign({ flex: '1 0 45%', padding: '5px', borderRadius: '6px', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' }, gcButtonStyle(showTable)) }, __alloT('stem.graphcalc.table', '\uD83D\uDCCA Table')),
-                h('button', { onClick: function() { try { var _cs = [].slice.call(document.querySelectorAll('canvas')); if (!_cs.length) return; var _c = _cs.sort(function(a,b){ return (b.width*b.height)-(a.width*a.height); })[0]; var _a = document.createElement('a'); _a.href = _c.toDataURL('image/png'); _a.download = 'graphcalc_' + Date.now() + '.png'; _a.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCF8 PNG saved!', 'success'); } catch (e) {} }, style: Object.assign({ flex: '1 0 45%', padding: '5px', borderRadius: '6px', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' }, gcButtonStyle(true, '#0369a1')) }, __alloT('stem.graphcalc.png', '\uD83D\uDCF8 PNG')),
+                h('button', { onClick: function() { try { var _cs = [].slice.call(document.querySelectorAll('canvas')); if (!_cs.length) return; var _c = _cs.sort(function(a,b){ return (b.width*b.height)-(a.width*a.height); })[0]; var _a = document.createElement('a'); _a.href = _c.toDataURL('image/png'); _a.download = 'graphcalc_' + Date.now() + '.png'; _a.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCF8 PNG saved!', 'success'); } catch (e) {} }, style: Object.assign({ flex: '1 0 45%', padding: '5px', borderRadius: '6px', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' }, gcButtonStyle(true)) }, __alloT('stem.graphcalc.png', '\uD83D\uDCF8 PNG')),
                 h('button', { onClick: function() { upd('showWindow', !showWindow); }, style: Object.assign({ flex: '1 0 45%', padding: '5px', borderRadius: '6px', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' }, gcButtonStyle(showWindow)) }, __alloT('stem.graphcalc.window', '\u2699\uFE0F Window')),
                 h('button', { 'aria-label': __alloT('stem.graphcalc.challenge', 'Challenge'), onClick: function() { SOUNDS.challengeOpen(); upd('showChallenge', !showChallenge); }, style: Object.assign({ flex: '1 0 45%', padding: '5px', borderRadius: '6px', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' }, gcButtonStyle(showChallenge)) }, __alloT('stem.graphcalc.challenge_2', '\uD83C\uDFAF Challenge')),
                 h('button', { 'aria-label': __alloT('stem.graphcalc.clear', 'Clear'), onClick: function() { SOUNDS.clearAll(); upd('funcs', funcs.map(function(f) { return Object.assign({}, f, { expr: '' }); })); }, style: { flex: '1 0 45%', padding: '5px', borderRadius: '6px', background: 'rgba(239,68,68,0.14)', color: gcDanger, border: '1px solid rgba(239,68,68,0.45)', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, __alloT('stem.graphcalc.clear_2', '\uD83D\uDDD1 Clear')),
-                h('button', { onClick: function() { SOUNDS.traceOn(); upd('traceMode', !d.traceMode); }, style: Object.assign({ flex: '1 0 45%', padding: '5px', borderRadius: '6px', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' }, gcButtonStyle(!!d.traceMode, '#92400e')) }, __alloT('stem.graphcalc.trace', '\uD83D\uDD0D Trace')),
-                h('button', { onClick: runAnalysis, style: Object.assign({ flex: '1 0 45%', padding: '5px', borderRadius: '6px', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' }, gcButtonStyle(!!d.showAnalysis, '#065f46')) }, __alloT('stem.graphcalc.analyze', '\u26A1 Analyze')),
-                h('button', { onClick: function() { upd('showDeriv', !d.showDeriv); if (!d.showDeriv) { upd('_usedDeriv', true); if (d.derivX == null) upd('derivX', 0); } }, style: Object.assign({ flex: '1 0 45%', padding: '5px', borderRadius: '6px', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' }, gcButtonStyle(!!d.showDeriv, '#9a3412')) }, __alloT('stem.graphcalc.f_x', "\u2202 f'(x)")),
+                h('button', { 'aria-pressed': !!d.traceMode, onClick: function() { SOUNDS.traceOn(); updMulti({ traceMode: !d.traceMode, traceX: traceX }); }, style: Object.assign({ flex: '1 0 45%', padding: '5px', borderRadius: '6px', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' }, gcButtonStyle(!!d.traceMode)) }, __alloT('stem.graphcalc.trace', '\uD83D\uDD0D Trace')),
+                h('button', { onClick: runAnalysis, style: Object.assign({ flex: '1 0 45%', padding: '5px', borderRadius: '6px', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' }, gcButtonStyle(!!d.showAnalysis)) }, __alloT('stem.graphcalc.analyze', '\u26A1 Analyze')),
+                h('button', { onClick: function() { upd('showDeriv', !d.showDeriv); if (!d.showDeriv) { upd('_usedDeriv', true); if (d.derivX == null) upd('derivX', 0); } }, style: Object.assign({ flex: '1 0 45%', padding: '5px', borderRadius: '6px', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' }, gcButtonStyle(!!d.showDeriv)) }, __alloT('stem.graphcalc.f_x', "\u2202 f'(x)")),
                 h('button', { 'aria-label': __alloT('stem.graphcalc.sliders', 'Sliders'), onClick: function() { upd('showSliders', !showSliders); if (!showSliders) { upd('_usedSliders', true); if (d.sliderA == null) upd('sliderA', 1); if (d.sliderB == null) upd('sliderB', 0); if (d.sliderC == null) upd('sliderC', 0); } }, style: Object.assign({ flex: '1 0 45%', padding: '5px', borderRadius: '6px', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' }, gcButtonStyle(showSliders)) }, __alloT('stem.graphcalc.sliders_2', '\uD83C\uDFA8 Sliders'))
               ),
               // Zoom presets
@@ -747,7 +821,7 @@
                 h('div', { style: { fontSize: '11px', color: gcText, marginBottom: '4px', fontWeight: 'bold' } }, __alloT('stem.graphcalc.zoom_presets', 'ZOOM PRESETS')),
                 h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '3px' } },
                   ZOOM_PRESETS.map(function(z) {
-                    return h('button', { 'aria-label': z.name + ' zoom preset', key: z.name, onClick: function() { SOUNDS.zoomPreset(); upd('window', { xmin: z.xmin, xmax: z.xmax, ymin: z.ymin, ymax: z.ymax }); }, style: { padding: '3px 7px', borderRadius: '4px', background: gcButtonBg, color: gcButtonText, border: '1px solid ' + gcBorder, fontSize: '11px', fontWeight: 700, cursor: 'pointer' } }, z.name);
+                    return h('button', { 'aria-label': z.name + ' zoom preset', key: z.name, onClick: function() { SOUNDS.zoomPreset(); applyWindow({ xmin: z.xmin, xmax: z.xmax, ymin: z.ymin, ymax: z.ymax }); }, style: { padding: '3px 7px', borderRadius: '4px', background: gcButtonBg, color: gcButtonText, border: '1px solid ' + gcBorder, fontSize: '11px', fontWeight: 700, cursor: 'pointer' } }, z.name);
                   })
                 )
               ),
@@ -768,8 +842,8 @@
                 h('div', { style: { fontSize: '11px', color: gcAccent, fontWeight: 'bold', marginBottom: '4px' } }, __alloT('stem.graphcalc.tangent_to_y', '\u2202 TANGENT to y\u2081')),
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: '6px' } },
                   h('span', { style: { fontSize: '10px', color: gcText } }, 'x='),
-                  h('input', { type: 'range', min: win.xmin, max: win.xmax, step: (win.xmax - win.xmin) / 200, value: d.derivX != null ? d.derivX : 0, 'aria-label': 'Tangent x position: ' + (d.derivX != null ? Number(d.derivX.toPrecision(4)) : '0'), onChange: function(e) { upd('derivX', parseFloat(e.target.value)); }, style: { flex: 1, accentColor: gcAccent } }),
-                  h('span', { style: { fontFamily: 'monospace', fontSize: '11px', color: gcAccent, fontWeight: 'bold' } }, d.derivX != null ? Number(d.derivX.toPrecision(4)) : '0')
+                  h('input', { type: 'range', min: win.xmin, max: win.xmax, step: graphStep, value: derivX, 'aria-label': 'Tangent x position: ' + Number(derivX.toPrecision(4)), onChange: function(e) { upd('derivX', parseFloat(e.target.value)); }, style: { flex: 1, accentColor: gcAccent } }),
+                  h('span', { style: { fontFamily: 'monospace', fontSize: '11px', color: gcAccent, fontWeight: 'bold' } }, Number(derivX.toPrecision(4)))
                 )
               ) : null,
               // Analysis results
@@ -790,13 +864,27 @@
 
             // Center — Canvas
             h('div', { style: { flex: 1, display: 'flex', flexDirection: 'column', position: 'relative' } },
-              h('canvas', { ref: canvasRef, role: 'img', 'aria-label': __alloT('stem.graphcalc.interactive_graphing_calculator_visual', 'Interactive graphing calculator visualization'), tabIndex: 0, style: { width: '100%', flex: 1, background: 'var(--allo-stem-canvas, #0f172a)', cursor: d.traceMode ? 'crosshair' : 'default' },
-                onMouseMove: function(e) { if (!d.traceMode) return; var rect = e.currentTarget.getBoundingClientRect(); var px = (e.clientX - rect.left) / rect.width * (e.currentTarget.width / (window.devicePixelRatio || 1)); if (e.currentTarget._toMathX) upd('traceX', e.currentTarget._toMathX(px)); },
-                onMouseLeave: function() { if (d.traceMode) upd('traceX', null); } }),
+              h('canvas', { ref: canvasRef, role: 'img', 'aria-label': __alloT('stem.graphcalc.interactive_graphing_calculator_visual', 'Interactive graphing calculator visualization'), style: { width: '100%', flex: 1, background: 'var(--allo-stem-canvas, #0f172a)', cursor: d.traceMode ? 'crosshair' : 'default', touchAction: d.traceMode ? 'none' : 'auto' },
+                onPointerDown: function(e) { if (!d.traceMode) return; try { e.currentTarget.setPointerCapture(e.pointerId); } catch (err) {} updateTraceFromPointer(e); },
+                onPointerMove: function(e) { if (!d.traceMode || (e.pointerType === 'mouse' && e.buttons !== 1)) return; updateTraceFromPointer(e); } }),
+              d.traceMode ? h('div', { style: { padding: '8px 12px', background: gcCard, borderTop: '1px solid ' + gcBorder } },
+                h('label', { htmlFor: 'graphcalc-trace-x', style: { display: 'flex', alignItems: 'center', gap: '8px', color: gcText, fontSize: '11px', fontWeight: 700 } },
+                  h('span', null, __alloT('stem.graphcalc.trace_x', 'Trace x')),
+                  h('input', {
+                    id: 'graphcalc-trace-x', type: 'range', min: win.xmin, max: win.xmax, step: graphStep, value: traceX,
+                    'aria-label': __alloT('stem.graphcalc.trace_x_position', 'Trace x position'),
+                    'aria-valuetext': traceSummary,
+                    onChange: function(e) { upd('traceX', parseFloat(e.target.value)); },
+                    style: { flex: 1, accentColor: '#fbbf24' }
+                  }),
+                  h('span', { style: { minWidth: '54px', textAlign: 'right', fontFamily: 'monospace', color: '#fbbf24' } }, Number(traceX.toPrecision(5)))
+                ),
+                h('div', { role: 'status', 'aria-live': 'polite', style: { marginTop: '4px', fontSize: '10px', color: gcMuted } }, traceSummary)
+              ) : null,
               showWindow ? h('div', { style: { padding: '8px 12px', background: gcPanel, borderTop: '1px solid ' + gcBorder, display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' } },
                 h('span', { style: { fontSize: '10px', color: gcAccent, fontWeight: 'bold' } }, 'WINDOW:'),
                 ['xmin', 'xmax', 'ymin', 'ymax'].map(function(k) {
-                  return h('label', { key: k, style: { display: 'flex', alignItems: 'center', gap: '3px', fontSize: '10px', color: gcText, fontWeight: 700 } }, k + ':', h('input', { type: 'number', value: win[k], onChange: function(e) { var nw = Object.assign({}, win); nw[k] = parseFloat(e.target.value) || 0; upd('window', nw); }, style: { width: '50px', padding: '2px 4px', borderRadius: '4px', border: '1px solid ' + gcBorder, background: gcPanel, color: gcText, fontFamily: 'monospace', fontSize: '10px' } }));
+                  return h('label', { key: k, style: { display: 'flex', alignItems: 'center', gap: '3px', fontSize: '10px', color: gcText, fontWeight: 700 } }, k + ':', h('input', { type: 'number', step: 'any', value: win[k], 'aria-label': 'Graph window ' + k, onChange: function(e) { updateWindowBound(k, e.target.value); }, style: { width: '64px', padding: '2px 4px', borderRadius: '4px', border: '1px solid ' + gcBorder, background: gcPanel, color: gcText, fontFamily: 'monospace', fontSize: '10px' } }));
                 })
               ) : null,
               showTable ? h('div', { style: { maxHeight: '150px', overflowY: 'auto', borderTop: '1px solid ' + gcBorder, background: gcPanel } },

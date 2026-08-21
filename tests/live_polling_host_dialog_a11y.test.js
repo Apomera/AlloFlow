@@ -202,4 +202,76 @@ describe('Live Polling host dialog accessibility', () => {
     expect(document.activeElement).toBe(opener);
     expect(warnSpy).toHaveBeenCalled();
   });
+
+  it('uses a near-fullscreen command center and opens a privacy-safe student activity view', async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const now = Date.now();
+    host = document.createElement('div');
+    document.body.appendChild(host);
+    root = ReactDOMClient.createRoot(host);
+
+    await act(async () => {
+      root.render(React.createElement(LivePolling.HostPanel, {
+        sessionCode: 'EYE1',
+        isOpen: true,
+        onClose: () => {},
+        transportKind: 'mailbox',
+        roster: {
+          u1: {
+            name: 'Ari Rivera', groupId: 'g1', lastSeen: now - 15000,
+            wsProgress: { correct: 7, total: 8, done: false, at: now - 10000 },
+          },
+        },
+        resources: [],
+        sessionGroups: { g1: { name: 'Indigo Crew' } },
+        activitySnapshots: [{
+          family: 'polling', kind: 'free_text', phase: 'collecting', updatedAt: now - 12000,
+          audienceUids: ['u1'], participantStatus: { u1: 'working' },
+          prompt: 'PRIVATE SENTINEL MUST NOT RENDER', response: 'PRIVATE ANSWER MUST NOT RENDER',
+        }],
+      }));
+      await Promise.resolve();
+    });
+
+    const commandCenter = host.querySelector('[aria-labelledby="live-polling-host-title"]');
+    expect(commandCenter.style.maxWidth).toBe('1480px');
+    expect(commandCenter.style.width).toBe('calc(100vw - 1rem)');
+    expect(commandCenter.style.height).toBe('calc(100dvh - 1rem)');
+    expect(commandCenter.textContent).toContain('Progress and engagement signals');
+    expect(commandCenter.textContent).toContain('7/8 completed');
+    expect(commandCenter.textContent).toContain('Active signal');
+
+    const eyeButton = commandCenter.querySelector('button[aria-label^="Open activity view for Ari Rivera"]');
+    expect(eyeButton).not.toBeNull();
+    expect(eyeButton.textContent).toContain('Activity view');
+    eyeButton.focus();
+    click(eyeButton);
+
+    const studentDialog = host.querySelector('[aria-labelledby="live-student-detail-title"]');
+    expect(studentDialog).not.toBeNull();
+    expect(studentDialog.textContent).toContain('Ari Rivera');
+    expect(studentDialog.textContent).toContain('Indigo Crew');
+    expect(studentDialog.textContent).toContain('This is an activity view, not a live screen.');
+    expect(studentDialog.textContent).toContain('7/8 completed');
+    expect(studentDialog.textContent).not.toContain('PRIVATE SENTINEL MUST NOT RENDER');
+    expect(studentDialog.textContent).not.toContain('PRIVATE ANSWER MUST NOT RENDER');
+    expect(commandCenter.getAttribute('aria-hidden')).toBe('true');
+    expect(commandCenter.hasAttribute('inert')).toBe(true);
+    expect(document.activeElement).toBe(studentDialog.querySelector('button[aria-label="Close student activity view"]'));
+    expect(window.__alloFocusTrapStack.at(-1)?.root).toBe(studentDialog);
+
+    const axeResult = await axe.run(studentDialog, {
+      rules: {
+        'color-contrast': { enabled: false },
+        region: { enabled: false },
+      },
+    });
+    expect(axeResult.violations.filter((item) => item.impact === 'serious' || item.impact === 'critical')).toEqual([]);
+
+    act(() => document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })));
+    expect(host.querySelector('[aria-labelledby="live-student-detail-title"]')).toBeNull();
+    expect(commandCenter.hasAttribute('aria-hidden')).toBe(false);
+    expect(commandCenter.hasAttribute('inert')).toBe(false);
+    expect(document.activeElement).toBe(eyeButton);
+  });
 });

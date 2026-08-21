@@ -2577,7 +2577,7 @@ const _ALLO_STEM_DEEP_LINK_MAP = {
   'timeschedule': 'timeSchedule', 'timelinestudio': 'timelineStudio', 'titrationlab': 'titrationLab', 'trajectorycomputing': 'trajectoryComputing',
   'treelab': 'treeLab', 'typingpractice': 'typingPractice', 'unitconvert': 'unitConvert', 'universe': 'universe',
   'volume': 'volume', 'watercycle': 'waterCycle', 'wave': 'wave', 'weathersystems': 'weatherSystems',
-  'weldlab': 'weldLab', 'wheelandfire': 'wheelAndFire', 'worldbuilder': 'worldBuilder', 'zoomgallery': 'zoomGallery'
+  'sourcebook': 'sourcebook', 'weldlab': 'weldLab', 'wheelandfire': 'wheelAndFire', 'worldbuilder': 'worldBuilder', 'zoomgallery': 'zoomGallery'
 };
 // __ALLO_STEM_DEEP_LINKS_END__
 // Cloudflare shell deep links (2026-08-15, generalized 2026-08-16): the static
@@ -4237,6 +4237,12 @@ const _isCanvasEnv = (() => {
          host.includes('idx.google') ||
          host.includes('run.app');
 })();
+const _isIOSCanvasEnv = (() => {
+  if (!_isCanvasEnv || typeof navigator === 'undefined') return false;
+  const ua = String(navigator.userAgent || '');
+  const platform = String(navigator.platform || '');
+  return /iP(?:hone|ad|od)/i.test(ua) || (platform === 'MacIntel' && Number(navigator.maxTouchPoints) > 1);
+})();
 const _isDesktopBundledApp = (() => {
   if (typeof window === 'undefined') return false;
   const host = window.location.hostname || '';
@@ -4255,6 +4261,7 @@ const GEMINI_MODELS = {
 if (typeof window !== 'undefined') {
     window.apiKey = apiKey;
     window._isCanvasEnv = _isCanvasEnv;
+    window._isIOSCanvasEnv = _isIOSCanvasEnv;
     window._isDesktopBundledApp = _isDesktopBundledApp;
     window.GEMINI_MODELS = GEMINI_MODELS;
 }
@@ -12689,7 +12696,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       // pluginCdnBase and pluginCdnVersion hoisted to useEffect scope
       var stemToolModules = [
         'stem_lab/stem_tool_dna.js',
-        'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js', 'stem_lab/stem_tool_wheelandfire.js',
+        'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js', 'stem_lab/stem_tool_sourcebook.js', 'stem_lab/stem_tool_wheelandfire.js',
         'data_kernel_loader.js',
         'stem_lab/stem_tool_datastudio.js', 'stem_lab/stem_tool_coding.js', 'stem_lab/stem_tool_trajectorycomputing.js', 'stem_lab/stem_tool_applab.js',
         'stem_lab/stem_tool_dataplot.js', 'stem_lab/stem_tool_geo.js', 'stem_lab/stem_tool_gisstudio.js', 'stem_lab/stem_tool_titration.js',
@@ -13255,6 +13262,12 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     if (!window.__kokoroTTSScriptInjected) {
       window.__kokoroTTSScriptInjected = true;
       window.__loadKokoroTTS = async (onProgress) => {
+        if (_isIOSCanvasEnv) {
+          const reason = 'Kokoro is paused inside Gemini Canvas on iPhone or iPad to prevent the Canvas from restarting. Browser voice will be used instead.';
+          window.__kokoroTTSUnavailableReason = 'ios-canvas';
+          try { if (onProgress) onProgress({ stage: reason, pct: 0, unsupported: true, reason: 'ios-canvas' }); } catch (_) {}
+          return false;
+        }
         if (window._kokoroTTS?.ready) return true;
         // A refresh clears window._kokoroTTS, so the model is re-read from the
         // durable cache and loaded into WASM — a real wait, but NOT a
@@ -20133,6 +20146,10 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
     }).finally(() => { setAlloModelStatus(prev => ({ ...prev, busy: '' })); refreshAlloModelStatus(); });
   }, [refreshAlloModelStatus]);
   const downloadKokoroModel = React.useCallback(() => {
+    if (_isIOSCanvasEnv) {
+      addToast('Kokoro is paused inside Gemini Canvas on iPhone or iPad because loading its on-device model can restart the Canvas. Browser voice will be used instead.', 'info');
+      return;
+    }
     // Kokoro has no file list of our own — loading it IS the download, and the
     // worker's cache proxy persists it into model_cache on the way through.
     if (typeof window.__loadKokoroTTS !== 'function') { addToast('The voice model loader is still starting up — try again in a moment.', 'info'); return; }
@@ -49719,12 +49736,6 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
           t, updateDoc, warnLog
       })}
       {/* Global application CSS is rendered by the core AppStyles module above. */}
-      <a
-        href="#main-content"
-        className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[200] focus:bg-indigo-600 focus:text-white focus:px-4 focus:py-2 focus:rounded-lg focus:shadow-lg focus:font-bold focus:text-sm"
-      >
-        {t('a11y.skip_content')}
-      </a>
       {/* SR announcement regions — drive these via window.alloAnnounce(msg, 'polite'|'assertive'). */}
       <div id="allo-live-polite" role="status" aria-live="polite" aria-atomic="true" className="sr-only" />
       <div id="allo-live-assertive" role="alert" aria-live="assertive" aria-atomic="true" className="sr-only" />
@@ -49960,7 +49971,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
             </div>
           </nav>
         )}
-        <aside
+        <div
             id="workspace-sidebar-pane"
             aria-label={t('sidebar.tools_header')}
             role={!isWide ? 'tabpanel' : undefined}
@@ -51448,7 +51459,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
             )}
             {isTeacherMode && activeSidebarTab === 'history' && !isIndependentMode && !isParentMode && <TeacherHistoryTab handleApplyRosterGroup={handleApplyRosterGroup} hasSourceOrAnalysis={hasSourceOrAnalysis} rosterKey={rosterKey} setIsRosterKeyOpen={setIsRosterKeyOpen} t={t} />}
             {(!isTeacherMode || activeSidebarTab === 'history') && <HistoryPanel activeSidebarTab={activeSidebarTab} activeStation={activeStation} activeUnitId={activeUnitId} addToast={addToast} cloudSyncStatus={cloudSyncStatus} editTitle={editTitle} editingId={editingId} generatedContent={generatedContent} getDefaultTitle={getDefaultTitle} getFilteredHistory={getFilteredHistory} getIconForType={getIconForType} handleCancelEdit={handleCancelEdit} handleClearHistory={handleClearHistory} handleCreateUnit={handleCreateUnit} handleDeleteHistoryItem={handleDeleteHistoryItem} handleDeleteUnit={handleDeleteUnit} handleDragEnd={handleDragEnd} handleDragEnter={handleDragEnter} handleDragStart={handleDragStart} handleLoadProject={handleLoadProject} handleMoveToUnit={handleMoveToUnit} handleRestoreView={handleRestoreView} handleSaveEdit={handleSaveEdit} handleSetIsProjectSettingsOpenToTrue={handleSetIsProjectSettingsOpenToTrue} handleSetIsUnitModalOpenToFalse={handleSetIsUnitModalOpenToFalse} handleSetIsUnitModalOpenToTrue={handleSetIsUnitModalOpenToTrue} handleSetMovingItemIdToNull={handleSetMovingItemIdToNull} handleStartEdit={handleStartEdit} handleToggleIsHistoryMaximized={handleToggleIsHistoryMaximized} history={history} initiateSaveStudentProject={initiateSaveStudentProject} initiateSaveTeacherProject={initiateSaveTeacherProject} isCloudSyncEnabled={isCloudSyncEnabled} isCanvas={isCanvas} canvasRecoverySaveStatus={canvasRecoverySaveStatus} canvasRecoverySnapshotCount={canvasRecoveryVaultState.enabled ? canvasRecoveryVaultState.snapshotCount : canvasRecoveryStore.snapshots.length} onOpenDeviceRecovery={openCanvasRecoveryManager} isHistoryMaximized={isHistoryMaximized} isIndependentMode={isIndependentMode} isParentMode={isParentMode} isSaveActionPulsing={isSaveActionPulsing} isStorageDisabled={isStorageDisabled} isSyncMode={isSyncMode} isTeacherMode={isTeacherMode} isUnitModalOpen={isUnitModalOpen} lastSaved={lastSaved} moveItem={moveItem} movingItemId={movingItemId} newUnitName={newUnitName} pendingSync={pendingSync} projectFileInputRef={projectFileInputRef} sanitizeString={sanitizeString} activeSelStation={activeSelStation} setActiveSelStation={setActiveSelStation} setActiveStation={setActiveStation} setActiveUnitId={setActiveUnitId} setEditTitle={setEditTitle} setIsCommunityCatalogOpen={setIsCommunityCatalogOpen} setMovingItemId={setMovingItemId} setNewUnitName={setNewUnitName} setSelHubTab={setSelHubTab} setShowSelHub={setShowSelHub} setShowStemLab={setShowStemLab} setStemLabTab={setStemLabTab} t={t} onVisualizeUnit={openThroughlineForUnit} units={units} />}
-        </aside>
+        </div>
         {isWide && !isFullscreen && !isZenMode && (
             <div
                 role="separator"

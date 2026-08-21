@@ -36,20 +36,17 @@ describe('EPPP distractor-quality warning diagnostics', () => {
     expect(report.policy.hardGate).toContain('remain prohibited');
   });
 
-  it('emits structurally valid candidates for every diagnostic family', () => {
+  it('clears lexical leakage, advanced-recall, and semantic-duplicate findings while retaining warning-only extreme candidates', () => {
     const bankIds = new Set(bank.map((item) => item.id));
-    expect(report.uniqueKeyStemLexicalLeakage.length).toBeGreaterThan(0);
-    expect(report.uniqueKeyStemLexicalLeakage.every((entry) => bankIds.has(entry.id) && entry.uniqueKeyStemTerms.length > 0)).toBe(true);
+    expect(report.uniqueKeyStemLexicalLeakage).toEqual([]);
 
     expect(report.asymmetricExtremeDistractors.length).toBeGreaterThan(0);
     expect(report.asymmetricExtremeDistractors.every((entry) => bankIds.has(entry.id) && entry.extremeDistractorIndexes.length >= 2)).toBe(true);
 
-    expect(report.advancedDirectRecall.length).toBeGreaterThan(0);
-    expect(report.advancedDirectRecall.every((entry) => bankIds.has(entry.id) && entry.difficulty === 'advanced' && entry.reason)).toBe(true);
+    expect(report.advancedDirectRecall).toEqual([]);
 
-    expect(report.semanticConceptDuplicates.pairs.length).toBeGreaterThan(0);
-    expect(report.semanticConceptDuplicates.pairs.every((pair) => bankIds.has(pair.leftId) && bankIds.has(pair.rightId) && pair.matchBasis.length > 0)).toBe(true);
-    expect(report.semanticConceptDuplicates.pairs.some((pair) => pair.matchBasis.includes('high-tfidf-similarity'))).toBe(true);
+    expect(report.semanticConceptDuplicates.pairs).toEqual([]);
+    expect(report.semanticConceptDuplicates.clusters).toEqual([]);
   });
 
   it('publishes a bounded active docket and tracks the original editorial anchors separately', () => {

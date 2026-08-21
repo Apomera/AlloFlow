@@ -30696,7 +30696,17 @@
       "reset_3": "↺ Réinitialiser",
       "back_3": "← Retour",
       "certificate_of_completion": "CERTIFICAT DE FIN",
-      "best": "Meilleur"
+      "best": "Meilleur",
+      "explore_the_road": "Explore la route",
+      "lane_change_without_signal": "Changement de voie sans clignotant",
+      "drove_in_oncoming_lane": "Conduite dans la voie en sens inverse",
+      "high_beams": "Feux de route",
+      "left_signal": "Clignotant gauche",
+      "right_signal": "Clignotant droit",
+      "braking": "Freinage",
+      "traction_loss": "Perte de traction",
+      "fog_low_beams_ok": "Brouillard — feux de croisement acceptés",
+      "welcome_to_roadready": "Bienvenue dans RoadReady"
     },
     "schoolbehaviortoolkit": {
       "replacement_behaviors": "Comportements de remplacement",

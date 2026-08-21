@@ -39,10 +39,10 @@ describe('Graphing Calculator theme contrast', () => {
     const html = renderGraphCalc({});
 
     expect(html).toContain('class="graphcalc-shell"');
-    expect(html).toContain('color:var(--gc-text)');
-    expect(html).toContain('color:var(--gc-muted)');
-    expect(html).toContain('color:var(--gc-button-text)');
-    expect(html).toContain('background:var(--gc-card)');
+    expect(html).toContain('color:var(--gc-text, #f8fafc)');
+    expect(html).toContain('color:var(--gc-muted, #cbd5e1)');
+    expect(html).toContain('color:var(--gc-button-text, #f8fafc)');
+    expect(html).toContain('background:var(--gc-card, #1e293b)');
     expect(html).not.toContain('rgba(255,255,255,0.05)');
     expect(html).not.toContain('color:#a5b4fc');
   });
@@ -52,8 +52,8 @@ describe('Graphing Calculator theme contrast', () => {
       const html = renderGraphCalc({ graphCalc: { _sideTab: sideTab } });
 
       expect(html).toContain('class="graphcalc-shell"');
-      expect(html).toContain('color:var(--gc-text)');
-      expect(html).toContain('var(--gc-border)');
+      expect(html).toContain('color:var(--gc-text, #f8fafc)');
+      expect(html).toContain('var(--gc-border, #64748b)');
       expect(html).not.toContain('color:#94a3b8');
       expect(html).not.toContain('background:rgba(99,102,241,0.1)');
     });
@@ -71,9 +71,9 @@ describe('Graphing Calculator theme contrast', () => {
     });
 
     expect(html).toContain('WINDOW:');
-    expect(html).toContain('var(--gc-button-bg)');
-    expect(html).toContain('background:var(--gc-card)');
-    expect(html).toContain('border-top:1px solid var(--gc-border)');
+    expect(html).toContain('var(--gc-button-bg, #1e293b)');
+    expect(html).toContain('background:var(--gc-card, #1e293b)');
+    expect(html).toContain('border-top:1px solid var(--gc-border, #64748b)');
     expect(html).not.toContain('color:var(--allo-stem-text-soft, #94a3b8)');
     expect(html).not.toContain('background:rgba(30,27,75,0.9)');
   });

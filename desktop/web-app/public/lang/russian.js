@@ -29207,7 +29207,17 @@
       "best": "Лучший",
       "menu_73": "← Меню",
       "menu_74": "← Меню",
-      "menu_75": "← Меню"
+      "menu_75": "← Меню",
+      "explore_the_road": "Исследовать дорогу",
+      "lane_change_without_signal": "Перестроение без указателя поворота",
+      "drove_in_oncoming_lane": "Выезд на встречную полосу",
+      "high_beams": "Дальний свет",
+      "left_signal": "Левый поворотник",
+      "right_signal": "Правый поворотник",
+      "braking": "Торможение",
+      "traction_loss": "Потеря сцепления",
+      "fog_low_beams_ok": "Туман — ближний свет разрешён",
+      "welcome_to_roadready": "Добро пожаловать в RoadReady"
     },
     "schoolbehaviortoolkit": {
       "replacement_behaviors": "Замещающее поведение",

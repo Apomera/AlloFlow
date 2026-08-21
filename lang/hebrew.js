@@ -30984,7 +30984,17 @@
       "best": "הכי טוב",
       "menu_73": "← תפריט",
       "menu_74": "← תפריט",
-      "menu_75": "← תפריט"
+      "menu_75": "← תפריט",
+      "explore_the_road": "חקור את הכביש",
+      "lane_change_without_signal": "מעבר נתיב ללא איתות",
+      "drove_in_oncoming_lane": "נסיעה בנתיב הנגדי",
+      "high_beams": "אורות גבוהים",
+      "left_signal": "איתות שמאלה",
+      "right_signal": "איתות ימינה",
+      "braking": "בלימה",
+      "traction_loss": "אובדן אחיזה",
+      "fog_low_beams_ok": "ערפל — אורות נמוכים מתאימים",
+      "welcome_to_roadready": "ברוכים הבאים ל‑RoadReady"
     },
     "schoolbehaviortoolkit": {
       "replacement_behaviors": "Replacement התנהגות",

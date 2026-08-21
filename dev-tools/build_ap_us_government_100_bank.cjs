@@ -13,13 +13,13 @@ const packPath = path.join(root, 'test_prep', 'ap_us_government_foundation_pilot
 const libraryPath = path.join(root, 'test_prep', 'ap_us_government_foundation_pilot_learning_library.json');
 
 const PACK_ID = 'ap-us-government-foundation-pilot';
-const VERSION = '0.4.0-internal-preview';
+const VERSION = '0.6.0-internal-preview';
 const VERIFIED_AT = '2026-08-20';
 const CED_URL = 'https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description.pdf';
 const COURSE_URL = 'https://apcentral.collegeboard.org/courses/ap-united-states-government-and-politics';
 const EXAM_URL = 'https://apcentral.collegeboard.org/courses/ap-united-states-government-and-politics/exam';
 const OPENSTAX_URL = 'https://openstax.org/details/books/american-government-3e';
-const LIBRARY_VERSION = 'ap-us-government-foundation-v4';
+const LIBRARY_VERSION = 'ap-us-government-foundation-v6';
 
 function assert(condition, message) {
   if (!condition) throw new Error('[AP U.S. Government foundation builder] ' + message);
@@ -356,17 +356,38 @@ const baseItemSpecs = [
 ];
 
 const depthItemSpecs = require('./ap_us_government_depth_specs.cjs')(q);
-const itemSpecs = baseItemSpecs.concat(depthItemSpecs);
-const expectedItemCountsByUnit = { 1: 36, 2: 60, 3: 30, 4: 24, 5: 50 };
+const transferItemSpecs = require('./ap_us_government_transfer_specs.cjs')(q);
+const itemSpecs = baseItemSpecs.concat(depthItemSpecs, transferItemSpecs);
+const expectedItemCountsByUnit = { 1: 45, 2: 75, 3: 43, 4: 34, 5: 63 };
 assert(baseItemSpecs.length === 100, 'Expected 100 base item specifications, found ' + baseItemSpecs.length + '.');
 assert(depthItemSpecs.length === 100, 'Expected 100 depth item specifications, found ' + depthItemSpecs.length + '.');
-assert(itemSpecs.length === 200, 'Expected 200 item specifications, found ' + itemSpecs.length + '.');
+assert(transferItemSpecs.length === 60, 'Expected 60 transfer item specifications, found ' + transferItemSpecs.length + '.');
+assert(itemSpecs.length === 260, 'Expected 260 item specifications, found ' + itemSpecs.length + '.');
+const officialTopicIds = units.flatMap((unit) => unit.topics.map((topic) => topic.id));
+const transferTopicCounts = transferItemSpecs.reduce((counts, item) => {
+  counts[item.topicId] = (counts[item.topicId] || 0) + 1;
+  return counts;
+}, {});
+assert(Object.keys(transferTopicCounts).length === officialTopicIds.length && officialTopicIds.every((topicId) => transferTopicCounts[topicId] === 1), 'Transfer layer must contain exactly one item for each current topic.');
 for (const unit of units) {
   const unitCount = itemSpecs.filter((item) => item.unit === unit.number).length;
   assert(unitCount === expectedItemCountsByUnit[unit.number], 'Unit ' + unit.number + ' expected ' + expectedItemCountsByUnit[unit.number] + ' items, found ' + unitCount + '.');
   for (const topic of unit.topics) {
-    assert(itemSpecs.filter((item) => item.unit === unit.number && item.topicId === topic.id).length >= 2, 'Topic ' + topic.id + ' needs at least two practice angles.');
+    assert(itemSpecs.filter((item) => item.unit === unit.number && item.topicId === topic.id).length >= 3, 'Topic ' + topic.id + ' needs at least three practice angles.');
   }
+}
+
+const FOUNDATION_ITEM_COUNT = baseItemSpecs.length;
+const DEPTH_ITEM_COUNT = depthItemSpecs.length;
+function practiceSliceForIndex(index) {
+  if (index < FOUNDATION_ITEM_COUNT) return 'foundation-slice';
+  if (index < FOUNDATION_ITEM_COUNT + DEPTH_ITEM_COUNT) return 'depth-slice';
+  return 'transfer-slice';
+}
+function practiceAngleForIndex(index) {
+  if (index < FOUNDATION_ITEM_COUNT) return 'foundation';
+  if (index < FOUNDATION_ITEM_COUNT + DEPTH_ITEM_COUNT) return 'depth';
+  return 'transfer';
 }
 
 const topicCatalog = units.flatMap((unit) => unit.topics.map((topic) => ({
@@ -488,8 +509,8 @@ function buildItem(spec, index, objectiveCatalog) {
     practiceIds: [practiceId],
     skillId: spec.skillId,
     skillIds: [spec.skillId],
-    practiceSlice: index < baseItemSpecs.length ? 'foundation-slice' : 'depth-slice',
-    practiceAngle: index < baseItemSpecs.length ? 'foundation' : 'depth',
+    practiceSlice: practiceSliceForIndex(index),
+    practiceAngle: practiceAngleForIndex(index),
     difficulty: spec.difficulty,
     cognitiveDemand: spec.skillId.startsWith('5.') ? 'argumentation' : spec.skillId.startsWith('3.') || spec.skillId.startsWith('4.') ? 'analysis' : 'application',
     cognitiveProcess: spec.cognitiveProcess,
@@ -552,6 +573,223 @@ function buildItem(spec, index, objectiveCatalog) {
   return item;
 }
 
+function buildConstructedResponseWorkshops() {
+  const workshops = [
+    {
+      id: 'ap-usg-workshop-concept-application',
+      taskType: 'Concept application planning',
+      title: 'Explain the constitutional mechanism before the conclusion',
+      prompt: 'Plan a concise response to a new policy scenario. Identify the governing constitutional principle, apply the principle to the facts, and explain one limit on the conclusion. This is a planning exercise, not an official AP prompt or scored response.',
+      stimulus: 'Original synthetic scenario: A state creates a public-safety grant for counties that adopt a shared emergency-alert system. The national government offers additional funds if counties meet accessibility and privacy standards. A county argues that the conditions interfere with state authority, while a civil-liberties organization argues that the standards are necessary to protect residents. The scenario is intentionally simplified so the planning focus stays on federalism, individual rights, and conditional spending.',
+      taskParts: [
+        'Name the constitutional or institutional principle that best organizes the dispute.',
+        'Apply that principle to the grant condition and the competing state and individual interests.',
+        'State one fact that would change or limit the strength of the conclusion.',
+      ],
+      planningFrame: [
+        { label: 'Principle', guidance: 'Define the relevant power, right, or structural relationship in one sentence.' },
+        { label: 'Evidence', guidance: 'Point to the grant condition, the county objection, and the public-safety rationale.' },
+        { label: 'Reasoning', guidance: 'Explain why the principle supports or limits the government action rather than merely naming it.' },
+        { label: 'Boundary', guidance: 'Identify a missing fact such as the statutory authority, condition scope, or privacy safeguard.' },
+      ],
+      successCriteria: [
+        'The response names a precise principle instead of using a broad label alone.',
+        'The application connects the principle to facts from the synthetic scenario.',
+        'The reasoning distinguishes shared authority from complete state or national control.',
+        'The limitation identifies evidence that could change the analysis.',
+      ],
+      commonPitfalls: [
+        'Treating federalism as a complete wall between state and national policy.',
+        'Assuming a funding condition is valid or invalid without examining its connection and scope.',
+        'Listing a constitutional clause without explaining the mechanism it creates.',
+        'Turning a planning response into a prediction of an official score or court outcome.',
+      ],
+      sampleOutline: [
+        'Claim: shared authority can permit a connected condition while rights protections constrain implementation.',
+        'Application: connect the funding terms, state objection, and privacy safeguards to the principle.',
+        'Limit: explain which missing legal or factual detail would require a narrower conclusion.',
+      ],
+      unitIds: [1, 3],
+      topicIds: ['1.7', '1.9', '3.6'],
+    },
+    {
+      id: 'ap-usg-workshop-data-analysis',
+      taskType: 'Quantitative analysis planning',
+      title: 'Describe a political data pattern without overclaiming',
+      prompt: 'Plan a response to a small original data display. Describe the pattern, compare the groups or time points, and explain what the display cannot establish. Keep the claim proportional to the evidence and do not treat the exercise as a scored quantitative-analysis response.',
+      stimulus: 'Original synthetic data display: In a statewide survey, support for a proposed transit measure is 61 percent among respondents who report voting in every recent election, 48 percent among occasional voters, and 42 percent among people who report not voting recently. The sample reports a margin of error of plus or minus 3 percentage points. The survey is observational and does not measure whether voting caused the difference in support.',
+      taskParts: [
+        'State one pattern or comparison directly supported by the displayed percentages.',
+        'Use the margin of error and the survey design to qualify the comparison.',
+        'Explain one conclusion the display cannot establish and identify evidence that would help.',
+      ],
+      planningFrame: [
+        { label: 'Read', guidance: 'Identify the variables, groups, units, and comparison the display actually provides.' },
+        { label: 'Compare', guidance: 'Describe the direction and size of the observed difference without inventing a cause.' },
+        { label: 'Uncertainty', guidance: 'Use the stated margin of error as sampling context, not as a guarantee that all error is removed.' },
+        { label: 'Limit', guidance: 'Separate association from causation and name a possible confounding factor or measurement concern.' },
+      ],
+      successCriteria: [
+        'The response uses the displayed values accurately and keeps the comparison in context.',
+        'The margin of error is described as sampling uncertainty rather than proof of a result.',
+        'The response distinguishes a relationship in survey data from a causal explanation.',
+        'The limitation is specific enough to guide a follow-up study or source check.',
+      ],
+      commonPitfalls: [
+        'Claiming that voting behavior caused the difference in policy support.',
+        'Treating the margin of error as a measure of every possible source of bias.',
+        'Using the survey to describe every citizen when the population and sampling frame are unspecified.',
+        'Reporting percentages without naming the comparison or the direction of the pattern.',
+      ],
+      sampleOutline: [
+        'Pattern: frequent voters show higher reported support than occasional or nonrecent voters in this sample.',
+        'Qualification: the margin of error and observational design limit what the comparison can show.',
+        'Limit: information about sampling, question wording, demographics, or a longitudinal design would support a stronger explanation.',
+      ],
+      unitIds: [4, 5],
+      topicIds: ['4.5', '4.6', '5.2'],
+    },
+    {
+      id: 'ap-usg-workshop-case-comparison',
+      taskType: 'Case-comparison planning',
+      title: 'Compare constitutional reasoning across two synthetic cases',
+      prompt: 'Plan a comparison of two original case summaries. Identify the constitutional question, explain one meaningful similarity or difference in the reasoning, and connect the comparison to a broader liberty-and-order conflict. The cases are synthetic and are not substitutes for required case study or expert review.',
+      stimulus: 'Original synthetic case summaries: Case A concerns a city rule requiring a permit for large demonstrations, with objective limits on time and location and several alternative public spaces. Case B concerns a rule that denies permits only to demonstrations criticizing the mayor. In both cases the city cites traffic and safety, but the second rule uses the message of the demonstration as part of the decision.',
+      taskParts: [
+        'State the shared constitutional issue raised by both case summaries.',
+        'Explain one legally meaningful difference in the government action or standard.',
+        'Use the comparison to make a broader claim about liberty, order, or viewpoint neutrality.',
+      ],
+      planningFrame: [
+        { label: 'Issue', guidance: 'Identify the right or constitutional principle common to both cases.' },
+        { label: 'Fact', guidance: 'Select the fact that changes the legal or political significance of the two rules.' },
+        { label: 'Comparison', guidance: 'Explain the consequence of the difference instead of merely saying the cases are different.' },
+        { label: 'Transfer', guidance: 'State how the comparison helps analyze a new public-order dispute.' },
+      ],
+      successCriteria: [
+        'The comparison is based on a material fact, such as content neutrality or official discretion.',
+        'The response explains why the fact matters to the constitutional analysis.',
+        'The broader claim recognizes that public safety does not erase individual rights.',
+        'The response avoids inventing holdings, quotations, or official case names.',
+      ],
+      commonPitfalls: [
+        'Treating any permit requirement as automatically unconstitutional.',
+        'Ignoring the difference between a neutral time-place rule and viewpoint discrimination.',
+        'Summarizing both cases without explaining the consequence of the comparison.',
+        'Presenting a synthetic case as if it were an official Supreme Court decision.',
+      ],
+      sampleOutline: [
+        'Shared issue: government regulation of public expression must be evaluated against speech protections.',
+        'Key difference: Case A uses neutral criteria and alternatives, while Case B selects messages for adverse treatment.',
+        'Broader claim: order-based regulation is stronger when it controls effects rather than viewpoints.',
+      ],
+      unitIds: [2, 3],
+      topicIds: ['3.3', '3.6', '2.15'],
+    },
+    {
+      id: 'ap-usg-workshop-source-analysis',
+      taskType: 'Foundational-document source planning',
+      title: 'Build a source-based claim from synthetic civic texts',
+      prompt: 'Plan a source-based response using two short, original civic texts. Identify each author\'s claim and audience, connect the texts to a constitutional or democratic principle, and explain one limitation of using the texts as evidence. No official document language is reproduced in this workshop.',
+      stimulus: 'Original synthetic source set: Source A is a town-meeting statement arguing that public officials should remain close to local voters and that distant institutions may overlook community needs. Source B is a legislative memorandum arguing that divided institutions and an extended republic can prevent a temporary majority from controlling every decision. Both sources support representative government but emphasize different risks: distance from the people and concentration of power.',
+      taskParts: [
+        'Identify the central claim and likely audience of each synthetic source.',
+        'Explain how the sources reflect competing concerns about representation, liberty, or institutional design.',
+        'State one limitation of the sources as evidence and describe what additional evidence would help.',
+      ],
+      planningFrame: [
+        { label: 'Author', guidance: 'Infer the speaker or institutional position from the text description, not from an assumed historical identity.' },
+        { label: 'Claim', guidance: 'State what each source wants the reader to believe about democratic design.' },
+        { label: 'Connection', guidance: 'Link the claims to a principle such as popular sovereignty, faction control, or representation.' },
+        { label: 'Limit', guidance: 'Consider audience, purpose, missing voices, or the gap between institutional design and practice.' },
+      ],
+      successCriteria: [
+        'The response distinguishes source claim, audience, and purpose.',
+        'The comparison identifies a real tension rather than forcing the sources into agreement.',
+        'The constitutional connection is explained with a mechanism and not just a vocabulary label.',
+        'The limitation names missing context or perspective and proposes useful additional evidence.',
+      ],
+      commonPitfalls: [
+        'Treating a source summary as proof of every fact about the historical period.',
+        'Assuming that two sources about democracy must have identical priorities.',
+        'Naming a foundational principle without connecting it to the source claim.',
+        'Using outside facts that overwhelm rather than clarify the source analysis.',
+      ],
+      sampleOutline: [
+        'Source A emphasizes local accountability and warns that distance can weaken representation.',
+        'Source B emphasizes institutional checks and warns that concentrated majorities can threaten liberty.',
+        'Synthesis: both value self-government but propose different safeguards, so audience and purpose shape the argument.',
+      ],
+      unitIds: [1],
+      topicIds: ['1.1', '1.3', '1.5'],
+    },
+    {
+      id: 'ap-usg-workshop-argumentation',
+      taskType: 'Argumentation planning',
+      title: 'Make a qualified policy claim with evidence and a counterpoint',
+      prompt: 'Plan an argument about whether a proposed participation reform would broaden democratic access. Develop a defensible claim, select evidence from the synthetic record, explain the mechanism connecting evidence to the claim, and address a plausible counterpoint. The workshop does not score argument essays or predict AP results.',
+      stimulus: 'Original synthetic policy record: A state proposes automatic voter registration at eligible-agency visits, expands early voting, and requires public reporting about wait times. Supporters argue that the reforms reduce administrative barriers. Critics argue that access changes alone cannot solve unequal information, work schedules, transportation, or trust in institutions. A pilot report shows registration increased, but turnout changed unevenly across counties.',
+      taskParts: [
+        'Write a qualified claim about the extent to which the reform could broaden participation.',
+        'Select two pieces of evidence and explain the mechanism connecting each to the claim.',
+        'Address the strongest counterpoint and state what additional evidence would resolve the disagreement.',
+      ],
+      planningFrame: [
+        { label: 'Claim', guidance: 'Answer the extent question with a position that allows for benefits and limits.' },
+        { label: 'Evidence', guidance: 'Use the registration result, turnout variation, and policy details as distinct evidence.' },
+        { label: 'Mechanism', guidance: 'Explain how an administrative change could affect opportunity without guaranteeing participation.' },
+        { label: 'Counterpoint', guidance: 'Recognize barriers the reform does not address and explain how they qualify the claim.' },
+      ],
+      successCriteria: [
+        'The claim is defensible and qualified rather than absolute.',
+        'Evidence is specific to the synthetic record and followed by reasoning.',
+        'The response distinguishes registration, access, and turnout as different outcomes.',
+        'The counterpoint changes the scope of the claim instead of appearing as an unrelated fact.',
+      ],
+      commonPitfalls: [
+        'Claiming that easier registration automatically produces equal turnout.',
+        'Using the pilot result without noting differences across counties.',
+        'Listing multiple reforms without explaining how each could affect participation.',
+        'Treating a counterpoint as something to dismiss rather than a limit to address.',
+      ],
+      sampleOutline: [
+        'Claim: access reforms can broaden opportunity, but their participation effect depends on implementation and remaining barriers.',
+        'Evidence and mechanism: registration and early voting reduce administrative friction, while reporting identifies unequal implementation.',
+        'Qualification: uneven turnout and nonadministrative barriers require complementary outreach and further evaluation.',
+      ],
+      unitIds: [4, 5],
+      topicIds: ['5.1', '5.2', '4.8'],
+    },
+  ];
+
+  return workshops.map((workshop) => ({
+    ...workshop,
+    type: 'unscored-planning-workshop',
+    references: [CED_URL, COURSE_URL],
+    unscored: true,
+    automatedScoring: false,
+    scorePrediction: false,
+    officialItem: false,
+    syntheticStimulus: true,
+    expertReviewStatus: 'pending',
+    releaseEligible: false,
+    rights: {
+      secureCollegeBoardContentUsed: false,
+      copiedOrRephrasedOfficialPrompt: false,
+      copiedOfficialRubric: false,
+      originalStimulus: true,
+    },
+    accessibility: {
+      stimulusFormat: 'plain text',
+      essentialVisualContent: false,
+      readingOrder: 'linear',
+      independentReviewStatus: 'pending',
+    },
+    reviewStatus: 'source-reviewed-editorial-pass',
+    reviewNote: 'Original synthetic planning workshop; not an official College Board prompt, rubric, score, or prediction. Independent AP U.S. Government subject-expert and accessibility review remain pending.',
+  }));
+}
+
 function buildLibrary(objectiveCatalog) {
   const chapters = units.map((unit, unitIndex) => {
     const chapterId = 'ap-usg-ch-' + String(unit.number).padStart(2, '0');
@@ -564,7 +802,7 @@ function buildLibrary(objectiveCatalog) {
         .map((spec, itemIndex) => ({
           id: 'ap-usg-u' + spec.unit + '-' + String(itemIndex + 1).padStart(3, '0'),
           topicId: spec.topicId,
-          practiceSlice: itemIndex < baseItemSpecs.length ? 'foundation-slice' : 'depth-slice',
+          practiceSlice: practiceSliceForIndex(itemIndex),
         }))
         .filter((candidate) => topicIds.includes(candidate.topicId));
       const sectionPracticeItems = practiceCandidates.filter((candidate) => topicIds.includes(candidate.topicId));
@@ -580,12 +818,14 @@ function buildLibrary(objectiveCatalog) {
         itemIds: sectionPracticeItems.map((candidate) => candidate.id),
         foundationItemIds: sectionPracticeItems.filter((candidate) => candidate.practiceSlice === 'foundation-slice').map((candidate) => candidate.id),
         depthItemIds: sectionPracticeItems.filter((candidate) => candidate.practiceSlice === 'depth-slice').map((candidate) => candidate.id),
+        transferItemIds: sectionPracticeItems.filter((candidate) => candidate.practiceSlice === 'transfer-slice').map((candidate) => candidate.id),
         topicCounts: practiceTopicCounts,
         topicItemIds,
         itemCount: sectionPracticeItems.length,
         foundationItemCount: sectionPracticeItems.filter((candidate) => candidate.practiceSlice === 'foundation-slice').length,
         depthItemCount: sectionPracticeItems.filter((candidate) => candidate.practiceSlice === 'depth-slice').length,
-        studyMove: 'Complete one foundation item, explain the mechanism in your own words, then use a depth item to transfer the reasoning to a new context.',
+        transferItemCount: sectionPracticeItems.filter((candidate) => candidate.practiceSlice === 'transfer-slice').length,
+        studyMove: 'Complete one foundation item, explain the mechanism in your own words, then use a depth item and a transfer item to apply the reasoning in new contexts.',
       };
       const focus = seed[1];
       const terms = seed[2];
@@ -642,7 +882,7 @@ function buildLibrary(objectiveCatalog) {
         accessibilityReviewStatus: 'pending-independent-review',
         contentComplete: true,
         releaseEligible: false,
-        contentEnhancementVersion: 'ap-usg-foundation-v4',
+        contentEnhancementVersion: 'ap-usg-foundation-v6',
       };
     });
     const chapterObjective = objectiveCatalog.find((objective) => objective.domainId === unit.id);
@@ -720,6 +960,7 @@ function buildLibrary(objectiveCatalog) {
     reviewStatus: 'source-reviewed-editorial-pass',
     reviewNote: 'Original foundation retrieval aid; AP U.S. Government and accessibility validation remain pending.',
   }));
+  const constructedResponseWorkshops = buildConstructedResponseWorkshops();
   const practiceRoutes = chapters.flatMap((chapter) => chapter.sections.map((section) => section.practiceRoute));
   const routedItemIds = practiceRoutes.flatMap((route) => route.itemIds);
   const practiceRouting = {
@@ -729,7 +970,9 @@ function buildLibrary(objectiveCatalog) {
     uniqueItemCount: new Set(routedItemIds).size,
     foundationItemCount: practiceRoutes.reduce((sum, route) => sum + route.foundationItemCount, 0),
     depthItemCount: practiceRoutes.reduce((sum, route) => sum + route.depthItemCount, 0),
+    transferItemCount: practiceRoutes.reduce((sum, route) => sum + route.transferItemCount, 0),
     sectionsWithDepth: practiceRoutes.filter((route) => route.depthItemCount > 0).length,
+    sectionsWithTransfer: practiceRoutes.filter((route) => route.transferItemCount > 0).length,
     topicDrillMapCount: practiceRoutes.reduce((sum, route) => sum + Object.keys(route.topicItemIds).length, 0),
   };
 
@@ -740,7 +983,7 @@ function buildLibrary(objectiveCatalog) {
     packId: PACK_ID,
     version: VERSION,
     title: 'AP U.S. Government and Politics Foundation Pilot Learning Library',
-    description: 'A text-first, independently authored AP U.S. Government and Politics foundation library with five unit chapters, structured lessons, item-linked study routes, retrieval checks, study cards, and reasoning aids. It is not released, official, calibrated, or score-predictive.',
+    description: 'A text-first, independently authored AP U.S. Government and Politics foundation library with five unit chapters, structured lessons, item-linked study routes, retrieval checks, study cards, reasoning aids, and five explicitly unscored response-planning workshops. It is not released, official, calibrated, or score-predictive.',
     status: 'preview',
     visibility: 'internal',
     released: false,
@@ -753,7 +996,7 @@ function buildLibrary(objectiveCatalog) {
       officialBlueprintUrl: CED_URL,
       officialCourseUrl: COURSE_URL,
       pilotVersion: LIBRARY_VERSION,
-      pilotNote: 'A 200-item foundation across all five units and all 60 current public framework topic IDs, with at least two practice angles per topic, item-linked study routes for all fifteen lesson sections, and topic-level drill maps. It is a study and architecture foundation, not a complete exam simulation.',
+      pilotNote: 'A 260-item foundation across all five units and all 60 current public framework topic IDs, with at least three practice angles per topic, item-linked study routes for all fifteen lesson sections, topic-level drill maps, and five explicitly unscored response-planning workshops. It is a study and architecture foundation, not a complete exam simulation.',
       bigIdeas,
       skills,
       learningObjectiveCatalogVersion: LIBRARY_VERSION,
@@ -763,13 +1006,15 @@ function buildLibrary(objectiveCatalog) {
     reviewStandard: 'Independent source and editorial review against the public AP U.S. Government and Politics Course and Exam Description and openly available factual references. Independent subject-expert, accessibility, rights, production, field-testing, and psychometric review remain required.',
     disclaimer: 'Independent, unofficial AP U.S. Government and Politics preparation material for internal foundation-pilot development only. Not affiliated with, endorsed by, or authored by College Board. AP and Advanced Placement are trademarks of College Board. No secure AP Classroom, Question Bank, Progress Check, official question, official rubric, or official source-set stimulus was used or reproduced. This pilot does not provide official scores, score predictions, college-credit predictions, or a substitute for civics instruction.',
     sourceCatalog,
+    workshopLabel: 'Unscored AP Government response-planning workshops',
+    workshopPracticeNote: 'These explicitly unscored workshops use original synthetic scenarios, data, and source descriptions for planning and self-check. AlloFlow does not score written responses, apply an official College Board rubric, estimate an AP score, or predict credit or placement.',
     chapters,
     practiceRouting,
     diagrams: [],
     diagramPlacements: [],
     flashcards,
     memoryAids,
-    constructedResponseWorkshops: [],
+    constructedResponseWorkshops,
     summary: {
       chapters: chapters.length,
       sections: chapters.reduce((sum, chapter) => sum + chapter.sections.length, 0),
@@ -778,16 +1023,18 @@ function buildLibrary(objectiveCatalog) {
       memoryAids: memoryAids.length,
       diagrams: 0,
       diagramPlacements: 0,
-      constructedResponseWorkshops: 0,
+      constructedResponseWorkshops: constructedResponseWorkshops.length,
       richLessonPrototypes: chapters.length,
       sourceReviewedChapters: chapters.length,
       sourceReviewedFlashcards: flashcards.length,
       sourceReviewedMemoryAids: memoryAids.length,
+      sourceReviewedConstructedResponseWorkshops: constructedResponseWorkshops.length,
       releaseEligibleRecords: 0,
     },
     accessibility: {
-      contentForm: 'text-first, linear lessons and single-choice items',
+      contentForm: 'text-first, linear lessons, single-choice items, and plain-text planning workshops',
       essentialVisualItems: 0,
+      workshopStimuliUsePlainText: true,
       diagramsRequiredForComprehension: false,
       diagramFallbackMode: 'ordered-text-equivalent',
       independentReviewStatus: 'pending',
@@ -803,6 +1050,7 @@ function buildLibrary(objectiveCatalog) {
       authoringBasis: 'Independent original wording informed by public blueprint metadata and factual sources.',
       publicSourceUse: 'Blueprint alignment and factual verification only; no source prose, figures, or assessment content reproduced.',
       openStaxUse: 'Factual cross-checking and links only; no textbook prose, figures, or assessment content reproduced.',
+      workshopStudiesAreSynthetic: true,
       status: 'pending-independent-rights-review',
     },
     releaseGates: {
@@ -829,7 +1077,7 @@ function buildLibrary(objectiveCatalog) {
       completeSections: chapters.reduce((sum, chapter) => sum + chapter.sections.length, 0),
       richLessonPrototypes: chapters.length,
       status: 'foundation-prototype',
-      note: 'All five unit chapters and fifteen structured sections are navigable; the companion 200-item bank adds a second practice angle for every current topic; independent review remains pending.',
+      note: 'All five unit chapters and fifteen structured sections are navigable; the companion 260-item bank adds a third transfer/application angle for every current topic, and five synthetic response-planning workshops remain explicitly unscored; independent review remains pending.',
     },
   };
 }
@@ -845,7 +1093,7 @@ function buildPack(library) {
     officialWeightMax: unit.officialWeightMax,
     itemCount: items.filter((item) => item.domainId === unit.id).length,
   }));
-  const sections = Array.from({ length: 40 }, (_, index) => ({
+  const sections = Array.from({ length: 52 }, (_, index) => ({
     id: 'ap-usg-foundation-bank-' + String(index + 1).padStart(2, '0'),
     label: 'Bank ' + String(index + 1).padStart(2, '0') + ': five-item internal foundation sampler',
     timeMinutes: null,
@@ -865,7 +1113,7 @@ function buildPack(library) {
     id: PACK_ID,
     title: 'AP U.S. Government and Politics Independent Foundation Pilot',
     shortTitle: 'AP U.S. Government Foundation Pilot',
-    description: 'An independently authored 200-question AP U.S. Government and Politics foundation pilot spanning all five current units and all 60 current public framework topic IDs. Every topic has at least two practice angles, with expanded constitutional, institutional, source, data, argumentation, and item-linked study-route coverage for internal QA and study-route testing.',
+    description: 'An independently authored 260-question AP U.S. Government and Politics foundation pilot spanning all five current units and all 60 current public framework topic IDs. Every topic has at least three practice angles, including a transfer/application layer, with expanded constitutional, institutional, source, data, argumentation, and item-linked study-route coverage for internal QA and study-route testing.',
     disclaimer: 'Independent, unofficial AP U.S. Government and Politics preparation material for internal foundation-pilot development only. Not affiliated with, endorsed by, or authored by College Board. This pilot does not provide official scores, score predictions, college-credit predictions, or a substitute for civics instruction.',
     credentialOwner: 'College Board',
     version: VERSION,
@@ -879,7 +1127,7 @@ function buildPack(library) {
     itemSchemaVersion: 2,
     responseTypes: ['single-choice'],
     examModes: ['fully-digital'],
-    contentReview: 'Two hundred original, source-aligned draft multiple-choice items: all five current units and all sixty current public framework topics are represented at least twice, with all five course skill categories and twenty-three named subskills sampled. Each of the fifteen native lesson sections carries a linked foundation/depth study route and topic-level drill map. This is an internal foundation, not an official exam form or calibrated readiness measure.',
+    contentReview: 'Two hundred sixty original, source-aligned draft multiple-choice items: all five current units and all sixty current public framework topics are represented at least three times, with all five course skill categories and twenty-three named subskills sampled. Each of the fifteen native lesson sections carries a linked foundation/depth/transfer study route and topic-level drill map, and the learning library adds five explicitly unscored response-planning workshops. This is an internal foundation, not an official exam form or calibrated readiness measure.',
     blueprintLabel: 'AP U.S. Government and Politics Course and Exam Description, effective Fall 2026, Course Framework V.1',
     blueprintEffective: 'Fall 2026 CED; current official public reference reviewed 2026-08-20.',
     officialBlueprintUrl: CED_URL,
@@ -900,11 +1148,12 @@ function buildPack(library) {
       responseTypes: ['single-choice'],
       stimulusGroupsIncluded: false,
       constructedResponseIncluded: false,
-      frqWorkshopsIncluded: false,
+      frqWorkshopsIncluded: true,
       handsFreeContentCompatible: true,
       limitations: [
         'This foundation pilot is not a complete AP U.S. Government and Politics exam simulation and does not reproduce the official digital exam experience.',
         'Official free-response task forms, source sets, scoring rubrics, and score conversions are not included or scored.',
+        'The five response-planning workshops use original synthetic material and do not score written responses or reproduce official prompts or rubrics.',
         'No official score, readiness, college-credit, or civic-competency inference is supported.',
       ],
     },
@@ -918,7 +1167,7 @@ function buildPack(library) {
       officialFrameworkTopicIds: topicCatalog.map((topic) => topic.id),
       officialUnitCount: units.length,
       unitWeights: units.map((unit) => ({ id: unit.id, label: unit.label, officialWeightRange: [unit.officialWeightMin, unit.officialWeightMax] })),
-      pilotAlignment: '200-item text-first foundation across all five units and all 60 current public framework topic IDs, with at least two practice angles per topic; fifteen native lesson sections carry linked foundation/depth routes and sixty topic-level drill maps; 40 five-item internal banks; all five course skill categories represented; no official stimulus sets or FRQ scoring.',
+      pilotAlignment: '260-item text-first foundation across all five units and all 60 current public framework topic IDs, with at least three practice angles per topic; fifteen native lesson sections carry linked foundation/depth/transfer routes and sixty topic-level drill maps; 52 five-item internal banks; five unscored response-planning workshops; all five course skill categories represented; no official stimulus sets or FRQ scoring.',
       lastVerifiedAt: VERIFIED_AT,
       sourceDigest: 'pending-build-generation',
       bigIdeas,
@@ -928,13 +1177,15 @@ function buildPack(library) {
     },
     practiceDistribution: { ...practiceDistribution, note: 'The five course skill categories are sampled across this internal foundation; this is not a psychometric exam blueprint.' },
     skillDistribution: { ...skillDistribution, note: 'Named AP course subskills are sampled for routing and study feedback; independent expert review remains pending.' },
-    topicDistribution: { ...topicDistribution, note: 'Every current public topic ID receives at least two internal practice items; distribution follows the internal unit sample and is not a psychometric exam blueprint.' },
+    topicDistribution: { ...topicDistribution, note: 'Every current public topic ID receives at least three internal practice items; distribution follows the internal unit sample and is not a psychometric exam blueprint.' },
     depthCoverage: {
       baseItemCount: baseItemSpecs.length,
       depthItemCount: depthItemSpecs.length,
+      transferItemCount: transferItemSpecs.length,
       topicsWithAtLeastTwoItems: topicCatalog.filter((topic) => topicDistribution[topic.id] >= 2).length,
+      topicsWithAtLeastThreeItems: topicCatalog.filter((topic) => topicDistribution[topic.id] >= 3).length,
       topicCount: topicCatalog.length,
-      status: 'second-angle-topic-coverage',
+      status: 'third-angle-transfer-topic-coverage',
     },
     rightsPolicy: library.rightsPolicy,
     releaseGates: library.releaseGates,
@@ -951,6 +1202,7 @@ function buildPack(library) {
     sourceQuestionItems: items.length,
     independentPracticeItems: items.length,
     distinctSourceContentKernels: items.length,
+    constructedResponseWorkshopCount: library.constructedResponseWorkshops.length,
     batchSize: 5,
     diagnosticBatchCount: sections.length,
   };
@@ -960,10 +1212,10 @@ function main() {
   const objectiveCatalog = buildObjectiveCatalog();
   const library = buildLibrary(objectiveCatalog);
   const pack = buildPack(library);
-  assert(pack.items.length === 200, 'AP U.S. Government pack must contain 200 items.');
-  assert(new Set(pack.items.map((item) => item.id)).size === 200, 'AP U.S. Government item IDs must be unique.');
+  assert(pack.items.length === 260, 'AP U.S. Government pack must contain 260 items.');
+  assert(new Set(pack.items.map((item) => item.id)).size === 260, 'AP U.S. Government item IDs must be unique.');
   assert(pack.domains.every((domain) => domain.itemCount === expectedItemCountsByUnit[units.find((unit) => unit.id === domain.id).number]), 'Unit counts are incorrect.');
-  assert(library.chapters.length === 5 && library.summary.sections === 15, 'AP U.S. Government library inventory is incorrect.');
+  assert(library.chapters.length === 5 && library.summary.sections === 15 && library.constructedResponseWorkshops.length === 5, 'AP U.S. Government library inventory is incorrect.');
   writeJson(packPath, pack);
   writeJson(libraryPath, library);
   console.log('Built ' + pack.id + ' ' + pack.version + ' with ' + pack.items.length + ' items across ' + pack.domains.length + ' units and ' + library.summary.sections + ' structured sections.');

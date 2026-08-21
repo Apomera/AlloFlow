@@ -59,6 +59,11 @@
     celadon: { id: 'celadon', name: 'Celadon study', color: '#87a98d', maturity: 1260, expansion: 0.38 },
     tin: { id: 'tin', name: 'Opaque white glaze', color: '#e9e5d8', maturity: 1040, expansion: 0.62 }
   };
+  var CYCLE_PROTOCOLS = [
+    { id: 'gentle-care', label: 'Gentle care', cycles: 12, dryingRate: 20, cycleTemperatureDelta: 30, note: 'Short reuse with slower drying and a small temperature swing.' },
+    { id: 'everyday-service', label: 'Everyday service', cycles: 24, dryingRate: 45, cycleTemperatureDelta: 80, note: 'A neutral classroom comparison point.' },
+    { id: 'harsh-contrast', label: 'Harsh contrast', cycles: 36, dryingRate: 85, cycleTemperatureDelta: 160, note: 'A deliberately demanding comparison, not a care recommendation.' }
+  ];
 
   var CULTURAL_STUDIES = [
     {
@@ -760,7 +765,15 @@
       var dryingFactor = 0.72 + dryingRate / 100 * 0.78;
       var thermalFactor = 0.78 + cycleTemperatureDelta / 100 * body.thermalSensitivity * 0.95;
       var exposureFactor = dryingFactor * thermalFactor;
-      var cycleSeverity = (effectivePorosity * 0.42 + defectPenalty * 0.68 + body.thermalSensitivity * 0.055) * exposureFactor;
+      var cycleDriverWeights = [
+        { id: 'porosity', label: 'Open pore pathways', value: effectivePorosity * 0.42 },
+        { id: 'defects', label: 'Modeled defects', value: defectPenalty * 0.68 },
+        { id: 'thermal', label: 'Body thermal sensitivity', value: body.thermalSensitivity * 0.055 }
+      ];
+      var cycleDriverTotal = cycleDriverWeights.reduce(function (sum, driver) { return sum + driver.value; }, 0);
+      var cycleDrivers = cycleDriverWeights.map(function (driver) { return { id: driver.id, label: driver.label, relativePct: cycleDriverTotal ? driver.value / cycleDriverTotal * 100 : 0 }; });
+      var primaryDriver = cycleDrivers.reduce(function (leader, driver) { return driver.relativePct > leader.relativePct ? driver : leader; }, cycleDrivers[0]);
+      var cycleSeverity = cycleDriverTotal * exposureFactor;
       var geometryFactor = 1 + Math.max(0, stats.maxWallCm - 2.2) * 0.05 + (100 - stats.uniformity) * 0.002;
       var defectAmplifier = 1 + defectPenalty * 1.4;
       function damageAtCycle(cycleCount) {
@@ -786,15 +799,70 @@
       });
       var cycleStress = damageAtCycle(cycles);
       var cycleScore = 100 - cycleStress;
+      var uncertaintyInputs = [
+        { id: 'baseline', label: 'Base model spread', value: 8 },
+        { id: 'porosity', label: 'Open pore pathways', value: effectivePorosity * 32 },
+        { id: 'defects', label: 'Modeled defects', value: defectPenalty * 14 },
+        { id: 'uniformity', label: 'Wall uniformity variation', value: (100 - stats.uniformity) * 0.04 },
+        { id: 'thermal', label: 'Body thermal sensitivity', value: body.thermalSensitivity * 6 }
+      ];
+      var rawUncertaintyPct = uncertaintyInputs.reduce(function (sum, input) { return sum + input.value; }, 0);
+      var uncertaintyPct = clamp(rawUncertaintyPct, 8, 24);
+      var uncertaintyDrivers = uncertaintyInputs.map(function (input) {
+        return { id: input.id, label: input.label, points: input.value, relativePct: rawUncertaintyPct ? input.value / rawUncertaintyPct * 100 : 0 };
+      });
+      var damageRange = {
+        low: clamp(cycleStress * (1 - uncertaintyPct / 100), 0, 100),
+        high: clamp(cycleStress * (1 + uncertaintyPct / 100), 0, 100)
+      };
       return Object.assign(base, {
         cycles: cycles, dryingRate: dryingRate, cycleTemperatureDelta: cycleTemperatureDelta, exposureFactor: exposureFactor,
-        damagePct: cycleStress, score: cycleScore, cycleCheckpoints: cycleCheckpoints,
+        cycleDrivers: cycleDrivers, primaryDriver: primaryDriver.label,
+        damagePct: cycleStress, uncertaintyPct: uncertaintyPct, uncertaintyDrivers: uncertaintyDrivers, damageRange: damageRange, score: cycleScore, cycleCheckpoints: cycleCheckpoints,
         status: cycleStatus(cycleStress),
-        summary: 'After ' + Math.round(cycles) + ' wet-dry cycles at ' + Math.round(dryingRate) + '% drying severity and a ' + Math.round(cycleTemperatureDelta) + ' C temperature swing, the teaching model estimates ' + Math.round(cycleStress) + '% accumulated damage. The progression is a comparative heuristic, not a durability certification.'
+        summary: 'After ' + Math.round(cycles) + ' wet-dry cycles at ' + Math.round(dryingRate) + '% drying severity and a ' + Math.round(cycleTemperatureDelta) + ' C temperature swing, the teaching model estimates ' + Math.round(cycleStress) + '% accumulated damage, with an uncalibrated sensitivity band of ' + Math.round(damageRange.low) + ' to ' + Math.round(damageRange.high) + '%. The leading modeled driver is ' + primaryDriver.label.toLowerCase() + '. This progression is a comparative heuristic, not a durability certification.'
       });
     }
     var permeabilityIndex = clamp(effectivePorosity * 265 + defectPenalty * 28, 0, 100);
     return Object.assign(base, { permeabilityIndex: permeabilityIndex, score: 100 - permeabilityIndex, status: permeabilityIndex < 22 ? 'Low permeability proxy' : (permeabilityIndex < 62 ? 'Moderate permeability proxy' : 'High permeability proxy'), summary: 'Modeled permeability index ' + Math.round(permeabilityIndex) + '/100. This is a comparative material proxy, not a food-storage or fermentation safety determination.' });
+  }
+  function compareCycleProtocols(vessel, protocols) {
+    vessel = normalizeVessel(vessel);
+    protocols = Array.isArray(protocols) ? protocols : CYCLE_PROTOCOLS;
+    return protocols.slice(0, 8).map(function (protocol) {
+      var result = evaluateVesselUse(vessel, 'cycles', {
+        cycles: protocol.cycles, dryingRate: protocol.dryingRate, cycleTemperatureDelta: protocol.cycleTemperatureDelta
+      });
+      return Object.assign({}, protocol, { result: result });
+    });
+  }
+  function compareCycleSensitivity(vessel, settings) {
+    vessel = normalizeVessel(vessel);
+    settings = settings || {};
+    var base = {
+      cycles: clamp(Math.round(finite(settings.cycles, 12)), 1, 60),
+      dryingRate: clamp(Math.round(finite(settings.dryingRate, 45)), 5, 100),
+      cycleTemperatureDelta: clamp(Math.round(finite(settings.cycleTemperatureDelta, 80)), 10, 220)
+    };
+    var axes = [
+      { id: 'cycles', label: 'Cycle count', unit: 'cycles', field: 'cycles', low: Math.max(1, Math.round(base.cycles * 0.5)), high: Math.min(60, Math.round(base.cycles * 1.5)) },
+      { id: 'drying', label: 'Drying severity', unit: '% dry', field: 'dryingRate', low: Math.max(5, base.dryingRate - 30), high: Math.min(100, base.dryingRate + 30) },
+      { id: 'temperature', label: 'Temperature swing', unit: ' C', field: 'cycleTemperatureDelta', low: Math.max(10, base.cycleTemperatureDelta - 60), high: Math.min(220, base.cycleTemperatureDelta + 60) }
+    ];
+    return axes.map(function (axis) {
+      var points = [
+        { id: 'lower', label: 'Lower', value: axis.low },
+        { id: 'current', label: 'Current', value: base[axis.field] },
+        { id: 'higher', label: 'Higher', value: axis.high }
+      ];
+      return Object.assign({}, axis, {
+        points: points.map(function (point) {
+          var runSettings = Object.assign({}, base);
+          runSettings[axis.field] = point.value;
+          return Object.assign({}, point, { result: evaluateVesselUse(vessel, 'cycles', runSettings) });
+        })
+      });
+    });
   }
   function stageIndex(stage) { return Math.max(0, STAGES.indexOf(stage)); }
   function profileGeometry(vessel) {
@@ -822,6 +890,7 @@
     STAGES: STAGES.slice(),
     CLAY_BODIES: CLAY_BODIES,
     GLAZES: GLAZES,
+    CYCLE_PROTOCOLS: CYCLE_PROTOCOLS,
     CULTURAL_STUDIES: CULTURAL_STUDIES,
     makeVessel: makeVessel,
     normalizeVessel: normalizeVessel,
@@ -841,6 +910,8 @@
     fireVessel: fireVessel,
     glazeVessel: glazeVessel,
     evaluateVesselUse: evaluateVesselUse,
+    compareCycleProtocols: compareCycleProtocols,
+    compareCycleSensitivity: compareCycleSensitivity,
     profileGeometry: profileGeometry
   };
 
@@ -1518,15 +1589,18 @@
         var cycles = clamp(finite(data.testCycles, 12), 1, 60);
         var cycleDryingRate = clamp(finite(data.testCycleDryingRate, 45), 5, 100);
         var cycleTemperatureDelta = clamp(finite(data.testCycleTemperatureDelta, 80), 10, 220);
+        var savedCycleProtocols = copyArray(data.cycleProtocols);
+        var cycleProtocolLabel = String(data.cycleProtocolLabel || '').slice(0, 48);
         var testSettings = { durationHours: durationHours, temperatureDelta: temperatureDelta, loadKg: loadKg, cycles: cycles, dryingRate: cycleDryingRate, cycleTemperatureDelta: cycleTemperatureDelta };
         var preview = evaluateVesselUse(vessel, testType, testSettings);
         var performanceLog = copyArray(data.performanceLog);
         var labels = { water: 'Water retention', thermal: 'Thermal change', load: 'Static load', permeability: 'Permeability proxy', cycles: 'Repeated wet-dry cycles' };
         function runPerformanceTest() {
           if (!preview.ready) { announce('Fire the piece before running a function test.'); return; }
-          var entry = Object.assign({ id: Date.now(), label: labels[testType], stage: vessel.stage, clayBody: vessel.clayBody, materialRecipe: normalizeRecipe(vessel.materialRecipe) }, preview);
-          patchData({ performanceLog: [entry].concat(performanceLog).slice(0, 12) });
-          announce(labels[testType] + ' simulation logged. ' + preview.status + '.');
+          var observation = String(data.testObservation || '').trim().slice(0, 240);
+          var entry = Object.assign({ id: Date.now(), label: labels[testType], stage: vessel.stage, clayBody: vessel.clayBody, materialRecipe: normalizeRecipe(vessel.materialRecipe), observation: observation }, preview);
+          patchData({ performanceLog: [entry].concat(performanceLog).slice(0, 12), testObservation: '' });
+          announce(labels[testType] + ' simulation logged. ' + preview.status + (observation ? '. Observation note saved.' : '.'));
         }
         function resultMetrics() {
           if (!preview.ready) return h('p', { className: 'rounded-xl border border-dashed border-slate-400 p-5 text-center text-sm text-slate-600' }, preview.summary);
@@ -1542,11 +1616,59 @@
           if (testType === 'permeability') cards.push(metricCard('Permeability', Math.round(preview.permeabilityIndex) + '/100', 'Comparative proxy'));
           if (testType === 'cycles') {
             cards.push(metricCard('Accumulated damage', Math.round(preview.damagePct) + '%', Math.round(preview.cycles) + ' wet-dry cycles'));
+            cards.push(metricCard('Modeled damage range', Math.round(preview.damageRange.low) + ' to ' + Math.round(preview.damageRange.high) + '%', 'Uncalibrated sensitivity band'));
             cards.push(metricCard('Exposure profile', Math.round(preview.dryingRate) + '% dry / ' + Math.round(preview.cycleTemperatureDelta) + ' C', 'Modeled protocol severity'));
           }
           return h('div', { className: 'space-y-3' },
             h('div', { className: 'wheel-fire-stats' }, cards),
             h('div', { role: 'status', 'aria-live': 'polite', className: 'rounded-xl border border-cyan-300 bg-cyan-50 p-3 text-sm text-cyan-950' }, h('strong', null, preview.status + ': '), preview.summary)
+          );
+        }
+        function cycleSensitivityExplainer() {
+          if (testType !== 'cycles' || !preview.ready || !preview.uncertaintyDrivers) return null;
+          var bandWidth = preview.damageRange.high - preview.damageRange.low;
+          return h('section', { className: 'rounded-xl border border-slate-300 bg-slate-50 p-3 space-y-3', 'aria-labelledby': 'wheel-fire-sensitivity-title' },
+            h('div', null,
+              h('h3', { id: 'wheel-fire-sensitivity-title', className: 'font-black text-slate-900' }, 'Read the sensitivity band'),
+              h('p', { className: 'text-xs text-slate-700 mt-1' }, 'The point estimate is a teaching-model center, while the band shows how sensitive that estimate is to simplified assumptions. It is not a statistical confidence interval or a prediction of service life.')
+            ),
+            h('div', { className: 'grid sm:grid-cols-2 gap-2' },
+              h('div', { className: 'rounded-lg border border-slate-200 bg-white p-2' }, h('div', { className: 'text-[11px] font-bold uppercase tracking-wide text-slate-500' }, 'Band width'), h('div', { className: 'text-lg font-black text-slate-900' }, Math.round(bandWidth) + ' percentage points'), h('div', { className: 'text-[11px] text-slate-600' }, 'bounded at Â±' + Math.round(preview.uncertaintyPct) + '% around the estimate')),
+              h('div', { className: 'rounded-lg border border-slate-200 bg-white p-2' }, h('div', { className: 'text-[11px] font-bold uppercase tracking-wide text-slate-500' }, 'Use it as a question'), h('div', { className: 'text-sm font-black text-slate-900' }, 'What changes if one input changes?'), h('div', { className: 'text-[11px] text-slate-600' }, 'Compare one variable at a time, then record an observation separately.'))
+            ),
+            h('div', { className: 'rounded-lg border border-slate-200 bg-white p-3 space-y-2', 'aria-label': 'Sensitivity band contributors' },
+              h('h4', { className: 'font-black text-slate-900' }, 'What widens the band?'),
+              h('div', { className: 'space-y-2' }, preview.uncertaintyDrivers.map(function (driver) {
+                return h('div', { key: driver.id },
+                  h('div', { className: 'flex items-center justify-between text-xs font-bold text-slate-700' }, h('span', null, driver.label), h('span', null, Math.round(driver.points * 10) / 10 + ' pts')),
+                  h('div', { className: 'wheel-fire-cycle-bar', 'aria-hidden': 'true' }, h('div', { className: 'wheel-fire-cycle-fill', style: { width: Math.max(0, Math.min(100, driver.relativePct)).toFixed(1) + '%' } }))
+                );
+              }))
+            ),
+            h('p', { className: 'text-[11px] text-slate-600' }, 'The model caps the displayed sensitivity at 8–24%. Treat the band as a prompt to investigate wall uniformity, defects, porosity, and thermal behavior—not as a measurement of those properties.')
+          );
+        }
+        function cycleSensitivitySweep() {
+          if (testType !== 'cycles' || !preview.ready) return null;
+          var sweeps = compareCycleSensitivity(vessel, testSettings);
+          return h('section', { className: 'rounded-xl border border-teal-300 bg-teal-50 p-3 space-y-3', 'aria-labelledby': 'wheel-fire-sensitivity-sweep-title' },
+            h('div', null,
+              h('h3', { id: 'wheel-fire-sensitivity-sweep-title', className: 'font-black text-teal-950' }, 'One-variable sensitivity sweep'),
+              h('p', { className: 'text-xs text-teal-950 mt-1' }, 'Compare lower, current, and higher settings while the other two cycle controls stay fixed. The cells show point damage followed by the uncalibrated band.')
+            ),
+            h('div', { className: 'overflow-x-auto rounded-lg border border-teal-200 bg-white' },
+              h('table', { className: 'w-full text-xs border-collapse' },
+                h('caption', { className: 'text-left p-2 font-black text-teal-950' }, 'Counterfactual cycle comparison'),
+                h('thead', null, h('tr', { className: 'bg-teal-100' }, ['Variable', 'Lower', 'Current', 'Higher'].map(function (label) { return h('th', { key: label, scope: 'col', className: 'text-left p-2 border-b border-teal-200' }, label); }))),
+                h('tbody', null, sweeps.map(function (axis) {
+                  return h('tr', { key: axis.id },
+                    h('th', { scope: 'row', className: 'p-2 border-b text-left font-black align-top' }, axis.label),
+                    axis.points.map(function (point) { return h('td', { key: point.id, className: 'p-2 border-b align-top' }, h('div', { className: 'font-bold' }, Math.round(point.value) + axis.unit), h('div', { className: 'font-black text-teal-900 mt-1' }, Math.round(point.result.damagePct) + '% damage'), h('div', { className: 'text-[11px] text-slate-600' }, Math.round(point.result.damageRange.low) + '–' + Math.round(point.result.damageRange.high) + '% band')); })
+                  );
+                }))
+              )
+            ),
+            h('p', { className: 'text-[11px] text-slate-600' }, 'This is a controlled comparison of the teaching model. For a real studio study, pair each run with measured drying conditions, fired test pieces, and field notes.')
           );
         }
         function cycleProgression() {
@@ -1566,6 +1688,18 @@
                 h('div', { className: 'wheel-fire-cycle-bar', 'aria-hidden': 'true' }, h('div', { className: 'wheel-fire-cycle-fill', style: { width: Math.max(0, Math.min(100, point.damagePct)).toFixed(1) + '%' } }))
               );
             })),
+            h('div', { className: 'rounded-lg border border-amber-200 bg-white p-3 space-y-2', 'aria-label': 'Relative modeled damage drivers' },
+              h('div', null,
+                h('h4', { className: 'font-black text-amber-950' }, 'Modeled driver breakdown'),
+                h('p', { className: 'text-xs text-slate-600 mt-1' }, 'Relative weights before the selected protocol multiplier. Leading driver: ' + preview.primaryDriver + '.')
+              ),
+              h('div', { className: 'space-y-2' }, preview.cycleDrivers.map(function (driver) {
+                return h('div', { key: driver.id },
+                  h('div', { className: 'flex items-center justify-between text-xs font-bold text-slate-700' }, h('span', null, driver.label), h('span', null, Math.round(driver.relativePct) + '%')),
+                  h('div', { className: 'wheel-fire-cycle-bar', 'aria-hidden': 'true' }, h('div', { className: 'wheel-fire-cycle-fill', style: { width: Math.max(0, Math.min(100, driver.relativePct)).toFixed(1) + '%' } }))
+                );
+              }))
+            ),
             h('div', { className: 'overflow-x-auto rounded-lg border border-amber-200 bg-white' },
               h('table', { className: 'w-full text-xs border-collapse' },
                 h('caption', { className: 'text-left p-2 font-black text-amber-950' }, 'Cycle checkpoints'),
@@ -1573,6 +1707,73 @@
                 h('tbody', null, points.map(function (point) { return h('tr', { key: 'row-' + point.phase + '-' + point.cycles }, h('td', { className: 'p-2 border-b font-bold' }, point.phase), h('td', { className: 'p-2 border-b' }, Math.round(point.cycles)), h('td', { className: 'p-2 border-b' }, Math.round(point.damagePct) + '%'), h('td', { className: 'p-2 border-b' }, Math.round(point.resiliencePct) + '%'), h('td', { className: 'p-2 border-b' }, point.status)); }))
               )
             )
+          );
+        }
+        function cycleProtocolComparison() {
+          if (testType !== 'cycles' || !preview.ready) return null;
+          var comparisons = compareCycleProtocols(vessel, CYCLE_PROTOCOLS);
+          function applyProtocol(protocol) {
+            patchData({ testCycles: protocol.cycles, testCycleDryingRate: protocol.dryingRate, testCycleTemperatureDelta: protocol.cycleTemperatureDelta });
+            announce(protocol.label + ' loaded into the cycle controls. No test was started.');
+          }
+          return h('section', { className: 'rounded-xl border border-blue-300 bg-blue-50 p-3 space-y-3', 'aria-labelledby': 'wheel-fire-cycle-protocols-title' },
+            h('div', null,
+              h('h3', { id: 'wheel-fire-cycle-protocols-title', className: 'font-black text-blue-950' }, 'Compare reuse protocols'),
+              h('p', { className: 'text-xs text-blue-950 mt-1' }, 'Run the same fired vessel through three bounded classroom scenarios. These are comparison presets, not care recommendations or service standards.')
+            ),
+            h('div', { className: 'overflow-x-auto rounded-lg border border-blue-200 bg-white' },
+              h('table', { className: 'w-full text-xs border-collapse' },
+                h('caption', { className: 'text-left p-2 font-black text-blue-950' }, 'Reuse protocol comparison'),
+                h('thead', null, h('tr', { className: 'bg-blue-100' }, ['Scenario', 'Cycles', 'Drying', 'Swing', 'Damage', 'Leading driver', 'Action'].map(function (label) { return h('th', { key: label, scope: 'col', className: 'text-left p-2 border-b border-blue-200' }, label); }))),
+                h('tbody', null, comparisons.map(function (comparison) {
+                  var result = comparison.result;
+                  return h('tr', { key: comparison.id },
+                    h('td', { className: 'p-2 border-b align-top' }, h('strong', null, comparison.label), h('span', { className: 'block text-[11px] text-slate-600 mt-1' }, comparison.note)),
+                    h('td', { className: 'p-2 border-b align-top' }, Math.round(comparison.cycles)),
+                    h('td', { className: 'p-2 border-b align-top' }, Math.round(comparison.dryingRate) + '%'),
+                    h('td', { className: 'p-2 border-b align-top' }, Math.round(comparison.cycleTemperatureDelta) + ' C'),
+                    h('td', { className: 'p-2 border-b align-top font-black' }, Math.round(result.damagePct) + '%'),
+                    h('td', { className: 'p-2 border-b align-top' }, result.primaryDriver),
+                    h('td', { className: 'p-2 border-b align-top' }, h('button', { type: 'button', onClick: function () { applyProtocol(comparison); }, className: 'rounded-lg border border-blue-400 px-2 py-1 font-bold text-blue-900 hover:bg-blue-100' }, 'Apply'))
+                  );
+                }))
+              )
+            )
+          );
+        }
+        function saveCycleProtocol() {
+          var label = cycleProtocolLabel.trim() || 'Reuse protocol ' + (savedCycleProtocols.length + 1);
+          var protocol = { id: Date.now(), label: label, cycles: cycles, dryingRate: cycleDryingRate, cycleTemperatureDelta: cycleTemperatureDelta, savedAt: new Date().toISOString() };
+          patchData({ cycleProtocols: [protocol].concat(savedCycleProtocols).slice(0, 8), cycleProtocolLabel: '' });
+          announce(label + ' saved to the reuse protocol shelf.');
+        }
+        function loadCycleProtocol(protocol) {
+          patchData({ testCycles: protocol.cycles, testCycleDryingRate: protocol.dryingRate, testCycleTemperatureDelta: protocol.cycleTemperatureDelta });
+          announce((protocol.label || 'Reuse protocol') + ' loaded into the cycle controls. No test was started.');
+        }
+        function removeCycleProtocol(id) {
+          patchData({ cycleProtocols: savedCycleProtocols.filter(function (protocol) { return protocol.id !== id; }) });
+          announce('Reuse protocol removed from the shelf.');
+        }
+        function cycleProtocolShelf() {
+          if (testType !== 'cycles' || !preview.ready) return null;
+          var evaluated = compareCycleProtocols(vessel, savedCycleProtocols);
+          return h('section', { className: 'rounded-xl border border-violet-300 bg-violet-50 p-3 space-y-3', 'aria-labelledby': 'wheel-fire-cycle-shelf-title' },
+            h('div', null,
+              h('h3', { id: 'wheel-fire-cycle-shelf-title', className: 'font-black text-violet-950' }, 'Saved reuse protocol shelf'),
+              h('p', { className: 'text-xs text-violet-950 mt-1' }, 'Name the current cycle settings to carry a hypothesis into another piece or a later journal review. Saved protocols do not change the vessel until you load one.')
+            ),
+            h('div', { className: 'flex flex-wrap gap-2 items-end' },
+              h('label', { className: 'block text-xs font-bold text-slate-700 flex-1 min-w-[190px]' }, 'Protocol label', h('input', { id: 'wheel-fire-cycle-protocol-label', value: cycleProtocolLabel, maxLength: 48, onChange: function (event) { patchData({ cycleProtocolLabel: event.target.value }); }, placeholder: 'e.g. slow studio rinse', className: 'block w-full mt-1 rounded-lg border border-slate-400 p-2 bg-white' })),
+              h('button', { type: 'button', onClick: saveCycleProtocol, className: 'rounded-lg bg-violet-800 text-white px-3 py-2 text-xs font-black' }, 'Save current protocol')
+            ),
+            savedCycleProtocols.length ? h('div', { className: 'overflow-x-auto rounded-lg border border-violet-200 bg-white' },
+              h('table', { className: 'w-full text-xs border-collapse' },
+                h('caption', { className: 'text-left p-2 font-black text-violet-950' }, 'Saved protocol hypotheses'),
+                h('thead', null, h('tr', { className: 'bg-violet-100' }, ['Protocol', 'Cycles', 'Drying', 'Swing', 'Damage', 'Actions'].map(function (label) { return h('th', { key: label, scope: 'col', className: 'text-left p-2 border-b border-violet-200' }, label); }))),
+                h('tbody', null, evaluated.map(function (comparison) { return h('tr', { key: comparison.id }, h('td', { className: 'p-2 border-b font-bold' }, comparison.label), h('td', { className: 'p-2 border-b' }, Math.round(finite(comparison.cycles, 0))), h('td', { className: 'p-2 border-b' }, Math.round(finite(comparison.dryingRate, 0)) + '%'), h('td', { className: 'p-2 border-b' }, Math.round(finite(comparison.cycleTemperatureDelta, 0)) + ' C'), h('td', { className: 'p-2 border-b font-black' }, Math.round(finite(comparison.result.damagePct, 0)) + '%'), h('td', { className: 'p-2 border-b' }, h('div', { className: 'flex gap-2' }, h('button', { type: 'button', onClick: function () { loadCycleProtocol(comparison); }, className: 'rounded-lg border border-violet-300 px-2 py-1 font-bold text-violet-900' }, 'Load'), h('button', { type: 'button', onClick: function () { removeCycleProtocol(comparison.id); }, className: 'rounded-lg border border-red-300 px-2 py-1 font-bold text-red-800' }, 'Remove')))); }))
+              )
+            ) : h('p', { className: 'rounded-lg border border-dashed border-violet-300 bg-white p-3 text-xs text-slate-600' }, 'No custom protocols saved yet.')
           );
         }
         return h('section', { id: 'wheel-fire-panel-performance', role: 'tabpanel', 'aria-labelledby': 'wheel-fire-tab-performance', className: 'space-y-3' },
@@ -1597,16 +1798,18 @@
               testType === 'cycles' ? rangeControl('wheel-fire-test-drying', 'Drying severity', cycleDryingRate, 5, 100, ' %', function (value) { patchData({ testCycleDryingRate: value }); }) : null,
               testType === 'cycles' ? rangeControl('wheel-fire-test-cycle-temp', 'Cycle temperature swing', cycleTemperatureDelta, 10, 220, ' C', function (value) { patchData({ testCycleTemperatureDelta: value }); }) : null,
               testType === 'cycles' ? h('p', { className: 'text-xs text-slate-600' }, 'This compares repeated filling, drying, and thermal/environmental stress. Adjust the protocol to compare gentle and harsh reuse conditions. It does not simulate microbes, food chemistry, or real fracture mechanics.') : null,
+              h('label', { htmlFor: 'wheel-fire-test-observation', className: 'block text-xs font-bold text-slate-700' }, 'Observed note (optional)', h('textarea', { id: 'wheel-fire-test-observation', rows: 3, maxLength: 240, value: data.testObservation || '', onChange: function (event) { patchData({ testObservation: event.target.value }); }, placeholder: 'Record what you actually saw, measured, or noticed. Keep it separate from the model result.', className: 'block w-full mt-1 rounded-lg border border-slate-400 p-2 font-normal bg-white' })),
+              h('p', { className: 'text-[11px] text-slate-600' }, 'Field notes document an observation; they do not validate the model or establish safe use.'),
               h('button', { type: 'button', disabled: !preview.ready, onClick: runPerformanceTest, className: 'w-full rounded-lg bg-blue-800 text-white px-3 py-2 text-xs font-black disabled:opacity-40' }, 'Run and log ' + labels[testType].toLowerCase()),
               h('p', { className: 'text-[11px] text-slate-600' }, preview.ready ? 'Change one variable or load another fired piece, then repeat the same test.' : 'Complete at least a bisque firing before testing.')
             ),
-            h('div', null, resultMetrics(), cycleProgression())
+            h('div', null, resultMetrics(), cycleSensitivityExplainer(), cycleSensitivitySweep(), cycleProgression(), cycleProtocolComparison(), cycleProtocolShelf())
           ),
           performanceLog.length ? h('div', { className: 'overflow-x-auto rounded-xl border border-blue-300 bg-white' },
             h('table', { className: 'w-full text-xs border-collapse' },
               h('caption', { className: 'text-left p-3 font-black text-blue-950' }, 'Performance evidence log'),
-              h('thead', null, h('tr', { className: 'bg-blue-50' }, ['Test', 'Stage', 'Clay', 'Score', 'Porosity', 'Integrity', 'Result'].map(function (label) { return h('th', { key: label, scope: 'col', className: 'text-left p-2 border-b border-blue-200' }, label); }))),
-              h('tbody', null, performanceLog.map(function (entry) { var entryBody = materialProfile({ clayBody: entry.clayBody, materialRecipe: entry.materialRecipe }); return h('tr', { key: entry.id }, h('td', { className: 'p-2 border-b' }, entry.label), h('td', { className: 'p-2 border-b' }, entry.stage), h('td', { className: 'p-2 border-b' }, entryBody.name), h('td', { className: 'p-2 border-b' }, Math.round(finite(entry.score, 0)) + '/100'), h('td', { className: 'p-2 border-b' }, finite(entry.porosityPct, 0).toFixed(1) + '%'), h('td', { className: 'p-2 border-b' }, Math.round(finite(entry.integrityPct, 0)) + '%'), h('td', { className: 'p-2 border-b' }, entry.status)); }))
+              h('thead', null, h('tr', { className: 'bg-blue-50' }, ['Test', 'Stage', 'Clay', 'Score', 'Porosity', 'Integrity', 'Result', 'Observation'].map(function (label) { return h('th', { key: label, scope: 'col', className: 'text-left p-2 border-b border-blue-200' }, label); }))),
+              h('tbody', null, performanceLog.map(function (entry) { var entryBody = materialProfile({ clayBody: entry.clayBody, materialRecipe: entry.materialRecipe }); return h('tr', { key: entry.id }, h('td', { className: 'p-2 border-b' }, entry.label), h('td', { className: 'p-2 border-b' }, entry.stage), h('td', { className: 'p-2 border-b' }, entryBody.name), h('td', { className: 'p-2 border-b' }, Math.round(finite(entry.score, 0)) + '/100'), h('td', { className: 'p-2 border-b' }, finite(entry.porosityPct, 0).toFixed(1) + '%'), h('td', { className: 'p-2 border-b' }, Math.round(finite(entry.integrityPct, 0)) + '%'), h('td', { className: 'p-2 border-b' }, entry.status), h('td', { className: 'p-2 border-b max-w-xs' }, entry.observation || 'No field note')); }))
             )
           ) : null
         );
@@ -1617,7 +1820,7 @@
         function savePiece() {
           var name = String(data.pieceName || '').trim().slice(0, 48);
           if (!name) { announce('Name the piece before saving it.'); return; }
-          var entry = { id: Date.now(), name: name, vessel: copyVessel(vessel), materialRecipe: normalizeRecipe(vessel.materialRecipe), materialScenarios: copyArray(data.materialScenarios).slice(0, 8), firingSchedules: copyArray(data.firingSchedules).slice(0, 8), method: method, studyLabel: data.studyLabel || '', statement: data.artistStatement || '', performanceTests: copyArray(data.performanceLog).slice(0, 4), savedAt: new Date().toISOString() };
+          var entry = { id: Date.now(), name: name, vessel: copyVessel(vessel), materialRecipe: normalizeRecipe(vessel.materialRecipe), materialScenarios: copyArray(data.materialScenarios).slice(0, 8), firingSchedules: copyArray(data.firingSchedules).slice(0, 8), cycleProtocols: copyArray(data.cycleProtocols).slice(0, 8), method: method, studyLabel: data.studyLabel || '', statement: data.artistStatement || '', performanceTests: copyArray(data.performanceLog).slice(0, 4), savedAt: new Date().toISOString() };
           patchData({ gallery: [entry].concat(saved).slice(0, 8), pieceName: '' });
           announce(name + ' saved to the pottery journal.');
         }
@@ -1644,7 +1847,8 @@
                 h('div', null, h('dt', { className: 'font-bold' }, 'Study credit'), h('dd', null, data.studyLabel || 'Original studio exploration')),
                 h('div', null, h('dt', { className: 'font-bold' }, 'Function tests'), h('dd', null, copyArray(data.performanceLog).length)),
                 h('div', null, h('dt', { className: 'font-bold' }, 'Saved scenarios'), h('dd', null, copyArray(data.materialScenarios).length)),
-                h('div', null, h('dt', { className: 'font-bold' }, 'Firing schedules'), h('dd', null, copyArray(data.firingSchedules).length))
+                h('div', null, h('dt', { className: 'font-bold' }, 'Firing schedules'), h('dd', null, copyArray(data.firingSchedules).length)),
+                h('div', null, h('dt', { className: 'font-bold' }, 'Reuse protocols'), h('dd', null, copyArray(data.cycleProtocols).length))
               )
             )
           ),
@@ -1658,10 +1862,11 @@
               entry.studyLabel ? h('p', { className: 'text-[11px] font-bold text-fuchsia-800 mt-1' }, 'Process credit: ' + entry.studyLabel) : null,
               copyArray(entry.materialScenarios).length ? h('p', { className: 'text-[11px] font-bold text-indigo-800 mt-1' }, copyArray(entry.materialScenarios).length + ' saved material scenario' + (copyArray(entry.materialScenarios).length === 1 ? '' : 's')) : null,
               copyArray(entry.firingSchedules).length ? h('p', { className: 'text-[11px] font-bold text-orange-800 mt-1' }, copyArray(entry.firingSchedules).length + ' saved firing schedule' + (copyArray(entry.firingSchedules).length === 1 ? '' : 's')) : null,
+              copyArray(entry.cycleProtocols).length ? h('p', { className: 'text-[11px] font-bold text-violet-800 mt-1' }, copyArray(entry.cycleProtocols).length + ' saved reuse protocol' + (copyArray(entry.cycleProtocols).length === 1 ? '' : 's')) : null,
               copyArray(entry.performanceTests).length ? h('p', { className: 'text-[11px] font-bold text-blue-800 mt-1' }, copyArray(entry.performanceTests).length + ' saved function test' + (copyArray(entry.performanceTests).length === 1 ? '' : 's')) : null,
               entry.statement ? h('p', { className: 'text-xs text-slate-700 mt-2' }, entry.statement) : null,
               h('div', { className: 'flex gap-2 mt-3' },
-                h('button', { type: 'button', onClick: function () { commitVessel(copyVessel(entry.vessel), entry.name + ' loaded from the journal.', { method: entry.method, studyLabel: entry.studyLabel || '', performanceLog: copyArray(entry.performanceTests), materialScenarios: copyArray(entry.materialScenarios), firingSchedules: copyArray(entry.firingSchedules), recipeDraft: normalizeRecipe(entry.materialRecipe || (entry.vessel && entry.vessel.materialRecipe)) }); }, className: 'rounded-lg border border-emerald-300 px-2 py-1 text-xs font-bold text-emerald-900' }, 'Load'),
+                h('button', { type: 'button', onClick: function () { commitVessel(copyVessel(entry.vessel), entry.name + ' loaded from the journal.', { method: entry.method, studyLabel: entry.studyLabel || '', performanceLog: copyArray(entry.performanceTests), materialScenarios: copyArray(entry.materialScenarios), firingSchedules: copyArray(entry.firingSchedules), cycleProtocols: copyArray(entry.cycleProtocols), recipeDraft: normalizeRecipe(entry.materialRecipe || (entry.vessel && entry.vessel.materialRecipe)) }); }, className: 'rounded-lg border border-emerald-300 px-2 py-1 text-xs font-bold text-emerald-900' }, 'Load'),
                 h('button', { type: 'button', onClick: function () { patchData({ gallery: saved.filter(function (piece) { return piece.id !== entry.id; }) }); announce(entry.name + ' removed from the journal.'); }, className: 'rounded-lg border border-red-300 px-2 py-1 text-xs font-bold text-red-800' }, 'Delete')
               )
             );

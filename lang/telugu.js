@@ -28767,7 +28767,17 @@
       "best": "ఉత్తమం",
       "menu_73": "← మెనూ",
       "menu_74": "← మెనూ",
-      "menu_75": "← మెనూ"
+      "menu_75": "← మెనూ",
+      "explore_the_road": "రోడ్డును అన్వేషించండి",
+      "lane_change_without_signal": "సిగ్నల్ లేకుండా లేన్ మార్చడం",
+      "drove_in_oncoming_lane": "ఎదురులేన్‌లో నడిపారు",
+      "high_beams": "హై బీమ్",
+      "left_signal": "ఎడమ సిగ్నల్",
+      "right_signal": "కుడి సిగ్నల్",
+      "braking": "బ్రేకింగ్",
+      "traction_loss": "ట్రాక్షన్ కోల్పోవడం",
+      "fog_low_beams_ok": "పొగమంచు — లో బీమ్‌లు సరే",
+      "welcome_to_roadready": "RoadReadyకి స్వాగతం"
     },
     "schoolbehaviortoolkit": {
       "replacement_behaviors": "Replacement ప్రవర్తన",

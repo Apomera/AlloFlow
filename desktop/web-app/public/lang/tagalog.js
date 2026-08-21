@@ -28344,7 +28344,17 @@
       "back_3": "← Bumalik",
       "certificate_of_completion": "SERTIPIKO NG PAGKUMPLETO",
       "date_2": "Petsa",
-      "best": "Pinakamahusay"
+      "best": "Pinakamahusay",
+      "explore_the_road": "Tuklasin ang daan",
+      "lane_change_without_signal": "Paglipat ng linya nang walang signal",
+      "drove_in_oncoming_lane": "Nagmaneho sa kabilang linya",
+      "high_beams": "High beam",
+      "left_signal": "Kaliwang signal",
+      "right_signal": "Kanang signal",
+      "braking": "Pagpreno",
+      "traction_loss": "Pagkawala ng traksyon",
+      "fog_low_beams_ok": "Hamog — ayos ang low beam",
+      "welcome_to_roadready": "Maligayang pagdating sa RoadReady"
     },
     "schoolbehaviortoolkit": {
       "back_to_stem_lab": "Bumalik sa STEM Lab",

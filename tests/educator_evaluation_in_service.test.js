@@ -112,8 +112,8 @@ describe('the teacher view holds up when a principal demos it', () => {
     // One panel, two tab labels: "Setup" (evaluator) and "About" (educator).
     // The heading used to say "Setup, sources, and sharing" in both, so the
     // teacher view a principal shows off opened a config screen under About.
-    expect(source).toContain("role === 'teacher' ? 'About this workspace'");
-    const at = source.indexOf("role === 'teacher' ? 'About this workspace'");
+    expect(source).toContain("role === 'teacher' ? t(\"educator_evaluation.about_this_workspace_k0ohsf\"");
+    const at = source.indexOf("educator_evaluation.about_this_workspace_k0ohsf");
     const block = source.slice(at, at + 420);
     expect(block).toMatch(/Where your records live/);
     expect(block, 'the evaluator wording must still be there for evaluators')

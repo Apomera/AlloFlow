@@ -120,6 +120,7 @@
       '.opticslab-focus-panel{position:relative;overflow:hidden;border:1px solid rgba(125,211,252,.28);border-radius:8px;background:linear-gradient(135deg,rgba(8,47,73,.72),rgba(15,23,42,.92));box-shadow:0 16px 38px rgba(2,8,23,.26);padding:16px;margin-bottom:14px;}',
       '.opticslab-focus-panel:before{content:"";position:absolute;inset:0 0 auto 0;height:4px;background:linear-gradient(90deg,#38bdf8,#22c55e,#f59e0b,#a78bfa);}',
       '.opticslab-focus-grid{position:relative;display:grid;grid-template-columns:minmax(0,1.2fr) minmax(260px,.85fr);gap:14px;}',
+      '.opticslab-topic-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;}',
       '.opticslab-focus-kicker{font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:0;color:#7dd3fc;margin:0 0 4px;}',
       '.opticslab-focus-title{font-size:22px;line-height:1.12;font-weight:900;color:#e0f2fe;margin:0;}',
       '.opticslab-focus-copy{font-size:12px;line-height:1.55;color:#cbd5e1;margin:8px 0 12px;max-width:68ch;}',
@@ -134,6 +135,7 @@
       '.opticslab-status-value{font-size:15px;font-weight:900;color:#f8fafc;margin:0;}',
       '.opticslab-library-toggle{margin-top:8px;width:100%;border-radius:8px;border:1px solid rgba(125,211,252,.32);background:rgba(14,165,233,.10);color:#bae6fd;padding:8px 10px;font-size:11px;font-weight:900;cursor:pointer;}',
       '@media (max-width:760px){.opticslab-focus-grid{grid-template-columns:1fr;}.opticslab-status-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}',
+      '@media (max-width:760px){.opticslab-topic-grid{grid-template-columns:1fr;}.opticslab-topic-grid > *{min-width:0;}}',
       '.opticslab-tool-shell button,.opticslab-tool-shell summary{min-block-size:24px;min-inline-size:24px;}',
       '@media(forced-colors:active){.opticslab-tool-shell button,.opticslab-tool-shell input,.opticslab-tool-shell select,.opticslab-tool-shell summary{background:Canvas!important;color:CanvasText!important;border:1px solid ButtonText!important;box-shadow:none!important}.opticslab-tool-shell [role=tab][aria-selected=true]{outline:2px solid Highlight!important}.opticslab-tool-shell [data-op-focusable]:focus-visible{outline:3px solid Highlight!important}}',
       'input[type="range"][data-op-focusable], input[type="checkbox"][data-op-focusable] { accent-color: #38bdf8; }'
@@ -574,6 +576,8 @@
       rows.push(['Image type', lens.isReal ? '✓ Real (in front of mirror)' : '✗ Virtual (behind mirror)']);
       rows.push(['Orientation', lens.isUpright ? 'Upright (m > 0)' : 'Inverted (m < 0)']);
       rows.push(['Size', lens.isMagnified ? 'Enlarged (|m| > 1)' : 'Reduced (|m| < 1)']);
+      var mirrorImageX = -lens.d_i;
+      if (mirrorImageX < -50 || mirrorImageX > 20) rows.push(['Diagram scale', 'Image is outside the -50 to +20 cm SVG window; use the numeric d_i readout.']);
     }
     return h('div', null,
       h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 8, lineHeight: 1.5 } },
@@ -806,10 +810,16 @@
       S.half = new THREE.Vector3(surfaceHalf, D * 0.95, surfaceHalf);
     }
 
+    function scheduleFrame() {
+      if (!S || S.raf || S.contextLost) return;
+      S.raf = requestAnimationFrame(frame);
+    }
+
     function frame() {
       if (!S) return;
-      S.raf = requestAnimationFrame(frame);
+      S.raf = 0;
       if (S.contextLost || !S.renderer) return;
+      if (typeof document !== 'undefined' && document.hidden) return;
       if (pending) {
         var next = pending; pending = null;
         if (next.sig !== sig) { sig = next.sig; applyModel(next); }
@@ -895,11 +905,23 @@
       });
       el.addEventListener('webglcontextrestored', function () {
         if (restoreAttempts >= 1) return;
-        restoreAttempts++; S.contextLost = false; sig = ''; setStatus('ready');
+        restoreAttempts++; S.contextLost = false; sig = ''; setStatus('ready'); scheduleFrame();
       });
 
+      var visibilityHandler = function () {
+        if (typeof document === 'undefined' || !document.hidden) scheduleFrame();
+      };
+      if (typeof document !== 'undefined' && document.addEventListener) {
+        document.addEventListener('visibilitychange', visibilityHandler);
+      }
+      S.visibilityHandler = visibilityHandler;
+      if (typeof ResizeObserver === 'function') {
+        S.resizeObserver = new ResizeObserver(function () { scheduleFrame(); });
+        S.resizeObserver.observe(host);
+      }
+
       sig = '';
-      S.raf = requestAnimationFrame(frame);
+      scheduleFrame();
       return true;
     }
 
@@ -919,13 +941,19 @@
           setStatus(build(THREE, host) ? 'ready' : 'failed');
         }).catch(function () { setStatus('failed'); });
       },
-      push: function (data) { pending = data; },
+      push: function (data) { pending = data; scheduleFrame(); },
       onStatusChange: function (fn) { notify = fn; },
       status: function () { return status; },
       debug: debug,
       dispose: function () {
         if (S) {
           if (S.raf) cancelAnimationFrame(S.raf);
+          if (S.visibilityHandler && typeof document !== 'undefined' && document.removeEventListener) {
+            document.removeEventListener('visibilitychange', S.visibilityHandler);
+          }
+          if (S.resizeObserver) {
+            try { S.resizeObserver.disconnect(); } catch (e) {}
+          }
           disposeGroup(S.model);
           if (S.renderer) {
             try { S.renderer.forceContextLoss(); } catch (e) {}
@@ -1168,6 +1196,7 @@
             value: theta1Deg,
             onChange: function(e) { upd('refrTheta1', parseFloat(e.target.value)); },
             'data-op-focusable': 'true', 'aria-label': 'Incident angle',
+            'aria-valuetext': theta1Deg.toFixed(1) + ' degrees incidence. ' + (isTIR ? 'Total internal reflection; no refracted ray.' : 'Refracted angle ' + radToDeg(theta2).toFixed(1) + ' degrees.'),
             style: { width: 200 }
           }),
           h('span', { style: { fontFamily: 'monospace', color: '#fbbf24', fontWeight: 700, minWidth: 36 } }, theta1Deg.toFixed(1) + '°')
@@ -1822,6 +1851,7 @@
       rows.push(['Image type', lens.isReal ? '✓ Real (light converges on far side)' : '✗ Virtual (extension lines on near side)']);
       rows.push(['Orientation', lens.isUpright ? 'Upright (m > 0)' : 'Inverted (m < 0)']);
       rows.push(['Size', lens.isMagnified ? 'Magnified (|m| > 1)' : 'Reduced (|m| < 1)']);
+      if (Math.abs(lens.d_i) > 45) rows.push(['Diagram scale', 'Image is outside the +/-45 cm SVG window; use the numeric d_i readout.']);
     }
     return h('div', null,
       h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 8, lineHeight: 1.5 } },
@@ -1919,6 +1949,7 @@
             value: lambdaNm,
             onChange: function(e) { upd('intLambda', parseFloat(e.target.value)); },
             'data-op-focusable': 'true', 'aria-label': 'Wavelength',
+            'aria-valuetext': lambdaNm.toFixed(0) + ' nanometers; fringe spacing ' + fringeSpacing_mm.toFixed(2) + ' millimeters.',
             style: { flex: 1 }
           }),
           h('span', { style: { fontFamily: 'monospace', color: '#fbbf24', fontWeight: 700, minWidth: 36, textAlign: 'right' } }, lambdaNm.toFixed(0))
@@ -1930,6 +1961,7 @@
             value: d_mm,
             onChange: function(e) { upd('intSlitSep', parseFloat(e.target.value)); },
             'data-op-focusable': 'true', 'aria-label': 'Slit separation',
+            'aria-valuetext': d_mm.toFixed(2) + ' millimeters; fringe spacing ' + fringeSpacing_mm.toFixed(2) + ' millimeters.',
             style: { flex: 1 }
           }),
           h('span', { style: { fontFamily: 'monospace', color: '#fbbf24', fontWeight: 700, minWidth: 36, textAlign: 'right' } }, d_mm.toFixed(2))
@@ -1941,6 +1973,7 @@
             value: L_m,
             onChange: function(e) { upd('intScreenL', parseFloat(e.target.value)); },
             'data-op-focusable': 'true', 'aria-label': 'Screen distance',
+            'aria-valuetext': L_m.toFixed(1) + ' meters; fringe spacing ' + fringeSpacing_mm.toFixed(2) + ' millimeters.',
             style: { flex: 1 }
           }),
           h('span', { style: { fontFamily: 'monospace', color: '#fbbf24', fontWeight: 700, minWidth: 36, textAlign: 'right' } }, L_m.toFixed(1))
@@ -1952,6 +1985,7 @@
             value: slitWidth_um,
             onChange: function(e) { upd('intSlitWidth', parseFloat(e.target.value)); },
             'data-op-focusable': 'true', 'aria-label': 'Slit width',
+            'aria-valuetext': slitWidth_um.toFixed(0) + ' micrometers; the single-slit envelope shapes the fringe intensity.',
             style: { flex: 1 }
           }),
           h('span', { style: { fontFamily: 'monospace', color: '#fbbf24', fontWeight: 700, minWidth: 36, textAlign: 'right' } }, slitWidth_um.toFixed(0))
@@ -2178,14 +2212,14 @@
       if (mode === 'single') {
         I = singleSlitIntensity(a, lambda, theta, I0);
       } else {
-        // Grating: high-finesse maxima at d sinθ = mλ
+        // Grating: high-finesse maxima at d sin(theta) = m lambda.
         var alpha = Math.PI * dGrating * Math.sin(theta) / lambda;
-        // Sharpened intensity: cos⁴ for visual emphasis (real grating intensity is sin²(Nα)/sin²(α))
+        // Finite slit width supplies the single-slit envelope around those orders.
         var Nslits = 50;
         var num = Math.sin(Nslits * alpha);
         var den = Math.sin(alpha);
         var f = (Math.abs(den) < 1e-9) ? Nslits * Nslits : (num * num) / (den * den);
-        I = I0 * f / (Nslits * Nslits);
+        I = singleSlitIntensity(a, lambda, theta, I0) * f / (Nslits * Nslits);
       }
       samples.push({ y: yPhys, I: I });
     }
@@ -2195,6 +2229,11 @@
     var midY = (screenTop + screenBot) / 2;
     var barX = pad.l + 70;
     return h('div', null,
+      h('div', { role: 'note', style: { marginBottom: 8, padding: '6px 8px', borderRadius: 6, background: 'rgba(148,163,184,0.08)', border: '1px solid rgba(148,163,184,0.22)', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, lineHeight: 1.45 } },
+        mode === 'single'
+          ? 'Schematic view: the screen is auto-scaled to keep several fringes visible; the numeric first-minimum readout carries the physical scale.'
+          : 'Schematic view: the pattern is normalized for visibility. This idealized model uses 50 interfering slits with a finite single-slit envelope; the calculator reports physical order angles.'
+      ),
       // Mode toggle + sliders
       h('div', { style: { display: 'flex', gap: 8, marginBottom: 8, alignItems: 'center', flexWrap: 'wrap' } },
         h('div', { role: 'tablist', 'aria-label': 'Diffraction mode', style: { display: 'flex', gap: 4 } },
@@ -2223,16 +2262,20 @@
             type: 'range', min: 380, max: 750, step: 5, value: lambdaNm,
             onChange: function(e) { upd('diffLambda', parseFloat(e.target.value)); },
             'data-op-focusable': 'true', 'aria-label': 'Wavelength',
+            'aria-valuetext': lambdaNm.toFixed(0) + ' nanometers; ' + (mode === 'single' ? 'first minimum at ' + (firstMin_m * 1000).toFixed(2) + ' millimeters.' : 'grating mode is active.'),
             style: { flex: 1 }
           }),
           h('span', { style: { fontFamily: 'monospace', color: '#fbbf24', fontWeight: 700, minWidth: 36, textAlign: 'right' } }, lambdaNm.toFixed(0))
         ),
-        mode === 'single' && h('label', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', display: 'flex', alignItems: 'center', gap: 6 } },
+        h('label', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', display: 'flex', alignItems: 'center', gap: 6 } },
           'a (μm):',
           h('input', {
             type: 'range', min: 5, max: 100, step: 1, value: slitWidth_um,
             onChange: function(e) { upd('diffSlitWidth', parseFloat(e.target.value)); },
             'data-op-focusable': 'true', 'aria-label': 'Slit width',
+            'aria-valuetext': slitWidth_um.toFixed(0) + ' micrometers; ' + (mode === 'single'
+              ? 'first minimum at ' + (firstMin_m * 1000).toFixed(2) + ' millimeters.'
+              : 'finite single-slit envelope shapes each grating order.'),
             style: { flex: 1 }
           }),
           h('span', { style: { fontFamily: 'monospace', color: '#fbbf24', fontWeight: 700, minWidth: 36, textAlign: 'right' } }, slitWidth_um.toFixed(0))
@@ -2243,6 +2286,7 @@
             type: 'range', min: 200, max: 1500, step: 50, value: grooveDensity,
             onChange: function(e) { upd('diffGrating', parseFloat(e.target.value)); },
             'data-op-focusable': 'true', 'aria-label': 'Grating line density',
+            'aria-valuetext': grooveDensity.toFixed(0) + ' lines per millimeter; line spacing ' + (dGrating * 1e6).toFixed(2) + ' micrometers.',
             style: { flex: 1 }
           }),
           h('span', { style: { fontFamily: 'monospace', color: '#fbbf24', fontWeight: 700, minWidth: 40, textAlign: 'right' } }, grooveDensity.toFixed(0))
@@ -2253,6 +2297,7 @@
             type: 'range', min: 0.3, max: 3.0, step: 0.1, value: L_m,
             onChange: function(e) { upd('diffScreenL', parseFloat(e.target.value)); },
             'data-op-focusable': 'true', 'aria-label': 'Screen distance',
+            'aria-valuetext': L_m.toFixed(1) + ' meters; ' + (mode === 'single' ? 'first minimum at ' + (firstMin_m * 1000).toFixed(2) + ' millimeters.' : 'grating orders are measured on the screen.'),
             style: { flex: 1 }
           }),
           h('span', { style: { fontFamily: 'monospace', color: '#fbbf24', fontWeight: 700, minWidth: 36, textAlign: 'right' } }, L_m.toFixed(1))
@@ -2380,7 +2425,7 @@
       h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4, fontStyle: 'italic' } },
         mode === 'single'
           ? 'Single-slit diffraction: sinc² envelope with central max at θ=0 and first minimum where a sinθ = λ.'
-          : 'Diffraction grating: many slits → narrow, bright peaks per order m. Higher line density spreads the peaks farther apart.'
+          : 'Diffraction grating: many slits → narrow peaks per order m; the finite slit envelope controls their relative brightness. Higher line density spreads the peaks farther apart.'
       )
     );
   }
@@ -2406,8 +2451,10 @@
       rows.push(['Central max width (2y₁)', _fmt(firstMin_m * 2000, 3) + ' mm']);
       rows.push(['Angle to first min', _fmt(radToDeg(Math.asin(clamp(lambda / a, -1, 1))), 3) + '°']);
     } else {
+      var slitWidth_um = state.diffSlitWidth != null ? state.diffSlitWidth : 30;
       var grooveDensity = state.diffGrating != null ? state.diffGrating : 600;
       var dGrating = 1 / (grooveDensity * 1000);
+      rows.push(['Slit width (envelope)', slitWidth_um.toFixed(0) + ' um']);
       rows.push(['Lines/mm', grooveDensity.toFixed(0)]);
       rows.push(['d (groove spacing)', _fmt(dGrating * 1000, 5) + ' mm']);
       // Angles for orders m=1,2,3
@@ -2463,9 +2510,13 @@
               '     = ' + _fmt(firstMin_m * 1000, 3) + ' mm'
             ].join('\n');
           } else {
+            var slitWidth_um = state.diffSlitWidth != null ? state.diffSlitWidth : 30;
             var grooveDensity = state.diffGrating != null ? state.diffGrating : 600;
             var dGrating = 1 / (grooveDensity * 1000);
             return [
+              '  Slit width a = ' + slitWidth_um.toFixed(0) + ' um',
+              '  The finite single-slit envelope controls relative order brightness.',
+              '',
               'Diffraction grating:  d sin θ = m λ',
               '',
               '  Lines/mm: ' + grooveDensity.toFixed(0),
@@ -2708,10 +2759,16 @@
       S.segs.push(seg);
     }
 
+    function scheduleFrame() {
+      if (!S || S.raf || S.contextLost) return;
+      S.raf = requestAnimationFrame(frame);
+    }
+
     function frame(now) {
       if (!S) return;
-      S.raf = requestAnimationFrame(frame);
+      S.raf = 0;
       if (S.contextLost || !S.renderer) return;
+      if (typeof document !== 'undefined' && document.hidden) return;
       if (pending) {
         var next = pending; pending = null;
         if (next.sig !== sig) { sig = next.sig; applyModel(next); }
@@ -2762,6 +2819,7 @@
       S.camera.updateProjectionMatrix();
       S.camera.lookAt(S.target);
       try { S.renderer.render(S.scene, S.camera); } catch (e) { /* keep looping */ }
+      if (S.animate) scheduleFrame();
     }
 
     function build(THREE, host) {
@@ -2801,11 +2859,23 @@
       });
       el.addEventListener('webglcontextrestored', function () {
         if (restoreAttempts >= 1) return;
-        restoreAttempts++; S.contextLost = false; sig = ''; setStatus('ready');
+        restoreAttempts++; S.contextLost = false; sig = ''; setStatus('ready'); scheduleFrame();
       });
 
+      var visibilityHandler = function () {
+        if (typeof document === 'undefined' || !document.hidden) scheduleFrame();
+      };
+      if (typeof document !== 'undefined' && document.addEventListener) {
+        document.addEventListener('visibilitychange', visibilityHandler);
+      }
+      S.visibilityHandler = visibilityHandler;
+      if (typeof ResizeObserver === 'function') {
+        S.resizeObserver = new ResizeObserver(function () { scheduleFrame(); });
+        S.resizeObserver.observe(host);
+      }
+
       sig = '';
-      S.raf = requestAnimationFrame(frame);
+      scheduleFrame();
       return true;
     }
 
@@ -2825,13 +2895,19 @@
           setStatus(build(THREE, host) ? 'ready' : 'failed');
         }).catch(function () { setStatus('failed'); });
       },
-      push: function (data) { pending = data; },
+      push: function (data) { pending = data; scheduleFrame(); },
       onStatusChange: function (fn) { notify = fn; },
       status: function () { return status; },
       debug: debug,
       dispose: function () {
         if (S) {
           if (S.raf) cancelAnimationFrame(S.raf);
+          if (S.visibilityHandler && typeof document !== 'undefined' && document.removeEventListener) {
+            document.removeEventListener('visibilitychange', S.visibilityHandler);
+          }
+          if (S.resizeObserver) {
+            try { S.resizeObserver.disconnect(); } catch (e) {}
+          }
           disposeGroup(S.model);
           if (S.renderer) {
             try { S.renderer.forceContextLoss(); } catch (e) {}
@@ -3046,6 +3122,7 @@
             value: theta2,
             onChange: function(e) { upd('polTheta2', parseFloat(e.target.value)); },
             'data-op-focusable': 'true', 'aria-label': 'P2 polarizer axis',
+            'aria-valuetext': theta2.toFixed(0) + ' degrees; transmitted intensity after P2 ' + (afterP2 * 100).toFixed(1) + ' percent of I0.',
             style: { width: 130 }
           }),
           h('span', { style: { fontFamily: 'monospace', color: '#fbbf24', fontWeight: 700, minWidth: 36 } }, theta2.toFixed(0) + '°')
@@ -3066,6 +3143,7 @@
             value: theta3,
             onChange: function(e) { upd('polTheta3', parseFloat(e.target.value)); },
             'data-op-focusable': 'true', 'aria-label': 'P3 polarizer axis',
+            'aria-valuetext': theta3.toFixed(0) + ' degrees; final intensity ' + (afterP3 * 100).toFixed(1) + ' percent of I0.',
             style: { width: 130 }
           }),
           h('span', { style: { fontFamily: 'monospace', color: '#fbbf24', fontWeight: 700, minWidth: 36 } }, theta3.toFixed(0) + '°')
@@ -3464,7 +3542,7 @@
   };
 
   // ──────────────────────────────────────────────────────────────────
-  // AP EXAM QUIZ BANK — 30 items tagged by topic
+  // AP EXAM QUIZ BANK — core items tagged by topic; optional extensions appended below
   // ──────────────────────────────────────────────────────────────────
   var AP_OPTICS_QUIZ = [
     // Reflection
@@ -3588,6 +3666,24 @@
       explain: 'Rayleigh scattering ∝ 1/λ⁴, so blue (470 nm) scatters about 9× more strongly than red (680 nm). At zenith, the short atmospheric path scatters some blue → blue sky. At sunset, the path becomes 10-40× longer; almost all blue scatters out before reaching you, leaving only red/orange — that\'s the long-wavelength survival you see in the sun itself.' }
   ];
 
+  function _shuffleOpticsQuestionChoices(q) {
+    var entries = (q.choices || []).map(function (choice, index) {
+      return { choice: choice, isCorrect: index === q.correct };
+    });
+    for (var i = entries.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var tmp = entries[i]; entries[i] = entries[j]; entries[j] = tmp;
+    }
+    var shuffledCorrect = 0;
+    for (var ci = 0; ci < entries.length; ci++) {
+      if (entries[ci].isCorrect) { shuffledCorrect = ci; break; }
+    }
+    return Object.assign({}, q, {
+      choices: entries.map(function (entry) { return entry.choice; }),
+      correct: shuffledCorrect
+    });
+  }
+
   function _pickOpticsQuizQuestions(activeTab) {
     var pool = AP_OPTICS_QUIZ.slice();
     // Shuffle
@@ -3612,7 +3708,9 @@
       var idx = pool.indexOf(q); if (idx !== -1) pool.splice(idx, 1);
     });
     while (picked.length < 5 && pool.length) picked.push(pool.shift());
-    return picked;
+    // Keep the question bank's correct answer private from predictable A/B/C/D
+    // patterns: choices are shuffled per attempt and the answer index follows.
+    return picked.map(_shuffleOpticsQuestionChoices);
   }
 
   // ──────────────────────────────────────────────────────────────────
@@ -3650,8 +3748,8 @@
         check: function(d) { return !!(d.polarizationExtinct); },
         progress: function(d) { return d.polarizationExtinct ? '✓' : 'pending'; } },
       { id: 'op_quiz_mastery', label: 'Score ≥4/5 on AP optics quiz', icon: '📝',
-        check: function(d) { return (d.quizCompletedCount || 0) >= 1 && (d.quizCorrect || 0) >= 4; },
-        progress: function(d) { return (d.quizCompletedCount || 0) > 0 ? 'best: ' + (d.quizCorrect || 0) + '/5' : 'pending'; } },
+        check: function(d) { return (d.quizCompletedCount || 0) >= 1 && (d.quizBestCorrect != null ? d.quizBestCorrect : (d.quizCorrect || 0)) >= 4; },
+        progress: function(d) { return (d.quizCompletedCount || 0) > 0 ? 'best: ' + (d.quizBestCorrect != null ? d.quizBestCorrect : (d.quizCorrect || 0)) + '/5' : 'pending'; } },
       { id: 'op_ai_graded', label: 'Get AI feedback on an explanation', icon: '🤖',
         check: function(d) { return (d.aiGradedCount || 0) >= 1; },
         progress: function(d) { return (d.aiGradedCount || 0) + '/1 AI grades'; } }
@@ -3700,8 +3798,10 @@
             showGlossary: false,
             aiDrafts: {}, aiResponse: null, aiResponseTab: null, aiLoadingTab: null, aiGradedCount: 0,
             activeSampleId: null, lastTopicTab: null,
+            // Prediction notebook (kept in the current lab session)
+            opPredictionDrafts: {}, opPredictionNotes: {},
             // Quiz
-            quizQuestions: null, quizAnswers: [], quizSubmitted: false, quizCorrect: 0, quizCompletedCount: 0,
+            quizQuestions: null, quizAnswers: [], quizSubmitted: false, quizCorrect: 0, quizBestCorrect: 0, quizCompletedCount: 0,
             // Quest tracking
             simRunOnce: false, snellRun: false,
             realImageFormed: false, virtualImageFormed: false,
@@ -3742,6 +3842,7 @@
             var merge = {};
             if (seed.quizMastery && !d.quizMastery) merge.quizMastery = seed.quizMastery;
             if (seed.quizCompletedCount != null && !d.quizCompletedCount) merge.quizCompletedCount = seed.quizCompletedCount;
+            if (seed.quizBestCorrect != null && (d.quizBestCorrect == null || seed.quizBestCorrect > d.quizBestCorrect)) merge.quizBestCorrect = seed.quizBestCorrect;
             if (Object.keys(merge).length > 0) {
               setLabToolData(function (prev) {
                 return Object.assign({}, prev, { opticsLab: Object.assign({}, prev.opticsLab, merge) });
@@ -3764,6 +3865,7 @@
           var snapshot = {
             quizMastery: d.quizMastery || {},
             quizCompletedCount: d.quizCompletedCount || 0,
+            quizBestCorrect: d.quizBestCorrect || 0,
             _ts: Date.now()
           };
           window.__alloflowOpticsLab = snapshot;
@@ -3780,6 +3882,7 @@
               var patch = {};
               if (w.quizMastery) patch.quizMastery = w.quizMastery;
               if (w.quizCompletedCount != null) patch.quizCompletedCount = w.quizCompletedCount;
+              if (w.quizBestCorrect != null) patch.quizBestCorrect = w.quizBestCorrect;
               return Object.assign({}, prev, { opticsLab: Object.assign({}, prev.opticsLab, patch) });
             });
           } catch (e) {}
@@ -4023,7 +4126,7 @@
               id: 'op-tab-' + tab.id,
               role: 'tab',
               'aria-selected': sel,
-              'aria-controls': 'op-panel-' + tab.id,
+              'aria-controls': sel ? 'op-panel-' + tab.id : undefined,
               tabIndex: sel ? 0 : -1,
               'data-op-focusable': 'true',
               'data-op-tab-value': tab.id,
@@ -4131,7 +4234,7 @@
           return h('div', { style: { padding: 16, borderRadius: 12, background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5' } },
             h('h3', { style: { margin: '0 0 4px', fontSize: 15, fontWeight: 800, color: sm.color, textTransform: 'uppercase', letterSpacing: 1 } }, t('stem.optics.snell_s_law_inquiry_refraction_tir_dis', '🔬 Snell\'s Law Inquiry — Refraction, TIR, Dispersion')),
             h('p', { style: { margin: '0 0 8px', fontSize: 11, opacity: 0.85, lineHeight: 1.4 } }, t('stem.optics.set_n_n_incidence_angle_and_wavelength', 'Set n₁, n₂, incidence angle, and wavelength. Predict where the system transitions from refraction to TIR. No score, no reveal.')),
-            h('div', { style: { display: 'inline-block', padding: '4px 10px', borderRadius: 999, background: sm.color, color: '#000', fontSize: 11, fontWeight: 800, marginBottom: 6 } }, sm.label),
+            h('div', { role: 'status', 'aria-live': 'polite', style: { display: 'inline-block', padding: '4px 10px', borderRadius: 999, background: sm.color, color: '#000', fontSize: 11, fontWeight: 800, marginBottom: 6 } }, sm.label),
             h('p', { style: { margin: '0 0 10px', fontSize: 11, opacity: 0.8 } }, sm.desc),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6, marginBottom: 10 } },
               [
@@ -4178,19 +4281,19 @@
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px 12px', marginBottom: 10 } },
               h('label', null,
                 h('div', { style: { fontSize: 11, marginBottom: 2, display: 'flex', justifyContent: 'space-between' } }, h('span', null, t('stem.optics.n_medium_1', 'n₁ (medium 1)')), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.n1.toFixed(2))),
-                h('input', { type: 'range', min: 1.0, max: 2.5, step: 0.01, value: iq.n1, onChange: function(e) { setKey('n1', parseFloat(e.target.value)); }, style: { width: '100%' } })
+                h('input', { type: 'range', min: 1.0, max: 2.5, step: 0.01, value: iq.n1, onChange: function(e) { setKey('n1', parseFloat(e.target.value)); }, 'data-op-focusable': 'true', 'aria-valuetext': iq.n1.toFixed(2) + ' refractive index for medium 1; ' + sm.label + '.', style: { width: '100%' } })
               ),
               h('label', null,
                 h('div', { style: { fontSize: 11, marginBottom: 2, display: 'flex', justifyContent: 'space-between' } }, h('span', null, t('stem.optics.n_medium_2', 'n₂ (medium 2)')), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.n2.toFixed(2))),
-                h('input', { type: 'range', min: 1.0, max: 2.5, step: 0.01, value: iq.n2, onChange: function(e) { setKey('n2', parseFloat(e.target.value)); }, style: { width: '100%' } })
+                h('input', { type: 'range', min: 1.0, max: 2.5, step: 0.01, value: iq.n2, onChange: function(e) { setKey('n2', parseFloat(e.target.value)); }, 'data-op-focusable': 'true', 'aria-valuetext': iq.n2.toFixed(2) + ' refractive index for medium 2; modeled index at this wavelength is ' + nDisp.toFixed(3) + '.', style: { width: '100%' } })
               ),
               h('label', null,
                 h('div', { style: { fontSize: 11, marginBottom: 2, display: 'flex', justifyContent: 'space-between' } }, h('span', null, t('stem.optics.incidence_angle', 'Incidence angle θ₁')), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.angle + '°')),
-                h('input', { type: 'range', min: 0, max: 89, step: 1, value: iq.angle, onChange: function(e) { setKey('angle', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
+                h('input', { type: 'range', min: 0, max: 89, step: 1, value: iq.angle, onChange: function(e) { setKey('angle', parseInt(e.target.value, 10)); }, 'data-op-focusable': 'true', 'aria-valuetext': iq.angle.toFixed(0) + ' degrees incidence; ' + (isTIR ? 'total internal reflection.' : 'refracted angle ' + theta2.toFixed(1) + ' degrees.'), style: { width: '100%' } })
               ),
               h('label', null,
                 h('div', { style: { fontSize: 11, marginBottom: 2, display: 'flex', justifyContent: 'space-between' } }, h('span', null, t('stem.optics.wavelength', 'Wavelength λ')), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.wavelength + ' nm')),
-                h('input', { type: 'range', min: 380, max: 740, step: 10, value: iq.wavelength, onChange: function(e) { setKey('wavelength', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
+                h('input', { type: 'range', min: 380, max: 740, step: 10, value: iq.wavelength, onChange: function(e) { setKey('wavelength', parseInt(e.target.value, 10)); }, 'data-op-focusable': 'true', 'aria-valuetext': iq.wavelength.toFixed(0) + ' nanometers; modeled medium 2 index ' + nDisp.toFixed(3) + '.', style: { width: '100%' } })
               )
             ),
             h('div', { style: { display: 'flex', gap: 6, marginBottom: 10, flexWrap: 'wrap' } },
@@ -4203,7 +4306,7 @@
                 var t = new Date().toISOString().slice(11, 19);
                 setIQ({ log: iq.log.concat([{ t: t, n1: iq.n1.toFixed(2), n2: iq.n2.toFixed(2), a: iq.angle, l: iq.wavelength, tir: isTIR, state: sm.label }]) });
               }, style: { flex: 1, padding: 6, fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid ' + sm.border, background: sm.bg, color: sm.color, cursor: 'pointer' } }, t('stem.optics.log_this_configuration', '📋 Log this configuration')),
-              h('button', { onClick: function() { setIQ({ n1: 1.0, n2: 1.5, angle: 30, wavelength: 550 }); }, style: { padding: '6px 10px', fontSize: 11, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: '#94a3b8', cursor: 'pointer' } }, t('stem.optics.reset', 'Reset'))
+              h('button', { onClick: function() { setIQ({ n1: 1.0, n2: 1.5, angle: 30, wavelength: 550, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] }); }, 'data-op-focusable': 'true', style: { padding: '6px 10px', fontSize: 11, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: '#94a3b8', cursor: 'pointer' } }, t('stem.optics.reset', 'Reset'))
             ),
             iq.log.length > 0 && h('div', { style: { maxHeight: 80, overflow: 'auto', padding: 6, borderRadius: 6, background: '#0a0a1a', border: '1px solid #1e293b', marginBottom: 10, fontSize: 10, fontFamily: 'monospace', lineHeight: 1.4 } },
               iq.log.slice(-5).map(function(e, i) { return h('div', { key: i }, e.t + '  ' + e.state + ' · n₁=' + e.n1 + ' n₂=' + e.n2 + ' θ=' + e.a + ' λ=' + e.l + (e.tir ? ' · TIR' : '')); })
@@ -4257,7 +4360,7 @@
             h('div', null,
               h('div', { style: { fontSize: 10, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.1em', opacity: 0.95 } }, t('stem.optics.concept_locked_in', 'Concept locked in')),
               h('div', { style: { fontSize: 13, fontWeight: 800, lineHeight: 1.3 } }, opCeleb.question.length > 90 ? (opCeleb.question.substring(0, 87) + '…') : opCeleb.question),
-              h('div', { style: { fontSize: 11, fontStyle: 'italic', opacity: 0.95, marginTop: 2 } }, opCeleb.total + ' / 30 quiz questions mastered')
+              h('div', { style: { fontSize: 11, fontStyle: 'italic', opacity: 0.95, marginTop: 2 } }, opCeleb.total + ' / ' + AP_OPTICS_QUIZ.length + ' quiz questions mastered')
             )
           )
         )
@@ -4312,7 +4415,7 @@
           ),
           h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.45 } },
             _hMasteredCount === 0 ? 'Take the AP quiz — every question you answer correctly the first time locks in here permanently.'
-            : _hMasteredCount === _hTotal ? '🏆 Full coverage — all 30 AP optics questions mastered.'
+            : _hMasteredCount === _hTotal ? '🏆 Full coverage — all ' + _hTotal + ' AP optics questions mastered.'
             : _hPct + '% of the AP optics question bank mastered. ' + (_hTotal - _hMasteredCount) + ' to go.'
           )
         ),
@@ -4818,7 +4921,7 @@
               h('div', { style: { width: pctOverall + '%', height: '100%', background: 'linear-gradient(90deg, #0ea5e9, #6366f1, #a855f7)', transition: 'width 0.3s' } })
             ),
             h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4, fontWeight: 700 } },
-              pctOverall === 100 ? '🏆 All 30 questions mastered — full AP coverage' :
+              pctOverall === 100 ? '🏆 All ' + totalQuestions + ' questions mastered — full AP coverage' :
               masteredCount === 0 ? 'Start the quiz to begin building mastery' :
               pctOverall + '% complete · ' + (totalQuestions - masteredCount) + ' to go'
             )
@@ -4965,6 +5068,7 @@
                 },
                 'data-op-focusable': 'true',
                 disabled: d.quizSubmitted,
+                'aria-pressed': isPicked ? 'true' : 'false',
                 style: {
                   display: 'block', width: '100%', textAlign: 'left',
                   padding: '8px 10px', marginBottom: 4,
@@ -5030,6 +5134,7 @@
             upd({
               quizSubmitted: true,
               quizCorrect: correct,
+              quizBestCorrect: Math.max(d.quizBestCorrect || 0, d.quizCorrect || 0, correct),
               quizCompletedCount: (d.quizCompletedCount || 0) + 1,
               quizMastery: nextMastery
             });
@@ -5071,7 +5176,7 @@
           var rad = 36, circ = 2 * Math.PI * rad;
           var dashOff = circ - (pct / 100) * circ;
           var ans = d.quizAnswers || [];
-          return h('div', { style: { marginTop: 8, borderRadius: 12, overflow: 'hidden', border: '2px solid ' + tierColor + 'aa', background: 'rgba(15,23,42,0.6)' } },
+          return h('div', { role: 'region', 'aria-live': 'polite', 'aria-label': 'Quiz results', style: { marginTop: 8, borderRadius: 12, overflow: 'hidden', border: '2px solid ' + tierColor + 'aa', background: 'rgba(15,23,42,0.6)' } },
             h('div', { style: { padding: 14, display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap', background: 'linear-gradient(135deg, ' + tierColor + '22, transparent)' } },
               h('div', { style: { position: 'relative', width: 88, height: 88, flexShrink: 0 } },
                 h('svg', { viewBox: '0 0 100 100', width: 88, height: 88,
@@ -5139,6 +5244,28 @@
   // ──────────────────────────────────────────────────────────────────
   function _renderTopicPanel(opts) {
     var h = opts.h, d = opts.d, upd = opts.upd, tab = opts.tab;
+    var predictionDrafts = (d.opPredictionDrafts && typeof d.opPredictionDrafts === 'object') ? d.opPredictionDrafts : {};
+    var predictionNotes = (d.opPredictionNotes && typeof d.opPredictionNotes === 'object') ? d.opPredictionNotes : {};
+    var predictionDraft = String(predictionDrafts[tab] || '');
+    var predictionNote = String(predictionNotes[tab] || '');
+    function savePrediction() {
+      var note = predictionDraft.trim();
+      if (!note) {
+        if (opts.addToast) opts.addToast('Write a prediction before saving it.', 'info');
+        return;
+      }
+      var next = Object.assign({}, predictionNotes);
+      next[tab] = note;
+      upd('opPredictionNotes', next);
+      opAnnounce('Prediction saved for ' + tab + '. Run the simulation, then compare the result.');
+    }
+    function clearPrediction() {
+      var nextNotes = Object.assign({}, predictionNotes);
+      var nextDrafts = Object.assign({}, predictionDrafts);
+      delete nextNotes[tab];
+      delete nextDrafts[tab];
+      upd({ opPredictionNotes: nextNotes, opPredictionDrafts: nextDrafts });
+    }
     var researchQuestion = null;
     if (d.activeSampleId) {
       for (var i = 0; i < SAMPLE_PROBLEMS.length; i++) {
@@ -5205,6 +5332,42 @@
           h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55 } }, meta.tryThis)
         )
       ),
+      meta.tryThis && h('section', {
+        role: 'region', 'aria-label': 'Prediction notebook',
+        style: {
+          background: 'rgba(14,165,233,0.06)',
+          border: '1px solid rgba(56,189,248,0.28)',
+          borderRadius: 10, padding: '9px 12px', marginBottom: 12
+        }
+      },
+        h('div', { style: { fontSize: 11, fontWeight: 800, color: '#7dd3fc', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 3 } }, 'Prediction notebook'),
+        h('p', { style: { margin: '0 0 6px', fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.45 } }, 'Before changing a control, write what you expect to happen. Save it, run the simulation, then compare the result with your prediction.'),
+        h('textarea', {
+          value: predictionDraft,
+          rows: 2,
+          onChange: function(e) {
+            var nextDrafts = Object.assign({}, predictionDrafts);
+            nextDrafts[tab] = e.target.value;
+            upd('opPredictionDrafts', nextDrafts);
+          },
+          'data-op-focusable': 'true',
+          'aria-label': 'Your prediction for the ' + tab + ' experiment',
+          placeholder: 'I predict that ...',
+          style: { display: 'block', width: '100%', minHeight: 48, boxSizing: 'border-box', resize: 'vertical', padding: '7px 8px', background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--allo-stem-text, #e2e8f0)', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, fontSize: 12, lineHeight: 1.45 }
+        }),
+        h('div', { style: { display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginTop: 6 } },
+          h('button', {
+            type: 'button', disabled: !predictionDraft.trim(), onClick: savePrediction,
+            'data-op-focusable': 'true',
+            style: { padding: '5px 10px', background: 'rgba(14,165,233,0.18)', color: '#bae6fd', border: '1px solid rgba(56,189,248,0.42)', borderRadius: 6, cursor: predictionDraft.trim() ? 'pointer' : 'not-allowed', fontSize: 11, fontWeight: 800, opacity: predictionDraft.trim() ? 1 : 0.6 }
+          }, 'Save prediction'),
+          predictionNote && h('button', {
+            type: 'button', onClick: clearPrediction, 'data-op-focusable': 'true',
+            style: { padding: '5px 10px', background: 'transparent', color: 'var(--allo-stem-text-soft, #94a3b8)', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, cursor: 'pointer', fontSize: 11 }
+          }, 'Clear'),
+          predictionNote && h('span', { role: 'status', 'aria-live': 'polite', style: { fontSize: 11, color: '#86efac', lineHeight: 1.4 } }, 'Saved: ' + predictionNote)
+        )
+      ),
       researchQuestion && h('div', {
         style: {
           background: 'rgba(251,191,36,0.10)',
@@ -5223,9 +5386,7 @@
           style: { marginTop: 6, padding: '3px 10px', background: 'transparent', color: 'var(--allo-stem-text-soft, #94a3b8)', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, cursor: 'pointer', fontSize: 10 }
         }, 'Dismiss')
       ),
-      h('div', {
-        style: { display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: 14 }
-      },
+      h('div', { className: 'opticslab-topic-grid' },
         // Left: simulation
         h('div', {
           style: {

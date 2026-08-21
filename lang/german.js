@@ -29092,7 +29092,17 @@
       "best": "Beste",
       "menu_73": "← Menü",
       "menu_74": "← Menü",
-      "menu_75": "← Menü"
+      "menu_75": "← Menü",
+      "explore_the_road": "Straße erkunden",
+      "lane_change_without_signal": "Spurwechsel ohne Blinker",
+      "drove_in_oncoming_lane": "Auf der Gegenfahrbahn gefahren",
+      "high_beams": "Fernlicht",
+      "left_signal": "Linker Blinker",
+      "right_signal": "Rechter Blinker",
+      "braking": "Bremsen",
+      "traction_loss": "Traktionsverlust",
+      "fog_low_beams_ok": "Nebel — Abblendlicht ist in Ordnung",
+      "welcome_to_roadready": "Willkommen bei RoadReady"
     },
     "schoolbehaviortoolkit": {
       "replacement_behaviors": "Replacement Verhaltens",

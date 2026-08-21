@@ -121,4 +121,52 @@ describe('Canvas transient 401 retry', () => {
     expect(fetchImpl).toHaveBeenCalledTimes(1);
     expect(out).toContain('hello');
   }, 30000);
+
+  it('lets the document pipeline own quota retries instead of nesting an inner ladder and fallback model', async () => {
+    const fetchImpl = vi.fn().mockRejectedValue(throwStatus(429, 'RESOURCE_EXHAUSTED'));
+    const api = createGeminiAPI({
+      apiKey: '',
+      _isCanvasEnv: true,
+      GEMINI_MODELS: { default: 'fixture-primary', fallback: 'fixture-fallback' },
+      fetchWithExponentialBackoff: fetchImpl,
+      optimizeImage: async (x) => x,
+      warnLog: () => {},
+      debugLog: () => {},
+      getAbortSignal: () => null,
+    });
+    const telemetry = { retryOwner: 'doc-pipeline', getDeadlineTs: () => Date.now() + 178000 };
+
+    await expect(api.callGeminiSingleAttempt('say hello', false, false, null, null, null, false, telemetry)).rejects.toBeTruthy();
+
+    // One HTTP request exposes the 429 directly to doc_pipeline's shared
+    // breaker. It must not be hidden behind a second inner attempt or a model
+    // fallback made inside the same throttled window.
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
+    expect(fetchImpl.mock.calls[0][2]).toBe(1);
+    expect(fetchImpl.mock.calls[0][3]).toBeLessThanOrEqual(80000);
+  });
+
+  it('keeps a transient model fallback inside the pipeline deadline with one attempt per model', async () => {
+    const fetchImpl = vi.fn()
+      .mockRejectedValueOnce(throwStatus(503, 'Service Unavailable'))
+      .mockResolvedValueOnce(okResponse());
+    const api = createGeminiAPI({
+      apiKey: '',
+      _isCanvasEnv: true,
+      GEMINI_MODELS: { default: 'fixture-primary', fallback: 'fixture-fallback' },
+      fetchWithExponentialBackoff: fetchImpl,
+      optimizeImage: async (x) => x,
+      warnLog: () => {},
+      debugLog: () => {},
+      getAbortSignal: () => null,
+    });
+    const telemetry = { retryOwner: 'doc-pipeline', getDeadlineTs: () => Date.now() + 178000 };
+
+    const out = await api.callGeminiSingleAttempt('say hello', false, false, null, null, null, false, telemetry);
+
+    expect(out).toContain('hello');
+    expect(fetchImpl).toHaveBeenCalledTimes(2);
+    expect(fetchImpl.mock.calls.map((call) => call[2])).toEqual([1, 1]);
+    expect(fetchImpl.mock.calls.every((call) => call[3] <= 80000)).toBe(true);
+  });
 });

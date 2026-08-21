@@ -28876,7 +28876,17 @@
       "best": "சிறந்தது",
       "menu_73": "← பட்டி",
       "menu_74": "← பட்டி",
-      "menu_75": "← பட்டி"
+      "menu_75": "← பட்டி",
+      "explore_the_road": "சாலையை ஆராயுங்கள்",
+      "lane_change_without_signal": "சிக்னல் இல்லாமல் பாதை மாற்றம்",
+      "drove_in_oncoming_lane": "எதிர்ப்பாதையில் ஓட்டினீர்கள்",
+      "high_beams": "உயர் ஒளி",
+      "left_signal": "இடது சிக்னல்",
+      "right_signal": "வலது சிக்னல்",
+      "braking": "பிரேக்கிங்",
+      "traction_loss": "இழுவை இழப்பு",
+      "fog_low_beams_ok": "பனி — தாழ் ஒளி சரி",
+      "welcome_to_roadready": "RoadReady-க்கு வரவேற்கிறோம்"
     },
     "schoolbehaviortoolkit": {
       "replacement_behaviors": "Replacement நடத்தை",

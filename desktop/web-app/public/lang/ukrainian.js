@@ -29130,7 +29130,17 @@
       "best": "Найкращий",
       "menu_73": "← Меню",
       "menu_74": "← Меню",
-      "menu_75": "← Меню"
+      "menu_75": "← Меню",
+      "explore_the_road": "Досліджувати дорогу",
+      "lane_change_without_signal": "Перестроювання без покажчика повороту",
+      "drove_in_oncoming_lane": "Виїзд на зустрічну смугу",
+      "high_beams": "Дальнє світло",
+      "left_signal": "Лівий покажчик повороту",
+      "right_signal": "Правий покажчик повороту",
+      "braking": "Гальмування",
+      "traction_loss": "Втрата зчеплення",
+      "fog_low_beams_ok": "Туман — ближнє світло дозволено",
+      "welcome_to_roadready": "Ласкаво просимо до RoadReady"
     },
     "schoolbehaviortoolkit": {
       "replacement_behaviors": "Replacement поведінка",

@@ -190,7 +190,9 @@ describe('honest scores, project memory cap, and loop completion', () => {
   });
 
   it('does not declare completion solely because axe is clean and catches loop errors', () => {
-    expect(view).toContain('if (!r || _s >= pdfTargetScore || _s <= _prevScore) break;');
+    expect(view).toContain('const _targetReached = !!(r && _s >= pdfTargetScore && _handsCanonicalComplete(r));');
+    expect(view).toContain('const _plateau = !_evidenceProgressed && !_stillRecoveringThrottle;');
+    expect(view).toContain('if (!r || _targetReached || _plateau) break;');
     expect(view).not.toContain("if (!r || _s >= pdfTargetScore || (r.axeAudit && r.axeAudit.totalViolations === 0)");
     expect(view).toContain('Auto-remediation stopped after an error:');
   });

@@ -14,8 +14,9 @@ describe('EPPP incorrect-option feedback diagnostics', () => {
     expect(report.warningOnly).toBe(true);
     expect(report.summary.totalItems).toBe(1500);
     expect(report.summary.totalIncorrectOptions).toBe(4500);
-    expect(report.summary.itemsWithWarnings).toBeGreaterThan(0);
-    expect(report.summary.priorityDocketItems).toBe(100);
+    expect(report.summary.itemsWithWarnings).toBe(0);
+    expect(report.summary.incorrectOptionsWithWarnings).toBe(0);
+    expect(report.summary.priorityDocketItems).toBe(0);
     expect(report.criteria.limitation).toMatch(/cannot prove conceptual accuracy/i);
     expect(report.currentWave).toEqual(report.waves['eppp-native-quality-wave-05']);
     expect(report.previousWave).toEqual(report.waves['eppp-native-quality-wave-06']);

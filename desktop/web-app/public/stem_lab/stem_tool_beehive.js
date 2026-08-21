@@ -25632,6 +25632,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           viewMode === 'beekeeper' && history.length > 2 && h('div', { className: 'rounded-xl border p-3 ' + (dk ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'), style: { boxShadow: dk ? '0 1px 3px rgba(0,0,0,0.3)' : '0 1px 3px rgba(0,0,0,0.06)' } },
             h('div', { className: 'text-xs font-bold mb-2 ' + (dk ? 'text-slate-300' : 'text-slate-700') }, '\uD83D\uDCCA Colony History (' + history.length + ' days)'),
             h('canvas', {
+              role: 'img',
+              'aria-label': 'Colony metrics history chart showing workers, honey, varroa, and morale over ' + history.length + ' days',
               ref: function(cv) {
                 if (!cv) return;
                 var cCtx = cv.getContext('2d');
@@ -25693,11 +25695,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 });
               },
               style: { display: 'block', width: '100%', borderRadius: '8px' },
-              // role="img" is load-bearing: <canvas> has no implicit role, and an
-              // aria-label on a role-less element is not reliably exposed. Every
-              // other labelled canvas in this file pairs the two.
-              role: 'img',
-              'aria-label': 'Colony metrics history chart showing workers, honey, varroa, and morale over ' + history.length + ' days'
             })
           ),
 

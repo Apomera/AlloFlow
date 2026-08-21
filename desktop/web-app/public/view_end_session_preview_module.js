@@ -33,6 +33,23 @@ function EndSessionPreview({
   onKeepOpen,
   onComplete
 }) {
+  // This module is loaded independently from the host bundle. Resolve the
+  // current shell translator lazily so language changes apply without a
+  // reload, while keeping the English copy as a safe pre-host fallback.
+  const tx = (key, fallback, params) => {
+    try {
+      const translated = typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT(key, params) : undefined;
+      let value = translated && translated !== key ? translated : fallback;
+      if (params && typeof params === 'object') {
+        Object.keys(params).forEach(name => {
+          value = String(value || '').replace(new RegExp('\\{' + name + '\\}', 'g'), String(params[name]));
+        });
+      }
+      return value;
+    } catch (_) {
+      return String(fallback || '');
+    }
+  };
   React.useEffect(() => {
     try {
       if (dialogRef && dialogRef.current) dialogRef.current.focus();
@@ -76,9 +93,9 @@ function EndSessionPreview({
   }, /*#__PURE__*/React.createElement("h2", {
     id: "end-session-summary-title",
     className: "text-xl font-black text-slate-800"
-  }, "End session"), /*#__PURE__*/React.createElement("p", {
+  }, tx('end_session.title', 'End session')), /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-slate-600 mt-1"
-  }, "Review the privacy-limited roster summary before temporary live-session data is deleted."), /*#__PURE__*/React.createElement("div", {
+  }, tx('end_session.review_summary', 'Review the privacy-limited roster summary before temporary live-session data is deleted.')), /*#__PURE__*/React.createElement("div", {
     className: "grid grid-cols-3 gap-2 my-4"
   }, /*#__PURE__*/React.createElement("div", {
     className: "rounded-xl bg-emerald-50 p-3 text-center"
@@ -86,22 +103,22 @@ function EndSessionPreview({
     className: "text-2xl font-black text-emerald-700"
   }, Object.keys(endSessionPreview.summary.participants || {}).length), /*#__PURE__*/React.createElement("div", {
     className: "text-[11px] font-bold text-emerald-800"
-  }, "Roster matched")), /*#__PURE__*/React.createElement("div", {
+  }, tx('end_session.roster_matched', 'Roster matched'))), /*#__PURE__*/React.createElement("div", {
     className: "rounded-xl bg-amber-50 p-3 text-center"
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-2xl font-black text-amber-700"
   }, (endSessionPreview.summary.absentCodenames || []).length), /*#__PURE__*/React.createElement("div", {
     className: "text-[11px] font-bold text-amber-800"
-  }, "Not present")), /*#__PURE__*/React.createElement("div", {
+  }, tx('end_session.not_present', 'Not present'))), /*#__PURE__*/React.createElement("div", {
     className: "rounded-xl bg-rose-50 p-3 text-center"
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-2xl font-black text-rose-700"
   }, (endSessionPreview.summary.unmatchedCodenames || []).length), /*#__PURE__*/React.createElement("div", {
     className: "text-[11px] font-bold text-rose-800"
-  }, "Unmatched"))), endSessionPreview.summary.organizerActivity && (() => {
+  }, tx('end_session.unmatched', 'Unmatched')))), endSessionPreview.summary.organizerActivity && (() => {
     const organizer = endSessionPreview.summary.organizerActivity;
     const counts = organizer.statusCounts || {};
-    const labels = [['complete', 'complete'], ['attempted', 'attempted'], ['working', 'working'], ['ready', 'ready'], ['loading', 'loading'], ['failed', 'failed'], ['waiting', 'waiting']].filter(([status]) => Number(counts[status]) > 0);
+    const labels = [['complete', tx('end_session.status_complete', 'complete')], ['attempted', tx('end_session.status_attempted', 'attempted')], ['working', tx('end_session.status_working', 'working')], ['ready', tx('end_session.status_ready', 'ready')], ['loading', tx('end_session.status_loading', 'loading')], ['failed', tx('end_session.status_failed', 'failed')], ['waiting', tx('end_session.status_waiting', 'waiting')]].filter(([status]) => Number(counts[status]) > 0);
     return /*#__PURE__*/React.createElement("section", {
       className: "rounded-2xl border border-fuchsia-200 bg-fuchsia-50/60 p-4 mb-4",
       "aria-labelledby": "end-session-organizer-title"
@@ -110,19 +127,25 @@ function EndSessionPreview({
     }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h3", {
       id: "end-session-organizer-title",
       className: "text-sm font-black text-fuchsia-950"
-    }, "Visual organizer evidence"), /*#__PURE__*/React.createElement("p", {
+    }, tx('end_session.organizer_evidence', 'Visual organizer evidence')), /*#__PURE__*/React.createElement("p", {
       className: "mt-0.5 text-[11px] text-fuchsia-800"
-    }, String(organizer.type || 'organizer').replace(/3d$/i, ' 3D').replace(/_/g, ' '), " activity \xC2\xB7 ", organizer.participantCount || 0, " matched learner", organizer.participantCount === 1 ? '' : 's')), (organizer.followUpCodenames || []).length > 0 && /*#__PURE__*/React.createElement("span", {
+    }, tx('end_session.organizer_activity_summary', '{type} activity · {count} matched learner{plural}', {
+      type: String(organizer.type || 'organizer').replace(/3d$/i, ' 3D').replace(/_/g, ' '),
+      count: organizer.participantCount || 0,
+      plural: organizer.participantCount === 1 ? '' : 's'
+    }))), (organizer.followUpCodenames || []).length > 0 && /*#__PURE__*/React.createElement("span", {
       className: "rounded-full border border-amber-300 bg-amber-100 px-2 py-1 text-[10px] font-black text-amber-900"
-    }, organizer.followUpCodenames.length, " may need launch support")), /*#__PURE__*/React.createElement("div", {
+    }, tx('end_session.may_need_launch_support', '{count} may need launch support', {
+      count: organizer.followUpCodenames.length
+    }))), /*#__PURE__*/React.createElement("div", {
       className: "mt-2 flex flex-wrap gap-1.5",
-      "aria-label": "Visual organizer activity outcomes"
+      "aria-label": tx('end_session.organizer_activity_outcomes', 'Visual organizer activity outcomes')
     }, labels.map(([status, label]) => /*#__PURE__*/React.createElement("span", {
       key: status,
       className: "rounded-full border border-fuchsia-200 bg-white px-2 py-1 text-[10px] font-bold text-fuchsia-900"
     }, counts[status], " ", label))), /*#__PURE__*/React.createElement("p", {
       className: "mt-2 text-[10px] text-slate-600"
-    }, "Saved evidence contains bounded status and score totals only\xE2\u20AC\u201Dnot card text, answers, account IDs, or resource IDs."));
+    }, tx('end_session.organizer_evidence_privacy', 'Saved evidence contains bounded status and score totals only—not card text, answers, account IDs, or resource IDs.')));
   })(), endSessionPreview.summary.insightBrief && /*#__PURE__*/React.createElement("section", {
     className: "rounded-2xl border border-indigo-200 bg-indigo-50/60 p-4 mb-4",
     "aria-labelledby": "end-session-insight-title"
@@ -131,13 +154,13 @@ function EndSessionPreview({
   }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h3", {
     id: "end-session-insight-title",
     className: "text-sm font-black text-indigo-950"
-  }, "Insight brief"), /*#__PURE__*/React.createElement("p", {
+  }, tx('end_session.insight_brief', 'Insight brief')), /*#__PURE__*/React.createElement("p", {
     className: "text-[11px] text-indigo-800 mt-0.5"
-  }, "A device-local summary of participation evidence\u2014not an automated judgment of understanding.")), /*#__PURE__*/React.createElement("button", {
+  }, tx('end_session.insight_brief_disclaimer', 'A device-local summary of participation evidence—not an automated judgment of understanding.'))), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: () => copyToClipboard(['Live session insight brief', `${endSessionPreview.summary.insightBrief.activityCount || 0} activities · ${endSessionPreview.summary.insightBrief.submissions || 0} submissions · ${endSessionPreview.summary.insightBrief.revisions || 0} revisions`, ...(endSessionPreview.summary.insightBrief.nextMoves || []).map(move => `${move.count}: ${move.label}`), 'Privacy: aggregate participation evidence only; no raw answers or account IDs.'].join('\n')),
     className: "rounded-lg border border-indigo-300 bg-white px-2.5 py-1.5 text-[11px] font-bold text-indigo-800 hover:bg-indigo-100"
-  }, "Copy brief")), /*#__PURE__*/React.createElement("div", {
+  }, tx('end_session.copy_brief', 'Copy brief'))), /*#__PURE__*/React.createElement("div", {
     className: "grid grid-cols-2 sm:grid-cols-4 gap-2 mt-3"
   }, /*#__PURE__*/React.createElement("div", {
     className: "rounded-lg bg-white p-2 text-center"
@@ -145,40 +168,40 @@ function EndSessionPreview({
     className: "text-lg font-black text-indigo-800"
   }, endSessionPreview.summary.insightBrief.activityCount || 0), /*#__PURE__*/React.createElement("div", {
     className: "text-[10px] font-bold text-slate-600"
-  }, "Activities")), /*#__PURE__*/React.createElement("div", {
+  }, tx('end_session.activities', 'Activities'))), /*#__PURE__*/React.createElement("div", {
     className: "rounded-lg bg-white p-2 text-center"
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-lg font-black text-indigo-800"
   }, endSessionPreview.summary.insightBrief.submissions || 0), /*#__PURE__*/React.createElement("div", {
     className: "text-[10px] font-bold text-slate-600"
-  }, "Submissions")), /*#__PURE__*/React.createElement("div", {
+  }, tx('end_session.submissions', 'Submissions'))), /*#__PURE__*/React.createElement("div", {
     className: "rounded-lg bg-white p-2 text-center"
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-lg font-black text-indigo-800"
   }, endSessionPreview.summary.insightBrief.revisions || 0), /*#__PURE__*/React.createElement("div", {
     className: "text-[10px] font-bold text-slate-600"
-  }, "Revisions")), /*#__PURE__*/React.createElement("div", {
+  }, tx('end_session.revisions', 'Revisions'))), /*#__PURE__*/React.createElement("div", {
     className: "rounded-lg bg-white p-2 text-center"
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-lg font-black text-indigo-800"
   }, (endSessionPreview.summary.insightBrief.followUpCodenames || []).length), /*#__PURE__*/React.createElement("div", {
     className: "text-[10px] font-bold text-slate-600"
-  }, "Follow-up"))), (endSessionPreview.summary.insightBrief.byKind || []).length > 0 && /*#__PURE__*/React.createElement("div", {
+  }, tx('end_session.follow_up', 'Follow-up')))), (endSessionPreview.summary.insightBrief.byKind || []).length > 0 && /*#__PURE__*/React.createElement("div", {
     className: "mt-3 flex flex-wrap gap-1.5",
-    "aria-label": "Activity participation by type"
+    "aria-label": tx('end_session.activity_participation_by_type', 'Activity participation by type')
   }, endSessionPreview.summary.insightBrief.byKind.map(item => /*#__PURE__*/React.createElement("span", {
     key: item.kind,
     className: "rounded-full border border-indigo-200 bg-white px-2 py-1 text-[10px] font-bold text-indigo-800"
   }, item.kind.replace(/_/g, ' '), " \xB7 ", item.submitted, "/", item.invited))), (endSessionPreview.summary.insightBrief.evidenceCohorts || []).length > 0 && /*#__PURE__*/React.createElement("div", {
     className: "mt-3 rounded-xl border border-violet-200 bg-white p-3",
-    "aria-label": "Evidence cohorts and targeted follow-up"
+    "aria-label": tx('end_session.evidence_cohorts_follow_up', 'Evidence cohorts and targeted follow-up')
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-[10px] font-black uppercase tracking-wide text-violet-900"
-  }, "Evidence cohorts"), /*#__PURE__*/React.createElement("p", {
+  }, tx('end_session.evidence_cohorts', 'Evidence cohorts')), /*#__PURE__*/React.createElement("p", {
     className: "mt-1 text-[11px] text-slate-600"
-  }, "Participation signals are review suggestions, not automatic mastery or misconception labels."), (endSessionPreview.followUpResources || []).length > 0 && /*#__PURE__*/React.createElement("label", {
+  }, tx('end_session.participation_signals_disclaimer', 'Participation signals are review suggestions, not automatic mastery or misconception labels.')), (endSessionPreview.followUpResources || []).length > 0 && /*#__PURE__*/React.createElement("label", {
     className: "mt-2 block text-[11px] font-bold text-slate-700"
-  }, "Follow-up resource", /*#__PURE__*/React.createElement("select", {
+  }, tx('end_session.follow_up_resource', 'Follow-up resource'), /*#__PURE__*/React.createElement("select", {
     value: endSessionPreview.followUpResourceId || '',
     disabled: !!endSessionPreview.followUpBusy,
     onChange: event => setEndSessionPreview(prev => prev ? {
@@ -186,7 +209,7 @@ function EndSessionPreview({
       followUpResourceId: event.target.value,
       followUpStatus: ''
     } : prev),
-    "aria-label": "Choose the student-safe resource to send to an evidence cohort",
+    "aria-label": tx('end_session.choose_follow_up_resource', 'Choose the student-safe resource to send to an evidence cohort'),
     className: "mt-1 min-h-11 w-full rounded-lg border border-violet-300 bg-white px-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-400"
   }, (endSessionPreview.followUpResources || []).map(resource => /*#__PURE__*/React.createElement("option", {
     key: resource.id,
@@ -212,13 +235,18 @@ function EndSessionPreview({
       type: "button",
       disabled: !!endSessionPreview.followUpBusy || endSessionPreview.busy,
       onClick: () => sendEndSessionEvidenceCohort(cohort),
-      "aria-label": 'Send the selected follow-up resource to ' + connectedCount + ' connected learners in ' + cohort.label,
+      "aria-label": tx('end_session.send_follow_up_resource', 'Send the selected follow-up resource to {count} connected learners in {cohort}', {
+        count: connectedCount,
+        cohort: cohort.label
+      }),
       className: "min-h-11 shrink-0 rounded-lg bg-violet-700 px-2.5 py-1.5 text-[10px] font-black text-white hover:bg-violet-800 disabled:opacity-50"
-    }, sending ? 'Sending...' : 'Send to ' + connectedCount)), /*#__PURE__*/React.createElement("details", {
+    }, sending ? tx('end_session.sending', 'Sending...') : tx('end_session.send_to_count', 'Send to {count}', {
+      count: connectedCount
+    }))), /*#__PURE__*/React.createElement("details", {
       className: "mt-1"
     }, /*#__PURE__*/React.createElement("summary", {
       className: "cursor-pointer text-[10px] font-bold text-slate-600"
-    }, "Review codenames"), /*#__PURE__*/React.createElement("div", {
+    }, tx('end_session.review_codenames', 'Review codenames')), /*#__PURE__*/React.createElement("div", {
       className: "mt-1 text-[10px] text-slate-600"
     }, (cohort.codenames || []).join(', '))));
   })), endSessionPreview.followUpStatus && /*#__PURE__*/React.createElement("p", {
@@ -229,7 +257,7 @@ function EndSessionPreview({
     className: "mt-3"
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-[10px] font-black uppercase tracking-wide text-indigo-900"
-  }, "Group patterns"), /*#__PURE__*/React.createElement("div", {
+  }, tx('end_session.group_patterns', 'Group patterns')), /*#__PURE__*/React.createElement("div", {
     className: "mt-1 flex flex-wrap gap-1.5"
   }, endSessionPreview.summary.insightBrief.groups.filter(group => group.followUpCount > 0).map(group => /*#__PURE__*/React.createElement("span", {
     key: group.groupId,
@@ -238,7 +266,7 @@ function EndSessionPreview({
     className: "mt-3"
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-[10px] font-black uppercase tracking-wide text-indigo-900"
-  }, "Suggested next moves"), /*#__PURE__*/React.createElement("ul", {
+  }, tx('end_session.suggested_next_moves', 'Suggested next moves')), /*#__PURE__*/React.createElement("ul", {
     className: "mt-1 space-y-1 text-xs text-slate-700"
   }, endSessionPreview.summary.insightBrief.nextMoves.map(move => /*#__PURE__*/React.createElement("li", {
     key: move.code,
@@ -247,69 +275,75 @@ function EndSessionPreview({
     className: "font-black text-indigo-700"
   }, move.count), /*#__PURE__*/React.createElement("span", null, move.label))))), (endSessionPreview.summary.insightBrief.followUpCodenames || []).length > 0 && /*#__PURE__*/React.createElement("p", {
     className: "mt-3 rounded-lg border border-amber-200 bg-amber-50 p-2 text-[11px] font-semibold text-amber-900"
-  }, "Connections remain active during this review. Use the cohort controls above or the companion view before ending; ending removes temporary student connections.")), (endSessionPreview.summary.unmatchedCodenames || []).length > 0 && /*#__PURE__*/React.createElement("div", {
+  }, tx('end_session.connections_active_disclaimer', 'Connections remain active during this review. Use the cohort controls above or the companion view before ending; ending removes temporary student connections.'))), (endSessionPreview.summary.unmatchedCodenames || []).length > 0 && /*#__PURE__*/React.createElement("div", {
     className: "rounded-xl border border-rose-200 bg-rose-50 p-3 mb-4"
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-xs font-black text-rose-800"
-  }, "Unmatched codenames are not added automatically"), /*#__PURE__*/React.createElement("div", {
+  }, tx('end_session.unmatched_codenames_notice', 'Unmatched codenames are not added automatically')), /*#__PURE__*/React.createElement("div", {
     className: "text-xs text-rose-700 mt-1"
   }, endSessionPreview.summary.unmatchedCodenames.join(', '))), endSessionPreview.deliverySummary?.pending > 0 && /*#__PURE__*/React.createElement("div", {
     role: "alert",
     className: "rounded-xl border border-amber-300 bg-amber-50 p-3 mb-4"
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-xs font-black text-amber-900"
-  }, "Resource delivery status"), /*#__PURE__*/React.createElement("p", {
+  }, tx('end_session.resource_delivery_status', 'Resource delivery status')), /*#__PURE__*/React.createElement("p", {
     className: "mt-1 text-xs text-amber-800"
-  }, endSessionPreview.deliverySummary.opened, " of ", endSessionPreview.deliverySummary.assigned, " targeted resources have been opened. ", endSessionPreview.deliverySummary.pending, " remain unconfirmed", endSessionPreview.deliverySummary.loading ? `; ${endSessionPreview.deliverySummary.loading} still loading` : '', endSessionPreview.deliverySummary.failed ? `; ${endSessionPreview.deliverySummary.failed} reported a load failure` : '', "."), /*#__PURE__*/React.createElement("p", {
+  }, tx('end_session.delivery_summary', '{opened} of {assigned} targeted resources have been opened. {pending} remain unconfirmed{loadingText}{failedText}.', {
+    opened: endSessionPreview.deliverySummary.opened,
+    assigned: endSessionPreview.deliverySummary.assigned,
+    pending: endSessionPreview.deliverySummary.pending,
+    loadingText: endSessionPreview.deliverySummary.loading ? `; ${endSessionPreview.deliverySummary.loading} still loading` : '',
+    failedText: endSessionPreview.deliverySummary.failed ? `; ${endSessionPreview.deliverySummary.failed} reported a load failure` : ''
+  })), /*#__PURE__*/React.createElement("p", {
     className: "mt-1 text-[11px] text-amber-800"
-  }, "The session can stay open while learners receive the resource. Ending removes temporary connections.")), /*#__PURE__*/React.createElement("details", {
+  }, tx('end_session.delivery_keep_open', 'The session can stay open while learners receive the resource. Ending removes temporary connections.'))), /*#__PURE__*/React.createElement("details", {
     className: "rounded-xl border border-slate-200 p-3 mb-4"
   }, /*#__PURE__*/React.createElement("summary", {
     className: "cursor-pointer text-sm font-bold text-slate-700"
-  }, "What will be saved?"), /*#__PURE__*/React.createElement("p", {
+  }, tx('end_session.what_will_be_saved', 'What will be saved?')), /*#__PURE__*/React.createElement("p", {
     className: "text-xs text-slate-600 mt-2"
-  }, "Date, duration, matched codenames, groups, response counts, organizer status and bounded score totals, and whether a resource was opened. Raw answers, organizer card text, resource IDs, account IDs, mailbox tokens, chat, and real names are not saved.")), /*#__PURE__*/React.createElement("label", {
+  }, tx('end_session.saved_summary_details', 'Date, duration, matched codenames, groups, response counts, organizer status and bounded score totals, and whether a resource was opened. Raw answers, organizer card text, resource IDs, account IDs, mailbox tokens, chat, and real names are not saved.'))), /*#__PURE__*/React.createElement("label", {
     className: "block text-xs font-bold text-slate-700 mb-1",
     htmlFor: "end-session-note"
-  }, "Optional teacher note"), /*#__PURE__*/React.createElement("textarea", {
+  }, tx('end_session.optional_teacher_note', 'Optional teacher note')), /*#__PURE__*/React.createElement("textarea", {
     id: "end-session-note",
     value: endSessionNote,
     onChange: event => setEndSessionNote(event.target.value.slice(0, 500)),
     rows: 3,
-    placeholder: "Example: Small-group review of fractions",
+    placeholder: tx('end_session.teacher_note_placeholder', 'Example: Small-group review of fractions'),
     className: "w-full rounded-xl border border-slate-300 p-3 text-sm focus:ring-2 focus:ring-indigo-400 focus:outline-none"
   }), /*#__PURE__*/React.createElement("div", {
     className: "text-[11px] text-slate-500 text-right"
   }, endSessionNote.length, "/500"), !rosterKey && /*#__PURE__*/React.createElement("p", {
     className: "mt-2 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg p-2"
-  }, "Create or import a class roster to save longitudinal summaries. You can still end this session normally."), /*#__PURE__*/React.createElement("div", {
+  }, tx('end_session.roster_required_notice', 'Create or import a class roster to save longitudinal summaries. You can still end this session normally.')), /*#__PURE__*/React.createElement("div", {
     className: "flex flex-col sm:flex-row gap-2 mt-5 justify-end"
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
     disabled: endSessionPreview.busy || !!endSessionPreview.followUpBusy,
     onClick: onKeepSessionOpen,
     className: "px-4 py-2.5 rounded-xl bg-slate-100 text-slate-700 font-bold disabled:opacity-50"
-  }, "Keep session open"), endSessionPreview.deliveryGuard ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("button", {
+  }, tx('end_session.keep_open', 'Keep session open')), endSessionPreview.deliveryGuard ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("button", {
     type: "button",
     disabled: endSessionPreview.busy || !!endSessionPreview.followUpBusy,
     onClick: () => completeLiveSessionEnd(false, true),
     className: "px-4 py-2.5 rounded-xl border border-rose-300 bg-rose-100 text-rose-800 font-bold disabled:opacity-50"
-  }, "End without saving anyway"), rosterKey && /*#__PURE__*/React.createElement("button", {
+  }, tx('end_session.end_without_saving_anyway', 'End without saving anyway')), rosterKey && /*#__PURE__*/React.createElement("button", {
     type: "button",
     disabled: endSessionPreview.busy || !!endSessionPreview.followUpBusy,
     onClick: () => completeLiveSessionEnd(true, true),
     className: "px-4 py-2.5 rounded-xl bg-amber-600 text-white font-bold shadow-lg disabled:opacity-50"
-  }, endSessionPreview.busy ? 'Ending…' : 'Save summary & end anyway')) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("button", {
+  }, endSessionPreview.busy ? tx('end_session.ending', 'Ending…') : tx('end_session.save_summary_end_anyway', 'Save summary & end anyway'))) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("button", {
     type: "button",
     disabled: endSessionPreview.busy || !!endSessionPreview.followUpBusy,
     onClick: () => completeLiveSessionEnd(false),
     className: "px-4 py-2.5 rounded-xl border border-rose-200 bg-rose-50 text-rose-700 font-bold disabled:opacity-50"
-  }, "End without saving"), rosterKey && /*#__PURE__*/React.createElement("button", {
+  }, tx('end_session.end_without_saving', 'End without saving')), rosterKey && /*#__PURE__*/React.createElement("button", {
     type: "button",
     disabled: endSessionPreview.busy || !!endSessionPreview.followUpBusy,
     onClick: () => completeLiveSessionEnd(true),
     className: "px-4 py-2.5 rounded-xl bg-indigo-600 text-white font-bold shadow-lg disabled:opacity-50"
-  }, endSessionPreview.busy ? 'Ending…' : 'Save summary & end')))));
+  }, endSessionPreview.busy ? tx('end_session.ending', 'Ending…') : tx('end_session.save_summary_end', 'Save summary & end'))))));
 }
 
   window.AlloModules = window.AlloModules || {};

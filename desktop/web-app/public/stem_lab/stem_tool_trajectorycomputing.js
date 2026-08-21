@@ -498,6 +498,59 @@
     }).filter(function (event) { return !!event.station; });
   }
 
+  function createSafeguardSummary(state, assignment) {
+    state = state || {};
+    var trail = normalizeAuditTrail(state.auditTrail);
+    var expectedTrail = [
+      ['briefing', 'worksheet'], ['worksheet', 'program'], ['program', 'cards'],
+      ['cards', 'batch'], ['batch', 'verify'], ['verify', 'complete']
+    ];
+    var auditChainPass = trail.length === expectedTrail.length && expectedTrail.every(function (handoff, index) {
+      return trail[index].station === handoff[0] && trail[index].nextStage === handoff[1];
+    });
+    var roleCheck = assignment || checkVerificationAssignment(state.workPattern, state.verification || {});
+    var reproducibility = state.reproducibilityResult || {};
+    var preview = state.printPreviewResult || {};
+    var readback = state.batchReadbackResult || {};
+    var checks = [
+      {
+        id: 'audit-chain',
+        label: 'Ordered operator audit chain',
+        pass: auditChainPass,
+        detail: trail.length + ' of ' + expectedTrail.length + ' expected handoffs recorded.'
+      },
+      {
+        id: 'role-separation',
+        label: 'Independent role separation',
+        pass: !!roleCheck.pass,
+        detail: roleCheck.message
+      },
+      {
+        id: 'fixed-inputs',
+        label: 'Fixed mission inputs',
+        pass: !!reproducibility.pass,
+        detail: (reproducibility.correct || 0) + ' of ' + (reproducibility.total || 4) + ' inputs recorded.'
+      },
+      {
+        id: 'print-preview',
+        label: 'Fixed-width line-printer preview',
+        pass: !!preview.pass,
+        detail: preview.pass ? 'Preview confirmed.' : (preview.actualLine ? 'Preview needs review.' : 'Preview not confirmed.')
+      },
+      {
+        id: 'machine-readback',
+        label: 'Machine output read-back',
+        pass: !!readback.pass,
+        detail: (readback.correct || 0) + ' of ' + (readback.total || 4) + ' fields matched the printed job.'
+      }
+    ];
+    return {
+      checks: checks,
+      passed: checks.filter(function (check) { return check.pass; }).length,
+      total: checks.length
+    };
+  }
+
   function createEvidenceRecord(state, timestamp) {
     state = state || {};
     var when = Number.isFinite(timestamp) ? timestamp : Date.now();
@@ -563,6 +616,7 @@
       printPreview: state.printPreviewResult || null,
       batchReadback: state.batchReadbackResult || null,
       reproducibilityNote: state.reproducibilityResult || null,
+      safeguards: createSafeguardSummary(state, assignment),
       auditTrail: normalizeAuditTrail(state.auditTrail),
       checks: [
         { label: 'Printed trigonometry reference', pass: !!(state.tableResult && state.tableResult.pass) },
@@ -637,10 +691,12 @@
       '[data-trajectory-lab]{--tc-ink:#15241f;--tc-paper:#f5efd9;--tc-paper2:#e8dfbe;--tc-green:#173c32;--tc-mint:#9ad7c0;--tc-orange:#a64220;--tc-line:#b9ad82;color:var(--tc-ink);background:#d8d0b3;font-family:Inter,system-ui,sans-serif}',
       '[data-trajectory-lab] *{box-sizing:border-box}',
       '[data-trajectory-lab] .tc-shell{min-height:100%;background:linear-gradient(135deg,#173c32 0,#173c32 29%,#d8d0b3 29%,#f5efd9 100%);padding:clamp(12px,2.4vw,28px)}',
+      '[data-trajectory-lab] .tc-skip-link{position:absolute;left:-10000px;top:8px;z-index:1000;background:#fffdf4;color:#173c32;border:3px solid #173c32;border-radius:7px;padding:9px 12px;font-weight:800;transform:translateY(-200%)}[data-trajectory-lab] .tc-skip-link:focus{left:8px;transform:translateY(0)}',
+      '[data-trajectory-lab] .tc-visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}',
       '[data-trajectory-lab] .tc-top{display:flex;gap:16px;align-items:flex-start;justify-content:space-between;color:#fff;margin-bottom:18px}',
       '[data-trajectory-lab] .tc-kicker{font:700 11px/1.2 ui-monospace,monospace;letter-spacing:.18em;text-transform:uppercase;color:#9ad7c0}',
       '[data-trajectory-lab] .tc-title{font:800 clamp(25px,4vw,42px)/1.05 Georgia,serif;margin:5px 0}',
-      '[data-trajectory-lab] .tc-subtitle{max-width:760px;color:#dcebe5;font-size:14px}',
+      '[data-trajectory-lab] .tc-subtitle{display:inline-block;max-width:760px;color:#f4fbf7;background:rgba(23,60,50,.92);padding:6px 10px;border-radius:7px;box-shadow:0 2px 0 rgba(10,33,27,.35);font-size:14px}',
       '[data-trajectory-lab] .tc-progress{max-width:480px;margin-top:12px;color:#e9f7f1}',
       '[data-trajectory-lab] .tc-progress-head{display:flex;justify-content:space-between;gap:12px;align-items:center;font:700 12px/1.3 ui-monospace,monospace}',
       '[data-trajectory-lab] .tc-progress-head strong{color:#fff0b5}',
@@ -656,7 +712,7 @@
       '[data-trajectory-lab] .tc-tabs{display:grid;grid-template-columns:repeat(6,minmax(112px,1fr));gap:7px;overflow-x:auto;padding:4px 4px 10px}',
       '[data-trajectory-lab] .tc-tab{min-height:52px;border:1px solid #8e8568;border-radius:8px;background:#ebe4ca;color:#26372f;padding:7px;text-align:left;font-weight:800;cursor:pointer}',
       '[data-trajectory-lab] .tc-tab[aria-selected=true]{background:#a64220;color:#fff;border-color:#7b2f18}',
-      '[data-trajectory-lab] .tc-tab:disabled{opacity:.48;cursor:not-allowed}',
+      '[data-trajectory-lab] .tc-tab:disabled{opacity:.68;background:#d7d1b8;color:#4d5b54;border-style:dashed;cursor:not-allowed}',
       '[data-trajectory-lab] .tc-tab-num{display:block;font:700 10px/1 ui-monospace,monospace;opacity:1;margin-bottom:4px}',
       '[data-trajectory-lab] .tc-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(245px,310px);gap:16px;align-items:start}',
       '[data-trajectory-lab] .tc-paper,[data-trajectory-lab] .tc-side{background:var(--tc-paper);border:1px solid #a99e79;border-radius:12px;box-shadow:0 9px 26px rgba(22,38,32,.2)}',
@@ -665,6 +721,7 @@
       '[data-trajectory-lab] .tc-heading{font:800 clamp(21px,3vw,30px)/1.1 Georgia,serif;color:#173c32;margin:0 0 8px}',
       '[data-trajectory-lab] .tc-lede{font-size:14px;line-height:1.6;max-width:74ch}',
       '[data-trajectory-lab] .tc-note{border-left:5px solid #a64220;background:#fff9e7;padding:12px 14px;margin:14px 0;font-size:13px;line-height:1.5}',
+      '[data-trajectory-lab] .tc-next-cue{border-left:5px solid #a64220;background:#fff9e7;border-radius:7px;padding:10px 12px;margin:12px 0;font-size:13px;line-height:1.5}',
       '[data-trajectory-lab] .tc-data{display:grid;grid-template-columns:repeat(4,minmax(110px,1fr));gap:9px;margin:16px 0}',
       '[data-trajectory-lab] .tc-datum{background:#173c32;color:#fff;border-radius:8px;padding:12px}',
       '[data-trajectory-lab] .tc-datum b{display:block;font:800 18px/1.2 ui-monospace,monospace;color:#fff0b5}',
@@ -1020,6 +1077,7 @@
       function renderCompletionReport() {
         var report = createCompletionReport(d);
         var formatFields = report.formatAudit && report.formatAudit.fields || {};
+        var safeguards = report.safeguards || { checks: [], passed: 0, total: 0 };
         return h('section', { className: 'tc-report', 'aria-labelledby': 'tc-report-title' },
           h('div', { className: 'tc-report-head' },
             h('div', null,
@@ -1040,14 +1098,12 @@
           })),
           renderAuditTrail(report.auditTrail),
           h('details', { className: 'tc-safeguards' },
-            h('summary', null, 'Accessibility and audit safeguards'),
-            h('p', { className: 'tc-lede' }, 'Safeguards recorded for this lesson report:'),
-            h('ul', { className: 'tc-teacher-list' },
-              h('li', null, 'Keyboard station tabs support Arrow keys, Home, and End.'),
-              h('li', null, 'Visible focus rings and 24-pixel checkbox and radio targets support keyboard and switch access.'),
-              h('li', null, 'The ordered operator audit chain and fixed-input reproducibility note preserve process evidence without personal identifiers.'),
-              h('li', null, 'The line-printer preview and machine read-back remain separate checks so learners can inspect output independently.')
-            )
+            h('summary', null, 'Accessibility and audit safeguards (' + safeguards.passed + '/' + safeguards.total + ' verified)'),
+            h('p', { className: 'tc-lede', role: 'status' }, safeguards.passed + ' of ' + safeguards.total + ' evidence safeguards verified in this report.'),
+            h('ul', { className: 'tc-checklist' }, safeguards.checks.map(function (check) {
+              return h('li', { key: check.id }, (check.pass ? '\u2713 Verified: ' : '\u25CB Needs review: ') + check.label + ' - ' + check.detail);
+            })),
+            h('p', { className: 'tc-lede' }, 'Interface safeguards: Keyboard station tabs support Arrow keys, Home, and End. Visible focus rings and 24-pixel checkbox and radio targets support keyboard and switch access. The line-printer preview and machine read-back remain separate checks so learners can inspect output independently.')
           ),
           h('p', null, h('strong', null, 'Role separation: '), report.assignment.message),
           renderLedger(d.worksheet || {}, 'Hand-calculation audit ledger'),
@@ -1209,6 +1265,7 @@
           h('p', { id: 'tc-code-help', className: 'tc-lede' }, 'This safe learning compiler validates the mathematical statements. It does not execute arbitrary code.'),
           diagnostics.length > 0 && h('div', { role: 'region', 'aria-label': 'Compiler diagnostics', 'aria-live': 'polite' }, diagnostics.map(function (diag) { return h('p', { key: diag.code + diag.message, className: 'tc-diag' }, h('strong', null, diag.code + ': '), diag.message); })),
           compileResult && compileResult.pass && h('p', { role: 'status', className: 'tc-check tc-ok' }, 'COMPILE SUCCESSFUL - 0 errors. The listing is ready to keypunch.'),
+          compileResult && compileResult.pass && h('div', { className: 'tc-next-cue' }, h('strong', null, 'Next on the desk: '), 'match the FORMAT card, inspect the fixed-width preview, then release the deck.'),
           compileResult && compileResult.pass && h('div', { className: 'tc-format-box' },
             h('p', { className: 'tc-kicker', style: { color: '#9b3e21' } }, 'Format card / line-printer audit'),
             h('h3', null, 'Make the batch output readable.'),
@@ -1552,6 +1609,7 @@
 
       return h('div', { 'data-trajectory-lab': 'true', 'data-stem-tool-shell': 'true' },
         h('div', { className: 'tc-shell' },
+          h('a', { className: 'tc-skip-link', href: '#tc-main-content' }, 'Skip to station content'),
           h('header', { className: 'tc-top' },
             h('div', null,
               h('p', { className: 'tc-kicker' }, 'Original historical STEM simulation'),
@@ -1570,15 +1628,16 @@
             h('button', { type: 'button', className: 'tc-back', onClick: function () { if (typeof ctx.setStemLabTool === 'function') ctx.setStemLabTool(null); }, 'aria-label': 'Back to all STEAM Lab tools' }, '\u2190 All tools')
           ),
           h('div', { className: 'tc-tabs-region', role: 'region', 'aria-label': 'Simulation stations' },
-            h('nav', { className: 'tc-tabs', role: 'tablist', 'aria-label': 'Simulation stations' }, stages.map(function (item, index) {
+            h('p', { id: 'tc-tabs-help', className: 'tc-visually-hidden' }, 'Station tabs: use Arrow Right or Arrow Left, or Arrow Down or Arrow Up, to move between unlocked stations. Press Home for the briefing or End for the last unlocked station.'),
+            h('nav', { className: 'tc-tabs', role: 'tablist', 'aria-label': 'Simulation stations', 'aria-describedby': 'tc-tabs-help' }, stages.map(function (item, index) {
             var locked = index > unlockedIndex;
             return h('button', { id: 'tc-tab-' + item[0], key: item[0], type: 'button', role: 'tab', className: 'tc-tab', 'aria-selected': stage === item[0], 'aria-controls': stage === item[0] ? 'tc-panel-' + item[0] : undefined, tabIndex: stage === item[0] ? 0 : -1, disabled: locked, onClick: function () { update({ stage: item[0] }); }, onKeyDown: function (event) { handleTabKey(event, index); } },
-              h('span', { className: 'tc-tab-num' }, (completed[item[0]] ? 'CHECKED / ' : '') + '0' + (index + 1)), item[1]
+              h('span', { className: 'tc-tab-num' }, (locked ? 'LOCKED / ' : (completed[item[0]] ? 'CHECKED / ' : '')) + '0' + (index + 1)), item[1]
             );
             }))
           ),
           h('div', { className: 'tc-grid' },
-            h('main', { className: 'tc-paper' }, renderStage()),
+            h('main', { id: 'tc-main-content', className: 'tc-paper', tabIndex: -1 }, renderStage()),
             h('aside', { className: 'tc-side', 'aria-label': 'Desk references and historical context' },
               h('h3', null, 'Desk card'),
               h('dl', null,

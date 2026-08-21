@@ -235,6 +235,13 @@ describe('Dino Lab — render invariants (the science a student actually sees)',
     expect(html).toMatch(/five-meter labels, and the full estimated length/);
     expect(html).toMatch(/five-meter labels, and the full estimated height/);
     expect(html).toMatch(/Survey compass/);
+    expect(html).toMatch(/data-dinolab-evidence-strip="true"/);
+    expect(html).toMatch(/Evidence context/);
+    expect(html).toMatch(/Evidence trail/);
+    expect(html).toMatch(/Reconstruction profile/);
+    expect(html).toMatch(/Environment hypothesis/);
+    expect(html).toMatch(/Open question/);
+    expect(html).toMatch(/A visible boundary for the next claim/);
     expect(html).toMatch(/Amber boundary ropes and north arrow orient the reconstruction inside its excavation grid/);
     expect(html).toMatch(/White vertebrae, curved rib shafts, pelvis, digits, and minor struts establish the inferred bone layout/);
     expect(html).toMatch(/Major limb shafts taper toward the middle, broaden at their ends/);
@@ -404,6 +411,9 @@ describe('Dino Lab — render invariants (the science a student actually sees)',
     expect(html).toMatch(/dinolab-field-workflow" hidden=""/);
     expect(html).toMatch(/dinolab-field-next" hidden=""/);
     expect(html).toMatch(/dinolab-field-notebook" hidden=""/);
+    expect(html).toMatch(/data-dinolab-evidence-strip="true"/);
+    expect(html).toMatch(/Environment hypothesis/);
+    expect(html).toMatch(/Open question/);
     expect(html).not.toMatch(/Choose species for 3D field station/);
     expect(html).not.toMatch(/A lightweight reconstruction lab/);
     expect(html).toMatch(/id="dinopanel" role="region" aria-label="3D Field Station focused workspace" style="padding:10px"/);
