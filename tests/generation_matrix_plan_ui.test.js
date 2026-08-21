@@ -165,4 +165,14 @@ describe('host Generation Matrix wiring', () => {
     expect(host).toMatch(/const _alloGenerationHelpersDeps[\s\S]*?quizReflectionCount,[\s\S]*?timelineItemCount,[\s\S]*?bridgeStepCount,/);
     expect(host).toContain('generationConfigSnapshot: (() => {');
   });
+
+  it('forwards each core math setting exactly once to GenerationHelpers', () => {
+    const depsBlock = host.match(/const _alloGenerationHelpersDeps = \(\) => \(\{([\s\S]*?)\n\s*\}\);/);
+    expect(depsBlock).not.toBeNull();
+
+    for (const key of ['mathSubject', 'mathMode', 'mathInput', 'isMathGraphEnabled']) {
+      const occurrences = depsBlock[1].match(new RegExp(`^\\s*${key},\\s*$`, 'gm')) || [];
+      expect(occurrences).toHaveLength(1);
+    }
+  });
 });
