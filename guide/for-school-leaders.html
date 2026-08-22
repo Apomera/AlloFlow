@@ -44,6 +44,8 @@
           <li><a href="review-and-next-steps.html">Review evidence and plan next steps</a></li>
           <li><a href="classroom-workflows.html">Classroom workflows</a></li>
           <li><a href="worked-student-vignette.html">Worked student vignette: water-cycle lesson</a></li>
+          <li><a href="worked-multilingual-vignette.html">Worked multilingual vignette: water-cycle language bridge</a></li>
+          <li><a href="worked-assessment-access-vignette.html">Worked assessment-access vignette: show the science, not the writing speed</a></li>
           <li><a href="privacy-and-responsible-ai.html">Privacy and responsible AI</a></li>
           <li><a href="allobot-assistant.html">AlloBot: the assistant that talks with you</a></li>
           <li><a href="documents-and-printing.html">Documents and printing: from resource to handout</a></li>
@@ -54,7 +56,7 @@
           <li><a href="school-rollout-and-coaching.html">School rollout and coaching</a></li>
           <li><a href="for-your-it-department.html">For your IT department: the one-page technical brief</a></li>
           <li><a href="for-school-leaders.html" aria-current="page">For school leaders: the Leadership Hub</a></li>
-          <li><a href="steam-lab.html">The STEAM Lab: 142 tools, and how to find the one you need</a></li>
+          <li><a href="steam-lab.html">The STEAM Lab: find and share the right tool</a></li>
         </ol>
       </nav>
     </aside>
@@ -78,7 +80,7 @@
             <dd>20 minutes</dd>
           </div>
         </dl>
-        <p class="chapter-meta">Chapter 24 of 25 · Verified <time datetime="2026-08-21">2026-08-21</time></p>
+        <p class="chapter-meta">Chapter 26 of 27 · Verified <time datetime="2026-08-22">2026-08-22</time></p>
         <nav class="section-nav" aria-labelledby="section-nav-title">
           <p id="section-nav-title" class="section-nav__title">On this page</p>
           <ol>
@@ -119,6 +121,8 @@
               <li><a href="review-and-next-steps.html">Review evidence and plan next steps</a></li>
               <li><a href="classroom-workflows.html">Classroom workflows</a></li>
               <li><a href="worked-student-vignette.html">Worked student vignette: water-cycle lesson</a></li>
+              <li><a href="worked-multilingual-vignette.html">Worked multilingual vignette: water-cycle language bridge</a></li>
+              <li><a href="worked-assessment-access-vignette.html">Worked assessment-access vignette: show the science, not the writing speed</a></li>
               <li><a href="privacy-and-responsible-ai.html">Privacy and responsible AI</a></li>
               <li><a href="allobot-assistant.html">AlloBot: the assistant that talks with you</a></li>
               <li><a href="documents-and-printing.html">Documents and printing: from resource to handout</a></li>
@@ -129,7 +133,7 @@
               <li><a href="school-rollout-and-coaching.html">School rollout and coaching</a></li>
               <li><a href="for-your-it-department.html">For your IT department: the one-page technical brief</a></li>
               <li><a href="for-school-leaders.html">For school leaders: the Leadership Hub</a></li>
-              <li><a href="steam-lab.html">The STEAM Lab: 142 tools, and how to find the one you need</a></li>
+              <li><a href="steam-lab.html">The STEAM Lab: find and share the right tool</a></li>
               </ul>
             </div>
           </noscript>
@@ -140,13 +144,13 @@
 <p>The hub states this once, and every tool holds to it:</p>
 <ul>
 <li><strong>Aggregate or de-identified where that is the point.</strong> The analysis tools take counts or student codes, never rosters of names tied to outcomes. The tools that do hold names — evaluation, meeting documentation — are real working records, not previews; what a district portal adds is shared, authenticated access and a retained store, not permission to do the work.</li>
-<li><strong>Computed on this device.</strong> Nothing you enter is sent to a server, with one exception you control: tools that offer AI drafting or translation call the AI backend your school configured, and they tell you before anything leaves. What you enter stays in your signed-in profile on that device, protected by your device sign-in rather than by encryption AlloFlow adds.</li>
+<li><strong>Local by default, with named exceptions.</strong> The standalone hub computes and stores working state in the current browser or desktop profile. AI drafting and translation, an optional evaluation portal, Drive backup, live or shared routes, an LMS, and other configured services can transmit or copy data outside that profile. Review the disclosure and destination for the exact tool and deployment. AlloFlow does not add application-level encryption to ordinary browser storage, so device access and disk protection still matter.</li>
 <li><strong>Descriptive, never a verdict.</strong> Every output is framed as material <em>for human review</em>. No tool places a student in a tier, rates a teacher, decides eligibility, or certifies a translation. You do, and the exports say so.</li>
 </ul>
 <p>A practical consequence worth planning around: because the data is on-device, a leadership workflow lives on the device where you started it. The hub's <strong>Back up this hub</strong> section covers this two ways:</p>
 <ul>
 <li><strong>Download backup / Restore from backup</strong> — one file with every tool's saved data, restorable on a new device or after a wipe. Treat the file as the confidential records it may describe. Restoring only ever writes the hub tools' own data; it cannot touch anything else in AlloFlow.</li>
-<li><strong>Automatic Drive backup</strong> — a three-minute, one-time script on your <strong>school-managed Google Workspace for Education account</strong> (so the stored data sits under your district's existing data-privacy agreement, not a personal account). Once connected, a dated backup is saved to a Drive folder whenever you close a hub tool or open the hub and something has changed — so finishing a walkthrough or saving a screening window is what freshens the copy, not remembering to visit a menu. The hub shows <em>last saved</em>, and the folder keeps a bounded history. The setup steps are in <code>apps_script/leadership_hub_backup/README.md</code> in the AlloFlow repository; the script can only write files it created — it cannot read the rest of your Drive and never shares anything with anyone.</li>
+<li><strong>Automatic Drive backup</strong> — an optional script installed in a <strong>school-managed Google Workspace for Education account</strong>, not a personal account. Once connected, it saves dated backups when the hub reports changed data on close or reopen, shows the last-save state, and maintains the history described by that script version. Follow <code>apps_script/leadership_hub_backup/README.md</code> for the exact deployment. The reviewed package requests access to files it creates and creates them Restricted; re-check scopes, sharing, retention, and behavior against the commit you install.</li>
 </ul>
 <p>Either way, the backup is working continuity, not filing. When a record needs to reach wherever your district officially stores it, download it from Drive and share it through the normal district channel yourself — that handoff stays deliberate and human.</p>
 <h2 id="classroom-visits-and-coaching">Classroom visits and coaching</h2>
@@ -176,7 +180,7 @@
 <h3 id="sped-timelines">SpEd Timelines ⏰</h3>
 <p>Evaluation clocks, IEP annuals, and triennials on one urgency dashboard (overdue / due in 14 / due in 30), with per-provider caseload views. Students are entered as codes only.</p>
 <p><strong>First session.</strong> Add timelines on the <strong>Timelines</strong> tab; the <strong>Dashboard</strong> sorts them into urgency bands automatically.</p>
-<p><strong>Keep in mind — this one matters legally.</strong> Due dates are <em>editable prefills</em>, not legal determinations. The evaluation clock prefills the IDEA fallback of 60 <strong>calendar</strong> days from consent (34 CFR 300.301(c)); many states set their own timeframes, and several count <strong>school</strong> days, which no calendar arithmetic can compute. Confirm every date against your state rule and district calendar — the screen and the CSV export both repeat this because it is that easy to forget. Once you hand-edit a date, the prefill stops touching it.</p>
+<p><strong>Keep in mind — this one matters legally.</strong> Due dates are <em>editable prefills</em>, not legal determinations. The evaluation clock uses the federal 60-<strong>calendar</strong>-day rule after parental consent, while <a href="https://sites.ed.gov/idea/regs/b/d/300.301">34 CFR § 300.301(c)(1)</a> also permits a state-established timeframe to control. Confirm every date against the current state rule, district procedure, consent facts, and school calendar. The screen and CSV repeat the warning, and a hand-edited due date is not overwritten by the prefill.</p>
 <h3 id="diagnosis-evaluation-and-school-eligibility">Diagnosis, Evaluation &amp; School Eligibility 🧩</h3>
 <p>A reference and reasoning tool: compare clinical diagnosis, IDEA eligibility, and Section 504; walk the evaluation path; review federal definitions, safeguards, and timelines; explore open-question cases; and build a privacy-safe meeting-preparation guide.</p>
 <p><strong>Keep in mind.</strong> It never decides eligibility, services, or placement — it prepares the humans who will. Definitions are federal; your state adds its own layer, so treat it as the map, not the territory.</p>
@@ -184,7 +188,7 @@
 <h3 id="meeting-documentation">Meeting Documentation 📋</h3>
 <p>Notes or a transcript in, your district's meeting format out. Six built-in formats (SST, IEP team, 504, parent/family conference, staff/PLC, evaluation planning) plus a custom-template builder — model your district's own form once and reuse it.</p>
 <p><strong>First session.</strong> Pick a format on <strong>New record</strong>, paste your notes, and draft. Review the result, certify it, and save; action items land in the <strong>Action items</strong> tracker with checkboxes.</p>
-<p><strong>Keep in mind — the two integrity mechanisms.</strong> Before any AI call, names are masked <em>locally</em> into &quot;Person A / Person B&quot; and restored locally afterward, so the model never sees who was in the room. And every drafted decision or action item carries a verbatim quote from your notes, mechanically verified; a claim the tool cannot find in your notes is flagged &quot;not found in your notes&quot; and kept visible rather than silently trusted. You certify before saving, and the export footer says a human did. There is also a fully manual no-AI mode.</p>
+<p><strong>Keep in mind — the two integrity mechanisms.</strong> Before an AI call, each name the preparer explicitly adds to <strong>Names to mask</strong> is replaced locally with a code such as &quot;Person A&quot; and restored locally in the result. A name omitted from that list remains in the notes and can reach the configured provider, so review the list before drafting. Every drafted decision or action item also carries a source quote that is checked as an exact substring of the masked notes; an unmatched quote is visibly flagged for review. You certify before saving, and the export footer records human review. A manual no-AI route is also available.</p>
 <h3 id="family-announcements">Family Announcements 📣</h3>
 <p>One announcement, every family language: write the English master, pick your building's languages (sixteen presets including right-to-left scripts), translate with AI, review each translation, and export an accessible packet with every section properly language-tagged and direction-aware.</p>
 <p><strong>First session.</strong> Compose a short real announcement — a picture day notice is a good first run — select two or three of your building's languages, translate, and <em>read the translations</em> before saving. The language selection is remembered for next time.</p>
@@ -196,17 +200,17 @@
 <li><strong>March–June:</strong> spring window closes the progress picture; Disproportionality Analyzer on the year's discipline and identification counts while the data is fresh; save everything — the Trends views only pay off in year two.</li>
 </ul>
 <h2 id="troubleshooting-and-support">Troubleshooting and support</h2>
-<p>The hub tools are ordinary AlloFlow modules: if a card opens to a loading screen that never resolves, the recovery sequence in <a href="troubleshooting.html">Troubleshooting</a> applies. AI drafting and translation require a configured backend — on a keyless install those buttons explain themselves and everything non-AI keeps working, per <a href="privacy-and-responsible-ai.html">Privacy and responsible AI</a>. For the rollout conversation with staff, pair this chapter with <a href="school-rollout-and-coaching.html">School rollout and coaching</a>.</p>
+<p>The hub tools are ordinary AlloFlow modules: if a card opens to a loading screen that never resolves, the recovery sequence in <a href="troubleshooting.html">Troubleshooting</a> applies. AI drafting and translation require a configured backend. Without one, local forms, calculations, saved records, and manual routes that do not call AI may remain available, but verify the exact tool and export path. For the rollout conversation with staff, pair this chapter with <a href="school-rollout-and-coaching.html">School rollout and coaching</a>.</p>
       </article>
       <nav class="chapter-pager" aria-label="Previous and next chapters">
         <a class="chapter-pager__previous" href="for-your-it-department.html"><span>Previous</span>For your IT department: the one-page technical brief</a>
-        <a class="chapter-pager__next" href="steam-lab.html"><span>Next</span>The STEAM Lab: 142 tools, and how to find the one you need</a>
+        <a class="chapter-pager__next" href="steam-lab.html"><span>Next</span>The STEAM Lab: find and share the right tool</a>
       </nav>
     </main>
   </div>
   <footer class="site-footer">
     <p>Teacher guidance, not a substitute for district policy or professional judgment.</p>
-    <p>Guide version 2026.08 &#183; Content verified <time datetime="2026-08-21">2026-08-21</time>.</p>
+    <p>Guide version 2026.08 &#183; Content verified <time datetime="2026-08-22">2026-08-22</time>.</p>
   </footer>
 
   <script src="guide-search.js" defer></script>

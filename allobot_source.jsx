@@ -4031,25 +4031,44 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                             </g>
                         )}
                         {effectiveAccessory === 'sorting-cubes' && (
-                            <g className="animate-in fade-in slide-in-from-top-2 duration-700 origin-center">
-                            <g className="animate-allobot-perk" style={{ animationDelay: '2.4s' }}>
-                                <ellipse cx="50" cy="32" rx="22" ry="3" fill="#1F2937" opacity="0.18" />
-                                <g transform="translate(38 18) rotate(-6)">
-                                    <rect x="0" y="0" width="14" height="14" rx="1.5" fill="#3B82F6" stroke="#1E3A8A" strokeWidth="1" />
-                                    <path d="M 0 0 L 14 0 L 14 14" stroke="#60A5FA" strokeWidth="1" fill="none" opacity="0.6" />
-                                    <circle cx="4" cy="4" r="1" fill="#DBEAFE" opacity="0.7" />
+                            <g data-accessory-placement="head-and-side" data-accessory-name="Sort-of-a-Hat">
+                                {/* A playful, original concept-sorting cap: crooked and patchwork, but
+                                    category-themed rather than modeled on any existing character. */}
+                                <g className="animate-in fade-in slide-in-from-top-2 duration-700 origin-center">
+                                    <g className="animate-allobot-perk" style={{ animationDelay: '2.4s' }}>
+                                        <ellipse cx="50" cy="26" rx="28" ry="5" fill="#312E81" stroke="#1E1B4B" strokeWidth="1.2" transform="rotate(-2 50 26)" />
+                                        <path d="M27 24 Q30 16 39 12 Q44 4 41 -7 Q52 -4 58 7 Q69 11 72 24 Q50 29 27 24 Z" fill="#7C3AED" stroke="#4C1D95" strokeWidth="1.4" />
+                                        <path d="M31 21 Q50 26 69 21" stroke="#FBBF24" strokeWidth="3.2" fill="none" />
+                                        <path d="M43 8 L50 4 L55 10 L50 15 L42 13 Z" fill="#A78BFA" stroke="#5B21B6" strokeWidth="0.7" transform="rotate(-8 49 10)" />
+                                        <text x="48.5" y="12" fontFamily="Arial" fontSize="6" fontWeight="bold" fill="#F5F3FF" textAnchor="middle">A</text>
+                                        <circle cx="61" cy="16" r="4" fill="#34D399" stroke="#065F46" strokeWidth="0.7" />
+                                        <text x="61" y="18" fontFamily="Arial" fontSize="5.5" fontWeight="bold" fill="#052E16" textAnchor="middle">B</text>
+                                        <path d="M35 18 Q38 14 41 18 Q39 21 36 23" stroke="#F9A8D4" strokeWidth="1.1" fill="none" strokeLinecap="round" />
+                                        <circle cx="35.5" cy="24" r="0.8" fill="#F9A8D4" />
+                                    </g>
                                 </g>
-                                <g transform="translate(46 6) rotate(8)">
-                                    <rect x="0" y="0" width="14" height="14" rx="1.5" fill="#22C55E" stroke="#14532D" strokeWidth="1" />
-                                    <path d="M 0 0 L 14 0 L 14 14" stroke="#4ADE80" strokeWidth="1" fill="none" opacity="0.6" />
-                                    <path d="M 3 7 L 6 10 L 11 4" stroke="#DCFCE7" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+
+                                {/* Sortable objects belong beside the bot, not balanced on its head. */}
+                                <g className="animate-in fade-in slide-in-from-left-3 duration-500" transform="translate(-30, 32)">
+                                    <g className="animate-allobot-float" style={{ animationDelay: '1.1s' }}>
+                                        <ellipse cx="17" cy="49" rx="17" ry="3" fill="#1F2937" opacity="0.18" />
+                                        <g transform="translate(3 33) rotate(-6)">
+                                            <rect x="0" y="0" width="14" height="14" rx="1.5" fill="#3B82F6" stroke="#1E3A8A" strokeWidth="1" />
+                                            <path d="M 0 0 L 14 0 L 14 14" stroke="#60A5FA" strokeWidth="1" fill="none" opacity="0.6" />
+                                            <circle cx="4" cy="4" r="1" fill="#DBEAFE" opacity="0.7" />
+                                        </g>
+                                        <g transform="translate(14 22) rotate(8)">
+                                            <rect x="0" y="0" width="14" height="14" rx="1.5" fill="#22C55E" stroke="#14532D" strokeWidth="1" />
+                                            <path d="M 0 0 L 14 0 L 14 14" stroke="#4ADE80" strokeWidth="1" fill="none" opacity="0.6" />
+                                            <path d="M 3 7 L 6 10 L 11 4" stroke="#DCFCE7" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+                                        </g>
+                                        <g transform="translate(5 8) rotate(-4)">
+                                            <rect x="0" y="0" width="13" height="13" rx="1.5" fill="#EF4444" stroke="#7F1D1D" strokeWidth="1" />
+                                            <path d="M 0 0 L 13 0 L 13 13" stroke="#FCA5A5" strokeWidth="1" fill="none" opacity="0.6" />
+                                            <path d="M 4 4 L 9 9 M 9 4 L 4 9" stroke="#FEE2E2" strokeWidth="1.4" strokeLinecap="round" />
+                                        </g>
+                                    </g>
                                 </g>
-                                <g transform="translate(54 -4) rotate(-4)">
-                                    <rect x="0" y="0" width="13" height="13" rx="1.5" fill="#EF4444" stroke="#7F1D1D" strokeWidth="1" />
-                                    <path d="M 0 0 L 13 0 L 13 13" stroke="#FCA5A5" strokeWidth="1" fill="none" opacity="0.6" />
-                                    <path d="M 4 4 L 9 9 M 9 4 L 4 9" stroke="#FEE2E2" strokeWidth="1.4" strokeLinecap="round" />
-                                </g>
-                            </g>
                             </g>
                         )}
                         {effectiveAccessory === 'clarity-crown' && (
@@ -4134,12 +4153,13 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                             </g>
                         )}
                         {effectiveAccessory === 'sticky-notes' && (
-                            <g className="animate-in fade-in slide-in-from-top-2 duration-700 origin-center">
-                            <g className="animate-allobot-perk" style={{ animationDelay: '2.5s' }}>
-                                <g transform="rotate(-8 34 18)"><rect x="22" y="8" width="22" height="20" rx="1" fill="#FDE047" stroke="#CA8A04" strokeWidth="1" /><path d="M38 28 L44 28 L44 22 Z" fill="#FACC15" /><line x1="26" y1="14" x2="40" y2="14" stroke="#A16207" strokeWidth="1" /><line x1="26" y1="18" x2="37" y2="18" stroke="#A16207" strokeWidth="1" /></g>
-                                <g transform="rotate(7 64 18)"><rect x="54" y="6" width="22" height="20" rx="1" fill="#5EEAD4" stroke="#0D9488" strokeWidth="1" /><path d="M70 26 L76 26 L76 20 Z" fill="#2DD4BF" /><line x1="58" y1="12" x2="72" y2="12" stroke="#0F766E" strokeWidth="1" /><line x1="58" y1="16" x2="69" y2="16" stroke="#0F766E" strokeWidth="1" /></g>
-                                <g transform="rotate(-3 50 12)"><rect x="40" y="0" width="22" height="20" rx="1" fill="#FDA4AF" stroke="#E11D48" strokeWidth="1" /><path d="M56 20 L62 20 L62 14 Z" fill="#FB7185" /><line x1="44" y1="6" x2="58" y2="6" stroke="#BE123C" strokeWidth="1" /><line x1="44" y1="10" x2="55" y2="10" stroke="#BE123C" strokeWidth="1" /></g>
-                            </g>
+                            <g className="animate-in fade-in slide-in-from-left-3 duration-500" transform="translate(-30, 34)" data-accessory-placement="side-left">
+                                <g className="animate-allobot-float" style={{ animationDelay: '2.5s' }}>
+                                    <ellipse cx="18" cy="48" rx="18" ry="3" fill="#1F2937" opacity="0.16" />
+                                    <g transform="rotate(-8 13 23)"><rect x="2" y="12" width="24" height="22" rx="1" fill="#FDE047" stroke="#CA8A04" strokeWidth="1" /><path d="M20 34 L26 34 L26 28 Z" fill="#FACC15" /><line x1="6" y1="19" x2="22" y2="19" stroke="#A16207" strokeWidth="1" /><line x1="6" y1="24" x2="19" y2="24" stroke="#A16207" strokeWidth="1" /></g>
+                                    <g transform="rotate(7 24 16)"><rect x="13" y="5" width="23" height="22" rx="1" fill="#5EEAD4" stroke="#0D9488" strokeWidth="1" /><path d="M30 27 L36 27 L36 21 Z" fill="#2DD4BF" /><line x1="17" y1="12" x2="32" y2="12" stroke="#0F766E" strokeWidth="1" /><line x1="17" y1="17" x2="29" y2="17" stroke="#0F766E" strokeWidth="1" /></g>
+                                    <g transform="rotate(-3 20 35)"><rect x="8" y="25" width="24" height="20" rx="1" fill="#FDA4AF" stroke="#E11D48" strokeWidth="1" /><path d="M26 45 L32 45 L32 39 Z" fill="#FB7185" /><line x1="12" y1="31" x2="28" y2="31" stroke="#BE123C" strokeWidth="1" /><line x1="12" y1="36" x2="25" y2="36" stroke="#BE123C" strokeWidth="1" /></g>
+                                </g>
                             </g>
                         )}
                         {effectiveAccessory === 'anchor-easel' && (
@@ -4203,9 +4223,10 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                             </g>
                         )}
                         {effectiveAccessory === 'gear' && (
-                            <g className="animate-in fade-in slide-in-from-top-2 duration-700 origin-center">
-                                <g className="animate-allobot-perk" style={{ animationDelay: '1.5s' }}>
-                                    <g transform="translate(50, 15)">
+                            <g className="animate-in fade-in slide-in-from-left-3 duration-500" transform="translate(-21, 38)" data-accessory-placement="side-left">
+                                <g className="animate-allobot-float" style={{ animationDelay: '1.5s' }}>
+                                    <ellipse cx="18" cy="51" rx="17" ry="3" fill="#1F2937" opacity="0.16" />
+                                    <g transform="translate(18, 28)">
                                         <g fill="#B0B8C4" stroke="#475569" strokeWidth="1.1">
                                             <rect x="-2.5" y="-15" width="5" height="6" rx="1" /><rect x="-2.5" y="9" width="5" height="6" rx="1" />
                                             <rect x="-15" y="-2.5" width="6" height="5" rx="1" /><rect x="9" y="-2.5" width="6" height="5" rx="1" />

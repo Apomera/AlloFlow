@@ -28,10 +28,10 @@ The X on the bot and the header toggle do the same thing: they hide AlloBot and 
 
 ## What gets sent where
 
-A spoken question goes to the same AI backend as everything else you generate, under the same settings. AlloBot does not listen when hands-free mode is off, and the microphone closes while it speaks or thinks (the indicator says so). If no AI backend is set up, AlloBot's AI conversation is unavailable; see [Troubleshooting](08-troubleshooting.md) for the three ways to turn AI on.
+A spoken question goes to the configured AI backend under the same provider settings used for generation. AlloBot does not listen when hands-free mode is off, and the microphone closes while it speaks or thinks (the indicator says so). If no AI backend is set up, AlloBot's AI conversation is unavailable; see [Troubleshooting](08-troubleshooting.md) for the connection routes available in your deployment.
 
 ## Practical guidance
 
 - **Let new users just talk.** The most common mistake is treating AlloBot like a command line. It is a colleague, not a console.
-- **During a lesson**, "stop reading" and the read-aloud transport always act instantly; they are deliberately exempt from the offer step.
+- **During a lesson**, "stop reading" and the read-aloud transport are direct controls rather than proposed screen changes. They should respond promptly; if audio continues, use the visible stop or mute control and follow the audio recovery steps in [Troubleshooting](08-troubleshooting.md).
 - **In Guided Mode**, AlloBot knows which step you are on, so "where was I?" is a fair question.

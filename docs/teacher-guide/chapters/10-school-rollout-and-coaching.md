@@ -23,7 +23,7 @@ Do not begin with a target such as “every teacher will use ten tools.” Featu
 
 A pilot answers one question: does this help our teachers with our students? Three to five volunteer teachers for four to six weeks is enough to know.
 
-**Keep the entry cost near zero.** Every interactive tool has its own direct link (for example, a water cycle simulation a science teacher can open with one click and use that period). Start volunteers with one link that fits something they already teach; nobody has to adopt a platform to try a tool. There are no accounts to create, for staff or students, so IT setup for the pilot itself is nothing.
+**Keep the entry cost low.** Many catalog tools have a focused link, such as the Water Cycle route shown in the public catalog. Start volunteers with one verified link that fits something they already teach. The default public standalone route may not require an AlloFlow account, but IT still needs to approve the host, filtering, device support, permissions, data path, and any surrounding LMS, Gemini, or district sign-in.
 
 **Agree on defaults once.** Have the pilot group open Universal Settings together for ten minutes and settle grade level, language, and the translation setting for their context. Shared defaults make pilot artifacts comparable and prevent the most common early confusion, which is two teachers getting different-feeling output from the same tool.
 

@@ -209,13 +209,18 @@ describe('UA-gate regression (bisected to @4d93bf5eb): scanned run without a per
 });
 
 describe('M24 — load-bearing qualifiers are focusable buttons, not tooltip-only spans', () => {
-  it('the shared qualifier component exists (focus ring + aria-label + toast on activation)', () => {
-    expect(view).toContain('const _AlloQualifier = ({ text, className, children }) => (');
+  it('uses a short visible name plus an accessible description, without giant native title tooltips', () => {
+    expect(view).toContain('const _AlloQualifier = ({ text, className, children }) => {');
     expect(view).toContain("onClick={() => { try { addToast(text, 'info'); } catch (_) {} }}");
+    expect(view).toContain('aria-describedby={detailId}');
+    expect(view).toContain('<span id={detailId} className="sr-only">{text}</span>');
+    expect(view).not.toContain('title={text}');
+    expect(view).not.toContain('aria-label={text}');
     expect(view).toContain('focus-visible:ring-2 focus-visible:ring-indigo-500');
   });
-  it('the named load-bearing sites all use it (est-min, governing tag, fidelity asterisk, foundations, advisory, PDF/UA chip+badge, reading order, OCR quality, content/automated labels)', () => {
-    expect((view.match(/<_AlloQualifier/g) || []).length).toBeGreaterThanOrEqual(11);
+  it('load-bearing qualifiers use it while the structure inventory owns its expanded disclosure panel', () => {
+    expect((view.match(/<_AlloQualifier/g) || []).length).toBeGreaterThanOrEqual(10);
+    expect(view).toContain('id="pdf-html-structure-details"');
     // the fidelity asterisk is no longer aria-hidden decoration
     expect(view).not.toContain('<span className="text-amber-600 font-bold" aria-hidden="true">*</span>');
     expect(view).toMatch(/_AlloQualifier className="text-amber-600 font-bold" text=\{t\('pdf_audit\.dashboard\.fidelity_limited_title'\)/);

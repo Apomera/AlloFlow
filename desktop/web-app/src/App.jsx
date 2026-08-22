@@ -11682,7 +11682,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // safety net for other components.
     if (window.__alloCdnBootstrapped) return;
     window.__alloCdnBootstrapped = true;
-    var pluginCdnVersion = 'ba3b4626d';
+    var pluginCdnVersion = '1787377616809';
     var isDesktopBundledApp = typeof window !== 'undefined'
       && /^(localhost|127\.0\.0\.1)$/i.test(window.location.hostname || '')
       && (window.location.pathname || '').startsWith('/app/');
@@ -12005,32 +12005,32 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       };
       document.head.appendChild(s);
     })();
-    loadModule('AlloData', 'https://alloflow-cdn.pages.dev/allo_data_module.js?v=ba3b4626d');
-    loadModule('MailboxScriptSource', 'https://alloflow-cdn.pages.dev/mailbox_script_source_module.js?v=ba3b4626d');
-    loadModule('ToolCatalog', 'https://alloflow-cdn.pages.dev/tool_catalog_module.js?v=ba3b4626d');
-    loadModule('SubmissionCrypto', 'https://alloflow-cdn.pages.dev/submission_crypto_module.js?v=ba3b4626d');
-    loadModule('AlloCrypto', 'https://alloflow-cdn.pages.dev/allo_crypto_module.js?v=ba3b4626d');
-    loadModule('DeviceAccessCode', 'https://alloflow-cdn.pages.dev/device_access_code_module.js?v=ba3b4626d');
-    loadModule('AlloDeviceVault', 'https://alloflow-cdn.pages.dev/allo_device_vault_module.js?v=ba3b4626d');
-    loadModule('AlloRecoveryVaultIntegration', 'https://alloflow-cdn.pages.dev/allo_recovery_vault_integration_module.js?v=ba3b4626d');
+    loadModule('AlloData', './allo_data_module.js');
+    loadModule('MailboxScriptSource', './mailbox_script_source_module.js');
+    loadModule('ToolCatalog', './tool_catalog_module.js');
+    loadModule('SubmissionCrypto', './submission_crypto_module.js');
+    loadModule('AlloCrypto', './allo_crypto_module.js');
+    loadModule('DeviceAccessCode', './device_access_code_module.js');
+    loadModule('AlloDeviceVault', './allo_device_vault_module.js');
+    loadModule('AlloRecoveryVaultIntegration', './allo_recovery_vault_integration_module.js');
     // Shared quest/goal vocabulary for directions goals, STEAM Lab and SEL Hub
     // quests. Tiny and dependency-free; every consumer degrades gracefully if it
     // has not landed yet, so load order is not load-bearing.
     loadModule('AlloQuestContract', 'https://alloflow-cdn.pages.dev/allo_quest_contract_module.js?v=355fa3d9a');
-    loadModule('SubmissionInbox', 'https://alloflow-cdn.pages.dev/view_submission_inbox_module.js?v=ba3b4626d');
-    loadModule('FirestoreSync', 'https://alloflow-cdn.pages.dev/firestore_sync_module.js?v=cc9eb976');
-    loadModule('SafetyChecker', 'https://alloflow-cdn.pages.dev/safety_checker_module.js?v=ba3b4626d');
-    loadModule('Fluency', 'https://alloflow-cdn.pages.dev/fluency_module.js?v=ba3b4626d');
-    loadModule('LargeFileModule', 'https://alloflow-cdn.pages.dev/large_file_module.js?v=ba3b4626d');
-    loadModule('KeyConceptMapModule', 'https://alloflow-cdn.pages.dev/key_concept_map_module.js?v=ba3b4626d');
-    loadModule('UtilsPure', 'https://alloflow-cdn.pages.dev/utils_pure_module.js?v=ba3b4626d');
-    loadModule('GeminiAPI', 'https://alloflow-cdn.pages.dev/gemini_api_module.js?v=ba3b4626d');
-    loadModule('TTS', 'https://alloflow-cdn.pages.dev/tts_module.js?v=8405ef04');
-    loadModule('Personas', 'https://alloflow-cdn.pages.dev/personas_module.js?v=e4ee2e66');
-    loadModule('Export', 'https://alloflow-cdn.pages.dev/export_module.js?v=eac1e2a4');
-    loadModule('MiscComponents', 'https://alloflow-cdn.pages.dev/misc_components_module.js?v=ba3b4626d');
-    loadModule('RemediationAudio', 'https://alloflow-cdn.pages.dev/remediation_audio_module.js?v=ba3b4626d');
-    loadModule('StemLab', 'https://alloflow-cdn.pages.dev/stem_lab/stem_lab_module.js?v=ba3b4626d');
+    loadModule('SubmissionInbox', './view_submission_inbox_module.js');
+    loadModule('FirestoreSync', './firestore_sync_module.js');
+    loadModule('SafetyChecker', './safety_checker_module.js');
+    loadModule('Fluency', './fluency_module.js');
+    loadModule('LargeFileModule', './large_file_module.js');
+    loadModule('KeyConceptMapModule', './key_concept_map_module.js');
+    loadModule('UtilsPure', './utils_pure_module.js');
+    loadModule('GeminiAPI', './gemini_api_module.js');
+    loadModule('TTS', './tts_module.js');
+    loadModule('Personas', './personas_module.js');
+    loadModule('Export', './export_module.js');
+    loadModule('MiscComponents', './misc_components_module.js');
+    loadModule('RemediationAudio', './remediation_audio_module.js');
+    loadModule('StemLab', './stem_lab/stem_lab_module.js');
     // Word Sounds is the largest CDN module in the app (~744KB) and was loaded
     // eagerly here for EVERY user at boot, including the majority who never open
     // it. It registers exactly one component, WordSoundsModal, and the only
@@ -12043,40 +12043,40 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // The render site already has a "Loading Word Sounds..." fallback with a
     // Close escape, and the module registry re-renders the app when the load
     // lands, so the fallback resolves on its own.
-    window.__alloLazyWordSounds = (function() { var L=false; return function() { if(L)return; L=true; loadModule('WordSoundsModal', 'https://alloflow-cdn.pages.dev/word_sounds_module.js?v=ba3b4626d'); }; })();
-    loadModule('AlloSheetTransferAdapter', 'https://alloflow-cdn.pages.dev/allo_sheet/transfer_adapter.js?v=ba3b4626d');
-    loadModule('StudentAnalytics', 'https://alloflow-cdn.pages.dev/student_analytics_module.js?v=ba3b4626d');
-    loadModule('AlloSheetHostBridge', 'https://alloflow-cdn.pages.dev/allo_sheet/host_bridge.js?v=ba3b4626d');
+    window.__alloLazyWordSounds = (function() { var L=false; return function() { if(L)return; L=true; loadModule('WordSoundsModal', './word_sounds_module.js'); }; })();
+    loadModule('AlloSheetTransferAdapter', './allo_sheet/transfer_adapter.js');
+    loadModule('StudentAnalytics', './student_analytics_module.js');
+    loadModule('AlloSheetHostBridge', './allo_sheet/host_bridge.js');
     (function queueBehaviorLensModules() {
       const startBehaviorLens = function() {
         if (!(window.AlloModules && window.AlloModules.BehaviorLensWorkspace)) return false;
         window.removeEventListener('alloflow:module-registry-changed', startBehaviorLens);
-        loadModule('BehaviorLens', 'https://alloflow-cdn.pages.dev/behavior_lens_module.js?v=ba3b4626d');
+        loadModule('BehaviorLens', './behavior_lens_module.js');
         return true;
       };
       if (!startBehaviorLens()) {
         window.addEventListener('alloflow:module-registry-changed', startBehaviorLens);
-        loadModule('BehaviorLensWorkspace', 'https://alloflow-cdn.pages.dev/behavior_lens_workspace_module.js?v=ba3b4626d');
+        loadModule('BehaviorLensWorkspace', './behavior_lens_workspace_module.js');
       }
     })();
-    loadModule('ReportWriter', 'https://alloflow-cdn.pages.dev/report_writer_module.js?v=ba3b4626d');
-    loadModule('CinematicStudio', 'https://alloflow-cdn.pages.dev/cinematic_studio_module.js?v=ba3b4626d');
-    loadModule('BrandProfile', 'https://alloflow-cdn.pages.dev/brand_profile_module.js?v=ba3b4626d');
+    loadModule('ReportWriter', './report_writer_module.js');
+    loadModule('CinematicStudio', './cinematic_studio_module.js');
+    loadModule('BrandProfile', './brand_profile_module.js');
     // Pyodide is ~10MB on first hit; load lazily so non–Report-Writer users
     // don't pay the cost at boot. Report Writer's generateReport() calls
     // window.__alloLazyPyodide() as soon as the user clicks Generate.
     window.__alloLazyPyodide = (function() { var L=false; return function() { if(L)return; L=true; loadModule('PyodideRuntime', 'https://alloflow-cdn.pages.dev/pyodide_runtime_module.js'); }; })();
-    window.__alloLazySymbolStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SymbolStudio', 'https://alloflow-cdn.pages.dev/symbol_studio_module.js?v=ba3b4626d'); }; })();
+    window.__alloLazySymbolStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SymbolStudio', './symbol_studio_module.js'); }; })();
     window.__alloLazyVideoStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TutorialCompilerModule', 'https://alloflow-cdn.pages.dev/tutorial_compiler_module.js?v=1e5f07c6'); loadModule('VideoStudio', 'https://alloflow-cdn.pages.dev/video_studio_module.js?v=1e5f07c6'); }; })();
-    window.__alloLazyAlloStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloStudio', 'https://alloflow-cdn.pages.dev/studio_module.js?v=ba3b4626d'); }; })();
-    window.__alloLazyAlloHaven = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloHaven', 'https://alloflow-cdn.pages.dev/allohaven_module.js?v=ba3b4626d'); }; })();
+    window.__alloLazyAlloStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloStudio', './studio_module.js'); }; })();
+    window.__alloLazyAlloHaven = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloHaven', './allohaven_module.js'); }; })();
     // Dynamic Assessment Studio (Phase A+B) — clinical tool, lazy-loaded.
     // School-psych workflow: pretest → AI-mediated or clinician-led mediation
     // → posttest with graduated prompt hierarchies + modifiability scoring.
     window.__alloLazyDynamicAssessment = (function() { var L=false; return function() { if(L)return; L=true; loadModule('DynamicAssessment', 'https://alloflow-cdn.pages.dev/dynamic_assessment_module.js'); }; })();
     // Seating Chart (Ring 0+1, July 21 2026) — teacher-only roster tool,
     // lazy-loaded from the Roster panel's Seating Chart button.
-    window.__alloLazySeatingChart = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SeatingChart', 'https://alloflow-cdn.pages.dev/seating_chart_module.js?v=ba3b4626d'); }; })();
+    window.__alloLazySeatingChart = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SeatingChart', './seating_chart_module.js'); }; })();
     // UDL Walkthrough (Aug 3 2026) — admin/coach classroom-visit tool,
     // lazy-loaded from the Educator Hub card.
     window.__alloLazyUdlWalkthrough = (function() { var L=false; return function() { if(L)return; L=true; loadModule('UdlWalkthrough', 'https://alloflow-cdn.pages.dev/udl_walkthrough_module.js?v=uw080306'); }; })();
@@ -12088,115 +12088,115 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // Meeting Documentation is its third tool (needs callGemini).
     window.__alloLazyAdminHub = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AdminHub', 'https://alloflow-cdn.pages.dev/admin_hub_module.js?v=29e9a817'); }; })();
     // Educator Growth & Evaluation (Aug 13 2026) — Act 13 workflow prototype.
-    window.__alloLazyEducatorEvaluation = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EducatorEvaluation', 'https://alloflow-cdn.pages.dev/educator_evaluation_module.js?v=ba3b4626d'); }; })();
+    window.__alloLazyEducatorEvaluation = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EducatorEvaluation', './educator_evaluation_module.js'); }; })();
     // Math Studio (Aug 17 2026) — the former STEM Lab Create tab, math-owned.
-    window.__alloLazyMathCreate = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MathCreate', 'https://alloflow-cdn.pages.dev/math_create_module.js?v=ba3b4626d'); }; })();
+    window.__alloLazyMathCreate = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MathCreate', './math_create_module.js'); }; })();
     window.__alloLazyMeetingDocs = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MeetingDocs', 'https://alloflow-cdn.pages.dev/meeting_docs_module.js?v=md080302'); }; })();
     window.__alloLazySpedTimelines = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SpedTimelines', 'https://alloflow-cdn.pages.dev/sped_timelines_module.js?v=st080301'); }; })();
-    window.__alloLazyDiagnosisEligibility = (function() { var L=false; return function() { if(L)return; L=true; loadModule('DiagnosisEligibility', 'https://alloflow-cdn.pages.dev/stem_lab/stem_tool_eligibility.js?v=ba3b4626d'); }; })();
+    window.__alloLazyDiagnosisEligibility = (function() { var L=false; return function() { if(L)return; L=true; loadModule('DiagnosisEligibility', './stem_lab/stem_tool_eligibility.js'); }; })();
     window.__alloLazyFamilyAnnouncements = (function() { var L=false; return function() { if(L)return; L=true; loadModule('FamilyAnnouncements', 'https://alloflow-cdn.pages.dev/family_announcements_module.js?v=fa080301'); }; })();
     window.__alloLazyMtssTriage = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MtssTriage', 'https://alloflow-cdn.pages.dev/mtss_triage_module.js?v=mt080301'); }; })();
     // Voice infrastructure (Phase 3v) — shared dictation + audio surface.
     // Loaded after AlloHaven so it's available for arcade modes and for
     // the 7+ existing inline SpeechRecognition reimplementations to migrate
     // onto in subsequent commits.
-    loadModule('Voice', 'https://alloflow-cdn.pages.dev/voice_module.js?v=ba3b4626d');
-    loadModule('SelHub', 'https://alloflow-cdn.pages.dev/sel_hub/sel_hub_module.js?v=ba3b4626d');
-    loadModule('CommunityCatalog', 'https://alloflow-cdn.pages.dev/catalog_module.js?v=ba3b4626d');
-    loadModule('ReadingLibrary', 'https://alloflow-cdn.pages.dev/reading_library_module.js?v=ba3b4626d');
-    loadModule('AccessibilityEvidence', 'https://alloflow-cdn.pages.dev/accessibility_evidence_module.js?v=ba3b4626d');
-    loadModule('AccessibilityLab', 'https://alloflow-cdn.pages.dev/accessibility_lab_module.js?v=ba3b4626d');
-    loadModule('AuditRemediator', 'https://alloflow-cdn.pages.dev/audit_remediator_module.js?v=ba3b4626d');
-    loadModule('QuizModeStrategies', 'https://alloflow-cdn.pages.dev/quiz_mode_strategies.js?v=ba3b4626d');
-    loadModule('QuizAIHelpers', 'https://alloflow-cdn.pages.dev/quiz_ai_helpers.js?v=ba3b4626d');
-    loadModule('QuizLiveAggregators', 'https://alloflow-cdn.pages.dev/quiz_live_aggregators.js?v=ba3b4626d');
-    loadModule('GamesBundle', 'https://alloflow-cdn.pages.dev/games_module.js?v=ba3b4626d');
-    loadModule('QuickStartWizard', 'https://alloflow-cdn.pages.dev/quickstart_module.js?v=ba3b4626d');
-    loadModule('AlloBot', 'https://alloflow-cdn.pages.dev/allobot_module.js?v=ba3b4626d');
-    loadModule('TeacherModule', 'https://alloflow-cdn.pages.dev/teacher_module.js?v=ba3b4626d');
-    window.__alloLazyStoryForge = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StoryForge', 'https://alloflow-cdn.pages.dev/story_forge_module.js?v=ba3b4626d'); }; })();
-    window.__alloLazyLitLab = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LitLab', 'https://alloflow-cdn.pages.dev/story_stage_module.js?v=ba3b4626d'); }; })();
-    window.__alloLazyLearningWebExplorer = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LearningWebExplorer', 'https://alloflow-cdn.pages.dev/learning_web_explorer_module.js?v=ba3b4626d'); }; })();
-    window.__alloLazyMindMap = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MindMap', 'https://alloflow-cdn.pages.dev/mind_map_module.js?v=ba3b4626d'); }; })();
-    window.__alloLazyPoetTree = (function() { var L=false; return function() { if(L)return; L=true; loadModule('PoetTree', 'https://alloflow-cdn.pages.dev/poet_tree_module.js?v=ba3b4626d'); }; })();
+    loadModule('Voice', './voice_module.js');
+    loadModule('SelHub', './sel_hub/sel_hub_module.js');
+    loadModule('CommunityCatalog', './catalog_module.js');
+    loadModule('ReadingLibrary', './reading_library_module.js');
+    loadModule('AccessibilityEvidence', './accessibility_evidence_module.js');
+    loadModule('AccessibilityLab', './accessibility_lab_module.js');
+    loadModule('AuditRemediator', './audit_remediator_module.js');
+    loadModule('QuizModeStrategies', './quiz_mode_strategies.js');
+    loadModule('QuizAIHelpers', './quiz_ai_helpers.js');
+    loadModule('QuizLiveAggregators', './quiz_live_aggregators.js');
+    loadModule('GamesBundle', './games_module.js');
+    loadModule('QuickStartWizard', './quickstart_module.js');
+    loadModule('AlloBot', './allobot_module.js');
+    loadModule('TeacherModule', './teacher_module.js');
+    window.__alloLazyStoryForge = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StoryForge', './story_forge_module.js'); }; })();
+    window.__alloLazyLitLab = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LitLab', './story_stage_module.js'); }; })();
+    window.__alloLazyLearningWebExplorer = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LearningWebExplorer', './learning_web_explorer_module.js'); }; })();
+    window.__alloLazyMindMap = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MindMap', './mind_map_module.js'); }; })();
+    window.__alloLazyPoetTree = (function() { var L=false; return function() { if(L)return; L=true; loadModule('PoetTree', './poet_tree_module.js'); }; })();
     window.__alloLazyResearchHub = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ResearchHub', 'https://alloflow-cdn.pages.dev/research_hub_module.js'); loadModule('ResearchLaneScientific', 'https://alloflow-cdn.pages.dev/research_lane_scientific_module.js'); loadModule('ResearchLaneEngineering', 'https://alloflow-cdn.pages.dev/research_lane_engineering_module.js'); loadModule('ResearchLaneHumanities', 'https://alloflow-cdn.pages.dev/research_lane_humanities_module.js'); loadModule('ResearchHubEducator', 'https://alloflow-cdn.pages.dev/research_hub_educator_module.js'); }; })();
-    window.__alloLazyVisualPanel = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VisualPanelModule', 'https://alloflow-cdn.pages.dev/visual_panel_module.js?v=ba3b4626d'); }; })();
+    window.__alloLazyVisualPanel = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VisualPanelModule', './visual_panel_module.js'); }; })();
     if (window.__alloVisualPanelRequested) window.__alloLazyVisualPanel();
-    loadModule('WordSoundsSetupModule', 'https://alloflow-cdn.pages.dev/word_sounds_setup_module.js?v=ba3b4626d');
-    loadModule('AdventureModule', 'https://alloflow-cdn.pages.dev/adventure_module.js?v=ba3b4626d');
-    loadModule('StudentInteractionModule', 'https://alloflow-cdn.pages.dev/student_interaction_module.js?v=0be128c6');
-    loadModule('MathFluency', 'https://alloflow-cdn.pages.dev/math_fluency_module.js?v=ba3b4626d');
-    loadModule('UIModalsModule', 'https://alloflow-cdn.pages.dev/ui_modals_module.js?v=ba3b4626d');
-    loadModule('UIFontLibrary', 'https://alloflow-cdn.pages.dev/ui_font_library_module.js?v=ba3b4626d');
-    loadModule('VoiceConfig', 'https://alloflow-cdn.pages.dev/voice_config_module.js?v=ba3b4626d');
-    loadModule('CanvasTips', 'https://alloflow-cdn.pages.dev/canvas_tips_module.js?v=ba3b4626d');
+    loadModule('WordSoundsSetupModule', './word_sounds_setup_module.js');
+    loadModule('AdventureModule', './adventure_module.js');
+    loadModule('StudentInteractionModule', './student_interaction_module.js');
+    loadModule('MathFluency', './math_fluency_module.js');
+    loadModule('UIModalsModule', './ui_modals_module.js');
+    loadModule('UIFontLibrary', './ui_font_library_module.js');
+    loadModule('VoiceConfig', './voice_config_module.js');
+    loadModule('CanvasTips', './canvas_tips_module.js');
     // ── Lazy-loaded modal modules (May 12 2026) ──
     // Each modal is gated by a wrapped setter that fires its ensure-loader on
     // first true. Until that happens the script is not fetched, cutting ~9
     // requests off cold boot. The embedded loadModule(...) call still matches
     // build.js's URL rewriter regex, so hashes auto-update on deploy.
-    window.__alloLazyKokoroOfferModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('KokoroOfferModal', 'https://alloflow-cdn.pages.dev/view_kokoro_offer_modal_module.js?v=ba3b4626d'); }; })();
+    window.__alloLazyKokoroOfferModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('KokoroOfferModal', './view_kokoro_offer_modal_module.js'); }; })();
     // Process Provenance (Work Story). Stable label pin, like the storage
     // module: this file is not in build.js MODULES, so a hash pin would freeze.
     window.__alloLazyProvenance = (function() { var L=false; return function() { if(L)return; L=true; loadModule('Provenance', 'https://alloflow-cdn.pages.dev/allo_provenance_module.js?v=prov-p1'); }; })();
     // ConfirmDialog stays eager — used by many widgets (delete unit, end session, clear edges, etc.).
-    loadModule('ConfirmDialog', 'https://alloflow-cdn.pages.dev/view_confirm_dialog_module.js?v=ba3b4626d');
+    loadModule('ConfirmDialog', './view_confirm_dialog_module.js');
     // PromptDialog (May 2026 polish pass): polished replacement for window.prompt(); shared by AlloFlowUX.
-    loadModule('PromptDialog', 'https://alloflow-cdn.pages.dev/view_prompt_dialog_module.js?v=ba3b4626d');
-    window.__alloLazyHintsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('HintsModal', 'https://alloflow-cdn.pages.dev/view_hints_modal_module.js?v=ba3b4626d'); }; })();
-    window.__alloLazyXPModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('XPModal', 'https://alloflow-cdn.pages.dev/view_xp_modal_module.js?v=ba3b4626d'); }; })();
-    window.__alloLazyStorybookExportModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StorybookExportModal', 'https://alloflow-cdn.pages.dev/view_storybook_export_modal_module.js?v=059104c5'); }; })();
-    window.__alloLazyInfoModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('InfoModal', 'https://alloflow-cdn.pages.dev/view_info_modal_module.js?v=ba3b4626d'); }; })();
-    window.__alloLazyVideoLibrary = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VideoLibrary', 'https://alloflow-cdn.pages.dev/view_video_library_module.js?v=ba3b4626d'); }; })();
-    window.__alloLazyVideoRefPlayer = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VideoRefPlayer', 'https://alloflow-cdn.pages.dev/view_video_ref_player_module.js?v=ba3b4626d'); }; })();
-    window.__alloLazyEndSessionPreview = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EndSessionPreview', 'https://alloflow-cdn.pages.dev/view_end_session_preview_module.js?v=ba3b4626d'); }; })();
-    window.__alloLazyAssignmentCenter = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AssignmentCenter', 'https://alloflow-cdn.pages.dev/view_assignment_center_module.js?v=ba3b4626d'); }; })();
-    window.__alloLazyDirectionsResult = (function() { var L=false; return function() { if(L)return; L=true; loadModule('DirectionsResult', 'https://alloflow-cdn.pages.dev/view_directions_result_module.js?v=ba3b4626d'); }; })();
-    window.__alloLazySessionModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SessionModal', 'https://alloflow-cdn.pages.dev/view_session_modal_module.js?v=ba3b4626d'); try { window.__alloLazyEndSessionPreview(); } catch (_) {} }; })();
-    window.__alloLazySocraticChat = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SocraticChat', 'https://alloflow-cdn.pages.dev/view_socratic_chat_module.js?v=0b3560bb'); }; })();
-    window.__alloLazyGlobalLevelUpModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('GlobalLevelUpModal', 'https://alloflow-cdn.pages.dev/view_global_level_up_module.js?v=ba3b4626d'); }; })();
-    loadModule('HeaderBar', 'https://alloflow-cdn.pages.dev/view_header_module.js?v=ba3b4626d');
-    window.__alloLazyGuidedModeBanner = (function() { var L=false; return function() { if(L)return; L=true; loadModule('GuidedModeBanner', 'https://alloflow-cdn.pages.dev/view_guided_mode_banner_module.js?v=ba3b4626d'); }; })();
+    loadModule('PromptDialog', './view_prompt_dialog_module.js');
+    window.__alloLazyHintsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('HintsModal', './view_hints_modal_module.js'); }; })();
+    window.__alloLazyXPModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('XPModal', './view_xp_modal_module.js'); }; })();
+    window.__alloLazyStorybookExportModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StorybookExportModal', './view_storybook_export_modal_module.js'); }; })();
+    window.__alloLazyInfoModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('InfoModal', './view_info_modal_module.js'); }; })();
+    window.__alloLazyVideoLibrary = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VideoLibrary', './view_video_library_module.js'); }; })();
+    window.__alloLazyVideoRefPlayer = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VideoRefPlayer', './view_video_ref_player_module.js'); }; })();
+    window.__alloLazyEndSessionPreview = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EndSessionPreview', './view_end_session_preview_module.js'); }; })();
+    window.__alloLazyAssignmentCenter = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AssignmentCenter', './view_assignment_center_module.js'); }; })();
+    window.__alloLazyDirectionsResult = (function() { var L=false; return function() { if(L)return; L=true; loadModule('DirectionsResult', './view_directions_result_module.js'); }; })();
+    window.__alloLazySessionModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SessionModal', './view_session_modal_module.js'); try { window.__alloLazyEndSessionPreview(); } catch (_) {} }; })();
+    window.__alloLazySocraticChat = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SocraticChat', './view_socratic_chat_module.js'); }; })();
+    window.__alloLazyGlobalLevelUpModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('GlobalLevelUpModal', './view_global_level_up_module.js'); }; })();
+    loadModule('HeaderBar', './view_header_module.js');
+    window.__alloLazyGuidedModeBanner = (function() { var L=false; return function() { if(L)return; L=true; loadModule('GuidedModeBanner', './view_guided_mode_banner_module.js'); }; })();
     if (window.__alloGuidedBannerRequested) window.__alloLazyGuidedModeBanner();
-    loadModule('LiveLessonRun', 'https://alloflow-cdn.pages.dev/view_live_lesson_run_module.js?v=ba3b4626d');
-    loadModule('StudentJoinPanel', 'https://alloflow-cdn.pages.dev/view_student_join_panel_module.js?v=d4463f3d');
-    loadModule('StudentSaveAdventurePanel', 'https://alloflow-cdn.pages.dev/view_student_save_adventure_module.js?v=ae1abf00');
-    loadModule('SidebarTabsNav', 'https://alloflow-cdn.pages.dev/view_sidebar_tabs_nav_module.js?v=ba3b4626d');
-    loadModule('UDLGuideButton', 'https://alloflow-cdn.pages.dev/view_udl_guide_button_module.js?v=ba3b4626d');
-    loadModule('TeacherHistoryTab', 'https://alloflow-cdn.pages.dev/view_teacher_history_tab_module.js?v=ba3b4626d');
-    loadModule('HistoryPanel', 'https://alloflow-cdn.pages.dev/view_history_panel_module.js?v=ba3b4626d');
-    loadModule('FabStack', 'https://alloflow-cdn.pages.dev/view_fab_stack_module.js?v=ba3b4626d');
-    window.__alloLazyStudyTimerModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StudyTimerModal', 'https://alloflow-cdn.pages.dev/view_study_timer_modal_module.js?v=ba3b4626d'); }; })();
-    window.__alloLazyEducatorHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EducatorHubModal', 'https://alloflow-cdn.pages.dev/view_educator_hub_modal_module.js?v=ba3b4626d'); }; })();
-    window.__alloLazyBrandProfileEditor = (function() { var L=false; return function() { if(L)return; L=true; loadModule('BrandProfileEditor', 'https://alloflow-cdn.pages.dev/brand_profile_editor_module.js?v=ba3b4626d'); }; })();
-    window.__alloLazyVisualSupportsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VisualSupportsModal', 'https://alloflow-cdn.pages.dev/view_visual_supports_modal_module.js?v=ba3b4626d'); }; })();
-    window.__alloLazyLearningHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LearningHubModal', 'https://alloflow-cdn.pages.dev/view_learning_hub_modal_module.js?v=ba3b4626d'); }; })();
-    window.__alloLazyOpenGrooveStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('OpenGrooveCore', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_core.js?v=ba3b4626d'); loadModule('OpenGrooveScheduler', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_scheduler.js?v=ba3b4626d'); loadModule('OpenGrooveAudio', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_audio.js?v=ba3b4626d'); loadModule('OpenGrooveStudio', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_module.js?v=ba3b4626d'); }; })();
-    window.__alloLazyTimelineStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TimelineStudio', 'https://alloflow-cdn.pages.dev/timeline_studio_module.js?v=ba3b4626d'); }; })();
-    window.__alloLazyLinguaPractice = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LexicalGraph', 'https://alloflow-cdn.pages.dev/lexical_graph_module.js?v=ba3b4626d'); loadModule('LinguaPractice', 'https://alloflow-cdn.pages.dev/lingua_practice_module.js?v=ba3b4626d'); }; })();
-    window.__alloLazyTestPrepHub = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TestPrepHub', 'https://alloflow-cdn.pages.dev/test_prep_hub_module.js?v=ba3b4626d'); }; })();
-    loadModule('ClozeInteractionPanel', 'https://alloflow-cdn.pages.dev/view_cloze_interaction_panel_module.js?v=ba3b4626d');
-    loadModule('LabelPositions', 'https://alloflow-cdn.pages.dev/label_positions_module.js?v=ba3b4626d');
-    loadModule('UILanguageSelector', 'https://alloflow-cdn.pages.dev/ui_language_selector_module.js?v=ba3b4626d');
+    loadModule('LiveLessonRun', './view_live_lesson_run_module.js');
+    loadModule('StudentJoinPanel', './view_student_join_panel_module.js');
+    loadModule('StudentSaveAdventurePanel', './view_student_save_adventure_module.js');
+    loadModule('SidebarTabsNav', './view_sidebar_tabs_nav_module.js');
+    loadModule('UDLGuideButton', './view_udl_guide_button_module.js');
+    loadModule('TeacherHistoryTab', './view_teacher_history_tab_module.js');
+    loadModule('HistoryPanel', './view_history_panel_module.js');
+    loadModule('FabStack', './view_fab_stack_module.js');
+    window.__alloLazyStudyTimerModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StudyTimerModal', './view_study_timer_modal_module.js'); }; })();
+    window.__alloLazyEducatorHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EducatorHubModal', './view_educator_hub_modal_module.js'); }; })();
+    window.__alloLazyBrandProfileEditor = (function() { var L=false; return function() { if(L)return; L=true; loadModule('BrandProfileEditor', './brand_profile_editor_module.js'); }; })();
+    window.__alloLazyVisualSupportsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VisualSupportsModal', './view_visual_supports_modal_module.js'); }; })();
+    window.__alloLazyLearningHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LearningHubModal', './view_learning_hub_modal_module.js'); }; })();
+    window.__alloLazyOpenGrooveStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('OpenGrooveCore', './music_studio/open_groove_core.js'); loadModule('OpenGrooveScheduler', './music_studio/open_groove_scheduler.js'); loadModule('OpenGrooveAudio', './music_studio/open_groove_audio.js'); loadModule('OpenGrooveStudio', './music_studio/open_groove_module.js'); }; })();
+    window.__alloLazyTimelineStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TimelineStudio', './timeline_studio_module.js'); }; })();
+    window.__alloLazyLinguaPractice = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LexicalGraph', './lexical_graph_module.js'); loadModule('LinguaPractice', './lingua_practice_module.js'); }; })();
+    window.__alloLazyTestPrepHub = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TestPrepHub', './test_prep_hub_module.js'); }; })();
+    loadModule('ClozeInteractionPanel', './view_cloze_interaction_panel_module.js');
+    loadModule('LabelPositions', './label_positions_module.js');
+    loadModule('UILanguageSelector', './ui_language_selector_module.js');
     // Fuzzy-match user-typed language strings against known packs (typos, endonyms, variants)
     loadModule('LanguageMatcher', 'https://alloflow-cdn.pages.dev/language_matcher_module.js');
-    loadModule('AudioBanks', 'https://alloflow-cdn.pages.dev/audio_banks_module.js?v=ba3b4626d');
-    loadModule('VerificationPolicy', 'https://alloflow-cdn.pages.dev/verification_policy_module.js?v=ba3b4626d');
-    loadModule('DocBuilderRenderer', 'https://alloflow-cdn.pages.dev/doc_builder_renderer_module.js?v=ba3b4626d');
-    loadModule('PdfAuditView', 'https://alloflow-cdn.pages.dev/view_pdf_audit_module.js?v=ba3b4626d');
-    loadModule('SemanticReview', 'https://alloflow-cdn.pages.dev/semantic_review_module.js?v=ba3b4626d');
-    loadModule('ReviewDocumentSession', 'https://alloflow-cdn.pages.dev/review_document_session_module.js?v=ba3b4626d');
-    loadModule('ExportPreviewView', 'https://alloflow-cdn.pages.dev/view_export_preview_module.js?v=ba3b4626d');
-    loadModule('MiscModals', 'https://alloflow-cdn.pages.dev/view_misc_modals_module.js?v=ba3b4626d');
-    loadModule('GeminiBridge', 'https://alloflow-cdn.pages.dev/view_gemini_bridge_module.js?v=ba3b4626d');
-    loadModule('MiscPanels', 'https://alloflow-cdn.pages.dev/view_misc_panels_module.js?v=ba3b4626d');
-    loadModule('AppStyles', 'https://alloflow-cdn.pages.dev/app_styles_module.js?v=ba3b4626d');
-    loadModule('LiveAac', 'https://alloflow-cdn.pages.dev/live_aac_module.js?v=ba3b4626d');
-    loadModule('SharedActivity', 'https://alloflow-cdn.pages.dev/shared_activity_module.js?v=ba3b4626d');
-    loadModule('GuidedModeConfig', 'https://alloflow-cdn.pages.dev/guided_mode_config_module.js?v=ba3b4626d');
-    loadModule('UIPolish', 'https://alloflow-cdn.pages.dev/ui_polish_module.js?v=ba3b4626d');
-    loadModule('SidebarPanels', 'https://alloflow-cdn.pages.dev/view_sidebar_panels_module.js?v=ba3b4626d');
-    loadModule('ModuleScopeExtras', 'https://alloflow-cdn.pages.dev/module_scope_extras_module.js?v=ba3b4626d');
+    loadModule('AudioBanks', './audio_banks_module.js');
+    loadModule('VerificationPolicy', './verification_policy_module.js');
+    loadModule('DocBuilderRenderer', './doc_builder_renderer_module.js');
+    loadModule('PdfAuditView', './view_pdf_audit_module.js');
+    loadModule('SemanticReview', './semantic_review_module.js');
+    loadModule('ReviewDocumentSession', './review_document_session_module.js');
+    loadModule('ExportPreviewView', './view_export_preview_module.js');
+    loadModule('MiscModals', './view_misc_modals_module.js');
+    loadModule('GeminiBridge', './view_gemini_bridge_module.js');
+    loadModule('MiscPanels', './view_misc_panels_module.js');
+    loadModule('AppStyles', './app_styles_module.js');
+    loadModule('LiveAac', './live_aac_module.js');
+    loadModule('SharedActivity', './shared_activity_module.js');
+    loadModule('GuidedModeConfig', './guided_mode_config_module.js');
+    loadModule('UIPolish', './ui_polish_module.js');
+    loadModule('SidebarPanels', './view_sidebar_panels_module.js');
+    loadModule('ModuleScopeExtras', './module_scope_extras_module.js');
     // ModuleScopeExtras exposes isRtlLang, getSpeechLangCode, ErrorBoundary, etc.
     // Current module builds invoke _upgradeModuleScopeExtras after registration.
     // Keep this short poll only for stale cached module copies that predate the
@@ -12217,13 +12217,13 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       }
       setTimeout(function () { awaitModuleScopeExtras(tries - 1); }, 100);
     })(50);
-    loadModule('ImmersiveReaderModule', 'https://alloflow-cdn.pages.dev/immersive_reader_module.js?v=d02240b3');
-    loadModule('PersonaUIModule', 'https://alloflow-cdn.pages.dev/persona_ui_module.js?v=ba3b4626d');
-    loadModule('DocPipelineModule', 'https://alloflow-cdn.pages.dev/doc_pipeline_module.js?v=ba3b4626d');
+    loadModule('ImmersiveReaderModule', './immersive_reader_module.js');
+    loadModule('PersonaUIModule', './persona_ui_module.js');
+    loadModule('DocPipelineModule', './doc_pipeline_module.js');
     loadModule('PdfValidator', 'https://alloflow-cdn.pages.dev/view_pdf_validator_module.js');
-    loadModule('ContentEngineModule', 'https://alloflow-cdn.pages.dev/content_engine_module.js?v=ba3b4626d');
-    loadModule('TimelineRevisionModule', 'https://alloflow-cdn.pages.dev/timeline_revision_module.js?v=ba3b4626d');
-    loadModule('PromptsLibraryModule', 'https://alloflow-cdn.pages.dev/prompts_library_module.js?v=ba3b4626d');
+    loadModule('ContentEngineModule', './content_engine_module.js');
+    loadModule('TimelineRevisionModule', './timeline_revision_module.js');
+    loadModule('PromptsLibraryModule', './prompts_library_module.js');
     // Capability index (dev-tools/build_tool_index.cjs): what each STEM tool
     // actually DOES, ~110 KB for 139 tools. The lesson-plan prompt ranks and
     // caps against this instead of dumping every tool name, and unlike
@@ -12246,22 +12246,22 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
           .catch(function () {});
       } catch (_) {}
     })();
-    loadModule('TextPipelineHelpersModule', 'https://alloflow-cdn.pages.dev/text_pipeline_helpers_module.js?v=ba3b4626d');
-    loadModule('AdaptiveControllerModule', 'https://alloflow-cdn.pages.dev/adaptive_controller_module.js?v=ba3b4626d');
-    loadModule('StandardsContext', 'https://alloflow-cdn.pages.dev/standards_context_module.js?v=ba3b4626d');
-    loadModule('InstructionalContext', 'https://alloflow-cdn.pages.dev/instructional_context_module.js?v=ba3b4626d');
-    loadModule('GenerationMatrix', 'https://alloflow-cdn.pages.dev/generation_matrix_module.js?v=ba3b4626d');
-    loadModule('StandardsProvider', 'https://alloflow-cdn.pages.dev/standards_provider_module.js?v=ba3b4626d');
+    loadModule('TextPipelineHelpersModule', './text_pipeline_helpers_module.js');
+    loadModule('AdaptiveControllerModule', './adaptive_controller_module.js');
+    loadModule('StandardsContext', './standards_context_module.js');
+    loadModule('InstructionalContext', './instructional_context_module.js');
+    loadModule('GenerationMatrix', './generation_matrix_module.js');
+    loadModule('StandardsProvider', './standards_provider_module.js');
     // Learning Web owns durable cross-view graph snapshots; domain modules keep
     // their richer standards, audit, unit, and lexical records. The engine is
     // eager here because the Alignment Map can render before Throughline opens.
-    loadModule('ConceptGraphEngine', 'https://alloflow-cdn.pages.dev/concept_graph_engine_module.js?v=ba3b4626d');
-    loadModule('LearningWebRegistry', 'https://alloflow-cdn.pages.dev/learning_web_registry_module.js?v=ba3b4626d');
+    loadModule('ConceptGraphEngine', './concept_graph_engine_module.js');
+    loadModule('LearningWebRegistry', './learning_web_registry_module.js');
     // Driving Questions Board. The contract carries the invariants both
     // transports enforce; the view module is inert until a surface mounts it.
-    loadModule('QuestionBoardContract', 'https://alloflow-cdn.pages.dev/question_board_contract_module.js?v=ba3b4626d');
-    loadModule('QuestionBoardView', 'https://alloflow-cdn.pages.dev/question_board_view_module.js?v=ba3b4626d');
-    loadModule('QuestionBoardTransport', 'https://alloflow-cdn.pages.dev/question_board_transport_module.js?v=ba3b4626d');
+    loadModule('QuestionBoardContract', './question_board_contract_module.js');
+    loadModule('QuestionBoardView', './question_board_view_module.js');
+    loadModule('QuestionBoardTransport', './question_board_transport_module.js');
 
     // Reviewed local standards snapshots (Learning Commons v1.11.0, CC BY 4.0).
     // DELIBERATE enablement per LEARNING_COMMONS_SNAPSHOT_IMPORT.md: publishing a
@@ -12273,70 +12273,70 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('StandardsSnapshotMaScienceG5', 'https://alloflow-cdn.pages.dev/standards_snapshots/ma-science-grade-5.js?v=e805fe3c7');
     loadModule('StandardsSnapshotCcssMath', 'https://alloflow-cdn.pages.dev/standards_snapshots/ccss-math.js?v=e805fe3c7');
     loadModule('StandardsSnapshotCcssEla', 'https://alloflow-cdn.pages.dev/standards_snapshots/ccss-ela.js?v=e805fe3c7');
-    loadModule('AgentCoreContracts', 'https://alloflow-cdn.pages.dev/agent_core_contracts_module.js?v=ba3b4626d');
-    loadModule('AgentCoreBlueprintService', 'https://alloflow-cdn.pages.dev/agent_core_blueprint_service_module.js?v=ba3b4626d');
-    loadModule('AgentCoreUIAdapter', 'https://alloflow-cdn.pages.dev/agent_core_ui_adapter_module.js?v=ba3b4626d');
-    loadModule('UdlChatModule', 'https://alloflow-cdn.pages.dev/udl_chat_module.js?v=ba3b4626d');
-    loadModule('AdventureHandlersModule', 'https://alloflow-cdn.pages.dev/adventure_handlers_module.js?v=ba3b4626d');
-    loadModule('GlossaryHelpersModule', 'https://alloflow-cdn.pages.dev/glossary_helpers_module.js?v=ba3b4626d');
-    loadModule('ViewRenderersModule', 'https://alloflow-cdn.pages.dev/view_renderers_module.js?v=ba3b4626d');
-    loadModule('AudioHelpersModule', 'https://alloflow-cdn.pages.dev/audio_helpers_module.js?v=ba3b4626d');
-    loadModule('KaraokeAudioStoreModule', 'https://alloflow-cdn.pages.dev/karaoke_audio_store_module.js?v=398e7a6a');
+    loadModule('AgentCoreContracts', './agent_core_contracts_module.js');
+    loadModule('AgentCoreBlueprintService', './agent_core_blueprint_service_module.js');
+    loadModule('AgentCoreUIAdapter', './agent_core_ui_adapter_module.js');
+    loadModule('UdlChatModule', './udl_chat_module.js');
+    loadModule('AdventureHandlersModule', './adventure_handlers_module.js');
+    loadModule('GlossaryHelpersModule', './glossary_helpers_module.js');
+    loadModule('ViewRenderersModule', './view_renderers_module.js');
+    loadModule('AudioHelpersModule', './audio_helpers_module.js');
+    loadModule('KaraokeAudioStoreModule', './karaoke_audio_store_module.js');
     // Word-by-word karaoke timing (deterministic envelope + valley snapping).
-    loadModule('WordTimingModule', 'https://alloflow-cdn.pages.dev/word_timing_module.js?v=df764e1d');
+    loadModule('WordTimingModule', './word_timing_module.js');
     // Unified live-session content channel (SessionTransport stage 1).
-    loadModule('SessionTransportModule', 'https://alloflow-cdn.pages.dev/session_transport_module.js?v=b57c8bf0');
-    loadModule('ReadAloudAudioServiceModule', 'https://alloflow-cdn.pages.dev/read_aloud_audio_service_module.js?v=74d2bdc6');
-    loadModule('ReadAloudArtifactContractModule', 'https://alloflow-cdn.pages.dev/read_aloud_artifact_contract_module.js?v=501639a2');
-    loadModule('ReadAloudArtifactAudioModule', 'https://alloflow-cdn.pages.dev/read_aloud_artifact_audio_module.js?v=3a046659');
-    loadModule('PersonaSessionArtifactModule', 'https://alloflow-cdn.pages.dev/persona_session_artifact_module.js?v=c6719fe4');
-    loadModule('GenerationHelpersModule', 'https://alloflow-cdn.pages.dev/generation_helpers_module.js?v=ba3b4626d');
-    loadModule('MiscHandlersModule', 'https://alloflow-cdn.pages.dev/misc_handlers_module.js?v=ba3b4626d');
-    loadModule('PureHelpersModule', 'https://alloflow-cdn.pages.dev/pure_helpers_module.js?v=ba3b4626d');
-    loadModule('MathHelpersModule', 'https://alloflow-cdn.pages.dev/math_helpers_module.js?v=ba3b4626d');
-    loadModule('CmapHandlersModule', 'https://alloflow-cdn.pages.dev/concept_map_handlers_module.js?v=ba3b4626d');
-    loadModule('GenDispatcherModule', 'https://alloflow-cdn.pages.dev/generate_dispatcher_module.js?v=ba3b4626d');
-    loadModule('PhaseKHelpersModule', 'https://alloflow-cdn.pages.dev/phase_k_helpers_module.js?v=709cc2a8');
-    loadModule('AdventureSessionHandlersModule', 'https://alloflow-cdn.pages.dev/adventure_session_handlers_module.js?v=ba3b4626d');
-    loadModule('TextUtilityHelpersModule', 'https://alloflow-cdn.pages.dev/text_utility_helpers_module.js?v=ba3b4626d');
-    loadModule('ViewDbqModule', 'https://alloflow-cdn.pages.dev/view_dbq_module.js?v=ba3b4626d');
-    loadModule('ViewTimelineModule', 'https://alloflow-cdn.pages.dev/view_timeline_module.js?v=ba3b4626d');
-    loadModule('ViewGlossaryModule', 'https://alloflow-cdn.pages.dev/view_glossary_module.js?v=ba3b4626d');
-    loadModule('ViewOutlineModule', 'https://alloflow-cdn.pages.dev/view_outline_module.js?v=ba3b4626d');
-    loadModule('ViewFaqModule', 'https://alloflow-cdn.pages.dev/view_faq_module.js?v=7c43afe4');
-    loadModule('ViewSentenceFramesModule', 'https://alloflow-cdn.pages.dev/view_sentence_frames_module.js?v=ba3b4626d');
-    loadModule('ViewBrainstormModule', 'https://alloflow-cdn.pages.dev/view_brainstorm_module.js?v=ba3b4626d');
-    loadModule('ViewImageModule', 'https://alloflow-cdn.pages.dev/view_image_module.js?v=ba3b4626d');
-    loadModule('ViewAnalysisModule', 'https://alloflow-cdn.pages.dev/view_analysis_module.js?v=ba3b4626d');
-    loadModule('ViewQuizModule', 'https://alloflow-cdn.pages.dev/view_quiz_module.js?v=ba3b4626d');
-    window.__alloLazySimplifiedView = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ViewSimplifiedModule', 'https://alloflow-cdn.pages.dev/view_simplified_module.js?v=d16a4a8f'); }; })();
+    loadModule('SessionTransportModule', './session_transport_module.js');
+    loadModule('ReadAloudAudioServiceModule', './read_aloud_audio_service_module.js');
+    loadModule('ReadAloudArtifactContractModule', './read_aloud_artifact_contract_module.js');
+    loadModule('ReadAloudArtifactAudioModule', './read_aloud_artifact_audio_module.js');
+    loadModule('PersonaSessionArtifactModule', './persona_session_artifact_module.js');
+    loadModule('GenerationHelpersModule', './generation_helpers_module.js');
+    loadModule('MiscHandlersModule', './misc_handlers_module.js');
+    loadModule('PureHelpersModule', './pure_helpers_module.js');
+    loadModule('MathHelpersModule', './math_helpers_module.js');
+    loadModule('CmapHandlersModule', './concept_map_handlers_module.js');
+    loadModule('GenDispatcherModule', './generate_dispatcher_module.js');
+    loadModule('PhaseKHelpersModule', './phase_k_helpers_module.js');
+    loadModule('AdventureSessionHandlersModule', './adventure_session_handlers_module.js');
+    loadModule('TextUtilityHelpersModule', './text_utility_helpers_module.js');
+    loadModule('ViewDbqModule', './view_dbq_module.js');
+    loadModule('ViewTimelineModule', './view_timeline_module.js');
+    loadModule('ViewGlossaryModule', './view_glossary_module.js');
+    loadModule('ViewOutlineModule', './view_outline_module.js');
+    loadModule('ViewFaqModule', './view_faq_module.js');
+    loadModule('ViewSentenceFramesModule', './view_sentence_frames_module.js');
+    loadModule('ViewBrainstormModule', './view_brainstorm_module.js');
+    loadModule('ViewImageModule', './view_image_module.js');
+    loadModule('ViewAnalysisModule', './view_analysis_module.js');
+    loadModule('ViewQuizModule', './view_quiz_module.js');
+    window.__alloLazySimplifiedView = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ViewSimplifiedModule', './view_simplified_module.js'); }; })();
     if (window.__alloSimplifiedViewRequested) window.__alloLazySimplifiedView();
-    loadModule('ViewMathModule', 'https://alloflow-cdn.pages.dev/view_math_module.js?v=ba3b4626d');
-    loadModule('ViewLessonPlanModule', 'https://alloflow-cdn.pages.dev/view_lesson_plan_module.js?v=ba3b4626d');
-    loadModule('ViewAlignmentReportModule', 'https://alloflow-cdn.pages.dev/view_alignment_report_module.js?v=ba3b4626d');
-    loadModule('ViewWordSoundsPreviewModule', 'https://alloflow-cdn.pages.dev/view_word_sounds_preview_module.js?v=ba3b4626d');
-    loadModule('ViewGeminiBridgeModule', 'https://alloflow-cdn.pages.dev/view_gemini_bridge_module.js?v=ba3b4626d');
-    loadModule('ViewConceptSortModule', 'https://alloflow-cdn.pages.dev/view_concept_sort_module.js?v=ba3b4626d');
-    window.__alloLazyPersonaChat = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ViewPersonaChatModule', 'https://alloflow-cdn.pages.dev/view_persona_chat_module.js?v=75192785'); }; })();
+    loadModule('ViewMathModule', './view_math_module.js');
+    loadModule('ViewLessonPlanModule', './view_lesson_plan_module.js');
+    loadModule('ViewAlignmentReportModule', './view_alignment_report_module.js');
+    loadModule('ViewWordSoundsPreviewModule', './view_word_sounds_preview_module.js');
+    loadModule('ViewGeminiBridgeModule', './view_gemini_bridge_module.js');
+    loadModule('ViewConceptSortModule', './view_concept_sort_module.js');
+    window.__alloLazyPersonaChat = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ViewPersonaChatModule', './view_persona_chat_module.js'); }; })();
     if (window.__alloPersonaChatRequested) window.__alloLazyPersonaChat();
-    loadModule('ViewSpotlightTourModule', 'https://alloflow-cdn.pages.dev/view_spotlight_tour_module.js?v=ba3b4626d');
-    loadModule('ViewProjectSettingsModule', 'https://alloflow-cdn.pages.dev/view_project_settings_module.js?v=ba3b4626d');
-    loadModule('ViewLaunchPadModule', 'https://alloflow-cdn.pages.dev/view_launch_pad_module.js?v=ba3b4626d');
+    loadModule('ViewSpotlightTourModule', './view_spotlight_tour_module.js');
+    loadModule('ViewProjectSettingsModule', './view_project_settings_module.js');
+    loadModule('ViewLaunchPadModule', './view_launch_pad_module.js');
     loadModule('OnboardingCoach', 'https://alloflow-cdn.pages.dev/onboarding_coach_module.js');
     loadModule('AlloCommands', 'https://alloflow-cdn.pages.dev/allo_commands_module.js');
     loadModule('OnboardingHelpers', 'https://alloflow-cdn.pages.dev/onboarding_helpers_module.js');
-    loadModule('ViewAdventureModule', 'https://alloflow-cdn.pages.dev/view_adventure_module.js?v=ba3b4626d');
-    loadModule('PhaseNHelpersModule', 'https://alloflow-cdn.pages.dev/phase_n_misc_helpers_module.js?v=ba3b4626d');
-    loadModule('PhaseOHandlersModule', 'https://alloflow-cdn.pages.dev/phase_o_misc_handlers_module.js?v=ba3b4626d');
-    loadModule('ExportHandlersModule', 'https://alloflow-cdn.pages.dev/export_handlers_module.js?v=ba3b4626d');
-    loadModule('AnnotationSuiteModule', 'https://alloflow-cdn.pages.dev/annotation_suite_module.js?v=ba3b4626d');
-    loadModule('NoteTakingTemplatesModule', 'https://alloflow-cdn.pages.dev/note_taking_templates_module.js?v=ba3b4626d');
-    loadModule('AnchorChartsModule', 'https://alloflow-cdn.pages.dev/anchor_charts_module.js?v=ba3b4626d');
-    loadModule('LivePolling', 'https://alloflow-cdn.pages.dev/live_polling_module.js?v=ba3b4626d');
-    loadModule('ConceptPictionaryModule', 'https://alloflow-cdn.pages.dev/concept_pictionary_module.js?v=ba3b4626d');
-    loadModule('ConceptQuestEngineModule', 'https://alloflow-cdn.pages.dev/concept_quest_engine.js?v=ba3b4626d');
-    loadModule('ConceptQuestTeacherModule', 'https://alloflow-cdn.pages.dev/concept_quest_teacher_module.js?v=ba3b4626d');
-    loadModule('EscapeRoomModule', 'https://alloflow-cdn.pages.dev/escape_room_module.js?v=ba3b4626d');
+    loadModule('ViewAdventureModule', './view_adventure_module.js');
+    loadModule('PhaseNHelpersModule', './phase_n_misc_helpers_module.js');
+    loadModule('PhaseOHandlersModule', './phase_o_misc_handlers_module.js');
+    loadModule('ExportHandlersModule', './export_handlers_module.js');
+    loadModule('AnnotationSuiteModule', './annotation_suite_module.js');
+    loadModule('NoteTakingTemplatesModule', './note_taking_templates_module.js');
+    loadModule('AnchorChartsModule', './anchor_charts_module.js');
+    loadModule('LivePolling', './live_polling_module.js');
+    loadModule('ConceptPictionaryModule', './concept_pictionary_module.js');
+    loadModule('ConceptQuestEngineModule', './concept_quest_engine.js');
+    loadModule('ConceptQuestTeacherModule', './concept_quest_teacher_module.js');
+    loadModule('EscapeRoomModule', './escape_room_module.js');
     (function() {
       var s = document.createElement('script');
       s.src = 'https://cdnjs.cloudflare.com/ajax/libs/mathjs/13.2.0/math.min.js';
@@ -20276,52 +20276,27 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   }, [guidedMode]);
   // Fluency export helpers.
   const exportFluencyCSV = () => {
-    const fluencyRecords = history.filter(h => h.type === 'fluency-record' && h.data?.metrics);
-    if (fluencyRecords.length === 0) {
-      addToast(t('toasts.fluency_assessments_export'), 'warning');
-      return;
+    const fluency = window.AlloModules && window.AlloModules.Fluency;
+    if (!fluency || typeof fluency.exportFluencyCSV !== 'function') {
+      addToast(t('toasts.fluency_tools_loading') || 'Fluency tools are still loading. Try again in a moment.', 'info');
+      return false;
     }
-    const headers = ['Date', 'Passage', 'WCPM', 'Accuracy %', 'Total Words', 'Duration (s)', 'Substitutions', 'Omissions', 'Insertions', 'Self-Corrections', 'Error Rate', 'Reading Level', 'Review Status', 'Reviewer', 'Review Date', 'Passage ID', 'Calibrated Parallel Form'];
-    const csvCell = value => '"' + String(value ?? '').replace(/"/g, '""') + '"';
-    const rows = fluencyRecords.map(r => {
-      const m = r.data.metrics;
-      const rrm = r.data.wordData ? (calculateRunningRecordMetrics(r.data.wordData, r.data.insertions || r.data.fullAnalysis?.insertions || []) || { substitutions: 0, omissions: 0, insertions: 0, selfCorrections: 0, errorRate: 0, readingLevel: 'unknown' }) : { substitutions: 0, omissions: 0, insertions: 0, selfCorrections: 0, errorRate: 0, readingLevel: 'unknown' };
-      const passageTitle = (r.data.sourceText || '').substring(0, 40).replace(/[\n\r,]/g, ' ').trim() || 'Untitled';
-      const review = r.data.review || {};
-      const passage = r.data.passageMetadata || {};
-      return [new Date(r.timestamp).toLocaleDateString(), csvCell(passageTitle), m.wcpm || 0, m.accuracy || 0, m.totalWords || 0, Math.round(m.durationSeconds || 0), rrm.substitutions || 0, rrm.omissions || 0, rrm.insertions || 0, rrm.selfCorrections || 0, '1:' + (rrm.errorRate || 0), rrm.readingLevel || 'unknown', review.status || 'unreviewed', csvCell(review.reviewer || ''), review.reviewedAt || '', csvCell(passage.passageId || ''), passage.calibrated === true ? 'yes' : 'no'].join(',');
+    return fluency.exportFluencyCSV(history, {
+      onEmpty: () => addToast(t('toasts.fluency_assessments_export'), 'warning'),
     });
-    const csv = [headers.join(','), ...rows].join('\n');
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = 'Fluency_Assessments_' + new Date().toISOString().split('T')[0] + '.csv';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(link.href);
   };
   const generateFluencyScoreSheet = (result, sourceText) => {
-    if (!result || !result.wordData) return;
-    const rrm = calculateRunningRecordMetrics(result.wordData, result.insertions || []) || { substitutions: 0, omissions: 0, insertions: 0, selfCorrections: 0, errorRate: 0, scRate: 0, accuracy: 0, totalErrors: 0, readingLevel: 'unknown' };
-    const readingLevelLabel = rrm.accuracy >= 95 ? 'Independent' : rrm.accuracy >= 90 ? 'Instructional' : 'Frustrational';
-    const wordMarkup = result.wordData.map(w => {
-      const sym = w.status === 'correct' ? '✓' : w.status === 'missed' ? '—' : w.status === 'self_corrected' ? 'SC' : '✗';
-      const color = w.status === 'correct' ? '#16a34a' : w.status === 'missed' ? '#dc2626' : w.status === 'self_corrected' ? '#2563eb' : '#ea580c';
-      const said = w.said ? `<br/><span style="font-size:9px;color:#94a3b8;">${w.said}</span>` : '';
-      return `<span style="display:inline-block;text-align:center;margin:4px 3px;padding:4px 6px;border-radius:6px;border:1px solid ${color}20;background:${color}08;"><span style="font-size:16px;color:#1e293b;">${w.word}</span><br/><span style="font-size:11px;font-weight:800;color:${color};">${sym}</span>${said}</span>`;
-    }).join('');
-    const html = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>${t('print.oral_fluency_title')}</title>
-<style>@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');*{box-sizing:border-box;margin:0;padding:0}body{font-family:'Inter',sans-serif;color:#1e293b;padding:24px;line-height:1.4}@media print{body{padding:12px}}.sheet{max-width:750px;margin:0 auto;border:2px solid #e2e8f0;border-radius:12px;overflow:hidden}.hdr{background:linear-gradient(135deg,#4f46e5,#7c3aed);color:white;padding:20px 24px;display:flex;justify-content:space-between;align-items:center}.hdr h1{font-size:18px;font-weight:800}.fields{padding:16px 24px;background:#f8fafc;border-bottom:1px solid #e2e8f0;display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}.field{font-size:12px}.field label{font-weight:700;color:#64748b;display:block;margin-bottom:2px}.field .val{font-weight:600;color:#1e293b;padding:4px 0;border-bottom:1px dashed #cbd5e1;min-height:24px}.words{padding:20px 24px;line-height:2.2}.metrics{padding:16px 24px;background:#f8fafc;border-top:1px solid #e2e8f0;display:grid;grid-template-columns:1fr 1fr;gap:16px}.mcol{padding:12px;background:white;border-radius:8px;border:1px solid #e2e8f0}.mcol h3{font-size:11px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}.mrow{display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px}.mrow .lbl{color:#475569}.mrow .vl{font-weight:700}.legend{padding:12px 24px;background:#faf5ff;border-top:1px solid #e2e8f0;display:flex;gap:16px;flex-wrap:wrap;font-size:10px;font-weight:600;color:#475569}@media print{.no-print{display:none!important}}</style></head><body>
-<div class="sheet"><div class="hdr"><div><h1>📊 ${t('print.oral_fluency_title')}</h1><p>${t('print.assessment_record')}</p></div><div style="text-align:right;font-size:11px;"><div>Generated: ${new Date().toLocaleDateString()}</div></div></div>
-<div class="fields"><div class="field"><label>${t('print.student')}</label><div class="val">${studentNickname || '________________'}</div></div><div class="field"><label>${t('print.date')}</label><div class="val">${new Date().toLocaleDateString()}</div></div><div class="field"><label>${t('print.grade_benchmark')}</label><div class="val">${fluencyBenchmarkGrade} / ${fluencyBenchmarkSeason}</div></div></div>
-<div class="words">${wordMarkup}</div>
-<div class="legend"><span>✓ = ${t('print.correct_legend')}</span><span>✗ = ${t('print.substitution_legend')}</span><span>— = ${t('print.omission_legend')}</span><span>SC = ${t('print.self_corrected_legend')}</span></div>
-<div class="metrics"><div class="mcol"><h3>${t('common.ai_calculated_metrics')}</h3><div class="mrow"><span class="lbl">${t('print.wcpm')}</span><span class="vl">${result.wcpm || 0}</span></div><div class="mrow"><span class="lbl">${t('print.accuracy')}</span><span class="vl">${result.accuracy || 0}%</span></div><div class="mrow"><span class="lbl">${t('print.substitutions')}</span><span class="vl">${rrm.substitutions || 0}</span></div><div class="mrow"><span class="lbl">${t('print.omissions')}</span><span class="vl">${rrm.omissions || 0}</span></div><div class="mrow"><span class="lbl">${t('print.insertions')}</span><span class="vl">${rrm.insertions || 0}</span></div><div class="mrow"><span class="lbl">${t('print.self_corrections')}</span><span class="vl">${rrm.selfCorrections || 0}</span></div><div class="mrow"><span class="lbl">${t('print.error_rate')}</span><span class="vl">1:${rrm.errorRate || 0}</span></div><div class="mrow"><span class="lbl">${t('print.reading_level')}</span><span class="vl">${readingLevelLabel}</span></div></div>
-<div class="mcol"><h3>${t('common.error_analysis')}</h3><div class="mrow"><span class="lbl">${t('print.total_errors')}</span><span class="vl">${rrm.totalErrors || 0}</span></div><div class="mrow"><span class="lbl">${t('print.sc_rate')}</span><span class="vl">${rrm.scRate || 0}%</span></div><div class="mrow"><span class="lbl">${t('print.total_words')}</span><span class="vl">${result.wordData?.length || 0}</span></div></div></div>
-<div class="no-print" style="text-align:center;margin-top:16px;"><button onclick="window.print()" style="background:#4f46e5;color:white;border:none;padding:10px 24px;border-radius:8px;font-weight:700;font-size:14px;cursor:pointer;">🖨️ Print Score Sheet</button></div></body></html>`;
-    const win = window.open('', '_blank');
-    if (win) { win.document.write(html); win.document.close(); }
+    const fluency = window.AlloModules && window.AlloModules.Fluency;
+    if (!fluency || typeof fluency.generateFluencyScoreSheet !== 'function') {
+      addToast(t('toasts.fluency_tools_loading') || 'Fluency tools are still loading. Try again in a moment.', 'info');
+      return false;
+    }
+    return fluency.generateFluencyScoreSheet(result, sourceText, {
+      t,
+      studentNickname,
+      fluencyBenchmarkGrade,
+      fluencyBenchmarkSeason,
+    });
   };
   const saveFluencyReview = React.useCallback((reviewedResult) => {
     if (!reviewedResult || !reviewedResult.recordId) return;
@@ -32951,6 +32926,14 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
     const supplied = _glossaryReadAloudOptions(segment, options);
     return bridge.inspect(segment, supplied.lane || 'reference', supplied);
   };
+  window.__alloRegenerateGlossaryAudio = async (request, options) => {
+    const segment = _findGlossaryReadAloudSegment(request);
+    const bridge = _getReadAloudBridge();
+    if (!segment || !bridge || typeof bridge.regenerate !== 'function') return null;
+    const supplied = _glossaryReadAloudOptions(segment,
+      Object.assign({ reason: 'glossary-edit-regenerate' }, options || {}));
+    return bridge.regenerate(segment, supplied);
+  };
   window.__alloPrepareGlossaryAudio = async (config, onProgress, prepareOptions) => {
     const resource = _ensureGlossaryReadAloudEntryIds();
     const segments = resource && String(resource.type || '').toLowerCase() === 'glossary'
@@ -32990,6 +32973,7 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
     const result = await window.__alloPrepareReadAloud(undefined, onProgress,
       Object.assign({}, prepareOptions || {}, { entries }));
     return Object.assign({}, result, {
+      total: entries.length,
       prepared: Number(result && result.generated || 0),
       ready: Math.max(0, entries.length - Number(result && result.remaining || 0)),
       estimatedBytes: Number(result && result.bytes || 0),
@@ -49588,7 +49572,13 @@ ${_toolList}
                         </span>
                         <span className="text-[11px] text-slate-600 block mt-0.5">{fullPackRun?.status === 'ready' ? (t('fullpack.action_generate_pack_help') || 'Plan reviewed? Generate the full pack with these exact resources.') : (t('fullpack.action_plan_help') || 'Review resources, settings, and estimated generations before creating them.')}</span>
                     </div>
-                    <ArrowRight aria-hidden="true" size={18} className={`shrink-0 transition-all duration-200 motion-reduce:transition-none group-hover:translate-x-1 ${fullPackRun?.status === 'ready' ? 'text-indigo-700 drop-shadow-sm' : 'text-indigo-300 group-hover:text-indigo-600'}`} />
+                    <span
+                        data-testid="full-pack-next-step-arrow"
+                        aria-hidden="true"
+                        className={`shrink-0 rounded-full transition-all duration-200 motion-reduce:transition-none group-hover:translate-x-1 ${fullPackRun?.status === 'ready' ? 'bg-indigo-100 p-1 ring-4 ring-indigo-300/60 shadow-[0_0_18px_rgba(79,70,229,0.8)] motion-safe:animate-pulse' : ''}`}
+                    >
+                        <ArrowRight size={18} className={fullPackRun?.status === 'ready' ? 'text-indigo-800 drop-shadow-sm' : 'text-indigo-300 group-hover:text-indigo-600'} />
+                    </span>
                 </button>
                 {['running', 'retrying', 'planning'].includes(fullPackRun?.status) && (
                     <button
@@ -55451,383 +55441,44 @@ ${_toolList}
             </div>
         )}
         <CDNModuleGate moduleKey="DynamicAssessment" isOpen={isDynamicAssessmentOpen} onClose={() => setIsDynamicAssessmentOpen(false)} icon="🔬" displayName="Dynamic Assessment Studio" t={t}>
-            {(DA) => (
-                <div className="fixed inset-0 z-[60] bg-black/50 overflow-y-auto" onClick={() => setIsDynamicAssessmentOpen(false)}>
-                    <div className="bg-white rounded-2xl mx-auto my-8 shadow-2xl max-w-4xl" onClick={(e) => e.stopPropagation()}>
-                        {React.createElement(DA, {
-                            React: React,
-                            onClose: () => setIsDynamicAssessmentOpen(false),
-                            callGemini: callGemini,
-                            addToast,
-                            t,
-                            studentNickname: studentNickname || '',
-                            mathFluencyProbes: Array.isArray(history)
-                                ? history.filter(e => e && e.type === 'math-fluency-probe').slice(-5).reverse()
-                                : [],
-                            outputLanguage: leveledTextLanguage || 'English',
-                            // Dynamic Assessment → AlloSheet uses the shared
-                            // popup bridge; the source tool never writes back.
-                            onOpenAlloSheet: (artifact) => {
-                                const bridge = window.AlloSheetHostBridge;
-                                if (!bridge || typeof bridge.open !== 'function') {
-                                    addToast('AlloSheet is still loading. Try again in a moment.', 'error');
-                                    return false;
-                                }
-                                const root = document.documentElement;
-                                const body = document.body;
-                                const alloSheetTheme = ((root && root.classList.contains('theme-contrast')) || (body && body.classList.contains('theme-contrast')))
-                                    ? 'contrast'
-                                    : ((root && root.classList.contains('theme-light')) || (body && body.classList.contains('theme-light')))
-                                        ? 'light'
-                                        : 'dark';
-                                if (typeof bridge.openTransfer === 'function') {
-                                    const transfer = bridge.openTransfer({ theme: alloSheetTheme, artifact });
-                                    if (!transfer) {
-                                        addToast('AlloSheet could not open. Allow pop-ups and try again.', 'error');
-                                        return false;
-                                    }
-                                    transfer.decision.then((decision) => {
-                                        if (decision && decision.status === 'accepted') addToast('Dynamic Assessment tables opened in AlloSheet for review.', 'success');
-                                        else if (decision && decision.status === 'cancelled') addToast('AlloSheet review canceled. Dynamic Assessment data did not change.', 'info');
-                                    }).catch(() => {});
-                                    return transfer.delivered.then(() => true);
-                                }
-                                const popup = bridge.open({ theme: alloSheetTheme, artifact });
-                                if (!popup) {
-                                    addToast('AlloSheet could not open. Allow pop-ups and try again.', 'error');
-                                    return false;
-                                }
-                                return true;
-                            },
-                            // Phase Z+ — DA-generated resource inventory so DA can suggest REUSE
-                            // (via existingResourceId) instead of minting duplicates when Gemini
-                            // is producing a second probe that needs the same support. Recent
-                            // DA resources only, max 20 entries to keep the prompt compact.
-                            daResourceManifest: Array.isArray(history)
-                                ? history
-                                    .filter(e => e && e.fromDA && (e.type === 'glossary' || e.type === 'manipulative-resource' || e.type === 'word-sounds' || e.type === 'outline' || e.type === 'timeline' || e.type === 'concept-sort' || e.type === 'sentence-frames'))
-                                    .slice(-20)
-                                    .reverse()
-                                    .map(e => {
-                                        const base = { id: e.id, title: e.title || '' };
-                                        if (e.type === 'glossary') {
-                                            const terms = Array.isArray(e.data) ? e.data.map(d => d && d.term).filter(Boolean).slice(0, 6) : [];
-                                            return { ...base, kind: 'glossary', summary: terms.join(', ') };
-                                        }
-                                        if (e.type === 'manipulative-resource') {
-                                            return { ...base, kind: 'math-manipulative', toolId: e.toolId, summary: e.toolId + (e.data && e.data.preset ? ' preset' : '') };
-                                        }
-                                        if (e.type === 'word-sounds' && e.isProbeMode) {
-                                            const wcount = Array.isArray(e.wsPreloadedWords) ? e.wsPreloadedWords.length : (Array.isArray(e.data) ? e.data.length : 0);
-                                            return { ...base, kind: 'word-sounds-probe', activity: e.probeActivity, summary: (e.probeActivity || 'probe') + ' · ' + wcount + ' words' };
-                                        }
-                                        if (e.type === 'outline' || e.type === 'timeline' || e.type === 'concept-sort') {
-                                            // Visual organizers (Phase 4). structureType distinguishes
-                                            // concept-map / mind-map / outline within the 'outline' type.
-                                            const vo = e.type === 'outline'
-                                                ? (e.data && e.data.structureType ? e.data.structureType : 'outline')
-                                                : e.type;
-                                            return { ...base, kind: 'visual-organizer', toolType: e.type, summary: vo };
-                                        }
-                                        if (e.type === 'sentence-frames') {
-                                            return { ...base, kind: 'sentence-frames', summary: 'expressive sentence frames' };
-                                        }
-                                        return null;
-                                    })
-                                    .filter(Boolean)
-                                : [],
-                            // Phase Z — Supplementary resource generation (reversed Lesson-Plan link pattern).
-                            // DA decides what resources each item needs and asks the host to mint them.
-                            // The host returns { id } so DA can inline-link to the freshly-generated resource.
-                            onGenerateGlossary: async (seedTerms, title, provenance) => {
-                                const safeTerms = (Array.isArray(seedTerms) ? seedTerms : [])
-                                    .map(s => String(s || '').trim()).filter(s => s.length > 1).slice(0, 6);
-                                if (safeTerms.length === 0) throw new Error('No seed terms supplied.');
-                                const lang = leveledTextLanguage || 'English';
-                                // Mirror handleQuickAddGlossary's prompt shape exactly — same field
-                                // names (term/def/tier/translations) the main GlossaryView consumes.
-                                const wantTranslations = Array.isArray(selectedLanguages) && selectedLanguages.length > 0;
-                                const prompt = wantTranslations
-                                    ? `Generate glossary entries for these target terms for a ${gradeLevel || 'grade-appropriate'} student in ${lang}.\nFor each term:\n  1. Provide a simple definition appropriate for the grade level.\n  2. Categorize as "Academic" (general Tier 2) or "Domain-Specific" (topic Tier 3).\n  3. Provide translations into: ${selectedLanguages.join(', ')}. Format each translation as "Translated Term: Translated Definition".\n\nReturn ONLY a JSON array; each element has: { "term": string, "def": string, "tier": "Academic" | "Domain-Specific", "translations": { "<Lang>": "TranslatedTerm: TranslatedDef", ... } }\n\nTarget terms:\n${safeTerms.map((t, i) => `${i + 1}. ${t}`).join('\n')}`
-                                    : `Generate glossary entries for these target terms for a ${gradeLevel || 'grade-appropriate'} student in ${lang}.\nFor each term:\n  1. Provide a simple definition appropriate for the grade level.\n  2. Categorize as "Academic" (general Tier 2) or "Domain-Specific" (topic Tier 3).\n\nReturn ONLY a JSON array; each element has: { "term": string, "def": string, "tier": "Academic" | "Domain-Specific" }\n\nTarget terms:\n${safeTerms.map((t, i) => `${i + 1}. ${t}`).join('\n')}`;
-                                const raw = await callGemini(prompt, true);
-                                const cleaned = typeof cleanJson === 'function' ? cleanJson(raw) : raw;
-                                let parsed;
-                                try { parsed = JSON.parse(cleaned); }
-                                catch (e) { throw new Error('Glossary AI response was not valid JSON.'); }
-                                if (!Array.isArray(parsed) || parsed.length === 0) {
-                                    throw new Error('Glossary AI returned an empty list.');
-                                }
-                                const data = parsed.slice(0, 6).map(entry => ({
-                                    term: String(entry.term || '').trim(),
-                                    def: String(entry.def || entry.definition || '').trim(),
-                                    tier: entry.tier === 'Domain-Specific' || entry.tier === 'Academic' ? entry.tier : undefined,
-                                    translations: entry.translations && typeof entry.translations === 'object' ? entry.translations : {}
-                                })).filter(e => e.term && e.def);
-                                if (data.length === 0) throw new Error('Glossary AI returned no usable entries.');
-                                const newId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
-                                const newItem = {
-                                    id: newId,
-                                    type: 'glossary',
-                                    data: data,
-                                    title: String(title || `Glossary: ${data.slice(0, 2).map(d => d.term).join(', ')}`).slice(0, 80),
-                                    meta: 'from Dynamic Assessment' + (provenance && typeof provenance.daItemIndex === 'number' ? ` · item ${provenance.daItemIndex + 1}` : ''),
-                                    timestamp: new Date(),
-                                    config: {},
-                                    fromDA: true,
-                                    daItemIndex: provenance && typeof provenance.daItemIndex === 'number' ? provenance.daItemIndex : null,
-                                    daItemPrompt: provenance && provenance.daItemPrompt ? String(provenance.daItemPrompt).slice(0, 120) : null
-                                };
-                                setHistory(prev => [...prev, newItem]);
-                                // Fire-and-forget icon generation, mirroring handleQuickAddGlossary's
-                                // pipeline EXACTLY: callImagen for the icon, then (if autoRemoveWords)
-                                // callGeminiImageEdit to strip any letters the model leaked in. Sequential
-                                // so we don't burst the rate limiter; per-term failures tolerated.
-                                (async () => {
-                                    for (let i = 0; i < data.length; i++) {
-                                        const term = data[i].term;
-                                        const definition = data[i].def;
-                                        const imgPrompt = `Icon style illustration of "${term}" (Context: ${definition}). Simple, clear, flat vector art style, white background. STRICTLY NO TEXT, NO LABELS, NO LETTERS. Visual only. Educational icon.`;
-                                        // Flip the per-term spinner the GlossaryView already renders
-                                        // (same state used by manual handleGenerateTermImage at line 20103).
-                                        // The "Creating icon…" copy + animated RefreshCw appear automatically.
-                                        setIsGeneratingTermImage(prev => ({ ...prev, [i]: true }));
-                                        try {
-                                            let imageUrl = await callImagen(imgPrompt);
-                                            if (!imageUrl) {
-                                                setIsGeneratingTermImage(prev => ({ ...prev, [i]: false }));
-                                                continue;
-                                            }
-                                            if (autoRemoveWords) {
-                                                try {
-                                                    const rawBase64 = imageUrl.split(',')[1];
-                                                    const editPrompt = "Remove all text, labels, letters, and words from the image. Keep the illustration clean.";
-                                                    imageUrl = await callGeminiImageEdit(editPrompt, rawBase64);
-                                                } catch (editErr) {
-                                                    console.warn('[DA glossary] Auto-remove text failed for term:', term, editErr && editErr.message);
-                                                }
-                                            }
-                                            setHistory(prev => prev.map(it => {
-                                                if (it.id !== newId || !Array.isArray(it.data)) return it;
-                                                const newData = it.data.slice();
-                                                const liveIdx = newData.findIndex(d => d && d.term === term);
-                                                if (liveIdx < 0) return it;
-                                                newData[liveIdx] = { ...newData[liveIdx], image: imageUrl };
-                                                return { ...it, data: newData };
-                                            }));
-                                            setGeneratedContent(prev => {
-                                                if (!prev || prev.id !== newId || prev.type !== 'glossary' || !Array.isArray(prev.data)) return prev;
-                                                const newData = prev.data.slice();
-                                                const liveIdx = newData.findIndex(d => d && d.term === term);
-                                                if (liveIdx < 0) return prev;
-                                                newData[liveIdx] = { ...newData[liveIdx], image: imageUrl };
-                                                return { ...prev, data: newData };
-                                            });
-                                        } catch (imgErr) {
-                                            console.warn('[DA glossary] Image gen failed for term:', term, imgErr && imgErr.message);
-                                        } finally {
-                                            setIsGeneratingTermImage(prev => ({ ...prev, [i]: false }));
-                                        }
-                                    }
-                                })();
-                                return { id: newId };
-                            },
-                            // Phase Z++ — In-place update callbacks for the "✏️ Edit" flow on
-                            // manipulative + word-sounds chips. Same resource id stays put;
-                            // only the data payload changes. Glossary edits go through
-                            // onGenerateGlossary (regeneration) since they involve new images.
-                            onUpdateManipulativePreset: async (resourceId, newPreset, newTitle) => {
-                                setHistory(prev => prev.map(it => {
-                                    if (!it || it.id !== resourceId || it.type !== 'manipulative-resource') return it;
-                                    return Object.assign({}, it, {
-                                        data: Object.assign({}, it.data || {}, { preset: newPreset || {} }),
-                                        title: newTitle ? String(newTitle).slice(0, 80) : it.title
-                                    });
-                                }));
-                                return { id: resourceId };
-                            },
-                            onUpdateWordSoundsProbe: async (resourceId, activity, words, newTitle) => {
-                                const safeWords = (Array.isArray(words) ? words : [])
-                                    .map(w => String(w || '').toLowerCase().replace(/[^a-z]/g, ''))
-                                    .filter(w => w.length >= 2 && w.length <= 14)
-                                    .slice(0, 12);
-                                if (safeWords.length < 3) throw new Error('Need at least 3 valid words.');
-                                const wordObjs = safeWords.map(w => ({
-                                    word: w, term: w, targetWord: w, ttsReady: false, _audioRequested: false
-                                }));
-                                setHistory(prev => prev.map(it => {
-                                    if (!it || it.id !== resourceId || it.type !== 'word-sounds') return it;
-                                    return Object.assign({}, it, {
-                                        data: wordObjs,
-                                        wsPreloadedWords: wordObjs,
-                                        probeActivity: activity || it.probeActivity,
-                                        lessonPlanSequence: activity ? [activity] : it.lessonPlanSequence,
-                                        configSummary: `Probe: ${(activity || it.probeActivity || '').replace(/_/g, ' ')}`,
-                                        title: newTitle ? String(newTitle).slice(0, 80) : it.title
-                                    });
-                                }));
-                                return { id: resourceId };
-                            },
-                            // Phase 3 — Word Sounds probe host callback. Mints a
-                            // type:'word-sounds' history entry with isProbeMode=true,
-                            // preloaded word list, and the chosen activity. Clicking
-                            // the inline link routes through handleRestoreView →
-                            // launches Word Sounds Studio in probe mode at that activity.
-                            onGenerateWordSoundsProbe: async (activity, words, title, provenance) => {
-                                const ALLOWED = { counting: 1, segmentation: 1, blending: 1, isolation: 1, manipulation: 1, rhyming: 1, syllable_blending: 1, syllable_counting: 1 };
-                                if (!ALLOWED[activity]) throw new Error('Unsupported phonics activity: ' + activity);
-                                const safeWords = (Array.isArray(words) ? words : [])
-                                    .map(w => String(w || '').toLowerCase().replace(/[^a-z]/g, ''))
-                                    .filter(w => w.length >= 2 && w.length <= 14)
-                                    .slice(0, 12);
-                                if (safeWords.length < 3) throw new Error('Need at least 3 valid words for a probe.');
-                                const wordObjs = safeWords.map(w => ({
-                                    word: w,
-                                    term: w,
-                                    targetWord: w,
-                                    ttsReady: false,
-                                    _audioRequested: false
-                                }));
-                                const newId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
-                                const newItem = {
-                                    id: newId,
-                                    type: 'word-sounds',
-                                    title: String(title || `Word Sounds Probe: ${activity} (${safeWords.length} words)`).slice(0, 80),
-                                    data: wordObjs,
-                                    wsPreloadedWords: wordObjs,
-                                    lessonPlanSequence: [activity],
-                                    lessonPlanConfig: { activities: [{ id: activity, count: safeWords.length }] },
-                                    configSummary: `Probe: ${activity.replace(/_/g, ' ')}`,
-                                    isProbeMode: true,
-                                    probeActivity: activity,
-                                    meta: 'from Dynamic Assessment' + (provenance && typeof provenance.daItemIndex === 'number' ? ` · item ${provenance.daItemIndex + 1}` : ''),
-                                    timestamp: new Date(),
-                                    config: {},
-                                    fromDA: true,
-                                    daItemIndex: provenance && typeof provenance.daItemIndex === 'number' ? provenance.daItemIndex : null,
-                                    daItemPrompt: provenance && provenance.daItemPrompt ? String(provenance.daItemPrompt).slice(0, 120) : null
-                                };
-                                setHistory(prev => [...prev, newItem]);
-                                return { id: newId };
-                            },
-                            // Phase 2 — Math manipulative host callback. Mints a
-                            // type:'manipulative-resource' history entry pointing at
-                            // a STEAM Lab tool (numberline / fractions / areamodel)
-                            // with preset state Gemini specified. Opening the entry
-                            // (via the inline link chip) routes through handleRestoreView
-                            // which slots the preset into labToolData + opens StemLab.
-                            onGenerateManipulative: async (toolId, preset, title, provenance) => {
-                                const ALLOWED = { numberline: true, fractions: true, areamodel: true };
-                                if (!ALLOWED[toolId]) throw new Error('Unsupported manipulative toolId: ' + toolId);
-                                const safePreset = (preset && typeof preset === 'object') ? preset : {};
-                                const newId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
-                                const newItem = {
-                                    id: newId,
-                                    type: 'manipulative-resource',
-                                    toolId: toolId,
-                                    data: { preset: safePreset },
-                                    title: String(title || `${toolId} (DA)`).slice(0, 80),
-                                    meta: 'from Dynamic Assessment' + (provenance && typeof provenance.daItemIndex === 'number' ? ` · item ${provenance.daItemIndex + 1}` : ''),
-                                    timestamp: new Date(),
-                                    config: {},
-                                    fromDA: true,
-                                    daItemIndex: provenance && typeof provenance.daItemIndex === 'number' ? provenance.daItemIndex : null,
-                                    daItemPrompt: provenance && provenance.daItemPrompt ? String(provenance.daItemPrompt).slice(0, 120) : null
-                                };
-                                setHistory(prev => [...prev, newItem]);
-                                return { id: newId };
-                            },
-                            // Phase 4 — Visual organizer host callback. The elegant
-                            // path: instead of DA-specific render code, route through
-                            // the SAME shared dispatcher (handleGenerate) the main app
-                            // uses for outline/concept-map/mind-map/timeline/concept-sort.
-                            // Reuses the generator + parsing + minting + restore machinery
-                            // for free. CRITICAL: passes isolatedContext so the dispatcher
-                            // suppresses ALL ambient lesson context (Lesson DNA, standards,
-                            // differentiation, selected concepts, source topic, and the
-                            // per-tool main-app custom instructions) — the organizer stays
-                            // self-contained to the DA item so no outside topic/vocabulary
-                            // contaminates the assessment. toolType picks the organizer;
-                            // directive is the sole source content.
-                            //
-                            // ENFORCED, not merely asserted: this exact comment was true in
-                            // intent and false in fact from the Phase-4 organizer work until
-                            // 2026-07-28 — the dispatcher never read the flag (zero
-                            // occurrences of the token), so every DA support silently
-                            // inherited the open lesson. The suppression now lives at each
-                            // ambient value's computation point in generate_dispatcher_source.jsx,
-                            // is pinned by tests/da_clinical_isolation.test.js (which drives the
-                            // real dispatcher and checks BOTH directions), and is blocked at
-                            // deploy by dev-tools/check_da_clinical_isolation.cjs. Do not
-                            // weaken any of the three without a clinical rationale.
-                            onGenerateVisualOrganizer: async (toolType, directive, title, provenance) => {
-                                const TOOLTYPE_MAP = {
-                                    'outline':      { type: 'outline', outlineType: 'Standard Outline' },
-                                    'concept-map':  { type: 'outline', outlineType: 'Key Concept Map' },
-                                    'mind-map':     { type: 'outline', outlineType: 'Mind Map' },
-                                    'timeline':     { type: 'timeline' },
-                                    'concept-sort': { type: 'concept-sort' }
-                                };
-                                const mapping = TOOLTYPE_MAP[toolType];
-                                if (!mapping) throw new Error('Unsupported visual organizer type: ' + toolType);
-                                const safeDirective = String(directive || '').trim();
-                                if (safeDirective.length < 8) throw new Error('Visual organizer directive too thin to generate.');
-                                // isolatedContext keeps the organizer self-contained to the DA
-                                // item — the dispatcher generates purely from safeDirective and
-                                // injects no ambient lesson topic/vocabulary/standards.
-                                const cfg = { isolatedContext: true };
-                                if (mapping.outlineType) cfg.outlineType = mapping.outlineType;
-                                // switchView=false so the main view doesn't change while DA is open.
-                                // handleGenerate returns the newly-minted history item.
-                                const newItem = await handleGenerate(mapping.type, null, false, safeDirective, cfg, false);
-                                if (!newItem || !newItem.id) throw new Error('Visual organizer generation returned no resource.');
-                                // handleGenerate doesn't set DA provenance — patch it in so the
-                                // "🔬 DA · item N" badge + "Return to Dynamic Assessment" pill work
-                                // exactly as they do for glossary/manipulative/word-sounds.
-                                const daMeta = 'from Dynamic Assessment' + (provenance && typeof provenance.daItemIndex === 'number' ? ` · item ${provenance.daItemIndex + 1}` : '');
-                                setHistory(prev => prev.map(it => it.id === newItem.id ? Object.assign({}, it, {
-                                    fromDA: true,
-                                    daItemIndex: provenance && typeof provenance.daItemIndex === 'number' ? provenance.daItemIndex : null,
-                                    daItemPrompt: provenance && provenance.daItemPrompt ? String(provenance.daItemPrompt).slice(0, 120) : null,
-                                    meta: daMeta,
-                                    title: title ? String(title).slice(0, 80) : it.title
-                                }) : it));
-                                return { id: newItem.id };
-                            },
-                            // Sentence-frames host callback — the expressive/output scaffold.
-                            // Same shared pipeline as visual organizers: route through
-                            // handleGenerate('sentence-frames', directive, {isolatedContext})
-                            // so it stays self-contained to the DA item, mint a standard
-                            // 'sentence-frames' history entry, and let handleRestoreView's
-                            // default branch open it. directive is the sole source content.
-                            onGenerateSentenceFrames: async (directive, title, provenance) => {
-                                const safeDirective = String(directive || '').trim();
-                                if (safeDirective.length < 8) throw new Error('Sentence-frames directive too thin to generate.');
-                                const newItem = await handleGenerate('sentence-frames', null, false, safeDirective, { isolatedContext: true }, false);
-                                if (!newItem || !newItem.id) throw new Error('Sentence-frames generation returned no resource.');
-                                const daMeta = 'from Dynamic Assessment' + (provenance && typeof provenance.daItemIndex === 'number' ? ` · item ${provenance.daItemIndex + 1}` : '');
-                                setHistory(prev => prev.map(it => it.id === newItem.id ? Object.assign({}, it, {
-                                    fromDA: true,
-                                    daItemIndex: provenance && typeof provenance.daItemIndex === 'number' ? provenance.daItemIndex : null,
-                                    daItemPrompt: provenance && provenance.daItemPrompt ? String(provenance.daItemPrompt).slice(0, 120) : null,
-                                    meta: daMeta,
-                                    title: title ? String(title).slice(0, 80) : it.title
-                                }) : it));
-                                return { id: newItem.id };
-                            },
-                            onOpenResource: (resourceId) => {
-                                const item = (Array.isArray(history) ? history : []).find(h => h && h.id === resourceId);
-                                if (!item) {
-                                    addToast(t('toasts.resource_not_found_history') || 'Resource not found in history (it may have been deleted).', 'info');
-                                    return;
-                                }
-                                setIsDynamicAssessmentOpen(false);
-                                setTimeout(() => { handleRestoreView(item); }, 50);
-                            }
-                        })}
-                    </div>
-                </div>
-            )}
+            {(DA) => {
+                const DynamicAssessmentHostAdapter = DA && DA.HostAdapter;
+                if (typeof DynamicAssessmentHostAdapter !== 'function') {
+                    return (
+                        <div className="fixed inset-0 z-[60] bg-black/50 overflow-y-auto p-4" onClick={() => setIsDynamicAssessmentOpen(false)}>
+                            <div role="alertdialog" aria-modal="true" aria-labelledby="dynamic-assessment-update-title" className="bg-white rounded-2xl mx-auto my-8 shadow-2xl max-w-lg p-6" onClick={(event) => event.stopPropagation()}>
+                                <h2 id="dynamic-assessment-update-title" className="text-xl font-bold text-slate-900">Dynamic Assessment update needed</h2>
+                                <p className="mt-2 text-slate-700">Close this panel, refresh AlloFlow, and try again.</p>
+                                <button type="button" className="mt-5 rounded-lg bg-indigo-600 px-4 py-2 font-semibold text-white hover:bg-indigo-700" onClick={() => setIsDynamicAssessmentOpen(false)}>Close</button>
+                            </div>
+                        </div>
+                    );
+                }
+                return React.createElement(DynamicAssessmentHostAdapter, {
+                    React,
+                    DynamicAssessment: DA,
+                    host: {
+                        addToast,
+                        autoRemoveWords,
+                        callGemini,
+                        callGeminiImageEdit,
+                        callImagen,
+                        cleanJson,
+                        gradeLevel,
+                        handleGenerate,
+                        handleRestoreView,
+                        history,
+                        leveledTextLanguage,
+                        selectedLanguages,
+                        setGeneratedContent,
+                        setHistory,
+                        setIsDynamicAssessmentOpen,
+                        setIsGeneratingTermImage,
+                        studentNickname,
+                        t,
+                    }
+                });
+            }}
         </CDNModuleGate>
 
         <CDNModuleGate moduleKey="CommunityCatalog" isOpen={isCommunityCatalogOpen} onClose={() => setIsCommunityCatalogOpen(false)} icon="📚" displayName="Community Catalog" t={t}>

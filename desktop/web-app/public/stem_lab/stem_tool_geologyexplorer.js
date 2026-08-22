@@ -1797,9 +1797,9 @@
       var guideMaterial3d = new THREE.MeshBasicMaterial({
         color: color3d,
         transparent: true,
-        opacity: SCENE.id === 'geode' ? 0.25 : 0.3,
+        opacity: SCENE.id === 'geode' ? 0.25 : (SCENE.id === 'deepEarth' ? 0.48 : 0.3),
         depthWrite: false,
-        blending: THREE.AdditiveBlending
+        blending: SCENE.id === 'deepEarth' ? THREE.NormalBlending : THREE.AdditiveBlending
       });
       var guideMesh3d = new THREE.Mesh(guideGeometry3d, guideMaterial3d);
       guideMesh3d.renderOrder = 2;
@@ -1812,9 +1812,9 @@
         var arrowMaterial3d = new THREE.MeshBasicMaterial({
           color: color3d,
           transparent: true,
-          opacity: 0.72,
+          opacity: SCENE.id === 'deepEarth' ? 0.84 : 0.72,
           depthWrite: false,
-          blending: THREE.AdditiveBlending
+          blending: SCENE.id === 'deepEarth' ? THREE.NormalBlending : THREE.AdditiveBlending
         });
         var arrowMesh3d = new THREE.Mesh(geologyProcessGuideArrowGeometry3d, arrowMaterial3d);
         arrowMesh3d.position.copy(arrowPosition3d);
@@ -1847,6 +1847,532 @@
       geologyProcessGuideGroup3d.position.z = SCENE.id === 'geode'
         ? 0.12
         : WORLD.d * 0.5 - (Number(sliceZ) || 0) * VOXEL + 0.085;
+    }
+    var geologyDeepEarthCoreGroup3d = new THREE.Group();
+    var geologyDeepEarthDynamoGroup3d = new THREE.Group();
+    var geologyDeepEarthFieldGroup3d = new THREE.Group();
+    var geologyDeepEarthGeometries3d = [];
+    var geologyDeepEarthMaterials3d = [];
+    var geologyDeepEarthFieldMaterials3d = [];
+    var geologyInnerCoreMesh3d = null;
+    var geologyInnerCoreGlow3d = null;
+    var geologyOuterCoreShell3d = null;
+    scene.add(geologyDeepEarthCoreGroup3d);
+    scene.add(geologyDeepEarthFieldGroup3d);
+    geologyDeepEarthCoreGroup3d.add(geologyDeepEarthDynamoGroup3d);
+    function addDeepEarthCoreVisuals3d() {
+      var innerCoreGeometry3d = new THREE.IcosahedronGeometry(1.38, geologyHighDetail3d ? 3 : 2);
+      var innerCoreMaterial3d = new THREE.MeshPhysicalMaterial({
+        color: 0xd97706,
+        emissive: 0x7c2d12,
+        emissiveIntensity: 0.12,
+        roughness: 0.44,
+        metalness: 0.28,
+        clearcoat: 0.38,
+        clearcoatRoughness: 0.28,
+        flatShading: true,
+        transparent: true,
+        opacity: 0.96
+      });
+      geologyInnerCoreMesh3d = new THREE.Mesh(innerCoreGeometry3d, innerCoreMaterial3d);
+      geologyInnerCoreMesh3d.castShadow = geologyHighDetail3d;
+      geologyDeepEarthCoreGroup3d.add(geologyInnerCoreMesh3d);
+      geologyDeepEarthGeometries3d.push(innerCoreGeometry3d);
+      geologyDeepEarthMaterials3d.push(innerCoreMaterial3d);
+
+      var innerCoreGlowGeometry3d = new THREE.SphereGeometry(1.58, geologyHighDetail3d ? 28 : 18, geologyHighDetail3d ? 18 : 12);
+      var innerCoreGlowMaterial3d = new THREE.MeshBasicMaterial({
+        color: 0xffb347,
+        transparent: true,
+        opacity: 0.06,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+        side: THREE.BackSide
+      });
+      innerCoreGlowMaterial3d.userData.geologyBaseOpacity = 0.06;
+      geologyInnerCoreGlow3d = new THREE.Mesh(innerCoreGlowGeometry3d, innerCoreGlowMaterial3d);
+      geologyInnerCoreGlow3d.renderOrder = 2;
+      geologyDeepEarthCoreGroup3d.add(geologyInnerCoreGlow3d);
+      geologyDeepEarthGeometries3d.push(innerCoreGlowGeometry3d);
+      geologyDeepEarthMaterials3d.push(innerCoreGlowMaterial3d);
+
+      var outerCoreShellGeometry3d = new THREE.SphereGeometry(3.58, geologyHighDetail3d ? 38 : 24, geologyHighDetail3d ? 24 : 16);
+      var outerCoreShellMaterial3d = new THREE.MeshPhysicalMaterial({
+        color: 0xea580c,
+        emissive: 0x7c2d12,
+        emissiveIntensity: 0.12,
+        transparent: true,
+        opacity: 0.16,
+        roughness: 0.4,
+        metalness: 0.12,
+        clearcoat: 0.34,
+        clearcoatRoughness: 0.26,
+        depthWrite: false,
+        side: THREE.BackSide
+      });
+      outerCoreShellMaterial3d.userData.geologyBaseOpacity = 0.16;
+      geologyOuterCoreShell3d = new THREE.Mesh(outerCoreShellGeometry3d, outerCoreShellMaterial3d);
+      geologyOuterCoreShell3d.renderOrder = 1;
+      geologyDeepEarthCoreGroup3d.add(geologyOuterCoreShell3d);
+      geologyDeepEarthGeometries3d.push(outerCoreShellGeometry3d);
+      geologyDeepEarthMaterials3d.push(outerCoreShellMaterial3d);
+
+      for (var coreBoundaryRingIndex3d = 0; coreBoundaryRingIndex3d < 3; coreBoundaryRingIndex3d++) {
+        var coreBoundaryRingGeometry3d = new THREE.TorusGeometry(3.58, 0.027, 6, geologyHighDetail3d ? 56 : 34);
+        var coreBoundaryRingMaterial3d = new THREE.MeshBasicMaterial({
+          color: coreBoundaryRingIndex3d === 2 ? 0xf59e0b : 0xc2410c,
+          transparent: true,
+          opacity: 0.2,
+          depthWrite: false
+        });
+        var coreBoundaryRing3d = new THREE.Mesh(coreBoundaryRingGeometry3d, coreBoundaryRingMaterial3d);
+        if (coreBoundaryRingIndex3d === 0) coreBoundaryRing3d.rotation.x = Math.PI / 2;
+        else if (coreBoundaryRingIndex3d === 1) coreBoundaryRing3d.rotation.y = Math.PI / 2;
+        else coreBoundaryRing3d.rotation.set(Math.PI / 2, Math.PI / 4, 0);
+        coreBoundaryRing3d.renderOrder = 2;
+        geologyDeepEarthCoreGroup3d.add(coreBoundaryRing3d);
+        geologyDeepEarthGeometries3d.push(coreBoundaryRingGeometry3d);
+        geologyDeepEarthMaterials3d.push(coreBoundaryRingMaterial3d);
+      }
+
+      var dynamoArrowGeometry3d = new THREE.ConeGeometry(0.09, 0.26, 7, 1, false);
+      geologyDeepEarthGeometries3d.push(dynamoArrowGeometry3d);
+      var dynamoLoopCount3d = geologyHighDetail3d ? 4 : 3;
+      for (var dynamoLoopIndex3d = 0; dynamoLoopIndex3d < dynamoLoopCount3d; dynamoLoopIndex3d++) {
+        var dynamoPoints3d = [];
+        var dynamoPhase3d = dynamoLoopIndex3d / dynamoLoopCount3d * Math.PI * 2;
+        for (var dynamoPointIndex3d = 0; dynamoPointIndex3d < 12; dynamoPointIndex3d++) {
+          var dynamoAngle3d = dynamoPointIndex3d / 12 * Math.PI * 2;
+          var dynamoRadius3d = 2.25 + (dynamoLoopIndex3d % 2) * 0.28;
+          dynamoPoints3d.push(new THREE.Vector3(
+            Math.cos(dynamoAngle3d) * dynamoRadius3d,
+            Math.sin(dynamoAngle3d) * dynamoRadius3d * 0.68,
+            Math.sin(dynamoAngle3d * 2 + dynamoPhase3d) * (0.5 + dynamoLoopIndex3d * 0.07)
+          ));
+        }
+        var dynamoCurve3d = new THREE.CatmullRomCurve3(dynamoPoints3d, true, 'centripetal', 0.45);
+        var dynamoGeometry3d = new THREE.TubeGeometry(dynamoCurve3d, geologyHighDetail3d ? 52 : 32, 0.047, 6, true);
+        var dynamoMaterial3d = new THREE.MeshBasicMaterial({
+          color: dynamoLoopIndex3d % 2 ? 0xf59e0b : 0xdc2626,
+          transparent: true,
+          opacity: 0.7,
+          depthWrite: false
+        });
+        var dynamoMesh3d = new THREE.Mesh(dynamoGeometry3d, dynamoMaterial3d);
+        dynamoMesh3d.rotation.y = dynamoPhase3d * 0.23;
+        dynamoMesh3d.renderOrder = 3;
+        geologyDeepEarthDynamoGroup3d.add(dynamoMesh3d);
+        geologyDeepEarthGeometries3d.push(dynamoGeometry3d);
+        geologyDeepEarthMaterials3d.push(dynamoMaterial3d);
+        var dynamoArrowStop3d = (0.18 + dynamoLoopIndex3d * 0.13) % 1;
+        var dynamoArrowPosition3d = dynamoCurve3d.getPointAt(dynamoArrowStop3d);
+        var dynamoArrowTangent3d = dynamoCurve3d.getTangentAt(dynamoArrowStop3d).normalize();
+        var dynamoArrowMaterial3d = new THREE.MeshBasicMaterial({
+          color: dynamoLoopIndex3d % 2 ? 0xf59e0b : 0xdc2626,
+          transparent: true,
+          opacity: 0.92,
+          depthWrite: false
+        });
+        var dynamoArrow3d = new THREE.Mesh(dynamoArrowGeometry3d, dynamoArrowMaterial3d);
+        dynamoArrow3d.position.copy(dynamoArrowPosition3d);
+        dynamoArrow3d.quaternion.setFromUnitVectors(geologyProcessGuideUp3d, dynamoArrowTangent3d);
+        dynamoArrow3d.renderOrder = 4;
+        geologyDeepEarthDynamoGroup3d.add(dynamoArrow3d);
+        geologyDeepEarthMaterials3d.push(dynamoArrowMaterial3d);
+      }
+
+      var magneticArrowGeometry3d = new THREE.ConeGeometry(0.075, 0.22, 7, 1, false);
+      geologyDeepEarthGeometries3d.push(magneticArrowGeometry3d);
+      var magneticFieldCount3d = geologyHighDetail3d ? 5 : 4;
+      for (var magneticFieldIndex3d = 0; magneticFieldIndex3d < magneticFieldCount3d; magneticFieldIndex3d++) {
+        var magneticAzimuth3d = magneticFieldIndex3d / magneticFieldCount3d * Math.PI * 2;
+        var magneticRadialX3d = Math.cos(magneticAzimuth3d);
+        var magneticRadialZ3d = Math.sin(magneticAzimuth3d);
+        var magneticWidth3d = 4.65 + (magneticFieldIndex3d % 3) * 0.48;
+        var magneticPoints3d = [
+          new THREE.Vector3(0, 3.25, 0),
+          new THREE.Vector3(magneticRadialX3d * magneticWidth3d * 0.58, 2.55, magneticRadialZ3d * magneticWidth3d * 0.58),
+          new THREE.Vector3(magneticRadialX3d * magneticWidth3d, 0, magneticRadialZ3d * magneticWidth3d),
+          new THREE.Vector3(magneticRadialX3d * magneticWidth3d * 0.58, -2.55, magneticRadialZ3d * magneticWidth3d * 0.58),
+          new THREE.Vector3(0, -3.25, 0)
+        ];
+        var magneticCurve3d = new THREE.CatmullRomCurve3(magneticPoints3d, false, 'centripetal', 0.45);
+        var magneticGeometry3d = new THREE.TubeGeometry(magneticCurve3d, geologyHighDetail3d ? 46 : 28, 0.03, 5, false);
+        var magneticMaterial3d = new THREE.MeshBasicMaterial({
+          color: magneticFieldIndex3d % 2 ? 0x38bdf8 : 0x2563eb,
+          transparent: true,
+          opacity: 0.38,
+          depthWrite: false,
+          depthTest: false
+        });
+        magneticMaterial3d.userData.geologyBaseOpacity = 0.38;
+        var magneticMesh3d = new THREE.Mesh(magneticGeometry3d, magneticMaterial3d);
+        magneticMesh3d.renderOrder = 5;
+        geologyDeepEarthFieldGroup3d.add(magneticMesh3d);
+        geologyDeepEarthGeometries3d.push(magneticGeometry3d);
+        geologyDeepEarthMaterials3d.push(magneticMaterial3d);
+        geologyDeepEarthFieldMaterials3d.push(magneticMaterial3d);
+        var magneticArrowPosition3d = magneticCurve3d.getPointAt(0.48);
+        var magneticArrowTangent3d = magneticCurve3d.getTangentAt(0.48).normalize();
+        var magneticArrowMaterial3d = new THREE.MeshBasicMaterial({
+          color: magneticFieldIndex3d % 2 ? 0x38bdf8 : 0x2563eb,
+          transparent: true,
+          opacity: 0.82,
+          depthWrite: false,
+          depthTest: false
+        });
+        var magneticArrow3d = new THREE.Mesh(magneticArrowGeometry3d, magneticArrowMaterial3d);
+        magneticArrow3d.position.copy(magneticArrowPosition3d);
+        magneticArrow3d.quaternion.setFromUnitVectors(geologyProcessGuideUp3d, magneticArrowTangent3d);
+        magneticArrow3d.renderOrder = 6;
+        geologyDeepEarthFieldGroup3d.add(magneticArrow3d);
+        geologyDeepEarthMaterials3d.push(magneticArrowMaterial3d);
+      }
+    }
+    if (SCENE.id === 'deepEarth') addDeepEarthCoreVisuals3d();
+    var geologyScienceStage3d = 0;
+    var geologySeismicGroup3d = new THREE.Group();
+    var geologySeismicRayGroup3d = new THREE.Group();
+    var geologySeismicMarkerGroup3d = new THREE.Group();
+    var geologySeismicGeometries3d = [];
+    var geologySeismicMaterials3d = [];
+    var geologySeismicPCurves3d = [];
+    var geologySeismicSCurves3d = [];
+    var geologySeismicPulseRecords3d = [];
+    var geologySeismicSourceRings3d = [];
+    var geologySeismicStopMarkers3d = [];
+    var geologySeismicShadowReceivers3d = [];
+    var geologySeismicSource3d = null;
+    scene.add(geologySeismicGroup3d);
+    geologySeismicGroup3d.add(geologySeismicRayGroup3d);
+    geologySeismicGroup3d.add(geologySeismicMarkerGroup3d);
+    function addDeepEarthSeismicVisuals3d() {
+      var pPulseGeometry3d = new THREE.SphereGeometry(0.12, geologyHighDetail3d ? 12 : 8, geologyHighDetail3d ? 8 : 6);
+      var sPulseGeometry3d = new THREE.OctahedronGeometry(0.16, 0);
+      var pPulseMaterial3d = new THREE.MeshBasicMaterial({
+        color: 0x22d3ee,
+        transparent: true,
+        opacity: 0.96,
+        depthWrite: false,
+        depthTest: false
+      });
+      var sPulseMaterial3d = new THREE.MeshBasicMaterial({
+        color: 0xf472b6,
+        transparent: true,
+        opacity: 0.96,
+        depthWrite: false,
+        depthTest: false
+      });
+      geologySeismicGeometries3d.push(pPulseGeometry3d, sPulseGeometry3d);
+      geologySeismicMaterials3d.push(pPulseMaterial3d, sPulseMaterial3d);
+      [
+        { radius: 5.3, width: 0.055, color: 0x93c5fd, opacity: 0.24, scaleY: 0.82 },
+        { radius: 3.52, width: 0.065, color: 0xfda4af, opacity: 0.36, scaleY: 1 }
+      ].forEach(function (boundary3d) {
+        var boundaryGeometry3d = new THREE.RingGeometry(
+          boundary3d.radius - boundary3d.width,
+          boundary3d.radius + boundary3d.width,
+          geologyHighDetail3d ? 72 : 44
+        );
+        var boundaryMaterial3d = new THREE.MeshBasicMaterial({
+          color: boundary3d.color,
+          side: THREE.DoubleSide,
+          transparent: true,
+          opacity: boundary3d.opacity,
+          depthWrite: false,
+          depthTest: false
+        });
+        var boundaryMesh3d = new THREE.Mesh(boundaryGeometry3d, boundaryMaterial3d);
+        boundaryMesh3d.scale.y = boundary3d.scaleY;
+        boundaryMesh3d.position.z = -0.06;
+        boundaryMesh3d.renderOrder = 6;
+        geologySeismicRayGroup3d.add(boundaryMesh3d);
+        geologySeismicGeometries3d.push(boundaryGeometry3d);
+        geologySeismicMaterials3d.push(boundaryMaterial3d);
+      });
+      function addSeismicRay3d(pointRows3d, waveType3d, rayIndex3d) {
+        var points3d = pointRows3d.map(function (point3d) {
+          return new THREE.Vector3(point3d[0], point3d[1], point3d[2]);
+        });
+        var rayCurve3d = new THREE.CatmullRomCurve3(points3d, false, 'centripetal', 0.38);
+        var isPWave3d = waveType3d === 'P';
+        var rayGeometry3d = new THREE.TubeGeometry(
+          rayCurve3d,
+          geologyHighDetail3d ? 58 : 34,
+          isPWave3d ? 0.052 : 0.068,
+          6,
+          false
+        );
+        var rayMaterial3d = new THREE.MeshBasicMaterial({
+          color: isPWave3d ? (rayIndex3d % 2 ? 0x67e8f9 : 0x22d3ee) : (rayIndex3d % 2 ? 0xe879f9 : 0xf472b6),
+          transparent: true,
+          opacity: isPWave3d ? 0.82 : 0.9,
+          depthWrite: false,
+          depthTest: false
+        });
+        rayMaterial3d.userData.geologyBaseOpacity = rayMaterial3d.opacity;
+        var rayMesh3d = new THREE.Mesh(rayGeometry3d, rayMaterial3d);
+        rayMesh3d.renderOrder = isPWave3d ? 8 : 9;
+        geologySeismicRayGroup3d.add(rayMesh3d);
+        geologySeismicGeometries3d.push(rayGeometry3d);
+        geologySeismicMaterials3d.push(rayMaterial3d);
+        (isPWave3d ? geologySeismicPCurves3d : geologySeismicSCurves3d).push(rayCurve3d);
+        var pulseCount3d = geologyHighDetail3d ? 2 : 1;
+        for (var pulseIndex3d = 0; pulseIndex3d < pulseCount3d; pulseIndex3d++) {
+          var pulseMesh3d = new THREE.Mesh(
+            isPWave3d ? pPulseGeometry3d : sPulseGeometry3d,
+            isPWave3d ? pPulseMaterial3d : sPulseMaterial3d
+          );
+          pulseMesh3d.renderOrder = 11;
+          geologySeismicRayGroup3d.add(pulseMesh3d);
+          geologySeismicPulseRecords3d.push({
+            curve: rayCurve3d,
+            mesh: pulseMesh3d,
+            type: waveType3d,
+            offset: (rayIndex3d * 0.19 + pulseIndex3d / pulseCount3d) % 1,
+            speed: isPWave3d ? 0.105 : 0.082
+          });
+        }
+      }
+
+      var pRayRows3d = [
+        [[-5.1, 3.45, -0.24], [-4.18, 2.78, -0.19], [-3.08, 1.58, -0.12], [-1.56, 0.58, -0.02], [0, -0.08, 0.08], [1.55, -0.66, 0.16], [3.05, -1.56, 0.21], [4.88, -3.02, 0.24]],
+        [[-5.1, 3.45, 0.02], [-4.18, 2.25, 0.1], [-3.32, 0.78, 0.17], [-2.08, -0.52, 0.21], [-0.48, -1.08, 0.17], [1.55, -1.26, 0.11], [3.55, -1.52, 0.05], [5.02, -1.82, 0]],
+        [[-5.1, 3.45, 0.3], [-4.02, 3.82, 0.25], [-2.18, 4.34, 0.13], [0, 4.56, 0], [2.4, 4.18, -0.13], [4.86, 2.88, -0.28]]
+      ];
+      var sRayRows3d = [
+        [[-5.1, 3.45, -0.18], [-4.36, 2.94, -0.12], [-3.7, 2.34, -0.04], [-3.05, 1.75, 0.03]],
+        [[-5.1, 3.45, 0.06], [-4.38, 2.4, 0.12], [-3.84, 1.25, 0.17], [-3.52, 0.38, 0.2]],
+        [[-5.1, 3.45, 0.28], [-4.14, 3.68, 0.24], [-3.02, 3.42, 0.16], [-2.08, 2.88, 0.08]]
+      ];
+      var pRayLimit3d = geologyHighDetail3d ? pRayRows3d.length : 2;
+      var sRayLimit3d = geologyHighDetail3d ? sRayRows3d.length : 2;
+      for (var pRayIndex3d = 0; pRayIndex3d < pRayLimit3d; pRayIndex3d++) {
+        addSeismicRay3d(pRayRows3d[pRayIndex3d], 'P', pRayIndex3d);
+      }
+      for (var sRayIndex3d = 0; sRayIndex3d < sRayLimit3d; sRayIndex3d++) {
+        addSeismicRay3d(sRayRows3d[sRayIndex3d], 'S', sRayIndex3d);
+      }
+
+      var sourceGeometry3d = new THREE.IcosahedronGeometry(0.2, 1);
+      var sourceMaterial3d = new THREE.MeshStandardMaterial({
+        color: 0xfb923c,
+        emissive: 0xdc2626,
+        emissiveIntensity: 0.82,
+        roughness: 0.36,
+        metalness: 0.05,
+        depthTest: false
+      });
+      geologySeismicSource3d = new THREE.Mesh(sourceGeometry3d, sourceMaterial3d);
+      geologySeismicSource3d.position.set(-5.1, 3.45, 0.38);
+      geologySeismicSource3d.renderOrder = 12;
+      geologySeismicMarkerGroup3d.add(geologySeismicSource3d);
+      geologySeismicGeometries3d.push(sourceGeometry3d);
+      geologySeismicMaterials3d.push(sourceMaterial3d);
+      for (var sourceRingIndex3d = 0; sourceRingIndex3d < 3; sourceRingIndex3d++) {
+        var sourceRingGeometry3d = new THREE.RingGeometry(
+          0.25 + sourceRingIndex3d * 0.16,
+          0.275 + sourceRingIndex3d * 0.16,
+          geologyHighDetail3d ? 32 : 20
+        );
+        var sourceRingMaterial3d = new THREE.MeshBasicMaterial({
+          color: sourceRingIndex3d % 2 ? 0xf97316 : 0xfbbf24,
+          side: THREE.DoubleSide,
+          transparent: true,
+          opacity: 0.78 - sourceRingIndex3d * 0.12,
+          depthWrite: false,
+          depthTest: false
+        });
+        sourceRingMaterial3d.userData.geologyBaseOpacity = sourceRingMaterial3d.opacity;
+        var sourceRing3d = new THREE.Mesh(sourceRingGeometry3d, sourceRingMaterial3d);
+        sourceRing3d.position.copy(geologySeismicSource3d.position);
+        sourceRing3d.position.z -= 0.015;
+        sourceRing3d.renderOrder = 10;
+        geologySeismicMarkerGroup3d.add(sourceRing3d);
+        geologySeismicSourceRings3d.push(sourceRing3d);
+        geologySeismicGeometries3d.push(sourceRingGeometry3d);
+        geologySeismicMaterials3d.push(sourceRingMaterial3d);
+      }
+
+      var stopRingGeometry3d = new THREE.TorusGeometry(0.21, 0.035, 6, geologyHighDetail3d ? 24 : 16);
+      var stopRingMaterial3d = new THREE.MeshBasicMaterial({
+        color: 0xf472b6,
+        transparent: true,
+        opacity: 0.88,
+        depthWrite: false,
+        depthTest: false
+      });
+      var stopXGeometry3d = new THREE.BoxGeometry(0.34, 0.055, 0.04);
+      var stopXMaterial3d = new THREE.MeshBasicMaterial({
+        color: 0xfdf2f8,
+        transparent: true,
+        opacity: 0.94,
+        depthWrite: false,
+        depthTest: false
+      });
+      geologySeismicGeometries3d.push(stopRingGeometry3d, stopXGeometry3d);
+      geologySeismicMaterials3d.push(stopRingMaterial3d, stopXMaterial3d);
+      geologySeismicSCurves3d.forEach(function (sCurve3d) {
+        var stopPosition3d = sCurve3d.getPointAt(1);
+        var stopGroup3d = new THREE.Group();
+        var stopRing3d = new THREE.Mesh(stopRingGeometry3d, stopRingMaterial3d);
+        var stopXForward3d = new THREE.Mesh(stopXGeometry3d, stopXMaterial3d);
+        var stopXBack3d = new THREE.Mesh(stopXGeometry3d, stopXMaterial3d);
+        stopXForward3d.rotation.z = Math.PI / 4;
+        stopXBack3d.rotation.z = -Math.PI / 4;
+        stopRing3d.renderOrder = 12;
+        stopXForward3d.renderOrder = 13;
+        stopXBack3d.renderOrder = 13;
+        stopGroup3d.position.copy(stopPosition3d);
+        stopGroup3d.add(stopRing3d);
+        stopGroup3d.add(stopXForward3d);
+        stopGroup3d.add(stopXBack3d);
+        geologySeismicMarkerGroup3d.add(stopGroup3d);
+        geologySeismicStopMarkers3d.push(stopGroup3d);
+      });
+
+      var shadowArcPoints3d = [];
+      for (var shadowPointIndex3d = 0; shadowPointIndex3d <= 12; shadowPointIndex3d++) {
+        var shadowAngle3d = (-52 + shadowPointIndex3d / 12 * 104) * Math.PI / 180;
+        shadowArcPoints3d.push(new THREE.Vector3(
+          Math.cos(shadowAngle3d) * 5.3,
+          Math.sin(shadowAngle3d) * 5.3,
+          0.04
+        ));
+      }
+      var shadowArcCurve3d = new THREE.CatmullRomCurve3(shadowArcPoints3d, false, 'centripetal', 0.4);
+      var shadowArcGeometry3d = new THREE.TubeGeometry(shadowArcCurve3d, geologyHighDetail3d ? 48 : 30, 0.05, 6, false);
+      var shadowArcMaterial3d = new THREE.MeshBasicMaterial({
+        color: 0xf472b6,
+        transparent: true,
+        opacity: 0.68,
+        depthWrite: false,
+        depthTest: false
+      });
+      var shadowArcMesh3d = new THREE.Mesh(shadowArcGeometry3d, shadowArcMaterial3d);
+      shadowArcMesh3d.renderOrder = 8;
+      geologySeismicMarkerGroup3d.add(shadowArcMesh3d);
+      geologySeismicGeometries3d.push(shadowArcGeometry3d);
+      geologySeismicMaterials3d.push(shadowArcMaterial3d);
+
+      var receiverRingGeometry3d = new THREE.TorusGeometry(0.2, 0.038, 6, geologyHighDetail3d ? 24 : 16);
+      var receiverRingMaterial3d = new THREE.MeshBasicMaterial({
+        color: 0x67e8f9,
+        transparent: true,
+        opacity: 0.9,
+        depthWrite: false,
+        depthTest: false
+      });
+      var receiverXGeometry3d = new THREE.BoxGeometry(0.28, 0.045, 0.035);
+      var receiverXMaterial3d = new THREE.MeshBasicMaterial({
+        color: 0xf472b6,
+        transparent: true,
+        opacity: 0.88,
+        depthWrite: false,
+        depthTest: false
+      });
+      geologySeismicGeometries3d.push(receiverRingGeometry3d, receiverXGeometry3d);
+      geologySeismicMaterials3d.push(receiverRingMaterial3d, receiverXMaterial3d);
+      [-38, -13, 14, 39].forEach(function (receiverAngleDegrees3d) {
+        var receiverAngle3d = receiverAngleDegrees3d * Math.PI / 180;
+        var receiverGroup3d = new THREE.Group();
+        var receiverRing3d = new THREE.Mesh(receiverRingGeometry3d, receiverRingMaterial3d);
+        var receiverXForward3d = new THREE.Mesh(receiverXGeometry3d, receiverXMaterial3d);
+        var receiverXBack3d = new THREE.Mesh(receiverXGeometry3d, receiverXMaterial3d);
+        receiverXForward3d.rotation.z = Math.PI / 4;
+        receiverXBack3d.rotation.z = -Math.PI / 4;
+        receiverRing3d.renderOrder = 12;
+        receiverXForward3d.renderOrder = 13;
+        receiverXBack3d.renderOrder = 13;
+        receiverGroup3d.position.set(
+          Math.cos(receiverAngle3d) * 5.3,
+          Math.sin(receiverAngle3d) * 5.3,
+          0.08
+        );
+        receiverGroup3d.add(receiverRing3d);
+        receiverGroup3d.add(receiverXForward3d);
+        receiverGroup3d.add(receiverXBack3d);
+        geologySeismicMarkerGroup3d.add(receiverGroup3d);
+        geologySeismicShadowReceivers3d.push(receiverGroup3d);
+      });
+    }
+    if (SCENE.id === 'deepEarth') addDeepEarthSeismicVisuals3d();
+    cnv.dataset.geologySeismicRendering = SCENE.id === 'deepEarth'
+      ? 'p-wave-refraction-s-wave-liquid-core-stop-and-shadow-receivers'
+      : 'not-applicable';
+    cnv.dataset.geologyPWaveRayCount = String(geologySeismicPCurves3d.length);
+    cnv.dataset.geologySWaveRayCount = String(geologySeismicSCurves3d.length);
+    cnv.dataset.geologySeismicReceiverCount = String(geologySeismicShadowReceivers3d.length);
+    function updateGeologySeismicVisuals3d(time3d) {
+      if (SCENE.id !== 'deepEarth' || !geologySeismicGroup3d.visible) return;
+      var seismicTime3d = reducedMotion3d ? 0.68 : time3d;
+      geologySeismicGroup3d.position.z = WORLD.d * 0.5 - (Number(sliceZ) || 0) * VOXEL + 0.18;
+      if (geologySeismicSource3d) {
+        geologySeismicSource3d.rotation.y = reducedMotion3d ? 0.2 : seismicTime3d * 0.72;
+        geologySeismicSource3d.rotation.z = reducedMotion3d ? -0.12 : seismicTime3d * 0.46;
+        geologySeismicSource3d.scale.setScalar(reducedMotion3d ? 1 : 0.9 + Math.sin(seismicTime3d * 3.4) * 0.1);
+      }
+      geologySeismicSourceRings3d.forEach(function (sourceRing3d, sourceRingIndex3d) {
+        var sourcePhase3d = reducedMotion3d ? (sourceRingIndex3d + 1) / 4 : (seismicTime3d * 0.24 + sourceRingIndex3d / 3) % 1;
+        sourceRing3d.scale.setScalar(0.82 + sourcePhase3d * 0.72);
+        sourceRing3d.material.opacity = sourceRing3d.material.userData.geologyBaseOpacity * (1 - sourcePhase3d * 0.72);
+      });
+      geologySeismicPulseRecords3d.forEach(function (pulseRecord3d, pulseIndex3d) {
+        var pulseProgress3d = reducedMotion3d
+          ? (pulseRecord3d.offset + 0.58) % 1
+          : (pulseRecord3d.offset + seismicTime3d * pulseRecord3d.speed) % 1;
+        pulseRecord3d.mesh.position.copy(pulseRecord3d.curve.getPointAt(pulseProgress3d));
+        var pulseScale3d = pulseRecord3d.type === 'S' && pulseProgress3d > 0.84
+          ? 1 + (pulseProgress3d - 0.84) * 2.8
+          : 0.86 + Math.sin((pulseProgress3d + pulseIndex3d * 0.17) * Math.PI * 2) * 0.12;
+        pulseRecord3d.mesh.scale.setScalar(pulseScale3d);
+        pulseRecord3d.mesh.rotation.z = pulseRecord3d.type === 'S' && !reducedMotion3d ? seismicTime3d * 2.1 : 0;
+      });
+      geologySeismicStopMarkers3d.forEach(function (stopMarker3d, stopIndex3d) {
+        var stopPulse3d = reducedMotion3d ? 1 : 0.92 + Math.sin(seismicTime3d * 2.5 + stopIndex3d) * 0.13;
+        stopMarker3d.scale.setScalar(stopPulse3d);
+      });
+      geologySeismicShadowReceivers3d.forEach(function (receiver3d, receiverIndex3d) {
+        var receiverPulse3d = reducedMotion3d ? 1 : 0.94 + Math.sin(seismicTime3d * 1.6 + receiverIndex3d * 0.8) * 0.08;
+        receiver3d.scale.setScalar(receiverPulse3d);
+      });
+    }
+    cnv.dataset.geologyCoreRendering = SCENE.id === 'deepEarth'
+      ? 'faceted-inner-core-liquid-shell-and-geodynamo-streamlines'
+      : 'not-applicable';
+    cnv.dataset.geologyCoreElementCount = String(SCENE.id === 'deepEarth'
+      ? geologyDeepEarthCoreGroup3d.children.length + geologyDeepEarthDynamoGroup3d.children.length
+      : 0);
+    cnv.dataset.geologyMagneticFieldRendering = SCENE.id === 'deepEarth'
+      ? 'three-dimensional-dipole-field-lines'
+      : 'not-applicable';
+    cnv.dataset.geologyMagneticFieldCount = String(geologyDeepEarthFieldGroup3d.children.length);
+    function updateGeologyDeepEarthVisuals3d(time3d) {
+      if (SCENE.id !== 'deepEarth') return;
+      var deepEarthTime3d = reducedMotion3d ? 0.76 : time3d;
+      var deepEarthVisible3d = !focusLens && (Number(sliceZ) || 0) >= Math.max(3, Math.round(NZ * 0.28));
+      geologyDeepEarthCoreGroup3d.visible = deepEarthVisible3d;
+      geologyDeepEarthDynamoGroup3d.visible = deepEarthVisible3d && geologyScienceStage3d === 2;
+      geologyDeepEarthFieldGroup3d.visible = deepEarthVisible3d && geologyScienceStage3d === 2;
+      geologySeismicGroup3d.visible = deepEarthVisible3d && geologyScienceStage3d === 1;
+      if (!deepEarthVisible3d) return;
+      updateGeologySeismicVisuals3d(deepEarthTime3d);
+      geologyInnerCoreMesh3d.rotation.set(
+        reducedMotion3d ? 0.08 : Math.sin(deepEarthTime3d * 0.09) * 0.08,
+        reducedMotion3d ? 0.16 : deepEarthTime3d * 0.055,
+        reducedMotion3d ? -0.05 : Math.cos(deepEarthTime3d * 0.07) * 0.055
+      );
+      geologyDeepEarthDynamoGroup3d.rotation.y = reducedMotion3d ? 0.14 : deepEarthTime3d * 0.038;
+      geologyDeepEarthDynamoGroup3d.rotation.x = reducedMotion3d ? -0.05 : Math.sin(deepEarthTime3d * 0.11) * 0.045;
+      geologyInnerCoreGlow3d.material.opacity = geologyInnerCoreGlow3d.material.userData.geologyBaseOpacity *
+        (reducedMotion3d ? 1 : 0.86 + Math.sin(deepEarthTime3d * 0.82) * 0.14);
+      geologyOuterCoreShell3d.material.opacity = geologyOuterCoreShell3d.material.userData.geologyBaseOpacity *
+        (reducedMotion3d ? 1 : 0.9 + Math.cos(deepEarthTime3d * 0.56) * 0.1);
+      geologyDeepEarthFieldGroup3d.rotation.y = reducedMotion3d ? 0 : Math.sin(deepEarthTime3d * 0.055) * 0.055;
+      geologyDeepEarthFieldMaterials3d.forEach(function (fieldMaterial3d, fieldIndex3d) {
+        fieldMaterial3d.opacity = fieldMaterial3d.userData.geologyBaseOpacity *
+          (reducedMotion3d ? 1 : 0.82 + Math.sin(deepEarthTime3d * 0.34 + fieldIndex3d) * 0.18);
+      });
     }
     function updateGeologyProcessTracers3d(time3d) {
       var effectiveTime3d = reducedMotion3d ? 0.86 : time3d;
@@ -2864,7 +3390,7 @@
         if ((SCENE.palette[v.key] || {}).glow) col.multiplyScalar(1.5);   // molten / core layers read hotter & glowing (re-boosted past the depth shade)
         // when a rock type is selected, make every voxel of that type glow and let
         // the rest recede — so its distribution through the crust pops out.
-        if (highlightKey) { if (v.key === highlightKey) col.lerp(WHITE, 0.42); else col.multiplyScalar(0.5); }
+        if (highlightKey && !(SCENE.id === 'deepEarth' && geologyScienceStage3d > 0)) { if (v.key === highlightKey) col.lerp(WHITE, 0.42); else col.multiplyScalar(0.5); }
         mesh.setColorAt(i, col);
         var voxelGlowStrength3d = geologyGlowStrength3d(v);
         if (voxelGlowStrength3d > 0 &&
@@ -2887,8 +3413,9 @@
       glowVoxelGeometry3d.attributes.position.needsUpdate = true;
       glowVoxelGeometry3d.attributes.color.needsUpdate = true;
       glowVoxelPoints3d.visible = glowVoxelCount3d > 0;
-      geologyProcessPoints3d.visible = !focusLens;
-      geologyProcessGuideGroup3d.visible = !focusLens;
+      var geologyProcessVisible3d = !focusLens && (SCENE.id !== 'deepEarth' || geologyScienceStage3d === 0);
+      geologyProcessPoints3d.visible = geologyProcessVisible3d;
+      geologyProcessGuideGroup3d.visible = geologyProcessVisible3d;
       updateGeologyProcessGuideDepth3d();
       crystalShards3d.forEach(function (crystalShard3d) {
         crystalShard3d.visible = visible(crystalShard3d.userData.voxel);
@@ -2903,6 +3430,7 @@
       updateGeologySurfaceEffects3d(reducedMotion3d ? 0.82 : t);
       updateGeologyHydrothermalField3d(reducedMotion3d ? 0.79 : t);
       updateGeologyVolcanicAtmosphere3d(reducedMotion3d ? 0.74 : t);
+      updateGeologyDeepEarthVisuals3d(reducedMotion3d ? 0.76 : t);
       updateUndoPreview();
     }
     rebuild();
@@ -3110,6 +3638,7 @@
           (reducedMotion3d ? 1 : 0.9 + Math.sin(t * 0.17 + geologyHazeSprite3d.userData.phase) * 0.1);
       });
       updateGeologyProcessTracers3d(geologyMotionTime3d);
+      updateGeologyDeepEarthVisuals3d(geologyMotionTime3d);
       glowVoxelMaterial3d.opacity = (SCENE.id === 'deepEarth' ? 0.28 : 0.36) *
         (reducedMotion3d ? 1 : 0.88 + Math.sin(t * 1.1) * 0.12);
       if (crystalShardMaterials3d.length) {
@@ -3207,7 +3736,8 @@
     eng.erupt = function () { startEruption(); };
     eng.setHighlight = function (k) { highlightKey = (k && SCENE.voxelKeys && SCENE.voxelKeys.indexOf(k) >= 0) ? k : null; hoverBox.visible = false; rebuild(); };
     eng.setFocusLens = function (b) { focusLens = !!b; if (focusLens) { excavate = false; undoPreviewRequested = false; } hoverBox.visible = false; rebuild(); };
-    eng.getVisualState = function () { return { focusLens: focusLens, highlightKey: highlightKey, visibleVoxels: mesh.count, sliceZ: sliceZ, excavate: excavate, excavatedCount: excavationHistory.length, undoPreview: undoPreviewBox.visible, undoPreviewKey: undoPreviewKey, processGuideCount: geologyProcessGuideGroup3d.children.length, landformCount: geologyLandformMeshes3d.length, bathymetryCount: geologyBathymetryMeshes3d.length, hydrothermalChimneyCount: geologyHydrothermalMeshes3d.length, hydrothermalPlumeCount: geologyHydrothermalPlumePhases3d ? geologyHydrothermalPlumePhases3d.length : 0, surfaceEffectCount: geologyFoamMeshes3d.length + (oceanCausticMesh3d ? 1 : 0), volcanicAtmosphereCount: geologyVolcanicSteamSprites3d.length, oceanWaveVertexCount: oceanSurfaceGeometry3d ? oceanSurfaceGeometry3d.attributes.position.count : 0 }; };
+    eng.setScienceStage = function (n) { geologyScienceStage3d = Math.max(0, Math.min(2, Math.round(Number(n) || 0))); rebuild(); return geologyScienceStage3d; };
+    eng.getVisualState = function () { return { focusLens: focusLens, highlightKey: highlightKey, visibleVoxels: mesh.count, sliceZ: sliceZ, excavate: excavate, excavatedCount: excavationHistory.length, undoPreview: undoPreviewBox.visible, undoPreviewKey: undoPreviewKey, scienceStage: geologyScienceStage3d, processGuideCount: geologyProcessGuideGroup3d.children.length, coreElementCount: SCENE.id === 'deepEarth' ? geologyDeepEarthCoreGroup3d.children.length + geologyDeepEarthDynamoGroup3d.children.length : 0, magneticFieldCount: geologyDeepEarthFieldGroup3d.children.length, pWaveRayCount: geologySeismicPCurves3d.length, sWaveRayCount: geologySeismicSCurves3d.length, seismicReceiverCount: geologySeismicShadowReceivers3d.length, landformCount: geologyLandformMeshes3d.length, bathymetryCount: geologyBathymetryMeshes3d.length, hydrothermalChimneyCount: geologyHydrothermalMeshes3d.length, hydrothermalPlumeCount: geologyHydrothermalPlumePhases3d ? geologyHydrothermalPlumePhases3d.length : 0, surfaceEffectCount: geologyFoamMeshes3d.length + (oceanCausticMesh3d ? 1 : 0), volcanicAtmosphereCount: geologyVolcanicSteamSprites3d.length, oceanWaveVertexCount: oceanSurfaceGeometry3d ? oceanSurfaceGeometry3d.attributes.position.count : 0 }; };
     eng.setStage = function (n) { showStage = (n == null) ? 99 : n; rebuild(); };
     eng.reset = function () {
       removed = {}; excavationHistory = []; undoPreviewRequested = false; undoPreviewKey = null; sliceZ = 0;
@@ -3246,6 +3776,10 @@
         geologyProcessGuideArrowGeometry3d.dispose();
         geologyProcessGuideGeometries3d.forEach(function (guideGeometry3d) { guideGeometry3d.dispose(); });
         geologyProcessGuideMaterials3d.forEach(function (guideMaterial3d) { guideMaterial3d.dispose(); });
+        geologyDeepEarthGeometries3d.forEach(function (deepEarthGeometry3d) { deepEarthGeometry3d.dispose(); });
+        geologyDeepEarthMaterials3d.forEach(function (deepEarthMaterial3d) { deepEarthMaterial3d.dispose(); });
+        geologySeismicGeometries3d.forEach(function (seismicGeometry3d) { seismicGeometry3d.dispose(); });
+        geologySeismicMaterials3d.forEach(function (seismicMaterial3d) { seismicMaterial3d.dispose(); });
         geologyLandformGeometries3d.forEach(function (landformGeometry3d) { landformGeometry3d.dispose(); });
         geologyLandformMaterials3d.forEach(function (landformMaterial3d) { landformMaterial3d.dispose(); });
         geologySurfaceEffectGeometries3d.forEach(function (surfaceEffectGeometry3d) { surfaceEffectGeometry3d.dispose(); });
@@ -3702,19 +4236,27 @@
         if (!threeReady || webglError || !containerRef.current) return;
         setScene(scene); setGrid(res);   // build the chosen scene at the chosen detail level
         if (window[ENGINE_KEY]) { try { window[ENGINE_KEY].dispose(); } catch (e) {} window[ENGINE_KEY] = null; }   // rebuild on scene/detail change
+        var mountedEngine = null;
         try {
-          window[ENGINE_KEY] = initEngine(containerRef.current, {
+          mountedEngine = initEngine(containerRef.current, {
             onSelect: function (facts) { selectRock(facts); },
             onUncover: function (k) { uncoverFossil(k); },
             onFlash: function (m) { addToast(m, 'info'); },
             onExcavateChange: function (count) { if (!count) undoPreviewIntentRef.current = { hover: false, focus: false }; setDigCount(count); },
             onFpProbe: function (p) { if (!p) return; setFpHud(p); var nw = (window.performance && performance.now) ? performance.now() : Date.now(); if (nw - fpAnnAtRef.current > 1200) { fpAnnAtRef.current = nw; announce(fpAnnounceText(p)); } },   // HUD every layer change; SR debounced so fast flight can't flood it
-            onContextLost: function () { setWebglError(true); setDigCount(0); try { if (window[ENGINE_KEY]) { window[ENGINE_KEY].dispose(); window[ENGINE_KEY] = null; } } catch (e) {} }
+            onContextLost: function () { setWebglError(true); setDigCount(0); try { if (mountedEngine) mountedEngine.dispose(); if (window[ENGINE_KEY] === mountedEngine) window[ENGINE_KEY] = null; } catch (e) {} }
           });
+          window[ENGINE_KEY] = mountedEngine;
           restoreEnginePresentation(window[ENGINE_KEY], selectedKeyRef.current, focusLensRef.current, cameraViewRef.current);
         } catch (e) { setWebglError(true); }
-        return function () { try { if (window[ENGINE_KEY]) { window[ENGINE_KEY].dispose(); window[ENGINE_KEY] = null; } } catch (e) {} };
+        return function () { try { if (mountedEngine) mountedEngine.dispose(); if (window[ENGINE_KEY] === mountedEngine) window[ENGINE_KEY] = null; } catch (e) {} };
       }, [threeReady, webglError, res, scene]);
+
+      React.useEffect(function () {
+        if (!threeReady || webglError) return;
+        var scienceEngine = window[ENGINE_KEY];
+        if (scienceEngine && scienceEngine.setScienceStage) scienceEngine.setScienceStage(sceneJourneyStep);
+      }, [sceneJourneyStep, threeReady, webglError, res, scene]);
 
       // ── first-person: ARM the engine (re-runs whenever the engine is rebuilt on scene/detail change, so FP survives a world switch) ──
       React.useEffect(function () {
@@ -4948,14 +5490,68 @@
       function processCueOverlay() {
         if (fpOn) return null;
         var cue = sceneProcessCueFor(SCENE.id), index = Math.max(0, Math.min(sceneJourneyStep, cue.steps.length - 1)), step = cue.steps[index];
+        var deepEarthCoreOpen = SCENE.id === 'deepEarth' && cutaway.step >= Math.max(3, Math.round(NZ * 0.28));
+        var deepEarthLegend3d = null, deepEarthLegendState3d = 'closed';
+        if (SCENE.id === 'deepEarth') {
+          if (!deepEarthCoreOpen) {
+            deepEarthLegend3d = 'Move Cutaway deeper to reveal the active science layer.';
+          } else if (index === 1) {
+            deepEarthLegendState3d = 'seismic-shadow';
+            deepEarthLegend3d = [
+              h('div', { key: 'p-wave', className: 'flex items-center gap-1.5' }, [h('span', { key: 'swatch', className: 'h-1.5 w-4 rounded-full bg-cyan-400' }), 'Cyan pulses · P-waves bend and continue']),
+              h('div', { key: 's-wave', className: 'mt-0.5 flex items-center gap-1.5' }, [h('span', { key: 'swatch', className: 'flex h-3 w-4 items-center justify-center text-pink-300' }, '◆'), 'Magenta diamonds · S-waves stop at liquid core']),
+              h('div', { key: 'shadow', className: 'mt-0.5 flex items-center gap-1.5' }, [h('span', { key: 'swatch', className: 'flex h-3 w-4 items-center justify-center font-black text-pink-300' }, '×'), 'Far-side receivers · S-wave shadow zone'])
+            ];
+          } else if (index === 2) {
+            deepEarthLegendState3d = 'core-dynamo';
+            deepEarthLegend3d = [
+              h('div', { key: 'flow', className: 'flex items-center gap-1.5' }, [h('span', { key: 'swatch', className: 'h-1.5 w-4 rounded-full bg-orange-500' }), 'Orange-red flow · liquid outer-core convection']),
+              h('div', { key: 'field', className: 'mt-0.5 flex items-center gap-1.5' }, [h('span', { key: 'swatch', className: 'h-1.5 w-4 rounded-full bg-sky-400' }), 'Blue arcs · magnetic field (schematic)']),
+              h('div', { key: 'inner', className: 'mt-0.5 flex items-center gap-1.5' }, [h('span', { key: 'swatch', className: 'h-2.5 w-2.5 rounded-full bg-amber-300' }), 'Gold center · pressure keeps the inner core solid'])
+            ];
+          } else {
+            deepEarthLegendState3d = 'solid-mantle';
+            deepEarthLegend3d = [
+              h('div', { key: 'mantle-flow', className: 'flex items-center gap-1.5' }, [h('span', { key: 'swatch', className: 'h-1.5 w-4 rounded-full bg-orange-500' }), 'Orange loops · slow mantle convection']),
+              h('div', { key: 'mantle-state', className: 'mt-0.5 text-slate-300' }, 'The mantle is solid rock that creeps over geologic time.')
+            ];
+          }
+        }
         return h('div', { className: 'pointer-events-none absolute bottom-12 left-2 z-10 hidden rounded-lg border border-white/20 bg-slate-950/85 p-2 text-white shadow-lg sm:block', style: { maxWidth: 'min(19rem, calc(100% - 6rem))' }, 'aria-hidden': 'true', 'data-geology-process-overlay': 'true' }, [
           h('div', { key: 'title', className: 'flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-amber-200' }, [h('span', { key: 'pulse', className: 'h-2 w-2 rounded-full bg-amber-300 ring-2 ring-amber-300/30', 'aria-hidden': 'true' }), cue.title]),
           h('div', { key: 'step', className: 'mt-1 text-[11px] font-bold' }, 'Stage ' + (index + 1) + ': ' + step.label),
-          h('p', { key: 'detail', className: 'mt-0.5 text-[10.5px] leading-snug text-slate-200' }, step.detail)
+          h('p', { key: 'detail', className: 'mt-0.5 text-[10.5px] leading-snug text-slate-200' }, step.detail),
+          deepEarthLegend3d != null ? h('div', { key: 'core-key', className: 'mt-1.5 border-t border-white/10 pt-1.5 text-[9.5px] leading-snug text-slate-100', 'data-geology-deep-earth-legend': deepEarthLegendState3d }, deepEarthLegend3d) : null
         ]);
       }
       function processCuePanel() {
         var cue = sceneProcessCueFor(SCENE.id), axis = cue.axis, index = Math.max(0, Math.min(sceneJourneyStep, cue.steps.length - 1));
+        var deepEarthScienceKey3d = null;
+        if (SCENE.id === 'deepEarth') {
+          deepEarthScienceKey3d = index === 1 ? {
+            state: 'seismic-waves',
+            title: 'Read the seismic model',
+            rows: [
+              { mark: 'P', tone: 'bg-cyan-400 text-slate-950', text: 'P-wave: a compressional pulse that travels through both solid and liquid layers.' },
+              { mark: 'S', tone: 'bg-pink-500 text-white', text: 'S-wave: a shear pulse that travels through solids but stops at the liquid outer core.' },
+              { mark: '×', tone: 'border border-pink-500 text-pink-500', text: 'Receiver cross: no S-wave arrival—evidence that the outer core is liquid.' }
+            ]
+          } : (index === 2 ? {
+            state: 'core-dynamo',
+            title: 'Read the core model',
+            rows: [
+              { mark: '↻', tone: 'bg-orange-500 text-white', text: 'Orange flow: conductive liquid iron circulates in the outer core.' },
+              { mark: '⌁', tone: 'bg-sky-400 text-slate-950', text: 'Blue arcs: a schematic magnetic field generated by that moving metal.' },
+              { mark: '●', tone: 'bg-amber-300 text-amber-950', text: 'Gold center: immense pressure keeps the inner core solid.' }
+            ]
+          } : {
+            state: 'solid-mantle',
+            title: 'Read the mantle model',
+            rows: [
+              { mark: '↻', tone: 'bg-orange-500 text-white', text: 'Orange loops: solid mantle rock slowly deforms and creeps over geologic time.' }
+            ]
+          });
+        }
         return h('section', { className: 'rounded-xl border ' + cardBg, role: 'region', 'aria-label': 'Process cues', 'data-geology-process-cues': 'true' },
           h('div', { className: 'p-3' }, [
             h('div', { key: 'head', className: 'flex flex-wrap items-start justify-between gap-2' }, [
@@ -4966,6 +5562,15 @@
               var on = stepIndex === index;
               return h('button', { key: step.label, type: 'button', 'aria-pressed': on ? 'true' : 'false', 'aria-label': 'Show process cue: ' + step.label, 'data-geology-process-step': stepIndex, onClick: function () { var beacon = sceneBeaconsFor(SCENE.id)[stepIndex]; if (beacon) activateBeacon(beacon); }, className: 'min-w-0 rounded-lg border px-1.5 py-2 text-center transition-colors ' + (on ? 'border-amber-500 bg-amber-500 text-amber-950 shadow-sm' : btnIdle) }, [h('span', { key: 'dot', className: 'mx-auto flex h-5 w-5 items-center justify-center rounded-full border text-[10px] font-black' }, stepIndex + 1), h('span', { key: 'label', className: 'mt-1 block text-[10px] font-bold leading-tight' }, step.label)]);
             })),
+            deepEarthScienceKey3d ? h('div', { key: 'science-key', className: 'mt-2 rounded-lg border p-2 ' + (isDark ? 'border-slate-700 bg-slate-900/45' : 'border-slate-200 bg-slate-50'), role: 'note', 'aria-label': 'Deep Earth visual key', 'data-geology-science-key': deepEarthScienceKey3d.state }, [
+              h('div', { key: 'title', className: 'text-[10px] font-black uppercase tracking-wider ' + muted }, deepEarthScienceKey3d.title),
+              h('div', { key: 'rows', className: 'mt-1 grid gap-1.5' }, deepEarthScienceKey3d.rows.map(function (row3d) {
+                return h('div', { key: row3d.text, className: 'flex items-start gap-2 text-[10.5px] leading-snug ' + ink }, [
+                  h('span', { key: 'mark', className: 'mt-px flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[10px] font-black ' + row3d.tone, 'aria-hidden': 'true' }, row3d.mark),
+                  h('span', { key: 'text' }, row3d.text)
+                ]);
+              }))
+            ]) : null,
             h('div', { key: 'axis', className: 'mt-3', 'data-geology-evidence-axis-panel': SCENE.id }, [
               h('div', { key: 'axis-head', className: 'flex items-center justify-between gap-2 text-[10px] font-black uppercase tracking-wider ' + muted }, [h('span', { key: 'label' }, axis.label), h('span', { key: 'value', className: 'text-right' }, axis.value)]),
               h('div', { key: 'bar', className: 'mt-1 h-2 rounded-full bg-gradient-to-r ' + axis.gradient, style: { height: '0.5rem', minWidth: '1px' }, role: 'img', 'aria-label': axis.ariaLabel, 'data-geology-evidence-axis': SCENE.id }),

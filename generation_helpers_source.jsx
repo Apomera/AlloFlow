@@ -811,6 +811,24 @@ const _getInstructionalContextModule = () => {
       : null;
   } catch (_) { return null; }
 };
+const _fullPackStandardsPreserveTextComplexity = (standardsContext, standardsInput = '') => {
+  const context = standardsContext && typeof standardsContext === 'object' ? standardsContext : {};
+  const constraints = context.instructionalConstraints && typeof context.instructionalConstraints === 'object'
+    ? context.instructionalConstraints : {};
+  if (constraints.textAccessExpectation === 'preserve-primary') return true;
+  const entries = Array.isArray(context.standards) ? context.standards : [];
+  const searchable = [
+    standardsInput,
+    context.inputText,
+    context.promptText,
+    ...entries.flatMap(entry => entry && typeof entry === 'object'
+      ? [entry.code, entry.label, entry.text, entry.statement, entry.description]
+      : [entry]),
+  ].filter(Boolean).join(' ');
+  if (!searchable) return false;
+  return /\b(?:text complexity|appropriately complex text|grade[- ]level complex text|complex (?:literary|informational|source) texts?|independently and proficiently|high end of (?:the )?text complexity band)\b/i.test(searchable)
+    || /\b(?:CCSS\.)?(?:ELA-LITERACY\.)?(?:RL|RI|RST|RH)\.[A-Z0-9-]+\.10\b/i.test(searchable);
+};
 const _normalizeFullPackInstructionalContext = (raw, options = {}) => {
   const source = raw && typeof raw === 'object' ? raw : {};
   const module = _getInstructionalContextModule();
@@ -1404,10 +1422,31 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
     const _plannedInstructionalContext = _planSourceRun
         && ((_planSourceRun.planPayload && _planSourceRun.planPayload.instructionalContext)
             || (_planSourceRun.settingsSnapshot && _planSourceRun.settingsSnapshot.instructionalContext));
-    const _activeInstructionalContext = _normalizeFullPackInstructionalContext(
-        _plannedInstructionalContext || _fullPackRequest.instructionalContext || instructionalContext,
+    const _requestedInstructionalContext = _plannedInstructionalContext
+        || _fullPackRequest.instructionalContext || instructionalContext;
+    const _hasExplicitPrimaryTextPolicy = !!(_requestedInstructionalContext
+        && typeof _requestedInstructionalContext === 'object'
+        && Object.prototype.hasOwnProperty.call(_requestedInstructionalContext, 'primaryTextPolicy'));
+    const _hasExistingAnalyzedSource = Array.isArray(history) && history.some(item => item
+        && item.type === 'analysis' && item._fullPackPlannedArtifact !== true);
+    const _inheritedDefaultTextPair = !!(deps && deps.fullPackDefaultTextPair === true);
+    // Keep the common path to two teacher actions: Plan, then Generate. When
+    // the source has not been analyzed yet, or a standards constraint requires
+    // continued access to complex primary text, include both the primary
+    // Analysis and a supplemental Adapted Text in the reviewed plan. An
+    // explicit educator policy still wins and approved/retry runs stay frozen.
+    const _defaultToAnalyzedAndAdaptedText = !_planSourceRun
+        && (_inheritedDefaultTextPair
+            || (!_hasExplicitPrimaryTextPolicy
+                && (!_hasExistingAnalyzedSource
+                    || _fullPackStandardsPreserveTextComplexity(_runStandardsContext, standardsInput))));
+    const _normalizedInstructionalContext = _normalizeFullPackInstructionalContext(
+        _requestedInstructionalContext,
         { gradeLevel, standardsContext: _runStandardsContext }
     );
+    const _activeInstructionalContext = _defaultToAnalyzedAndAdaptedText
+        ? Object.assign({}, _normalizedInstructionalContext, { primaryTextPolicy: 'educator-directed' })
+        : _normalizedInstructionalContext;
     const _fullPackRunAbortCtl = _ownsFullPackAbort && typeof AbortController !== 'undefined' ? new AbortController() : null;
     const _fullPackSignal = generationSignal || (_fullPackRunAbortCtl && _fullPackRunAbortCtl.signal) || null;
     if (_fullPackRunAbortCtl) _fullPackAbortCtl = _fullPackRunAbortCtl;
@@ -1628,6 +1667,10 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
                     targetStandards: Array.isArray(profile.targetStandards) ? profile.targetStandards : targetStandards,
                     standardsContext: groupStandardsContext,
                     instructionalContext: groupInstructionalContext,
+                    // The normalized child context carries an explicit policy,
+                    // so preserve the parent's automatic pair decision out of
+                    // band instead of mistaking it for an educator override.
+                    fullPackDefaultTextPair: _defaultToAnalyzedAndAdaptedText,
                     useEmojis: profile.useEmojis === undefined ? useEmojis : profile.useEmojis,
                     textFormat: profile.textFormat || textFormat,
                     generationSignal: _fullPackSignal,
@@ -1912,6 +1955,18 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
             resourcesToGen.sort((a, b) => (a.type === 'analysis' ? -1 : b.type === 'analysis' ? 1 : 0));
             if (planItems.length > 0) {
                 resourcesToGen.push(...planItems);
+            }
+        }
+        if (_defaultToAnalyzedAndAdaptedText && !_approvedRun && !_retryRun) {
+            if (!resourcesToGen.some(item => item && item.type === 'analysis')) {
+                resourcesToGen.unshift({ type: 'analysis', directive: 'Analyze the primary source before building its companion resources.' });
+            }
+            if (!resourcesToGen.some(item => item && item.type === 'simplified')) {
+                const analysisIndex = resourcesToGen.findIndex(item => item && item.type === 'analysis');
+                resourcesToGen.splice(Math.max(0, analysisIndex + 1), 0, {
+                    type: 'simplified',
+                    directive: 'Create a supplemental Adapted Text while keeping the analyzed primary text available.'
+                });
             }
         }
         const _policySkippedResources = [];

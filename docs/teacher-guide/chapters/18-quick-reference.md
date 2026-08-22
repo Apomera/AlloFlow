@@ -22,7 +22,7 @@ Everything on this page is a reminder, not a lesson. If a line raises a question
 - Just talk. Ordinary speech gets a conversational answer; nothing you say is "wrong."
 - Anything that would change the screen is **offered** first; say yes to do it, or keep talking and the offer fades.
 - Say **"command"** before a phrase to skip the offer and act immediately.
-- "Stop reading" and the read-aloud controls always act instantly.
+- "Stop reading" and the read-aloud controls are direct controls rather than proposed screen changes. If audio does not stop promptly, use the visible stop or mute control.
 - The voice indicator names its state in words: Listening, Paused, Thinking, Speaking. A small meter shows your voice being heard. ([AlloBot](14-allobot-assistant.md))
 
 ## Where things live
@@ -33,10 +33,10 @@ Everything on this page is a reminder, not a lesson. If a line raises a question
 | A message that vanished | The header **lightbulb → Messages** |
 | Your saved work | AI settings → **Open saved work** |
 | A finished copy vs a blank copy | Export: **Print / Save as PDF** vs **Worksheet** ([Documents and printing](15-documents-and-printing.md)) |
-| One tool to share with anyone | Its direct link, no sign-in needed ([Start here](01-start-here.md)) |
+| One focused tool to share | Copy and test its current catalog link; surrounding platforms may add sign-in ([Start here](01-start-here.md)) |
 | Timed math practice | Math tool → Mode, or Ctrl+K then "math minute" ([Math Fluency](13-math-fluency.md)) |
 | Turn Adventure off for an assignment | Project Settings → "Include Adventure in this assignment" ([Adventure Mode](12-adventure-mode.md)) |
-| "AI extras: off" in the STEAM Lab | Nothing is broken; click the pill for the three ways to turn AI on ([Troubleshooting](08-troubleshooting.md)) |
+| "AI extras: off" in the STEAM Lab | Core non-AI routes may still work; AI-dependent options remain unavailable. Click the pill to review the connections offered by this deployment ([Troubleshooting](08-troubleshooting.md)). |
 | Fix an inherited PDF | The remediation workflow: audit, Make Accessible, review, export with evidence ([Make a document accessible](19-make-a-document-accessible.md)) |
 
 ## The habits that prevent the common problems

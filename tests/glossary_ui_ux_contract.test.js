@@ -4,6 +4,8 @@ import { readFileSync } from 'node:fs';
 const source = readFileSync('view_glossary_source.jsx', 'utf8');
 const built = readFileSync('view_glossary_module.js', 'utf8');
 const deployed = readFileSync('desktop/web-app/public/view_glossary_module.js', 'utf8');
+const uiStrings = readFileSync('ui_strings.js', 'utf8');
+const deployedUiStrings = readFileSync('desktop/web-app/public/ui_strings.js', 'utf8');
 
 describe('Glossary focused UI and UX contract', () => {
   it('groups study, games, and teacher actions without removing capabilities', () => {
@@ -74,10 +76,15 @@ describe('Glossary focused UI and UX contract', () => {
 
   it('guards resource-scoped glossary audio preparation and reports progress', () => {
     expect(source).toContain('window.__alloPrepareGlossaryAudio');
+    expect(source).toContain("var glossaryAudioScopeState = React.useState('core')");
     expect(source).toContain("var includeDefinitions = glossaryAudioScope !== 'terms'");
     expect(source).toContain("var preparedLanguages = glossaryAudioScope === 'all'");
     expect(source).toContain("typeof prepare !== 'function'");
     expect(source).toContain("doneOrProgress && typeof doneOrProgress === 'object'");
+    expect(source).toContain('Terms + definitions (recommended)');
+    expect(source).toContain('Terms only');
+    expect(source).toContain('Terms + definitions + translations');
+    expect(source).toContain("var ready = Number(result && (result.ready ?? result.prepared ?? result.total))");
     expect(source).toContain('Saved with this resource/project.');
     expect(source).toContain('id="glossary-audio-prep-status" role="status" aria-live="polite"');
   });
@@ -92,6 +99,22 @@ describe('Glossary focused UI and UX contract', () => {
     expect(source).toContain('aria-label="Audio content to prepare"');
     expect(source).toContain("includeDefinitions: includeDefinitions, languages: preparedLanguages");
     expect(source).toContain('window.__alloEnsureGlossaryEntryIds');
+  });
+
+  it('shows plain-language image editing and per-field audio review in edit mode', () => {
+    expect(source).toContain('Image editing active');
+    expect(source).not.toContain("t('visuals.nano_active_status')");
+    expect(uiStrings).toContain('"refiner_title": "Image Editor"');
+    expect(uiStrings).toContain('"nano_active_status": "Image editing active"');
+    expect(uiStrings).not.toContain('Nano Banana');
+    expect(deployedUiStrings).toBe(uiStrings);
+    expect(source).toContain('id="glossary-edit-audio-review"');
+    expect(source).toContain('Review glossary audio');
+    expect(source).toContain("renderGlossaryEditAudioTools(item, 'term'");
+    expect(source).toContain("renderGlossaryEditAudioTools(item, 'definition'");
+    expect(source).toContain("renderGlossaryEditAudioTools(item, 'translation'");
+    expect(source).toContain('window.__alloRegenerateGlossaryAudio');
+    expect(source).toContain("status === 'stale' || status === 'corrupt'");
   });
 
   it('keeps built and deployed artifacts synchronized', () => {

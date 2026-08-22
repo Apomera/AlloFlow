@@ -816,6 +816,37 @@ function _viewVerificationForExport(result, pipeline) {
     verificationHtmlBinding: binding
   };
 }
+function _viewCanonicalRemediationEvidence(result, pipeline) {
+  const value = result || {};
+  const engineEvidence = _viewDeriveVerificationState({
+    ai: value.verificationAudit || null,
+    aiVerificationIncomplete: !!value._aiVerificationIncomplete,
+    axe: value.axeAudit || null,
+    equalAccess: value.secondEngineAudit || null,
+    languageReviewRequired: !!value.languageReviewRequired
+  }, pipeline);
+  const verification = _viewVerificationForExport(value, pipeline);
+  const findings = engineEvidence.knownFindings || verification.knownFindings || {};
+  const count = (value2) => Number.isFinite(value2) ? Math.max(0, Math.floor(value2)) : null;
+  const counts = {
+    ai: count(findings.aiIssues),
+    axe: count(findings.axeViolations),
+    equalAccess: count(findings.equalAccessFailures)
+  };
+  const known = [counts.ai, counts.axe, counts.equalAccess].filter(Number.isFinite);
+  const totalEngineFindings = known.length ? known.reduce((sum, value2) => sum + value2, 0) : null;
+  const reviewCount = Number.isFinite(engineEvidence.reviewCount) ? Math.max(0, Math.floor(engineEvidence.reviewCount)) : 0;
+  const compactLabel = "AI " + (counts.ai === null ? "?" : counts.ai) + " \xB7 axe " + (counts.axe === null ? "?" : counts.axe) + " \xB7 EA " + (counts.equalAccess === null ? "?" : counts.equalAccess) + (reviewCount > 0 ? " \xB7 review " + reviewCount : "");
+  return {
+    verification,
+    counts,
+    totalEngineFindings,
+    reviewCount,
+    compactLabel,
+    allThreeComplete: engineEvidence.engineExecutionComplete === true,
+    fullyVerifiedSuccess: verification.fullyVerifiedSuccess === true
+  };
+}
 function _viewNormalizeLoadedVerification(result, pipeline) {
   const value = result || {};
   const normalized = _viewVerificationForExport(value, pipeline);
@@ -4290,6 +4321,10 @@ function PdfAuditView(props) {
       return null;
     }
   }, [pdfFixResult && pdfFixResult.accessibleHtml]);
+  const [_foundationDetailsOpen, _setFoundationDetailsOpen] = useState(false);
+  React.useEffect(() => {
+    _setFoundationDetailsOpen(false);
+  }, [pdfFixResult && pdfFixResult.accessibleHtml]);
   const [pdfAutoVeraPdf, setPdfAutoVeraPdf] = useState(() => {
     try {
       return localStorage.getItem("alloflow_pdf_auto_verapdf") !== "false";
@@ -6341,23 +6376,25 @@ function PdfAuditView(props) {
       }
     }
   };
-  const _AlloQualifier = ({ text, className, children }) => /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      type: "button",
-      title: text,
-      "aria-label": text,
-      onClick: () => {
-        try {
-          addToast(text, "info");
-        } catch (_) {
-        }
+  const _AlloQualifier = ({ text, className, children }) => {
+    const detailId = React.useId();
+    return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        "aria-describedby": detailId,
+        onClick: () => {
+          try {
+            addToast(text, "info");
+          } catch (_) {
+          }
+        },
+        style: { font: "inherit", textAlign: "inherit" },
+        className: (className || "") + " border-0 cursor-help underline decoration-dotted underline-offset-2 focus-visible:ring-2 focus-visible:ring-indigo-500 rounded"
       },
-      style: { font: "inherit", textAlign: "inherit" },
-      className: (className || "") + " border-0 cursor-help underline decoration-dotted underline-offset-2 focus-visible:ring-2 focus-visible:ring-indigo-500 rounded"
-    },
-    children
-  );
+      children
+    ), /* @__PURE__ */ React.createElement("span", { id: detailId, className: "sr-only" }, text));
+  };
   const _explainIssue = (issueText) => {
     const s = String(issueText || "");
     if (/alt|image|img/i.test(s)) return "Images without descriptions: a blind student hears silence where sighted students see diagrams, charts, or photographs \u2014 they miss educational content entirely.";
@@ -9505,10 +9542,12 @@ Return ONLY JSON:
       let html = _fixRemainingSource.accessibleHtml;
       let bestHtml = html;
       const _countCanonicalIssues = (ai, axe, equalAccess) => {
-        const aiCount = ai && Array.isArray(ai.issues) ? ai.issues.length : null;
-        const axeCount = axe && Number.isFinite(axe.totalViolations) ? axe.totalViolations : null;
-        const equalAccessCount = equalAccess && Number.isFinite(equalAccess.failViolations) ? Math.max(0, equalAccess.failViolations) : null;
-        return aiCount === null && axeCount === null && equalAccessCount === null ? Number.POSITIVE_INFINITY : (aiCount || 0) + (axeCount || 0) + (equalAccessCount || 0);
+        const evidence = _viewCanonicalRemediationEvidence({
+          verificationAudit: ai || null,
+          axeAudit: axe || null,
+          secondEngineAudit: equalAccess || null
+        }, _docPipeline);
+        return Number.isFinite(evidence.totalEngineFindings) ? evidence.totalEngineFindings : Number.POSITIVE_INFINITY;
       };
       const _executionRank = (verification) => verification && verification.engineExecutionComplete === true ? 2 : verification && verification.executionState === "partial" ? 1 : 0;
       const _outcomeRank = (verification) => verification && verification.outcomeState === "pass" ? 3 : verification && verification.outcomeState === "review-required" ? 2 : verification && verification.outcomeState === "fail" ? 1 : 0;
@@ -9729,7 +9768,11 @@ Return ONLY JSON:
       } finally {
         _finishPdfRemediationOperation(_fixRemainingOperation, true);
       }
-    }, disabled: pdfFixLoading, className: "flex-1 px-5 py-3 bg-gradient-to-r from-amber-800 to-orange-800 text-white rounded-xl font-bold text-sm hover:from-amber-900 hover:to-orange-900 transition-all shadow-lg flex items-center justify-center gap-2 disabled:opacity-40" }, pdfFixLoading && pdfFixModeRef.current === "fix" ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("span", { className: "animate-spin" }, "\u23F3"), " ", pdfFixStep || "Fixing...") : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(Wrench, { size: 16 }), " ", (pdfFixResult.verificationAudit?.issues?.length || 0) + (pdfFixResult.axeAudit?.totalViolations || 0) > 0 ? `Fix ${(pdfFixResult.verificationAudit?.issues?.length || 0) + (pdfFixResult.axeAudit?.totalViolations || 0)} Remaining` : "Run Additional Fix Pass"))) : /* @__PURE__ */ React.createElement("button", { onClick: async () => {
+    }, disabled: pdfFixLoading, className: "flex-1 px-5 py-3 bg-gradient-to-r from-amber-800 to-orange-800 text-white rounded-xl font-bold text-sm hover:from-amber-900 hover:to-orange-900 transition-all shadow-lg flex items-center justify-center gap-2 disabled:opacity-40" }, pdfFixLoading && pdfFixModeRef.current === "fix" ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("span", { className: "animate-spin" }, "\u23F3"), " ", pdfFixStep || "Fixing...") : (() => {
+      const evidence = _viewCanonicalRemediationEvidence(pdfFixResult, _docPipeline);
+      const action = Number.isFinite(evidence.totalEngineFindings) && evidence.totalEngineFindings > 0 ? `Fix ${evidence.totalEngineFindings} Engine Finding${evidence.totalEngineFindings === 1 ? "" : "s"}` : evidence.reviewCount > 0 ? `Address ${evidence.reviewCount} Review Finding${evidence.reviewCount === 1 ? "" : "s"}` : evidence.allThreeComplete ? "Run Additional Fix Pass" : "Complete 3-Engine Verification";
+      return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(Wrench, { size: 16 }), /* @__PURE__ */ React.createElement("span", { className: "flex flex-col items-start leading-tight" }, /* @__PURE__ */ React.createElement("span", null, action), /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-semibold text-amber-100" }, evidence.compactLabel)));
+    })())) : /* @__PURE__ */ React.createElement("button", { onClick: async () => {
       console.warn("[Fix&Verify btn] clicked \u2014 pendingPdfBase64:", !!pendingPdfBase64, "pdfAuditResult:", !!pdfAuditResult, "pageRange:", pdfPageRange);
       if (!_requireRemediationReady()) return;
       const _fixDocumentEpoch = typeof capturePdfDocumentIntakeEpoch === "function" ? capturePdfDocumentIntakeEpoch() : pdfDocumentEpoch;
@@ -10671,13 +10714,20 @@ Return ONLY JSON:
         } catch (_) {
         }
       };
-      const _vio = pdfFixResult.axeAudit ? pdfFixResult.axeAudit.totalViolations || 0 : null;
+      const _dashboardEvidence = _viewCanonicalRemediationEvidence(pdfFixResult, _docPipeline);
+      const _vio = _dashboardEvidence.totalEngineFindings;
       const _chip = "px-2 py-1 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700 hover:bg-indigo-100 hover:text-indigo-700 transition-colors whitespace-nowrap";
       const _hdrAi = pdfFixResult.verificationAudit?.score ?? null;
       const _hdrAxe = pdfFixResult.axeAudit?.score ?? null;
       const _hdrEa = pdfFixResult.secondEngineAudit?.score ?? null;
       const _hdrDet = _hdrAxe != null && _hdrEa != null ? Math.min(_hdrAxe, _hdrEa) : _hdrAxe ?? _hdrEa;
       const _govTag = pdfFixResult._aiVerificationIncomplete ? t("pdf_audit.dashboard.content_structural_tag") || "structural only" : pdfFixResult._scoreIsBlended && _hdrAi != null && _hdrDet != null && _hdrDet < _hdrAi ? t("pdf_audit.dashboard.automated_tag") || "automated" : t("pdf_audit.dashboard.content_tag") || "content";
+      const _sourceImageCount = Number.isFinite(Number(pdfFixResult.imageCount)) ? Math.max(0, Number(pdfFixResult.imageCount)) : 0;
+      const _htmlImageSummary = _structuralFoundations && _structuralFoundations.imageSummary || { total: 0, withAlt: 0, missingAlt: 0, captions: 0 };
+      const _htmlImageCount = Number(_htmlImageSummary.total) || 0;
+      const _htmlImagesWithAlt = Number(_htmlImageSummary.withAlt) || 0;
+      const _imageFoundationConcern = _sourceImageCount > _htmlImageCount || _htmlImagesWithAlt < _htmlImageCount;
+      const _imageFoundationDetail = _sourceImageCount > 0 && _htmlImageCount === 0 ? _sourceImageCount + " meaningful source image" + (_sourceImageCount === 1 ? " was" : "s were") + " identified, but the remediated HTML contains no <img> element. Review the image panel and content Diff before distributing; an auditor cannot flag missing alt text on an image element that disappeared." : _sourceImageCount > _htmlImageCount ? _sourceImageCount + " meaningful source images were identified, but only " + _htmlImageCount + " <img> element" + (_htmlImageCount === 1 ? " is" : "s are") + " present in the remediated HTML. Confirm that no instructional image was lost." : _htmlImagesWithAlt < _htmlImageCount ? _htmlImageCount - _htmlImagesWithAlt + " of " + _htmlImageCount + " HTML image" + (_htmlImageCount === 1 ? "" : "s") + " lack" + (_htmlImageCount - _htmlImagesWithAlt === 1 ? "s" : "") + " non-empty alternative text." : "";
       return /* @__PURE__ */ React.createElement(React.Fragment, null, (pdfFixLoading || pdfAutoContinueRunning) && /* @__PURE__ */ React.createElement("div", { className: "sticky -top-5 -mx-5 px-5 py-2.5 bg-indigo-600 text-white z-30 flex items-center gap-2 flex-wrap rounded-t-2xl", role: "status", "aria-live": "polite" }, /* @__PURE__ */ React.createElement("span", { className: "inline-block w-3 h-3 rounded-full bg-white animate-ping shrink-0", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold flex-1 min-w-0" }, "\u23F3 ", t("pdf_audit.running.lead") || "STILL WORKING", " \u2014 ", pdfFixStep || (t("pdf_audit.running.generic") || "improving toward the target score"), ". ", t("pdf_audit.running.note") || "Results below update live; keep this open."), /* @__PURE__ */ React.createElement("button", { onClick: () => {
         try {
           pdfAutoContinueAbortRef.current = true;
@@ -10692,17 +10742,29 @@ Return ONLY JSON:
           title: t("pdf_audit.dashboard.fidelity_limited_title") || "This is an ACCESSIBILITY score only. Some source content may not have carried over" + (typeof pdfFixResult.integrityCoverage === "number" ? " (" + pdfFixResult.integrityCoverage + "% of source text preserved)" : "") + " \u2014 verify content fidelity (review the Diff) before distributing."
         },
         t("pdf_audit.dashboard.fidelity_limited") || "\u26A0 verify content"
-      ), _vio !== null && /* @__PURE__ */ React.createElement("span", { className: "px-1.5 py-0.5 rounded-full text-[10px] font-bold " + (_vio === 0 ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700") }, _vio === 0 ? t("pdf_audit.dashboard.zero_issues") || "0 content issues" : _vio + " " + (t("pdf_audit.dashboard.issues_left") || "content issues")), _structuralFoundations && _structuralFoundations.present && _structuralFoundations.present.length > 0 && /* @__PURE__ */ React.createElement(
-        _AlloQualifier,
+      ), _vio !== null && /* @__PURE__ */ React.createElement("span", { className: "px-1.5 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap " + (_dashboardEvidence.fullyVerifiedSuccess ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700") }, _dashboardEvidence.compactLabel), _imageFoundationConcern && /* @__PURE__ */ React.createElement(
+        "button",
         {
-          className: "px-1.5 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap bg-sky-100 text-sky-800",
-          text: (t("pdf_audit.dashboard.foundations_title") || "HTML structural foundations DETECTED in the remediated document (lang, title, landmarks, headings, lists, etc.) \u2014 presence only, not validated for correctness, and separate from the per-issue content score above. Also DIFFERENT from the \u201CPDF/UA self-check\u201D chip, which checks the EXPORTED PDF\u2019s byte-level structure \u2014 the two happen to both count to 18 but measure different things. Present:") + " " + _structuralFoundations.present.join("; ")
+          type: "button",
+          "aria-expanded": _foundationDetailsOpen,
+          "aria-controls": "pdf-html-structure-details",
+          onClick: () => _setFoundationDetailsOpen(true),
+          className: "px-1.5 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap bg-amber-100 text-amber-800 border-0 underline decoration-dotted underline-offset-2 focus-visible:ring-2 focus-visible:ring-amber-500"
+        },
+        "\u26A0\uFE0F ",
+        _sourceImageCount > 0 ? _sourceImageCount + " source image" + (_sourceImageCount === 1 ? "" : "s") + " need HTML review" : _htmlImageCount - _htmlImagesWithAlt + " HTML image" + (_htmlImageCount - _htmlImagesWithAlt === 1 ? "" : "s") + " need alt text"
+      ), _structuralFoundations && _structuralFoundations.present && _structuralFoundations.present.length > 0 && /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          type: "button",
+          "aria-expanded": _foundationDetailsOpen,
+          "aria-controls": "pdf-html-structure-details",
+          onClick: () => _setFoundationDetailsOpen((open) => !open),
+          className: "px-1.5 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap bg-sky-100 text-sky-800 border-0 underline decoration-dotted underline-offset-2 focus-visible:ring-2 focus-visible:ring-sky-500"
         },
         "\u{1F3D7}\uFE0F ",
         _structuralFoundations.present.length,
-        _structuralFoundations.checked ? "/" + _structuralFoundations.checked : "",
-        " ",
-        t("pdf_audit.dashboard.foundations") || "HTML foundations"
+        " HTML structure patterns detected"
       ), _structuralFoundations && Array.isArray(_structuralFoundations.advisory) && _structuralFoundations.advisory.length > 0 && /* @__PURE__ */ React.createElement(
         _AlloQualifier,
         {
@@ -10775,7 +10837,27 @@ Return ONLY JSON:
           },
           (_low ? "\u26A0\uFE0F " : "") + (t("pdf_audit.dashboard.reading_order") || "Reading order") + " (stream): " + Math.round(_ro * 10) / 10 + "%"
         );
-      })(), "                            ", /* @__PURE__ */ React.createElement("span", { className: "h-4 w-px bg-slate-300 mx-0.5", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("button", { className: _chip, onClick: () => _jump("allo-sec-verify") }, "\u2705 ", t("pdf_audit.dashboard.verify") || "Verification"), /* @__PURE__ */ React.createElement("button", { className: _chip, onClick: () => _jump("allo-sec-recovery") }, "\u{1FA79} ", t("pdf_audit.dashboard.recovery") || "Recovery"), /* @__PURE__ */ React.createElement("button", { className: _chip, onClick: () => _jump("allo-sec-axe") }, "\u{1FA93} ", t("pdf_audit.dashboard.axe") || "Issues (axe)"), /* @__PURE__ */ React.createElement("button", { className: _chip, onClick: () => _jump("allo-sec-downloads") }, "\u{1F4E5} ", t("pdf_audit.dashboard.downloads") || "Downloads"), /* @__PURE__ */ React.createElement("button", { className: _chip, onClick: () => _jump("allo-sec-taginspect") }, "\u{1F50D} ", t("pdf_audit.dashboard.tags") || "Tag inspector"), /* @__PURE__ */ React.createElement("button", { className: _chip, onClick: () => _jump("allo-sec-workbench") }, "\u{1F6E0} ", t("pdf_audit.dashboard.workbench") || "Workbench"), /* @__PURE__ */ React.createElement("button", { className: _chip, onClick: () => _jump("allo-sec-changed") }, "\u{1F4CB} ", t("pdf_audit.dashboard.changed") || "What changed"), typeof startPipelineTour === "function" && /* @__PURE__ */ React.createElement("button", { className: _chip, onClick: () => startPipelineTour("results"), "data-help-ignore": "true", title: t("pdf_audit.tour.results_title") || "A 60-second guided walk through this screen \u2014 what to download, what the score means, where the reports live." }, "\u2728 ", t("pdf_audit.tour.results_cta") || "Tour")));
+      })(), "                            ", /* @__PURE__ */ React.createElement("span", { className: "h-4 w-px bg-slate-300 mx-0.5", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("button", { className: _chip, onClick: () => _jump("allo-sec-verify") }, "\u2705 ", t("pdf_audit.dashboard.verify") || "Verification"), /* @__PURE__ */ React.createElement("button", { className: _chip, onClick: () => _jump("allo-sec-recovery") }, "\u{1FA79} ", t("pdf_audit.dashboard.recovery") || "Recovery"), /* @__PURE__ */ React.createElement("button", { className: _chip, onClick: () => _jump("allo-sec-axe") }, "\u{1FA93} ", t("pdf_audit.dashboard.axe") || "Issues (axe)"), /* @__PURE__ */ React.createElement("button", { className: _chip, onClick: () => _jump("allo-sec-downloads") }, "\u{1F4E5} ", t("pdf_audit.dashboard.downloads") || "Downloads"), /* @__PURE__ */ React.createElement("button", { className: _chip, onClick: () => _jump("allo-sec-taginspect") }, "\u{1F50D} ", t("pdf_audit.dashboard.tags") || "Tag inspector"), /* @__PURE__ */ React.createElement("button", { className: _chip, onClick: () => _jump("allo-sec-workbench") }, "\u{1F6E0} ", t("pdf_audit.dashboard.workbench") || "Workbench"), /* @__PURE__ */ React.createElement("button", { className: _chip, onClick: () => _jump("allo-sec-changed") }, "\u{1F4CB} ", t("pdf_audit.dashboard.changed") || "What changed"), typeof startPipelineTour === "function" && /* @__PURE__ */ React.createElement("button", { className: _chip, onClick: () => startPipelineTour("results"), "data-help-ignore": "true", title: t("pdf_audit.tour.results_title") || "A 60-second guided walk through this screen \u2014 what to download, what the score means, where the reports live." }, "\u2728 ", t("pdf_audit.tour.results_cta") || "Tour")), _foundationDetailsOpen && _structuralFoundations && /* @__PURE__ */ React.createElement(
+        "section",
+        {
+          id: "pdf-html-structure-details",
+          role: "region",
+          "aria-labelledby": "pdf-html-structure-details-heading",
+          className: "-mx-1 mt-2 mb-3 rounded-xl border border-sky-200 bg-sky-50/90 p-3 text-slate-700 shadow-sm"
+        },
+        /* @__PURE__ */ React.createElement("div", { className: "flex items-start gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0 flex-1" }, /* @__PURE__ */ React.createElement("h3", { id: "pdf-html-structure-details-heading", className: "text-sm font-black text-sky-950" }, "HTML structure inventory"), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-xs leading-relaxed" }, "This is a presence inventory, not an accessibility score or remediation target. Patterns can be absent because they do not apply; the content score and exported-PDF validation are separate checks.")), /* @__PURE__ */ React.createElement(
+          "button",
+          {
+            type: "button",
+            onClick: () => _setFoundationDetailsOpen(false),
+            className: "shrink-0 rounded-md border border-sky-300 bg-white px-2 py-1 text-[11px] font-bold text-sky-900 hover:bg-sky-100 focus-visible:ring-2 focus-visible:ring-sky-500",
+            "aria-label": "Close HTML structure details"
+          },
+          "Close"
+        )),
+        _imageFoundationConcern && /* @__PURE__ */ React.createElement("div", { className: "mt-3 rounded-lg border border-amber-300 bg-amber-50 p-2.5 text-xs leading-relaxed text-amber-950", role: "alert" }, /* @__PURE__ */ React.createElement("strong", null, "Image fidelity needs review."), " ", _imageFoundationDetail),
+        /* @__PURE__ */ React.createElement("div", { className: "mt-3 grid gap-3 md:grid-cols-2" }, /* @__PURE__ */ React.createElement("div", { className: "rounded-lg border border-emerald-200 bg-white p-2.5" }, /* @__PURE__ */ React.createElement("h4", { className: "text-xs font-black text-emerald-900" }, "Detected (", _structuralFoundations.present.length, ")"), /* @__PURE__ */ React.createElement("ul", { className: "mt-1.5 list-disc space-y-1 pl-4 text-[11px] leading-relaxed" }, _structuralFoundations.present.map((label, index) => /* @__PURE__ */ React.createElement("li", { key: "foundation-present-" + index }, label)))), /* @__PURE__ */ React.createElement("div", { className: "rounded-lg border border-slate-200 bg-white p-2.5" }, /* @__PURE__ */ React.createElement("h4", { className: "text-xs font-black text-slate-800" }, "Not detected (not automatically failures)"), Array.isArray(_structuralFoundations.notDetected) && _structuralFoundations.notDetected.length > 0 ? /* @__PURE__ */ React.createElement("ul", { className: "mt-1.5 list-disc space-y-1 pl-4 text-[11px] leading-relaxed" }, _structuralFoundations.notDetected.map((item) => /* @__PURE__ */ React.createElement("li", { key: item.id }, item.label))) : /* @__PURE__ */ React.createElement("p", { className: "mt-1.5 text-[11px]" }, "Every cataloged pattern was detected; this still is not a conformance claim.")))
+      ));
     })(), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, (() => {
       const _stillWorking = pdfAutoContinueRunning || pdfFixLoading;
       const _fidelity = !!(pdfFixResult && pdfFixResult.fidelityLimited);

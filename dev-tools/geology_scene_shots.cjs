@@ -63,7 +63,7 @@ window.__mountGeology = function (state, dark) {
 const shots = [
   { name: '01-crust-cutaway', scene: 'crust', slice: 3 },
   { name: '02-geode-cavern', scene: 'geode', slice: 7 },
-  { name: '03-deep-earth-core', scene: 'deepEarth', slice: 7 },
+  { name: '03-deep-earth-core', scene: 'deepEarth', slice: 7, scienceStage: 2 },
   { name: '04-subduction-flow', scene: 'subduction', slice: 4 },
   { name: '05-ridge-spreading', scene: 'ridge', slice: 4 },
   { name: '06-hotspot-plume', scene: 'hotspot', slice: 4 },
@@ -71,6 +71,8 @@ const shots = [
   { name: '08-hotspot-island-chain-top', scene: 'hotspot', slice: 0, view: 'top' },
   { name: '09-subduction-arc-surface', scene: 'subduction', slice: 0 },
   { name: '10-ridge-bathymetry-top', scene: 'ridge', slice: 0, view: 'top' },
+  { name: '11-deep-earth-core-front', scene: 'deepEarth', slice: 7, view: 'front', scienceStage: 2 },
+  { name: '12-deep-earth-seismic-front', scene: 'deepEarth', slice: 7, view: 'front', scienceStage: 1 },
 ];
 
 function viewportClip(page) {
@@ -81,6 +83,54 @@ function viewportClip(page) {
     const r = (frame || canvas).getBoundingClientRect();
     return { x: Math.max(0, r.x), y: Math.max(0, r.y), width: r.width, height: r.height };
   });
+}
+
+async function waitForStableEngine(page) {
+  await page.waitForFunction(() => {
+    const engine = window.__alloGeologyEngine;
+    return !!engine && !engine.disposed && !!document.querySelector('canvas[data-geology-material-rendering]');
+  });
+}
+
+async function setCutawayControl(page, slice) {
+  const control = page.locator('input[aria-label="Cutaway from front"]');
+  await page.waitForFunction(() => {
+    const element = document.querySelector('input[aria-label="Cutaway from front"]');
+    return !!element && !element.disabled;
+  });
+  await control.evaluate((element, value) => {
+    const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set;
+    setter.call(element, String(value));
+    element.dispatchEvent(new Event('input', { bubbles: true }));
+    element.dispatchEvent(new Event('change', { bubbles: true }));
+  }, slice);
+  await page.waitForTimeout(350);
+  let matched = await page.evaluate((expected) => {
+    const engine = window.__alloGeologyEngine;
+    return !!engine && !engine.disposed && engine.getVisualState().sliceZ === expected;
+  }, slice);
+  if (matched) return;
+  await control.focus();
+  await control.press('Home');
+  for (let step = 0; step < slice; step += 1) await control.press('ArrowRight');
+  await page.waitForTimeout(350);
+  matched = await page.evaluate((expected) => {
+    const engine = window.__alloGeologyEngine;
+    return !!engine && !engine.disposed && engine.getVisualState().sliceZ === expected;
+  }, slice);
+  if (!matched) {
+    const actual = await page.evaluate(() => window.__alloGeologyEngine && window.__alloGeologyEngine.getVisualState());
+    throw new Error('Cutaway control did not reach ' + slice + ': ' + JSON.stringify(actual));
+  }
+}
+
+async function setScienceStageControl(page, stage) {
+  const control = page.locator('[data-geology-process-step="' + stage + '"]');
+  await control.click();
+  await page.waitForFunction((expected) => {
+    const engine = window.__alloGeologyEngine;
+    return !!engine && !engine.disposed && engine.getVisualState().scienceStage === expected;
+  }, stage);
 }
 
 (async () => {
@@ -97,9 +147,15 @@ function viewportClip(page) {
 
   for (const shot of shots) {
     await page.evaluate(({ scene, dark }) => window.__mountGeology({ scene, res: 'standard' }, dark), shot);
-    await page.waitForFunction(() => !!window.__alloGeologyEngine && !!document.querySelector('canvas[data-geology-material-rendering]'));
-    await page.evaluate((slice) => window.__alloGeologyEngine.setSlice(slice), shot.slice);
+    await waitForStableEngine(page);
+    await setCutawayControl(page, shot.slice);
+    if (Number.isFinite(shot.scienceStage)) await setScienceStageControl(page, shot.scienceStage);
     if (shot.view) await page.evaluate((view) => window.__alloGeologyEngine.setView(view), shot.view);
+    await page.evaluate(() => {
+      const canvas = document.querySelector('canvas[data-geology-material-rendering]');
+      const frame = canvas && canvas.parentElement && canvas.parentElement.parentElement;
+      if (frame || canvas) (frame || canvas).scrollIntoView({ block: 'center', inline: 'nearest' });
+    });
     await page.waitForTimeout(1200);
     const state = await page.evaluate(() => {
       const canvas = document.querySelector('canvas[data-geology-material-rendering]');
@@ -110,6 +166,14 @@ function viewportClip(page) {
         atmosphere: canvas && canvas.dataset.geologyAtmosphereRendering,
         process: canvas && canvas.dataset.geologyProcessRendering,
         processGuide: canvas && canvas.dataset.geologyProcessGuideRendering,
+        core: canvas && canvas.dataset.geologyCoreRendering,
+        coreCount: canvas && canvas.dataset.geologyCoreElementCount,
+        magneticField: canvas && canvas.dataset.geologyMagneticFieldRendering,
+        magneticFieldCount: canvas && canvas.dataset.geologyMagneticFieldCount,
+        seismic: canvas && canvas.dataset.geologySeismicRendering,
+        pWaveCount: canvas && canvas.dataset.geologyPWaveRayCount,
+        sWaveCount: canvas && canvas.dataset.geologySWaveRayCount,
+        seismicReceiverCount: canvas && canvas.dataset.geologySeismicReceiverCount,
         cutaway: canvas && canvas.dataset.geologyCutawayRendering,
         surface: canvas && canvas.dataset.geologySurfaceRendering,
         landform: canvas && canvas.dataset.geologyLandformRendering,
@@ -136,16 +200,19 @@ function viewportClip(page) {
     console.log(shot.name + ' ' + JSON.stringify(state));
   }
 
+  // Release the desktop WebGL context before opening a second high-DPI page.
+  // SwiftShader otherwise occasionally reaches its per-process context limit.
+  await page.close();
   const mobile = await browser.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 });
   mobile.on('pageerror', (error) => errors.push('[mobile] ' + String((error && error.stack) || error).slice(0, 900)));
   await mobile.setContent('<!doctype html><html><head><style>body{margin:0;background:#e2e8f0;font-family:system-ui}#slot{padding:8px}</style></head><body><main id="slot"></main></body></html>');
   await mobile.addStyleTag({ content: fs.readFileSync(tailwindPath, 'utf8') });
   for (const code of scripts.concat(shell)) await mobile.addScriptTag({ content: code });
   await mobile.evaluate(() => window.__mountGeology({ scene: 'subduction', res: 'low' }, false));
-  await mobile.waitForFunction(() => !!window.__alloGeologyEngine && !!document.querySelector('canvas[data-geology-material-rendering]'));
-  await mobile.evaluate(() => window.__alloGeologyEngine.setSlice(2));
+  await waitForStableEngine(mobile);
+  await setCutawayControl(mobile, 2);
   await mobile.waitForTimeout(1000);
-  await mobile.screenshot({ path: path.join(OUT, '11-subduction-mobile.png'), fullPage: true, animations: 'disabled' });
+  await mobile.screenshot({ path: path.join(OUT, '13-subduction-mobile.png'), fullPage: true, animations: 'disabled' });
   const mobileState = await mobile.evaluate(() => ({
     documentWidth: document.documentElement.scrollWidth,
     viewportWidth: window.innerWidth,
@@ -154,7 +221,7 @@ function viewportClip(page) {
   if (mobileState.documentWidth > mobileState.viewportWidth + 1) {
     throw new Error('mobile horizontal overflow: ' + JSON.stringify(mobileState));
   }
-  console.log('11-subduction-mobile ' + JSON.stringify(mobileState));
+  console.log('13-subduction-mobile ' + JSON.stringify(mobileState));
 
   await browser.close();
   if (errors.length) {

@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light dark">
-  <meta name="description" content="The technical brief: static app, no accounts, on-device data, the three AI backend options, and what to verify.">
+  <meta name="description" content="The technical brief: the client-side core, deployment-specific accounts and data paths, AI backend choices, and what to verify.">
   <title>For your IT department: the one-page technical brief · AlloFlow Teacher Guide</title>
   <link rel="stylesheet" href="guide.css">
 </head>
@@ -44,6 +44,8 @@
           <li><a href="review-and-next-steps.html">Review evidence and plan next steps</a></li>
           <li><a href="classroom-workflows.html">Classroom workflows</a></li>
           <li><a href="worked-student-vignette.html">Worked student vignette: water-cycle lesson</a></li>
+          <li><a href="worked-multilingual-vignette.html">Worked multilingual vignette: water-cycle language bridge</a></li>
+          <li><a href="worked-assessment-access-vignette.html">Worked assessment-access vignette: show the science, not the writing speed</a></li>
           <li><a href="privacy-and-responsible-ai.html">Privacy and responsible AI</a></li>
           <li><a href="allobot-assistant.html">AlloBot: the assistant that talks with you</a></li>
           <li><a href="documents-and-printing.html">Documents and printing: from resource to handout</a></li>
@@ -54,7 +56,7 @@
           <li><a href="school-rollout-and-coaching.html">School rollout and coaching</a></li>
           <li><a href="for-your-it-department.html" aria-current="page">For your IT department: the one-page technical brief</a></li>
           <li><a href="for-school-leaders.html">For school leaders: the Leadership Hub</a></li>
-          <li><a href="steam-lab.html">The STEAM Lab: 142 tools, and how to find the one you need</a></li>
+          <li><a href="steam-lab.html">The STEAM Lab: find and share the right tool</a></li>
         </ol>
       </nav>
     </aside>
@@ -67,7 +69,7 @@
       </nav>
       <article class="guide-article">
 <h1 id="for-your-it-department-the-one-page-technical-brief">For your IT department: the one-page technical brief</h1>
-        <p class="chapter-summary">The technical brief: static app, no accounts, on-device data, the three AI backend options, and what to verify.</p>
+        <p class="chapter-summary">The technical brief: the client-side core, deployment-specific accounts and data paths, AI backend choices, and what to verify.</p>
         <dl class="chapter-cues" aria-label="Chapter at a glance">
           <div>
             <dt>Best for</dt>
@@ -78,7 +80,7 @@
             <dd>5 minutes</dd>
           </div>
         </dl>
-        <p class="chapter-meta">Chapter 23 of 25 · Verified <time datetime="2026-08-21">2026-08-21</time></p>
+        <p class="chapter-meta">Chapter 25 of 27 · Verified <time datetime="2026-08-22">2026-08-22</time></p>
         <nav class="section-nav" aria-labelledby="section-nav-title">
           <p id="section-nav-title" class="section-nav__title">On this page</p>
           <ol>
@@ -120,6 +122,8 @@
               <li><a href="review-and-next-steps.html">Review evidence and plan next steps</a></li>
               <li><a href="classroom-workflows.html">Classroom workflows</a></li>
               <li><a href="worked-student-vignette.html">Worked student vignette: water-cycle lesson</a></li>
+              <li><a href="worked-multilingual-vignette.html">Worked multilingual vignette: water-cycle language bridge</a></li>
+              <li><a href="worked-assessment-access-vignette.html">Worked assessment-access vignette: show the science, not the writing speed</a></li>
               <li><a href="privacy-and-responsible-ai.html">Privacy and responsible AI</a></li>
               <li><a href="allobot-assistant.html">AlloBot: the assistant that talks with you</a></li>
               <li><a href="documents-and-printing.html">Documents and printing: from resource to handout</a></li>
@@ -130,20 +134,20 @@
               <li><a href="school-rollout-and-coaching.html">School rollout and coaching</a></li>
               <li><a href="for-your-it-department.html">For your IT department: the one-page technical brief</a></li>
               <li><a href="for-school-leaders.html">For school leaders: the Leadership Hub</a></li>
-              <li><a href="steam-lab.html">The STEAM Lab: 142 tools, and how to find the one you need</a></li>
+              <li><a href="steam-lab.html">The STEAM Lab: find and share the right tool</a></li>
               </ul>
             </div>
           </noscript>
       </section>
 <p>When a school pilots AlloFlow, the questions come from IT within a week. This chapter answers them in IT's own terms. It describes the public deployment; if your district self-hosts, verify each answer against your own instance, in the spirit of <a href="privacy-and-responsible-ai.html">Privacy and responsible AI</a>: assume nothing until verified.</p>
 <h2 id="what-it-is-architecturally">What it is, architecturally</h2>
-<p>A static web application served from a CDN. There is no application server holding user data, no database of students, and no login system. The code is open source (AGPL) and publicly auditable on GitHub, so your security review can read exactly what runs.</p>
+<p>The core teacher workspace is a client-side web application that can be served as static assets from a CDN or bundled in the desktop package. That does <strong>not</strong> make every AlloFlow workflow serverless: AI backends, live-session transport, LMS launches, online lookups, optional school-owned Apps Script services, and the optional evaluation portal have their own network, identity, and storage paths. The code is open source (AGPL) and publicly auditable on GitHub, so a security review can inspect the paths enabled in the deployment being approved.</p>
 <h2 id="accounts-and-authentication">Accounts and authentication</h2>
-<p>None. Staff and students use it without creating accounts. This removes the usual pilot blockers (rostering, SSO integration, account lifecycle) and also means AlloFlow holds no credential or directory data at all.</p>
+<p>The standalone public and desktop workspace does not require users to create an AlloFlow vendor account. A surrounding Gemini or Canvas environment, LMS, district gateway, AI provider, optional Google Apps Script service, or evaluation portal may require its own account or identity. Review authentication per route; do not generalize the standalone behavior to every deployment.</p>
 <h2 id="where-data-lives">Where data lives</h2>
-<p>Work product stays in the browser's own storage on the device that created it (localStorage and equivalent browser storage). Nothing is synced to an AlloFlow server, because there is not one. The practical consequences cut both ways:</p>
+<p>Authoring state is stored in the browser or desktop profile by default (localStorage, IndexedDB, and related device storage). Explicit actions and configured features can transmit or copy content to an AI provider, live-session service, LMS, share route, school-owned service, downloaded file, or synced folder. The practical consequences cut both ways:</p>
 <ul>
-<li>Nothing to breach centrally, nothing to subpoena from a vendor, nothing to delete on offboarding.</li>
+<li>The default local workspace does not create a central AlloFlow roster or project store, but each connected route must be reviewed for its own records, retention, deletion, and access controls.</li>
 <li>A lost or wiped device loses its local work unless the user exported a project file. Treat exported project files as instructional records under your normal file-handling policy.</li>
 </ul>
 <h3 id="every-place-work-can-come-to-rest">Every place work can come to rest</h3>
@@ -180,8 +184,8 @@
 </tr>
 <tr>
 <td>Live session transport</td>
-<td>Local peer connections, or a mailbox you deploy (below)</td>
-<td>Session coordination and student responses</td>
+<td>Local peer connections, a configured Firestore path, or a mailbox/service the school deploys</td>
+<td>Session coordination, delivery state, and student responses, according to that transport</td>
 </tr>
 <tr>
 <td>LMS launch</td>
@@ -204,7 +208,7 @@
 <p>Two consequences worth stating to a leadership team. Browser storage means a wiped device or a cleared profile destroys unexported work, so &quot;save the project file&quot; is an operational instruction, not a nicety. And &quot;local&quot; is not the same as &quot;safe&quot;: a shared Windows profile, a synced Downloads folder, or a copied project file moves instructional content exactly as far as any other file would.</p>
 <p>The full teacher-facing data-path table is in <a href="privacy-and-responsible-ai.html">Privacy and responsible AI</a>; it is written to be reviewed line by line with a privacy officer. The teacher-side mechanics of saving, exporting, storage presets and recovery are in <a href="saving-and-storage.html">Saving, loading, and managing storage</a>.</p>
 <h3 id="the-google-drive-option-services-you-deploy-in-your-own-tenant">The Google Drive option: services you deploy in your own tenant</h3>
-<p>AlloFlow has no server. When a school genuinely needs shared or persistent storage, the pattern is always the same: a small Apps Script project deployed <strong>into a school-owned Google account, never a personal one</strong>, so the data sits in your Drive under the Workspace for Education agreement you already hold. Each is optional, and each is off until someone deploys it. The packages and their deployment READMEs are in <code>apps_script/</code>.</p>
+<p>The standalone workspace does not require a vendor-side application server. When a school chooses one of the repository's optional Apps Script integrations for shared or persistent storage, deploy it into a school-managed Google account under the district's approved Workspace terms, not a personal account. Each service is optional, has a different security model, and remains off until it is configured. The packages and their deployment READMEs are in <code>apps_script/</code>.</p>
 <p>They do not share one security model, and the differences are the part worth your attention:</p>
 <div class="table-scroll" role="region" aria-label="The Google Drive option: services you deploy in your own tenant table" tabindex="0">
 <table>
@@ -267,33 +271,34 @@
 </tr>
 <tr>
 <td><strong>A local model</strong> (LM Studio, Ollama, LocalAI on the device or a district server)</td>
-<td>Nothing leaves the machine or the district network</td>
-<td>Confidential contexts, strict no-egress requirements</td>
+<td>Prompts go to the endpoint the district configured; content may stay on one device or inside the district network depending on that endpoint and its logging</td>
+<td>Contexts approved for that specific local or district-managed service</td>
 </tr>
 <tr>
 <td><strong>No backend</strong></td>
-<td>Nothing; AI features hide or disable themselves and everything else keeps working</td>
+<td>No AI-generation request is made; AI-dependent controls disable or explain the missing connection</td>
 <td>Evaluation phase, or a deliberate non-AI deployment</td>
 </tr>
 </tbody>
 </table>
 </div>
-<p>Teachers are instructed throughout this guide to use de-identified content with any cloud backend. The no-backend state is honest by design: the interactive tools, delivery, and documents all work without AI.</p>
+<p>Teachers are instructed throughout this guide to use de-identified content with any cloud backend. In the no-backend state, many non-AI tools, existing resources, settings, saving, and exports remain available. Verify the exact activity: an AI-dependent option or a feature that needs an external lookup will not become offline merely because generation is disabled.</p>
 <h2 id="network-requirements">Network requirements</h2>
 <ul>
 <li>Allow the application host (for the public deployment, <code>alloflow-cdn.pages.dev</code>).</li>
 <li>If a cloud AI backend is chosen, allow that provider's endpoint (for Gemini, Google's API hosts).</li>
-<li>Exported HTML handouts are self-contained and work offline; the optional high-legibility web fonts are off by default and clearly labeled &quot;needs internet&quot; when a teacher opts in.</li>
+<li>If live sessions, an LMS, online lookups, or a school-owned service are enabled, allow only the documented endpoints for those approved features and confirm their retention and authentication settings.</li>
+<li>Exported HTML handouts are designed for offline use with their required lesson content embedded. Optional web fonts, external links or media, and connected interactions can add network dependencies; test the exported file offline before relying on it.</li>
 </ul>
 <h2 id="what-to-verify-yourself-because-you-should-not-take-a-guides-word-for-it">What to verify yourself, because you should not take a guide's word for it</h2>
 <ol>
 <li>Open the app on a managed device with your standard filtering and confirm it loads and a sample tool runs.</li>
-<li>Watch the network tab during generation with your chosen backend and confirm traffic goes only where this chapter says.</li>
+<li>Watch the network tab during generation, live delivery, exports, and any connected tool. Compare every destination with the deployment's approved allowlist and investigate unexpected traffic.</li>
 <li>Review the repository if your process requires code review; the license permits it and the build is reproducible from source.</li>
-<li>If you deploy the evaluation portal, grep its <code>Code.gs</code> for <code>UrlFetchApp</code> before you approve it. There are zero occurrences, which is the claim that nothing leaves your tenant, and it takes one search to confirm rather than trust.</li>
+<li>If you deploy the evaluation portal, inspect its <code>Code.gs</code> for network-capable services such as <code>UrlFetchApp</code> before approval. The source reviewed for this guide on 22 August 2026 contains zero <code>UrlFetchApp</code> references; repeat the check against the exact commit you deploy, and separately review Google services the script intentionally uses inside your tenant.</li>
 </ol>
 <h2 id="the-two-sentence-version-for-a-busy-director">The two-sentence version for a busy director</h2>
-<p>AlloFlow is a static, open source web app with no accounts and no vendor-side data storage; work stays on the device by default, and AI runs only through the backend the district chooses, including a fully local option. Where a school does want shared storage, it deploys a small optional service into its own Google Drive, so that data stays in your tenant too. The realistic review effort is the same as approving a website plus, if you choose one, an AI provider you have likely already reviewed.</p>
+<p>AlloFlow's core workspace is a client-side, open-source app whose authoring state stays on the device by default. Accounts, transmission, and storage change when the school enables Gemini or another AI provider, live-session transport, an LMS, online lookups, shared links, or optional school-owned services, so approve and test those routes individually rather than relying on one product-wide privacy sentence.</p>
       </article>
       <nav class="chapter-pager" aria-label="Previous and next chapters">
         <a class="chapter-pager__previous" href="school-rollout-and-coaching.html"><span>Previous</span>School rollout and coaching</a>
@@ -303,7 +308,7 @@
   </div>
   <footer class="site-footer">
     <p>Teacher guidance, not a substitute for district policy or professional judgment.</p>
-    <p>Guide version 2026.08 &#183; Content verified <time datetime="2026-08-21">2026-08-21</time>.</p>
+    <p>Guide version 2026.08 &#183; Content verified <time datetime="2026-08-22">2026-08-22</time>.</p>
   </footer>
 
   <script src="guide-search.js" defer></script>

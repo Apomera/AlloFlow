@@ -93,7 +93,9 @@ describe('region + landmark-nesting (best-practice advisory completeness, 2026-0
 
 describe('anti-drift: advisory is computed in the engine + rendered honestly in the view', () => {
   it('the engine returns an advisory array of best-practice gaps', () => {
-    expect(dp).toContain('var _foundations = { present: present, checked: 18, advisory: advisory };');
+    expect(dp).toContain('notDetected: _notDetected');
+    expect(dp).toContain('checked: 18');
+    expect(dp).toContain('imageSummary: { total: _fImgTotal');
     expect(dp).toContain("id: 'landmark-main'");
     expect(dp).toContain("id: 'page-has-heading-one'");
     expect(dp).toContain("id: 'heading-order'");

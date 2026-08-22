@@ -7,7 +7,9 @@ import { readFileSync } from 'node:fs';
 const src = readFileSync('educator_evaluation_source.jsx', 'utf8');
 const at = src.indexOf('function aeEvidenceSufficiency(');
 const stop = src.indexOf('\n}', at);
-const check = new Function(src.slice(at, stop + 2) + 'return aeEvidenceSufficiency;')();
+const check = new Function('t', src.slice(at, stop + 2) + 'return aeEvidenceSufficiency;')(
+  (_key, fallback) => fallback,
+);
 
 const domains = [
   { id: 'd1', label: 'Planning', components: [['1a', 'x'], ['1b', 'y']] },

@@ -40,6 +40,8 @@
             "description": "Start from a worked recipe and adapt it to your students and source.",
             "chapterSlugs": [
                 "worked-student-vignette",
+                "worked-multilingual-vignette",
+                "worked-assessment-access-vignette",
                 "classroom-workflows",
                 "steam-lab",
                 "prepare-a-lesson"
@@ -49,10 +51,22 @@
             "title": "I support accessibility",
             "description": "Check learner experience, response options, and specialist workflows.",
             "chapterSlugs": [
+                "worked-assessment-access-vignette",
                 "accessibility-and-udl",
                 "specialist-reference",
                 "math-fluency",
                 "make-a-document-accessible"
+            ]
+        },
+        {
+            "title": "I am designing or reviewing an assessment",
+            "description": "Protect the construct, offer equivalent response routes, test delivery, and interpret only valid evidence.",
+            "chapterSlugs": [
+                "worked-assessment-access-vignette",
+                "prepare-a-lesson",
+                "accessibility-and-udl",
+                "review-and-next-steps",
+                "privacy-and-responsible-ai"
             ]
         },
         {
@@ -81,6 +95,7 @@
             "title": "I support multilingual learners",
             "description": "Set language and translation choices, protect learner dignity, and verify that supports preserve the learning goal.",
             "chapterSlugs": [
+                "worked-multilingual-vignette",
                 "accessibility-and-udl",
                 "universal-settings",
                 "classroom-workflows",
@@ -99,7 +114,7 @@
         }
     ],
     "version": "2026.08",
-    "lastVerified": "2026-08-21",
+    "lastVerified": "2026-08-22",
     "chapters": [
         {
             "source": "chapters/01-start-here.md",
@@ -200,6 +215,20 @@
             "time": "15-minute worked example"
         },
         {
+            "source": "chapters/26-worked-multilingual-vignette.md",
+            "slug": "worked-multilingual-vignette",
+            "summary": "Preserve a shared science target while adding reviewed home-language access, visuals, response options, and bilingual delivery checks.",
+            "audience": "Teachers and multilingual learner teams",
+            "time": "15-minute worked example"
+        },
+        {
+            "source": "chapters/27-worked-assessment-access-vignette.md",
+            "slug": "worked-assessment-access-vignette",
+            "summary": "Design a formative science check that protects the construct, offers equivalent response routes, and distinguishes access failure from missing knowledge.",
+            "audience": "Teachers and assessment or accessibility teams",
+            "time": "15-minute worked example"
+        },
+        {
             "source": "chapters/07-privacy-and-responsible-ai.md",
             "slug": "privacy-and-responsible-ai",
             "summary": "Use student data and generated materials with appropriate judgment.",
@@ -258,7 +287,7 @@
         {
             "source": "chapters/17-for-your-it-department.md",
             "slug": "for-your-it-department",
-            "summary": "The technical brief: static app, no accounts, on-device data, the three AI backend options, and what to verify.",
+            "summary": "The technical brief: the client-side core, deployment-specific accounts and data paths, AI backend choices, and what to verify.",
             "audience": "IT and technology directors",
             "time": "5 minutes"
         },
@@ -272,7 +301,7 @@
         {
             "source": "chapters/21-steam-lab.md",
             "slug": "steam-lab",
-            "summary": "The 142-tool STEAM Lab: how to find a tool, how to put one in front of students with its own link, what to expect from any of them, and three ways teachers actually use them.",
+            "summary": "Use the live STEAM Lab catalog to find, verify, and share a focused interactive tool without relying on a stale printed count or inferred link.",
             "audience": "Any teacher",
             "time": "8 minutes"
         }

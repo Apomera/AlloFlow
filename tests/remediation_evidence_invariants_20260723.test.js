@@ -157,11 +157,11 @@ describe('canonical remediation outcome', () => {
 describe('source-level anti-drift wiring', () => {
   it('requires fresh complete evidence for promotion and clean/target stops', () => {
     expect(src).toContain('const _passCoverageComplete = _alloAutoFixPassHasCompleteEvidence(_fixPassEvidence, verification, reVerify);');
-    expect(src).toContain('const _passEvidenceComplete = _reAiUsable && _reAxeUsable && _passCoverageComplete;');
+    expect(src).toContain('const _passEvidenceComplete = _reThreeEngine.engineExecutionComplete === true && _passCoverageComplete;');
     expect(src).toContain('const _comparisonEvidenceComplete = _passEvidenceComplete && _bestEvidenceComplete;');
     expect(src).toContain('const _passIsBest = _passEvidenceComplete');
-    expect(src).toContain('else if (_passEvidenceComplete && newAxeViolations === 0');
-    expect(src).toContain('if (_passEvidenceComplete && newAxeViolations === 0 && !_reReviewRequired && newAiScore >= targetScore)');
+    expect(src).toContain('else if (_passEvidenceComplete && newAxeViolations === 0 && newEaFailures === 0 && newEaReviewFindings === 0');
+    expect(src).toContain('if (_passEvidenceComplete && newAxeViolations === 0 && newEaFailures === 0 && newEaReviewFindings === 0 && !_reReviewRequired && newAiScore >= targetScore)');
     expect(src).not.toContain('const newAxeViolations = reAxe ? reAxe.totalViolations : bestAxeViolations;');
   });
 

@@ -28,15 +28,15 @@ const expectedUnits = [
   'thermodynamics-and-electrochemistry',
 ];
 const expectedUnitCounts = {
-  'atomic-structure-and-properties': 64,
-  'compound-structure-and-properties': 62,
-  'properties-of-substances-and-mixtures': 79,
-  'chemical-reactions': 62,
-  kinetics: 64,
-  thermochemistry: 66,
-  equilibrium: 68,
-  'acids-and-bases': 77,
-  'thermodynamics-and-electrochemistry': 58,
+  'atomic-structure-and-properties': 72,
+  'compound-structure-and-properties': 70,
+  'properties-of-substances-and-mixtures': 95,
+  'chemical-reactions': 70,
+  kinetics: 74,
+  thermochemistry: 80,
+  equilibrium: 82,
+  'acids-and-bases': 91,
+  'thermodynamics-and-electrochemistry': 66,
 };
 const expectedPractices = ['SP1', 'SP2', 'SP3', 'SP4', 'SP5', 'SP6'];
 const allowedHosts = new Set(['apcentral.collegeboard.org', 'apstudents.collegeboard.org', 'openstax.org']);
@@ -133,7 +133,7 @@ function requireCondition(condition, check, message, detail) {
 
 requireCondition(
   pack.schemaVersion === 1 && pack.itemSchemaVersion === 2 && pack.id === 'ap-chemistry-foundation-pilot' &&
-    pack.version === '0.4.0-internal-preview' && pack.status === 'preview' && pack.visibility === 'internal',
+    pack.version === '0.5.0-internal-preview' && pack.status === 'preview' && pack.visibility === 'internal',
   'asset-identity', 'Pack schema, identity, version, or internal-preview state is invalid.'
 );
 requireCondition(
@@ -207,9 +207,17 @@ const answerCounts = countBy(items, (item) => item.answerIndex);
 const unitCounts = countBy(items, (item) => item.domainId);
 const practiceCounts = countBy(items, (item) => item.practiceId);
 const topicCounts = countBy(items, (item) => item.topicIds?.[0]);
-const capstoneItems = items.filter((item) => Number(String(item.id).match(/-(\d{3})$/)?.[1]) >= 501);
+const capstoneItems = items.filter((item) => {
+  const itemNumber = Number(String(item.id).match(/-(\d{3})$/)?.[1]);
+  return itemNumber >= 501 && itemNumber <= 600;
+});
 const capstonePracticeCounts = countBy(capstoneItems, (item) => item.practiceId);
-requireCondition(items.length === 600 && new Set(items.map((item) => item.id)).size === 600, 'asset-identity', 'The AP Chemistry foundation pilot must contain exactly 600 uniquely identified items.');
+const synthesisItems = items.filter((item) => {
+  const itemNumber = Number(String(item.id).match(/-(\d{3})$/)?.[1]);
+  return itemNumber >= 601 && itemNumber <= 700;
+});
+const synthesisPracticeCounts = countBy(synthesisItems, (item) => item.practiceId);
+requireCondition(items.length === 700 && new Set(items.map((item) => item.id)).size === 700, 'asset-identity', 'The AP Chemistry foundation pilot must contain exactly 700 uniquely identified items.');
 requireCondition(expectedUnits.every((unit) => unitCounts[unit] === expectedUnitCounts[unit]), 'blueprint-and-unit-coverage', 'Every current AP Chemistry unit must receive its expected item count.');
 requireCondition(expectedPractices.every((practice) => practiceCounts[practice] > 0), 'blueprint-and-unit-coverage', 'All six AP Chemistry science practices must be represented.');
 requireCondition(
@@ -217,12 +225,16 @@ requireCondition(
   'blueprint-and-unit-coverage', 'The 100-item capstone layer must be evenly split between SP3 and SP6 and carry substantive stimuli.'
 );
 requireCondition(
-  answerCounts[0] === 150 && answerCounts[1] === 150 && answerCounts[2] === 150 && answerCounts[3] === 150,
-  'one-best-answer', 'Answer keys must be intentionally balanced at 150/150/150/150 across A-D.'
+  synthesisItems.length === 100 && synthesisPracticeCounts.SP1 === 50 && synthesisPracticeCounts.SP2 === 50 && synthesisItems.every((item) => typeof item.stimulus === 'string' && item.stimulus.length >= 20),
+  'blueprint-and-unit-coverage', 'The 100-item model-and-method synthesis layer must be evenly split between SP1 and SP2 and carry substantive stimuli.'
 );
 requireCondition(
-  Array.isArray(pack.sections) && pack.sections.length === 120 && pack.sections.every((section) => Array.isArray(section.itemIds) && section.itemIds.length === 5 && section.itemIds.every((id) => items.some((item) => item.id === id))),
-  'asset-identity', 'The 600-item pilot must expose one hundred twenty complete five-item internal banks.'
+  answerCounts[0] === 175 && answerCounts[1] === 175 && answerCounts[2] === 175 && answerCounts[3] === 175,
+  'one-best-answer', 'Answer keys must be intentionally balanced at 175/175/175/175 across A-D.'
+);
+requireCondition(
+  Array.isArray(pack.sections) && pack.sections.length === 140 && pack.sections.every((section) => Array.isArray(section.itemIds) && section.itemIds.length === 5 && section.itemIds.every((id) => items.some((item) => item.id === id))),
+  'asset-identity', 'The 700-item pilot must expose one hundred forty complete five-item internal banks.'
 );
 requireCondition(
   [...topicCoverage.keys()].every((topicId) => topicCounts[topicId] > 0),
@@ -334,7 +346,7 @@ requireCondition(
     library.accessibility?.independentReviewStatus === 'pending' && library.expertReviewGate?.status === 'pending' &&
     library.expertReviewGate?.releaseBlocked === true && library.releaseGates?.releaseEligible === false &&
     library.releaseGates?.apChemistrySubjectExpertReview === 'pending' && library.contentMigration?.richLessonPrototypes === 9 &&
-    library.contentMigration?.contentVersion === 'ap-chemistry-foundation-v3' && /600-item/.test(String(library.blueprint?.pilotAlignment || '')),
+    library.contentMigration?.contentVersion === 'ap-chemistry-foundation-v4' && /700-item/.test(String(library.blueprint?.pilotAlignment || '')),
   'rights-boundary', 'Learning-library rights, accessibility, expert, release, or migration boundaries regressed.', { asset: 'learning-library' }
 );
 
@@ -378,6 +390,8 @@ const report = {
     topicCount: topicCoverage.size,
     topicCounts,
     practiceCounts,
+    capstonePracticeCounts,
+    synthesisPracticeCounts,
     answerCounts: { A: Number(answerCounts[0] || 0), B: Number(answerCounts[1] || 0), C: Number(answerCounts[2] || 0), D: Number(answerCounts[3] || 0) },
     chapterCount: chapters.length,
     sectionCount: sections.length,

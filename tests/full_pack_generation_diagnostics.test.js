@@ -35,6 +35,7 @@ const makeDeps = (overrides = {}) => {
     sourceTopic: 'Test topic',
     standardsInput: '',
     standardsContext: null,
+    instructionalContext: { primaryTextPolicy: 'preserve-primary' },
     resourceCount: '5',
     isAutoConfigEnabled: true,
     quizCustomInstructions: '',
@@ -82,6 +83,97 @@ const makeDeps = (overrides = {}) => {
 };
 
 describe('Full Pack failure diagnostics and resilience', () => {
+  it('defaults a new source to analyzed primary text plus a supplemental adapted companion', async () => {
+    let latestRun = null;
+    const deps = makeDeps({
+      history: [],
+      instructionalContext: null,
+      setFullPackRun: next => { latestRun = typeof next === 'function' ? next(latestRun) : next; },
+      autoConfigureSettings: vi.fn(async () => ({ resourcePlan: [{ tool: 'quiz', directive: '' }] })),
+    });
+
+    await GenerationHelpers.handlePlanFullPack(deps);
+
+    expect(latestRun.status).toBe('ready');
+    expect(latestRun.preflight.selected.slice(0, 2).map(item => item.type)).toEqual(['analysis', 'simplified']);
+    expect(latestRun.preflight.selected.find(item => item.type === 'simplified').instructionalText).toMatchObject({
+      role: 'supplemental', form: 'adapted',
+      replacementAuthorization: { authorized: false, source: 'none' },
+    });
+    expect(latestRun.planPayload.instructionalContext.primaryTextPolicy).toBe('educator-directed');
+    expect(deps.handleGenerate).not.toHaveBeenCalled();
+  });
+
+  it('goes directly from the default reviewed plan to generation without a policy click', async () => {
+    let latestRun = null;
+    const deps = makeDeps({
+      history: [],
+      instructionalContext: null,
+      setFullPackRun: next => { latestRun = typeof next === 'function' ? next(latestRun) : next; },
+      autoConfigureSettings: vi.fn(async () => ({ resourcePlan: [{ tool: 'quiz', directive: '' }] })),
+    });
+
+    await GenerationHelpers.handlePlanFullPack(deps);
+    const reviewed = latestRun;
+    await GenerationHelpers.handleApproveFullPack(reviewed, deps);
+
+    expect(deps.handleGenerate.mock.calls.map(call => call[0])).toEqual(['analysis', 'simplified', 'quiz']);
+    expect(latestRun.status).toBe('completed');
+  });
+
+  it('includes both text paths when a standard requires preserving complex primary text', async () => {
+    let latestRun = null;
+    const deps = makeDeps({
+      instructionalContext: null,
+      history: [{ id: 'analyzed-source', type: 'analysis', data: { originalText: 'A reliable source text for the pack.' } }],
+      standardsInput: 'Read and comprehend grade-level complex texts independently and proficiently.',
+      standardsContext: {
+        inputText: 'CCSS.ELA-LITERACY.RI.5.10',
+        promptText: 'Read and comprehend grade-level complex texts independently and proficiently.',
+        standards: [{ code: 'CCSS.ELA-LITERACY.RI.5.10', text: 'Read and comprehend grade-level complex texts independently and proficiently.' }],
+        instructionalConstraints: { textAccessExpectation: 'preserve-primary', sourced: true },
+      },
+      setFullPackRun: next => { latestRun = typeof next === 'function' ? next(latestRun) : next; },
+      autoConfigureSettings: vi.fn(async () => ({ resourcePlan: [{ tool: 'quiz', directive: '' }] })),
+    });
+
+    await GenerationHelpers.handlePlanFullPack(deps);
+
+    expect(latestRun.preflight.selected.slice(0, 2).map(item => item.type)).toEqual(['analysis', 'simplified']);
+    expect(latestRun.planPayload.instructionalContext.primaryTextPolicy).toBe('educator-directed');
+    expect(latestRun.planPayload.instructionalContext.standardsContext.instructionalConstraints)
+      .toMatchObject({ textAccessExpectation: 'preserve-primary' });
+  });
+
+  it('honors an explicit educator choice to preserve the primary without an adapted companion', async () => {
+    let latestRun = null;
+    const deps = makeDeps({
+      history: [],
+      setFullPackRun: next => { latestRun = typeof next === 'function' ? next(latestRun) : next; },
+      autoConfigureSettings: vi.fn(async () => ({ resourcePlan: [{ tool: 'quiz', directive: '' }, { tool: 'simplified', directive: '' }] })),
+    });
+
+    await GenerationHelpers.handlePlanFullPack(deps);
+
+    expect(latestRun.preflight.selected.map(item => item.type)).toEqual(['quiz']);
+    expect(latestRun.preflight.skipped.find(item => item.type === 'simplified').reason).toContain('preserve-primary');
+  });
+
+  it('preserves the automatic text pair decision through a normalized roster-group context', async () => {
+    let latestRun = null;
+    const deps = makeDeps({
+      history: [],
+      instructionalContext: { primaryTextPolicy: 'educator-directed' },
+      fullPackDefaultTextPair: true,
+      setFullPackRun: next => { latestRun = typeof next === 'function' ? next(latestRun) : next; },
+      autoConfigureSettings: vi.fn(async () => ({ resourcePlan: [{ tool: 'quiz', directive: '' }] })),
+    });
+
+    await GenerationHelpers.handlePlanFullPack(deps);
+
+    expect(latestRun.preflight.selected.slice(0, 2).map(item => item.type)).toEqual(['analysis', 'simplified']);
+  });
+
   it('records a failed resource and continues with the remaining pack', async () => {
     vi.useFakeTimers();
     const prior = window.AlloModules.ErrorReporter;

@@ -207,7 +207,7 @@ html:root[data-allo-theme="easyread"]{--bg:#faf8ef;--panel:#fffefa;--ink:#18202f
 <p class="docmeta">
 <span>21 sections</span><span class="dot" aria-hidden="true"></span>
 <span>about 35 minutes end to end</span><span class="dot" aria-hidden="true"></span>
-<span>reviewed August 21, 2026</span><span class="dot" aria-hidden="true"></span>
+<span>reviewed August 22, 2026</span><span class="dot" aria-hidden="true"></span>
 <span>prints to about 20 pages</span>
 </p>
 
@@ -255,7 +255,7 @@ html:root[data-allo-theme="easyread"]{--bg:#faf8ef;--panel:#fffefa;--ink:#18202f
 <tr><th scope="row">Setup needed</th><td>None.</td><td>The principal copies three files into their own private Apps Script project, with district approval.</td><td>A district administrator deploys and configures the repository, membership, and assignments.</td></tr>
 <tr><th scope="row">Where working data lives</th><td>In this browser profile on this device. A deliberate export creates a separate file wherever you save or send it.</td><td>Exported HTML packets in the principal's district Drive, plus the principal's local source workspace until it is handed off.</td><td>The district deployment account's repository and released-summary folders inside its Google Workspace tenant.</td></tr>
 <tr><th scope="row">Educator access</th><td>No authentication. Real local records expose a read-only Educator preview. Only the explicitly fictional sample makes perspective changes interactive for rehearsal.</td><td>A reviewed viewer/commenter permission to one exported packet; it may expire or be revoked.</td><td>Each educator signs in and sees only their assigned record.</td></tr>
-<tr><th scope="row">Controls</th><td>Visible save state, staged import review, automatic pre-import backup, manual exports, read-only preview for real records, and an interactive coach limited to fictional data.</td><td>Validated one-educator packet, verified-account domain boundary, immutable final review, live permission re-read, optional expiration, and proof-based revoke.</td><td>Managed identity, roles, assignments, mutation validation, server audit, two-party workflow, reviewed administrator changes, private audited exports, and archive rehearsal.</td></tr>
+<tr><th scope="row">Controls</th><td>Visible save state, staged import review, automatic pre-import backup, manual exports, read-only preview for real records, an interactive coach limited to fictional data, and a reviewed backup-before-clean transition into real work.</td><td>Validated one-educator packet, verified-account domain boundary, immutable final review, live permission re-read, optional expiration, and proof-based revoke.</td><td>Managed identity, roles, assignments, mutation validation, server audit, two-party workflow, reviewed administrator changes, private audited exports, and archive rehearsal.</td></tr>
 <tr><th scope="row">Official record</th><td>No.</td><td>No; the Drive folder needs a deliberate records handoff.</td><td>The district still decides which authorized personnel system is official.</td></tr>
 </table>
 </div>
@@ -286,8 +286,22 @@ html:root[data-allo-theme="easyread"]{--bg:#faf8ef;--panel:#fffefa;--ink:#18202f
 </ol>
 <div class="warn"><strong>Fictional-data boundary:</strong> interactive perspective switching exists only while the workspace is explicitly simulated. In real local work, <strong>Educator preview</strong> remains read-only because a role switch is not authentication; the educator responds through a deliberately shared packet or the authenticated district portal. Never paste real personnel or student-identifying information into the rehearsal.</div>
 <figure>
-<img src="educator-evaluation-manual-assets/14-rehearsal-complete.jpg" width="1770" height="1200" loading="lazy" alt="Evaluation Overview after the fictional Teacher 08 rehearsal is finished. The practice card reads Rehearsal complete, 10 of 10 formal steps complete, final release Recorded, and next owner Done, with a Review completed fictional cycle button beneath the completion message.">
-<figcaption>A finished end-to-end rehearsal. The completion card is both a progress check and a direct route to the fictional audit chain.</figcaption>
+<img src="educator-evaluation-manual-assets/14-rehearsal-complete.jpg" width="1770" height="1200" loading="lazy" alt="Evaluation Overview after the fictional Teacher 08 rehearsal is finished. The practice card reads Rehearsal complete, 10 of 10 formal steps complete, final release Recorded, and next owner Done, with Review completed fictional cycle and Prepare a clean real workspace buttons beneath the completion message.">
+<figcaption>A finished end-to-end rehearsal. The completion card routes either to the fictional audit chain or to the reviewed clean-workspace transition.</figcaption>
+</figure>
+<h3>Move safely from practice to real work</h3>
+<p>The practice workspace is a rehearsal environment, not a template for personnel records. When training is complete, use the built-in transition so the rehearsal remains recoverable while real work begins in a separate empty workspace.</p>
+<ol>
+<li><strong>Open the transition.</strong> On the completed rehearsal card, choose <strong>Prepare a clean real workspace</strong>. The tool opens Reports &amp; audit and moves to the practice-to-real controls.</li>
+<li><strong>Review what will happen.</strong> Choose <strong>Review clean-workspace transition</strong>. Check the displayed fictional educator count, fictional workflow-record count, current planning path, and the promise that a backup downloads before the reset.</li>
+<li><strong>Acknowledge the boundary.</strong> Check the statement confirming that the clean workspace starts empty. Until it is checked, <strong>Download rehearsal backup and start clean</strong> stays disabled.</li>
+<li><strong>Preserve and separate.</strong> Choose <strong>Download rehearsal backup and start clean</strong>. The browser downloads a dated JSON recovery copy, then starts a blank real-work workspace. The sample records are never copied, converted, or mixed into the new workspace.</li>
+<li><strong>Complete first-cycle readiness.</strong> On Overview, follow <strong>Set up your first real cycle</strong>. The checklist routes you through <strong>Choose an approved record path</strong>, <strong>Confirm workspace details</strong>, and <strong>Add the first educator</strong>. Its status changes from 0 / 3 ready as each local requirement is completed.</li>
+</ol>
+<div class="warn"><strong>Authorization boundary:</strong> the readiness checklist confirms that this browser workspace has a path, complete identifying details, and an educator. It does not approve a personnel-record system or replace district privacy, retention, labor, security, or legal review. Store the downloaded rehearsal backup only where fictional training files are permitted.</div>
+<figure>
+<img src="educator-evaluation-manual-assets/15-real-work-launch.jpg" width="1770" height="1200" loading="lazy" alt="Blank private on-device Evaluation Overview showing the Set up your first real cycle card, zero of three ready, and the first Choose record path action. The three readiness items are approved record path, workspace details, and first educator.">
+<figcaption>The clean real-work Overview makes the next safe setup action explicit and keeps the three readiness requirements visible.</figcaption>
 </figure>
 <h3>Changing the fictional scenario</h3>
 <p>In a simulated workspace, open <strong>Setup &rarr; Simulation Studio</strong>. It is intentionally absent from real workspaces. The language interpreter is a local rules parser, not an AI service: no request or record leaves the browser.</p>
@@ -782,6 +796,7 @@ does not permit AI in evaluation, leave it off and everything else works unchang
 <li><strong>“Changes are not saved” or a save-failed banner:</strong> stop editing, choose <strong>Retry save</strong>, then <strong>Download emergency backup</strong>. Check browser storage/privacy settings and available space. Do not close until you have an authorized recovery copy.</li>
 <li><strong>A damaged local workspace was detected:</strong> download the raw damaged value first. Retry storage or ask IT/data support to inspect that copy. Use the two-confirmation fresh-start action only after preserving it.</li>
 <li><strong>An import did not apply when you chose a file:</strong> this is intentional. Read the staged organization/year/counts or response-field review, then explicitly confirm. A workspace replacement downloads a checkpoint first.</li>
+<li><strong>Download rehearsal backup and start clean is disabled:</strong> read the transition review and check the empty-workspace acknowledgment. If the browser blocks the download, allow the authorized download before proceeding; do not manually copy fictional records into real work.</li>
 <li><strong>A response shows stale or ignored fields:</strong> compare the packet issue/source time with the current record. Stale responses are identified; evaluator-controlled fields and file-supplied timestamps are dropped. Do not edit the response JSON to force a workflow transition.</li>
 <li><strong>You need to undo an import:</strong> use <strong>Undo import</strong> before making another edit. The prior workspace is intentionally discarded from undo history after the next mutation; the automatic checkpoint remains as a downloaded file.</li>
 <li><strong>Simulation Studio ignored part of a sentence:</strong> only the clauses listed as recognized were applied. Reword the ignored clause or set that parameter manually. Inspect normalization corrections and Preview before Apply.</li>

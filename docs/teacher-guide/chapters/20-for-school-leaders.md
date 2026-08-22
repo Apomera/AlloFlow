@@ -9,13 +9,13 @@ If you have not read [Privacy and responsible AI](07-privacy-and-responsible-ai.
 The hub states this once, and every tool holds to it:
 
 - **Aggregate or de-identified where that is the point.** The analysis tools take counts or student codes, never rosters of names tied to outcomes. The tools that do hold names — evaluation, meeting documentation — are real working records, not previews; what a district portal adds is shared, authenticated access and a retained store, not permission to do the work.
-- **Computed on this device.** Nothing you enter is sent to a server, with one exception you control: tools that offer AI drafting or translation call the AI backend your school configured, and they tell you before anything leaves. What you enter stays in your signed-in profile on that device, protected by your device sign-in rather than by encryption AlloFlow adds.
+- **Local by default, with named exceptions.** The standalone hub computes and stores working state in the current browser or desktop profile. AI drafting and translation, an optional evaluation portal, Drive backup, live or shared routes, an LMS, and other configured services can transmit or copy data outside that profile. Review the disclosure and destination for the exact tool and deployment. AlloFlow does not add application-level encryption to ordinary browser storage, so device access and disk protection still matter.
 - **Descriptive, never a verdict.** Every output is framed as material *for human review*. No tool places a student in a tier, rates a teacher, decides eligibility, or certifies a translation. You do, and the exports say so.
 
 A practical consequence worth planning around: because the data is on-device, a leadership workflow lives on the device where you started it. The hub's **Back up this hub** section covers this two ways:
 
 - **Download backup / Restore from backup** — one file with every tool's saved data, restorable on a new device or after a wipe. Treat the file as the confidential records it may describe. Restoring only ever writes the hub tools' own data; it cannot touch anything else in AlloFlow.
-- **Automatic Drive backup** — a three-minute, one-time script on your **school-managed Google Workspace for Education account** (so the stored data sits under your district's existing data-privacy agreement, not a personal account). Once connected, a dated backup is saved to a Drive folder whenever you close a hub tool or open the hub and something has changed — so finishing a walkthrough or saving a screening window is what freshens the copy, not remembering to visit a menu. The hub shows *last saved*, and the folder keeps a bounded history. The setup steps are in `apps_script/leadership_hub_backup/README.md` in the AlloFlow repository; the script can only write files it created — it cannot read the rest of your Drive and never shares anything with anyone.
+- **Automatic Drive backup** — an optional script installed in a **school-managed Google Workspace for Education account**, not a personal account. Once connected, it saves dated backups when the hub reports changed data on close or reopen, shows the last-save state, and maintains the history described by that script version. Follow `apps_script/leadership_hub_backup/README.md` for the exact deployment. The reviewed package requests access to files it creates and creates them Restricted; re-check scopes, sharing, retention, and behavior against the commit you install.
 
 Either way, the backup is working continuity, not filing. When a record needs to reach wherever your district officially stores it, download it from Drive and share it through the normal district channel yourself — that handoff stays deliberate and human.
 
@@ -73,7 +73,7 @@ Evaluation clocks, IEP annuals, and triennials on one urgency dashboard (overdue
 
 **First session.** Add timelines on the **Timelines** tab; the **Dashboard** sorts them into urgency bands automatically.
 
-**Keep in mind — this one matters legally.** Due dates are *editable prefills*, not legal determinations. The evaluation clock prefills the IDEA fallback of 60 **calendar** days from consent (34 CFR 300.301(c)); many states set their own timeframes, and several count **school** days, which no calendar arithmetic can compute. Confirm every date against your state rule and district calendar — the screen and the CSV export both repeat this because it is that easy to forget. Once you hand-edit a date, the prefill stops touching it.
+**Keep in mind — this one matters legally.** Due dates are *editable prefills*, not legal determinations. The evaluation clock uses the federal 60-**calendar**-day rule after parental consent, while [34 CFR § 300.301(c)(1)](https://sites.ed.gov/idea/regs/b/d/300.301) also permits a state-established timeframe to control. Confirm every date against the current state rule, district procedure, consent facts, and school calendar. The screen and CSV repeat the warning, and a hand-edited due date is not overwritten by the prefill.
 
 ### Diagnosis, Evaluation & School Eligibility 🧩
 
@@ -89,7 +89,7 @@ Notes or a transcript in, your district's meeting format out. Six built-in forma
 
 **First session.** Pick a format on **New record**, paste your notes, and draft. Review the result, certify it, and save; action items land in the **Action items** tracker with checkboxes.
 
-**Keep in mind — the two integrity mechanisms.** Before any AI call, names are masked *locally* into "Person A / Person B" and restored locally afterward, so the model never sees who was in the room. And every drafted decision or action item carries a verbatim quote from your notes, mechanically verified; a claim the tool cannot find in your notes is flagged "not found in your notes" and kept visible rather than silently trusted. You certify before saving, and the export footer says a human did. There is also a fully manual no-AI mode.
+**Keep in mind — the two integrity mechanisms.** Before an AI call, each name the preparer explicitly adds to **Names to mask** is replaced locally with a code such as "Person A" and restored locally in the result. A name omitted from that list remains in the notes and can reach the configured provider, so review the list before drafting. Every drafted decision or action item also carries a source quote that is checked as an exact substring of the masked notes; an unmatched quote is visibly flagged for review. You certify before saving, and the export footer records human review. A manual no-AI route is also available.
 
 ### Family Announcements 📣
 
@@ -107,4 +107,4 @@ One announcement, every family language: write the English master, pick your bui
 
 ## Troubleshooting and support
 
-The hub tools are ordinary AlloFlow modules: if a card opens to a loading screen that never resolves, the recovery sequence in [Troubleshooting](08-troubleshooting.md) applies. AI drafting and translation require a configured backend — on a keyless install those buttons explain themselves and everything non-AI keeps working, per [Privacy and responsible AI](07-privacy-and-responsible-ai.md). For the rollout conversation with staff, pair this chapter with [School rollout and coaching](10-school-rollout-and-coaching.md).
+The hub tools are ordinary AlloFlow modules: if a card opens to a loading screen that never resolves, the recovery sequence in [Troubleshooting](08-troubleshooting.md) applies. AI drafting and translation require a configured backend. Without one, local forms, calculations, saved records, and manual routes that do not call AI may remain available, but verify the exact tool and export path. For the rollout conversation with staff, pair this chapter with [School rollout and coaching](10-school-rollout-and-coaching.md).

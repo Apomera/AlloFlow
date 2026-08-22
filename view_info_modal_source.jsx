@@ -473,25 +473,21 @@ const ATLAS_HUBS = [
     "icon": "🔬",
     "sourceKind": "registry",
     "sourceLabel": "Generated from the STEAM Lab registry",
-    "total": 127,
+    "total": 140,
     "categories": [
       {
         "name": "Math Fundamentals",
         "tools": [
-          "3D Volume Explorer",
           "Number Line",
           "Area Model",
           "Arithmetic Strategy Studio",
-          "Ratios, Rates & Proportions Lab",
-          "Area & Perimeter Lab",
-          "Time & Schedule Lab",
           "Fraction Lab",
           "Math Manipulatives",
+          "Multiplication Table",
+          "Ratios, Rates & Proportions Lab",
           "Money Math",
-          "Coordinate Grid",
-          "Angle Explorer",
-          "Geometry Sandbox",
-          "Multiplication Table"
+          "Unit Converter",
+          "Time & Schedule Lab"
         ]
       },
       {
@@ -501,68 +497,142 @@ const ATLAS_HUBS = [
           "Inequality Grapher",
           "Calculus Visualizer",
           "Algebra Solver",
-          "Graphing Calculator",
-          "Probability",
-          "Unit Converter"
+          "Graphing Calculator"
         ]
       },
       {
-        "name": "Life & Earth Science",
+        "name": "📐 Geometry & Measurement",
         "tools": [
-          "Dino Lab",
+          "3D Volume Explorer",
+          "Area & Perimeter Lab",
+          "Coordinate Grid",
+          "Angle Explorer",
+          "Geometry Sandbox",
+          "Geometry Prover",
+          "Geometry World"
+        ]
+      },
+      {
+        "name": "📊 Data, Statistics & Probability",
+        "tools": [
+          "Probability",
+          "Statistical Tests",
+          "Charts & Graphs",
+          "CODAP Data Science",
+          "Lumen Research Canvas"
+        ]
+      },
+      {
+        "name": "🧬 Life Science & Genetics",
+        "tools": [
           "Cell Simulator",
-          "Solar System",
-          "Moon Mission",
-          "Space Station",
-          "Coaster Lab",
-          "Galaxy Explorer",
-          "Universe Time-Lapse",
-          "Rocks & Minerals",
-          "Water Cycle",
-          "Weather Systems & Forecasting",
-          "Rock Cycle",
+          "Dissection Lab",
+          "Tree Life Lab",
+          "Cell Atlas Lab",
+          "DNA Lab",
+          "Punnett Square",
+          "Microbiology Lab",
+          "Epidemic Simulator",
+          "EvoLab: Evolution",
+          "Taxonomy Explorer",
+          "Dino Lab",
+          "AlphaFold Explorer"
+        ]
+      },
+      {
+        "name": "🫀 Human Body, Health & Safety",
+        "tools": [
+          "Human Anatomy",
+          "Brain Atlas",
+          "NutritionLab: Nutrition Science",
+          "First Response Lab",
+          "Kitchen Lab"
+        ]
+      },
+      {
+        "name": "🌍 Ecology, Environment & Animals",
+        "tools": [
           "Ecosystem",
           "Companion Planting Lab",
           "Beehive Colony Simulator",
           "Climate Explorer",
           "Environmental Stewardship Campaigns",
-          "Renewables Lab",
           "Fire Ecology & Indigenous Stewardship",
+          "Renewables Lab",
           "Aquaculture & Ocean Lab",
+          "BirdLab: I-Spy Ornithology",
+          "Raptor Hunt: Predator Physics + Biology",
+          "Animal Migration Lab",
+          "Cephalopod Lab",
           "Science of Pets Lab",
-          "FisherLab: Boating & Fishing Sim",
-          "AquacultureLab: Mussel Farm Sim",
-          "Decomposer",
-          "Human Anatomy",
-          "Titration Lab",
-          "Baking Lab",
-          "Dissection Lab",
-          "Brain Atlas",
-          "Molecule Builder"
+          "Decomposer"
+        ]
+      },
+      {
+        "name": "🌎 Earth & Space Science",
+        "tools": [
+          "Rocks & Minerals",
+          "Rock Cycle",
+          "Water Cycle",
+          "Weather Systems & Forecasting",
+          "Plate Tectonics",
+          "Geology Explorer",
+          "Geography Quiz",
+          "GIS Studio",
+          "Night Sky & Astronomy",
+          "Solar System",
+          "Moon Mission",
+          "Space Station",
+          "Galaxy Explorer",
+          "Universe Time-Lapse"
         ]
       },
       {
         "name": "Physics & Chemistry",
         "tools": [
           "Wave Simulator",
-          "Circuit Builder",
+          "Heat & Thermodynamics Lab",
+          "Nuclear & Radiation Lab",
+          "Echolocation Lab",
           "Magnetism Lab",
-          "Equation Balancer",
-          "Punnett Square",
-          "Semiconductor Lab",
           "Physics Simulator",
-          "Data Plotter",
-          "Data Studio",
-          "Lumen",
-          "OpticsLab AP"
+          "OpticsLab AP",
+          "Particle Lab 3D",
+          "Coaster Lab",
+          "Molecule Builder",
+          "ChemLab: Reactions & Elements",
+          "Titration Lab",
+          "Baking Lab"
         ]
       },
       {
-        "name": "Computer Science",
+        "name": "⚙️ Engineering & Design",
+        "tools": [
+          "Machine Lab",
+          "Circuit Builder",
+          "Semiconductor Lab",
+          "Bridge Engineering Lab",
+          "PrintingPress",
+          "Architecture Studio",
+          "City Planning Lab"
+        ]
+      },
+      {
+        "name": "💻 Computing, AI & Digital Literacy",
         "tools": [
           "Coding Playground",
+          "Trajectory Computing Lab",
+          "Game Studio",
+          "AppLab: AI App Generator",
+          "Logic Lab",
+          "Cellular Automaton Lab",
           "Cyber Defense Lab",
-          "Digital Accessibility Lab"
+          "Digital Accessibility Lab",
+          "AI Literacy Lab",
+          "Access Lens",
+          "Typing Practice",
+          "Sim Shelf",
+          "Zoom Gallery"
         ]
       },
       {
@@ -570,44 +640,50 @@ const ATLAS_HUBS = [
         "tools": [
           "Music Synthesizer",
           "Art & Design Studio",
-          "Architecture Studio",
-          "Free Forms"
+          "Sourcebook",
+          "Wheel & Fire: Pottery Lab",
+          "Free Forms",
+          "Voice & Singing Lab",
+          "Oratory & Speech Lab",
+          "Echo Navigator",
+          "WriteCraft"
         ]
       },
       {
-        "name": "🧠 Behavioral Science",
+        "name": "🧠 Learning & Behavioral Science",
         "tools": [
           "Behavior Shaping Lab",
-          "School Behavior Toolkit"
+          "School Behavior Toolkit",
+          "Learning Lab: How Learning Works",
+          "Consciousness Theory Lab",
+          "Assessment Literacy Lab",
+          "Education Law Navigator",
+          "Science of Parenting Lab"
         ]
       },
       {
-        "name": "💰 Social Studies & Economics",
+        "name": "💰 Life Skills, Careers & Economics",
         "tools": [
           "Economics Lab",
-          "WriteCraft",
+          "PaperTrail: Official Documents",
           "Life Skills Lab",
-          "Typing Practice",
-          "SkySchool",
           "RoadReady: Driver's Ed",
-          "BikeLab: Physics & Repair",
-          "Echo Navigator",
-          "ATC Tower",
-          "ThrowLab: Sports Physics",
-          "PlayLab: Strategy on the Field",
-          "SkateLab: Skate + BMX Physics",
-          "First Response Lab",
-          "SwimLab",
           "Auto Repair Shop",
           "WeldLab: Welding & Metal Joining",
-          "NutritionLab: Nutrition Science",
-          "Kitchen Lab",
-          "Cephalopod Lab",
-          "EvoLab: Evolution",
-          "Statistics Lab",
-          "Learning Lab: How Learning Works",
-          "AI Literacy Lab",
-          "Assessment Literacy Lab"
+          "BikeLab: Physics & Repair",
+          "SkySchool",
+          "ATC Tower",
+          "FisherLab: Boating & Fishing Sim",
+          "AquacultureLab: Mussel Farm Sim"
+        ]
+      },
+      {
+        "name": "🏅 Sports & Movement Science",
+        "tools": [
+          "ThrowLab: Sports Physics",
+          "SkateLab: Skate + BMX Physics",
+          "PlayLab: Strategy on the Field",
+          "SwimLab"
         ]
       },
       {
@@ -616,70 +692,7 @@ const ATLAS_HUBS = [
           "Arc City",
           "Kepler Colony",
           "Space Explorer",
-          "AlloBot: Starbound Sage",
-          "Game Studio"
-        ]
-      },
-      {
-        "name": "🧬 Biology & Life Science",
-        "tools": [
-          "DNA Lab",
-          "Epidemic Simulator",
-          "Microbiology Lab"
-        ]
-      },
-      {
-        "name": "🌍 Geography & Earth Science",
-        "tools": [
-          "Geography Quiz",
-          "Plate Tectonics",
-          "Geology Explorer",
-          "Night Sky & Astronomy",
-          "GIS Studio"
-        ]
-      },
-      {
-        "name": "📐 Advanced Math",
-        "tools": [
-          "Geometry Prover",
-          "Geometry World",
-          "Logic Lab",
-          "Cellular Automaton Lab"
-        ]
-      },
-      {
-        "name": "🎤 Sound, Speech & Music",
-        "tools": [
-          "Echolocation Lab",
-          "Oratory & Speech Lab",
-          "Voice & Singing Lab"
-        ]
-      },
-      {
-        "name": "📜 History & Engineering",
-        "tools": [
-          "PrintingPress",
-          "Bridge Engineering Lab"
-        ]
-      },
-      {
-        "name": "🌍 Ecology & Migration",
-        "tools": [
-          "BirdLab: I-Spy Ornithology",
-          "Raptor Hunt: Predator Physics + Biology",
-          "Animal Migration Lab"
-        ]
-      },
-      {
-        "name": "📱 Technology & AI",
-        "tools": [
-          "AppLab: AI App Generator",
-          "Access Lens",
-          "Data Lab",
-          "AlphaFold Explorer",
-          "Sim Shelf",
-          "Particle Lab 3D",
-          "Zoom Gallery"
+          "AlloBot: Starbound Sage"
         ]
       }
     ]
@@ -689,7 +702,7 @@ const ATLAS_HUBS = [
     "icon": "🧠",
     "sourceKind": "registry",
     "sourceLabel": "Generated from the SEL Hub registry",
-    "total": 69,
+    "total": 71,
     "categories": [
       {
         "name": "Self-Awareness",
@@ -700,7 +713,7 @@ const ATLAS_HUBS = [
           "VIA Strengths",
           "Wheel of Life",
           "PERMA Wellbeing",
-          "Self-Advocacy"
+          "Advocacy Practice"
         ]
       },
       {
@@ -716,6 +729,7 @@ const ATLAS_HUBS = [
           "Big Feelings (Anger)",
           "Substance Use",
           "Behavioral Activation",
+          "Body & Breath Reset",
           "Life Transitions",
           "Digital Wellbeing Studio"
         ]
@@ -758,6 +772,7 @@ const ATLAS_HUBS = [
           "PATH",
           "Values & Action",
           "Career Compass",
+          "Self-Advocacy Studio",
           "Growth Mindset",
           "Executive Function"
         ]
@@ -827,7 +842,7 @@ const ATLAS_HUBS = [
   {
     "hub": "Studios & Surfaces",
     "icon": "🎬",
-    "total": 40,
+    "total": 46,
     "sourceKind": "mixed",
     "sourceLabel": "Command palette plus curated top-level launchers",
     "categories": [
@@ -850,12 +865,15 @@ const ATLAS_HUBS = [
           "Guided Mode",
           "Interview Mode",
           "Learning Hub",
+          "Learning Web: Explore",
+          "Learning Web: Unit Path",
           "Lingua Practice",
           "Lit Lab",
           "LitLab",
           "Lumen (data canvas)",
           "Memory Palace",
           "Open Groove Studio",
+          "Page Designer",
           "Poet Tree",
           "PoetTree",
           "Read this page to me",
@@ -864,14 +882,17 @@ const ATLAS_HUBS = [
           "Research Hub",
           "SEL Hub",
           "STEAM Lab",
+          "Screen Coach",
+          "Share & Collect",
           "StoryForge",
           "Symbol Studio",
           "Test Prep Hub",
-          "Learning Web: Unit Path",
+          "Throughline",
           "Timeline Studio",
           "Video Studio",
           "Visual Organizer",
           "Whiteboard",
+          "a specific STEM tool",
           "export menu",
           "my notebook"
         ]
@@ -2538,7 +2559,7 @@ function getFeatureDetails(title) {
     },
     "Visual Support": {
       inputs: ["Concept text", "Refinement prompt (e.g. 'draw a cell membrane')"],
-      engine: ["Imagen generation API", "Nano Banana canvas overlay editor", "Text removal / element crop tools"],
+      engine: ["Imagen generation API", "Image editing canvas", "Text removal / element crop tools"],
       outputs: ["AI-generated diagram", "Annotated learning illustrations"],
       customizations: ["Image-to-image refinement prompt", "Adjust canvas text overlays"],
       proTip: "Type prompts into the refinement box to add detail or customize diagrams to exactly match your lesson plans."

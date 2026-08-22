@@ -141,7 +141,7 @@ describe('Auto-fix loop: a PARTIAL audit does not count as "target met" (do not 
     // Reformatted across lines, and the trigger broadened: _initialEvidenceIncomplete
     // now gates BOTH clauses, so a run whose evidence never completed still
     // enters the fix loop instead of being treated as nothing-to-do.
-    expect(dp).toMatch(/if \(maxFixPasses > 0\s*\n\s*&& \(_totalIssues > 0 \|\| _initialEvidenceIncomplete \|\| _auditReviewRequired\)\s*\n\s*&& \(_initialEvidenceIncomplete \|\| bestAxeViolations > 0 \|\| bestAiScore < _targetScore \|\| _auditReviewRequired\)\)/);
+    expect(dp).toMatch(/if \(maxFixPasses > 0\s*\n\s*&& \(_totalIssues > 0 \|\| _initialEvidenceIncomplete \|\| _auditReviewRequired \|\| \(_initialThreeEngine\.reviewCount \|\| 0\) > 0\)\s*\n\s*&& \(_initialEvidenceIncomplete \|\| bestAxeViolations > 0 \|\| bestEaFailures > 0 \|\| bestAiScore < _targetScore \|\| _auditReviewRequired \|\| \(_initialThreeEngine\.reviewCount \|\| 0\) > 0\)\)/);
   });
 });
 

@@ -25,6 +25,23 @@ The publication sequence is:
 
 For a future clean recapture, keep the same lesson source and viewport, remove transient overlays, and capture the complete Glossary, Sequence Builder, Exit Ticket, and populated Document Builder results. A result belongs in the vignette only when the matching controls, resource title, and final student-facing content are all visible and accurate.
 
+The Teacher Guide chapter [Worked multilingual vignette: water-cycle language bridge](../../../chapters/26-worked-multilingual-vignette.md) reuses the synthetic lesson to show a different decision chain:
+
+1. `02-glossary-panel.png` — catch the missing translation-language setting before generation.
+2. `07-lesson-images-panel.png` — choose a text-reduced visual while keeping essential terms outside generated artwork.
+3. `09-writing-scaffolds-panel.png` — create optional relationship frames without drafting the answer.
+4. `21-assignment-directions-panel.png` — write equivalent bilingual steps and success criteria.
+5. `22-preview-package-deliver-result.png` — test language tags, direction, reading order, audio, and the real delivery route.
+
+The Teacher Guide chapter [Worked assessment-access vignette: show the science, not the writing speed](../../../chapters/27-worked-assessment-access-vignette.md) uses the same source to protect an assessment construct while changing response access:
+
+1. `18-assess-panel.png` — start from a formative preset, then reduce the item load and preserve the explanation target.
+2. `21-assignment-directions-panel.png` — state the common criteria and response choices without naming a learner.
+3. `19-standards-udl-alignment-result.png` — show that accessibility cannot repair a standards mismatch.
+4. `22-preview-package-deliver-panel.png` — test the actual student route and fallback before assigning.
+
+All three vignette chapters frame the untouched source PNGs. **Focused controls view** enlarges the left setup panel so adjacent steps show distinct controls; **Focused app view** preserves more of the result and delivery area. The stylesheet changes presentation only. Full Canvas captures remain the preservation and audit masters.
+
 ## Capture matrix
 
 | # | Guided resource | Left panel | Resource view | Capture status |

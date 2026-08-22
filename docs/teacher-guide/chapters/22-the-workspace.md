@@ -11,7 +11,7 @@ The first screen asks how you want to begin. It is not a settings page you have 
 **Choose your workspace** offers two doors into the same product:
 
 - **Guided Mode** walks you through lesson creation one step at a time. It is marked *Recommended* because it is the shortest route to a finished resource on your first day.
-- **Full Platform** opens the complete workspace at once: every tool, every setting, nothing hidden. The rest of this chapter describes this view, because it is the one with all the parts in it.
+- **Full Platform** opens the complete teacher workspace available to the current deployment and role. Some connected, student, or administrator surfaces still appear only when their route is configured. The rest of this chapter describes the main teacher view.
 
 **Open a tool directly** skips the workspace entirely:
 
@@ -98,7 +98,7 @@ The detail that makes this panel trustworthy is the small coverage note under ma
 Below the settings is the tool finder, and it has three ways to narrow a long list:
 
 - **Search by name** in the search box, which prompts with examples such as *glossary, visuals, assessment*.
-- **Filter by purpose** with the row of buttons: **Recommended**, **Make accessible**, **Engage**, **Assess and deliver**, **All tools**. When a filter is active the panel says so in words, reading something like *A filter is on: showing 8 of 22 tools*, with a count of how many are shown. This matters: if a tool you expected is missing, a filter is the usual reason, and the panel tells you rather than leaving you to guess.
+- **Filter by purpose** with the row of buttons: **Recommended**, **Make accessible**, **Engage**, **Assess and deliver**, **All tools**. When a filter is active the panel reports live shown and total counts in words, such as *A filter is on: showing X of Y tools*. This matters: if a tool you expected is missing, check the active filter before treating the tool as unavailable.
 - **Show all tools** clears the filter, and **Expand All** and **Collapse** open or close every tool panel at once.
 
 The list underneath holds the resource tools: Analyze Source Material, Glossary, Text Adaptation, Word Sounds, Visual Organizer, Note-Taking Templates, Anchor Chart, Lesson Images, FAQ Generator, Writing Scaffolds, Activities, Interview Mode, Sequence Builder, Concept Sort, Document Analysis, Assess, Lesson Plan, Assignment Directions, and the entry points to the STEAM Lab and Adventure Mode.
@@ -121,7 +121,7 @@ You do not always need a source. Some tools invent their own material. But when 
 
 ![A tool panel expanded, with its own options, Custom Instructions, and its Generate button](../assets/screenshots/15-tool-panel.png)
 
-Click a tool in the left column and its panel expands in place. Every tool panel has the same shape:
+Click a guided resource tool in the left column and its panel expands in place. Most of those panels share this shape, though specialized tools may add or omit controls:
 
 1. **Options specific to that tool.** The Glossary, for example, asks how many Tier 2 academic and Tier 3 domain words to pull, what reading level the definitions should sit at, and whether to include word roots and etymology.
 2. **Custom Instructions (Optional)**, a free-text box for anything the options do not cover.
@@ -197,9 +197,9 @@ If a lesson matters, save the project. Browser data clearing removes on-device w
 
 You will sometimes see a line on a tool panel reading *Needs AI setup*, offering to connect an AI or to use AlloFlow inside Gemini Canvas. Nothing is broken. AlloFlow separates the things that need a model from the things that do not.
 
-Generation needs AI. Browsing tools, the STEAM Lab simulations, Universal Settings, saving and exporting, and everything you have already generated all keep working without it. If you are evaluating AlloFlow before your district has chosen a model, you can still see most of the product.
+AI-dependent generation needs a configured backend. Browsing the catalog, Universal Settings, saving, exports, existing resources, and many core simulations remain available without one; an activity that generates content, calls a model, or performs an online lookup may not. Test the exact route you intend to use.
 
-For the three ways to connect one, see [Troubleshooting](08-troubleshooting.md); for what leaves the device when you do, see [Privacy and responsible AI](07-privacy-and-responsible-ai.md).
+For the connection routes available in the current deployment, see [Troubleshooting](08-troubleshooting.md); for what leaves the device when you use one, see [Privacy and responsible AI](07-privacy-and-responsible-ai.md).
 
 ## Where to go next
 

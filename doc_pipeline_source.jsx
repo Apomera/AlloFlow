@@ -1119,30 +1119,61 @@ var _alloStructuralFoundations = function (html) {
   var htmlContent = String(html || '');
   var lc = htmlContent.toLowerCase();
   var present = [];
-  if (/<html[^>]*lang="[a-z]{2,3}/.test(lc)) present.push('HTML lang attribute is present');
-  if (/<title>[^<]+<\/title>/.test(lc)) present.push('Page title is present and descriptive');
-  if (/<main[\s>]/.test(lc)) present.push('A <main> landmark defines the primary content area');
-  if (/<nav[\s>]/.test(lc)) present.push('Navigation landmark (<nav>) is present');
-  if (/<header[\s>]/.test(lc)) present.push('Header landmark is present');
-  if (/<footer[\s>]/.test(lc)) present.push('Footer landmark is present');
-  if (/<h1[\s>]/.test(lc)) present.push('Level 1 heading (h1) establishes the document topic');
-  if (/<h2[\s>]/.test(lc)) present.push('Section headings (h2) provide document structure');
-  if (/<a[^>]*href=/.test(lc) && !/<a[^>]*>click here<\/a>/i.test(htmlContent)) present.push('Links use descriptive text');
-  if (/<ul[\s>]/.test(lc) && /<li[\s>]/.test(lc)) present.push('Semantic list markup (ul/li) is used');
-  if (/<ol[\s>]/.test(lc) && /<li[\s>]/.test(lc)) present.push('Ordered lists (ol/li) are used for sequential content');
-  if (/<table[\s>]/.test(lc) && /<th[\s>]/.test(lc)) present.push('Table headers (th) are used for data tables');
-  if (/<th[^>]*scope=/.test(lc)) present.push('Table header scope attributes define data relationships');
-  if (/skip.*content|skip.*nav/i.test(htmlContent)) present.push('Skip-to-content link is provided for keyboard navigation');
+  var presentIds = [];
+  // Keep a stable catalog beside the detectors so the view can explain what was NOT detected without
+  // pretending every absent pattern is a failure. Several are conditional or optional: a document with
+  // no navigation, sequence, table, image or form should not be pushed toward meaningless markup merely
+  // to make an 18/18 badge. `checked: 18` remains below for backward compatibility; the UI renders this as
+  // an inventory, not a score or target. (2026-08-22)
+  var _foundationCatalog = [
+    { id: 'html-lang', label: 'HTML language attribute' },
+    { id: 'page-title', label: 'Document title' },
+    { id: 'main', label: 'Main-content landmark' },
+    { id: 'nav', label: 'Navigation landmark (only when navigation exists)' },
+    { id: 'header', label: 'Header/banner landmark (optional)' },
+    { id: 'footer', label: 'Footer/content-info landmark (optional)' },
+    { id: 'h1', label: 'Level-1 document heading' },
+    { id: 'h2', label: 'Level-2 section headings (when sections exist)' },
+    { id: 'links', label: 'Descriptive links (when links exist)' },
+    { id: 'unordered-list', label: 'Unordered-list semantics (when list content exists)' },
+    { id: 'ordered-list', label: 'Ordered-list semantics (when sequential content exists)' },
+    { id: 'table-headers', label: 'Table headers (when data tables exist)' },
+    { id: 'table-scope', label: 'Table-header scope (when data tables exist)' },
+    { id: 'skip-link', label: 'Skip-to-content link' },
+    { id: 'image-alt', label: 'Non-empty image alternative text (when images exist)' },
+    { id: 'figure-caption', label: 'Figure captions (optional; not a substitute for alt text)' },
+    { id: 'form-label', label: 'Form labels (when form controls exist)' },
+    { id: 'aria-landmark', label: 'Explicit ARIA landmark roles (optional when native landmarks are used)' }
+  ];
+  var _markFoundation = function (id, label) { presentIds.push(id); present.push(label); };
+  if (/<html[^>]*lang\s*=\s*["'][a-z]{2,3}/.test(lc)) _markFoundation('html-lang', 'HTML lang attribute is present');
+  if (/<title>[^<]+<\/title>/.test(lc)) _markFoundation('page-title', 'Page title is present and descriptive');
+  if (/<main[\s>]/.test(lc)) _markFoundation('main', 'A <main> landmark defines the primary content area');
+  if (/<nav[\s>]/.test(lc)) _markFoundation('nav', 'Navigation landmark (<nav>) is present');
+  if (/<header[\s>]/.test(lc)) _markFoundation('header', 'Header landmark is present');
+  if (/<footer[\s>]/.test(lc)) _markFoundation('footer', 'Footer landmark is present');
+  if (/<h1[\s>]/.test(lc)) _markFoundation('h1', 'Level 1 heading (h1) establishes the document topic');
+  if (/<h2[\s>]/.test(lc)) _markFoundation('h2', 'Section headings (h2) provide document structure');
+  if (/<a[^>]*href=/.test(lc) && !/<a[^>]*>click here<\/a>/i.test(htmlContent)) _markFoundation('links', 'Links use descriptive text');
+  if (/<ul[\s>]/.test(lc) && /<li[\s>]/.test(lc)) _markFoundation('unordered-list', 'Semantic list markup (ul/li) is used');
+  if (/<ol[\s>]/.test(lc) && /<li[\s>]/.test(lc)) _markFoundation('ordered-list', 'Ordered lists (ol/li) are used for sequential content');
+  if (/<table[\s>]/.test(lc) && /<th[\s>]/.test(lc)) _markFoundation('table-headers', 'Table headers (th) are used for data tables');
+  if (/<th[^>]*scope=/.test(lc)) _markFoundation('table-scope', 'Table header scope attributes define data relationships');
+  if (/skip.*content|skip.*nav/i.test(htmlContent)) _markFoundation('skip-link', 'Skip-to-content link is provided for keyboard navigation');
   // Count-aware, not a single-match test: only claim "All images have alt" when EVERY <img> has a
   // non-empty alt — otherwise state the honest fraction, so this card can't contradict the per-image
   // self-check (a doc with one alt'd image + five missing was wrongly claiming universal alt coverage).
-  var _fImgTotal = (htmlContent.match(/<img\b/gi) || []).length;
-  var _fImgAlt = (htmlContent.match(/<img\b[^>]*\balt="[^"]+"/gi) || []).length;
-  if (_fImgTotal > 0 && _fImgAlt === _fImgTotal) present.push('All images have a non-empty alt attribute (description quality not verified)');
-  else if (_fImgAlt > 0) present.push(_fImgAlt + ' of ' + _fImgTotal + ' images have a non-empty alt attribute (the rest may be missing it)');
-  if (/<figcaption[\s>]/.test(lc)) present.push('Figure captions provide image descriptions');
-  if (/<label[\s>]/.test(lc) || /aria-label/.test(lc)) present.push('Form elements have associated labels');
-  if (/role="(main|navigation|banner|contentinfo|complementary)"/.test(lc)) present.push('ARIA landmark roles are used for page structure');
+  var _fImgTags = htmlContent.match(/<img\b[^>]*>/gi) || [];
+  var _fImgTotal = _fImgTags.length;
+  var _fImgAlt = _fImgTags.filter(function (tag) {
+    return /\balt\s*=\s*(?:"[^"]*\S[^"]*"|'[^']*\S[^']*'|[^\s"'=<>]+)/i.test(tag);
+  }).length;
+  var _fFigcaptionTotal = (htmlContent.match(/<figcaption[\s>]/gi) || []).length;
+  if (_fImgTotal > 0 && _fImgAlt === _fImgTotal) _markFoundation('image-alt', 'All images have a non-empty alt attribute (description quality not verified)');
+  else if (_fImgAlt > 0) _markFoundation('image-alt', _fImgAlt + ' of ' + _fImgTotal + ' images have a non-empty alt attribute (the rest may be missing it)');
+  if (_fFigcaptionTotal > 0) _markFoundation('figure-caption', 'Figure captions provide image descriptions');
+  if (/<label[\s>]/.test(lc) || /aria-label/.test(lc)) _markFoundation('form-label', 'Form elements have associated labels');
+  if (/role\s*=\s*["'](main|navigation|banner|contentinfo|complementary)["']/.test(lc)) _markFoundation('aria-landmark', 'ARIA landmark roles are used for page structure');
   // ADVISORY (best-practice, NOT WCAG): the structural gaps the WCAG-tagged audit can't see — axe's
   // region / landmark-one-main / page-has-heading-one / heading-order are best-practice rules that
   // runAxeAudit never loads, so the re-audit is silent on them. Surfaced as RECOMMENDATIONS only (never
@@ -1183,7 +1214,16 @@ var _alloStructuralFoundations = function (html) {
     }
   } catch (_) {}
   // checked = the number of distinct foundation TYPES this looks for (the denominator for "N of M present").
-  var _foundations = { present: present, checked: 18, advisory: advisory };
+  var _presentIdSet = new Set(presentIds);
+  var _notDetected = _foundationCatalog.filter(function (item) { return !_presentIdSet.has(item.id); });
+  var _foundations = {
+    present: present,
+    presentIds: presentIds,
+    notDetected: _notDetected,
+    checked: 18,
+    advisory: advisory,
+    imageSummary: { total: _fImgTotal, withAlt: _fImgAlt, missingAlt: Math.max(0, _fImgTotal - _fImgAlt), captions: _fFigcaptionTotal }
+  };
   return _foundations;
 };
 // ── Deterministic contrast PAIR fixer (2026-06-21) ──
@@ -2609,17 +2649,24 @@ function _alloOrderTextItems(items, opts) {
   // concentration, a FIGURE page on line count.
   var _listLike = function (side, S) {
     if (!(S.lines >= 12 && S.itemsPerLine <= 3.0 && S.medianChars >= 8 && S.medianChars <= 40)) return null;
-    var lines = Object.create(null), kL2;
+    var lines = Object.create(null), lineText = Object.create(null), kL2;
     for (var iL2 = 0; iL2 < side.length; iL2++) {
       var kk = Math.round(_y(side[iL2]) / 3);
       var xa2 = _x(side[iL2]);
       if (!(kk in lines) || xa2 < lines[kk]) lines[kk] = xa2;
+      lineText[kk] = (lineText[kk] || '') + String(side[iL2].str || '').trim();
     }
-    var ys3 = [], stops = Object.create(null), nL = 0;
+    var ys3 = [], stops = Object.create(null), nL = 0, codeLikeLines = 0;
     for (kL2 in lines) {
       ys3.push(parseFloat(kL2) * 3);
       var stop = Math.round(lines[kL2] / 6);
       stops[stop] = (stops[stop] || 0) + 1;
+      // A compact identifier such as VTM-21.1 is a table key, not an
+      // independent index entry. Record this shape so the two-sided gate can
+      // distinguish a code-to-label row pair from two peer list columns.
+      var txtL = String(lineText[kL2] || '').trim();
+      if (txtL.length <= 16 && !/\s/.test(txtL) && /[A-Za-z]/.test(txtL)
+          && /\d/.test(txtL) && /[-._/]/.test(txtL)) codeLikeLines++;
       nL++;
     }
     var aligned = 0, kS;
@@ -2635,6 +2682,7 @@ function _alloOrderTextItems(items, opts) {
     for (kS in gapCount) if (gapCount[kS] > modal) modal = gapCount[kS];
     var pitchShare = nG ? modal / nG : 0;
     return { alignedShare: alignedShare, pitchShare: pitchShare,
+             codeLikeShare: nL ? codeLikeLines / nL : 0,
              pass: alignedShare >= 0.75 && pitchShare >= 0.5 };
   };
   var MAX_DEPTH = 4; // deeper than the old 2: a band cut may sit above a column cut
@@ -3106,12 +3154,19 @@ function _alloOrderTextItems(items, opts) {
       // vetoed exactly the pages where column-major reading is most right
       // (i1040 p124's Index, 0.68 as one interleaved column). Both sides
       // must classify as lists; tables fail on items-per-line, forms on
-      // pitch regularity/stop concentration, figure pages on line count.
+      // pitch regularity/stop concentration, figure pages on line count. A
+      // mostly short-code side paired with substantially longer labels is a
+      // key/value table even when both sides otherwise look list-like.
       var LL = _listLike(lSide, LS), RL = _listLike(rSide, RS);
-      if (LL && RL && LL.pass && RL.pass) {
+      var _codeLabelRows = !!(LL && RL) && (
+        (LL.codeLikeShare >= 0.6 && LS.medianChars <= 16 && RS.medianChars >= Math.max(18, LS.medianChars * 2))
+        || (RL.codeLikeShare >= 0.6 && RS.medianChars <= 16 && LS.medianChars >= Math.max(18, RS.medianChars * 2))
+      );
+      if (LL && RL && LL.pass && RL.pass && !_codeLabelRows) {
         _t('  listLike both sides (align ' + LL.alignedShare.toFixed(2) + '/' + RL.alignedShare.toFixed(2) + ', pitch ' + LL.pitchShare.toFixed(2) + '/' + RL.pitchShare.toFixed(2) + ') -> cut allowed');
         return true;
       }
+      if (_codeLabelRows) _t('  listLike override vetoed: short-code side is paired with longer row labels');
       // PROSE-PURITY floor relaxation (corpus round 13). The 8-line floor
       // exists because short columns are usually table cells — but when both
       // sides are >=80% one body-size face (the classifier's pure-prose
@@ -23595,10 +23650,11 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
   // Extracted VERBATIM from fixAndVerifyPdf's Step 4 (body byte-identical, original
   // indentation kept; the decisions inside delegate to the golden-tested _alloLoopPolicy).
   // Explicit contract:
-  //   in : { accessibleHtml, verification, axeResults,
+  //   in : { accessibleHtml, verification, axeResults, equalAccessResults,
   //          updateProgress, applyDetectedLang }   — the run state after Step 3 + the two
   //          run-scoped callbacks that close over fixAndVerifyPdf's onProgress/lang state
-  //   out: { accessibleHtml, verification, axeResults, autoFixPasses, bestAiScore, bestAxeViolations }
+  //   out: { accessibleHtml, verification, axeResults, equalAccessResults,
+  //          autoFixPasses, bestAiScore, bestAxeViolations, bestEaFailures }
   // All other helpers (aiFixChunked, audits, deterministic nets) and addToast resolve from
   // the factory closure. S1 step 5: the run SETTINGS (maxFixPasses, targetScore) arrive via
   // loopCtx — snapshotted by fixAndVerifyPdf at run entry — so a concurrent call's rebind
@@ -23607,6 +23663,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
     let accessibleHtml = loopCtx.accessibleHtml;
     let verification = loopCtx.verification;
     let axeResults = loopCtx.axeResults;
+    let equalAccessResults = loopCtx.equalAccessResults;
     const _documentEpoch = _normalizeDocumentEpoch(loopCtx.documentEpoch);
     const _controlSignal = loopCtx.signal || null;
     const _controlOwner = loopCtx.owner || null;
@@ -23629,16 +23686,29 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
       // M8 (audit 2026-07-26): the audit that describes bestHtml. Seeded with the incoming audit,
       // which does describe the incoming html; every promotion below replaces both together.
       let bestVerification = verification || null;
+      let bestAxeAudit = axeResults || null;
+      let bestEqualAccessAudit = equalAccessResults || null;
       const _initialAiUsable = _alloUsableCompleteAiAudit(verification);
       const _initialAxeUsable = _alloUsableAxeAudit(axeResults);
-      let _bestEvidenceComplete = _initialAiUsable && _initialAxeUsable;
+      const _threeEngineEvidence = (ai, axe, equalAccess) => _alloDeriveVerificationState({
+        ai: ai || null,
+        aiVerificationIncomplete: !_alloUsableCompleteAiAudit(ai),
+        axe: axe || null,
+        equalAccess: equalAccess || null,
+      });
+      const _initialThreeEngine = _threeEngineEvidence(verification, axeResults, equalAccessResults);
+      let _bestEvidenceComplete = _initialThreeEngine.engineExecutionComplete === true;
       let bestAiScore = _initialAiUsable ? Math.round(verification.score) : null;
       let bestAxeViolations = _initialAxeUsable ? Math.max(0, axeResults.totalViolations) : null;
+      let bestEaFailures = Number.isFinite(_initialThreeEngine.knownFindings && _initialThreeEngine.knownFindings.equalAccessFailures)
+        ? Math.max(0, _initialThreeEngine.knownFindings.equalAccessFailures) : null;
+      let bestEaReviewFindings = equalAccessResults ? _alloEqualAccessReviewCount(equalAccessResults) : null;
       let _lastFullCoverageAiScore = _initialAiUsable ? bestAiScore : null;
 
       const _aiIssueCount = verification && verification.issues ? verification.issues.length : 0;
-      const _totalIssues = (_initialAxeUsable ? bestAxeViolations : 0) + _aiIssueCount;
-      const _initialEvidenceIncomplete = !_initialAiUsable || !_initialAxeUsable;
+      const _eaIssueCount = Number.isFinite(bestEaFailures) ? bestEaFailures : 0;
+      const _totalIssues = (_initialAxeUsable ? bestAxeViolations : 0) + _aiIssueCount + _eaIssueCount;
+      const _initialEvidenceIncomplete = !_initialThreeEngine.engineExecutionComplete;
       const _targetScore = loopCtx.targetScore; // S1: run-entry snapshot
       const _auditReviewRequired = !!(verification && Array.isArray(verification.issues)
         && verification.issues.some((issue) => !!(issue && issue.requiresManualReview === true)));
@@ -23649,10 +23719,10 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
       // still bounded by maxFixPasses + the plateau / consecutive-fix-error stops. (2026-06-24, maintainer ask.)
       const _auditPartial = !_initialAiUsable;
       if (maxFixPasses > 0
-          && (_totalIssues > 0 || _initialEvidenceIncomplete || _auditReviewRequired)
-          && (_initialEvidenceIncomplete || bestAxeViolations > 0 || bestAiScore < _targetScore || _auditReviewRequired)) {
+          && (_totalIssues > 0 || _initialEvidenceIncomplete || _auditReviewRequired || (_initialThreeEngine.reviewCount || 0) > 0)
+          && (_initialEvidenceIncomplete || bestAxeViolations > 0 || bestEaFailures > 0 || bestAiScore < _targetScore || _auditReviewRequired || (_initialThreeEngine.reviewCount || 0) > 0)) {
         // Emit live remediation session start so UI shows progress panel
-        warnLog(`[Auto-fix] Starting fix loop: ${_totalIssues} issues (${bestAxeViolations} axe, ${_aiIssueCount} AI), score ${bestAiScore}, target ${_targetScore}`);
+        warnLog(`[Auto-fix] Starting three-engine fix loop: ${_totalIssues} engine findings (${_aiIssueCount} AI, ${bestAxeViolations} axe, ${bestEaFailures} Equal Access), score ${bestAiScore}, target ${_targetScore}`);
         // Emit specific issues list for UI to display during fix passes
         var _issuesList = [];
         if (verification && verification.issues) {
@@ -23663,7 +23733,12 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
           (axeResults.serious || []).forEach(function(v) { _issuesList.push('🟠 ' + v.description + ' (' + v.id + ')'); });
           (axeResults.moderate || []).forEach(function(v) { _issuesList.push('🟡 ' + v.description); });
         }
-        try { setTimeout(function() { window.dispatchEvent(new CustomEvent('alloflow:fix-issues-detected', { detail: { issues: _issuesList, score: bestAiScore, axeViolations: bestAxeViolations, target: _targetScore, documentEpoch: _documentEpoch, runId: _controlRunId, runSequence: _controlRunSequence } })); }, 0); } catch(e) {}
+        if (equalAccessResults) {
+          (equalAccessResults.fails || []).forEach(function(v) { _issuesList.push('Equal Access FAIL: ' + (v.description || v.id)); });
+          (equalAccessResults.potentialFindings || []).forEach(function(v) { _issuesList.push('Equal Access review: ' + (v.description || v.id)); });
+          (equalAccessResults.manualFindings || []).forEach(function(v) { _issuesList.push('Equal Access manual check: ' + (v.description || v.id)); });
+        }
+        try { setTimeout(function() { window.dispatchEvent(new CustomEvent('alloflow:fix-issues-detected', { detail: { issues: _issuesList, score: bestAiScore, axeViolations: bestAxeViolations, equalAccessFailures: bestEaFailures, target: _targetScore, documentEpoch: _documentEpoch, runId: _controlRunId, runSequence: _controlRunSequence } })); }, 0); } catch(e) {}
         try { setTimeout(function() { window.dispatchEvent(new CustomEvent('alloflow:chunk-session-start', { detail: { totalChunks: maxFixPasses, chunkSizes: [], timestamp: Date.now(), documentEpoch: _documentEpoch, runId: _controlRunId, runSequence: _controlRunSequence } })); }, 0); } catch(e) {}
         // Persistence counters: a SINGLE bad/flat pass should not end the whole loop —
         // AI fixes are stochastic, so we keep going (still below target) and only give up
@@ -23698,14 +23773,17 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
           const _passAiUsable = _alloUsableCompleteAiAudit(verification);
           const _passAxeCount = _passAxeUsable ? axeResults.totalViolations : null;
           const _passAiCount = _passAiUsable && Array.isArray(verification.issues) ? verification.issues.length : null;
-          const _passKnownTotal = (_passAxeCount || 0) + (_passAiCount || 0);
-          const _passEvidenceLabel = `${_passAxeCount === null ? 'axe-core unavailable' : _passAxeCount + ' axe-core'}, ${_passAiCount === null ? 'AI audit incomplete' : _passAiCount + ' AI-flagged'}`;
-          updateProgress(4, `Improving accessibility — pass ${fixPass + 1} of ${maxFixPasses} (${_passEvidenceLabel})${_passAxeUsable && _passAiUsable && _passKnownTotal === 0 ? ' \u2714 verifying...' : ''}...`);
+          const _passCanonical = _threeEngineEvidence(verification, axeResults, equalAccessResults);
+          const _passEaCount = Number.isFinite(_passCanonical.knownFindings && _passCanonical.knownFindings.equalAccessFailures)
+            ? _passCanonical.knownFindings.equalAccessFailures : null;
+          const _passKnownTotal = (_passAxeCount || 0) + (_passAiCount || 0) + (_passEaCount || 0);
+          const _passEvidenceLabel = `${_passAiCount === null ? 'AI audit incomplete' : _passAiCount + ' AI'}, ${_passAxeCount === null ? 'axe-core unavailable' : _passAxeCount + ' axe'}, ${_passEaCount === null ? 'Equal Access unavailable' : _passEaCount + ' EA'}`;
+          updateProgress(4, `Improving accessibility — pass ${fixPass + 1} of ${maxFixPasses} (${_passEvidenceLabel})${_passCanonical.engineExecutionComplete && _passKnownTotal === 0 ? ' \u2714 verifying...' : ''}...`);
 
           // Save snapshot before fix attempt
           const snapshotHtml = accessibleHtml;
 
-          // AI attempts targeted fixes for remaining violations from BOTH engines.
+          // AI attempts targeted fixes for remaining findings from all three engines.
           // $4 (2026-07-02): built as structured ENTRIES so aiFixChunked can route
           // element-scoped violations to the chunk containing the element (and skip the
           // rest). The rendered text below is byte-identical to the old string build; the
@@ -23713,10 +23791,20 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
           // non-skipped chunks (aiFixChunked re-appends it identically when routing is
           // inactive, so legacy prompts don't change by a byte).
           const _axeEntry = (v, line) => ({ text: line, axeId: v.id, nodes: v.nodes || 0, nodeHtmls: Array.isArray(v.nodeDetails) ? v.nodeDetails.map((n) => n && n.html).filter(Boolean) : [], snippet: null });
+          const _eaEntry = (v, prefix) => ({
+            text: `${prefix} (IBM Equal Access): ${v.description || v.id} (${v.id || 'unknown-rule'}, ${v.nodes || 0} elements)`,
+            axeId: null,
+            nodes: v.nodes || 0,
+            nodeHtmls: [],
+            snippet: v && Array.isArray(v.details) && v.details[0] && v.details[0].snippet ? v.details[0].snippet : null,
+          });
           const _fixEntries = []
             .concat((axeResults ? axeResults.critical || [] : []).map(v => _axeEntry(v, `CRITICAL (axe-core): ${v.description} (${v.id}, ${v.nodes} elements)`)))
             .concat((axeResults ? axeResults.serious || [] : []).map(v => _axeEntry(v, `SERIOUS (axe-core): ${v.description} (${v.id}, ${v.nodes} elements)`)))
             .concat((axeResults ? axeResults.moderate || [] : []).map(v => _axeEntry(v, `MODERATE (axe-core): ${v.description} (${v.id})`)))
+            .concat((equalAccessResults ? equalAccessResults.fails || [] : []).map(v => _eaEntry(v, 'CONFIRMED FAIL')))
+            .concat((equalAccessResults ? equalAccessResults.potentialFindings || [] : []).map(v => _eaEntry(v, 'POTENTIAL REVIEW FINDING')))
+            .concat((equalAccessResults ? equalAccessResults.manualFindings || [] : []).map(v => _eaEntry(v, 'MANUAL REVIEW FINDING')))
             .concat((verification && verification.issues ? verification.issues : []).map(i => ({
               text: `AI-FLAGGED: ${i.issue || i}`,
               axeId: null, nodes: 0, nodeHtmls: [],
@@ -23839,6 +23927,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
           let _reAuditSkipped = false;
           let _reVerifyFresh = null;
           let _reAxeFresh = null;
+          let _reEaFresh = null;
           // (2026-08-16, field run jyo4ro/e2) Reverify triads launched into the same weather that
           // had just failed the fixer went 0-2/3 sections all afternoon: pass 1's triad burned ~6
           // transports for a NULLED score, pass 4's ~8. The breaker cannot flag this storm — the
@@ -23850,12 +23939,18 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
           // still reverify in full.
           const _fixPassSawThrottle = !!(_fixThrottleDeferred
             || (Number(_fixPassEvidence && _fixPassEvidence.shippedOriginalChunks) || 0) > 0);
+          const _deterministicPassHtml = _stripChromeForAudit(accessibleHtml);
           if (!_aiFixApplied || _fixPassSawThrottle) {
             _reAuditSkipped = true;
             warnLog(!_aiFixApplied
               ? `[Auto-fix] Pass ${fixPass + 1}: no AI chunk applied (deterministic-only changes) — skipping the AI re-audit; axe verifies the deterministic fixes locally (no API calls)`
               : `[Auto-fix] Pass ${fixPass + 1}: fixer chunks were throttle-deferred this pass — deferring the 3-call AI re-audit instead of firing it into the same storm (axe still verifies locally; the final audit completes AI coverage)`);
-            _reAxeFresh = await runAxeAudit(accessibleHtml);
+            const _localDeterministicAudits = await Promise.all([
+              runAxeAudit(_deterministicPassHtml),
+              runEqualAccessAudit(_deterministicPassHtml),
+            ]);
+            _reAxeFresh = _localDeterministicAudits[0];
+            _reEaFresh = _localDeterministicAudits[1];
           } else {
             // A failed fixer wave can trip the breaker immediately. Do not launch the next audit
             // wave into that same storm; wait for representative recovery confirmation first.
@@ -23865,15 +23960,18 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
             // Inner names deliberately match the outer consts below —
             // tests/pdf_pipeline_quick_bugs.test.js:227 pins this exact destructuring ($1: ONE
             // AI re-audit + axe, in parallel). The block-scoped pair is copied out one line later.
-            const [reVerify1, reAxe] = await Promise.all([
+            const [reVerify1, reAxe, reEa] = await Promise.all([
               auditOutputAccessibility(accessibleHtml, { signal: _controlSignal, owner: _controlOwner, trigger: 'fix-pass-reverify' }),
-              runAxeAudit(accessibleHtml)
+              runAxeAudit(_deterministicPassHtml),
+              runEqualAccessAudit(_deterministicPassHtml),
             ]);
             _reVerifyFresh = reVerify1;
             _reAxeFresh = reAxe;
+            _reEaFresh = reEa;
           }
           const reVerify1 = _reVerifyFresh;
           const reAxe = _reAxeFresh;
+          const reEa = _reEaFresh;
 
           if (_shouldAbort()) break;
           const reScores = [reVerify1].map(v => v ? v.score : null).filter(s => Number.isFinite(s));
@@ -23882,8 +23980,13 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
           const reVerify = reVerify1 || null;
           const _reAiUsable = _alloUsableCompleteAiAudit(reVerify);
           const _reAxeUsable = _alloUsableAxeAudit(reAxe);
+          const _reThreeEngine = _threeEngineEvidence(reVerify, reAxe, reEa);
+          const _reEaUsable = _reThreeEngine.coverage && /^(?:complete|complete-with-review)$/.test(_reThreeEngine.coverage.equalAccess || '');
           const newAiScore = _reAiUsable ? Math.round(reVerify.score) : null;
           const newAxeViolations = _reAxeUsable ? Math.max(0, reAxe.totalViolations) : null;
+          const newEaFailures = _reEaUsable && Number.isFinite(_reThreeEngine.knownFindings && _reThreeEngine.knownFindings.equalAccessFailures)
+            ? Math.max(0, _reThreeEngine.knownFindings.equalAccessFailures) : null;
+          const newEaReviewFindings = _reEaUsable ? _alloEqualAccessReviewCount(reEa) : null;
           if (reVerify) { reVerify._sem = reSEM; reVerify._sd = reSD; reVerify._scores = reScores; }
           autoFixPasses++;
 
@@ -23895,7 +23998,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
             ? Math.max(0, Math.min(1, _reAudited / _reRequested)) : 0;
           const _rePartial = !_reAiUsable;
           const _passCoverageComplete = _alloAutoFixPassHasCompleteEvidence(_fixPassEvidence, verification, reVerify);
-          const _passEvidenceComplete = _reAiUsable && _reAxeUsable && _passCoverageComplete;
+          const _passEvidenceComplete = _reThreeEngine.engineExecutionComplete === true && _passCoverageComplete;
           const _shippedOriginalChunks = Number(_fixPassEvidence && _fixPassEvidence.shippedOriginalChunks);
           const _passIncompleteReasons = [];
           if (Number.isFinite(_shippedOriginalChunks) && _shippedOriginalChunks > 0) {
@@ -23905,6 +24008,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
             _passIncompleteReasons.push('AI audit section coverage was incomplete');
           }
           if (!_reAxeUsable) _passIncompleteReasons.push('axe evidence was unavailable');
+          if (!_reEaUsable) _passIncompleteReasons.push('Equal Access evidence was unavailable');
           if (_rePartial) warnLog(`[Auto-fix] Pass ${fixPass + 1}: AI audit evidence was incomplete (${Math.round(_reCoverage * 100)}% section coverage or unusable score); it cannot stop the loop or promote best-so-far.`);
           if (!_passEvidenceComplete) {
             warnLog(`[Auto-fix] Pass ${fixPass + 1}: evidence incomplete - ${_passIncompleteReasons.join('; ') || 'fixer metadata was unavailable'}; score delta is not comparable and will not drive a regression verdict.`);
@@ -23916,8 +24020,14 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
           // violation was fixed to justify it (the 2026-06-19 AND-only guard fix).
           const _policyArgs = { newAi: newAiScore, bestAi: bestAiScore, newAxe: newAxeViolations, bestAxe: bestAxeViolations };
           const _comparisonEvidenceComplete = _passEvidenceComplete && _bestEvidenceComplete;
-          if (_comparisonEvidenceComplete && _alloLoopPolicy.shouldRevert(_policyArgs)) {
-            const _why = _alloLoopPolicy.revertReason(_policyArgs);
+          const _eaRegressed = _comparisonEvidenceComplete && (
+            (Number.isFinite(bestEaFailures) && newEaFailures > bestEaFailures)
+            || (Number.isFinite(bestEaReviewFindings) && newEaReviewFindings > bestEaReviewFindings)
+          );
+          if (_comparisonEvidenceComplete && (_alloLoopPolicy.shouldRevert(_policyArgs) || _eaRegressed)) {
+            const _why = _eaRegressed
+              ? `increased Equal Access findings (fails ${bestEaFailures}→${newEaFailures}, review ${bestEaReviewFindings}→${newEaReviewFindings})`
+              : _alloLoopPolicy.revertReason(_policyArgs);
             // Revert this pass, but DON'T end the loop on a single stochastic dud — retry
             // from the last-good state (best*/axeResults/verification are untouched here, so
             // the next pass re-attempts the same remaining violations). Give up only after
@@ -23929,11 +24039,11 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
             _lastPassFeedback = 'NOTE: the previous fix attempt was REVERTED because it ' + _why + '. Take a different, more conservative approach: change only what each violation requires and leave all other content untouched.';
             consecutiveRegressions++;
             if (consecutiveRegressions >= 2) {
-              warnLog(`[Auto-fix] Pass ${fixPass + 1} REGRESSED (${_why}; AI: ${bestAiScore}→${newAiScore}, axe: ${bestAxeViolations}→${newAxeViolations}) — ${consecutiveRegressions} consecutive reverts, stopping`);
+              warnLog(`[Auto-fix] Pass ${fixPass + 1} REGRESSED (${_why}; AI: ${bestAiScore}→${newAiScore}, axe: ${bestAxeViolations}→${newAxeViolations}, EA: ${bestEaFailures}→${newEaFailures}) — ${consecutiveRegressions} consecutive reverts, stopping`);
               if (addToast) addToast(`⚠️ Fix pass ${fixPass + 1} made things worse — reverted, stopping`, 'info');
               break;
             }
-            warnLog(`[Auto-fix] Pass ${fixPass + 1} REGRESSED (${_why}; AI: ${bestAiScore}→${newAiScore}, axe: ${bestAxeViolations}→${newAxeViolations}) — REVERTED, retrying`);
+            warnLog(`[Auto-fix] Pass ${fixPass + 1} REGRESSED (${_why}; AI: ${bestAiScore}→${newAiScore}, axe: ${bestAxeViolations}→${newAxeViolations}, EA: ${bestEaFailures}→${newEaFailures}) — REVERTED, retrying`);
             if (addToast) addToast(`⚠️ Fix pass ${fixPass + 1} made things worse — reverted, retrying`, 'info');
             continue;
           }
@@ -23946,9 +24056,12 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
           // correct pattern in runAutonomousRemediation.
           const prevBestAiScore = bestAiScore;
           const prevBestAxeViolations = bestAxeViolations;
+          const prevBestEaFailures = bestEaFailures;
+          const prevBestEaReviewFindings = bestEaReviewFindings;
           const _prevBestEvidenceComplete = _bestEvidenceComplete;
           if (reVerify) verification = reVerify;
           if (reAxe) axeResults = reAxe;
+          if (reEa) equalAccessResults = reEa;
           // M5: remember the latest full-coverage AI reading (partial scores never qualify).
           if (_reAiUsable) _lastFullCoverageAiScore = Math.round(newAiScore);
           // Keep-best (2026-06-19): only promote this pass to the shipped "best" if it is genuinely
@@ -23958,12 +24071,19 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
           // bestHtml is what the pipeline ships (restored after the loop).
           // Under a partial audit the AI score is inflated, so promote ONLY on a real axe gain
           // (full-doc, reliable); otherwise use the normal AI-or-axe rule.
+          const _eaNotWorse = !Number.isFinite(bestEaFailures)
+            || (newEaFailures <= bestEaFailures && newEaReviewFindings <= bestEaReviewFindings);
+          const _eaImproved = Number.isFinite(bestEaFailures)
+            && (newEaFailures < bestEaFailures || newEaReviewFindings < bestEaReviewFindings);
           const _passIsBest = _passEvidenceComplete && (!_bestEvidenceComplete
-            || _alloLoopPolicy.isBest({ newAi: newAiScore, bestAi: bestAiScore, newAxe: newAxeViolations, bestAxe: bestAxeViolations, partial: false }));
+            || (_eaNotWorse && (_eaImproved
+              || _alloLoopPolicy.isBest({ newAi: newAiScore, bestAi: bestAiScore, newAxe: newAxeViolations, bestAxe: bestAxeViolations, partial: false }))));
           if (_passIsBest) {
             bestHtml = accessibleHtml;
             bestAiScore = newAiScore;
             bestAxeViolations = newAxeViolations;
+            bestEaFailures = newEaFailures;
+            bestEaReviewFindings = newEaReviewFindings;
             _bestEvidenceComplete = true;
             // M8 (audit 2026-07-26): the AUDIT that describes those bytes, kept with them. The loop
             // returned `verification` — the LAST pass's audit — while shipping bestHtml, a pass that
@@ -23975,9 +24095,11 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
             // diff. The teacher then works through a list of issues computed on a different version
             // of the document than the one in their download.
             bestVerification = reVerify || null;
+            bestAxeAudit = reAxe || null;
+            bestEqualAccessAudit = reEa || null;
           }
 
-          warnLog(`[Auto-fix] Pass ${fixPass + 1}: AI ${newAiScore}/100, axe ${newAxeViolations} violations`);
+          warnLog(`[Auto-fix] Pass ${fixPass + 1}: AI ${newAiScore}/100, axe ${newAxeViolations} violations, Equal Access ${newEaFailures} failures + ${newEaReviewFindings} review findings`);
 
           // Emit per-pass completion for live UI. snapshotHtml captured the BEFORE
           // state of this pass; passing it as originalHtml gives the diff view
@@ -23990,10 +24112,10 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
           try { _stepIntegrityPassed = !!(verifyChunkIntegrity(snapshotHtml, accessibleHtml) || {}).passed; } catch (_e) { _stepIntegrityPassed = false; }
           try { var _cfDetail = { passNumber: fixPass + 1, totalPasses: maxFixPasses, originalHtml: _chunkHtmlPreview(snapshotHtml), fixedHtml: _chunkHtmlPreview(accessibleHtml), score: newAiScore, deterministicFixCount: 0, surgicalFixCount: 0, integrityPassed: _stepIntegrityPassed, aiVerified: false, wasRetried: false, usedOriginal: false, sizeKB: Math.round(accessibleHtml.length / 1000), timestamp: Date.now(), documentEpoch: _documentEpoch, runId: _controlRunId, runSequence: _controlRunSequence }; setTimeout(function() { window.dispatchEvent(new CustomEvent('alloflow:remediation-pass-complete', { detail: _cfDetail })); }, 0); } catch(e) {}
 
-          // If BOTH engines report 0 actionable issues, stop regardless of score.
-          // reVerify is null only when BOTH AI audits failed this pass (reScores empty) —
+          // If all THREE engines report 0 actionable or review findings, stop regardless of score.
+          // reVerify is null when the AI audit failed this pass (reScores empty) —
           // in that case we have NO AI signal, so a null audit must NOT be read as
-          // "AI saw zero issues". Require a real AI result before claiming dual-clean;
+          // "AI saw zero issues". Require a real AI result before claiming three-engine clean;
           // surface that AI verification was unavailable so an axe-only clean isn't
           // silently attributed to dual verification. The loop falls through (bounded by
           // maxFixPasses / stall guards / the target-score stop below). (vision-null-audit)
@@ -24002,17 +24124,19 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
           if (!_reAiUsable) {
             // L4 (2026-07-03): reAxe null means axe did NOT run this pass — newAxeViolations then carries the
             // previous best (often 0), which is NOT "axe clean". Don't log/claim "axe-only clean" in that case.
-            warnLog(`[Auto-fix] Pass ${fixPass + 1}: AI verification ${_reAuditSkipped ? 'skipped this pass (no AI chunk applied)' : 'unavailable this pass (audit failed)'} — ${_reAxeUsable ? 'axe ' + newAxeViolations + ' violation(s)' : 'axe ALSO unavailable this pass'}; not treating as dual-clean`);
+            warnLog(`[Auto-fix] Pass ${fixPass + 1}: AI verification ${_reAuditSkipped ? 'skipped this pass (no AI chunk applied)' : 'unavailable this pass (audit failed)'} — ${_reAxeUsable ? 'axe ' + newAxeViolations + ' violation(s)' : 'axe ALSO unavailable this pass'}, ${_reEaUsable ? 'Equal Access ' + newEaFailures + ' failure(s)' : 'Equal Access unavailable'}; not treating as three-engine clean`);
             if (_reAxeUsable && newAxeViolations === 0 && addToast) addToast(`⚠️ Fix pass ${fixPass + 1}: AI verification unavailable — axe-only clean, continuing`, 'info');
-          } else if (_passEvidenceComplete && newAxeViolations === 0 && (!reVerify.issues || reVerify.issues.length === 0)) {
-            warnLog(`[Auto-fix] Pass ${fixPass + 1}: zero issues from both engines — stopping`);
+          } else if (!_reAxeUsable || !_reEaUsable) {
+            warnLog(`[Auto-fix] Pass ${fixPass + 1}: deterministic verification incomplete — ${_reAxeUsable ? 'axe ran' : 'axe unavailable'}, ${_reEaUsable ? 'Equal Access ran' : 'Equal Access unavailable'}; continuing without a verified-success claim`);
+          } else if (_passEvidenceComplete && newAxeViolations === 0 && newEaFailures === 0 && newEaReviewFindings === 0 && (!reVerify.issues || reVerify.issues.length === 0)) {
+            warnLog(`[Auto-fix] Pass ${fixPass + 1}: zero findings from AI, axe, and Equal Access — stopping`);
             break;
           }
 
-          // If BOTH engines are satisfied, stop
+          // If all three engines are satisfied, stop.
           const targetScore = loopCtx.targetScore; // S1: run-entry snapshot
-          if (_passEvidenceComplete && newAxeViolations === 0 && !_reReviewRequired && newAiScore >= targetScore) {
-            warnLog(`[Auto-fix] Excellent: axe clean + AI ${newAiScore}/100 (target ${targetScore}) — stopping`);
+          if (_passEvidenceComplete && newAxeViolations === 0 && newEaFailures === 0 && newEaReviewFindings === 0 && !_reReviewRequired && newAiScore >= targetScore) {
+            warnLog(`[Auto-fix] Excellent: AI ${newAiScore}/100 (target ${targetScore}) + axe clean + Equal Access clean — stopping`);
             break;
           }
 
@@ -24051,13 +24175,15 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
           // update above), not the just-updated value. Policy: axe gain always counts; AI gain
           // must clear the minimum-detectable floor (S3 golden-tested; reSEM is 0 since $1, so
           // the floor of 2 governs).
-          if (_passEvidenceComplete && _prevBestEvidenceComplete && !_alloLoopPolicy.improved({ newAi: newAiScore, prevBestAi: prevBestAiScore, newAxe: newAxeViolations, prevBestAxe: prevBestAxeViolations, minDetectable: Math.round(reSEM * 1.5) }) && fixPass > 0) {
+          const _threeEngineImproved = _alloLoopPolicy.improved({ newAi: newAiScore, prevBestAi: prevBestAiScore, newAxe: newAxeViolations, prevBestAxe: prevBestAxeViolations, minDetectable: Math.round(reSEM * 1.5) })
+            || newEaFailures < prevBestEaFailures || newEaReviewFindings < prevBestEaReviewFindings;
+          if (_passEvidenceComplete && _prevBestEvidenceComplete && !_threeEngineImproved && fixPass > 0) {
             // One flat pass isn't a plateau — AI is stochastic, so the next pass often makes
             // progress. Require 2 CONSECUTIVE non-improving passes before giving up (we're
             // still below target here). Any improvement resets the counter.
             stallCount++;
             if (stallCount >= 2) {
-              warnLog(`[Auto-fix] Plateau: AI ${newAiScore}, axe ${newAxeViolations} — no improvement for ${stallCount} consecutive passes, stopping`);
+              warnLog(`[Auto-fix] Plateau: AI ${newAiScore}, axe ${newAxeViolations}, Equal Access ${newEaFailures} fail + ${newEaReviewFindings} review — no improvement for ${stallCount} consecutive passes, stopping`);
               break;
             }
             warnLog(`[Auto-fix] No improvement on pass ${fixPass + 1} (stall ${stallCount}/2) — continuing`);
@@ -24076,7 +24202,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
       // document than the loop achieved (this is the fix for "audited 89 but shipped 85"). No-op when
       // the loop didn't run or no pass beat the baseline (bestHtml === accessibleHtml).
       if (bestHtml && bestHtml !== accessibleHtml) {
-        warnLog('[Auto-fix] Shipping best verified version (AI ' + bestAiScore + ', axe ' + bestAxeViolations + ') instead of the loop\'s last working state.');
+        warnLog('[Auto-fix] Shipping best verified version (AI ' + bestAiScore + ', axe ' + bestAxeViolations + ', Equal Access ' + bestEaFailures + ') instead of the loop\'s last working state.');
         accessibleHtml = bestHtml;
         // M8: the audit has to travel with the bytes it describes. If the promoted version has no
         // audit of its own, return NULL rather than the last pass's — fixAndVerifyPdf already fails
@@ -24087,8 +24213,10 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
             + (bestVerification ? '' : ' (none — the promoted version was never re-audited; the final audit governs)') + '.');
           verification = bestVerification;
         }
+        axeResults = bestAxeAudit;
+        equalAccessResults = bestEqualAccessAudit;
       }
-    return { accessibleHtml, verification, axeResults, autoFixPasses, bestAiScore, bestAxeViolations, lastFullCoverageAiScore: _lastFullCoverageAiScore };
+    return { accessibleHtml, verification, axeResults, equalAccessResults, autoFixPasses, bestAiScore, bestAxeViolations, bestEaFailures, lastFullCoverageAiScore: _lastFullCoverageAiScore };
   };
 
   // ── S2 phase extraction (deep dive 2026-07-02, wave 3): Step 1b image extraction ──
@@ -27241,6 +27369,48 @@ ${hasCropData ? `<button onclick="window.__pdfCropImage && window.__pdfCropImage
 </figure>` + _carriedOut;
           }
         });
+        // If extraction found meaningful PDF images but the model emitted fewer (or zero) figure
+        // placeholders, the old path silently abandoned every unclaimed image: no token entered the
+        // deferred map, the final dropped-token recovery had nothing to restore, axe saw no <img> to
+        // flag, and the dashboard could simultaneously say "0 issues" + "N images identified". Keep
+        // the bytes instead. Exact placement is unknown, so gather unmatched images in a clearly labeled
+        // review section and raise the existing persistent image-fidelity signal. This is the same honest
+        // fallback already used for unanchored Office media below. (2026-08-22)
+        if (imgIdx < extractedImages.length) {
+          const _unclaimed = extractedImages.slice(imgIdx);
+          const _uEscTxt = (s) => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+          const _uEscAttr = (s) => _uEscTxt(s).replace(/"/g, '&quot;');
+          const _unclaimedFigures = [];
+          let _unclaimedEmbedded = 0;
+          for (let _ui = 0; _ui < _unclaimed.length; _ui++) {
+            const _im = _unclaimed[_ui] || {};
+            const _absoluteIdx = imgIdx + _ui + 1;
+            const _alt = _im.description || ('Source image' + (_im.page ? ' from page ' + _im.page : ''));
+            const _pageNote = _im.page ? ('From source page ' + _im.page) : 'From the source document';
+            if (!_im.generatedSrc) {
+              window.__lastImageSrcMissing.push({ idx: _absoluteIdx, description: _alt, page: _im.page || null, reason: 'unclaimed-image-source-unavailable' });
+              _unclaimedFigures.push('<p><em>[A source image could not be embedded. Its description: ' + _uEscTxt(_alt) + ']</em></p>');
+              continue;
+            }
+            const _utok = '__ALLOFLOW_DATAURL_FINAL_' + _absoluteIdx + '__';
+            _deferredImageMap[_utok] = _im.generatedSrc;
+            _deferredImageMeta[_utok] = { alt: _alt, purpose: _im.educationalPurpose || '' };
+            _unclaimedEmbedded++;
+            _unclaimedFigures.push('<figure data-allo-recovered-source-image="true"><img src="' + _utok + '" alt="' + _uEscAttr(_alt) + '"><figcaption><span aria-hidden="true">' + _uEscTxt(_alt) + '</span> — <em>' + _uEscTxt(_pageNote) + '; exact placement needs review.</em></figcaption></figure>');
+          }
+          bodyContent += '\n<section data-allo-recovered-source-images="true" aria-label="Recovered source images requiring placement review">\n'
+            + '<h2>Recovered source images</h2>\n'
+            + '<p><em>These images were present in the source, but the reconstructed HTML did not provide reliable placement anchors. They are preserved here so they are not silently lost; move them to the correct reading-order positions before distributing.</em></p>\n'
+            + _unclaimedFigures.join('\n') + '\n</section>';
+          try {
+            window.__alloImagePairingUncertain = {
+              placeholders: _placeholderCount,
+              images: extractedImages.length,
+              msg: _unclaimed.length + ' source image(s) had no reliable HTML placement anchor. They were preserved in a “Recovered source images” review section at the end of the document; move each image to its correct reading-order position before distributing.'
+            };
+          } catch (_) {}
+          warnLog('[PDF Fix] preserved ' + _unclaimedEmbedded + ' unclaimed source image(s) in the placement-review section (+' + (_unclaimed.length - _unclaimedEmbedded) + ' description-only).');
+        }
         _pipeLog('Images', 'Deferred ' + Object.keys(_deferredImageMap).length + ' image(s) as placeholder tokens — real data URLs restored at end of pipeline');
       }
 
@@ -27989,22 +28159,29 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         }
       }
 
-      // Re-run axe after all deterministic fixes
-      if (axeResults) {
-        const reAxe = await runAxeAudit(accessibleHtml);
-        if (reAxe) axeResults = reAxe;
-      }
+      // Establish all three evidence sources before the fix loop. The loop may keep
+      // improving with whatever evidence is available, but it cannot claim a clean
+      // stop unless AI, axe-core, and Equal Access all completed for these bytes.
+      let loopEqualAccessResults = null;
+      const _loopAuditHtml = _stripChromeForAudit(accessibleHtml);
+      const [_loopAxe, _loopEa] = await Promise.all([
+        runAxeAudit(_loopAuditHtml),
+        runEqualAccessAudit(_loopAuditHtml),
+      ]);
+      if (_loopAxe) axeResults = _loopAxe;
+      if (_loopEa) loopEqualAccessResults = _loopEa;
 
-      _pipeStepEnd(3, 'axe: ' + (axeResults ? axeResults.totalViolations : '?') + ' violations, AI: ' + (verification ? verification.score : '?') + '/100', _runTelemetry);
+      _pipeStepEnd(3, 'AI: ' + (verification ? verification.score : '?') + '/100, axe: ' + (axeResults ? axeResults.totalViolations : '?') + ' violations, Equal Access: ' + (loopEqualAccessResults ? loopEqualAccessResults.failViolations : '?') + ' failures', _runTelemetry);
       // ── Step 4: Self-correcting AI fix loop with regression guard ──
-      // Uses BOTH auditors. Reverts if score drops. Keeps going until stable.
+      // Uses AI, axe-core, and Equal Access. Reverts if any completed evidence layer regresses.
       _pipeStepStart(4, _runTelemetry);
       // S2-extracted → _runMainFixLoop (policy: _alloLoopPolicy, golden-tested).
-      const _loopOut = await _runMainFixLoop({ accessibleHtml, verification, axeResults, updateProgress, applyDetectedLang: _applyDetectedLang, maxFixPasses: _runMaxFixPasses, targetScore: _runTargetScore, perFileDeadlineTs: _perFileDeadlineTs, genStale: _runGenStale, signal: _runAbortSignal, owner: _runTelemetry, documentEpoch: _runDocumentEpoch });
+      const _loopOut = await _runMainFixLoop({ accessibleHtml, verification, axeResults, equalAccessResults: loopEqualAccessResults, updateProgress, applyDetectedLang: _applyDetectedLang, maxFixPasses: _runMaxFixPasses, targetScore: _runTargetScore, perFileDeadlineTs: _perFileDeadlineTs, genStale: _runGenStale, signal: _runAbortSignal, owner: _runTelemetry, documentEpoch: _runDocumentEpoch });
       _throwIfRunCancelled();
       accessibleHtml = _loopOut.accessibleHtml;
       verification = _loopOut.verification;
       axeResults = _loopOut.axeResults;
+      let eaResults = _loopOut.equalAccessResults;
       let autoFixPasses = _loopOut.autoFixPasses;      // consumed by triage/footer/report below
       let bestAiScore = _loopOut.bestAiScore;          // consumed by the divergence check + H5 headline note
       const _lastFullCoverageAiScore = _loopOut.lastFullCoverageAiScore; // M5: partial-inflation-free provenance for the estimated minimum
@@ -28492,7 +28669,7 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       // fresh run invalidates prior axe evidence instead of silently reusing it.
       const _cleanAxeOk = _alloUsableAxeAudit(_cleanAxe);
       axeResults = _cleanAxeOk ? _cleanAxe : null;
-      let eaResults = null;
+      eaResults = null;
       try { eaResults = await runEqualAccessAudit(_scoreHtml); } catch (_) { eaResults = null; }
       _throwIfRunCancelled();
       // Detect a GENUINE deterministic regression (now that preview chrome is excluded): if the clean
@@ -28544,10 +28721,9 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         // same by-construction reason before the switch to min.)
         const governingFinal = _alloComputeHeadline(finalAfterScore, deterministicScore);
         warnLog(`[PDF Fix] Final headline (weakest-layer): min(AI ${finalAfterScore}, deterministic ${deterministicScore} [axe ${axeScoreAvailable ? axeResults.score : 'unavailable'}${eaScoreAvailable ? ', EqualAccess ' + eaResults.score + ', using the more conservative' : ', EA unavailable'}]) = ${governingFinal}`);
-        // H5 (deep dive 2026-07-02): the fix loop stops on raw AI mean ≥ target + axe==0, but
-        // EqualAccess only runs HERE, post-loop, and the shipped headline is the min() above —
-        // so a run could declare "target 95 reached" and then display 88 with no explanation.
-        // Say so explicitly when it happens.
+        // The fix loop now requires current AI + axe + Equal Access evidence. The final audit still
+        // reruns all three after cleanup/recovery mutations, so a late deterministic regression can
+        // legitimately lower the shipped headline; disclose that instead of hiding the disagreement.
         {
           const _tgt = _runTargetScore; // S1: run-entry snapshot
           if (bestAiScore >= _tgt && governingFinal < _tgt) {

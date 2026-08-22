@@ -46,6 +46,17 @@ const KEYS = mappingKeys();
 const srcKey = (k) => SRC.includes(`effectiveAccessory === '${k}'`);
 const modKey = (k) => MOD.includes(`effectiveAccessory === "${k}"`) || MOD.includes(`effectiveAccessory === '${k}'`);
 
+function accessoryBlock(source, key) {
+  const quotedKeys = [`effectiveAccessory === '${key}'`, `effectiveAccessory === "${key}"`];
+  const start = Math.max(...quotedKeys.map((token) => source.indexOf(token)));
+  expect(start, `accessory block ${key} not found`).toBeGreaterThan(-1);
+  const nextSingle = source.indexOf("effectiveAccessory === '", start + 1);
+  const nextDouble = source.indexOf('effectiveAccessory === "', start + 1);
+  const candidates = [nextSingle, nextDouble].filter((index) => index > start);
+  const end = candidates.length ? Math.min(...candidates) : source.length;
+  return source.slice(start, end);
+}
+
 describe('AlloBot accessory integrity', () => {
   it('mapping returns a sensible, non-trivial set of accessory keys', () => {
     expect(KEYS.size).toBeGreaterThanOrEqual(15);
@@ -105,6 +116,22 @@ describe('AlloBot accessory integrity', () => {
   it('mood-reactive + signature animation hooks are present', () => {
     for (const tok of ['allobot-thinking', 'allobot-pop', 'allobotWorking', 'allobotTick', 'allobotSway']) {
       expect(MOD.includes(tok), `missing animation hook ${tok}`).toBe(true);
+    }
+  });
+
+  it('keeps non-wearable props beside the bot and gives Concept Sort an original head accent', () => {
+    for (const source of [SRC, MOD]) {
+      const conceptSort = accessoryBlock(source, 'sorting-cubes');
+      expect(conceptSort).toContain('data-accessory-placement');
+      expect(conceptSort).toContain('head-and-side');
+      expect(conceptSort).toContain('Sort-of-a-Hat');
+      expect(conceptSort).toContain('slide-in-from-left-3');
+
+      for (const key of ['sticky-notes', 'gear']) {
+        const block = accessoryBlock(source, key);
+        expect(block, `${key} should use the side anchor`).toContain('side-left');
+        expect(block, `${key} should enter from the side`).toContain('slide-in-from-left-3');
+      }
     }
   });
 });

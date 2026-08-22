@@ -24,6 +24,6 @@ These are school-role surfaces, closed to family mode by design:
 
 ## Practical guidance
 
-- **Everything lives on the family's own device.** There is no account, so there is also no recovery from another machine; families who invest real time should use Save Project and keep the file somewhere safe.
+- **Standalone work is stored on the family's device by default.** It does not automatically appear on another device. Save Project creates a portable file, which the family should protect like any other instructional record. Provider-hosted, LMS, shared-link, AI, or optional connected workflows can have different account and storage behavior, so follow the disclosure for the route actually used.
 - **AI setup is the family's choice**: their own free Gemini key, running AlloFlow inside Gemini Canvas, or a local model. The setup screen walks through all three. See [Troubleshooting](08-troubleshooting.md).
 - **Teachers coordinating with families:** the cleanest handoff is still a delivered assignment or a single-tool link, not asking a family to reproduce your setup. Family mode shines when the family is driving.

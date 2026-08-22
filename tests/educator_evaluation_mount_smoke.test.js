@@ -171,6 +171,12 @@ describe('EducatorEvaluationPanel', () => {
     expect(container.textContent).toContain('Private on-device workspace');
     expect(container.textContent).not.toContain('Teacher 01');
     expect(container.textContent).toContain('No educators yet');
+    expect(container.textContent).toContain('Set up your first real cycle');
+    expect(container.textContent).toContain('0 / 3 ready');
+    expect(container.textContent).toContain('Choose an approved record path');
+    clickButton(container, 'Choose record path');
+    expect(container.querySelector('#ae-tab-about').getAttribute('aria-selected')).toBe('true');
+    expect(container.querySelector('#ae-record-path-setup')).toBeTruthy();
     const stored = JSON.parse(localStorage.getItem('allo_educator_evaluation_workspace_v1'));
     expect(localStorage.getItem('allo_educator_evaluation_onboarding_v1')).toBe('blank');
     expect(stored.config.sampleMode).toBe(false);

@@ -80,7 +80,7 @@ Use concrete verbs such as compare, explain, model, revise, justify, or solve. �
 Most of these live in one place. Set the grade level, output language, translations, standards, interests, and Depth of Knowledge in [Universal Settings](11-universal-settings.md) before you generate, so every part of the pack agrees. Set subject and response format where the tool offers them. Do not enter a student name or confidential profile to personalize a resource. Describe a support in general terms, such as:
 
 - “Use grade-level science vocabulary with a plain-language definition on first use.”
-- “Provide a Spanish-English glossary but keep the final explanation in English.”
+- “After Spanish is added to the language list in Universal Settings, keep the English science terms visible in the glossary and the final explanation.”
 - “Add sentence frames for claim, evidence, and reasoning.”
 - “Include one worked example and one problem students complete independently.”
 
@@ -90,7 +90,7 @@ Interests can increase relevance, but they should not stereotype students or dis
 
 ### Finding the right tool
 
-The sidebar's **Find a tool** panel narrows the tool list by purpose (Recommended, Make accessible, Engage, Assess and deliver) or by search. It filters what you see; the tool cards below it are what actually create. While a filter is on, the panel says so in words ("A filter is on: showing 8 of 22 tools"), and you can only hide the panel when no filter is active, so tools can never go missing without an explanation on screen.
+The sidebar's **Find a tool** panel narrows the tool list by purpose (Recommended, Make accessible, Engage, Assess and deliver) or by search. It filters what you see; the tool cards below it are what actually create. While a filter is on, the panel reports the live shown and total counts in words, such as “A filter is on: showing X of Y tools.” Check that status before concluding a tool has disappeared.
 
 ![The Find a tool panel with purpose filters and the active-filter notice](../assets/screenshots/06-find-a-tool.png)
 

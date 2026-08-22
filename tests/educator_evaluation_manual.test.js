@@ -283,13 +283,25 @@ describe('educator evaluation user manual', () => {
     expect(SOURCE).toContain('localTeacherPreview');
   });
 
-  it('has a repeatable current-UI screenshot pipeline, including both portal roles and the completed rehearsal', () => {
+  it('documents the safeguarded transition from fictional rehearsal to a clean real workspace', () => {
+    for (const phrase of ['Prepare a clean real workspace', 'Review clean-workspace transition',
+      'Download rehearsal backup and start clean', 'Set up your first real cycle',
+      'Choose an approved record path', 'Confirm workspace details', 'Add the first educator']) {
+      expect(MANUAL).toContain(phrase);
+      expect(SOURCE).toContain(phrase);
+    }
+    expect(MANUAL).toContain('sample records are never copied');
+    expect(SOURCE).toContain('alloflow-fictional-rehearsal-backup-');
+  });
+
+  it('has a repeatable current-UI screenshot pipeline, including both portal roles, completed rehearsal, and real-work launch', () => {
     expect(PACKAGE.scripts['capture:evaluation-manual']).toBe('node dev-tools/capture_educator_evaluation_manual.cjs');
     expect(CAPTURE_SCRIPT).toContain('educator_evaluation_standalone.js');
     expect(CAPTURE_SCRIPT).toContain('completeRehearsal');
     for (const name of ['01-first-launch.jpg', '02-overview.jpg', '04-formal-observation.jpg',
       '08-teacher-view.jpg', '11-portal-evaluator.jpg', '11-portal-teacher.jpg',
-      '12-simulation-studio.jpg', '13-principal-helper.jpg', '14-rehearsal-complete.jpg']) {
+      '12-simulation-studio.jpg', '13-principal-helper.jpg', '14-rehearsal-complete.jpg',
+      '15-real-work-launch.jpg']) {
       expect(CAPTURE_SCRIPT).toContain(name);
       expect(imageSrcs).toContain(`educator-evaluation-manual-assets/${name}`);
     }

@@ -146,6 +146,9 @@ describe('Educator Evaluation — browser e2e', () => {
     // Convert the fictional fixture into the real-local boundary without
     // changing its records. This keeps a populated educator record available
     // while proving sample rehearsal is the only mutable role-switch path.
+    // Wait for the onboarding save so its debounced write cannot race the
+    // deliberate fixture conversion during a busy full-suite run.
+    await page.locator('.ae-save-state').filter({ hasText: 'Saved on this device' }).waitFor({ state: 'visible', timeout: 10000 });
     await page.evaluate(() => {
       const key = Object.keys(localStorage).find((item) => item.includes('_workspace_v1'));
       const workspace = key ? JSON.parse(localStorage.getItem(key)) : null;
@@ -157,7 +160,9 @@ describe('Educator Evaluation — browser e2e', () => {
     await page.reload();
     await page.waitForSelector('.ae-tabs');
     await selectTeacher(page, 'Teacher 03 · T-03');
-    await page.getByRole('button', { name: 'Educator preview', exact: true }).click();
+    const educatorPreview = page.getByRole('button', { name: 'Educator preview', exact: true });
+    await educatorPreview.waitFor({ state: 'visible', timeout: 10000 });
+    await educatorPreview.click();
     await page.waitForTimeout(400);
     const text = await page.locator('main').innerText();
     expect(text).toContain('How your final rating is calculated');
@@ -232,9 +237,42 @@ describe('Educator Evaluation — browser e2e', () => {
     await page.getByRole('button', { name: 'Review completed fictional cycle', exact: true }).click();
     const auditText = await page.locator('main').innerText();
     for (const event of ['ASSIGNED', 'EVIDENCE PUBLISHED', 'SIGNED', 'ACKNOWLEDGED', 'FINALIZED', 'RELEASED']) expect(auditText).toContain(event);
+
+    await page.getByRole('button', { name: 'Review clean-workspace transition', exact: true }).click();
+    expect(await page.getByText('Review before leaving fictional practice', { exact: true }).count()).toBe(1);
+    const startClean = page.getByRole('button', { name: 'Download rehearsal backup and start clean', exact: true });
+    expect(await startClean.isDisabled()).toBe(true);
+    await page.getByText(/I understand the clean workspace starts empty/).locator('..').locator('input[type="checkbox"]').check();
+    const [backup] = await Promise.all([
+      page.waitForEvent('download'),
+      startClean.click(),
+    ]);
+    expect(backup.suggestedFilename()).toMatch(/^alloflow-fictional-rehearsal-backup-\d{4}-\d{2}-\d{2}\.json$/);
+    const backupFile = path.join(process.cwd(), 'tests', '.tmp_rehearsal_backup_e2e.json');
+    await backup.saveAs(backupFile);
+    const rehearsalBackup = JSON.parse(fs.readFileSync(backupFile, 'utf8'));
+    fs.unlinkSync(backupFile);
+    expect(rehearsalBackup.kind).toBe('alloflow-educator-evaluation-workspace');
+    expect(rehearsalBackup.recoveryReason).toBe('Fictional rehearsal backup before clean real-work workspace');
+    expect(rehearsalBackup.config.sampleMode).toBe(true);
+    expect(rehearsalBackup.teachers.some((teacher) => teacher.name === 'Teacher 08' && teacher.finalizedAt)).toBe(true);
+    expect(rehearsalBackup.audit.some((event) => event.event === 'RELEASED')).toBe(true);
+    await page.getByText('Set up your first real cycle', { exact: true }).waitFor();
+    const cleanText = await page.locator('main').innerText();
+    expect(cleanText).toContain('0 / 3 ready');
+    expect(cleanText).toContain('Choose an approved record path');
+    expect(cleanText).toContain('Confirm workspace details');
+    expect(cleanText).toContain('Add the first educator');
+    expect(cleanText).not.toContain('Simulated data');
+    const cleanWorkspace = await page.evaluate(() => JSON.parse(localStorage.getItem('allo_educator_evaluation_workspace_v1')));
+    expect(cleanWorkspace.config.sampleMode).toBe(false);
+    expect(cleanWorkspace.config.setupPath).toBe('');
+    for (const collection of ['teachers', 'walkthroughs', 'observations', 'spms', 'comments', 'audit']) {
+      expect(cleanWorkspace[collection]).toHaveLength(0);
+    }
     expect(errors).toEqual([]);
     await page.close();
-  }, 120000);
+  }, 150000);
 
   it('growth snapshot downloads formative content with no ratings vocabulary', async () => {
     const { page, errors } = await openWorkspace();
@@ -343,20 +381,35 @@ describe('Educator Evaluation — browser e2e', () => {
     // Deep equality of the whole tree, not a spot check on counts.
     expect(exportedWorkspace).toMatchObject(storedWorkspace);
 
-    // Wipe the device, start clean, and import the file back.
-    await page.evaluate(() => localStorage.clear());
-    await page.reload();
-    await page.waitForSelector('.ae-onboarding-overlay .ae-onboarding-option');
-    await page.locator('.ae-onboarding-overlay .ae-onboarding-option').nth(0).click(); // blank
-    await page.waitForSelector('.ae-tabs');
-    await openTab(page, 'Reports & audit');
-    await page.waitForTimeout(300);
-    await page.setInputFiles('input[type="file"]', {
+    // Import into a genuinely fresh browser workspace. A separate context is
+    // deterministic and better represents recovery on a wiped or new device;
+    // it also avoids a pending save from the source page repopulating storage
+    // during reload.
+    await page.close();
+    const importPage = await browser.newPage();
+    importPage.on('pageerror', (err) => errors.push(String(err)));
+    importPage.on('console', (msg) => { if (msg.type() === 'error') errors.push(msg.text()); });
+    await importPage.goto(PAGE);
+    await importPage.waitForSelector('.ae-onboarding-overlay .ae-onboarding-option');
+    await importPage.locator('.ae-onboarding-overlay .ae-onboarding-option').nth(1).click(); // blank
+    await importPage.waitForSelector('.ae-tabs');
+    await openTab(importPage, 'Reports & audit');
+    await importPage.waitForTimeout(300);
+    await importPage.setInputFiles('input[type="file"]', {
       name: 'workspace.json', mimeType: 'application/json', buffer: Buffer.from(exportedText),
     });
-    await page.waitForTimeout(600);
+    await importPage.getByRole('heading', { name: 'Review before applying', exact: true }).waitFor({ state: 'visible', timeout: 10000 });
+    const applyImport = importPage.getByRole('button', { name: 'Download backup and replace workspace', exact: true });
+    const [preImportBackup] = await Promise.all([
+      importPage.waitForEvent('download'),
+      applyImport.click(),
+    ]);
+    expect(preImportBackup.suggestedFilename()).toMatch(/^alloflow-before-import-\d{4}-\d{2}-\d{2}\.json$/);
+    await importPage.getByRole('heading', { name: 'Evaluation overview', exact: true }).waitFor({ state: 'visible', timeout: 10000 });
+    await importPage.locator('.ae-operation-notice').filter({ hasText: 'Workspace replaced after review; the prior workspace was downloaded' }).waitFor({ state: 'visible', timeout: 10000 });
+    await importPage.locator('.ae-save-state').filter({ hasText: 'Saved on this device' }).waitFor({ state: 'visible', timeout: 10000 });
 
-    const restored = await page.evaluate(() => {
+    const restored = await importPage.evaluate(() => {
       const key = Object.keys(localStorage).find((k) => k.includes('_workspace_v1'));
       const ws = key ? JSON.parse(localStorage.getItem(key)) : null;
       return ws ? { teachers: ws.teachers.length, org: ws.config.organization } : null;
@@ -365,7 +418,7 @@ describe('Educator Evaluation — browser e2e', () => {
     expect(restored.teachers).toBe(storedWorkspace.teachers.length);
     expect(restored.org).toBe(storedWorkspace.config.organization);
     expect(errors).toEqual([]);
-    await page.close();
+    await importPage.close();
   }, 90000);
 
   it('dark scheme: the panel paints its own ground (no transparent-body inherit)', async () => {

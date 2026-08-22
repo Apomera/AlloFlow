@@ -8,6 +8,7 @@ const src = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8') /* 
 // reducer slice of doc_pipeline_source.jsx; the host loop keeps only policy (revert, gen
 // guards, proof attachment) and DELEGATES the merge.
 const pipeSrc = readFileSync(resolve(process.cwd(), 'doc_pipeline_source.jsx'), 'utf8');
+const policySrc = readFileSync(resolve(process.cwd(), 'verification_policy_source.jsx'), 'utf8');
 const reducerStart = pipeSrc.indexOf('const _finalizeRemediationRound = async (prev, round) => {');
 const reducerEnd = pipeSrc.indexOf('// acceptFixedHtmlDetailed:', reducerStart);
 const reducer = pipeSrc.slice(reducerStart, reducerEnd);
@@ -44,7 +45,7 @@ describe('auto-continue canonical verification', () => {
       'waitForGeminiCalm({',
       'autoFixAxeViolations(',
       'aiFixChunked(',
-      'const reVerify = await auditOutputAccessibility(result.html);',
+      "const reVerify = await auditOutputAccessibility(result.html, { signal: _abortCtrl.signal, owner: _loopOwner, trigger: 'auto-continue-round-'",
       // The inline _detRegressed / _moreIssues locals became a pure
       // _loopPolicy.roundRegressed({...}), overridable from the shared pipeline
       // module. Same direction as the completion-toast selector: a decision the
@@ -206,10 +207,13 @@ describe('auto-continue canonical verification', () => {
   });
 
   it('explains stale, mismatched, and unavailable bindings in readable language', () => {
-    expect(src).toContain("value === 'verification-html-binding-missing-or-stale'");
-    expect(src).toContain("value === 'verification-html-binding-unavailable'");
-    expect(src).toContain("value === 'verification-html-binding-mismatch'");
-    expect(src).toContain('The document changed after verification');
+    // The shared policy owns user-facing wording; the host fallback deliberately
+    // stays generic when that module has not loaded yet.
+    expect(src).toContain("policy.formatVerificationReason(reason)");
+    expect(policySrc).toContain("value === 'verification-html-binding-missing-or-stale'");
+    expect(policySrc).toContain("value === 'verification-html-binding-unavailable'");
+    expect(policySrc).toContain("value === 'verification-html-binding-mismatch'");
+    expect(policySrc).toContain('The document changed after verification');
   });
   it('fails closed when the HTML changes but its length stays identical', () => {
     const extract = (name) => {
@@ -282,10 +286,12 @@ describe('auto-continue canonical verification', () => {
     expect(loop).toMatch(/Human review required at score[\s\S]*?'warning'/);
   });
 
-  it('keeps the cached-module fallback in parity with unknown/manual verification states', () => {
-    expect(src).toContain("const _finite = (value) => typeof value === 'number' && Number.isFinite(value);");
-    expect(src).toContain("_reasons.push('axe-review-count-unknown')");
-    expect(src).toContain('const _eaAggregate = _count(_ea.reviewFindingCount);');
+  it('keeps the shared policy authoritative while a missing cached module fails closed', () => {
+    expect(src).toContain("policy && typeof policy.deriveVerificationState === 'function'");
+    expect(src).toContain("reasons: ['verification-policy-module-unavailable']");
+    expect(policySrc).toContain("var _finite = function (v) { return typeof v === 'number' && Number.isFinite(v); };");
+    expect(policySrc).toContain("reasons.push('axe-review-count-unknown')");
+    expect(policySrc).toContain('var _eaAggregate = _count(ea.reviewFindingCount);');
     // B7 (2026-07-13): precedence now matches the canonical policy — unavailable
     // beats review evidence — and the EA count uses the same max() the policy uses.
     // The flat ternary became an ordered ladder, and the ORDER is the fix. The
@@ -295,8 +301,8 @@ describe('auto-continue canonical verification', () => {
     // "we did not finish looking". It also never consulted actual failures.
     // Now: unavailable -> partial -> review-required -> complete, with
     // 'complete-for-tested-scope' when only a static source scope was covered.
-    expect(src).toMatch(/const _verificationState = _allUnavailable\s*\n\s*\? 'unavailable'\s*\n\s*: \(!_engineExecutionComplete\s*\n\s*\? 'partial'\s*\n\s*: \(_hasKnownFailures \|\| _hasReviewEvidence\s*\n\s*\? 'review-required'\s*\n\s*: \(_staticSourceScope \? 'complete-for-tested-scope' : 'complete'\)\)\)/);
-    expect(src).toContain('Math.max(_eaAggregate, (_eaPotential || 0) + (_eaManual || 0))');
+    expect(policySrc).toMatch(/var verificationState = allUnavailable\s*\n\s*\? 'unavailable'\s*\n\s*: \(!engineExecutionComplete\s*\n\s*\? 'partial'\s*\n\s*: \(hasKnownFailures \|\| hasReviewEvidence\s*\n\s*\? 'review-required'\s*\n\s*: \(staticSourceScope \? 'complete-for-tested-scope' : 'complete'\)\)\)/);
+    expect(policySrc).toContain('Math.max(_eaAggregate, (_eaPotential || 0) + (_eaManual || 0))');
   });
 
   it('persists canonical verification in the autosave hash/project and derives it for legacy loads', () => {

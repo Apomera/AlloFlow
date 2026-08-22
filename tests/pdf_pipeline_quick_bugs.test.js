@@ -221,10 +221,10 @@ describe('B3-5: H-8 — the loaded-project loader resets per-doc holdovers (pale
 
 describe('B4: audit call-volume + pacing reductions to cut throttle failures', () => {
   it('per-pass re-audit is a single memoized call (2026-07-02 $1/$2; the old 2-audit anchors lived in the deleted dead batch loop)', () => {
-    // One AI audit + axe per pass — the former "2 parallel audits" were byte-identical
+    // One AI audit + both deterministic engines per pass — the former "2 parallel AI audits" were byte-identical
     // temperature-0 prompts (zero information gain); the numAudits=2 + rvScores tiebreaker
     // this test used to pin existed only inside the deleted processSinglePdfForBatch.
-    expect(dp).toMatch(/const \[reVerify1, reAxe\] = await Promise\.all/);
+    expect(dp).toMatch(/const \[reVerify1, reAxe, reEa\] = await Promise\.all/);
     // …and unchanged chunks must be served from the temp-0 memo, not re-billed
     expect(dp).toMatch(/_auditChunkMemo/);
   });
@@ -477,7 +477,7 @@ describe('B8: 2026-06-29 scorecard fixes (export honesty + OCR/foundations/basel
   });
   // #4: foundations "All images have alt" is count-aware, not a single-match overclaim
   it('foundations card claims "All images have alt" ONLY when every image has it (else honest fraction)', () => {
-    expect(dpx).toMatch(/_fImgAlt === _fImgTotal\) present\.push\('All images have a non-empty alt/);
+    expect(dpx).toMatch(/_fImgAlt === _fImgTotal\) _markFoundation\('image-alt', 'All images have a non-empty alt/);
     expect(dpx).toMatch(/of ' \+ _fImgTotal \+ ' images have a non-empty alt/);
   });
   // #3: OCR low-confidence net is engine-agnostic (catches garbled Vision-won / all-Vision pages)
@@ -590,7 +590,7 @@ describe('B11: audit #1 — null AI score no longer coerced to 0 (no fabricated 
   it('the headline derivations pass null per validated operand, never `(score || 0)` coercions', () => {
     expect(vpx).not.toMatch(/_computeHeadline\(\(finalAi\.score \|\| 0\), \(finalAxe\.score \|\| 0\)\)/);
     expect(vpx).not.toMatch(/reAxe \? _computeHeadline\(\(reAi\.score \|\| 0\), \(reAxe\.score \|\| 0\)\)/);
-    expect(vpx).toMatch(/const _finalAiScore = \(finalAi && Number\.isFinite\(finalAi\.score\)[^;]+\) \? finalAi\.score : null;/);
+    expect(vpx).toMatch(/const _finalAiScore = _viewUsableCompleteAiAudit\(finalAi\) \? finalAi\.score : null;/);
     expect(vpx).toMatch(/const finalScore = _computeHeadline\(_finalAiScore, _finalDetScore\);/);
     expect(vpx).toMatch(/const _wscore = _computeHeadline\(_wvOk \? _wv\.score : null, _wdet\);/);
   });

@@ -4,7 +4,7 @@
 
 > Practical, classroom-centered guidance for planning, teaching, accessibility, live lessons, and responsible use.
 >
-> Guide version **2026.08** · Content verified **2026-08-21**
+> Guide version **2026.08** · Content verified **2026-08-22**
 
 This consolidated Markdown edition is generated for repository browsing, review, and export. The polished searchable edition is in [guide/](guide/index.html), and the canonical chapter sources are in [docs/teacher-guide/chapters/](docs/teacher-guide/chapters/).
 
@@ -24,17 +24,19 @@ This consolidated Markdown edition is generated for repository browsing, review,
 12. [Review evidence and plan next steps](#review-evidence-and-plan-next-steps) · Interpret classroom evidence carefully and plan useful follow-up.
 13. [Classroom workflows](#classroom-workflows) · Use practical recipes for common middle-school teaching needs.
 14. [Worked student vignette: water-cycle lesson](#worked-student-vignette-water-cycle-lesson) · Follow one fictional learner from a shared target through privacy-safe supports, live Canvas examples, evidence, and the next teaching decision.
-15. [Privacy and responsible AI](#privacy-and-responsible-ai) · Use student data and generated materials with appropriate judgment.
-16. [AlloBot: the assistant that talks with you](#allobot-the-assistant-that-talks-with-you) · Talking with the assistant: conversation first, offers before actions, and what the microphone states mean.
-17. [Documents and printing: from resource to handout](#documents-and-printing-from-resource-to-handout) · The four export formats, the handout reading tools, annotations that stay put, and printing that always comes out light.
-18. [Make a document accessible: the remediation workflow](#make-a-document-accessible-the-remediation-workflow) · Turning an inherited document into an accessible version: what you can upload, the audit, Make Accessible, the human review, the evidence report, the local connector, and the no-egress option.
-19. [Troubleshooting](#troubleshooting) · Recover work and diagnose common classroom problems.
-20. [Math Fluency: timed practice and CBM probes](#math-fluency-timed-practice-and-cbm-probes) · Where timed math practice and CBM probes live, and the fastest way to open them.
-21. [Specialist and product reference](#specialist-and-product-reference) · Find specialist surfaces, keyboard help, and product terminology.
-22. [School rollout and coaching](#school-rollout-and-coaching) · Introduce AlloFlow as an instructional routine with shared guardrails and coaching.
-23. [For your IT department: the one-page technical brief](#for-your-it-department-the-one-page-technical-brief) · The technical brief: static app, no accounts, on-device data, the three AI backend options, and what to verify.
-24. [For school leaders: the Leadership Hub](#for-school-leaders-the-leadership-hub) · The nine Leadership Hub tools: visits and coaching, equity and student-services analytics, meeting documentation, multilingual family communication, and backing the whole suite up.
-25. [The STEAM Lab: 142 tools, and how to find the one you need](#the-steam-lab-142-tools-and-how-to-find-the-one-you-need) · The 142-tool STEAM Lab: how to find a tool, how to put one in front of students with its own link, what to expect from any of them, and three ways teachers actually use them.
+15. [Worked multilingual vignette: water-cycle language bridge](#worked-multilingual-vignette-water-cycle-language-bridge) · Preserve a shared science target while adding reviewed home-language access, visuals, response options, and bilingual delivery checks.
+16. [Worked assessment-access vignette: show the science, not the writing speed](#worked-assessment-access-vignette-show-the-science-not-the-writing-speed) · Design a formative science check that protects the construct, offers equivalent response routes, and distinguishes access failure from missing knowledge.
+17. [Privacy and responsible AI](#privacy-and-responsible-ai) · Use student data and generated materials with appropriate judgment.
+18. [AlloBot: the assistant that talks with you](#allobot-the-assistant-that-talks-with-you) · Talking with the assistant: conversation first, offers before actions, and what the microphone states mean.
+19. [Documents and printing: from resource to handout](#documents-and-printing-from-resource-to-handout) · The four export formats, the handout reading tools, annotations that stay put, and printing that always comes out light.
+20. [Make a document accessible: the remediation workflow](#make-a-document-accessible-the-remediation-workflow) · Turning an inherited document into an accessible version: what you can upload, the audit, Make Accessible, the human review, the evidence report, the local connector, and the no-egress option.
+21. [Troubleshooting](#troubleshooting) · Recover work and diagnose common classroom problems.
+22. [Math Fluency: timed practice and CBM probes](#math-fluency-timed-practice-and-cbm-probes) · Where timed math practice and CBM probes live, and the fastest way to open them.
+23. [Specialist and product reference](#specialist-and-product-reference) · Find specialist surfaces, keyboard help, and product terminology.
+24. [School rollout and coaching](#school-rollout-and-coaching) · Introduce AlloFlow as an instructional routine with shared guardrails and coaching.
+25. [For your IT department: the one-page technical brief](#for-your-it-department-the-one-page-technical-brief) · The technical brief: the client-side core, deployment-specific accounts and data paths, AI backend choices, and what to verify.
+26. [For school leaders: the Leadership Hub](#for-school-leaders-the-leadership-hub) · The nine Leadership Hub tools: visits and coaching, equity and student-services analytics, meeting documentation, multilingual family communication, and backing the whole suite up.
+27. [The STEAM Lab: find and share the right tool](#the-steam-lab-find-and-share-the-right-tool) · Use the live STEAM Lab catalog to find, verify, and share a focused interactive tool without relying on a stale printed count or inferred link.
 
 ---
 
@@ -218,11 +220,11 @@ Avoid labeling pathways as “low,” “easy,” or “special.” Use neutral 
 
 ### The smallest possible start: one tool, one link
 
-You do not have to begin with a lesson at all. Every interactive STEAM Lab tool has its own direct web address that opens just that tool, with no sign-in for you or your students. Pasting one such link into whatever you already use (your LMS, a slide, a message home) is the lowest-commitment way to try AlloFlow, share it with a colleague, or give a family one good activity. When you are ready for more than one tool, come back to the fifteen-minute lesson above.
+You do not have to begin with a lesson at all. Many STEAM Lab entries expose a focused link in the current catalog. Copy and test that link rather than guessing the address. The public standalone route may open without an AlloFlow account, while an LMS, district gateway, Gemini environment, or other surrounding platform may require its own sign-in. One verified link is a low-commitment way to try a tool, share it with a colleague, or give a family one good activity. When you are ready for more than one tool, come back to the fifteen-minute lesson above.
 
-![The Water Cycle tool opened directly from its own link, ready to use with no sign-in](docs/teacher-guide/assets/screenshots/08-single-tool-link.png)
+![The Water Cycle tool opened through its public standalone link](docs/teacher-guide/assets/screenshots/08-single-tool-link.png)
 
-*A direct tool link, captured August 16, 2026. The "AI extras: off" note in the header means no AI backend is set up on that device; the tool itself is fully usable either way. See [Troubleshooting](#troubleshooting).*
+*A direct tool link, captured August 16, 2026. The "AI extras: off" note means no AI backend was set up on that device. The core simulation route shown remains usable, while AI-dependent extras do not. See [Troubleshooting](#troubleshooting).*
 
 ### If something does not work
 
@@ -245,7 +247,7 @@ The first screen asks how you want to begin. It is not a settings page you have 
 **Choose your workspace** offers two doors into the same product:
 
 - **Guided Mode** walks you through lesson creation one step at a time. It is marked *Recommended* because it is the shortest route to a finished resource on your first day.
-- **Full Platform** opens the complete workspace at once: every tool, every setting, nothing hidden. The rest of this chapter describes this view, because it is the one with all the parts in it.
+- **Full Platform** opens the complete teacher workspace available to the current deployment and role. Some connected, student, or administrator surfaces still appear only when their route is configured. The rest of this chapter describes the main teacher view.
 
 **Open a tool directly** skips the workspace entirely:
 
@@ -332,7 +334,7 @@ The detail that makes this panel trustworthy is the small coverage note under ma
 Below the settings is the tool finder, and it has three ways to narrow a long list:
 
 - **Search by name** in the search box, which prompts with examples such as *glossary, visuals, assessment*.
-- **Filter by purpose** with the row of buttons: **Recommended**, **Make accessible**, **Engage**, **Assess and deliver**, **All tools**. When a filter is active the panel says so in words, reading something like *A filter is on: showing 8 of 22 tools*, with a count of how many are shown. This matters: if a tool you expected is missing, a filter is the usual reason, and the panel tells you rather than leaving you to guess.
+- **Filter by purpose** with the row of buttons: **Recommended**, **Make accessible**, **Engage**, **Assess and deliver**, **All tools**. When a filter is active the panel reports live shown and total counts in words, such as *A filter is on: showing X of Y tools*. This matters: if a tool you expected is missing, check the active filter before treating the tool as unavailable.
 - **Show all tools** clears the filter, and **Expand All** and **Collapse** open or close every tool panel at once.
 
 The list underneath holds the resource tools: Analyze Source Material, Glossary, Text Adaptation, Word Sounds, Visual Organizer, Note-Taking Templates, Anchor Chart, Lesson Images, FAQ Generator, Writing Scaffolds, Activities, Interview Mode, Sequence Builder, Concept Sort, Document Analysis, Assess, Lesson Plan, Assignment Directions, and the entry points to the STEAM Lab and Adventure Mode.
@@ -355,7 +357,7 @@ You do not always need a source. Some tools invent their own material. But when 
 
 ![A tool panel expanded, with its own options, Custom Instructions, and its Generate button](docs/teacher-guide/assets/screenshots/15-tool-panel.png)
 
-Click a tool in the left column and its panel expands in place. Every tool panel has the same shape:
+Click a guided resource tool in the left column and its panel expands in place. Most of those panels share this shape, though specialized tools may add or omit controls:
 
 1. **Options specific to that tool.** The Glossary, for example, asks how many Tier 2 academic and Tier 3 domain words to pull, what reading level the definitions should sit at, and whether to include word roots and etymology.
 2. **Custom Instructions (Optional)**, a free-text box for anything the options do not cover.
@@ -431,9 +433,9 @@ If a lesson matters, save the project. Browser data clearing removes on-device w
 
 You will sometimes see a line on a tool panel reading *Needs AI setup*, offering to connect an AI or to use AlloFlow inside Gemini Canvas. Nothing is broken. AlloFlow separates the things that need a model from the things that do not.
 
-Generation needs AI. Browsing tools, the STEAM Lab simulations, Universal Settings, saving and exporting, and everything you have already generated all keep working without it. If you are evaluating AlloFlow before your district has chosen a model, you can still see most of the product.
+AI-dependent generation needs a configured backend. Browsing the catalog, Universal Settings, saving, exports, existing resources, and many core simulations remain available without one; an activity that generates content, calls a model, or performs an online lookup may not. Test the exact route you intend to use.
 
-For the three ways to connect one, see [Troubleshooting](#troubleshooting); for what leaves the device when you do, see [Privacy and responsible AI](#privacy-and-responsible-ai).
+For the connection routes available in the current deployment, see [Troubleshooting](#troubleshooting); for what leaves the device when you use one, see [Privacy and responsible AI](#privacy-and-responsible-ai).
 
 ### Where to go next
 
@@ -482,7 +484,7 @@ Visuals, Glossary and Word Sounds start on **Use Universal style**. Choose **Ove
 
 **AI Backend Settings** is on the Launch Pad, top right, and again under **AI** in the header's More information menu, which also holds model diagnostics and a usage meter.
 
-Until an AI is connected, tool panels show a line reading *Needs AI setup*, offering to connect one or to use AlloFlow inside Gemini Canvas. Nothing else is broken by this: browsing, the STEAM Lab, settings, saving and exporting all work. Only generation waits.
+Until an AI is connected, AI-dependent tool panels show a line reading *Needs AI setup*, offering the connection routes supported by the deployment. Catalog browsing, settings, local saving, existing resources, many core simulations, and non-AI exports can remain available. Generation, AI coaching, AI hints, or any route that calls a model will wait, and a connected lookup or service may have its own requirement.
 
 The usage meter is worth knowing about before you run a full pack, because a pack is the fastest way to spend a daily quota.
 
@@ -575,17 +577,17 @@ That is the whole configuration surface that matters on day one. Everything else
 
 ## Saving, loading, and managing storage
 
-AlloFlow keeps your work on the device rather than in an account. That is what makes it usable without sign-in, rostering, or a district contract, and it is also the thing most likely to lose you a lesson if nobody explains it. This chapter explains where your work actually lives, how to save and reload it, and how to keep the device from filling up.
+In the standalone browser and desktop workspace, AlloFlow keeps authoring work on the device by default rather than in an AlloFlow account. That local default is what makes many routes usable without an AlloFlow sign-in, and it is also the thing most likely to lose you a lesson if nobody explains it. Connected AI, live, LMS, share, portal, or school-owned service routes have their own data paths; this chapter covers the local authoring workspace.
 
 Read [Privacy and responsible AI](#privacy-and-responsible-ai) for why the design is this way. This chapter is the operating manual.
 
 ### Where your work lives
 
-Everything you generate is held in the browser's own storage on the machine you are using. Nothing is uploaded, which has three practical consequences worth stating plainly:
+Unexported authoring state in the standalone workspace is held in the browser or desktop profile on the machine you are using. Unless you deliberately export, share, connect a service, or use a feature whose disclosure names an external destination, that local state has three practical consequences worth stating plainly:
 
 - **Your work does not follow you to another device.** A lesson built on the classroom desktop is not on your laptop at home.
 - **Clearing browsing data erases it.** "Clear cookies and site data" removes AlloFlow's work along with everything else. On a managed fleet, a device wipe or a profile reset does the same.
-- **Nobody else can see it**, including us. There is no server copy to recover from, which is the trade you are making for the privacy.
+- **There is no default central AlloFlow project copy to recover.** Anyone who can access the same device profile may be able to access the local workspace, and exported or connected copies follow the access rules of their destination.
 
 The fix for all three is the same, and it is the next section.
 
@@ -599,7 +601,7 @@ The fix for all three is the same, and it is the next section.
 
 This is the one habit worth building. If a lesson took you more than a few minutes to build, save the project. The file is device-independent, survives a browser wipe, and is how you move work between home and school.
 
-> **In Gemini Canvas, this matters even more.** Nothing survives closing the tab except files you have downloaded. The project file *is* your save.
+> **In Gemini Canvas, this matters even more.** Canvas storage behavior can vary by host session and browser policy. Do not rely on the tab to preserve a lesson: download a project file before closing it.
 
 ### Getting finished work out
 
@@ -696,7 +698,7 @@ Everything on this page is a reminder, not a lesson. If a line raises a question
 - Just talk. Ordinary speech gets a conversational answer; nothing you say is "wrong."
 - Anything that would change the screen is **offered** first; say yes to do it, or keep talking and the offer fades.
 - Say **"command"** before a phrase to skip the offer and act immediately.
-- "Stop reading" and the read-aloud controls always act instantly.
+- "Stop reading" and the read-aloud controls are direct controls rather than proposed screen changes. If audio does not stop promptly, use the visible stop or mute control.
 - The voice indicator names its state in words: Listening, Paused, Thinking, Speaking. A small meter shows your voice being heard. ([AlloBot](#allobot-the-assistant-that-talks-with-you))
 
 ### Where things live
@@ -707,10 +709,10 @@ Everything on this page is a reminder, not a lesson. If a line raises a question
 | A message that vanished | The header **lightbulb → Messages** |
 | Your saved work | AI settings → **Open saved work** |
 | A finished copy vs a blank copy | Export: **Print / Save as PDF** vs **Worksheet** ([Documents and printing](#documents-and-printing-from-resource-to-handout)) |
-| One tool to share with anyone | Its direct link, no sign-in needed ([Start here](#start-here-prepare-your-first-student-ready-resource)) |
+| One focused tool to share | Copy and test its current catalog link; surrounding platforms may add sign-in ([Start here](#start-here-prepare-your-first-student-ready-resource)) |
 | Timed math practice | Math tool → Mode, or Ctrl+K then "math minute" ([Math Fluency](#math-fluency-timed-practice-and-cbm-probes)) |
 | Turn Adventure off for an assignment | Project Settings → "Include Adventure in this assignment" ([Adventure Mode](#adventure-mode-a-story-your-lesson-can-carry)) |
-| "AI extras: off" in the STEAM Lab | Nothing is broken; click the pill for the three ways to turn AI on ([Troubleshooting](#troubleshooting)) |
+| "AI extras: off" in the STEAM Lab | Core non-AI routes may still work; AI-dependent options remain unavailable. Click the pill to review the connections offered by this deployment ([Troubleshooting](#troubleshooting)). |
 | Fix an inherited PDF | The remediation workflow: audit, Make Accessible, review, export with evidence ([Make a document accessible](#make-a-document-accessible-the-remediation-workflow)) |
 
 ### The habits that prevent the common problems
@@ -804,7 +806,7 @@ Use concrete verbs such as compare, explain, model, revise, justify, or solve. �
 Most of these live in one place. Set the grade level, output language, translations, standards, interests, and Depth of Knowledge in [Universal Settings](#universal-settings-set-it-once-not-per-tool) before you generate, so every part of the pack agrees. Set subject and response format where the tool offers them. Do not enter a student name or confidential profile to personalize a resource. Describe a support in general terms, such as:
 
 - “Use grade-level science vocabulary with a plain-language definition on first use.”
-- “Provide a Spanish-English glossary but keep the final explanation in English.”
+- “After Spanish is added to the language list in Universal Settings, keep the English science terms visible in the glossary and the final explanation.”
 - “Add sentence frames for claim, evidence, and reasoning.”
 - “Include one worked example and one problem students complete independently.”
 
@@ -814,7 +816,7 @@ Interests can increase relevance, but they should not stereotype students or dis
 
 #### Finding the right tool
 
-The sidebar's **Find a tool** panel narrows the tool list by purpose (Recommended, Make accessible, Engage, Assess and deliver) or by search. It filters what you see; the tool cards below it are what actually create. While a filter is on, the panel says so in words ("A filter is on: showing 8 of 22 tools"), and you can only hide the panel when no filter is active, so tools can never go missing without an explanation on screen.
+The sidebar's **Find a tool** panel narrows the tool list by purpose (Recommended, Make accessible, Engage, Assess and deliver) or by search. It filters what you see; the tool cards below it are what actually create. While a filter is on, the panel reports the live shown and total counts in words, such as “A filter is on: showing X of Y tools.” Check that status before concluding a tool has disappeared.
 
 ![The Find a tool panel with purpose filters and the active-filter notice](docs/teacher-guide/assets/screenshots/06-find-a-tool.png)
 
@@ -1018,6 +1020,16 @@ The panel gathers the settings that would otherwise repeat in every tool.
 
 Each control tells you how many kinds of resource actually use it. Read that number before you spend time on a setting. Some controls reach almost everything; others reach two or three tools.
 
+#### Set languages with the controls, not the prompt
+
+For an English resource with Arabic support:
+
+1. Add **Arabic** to the language list in Universal Settings.
+2. Keep **Output language** set to **English**.
+3. Open the target tool and read its language summary before generating. The Glossary panel, for example, states which languages from the shared list it will include.
+
+That shared language list and the **Translations** policy are related but not interchangeable. The list supplies languages to tools such as Glossary and to **All Selected Languages** output. The Translations control governs an additional companion version where that control is relevant; it can remain hidden when its automatic target would duplicate the primary output. Custom Instructions can narrow terms, tone, examples, or format, but they do not add a language to either control. If a language is missing, return to Universal Settings rather than typing “make this bilingual” into the resource prompt.
+
 You can collapse the card once you are done. The summary line stays visible, so you can check your choices without opening the panel again.
 
 ### The rule that surprises teachers
@@ -1076,7 +1088,7 @@ Two separate controls do two different jobs.
 
 A hint line under the control always says in plain words what will happen, such as "Resources in Spanish will also include an English version." You do not have to open the list to know where you stand.
 
-The Translations control appears only when it would do something. If your interface and your output language are both English, there is nothing to translate into, so the control stays hidden. It appears as soon as the two differ.
+The Translations control appears only when it would do something, or when a previously selected explicit policy needs to remain editable. With **Automatic**, if the interface and output language match, its automatic target would duplicate the primary content, so the control stays hidden. Adding a language to the shared list can still affect tools such as Glossary even while this companion-translation control is hidden.
 
 Two cautions:
 
@@ -1483,7 +1495,7 @@ These are school-role surfaces, closed to family mode by design:
 
 ### Practical guidance
 
-- **Everything lives on the family's own device.** There is no account, so there is also no recovery from another machine; families who invest real time should use Save Project and keep the file somewhere safe.
+- **Standalone work is stored on the family's device by default.** It does not automatically appear on another device. Save Project creates a portable file, which the family should protect like any other instructional record. Provider-hosted, LMS, shared-link, AI, or optional connected workflows can have different account and storage behavior, so follow the disclosure for the route actually used.
 - **AI setup is the family's choice**: their own free Gemini key, running AlloFlow inside Gemini Canvas, or a local model. The setup screen walks through all three. See [Troubleshooting](#troubleshooting).
 - **Teachers coordinating with families:** the cleanest handoff is still a delivered assignment or a single-tool link, not asking a family to reproduce your setup. Family mode shines when the family is driving.
 
@@ -1651,7 +1663,7 @@ A document that looks organized can still be structurally inaccessible. Visual i
 
 #### What the exported handout already carries
 
-The HTML handout ships with its own accessibility toolbar, so many supports travel with the document instead of depending on the student's device: adjustable text size that reflows rather than clipping, offline dyslexia-friendly and high-legibility font options, reading themes, and annotations that stay anchored to the content through those changes. Printing always comes out black on white, whatever screen theme the teacher works in. Details and the font options table are in [Documents and printing](#documents-and-printing-from-resource-to-handout).
+The HTML handout can carry an accessibility toolbar with adjustable text size, offline font choices, reading themes, and supported annotations. Verify reflow, font coverage, annotation persistence, and offline behavior in the exported file rather than assuming the preview guarantees them. Print styles are designed for a light page, but preview the actual print job. Details are in [Documents and printing](#documents-and-printing-from-resource-to-handout).
 
 #### Voice features announce their state
 
@@ -2308,7 +2320,7 @@ For interpreting the resulting classroom signals, return to [Review evidence and
 
 This chapter follows one fictional learner through a complete planning decision. It shows how a teacher can turn a broad student need into a small, reviewable AlloFlow resource set without entering a student name, disability label, assessment record, or other personal information.
 
-The learner, classroom, and response samples are hypothetical. The live product images were captured in the signed-in Gemini Canvas release on August 20, 2026 with a synthetic third-grade water-cycle source and no student data. They demonstrate the workflow and the teacher's decisions; they are not evidence about a real child.
+The learner, classroom, and response samples are hypothetical. The live product images were captured in the signed-in Gemini Canvas release on August 20, 2026 with a synthetic third-grade water-cycle source and no student data. They demonstrate the workflow and the teacher's decisions; they are not evidence about a real child. The manual frames the app region for readability; each untouched 1536 x 902 original remains in the maintained live-capture index in the documentation source.
 
 ### Case snapshot
 
@@ -2350,7 +2362,7 @@ The teacher will package only the reviewed student-facing items. The source anal
 
 Ms. Rivera opens Universal Settings and enters only information that belongs to the lesson: third grade, English, the approved science target or standard, and a high-contrast educational image style. She leaves Student Interests blank because no interest theme is necessary for this task.
 
-![AlloFlow Universal Settings in Gemini Canvas showing a third-grade lesson and the image-style field set to clean educational vector illustration, high contrast, and no embedded text](docs/teacher-guide/assets/live-screenshots/current-v1.2-resources/00-universal-settings.png)
+![AlloFlow Universal Settings in Gemini Canvas showing a third-grade lesson and the image-style field set to clean educational vector illustration, high contrast, and no embedded text](docs/teacher-guide/assets/live-screenshots/current-v1.2-resources/00-universal-settings.png "Focused controls view")
 
 **Live Canvas decision shown:** the universal image style is a lesson default, not a description of Sam. A resource-level exception should be used only when the resource has a real instructional need, such as a black-line image that must photocopy clearly.
 
@@ -2367,7 +2379,7 @@ The second statement in each pair can guide a resource without exposing who prom
 
 The source analysis identifies upper-elementary text demands and highlights terms such as *evaporation*, *condensation*, *precipitation*, *transpiration*, and *surface runoff*. Ms. Rivera treats those outputs as leads to inspect, not as a reading diagnosis or a command to simplify everything.
 
-![AlloFlow source analysis in Gemini Canvas showing a third-to-fifth-grade complexity estimate and water-cycle key concepts including evaporation, condensation, and precipitation](docs/teacher-guide/assets/live-screenshots/current-v1.2-resources/01-analyze-result.png)
+![AlloFlow source analysis in Gemini Canvas showing a third-to-fifth-grade complexity estimate and water-cycle key concepts including evaporation, condensation, and precipitation](docs/teacher-guide/assets/live-screenshots/current-v1.2-resources/01-analyze-result.png "Focused app view")
 
 **Live Canvas decision shown:** the analysis places likely demands beside the source workflow. It does not decide what Sam can understand. Ms. Rivera checks the actual sentences and sees that the essential science is accessible when the process terms are previewed and the sequence remains visible. She keeps the original passage rather than replacing it automatically.
 
@@ -2382,7 +2394,7 @@ Her review questions are:
 
 The live Glossary panel can generate both Tier 2 academic words and Tier 3 domain words. The screenshot shows a broad starting configuration of four Tier 2 and six Tier 3 terms while the source analysis remains visible on the right.
 
-![AlloFlow Glossary panel in Gemini Canvas showing controls for Tier 2 and Tier 3 term counts, definition level, word roots, custom instructions, and words in images](docs/teacher-guide/assets/live-screenshots/current-v1.2-resources/02-glossary-panel.png)
+![AlloFlow Glossary panel in Gemini Canvas showing controls for Tier 2 and Tier 3 term counts, definition level, word roots, custom instructions, and words in images](docs/teacher-guide/assets/live-screenshots/current-v1.2-resources/02-glossary-panel.png "Focused controls view")
 
 **Live Canvas decision shown:** generation breadth is not the same as the final student load. Ms. Rivera generates candidates, then reduces the delivered set to five terms: *cycle*, *evaporation*, *condensation*, *precipitation*, and *collection*. She checks each definition in the context of the passage and adds one familiar example. She does not require Sam to memorize ten disconnected cards before beginning the lesson.
 
@@ -2394,7 +2406,7 @@ A privacy-safe Custom Instructions entry for this case is:
 
 Ms. Rivera opens Sequence Builder. The panel lets her specify the topic, number of items, ordering mode, and whether visuals are included. In the captured starting state, item count is still automatic and visuals are not yet selected; the prior source analysis remains visible for comparison.
 
-![AlloFlow Sequence Builder panel in Gemini Canvas showing topic, item-count, ordering-mode, and include-visuals controls beside the water-cycle source analysis](docs/teacher-guide/assets/live-screenshots/current-v1.2-resources/13-sequence-builder-panel.png)
+![AlloFlow Sequence Builder panel in Gemini Canvas showing topic, item-count, ordering-mode, and include-visuals controls beside the water-cycle source analysis](docs/teacher-guide/assets/live-screenshots/current-v1.2-resources/13-sequence-builder-panel.png "Focused controls view")
 
 **Live Canvas decision shown:** the teacher changes the automatic starting state for an instructional reason. She requests five items, selects process order, turns on visuals, and asks for arrows or connection language that makes cause and effect explicit. After generation, she verifies that evaporation follows warming, condensation follows cooling, and the sequence does not imply that the cycle has one permanent starting point.
 
@@ -2423,7 +2435,7 @@ AlloFlow can help draft the prompt, options, and feedback, but Ms. Rivera checks
 
 The live Curriculum Audit flags a mismatch between the water-cycle lesson and NGSS 3-ESS2-1, which addresses representing weather data. This is a useful failure: the tool has surfaced a planning problem rather than decorating the lesson with a standard label.
 
-![AlloFlow Curriculum Audit in Gemini Canvas showing a score of 40 and a critical standards-alignment warning for a water-cycle lesson labeled with NGSS 3-ESS2-1](docs/teacher-guide/assets/live-screenshots/current-v1.2-resources/19-standards-udl-alignment-result.png)
+![AlloFlow Curriculum Audit in Gemini Canvas showing a score of 40 and a critical standards-alignment warning for a water-cycle lesson labeled with NGSS 3-ESS2-1](docs/teacher-guide/assets/live-screenshots/current-v1.2-resources/19-standards-udl-alignment-result.png "Focused app view")
 
 **Live Canvas decision shown:** Ms. Rivera does not click **Apply suggested fixes** automatically. She checks the district curriculum and makes one of two honest choices:
 
@@ -2436,7 +2448,7 @@ The same review applies to UDL feedback. A low audit score is a prompt to inspec
 
 After the content is corrected, Ms. Rivera opens Document Builder. The live interface provides student-document formats, appearance controls, navigation, focus mode, accessibility inspection, and a preview area.
 
-![AlloFlow Document Builder in Gemini Canvas showing PDF, worksheet, HTML, and slide choices with accessibility inspection, focus mode, appearance controls, and live preview](docs/teacher-guide/assets/live-screenshots/current-v1.2-resources/22-preview-package-deliver-result.png)
+![AlloFlow Document Builder in Gemini Canvas showing PDF, worksheet, HTML, and slide choices with accessibility inspection, focus mode, appearance controls, and live preview](docs/teacher-guide/assets/live-screenshots/current-v1.2-resources/22-preview-package-deliver-result.png "Focused app view")
 
 **Live Canvas decision shown:** opening Document Builder is not the final check. Ms. Rivera confirms that the preview contains the intended student content, that teacher analysis and answer material are absent, and that the exported or linked version works outside the teacher view. She tests keyboard navigation, zoom, read-aloud, and the oral-response route on the same kind of device students will use.
 
@@ -2480,6 +2492,350 @@ The durable pattern is **target, barrier, support, evidence, branch**:
 For another vignette, change the subject and barrier while keeping that decision structure. A humanities case might pair a primary-source glossary with a DBQ evidence organizer. A mathematics case might pair a worked example with an alternate response format. A multilingual case might add a reviewed home-language support while preserving the shared content target.
 
 Return to [Prepare a lesson](#prepare-a-purposeful-differentiated-lesson) for the full planning workflow, [Classroom workflows](#classroom-workflows) for more recipes, and [Privacy and responsible AI](#privacy-and-responsible-ai) before entering or sharing any student-related information.
+
+---
+
+## Worked multilingual vignette: water-cycle language bridge
+
+This fictional case shows how a teacher can add home-language access while preserving a shared science target. It uses the same synthetic third-grade water-cycle source as the first vignette so readers can compare how one lesson changes when the barrier changes.
+
+The learner, teacher, classroom evidence, and family interaction are hypothetical. No learner profile was entered in AlloFlow. The live product images were captured in signed-in Gemini Canvas on August 20, 2026 with no student data. The manual frames the app region for readability; each untouched 1536 x 902 original remains in the maintained live-capture index in the documentation source.
+
+### Multilingual case snapshot
+
+Ms. Rivera is teaching the same water-cycle lesson described in the first worked case. The shared learning target remains:
+
+> Explain how water moves through evaporation, condensation, precipitation, and collection, using sequence and cause-and-effect language.
+
+One fictional learner, called **Lina** in this chapter, uses Arabic with family and is developing the English academic language needed for science class. Lina can show accurate water-cycle relationships in drawings and discussion, but an English-only paragraph and unfamiliar domain terms make it harder to demonstrate that understanding independently. Ms. Rivera wants home-language access to support meaning while keeping the English science terms visible for class participation.
+
+| Planning question | Decision in this case |
+|---|---|
+| What is the content target? | Explain the water-cycle process and the role of the Sun. |
+| What is the language demand? | Read and use English process terms and cause-and-effect language. |
+| What access will be added? | Reviewed Arabic support, visuals, read-aloud, and optional English sentence frames. |
+| What evidence will count? | An accurate sequence and causal explanation through an approved combination of labels, drawing, speech, or writing. |
+| What will not be graded as science? | Accent, translation quality, English sentence complexity beyond the stated target, or use of the home-language support. |
+| What stays out of AlloFlow? | Lina's name, immigration history, program status, test scores, family records, and prior responses. |
+
+This vignette does not determine English-language proficiency, services, placement, or an individual plan. Those decisions require the responsible school process and multiple appropriate sources of evidence.
+
+### Separate the science target from the language work
+
+Ms. Rivera writes two related goals before generating anything:
+
+- **Science goal:** explain how energy and changes in state move water through a cycle.
+- **Language practice:** use the English terms *evaporation*, *condensation*, *precipitation*, and *collection* in a supported explanation.
+
+The language practice supports participation in the science task; it does not replace the science goal. Lina may use Arabic to build meaning, plan, ask questions, or clarify a relationship. The final evidence can combine the home language with the required English science terms unless a separate language objective says otherwise.
+
+### Plan a compact language-access set
+
+Ms. Rivera chooses five connected resources:
+
+1. a reviewed bilingual glossary;
+2. one text-reduced process visual;
+3. optional English sentence frames;
+4. bilingual assignment directions and success criteria;
+5. a student package tested for language direction, reading order, and read-aloud.
+
+| Resource | Purpose | Human review |
+|---|---|---|
+| Bilingual glossary | Connect a few English science terms to meaning. | Verify both languages in context; keep the English term visible. |
+| Process visual | Make sequence and relationships available without another dense paragraph. | Check labels, arrows, contrast, and whether the visual teaches the correct process. |
+| Sentence frames | Offer an English entry point for cause and sequence. | Keep frames optional and avoid forcing every student into identical prose. |
+| Directions | Make the task, choices, and success criteria understandable. | Confirm that both versions require the same thinking and deliverable. |
+| Student package | Put the reviewed supports in one predictable route. | Test language tags, right-to-left behavior, keyboard order, audio, and the real student link or file. |
+
+### Step 1: catch a missing translation setting
+
+The live Glossary panel shows an important preflight message: **No translation languages set — add them in Universal Settings.** The teacher notices this before generating the glossary.
+
+![AlloFlow Glossary panel in Gemini Canvas showing Tier 2 and Tier 3 controls and a message that no translation languages are set](docs/teacher-guide/assets/live-screenshots/current-v1.2-resources/02-glossary-panel.png "Focused controls view")
+
+**Live Canvas decision shown:** Ms. Rivera returns to Universal Settings, adds Arabic to the shared language list, and keeps English as the output language. Back in Glossary, she confirms that the panel now says it will include Arabic. She does not look for a Translations selector that may be hidden when its automatic target would duplicate the English output, and she does not enter Lina's name or label the setting with a student group. The language choice describes an available lesson support.
+
+Before continuing, she confirms:
+
+- the selected language and regional form match the intended audience;
+- the school permits the configured AI or translation route for this material;
+- a bilingual staff member, interpreter, family liaison, or other qualified reviewer can check high-stakes wording when available;
+- the English source remains available for quotation and class discussion.
+
+Machine translation is a draft. A fluent review is especially important for safety language, assessment directions, family communication, culturally specific wording, and terms that have more than one common translation.
+
+### Step 2: generate broadly, deliver narrowly
+
+The Glossary controls can produce several Tier 2 and Tier 3 terms. Ms. Rivera uses generation to find candidates, then delivers only the five terms needed for this task: *cycle*, *evaporation*, *condensation*, *precipitation*, and *collection*.
+
+Arabic is already selected in Universal Settings, so AlloFlow uses that setting to add the translation column. Custom Instructions refine the glossary content; they do not select or enable a language. Her privacy-safe entry is:
+
+> Include only the five required water-cycle terms. Keep each English science term exactly as it appears in the source. Use one short, context-specific definition and one familiar example. Do not infer language proficiency or add student information.
+
+The resulting glossary includes the translation language configured in Universal Settings. She checks that each translation communicates the meaning used in the passage, not merely the most common dictionary equivalent. She also checks line wrapping, punctuation, text direction, pronunciation support when present, and whether generated images contain stray or unreadable text.
+
+The glossary is available to the whole class. Students can use one language, both languages, or only the visual example without being assigned a public label.
+
+### Step 3: add a visual that carries meaning
+
+The Lesson Images panel offers Text-Reduced Mode, art style, layout, and Custom Instructions. The live capture keeps the source analysis visible while the teacher chooses how much text the visual should contain.
+
+![AlloFlow Lesson Images panel in Gemini Canvas showing Text-Reduced Mode, art style, layout mode, and Custom Instructions](docs/teacher-guide/assets/live-screenshots/current-v1.2-resources/07-lesson-images-panel.png "Focused controls view")
+
+**Live Canvas decision shown:** Text-Reduced Mode is a starting choice, not proof that the image is accessible. Ms. Rivera asks for one clear process diagram with arrows and short labels. She keeps the required English terms on the visual and places reviewed Arabic terms in an adjacent key rather than asking an image model to draw bilingual text inside the artwork.
+
+Her Custom Instructions entry is:
+
+> Show the water cycle as a continuous process with the Sun, evaporation, condensation, precipitation, and collection. Use high contrast, clear arrows, and no decorative text. Leave space for a reviewed bilingual key outside the illustration.
+
+After generation, she checks the process order, arrow direction, state changes, label-image relationships, contrast, and alt text. If the science is wrong, she edits or replaces the image rather than trying to explain away the error during class.
+
+### Step 4: offer English frames without scripting the answer
+
+The Writing Scaffolds panel can generate sentence starters. Ms. Rivera keeps the source analysis visible and chooses a narrow scaffold type rather than creating a full alternate assignment.
+
+![AlloFlow Writing Scaffolds panel in Gemini Canvas showing Sentence Starters and Custom Instructions beside the water-cycle source analysis](docs/teacher-guide/assets/live-screenshots/current-v1.2-resources/09-writing-scaffolds-panel.png "Focused controls view")
+
+**Live Canvas decision shown:** the scaffold supports relationship language while leaving the scientific reasoning to the student. Ms. Rivera reviews three optional frames:
+
+- "When the Sun warms water, ..."
+- "After water vapor cools, ..."
+- "Because water collects, ..."
+
+Students may use, change, combine, or ignore the frames. The teacher does not require Lina to copy a complete generated paragraph, because that would hide whether the science relationship is understood.
+
+The Custom Instructions entry is:
+
+> Draft three optional English sentence frames for explaining sequence and cause in the water cycle. Leave the science idea for the student to complete. Use the required terms but do not provide a finished answer.
+
+### Step 5: write directions before asking AI to draft
+
+The Assignment Directions dialog asks for a title, student steps, due information, goals, an optional auto-check resource, and the route into the pack. It also offers **Draft for me**, but the teacher can write the task directly.
+
+![AlloFlow Assignment Directions dialog in Gemini Canvas showing title, directions, due information, goals, auto-check, draft, and add-to-pack controls](docs/teacher-guide/assets/live-screenshots/current-v1.2-resources/21-assignment-directions-panel.png "Focused app view")
+
+**Live Canvas decision shown:** Ms. Rivera writes the English directions first so the learning target and response choices are explicit, then requests an Arabic draft and reviews it. Both versions say:
+
+1. Read or listen to the source.
+2. Use the glossary and process visual as needed.
+3. Explain the role of the Sun and put the water-cycle stages in order.
+4. Use at least three English science terms.
+5. Respond with a labeled diagram plus audio, a short typed explanation, or another approved class response route.
+
+The success criteria are identical in both languages. The translation does not add extra hints, remove the causal explanation, or turn the task into vocabulary matching.
+
+### Step 6: test the bilingual package, not just the preview
+
+Document Builder provides formats, appearance controls, focus mode, navigation, accessibility inspection, and a live preview. Those controls make review possible; they do not guarantee that the content is ready.
+
+![AlloFlow Document Builder in Gemini Canvas showing document formats, appearance controls, navigation, focus mode, accessibility inspection, and live preview](docs/teacher-guide/assets/live-screenshots/current-v1.2-resources/22-preview-package-deliver-result.png "Focused app view")
+
+**Live Canvas decision shown:** Ms. Rivera verifies the actual exported file or student link. For the bilingual sections, she checks:
+
+- Arabic text is marked with the correct language and displayed right to left;
+- English science terms remain readable in their left-to-right form;
+- punctuation, numbers, arrows, and mixed-language lines appear in the intended order;
+- headings and links have a sensible keyboard and screen-reader sequence;
+- read-aloud changes language or voice appropriately instead of reading both languages as English;
+- the visual, glossary, directions, and response route still work on a school device;
+- teacher notes, translation-review comments, and answer guidance are not in the student copy.
+
+If the export cannot preserve direction or language tags, she uses a format that can and provides a stable fallback, such as a reviewed HTML handout or teacher-approved print copy.
+
+### Hypothetical evidence and the next decision
+
+In this fictional example, Lina labels the diagram with the four English process terms, rehearses the relationship in Arabic with an approved partner, and records a short explanation that uses the English terms within the response. Ms. Rivera evaluates the science relationships and the stated language practice separately.
+
+| Evidence noticed | Reasonable interpretation | Next move |
+|---|---|---|
+| The process and arrows are accurate; required English terms are used meaningfully. | The science target is demonstrated with language support. | Ask for a new example, such as explaining a puddle after rain. |
+| The drawing is accurate but the causal explanation is missing in both response routes. | The relationship may need more modeling or questioning. | Confer with the visual present and model one because/so connection. |
+| The science is accurate in the home language but English terms are not yet stable. | Content understanding and English vocabulary practice are at different points. | Preserve the science evidence and continue targeted vocabulary practice. |
+| The English response is brief but accurate. | Brevity alone does not show weak science understanding. | Use the shared criteria; do not add an unstated language-complexity penalty. |
+| Several students misunderstand condensation despite using the glossary. | Translation did not remove the conceptual barrier. | Reteach the state change with a model or observation and collect new evidence. |
+| The Arabic directions and English directions lead to different products. | The versions are not equivalent enough for use. | Correct and re-review the directions before assigning. |
+
+### Protect dignity and keep human relationships central
+
+Do not use AlloFlow to rank home languages, infer immigration history, diagnose language needs, or replace an interpreter. Do not ask a student or family member to become the unpaid quality-control step for essential school communication. A learner may volunteer helpful feedback, but the school remains responsible for providing accurate, accessible information.
+
+Avoid public pathway names such as "English learner version" or "low-language copy." Use neutral labels tied to purpose, such as "bilingual glossary," "visual process guide," "read and listen," or "sentence-frame option."
+
+### Reuse the language-access pattern
+
+The repeatable sequence is:
+
+1. Separate the content target from the language demand.
+2. Add the home language as an access option, not a lower target.
+3. Keep essential English academic terms visible when they belong to participation in the lesson.
+4. Pair translation with a meaningful visual or model.
+5. Offer comparable response routes and shared success criteria.
+6. Review language, culture, accessibility, and content accuracy with qualified humans.
+7. Interpret content evidence separately from developing English unless language itself is the target.
+
+Continue with [Accessibility and UDL](#accessibility-and-udl-verify-the-learner-experience) for learner-experience checks, [Classroom workflows](#classroom-workflows) for more recipes, and [Privacy and responsible AI](#privacy-and-responsible-ai) before entering, translating, or sharing student-related information.
+
+---
+
+## Worked assessment-access vignette: show the science, not the writing speed
+
+This fictional case follows a teacher who wants a short water-cycle check to measure science reasoning without accidentally turning it into a test of handwriting speed, sustained typing, or memory for a long set of directions. It uses the same synthetic third-grade lesson as the other worked cases so readers can see how one target leads to different AlloFlow decisions when the barrier changes.
+
+The learner, classroom, work samples, and scores are hypothetical. No learner profile was entered in AlloFlow. The live product images were captured in signed-in Gemini Canvas on August 20, 2026 with no student data. The manual frames the app region for readability; each untouched 1536 x 902 original remains in the maintained live-capture index in the documentation source.
+
+### Assessment-access case snapshot
+
+Ms. Rivera wants to know whether students can explain how the Sun drives part of the water cycle. One fictional learner, called **Jordan** in this chapter, gives accurate explanations during partner talk and labels diagrams correctly, but produces very little during a short, text-heavy exit ticket. The teacher does not assume that the blank space represents missing science knowledge. She first inspects what the assessment actually requires.
+
+The shared learning target is:
+
+> Explain how the Sun's energy causes evaporation and how that change connects to the rest of the water cycle.
+
+| Planning question | Decision in this case |
+|---|---|
+| What construct should the assessment measure? | Water-cycle sequence and causal science reasoning. |
+| What is not part of that construct? | Handwriting speed, typing stamina, spelling, or remembering several directions at once. |
+| What access will be available to everyone? | Chunked directions, optional read-aloud, a process visual, and typed, drawn-plus-labeled, or recorded response routes. |
+| What remains comparable across routes? | The same prompt, science terms, success criteria, and evidence of cause and sequence. |
+| What stays out of AlloFlow? | Jordan's name, diagnosis, plan, scores, work samples, and the reason any learner uses an approved support. |
+
+This vignette is an instructional example, not a recommendation for an individual plan or a substitute for the school's assessment, accessibility, or special-education process. Required accommodations and assistive technology should follow the learner's established plan and be tested in the real delivery environment.
+
+### Name the evidence before choosing a format
+
+Ms. Rivera turns the target into four observable criteria before asking AlloFlow to draft anything:
+
+1. The response identifies the Sun as an energy source.
+2. It connects warming to evaporation.
+3. It places evaporation in a defensible water-cycle sequence.
+4. It explains at least one relationship using words, labels, arrows, or speech.
+
+Those criteria are the anchor. A route is acceptable only if it can reveal the same evidence. A multiple-choice item may efficiently check recognition, but it cannot replace the explanation evidence by itself. A polished paragraph may include the evidence, but prose quality is not scored unless writing is also an explicit target.
+
+| Possible route | What the learner produces | Comparable evidence to inspect | Review risk |
+|---|---|---|---|
+| Short typed explanation | Three or four sentences. | Cause, sequence, and meaningful science terms. | Do not add grammar or typing speed to the science score. |
+| Oral explanation | A brief recording or teacher-documented conference response. | The same cause, sequence, and terms. | Confirm audio works and use the same criteria, not an easier prompt. |
+| Draw, label, and explain | A process sketch with arrows, labels, and a short caption or recording. | Correct relationships and an explicit Sun-to-evaporation link. | A decorative drawing without an explanation is not enough evidence. |
+
+### Step 1: start with a formative purpose
+
+The live **Assess** panel shows **Exit Ticket** as the assessment purpose and describes a recommended preset of five scored questions plus one unscored reflection. It also exposes separate areas for question customization, reflection, scoring, feedback, saved setups, and Custom Instructions.
+
+![AlloFlow Assess panel in Gemini Canvas showing the Exit Ticket purpose, recommended question and reflection preset, question customization, scoring, feedback, and Custom Instructions controls](docs/teacher-guide/assets/live-screenshots/current-v1.2-resources/18-assess-panel.png "Focused controls view")
+
+**Live Canvas decision shown:** a preset is a starting point, not a requirement. Ms. Rivera needs a quick formative signal, so she reduces the set to two scored prompts and one unscored reflection. She avoids a long quiz that would collect more fatigue than useful evidence.
+
+Her privacy-safe Custom Instructions entry is:
+
+> Create a two-prompt formative check for the stated water-cycle target. Include one brief recognition item and one explanation item. Word the explanation prompt and success criteria so the teacher can use them unchanged with a typed, recorded, or drawn-and-labeled response. Do not include student names, ability labels, or diagnostic language.
+
+This instruction shapes the wording; it does **not** switch on recording, drawing, or submission tools. Ms. Rivera must enable or provide each response route separately in the delivery environment and test it before assigning.
+
+She reviews every generated item for scientific accuracy, reading demand, answer clues, cultural assumptions, and whether the stated response routes can actually show the target.
+
+### Step 2: separate access from a change in the target
+
+Ms. Rivera uses a simple test: **If I remove the barrier, can the learner still show all four science criteria?**
+
+- Read-aloud changes access to the prompt; it does not supply the science explanation.
+- Breaking directions into numbered steps reduces memory load; it does not reduce the target.
+- Recording an answer changes the response mode; it does not remove cause-and-effect reasoning.
+- Keeping a process visual available supports recall and organization; it does not make an incorrect sequence correct.
+- Replacing the explanation with only a matching item would change the evidence and is not equivalent for this target.
+
+The teacher records the instructional decision in lesson language, not student language: **Offer three equivalent response routes and score the common science criteria.** The system does not need to know which learner prompted the design or why any learner chooses a route.
+
+### Step 3: write directions that make the choices real
+
+The live **Assignment Directions** dialog asks the teacher to provide a title, student-facing steps, due information, goals, and an optional resource for automatic checking. It also offers AI drafting from the lesson plan and pack, with a visible reminder that the draft must be reviewed.
+
+![AlloFlow Assignment Directions dialog in Gemini Canvas showing fields for the title, student-facing directions, due information, goals, automatic checking, AI drafting, and adding the directions to the pack](docs/teacher-guide/assets/live-screenshots/current-v1.2-resources/21-assignment-directions-panel.png "Focused app view")
+
+**Live Canvas decision shown:** Ms. Rivera writes the essential directions herself before using any draft assistance:
+
+1. Review the water-cycle visual and the four science words.
+2. Answer the first question.
+3. For the explanation, choose one route: type, record, or draw and label.
+4. Show how the Sun's energy connects to evaporation.
+5. Check that your response shows both cause and sequence.
+
+She does not write “Jordan may record.” The directions present legitimate classwide choices without disclosing who needs which route. If a learner has an individually required accommodation, the teacher provides it through the established process whether or not it appears as a classwide option.
+
+### Step 4: audit the target and the assessment claim
+
+The live Curriculum Audit catches that the synthetic water-cycle lesson had been labeled with NGSS 3-ESS2-1, a standard about representing weather data. The report calls the mismatch critical and recommends revising the lesson evidence.
+
+![AlloFlow Curriculum Audit in Gemini Canvas showing a score of 40 and a critical warning that the water-cycle materials do not align with the selected weather-data standard](docs/teacher-guide/assets/live-screenshots/current-v1.2-resources/19-standards-udl-alignment-result.png "Focused app view")
+
+**Live Canvas decision shown:** accessibility does not repair a validity problem. Ms. Rivera corrects the standard or changes the task before interpreting any score. She does not apply suggested fixes automatically, and she does not claim that flexible response routes make a misaligned assessment valid.
+
+Her review separates three questions:
+
+- **Alignment:** Does the prompt elicit the knowledge or reasoning named in the target?
+- **Access:** Can students perceive the prompt and use an approved way to respond?
+- **Scoring:** Do the criteria reward the target rather than unrelated performance demands?
+
+An automated audit can flag a question to inspect. It cannot certify the assessment, choose a required accommodation, or decide what a learner knows.
+
+### Step 5: choose and test the actual delivery route
+
+The live **Preview, Package & Deliver** panel groups print and editable documents, web and accessibility formats, LMS packages, sharing methods, and resource-specific exports. The available buttons include Document Builder, a homework QR route, a live session, and a test of the latest student link.
+
+![AlloFlow Preview, Package and Deliver panel in Gemini Canvas showing document, web and accessibility, LMS, sharing, and resource-specific export groups with buttons for Document Builder, Homework QR, live session, and testing the latest student link](docs/teacher-guide/assets/live-screenshots/current-v1.2-resources/22-preview-package-deliver-panel.png "Focused app view")
+
+**Live Canvas decision shown:** a listed export format is not proof that the assessment route works. Ms. Rivera opens the same student link or file students will use and tests it on the same kind of device. She checks:
+
+- keyboard order, focus visibility, zoom, contrast, and read-aloud;
+- whether the directions and success criteria remain attached to the task;
+- whether typed, recorded, and drawn responses can actually be submitted;
+- whether a recording has a private, workable location and a non-audio fallback;
+- whether teacher notes, answer guidance, audit reports, and private observations are absent;
+- what students should do if the network, microphone, or export fails.
+
+If one route cannot be delivered reliably that day, she uses a tested equivalent, such as a brief teacher conference documented with the same criteria. She does not make a student troubleshoot in public to earn access.
+
+### Hypothetical responses and scoring decisions
+
+Ms. Rivera applies the same four science criteria to these fictional samples:
+
+| Evidence received | Science interpretation | Scoring and next move |
+|---|---|---|
+| Jordan records: “The Sun warms liquid water. Some becomes water vapor, so that is evaporation. Later it cools, forms clouds, and can fall back down.” | Cause and sequence are present; the key term is used accurately. | Count the target as demonstrated. Give content feedback, not a penalty for using audio. |
+| A typed response says, “The Sun makes evaporation,” with no sequence. | One causal link is present, but the broader relationship is incomplete. | Ask one follow-up about what happens after water vapor rises. |
+| A labeled drawing shows correct arrows but no explicit role for the Sun. | The cycle is organized, but one required causal idea is missing. | Prompt for a label, caption, or brief oral addition about energy. |
+| A blank digital response follows a microphone permission failure. | No valid inference about science understanding is available. | Restore access and recollect evidence; do not score the technology failure as zero knowledge. |
+| Many students choose the same attractive wrong option. | The item may contain a misconception signal or a design flaw. | Inspect the distractor and reteach before making an individual conclusion. |
+
+Ms. Rivera keeps any student-linked evidence in the school's approved system, not in Custom Instructions or a reusable AlloFlow project. She records only what is needed for instruction and follows local retention rules.
+
+### Use a route-equivalence check before sharing
+
+For every response choice, Ms. Rivera asks:
+
+1. Does this route preserve the same target?
+2. Can it reveal every required criterion?
+3. Is the cognitive demand comparable?
+4. Does the route avoid introducing a new barrier?
+5. Can the teacher review and score it consistently?
+6. Has it been tested in the real student environment?
+
+If any answer is no, the route needs revision. “Choice” is not automatically accessible, and equal-looking formats are not automatically equivalent.
+
+### Reuse the assessment-access pattern
+
+The durable pattern is **construct, barrier, route, criteria, test, interpret**:
+
+1. Define what the assessment should measure.
+2. Identify unrelated demands that could hide that knowledge.
+3. Offer approved routes that preserve the target.
+4. Apply common criteria to all routes.
+5. Test the actual student experience and fallback.
+6. Interpret only evidence the route validly produced.
+
+In mathematics, the construct might require showing a strategy, so an answer-only route would not be equivalent. In history, a DBQ target may require citing evidence, so dictation can change the input method but cannot remove the citations. In writing, sentence construction may be part of the target, so the teacher must distinguish access support from generating the response itself.
+
+Continue with [Accessibility and UDL](#accessibility-and-udl-verify-the-learner-experience) for the learner-experience review, [Review evidence and plan next steps](#review-evidence-and-plan-next-steps) for cautious interpretation, and [Privacy and responsible AI](#privacy-and-responsible-ai) before entering or storing student-related information.
 
 ---
 
@@ -2706,29 +3062,29 @@ The X on the bot and the header toggle do the same thing: they hide AlloBot and 
 
 ### What gets sent where
 
-A spoken question goes to the same AI backend as everything else you generate, under the same settings. AlloBot does not listen when hands-free mode is off, and the microphone closes while it speaks or thinks (the indicator says so). If no AI backend is set up, AlloBot's AI conversation is unavailable; see [Troubleshooting](#troubleshooting) for the three ways to turn AI on.
+A spoken question goes to the configured AI backend under the same provider settings used for generation. AlloBot does not listen when hands-free mode is off, and the microphone closes while it speaks or thinks (the indicator says so). If no AI backend is set up, AlloBot's AI conversation is unavailable; see [Troubleshooting](#troubleshooting) for the connection routes available in your deployment.
 
 ### Practical guidance
 
 - **Let new users just talk.** The most common mistake is treating AlloBot like a command line. It is a colleague, not a console.
-- **During a lesson**, "stop reading" and the read-aloud transport always act instantly; they are deliberately exempt from the offer step.
+- **During a lesson**, "stop reading" and the read-aloud transport are direct controls rather than proposed screen changes. They should respond promptly; if audio continues, use the visible stop or mute control and follow the audio recovery steps in [Troubleshooting](#troubleshooting).
 - **In Guided Mode**, AlloBot knows which step you are on, so "where was I?" is a fair question.
 
 ---
 
 ## Documents and printing: from resource to handout
 
-Everything AlloFlow generates can leave the app as a document a student can hold: a finished copy to read, a blank copy to write on, or a self-contained web page with its own reading tools. This chapter covers choosing between them and the details that matter once paper is involved.
+Document Builder can package supported lesson resources as a finished copy to read, a blank copy to write on, a web handout with reading tools, or slides. Not every interactive tool becomes a meaningful static document, so preview the chosen resources and use the tool's own export when one is required.
 
 For building the resources themselves, see [Prepare a lesson](#prepare-a-purposeful-differentiated-lesson).
 
-### The four export formats, plainly
+### The four primary Document Builder modes
 
 | Format | What it is | Reach for it when |
 | --- | --- | --- |
 | **Print / Save as PDF** | A finished copy to read. Opens your print window; print it or save as PDF there. | Reference copies, family communication, reading material. |
 | **Worksheet** | A blank copy to write on: answer boxes become ruled lines, multiple choice becomes fill-in bubbles, and a Name / Date / Score header appears. | Paper practice and anything handed in physically. |
-| **HTML handout** | One self-contained file with its own reading toolbar. Works offline once downloaded; nothing phones home. | Sending work home, devices without AlloFlow, screen-reader use. |
+| **HTML handout** | A downloadable file with its own reading toolbar. The default export is designed for offline use; optional web fonts, external links, media, or connected features can still create network dependencies. | Sending work home, devices without AlloFlow, screen-reader use after testing. |
 | **Slides** | A presentation export. | Whole-class instruction. |
 
 The export screen explains each format under its selector, so you do not need to memorize this table.
@@ -2739,13 +3095,13 @@ The export screen explains each format under its selector, so you do not need to
 
 The exported page carries its own accessibility toolbar, independent of AlloFlow:
 
-- **Text size** steps from 90% to 175%, with a live percentage readout. Content reflows instead of getting cut off, at every size, on every screen width.
-- **Fonts:** nine faces that work with no internet at all, including a readable serif, a rounded face, and a dyslexia-friendly option. Thirteen optional web fonts span accessibility (OpenDyslexic, Atkinson Hyperlegible, Lexend, Andika), multilingual reading (Noto Sans and Noto Serif), sans-serif, serif, and monospace choices. They are behind a clearly labeled "needs internet" checkbox at export time and are off by default.
+- **Text size** offers a range with a live percentage readout. The handout is designed to reflow, but test the actual file at the largest offered size and the narrowest student viewport.
+- **Fonts:** offline choices travel with or fall back inside the handout, while optional web fonts can require internet. The exact list can change; use the export screen's **needs internet** label and test multilingual coverage before choosing a font.
 - **Reading themes**, sentence read-along where the lesson includes audio, and the annotation tools below.
 
 ### Annotations that stay put
 
-Students and teachers can highlight, add notes and stickers, record voice notes, and draw freehand directly on the handout. Marks belong to the document: they scroll with it, stay attached through text-size and font changes, and survive reload. "Erase my marks" clears only your own annotations, tells you how many it would erase, and is disabled when there is nothing to erase.
+Supported handouts can provide highlights, notes, stickers, voice notes, and drawing. Annotation persistence depends on the exported format, browser storage, permissions, and the way the file is reopened. Test a sample mark, reload the actual handout, and confirm that it remains anchored before promising persistence to students.
 
 Teacher annotations made in the app travel into the export, including drawings.
 
@@ -2762,7 +3118,7 @@ The Document Builder's ribbon has an **Expert Workbench** tab: type a plain-lang
 ### Practical guidance
 
 - **Preview in the real format.** A resource that looks right in the app can break at 175% text on a phone; the reflow work makes this rare, but the habit is free.
-- **For families without reliable internet**, the HTML handout with the default fonts is the safest artifact: one file, works from a download, nothing external.
+- **For families without reliable internet**, test the downloaded HTML handout with default fonts while the device is offline. Remove or replace any optional font, link, media item, or feature that still needs a network.
 - **Keep the answer-key page** before handing a stack to students; it prints last on purpose.
 
 ---
@@ -2789,7 +3145,7 @@ A thorough run on a long document takes a while, and there are three things wort
 
 ### Doing this without the app
 
-If you already use Claude Desktop, there is a local connector that runs the same pipeline on your own computer. You install it once, and then you can ask in plain language: audit this document, remediate it, export it as EPUB. It reads the file from your disk, so nothing is uploaded to AlloFlow.
+If you already use a compatible desktop MCP host, the optional local connector can run the pipeline on your computer. You install it once, then ask in plain language to audit a document, remediate it, or export a supported format. The connector reads the file from disk; deterministic processing does not require an AlloFlow upload, but the host, configured AI provider, logging, and export destination still need their own review.
 
 Two things make it worth knowing about. The deterministic tools (validation, text extraction, redaction, structure checks, exports) work with no AI key at all, and the AI-assisted repair runs on a key you supply yourself. Your IT department may prefer this path for exactly that reason: see [For your IT department](#for-your-it-department-the-one-page-technical-brief).
 
@@ -2805,7 +3161,7 @@ Every run produces a report bound to the exact files it describes: what was foun
 
 ### Confidential documents
 
-The whole workflow can run against a local AI model instead of a cloud provider, and the validation tools run locally, so a sensitive document can be processed with nothing leaving the machine. Set that up in AI Backend Settings ("Private AI on this computer"), and see [Privacy and responsible AI](#privacy-and-responsible-ai) for the handling rules that still apply to the files themselves.
+The workflow can use a local AI endpoint instead of a cloud provider, and its deterministic validation tools run locally. For sensitive documents, verify that the chosen endpoint is actually on the device, that the desktop host and model do not send telemetry or retain prompts, and that exports stay in an approved location before describing the route as no-egress. Set the endpoint in AI Backend Settings and see [Privacy and responsible AI](#privacy-and-responsible-ai) for the handling rules that still apply to the files themselves.
 
 ### Where this connects
 
@@ -2916,11 +3272,11 @@ If a content filter or network rule is suspected, report the approved site URL, 
 
 #### If you see "AI extras: off" in the STEAM Lab header
 
-That small sparkle pill means no AI backend is set up on this device: no API key, no local model, and you are not inside Gemini Canvas. Nothing is broken. Every sim and activity works fully without AI; only the extras (AI hints, coaching) are off. Click the pill to see the three ways to turn AI on. The easiest is opening AlloFlow inside Gemini Canvas, which is free with a Google account and uses your Gemini plan's daily quota; the setup screen has a button that takes you straight there.
+That small sparkle pill means no AI backend is set up on this device: no API key, no reachable local model, and the app is not using the Gemini Canvas bridge. The catalog and many core simulations still work, while AI-dependent generation, hints, coaching, or individual drills remain unavailable. Click the pill to review the connection choices offered by the current deployment. If Gemini Canvas is one of them, its availability, account requirements, quotas, and school approval come from Google and the account being used; verify those terms rather than treating the route as automatically free or approved.
 
 #### If a message disappeared before you finished reading it
 
-Notices appear at the top center of the screen and fade after a few seconds. Nothing is lost: click the lightbulb in the header and open the **Messages** list to reread every recent notice, newest first.
+Notices appear at the top center of the screen and fade after a few seconds. Click the lightbulb in the header and open the **Messages** list to reread the notices still retained for the current workspace, newest first. Treat that list as a convenience, not as a permanent log.
 
 #### If generation does not start
 
@@ -3299,7 +3655,7 @@ Keyboard behavior can vary inside simulations and specialized editors. Turn on H
 
 **Codename:** A classroom alias used to reduce the need for student names in a live workflow. A codename still requires careful handling if the teacher can link it to a student.
 
-**Deep link:** A direct web address that opens one interactive tool by itself, with no sign-in (for example, a water cycle link a teacher can put in any assignment or message). Every STEAM Lab tool has one.
+**Deep link:** A direct web address exposed by the current catalog or deployment that opens a focused interactive tool (for example, the public Water Cycle link). Verify the copied link in a student-equivalent profile; a surrounding LMS, district gateway, or provider may add sign-in even when the public standalone route does not.
 
 **Deployment:** The approved combination of app location, hosting, accounts, AI backend, live-session services, storage, security rules, and retention settings.
 
@@ -3376,7 +3732,7 @@ Do not begin with a target such as “every teacher will use ten tools.” Featu
 
 A pilot answers one question: does this help our teachers with our students? Three to five volunteer teachers for four to six weeks is enough to know.
 
-**Keep the entry cost near zero.** Every interactive tool has its own direct link (for example, a water cycle simulation a science teacher can open with one click and use that period). Start volunteers with one link that fits something they already teach; nobody has to adopt a platform to try a tool. There are no accounts to create, for staff or students, so IT setup for the pilot itself is nothing.
+**Keep the entry cost low.** Many catalog tools have a focused link, such as the Water Cycle route shown in the public catalog. Start volunteers with one verified link that fits something they already teach. The default public standalone route may not require an AlloFlow account, but IT still needs to approve the host, filtering, device support, permissions, data path, and any surrounding LMS, Gemini, or district sign-in.
 
 **Agree on defaults once.** Have the pilot group open Universal Settings together for ten minutes and settle grade level, language, and the translation setting for their context. Shared defaults make pilot artifacts comparable and prevent the most common early confusion, which is two teachers getting different-feeling output from the same tool.
 
@@ -3531,17 +3887,17 @@ When a school pilots AlloFlow, the questions come from IT within a week. This ch
 
 ### What it is, architecturally
 
-A static web application served from a CDN. There is no application server holding user data, no database of students, and no login system. The code is open source (AGPL) and publicly auditable on GitHub, so your security review can read exactly what runs.
+The core teacher workspace is a client-side web application that can be served as static assets from a CDN or bundled in the desktop package. That does **not** make every AlloFlow workflow serverless: AI backends, live-session transport, LMS launches, online lookups, optional school-owned Apps Script services, and the optional evaluation portal have their own network, identity, and storage paths. The code is open source (AGPL) and publicly auditable on GitHub, so a security review can inspect the paths enabled in the deployment being approved.
 
 ### Accounts and authentication
 
-None. Staff and students use it without creating accounts. This removes the usual pilot blockers (rostering, SSO integration, account lifecycle) and also means AlloFlow holds no credential or directory data at all.
+The standalone public and desktop workspace does not require users to create an AlloFlow vendor account. A surrounding Gemini or Canvas environment, LMS, district gateway, AI provider, optional Google Apps Script service, or evaluation portal may require its own account or identity. Review authentication per route; do not generalize the standalone behavior to every deployment.
 
 ### Where data lives
 
-Work product stays in the browser's own storage on the device that created it (localStorage and equivalent browser storage). Nothing is synced to an AlloFlow server, because there is not one. The practical consequences cut both ways:
+Authoring state is stored in the browser or desktop profile by default (localStorage, IndexedDB, and related device storage). Explicit actions and configured features can transmit or copy content to an AI provider, live-session service, LMS, share route, school-owned service, downloaded file, or synced folder. The practical consequences cut both ways:
 
-- Nothing to breach centrally, nothing to subpoena from a vendor, nothing to delete on offboarding.
+- The default local workspace does not create a central AlloFlow roster or project store, but each connected route must be reviewed for its own records, retention, deletion, and access controls.
 - A lost or wiped device loses its local work unless the user exported a project file. Treat exported project files as instructional records under your normal file-handling policy.
 
 #### Every place work can come to rest
@@ -3554,7 +3910,7 @@ Browser storage is the default, not the only destination. These are the paths an
 | AlloFlow project file (`Save Project`) | Wherever the user saves it | A full snapshot: source material, generated resources, settings, notes |
 | Exports (PDF, print, accessible document, worksheet, teacher copy) | Wherever the user saves it | Finished copies, and the teacher copy also carries answer keys |
 | QR code or student share link | No new storage; a new access path | Whatever the shared route exposes |
-| Live session transport | Local peer connections, or a mailbox you deploy (below) | Session coordination and student responses |
+| Live session transport | Local peer connections, a configured Firestore path, or a mailbox/service the school deploys | Session coordination, delivery state, and student responses, according to that transport |
 | LMS launch | Your LMS | Course, role, and assignment context supplied by the LMS |
 | Optional Apps Script services | **Your school's own Google Drive** | Only what that specific service is for (below) |
 | On-device model and remediation caches | The device | Cached speech models and remediation working data |
@@ -3565,7 +3921,7 @@ The full teacher-facing data-path table is in [Privacy and responsible AI](#priv
 
 #### The Google Drive option: services you deploy in your own tenant
 
-AlloFlow has no server. When a school genuinely needs shared or persistent storage, the pattern is always the same: a small Apps Script project deployed **into a school-owned Google account, never a personal one**, so the data sits in your Drive under the Workspace for Education agreement you already hold. Each is optional, and each is off until someone deploys it. The packages and their deployment READMEs are in `apps_script/`.
+The standalone workspace does not require a vendor-side application server. When a school chooses one of the repository's optional Apps Script integrations for shared or persistent storage, deploy it into a school-managed Google account under the district's approved Workspace terms, not a personal account. Each service is optional, has a different security model, and remains off until it is configured. The packages and their deployment READMEs are in `apps_script/`.
 
 They do not share one security model, and the differences are the part worth your attention:
 
@@ -3591,27 +3947,28 @@ AI features only work when a backend is configured, and the district controls wh
 | Option | What leaves the device | Fits when |
 | --- | --- | --- |
 | **Gemini Canvas or a Gemini API key** | Prompts and source content go to Google under the account or key used | The district already permits Google AI services |
-| **A local model** (LM Studio, Ollama, LocalAI on the device or a district server) | Nothing leaves the machine or the district network | Confidential contexts, strict no-egress requirements |
-| **No backend** | Nothing; AI features hide or disable themselves and everything else keeps working | Evaluation phase, or a deliberate non-AI deployment |
+| **A local model** (LM Studio, Ollama, LocalAI on the device or a district server) | Prompts go to the endpoint the district configured; content may stay on one device or inside the district network depending on that endpoint and its logging | Contexts approved for that specific local or district-managed service |
+| **No backend** | No AI-generation request is made; AI-dependent controls disable or explain the missing connection | Evaluation phase, or a deliberate non-AI deployment |
 
-Teachers are instructed throughout this guide to use de-identified content with any cloud backend. The no-backend state is honest by design: the interactive tools, delivery, and documents all work without AI.
+Teachers are instructed throughout this guide to use de-identified content with any cloud backend. In the no-backend state, many non-AI tools, existing resources, settings, saving, and exports remain available. Verify the exact activity: an AI-dependent option or a feature that needs an external lookup will not become offline merely because generation is disabled.
 
 ### Network requirements
 
 - Allow the application host (for the public deployment, `alloflow-cdn.pages.dev`).
 - If a cloud AI backend is chosen, allow that provider's endpoint (for Gemini, Google's API hosts).
-- Exported HTML handouts are self-contained and work offline; the optional high-legibility web fonts are off by default and clearly labeled "needs internet" when a teacher opts in.
+- If live sessions, an LMS, online lookups, or a school-owned service are enabled, allow only the documented endpoints for those approved features and confirm their retention and authentication settings.
+- Exported HTML handouts are designed for offline use with their required lesson content embedded. Optional web fonts, external links or media, and connected interactions can add network dependencies; test the exported file offline before relying on it.
 
 ### What to verify yourself, because you should not take a guide's word for it
 
 1. Open the app on a managed device with your standard filtering and confirm it loads and a sample tool runs.
-2. Watch the network tab during generation with your chosen backend and confirm traffic goes only where this chapter says.
+2. Watch the network tab during generation, live delivery, exports, and any connected tool. Compare every destination with the deployment's approved allowlist and investigate unexpected traffic.
 3. Review the repository if your process requires code review; the license permits it and the build is reproducible from source.
-4. If you deploy the evaluation portal, grep its `Code.gs` for `UrlFetchApp` before you approve it. There are zero occurrences, which is the claim that nothing leaves your tenant, and it takes one search to confirm rather than trust.
+4. If you deploy the evaluation portal, inspect its `Code.gs` for network-capable services such as `UrlFetchApp` before approval. The source reviewed for this guide on 22 August 2026 contains zero `UrlFetchApp` references; repeat the check against the exact commit you deploy, and separately review Google services the script intentionally uses inside your tenant.
 
 ### The two-sentence version for a busy director
 
-AlloFlow is a static, open source web app with no accounts and no vendor-side data storage; work stays on the device by default, and AI runs only through the backend the district chooses, including a fully local option. Where a school does want shared storage, it deploys a small optional service into its own Google Drive, so that data stays in your tenant too. The realistic review effort is the same as approving a website plus, if you choose one, an AI provider you have likely already reviewed.
+AlloFlow's core workspace is a client-side, open-source app whose authoring state stays on the device by default. Accounts, transmission, and storage change when the school enables Gemini or another AI provider, live-session transport, an LMS, online lookups, shared links, or optional school-owned services, so approve and test those routes individually rather than relying on one product-wide privacy sentence.
 
 ---
 
@@ -3626,13 +3983,13 @@ If you have not read [Privacy and responsible AI](#privacy-and-responsible-ai), 
 The hub states this once, and every tool holds to it:
 
 - **Aggregate or de-identified where that is the point.** The analysis tools take counts or student codes, never rosters of names tied to outcomes. The tools that do hold names — evaluation, meeting documentation — are real working records, not previews; what a district portal adds is shared, authenticated access and a retained store, not permission to do the work.
-- **Computed on this device.** Nothing you enter is sent to a server, with one exception you control: tools that offer AI drafting or translation call the AI backend your school configured, and they tell you before anything leaves. What you enter stays in your signed-in profile on that device, protected by your device sign-in rather than by encryption AlloFlow adds.
+- **Local by default, with named exceptions.** The standalone hub computes and stores working state in the current browser or desktop profile. AI drafting and translation, an optional evaluation portal, Drive backup, live or shared routes, an LMS, and other configured services can transmit or copy data outside that profile. Review the disclosure and destination for the exact tool and deployment. AlloFlow does not add application-level encryption to ordinary browser storage, so device access and disk protection still matter.
 - **Descriptive, never a verdict.** Every output is framed as material *for human review*. No tool places a student in a tier, rates a teacher, decides eligibility, or certifies a translation. You do, and the exports say so.
 
 A practical consequence worth planning around: because the data is on-device, a leadership workflow lives on the device where you started it. The hub's **Back up this hub** section covers this two ways:
 
 - **Download backup / Restore from backup** — one file with every tool's saved data, restorable on a new device or after a wipe. Treat the file as the confidential records it may describe. Restoring only ever writes the hub tools' own data; it cannot touch anything else in AlloFlow.
-- **Automatic Drive backup** — a three-minute, one-time script on your **school-managed Google Workspace for Education account** (so the stored data sits under your district's existing data-privacy agreement, not a personal account). Once connected, a dated backup is saved to a Drive folder whenever you close a hub tool or open the hub and something has changed — so finishing a walkthrough or saving a screening window is what freshens the copy, not remembering to visit a menu. The hub shows *last saved*, and the folder keeps a bounded history. The setup steps are in `apps_script/leadership_hub_backup/README.md` in the AlloFlow repository; the script can only write files it created — it cannot read the rest of your Drive and never shares anything with anyone.
+- **Automatic Drive backup** — an optional script installed in a **school-managed Google Workspace for Education account**, not a personal account. Once connected, it saves dated backups when the hub reports changed data on close or reopen, shows the last-save state, and maintains the history described by that script version. Follow `apps_script/leadership_hub_backup/README.md` for the exact deployment. The reviewed package requests access to files it creates and creates them Restricted; re-check scopes, sharing, retention, and behavior against the commit you install.
 
 Either way, the backup is working continuity, not filing. When a record needs to reach wherever your district officially stores it, download it from Drive and share it through the normal district channel yourself — that handoff stays deliberate and human.
 
@@ -3690,7 +4047,7 @@ Evaluation clocks, IEP annuals, and triennials on one urgency dashboard (overdue
 
 **First session.** Add timelines on the **Timelines** tab; the **Dashboard** sorts them into urgency bands automatically.
 
-**Keep in mind — this one matters legally.** Due dates are *editable prefills*, not legal determinations. The evaluation clock prefills the IDEA fallback of 60 **calendar** days from consent (34 CFR 300.301(c)); many states set their own timeframes, and several count **school** days, which no calendar arithmetic can compute. Confirm every date against your state rule and district calendar — the screen and the CSV export both repeat this because it is that easy to forget. Once you hand-edit a date, the prefill stops touching it.
+**Keep in mind — this one matters legally.** Due dates are *editable prefills*, not legal determinations. The evaluation clock uses the federal 60-**calendar**-day rule after parental consent, while [34 CFR § 300.301(c)(1)](https://sites.ed.gov/idea/regs/b/d/300.301) also permits a state-established timeframe to control. Confirm every date against the current state rule, district procedure, consent facts, and school calendar. The screen and CSV repeat the warning, and a hand-edited due date is not overwritten by the prefill.
 
 #### Diagnosis, Evaluation & School Eligibility 🧩
 
@@ -3706,7 +4063,7 @@ Notes or a transcript in, your district's meeting format out. Six built-in forma
 
 **First session.** Pick a format on **New record**, paste your notes, and draft. Review the result, certify it, and save; action items land in the **Action items** tracker with checkboxes.
 
-**Keep in mind — the two integrity mechanisms.** Before any AI call, names are masked *locally* into "Person A / Person B" and restored locally afterward, so the model never sees who was in the room. And every drafted decision or action item carries a verbatim quote from your notes, mechanically verified; a claim the tool cannot find in your notes is flagged "not found in your notes" and kept visible rather than silently trusted. You certify before saving, and the export footer says a human did. There is also a fully manual no-AI mode.
+**Keep in mind — the two integrity mechanisms.** Before an AI call, each name the preparer explicitly adds to **Names to mask** is replaced locally with a code such as "Person A" and restored locally in the result. A name omitted from that list remains in the notes and can reach the configured provider, so review the list before drafting. Every drafted decision or action item also carries a source quote that is checked as an exact substring of the masked notes; an unmatched quote is visibly flagged for review. You certify before saving, and the export footer records human review. A manual no-AI route is also available.
 
 #### Family Announcements 📣
 
@@ -3724,29 +4081,19 @@ One announcement, every family language: write the English master, pick your bui
 
 ### Troubleshooting and support
 
-The hub tools are ordinary AlloFlow modules: if a card opens to a loading screen that never resolves, the recovery sequence in [Troubleshooting](#troubleshooting) applies. AI drafting and translation require a configured backend — on a keyless install those buttons explain themselves and everything non-AI keeps working, per [Privacy and responsible AI](#privacy-and-responsible-ai). For the rollout conversation with staff, pair this chapter with [School rollout and coaching](#school-rollout-and-coaching).
+The hub tools are ordinary AlloFlow modules: if a card opens to a loading screen that never resolves, the recovery sequence in [Troubleshooting](#troubleshooting) applies. AI drafting and translation require a configured backend. Without one, local forms, calculations, saved records, and manual routes that do not call AI may remain available, but verify the exact tool and export path. For the rollout conversation with staff, pair this chapter with [School rollout and coaching](#school-rollout-and-coaching).
 
 ---
 
-## The STEAM Lab: 142 tools, and how to find the one you need
+## The STEAM Lab: find and share the right tool
 
-The STEAM Lab is the largest thing in AlloFlow: **142 interactive tools** across thirteen subject areas, from a water-cycle simulation to a titration burette to a disproportionality analyzer. This chapter does not describe all 142 — that list lives in the catalog, which is always current, while a printed list would be wrong within a month. What this chapter teaches is the part that does not change: how to find the right tool, how to put it in front of students, and what to expect from any tool you open.
+The STEAM Lab is the largest collection in AlloFlow, with interactive tools across thirteen subject areas, from a water-cycle simulation to a titration burette to a disproportionality analyzer. The generated registry changes as tools are added or retired, so this manual intentionally does not hard-code a total. Use the live STEAM Lab catalog for the current list.
 
 ### What is in there
 
-| Area | Roughly |
-| --- | --- |
-| Earth and space science | 27 tools |
-| Computing, AI, and digital literacy | 19 |
-| Ecology, environment, and animals | 14 |
-| Math fundamentals | 15 |
-| Life science and genetics | 12 |
-| Life skills, careers, and economics | 11 |
-| Engineering and design · geometry and measurement · learning and behavioral science | 7 each |
-| Human body and safety · data and statistics | 5 each |
-| Strategy games · sports and movement science | 4 each |
+The current registry groups tools under Arts and Music; Computing, AI, and Digital Literacy; Data, Statistics, and Probability; Earth and Space Science; Ecology, Environment, and Animals; Engineering and Design; Geometry and Measurement; Human Body, Health, and Safety; Learning and Behavioral Science; Life Science and Genetics; Life Skills, Careers, and Economics; Sports and Movement Science; and Strategy Games.
 
-**Where the live list is.** All 142 live inside the STEAM Lab itself: open it from **Learning Tools** on the Launch Pad, or from the STEAM Lab entry in the tool list, and search or browse by area there. That is the only always-current list, which is why this chapter does not reproduce it.
+**Where the live list is.** Open the STEAM Lab from **Learning Tools** on the Launch Pad or from the STEAM Lab entry in the tool list, then search or browse by area. That live catalog is the source of truth for what the current build exposes.
 
 Do not confuse this with [Find a tool](https://alloflow-cdn.pages.dev/tools.html) on the AlloFlow website. That page is a finder for the **lesson-building tools**, the ones that turn source material into glossaries, adaptations and quizzes, and it usefully filters by whether a tool needs a source, needs AI, or runs in Gemini Canvas. It does not list the STEAM Lab's simulations, so searching it for "titration" or "solar system" finds nothing.
 
@@ -3762,34 +4109,34 @@ Do not confuse this with [Find a tool](https://alloflow-cdn.pages.dev/tools.html
 
 This is the part worth learning once, because it works for every tool.
 
-**Every tool has its own web address.** A tool called Water Cycle is at `/water-cycle`, the coaster lab at `/coaster-lab`, and so on — one address per tool, all 142 of them. Paste that link into Google Classroom, an email, or a QR code and a student lands directly in that one tool, with no menus to navigate and nothing to install. They do not need an account.
+**Use the direct link shown by the current catalog or deployment.** Many discoverable tools expose a focused address; for example, the public catalog currently links Water Cycle at `/water-cycle`. Copy the link from the live catalog or open tool instead of guessing a slug, because aliases, availability, and hostnames can change. The public standalone route does not ask for an AlloFlow account, but an LMS, district gateway, Gemini environment, or other surrounding platform may require its own sign-in.
 
-A student who arrives this way sees a small note at the bottom of the screen explaining that this is one tool from AlloFlow and offering a way into the full app. It can be dismissed and does not follow them into the activity.
+Preview the copied link in a student-equivalent browser profile before sharing it. Confirm that it opens the intended tool, does not expose a teacher workspace, and works under the school's filtering and sign-in rules.
 
 **Or share the whole lab** by sending the app link and telling students which tool to open. Use the direct link when you want them in one place; use the app link when the activity is "explore three of these."
 
 ### What to expect from any tool
 
-**They run on the device, in the browser.** No installation, no account, and nothing uploaded. A Chromebook, an iPad, and a ten-year-old laptop all work; the 3D tools want a reasonably modern browser.
+**The interface runs in the browser, but data paths are feature-specific.** Many simulations compute locally. AI extras, online lookups, live coordination, camera or microphone features, imports, LMS launches, and configured school services can use a network or create records elsewhere. Check the tool's disclosure and the approved deployment before entering student-related content.
 
-**AI is optional and clearly marked.** Most tools are simulations and instruments — they compute, they draw, they respond, and none of that needs AI. Some offer AI extras such as hints or coaching. If your school has not connected an AI backend, those extras are simply not shown, and a small "AI extras: off" note appears in the lab header explaining why and how to turn them on. The tool itself works fully either way. This matters for planning: a lesson built on a simulation is not at risk if the AI is unavailable that morning.
+**AI is optional for many core simulations, not necessarily every feature.** When no backend is connected, the lab can show an **AI extras: off** notice and AI-dependent hints, coaching, generation, or drills remain unavailable. Verify that the exact activity you plan to use has a complete non-AI path, and keep a fallback when it does not.
 
 **They are instruments, not answer keys.** The tools show what happens; the interpretation is the lesson. A simulation that produces a surprising result is usually the most valuable moment in the class, not a bug to be fixed.
 
-**Fullscreen and accessibility.** Most visual tools have a fullscreen control for projecting to a class. Tools are keyboard-operable, and the 3D ones expose camera controls to the keyboard rather than requiring a mouse drag.
+**Fullscreen and accessibility vary by tool.** Many visual tools provide a fullscreen control, and many expose keyboard or alternate interaction routes. Test the exact tool with keyboard, zoom, reduced motion, screen-reader or text alternatives, and the students' real devices. Do not infer conformance for the whole catalog from one tool.
 
 ### Three ways teachers actually use them
 
 **As a demonstration.** Project one tool, drive it yourself, and narrate. Fastest to plan, and the fullscreen control exists for exactly this.
 
-**As a station.** Send the direct link for one tool to a group and give them a question to answer with it. Because each tool has its own address, four groups can be in four different tools without anyone getting lost.
+**As a station.** Send a verified direct link for one tool to a group and give them a question to answer with it. Test every link and provide a short title so students know they reached the intended station.
 
-**As the evidence step in a lesson.** Build the lesson in AlloFlow as usual, then send students to a tool to gather the observation the lesson asks them to explain. The tools do not record student work, so decide in advance how you want them to capture what they found — a worksheet, a photo, a shared document.
+**As the evidence step in a lesson.** Build the lesson in AlloFlow as usual, then send students to a tool to gather the observation the lesson asks them to explain. Some tools keep local progress or support an export, but the catalog is not a universal class gradebook. Decide in advance how students should capture and submit evidence in the approved system.
 
 ### When something does not work
 
-Almost every problem is one of three: the tool did not finish loading, the browser is too old for a 3D tool, or an AI extra is hidden because no backend is connected. The first is a reload, the second needs a different device, and the third is explained by the note in the lab header. The full recovery sequence is in [Troubleshooting](#troubleshooting).
+Common causes include a tool that did not finish loading, blocked assets or APIs, unavailable permissions, unsupported graphics, an AI-dependent option with no backend, or a stale direct link. Protect any local work, check the visible error and required permissions, retry the verified catalog route, then use the full recovery sequence in [Troubleshooting](#troubleshooting).
 
 ### For leaders planning wider use
 
-Tool links are the easiest way to hand teachers something concrete: pick three tools for a grade band and send the three addresses. There is nothing to license, provision, or roster, so a department can pilot on Monday. The privacy picture is the same as the rest of AlloFlow and is set out in [Privacy and responsible AI](#privacy-and-responsible-ai).
+Tool links are an easy way to hand teachers something concrete: pick three tools for a grade band and send three verified addresses. The public standalone routes may not require AlloFlow rostering, but the school still needs to approve the host, device support, permissions, network paths, data handling, and any connected AI or external service. Use [Privacy and responsible AI](#privacy-and-responsible-ai) for that review.

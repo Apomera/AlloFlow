@@ -169,7 +169,7 @@ Keyboard behavior can vary inside simulations and specialized editors. Turn on H
 
 **Codename:** A classroom alias used to reduce the need for student names in a live workflow. A codename still requires careful handling if the teacher can link it to a student.
 
-**Deep link:** A direct web address that opens one interactive tool by itself, with no sign-in (for example, a water cycle link a teacher can put in any assignment or message). Every STEAM Lab tool has one.
+**Deep link:** A direct web address exposed by the current catalog or deployment that opens a focused interactive tool (for example, the public Water Cycle link). Verify the copied link in a student-equivalent profile; a surrounding LMS, district gateway, or provider may add sign-in even when the public standalone route does not.
 
 **Deployment:** The approved combination of app location, hosting, accounts, AI backend, live-session services, storage, security rules, and retention settings.
 

@@ -100,11 +100,11 @@ If a content filter or network rule is suspected, report the approved site URL, 
 
 ### If you see "AI extras: off" in the STEAM Lab header
 
-That small sparkle pill means no AI backend is set up on this device: no API key, no local model, and you are not inside Gemini Canvas. Nothing is broken. Every sim and activity works fully without AI; only the extras (AI hints, coaching) are off. Click the pill to see the three ways to turn AI on. The easiest is opening AlloFlow inside Gemini Canvas, which is free with a Google account and uses your Gemini plan's daily quota; the setup screen has a button that takes you straight there.
+That small sparkle pill means no AI backend is set up on this device: no API key, no reachable local model, and the app is not using the Gemini Canvas bridge. The catalog and many core simulations still work, while AI-dependent generation, hints, coaching, or individual drills remain unavailable. Click the pill to review the connection choices offered by the current deployment. If Gemini Canvas is one of them, its availability, account requirements, quotas, and school approval come from Google and the account being used; verify those terms rather than treating the route as automatically free or approved.
 
 ### If a message disappeared before you finished reading it
 
-Notices appear at the top center of the screen and fade after a few seconds. Nothing is lost: click the lightbulb in the header and open the **Messages** list to reread every recent notice, newest first.
+Notices appear at the top center of the screen and fade after a few seconds. Click the lightbulb in the header and open the **Messages** list to reread the notices still retained for the current workspace, newest first. Treat that list as a convenience, not as a permanent log.
 
 ### If generation does not start
 

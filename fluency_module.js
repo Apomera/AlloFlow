@@ -17,6 +17,11 @@
  *       Async: orchestrates Gemini word-by-word audio analysis with bias-aware
  *       prompt (AAE / child / accent / dialect protections per Koenecke 2020,
  *       Wu 2020, Tatman 2017).
+ *   - exportFluencyCSV(records, options)
+ *       Synchronous assessment-history download with injectable browser sinks.
+ *   - generateFluencyScoreSheet(result, sourceText, options)
+ *       Synchronous printable running-record export. Host-only labels and
+ *       benchmark fields arrive through options; document values are escaped.
  *
  * Pure: no React state, no closure capture. External deps reached via window:
  *   - window.GEMINI_MODELS.default (set at AlloFlowANTI.txt:792)
@@ -92,6 +97,117 @@
           scRate: scRate, readingLevel: readingLevel,
           accuracy: Math.round(accuracyPct), accuracyPct: Math.round(accuracyPct)
       };
+  }
+
+  function _fluencyCsvCell(value) {
+      return '"' + String(value == null ? '' : value).replace(/"/g, '""') + '"';
+  }
+
+  function exportFluencyCSV(records, options) {
+      options = options || {};
+      var fluencyRecords = (Array.isArray(records) ? records : []).filter(function (record) {
+          return record && record.type === 'fluency-record' && record.data && record.data.metrics;
+      });
+      if (fluencyRecords.length === 0) {
+          if (typeof options.onEmpty === 'function') options.onEmpty();
+          return false;
+      }
+      var headers = ['Date', 'Passage', 'WCPM', 'Accuracy %', 'Total Words', 'Duration (s)', 'Substitutions', 'Omissions', 'Insertions', 'Self-Corrections', 'Error Rate', 'Reading Level', 'Review Status', 'Reviewer', 'Review Date', 'Passage ID', 'Calibrated Parallel Form'];
+      var formatDate = typeof options.formatDate === 'function'
+          ? options.formatDate
+          : function (timestamp) { return new Date(timestamp).toLocaleDateString(); };
+      var rows = fluencyRecords.map(function (record) {
+          var data = record.data;
+          var metrics = data.metrics;
+          var fallback = { substitutions: 0, omissions: 0, insertions: 0, selfCorrections: 0, errorRate: 0, readingLevel: 'unknown' };
+          var running = data.wordData
+              ? (calculateRunningRecordMetrics(data.wordData, data.insertions || (data.fullAnalysis && data.fullAnalysis.insertions) || []) || fallback)
+              : fallback;
+          var passageTitle = (data.sourceText || '').substring(0, 40).replace(/[\n\r,]/g, ' ').trim() || 'Untitled';
+          var review = data.review || {};
+          var passage = data.passageMetadata || {};
+          return [formatDate(record.timestamp), _fluencyCsvCell(passageTitle), metrics.wcpm || 0, metrics.accuracy || 0, metrics.totalWords || 0, Math.round(metrics.durationSeconds || 0), running.substitutions || 0, running.omissions || 0, running.insertions || 0, running.selfCorrections || 0, '1:' + (running.errorRate || 0), running.readingLevel || 'unknown', review.status || 'unreviewed', _fluencyCsvCell(review.reviewer || ''), review.reviewedAt || '', _fluencyCsvCell(passage.passageId || ''), passage.calibrated === true ? 'yes' : 'no'].join(',');
+      });
+      var csv = [headers.join(',')].concat(rows).join('\n');
+      var BlobCtor = options.BlobCtor || (typeof Blob !== 'undefined' ? Blob : null);
+      var documentRef = options.documentRef || (typeof document !== 'undefined' ? document : null);
+      var urlApi = options.urlApi || (typeof URL !== 'undefined' ? URL : null);
+      if (!BlobCtor || !documentRef || !documentRef.body || !urlApi || typeof urlApi.createObjectURL !== 'function' || typeof urlApi.revokeObjectURL !== 'function') return false;
+      var blob = new BlobCtor([csv], { type: 'text/csv;charset=utf-8;' });
+      var link = documentRef.createElement('a');
+      var href = urlApi.createObjectURL(blob);
+      var now = options.now instanceof Date ? options.now : new Date();
+      link.href = href;
+      link.download = 'Fluency_Assessments_' + now.toISOString().split('T')[0] + '.csv';
+      documentRef.body.appendChild(link);
+      try {
+          link.click();
+      } finally {
+          try { documentRef.body.removeChild(link); }
+          finally { urlApi.revokeObjectURL(href); }
+      }
+      return true;
+  }
+
+  function _fluencyScoreSheetEscape(value) {
+      return String(value == null ? '' : value)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+  }
+
+  function generateFluencyScoreSheet(result, sourceText, options) {
+      options = options || {};
+      if (!result || !Array.isArray(result.wordData)) return false;
+      // Keep the legacy argument for the FluencyModePanel prop contract. The
+      // score sheet intentionally renders the reviewed wordData, not the raw
+      // source passage, so sourceText never enters the printable document.
+      void sourceText;
+      var translate = typeof options.t === 'function' ? options.t : function (key) { return key; };
+      var label = function (key) {
+          var translated = key;
+          try { translated = translate(key) || key; } catch (_) {}
+          return _fluencyScoreSheetEscape(translated);
+      };
+      var rrm = calculateRunningRecordMetrics(result.wordData, result.insertions || []) || {
+          substitutions: 0, omissions: 0, insertions: 0, selfCorrections: 0,
+          errorRate: 0, scRate: 0, accuracy: 0, totalErrors: 0,
+          readingLevel: 'unknown'
+      };
+      var readingLevelLabel = rrm.accuracy >= 95 ? 'Independent' : rrm.accuracy >= 90 ? 'Instructional' : 'Frustrational';
+      var wordMarkup = result.wordData.map(function (word) {
+          word = word || {};
+          var symbol = word.status === 'correct' ? '✓' : word.status === 'missed' ? '—' : word.status === 'self_corrected' ? 'SC' : '✗';
+          var color = word.status === 'correct' ? '#16a34a' : word.status === 'missed' ? '#dc2626' : word.status === 'self_corrected' ? '#2563eb' : '#ea580c';
+          var said = word.said ? '<br/><span style="font-size:9px;color:#94a3b8;">' + _fluencyScoreSheetEscape(word.said) + '</span>' : '';
+          return '<span style="display:inline-block;text-align:center;margin:4px 3px;padding:4px 6px;border-radius:6px;border:1px solid ' + color + '20;background:' + color + '08;"><span style="font-size:16px;color:#1e293b;">' + _fluencyScoreSheetEscape(word.word) + '</span><br/><span style="font-size:11px;font-weight:800;color:' + color + ';">' + symbol + '</span>' + said + '</span>';
+      }).join('');
+      var now = options.now instanceof Date ? options.now : new Date();
+      var displayDate = _fluencyScoreSheetEscape(options.displayDate || now.toLocaleDateString());
+      var student = _fluencyScoreSheetEscape(options.studentNickname || '________________');
+      var benchmarkGrade = _fluencyScoreSheetEscape(options.fluencyBenchmarkGrade || '');
+      var benchmarkSeason = _fluencyScoreSheetEscape(options.fluencyBenchmarkSeason || '');
+      var html = '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>' + label('print.oral_fluency_title') + '</title>\n' +
+'<style>@import url(\'https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap\');*{box-sizing:border-box;margin:0;padding:0}body{font-family:\'Inter\',sans-serif;color:#1e293b;padding:24px;line-height:1.4}@media print{body{padding:12px}}.sheet{max-width:750px;margin:0 auto;border:2px solid #e2e8f0;border-radius:12px;overflow:hidden}.hdr{background:linear-gradient(135deg,#4f46e5,#7c3aed);color:white;padding:20px 24px;display:flex;justify-content:space-between;align-items:center}.hdr h1{font-size:18px;font-weight:800}.fields{padding:16px 24px;background:#f8fafc;border-bottom:1px solid #e2e8f0;display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}.field{font-size:12px}.field label{font-weight:700;color:#64748b;display:block;margin-bottom:2px}.field .val{font-weight:600;color:#1e293b;padding:4px 0;border-bottom:1px dashed #cbd5e1;min-height:24px}.words{padding:20px 24px;line-height:2.2}.metrics{padding:16px 24px;background:#f8fafc;border-top:1px solid #e2e8f0;display:grid;grid-template-columns:1fr 1fr;gap:16px}.mcol{padding:12px;background:white;border-radius:8px;border:1px solid #e2e8f0}.mcol h3{font-size:11px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}.mrow{display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px}.mrow .lbl{color:#475569}.mrow .vl{font-weight:700}.legend{padding:12px 24px;background:#faf5ff;border-top:1px solid #e2e8f0;display:flex;gap:16px;flex-wrap:wrap;font-size:10px;font-weight:600;color:#475569}@media print{.no-print{display:none!important}}</style></head><body>\n' +
+'<div class="sheet"><div class="hdr"><div><h1>📊 ' + label('print.oral_fluency_title') + '</h1><p>' + label('print.assessment_record') + '</p></div><div style="text-align:right;font-size:11px;"><div>Generated: ' + displayDate + '</div></div></div>\n' +
+'<div class="fields"><div class="field"><label>' + label('print.student') + '</label><div class="val">' + student + '</div></div><div class="field"><label>' + label('print.date') + '</label><div class="val">' + displayDate + '</div></div><div class="field"><label>' + label('print.grade_benchmark') + '</label><div class="val">' + benchmarkGrade + ' / ' + benchmarkSeason + '</div></div></div>\n' +
+'<div class="words">' + wordMarkup + '</div>\n' +
+'<div class="legend"><span>✓ = ' + label('print.correct_legend') + '</span><span>✗ = ' + label('print.substitution_legend') + '</span><span>— = ' + label('print.omission_legend') + '</span><span>SC = ' + label('print.self_corrected_legend') + '</span></div>\n' +
+'<div class="metrics"><div class="mcol"><h3>' + label('common.ai_calculated_metrics') + '</h3><div class="mrow"><span class="lbl">' + label('print.wcpm') + '</span><span class="vl">' + _fluencyScoreSheetEscape(result.wcpm || 0) + '</span></div><div class="mrow"><span class="lbl">' + label('print.accuracy') + '</span><span class="vl">' + _fluencyScoreSheetEscape(result.accuracy || 0) + '%</span></div><div class="mrow"><span class="lbl">' + label('print.substitutions') + '</span><span class="vl">' + _fluencyScoreSheetEscape(rrm.substitutions || 0) + '</span></div><div class="mrow"><span class="lbl">' + label('print.omissions') + '</span><span class="vl">' + _fluencyScoreSheetEscape(rrm.omissions || 0) + '</span></div><div class="mrow"><span class="lbl">' + label('print.insertions') + '</span><span class="vl">' + _fluencyScoreSheetEscape(rrm.insertions || 0) + '</span></div><div class="mrow"><span class="lbl">' + label('print.self_corrections') + '</span><span class="vl">' + _fluencyScoreSheetEscape(rrm.selfCorrections || 0) + '</span></div><div class="mrow"><span class="lbl">' + label('print.error_rate') + '</span><span class="vl">1:' + _fluencyScoreSheetEscape(rrm.errorRate || 0) + '</span></div><div class="mrow"><span class="lbl">' + label('print.reading_level') + '</span><span class="vl">' + _fluencyScoreSheetEscape(readingLevelLabel) + '</span></div></div>\n' +
+'<div class="mcol"><h3>' + label('common.error_analysis') + '</h3><div class="mrow"><span class="lbl">' + label('print.total_errors') + '</span><span class="vl">' + _fluencyScoreSheetEscape(rrm.totalErrors || 0) + '</span></div><div class="mrow"><span class="lbl">' + label('print.sc_rate') + '</span><span class="vl">' + _fluencyScoreSheetEscape(rrm.scRate || 0) + '%</span></div><div class="mrow"><span class="lbl">' + label('print.total_words') + '</span><span class="vl">' + _fluencyScoreSheetEscape(result.wordData.length) + '</span></div></div></div>\n' +
+'<div class="no-print" style="text-align:center;margin-top:16px;"><button onclick="window.print()" style="background:#4f46e5;color:white;border:none;padding:10px 24px;border-radius:8px;font-weight:700;font-size:14px;cursor:pointer;">🖨️ Print Score Sheet</button></div></body></html>';
+      var openWindow = typeof options.openWindow === 'function'
+          ? options.openWindow
+          : (typeof window !== 'undefined' && typeof window.open === 'function' ? window.open.bind(window) : null);
+      var printWindow = openWindow ? openWindow('', '_blank') : null;
+      if (printWindow && printWindow.document) {
+          printWindow.document.write(html);
+          printWindow.document.close();
+          return true;
+      }
+      return false;
   }
 
   var _FLUENCY_STATUSES = {
@@ -975,6 +1091,8 @@
   window.AlloModules.Fluency = {
       calculateLocalFluencyMetrics: calculateLocalFluencyMetrics,
       calculateRunningRecordMetrics: calculateRunningRecordMetrics,
+      exportFluencyCSV: exportFluencyCSV,
+      generateFluencyScoreSheet: generateFluencyScoreSheet,
       getBenchmarkComparison: getBenchmarkComparison,
       analyzeFluencyWithGemini: analyzeFluencyWithGemini,
       alignTranscriptToReference: alignTranscriptToReference,

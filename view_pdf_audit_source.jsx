@@ -742,6 +742,46 @@ function _viewVerificationForExport(result, pipeline) {
     verificationHtmlBinding: binding,
   };
 }
+// One teacher-visible residual model for every remediation control. AI, axe-core,
+// and Equal Access are deliberately kept as separate counts: the same underlying
+// barrier can be reported by more than one engine, so the summed total is a count
+// of engine findings, not a claim about unique defects. The canonical verification
+// policy still decides whether all three engines completed and whether the document
+// may be described as fully verified.
+function _viewCanonicalRemediationEvidence(result, pipeline) {
+  const value = result || {};
+  const engineEvidence = _viewDeriveVerificationState({
+    ai: value.verificationAudit || null,
+    aiVerificationIncomplete: !!value._aiVerificationIncomplete,
+    axe: value.axeAudit || null,
+    equalAccess: value.secondEngineAudit || null,
+    languageReviewRequired: !!value.languageReviewRequired,
+  }, pipeline);
+  const verification = _viewVerificationForExport(value, pipeline);
+  const findings = engineEvidence.knownFindings || verification.knownFindings || {};
+  const count = (value) => Number.isFinite(value) ? Math.max(0, Math.floor(value)) : null;
+  const counts = {
+    ai: count(findings.aiIssues),
+    axe: count(findings.axeViolations),
+    equalAccess: count(findings.equalAccessFailures),
+  };
+  const known = [counts.ai, counts.axe, counts.equalAccess].filter(Number.isFinite);
+  const totalEngineFindings = known.length ? known.reduce((sum, value) => sum + value, 0) : null;
+  const reviewCount = Number.isFinite(engineEvidence.reviewCount) ? Math.max(0, Math.floor(engineEvidence.reviewCount)) : 0;
+  const compactLabel = 'AI ' + (counts.ai === null ? '?' : counts.ai)
+    + ' · axe ' + (counts.axe === null ? '?' : counts.axe)
+    + ' · EA ' + (counts.equalAccess === null ? '?' : counts.equalAccess)
+    + (reviewCount > 0 ? ' · review ' + reviewCount : '');
+  return {
+    verification,
+    counts,
+    totalEngineFindings,
+    reviewCount,
+    compactLabel,
+    allThreeComplete: engineEvidence.engineExecutionComplete === true,
+    fullyVerifiedSuccess: verification.fullyVerifiedSuccess === true,
+  };
+}
 function _viewNormalizeLoadedVerification(result, pipeline) {
   const value = result || {};
   const normalized = _viewVerificationForExport(value, pipeline);
@@ -4246,13 +4286,15 @@ function PdfAuditView(props) {
   // landmarks/headings/list-semantics/table-headers/labels/ARIA) — document-level wins that a long doc
   // shouldn't have buried under per-instance content issues. Computed from the engine's single-source fn
   // (so it can never disagree with the audit's own pass list); memoized on the remediated HTML. The view
-  // renders a "foundations present" scorecard (presence only — not a conformance score).
+  // renders a structure inventory (presence only — not a score, target, or conformance claim).
   const _structuralFoundations = React.useMemo(() => {
     const _html = pdfFixResult && pdfFixResult.accessibleHtml;
     const _fn = _docPipeline && _docPipeline.structuralFoundations;
     if (!_html || typeof _fn !== 'function') return null;
     try { return _fn(_html); } catch (_) { return null; }
   }, [pdfFixResult && pdfFixResult.accessibleHtml]);
+  const [_foundationDetailsOpen, _setFoundationDetailsOpen] = useState(false);
+  React.useEffect(() => { _setFoundationDetailsOpen(false); }, [pdfFixResult && pdfFixResult.accessibleHtml]);
   // (2026-06-20) Auto-validate the remediated output with veraPDF after Make Accessible — default ON.
   // Warmed inside the click gesture (so the popup is allowed) + validated at the end; opt-out persisted.
   const [pdfAutoVeraPdf, setPdfAutoVeraPdf] = useState(() => { try { return localStorage.getItem('alloflow_pdf_auto_verapdf') !== 'false'; } catch (_) { return true; } });
@@ -6049,23 +6091,25 @@ function PdfAuditView(props) {
       if (_batchIngestSessionRef.current === session) { session.reader = null; setBatchIngesting(false); }
     }
   };
-  // M24 (deep dive 2026-07-09): load-bearing score qualifiers were title-tooltips on non-focusable
-  // spans — keyboard, screen-reader, and touch users got the NUMBER without its caveat. This keeps
-  // each chip's exact look but makes it a real inline button: focusable (visible ring), SR-labeled
-  // with the full qualifier, and click/Enter/tap shows the same text as a toast (title= still
-  // serves mouse hover). Dotted underline signals "there's more here" to sighted users too.
-  const _AlloQualifier = ({ text, className, children }) => (
+  // M24 (deep dive 2026-07-09; refined 2026-08-22): qualifier chips stay focusable buttons, but
+  // their prose is now an accessible DESCRIPTION rather than the control NAME. The former
+  // title-plus-ARIA-label pairing produced giant native tooltips and paragraph-long
+  // button names. Visible children provide the short name; activation still exposes the detail.
+  const _AlloQualifier = ({ text, className, children }) => {
+    const detailId = React.useId();
+    return (<>
     <button
       type="button"
-      title={text}
-      aria-label={text}
+      aria-describedby={detailId}
       onClick={() => { try { addToast(text, 'info'); } catch (_) {} }}
       style={{ font: 'inherit', textAlign: 'inherit' }} /* padding/background come from the caller's chip classes — an inline reset here would beat them */
       className={(className || '') + ' border-0 cursor-help underline decoration-dotted underline-offset-2 focus-visible:ring-2 focus-visible:ring-indigo-500 rounded'}
     >
       {children}
     </button>
-  );
+    <span id={detailId} className="sr-only">{text}</span>
+    </>);
+  };
   // 2026-06-08: per-issue plain-English explanation. Reuses the keyword-regex
   // pattern from the whole-pipeline whyParts (L1940+) but at per-row granularity
   // so a teacher seeing "WCAG 1.4.3" gets actionable context without leaving
@@ -10143,12 +10187,14 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           let html = _fixRemainingSource.accessibleHtml;
                           let bestHtml = html;
                           const _countCanonicalIssues = (ai, axe, equalAccess) => {
-                            const aiCount = ai && Array.isArray(ai.issues) ? ai.issues.length : null;
-                            const axeCount = axe && Number.isFinite(axe.totalViolations) ? axe.totalViolations : null;
-                            const equalAccessCount = equalAccess && Number.isFinite(equalAccess.failViolations) ? Math.max(0, equalAccess.failViolations) : null;
-                            return aiCount === null && axeCount === null && equalAccessCount === null
-                              ? Number.POSITIVE_INFINITY
-                              : (aiCount || 0) + (axeCount || 0) + (equalAccessCount || 0);
+                            const evidence = _viewCanonicalRemediationEvidence({
+                              verificationAudit: ai || null,
+                              axeAudit: axe || null,
+                              secondEngineAudit: equalAccess || null,
+                            }, _docPipeline);
+                            return Number.isFinite(evidence.totalEngineFindings)
+                              ? evidence.totalEngineFindings
+                              : Number.POSITIVE_INFINITY;
                           };
                           const _executionRank = (verification) => verification && verification.engineExecutionComplete === true ? 2
                             : verification && verification.executionState === 'partial' ? 1 : 0;
@@ -10398,7 +10444,17 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           } catch(e) { if (_remediationOperationIsCurrent(_fixRemainingOperation)) { warnLog('Fix remaining failed:', e); _toastForRemediationOperation(_fixRemainingOperation, t('toasts.fix_remaining_failed') + (e?.message || 'unknown error'), 'error'); } }
                           finally { _finishPdfRemediationOperation(_fixRemainingOperation, true); }
                         }} disabled={pdfFixLoading} className="flex-1 px-5 py-3 bg-gradient-to-r from-amber-800 to-orange-800 text-white rounded-xl font-bold text-sm hover:from-amber-900 hover:to-orange-900 transition-all shadow-lg flex items-center justify-center gap-2 disabled:opacity-40">
-                          {pdfFixLoading && pdfFixModeRef.current === 'fix' ? <><span className="animate-spin">&#9203;</span> {pdfFixStep || 'Fixing...'}</> : <><Wrench size={16} /> {((pdfFixResult.verificationAudit?.issues?.length || 0) + (pdfFixResult.axeAudit?.totalViolations || 0)) > 0 ? `Fix ${(pdfFixResult.verificationAudit?.issues?.length || 0) + (pdfFixResult.axeAudit?.totalViolations || 0)} Remaining` : 'Run Additional Fix Pass'}</>}
+                          {pdfFixLoading && pdfFixModeRef.current === 'fix' ? <><span className="animate-spin">&#9203;</span> {pdfFixStep || 'Fixing...'}</> : (() => {
+                            const evidence = _viewCanonicalRemediationEvidence(pdfFixResult, _docPipeline);
+                            const action = Number.isFinite(evidence.totalEngineFindings) && evidence.totalEngineFindings > 0
+                              ? `Fix ${evidence.totalEngineFindings} Engine Finding${evidence.totalEngineFindings === 1 ? '' : 's'}`
+                              : evidence.reviewCount > 0
+                                ? `Address ${evidence.reviewCount} Review Finding${evidence.reviewCount === 1 ? '' : 's'}`
+                              : evidence.allThreeComplete
+                                ? 'Run Additional Fix Pass'
+                                : 'Complete 3-Engine Verification';
+                            return <><Wrench size={16} /><span className="flex flex-col items-start leading-tight"><span>{action}</span><span className="text-[10px] font-semibold text-amber-100">{evidence.compactLabel}</span></span></>;
+                          })()}
                         </button>
                     </>) : (
                       <button onClick={async () => {
@@ -12143,7 +12199,8 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             el.scrollIntoView({ behavior: 'smooth', block: 'start' });
                           } catch (_) {}
                         };
-                        const _vio = pdfFixResult.axeAudit ? (pdfFixResult.axeAudit.totalViolations || 0) : null;
+                        const _dashboardEvidence = _viewCanonicalRemediationEvidence(pdfFixResult, _docPipeline);
+                        const _vio = _dashboardEvidence.totalEngineFindings;
                         const _chip = 'px-2 py-1 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700 hover:bg-indigo-100 hover:text-indigo-700 transition-colors whitespace-nowrap';
                         // Governing-layer tag for the compact header. The headline = min(content, automated[axe/EA]).
                         // When the deterministic engines are the lower layer, the headline is "automated", NOT
@@ -12158,6 +12215,18 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           : (pdfFixResult._scoreIsBlended && _hdrAi != null && _hdrDet != null && _hdrDet < _hdrAi)
                             ? (t('pdf_audit.dashboard.automated_tag') || 'automated')
                             : (t('pdf_audit.dashboard.content_tag') || 'content');
+                        const _sourceImageCount = Number.isFinite(Number(pdfFixResult.imageCount)) ? Math.max(0, Number(pdfFixResult.imageCount)) : 0;
+                        const _htmlImageSummary = (_structuralFoundations && _structuralFoundations.imageSummary) || { total: 0, withAlt: 0, missingAlt: 0, captions: 0 };
+                        const _htmlImageCount = Number(_htmlImageSummary.total) || 0;
+                        const _htmlImagesWithAlt = Number(_htmlImageSummary.withAlt) || 0;
+                        const _imageFoundationConcern = _sourceImageCount > _htmlImageCount || _htmlImagesWithAlt < _htmlImageCount;
+                        const _imageFoundationDetail = _sourceImageCount > 0 && _htmlImageCount === 0
+                          ? (_sourceImageCount + ' meaningful source image' + (_sourceImageCount === 1 ? ' was' : 's were') + ' identified, but the remediated HTML contains no <img> element. Review the image panel and content Diff before distributing; an auditor cannot flag missing alt text on an image element that disappeared.')
+                          : _sourceImageCount > _htmlImageCount
+                            ? (_sourceImageCount + ' meaningful source images were identified, but only ' + _htmlImageCount + ' <img> element' + (_htmlImageCount === 1 ? ' is' : 's are') + ' present in the remediated HTML. Confirm that no instructional image was lost.')
+                            : _htmlImagesWithAlt < _htmlImageCount
+                              ? ((_htmlImageCount - _htmlImagesWithAlt) + ' of ' + _htmlImageCount + ' HTML image' + (_htmlImageCount === 1 ? '' : 's') + ' lack' + (_htmlImageCount - _htmlImagesWithAlt === 1 ? 's' : '') + ' non-empty alternative text.')
+                              : '';
                         return (<>
                           {/* Unmissable running banner (2026-06-11, maintainer ask):
                               results render after round 1 while auto-continue keeps
@@ -12184,17 +12253,35 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               </span>
                             )}
                             {_vio !== null && (
-                              <span className={'px-1.5 py-0.5 rounded-full text-[10px] font-bold ' + (_vio === 0 ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700')}>
-                                {_vio === 0 ? (t('pdf_audit.dashboard.zero_issues') || '0 content issues') : _vio + ' ' + (t('pdf_audit.dashboard.issues_left') || 'content issues')}
+                              <span className={'px-1.5 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap ' + (_dashboardEvidence.fullyVerifiedSuccess ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700')}>
+                                {_dashboardEvidence.compactLabel}
                               </span>
+                            )}
+                            {_imageFoundationConcern && (
+                              <button
+                                type="button"
+                                aria-expanded={_foundationDetailsOpen}
+                                aria-controls="pdf-html-structure-details"
+                                onClick={() => _setFoundationDetailsOpen(true)}
+                                className="px-1.5 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap bg-amber-100 text-amber-800 border-0 underline decoration-dotted underline-offset-2 focus-visible:ring-2 focus-visible:ring-amber-500"
+                              >
+                                ⚠️ {_sourceImageCount > 0
+                                  ? (_sourceImageCount + ' source image' + (_sourceImageCount === 1 ? '' : 's') + ' need HTML review')
+                                  : ((_htmlImageCount - _htmlImagesWithAlt) + ' HTML image' + ((_htmlImageCount - _htmlImagesWithAlt) === 1 ? '' : 's') + ' need alt text')}
+                              </button>
                             )}
                             {/* #3 Structural foundations: length-independent wins, scored on their OWN axis so a long
                                 document's per-issue pile can't bury them. Presence only — never a conformance score. */}
                             {_structuralFoundations && _structuralFoundations.present && _structuralFoundations.present.length > 0 && (
-                              <_AlloQualifier className="px-1.5 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap bg-sky-100 text-sky-800"
-                                text={(t('pdf_audit.dashboard.foundations_title') || 'HTML structural foundations DETECTED in the remediated document (lang, title, landmarks, headings, lists, etc.) — presence only, not validated for correctness, and separate from the per-issue content score above. Also DIFFERENT from the “PDF/UA self-check” chip, which checks the EXPORTED PDF’s byte-level structure — the two happen to both count to 18 but measure different things. Present:') + ' ' + _structuralFoundations.present.join('; ')}>
-                                🏗️ {_structuralFoundations.present.length}{_structuralFoundations.checked ? '/' + _structuralFoundations.checked : ''} {t('pdf_audit.dashboard.foundations') || 'HTML foundations'}
-                              </_AlloQualifier>
+                              <button
+                                type="button"
+                                aria-expanded={_foundationDetailsOpen}
+                                aria-controls="pdf-html-structure-details"
+                                onClick={() => _setFoundationDetailsOpen((open) => !open)}
+                                className="px-1.5 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap bg-sky-100 text-sky-800 border-0 underline decoration-dotted underline-offset-2 focus-visible:ring-2 focus-visible:ring-sky-500"
+                              >
+                                🏗️ {_structuralFoundations.present.length} HTML structure patterns detected
+                              </button>
                             )}
                             {/* Best-practice STRUCTURE recommendations (advisory, NOT WCAG, never scored): the gaps the
                                 WCAG-tagged re-audit can't see — no <main>, no <h1>, heading-order skips. Surfaced honestly
@@ -12287,6 +12374,54 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               <button className={_chip} onClick={() => startPipelineTour('results')} data-help-ignore="true" title={t('pdf_audit.tour.results_title') || 'A 60-second guided walk through this screen — what to download, what the score means, where the reports live.'}>✨ {t('pdf_audit.tour.results_cta') || 'Tour'}</button>
                             )}
                           </div>
+                          {_foundationDetailsOpen && _structuralFoundations && (
+                            <section
+                              id="pdf-html-structure-details"
+                              role="region"
+                              aria-labelledby="pdf-html-structure-details-heading"
+                              className="-mx-1 mt-2 mb-3 rounded-xl border border-sky-200 bg-sky-50/90 p-3 text-slate-700 shadow-sm"
+                            >
+                              <div className="flex items-start gap-3">
+                                <div className="min-w-0 flex-1">
+                                  <h3 id="pdf-html-structure-details-heading" className="text-sm font-black text-sky-950">HTML structure inventory</h3>
+                                  <p className="mt-1 text-xs leading-relaxed">
+                                    This is a presence inventory, not an accessibility score or remediation target. Patterns can be absent because they do not apply; the content score and exported-PDF validation are separate checks.
+                                  </p>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => _setFoundationDetailsOpen(false)}
+                                  className="shrink-0 rounded-md border border-sky-300 bg-white px-2 py-1 text-[11px] font-bold text-sky-900 hover:bg-sky-100 focus-visible:ring-2 focus-visible:ring-sky-500"
+                                  aria-label="Close HTML structure details"
+                                >
+                                  Close
+                                </button>
+                              </div>
+                              {_imageFoundationConcern && (
+                                <div className="mt-3 rounded-lg border border-amber-300 bg-amber-50 p-2.5 text-xs leading-relaxed text-amber-950" role="alert">
+                                  <strong>Image fidelity needs review.</strong> {_imageFoundationDetail}
+                                </div>
+                              )}
+                              <div className="mt-3 grid gap-3 md:grid-cols-2">
+                                <div className="rounded-lg border border-emerald-200 bg-white p-2.5">
+                                  <h4 className="text-xs font-black text-emerald-900">Detected ({_structuralFoundations.present.length})</h4>
+                                  <ul className="mt-1.5 list-disc space-y-1 pl-4 text-[11px] leading-relaxed">
+                                    {_structuralFoundations.present.map((label, index) => <li key={'foundation-present-' + index}>{label}</li>)}
+                                  </ul>
+                                </div>
+                                <div className="rounded-lg border border-slate-200 bg-white p-2.5">
+                                  <h4 className="text-xs font-black text-slate-800">Not detected (not automatically failures)</h4>
+                                  {Array.isArray(_structuralFoundations.notDetected) && _structuralFoundations.notDetected.length > 0 ? (
+                                    <ul className="mt-1.5 list-disc space-y-1 pl-4 text-[11px] leading-relaxed">
+                                      {_structuralFoundations.notDetected.map((item) => <li key={item.id}>{item.label}</li>)}
+                                    </ul>
+                                  ) : (
+                                    <p className="mt-1.5 text-[11px]">Every cataloged pattern was detected; this still is not a conformance claim.</p>
+                                  )}
+                                </div>
+                              </div>
+                            </section>
+                          )}
                         </>);
                       })()}
                       <div className="flex items-center gap-2">

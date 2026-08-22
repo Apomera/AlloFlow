@@ -22,7 +22,8 @@ describe('educator evaluation annual rollover lifecycle', () => {
     const source = fs.readFileSync(path.join(root, 'educator_evaluation_source.jsx'), 'utf8');
     const builder = fs.readFileSync(path.join(root, '_build_educator_evaluation_apps_script.js'), 'utf8');
     expect(source).toContain('function AeAnnualRollover');
-    expect(source).toContain('Annual rollover &amp; continuity');
+    expect(source).toContain('educator_evaluation.annual_rollover_and_continuity_18pcrtd');
+    expect(source).toContain('Annual rollover & continuity');
     expect(source).toContain('reviewAnnualRollover');
     expect(source).toContain('performAnnualRollover');
     expect(source).toContain('Recheck interrupted rollover');

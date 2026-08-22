@@ -233,6 +233,15 @@ describe('H11/H14/M10 — the image lane refuses to guess', () => {
     expect(dp).toContain('window.__alloImagePairingUncertain = null; // H14');
   });
 
+  it('H14: extracted images without model-authored placeholders are preserved for placement review', () => {
+    expect(dp).toContain('if (imgIdx < extractedImages.length) {');
+    expect(dp).toContain('data-allo-recovered-source-images="true"');
+    expect(dp).toContain('They are preserved here so they are not silently lost');
+    expect(dp).toContain("_deferredImageMap[_utok] = _im.generatedSrc;");
+    expect(dp).toContain("reason: 'unclaimed-image-source-unavailable'");
+    expect(dp).toContain('had no reliable HTML placement anchor');
+  });
+
   it('H14: imagePairing is a DURABLE note — a re-fix pass must not silently drop it', () => {
     const kinds = dp.slice(dp.indexOf('_REFIX_RECOMPUTED_FIDELITY_KINDS = Object.assign'), dp.indexOf('_REFIX_RECOMPUTED_FIDELITY_KINDS = Object.assign') + 200);
     expect(kinds).not.toContain('imagePairing');
@@ -898,7 +907,7 @@ describe('M16 — a failure wave expires instead of pinning the gate for the who
   it('enough off-route successes clear the wave on their own', () => {
     // A run that has moved on to a different route can never produce the failed route's evidence.
     expect(dp).toContain('_geminiOffRouteOkStreak++;');
-    expect(dp).toContain('if (_geminiOffRouteOkStreak < _GEMINI_RECOVER_HITS) return;');
+    expect(dp).toMatch(/if \(_geminiOffRouteOkStreak < _GEMINI_RECOVER_HITS\) \{[\s\S]{0,180}?return;\s*\}/);
   });
 
   it('any real failure resets the off-route recovery run', () => {
@@ -950,7 +959,9 @@ describe('L7 — only a RECENT throttle may be blamed for a coverage shortfall',
     // rest were throttled by a temporary Canvas rate-limit" — the false attribution R3 wrote that
     // branch to avoid — and the teacher re-ran a document whose bad section fails identically.
     expect(dp).not.toContain('|| (_geminiCap < _geminiEffectiveMax); // R7');
-    expect(dp).toContain('const _throttleCaused = _finalAuditThrottled || _geminiThrottleInfo().recentlyThrottled;');
+    expect(dp).toContain('const _throttleCaused = _finalAuditThrottled || _finalAuditThrottleActive();');
+    const throttleFact = dp.slice(dp.indexOf('const _finalAuditThrottleActive = () =>'), dp.indexOf('let _finalAuditThrottleDeferred'));
+    expect(throttleFact).toContain('_info.recentlyThrottled || _info.storming');
     // The only two remaining cap-vs-ceiling comparisons are the gate's own recovery check and the
     // `capped` field it publishes.
     expect((dp.match(/_geminiCap < _geminiEffectiveMax/g) || []).length).toBe(2);
@@ -1096,9 +1107,10 @@ describe('H18/M7 — a stranded loading flag always gets cleared', () => {
 
   it('M7: the genuine supersession branch RE-ARMS instead of dying', () => {
     // arm() was only otherwise reachable from onActivity, which needs a pipeline heartbeat that is
-    // never coming once the run has ended.
+    // never coming once the run has ended. `true` deliberately starts a fresh idle window for the
+    // replacement owner instead of immediately replaying the already-expired timeout.
     const fire = anti.slice(anti.indexOf('Ignoring superseded remediation watchdog timeout'));
-    expect(fire.slice(0, 400)).toContain('arm();');
+    expect(fire.slice(0, 400)).toContain('arm(true);');
   });
 
   it('M7: a missing runId is adopted from the live owner rather than disarming forever', () => {
@@ -1528,7 +1540,8 @@ describe('R7 — prose columns on a shared baseline grid still split', () => {
 
   it('a short-code table column is NOT split away from its row labels (HB44 class)', () => {
     // Code column fills its narrow side (fill ≈0.82 — past the fill gate) with
-    // one item per line, but its lines are ~8 chars: only medianChars stops it.
+    // one item per line. The index/list exception must still recognize that a
+    // compact identifier column paired with long labels is a row-major table.
     const items = [];
     for (let line = 0; line < LINES; line++) {
       const y = 700 - line * 15;

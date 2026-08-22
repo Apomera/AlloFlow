@@ -57,7 +57,10 @@ describe('the run counts what Canvas actually meters', () => {
   });
 
   it('FERPA: the ledger records counts only, never prompt or document text', () => {
-    const note = dp.slice(dp.indexOf('var _alloNotePayload = function'), dp.indexOf('var _alloFormatPayloadLedger'));
+    // Inspect only the payload-counting function. The adjacent call ledger
+    // intentionally truncates content-free operation/chunk identifiers, so
+    // slicing through that function made this privacy assertion overbroad.
+    const note = dp.slice(dp.indexOf('var _alloNotePayload = function'), dp.indexOf('var _alloBeginCallLedger'));
     expect(note).toContain('promptChars');
     expect(note).toContain('attachmentChars');
     // no capture of the prompt or attachment themselves

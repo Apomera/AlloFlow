@@ -124,7 +124,7 @@ describe('Sourcebook initial feature contract', () => {
       }
     };
     const window = loadSourcebook(async () => ({ ok: true, json: async () => payload }));
-    const results = Array.from(await window.SourcebookProviders.searchOpen('contour drawing', { kind: 'Maps' }));
+    const results = Array.from(await window.SourcebookProviders.searchOpen('contour drawing', { kind: 'Maps', provider: 'Wikimedia Commons', rightsScope: 'all' }));
     expect(results).toHaveLength(1);
     expect(results[0]).toMatchObject({ rightsType: 'ccby', license: 'CC BY 4.0', creator: 'Example Artist', kind: 'Maps', live: true });
     expect(results[0].rightsNote).toMatch(/Attribution is required/i);
@@ -292,7 +292,7 @@ describe('Sourcebook initial feature contract', () => {
     expect(normalize({ ...records[0], id: 905, url: 'https://example.com/not-a-record' }, 'textile', 'Patterns')).toBeNull();
   });
 
-  it('ships a verified Cleveland CC0 fallback shelf instead of an unusable browser-live search', () => {
+  it('keeps a verified Cleveland CC0 shelf for offline fallback', () => {
     const window = loadSourcebook();
     const cma = Array.from(window.SourcebookProviders.materials).filter((item) => item.provider === 'Cleveland Museum of Art');
     expect(cma).toHaveLength(5);
@@ -300,7 +300,78 @@ describe('Sourcebook initial feature contract', () => {
     expect(cma.every((item) => item.rightsType === 'pd' && /CC0/i.test(item.license))).toBe(true);
     expect(cma.every((item) => /openaccess-cdn\.clevelandart\.org/.test(item.imageUrl))).toBe(true);
     expect(cma.every((item) => /_print\.jpg$/.test(item.downloadUrl))).toBe(true);
-    expect(pluginSource).not.toContain('searchCmaLive');
+  });
+
+  it('searches Cleveland Open Access live with the API rights and image gates enabled', async () => {
+    const urls = [];
+    const payload = {
+      data: [{
+        id: 910,
+        share_license_status: 'CC0',
+        title: 'Architectural Elevation',
+        creation_date: '1910',
+        creators: [{ description: 'Studio architect' }],
+        type: 'Drawing',
+        department: 'Drawings',
+        tombstone: 'Measured architectural line drawing.',
+        url: 'https://clevelandart.org/art/1910.10',
+        images: {
+          web: { url: 'https://openaccess-cdn.clevelandart.org/1910.10/1910.10_web.jpg' },
+          print: { url: 'https://openaccess-cdn.clevelandart.org/1910.10/1910.10_print.jpg' }
+        }
+      }]
+    };
+    const window = loadSourcebook(async (url) => {
+      urls.push(String(url));
+      return { ok: true, json: async () => payload };
+    });
+    const results = Array.from(await window.SourcebookProviders.searchCma('architectural drawing', { kind: 'Blueprints', limit: 12 }));
+    expect(results).toHaveLength(1);
+    expect(results[0]).toMatchObject({ id: 'cma-live-910', rightsType: 'pd', kind: 'Blueprints', live: true });
+    expect(urls[0]).toContain('/artworks/?');
+    expect(urls[0]).toContain('cc0');
+    expect(urls[0]).toContain('has_image=1');
+    expect(urls[0]).toContain('limit=12');
+  });
+
+  it('builds and safely normalizes multi-query discovery plans', () => {
+    const window = loadSourcebook();
+    const fallback = window.SourcebookProviders.buildDiscoveryPlan('quiet contour maps for a watershed lesson', 'Maps');
+    expect(Array.from(fallback.queries)).toHaveLength(4);
+    expect(fallback.paletteSize).toBe(6);
+    expect(fallback.aiUsed).toBe(false);
+
+    const normalized = window.SourcebookProviders.normalizeDiscoveryPlan(JSON.stringify({
+      queries: ['historic watershed contour map', 'topographic relief line drawing', 'river basin survey sheet'],
+      paletteSize: 'not-a-number',
+      reason: 'Vary map scale and line density.'
+    }), fallback.query, fallback.kind);
+    expect(Array.from(normalized.queries)).toHaveLength(4);
+    expect(normalized.paletteSize).toBe(6);
+    expect(normalized.aiUsed).toBe(true);
+  });
+
+  it('ranks live candidates and auto-selects a provider-diverse rights-safe palette', () => {
+    const window = loadSourcebook();
+    const materials = Array.from(window.SourcebookProviders.materials);
+    const candidates = [
+      { ...materials[0], id: 'a', provider: 'Provider A', title: 'Unrelated botanical plate' },
+      { ...materials[1], id: 'b', provider: 'Provider A', title: 'Contour watershed survey map' },
+      { ...materials[2], id: 'c', provider: 'Provider B', title: 'Topographic contour lines' },
+      { ...materials[3], id: 'd', provider: 'Provider C', title: 'Historic river basin chart' }
+    ];
+    const ranked = Array.from(window.SourcebookProviders.rankDiscovery(candidates, 'contour watershed map', 'Maps', 4));
+    expect(ranked[0].id).toBe('b');
+    const selected = Array.from(window.SourcebookProviders.selectDiscoveryPalette(ranked, 3));
+    expect(selected).toHaveLength(3);
+    expect(new Set(selected.map((item) => item.provider)).size).toBeGreaterThanOrEqual(2);
+
+    const curated = window.SourcebookProviders.normalizeAiSelection(JSON.stringify({ ids: ['c', 'unknown', 'b'], reason: 'Linework variety.' }), ranked, 3);
+    expect(Array.from(curated.items).map((item) => item.id).slice(0, 2)).toEqual(['c', 'b']);
+    expect(curated.aiUsed).toBe(true);
+    const safeFallback = window.SourcebookProviders.normalizeAiSelection(JSON.stringify({ ids: ['unknown'] }), ranked, 3);
+    expect(safeFallback.aiUsed).toBe(false);
+    expect(Array.from(safeFallback.items)).toHaveLength(3);
   });
 
   it('caches identical live provider searches briefly to respect anonymous rate limits', async () => {
@@ -325,6 +396,22 @@ describe('Sourcebook initial feature contract', () => {
     expect(manifest.assets).toHaveLength(2);
     expect(manifest.assets[0].preparation.mode).toBe('tile');
     expect(manifest.assets.every((asset) => asset.sourceUrl && asset.license && asset.rightsNote && asset.attribution)).toBe(true);
+  });
+
+  it('imports only Sourcebook manifests whose source domains and rights trail are verifiable', () => {
+    const window = loadSourcebook();
+    const items = Array.from(window.SourcebookProviders.materials).slice(0, 2);
+    const manifest = window.SourcebookProviders.buildPalette(items.map((item) => item.id), {
+      [items[0].id]: { mode: 'tile', tile: 120 }
+    }, 'Imported geography set');
+    const imported = window.SourcebookProviders.normalizePalette(manifest);
+    expect(imported).toMatchObject({ schema: 'org.owlflow.sourcebook-palette', version: 1, title: 'Imported geography set' });
+    expect(imported.assets).toHaveLength(2);
+    expect(imported.assets.every((asset) => ['pd', 'cc0', 'ccby'].includes(asset.rightsType))).toBe(true);
+    expect(imported.preparation[items[0].id]).toMatchObject({ mode: 'tile', tile: 120 });
+    expect(window.SourcebookProviders.normalizePalette({ ...manifest, assets: [{ ...manifest.assets[0], sourceUrl: 'https://example.com/not-a-verified-source' }] })).toBeNull();
+    expect(window.SourcebookProviders.normalizePalette({ ...manifest, assets: [{ ...manifest.assets[0], rightsType: 'unknown' }] })).toBeNull();
+    expect(window.SourcebookProviders.normalizePalette({ ...manifest, schema: 'other.schema' })).toBeNull();
   });
 
   it('builds a rights-checked Page Designer handoff with preparation and provenance', () => {
@@ -368,11 +455,70 @@ describe('Sourcebook initial feature contract', () => {
     expect(requests[0]).toContain('iiurlwidth=1400');
   });
 
+  it('builds a self-contained prepared source package with its rights trail', () => {
+    const window = loadSourcebook();
+    const item = Array.from(window.SourcebookProviders.materials)[0];
+    const dataUrl = 'data:image/png;base64,AAAA';
+    const html = window.SourcebookProviders.buildSourcePackage(item, { mode: 'tile', tile: 140 }, dataUrl);
+    expect(window.SourcebookProviders.version).toBe(10);
+    expect(html).toContain('<!doctype html>');
+    expect(html).toContain(`<img src="${dataUrl}"`);
+    expect(html).toContain('download="contour-map-line-drawing.png"');
+    expect(html).toContain('Repeat / tile at 140 px');
+    expect(html).toContain(item.license);
+    expect(html).toContain(item.sourceUrl);
+    expect(html).toContain('Credit and provenance');
+    expect(html).not.toContain('<script');
+    expect(window.SourcebookProviders.buildSourcePackage({ ...item, rightsType: 'unknown' }, {}, dataUrl)).toBe('');
+    expect(window.SourcebookProviders.buildSourcePackage(item, {}, 'data:image/png;base64,AAAA&quot; onerror=alert(1)')).toBe('');
+  });
+
+  it('builds an offline-friendly prepared palette package with every rights trail intact', () => {
+    const window = loadSourcebook();
+    const items = Array.from(window.SourcebookProviders.materials).slice(0, 2);
+    const images = {
+      [items[0].id]: 'data:image/png;base64,AAAA',
+      [items[1].id]: 'data:image/jpeg;base64,BBBB'
+    };
+    const preparation = {
+      [items[0].id]: { mode: 'tile', tile: 125 },
+      [items[1].id]: { mode: 'crop', zoom: 135, x: 30, y: 70 }
+    };
+    const html = window.SourcebookProviders.buildPalettePackage(items, preparation, 'Map study sources', images);
+    const credits = window.SourcebookProviders.buildPaletteCredits(items);
+    expect(html).toContain('data-sourcebook-schema="org.owlflow.sourcebook-palette-package"');
+    expect(html).toContain('2 prepared visual assets');
+    expect(html).toContain('Repeat / tile at 125 px');
+    expect(html).toContain('Crop at 135% zoom, focus 30% horizontal / 70% vertical');
+    expect(html).toContain(`download="contour-map-line-drawing.png"`);
+    expect(html).toContain('data:image/jpeg;base64,BBBB');
+    expect(items.every((item) => html.includes(item.license) && html.includes(item.sourceUrl))).toBe(true);
+    expect(credits).toContain(items[0].title);
+    expect(credits).toContain(`\n\n2. ${items[1].creator}`);
+    expect(html).not.toContain('<script');
+    expect(window.SourcebookProviders.buildPalettePackage([{ ...items[0], rightsType: 'unknown' }], {}, 'Unsafe', images)).toBe('');
+    expect(window.SourcebookProviders.buildPalettePackage(items, {}, 'Incomplete', { [items[0].id]: images[items[0].id] })).toBe('');
+    expect(window.SourcebookProviders.buildPalettePackage([items[0]], {}, 'Malformed', { [items[0].id]: 'data:image/png;base64,AAAA" onerror=alert(1)' })).toBe('');
+  });
+
   it('supports two-axis crop preparation and attribution copying in the UI', () => {
     expect(pluginSource).toContain("'aria-label': 'Horizontal crop focus'");
     expect(pluginSource).toContain("'aria-label': 'Vertical crop focus'");
     expect(pluginSource).toContain("'Copy credit'");
     expect(pluginSource).toContain("'Open in Page Designer'");
+    expect(pluginSource).toContain("'Download source package'");
+    expect(pluginSource).toContain("'Download package'");
+    expect(pluginSource).toContain("'Copy credits'");
+    expect(pluginSource).toContain("'Rights check passed:'");
+    expect(pluginSource).toContain("'Import .json'");
+    expect(pluginSource).toContain('FileReader');
+    expect(pluginSource).toContain("'Find & build palette'");
+    expect(pluginSource).toContain("'Auto-build palette'");
+    expect(pluginSource).toContain("ctx.generateText");
+    expect(pluginSource).toContain("'Federated public collections'");
+    expect(pluginSource).toContain('lg:overflow-y-auto');
+    expect(pluginSource).toContain("tabIndex: 0");
+    expect(pluginSource).toContain("'aria-label': 'Selected source details and preparation controls'");
   });
 
   it('routes the prepared asset through the existing host handoff and retains its credit in Page Designer', () => {
@@ -390,7 +536,7 @@ describe('Sourcebook initial feature contract', () => {
     const hubSource = fs.readFileSync(path.join(root, 'stem_lab', 'stem_lab_module.js'), 'utf8');
     const buildSource = fs.readFileSync(path.join(root, 'build.js'), 'utf8');
     expect(appSource).toContain("'stem_lab/stem_tool_sourcebook.js'");
-    expect(appSource).toContain("'sourcebook': 'sourcebook'");
+    expect(appSource).toContain('function normalizedToolKey(value)');
     expect(hubSource).toContain("id: 'sourcebook'");
     expect(hubSource).toContain('sourcebook: true');
     expect(buildSource).toContain("'stem_lab/stem_tool_sourcebook.js'");

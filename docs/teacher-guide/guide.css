@@ -258,6 +258,46 @@ a:hover {
   max-width: var(--measure);
 }
 
+/* Live Canvas captures retain their untouched 1536 x 902 originals. Marked
+   manual images use the same pixels: app views frame out the Gemini share-page
+   chrome, while controls views also enlarge the left setup panel so adjacent
+   workflow screenshots do not look identical. */
+.guide-article > p:has(> img[title="Focused app view"]),
+.guide-article > p:has(> img[title="Focused controls view"]) {
+  overflow: hidden;
+  max-width: 100%;
+  margin: 1.4rem 0 0.45rem;
+  padding: 0.45rem;
+  border: 1px solid var(--line);
+  border-radius: 0.75rem;
+  background: var(--surface-subtle);
+  box-shadow: 0 0.35rem 1rem rgba(16, 35, 55, 0.08);
+}
+
+.guide-article img[title="Focused app view"] {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1536 / 758;
+  border-radius: 0.45rem;
+  object-fit: cover;
+  object-position: center;
+}
+
+.guide-article > p:has(> img[title="Focused controls view"]) {
+  aspect-ratio: 4 / 3;
+}
+
+.guide-article img[title="Focused controls view"] {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 0.45rem;
+  object-fit: cover;
+  object-position: left center;
+  transform: scale(1.19);
+  transform-origin: left center;
+}
+
 h1,
 h2,
 h3,
@@ -1212,6 +1252,13 @@ html:root[data-allo-theme="easyread"]{--page:#faf8ef;--surface:#fffefa;--surface
   td,
   th {
     max-width: none;
+  }
+
+  .guide-article > p:has(> img[title="Focused app view"]),
+  .guide-article > p:has(> img[title="Focused controls view"]) {
+    padding: 0;
+    border-color: #777777;
+    box-shadow: none;
   }
 
   a {

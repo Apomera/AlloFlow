@@ -106,11 +106,50 @@ describe('Geology Explorer 3D visual refinement', () => {
     expect(source).toContain('geologyHydrothermalGeometries3d.forEach');
   });
 
+  it('reveals a faceted inner core, liquid-core circulation, and a spatial magnetic field', () => {
+    expect(source).toContain('function addDeepEarthCoreVisuals3d');
+    expect(source).toContain('new THREE.IcosahedronGeometry');
+    expect(source).toContain("'faceted-inner-core-liquid-shell-and-geodynamo-streamlines'");
+    expect(source).toContain("'three-dimensional-dipole-field-lines'");
+    expect(source).toContain('function updateGeologyDeepEarthVisuals3d');
+    expect(source).toContain('var deepEarthTime3d = reducedMotion3d ? 0.76 : time3d;');
+    expect(source).toContain("'data-geology-deep-earth-legend'");
+    expect(source).toContain('Orange-red flow · liquid outer-core convection');
+    expect(source).toContain('Blue arcs · magnetic field (schematic)');
+    expect(source).toContain('geologyDeepEarthGeometries3d.forEach');
+    expect(source).toContain('geologyDeepEarthMaterials3d.forEach');
+  });
+
+  it('turns the Deep Earth evidence stage into P- and S-wave ray tracing', () => {
+    expect(source).toContain('function addDeepEarthSeismicVisuals3d');
+    expect(source).toContain("'p-wave-refraction-s-wave-liquid-core-stop-and-shadow-receivers'");
+    expect(source).toContain('geologySeismicPCurves3d');
+    expect(source).toContain('geologySeismicSCurves3d');
+    expect(source).toContain('function updateGeologySeismicVisuals3d');
+    expect(source).toContain('var seismicTime3d = reducedMotion3d ? 0.68 : time3d;');
+    expect(source).toContain('geologySeismicGroup3d.visible = deepEarthVisible3d && geologyScienceStage3d === 1;');
+    expect(source).toContain('eng.setScienceStage');
+    expect(source).toContain('scienceEngine.setScienceStage(sceneJourneyStep)');
+    expect(source).toContain('Cyan pulses · P-waves bend and continue');
+    expect(source).toContain('Magenta diamonds · S-waves stop at liquid core');
+    expect(source).toContain("deepEarthLegendState3d = 'seismic-shadow'");
+    expect(source).toContain("'data-geology-science-key': deepEarthScienceKey3d.state");
+    expect(source).toContain('P-wave: a compressional pulse that travels through both solid and liquid layers.');
+    expect(source).toContain('Receiver cross: no S-wave arrival—evidence that the outer core is liquid.');
+    expect(source).toContain('geologySeismicGeometries3d.forEach');
+    expect(source).toContain('geologySeismicMaterials3d.forEach');
+  });
+
   it('freezes ambient motion and cleans up its listener for reduced-motion users', () => {
     expect(source).toContain("window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)')");
     expect(source).toContain('var geologyMotionTime3d = reducedMotion3d ? 0.86 : t;');
     expect(source).toContain("motionMedia3d.removeEventListener('change', syncGeologyMotion3d)");
     expect(source).toContain('excavationDustPoints3d.visible = !reducedMotion3d;');
+  });
+
+  it('keeps effect cleanup from disposing a newer WebGL engine during a remount', () => {
+    expect(source).toContain('var mountedEngine = null;');
+    expect(source).toContain('if (window[ENGINE_KEY] === mountedEngine) window[ENGINE_KEY] = null;');
   });
 
   it('keeps the source and packaged copies identical', () => {

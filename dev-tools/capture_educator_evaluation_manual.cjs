@@ -212,6 +212,8 @@ async function run() {
     shot = await localPage(browser, 1280, 720); await openTab(shot.page, 'Setup'); await shot.page.getByRole('button', { name: 'Choose principal helper', exact: true }).click(); await shot.page.locator('#ae-principal-share-setup').scrollIntoViewIfNeeded(); await shot.page.waitForTimeout(250); await save(shot.page, '13-principal-helper.jpg'); shot.verify(); await shot.context.close();
 
     shot = await localPage(browser, 1770, 1200); await completeRehearsal(shot.page); await shot.page.locator('section', { hasText: 'Practice one complete fictional evaluation' }).first().scrollIntoViewIfNeeded(); await shot.page.waitForTimeout(250); await save(shot.page, '14-rehearsal-complete.jpg'); shot.verify(); await shot.context.close();
+
+    shot = await localPage(browser, 1770, 1200, 'blank'); await save(shot.page, '15-real-work-launch.jpg'); shot.verify(); await shot.context.close();
   } finally {
     await browser.close();
   }

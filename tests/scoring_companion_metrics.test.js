@@ -101,7 +101,7 @@ describe('#3 structural foundations — length-independent checks on their own a
   it('the live module exposes structuralFoundations', async () => {
     expect(typeof (await liveFoundations())).toBe('function');
   });
-  it('a well-structured doc detects many foundations; checked is the fixed denominator', async () => {
+  it('a well-structured doc returns a backward-compatible catalog plus detected/undetected details', async () => {
     const fn = await liveFoundations();
     const html = '<html lang="en"><head><title>Report</title></head><body><main><nav></nav><h1>Title</h1><h2>Section</h2><ul><li>a</li></ul><table><th scope="col">H</th></table><img alt="a chart"><label>Name</label></main></body></html>';
     const f = fn(html);
@@ -109,6 +109,9 @@ describe('#3 structural foundations — length-independent checks on their own a
     expect(f.present).toContain('HTML lang attribute is present');
     expect(f.present).toContain('A <main> landmark defines the primary content area');
     expect(f.present.length).toBeGreaterThanOrEqual(8);
+    expect(f.presentIds).toContain('image-alt');
+    expect(f.notDetected.some((item) => item.id === 'ordered-list')).toBe(true);
+    expect(f.imageSummary).toEqual({ total: 1, withAlt: 1, missingAlt: 0, captions: 0 });
   });
   it('a bare doc detects (almost) none', async () => {
     const fn = await liveFoundations();
@@ -117,8 +120,10 @@ describe('#3 structural foundations — length-independent checks on their own a
   });
   it('honesty: presence only — the alt-text foundation says correctness is NOT verified', async () => {
     const fn = await liveFoundations();
-    const f = fn('<img alt="x">');
+    const f = fn("<img alt='x'>");
     expect(f.present.some((p) => /alt attribute/.test(p) && /not verified/.test(p))).toBe(true);
+    const partial = fn("<img alt='x'><img alt=''>");
+    expect(partial.imageSummary).toEqual({ total: 2, withAlt: 1, missingAlt: 1, captions: 0 });
   });
 });
 
@@ -129,12 +134,20 @@ describe('anti-drift: structural foundations are single-sourced + wired (never a
     // the old inline 18-regex block is gone (no longer building structuralPasses by hand)
     expect(pipeSrc).not.toMatch(/const structuralPasses = \[\];\s*\n\s*const lc = htmlContent\.toLowerCase\(\);/);
   });
-  it('the view renders the foundations chip from _docPipeline.structuralFoundations (maps to the export)', () => {
+  it('the view renders an expandable inventory from _docPipeline.structuralFoundations', () => {
     expect(viewSrc).toMatch(/const _fn = _docPipeline && _docPipeline\.structuralFoundations;/);
     expect(viewSrc).toMatch(/_structuralFoundations\.present\.length/);
+    expect(viewSrc).toContain('HTML structure inventory');
+    expect(viewSrc).toContain('Not detected (not automatically failures)');
+    expect(viewSrc).not.toMatch(/_structuralFoundations\.present\.length\}\{_structuralFoundations\.checked/);
   });
-  it('the foundations chip is labeled presence-only and separate from the content score', () => {
-    expect(viewSrc).toMatch(/presence only/);
-    expect(viewSrc).toMatch(/separate from the per-issue content score/);
+  it('the inventory explicitly says it is not a score or remediation target', () => {
+    expect(viewSrc).toMatch(/presence inventory, not an accessibility score or remediation target/);
+    expect(viewSrc).toMatch(/content score and exported-PDF validation are separate checks/);
+  });
+  it('surfaces source-image versus remediated-HTML fidelity mismatches', () => {
+    expect(viewSrc).toContain("const _imageFoundationConcern = _sourceImageCount > _htmlImageCount || _htmlImagesWithAlt < _htmlImageCount;");
+    expect(viewSrc).toContain('Image fidelity needs review.');
+    expect(viewSrc).toContain('an auditor cannot flag missing alt text on an image element that disappeared');
   });
 });

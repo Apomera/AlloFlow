@@ -27,6 +27,16 @@ The panel gathers the settings that would otherwise repeat in every tool.
 
 Each control tells you how many kinds of resource actually use it. Read that number before you spend time on a setting. Some controls reach almost everything; others reach two or three tools.
 
+### Set languages with the controls, not the prompt
+
+For an English resource with Arabic support:
+
+1. Add **Arabic** to the language list in Universal Settings.
+2. Keep **Output language** set to **English**.
+3. Open the target tool and read its language summary before generating. The Glossary panel, for example, states which languages from the shared list it will include.
+
+That shared language list and the **Translations** policy are related but not interchangeable. The list supplies languages to tools such as Glossary and to **All Selected Languages** output. The Translations control governs an additional companion version where that control is relevant; it can remain hidden when its automatic target would duplicate the primary output. Custom Instructions can narrow terms, tone, examples, or format, but they do not add a language to either control. If a language is missing, return to Universal Settings rather than typing “make this bilingual” into the resource prompt.
+
 You can collapse the card once you are done. The summary line stays visible, so you can check your choices without opening the panel again.
 
 ## The rule that surprises teachers
@@ -85,7 +95,7 @@ Two separate controls do two different jobs.
 
 A hint line under the control always says in plain words what will happen, such as "Resources in Spanish will also include an English version." You do not have to open the list to know where you stand.
 
-The Translations control appears only when it would do something. If your interface and your output language are both English, there is nothing to translate into, so the control stays hidden. It appears as soon as the two differ.
+The Translations control appears only when it would do something, or when a previously selected explicit policy needs to remain editable. With **Automatic**, if the interface and output language match, its automatic target would duplicate the primary content, so the control stays hidden. Adding a language to the shared list can still affect tools such as Glossary even while this companion-translation control is hidden.
 
 Two cautions:
 

@@ -4743,9 +4743,10 @@ try {
     // drifted out of scope: studentNickname, fluencyBenchmarkGrade and
     // fluencyBenchmarkSeason are host state it could not see, so calling it
     // would have thrown ReferenceError while printing a running record.
-    // The live one is in AlloFlowANTI.txt and reaches the ORF panel as the
-    // generateFluencyScoreSheet prop on FluencyModePanel. One clinical
-    // document, one generator.
+    // The live implementation now belongs to window.AlloModules.Fluency;
+    // AlloFlowANTI keeps only the injected host-label/state bridge passed as
+    // generateFluencyScoreSheet on FluencyModePanel. One clinical document,
+    // one generator.
     const generateStudentProgressReport = student => {
       if (!student) return;
       const rti = classifyRTITier(student.stats);

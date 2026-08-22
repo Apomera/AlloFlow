@@ -68,6 +68,12 @@ describe('Info modal accuracy contracts', () => {
     expect(strings).toContain('Private, device-local infinite whiteboard');
   });
 
+  it('uses plain-language image editing labels instead of an internal model nickname', () => {
+    expect(source).toContain('Image editing canvas');
+    expect(strings).toContain('"refiner_title": "Image Editor"');
+    expect(source + strings).not.toContain('Nano Banana');
+  });
+
   it('keeps hosted-provider attribution provider-neutral', () => {
     expect(strings).toContain('Gemini, OpenAI, Claude, or an OpenAI-compatible endpoint');
     expect(licenses).toContain('OpenAI, Claude, or an OpenAI-compatible endpoint');

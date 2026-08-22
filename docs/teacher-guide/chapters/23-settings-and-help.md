@@ -39,7 +39,7 @@ Visuals, Glossary and Word Sounds start on **Use Universal style**. Choose **Ove
 
 **AI Backend Settings** is on the Launch Pad, top right, and again under **AI** in the header's More information menu, which also holds model diagnostics and a usage meter.
 
-Until an AI is connected, tool panels show a line reading *Needs AI setup*, offering to connect one or to use AlloFlow inside Gemini Canvas. Nothing else is broken by this: browsing, the STEAM Lab, settings, saving and exporting all work. Only generation waits.
+Until an AI is connected, AI-dependent tool panels show a line reading *Needs AI setup*, offering the connection routes supported by the deployment. Catalog browsing, settings, local saving, existing resources, many core simulations, and non-AI exports can remain available. Generation, AI coaching, AI hints, or any route that calls a model will wait, and a connected lookup or service may have its own requirement.
 
 The usage meter is worth knowing about before you run a full pack, because a pack is the fastest way to spend a daily quota.
 

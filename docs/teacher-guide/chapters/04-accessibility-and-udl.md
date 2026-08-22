@@ -160,7 +160,7 @@ A document that looks organized can still be structurally inaccessible. Visual i
 
 ### What the exported handout already carries
 
-The HTML handout ships with its own accessibility toolbar, so many supports travel with the document instead of depending on the student's device: adjustable text size that reflows rather than clipping, offline dyslexia-friendly and high-legibility font options, reading themes, and annotations that stay anchored to the content through those changes. Printing always comes out black on white, whatever screen theme the teacher works in. Details and the font options table are in [Documents and printing](15-documents-and-printing.md).
+The HTML handout can carry an accessibility toolbar with adjustable text size, offline font choices, reading themes, and supported annotations. Verify reflow, font coverage, annotation persistence, and offline behavior in the exported file rather than assuming the preview guarantees them. Print styles are designed for a light page, but preview the actual print job. Details are in [Documents and printing](15-documents-and-printing.md).
 
 ### Voice features announce their state
 

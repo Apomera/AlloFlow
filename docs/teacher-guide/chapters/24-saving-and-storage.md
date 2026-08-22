@@ -1,16 +1,16 @@
 # Saving, loading, and managing storage
 
-AlloFlow keeps your work on the device rather than in an account. That is what makes it usable without sign-in, rostering, or a district contract, and it is also the thing most likely to lose you a lesson if nobody explains it. This chapter explains where your work actually lives, how to save and reload it, and how to keep the device from filling up.
+In the standalone browser and desktop workspace, AlloFlow keeps authoring work on the device by default rather than in an AlloFlow account. That local default is what makes many routes usable without an AlloFlow sign-in, and it is also the thing most likely to lose you a lesson if nobody explains it. Connected AI, live, LMS, share, portal, or school-owned service routes have their own data paths; this chapter covers the local authoring workspace.
 
 Read [Privacy and responsible AI](07-privacy-and-responsible-ai.md) for why the design is this way. This chapter is the operating manual.
 
 ## Where your work lives
 
-Everything you generate is held in the browser's own storage on the machine you are using. Nothing is uploaded, which has three practical consequences worth stating plainly:
+Unexported authoring state in the standalone workspace is held in the browser or desktop profile on the machine you are using. Unless you deliberately export, share, connect a service, or use a feature whose disclosure names an external destination, that local state has three practical consequences worth stating plainly:
 
 - **Your work does not follow you to another device.** A lesson built on the classroom desktop is not on your laptop at home.
 - **Clearing browsing data erases it.** "Clear cookies and site data" removes AlloFlow's work along with everything else. On a managed fleet, a device wipe or a profile reset does the same.
-- **Nobody else can see it**, including us. There is no server copy to recover from, which is the trade you are making for the privacy.
+- **There is no default central AlloFlow project copy to recover.** Anyone who can access the same device profile may be able to access the local workspace, and exported or connected copies follow the access rules of their destination.
 
 The fix for all three is the same, and it is the next section.
 
@@ -24,7 +24,7 @@ The fix for all three is the same, and it is the next section.
 
 This is the one habit worth building. If a lesson took you more than a few minutes to build, save the project. The file is device-independent, survives a browser wipe, and is how you move work between home and school.
 
-> **In Gemini Canvas, this matters even more.** Nothing survives closing the tab except files you have downloaded. The project file *is* your save.
+> **In Gemini Canvas, this matters even more.** Canvas storage behavior can vary by host session and browser policy. Do not rely on the tab to preserve a lesson: download a project file before closing it.
 
 ## Getting finished work out
 

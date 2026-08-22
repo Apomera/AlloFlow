@@ -2,7 +2,7 @@
 
 This chapter follows one fictional learner through a complete planning decision. It shows how a teacher can turn a broad student need into a small, reviewable AlloFlow resource set without entering a student name, disability label, assessment record, or other personal information.
 
-The learner, classroom, and response samples are hypothetical. The live product images were captured in the signed-in Gemini Canvas release on August 20, 2026 with a synthetic third-grade water-cycle source and no student data. They demonstrate the workflow and the teacher's decisions; they are not evidence about a real child.
+The learner, classroom, and response samples are hypothetical. The live product images were captured in the signed-in Gemini Canvas release on August 20, 2026 with a synthetic third-grade water-cycle source and no student data. They demonstrate the workflow and the teacher's decisions; they are not evidence about a real child. The manual frames the app region for readability; each untouched 1536 x 902 original remains in the maintained live-capture index in the documentation source.
 
 ## Case snapshot
 
@@ -44,7 +44,7 @@ The teacher will package only the reviewed student-facing items. The source anal
 
 Ms. Rivera opens Universal Settings and enters only information that belongs to the lesson: third grade, English, the approved science target or standard, and a high-contrast educational image style. She leaves Student Interests blank because no interest theme is necessary for this task.
 
-![AlloFlow Universal Settings in Gemini Canvas showing a third-grade lesson and the image-style field set to clean educational vector illustration, high contrast, and no embedded text](../assets/live-screenshots/current-v1.2-resources/00-universal-settings.png)
+![AlloFlow Universal Settings in Gemini Canvas showing a third-grade lesson and the image-style field set to clean educational vector illustration, high contrast, and no embedded text](../assets/live-screenshots/current-v1.2-resources/00-universal-settings.png "Focused controls view")
 
 **Live Canvas decision shown:** the universal image style is a lesson default, not a description of Sam. A resource-level exception should be used only when the resource has a real instructional need, such as a black-line image that must photocopy clearly.
 
@@ -61,7 +61,7 @@ The second statement in each pair can guide a resource without exposing who prom
 
 The source analysis identifies upper-elementary text demands and highlights terms such as *evaporation*, *condensation*, *precipitation*, *transpiration*, and *surface runoff*. Ms. Rivera treats those outputs as leads to inspect, not as a reading diagnosis or a command to simplify everything.
 
-![AlloFlow source analysis in Gemini Canvas showing a third-to-fifth-grade complexity estimate and water-cycle key concepts including evaporation, condensation, and precipitation](../assets/live-screenshots/current-v1.2-resources/01-analyze-result.png)
+![AlloFlow source analysis in Gemini Canvas showing a third-to-fifth-grade complexity estimate and water-cycle key concepts including evaporation, condensation, and precipitation](../assets/live-screenshots/current-v1.2-resources/01-analyze-result.png "Focused app view")
 
 **Live Canvas decision shown:** the analysis places likely demands beside the source workflow. It does not decide what Sam can understand. Ms. Rivera checks the actual sentences and sees that the essential science is accessible when the process terms are previewed and the sequence remains visible. She keeps the original passage rather than replacing it automatically.
 
@@ -76,7 +76,7 @@ Her review questions are:
 
 The live Glossary panel can generate both Tier 2 academic words and Tier 3 domain words. The screenshot shows a broad starting configuration of four Tier 2 and six Tier 3 terms while the source analysis remains visible on the right.
 
-![AlloFlow Glossary panel in Gemini Canvas showing controls for Tier 2 and Tier 3 term counts, definition level, word roots, custom instructions, and words in images](../assets/live-screenshots/current-v1.2-resources/02-glossary-panel.png)
+![AlloFlow Glossary panel in Gemini Canvas showing controls for Tier 2 and Tier 3 term counts, definition level, word roots, custom instructions, and words in images](../assets/live-screenshots/current-v1.2-resources/02-glossary-panel.png "Focused controls view")
 
 **Live Canvas decision shown:** generation breadth is not the same as the final student load. Ms. Rivera generates candidates, then reduces the delivered set to five terms: *cycle*, *evaporation*, *condensation*, *precipitation*, and *collection*. She checks each definition in the context of the passage and adds one familiar example. She does not require Sam to memorize ten disconnected cards before beginning the lesson.
 
@@ -88,7 +88,7 @@ A privacy-safe Custom Instructions entry for this case is:
 
 Ms. Rivera opens Sequence Builder. The panel lets her specify the topic, number of items, ordering mode, and whether visuals are included. In the captured starting state, item count is still automatic and visuals are not yet selected; the prior source analysis remains visible for comparison.
 
-![AlloFlow Sequence Builder panel in Gemini Canvas showing topic, item-count, ordering-mode, and include-visuals controls beside the water-cycle source analysis](../assets/live-screenshots/current-v1.2-resources/13-sequence-builder-panel.png)
+![AlloFlow Sequence Builder panel in Gemini Canvas showing topic, item-count, ordering-mode, and include-visuals controls beside the water-cycle source analysis](../assets/live-screenshots/current-v1.2-resources/13-sequence-builder-panel.png "Focused controls view")
 
 **Live Canvas decision shown:** the teacher changes the automatic starting state for an instructional reason. She requests five items, selects process order, turns on visuals, and asks for arrows or connection language that makes cause and effect explicit. After generation, she verifies that evaporation follows warming, condensation follows cooling, and the sequence does not imply that the cycle has one permanent starting point.
 
@@ -117,7 +117,7 @@ AlloFlow can help draft the prompt, options, and feedback, but Ms. Rivera checks
 
 The live Curriculum Audit flags a mismatch between the water-cycle lesson and NGSS 3-ESS2-1, which addresses representing weather data. This is a useful failure: the tool has surfaced a planning problem rather than decorating the lesson with a standard label.
 
-![AlloFlow Curriculum Audit in Gemini Canvas showing a score of 40 and a critical standards-alignment warning for a water-cycle lesson labeled with NGSS 3-ESS2-1](../assets/live-screenshots/current-v1.2-resources/19-standards-udl-alignment-result.png)
+![AlloFlow Curriculum Audit in Gemini Canvas showing a score of 40 and a critical standards-alignment warning for a water-cycle lesson labeled with NGSS 3-ESS2-1](../assets/live-screenshots/current-v1.2-resources/19-standards-udl-alignment-result.png "Focused app view")
 
 **Live Canvas decision shown:** Ms. Rivera does not click **Apply suggested fixes** automatically. She checks the district curriculum and makes one of two honest choices:
 
@@ -130,7 +130,7 @@ The same review applies to UDL feedback. A low audit score is a prompt to inspec
 
 After the content is corrected, Ms. Rivera opens Document Builder. The live interface provides student-document formats, appearance controls, navigation, focus mode, accessibility inspection, and a preview area.
 
-![AlloFlow Document Builder in Gemini Canvas showing PDF, worksheet, HTML, and slide choices with accessibility inspection, focus mode, appearance controls, and live preview](../assets/live-screenshots/current-v1.2-resources/22-preview-package-deliver-result.png)
+![AlloFlow Document Builder in Gemini Canvas showing PDF, worksheet, HTML, and slide choices with accessibility inspection, focus mode, appearance controls, and live preview](../assets/live-screenshots/current-v1.2-resources/22-preview-package-deliver-result.png "Focused app view")
 
 **Live Canvas decision shown:** opening Document Builder is not the final check. Ms. Rivera confirms that the preview contains the intended student content, that teacher analysis and answer material are absent, and that the exported or linked version works outside the teacher view. She tests keyboard navigation, zoom, read-aloud, and the oral-response route on the same kind of device students will use.
 

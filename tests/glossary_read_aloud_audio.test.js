@@ -171,14 +171,17 @@ describe('glossary audio host contract', () => {
     readFileSync('desktop/web-app/src/AlloFlowANTI.txt', 'utf8'),
   ];
 
-  it.each(hosts)('exposes stable-ID, inspect, resolve, and explicit Prepare APIs', (host) => {
+  it.each(hosts)('exposes stable-ID, inspect, resolve, regenerate, and explicit Prepare APIs', (host) => {
     expect(host).toContain('window.__alloEnsureGlossaryEntryIds = _ensureGlossaryReadAloudEntryIds');
     expect(host).toContain('window.__alloResolveGlossaryAudio = async (request, options)');
     expect(host).toContain('window.__alloInspectGlossaryAudio = (request, options)');
+    expect(host).toContain('window.__alloRegenerateGlossaryAudio = async (request, options)');
     expect(host).toContain('window.__alloPrepareGlossaryAudio = async (config, onProgress, prepareOptions)');
     expect(host).toContain('return bridge.resolve(segment, _glossaryReadAloudOptions(segment, options))');
+    expect(host).toContain('return bridge.regenerate(segment, supplied)');
     expect(host).toContain('window.__alloPrepareReadAloud(undefined, onProgress');
     expect(host).toContain('Object.assign({}, prepareOptions || {}, { entries })');
+    expect(host).toContain('total: entries.length');
   });
 
   it('keeps the built and deployed audio-service artifacts synchronized', () => {

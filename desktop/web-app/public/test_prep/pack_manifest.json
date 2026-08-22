@@ -1008,15 +1008,15 @@
       ],
       "title": "AP Chemistry Independent Foundation Pilot",
       "shortTitle": "AP Chemistry Foundation Pilot",
-      "description": "An independently authored 600-question AP Chemistry foundation pilot spanning all nine current units. It tests the blueprint crosswalk, six chemistry science practices, quantitative routines, model analysis, laboratory reasoning, cross-unit reasoning, data interpretation, argumentation, structured native chapters, and internal QA before any release-ready expansion.",
+      "description": "An independently authored 700-question AP Chemistry foundation pilot spanning all nine current units. It tests the blueprint crosswalk, six chemistry science practices, quantitative routines, model analysis, laboratory reasoning, cross-unit reasoning, data interpretation, argumentation, model translation, method design, structured native chapters, and internal QA before any release-ready expansion.",
       "disclaimer": "Independent, unofficial AP Chemistry preparation material for internal foundation-pilot development only. Not affiliated with, endorsed by, or authored by College Board. This pilot does not provide official scores, score predictions, college-credit predictions, laboratory competency, or a substitute for supervised laboratory work.",
       "credentialOwner": "College Board",
       "status": "preview",
-      "version": "0.4.0-internal-preview",
+      "version": "0.5.0-internal-preview",
       "blueprintLabel": "AP Chemistry Course and Exam Description, effective Fall 2024, Course Framework V.1",
       "blueprintEffective": "Fall 2024 CED; current official public reference reviewed 2026-08-20.",
       "officialBlueprintUrl": "https://apcentral.collegeboard.org/media/pdf/ap-chemistry-course-and-exam-description.pdf",
-      "itemCount": 600,
+      "itemCount": 700,
       "domainCount": 9,
       "itemSchemaVersion": 2,
       "responseTypes": [
@@ -1026,12 +1026,12 @@
         "hybrid-digital"
       ],
       "packUrl": "./test_prep/ap_chemistry_foundation_pilot.json",
-      "sha256": "d188ec3fd25d11c3c7c9962e38abe95e964bba40b931c0d2b0c0a1d942eac84f",
+      "sha256": "d2863cdb8ef0d12d151a3d49f193da457e92597ec9c0d1d9910f638e17963e13",
       "learningLibraryUrl": "./test_prep/ap_chemistry_foundation_pilot_learning_library.json",
       "learningLibraryQaUrl": "",
       "nativeQaUrl": "./test_prep/ap_chemistry_foundation_pilot_qa.json",
-      "learningLibrarySha256": "f02ea114973cb9bec29e671f2c0514add067782ab72b96ae4885cdd9331020c9",
-      "nativeQaSha256": "1a10749c9ac97856d9fb59d4440f9886baa86ef049acbfbe74569e067e33d0e9"
+      "learningLibrarySha256": "19c62bb27051c382064742ddd31107358704c8e41346dd4f77cd00ec9ccd6d68",
+      "nativeQaSha256": "5275cda293aedcd279e8b5b508780dd7c897ba3d0e2f1c6db16d5bcb0544e5bc"
     }
   ]
 }

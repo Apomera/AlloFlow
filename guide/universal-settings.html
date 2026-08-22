@@ -44,6 +44,8 @@
           <li><a href="review-and-next-steps.html">Review evidence and plan next steps</a></li>
           <li><a href="classroom-workflows.html">Classroom workflows</a></li>
           <li><a href="worked-student-vignette.html">Worked student vignette: water-cycle lesson</a></li>
+          <li><a href="worked-multilingual-vignette.html">Worked multilingual vignette: water-cycle language bridge</a></li>
+          <li><a href="worked-assessment-access-vignette.html">Worked assessment-access vignette: show the science, not the writing speed</a></li>
           <li><a href="privacy-and-responsible-ai.html">Privacy and responsible AI</a></li>
           <li><a href="allobot-assistant.html">AlloBot: the assistant that talks with you</a></li>
           <li><a href="documents-and-printing.html">Documents and printing: from resource to handout</a></li>
@@ -54,7 +56,7 @@
           <li><a href="school-rollout-and-coaching.html">School rollout and coaching</a></li>
           <li><a href="for-your-it-department.html">For your IT department: the one-page technical brief</a></li>
           <li><a href="for-school-leaders.html">For school leaders: the Leadership Hub</a></li>
-          <li><a href="steam-lab.html">The STEAM Lab: 142 tools, and how to find the one you need</a></li>
+          <li><a href="steam-lab.html">The STEAM Lab: find and share the right tool</a></li>
         </ol>
       </nav>
     </aside>
@@ -78,7 +80,7 @@
             <dd>2-minute preflight</dd>
           </div>
         </dl>
-        <p class="chapter-meta">Chapter 7 of 25 · Verified <time datetime="2026-08-21">2026-08-21</time></p>
+        <p class="chapter-meta">Chapter 7 of 27 · Verified <time datetime="2026-08-22">2026-08-22</time></p>
         <nav class="section-nav" aria-labelledby="section-nav-title">
           <p id="section-nav-title" class="section-nav__title">On this page</p>
           <ol>
@@ -121,6 +123,8 @@
               <li><a href="review-and-next-steps.html">Review evidence and plan next steps</a></li>
               <li><a href="classroom-workflows.html">Classroom workflows</a></li>
               <li><a href="worked-student-vignette.html">Worked student vignette: water-cycle lesson</a></li>
+              <li><a href="worked-multilingual-vignette.html">Worked multilingual vignette: water-cycle language bridge</a></li>
+              <li><a href="worked-assessment-access-vignette.html">Worked assessment-access vignette: show the science, not the writing speed</a></li>
               <li><a href="privacy-and-responsible-ai.html">Privacy and responsible AI</a></li>
               <li><a href="allobot-assistant.html">AlloBot: the assistant that talks with you</a></li>
               <li><a href="documents-and-printing.html">Documents and printing: from resource to handout</a></li>
@@ -131,7 +135,7 @@
               <li><a href="school-rollout-and-coaching.html">School rollout and coaching</a></li>
               <li><a href="for-your-it-department.html">For your IT department: the one-page technical brief</a></li>
               <li><a href="for-school-leaders.html">For school leaders: the Leadership Hub</a></li>
-              <li><a href="steam-lab.html">The STEAM Lab: 142 tools, and how to find the one you need</a></li>
+              <li><a href="steam-lab.html">The STEAM Lab: find and share the right tool</a></li>
               </ul>
             </div>
           </noscript>
@@ -197,6 +201,14 @@
 </table>
 </div>
 <p>Each control tells you how many kinds of resource actually use it. Read that number before you spend time on a setting. Some controls reach almost everything; others reach two or three tools.</p>
+<h3 id="set-languages-with-the-controls-not-the-prompt">Set languages with the controls, not the prompt</h3>
+<p>For an English resource with Arabic support:</p>
+<ol>
+<li>Add <strong>Arabic</strong> to the language list in Universal Settings.</li>
+<li>Keep <strong>Output language</strong> set to <strong>English</strong>.</li>
+<li>Open the target tool and read its language summary before generating. The Glossary panel, for example, states which languages from the shared list it will include.</li>
+</ol>
+<p>That shared language list and the <strong>Translations</strong> policy are related but not interchangeable. The list supplies languages to tools such as Glossary and to <strong>All Selected Languages</strong> output. The Translations control governs an additional companion version where that control is relevant; it can remain hidden when its automatic target would duplicate the primary output. Custom Instructions can narrow terms, tone, examples, or format, but they do not add a language to either control. If a language is missing, return to Universal Settings rather than typing “make this bilingual” into the resource prompt.</p>
 <p>You can collapse the card once you are done. The summary line stays visible, so you can check your choices without opening the panel again.</p>
 <h2 id="the-rule-that-surprises-teachers">The rule that surprises teachers</h2>
 <p><strong>Universal Settings applies to new work only.</strong></p>
@@ -239,7 +251,7 @@
 <li><strong>A named language</strong> attaches a version in exactly that language.</li>
 </ul>
 <p>A hint line under the control always says in plain words what will happen, such as &quot;Resources in Spanish will also include an English version.&quot; You do not have to open the list to know where you stand.</p>
-<p>The Translations control appears only when it would do something. If your interface and your output language are both English, there is nothing to translate into, so the control stays hidden. It appears as soon as the two differ.</p>
+<p>The Translations control appears only when it would do something, or when a previously selected explicit policy needs to remain editable. With <strong>Automatic</strong>, if the interface and output language match, its automatic target would duplicate the primary content, so the control stays hidden. Adding a language to the shared list can still affect tools such as Glossary even while this companion-translation control is hidden.</p>
 <p>Two cautions:</p>
 <ul>
 <li>A translation is generated text. Check it the way you would check any other generated content, especially for subject vocabulary. A word that is correct in general use can be wrong in a science or mathematics context.</li>
@@ -312,7 +324,7 @@
   </div>
   <footer class="site-footer">
     <p>Teacher guidance, not a substitute for district policy or professional judgment.</p>
-    <p>Guide version 2026.08 &#183; Content verified <time datetime="2026-08-21">2026-08-21</time>.</p>
+    <p>Guide version 2026.08 &#183; Content verified <time datetime="2026-08-22">2026-08-22</time>.</p>
   </footer>
 
   <script src="guide-search.js" defer></script>

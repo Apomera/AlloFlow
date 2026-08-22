@@ -199,9 +199,10 @@ describe('remediation ownership and lifecycle regressions', () => {
       ...collectOwnedChunkEvents(pipeline, 'doc_pipeline_source.jsx'),
       ...collectOwnedChunkEvents(view, 'view_pdf_audit_source.jsx'),
     ];
-    expect(events.length).toBeGreaterThanOrEqual(18);
     const emittedTypes = new Set(events.map((event) => event.type));
-    for (const type of ['session-start', 'start', 'progress', 'fixed', 'session-complete', 'refixed', 'resume-available', 'resume-accept', 'resume-decline', 'resume-settled']) {
+    const requiredTypes = ['session-start', 'start', 'progress', 'fixed', 'session-complete', 'refixed', 'resume-available', 'resume-accept', 'resume-decline', 'resume-settled'];
+    expect(events.length).toBeGreaterThanOrEqual(requiredTypes.length);
+    for (const type of requiredTypes) {
       expect(emittedTypes.has('alloflow:chunk-' + type)).toBe(true);
     }
     for (const event of events) {

@@ -1879,7 +1879,7 @@
     "remove_standard": "Remove Standard",
     "remove_concept": "Remove concept",
     "choose_overwrite_version": "Choose whether to overwrite the current text or create a new version",
-    "apply_nano_edit": "Apply Custom Nano Banana Edit",
+    "apply_nano_edit": "Apply Image Edit",
     "link_opened_copy_paste": "Link opened. Copy the URL and paste it here.",
     "find_relevant_standards": "Find relevant standards",
     "export_for_grading": "Export work for teacher grading (Images removed)",
@@ -2027,7 +2027,7 @@
     "writing": "Writing content...",
     "translating": "Translating...",
     "generating_image": "Rendering visual...",
-    "refining_image": "Refining image with Nano Banana...",
+    "refining_image": "Editing image...",
     "saving_draft": "Saving draft...",
     "saved_device": "Saved to Device",
     "language": "Language",
@@ -4646,7 +4646,7 @@
       "select_all_highlight": "Select/Deselect All for Adapted Text Highlighting",
       "select_highlight": "Include this term in Adapted Text Highlighting",
       "delete_term": "Delete Term",
-      "apply_edit": "Apply Custom Nano Banana Edit",
+      "apply_edit": "Apply Image Edit",
       "generate_icon": "Generate a visual icon for this term"
     },
     "auto_remove": "Auto-Remove Words from Images",
@@ -5928,7 +5928,7 @@
     "image_stripped": "Images are stripped to save space.",
     "prompt_label": "AI Generated Prompt",
     "art_style": "Art Style",
-    "nano_active_status": "Nano Banana active",
+    "nano_active_status": "Image editing active",
     "styles": {
       "default": "Default (Clean Vector)",
       "isometric": "Isometric Diagram",
@@ -5944,15 +5944,15 @@
     },
     "generate": "Generate Visual",
     "regenerate_prompt": "Regenerate from Prompt",
-    "refiner_title": "Nano Banana Image Refiner",
-    "refiner_desc": "Ask Nano Banana to edit text or visual elements of this image directly for you.",
+    "refiner_title": "Image Editor",
+    "refiner_desc": "Describe the text or visual changes you want to make to this image.",
     "refiner_placeholder": "Describe changes (e.g., 'Add more labels', 'Make background blue')...",
     "placeholder_instructions": "e.g., Focus on the cellular structure...",
     "download": "Download Image",
     "warning": {
       "title": "Important: Save Your Work",
       "desc": "Images are <strong>not saved</strong> to your history if you refresh the page. Please download the image or the HTML Pack immediately if you wish to keep it.",
-      "tip": "<strong>Pro Tip:</strong> AI-generated text in diagrams can sometimes be inaccurate. Use the <strong>Nano Banana Refiner</strong> above to 'fix spelling' or 'remove text labels' before downloading."
+      "tip": "<strong>Pro Tip:</strong> AI-generated text in diagrams can sometimes be inaccurate. Use the <strong>Image Editor</strong> above to 'fix spelling' or 'remove text labels' before downloading."
     },
     "actions": {
       "refining_icon": "Refining icon...",
@@ -10170,7 +10170,7 @@
     "custom_art_style_placeholder": "e.g., anime, watercolor, realistic...",
     "edit_appearance": "Edit Appearance",
     "edit_name": "Edit Name",
-    "edit_nanobanana": "Edit with Nano Banana",
+    "edit_nanobanana": "Edit image",
     "edit_role": "Edit Role",
     "focus_reader": "Focus Reader",
     "generate_all": "Generate All",
@@ -10628,7 +10628,7 @@
         {
           "title": "Lesson Images",
           "icon": "ImageIcon",
-          "desc": "AI diagrams and illustrations. Use 'Nano Banana' to refine or remove text.",
+          "desc": "AI diagrams and illustrations. Use image editing to refine or remove text.",
           "category": "assessment",
           "color": "purple"
         },

@@ -23,6 +23,7 @@ describe('Test Prep learning-library load gate source QA', () => {
     expect(source).toContain("['quick-reference', 'Quick reference']");
     expect(source).toContain("libraryMode === 'quick-reference'");
     expect(source).toContain('AP Statistics quick reference');
+    expect(source).toContain('Read reference aloud');
   });
 
   it('binds visible content and validation to pack, version, visibility, URL, and manifest digest identity', () => {

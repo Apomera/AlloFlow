@@ -107,8 +107,8 @@ function groupByCatMarker(arr) {
 // ── STEM ──
 const stem = groupByCatMarker(extractArray('stem_lab/stem_lab_module.js', '_allStemTools'));
 const stemHub = {
-  hub: 'STEM Lab', icon: '🔬',
-  sourceKind: 'registry', sourceLabel: 'Generated from the STEM Lab registry',
+  hub: 'STEAM Lab', icon: '🔬',
+  sourceKind: 'registry', sourceLabel: 'Generated from the STEAM Lab registry',
   total: stem.cats.reduce((n, c) => n + c.tools.length, 0),
   categories: stem.cats.filter((c) => c.tools.length).map((c) => ({ name: c.name, tools: c.tools })),
 };

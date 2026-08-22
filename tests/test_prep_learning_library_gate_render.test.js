@@ -62,6 +62,7 @@ function makeFixture(suffix, title = 'Gate Catalog') {
     items: basePack.items.map((item, index) => ({
       ...item,
       id: id + '-item-' + (index + 1),
+      topicIds: [index < 3 ? 'hazard-awareness' : 'emergency-response'],
       skillIds: [index < 3 ? 'hazard-recognition' : 'emergency-response'],
     })),
   };
@@ -88,6 +89,8 @@ function makeFixture(suffix, title = 'Gate Catalog') {
       sourceReviewedFoundationalDocuments: 1,
       foundationalDocumentRoutes: 1,
       sourceReviewedFoundationalDocumentRoutes: 1,
+      constructedResponseWorkshops: 1,
+      sourceReviewedConstructedResponseWorkshops: 1,
     },
     chapters: [{
       id: id + '-chapter',
@@ -107,7 +110,7 @@ function makeFixture(suffix, title = 'Gate Catalog') {
       topicIds: ['hazard-awareness'],
       chapterIds: [id + '-chapter'],
       sectionIds: [id + '-chapter-section'],
-      workshopIds: [],
+      workshopIds: [id + '-workshop'],
       itemIds: pack.items.map((item) => item.id),
       foundationItemIds: pack.items.slice(0, 3).map((item) => item.id),
       depthItemIds: pack.items.slice(3, 4).map((item) => item.id),
@@ -117,6 +120,22 @@ function makeFixture(suffix, title = 'Gate Catalog') {
       studyMove: 'Use this public document title as a retrieval cue, then connect it to the linked practice topics.',
       accessNote: 'This route contains public metadata and original practice links only; it does not reproduce official document text.',
       references: ['https://example.com/public-foundation-document'],
+      reviewStatus: 'source-reviewed-editorial-pass',
+    }],
+    constructedResponseWorkshops: [{
+      id: id + '-workshop',
+      title: 'Practice workshop for ' + suffix,
+      taskType: 'Concept application planning',
+      prompt: 'Explain the mechanism before stating a conclusion.',
+      stimulus: 'A short synthetic civic scenario for regression testing.',
+      topicIds: ['hazard-awareness'],
+      taskParts: ['Name the mechanism.', 'Connect it to the evidence.'],
+      planningFrame: [{ label: 'Claim', guidance: 'State a qualified claim.' }],
+      successCriteria: ['Names the mechanism accurately.'],
+      commonPitfalls: ['Overstates what the evidence proves.'],
+      sampleOutline: ['Claim', 'Evidence', 'Qualification'],
+      reviewNote: 'Original unscored workshop fixture.',
+      references: ['https://example.com/workshop'],
       reviewStatus: 'source-reviewed-editorial-pass',
     }],
     skills: [],
@@ -429,6 +448,24 @@ describe('Test Prep interaction-gated learning library', () => {
     expect(host.querySelector('[data-test-prep-foundational-route-id="learning-library-gate-document-routes-document-route"]')).toBeTruthy();
     expect(host.querySelector('[data-test-prep-foundational-route-progress="not-started"]')).toBeTruthy();
     expect(host.textContent).toContain('Not started yet');
+    const linkedChapterButton = findButton('Open linked chapter');
+    expect(linkedChapterButton).toBeTruthy();
+    await act(async () => { linkedChapterButton.click(); });
+    await waitUntil(() => host.textContent.includes('Chapter lessons'), 'Expected the document route to open its linked lesson chapter.');
+    expect(host.textContent).toContain('Document Route Catalog Chapter');
+    await act(async () => { findButton('Back to chapter catalog').click(); });
+    await act(async () => { findButton('Foundational documents').click(); });
+    await waitUntil(() => host.textContent.includes('Foundational-document study routes'), 'Expected the route catalog to return after opening the linked chapter.');
+    const topicButton = findButton('Practice topic hazard-awareness');
+    expect(topicButton).toBeTruthy();
+    expect(topicButton.disabled).toBe(false);
+    const workshopButton = findButton('Open linked workshop');
+    expect(workshopButton).toBeTruthy();
+    await act(async () => { workshopButton.click(); });
+    await waitUntil(() => host.textContent.includes('Practice workshop for document-routes'), 'Expected the document route to open its linked response workshop.');
+    expect(host.textContent).toContain('Showing 1 of 1 written-response workshops matching this route');
+    await act(async () => { findButton('Foundational documents').click(); });
+    await waitUntil(() => host.textContent.includes('Foundational-document study routes'), 'Expected the route catalog to return after opening the linked workshop.');
     expect(findButton('Start foundation set')).toBeTruthy();
     expect(findButton('Start depth set')).toBeTruthy();
     expect(findButton('Start transfer set')).toBeTruthy();

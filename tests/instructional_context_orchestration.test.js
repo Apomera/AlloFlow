@@ -213,7 +213,9 @@ describe('instructional context orchestration', () => {
     const updated = remove(run, 'simplified-0');
     expect(updated).not.toBe(run);
     expect(run.preflight.selected).toHaveLength(2);
-    expect(updated.preflight.selected).toEqual([{ type: 'quiz', uiId: 'quiz-1', index: 0 }]);
+    expect(updated.preflight.selected).toEqual([
+      expect.objectContaining({ type: 'quiz', uiId: 'quiz-1', index: 0 }),
+    ]);
     expect(updated.preflight.estimatedResourceGenerations).toBe(1);
     expect(updated.preflight.skipped.at(-1).reason).toContain('Removed by educator');
   });

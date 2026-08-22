@@ -5,9 +5,10 @@
 // Background:
 //   A DA probe measures one student's MODIFIABILITY on one construct. DA
 //   supports (visual organizers, sentence frames) are generated through the
-//   SHARED dispatcher that the main lesson app uses, and the DA host callbacks
-//   opt out of ambient context by passing { isolatedContext: true } into
-//   handleGenerate. If that opt-out does not work, the support teaches outside
+//   SHARED dispatcher that the main lesson app uses, and the lazy DA host
+//   adapter callbacks opt out of ambient context by passing
+//   { isolatedContext: true } into handleGenerate. If that opt-out does not
+//   work, the support teaches outside
 //   content — different topic, different vocabulary, the teacher's lesson
 //   standards, the roster's differentiation groups, the student's declared
 //   interests — and the assessment is confounded. That is a validity failure,
@@ -43,10 +44,14 @@ const COPIES = [
   'generate_dispatcher_module.js',
   'desktop/web-app/public/generate_dispatcher_module.js',
 ];
-const HOSTS = [
+const HOST_SHELLS = [
   'AlloFlowANTI.txt',
   'desktop/web-app/src/AlloFlowANTI.txt',
   'desktop/web-app/src/App.jsx',
+];
+const HOST_ADAPTERS = [
+  'dynamic_assessment_module.js',
+  'desktop/web-app/public/dynamic_assessment_module.js',
 ];
 
 const errors = [];
@@ -104,13 +109,56 @@ for (const rel of COPIES) {
   }
 }
 
-// ── 4. The host must still opt in. A guard nobody triggers is decorative. ──
-for (const rel of HOSTS) {
+// ── 4. The app shell must still wire the extracted host adapter. ──
+// The resource callbacks moved out of AlloFlowANTI.txt in August 2026 so the
+// Dynamic Assessment gate would remain a compact lazy-module seam. The shell
+// now owns only dependency injection; the adapter module owns the callbacks.
+for (const rel of HOST_SHELLS) {
   const text = read(rel);
   if (!text) continue;
-  const n = (text.match(/isolatedContext: true/g) || []).length;
-  if (n < 2) {
-    errors.push(`${rel} passes isolatedContext only ${n}x (expected >= 2: the visual-organizer and sentence-frames DA callbacks). If a DA support kind stopped opting in, it is now inheriting the open lesson.`);
+  if (!text.includes('DA && DA.HostAdapter')) {
+    errors.push(`${rel} no longer resolves DA.HostAdapter at the lazy-module boundary.`);
+  }
+  if (!text.includes('DynamicAssessment: DA')) {
+    errors.push(`${rel} no longer passes the loaded DynamicAssessment component into its host adapter.`);
+  }
+  if (!/host:\s*\{[\s\S]{0,1600}\bhandleGenerate,/.test(text)) {
+    errors.push(`${rel} no longer injects handleGenerate into the Dynamic Assessment host contract.`);
+  }
+  if (text.includes('onGenerateVisualOrganizer: async') || text.includes('onGenerateSentenceFrames: async')) {
+    errors.push(`${rel} contains inline DA generation callbacks again; keep clinical-isolation ownership in the lazy host adapter.`);
+  }
+}
+
+// ── 5. Each extracted callback must opt in independently. ──
+// A total token count alone is insufficient: both flags could accidentally land
+// in one callback while the other silently resumes inheriting ambient context.
+for (const rel of HOST_ADAPTERS) {
+  const text = read(rel);
+  if (!text) continue;
+  if (!text.includes('function DynamicAssessmentHostAdapter(props)') ||
+      !text.includes('DynamicAssessment.HostAdapter = DynamicAssessmentHostAdapter')) {
+    errors.push(`${rel} does not publish the extracted DynamicAssessmentHostAdapter.`);
+    continue;
+  }
+
+  const visualStart = text.indexOf('onGenerateVisualOrganizer: async');
+  const sentenceComment = text.indexOf('// Sentence-frames host callback', visualStart);
+  const sentenceStart = text.indexOf('onGenerateSentenceFrames: async', sentenceComment);
+  const resourceStart = text.indexOf('onOpenResource:', sentenceStart);
+  if (visualStart < 0 || sentenceComment < 0 || sentenceStart < 0 || resourceStart < 0) {
+    errors.push(`${rel} is missing a bounded visual-organizer or sentence-frames host callback.`);
+    continue;
+  }
+
+  const visualCallback = text.slice(visualStart, sentenceComment);
+  const sentenceCallback = text.slice(sentenceStart, resourceStart);
+  if (!/const cfg\s*=\s*\{\s*isolatedContext:\s*true\s*\}/.test(visualCallback) ||
+      !/handleGenerate\([\s\S]*?\bcfg\b[\s\S]*?\)/.test(visualCallback)) {
+    errors.push(`${rel} visual-organizer callback no longer passes isolatedContext: true to handleGenerate.`);
+  }
+  if (!/handleGenerate\([\s\S]*isolatedContext:\s*true/.test(sentenceCallback)) {
+    errors.push(`${rel} sentence-frames callback no longer passes isolatedContext: true to handleGenerate.`);
   }
 }
 
@@ -123,4 +171,4 @@ if (errors.length) {
   process.exit(1);
 }
 
-console.log(`✓ check_da_clinical_isolation: ${GUARDS.length} ambient channels guarded on _isolatedContext, ${COPIES.length} dispatcher copies carry it, ${HOSTS.length} hosts still opt in.`);
+console.log(`✓ check_da_clinical_isolation: ${GUARDS.length} ambient channels guarded on _isolatedContext, ${COPIES.length} dispatcher copies carry it, ${HOST_SHELLS.length} host shells wire ${HOST_ADAPTERS.length} isolated adapter copies.`);

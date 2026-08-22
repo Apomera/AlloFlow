@@ -1,16 +1,16 @@
 # Documents and printing: from resource to handout
 
-Everything AlloFlow generates can leave the app as a document a student can hold: a finished copy to read, a blank copy to write on, or a self-contained web page with its own reading tools. This chapter covers choosing between them and the details that matter once paper is involved.
+Document Builder can package supported lesson resources as a finished copy to read, a blank copy to write on, a web handout with reading tools, or slides. Not every interactive tool becomes a meaningful static document, so preview the chosen resources and use the tool's own export when one is required.
 
 For building the resources themselves, see [Prepare a lesson](02-prepare-a-lesson.md).
 
-## The four export formats, plainly
+## The four primary Document Builder modes
 
 | Format | What it is | Reach for it when |
 | --- | --- | --- |
 | **Print / Save as PDF** | A finished copy to read. Opens your print window; print it or save as PDF there. | Reference copies, family communication, reading material. |
 | **Worksheet** | A blank copy to write on: answer boxes become ruled lines, multiple choice becomes fill-in bubbles, and a Name / Date / Score header appears. | Paper practice and anything handed in physically. |
-| **HTML handout** | One self-contained file with its own reading toolbar. Works offline once downloaded; nothing phones home. | Sending work home, devices without AlloFlow, screen-reader use. |
+| **HTML handout** | A downloadable file with its own reading toolbar. The default export is designed for offline use; optional web fonts, external links, media, or connected features can still create network dependencies. | Sending work home, devices without AlloFlow, screen-reader use after testing. |
 | **Slides** | A presentation export. | Whole-class instruction. |
 
 The export screen explains each format under its selector, so you do not need to memorize this table.
@@ -21,13 +21,13 @@ The export screen explains each format under its selector, so you do not need to
 
 The exported page carries its own accessibility toolbar, independent of AlloFlow:
 
-- **Text size** steps from 90% to 175%, with a live percentage readout. Content reflows instead of getting cut off, at every size, on every screen width.
-- **Fonts:** nine faces that work with no internet at all, including a readable serif, a rounded face, and a dyslexia-friendly option. Thirteen optional web fonts span accessibility (OpenDyslexic, Atkinson Hyperlegible, Lexend, Andika), multilingual reading (Noto Sans and Noto Serif), sans-serif, serif, and monospace choices. They are behind a clearly labeled "needs internet" checkbox at export time and are off by default.
+- **Text size** offers a range with a live percentage readout. The handout is designed to reflow, but test the actual file at the largest offered size and the narrowest student viewport.
+- **Fonts:** offline choices travel with or fall back inside the handout, while optional web fonts can require internet. The exact list can change; use the export screen's **needs internet** label and test multilingual coverage before choosing a font.
 - **Reading themes**, sentence read-along where the lesson includes audio, and the annotation tools below.
 
 ## Annotations that stay put
 
-Students and teachers can highlight, add notes and stickers, record voice notes, and draw freehand directly on the handout. Marks belong to the document: they scroll with it, stay attached through text-size and font changes, and survive reload. "Erase my marks" clears only your own annotations, tells you how many it would erase, and is disabled when there is nothing to erase.
+Supported handouts can provide highlights, notes, stickers, voice notes, and drawing. Annotation persistence depends on the exported format, browser storage, permissions, and the way the file is reopened. Test a sample mark, reload the actual handout, and confirm that it remains anchored before promising persistence to students.
 
 Teacher annotations made in the app travel into the export, including drawings.
 
@@ -44,5 +44,5 @@ The Document Builder's ribbon has an **Expert Workbench** tab: type a plain-lang
 ## Practical guidance
 
 - **Preview in the real format.** A resource that looks right in the app can break at 175% text on a phone; the reflow work makes this rare, but the habit is free.
-- **For families without reliable internet**, the HTML handout with the default fonts is the safest artifact: one file, works from a download, nothing external.
+- **For families without reliable internet**, test the downloaded HTML handout with default fonts while the device is offline. Remove or replace any optional font, link, media item, or feature that still needs a network.
 - **Keep the answer-key page** before handing a stack to students; it prints last on purpose.

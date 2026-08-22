@@ -20,7 +20,7 @@ A thorough run on a long document takes a while, and there are three things wort
 
 ## Doing this without the app
 
-If you already use Claude Desktop, there is a local connector that runs the same pipeline on your own computer. You install it once, and then you can ask in plain language: audit this document, remediate it, export it as EPUB. It reads the file from your disk, so nothing is uploaded to AlloFlow.
+If you already use a compatible desktop MCP host, the optional local connector can run the pipeline on your computer. You install it once, then ask in plain language to audit a document, remediate it, or export a supported format. The connector reads the file from disk; deterministic processing does not require an AlloFlow upload, but the host, configured AI provider, logging, and export destination still need their own review.
 
 Two things make it worth knowing about. The deterministic tools (validation, text extraction, redaction, structure checks, exports) work with no AI key at all, and the AI-assisted repair runs on a key you supply yourself. Your IT department may prefer this path for exactly that reason: see [For your IT department](17-for-your-it-department.md).
 
@@ -36,7 +36,7 @@ Every run produces a report bound to the exact files it describes: what was foun
 
 ## Confidential documents
 
-The whole workflow can run against a local AI model instead of a cloud provider, and the validation tools run locally, so a sensitive document can be processed with nothing leaving the machine. Set that up in AI Backend Settings ("Private AI on this computer"), and see [Privacy and responsible AI](07-privacy-and-responsible-ai.md) for the handling rules that still apply to the files themselves.
+The workflow can use a local AI endpoint instead of a cloud provider, and its deterministic validation tools run locally. For sensitive documents, verify that the chosen endpoint is actually on the device, that the desktop host and model do not send telemetry or retain prompts, and that exports stay in an approved location before describing the route as no-egress. Set the endpoint in AI Backend Settings and see [Privacy and responsible AI](07-privacy-and-responsible-ai.md) for the handling rules that still apply to the files themselves.
 
 ## Where this connects
 

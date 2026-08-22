@@ -3582,6 +3582,13 @@
         if (!window.THREE) return;
         var cnv = document.getElementById('arch-studio-canvas');
         if (!cnv) return;
+        // Architecture Studio now owns this canvas through the hook-free
+        // ArchGL renderer in stem_tool_archstudio.js.  The legacy shell scene
+        // below has its own renderer + RAF loop; letting both attach to the
+        // same canvas makes pointer rotation flash between cameras (and can
+        // trigger WebGL context churn).  Keep the old scene available for
+        // older canvases, but never compete with an explicitly owned canvas.
+        if (cnv.getAttribute('data-arch-gl') === 'true') return;
         var gd = (labToolData && labToolData.archStudio) || {};
         var blocks = gd.blocks || [];
         var THREE = window.THREE;

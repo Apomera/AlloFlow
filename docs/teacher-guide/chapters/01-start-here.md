@@ -178,11 +178,11 @@ Avoid labeling pathways as “low,” “easy,” or “special.” Use neutral 
 
 ## The smallest possible start: one tool, one link
 
-You do not have to begin with a lesson at all. Every interactive STEAM Lab tool has its own direct web address that opens just that tool, with no sign-in for you or your students. Pasting one such link into whatever you already use (your LMS, a slide, a message home) is the lowest-commitment way to try AlloFlow, share it with a colleague, or give a family one good activity. When you are ready for more than one tool, come back to the fifteen-minute lesson above.
+You do not have to begin with a lesson at all. Many STEAM Lab entries expose a focused link in the current catalog. Copy and test that link rather than guessing the address. The public standalone route may open without an AlloFlow account, while an LMS, district gateway, Gemini environment, or other surrounding platform may require its own sign-in. One verified link is a low-commitment way to try a tool, share it with a colleague, or give a family one good activity. When you are ready for more than one tool, come back to the fifteen-minute lesson above.
 
-![The Water Cycle tool opened directly from its own link, ready to use with no sign-in](../assets/screenshots/08-single-tool-link.png)
+![The Water Cycle tool opened through its public standalone link](../assets/screenshots/08-single-tool-link.png)
 
-*A direct tool link, captured August 16, 2026. The "AI extras: off" note in the header means no AI backend is set up on that device; the tool itself is fully usable either way. See [Troubleshooting](08-troubleshooting.md).*
+*A direct tool link, captured August 16, 2026. The "AI extras: off" note means no AI backend was set up on that device. The core simulation route shown remains usable, while AI-dependent extras do not. See [Troubleshooting](08-troubleshooting.md).*
 
 ## If something does not work
 

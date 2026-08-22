@@ -1,22 +1,12 @@
-# The STEAM Lab: 142 tools, and how to find the one you need
+# The STEAM Lab: find and share the right tool
 
-The STEAM Lab is the largest thing in AlloFlow: **142 interactive tools** across thirteen subject areas, from a water-cycle simulation to a titration burette to a disproportionality analyzer. This chapter does not describe all 142 — that list lives in the catalog, which is always current, while a printed list would be wrong within a month. What this chapter teaches is the part that does not change: how to find the right tool, how to put it in front of students, and what to expect from any tool you open.
+The STEAM Lab is the largest collection in AlloFlow, with interactive tools across thirteen subject areas, from a water-cycle simulation to a titration burette to a disproportionality analyzer. The generated registry changes as tools are added or retired, so this manual intentionally does not hard-code a total. Use the live STEAM Lab catalog for the current list.
 
 ## What is in there
 
-| Area | Roughly |
-| --- | --- |
-| Earth and space science | 27 tools |
-| Computing, AI, and digital literacy | 19 |
-| Ecology, environment, and animals | 14 |
-| Math fundamentals | 15 |
-| Life science and genetics | 12 |
-| Life skills, careers, and economics | 11 |
-| Engineering and design · geometry and measurement · learning and behavioral science | 7 each |
-| Human body and safety · data and statistics | 5 each |
-| Strategy games · sports and movement science | 4 each |
+The current registry groups tools under Arts and Music; Computing, AI, and Digital Literacy; Data, Statistics, and Probability; Earth and Space Science; Ecology, Environment, and Animals; Engineering and Design; Geometry and Measurement; Human Body, Health, and Safety; Learning and Behavioral Science; Life Science and Genetics; Life Skills, Careers, and Economics; Sports and Movement Science; and Strategy Games.
 
-**Where the live list is.** All 142 live inside the STEAM Lab itself: open it from **Learning Tools** on the Launch Pad, or from the STEAM Lab entry in the tool list, and search or browse by area there. That is the only always-current list, which is why this chapter does not reproduce it.
+**Where the live list is.** Open the STEAM Lab from **Learning Tools** on the Launch Pad or from the STEAM Lab entry in the tool list, then search or browse by area. That live catalog is the source of truth for what the current build exposes.
 
 Do not confuse this with [Find a tool](https://alloflow-cdn.pages.dev/tools.html) on the AlloFlow website. That page is a finder for the **lesson-building tools**, the ones that turn source material into glossaries, adaptations and quizzes, and it usefully filters by whether a tool needs a source, needs AI, or runs in Gemini Canvas. It does not list the STEAM Lab's simulations, so searching it for "titration" or "solar system" finds nothing.
 
@@ -32,34 +22,34 @@ Do not confuse this with [Find a tool](https://alloflow-cdn.pages.dev/tools.html
 
 This is the part worth learning once, because it works for every tool.
 
-**Every tool has its own web address.** A tool called Water Cycle is at `/water-cycle`, the coaster lab at `/coaster-lab`, and so on — one address per tool, all 142 of them. Paste that link into Google Classroom, an email, or a QR code and a student lands directly in that one tool, with no menus to navigate and nothing to install. They do not need an account.
+**Use the direct link shown by the current catalog or deployment.** Many discoverable tools expose a focused address; for example, the public catalog currently links Water Cycle at `/water-cycle`. Copy the link from the live catalog or open tool instead of guessing a slug, because aliases, availability, and hostnames can change. The public standalone route does not ask for an AlloFlow account, but an LMS, district gateway, Gemini environment, or other surrounding platform may require its own sign-in.
 
-A student who arrives this way sees a small note at the bottom of the screen explaining that this is one tool from AlloFlow and offering a way into the full app. It can be dismissed and does not follow them into the activity.
+Preview the copied link in a student-equivalent browser profile before sharing it. Confirm that it opens the intended tool, does not expose a teacher workspace, and works under the school's filtering and sign-in rules.
 
 **Or share the whole lab** by sending the app link and telling students which tool to open. Use the direct link when you want them in one place; use the app link when the activity is "explore three of these."
 
 ## What to expect from any tool
 
-**They run on the device, in the browser.** No installation, no account, and nothing uploaded. A Chromebook, an iPad, and a ten-year-old laptop all work; the 3D tools want a reasonably modern browser.
+**The interface runs in the browser, but data paths are feature-specific.** Many simulations compute locally. AI extras, online lookups, live coordination, camera or microphone features, imports, LMS launches, and configured school services can use a network or create records elsewhere. Check the tool's disclosure and the approved deployment before entering student-related content.
 
-**AI is optional and clearly marked.** Most tools are simulations and instruments — they compute, they draw, they respond, and none of that needs AI. Some offer AI extras such as hints or coaching. If your school has not connected an AI backend, those extras are simply not shown, and a small "AI extras: off" note appears in the lab header explaining why and how to turn them on. The tool itself works fully either way. This matters for planning: a lesson built on a simulation is not at risk if the AI is unavailable that morning.
+**AI is optional for many core simulations, not necessarily every feature.** When no backend is connected, the lab can show an **AI extras: off** notice and AI-dependent hints, coaching, generation, or drills remain unavailable. Verify that the exact activity you plan to use has a complete non-AI path, and keep a fallback when it does not.
 
 **They are instruments, not answer keys.** The tools show what happens; the interpretation is the lesson. A simulation that produces a surprising result is usually the most valuable moment in the class, not a bug to be fixed.
 
-**Fullscreen and accessibility.** Most visual tools have a fullscreen control for projecting to a class. Tools are keyboard-operable, and the 3D ones expose camera controls to the keyboard rather than requiring a mouse drag.
+**Fullscreen and accessibility vary by tool.** Many visual tools provide a fullscreen control, and many expose keyboard or alternate interaction routes. Test the exact tool with keyboard, zoom, reduced motion, screen-reader or text alternatives, and the students' real devices. Do not infer conformance for the whole catalog from one tool.
 
 ## Three ways teachers actually use them
 
 **As a demonstration.** Project one tool, drive it yourself, and narrate. Fastest to plan, and the fullscreen control exists for exactly this.
 
-**As a station.** Send the direct link for one tool to a group and give them a question to answer with it. Because each tool has its own address, four groups can be in four different tools without anyone getting lost.
+**As a station.** Send a verified direct link for one tool to a group and give them a question to answer with it. Test every link and provide a short title so students know they reached the intended station.
 
-**As the evidence step in a lesson.** Build the lesson in AlloFlow as usual, then send students to a tool to gather the observation the lesson asks them to explain. The tools do not record student work, so decide in advance how you want them to capture what they found — a worksheet, a photo, a shared document.
+**As the evidence step in a lesson.** Build the lesson in AlloFlow as usual, then send students to a tool to gather the observation the lesson asks them to explain. Some tools keep local progress or support an export, but the catalog is not a universal class gradebook. Decide in advance how students should capture and submit evidence in the approved system.
 
 ## When something does not work
 
-Almost every problem is one of three: the tool did not finish loading, the browser is too old for a 3D tool, or an AI extra is hidden because no backend is connected. The first is a reload, the second needs a different device, and the third is explained by the note in the lab header. The full recovery sequence is in [Troubleshooting](08-troubleshooting.md).
+Common causes include a tool that did not finish loading, blocked assets or APIs, unavailable permissions, unsupported graphics, an AI-dependent option with no backend, or a stale direct link. Protect any local work, check the visible error and required permissions, retry the verified catalog route, then use the full recovery sequence in [Troubleshooting](08-troubleshooting.md).
 
 ## For leaders planning wider use
 
-Tool links are the easiest way to hand teachers something concrete: pick three tools for a grade band and send the three addresses. There is nothing to license, provision, or roster, so a department can pilot on Monday. The privacy picture is the same as the rest of AlloFlow and is set out in [Privacy and responsible AI](07-privacy-and-responsible-ai.md).
+Tool links are an easy way to hand teachers something concrete: pick three tools for a grade band and send three verified addresses. The public standalone routes may not require AlloFlow rostering, but the school still needs to approve the host, device support, permissions, network paths, data handling, and any connected AI or external service. Use [Privacy and responsible AI](07-privacy-and-responsible-ai.md) for that review.

@@ -6314,6 +6314,426 @@
   // ═════════════════════════════════════════════════════════
   // SECTION 4 — React component
   // ═════════════════════════════════════════════════════════
+  // Host-owned resource generation and navigation callbacks live beside the
+  // lazy Dynamic Assessment UI. This keeps the app shell to a small, explicit
+  // dependency contract while preserving the existing single-module request.
+  function DynamicAssessmentHostAdapter(props) {
+    props = props || {};
+    var React = props.React || window.React;
+    var DA = props.DynamicAssessment || DynamicAssessment;
+    var host = props.host || {};
+    var addToast = host.addToast;
+    var autoRemoveWords = host.autoRemoveWords;
+    var callGemini = host.callGemini;
+    var callGeminiImageEdit = host.callGeminiImageEdit;
+    var callImagen = host.callImagen;
+    var cleanJson = host.cleanJson;
+    var gradeLevel = host.gradeLevel;
+    var handleGenerate = host.handleGenerate;
+    var handleRestoreView = host.handleRestoreView;
+    var history = host.history;
+    var leveledTextLanguage = host.leveledTextLanguage;
+    var selectedLanguages = host.selectedLanguages;
+    var setGeneratedContent = host.setGeneratedContent;
+    var setHistory = host.setHistory;
+    var setIsDynamicAssessmentOpen = host.setIsDynamicAssessmentOpen;
+    var setIsGeneratingTermImage = host.setIsGeneratingTermImage;
+    var studentNickname = host.studentNickname;
+    var t = host.t;
+
+    if (!React || typeof React.createElement !== "function") {
+      throw new Error("DynamicAssessmentHostAdapter requires React");
+    }
+    if (typeof DA !== "function") {
+      throw new Error("DynamicAssessmentHostAdapter requires the DynamicAssessment component");
+    }
+
+    return React.createElement(
+      "div",
+      {
+        className: "fixed inset-0 z-[60] bg-black/50 overflow-y-auto",
+        onClick: function () { setIsDynamicAssessmentOpen(false); }
+      },
+      React.createElement(
+        "div",
+        {
+          className: "bg-white rounded-2xl mx-auto my-8 shadow-2xl max-w-4xl",
+          onClick: function (event) { event.stopPropagation(); }
+        },
+        React.createElement(DA, {
+            React: React,
+            onClose: () => setIsDynamicAssessmentOpen(false),
+            callGemini: callGemini,
+            addToast,
+            t,
+            studentNickname: studentNickname || '',
+            mathFluencyProbes: Array.isArray(history)
+                ? history.filter(e => e && e.type === 'math-fluency-probe').slice(-5).reverse()
+                : [],
+            outputLanguage: leveledTextLanguage || 'English',
+            // Dynamic Assessment → AlloSheet uses the shared
+            // popup bridge; the source tool never writes back.
+            onOpenAlloSheet: (artifact) => {
+                const bridge = window.AlloSheetHostBridge;
+                if (!bridge || typeof bridge.open !== 'function') {
+                    addToast('AlloSheet is still loading. Try again in a moment.', 'error');
+                    return false;
+                }
+                const root = document.documentElement;
+                const body = document.body;
+                const alloSheetTheme = ((root && root.classList.contains('theme-contrast')) || (body && body.classList.contains('theme-contrast')))
+                    ? 'contrast'
+                    : ((root && root.classList.contains('theme-light')) || (body && body.classList.contains('theme-light')))
+                        ? 'light'
+                        : 'dark';
+                if (typeof bridge.openTransfer === 'function') {
+                    const transfer = bridge.openTransfer({ theme: alloSheetTheme, artifact });
+                    if (!transfer) {
+                        addToast('AlloSheet could not open. Allow pop-ups and try again.', 'error');
+                        return false;
+                    }
+                    transfer.decision.then((decision) => {
+                        if (decision && decision.status === 'accepted') addToast('Dynamic Assessment tables opened in AlloSheet for review.', 'success');
+                        else if (decision && decision.status === 'cancelled') addToast('AlloSheet review canceled. Dynamic Assessment data did not change.', 'info');
+                    }).catch(() => {});
+                    return transfer.delivered.then(() => true);
+                }
+                const popup = bridge.open({ theme: alloSheetTheme, artifact });
+                if (!popup) {
+                    addToast('AlloSheet could not open. Allow pop-ups and try again.', 'error');
+                    return false;
+                }
+                return true;
+            },
+            // Phase Z+ — DA-generated resource inventory so DA can suggest REUSE
+            // (via existingResourceId) instead of minting duplicates when Gemini
+            // is producing a second probe that needs the same support. Recent
+            // DA resources only, max 20 entries to keep the prompt compact.
+            daResourceManifest: Array.isArray(history)
+                ? history
+                    .filter(e => e && e.fromDA && (e.type === 'glossary' || e.type === 'manipulative-resource' || e.type === 'word-sounds' || e.type === 'outline' || e.type === 'timeline' || e.type === 'concept-sort' || e.type === 'sentence-frames'))
+                    .slice(-20)
+                    .reverse()
+                    .map(e => {
+                        const base = { id: e.id, title: e.title || '' };
+                        if (e.type === 'glossary') {
+                            const terms = Array.isArray(e.data) ? e.data.map(d => d && d.term).filter(Boolean).slice(0, 6) : [];
+                            return { ...base, kind: 'glossary', summary: terms.join(', ') };
+                        }
+                        if (e.type === 'manipulative-resource') {
+                            return { ...base, kind: 'math-manipulative', toolId: e.toolId, summary: e.toolId + (e.data && e.data.preset ? ' preset' : '') };
+                        }
+                        if (e.type === 'word-sounds' && e.isProbeMode) {
+                            const wcount = Array.isArray(e.wsPreloadedWords) ? e.wsPreloadedWords.length : (Array.isArray(e.data) ? e.data.length : 0);
+                            return { ...base, kind: 'word-sounds-probe', activity: e.probeActivity, summary: (e.probeActivity || 'probe') + ' · ' + wcount + ' words' };
+                        }
+                        if (e.type === 'outline' || e.type === 'timeline' || e.type === 'concept-sort') {
+                            // Visual organizers (Phase 4). structureType distinguishes
+                            // concept-map / mind-map / outline within the 'outline' type.
+                            const vo = e.type === 'outline'
+                                ? (e.data && e.data.structureType ? e.data.structureType : 'outline')
+                                : e.type;
+                            return { ...base, kind: 'visual-organizer', toolType: e.type, summary: vo };
+                        }
+                        if (e.type === 'sentence-frames') {
+                            return { ...base, kind: 'sentence-frames', summary: 'expressive sentence frames' };
+                        }
+                        return null;
+                    })
+                    .filter(Boolean)
+                : [],
+            // Phase Z — Supplementary resource generation (reversed Lesson-Plan link pattern).
+            // DA decides what resources each item needs and asks the host to mint them.
+            // The host returns { id } so DA can inline-link to the freshly-generated resource.
+            onGenerateGlossary: async (seedTerms, title, provenance) => {
+                const safeTerms = (Array.isArray(seedTerms) ? seedTerms : [])
+                    .map(s => String(s || '').trim()).filter(s => s.length > 1).slice(0, 6);
+                if (safeTerms.length === 0) throw new Error('No seed terms supplied.');
+                const lang = leveledTextLanguage || 'English';
+                // Mirror handleQuickAddGlossary's prompt shape exactly — same field
+                // names (term/def/tier/translations) the main GlossaryView consumes.
+                const wantTranslations = Array.isArray(selectedLanguages) && selectedLanguages.length > 0;
+                const prompt = wantTranslations
+                    ? `Generate glossary entries for these target terms for a ${gradeLevel || 'grade-appropriate'} student in ${lang}.\nFor each term:\n  1. Provide a simple definition appropriate for the grade level.\n  2. Categorize as "Academic" (general Tier 2) or "Domain-Specific" (topic Tier 3).\n  3. Provide translations into: ${selectedLanguages.join(', ')}. Format each translation as "Translated Term: Translated Definition".\n\nReturn ONLY a JSON array; each element has: { "term": string, "def": string, "tier": "Academic" | "Domain-Specific", "translations": { "<Lang>": "TranslatedTerm: TranslatedDef", ... } }\n\nTarget terms:\n${safeTerms.map((t, i) => `${i + 1}. ${t}`).join('\n')}`
+                    : `Generate glossary entries for these target terms for a ${gradeLevel || 'grade-appropriate'} student in ${lang}.\nFor each term:\n  1. Provide a simple definition appropriate for the grade level.\n  2. Categorize as "Academic" (general Tier 2) or "Domain-Specific" (topic Tier 3).\n\nReturn ONLY a JSON array; each element has: { "term": string, "def": string, "tier": "Academic" | "Domain-Specific" }\n\nTarget terms:\n${safeTerms.map((t, i) => `${i + 1}. ${t}`).join('\n')}`;
+                const raw = await callGemini(prompt, true);
+                const cleaned = typeof cleanJson === 'function' ? cleanJson(raw) : raw;
+                let parsed;
+                try { parsed = JSON.parse(cleaned); }
+                catch (e) { throw new Error('Glossary AI response was not valid JSON.'); }
+                if (!Array.isArray(parsed) || parsed.length === 0) {
+                    throw new Error('Glossary AI returned an empty list.');
+                }
+                const data = parsed.slice(0, 6).map(entry => ({
+                    term: String(entry.term || '').trim(),
+                    def: String(entry.def || entry.definition || '').trim(),
+                    tier: entry.tier === 'Domain-Specific' || entry.tier === 'Academic' ? entry.tier : undefined,
+                    translations: entry.translations && typeof entry.translations === 'object' ? entry.translations : {}
+                })).filter(e => e.term && e.def);
+                if (data.length === 0) throw new Error('Glossary AI returned no usable entries.');
+                const newId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
+                const newItem = {
+                    id: newId,
+                    type: 'glossary',
+                    data: data,
+                    title: String(title || `Glossary: ${data.slice(0, 2).map(d => d.term).join(', ')}`).slice(0, 80),
+                    meta: 'from Dynamic Assessment' + (provenance && typeof provenance.daItemIndex === 'number' ? ` · item ${provenance.daItemIndex + 1}` : ''),
+                    timestamp: new Date(),
+                    config: {},
+                    fromDA: true,
+                    daItemIndex: provenance && typeof provenance.daItemIndex === 'number' ? provenance.daItemIndex : null,
+                    daItemPrompt: provenance && provenance.daItemPrompt ? String(provenance.daItemPrompt).slice(0, 120) : null
+                };
+                setHistory(prev => [...prev, newItem]);
+                // Fire-and-forget icon generation, mirroring handleQuickAddGlossary's
+                // pipeline EXACTLY: callImagen for the icon, then (if autoRemoveWords)
+                // callGeminiImageEdit to strip any letters the model leaked in. Sequential
+                // so we don't burst the rate limiter; per-term failures tolerated.
+                (async () => {
+                    for (let i = 0; i < data.length; i++) {
+                        const term = data[i].term;
+                        const definition = data[i].def;
+                        const imgPrompt = `Icon style illustration of "${term}" (Context: ${definition}). Simple, clear, flat vector art style, white background. STRICTLY NO TEXT, NO LABELS, NO LETTERS. Visual only. Educational icon.`;
+                        // Flip the per-term spinner the GlossaryView already renders
+                        // (same state used by manual handleGenerateTermImage at line 20103).
+                        // The "Creating icon…" copy + animated RefreshCw appear automatically.
+                        setIsGeneratingTermImage(prev => ({ ...prev, [i]: true }));
+                        try {
+                            let imageUrl = await callImagen(imgPrompt);
+                            if (!imageUrl) {
+                                setIsGeneratingTermImage(prev => ({ ...prev, [i]: false }));
+                                continue;
+                            }
+                            if (autoRemoveWords) {
+                                try {
+                                    const rawBase64 = imageUrl.split(',')[1];
+                                    const editPrompt = "Remove all text, labels, letters, and words from the image. Keep the illustration clean.";
+                                    imageUrl = await callGeminiImageEdit(editPrompt, rawBase64);
+                                } catch (editErr) {
+                                    console.warn('[DA glossary] Auto-remove text failed for term:', term, editErr && editErr.message);
+                                }
+                            }
+                            setHistory(prev => prev.map(it => {
+                                if (it.id !== newId || !Array.isArray(it.data)) return it;
+                                const newData = it.data.slice();
+                                const liveIdx = newData.findIndex(d => d && d.term === term);
+                                if (liveIdx < 0) return it;
+                                newData[liveIdx] = { ...newData[liveIdx], image: imageUrl };
+                                return { ...it, data: newData };
+                            }));
+                            setGeneratedContent(prev => {
+                                if (!prev || prev.id !== newId || prev.type !== 'glossary' || !Array.isArray(prev.data)) return prev;
+                                const newData = prev.data.slice();
+                                const liveIdx = newData.findIndex(d => d && d.term === term);
+                                if (liveIdx < 0) return prev;
+                                newData[liveIdx] = { ...newData[liveIdx], image: imageUrl };
+                                return { ...prev, data: newData };
+                            });
+                        } catch (imgErr) {
+                            console.warn('[DA glossary] Image gen failed for term:', term, imgErr && imgErr.message);
+                        } finally {
+                            setIsGeneratingTermImage(prev => ({ ...prev, [i]: false }));
+                        }
+                    }
+                })();
+                return { id: newId };
+            },
+            // Phase Z++ — In-place update callbacks for the "✏️ Edit" flow on
+            // manipulative + word-sounds chips. Same resource id stays put;
+            // only the data payload changes. Glossary edits go through
+            // onGenerateGlossary (regeneration) since they involve new images.
+            onUpdateManipulativePreset: async (resourceId, newPreset, newTitle) => {
+                setHistory(prev => prev.map(it => {
+                    if (!it || it.id !== resourceId || it.type !== 'manipulative-resource') return it;
+                    return Object.assign({}, it, {
+                        data: Object.assign({}, it.data || {}, { preset: newPreset || {} }),
+                        title: newTitle ? String(newTitle).slice(0, 80) : it.title
+                    });
+                }));
+                return { id: resourceId };
+            },
+            onUpdateWordSoundsProbe: async (resourceId, activity, words, newTitle) => {
+                const safeWords = (Array.isArray(words) ? words : [])
+                    .map(w => String(w || '').toLowerCase().replace(/[^a-z]/g, ''))
+                    .filter(w => w.length >= 2 && w.length <= 14)
+                    .slice(0, 12);
+                if (safeWords.length < 3) throw new Error('Need at least 3 valid words.');
+                const wordObjs = safeWords.map(w => ({
+                    word: w, term: w, targetWord: w, ttsReady: false, _audioRequested: false
+                }));
+                setHistory(prev => prev.map(it => {
+                    if (!it || it.id !== resourceId || it.type !== 'word-sounds') return it;
+                    return Object.assign({}, it, {
+                        data: wordObjs,
+                        wsPreloadedWords: wordObjs,
+                        probeActivity: activity || it.probeActivity,
+                        lessonPlanSequence: activity ? [activity] : it.lessonPlanSequence,
+                        configSummary: `Probe: ${(activity || it.probeActivity || '').replace(/_/g, ' ')}`,
+                        title: newTitle ? String(newTitle).slice(0, 80) : it.title
+                    });
+                }));
+                return { id: resourceId };
+            },
+            // Phase 3 — Word Sounds probe host callback. Mints a
+            // type:'word-sounds' history entry with isProbeMode=true,
+            // preloaded word list, and the chosen activity. Clicking
+            // the inline link routes through handleRestoreView →
+            // launches Word Sounds Studio in probe mode at that activity.
+            onGenerateWordSoundsProbe: async (activity, words, title, provenance) => {
+                const ALLOWED = { counting: 1, segmentation: 1, blending: 1, isolation: 1, manipulation: 1, rhyming: 1, syllable_blending: 1, syllable_counting: 1 };
+                if (!ALLOWED[activity]) throw new Error('Unsupported phonics activity: ' + activity);
+                const safeWords = (Array.isArray(words) ? words : [])
+                    .map(w => String(w || '').toLowerCase().replace(/[^a-z]/g, ''))
+                    .filter(w => w.length >= 2 && w.length <= 14)
+                    .slice(0, 12);
+                if (safeWords.length < 3) throw new Error('Need at least 3 valid words for a probe.');
+                const wordObjs = safeWords.map(w => ({
+                    word: w,
+                    term: w,
+                    targetWord: w,
+                    ttsReady: false,
+                    _audioRequested: false
+                }));
+                const newId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
+                const newItem = {
+                    id: newId,
+                    type: 'word-sounds',
+                    title: String(title || `Word Sounds Probe: ${activity} (${safeWords.length} words)`).slice(0, 80),
+                    data: wordObjs,
+                    wsPreloadedWords: wordObjs,
+                    lessonPlanSequence: [activity],
+                    lessonPlanConfig: { activities: [{ id: activity, count: safeWords.length }] },
+                    configSummary: `Probe: ${activity.replace(/_/g, ' ')}`,
+                    isProbeMode: true,
+                    probeActivity: activity,
+                    meta: 'from Dynamic Assessment' + (provenance && typeof provenance.daItemIndex === 'number' ? ` · item ${provenance.daItemIndex + 1}` : ''),
+                    timestamp: new Date(),
+                    config: {},
+                    fromDA: true,
+                    daItemIndex: provenance && typeof provenance.daItemIndex === 'number' ? provenance.daItemIndex : null,
+                    daItemPrompt: provenance && provenance.daItemPrompt ? String(provenance.daItemPrompt).slice(0, 120) : null
+                };
+                setHistory(prev => [...prev, newItem]);
+                return { id: newId };
+            },
+            // Phase 2 — Math manipulative host callback. Mints a
+            // type:'manipulative-resource' history entry pointing at
+            // a STEAM Lab tool (numberline / fractions / areamodel)
+            // with preset state Gemini specified. Opening the entry
+            // (via the inline link chip) routes through handleRestoreView
+            // which slots the preset into labToolData + opens StemLab.
+            onGenerateManipulative: async (toolId, preset, title, provenance) => {
+                const ALLOWED = { numberline: true, fractions: true, areamodel: true };
+                if (!ALLOWED[toolId]) throw new Error('Unsupported manipulative toolId: ' + toolId);
+                const safePreset = (preset && typeof preset === 'object') ? preset : {};
+                const newId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
+                const newItem = {
+                    id: newId,
+                    type: 'manipulative-resource',
+                    toolId: toolId,
+                    data: { preset: safePreset },
+                    title: String(title || `${toolId} (DA)`).slice(0, 80),
+                    meta: 'from Dynamic Assessment' + (provenance && typeof provenance.daItemIndex === 'number' ? ` · item ${provenance.daItemIndex + 1}` : ''),
+                    timestamp: new Date(),
+                    config: {},
+                    fromDA: true,
+                    daItemIndex: provenance && typeof provenance.daItemIndex === 'number' ? provenance.daItemIndex : null,
+                    daItemPrompt: provenance && provenance.daItemPrompt ? String(provenance.daItemPrompt).slice(0, 120) : null
+                };
+                setHistory(prev => [...prev, newItem]);
+                return { id: newId };
+            },
+            // Phase 4 — Visual organizer host callback. The elegant
+            // path: instead of DA-specific render code, route through
+            // the SAME shared dispatcher (handleGenerate) the main app
+            // uses for outline/concept-map/mind-map/timeline/concept-sort.
+            // Reuses the generator + parsing + minting + restore machinery
+            // for free. CRITICAL: passes isolatedContext so the dispatcher
+            // suppresses ALL ambient lesson context (Lesson DNA, standards,
+            // differentiation, selected concepts, source topic, and the
+            // per-tool main-app custom instructions) — the organizer stays
+            // self-contained to the DA item so no outside topic/vocabulary
+            // contaminates the assessment. toolType picks the organizer;
+            // directive is the sole source content.
+            //
+            // ENFORCED, not merely asserted: this exact comment was true in
+            // intent and false in fact from the Phase-4 organizer work until
+            // 2026-07-28 — the dispatcher never read the flag (zero
+            // occurrences of the token), so every DA support silently
+            // inherited the open lesson. The suppression now lives at each
+            // ambient value's computation point in generate_dispatcher_source.jsx,
+            // is pinned by tests/da_clinical_isolation.test.js (which drives the
+            // real dispatcher and checks BOTH directions), and is blocked at
+            // deploy by dev-tools/check_da_clinical_isolation.cjs. Do not
+            // weaken any of the three without a clinical rationale.
+            onGenerateVisualOrganizer: async (toolType, directive, title, provenance) => {
+                const TOOLTYPE_MAP = {
+                    'outline':      { type: 'outline', outlineType: 'Standard Outline' },
+                    'concept-map':  { type: 'outline', outlineType: 'Key Concept Map' },
+                    'mind-map':     { type: 'outline', outlineType: 'Mind Map' },
+                    'timeline':     { type: 'timeline' },
+                    'concept-sort': { type: 'concept-sort' }
+                };
+                const mapping = TOOLTYPE_MAP[toolType];
+                if (!mapping) throw new Error('Unsupported visual organizer type: ' + toolType);
+                const safeDirective = String(directive || '').trim();
+                if (safeDirective.length < 8) throw new Error('Visual organizer directive too thin to generate.');
+                // isolatedContext keeps the organizer self-contained to the DA
+                // item — the dispatcher generates purely from safeDirective and
+                // injects no ambient lesson topic/vocabulary/standards.
+                const cfg = { isolatedContext: true };
+                if (mapping.outlineType) cfg.outlineType = mapping.outlineType;
+                // switchView=false so the main view doesn't change while DA is open.
+                // handleGenerate returns the newly-minted history item.
+                const newItem = await handleGenerate(mapping.type, null, false, safeDirective, cfg, false);
+                if (!newItem || !newItem.id) throw new Error('Visual organizer generation returned no resource.');
+                // handleGenerate doesn't set DA provenance — patch it in so the
+                // "🔬 DA · item N" badge + "Return to Dynamic Assessment" pill work
+                // exactly as they do for glossary/manipulative/word-sounds.
+                const daMeta = 'from Dynamic Assessment' + (provenance && typeof provenance.daItemIndex === 'number' ? ` · item ${provenance.daItemIndex + 1}` : '');
+                setHistory(prev => prev.map(it => it.id === newItem.id ? Object.assign({}, it, {
+                    fromDA: true,
+                    daItemIndex: provenance && typeof provenance.daItemIndex === 'number' ? provenance.daItemIndex : null,
+                    daItemPrompt: provenance && provenance.daItemPrompt ? String(provenance.daItemPrompt).slice(0, 120) : null,
+                    meta: daMeta,
+                    title: title ? String(title).slice(0, 80) : it.title
+                }) : it));
+                return { id: newItem.id };
+            },
+            // Sentence-frames host callback — the expressive/output scaffold.
+            // Same shared pipeline as visual organizers: route through
+            // handleGenerate('sentence-frames', directive, {isolatedContext})
+            // so it stays self-contained to the DA item, mint a standard
+            // 'sentence-frames' history entry, and let handleRestoreView's
+            // default branch open it. directive is the sole source content.
+            onGenerateSentenceFrames: async (directive, title, provenance) => {
+                const safeDirective = String(directive || '').trim();
+                if (safeDirective.length < 8) throw new Error('Sentence-frames directive too thin to generate.');
+                const newItem = await handleGenerate('sentence-frames', null, false, safeDirective, { isolatedContext: true }, false);
+                if (!newItem || !newItem.id) throw new Error('Sentence-frames generation returned no resource.');
+                const daMeta = 'from Dynamic Assessment' + (provenance && typeof provenance.daItemIndex === 'number' ? ` · item ${provenance.daItemIndex + 1}` : '');
+                setHistory(prev => prev.map(it => it.id === newItem.id ? Object.assign({}, it, {
+                    fromDA: true,
+                    daItemIndex: provenance && typeof provenance.daItemIndex === 'number' ? provenance.daItemIndex : null,
+                    daItemPrompt: provenance && provenance.daItemPrompt ? String(provenance.daItemPrompt).slice(0, 120) : null,
+                    meta: daMeta,
+                    title: title ? String(title).slice(0, 80) : it.title
+                }) : it));
+                return { id: newItem.id };
+            },
+            onOpenResource: (resourceId) => {
+                const item = (Array.isArray(history) ? history : []).find(h => h && h.id === resourceId);
+                if (!item) {
+                    addToast(t('toasts.resource_not_found_history') || 'Resource not found in history (it may have been deleted).', 'info');
+                    return;
+                }
+                setIsDynamicAssessmentOpen(false);
+                setTimeout(() => { handleRestoreView(item); }, 50);
+            }
+        })
+      )
+    );
+  }
   function DynamicAssessment(props) {
     var React = props.React || window.React;
     var h = React.createElement;
@@ -16517,6 +16937,7 @@
   // SECTION 5 — Export
   // ═════════════════════════════════════════════════════════
   window.AlloModules = window.AlloModules || {};
+  DynamicAssessment.HostAdapter = DynamicAssessmentHostAdapter;
   window.AlloModules.DynamicAssessment = DynamicAssessment;
   // Also expose constants for future host integrations / Report Writer.
   // Public read-only query: return DA sessions for a given student nickname,
@@ -16544,7 +16965,7 @@
   }
 
   window.AlloModules.DynamicAssessment._meta = {
-    version: "1.4.0-da-flow", // versioned probes/forms + privacy-safe saved-record audit history
+    version: "1.4.1-host-adapter", // versioned probes/forms + privacy-safe saved-record audit history
     storageKey: STORAGE_KEY,
     domains: ["math", "reading", "working-memory", "language"],
     itemCounts: {

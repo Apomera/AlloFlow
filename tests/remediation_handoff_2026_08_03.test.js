@@ -77,8 +77,12 @@ describe('auto-continuation ownership propagation', () => {
     expect(PIPE_SRC).toContain("typeof args[6].aborted !== 'boolean'");
     expect(PIPE_SRC).toContain('Array.prototype.slice.call(args, 0, 6)');
   });
-  it('every aiFixChunked call path (full, chunk, image-token retry, half) forwards _control.owner', () => {
-    const forwarded = (PIPE_SRC.match(/_control && _control\.signal, _control && _control\.owner\)/g) || []).length;
+  it('every aiFixChunked call path (full, chunk, image-token retry, half) forwards an owned chunk identity', () => {
+    // Ownership now goes through _callOwnerFor so each heartbeat also carries
+    // operation/chunk/pass metadata instead of forwarding the bare owner.
+    const aiFix = PIPE_SRC.slice(PIPE_SRC.indexOf('const aiFixChunked = async'), PIPE_SRC.indexOf('const autoFixAxeViolations = async'));
+    expect(aiFix).toContain('const _callOwnerFor = (chunkId) => {');
+    const forwarded = (aiFix.match(/_callOwnerFor\(/g) || []).length;
     expect(forwarded).toBeGreaterThanOrEqual(4);
   });
   it('autoFixAxeViolations stamps the caller-supplied owner on every chunk Gemini call', () => {

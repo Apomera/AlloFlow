@@ -194,8 +194,35 @@ describe('DA clinical isolation — the flag is actually wired', () => {
       expect(src).toMatch(/_isolatedContext \? '' : getGroupDifferentiationContext/);
     });
 
-  it('the DA host callbacks still pass the flag', () => {
-    const host = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8');
-    expect((host.match(/isolatedContext: true/g) || []).length).toBeGreaterThanOrEqual(2);
-  });
+  it.each(['AlloFlowANTI.txt', 'desktop/web-app/src/AlloFlowANTI.txt',
+           'desktop/web-app/src/App.jsx'])(
+    '%s still wires the extracted DA host adapter', (file) => {
+      const host = readFileSync(resolve(process.cwd(), file), 'utf8');
+      expect(host).toContain('DA && DA.HostAdapter');
+      expect(host).toContain('DynamicAssessment: DA');
+      expect(host).toMatch(/host:\s*\{[\s\S]{0,1600}\bhandleGenerate,/);
+      expect(host).not.toContain('onGenerateVisualOrganizer: async');
+      expect(host).not.toContain('onGenerateSentenceFrames: async');
+    });
+
+  it.each(['dynamic_assessment_module.js',
+           'desktop/web-app/public/dynamic_assessment_module.js'])(
+    '%s keeps each extracted callback clinically isolated', (file) => {
+      const adapter = readFileSync(resolve(process.cwd(), file), 'utf8');
+      expect(adapter).toContain('function DynamicAssessmentHostAdapter(props)');
+      expect(adapter).toContain('DynamicAssessment.HostAdapter = DynamicAssessmentHostAdapter');
+
+      const visualStart = adapter.indexOf('onGenerateVisualOrganizer: async');
+      const sentenceComment = adapter.indexOf('// Sentence-frames host callback', visualStart);
+      const sentenceStart = adapter.indexOf('onGenerateSentenceFrames: async', sentenceComment);
+      const resourceStart = adapter.indexOf('onOpenResource:', sentenceStart);
+      expect(visualStart).toBeGreaterThan(-1);
+      expect(sentenceComment).toBeGreaterThan(visualStart);
+      expect(sentenceStart).toBeGreaterThan(sentenceComment);
+      expect(resourceStart).toBeGreaterThan(sentenceStart);
+      const visualCallback = adapter.slice(visualStart, sentenceComment);
+      expect(visualCallback).toMatch(/const cfg\s*=\s*\{\s*isolatedContext:\s*true\s*\}/);
+      expect(visualCallback).toMatch(/handleGenerate\([\s\S]*?\bcfg\b[\s\S]*?\)/);
+      expect(adapter.slice(sentenceStart, resourceStart)).toMatch(/handleGenerate\([\s\S]*isolatedContext:\s*true/);
+    });
 });

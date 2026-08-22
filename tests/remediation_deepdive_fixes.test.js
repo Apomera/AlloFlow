@@ -427,6 +427,6 @@ describe('a watchdog for a document that is gone retires instead of relogging', 
     expect(stale).toContain('Retiring a remediation watchdog');
     expect(stale, 'a document-stale watchdog must NOT re-arm').not.toContain('arm();');
     const otherRun = anti.slice(anti.indexOf('if (_otherRunOwnsHost || _otherAbortOwner) {'), anti.indexOf('if (!liveOwner) {'));
-    expect(otherRun, 'a run-stale watchdog SHOULD re-arm — that one can resolve').toContain('arm();');
+    expect(otherRun, 'a run-stale watchdog SHOULD re-arm — that one can resolve').toContain('arm(true);');
   });
 });

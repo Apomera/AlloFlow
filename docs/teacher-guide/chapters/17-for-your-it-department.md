@@ -4,17 +4,17 @@ When a school pilots AlloFlow, the questions come from IT within a week. This ch
 
 ## What it is, architecturally
 
-A static web application served from a CDN. There is no application server holding user data, no database of students, and no login system. The code is open source (AGPL) and publicly auditable on GitHub, so your security review can read exactly what runs.
+The core teacher workspace is a client-side web application that can be served as static assets from a CDN or bundled in the desktop package. That does **not** make every AlloFlow workflow serverless: AI backends, live-session transport, LMS launches, online lookups, optional school-owned Apps Script services, and the optional evaluation portal have their own network, identity, and storage paths. The code is open source (AGPL) and publicly auditable on GitHub, so a security review can inspect the paths enabled in the deployment being approved.
 
 ## Accounts and authentication
 
-None. Staff and students use it without creating accounts. This removes the usual pilot blockers (rostering, SSO integration, account lifecycle) and also means AlloFlow holds no credential or directory data at all.
+The standalone public and desktop workspace does not require users to create an AlloFlow vendor account. A surrounding Gemini or Canvas environment, LMS, district gateway, AI provider, optional Google Apps Script service, or evaluation portal may require its own account or identity. Review authentication per route; do not generalize the standalone behavior to every deployment.
 
 ## Where data lives
 
-Work product stays in the browser's own storage on the device that created it (localStorage and equivalent browser storage). Nothing is synced to an AlloFlow server, because there is not one. The practical consequences cut both ways:
+Authoring state is stored in the browser or desktop profile by default (localStorage, IndexedDB, and related device storage). Explicit actions and configured features can transmit or copy content to an AI provider, live-session service, LMS, share route, school-owned service, downloaded file, or synced folder. The practical consequences cut both ways:
 
-- Nothing to breach centrally, nothing to subpoena from a vendor, nothing to delete on offboarding.
+- The default local workspace does not create a central AlloFlow roster or project store, but each connected route must be reviewed for its own records, retention, deletion, and access controls.
 - A lost or wiped device loses its local work unless the user exported a project file. Treat exported project files as instructional records under your normal file-handling policy.
 
 ### Every place work can come to rest
@@ -27,7 +27,7 @@ Browser storage is the default, not the only destination. These are the paths an
 | AlloFlow project file (`Save Project`) | Wherever the user saves it | A full snapshot: source material, generated resources, settings, notes |
 | Exports (PDF, print, accessible document, worksheet, teacher copy) | Wherever the user saves it | Finished copies, and the teacher copy also carries answer keys |
 | QR code or student share link | No new storage; a new access path | Whatever the shared route exposes |
-| Live session transport | Local peer connections, or a mailbox you deploy (below) | Session coordination and student responses |
+| Live session transport | Local peer connections, a configured Firestore path, or a mailbox/service the school deploys | Session coordination, delivery state, and student responses, according to that transport |
 | LMS launch | Your LMS | Course, role, and assignment context supplied by the LMS |
 | Optional Apps Script services | **Your school's own Google Drive** | Only what that specific service is for (below) |
 | On-device model and remediation caches | The device | Cached speech models and remediation working data |
@@ -38,7 +38,7 @@ The full teacher-facing data-path table is in [Privacy and responsible AI](07-pr
 
 ### The Google Drive option: services you deploy in your own tenant
 
-AlloFlow has no server. When a school genuinely needs shared or persistent storage, the pattern is always the same: a small Apps Script project deployed **into a school-owned Google account, never a personal one**, so the data sits in your Drive under the Workspace for Education agreement you already hold. Each is optional, and each is off until someone deploys it. The packages and their deployment READMEs are in `apps_script/`.
+The standalone workspace does not require a vendor-side application server. When a school chooses one of the repository's optional Apps Script integrations for shared or persistent storage, deploy it into a school-managed Google account under the district's approved Workspace terms, not a personal account. Each service is optional, has a different security model, and remains off until it is configured. The packages and their deployment READMEs are in `apps_script/`.
 
 They do not share one security model, and the differences are the part worth your attention:
 
@@ -64,24 +64,25 @@ AI features only work when a backend is configured, and the district controls wh
 | Option | What leaves the device | Fits when |
 | --- | --- | --- |
 | **Gemini Canvas or a Gemini API key** | Prompts and source content go to Google under the account or key used | The district already permits Google AI services |
-| **A local model** (LM Studio, Ollama, LocalAI on the device or a district server) | Nothing leaves the machine or the district network | Confidential contexts, strict no-egress requirements |
-| **No backend** | Nothing; AI features hide or disable themselves and everything else keeps working | Evaluation phase, or a deliberate non-AI deployment |
+| **A local model** (LM Studio, Ollama, LocalAI on the device or a district server) | Prompts go to the endpoint the district configured; content may stay on one device or inside the district network depending on that endpoint and its logging | Contexts approved for that specific local or district-managed service |
+| **No backend** | No AI-generation request is made; AI-dependent controls disable or explain the missing connection | Evaluation phase, or a deliberate non-AI deployment |
 
-Teachers are instructed throughout this guide to use de-identified content with any cloud backend. The no-backend state is honest by design: the interactive tools, delivery, and documents all work without AI.
+Teachers are instructed throughout this guide to use de-identified content with any cloud backend. In the no-backend state, many non-AI tools, existing resources, settings, saving, and exports remain available. Verify the exact activity: an AI-dependent option or a feature that needs an external lookup will not become offline merely because generation is disabled.
 
 ## Network requirements
 
 - Allow the application host (for the public deployment, `alloflow-cdn.pages.dev`).
 - If a cloud AI backend is chosen, allow that provider's endpoint (for Gemini, Google's API hosts).
-- Exported HTML handouts are self-contained and work offline; the optional high-legibility web fonts are off by default and clearly labeled "needs internet" when a teacher opts in.
+- If live sessions, an LMS, online lookups, or a school-owned service are enabled, allow only the documented endpoints for those approved features and confirm their retention and authentication settings.
+- Exported HTML handouts are designed for offline use with their required lesson content embedded. Optional web fonts, external links or media, and connected interactions can add network dependencies; test the exported file offline before relying on it.
 
 ## What to verify yourself, because you should not take a guide's word for it
 
 1. Open the app on a managed device with your standard filtering and confirm it loads and a sample tool runs.
-2. Watch the network tab during generation with your chosen backend and confirm traffic goes only where this chapter says.
+2. Watch the network tab during generation, live delivery, exports, and any connected tool. Compare every destination with the deployment's approved allowlist and investigate unexpected traffic.
 3. Review the repository if your process requires code review; the license permits it and the build is reproducible from source.
-4. If you deploy the evaluation portal, grep its `Code.gs` for `UrlFetchApp` before you approve it. There are zero occurrences, which is the claim that nothing leaves your tenant, and it takes one search to confirm rather than trust.
+4. If you deploy the evaluation portal, inspect its `Code.gs` for network-capable services such as `UrlFetchApp` before approval. The source reviewed for this guide on 22 August 2026 contains zero `UrlFetchApp` references; repeat the check against the exact commit you deploy, and separately review Google services the script intentionally uses inside your tenant.
 
 ## The two-sentence version for a busy director
 
-AlloFlow is a static, open source web app with no accounts and no vendor-side data storage; work stays on the device by default, and AI runs only through the backend the district chooses, including a fully local option. Where a school does want shared storage, it deploys a small optional service into its own Google Drive, so that data stays in your tenant too. The realistic review effort is the same as approving a website plus, if you choose one, an AI provider you have likely already reviewed.
+AlloFlow's core workspace is a client-side, open-source app whose authoring state stays on the device by default. Accounts, transmission, and storage change when the school enables Gemini or another AI provider, live-session transport, an LMS, online lookups, shared links, or optional school-owned services, so approve and test those routes individually rather than relying on one product-wide privacy sentence.

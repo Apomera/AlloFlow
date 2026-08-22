@@ -40,10 +40,12 @@ const helpers = new Function('crypto', 'TextEncoder',
   extractFunction('_viewPatchBoundValidation') + '\n' +
   extractFunction('_viewDeriveVerificationState') + '\n' +
   extractFunction('_viewVerificationForExport') + '\n' +
+  extractFunction('_viewCanonicalRemediationEvidence') + '\n' +
   `return {
     hasLang: _htmlHasExplicitLanguage,
     derive: _viewDeriveVerificationState,
     forExport: _viewVerificationForExport,
+    canonicalEvidence: _viewCanonicalRemediationEvidence,
     createBinding: _viewCreateVerificationHtmlBinding,
     verifyBinding: _viewVerifyVerificationHtmlBinding,
     isLiveBound: _viewIsLiveVerificationHtmlBound,
@@ -105,6 +107,44 @@ describe('remediation view verification state', () => {
     expect(result.requiresManualReview).toBe(false);
     expect(result.coverage.equalAccess).toBe('complete');
     expect(result.verificationCoverage).toBe(result.coverage);
+  });
+
+  it('uses AI, axe-core, and Equal Access in one visible residual model', () => {
+    const pipeline = { deriveVerificationState: canonicalDerive };
+    const evidence = helpers.canonicalEvidence({
+      verificationAudit: { score: 91, issues: [{ issue: 'heading' }, { issue: 'link' }], chunksRequested: 1, chunksAudited: 1 },
+      axeAudit: { score: 90, totalViolations: 1, totalIncomplete: 0 },
+      secondEngineAudit: { score: 88, failViolations: 3, potentialViolations: 0, manualViolations: 0, reviewFindingCount: 0 },
+    }, pipeline);
+    expect(evidence.counts).toEqual({ ai: 2, axe: 1, equalAccess: 3 });
+    expect(evidence.totalEngineFindings).toBe(6);
+    expect(evidence.compactLabel).toBe('AI 2 · axe 1 · EA 3');
+    expect(evidence.allThreeComplete).toBe(true);
+    expect(evidence.fullyVerifiedSuccess).toBe(false);
+  });
+
+  it('shows a missing engine and never calls partial evidence fully verified', () => {
+    const evidence = helpers.canonicalEvidence({
+      verificationAudit: { score: 96, issues: [], chunksRequested: 1, chunksAudited: 1 },
+      axeAudit: { score: 100, totalViolations: 0, totalIncomplete: 0 },
+      secondEngineAudit: null,
+    }, { deriveVerificationState: canonicalDerive });
+    expect(evidence.compactLabel).toBe('AI 0 · axe 0 · EA ?');
+    expect(evidence.allThreeComplete).toBe(false);
+    expect(evidence.fullyVerifiedSuccess).toBe(false);
+  });
+
+  it('keeps Equal Access review findings visible even when confirmed failures are zero', () => {
+    const evidence = helpers.canonicalEvidence({
+      verificationAudit: { score: 98, issues: [], chunksRequested: 1, chunksAudited: 1 },
+      axeAudit: { score: 100, totalViolations: 0, totalIncomplete: 0 },
+      secondEngineAudit: { score: 96, failViolations: 0, potentialViolations: 2, manualViolations: 0, reviewFindingCount: 2 },
+    }, { deriveVerificationState: canonicalDerive });
+    expect(evidence.totalEngineFindings).toBe(0);
+    expect(evidence.reviewCount).toBe(2);
+    expect(evidence.compactLabel).toBe('AI 0 · axe 0 · EA 0 · review 2');
+    expect(evidence.allThreeComplete).toBe(true);
+    expect(evidence.fullyVerifiedSuccess).toBe(false);
   });
 
   it('marks missing engines and unknown review counts partial rather than verified', () => {

@@ -1,0 +1,15 @@
+{
+  "chinese_simplified": {
+    "permit_flashcards": "驾照考试学习卡"
+  },
+  "chinese_traditional": {
+    "permit_flashcards": "駕照考試學習卡"
+  },
+  "japanese": {
+    "practice_saying_no_to_friend_pressure": "「友達」からの圧力に「ノー」と言う練習"
+  },
+  "korean": {
+    "permit_flashcards": "운전면허 학습 카드",
+    "practice_saying_no_to_friend_pressure": "“친구”의 압박에 “싫다”고 말하는 연습"
+  }
+}

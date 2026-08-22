@@ -54,6 +54,11 @@ describe('Particle Lab 3D interaction surface accessibility contract', () => {
     expect(source).toContain("var evidenceCue = currentProtocol ? currentProtocol.watch");
     expect(source).toContain("'measured'");
     expect(source).toContain("'setpoint ' + temperature");
+    expect(source).toContain('var visualOverlayLabels = [vectors &&');
+    expect(source).toContain('var visualOverlayDisplayLabels = [vectors &&');
+    expect(source).toContain("'wall-impact glow'");
+    expect(source).toContain("var sceneKeyLabel = transportMode ?");
+    expect(source).toContain("'Cues: ' + visualOverlayDisplayLabels.join(' • ')");
   });
 
   it('makes advanced chamber conditions discoverable, persistent, and announced', () => {
