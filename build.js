@@ -1302,6 +1302,7 @@ const PLUGIN_FILES = [
     'stem_lab/stem_tool_areamodel.js',
     'stem_lab/stem_tool_artstudio.js',
     'stem_lab/stem_tool_sourcebook.js',
+    'stem_lab/stem_tool_openbim.js',
     'stem_lab/stem_tool_wheelandfire.js',
     'stem_lab/stem_tool_brainatlas.js',
     'stem_lab/stem_tool_cell.js',
