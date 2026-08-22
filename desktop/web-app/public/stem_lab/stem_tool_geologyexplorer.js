@@ -5099,21 +5099,21 @@
             a.href = url; a.download = 'geology-field-note-' + SCENE.id + '.txt'; a.click(); setTimeout(function () { URL.revokeObjectURL(url); }, 0);
           } catch (e) { addToast('Could not export the field note.', 'error'); }
         }
-        var fields = h('div', { className: 'mt-2 space-y-2' }, [
+        var fields = h('div', { key: 'fields', className: 'mt-2 space-y-2' }, [
           h('label', { key: 'claim', className: 'block text-[11px] font-bold ' + ink }, [
             'Claim',
-            h('textarea', { rows: 2, value: notebook.claim || '', onChange: function (e) { setNotebookField('claim', e.target.value); }, placeholder: 'I think this world formed because…', className: 'mt-1 block w-full rounded-lg border p-2 text-[12px] font-normal ' + (isDark ? 'border-slate-600 bg-slate-900 text-slate-100' : 'border-slate-300 bg-white text-slate-800') })
+            h('textarea', { key: 'field', rows: 2, value: notebook.claim || '', onChange: function (e) { setNotebookField('claim', e.target.value); }, placeholder: 'I think this world formed because…', className: 'mt-1 block w-full rounded-lg border p-2 text-[12px] font-normal ' + (isDark ? 'border-slate-600 bg-slate-900 text-slate-100' : 'border-slate-300 bg-white text-slate-800') })
           ]),
           h('label', { key: 'explanation', className: 'block text-[11px] font-bold ' + ink }, [
             'Explain your evidence',
-            h('textarea', { rows: 4, value: explanation, onChange: function (e) { setNotebookField('explanation', e.target.value); }, placeholder: 'Use two or more observations. Connect what you saw to the process.', className: 'mt-1 block w-full rounded-lg border p-2 text-[12px] font-normal ' + (isDark ? 'border-slate-600 bg-slate-900 text-slate-100' : 'border-slate-300 bg-white text-slate-800') })
+            h('textarea', { key: 'field', rows: 4, value: explanation, onChange: function (e) { setNotebookField('explanation', e.target.value); }, placeholder: 'Use two or more observations. Connect what you saw to the process.', className: 'mt-1 block w-full rounded-lg border p-2 text-[12px] font-normal ' + (isDark ? 'border-slate-600 bg-slate-900 text-slate-100' : 'border-slate-300 bg-white text-slate-800') })
           ]),
           h('label', { key: 'reflection', className: 'block text-[11px] font-bold ' + ink }, [
             'Reflection: Which observation changed your thinking?',
-             h('textarea', { rows: 3, value: notebook.reflection || '', onChange: function (e) { setNotebookField('reflection', e.target.value); }, placeholder: 'Name the observation that changed, strengthened, or complicated your first idea.', className: 'mt-1 block w-full rounded-lg border p-2 text-[12px] font-normal ' + (isDark ? 'border-slate-600 bg-slate-900 text-slate-100' : 'border-slate-300 bg-white text-slate-800') })
+             h('textarea', { key: 'field', rows: 3, value: notebook.reflection || '', onChange: function (e) { setNotebookField('reflection', e.target.value); }, placeholder: 'Name the observation that changed, strengthened, or complicated your first idea.', className: 'mt-1 block w-full rounded-lg border p-2 text-[12px] font-normal ' + (isDark ? 'border-slate-600 bg-slate-900 text-slate-100' : 'border-slate-300 bg-white text-slate-800') })
            ]),
         ]);
-        var rubricBox = h('div', { className: 'mt-2 rounded-lg border p-2 ' + (isDark ? 'border-slate-700 bg-slate-900/50' : 'bg-slate-50 border-slate-200'), role: 'region', 'aria-label': 'CER rubric' }, [
+        var rubricBox = h('div', { key: 'rubric', className: 'mt-2 rounded-lg border p-2 ' + (isDark ? 'border-slate-700 bg-slate-900/50' : 'bg-slate-50 border-slate-200'), role: 'region', 'aria-label': 'CER rubric' }, [
           h('div', { key: 'title', className: 'flex items-center justify-between gap-2 text-[10px] font-black uppercase tracking-wider ' + muted },
             h('span', null, t('stem.geology.rubric_title', 'CER rubric')),
             h('span', { className: rubric.ready ? (isDark ? 'text-emerald-300' : 'text-emerald-700') : ink }, rubric.score + '/' + rubric.total)),
@@ -5125,7 +5125,7 @@
           h('p', { key: 'summary', className: 'mt-2 text-[11px] font-semibold ' + (rubric.ready ? (isDark ? 'text-emerald-300' : 'text-emerald-700') : muted) }, rubric.ready ? t('stem.geology.rubric_ready', 'Ready to submit for teacher review.') : t('stem.geology.rubric_next', 'Use the feedback above to strengthen the explanation.')),
           h('div', { key: 'audio', className: 'mt-2' }, readAloudButton('CER rubric. Score ' + rubric.score + ' out of ' + rubric.total + '. ' + rubric.criteria.map(function (criterion) { return criterion.label + ': ' + criterion.feedback; }).join(' '), 'cer-' + SCENE.id, 'Read CER feedback aloud'))
         ]);
-        var evidenceMapBox = h('section', { className: 'mt-2 rounded-lg border p-2 ' + (isDark ? 'border-slate-700 bg-slate-900/50' : 'border-slate-200 bg-slate-50'), role: 'region', 'aria-label': 'Evidence map', 'data-geology-evidence-map': 'true' }, [
+        var evidenceMapBox = h('section', { key: 'evidence-map', className: 'mt-2 rounded-lg border p-2 ' + (isDark ? 'border-slate-700 bg-slate-900/50' : 'border-slate-200 bg-slate-50'), role: 'region', 'aria-label': 'Evidence map', 'data-geology-evidence-map': 'true' }, [
           h('div', { key: 'header', className: 'flex flex-wrap items-start justify-between gap-2' }, [
             h('div', { key: 'em-label' },
               h('div', { className: 'text-[10px] font-black uppercase tracking-wider ' + muted }, 'Evidence Map'),
@@ -5150,13 +5150,13 @@
               }))
             : h('p', { key: 'empty', className: 'mt-2 text-[11px] ' + muted }, 'Collect observations in Investigate mode, then map them here.')
         ]);
-        var evidenceBox = h('div', { className: 'mt-2 rounded-lg border p-2 ' + (isDark ? 'border-slate-700 bg-slate-900/50' : 'border-slate-200 bg-slate-50') }, [
+        var evidenceBox = h('div', { key: 'evidence', className: 'mt-2 rounded-lg border p-2 ' + (isDark ? 'border-slate-700 bg-slate-900/50' : 'border-slate-200 bg-slate-50') }, [
           h('div', { key: 'title', className: 'text-[10px] font-black uppercase tracking-wider ' + muted }, 'Collected evidence'),
           evidence.length
             ? h('ul', { key: 'list', className: 'mt-1 space-y-1 text-[11px] ' + ink }, evidence.map(function (item) { return h('li', { key: item.id }, [h('strong', { key: 'label' }, item.label + ': '), item.detail]); }))
             : h('p', { key: 'empty', className: 'mt-1 text-[11px] ' + muted }, 'Your observations will appear here as you explore.')
         ]);
-        var actions = h('div', { className: 'mt-2 flex flex-wrap gap-1.5' }, [
+        var actions = h('div', { key: 'actions', className: 'mt-2 flex flex-wrap gap-1.5' }, [
           h('button', { key: 'save', type: 'button', disabled: !rubric.ready, onClick: function () { saveNotebook(Object.assign({}, notebookRef.current, { submitted: true, rubric: rubric, submittedAt: Date.now() })); addToast('Field conclusion saved.', 'success'); announce('Your field conclusion is saved.'); }, className: btn + (!rubric.ready ? 'opacity-50 ' : '') + btnIdle }, notebook.submitted ? '✓ Conclusion saved' : 'Save conclusion'),
           h('button', { key: 'export', type: 'button', disabled: !evidence.length, onClick: exportNote, className: btn + (!evidence.length ? 'opacity-50 ' : '') + btnIdle }, '⇩ Export field note')
         ]);
@@ -5383,8 +5383,8 @@
           h('p', { key: 'description', className: 'mt-1 text-[11px] leading-relaxed ' + muted }, info.description),
           h('div', { key: 'map', className: 'mt-2 overflow-hidden rounded-lg border ' + (isDark ? 'border-slate-700' : 'border-slate-300') }, sceneSchematicSVG(info)),
           h('div', { key: 'status', className: 'mt-2 flex flex-wrap gap-x-3 gap-y-1 text-[11px] ' + ink, 'data-geology-schematic-status': 'true' }, [
-            h('span', { key: 'active' }, [h('span', { className: 'font-bold' }, 'Active stage: '), info.activeLabel]),
-            h('span', { key: 'selected' }, info.selectedLabel ? [h('span', { className: 'font-bold' }, 'Selected: '), info.selectedLabel] : 'Select a material below to connect it to the map.'),
+            h('span', { key: 'active' }, [h('span', { key: 'label', className: 'font-bold' }, 'Active stage: '), info.activeLabel]),
+            h('span', { key: 'selected' }, info.selectedLabel ? [h('span', { key: 'label', className: 'font-bold' }, 'Selected: '), info.selectedLabel] : 'Select a material below to connect it to the map.'),
             focusLensOn && info.selectedLabel ? h('span', { key: 'focus', className: 'font-semibold text-cyan-500' }, 'Focus Lens is isolating this material.') : null
           ]),
           h('p', { key: 'hint', className: 'mt-1 text-[10.5px] ' + muted }, 'This map follows the formation timeline and the existing material list.')
