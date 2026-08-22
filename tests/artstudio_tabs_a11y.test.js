@@ -5,12 +5,19 @@ describe('Art Studio section tabs accessibility', () => {
   it('keeps mirrored source aligned and exposes keyboard-operable tabs', () => {
     const source = readFileSync('stem_lab/stem_tool_artstudio.js', 'utf8');
     expect(readFileSync('desktop/web-app/public/stem_lab/stem_tool_artstudio.js', 'utf8')).toBe(source);
-    expect(source).toContain("const ART_STUDIO_TAB_ORDER = ['colorWheel', 'mixer', 'watercolor', 'pixel', 'symmetry', 'spirograph', 'generative', 'spinArt', 'stringArt', 'opArt', 'tessellation', 'fractal', 'gradient', 'stereogram', 'sculpt3d', 'contrast', 'harmonyHunt'];");
+    expect(source).toContain("const ART_STUDIO_TAB_ORDER = ['artistExplorer', 'colorWheel', 'mixer', 'watercolor', 'pixel', 'symmetry', 'spirograph', 'generative', 'spinArt', 'stringArt', 'opArt', 'tessellation', 'fractal', 'gradient', 'stereogram', 'sculpt3d', 'contrast', 'harmonyHunt'];");
+    expect(source).toContain("const tab = ART_STUDIO_TAB_ORDER.indexOf(requestedArtStudioTab) !== -1 ? requestedArtStudioTab : 'colorWheel';");
+    expect(source).toContain('const ART_STUDIO_GROUPS = [');
+    expect(source).toContain("label: 'Paint & color'");
+    expect(source).toContain("label: 'Pattern & mathematics'");
+    expect(source).toContain("label: 'Perception & access'");
+    expect(source).toContain("'data-artstudio-grouped-nav': 'true'");
+    expect(source).toContain("'aria-label': 'Art Studio tool groups'");
     expect(source).toContain("role: 'tablist'");
     expect(source).toContain("id: 'artstudio-tab-' + tb.id");
     expect(source).toContain("'aria-controls': 'artstudio-panel-' + tb.id");
     expect(source).toContain("tabIndex: tab === tb.id ? 0 : -1");
-    expect(source).toContain("onKeyDown: function (e) { artStudioTabKeyDown(e, tabIndex); }");
+    expect(source).toContain("onKeyDown: function (e) { artStudioTabKeyDown(e, tabIndex, activeArtStudioGroup.tabs); }");
     expect(source).toContain("e.key === 'ArrowRight'");
     expect(source).toContain("e.key === 'ArrowLeft'");
     expect(source).toContain("e.key === 'Home'");

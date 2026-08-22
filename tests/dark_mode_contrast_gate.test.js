@@ -13,7 +13,7 @@
 // follows the user's OPERATING SYSTEM. Measured on the shipped bundle: one such
 // block, zero `.dark` class rules. `bg-white dark:bg-slate-800` under a panel's
 // `text-white` therefore measured 1.00 contrast with app theme dark + OS light,
-// and 14.63 with OS dark -- the header Typography and Narrator Voice panels,
+// and 14.63 with OS dark -- the header Typography and Voice & Audio panels,
 // exactly as reported on 2026-08-16.
 //
 // THE NEGATIVE CONTROL BELOW IS THE POINT

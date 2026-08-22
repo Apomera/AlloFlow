@@ -141,6 +141,168 @@ window.StemLab = window.StemLab || {
   // ═══ dataPlot → extracted to stem_tool_dataplot.js ═══
 
   // ═══ 🔬 artStudio (artStudio) ═══
+  // Artist & Traditions Explorer. Profiles teach ways of looking and making;
+  // they are not image-generation style presets. Living artists and culturally
+  // specific practices retain an explicit respect note.
+  var ARTIST_EXPLORER_PROFILES = [
+    { id: 'el-anatsui', name: 'El Anatsui', life: 'born 1944', region: 'Africa', places: 'Ghana and Nigeria', era: 'Contemporary', medium: 'Installation & mixed media', colors: ['#9b6b28','#d7b96a','#3b5368'], overview: 'Transforms discarded bottle caps and metal into vast, flexible fields that change with every installation.', lookFor: 'Repetition, material history, changing surfaces, and the tension between precious appearance and discarded matter.', context: 'His works connect trade, consumption, colonial histories, labor, and the ability of a material to carry memory.', tryThis: 'Build a repeated unit from safe reused material, then test three arrangements instead of treating the first layout as final.', respect: 'Study transformation and systems; do not reduce West African histories to a decorative metallic effect.', labs: ['tessellation','sculpt3d','gradient'] },
+    { id: 'ibrahim-el-salahi', name: 'Ibrahim El-Salahi', life: 'born 1930', region: 'Africa', places: 'Sudan and the United Kingdom', era: 'Contemporary', medium: 'Painting & drawing', colors: ['#1f2937','#a16207','#e7e5e4'], overview: 'A foundational figure in African modernism whose drawings and paintings join calligraphic energy, memory, landscape, and abstraction.', lookFor: 'Branching lines, compressed figures, black-and-white rhythm, and forms that hover between writing and image.', context: 'His work emerged through Sudanese, African, Arab, Islamic, and international modernist conversations rather than a single inherited category.', tryThis: 'Let one continuous line grow into an image, then identify where it reads as symbol, body, landscape, or writing.', respect: 'Explore the relationship between mark and meaning without copying sacred or unfamiliar scripts as decoration.', labs: ['symmetry','generative','stringArt'] },
+    { id: 'esther-mahlangu', name: 'Esther Mahlangu', life: 'born 1935', region: 'Africa', places: 'South Africa; Ndebele', era: 'Contemporary', medium: 'Textiles, pattern & design', colors: ['#111827','#f8fafc','#ef4444','#2563eb','#facc15'], overview: 'Extends Ndebele mural painting through architecture, canvas, vehicles, and public commissions while asserting the knowledge of women artists.', lookFor: 'Bold boundaries, geometric sequencing, high-contrast color, scale, and the adaptation of a living mural practice.', context: 'Ndebele house painting is a living cultural practice tied to community, identity, and women’s knowledge—not a generic pattern library.', tryThis: 'Create a geometric rhythm from shapes drawn from your own environment and explain what your repeated choices mean.', respect: 'Credit Ndebele artists and context. Do not claim Ndebele identity or reproduce culturally meaningful motifs as anonymous décor.', labs: ['tessellation','contrast','colorWheel'] },
+    { id: 'skunder-boghossian', name: 'Skunder Boghossian', life: '1937–2003', region: 'Africa', places: 'Ethiopia, France, and the United States', era: 'Modern', medium: 'Painting & drawing', colors: ['#7c2d12','#d97706','#312e81','#0f172a'], overview: 'Built dense, layered paintings from Ethiopian visual histories, personal symbols, jazz-like rhythm, and international modernism.', lookFor: 'Layering, icon-like forms, luminous color, improvisation, and figures emerging from complex grounds.', context: 'His work challenges accounts of modernism that place innovation only in Europe and North America.', tryThis: 'Layer three translucent systems—marks, shapes, and a limited palette—then decide which layer should lead.', respect: 'Study how multiple histories coexist in a work rather than extracting Ethiopian symbols from their meanings.', labs: ['watercolor','generative','gradient'] },
+    { id: 'hokusai', name: 'Katsushika Hokusai', life: '1760–1849', region: 'Asia', places: 'Japan', era: 'Early modern', medium: 'Printmaking', colors: ['#164e63','#e0f2fe','#d6b98c','#1e293b'], overview: 'Used woodblock design, dramatic cropping, repeated series, and close observation to make everyday labor and landscape feel monumental.', lookFor: 'Strong silhouettes, compressed depth, directional movement, foreground cropping, and recurring viewpoints.', context: 'Ukiyo-e prints were collaborative works involving designer, carver, printer, and publisher—not the product of one isolated hand.', tryThis: 'Compose the same place from three viewpoints using only flat shapes and a four-color palette.', respect: 'Name the collaborative print process and avoid treating Japanese design as a timeless exotic aesthetic.', labs: ['pixel','gradient','tessellation'], sourceUrl: 'https://www.metmuseum.org/art/collection/search/55286' },
+    { id: 'amrita-sher-gil', name: 'Amrita Sher-Gil', life: '1913–1941', region: 'Asia', places: 'India and Hungary', era: 'Modern', medium: 'Painting & drawing', colors: ['#7f1d1d','#ca8a04','#334155','#d6d3d1'], overview: 'Joined European painting study with sustained attention to people, color, and social life in India, refusing an easy division between East and West.', lookFor: 'Weighted figures, quiet group psychology, earthy color, simplified volume, and carefully held space.', context: 'Her work belongs to histories of Indian modernism, migration, gender, and the unequal conditions through which art histories are written.', tryThis: 'Arrange three simplified figures so posture and spacing communicate a relationship without facial detail.', respect: 'Study composition and social attention rather than using clothing or identity as costume.', labs: ['colorWheel','sculpt3d','contrast'] },
+    { id: 'pacita-abad', name: 'Pacita Abad', life: '1946–2004', region: 'Asia', places: 'The Philippines and a global studio practice', era: 'Contemporary', medium: 'Textiles, pattern & design', colors: ['#db2777','#f97316','#14b8a6','#7c3aed'], overview: 'Created exuberant trapunto paintings by stitching, stuffing, painting, and attaching materials to build color into physical relief.', lookFor: 'Quilted depth, accumulated surfaces, portable materials, intense color, and the movement between abstraction and social witness.', context: 'Her global practice grew through travel and relationships; it should not be flattened into a collection of interchangeable cultural motifs.', tryThis: 'Design a relief surface in three layers: base shape, stitched or repeated boundary, and attached texture.', respect: 'Credit specific material traditions when using them and avoid presenting cultural borrowing as placeless “world pattern.”', labs: ['sculpt3d','tessellation','colorWheel'] },
+    { id: 'yayoi-kusama', name: 'Yayoi Kusama', life: 'born 1929', region: 'Asia', places: 'Japan and the United States', era: 'Contemporary', medium: 'Installation & mixed media', colors: ['#dc2626','#f8fafc','#facc15','#111827'], overview: 'Uses repetition, mirrored space, accumulation, performance, painting, and sculpture to alter how a viewer experiences body and environment.', lookFor: 'Accumulation, serial marks, scale shifts, reflection, immersion, and the point where repetition changes perception.', context: 'Her long practice cannot be reduced to polka dots; it includes painting, political performance, publishing, fashion, sculpture, and installation.', tryThis: 'Choose one simple mark and vary density and scale until the surrounding space—not the mark itself—becomes the subject.', respect: 'Kusama is a living artist. Study repetition and perception; do not ask an image model to imitate her signature works.', labs: ['opArt','tessellation','sculpt3d'] },
+    { id: 'artemisia-gentileschi', name: 'Artemisia Gentileschi', life: '1593–c.1654', region: 'Europe', places: 'Italy', era: 'Early modern', medium: 'Painting & drawing', colors: ['#422006','#9f1239','#d6b98c','#0f172a'], overview: 'Built large narrative paintings through forceful gesture, directional light, compressed action, and protagonists with physical presence.', lookFor: 'Chiaroscuro, diagonals, weight, hands at work, and the moment in a story selected for maximum consequence.', context: 'Her biography matters, but reducing every painting to personal trauma can erase her professional ambition, learning, patrons, and invention.', tryThis: 'Stage a three-shape scene where light and diagonal movement identify the decisive moment without adding text.', respect: 'Do not treat an artist’s suffering as the only explanation for artistic intelligence.', labs: ['contrast','gradient','sculpt3d'] },
+    { id: 'kathe-kollwitz', name: 'Käthe Kollwitz', life: '1867–1945', region: 'Europe', places: 'Germany', era: 'Modern', medium: 'Printmaking', colors: ['#111827','#57534e','#d6d3d1'], overview: 'Used drawing, etching, lithography, woodcut, and sculpture to address grief, labor, poverty, war, care, and resistance.', lookFor: 'Compressed value, expressive hands, repeated figures, carved silhouettes, and empathy without sentimentality.', context: 'Printmaking allowed images to circulate beyond a single painting, joining formal decisions to public witness.', tryThis: 'Tell a social story using only black, paper color, and three values; remove every mark that does not carry meaning.', respect: 'Approach represented suffering with specificity and dignity, not as visual drama detached from people’s lives.', labs: ['contrast','pixel','stringArt'] },
+    { id: 'hilma-af-klint', name: 'Hilma af Klint', life: '1862–1944', region: 'Europe', places: 'Sweden', era: 'Modern', medium: 'Painting & drawing', colors: ['#f9a8d4','#93c5fd','#fef3c7','#7c3aed'], overview: 'Developed large abstract systems of color, geometry, notation, and organic form years before abstraction entered the standard modernist story.', lookFor: 'Paired forms, spirals, diagrams, botanical growth, letter-like signs, scale, and sequences across groups of works.', context: 'Her practice joined artistic experiment, spiritual inquiry, scientific curiosity, collaboration, and careful systems of documentation.', tryThis: 'Invent five nonverbal forms for growth, tension, balance, change, and return; arrange them as a visual argument.', respect: 'Distinguish studying symbolic systems from claiming that unfamiliar spiritual signs have meanings you invented.', labs: ['symmetry','spirograph','colorWheel'] },
+    { id: 'bridget-riley', name: 'Bridget Riley', life: 'born 1931', region: 'Europe', places: 'United Kingdom', era: 'Contemporary', medium: 'Painting & drawing', colors: ['#111827','#f8fafc','#2563eb','#f97316'], overview: 'Builds precise arrangements of line, interval, contrast, and color that make perception feel unstable and active.', lookFor: 'Rhythm, optical vibration, repeated intervals, figure-ground reversal, and movement produced without animation.', context: 'Op art is not merely an illusion trick; it asks how seeing unfolds over time in an embodied viewer.', tryThis: 'Change one interval across a repeated grid and record where still pattern begins to appear mobile.', respect: 'Riley is a living artist. Investigate perceptual variables rather than copying a recognizable composition.', labs: ['opArt','contrast','gradient'] },
+    { id: 'tarsila-do-amaral', name: 'Tarsila do Amaral', life: '1886–1973', region: 'Latin America & Caribbean', places: 'Brazil', era: 'Modern', medium: 'Painting & drawing', colors: ['#65a30d','#facc15','#f97316','#38bdf8'], overview: 'Combined vivid color, transformed bodies and landscapes, industrial change, and Brazilian modernist debates into an unmistakable visual language.', lookFor: 'Elastic scale, simplified volume, saturated local color, landscape-body relationships, and tension between city and countryside.', context: 'Brazilian modernism wrestled with colonial inheritance and national identity; cultural cannibalism was a critical strategy, not a decorative theme.', tryThis: 'Exaggerate the scale of one ordinary form to show how power or attention operates in a place you know.', respect: 'Study transformation and national self-definition without turning Brazilian identity into tropical shorthand.', labs: ['sculpt3d','colorWheel','gradient'] },
+    { id: 'wifredo-lam', name: 'Wifredo Lam', life: '1902–1982', region: 'Latin America & Caribbean', places: 'Cuba, Spain, and France', era: 'Modern', medium: 'Painting & drawing', colors: ['#14532d','#713f12','#1e293b','#a3a3a3'], overview: 'Created hybrid, compressed figures amid cane-like vegetation while confronting colonialism and the European appetite for primitivism.', lookFor: 'Mask-like heads, blade forms, unstable bodies, dense vertical space, and figures that resist easy reading.', context: 'Lam engaged Afro-Cuban histories and modernism while rejecting the treatment of African and Caribbean culture as raw material for Europe.', tryThis: 'Construct a figure from plant, tool, and body shapes so no single category fully explains it.', respect: 'Do not call unfamiliar sacred or cultural forms “primitive,” and do not detach Afro-Cuban references from colonial history.', labs: ['symmetry','generative','sculpt3d'] },
+    { id: 'frida-kahlo', name: 'Frida Kahlo', life: '1907–1954', region: 'Latin America & Caribbean', places: 'Mexico', era: 'Modern', medium: 'Painting & drawing', colors: ['#166534','#b91c1c','#facc15','#0f172a'], overview: 'Made tightly constructed paintings in which body, disability, clothing, plants, politics, place, and self-representation carry layered meanings.', lookFor: 'Direct gaze, compressed symbols, doubled selves, bodily specificity, staged space, and objects functioning as evidence.', context: 'Her work exceeds the simplified label “pain transformed into art”; it also involves humor, politics, national identity, intimacy, and deliberate self-fashioning.', tryThis: 'Create a symbolic self-portrait without drawing a face: choose five objects and explain what relationship each one carries.', respect: 'Do not romanticize disability or reduce a complex artist to trauma and inspirational perseverance.', labs: ['symmetry','colorWheel','sculpt3d'] },
+    { id: 'joaquin-torres-garcia', name: 'Joaquín Torres-García', life: '1874–1949', region: 'Latin America & Caribbean', places: 'Uruguay, Spain, and France', era: 'Modern', medium: 'Painting & drawing', colors: ['#dc2626','#eab308','#2563eb','#111827'], overview: 'Organized grids, pictographic signs, proportion, and a School of the South that reoriented modern art away from Europe as the automatic center.', lookFor: 'Modular grids, unequal rectangles, compact signs, primary colors, and relationships between universal systems and local place.', context: 'His inverted map of South America made orientation itself an argument: north need not determine cultural authority.', tryThis: 'Design a grid-map of your community using only ten personal symbols, then rotate it and ask what the new orientation changes.', respect: 'Invent symbols from your own life instead of borrowing Indigenous signs as supposedly universal marks.', labs: ['pixel','tessellation','contrast'] },
+    { id: 'etel-adnan', name: 'Etel Adnan', life: '1925–2021', region: 'Middle East & North Africa', places: 'Lebanon, France, and the United States', era: 'Contemporary', medium: 'Painting & drawing', colors: ['#f97316','#eab308','#2563eb','#7c2d12'], overview: 'Moved among poetry, painting, tapestry, leporello books, journalism, and philosophy, often returning to compact landscapes and the changing presence of a mountain.', lookFor: 'Small fields of strong color, horizon, sun, folded sequence, repeated place, and the exchange between writing and image.', context: 'Her multilingual, diasporic practice resists being assigned to one nation, language, medium, or identity.', tryThis: 'Observe the same view at three times and reduce each version to five color shapes; bind them into a sequence.', respect: 'Treat migration and multilingual identity as lived complexity, not as an exotic source of visual hybridity.', labs: ['gradient','colorWheel','pixel'] },
+    { id: 'shirin-neshat', name: 'Shirin Neshat', life: 'born 1957', region: 'Middle East & North Africa', places: 'Iran and the United States', era: 'Contemporary', medium: 'Photography & video', colors: ['#111827','#f8fafc','#991b1b'], overview: 'Uses photography, film, sound, performance, and divided installations to examine power, gender, exile, collective voice, and representation.', lookFor: 'Black-white contrast, opposing screens, gaze, calligraphic overlay, sound across space, and individuals positioned within groups.', context: 'Her work addresses Iranian and diasporic histories while also questioning Western expectations about Muslim women.', tryThis: 'Storyboard two simultaneous viewpoints on the same event and decide what each frame allows or withholds.', respect: 'Neshat is a living artist. Do not imitate her signature imagery or use pseudo-calligraphy; study viewpoint, opposition, and spectatorship.', labs: ['contrast','stereogram','gradient'] },
+    { id: 'monir-farmanfarmaian', name: 'Monir Shahroudy Farmanfarmaian', life: '1922–2019', region: 'Middle East & North Africa', places: 'Iran and the United States', era: 'Contemporary', medium: 'Sculpture', colors: ['#e2e8f0','#67e8f9','#f9a8d4','#facc15'], overview: 'Joined mirror mosaic, reverse-glass painting, geometry, craft collaboration, and modern abstraction in radiant constructed works.', lookFor: 'Reflection, polygon systems, cut modules, changing light, symmetry, and the viewer becoming part of the surface.', context: 'Her work grew through Iranian architectural and craft traditions as well as international abstraction; neither side is a decorative footnote.', tryThis: 'Build a symmetric polygon system whose appearance changes when a light source or viewer position moves.', respect: 'Credit mirror-work traditions and workshop collaboration rather than describing the work as geometry discovered by modernism alone.', labs: ['symmetry','tessellation','sculpt3d'] },
+    { id: 'laila-shawa', name: 'Laila Shawa', life: '1940–2022', region: 'Middle East & North Africa', places: 'Palestine and the United Kingdom', era: 'Contemporary', medium: 'Printmaking', colors: ['#ec4899','#22c55e','#111827','#f8fafc'], overview: 'Combined screenprint, photography, painting, text, pattern, and pop color to confront occupation, gender, violence, propaganda, and mass media.', lookFor: 'Repetition, photographic fragments, bright color against difficult content, fences or grids, and images transformed through printing.', context: 'Surface attraction and political critique operate together; brightness does not make the subject uncomplicated.', tryThis: 'Repeat one news-derived shape, changing scale and color to reveal how repetition can normalize or challenge a message.', respect: 'Keep political images connected to real histories and people; do not aestheticize violence into an empty pattern.', labs: ['pixel','contrast','tessellation'] },
+    { id: 'alma-thomas', name: 'Alma Thomas', life: '1891–1978', region: 'North America', places: 'United States', era: 'Modern', medium: 'Painting & drawing', colors: ['#dc2626','#2563eb','#16a34a','#facc15'], overview: 'Developed luminous abstractions from gardens, music, light, and space exploration after a long career as a public-school art teacher.', lookFor: 'Broken color marks, white intervals, vertical and circular rhythm, optical mixing, and movement built from small variation.', context: 'Thomas became Howard University’s first fine-arts graduate and produced her best-known work after retiring from thirty-five years of teaching.', tryThis: 'Build a rhythm from separated color marks, leaving the ground active; vary one interval so the pattern breathes rather than becoming mechanical.', respect: 'Study rhythm, nature, and late-life experimentation rather than copying a signature mosaic surface.', labs: ['colorWheel','tessellation','gradient'], sourceUrl: 'https://americanart.si.edu/artist/alma-thomas-4778' },
+    { id: 'ruth-asawa', name: 'Ruth Asawa', life: '1926–2013', region: 'North America', places: 'United States; Japanese American', era: 'Contemporary', medium: 'Sculpture', colors: ['#475569','#cbd5e1','#f8fafc'], overview: 'Created suspended looped-wire forms whose interior and exterior remain visible, while also building arts education and public-making programs.', lookFor: 'Continuous line in space, nested volume, transparency, shadow, hand process, and structures that hold air rather than conceal it.', context: 'Her work connects craft knowledge, experimental education, unjust wartime incarceration, family, public art, and sustained community organizing.', tryThis: 'Model a volume using only a continuous line or mesh; make its shadow a second composition.', respect: 'Do not use incarceration as an inspirational prelude; recognize it as state violence within a larger life and practice.', labs: ['sculpt3d','stringArt','symmetry'] },
+    { id: 'jacob-lawrence', name: 'Jacob Lawrence', life: '1917–2000', region: 'North America', places: 'United States', era: 'Modern', medium: 'Painting & drawing', colors: ['#b91c1c','#1d4ed8','#eab308','#111827'], overview: 'Built narrative series from repeated colors, angular figures, research, text, and scenes of migration, labor, resistance, and everyday life.', lookFor: 'Series structure, recurring palette, diagonals, compressed rooms, repeated figures, and the relation between caption and image.', context: 'The Migration Series treats history through many connected panels, making movement and collective experience structural rather than incidental.', tryThis: 'Tell one community change in four panels using a fixed six-color palette and one recurring shape.', respect: 'Research the people and history represented; do not turn collective struggle into a generic heroic storyline.', labs: ['pixel','contrast','colorWheel'] },
+    { id: 'maria-martinez', name: 'Maria Poveka Martinez', life: 'c.1887–1980', region: 'North America', places: 'San Ildefonso Pueblo, United States', era: 'Modern', medium: 'Ceramics', colors: ['#111827','#44403c','#a8a29e'], overview: 'Worked with family and community collaborators to refine celebrated black-on-black pottery grounded in Pueblo knowledge and material practice.', lookFor: 'Form, burnished and matte contrast, firing knowledge, surface-light relationships, and the precision of a vessel as a whole.', context: 'Maria Martinez’s pottery is inseparable from San Ildefonso Pueblo, family collaboration, clay knowledge, firing, and the pressures of an outside art market.', tryThis: 'Design a vessel through silhouette and two surface finishes; explain how light—not borrowed motif—creates contrast.', respect: 'Pueblo designs are not a pattern pack. Credit Maria, Julian Martinez, family collaborators, San Ildefonso Pueblo, and living pottery traditions.', labs: ['sculpt3d','contrast','gradient'] },
+    { id: 'emily-kame-kngwarreye', name: 'Emily Kam Kngwarray', life: 'c.1910–1996', region: 'Oceania', places: 'Anmatyerr Country, Australia', era: 'Contemporary', medium: 'Painting & drawing', colors: ['#7c2d12','#f59e0b','#f8fafc','#1e3a8a'], overview: 'Began painting on canvas late in life after decades of cultural and artistic work, creating varied paintings grounded in Alhalker Country and Anmatyerr knowledge.', lookFor: 'Gesture, seasonal change, layered mark, scale, Country, and dramatic shifts between dense fields and spare lines.', context: 'The work is not generic abstraction: it arises from Country, kinship, plants, ceremony, and knowledge that viewers do not automatically possess.', tryThis: 'Map change in a place you personally know through gesture, density, and season rather than copying dots or cultural symbols.', respect: 'Do not copy Anmatyerr marks or claim their meanings. Learn from sustained attention to your own relationship with place.', labs: ['watercolor','generative','colorWheel'], sourceUrl: 'https://nga.gov.au/learn/learning-resources/emily-kam-kngwarray/' },
+    { id: 'lisa-reihana', name: 'Lisa Reihana', life: 'born 1964', region: 'Oceania', places: 'Aotearoa New Zealand; Māori', era: 'Contemporary', medium: 'Photography & video', colors: ['#0f172a','#0f766e','#d6b98c','#be123c'], overview: 'Uses photography, moving image, sound, performance, costume, and digital compositing to question colonial representation and reactivate histories.', lookFor: 'Panoramic sequence, staged encounter, gaze, costume, sound, quotation, and the difference between being pictured and representing oneself.', context: 'Her work often speaks back to European images of the Pacific rather than simply illustrating the historical record they created.', tryThis: 'Take one historical image and storyboard what occurs immediately outside its frame from another participant’s viewpoint.', respect: 'Reihana is a living Māori artist. Study counter-narrative and framing; do not imitate culturally specific imagery or performance.', labs: ['stereogram','gradient','contrast'] },
+    { id: 'yuki-kihara', name: 'Yuki Kihara', life: 'born 1975', region: 'Oceania', places: 'Sāmoa and Aotearoa New Zealand', era: 'Contemporary', medium: 'Photography & video', colors: ['#7f1d1d','#f8fafc','#0f172a','#0e7490'], overview: 'Works across photography, performance, video, dance, and curating to examine colonial imagery, climate, gender, labor, and Sāmoan histories.', lookFor: 'Re-enactment, serial photographs, pose, archival quotation, costume, absence, and who controls the camera.', context: 'Kihara’s perspective as a faʻafafine artist is specific; it should not be translated into a generic Western category or spectacle.', tryThis: 'Restage the composition—not the identity or costume—of an archival image and change who has agency in the frame.', respect: 'Kihara is a living artist. Use the work to study power in representation, not to imitate Sāmoan or faʻafafine identity.', labs: ['contrast','stereogram','pixel'] },
+    { id: 'fiona-foley', name: 'Fiona Foley', life: 'born 1964', region: 'Oceania', places: 'Badtjala Country, Australia', era: 'Contemporary', medium: 'Installation & mixed media', colors: ['#7c2d12','#e7e5e4','#1e3a8a','#111827'], overview: 'Uses sculpture, photography, public art, text, and research to expose colonial violence, contested language, memory, and Badtjala histories.', lookFor: 'Encoded text, archival evidence, public placement, material symbolism, withheld information, and work that changes as history is uncovered.', context: 'Her projects demonstrate that public monuments and official archives are active political forms, not neutral containers of facts.', tryThis: 'Identify a phrase or omission in a local public record and design a nonliteral memorial that asks viewers to investigate it.', respect: 'Foley is a living Badtjala artist. Research local Indigenous authority and history rather than borrowing her symbols or speaking for her community.', labs: ['sculpt3d','contrast','tessellation'] }
+  ];
+
+  function artistExplorerSourceUrl(profile) {
+    return profile.sourceUrl || ('https://www.si.edu/search?edan_q=' + encodeURIComponent(profile.name));
+  }
+
+  function filterArtistExplorerProfiles(filters) {
+    var opts = filters || {};
+    var query = String(opts.query || '').toLowerCase().trim();
+    return ARTIST_EXPLORER_PROFILES.filter(function (profile) {
+      if (opts.region && opts.region !== 'All regions' && profile.region !== opts.region) return false;
+      if (opts.era && opts.era !== 'All eras' && profile.era !== opts.era) return false;
+      if (opts.medium && opts.medium !== 'All media' && profile.medium !== opts.medium) return false;
+      if (!query) return true;
+      return [profile.name, profile.life, profile.region, profile.places, profile.era, profile.medium, profile.overview, profile.lookFor, profile.context]
+        .join(' ').toLowerCase().indexOf(query) !== -1;
+    });
+  }
+
+  function compareArtistExplorerProfiles(ids) {
+    var requested = Array.isArray(ids) ? ids : [];
+    var seen = {};
+    var profiles = [];
+    requested.forEach(function (id) {
+      if (seen[id] || profiles.length >= 3) return;
+      var profile = ARTIST_EXPLORER_PROFILES.filter(function (candidate) { return candidate.id === id; })[0];
+      if (!profile) return;
+      seen[id] = true;
+      profiles.push(profile);
+    });
+    var sharedLabs = profiles.length ? profiles[0].labs.filter(function (labId) {
+      return profiles.every(function (profile) { return profile.labs.indexOf(labId) !== -1; });
+    }) : [];
+    return {
+      profiles: profiles,
+      sharedLabs: sharedLabs,
+      prompts: [
+        'What appears similar at first, and what different histories or purposes change its meaning?',
+        'How does each material or process shape what the artist can ask a viewer to notice?',
+        'Which underlying decision could you translate into your own context without copying identity, symbols, or a signature style?'
+      ]
+    };
+  }
+
+  function artistSourcebookQuery(profile) {
+    if (!profile) return '';
+    return [profile.name, profile.medium, profile.places, 'museum open access'].join(' ');
+  }
+
+  function sourcebookProviderApiReady(api) {
+    return !!(api && Number(api.version) >= 10 && typeof api.searchOpen === 'function' && typeof api.allowsRightsScope === 'function');
+  }
+
+  function ensureArtistSourcebookProviders() {
+    if (sourcebookProviderApiReady(window.SourcebookProviders)) return Promise.resolve(window.SourcebookProviders);
+    if (window._artStudioSourcebookProviderPromise) return window._artStudioSourcebookProviderPromise;
+    if (typeof document === 'undefined' || !document.head) return Promise.reject(new Error('Sourcebook provider loading is unavailable.'));
+    var scripts = Array.prototype.slice.call(document.getElementsByTagName('script'));
+    var artStudioScript = scripts.filter(function (script) { return /stem_lab\/stem_tool_artstudio\.js(?:[?#].*)?$/i.test(script.src || ''); })[0];
+    var sourceUrl = artStudioScript && artStudioScript.src
+      ? artStudioScript.src.replace(/stem_tool_artstudio\.js(?:[?#].*)?$/i, 'stem_tool_sourcebook.js')
+      : 'stem_lab/stem_tool_sourcebook.js';
+    try {
+      var resolved = new URL(sourceUrl, window.location.href);
+      if (resolved.origin !== window.location.origin) return Promise.reject(new Error('Sourcebook provider URL must be same-origin.'));
+      sourceUrl = resolved.href;
+    } catch (_) { return Promise.reject(new Error('Sourcebook provider URL is invalid.')); }
+    window._artStudioSourcebookProviderPromise = new Promise(function (resolve, reject) {
+      var script = document.createElement('script');
+      var settled = false;
+      var timer = setTimeout(function () {
+        if (settled) return;
+        settled = true;
+        window._artStudioSourcebookProviderPromise = null;
+        reject(new Error('Sourcebook provider loading timed out.'));
+      }, 12000);
+      function finish(error) {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        if (!error && sourcebookProviderApiReady(window.SourcebookProviders)) resolve(window.SourcebookProviders);
+        else {
+          window._artStudioSourcebookProviderPromise = null;
+          reject(error || new Error('Sourcebook rights API did not initialize.'));
+        }
+      }
+      script.async = true;
+      script.src = sourceUrl;
+      script.onload = function () { finish(); };
+      script.onerror = function () { finish(new Error('Sourcebook provider bundle could not be loaded.')); };
+      document.head.appendChild(script);
+    });
+    return window._artStudioSourcebookProviderPromise;
+  }
+
+  function searchArtistSourcebookWorks(profile, providerApi, options) {
+    var opts = options || {};
+    var rightsScope = ['pd', 'pd-cc0', 'all'].indexOf(opts.rightsScope) !== -1 ? opts.rightsScope : 'pd';
+    if (!profile || !providerApi || Number(providerApi.version) < 10 || typeof providerApi.searchOpen !== 'function' || typeof providerApi.allowsRightsScope !== 'function') {
+      return Promise.reject(new Error('Sourcebook rights-verified search is unavailable.'));
+    }
+    return Promise.resolve(providerApi.searchOpen(artistSourcebookQuery(profile), {
+      provider: 'All',
+      kind: 'Visual assets',
+      rightsScope: rightsScope,
+      limit: 24,
+      resultLimit: 18
+    })).then(function (items) {
+      var seen = {};
+      return (Array.isArray(items) ? items : []).filter(function (item) {
+        if (!item || seen[item.id] || !item.title || !item.imageUrl || !item.sourceUrl) return false;
+        if (!/^https:\/\//i.test(item.imageUrl) || !/^https:\/\//i.test(item.sourceUrl)) return false;
+        if (!providerApi.allowsRightsScope(item, rightsScope)) return false;
+        seen[item.id] = true;
+        return true;
+      }).slice(0, 12);
+    });
+  }
+
+  window.ArtStudioArtistExplorer = {
+    version: 2,
+    profiles: ARTIST_EXPLORER_PROFILES.slice(),
+    filter: filterArtistExplorerProfiles,
+    sourceUrl: artistExplorerSourceUrl,
+    compare: compareArtistExplorerProfiles,
+    sourcebookQuery: artistSourcebookQuery,
+    searchWorks: searchArtistSourcebookWorks,
+    ensureSourcebook: ensureArtistSourcebookProviders
+  };
+
   window.StemLab.registerTool('artStudio', {
     icon: "🎨",
     label: "Art & Design Studio",
@@ -195,6 +357,14 @@ window.StemLab = window.StemLab || {
 const d = labToolData.artStudio || {};
 
           const upd = (key, val) => setLabToolData(prev => ({ ...prev, artStudio: { ...prev.artStudio, [key]: val } }));
+          const updMany = (values) => setLabToolData(prev => ({ ...prev, artStudio: { ...prev.artStudio, ...values } }));
+          const _artistWorksState = React.useState({ profileId: '', status: 'idle', message: '', items: [] });
+          const artistWorksState = _artistWorksState[0];
+          const setArtistWorksState = _artistWorksState[1];
+          const artistWorksRequestRef = React.useRef(0);
+          const _artistCompareIdsState = React.useState(Array.isArray(d.artistCompareIds) ? d.artistCompareIds.slice(0, 3) : []);
+          const artistCompareIds = _artistCompareIdsState[0];
+          const setArtistCompareIds = _artistCompareIdsState[1];
           const saveWatercolorMetadata = function (snapshot, stateKey) {
             setLabToolData(function (prev) {
               return {
@@ -208,14 +378,49 @@ const d = labToolData.artStudio || {};
             });
           };
 
-          const tab = d.tab || 'colorWheel';
-          const ART_STUDIO_TAB_ORDER = ['colorWheel', 'mixer', 'watercolor', 'pixel', 'symmetry', 'spirograph', 'generative', 'spinArt', 'stringArt', 'opArt', 'tessellation', 'fractal', 'gradient', 'stereogram', 'sculpt3d', 'contrast', 'harmonyHunt'];
+          const ART_STUDIO_TAB_ORDER = ['artistExplorer', 'colorWheel', 'mixer', 'watercolor', 'pixel', 'symmetry', 'spirograph', 'generative', 'spinArt', 'stringArt', 'opArt', 'tessellation', 'fractal', 'gradient', 'stereogram', 'sculpt3d', 'contrast', 'harmonyHunt'];
+          const requestedArtStudioTab = d.tab || 'colorWheel';
+          const tab = ART_STUDIO_TAB_ORDER.indexOf(requestedArtStudioTab) !== -1 ? requestedArtStudioTab : 'colorWheel';
           const ART_STUDIO_TAB_LABELS = {
+            artistExplorer: 'Artists & Traditions',
             colorWheel: 'Color Wheel', mixer: 'Color Mixer', watercolor: 'Watercolor', pixel: 'Pixel Art',
             symmetry: 'Symmetry', spirograph: 'Spirograph', generative: 'Generative Art', spinArt: 'Spin Art',
             stringArt: 'String Art', opArt: 'Op Art', tessellation: 'Tessellation', fractal: 'Fractal',
             gradient: 'Gradient', stereogram: 'Stereogram', sculpt3d: '3D Sculpture', contrast: 'Contrast', harmonyHunt: 'Harmony'
           };
+          const ART_STUDIO_TAB_ITEMS = [
+            { id: 'artistExplorer', icon: '\uD83C\uDF0D', label: __alloT('stem.artstudio.artists_traditions', 'Artists & Traditions') },
+            { id: 'colorWheel', icon: '\uD83C\uDFA8', label: __alloT('stem.artstudio.color_wheel_2', 'Color Wheel') },
+            { id: 'mixer', icon: '\uD83E\uDDEA', label: __alloT('stem.artstudio.color_mixer_2', 'Color Mixer') },
+            { id: 'watercolor', icon: '\uD83C\uDFA8', label: __alloT('stem.artstudio.watercolor_2', 'Watercolor') },
+            { id: 'pixel', icon: '\uD83D\uDDBC', label: __alloT('stem.artstudio.pixel_art_2', 'Pixel Art') },
+            { id: 'symmetry', icon: '\u2728', label: __alloT('stem.artstudio.symmetry_2', 'Symmetry') },
+            { id: 'spirograph', icon: '\uD83C\uDF00', label: __alloT('stem.artstudio.spirograph_2', 'Spirograph') },
+            { id: 'generative', icon: '\uD83C\uDF86', label: __alloT('stem.artstudio.generative_2', 'Generative') },
+            { id: 'spinArt', icon: '\uD83C\uDF00', label: __alloT('stem.artstudio.spin_art_2', 'Spin Art') },
+            { id: 'stringArt', icon: '\uD83D\uDD78', label: __alloT('stem.artstudio.string_art_2', 'String Art') },
+            { id: 'opArt', icon: '\uD83D\uDC41', label: __alloT('stem.artstudio.op_art_2', 'Op Art') },
+            { id: 'tessellation', icon: '\uD83D\uDD37', label: __alloT('stem.artstudio.tessellation_2', 'Tessellation') },
+            { id: 'fractal', icon: '\uD83D\uDD2E', label: __alloT('stem.artstudio.fractals_2', 'Fractals') },
+            { id: 'gradient', icon: '\uD83C\uDF08', label: __alloT('stem.artstudio.gradient_2', 'Gradient') },
+            { id: 'stereogram', icon: '\uD83D\uDC53', label: __alloT('stem.artstudio.stereogram_2', 'Stereogram') },
+            { id: 'sculpt3d', icon: '\uD83D\uDDFF', label: __alloT('stem.artstudio.sculpt_3d', 'Sculpt 3D') },
+            { id: 'contrast', icon: '\u267F', label: __alloT('stem.artstudio.contrast_2', 'Contrast') },
+            { id: 'harmonyHunt', icon: '\uD83C\uDFB6', label: __alloT('stem.artstudio.harmony', 'Harmony') }
+          ];
+          const ART_STUDIO_GROUPS = [
+            { id: 'explore', icon: '\uD83C\uDF0D', label: 'Explore', tabs: ['artistExplorer'] },
+            { id: 'paint', icon: '\uD83C\uDFA8', label: 'Paint & color', tabs: ['colorWheel', 'mixer', 'watercolor', 'gradient'] },
+            { id: 'pattern', icon: '\u25C8', label: 'Pattern & mathematics', tabs: ['symmetry', 'spirograph', 'stringArt', 'tessellation', 'fractal'] },
+            { id: 'digital', icon: '\u2726', label: 'Digital & generative', tabs: ['pixel', 'generative', 'spinArt', 'stereogram'] },
+            { id: 'space', icon: '\uD83D\uDDFF', label: 'Space & sculpture', tabs: ['sculpt3d'] },
+            { id: 'perception', icon: '\u25C9', label: 'Perception & access', tabs: ['opArt', 'contrast', 'harmonyHunt'] }
+          ];
+          const artStudioGroupForTab = function (tabId) {
+            return ART_STUDIO_GROUPS.filter(function (group) { return group.tabs.indexOf(tabId) !== -1; })[0] || ART_STUDIO_GROUPS[0];
+          };
+          const activeArtStudioGroup = artStudioGroupForTab(tab);
+          const visibleArtStudioTabs = ART_STUDIO_TAB_ITEMS.filter(function (item) { return activeArtStudioGroup.tabs.indexOf(item.id) !== -1; });
           const WATERCOLOR_PIGMENTS = [
             { id: 'ultramarine', color: '#2f6fb0', label: 'Ultramarine', description: 'granulating, transparent, low staining, medium mobility', values: { watercolorGranulation: 78, watercolorStaining: 34, watercolorOpacity: 28, watercolorMobility: 62 } },
             { id: 'crimson', color: '#b4233c', label: 'Crimson', description: 'smooth, transparent, high staining, high mobility', values: { watercolorGranulation: 18, watercolorStaining: 84, watercolorOpacity: 22, watercolorMobility: 82 } },
@@ -295,12 +500,13 @@ const d = labToolData.artStudio || {};
             }
             onUseArtwork(artwork, destination);
           };
-          const artStudioTabKeyDown = function (e, index) {
+          const artStudioTabKeyDown = function (e, index, tabOrder) {
+            var order = Array.isArray(tabOrder) && tabOrder.length ? tabOrder : ART_STUDIO_TAB_ORDER;
             let nextIndex = -1;
-            if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = (index + 1) % ART_STUDIO_TAB_ORDER.length;
-            else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = (index + ART_STUDIO_TAB_ORDER.length - 1) % ART_STUDIO_TAB_ORDER.length;
+            if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = (index + 1) % order.length;
+            else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = (index + order.length - 1) % order.length;
             else if (e.key === 'Home') nextIndex = 0;
-            else if (e.key === 'End') nextIndex = ART_STUDIO_TAB_ORDER.length - 1;
+            else if (e.key === 'End') nextIndex = order.length - 1;
             if (nextIndex < 0) return;
             e.preventDefault();
             const tabs = e.currentTarget && e.currentTarget.parentNode
@@ -329,7 +535,7 @@ const d = labToolData.artStudio || {};
                 }
               }
             }
-            upd('tab', nextTab);
+            updMany({ tab: nextTab, artNavGroup: artStudioGroupForTab(nextTab).id });
             if (typeof canvasNarrate === 'function') canvasNarrate('artStudio', 'tabSwitch', 'Switched to ' + label + ' canvas tool.', { debounce: 500 });
           };
           const reducedMotion = typeof window !== 'undefined' && typeof window.matchMedia === 'function' &&
@@ -3068,9 +3274,10 @@ const d = labToolData.artStudio || {};
             /* ── Art Studio Tour/Welcome Panel ── */
             d.showTour && React.createElement("div", { className: "mb-4 bg-gradient-to-br from-pink-50 via-purple-50 to-indigo-50 rounded-xl border-2 border-pink-200 p-4 animate-in fade-in duration-200" },
               React.createElement("h4", { className: "text-sm font-black text-pink-800 mb-3 flex items-center gap-2" }, __alloT('stem.artstudio.welcome_to_the_art_design_studio', "\uD83C\uDFA8 Welcome to the Art & Design Studio!")),
-              React.createElement("p", { className: "text-xs text-slate-600 mb-3 leading-relaxed" }, __alloT('stem.artstudio.explore_15_interactive_tools_that_teac', "Explore 16 interactive tools that teach color theory, mathematical art, generative design, and visual accessibility. Each tab is a different creative canvas. Here\u2019s what you can create:")),
+              React.createElement("p", { className: "text-xs text-slate-600 mb-3 leading-relaxed" }, __alloT('stem.artstudio.explore_15_interactive_tools_that_teac', "Explore artists and traditions alongside 17 interactive labs for color theory, mathematical art, generative design, sculpture, sound, and visual accessibility.")),
               React.createElement("div", { className: "grid grid-cols-3 sm:grid-cols-5 gap-2 mb-3" },
                 [
+                  { icon: '\uD83C\uDF0D', name: __alloT('stem.artstudio.artists_traditions', 'Artists & Traditions'), desc: __alloT('stem.artstudio.artists_traditions_desc', 'Explore 28 globally representative creative practices') },
                   { icon: '\uD83C\uDFA8', name: __alloT('stem.artstudio.color_wheel', 'Color Wheel'), desc: __alloT('stem.artstudio.explore_hsl_color_space_interactively', 'Explore HSL color space interactively') },
                   { icon: '\uD83E\uDDEA', name: __alloT('stem.artstudio.color_mixer', 'Color Mixer'), desc: __alloT('stem.artstudio.mix_paints_with_subtractive_color_theo', 'Mix paints with subtractive color theory') },
                   { icon: '\uD83C\uDFA8', name: __alloT('stem.artstudio.watercolor', 'Watercolor'), desc: __alloT('stem.artstudio.simulate_watercolor_diffusion_and_paper', 'Simulate pigment, water, and paper texture') },
@@ -3105,19 +3312,26 @@ const d = labToolData.artStudio || {};
               React.createElement("button", { onClick: function () { upd('showTour', false); }, className: "mt-3 w-full py-2 bg-pink-600 text-white text-sm font-bold rounded-lg hover:bg-pink-700 transition-colors" }, __alloT('stem.artstudio.got_it_let_s_create', "Got it \u2014 let\u2019s create! \uD83C\uDFA8"))
             ),
 
-            React.createElement("div", { className: "flex gap-1 mb-4 bg-slate-50 p-1 rounded-xl border border-slate-400", role: 'tablist', 'aria-label': __alloT('stem.artstudio.art_studio_sections', 'Art Studio sections') },
-
-              [{ id: 'colorWheel', icon: '\uD83C\uDFA8', label: __alloT('stem.artstudio.color_wheel_2', 'Color Wheel') }, { id: 'mixer', icon: '\uD83E\uDDEA', label: __alloT('stem.artstudio.color_mixer_2', 'Color Mixer') }, { id: 'watercolor', icon: '\uD83C\uDFA8', label: __alloT('stem.artstudio.watercolor_2', 'Watercolor') }, { id: 'pixel', icon: '\uD83D\uDDBC', label: __alloT('stem.artstudio.pixel_art_2', 'Pixel Art') }, { id: 'symmetry', icon: '\u2728', label: __alloT('stem.artstudio.symmetry_2', 'Symmetry') }, { id: 'spirograph', icon: '\uD83C\uDF00', label: __alloT('stem.artstudio.spirograph_2', 'Spirograph') }, { id: 'generative', icon: '\uD83C\uDF86', label: __alloT('stem.artstudio.generative_2', 'Generative') }, { id: 'spinArt', icon: '\uD83C\uDF00', label: __alloT('stem.artstudio.spin_art_2', 'Spin Art') }, { id: 'stringArt', icon: '\uD83D\uDD78', label: __alloT('stem.artstudio.string_art_2', 'String Art') }, { id: 'opArt', icon: '\uD83D\uDC41', label: __alloT('stem.artstudio.op_art_2', 'Op Art') }, { id: 'tessellation', icon: '\uD83D\uDD37', label: __alloT('stem.artstudio.tessellation_2', 'Tessellation') }, { id: 'fractal', icon: '\uD83D\uDD2E', label: __alloT('stem.artstudio.fractals_2', 'Fractals') }, { id: 'gradient', icon: '\uD83C\uDF08', label: __alloT('stem.artstudio.gradient_2', 'Gradient') }, { id: 'stereogram', icon: '\uD83D\uDC53', label: __alloT('stem.artstudio.stereogram_2', 'Stereogram') }, { id: 'sculpt3d', icon: '\uD83D\uDDFF', label: __alloT('stem.artstudio.sculpt_3d', 'Sculpt 3D') }, { id: 'contrast', icon: '\u267F', label: __alloT('stem.artstudio.contrast_2', 'Contrast') }, { id: 'harmonyHunt', icon: '\uD83C\uDFB6', label: __alloT('stem.artstudio.harmony', 'Harmony') }].map(function (tb, tabIndex) {
-
-                return React.createElement("button", { "aria-label": 'Switch to ' + tb.label + ' tab', key: tb.id, id: 'artstudio-tab-' + tb.id, 'aria-controls': 'artstudio-panel-' + tb.id, onClick: function () { selectArtStudioTab(tb.id, tb.label); }, role: 'tab', 'aria-selected': tab === tb.id, tabIndex: tab === tb.id ? 0 : -1, onKeyDown: function (e) { artStudioTabKeyDown(e, tabIndex); }, className: "flex-1 px-2 py-2 rounded-lg text-xs font-bold transition-all " + (tab === tb.id ? 'bg-white shadow-md text-pink-700' : 'text-slate-600 hover:text-slate-700 hover:bg-white/50') }, tb.icon + ' ' + tb.label);
-
-              })
-
+            React.createElement('nav', { className: 'mb-4 space-y-2', 'aria-label': __alloT('stem.artstudio.art_studio_sections', 'Art Studio sections'), 'data-artstudio-grouped-nav': 'true' },
+              React.createElement('div', { className: 'flex gap-1 overflow-x-auto rounded-xl border border-slate-400 bg-slate-100 p-1', role: 'group', 'aria-label': 'Art Studio tool groups' }, ART_STUDIO_GROUPS.map(function (group) {
+                var groupActive = group.id === activeArtStudioGroup.id;
+                return React.createElement('button', {
+                  type: 'button', key: group.id, 'aria-pressed': groupActive,
+                  onClick: function () { var firstTab = group.tabs[0]; selectArtStudioTab(firstTab, ART_STUDIO_TAB_LABELS[firstTab] || group.label); },
+                  className: 'min-h-[42px] shrink-0 rounded-lg px-3 text-xs font-black transition-all ' + (groupActive ? 'bg-slate-900 text-white shadow-md' : 'bg-white text-slate-700 hover:bg-slate-50')
+                }, group.icon + ' ' + group.label);
+              })),
+              React.createElement('div', { id: 'artstudio-group-tools', className: 'flex flex-wrap gap-1 rounded-xl border border-rose-200 bg-rose-50/60 p-1', role: 'tablist', 'aria-label': activeArtStudioGroup.label + ' tools' },
+                visibleArtStudioTabs.map(function (tb, tabIndex) {
+                  return React.createElement('button', { 'aria-label': 'Switch to ' + tb.label + ' tab', key: tb.id, id: 'artstudio-tab-' + tb.id, 'aria-controls': 'artstudio-panel-' + tb.id, onClick: function () { selectArtStudioTab(tb.id, tb.label); }, role: 'tab', 'aria-selected': tab === tb.id, tabIndex: tab === tb.id ? 0 : -1, onKeyDown: function (e) { artStudioTabKeyDown(e, tabIndex, activeArtStudioGroup.tabs); }, className: 'min-h-[40px] flex-1 rounded-lg px-3 py-2 text-xs font-bold transition-all ' + (tab === tb.id ? 'bg-white text-pink-700 shadow-md ring-1 ring-rose-200' : 'text-slate-700 hover:bg-white/70') }, tb.icon + ' ' + tb.label);
+                })
+              )
             ),
 
             // ── Topic-accent hero band per tab ──
             (function() {
               var TAB_META = {
+                artistExplorer:{ accent: '#9d174d', soft: 'rgba(157,23,77,0.09)', icon: '\uD83C\uDF0D', title: __alloT('stem.artstudio.artist_explorer_title', 'Artists & Traditions — decisions, context, and making'), hint: __alloT('stem.artstudio.artist_explorer_hint', 'Explore 28 practices across seven regions. Learn from artistic decisions and cultural context, then carry the question—not a copied signature style—into an interactive Studio lab.') },
                 colorWheel:   { accent: '#db2777', soft: 'rgba(219,39,119,0.10)', icon: '\uD83C\uDFA8', title: __alloT('stem.artstudio.color_wheel_hsl_hsv_complementary_pair', 'Color Wheel \u2014 HSL/HSV + complementary pairs'),           hint: __alloT('stem.artstudio.hue_0_360_around_the_wheel_saturation_', 'Hue (0-360 around the wheel), saturation (purity), lightness (brightness). Complementary across, analogous adjacent, triadic 120\u00b0 apart. Newton put the spectrum on a wheel in 1666.') },
                 mixer:        { accent: '#9333ea', soft: 'rgba(147,51,234,0.10)', icon: '\uD83E\uDDEA', title: __alloT('stem.artstudio.color_mixer_subtractive_vs_additive', 'Color Mixer \u2014 subtractive vs additive'),                  hint: __alloT('stem.artstudio.paint_and_print_subtractive_cmy_mixes_', 'Paint and print = subtractive (CMY mixes to dark); light and screens = additive (RGB mixes to white). Same world, completely different math \u2014 a printer thinks in K plates, a TV thinks in Hz.') },
                 watercolor:   { accent: '#0f766e', soft: 'rgba(15,118,110,0.10)', icon: '\uD83C\uDFA8', title: __alloT('stem.artstudio.watercolor_simulation', 'Watercolor \u2014 pigment, water, and paper'),                 hint: __alloT('stem.artstudio.watercolor_simulation_hint', 'Water carries pigment across paper; as the brush unloads and water evaporates, clustered pigment creates granulation and darker drying edges. Try a wash, then a dry brush.') },
@@ -3154,6 +3368,287 @@ const d = labToolData.artStudio || {};
                 React.createElement('div', { style: { flex: 1, minWidth: 220 } },
                   React.createElement('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
                   React.createElement('p', { style: { margin: '3px 0 0', color: 'var(--allo-stem-text-soft, #475569)', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+                )
+              );
+            })(),
+
+            tab === 'artistExplorer' && (function () {
+              var regions = ['All regions', 'Africa', 'Asia', 'Europe', 'Latin America & Caribbean', 'Middle East & North Africa', 'North America', 'Oceania'];
+              var eras = ['All eras', 'Early modern', 'Modern', 'Contemporary'];
+              var media = ['All media', 'Painting & drawing', 'Printmaking', 'Sculpture', 'Ceramics', 'Textiles, pattern & design', 'Photography & video', 'Installation & mixed media'];
+              var filters = {
+                query: d.artistQuery || '',
+                region: d.artistRegion || 'All regions',
+                era: d.artistEra || 'All eras',
+                medium: d.artistMedium || 'All media'
+              };
+              var matches = filterArtistExplorerProfiles(filters);
+              var selected = matches.filter(function (profile) { return profile.id === d.artistProfileId; })[0] || matches[0] || null;
+              var selectedIndex = selected ? ARTIST_EXPLORER_PROFILES.indexOf(selected) : -1;
+              var comparison = compareArtistExplorerProfiles(artistCompareIds);
+              var artistRightsScope = ['pd', 'pd-cc0', 'all'].indexOf(d.artistRightsScope) !== -1 ? d.artistRightsScope : 'pd';
+              var sourcebookApi = typeof window !== 'undefined' ? window.SourcebookProviders : null;
+              var sourcebookReady = sourcebookProviderApiReady(sourcebookApi);
+              var currentWorks = selected && artistWorksState.profileId === selected.id ? artistWorksState : { profileId: selected ? selected.id : '', status: 'idle', message: '', items: [] };
+              function palettePreview(profile, height) {
+                var stops = profile.colors.map(function (color, index) { return color + ' ' + Math.round(index * 100 / Math.max(1, profile.colors.length - 1)) + '%'; }).join(',');
+                return React.createElement('div', {
+                  role: 'img',
+                  'aria-label': profile.name + ' study palette: ' + profile.colors.join(', '),
+                  style: { height: height || 54, borderRadius: 10, background: 'linear-gradient(135deg,' + stops + ')', border: '1px solid rgba(15,23,42,.16)', boxShadow: 'inset 0 0 0 1px rgba(255,255,255,.28)' }
+                });
+              }
+              function selectProfile(profile) {
+                upd('artistProfileId', profile.id);
+                if (typeof announceToSR === 'function') announceToSR('Selected ' + profile.name + ' in Artists and Traditions Explorer');
+              }
+              function toggleComparison(profile) {
+                var ids = comparison.profiles.map(function (item) { return item.id; });
+                var existingIndex = ids.indexOf(profile.id);
+                if (existingIndex !== -1) ids.splice(existingIndex, 1);
+                else if (ids.length < 3) ids.push(profile.id);
+                else {
+                  if (typeof addToast === 'function') addToast('Compare up to three artists at a time.', 'info');
+                  return;
+                }
+                setArtistCompareIds(ids);
+                upd('artistCompareIds', ids);
+                if (typeof announceToSR === 'function') announceToSR((existingIndex === -1 ? 'Added ' : 'Removed ') + profile.name + (existingIndex === -1 ? ' to comparison' : ' from comparison'));
+              }
+              function findRightsClearedWorks(profile) {
+                var requestId = ++artistWorksRequestRef.current;
+                setArtistWorksState({ profileId: profile.id, status: 'loading', message: (sourcebookReady ? 'Searching public collections' : 'Loading Sourcebook, then searching public collections') + ' and checking item-level reuse rights\u2026', items: [] });
+                ensureArtistSourcebookProviders().then(function (api) {
+                  return searchArtistSourcebookWorks(profile, api, { rightsScope: artistRightsScope });
+                }).then(function (items) {
+                  if (requestId !== artistWorksRequestRef.current) return;
+                  setArtistWorksState({
+                    profileId: profile.id,
+                    status: 'ready',
+                    message: items.length ? items.length + ' rights-verified collection matches. Review the catalog metadata before deciding whether a result is by or about this artist.' : 'No results passed this rights filter. Try a broader reuse setting or continue in Sourcebook.',
+                    items: items
+                  });
+                }, function () {
+                  if (requestId !== artistWorksRequestRef.current) return;
+                  setArtistWorksState({ profileId: profile.id, status: 'unavailable', message: 'Sourcebook search is unavailable. No unverified artwork has been substituted.', items: [] });
+                });
+              }
+              function saveWorkToSourcebook(item) {
+                if (!sourcebookReady || !sourcebookApi.allowsRightsScope(item, artistRightsScope)) {
+                  if (typeof addToast === 'function') addToast('This asset did not pass the active Sourcebook rights filter.', 'error');
+                  return;
+                }
+                setLabToolData(function (prev) {
+                  var previousSourcebook = prev.sourcebook || {};
+                  var collection = Array.isArray(previousSourcebook.collection) ? previousSourcebook.collection.slice() : [];
+                  if (collection.indexOf(item.id) === -1) collection.push(item.id);
+                  var savedAssets = Object.assign({}, previousSourcebook.savedAssets || {});
+                  savedAssets[item.id] = item;
+                  return Object.assign({}, prev, {
+                    sourcebook: Object.assign({}, previousSourcebook, {
+                      query: selected ? artistSourcebookQuery(selected) : '',
+                      rightsScope: artistRightsScope,
+                      activeId: item.id,
+                      collection: collection,
+                      savedAssets: savedAssets
+                    })
+                  });
+                });
+                if (typeof addToast === 'function') addToast('Saved to the Sourcebook palette with rights and source metadata.', 'success');
+                if (typeof announceToSR === 'function') announceToSR('Saved ' + item.title + ' to the Sourcebook palette');
+              }
+              function continueInSourcebook(profile) {
+                setLabToolData(function (prev) {
+                  return Object.assign({}, prev, {
+                    sourcebook: Object.assign({}, prev.sourcebook || {}, { query: artistSourcebookQuery(profile), rightsScope: artistRightsScope })
+                  });
+                });
+                if (typeof setStemLabTool === 'function') setStemLabTool('sourcebook');
+              }
+              return React.createElement('div', { className: 'space-y-4', 'data-artstudio-artist-explorer': 'true' },
+                React.createElement('section', { className: 'rounded-xl border border-rose-200 bg-gradient-to-br from-rose-50 via-white to-amber-50 p-4', 'aria-labelledby': 'artist-explorer-intro' },
+                  React.createElement('div', { className: 'flex flex-wrap items-start justify-between gap-3' },
+                    React.createElement('div', { className: 'max-w-2xl' },
+                      React.createElement('h4', { id: 'artist-explorer-intro', className: 'text-base font-black text-rose-900' }, 'A wider map of artistic intelligence'),
+                      React.createElement('p', { className: 'mt-1 text-xs leading-relaxed text-slate-700' }, 'Explore artists across seven regions, many media, and different relationships among art, place, history, technology, and community. No profile is a style preset: notice decisions, investigate context, and make from your own experience.')
+                    ),
+                    React.createElement('span', { className: 'rounded-full bg-rose-900 px-3 py-1 text-[11px] font-black text-white' }, ARTIST_EXPLORER_PROFILES.length + ' profiles')
+                  )
+                ),
+                React.createElement('section', { className: 'rounded-xl border border-slate-300 bg-white p-3', 'aria-label': 'Filter artists and traditions' },
+                  React.createElement('div', { className: 'grid gap-2 sm:grid-cols-2 lg:grid-cols-4' },
+                    React.createElement('label', { className: 'text-[11px] font-bold text-slate-700' }, 'Search',
+                      React.createElement('input', { type: 'search', value: filters.query, onChange: function (event) { upd('artistQuery', event.target.value.slice(0, 80)); }, placeholder: 'Artist, place, idea, medium…', className: 'mt-1 min-h-[42px] w-full rounded-lg border border-slate-400 px-3 text-sm', 'aria-label': 'Search artist profiles' })
+                    ),
+                    React.createElement('label', { className: 'text-[11px] font-bold text-slate-700' }, 'Region',
+                      React.createElement('select', { value: filters.region, onChange: function (event) { upd('artistRegion', event.target.value); }, className: 'mt-1 min-h-[42px] w-full rounded-lg border border-slate-400 bg-white px-2 text-xs', 'aria-label': 'Filter artists by region' }, regions.map(function (value) { return React.createElement('option', { key: value, value: value }, value); }))
+                    ),
+                    React.createElement('label', { className: 'text-[11px] font-bold text-slate-700' }, 'Era',
+                      React.createElement('select', { value: filters.era, onChange: function (event) { upd('artistEra', event.target.value); }, className: 'mt-1 min-h-[42px] w-full rounded-lg border border-slate-400 bg-white px-2 text-xs', 'aria-label': 'Filter artists by era' }, eras.map(function (value) { return React.createElement('option', { key: value, value: value }, value); }))
+                    ),
+                    React.createElement('label', { className: 'text-[11px] font-bold text-slate-700' }, 'Medium',
+                      React.createElement('select', { value: filters.medium, onChange: function (event) { upd('artistMedium', event.target.value); }, className: 'mt-1 min-h-[42px] w-full rounded-lg border border-slate-400 bg-white px-2 text-xs', 'aria-label': 'Filter artists by medium' }, media.map(function (value) { return React.createElement('option', { key: value, value: value }, value); }))
+                    )
+                  ),
+                  React.createElement('div', { className: 'mt-2 flex flex-wrap items-center gap-2' },
+                    React.createElement('p', { className: 'mr-auto text-xs font-bold text-slate-700', role: 'status', 'aria-live': 'polite' }, matches.length + ' matching profile' + (matches.length === 1 ? '' : 's')),
+                    React.createElement('button', { type: 'button', onClick: function () { upd('artistQuery', ''); upd('artistRegion', 'All regions'); upd('artistEra', 'All eras'); upd('artistMedium', 'All media'); }, className: 'min-h-[38px] rounded-lg border border-slate-400 bg-slate-50 px-3 text-xs font-bold text-slate-800' }, 'Clear filters'),
+                    React.createElement('button', { type: 'button', disabled: !ARTIST_EXPLORER_PROFILES.length, onClick: function () { var next = ARTIST_EXPLORER_PROFILES[(Math.max(0, selectedIndex) + 7) % ARTIST_EXPLORER_PROFILES.length]; upd('artistQuery', ''); upd('artistRegion', 'All regions'); upd('artistEra', 'All eras'); upd('artistMedium', 'All media'); selectProfile(next); }, className: 'min-h-[38px] rounded-lg bg-rose-800 px-3 text-xs font-black text-white disabled:opacity-50' }, 'Surprise me')
+                  )
+                ),
+                comparison.profiles.length > 0 && React.createElement('section', { className: 'rounded-xl border-2 border-indigo-300 bg-gradient-to-br from-indigo-50 to-white p-4', 'aria-labelledby': 'artist-comparison-title', 'data-artist-comparison': 'true' },
+                  React.createElement('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
+                    React.createElement('div', null,
+                      React.createElement('h4', { id: 'artist-comparison-title', className: 'font-black text-indigo-950' }, 'Compare artistic decisions'),
+                      React.createElement('p', { className: 'mt-1 text-xs text-indigo-900' }, comparison.profiles.length < 2 ? 'Choose at least one more profile to begin a side-by-side inquiry.' : 'Compare context and choices without flattening distinct practices into a shared style.')
+                    ),
+                    React.createElement('div', { className: 'flex items-center gap-2' },
+                      React.createElement('span', { className: 'rounded-full bg-indigo-900 px-3 py-1 text-[10px] font-black text-white' }, comparison.profiles.length + ' of 3'),
+                      React.createElement('button', { type: 'button', onClick: function () { setArtistCompareIds([]); upd('artistCompareIds', []); }, className: 'min-h-[36px] rounded-lg border border-indigo-400 bg-white px-3 text-[11px] font-black text-indigo-950' }, 'Clear')
+                    )
+                  ),
+                  React.createElement('div', { className: 'mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-3', role: 'list', 'aria-label': 'Artists selected for comparison' }, comparison.profiles.map(function (profile) {
+                    return React.createElement('article', { key: profile.id, role: 'listitem', className: 'rounded-xl border border-indigo-200 bg-white p-3 shadow-sm' },
+                      palettePreview(profile, 34),
+                      React.createElement('div', { className: 'mt-2 flex items-start justify-between gap-2' },
+                        React.createElement('div', null,
+                          React.createElement('h5', { className: 'text-sm font-black text-slate-950' }, profile.name),
+                          React.createElement('p', { className: 'text-[10px] font-bold text-slate-600' }, profile.places + ' \u00B7 ' + profile.medium)
+                        ),
+                        React.createElement('button', { type: 'button', onClick: function () { toggleComparison(profile); }, 'aria-label': 'Remove ' + profile.name + ' from comparison', className: 'rounded-lg border border-slate-300 px-2 py-1 text-[10px] font-black text-slate-700' }, 'Remove')
+                      ),
+                      React.createElement('p', { className: 'mt-2 text-[11px] leading-relaxed text-slate-700' }, profile.lookFor),
+                      React.createElement('p', { className: 'mt-2 rounded-lg bg-emerald-50 p-2 text-[10px] leading-relaxed text-emerald-950' }, profile.tryThis)
+                    );
+                  })),
+                  comparison.profiles.length >= 2 && React.createElement('div', { className: 'mt-3 grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto]' },
+                    React.createElement('div', { className: 'rounded-xl border border-indigo-200 bg-white p-3' },
+                      React.createElement('h5', { className: 'text-xs font-black text-indigo-950' }, 'Inquiry prompts'),
+                      React.createElement('ol', { className: 'mt-2 list-decimal space-y-1 pl-5 text-[11px] leading-relaxed text-slate-700' }, comparison.prompts.map(function (prompt) { return React.createElement('li', { key: prompt }, prompt); }))
+                    ),
+                    React.createElement('div', { className: 'rounded-xl border border-indigo-200 bg-white p-3' },
+                      React.createElement('h5', { className: 'text-xs font-black text-indigo-950' }, comparison.sharedLabs.length ? 'Shared Studio labs' : 'Different lab pathways'),
+                      React.createElement('div', { className: 'mt-2 flex flex-wrap gap-2' }, (comparison.sharedLabs.length ? comparison.sharedLabs : comparison.profiles.reduce(function (ids, profile) {
+                        profile.labs.forEach(function (labId) { if (ids.indexOf(labId) === -1 && ids.length < 3) ids.push(labId); });
+                        return ids;
+                      }, [])).map(function (labId) {
+                        var label = ART_STUDIO_TAB_LABELS[labId] || labId;
+                        return React.createElement('button', { key: labId, type: 'button', onClick: function () { selectArtStudioTab(labId, label); }, className: 'min-h-[36px] rounded-lg bg-indigo-900 px-3 text-[10px] font-black text-white' }, 'Open ' + label);
+                      }))
+                    )
+                  )
+                ),
+                matches.length === 0 ? React.createElement('div', { className: 'rounded-xl border border-amber-300 bg-amber-50 p-5 text-center' },
+                  React.createElement('h4', { className: 'font-black text-amber-950' }, 'No profiles match these filters'),
+                  React.createElement('p', { className: 'mt-1 text-xs text-amber-900' }, 'Clear one or more filters to return to the full explorer.')
+                ) : React.createElement('div', { className: 'grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_340px]' },
+                  React.createElement('div', { className: 'grid gap-3 sm:grid-cols-2', role: 'list', 'aria-label': 'Artist and tradition profiles' }, matches.map(function (profile) {
+                    var active = selected && selected.id === profile.id;
+                    return React.createElement('div', { key: profile.id, role: 'listitem' },
+                      React.createElement('button', {
+                        type: 'button', 'aria-pressed': active, onClick: function () { selectProfile(profile); },
+                        className: 'h-full w-full min-h-[150px] rounded-xl border-2 p-3 text-left transition-all focus:outline-none focus:ring-2 focus:ring-rose-700 ' + (active ? 'border-rose-700 bg-rose-50 shadow-md' : 'border-slate-300 bg-white hover:border-rose-400 hover:shadow-sm')
+                      },
+                        palettePreview(profile, 42),
+                        React.createElement('div', { className: 'mt-2 flex items-start justify-between gap-2' },
+                          React.createElement('div', null,
+                            React.createElement('h5', { className: 'text-sm font-black text-slate-900' }, profile.name),
+                            React.createElement('p', { className: 'text-[11px] font-bold text-slate-600' }, profile.life + ' · ' + profile.places)
+                          ),
+                          React.createElement('span', { className: 'rounded-full bg-slate-100 px-2 py-1 text-[9px] font-black text-slate-700' }, profile.region)
+                        ),
+                        React.createElement('p', { className: 'mt-2 text-[11px] leading-relaxed text-slate-700' }, profile.overview)
+                      ),
+                      React.createElement('button', {
+                        type: 'button',
+                        'aria-pressed': comparison.profiles.some(function (item) { return item.id === profile.id; }),
+                        onClick: function () { toggleComparison(profile); },
+                        className: 'mt-2 min-h-[38px] w-full rounded-lg border px-3 text-[11px] font-black ' + (comparison.profiles.some(function (item) { return item.id === profile.id; }) ? 'border-indigo-700 bg-indigo-50 text-indigo-950' : 'border-slate-400 bg-white text-slate-700')
+                      }, comparison.profiles.some(function (item) { return item.id === profile.id; }) ? '✓ In comparison' : '+ Add to compare')
+                    );
+                  })),
+                  selected && React.createElement('aside', { className: 'lg:sticky lg:top-2 max-h-[72vh] overflow-y-auto rounded-xl border-2 border-rose-300 bg-[#fffaf3] p-4 shadow-sm focus:outline-none focus:ring-2 focus:ring-rose-700', tabIndex: 0, 'aria-label': 'Selected artist study details' },
+                    palettePreview(selected, 82),
+                    React.createElement('p', { className: 'mt-3 text-[10px] font-black uppercase tracking-wider text-rose-800' }, selected.region + ' · ' + selected.era),
+                    React.createElement('div', { className: 'mt-1 flex items-start justify-between gap-2' },
+                      React.createElement('h4', { className: 'font-serif text-xl font-black text-slate-900' }, selected.name),
+                      React.createElement('button', { type: 'button', onClick: function () { toggleComparison(selected); }, 'aria-pressed': comparison.profiles.some(function (item) { return item.id === selected.id; }), className: 'shrink-0 rounded-lg border border-indigo-400 bg-white px-2 py-1 text-[10px] font-black text-indigo-950' }, comparison.profiles.some(function (item) { return item.id === selected.id; }) ? '\u2713 Compare' : '+ Compare')
+                    ),
+                    React.createElement('p', { className: 'text-xs font-bold text-slate-600' }, selected.life + ' · ' + selected.medium),
+                    React.createElement('p', { className: 'mt-3 text-xs leading-relaxed text-slate-700' }, selected.overview),
+                    React.createElement('section', { className: 'mt-3 rounded-lg border border-sky-200 bg-sky-50 p-3' },
+                      React.createElement('h5', { className: 'text-xs font-black text-sky-950' }, 'Look closely'),
+                      React.createElement('p', { className: 'mt-1 text-[11px] leading-relaxed text-sky-950' }, selected.lookFor)
+                    ),
+                    React.createElement('section', { className: 'mt-3 rounded-lg border border-violet-200 bg-violet-50 p-3' },
+                      React.createElement('h5', { className: 'text-xs font-black text-violet-950' }, 'Context matters'),
+                      React.createElement('p', { className: 'mt-1 text-[11px] leading-relaxed text-violet-950' }, selected.context)
+                    ),
+                    React.createElement('section', { className: 'mt-3 rounded-lg border border-emerald-200 bg-emerald-50 p-3' },
+                      React.createElement('h5', { className: 'text-xs font-black text-emerald-950' }, 'Try the underlying question'),
+                      React.createElement('p', { className: 'mt-1 text-[11px] leading-relaxed text-emerald-950' }, selected.tryThis)
+                    ),
+                    React.createElement('section', { className: 'mt-3 rounded-lg border border-amber-300 bg-amber-50 p-3' },
+                      React.createElement('h5', { className: 'text-xs font-black text-amber-950' }, 'Learn with respect'),
+                      React.createElement('p', { className: 'mt-1 text-[11px] leading-relaxed text-amber-950' }, selected.respect)
+                    ),
+                    React.createElement('div', { className: 'mt-3' },
+                      React.createElement('p', { className: 'text-[10px] font-black uppercase tracking-wider text-slate-600' }, 'Carry the inquiry into a Studio lab'),
+                      React.createElement('div', { className: 'mt-2 flex flex-wrap gap-2' }, selected.labs.map(function (labId) {
+                        var labLabel = ART_STUDIO_TAB_LABELS[labId] || labId;
+                        return React.createElement('button', { key: labId, type: 'button', onClick: function () { selectArtStudioTab(labId, labLabel); }, className: 'min-h-[38px] rounded-lg bg-slate-900 px-3 text-[11px] font-black text-white' }, 'Open ' + labLabel);
+                      }))
+                    ),
+                    React.createElement('section', { className: 'mt-4 rounded-xl border-2 border-emerald-300 bg-emerald-50 p-3', 'aria-labelledby': 'artist-sourcebook-title' },
+                      React.createElement('p', { className: 'text-[9px] font-black uppercase tracking-[.16em] text-emerald-800' }, 'Sourcebook bridge'),
+                      React.createElement('h5', { id: 'artist-sourcebook-title', className: 'mt-1 text-xs font-black text-emerald-950' }, 'Find reusable collection images'),
+                      React.createElement('p', { className: 'mt-1 text-[10px] leading-relaxed text-emerald-950' }, 'Searches Sourcebook providers and fails closed: no result appears unless its item-level rights pass the selected allowlist.'),
+                      React.createElement('label', { className: 'mt-2 block text-[10px] font-black text-emerald-950' }, 'Reuse rights',
+                        React.createElement('select', { value: artistRightsScope, onChange: function (event) { upd('artistRightsScope', event.target.value); setArtistWorksState({ profileId: '', status: 'idle', message: '', items: [] }); }, className: 'mt-1 min-h-[38px] w-full rounded-lg border border-emerald-500 bg-white px-2 text-[11px]', 'aria-label': 'Rights filter for artist collection search' },
+                          React.createElement('option', { value: 'pd' }, 'Public domain only'),
+                          React.createElement('option', { value: 'pd-cc0' }, 'Public domain + CC0'),
+                          React.createElement('option', { value: 'all' }, 'Public domain + CC0 + CC BY')
+                        )
+                      ),
+                      React.createElement('div', { className: 'mt-2 grid gap-2' },
+                        React.createElement('button', { type: 'button', disabled: currentWorks.status === 'loading', onClick: function () { findRightsClearedWorks(selected); }, className: 'min-h-[40px] rounded-lg bg-emerald-900 px-3 text-[11px] font-black text-white disabled:opacity-50' }, currentWorks.status === 'loading' ? 'Checking rights…' : (sourcebookReady ? 'Find rights-cleared images' : 'Load Sourcebook & find images')),
+                        React.createElement('button', { type: 'button', onClick: function () { continueInSourcebook(selected); }, className: 'min-h-[40px] rounded-lg border border-emerald-700 bg-white px-3 text-[11px] font-black text-emerald-950' }, 'Continue this search in Sourcebook →')
+                      ),
+                      !sourcebookReady && React.createElement('p', { className: 'mt-2 text-[10px] font-bold text-emerald-900', role: 'status' }, 'Sourcebook’s verified provider service will load on demand. If it cannot load, Art Studio shows no substitute results.')
+                    ),
+                    React.createElement('a', { href: artistExplorerSourceUrl(selected), target: '_blank', rel: 'noopener noreferrer', className: 'mt-4 inline-flex min-h-[40px] items-center rounded-lg border border-rose-700 bg-white px-3 text-xs font-black text-rose-900' }, 'Explore museum collection records ↗'),
+                    React.createElement('p', { className: 'mt-2 text-[10px] leading-relaxed text-slate-500' }, 'External collection records are for further study. Rights vary by individual artwork; this tab does not grant reuse permission or reproduce those works.')
+                  )
+                ),
+                selected && currentWorks.status !== 'idle' && React.createElement('section', { className: 'rounded-2xl border-2 border-emerald-300 bg-[#f4fbf7] p-4', 'aria-labelledby': 'artist-sourcebook-results-title', 'data-artist-sourcebook-results': currentWorks.status },
+                  React.createElement('div', { className: 'flex flex-wrap items-start justify-between gap-2' },
+                    React.createElement('div', null,
+                      React.createElement('p', { className: 'text-[9px] font-black uppercase tracking-[.18em] text-emerald-800' }, 'Rights-verified visual assets'),
+                      React.createElement('h4', { id: 'artist-sourcebook-results-title', className: 'mt-1 font-serif text-xl font-black text-emerald-950' }, 'Sourcebook matches for ' + selected.name),
+                      React.createElement('p', { className: 'mt-1 max-w-3xl text-[11px] leading-relaxed text-emerald-950', role: 'status', 'aria-live': 'polite' }, currentWorks.message)
+                    ),
+                    React.createElement('span', { className: 'rounded-full bg-emerald-900 px-3 py-1 text-[10px] font-black text-white' }, artistRightsScope === 'pd' ? 'Public domain only' : (artistRightsScope === 'pd-cc0' ? 'PD + CC0' : 'PD + CC0 + CC BY'))
+                  ),
+                  currentWorks.status === 'loading' && React.createElement('div', { className: 'mt-4 h-2 overflow-hidden rounded-full bg-emerald-100', 'aria-hidden': 'true' }, React.createElement('div', { className: 'h-full w-1/2 animate-pulse rounded-full bg-emerald-700' })),
+                  currentWorks.status === 'ready' && currentWorks.items.length === 0 && React.createElement('div', { className: 'mt-4 rounded-xl border border-amber-300 bg-amber-50 p-4 text-xs text-amber-950' }, 'Nothing was shown because no collection result passed both relevance and the active rights allowlist.'),
+                  currentWorks.items.length > 0 && React.createElement('div', { className: 'mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3', role: 'list', 'aria-label': 'Rights-verified Sourcebook matches' }, currentWorks.items.map(function (item) {
+                    var credit = sourcebookApi && typeof sourcebookApi.buildAttribution === 'function' ? sourcebookApi.buildAttribution(item) : ((item.creator || 'Creator not listed') + ' · ' + (item.provider || 'Source collection'));
+                    return React.createElement('article', { key: item.id, role: 'listitem', className: 'overflow-hidden rounded-xl border border-emerald-200 bg-white shadow-sm' },
+                      React.createElement('div', { className: 'h-44 bg-slate-100' }, React.createElement('img', { src: item.imageUrl, alt: item.title + (item.creator ? ' by ' + item.creator : ''), loading: 'lazy', className: 'h-full w-full object-contain' })),
+                      React.createElement('div', { className: 'p-3' },
+                        React.createElement('div', { className: 'flex items-start justify-between gap-2' },
+                          React.createElement('h5', { className: 'text-xs font-black leading-snug text-slate-950' }, item.title),
+                          React.createElement('span', { className: 'shrink-0 rounded-full bg-emerald-100 px-2 py-1 text-[9px] font-black text-emerald-950' }, item.rightsShort || item.license)
+                        ),
+                        React.createElement('p', { className: 'mt-1 text-[10px] font-bold text-slate-600' }, (item.creator || 'Creator not listed') + ' · ' + (item.provider || 'Open collection')),
+                        React.createElement('p', { className: 'mt-2 text-[9px] leading-relaxed text-slate-600' }, credit),
+                        React.createElement('div', { className: 'mt-3 grid gap-2' },
+                          React.createElement('button', { type: 'button', onClick: function () { saveWorkToSourcebook(item); }, className: 'min-h-[38px] rounded-lg bg-emerald-900 px-3 text-[10px] font-black text-white' }, 'Save to Sourcebook palette'),
+                          React.createElement('a', { href: item.sourceUrl, target: '_blank', rel: 'noopener noreferrer', className: 'min-h-[38px] inline-flex items-center justify-center rounded-lg border border-emerald-700 bg-white px-3 text-[10px] font-black text-emerald-950' }, 'Verify source & rights ↗')
+                        )
+                      )
+                    );
+                  }))
                 )
               );
             })(),

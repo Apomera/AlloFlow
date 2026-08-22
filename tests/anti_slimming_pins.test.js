@@ -14,7 +14,7 @@ const read = (file) => fs.readFileSync(path.join(ROOT, file), 'utf8');
 // Family → expected minimum wrapper call sites using the shared builder.
 const BUILDERS = {
   PhaseKHelpers: 10,
-  PhaseNHelpers: 5,
+  PhaseNHelpers: 4,
   AdventureSessionHandlers: 3,
   TextUtilityHelpers: 4,
   PhaseOHandlers: 5,
@@ -68,14 +68,19 @@ describe('extraction pins', () => {
     expect(anti).toContain("if (_m && typeof _m.planAndSendUdlMessage === 'function') return _m.planAndSendUdlMessage(manualText, {");
     // updateExportPreview → ExportPreviewHelpers
     expect(anti).toContain("if (_m && typeof _m.updateExportPreview === 'function') return _m.updateExportPreview({");
+    // Student-pack serializer → LiveAac
+    expect(anti).toContain('moduleApi.serializeResourceForStudentPack(item, { sanitizeHistoryForCloud, stripUndefined })');
+    expect(anti).not.toContain('const safePortableTtsAssets = (value) => {');
   });
 
   it('the module sides actually define what the wrappers forward to', () => {
     expect(read('misc_handlers_source.jsx')).toContain('async function runAutoFixLoop(maxRounds, deps)');
     expect(read('udl_chat_source.jsx')).toContain('async function planAndSendUdlMessage(manualText, deps)');
     expect(read('view_export_preview_source.jsx')).toContain('function updateExportPreview(deps)');
+    expect(read('live_aac_source.jsx')).toContain('const _alloSerializeResourceForStudentPack = (item, deps = {}) => {');
     // …and register them.
     expect(read('misc_handlers_source.jsx')).toMatch(/window\.AlloModules\.MiscHandlers = \{ runAutoFixLoop,/);
-    expect(read('udl_chat_source.jsx')).toMatch(/window\.AlloModules\.UdlChat = \{ planAndSendUdlMessage,/);
+    expect(read('udl_chat_source.jsx')).toMatch(/window\.AlloModules\.UdlChat = \{\s*planAndSendUdlMessage,/);
+    expect(read('live_aac_source.jsx')).toContain('serializeResourceForStudentPack: _alloSerializeResourceForStudentPack');
   });
 });

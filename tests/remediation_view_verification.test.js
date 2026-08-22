@@ -495,7 +495,9 @@ describe('PDF verification recovery and referral separation', () => {
   it('renders the canonical state, engine coverage, reasons, and a verification-only retry', () => {
     expect(source).toContain('data-help-key="pdf_audit_verification_status"');
     expect(source).toContain('WCAG verification: {label}');
-    expect(source).toContain('<strong>Equal Access:</strong> {engineLabel(coverage.equalAccess)}');
+    expect(source).toContain('function _PdfAuditVerificationEngineList({ coverage, engineLabel })');
+    expect(source).toContain('<strong>Equal Access:</strong> {label(value.equalAccess)}');
+    expect(source).toContain('<_PdfAuditVerificationEngineList coverage={coverage} engineLabel={engineLabel} />');
     expect(source).toContain("const reasons = Array.isArray(pdfFixResult.verificationReasons)");
     expect(source).toContain("_reauditAndScore(pdfFixResult.accessibleHtml, null)");
     const panel = source.slice(source.indexOf('data-help-key="pdf_audit_verification_status"'), source.indexOf('Results dashboard bar'));

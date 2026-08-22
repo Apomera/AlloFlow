@@ -121,23 +121,105 @@ describe('named editable-field voice scope', () => {
   });
 });
 
-describe('main host registration contract', () => {
-  it('uses direct React setters for the three critical field families', async () => {
-    const source = await import('node:fs').then((fs) => fs.readFileSync('AlloFlowANTI.txt', 'utf8'));
-    expect(source).toContain("id: 'main-editable-fields'");
-    expect(source).toContain("id: 'source-text'");
-    expect(source).toContain("id: 'sentence-frame-' + index");
-    expect(source).toContain("id: 'math-work-' + index");
-    expect(source).toContain('setValue: (next) => setInputText(next)');
-    expect(source).toContain('setValue: (next) => handleStudentInput(generatedContent.id, index, next)');
-    const block = source.slice(source.indexOf('const _listMainVoiceEditableFields'), source.indexOf('const _alloCmdCtxRef'));
-    expect(block).not.toMatch(/\.click\s*\(|querySelector|activeElement|\.focus\s*\(/);
+describe('main editable-field registry', () => {
+  it('publishes source and sentence-frame fields through live host setters', () => {
+    const setInputText = vi.fn();
+    const handleStudentInput = vi.fn();
+    const fields = AC.listMainVoiceEditableFields({
+      activeSidebarTab: 'create',
+      activeView: 'input',
+      generatedContent: { id: 'lesson-1', type: 'sentence-frames', data: { mode: 'list', items: [{}] } },
+      handleStudentInput,
+      inputText: 'Source draft',
+      isEditingScaffolds: false,
+      setInputText,
+      showNotebook: false,
+      showSourceGen: false,
+      showUrlInput: false,
+      studentResponses: { 'lesson-1': { 0: 'Response draft' } },
+    });
+
+    expect(fields.map((field) => field.id)).toEqual(['source-text', 'sentence-frame-0']);
+    fields[0].setValue('Updated source');
+    fields[1].setValue('Updated response');
+    expect(setInputText).toHaveBeenCalledWith('Updated source');
+    expect(handleStudentInput).toHaveBeenCalledWith('lesson-1', 0, 'Updated response');
   });
 
-  it('publishes DBQ, Persona, and saved note-template drafts through direct host setters', async () => {
+  it('isolates a Persona reflection from fields behind its modal', () => {
+    const setPersonaReflectionInput = vi.fn();
+    const fields = AC.listMainVoiceEditableFields({
+      activeSidebarTab: 'create',
+      activeView: 'input',
+      inputText: 'Hidden source draft',
+      isGeneratingReflectionPrompt: false,
+      isGradingReflection: false,
+      isPersonaChatOpen: true,
+      isPersonaReflectionOpen: true,
+      personaReflectionInput: 'Private reflection',
+      setPersonaReflectionInput,
+      showSourceGen: false,
+      showUrlInput: false,
+      t: () => 'Write your reflection',
+    });
+
+    expect(fields).toHaveLength(1);
+    expect(fields[0]).toMatchObject({ id: 'persona-reflection', value: 'Private reflection', disabled: false });
+    fields[0].setValue('Updated reflection');
+    expect(setPersonaReflectionInput).toHaveBeenCalledWith('Updated reflection');
+  });
+
+  it('routes DBQ and note-template edits through their host update APIs', () => {
+    const handleStudentInput = vi.fn();
+    const dbqFields = AC.listMainVoiceEditableFields({
+      generatedContent: {
+        id: 'dbq-1',
+        type: 'dbq',
+        data: { documents: [{ id: 'A', sourcingQuestions: ['Who?'], analysisQuestions: ['Why?'] }] },
+      },
+      handleStudentInput,
+      studentResponses: { 'dbq-1': {} },
+    });
+    dbqFields.find((field) => field.id === 'dbq-synthesis-essay').setValue('Essay draft');
+    expect(handleStudentInput).toHaveBeenCalledWith('dbq-1', '_essayText', 'Essay draft');
+
+    const handleNoteUpdate = vi.fn();
+    const noteFields = AC.listMainVoiceEditableFields({
+      generatedContent: { id: 'notes-1', type: 'note-taking', data: { templateType: 'q-and-a', pairs: [] } },
+      handleNoteUpdate,
+      studentResponses: {},
+    });
+    noteFields.find((field) => field.id === 'notes-qanda-answer-0').setValue('Study answer');
+    expect(handleNoteUpdate).toHaveBeenCalledWith('pairs', [{ question: '', answer: 'Study answer' }]);
+  });
+});
+
+describe('main host registration contract', () => {
+  it('keeps registry ownership in AlloCommands and only live state wiring in the host', async () => {
     const fs = await import('node:fs');
-    const source = fs.readFileSync('AlloFlowANTI.txt', 'utf8');
-    const block = source.slice(source.indexOf('const _listMainVoiceEditableFields'), source.indexOf('const _alloCmdCtxRef'));
+    const host = fs.readFileSync('AlloFlowANTI.txt', 'utf8');
+    const owner = fs.readFileSync('allo_commands_source.jsx', 'utf8');
+    const hostBlock = host.slice(host.indexOf('const _listMainVoiceEditableFields'), host.indexOf('const _selectMainVoiceEditableField'));
+    const ownerBlock = owner.slice(owner.indexOf('function listMainVoiceEditableFields'), owner.indexOf('function normalizeVoiceEditableFields'));
+
+    expect(host).toContain("id: 'main-editable-fields'");
+    expect(hostBlock).toContain('commandApi.listMainVoiceEditableFields({');
+    for (const dependency of ['generatedContent', 'handleNoteUpdate', 'handleStudentInput', 'studentResponses', 't']) {
+      expect(hostBlock).toContain(dependency);
+    }
+    expect(hostBlock).not.toContain("id: 'source-text'");
+    expect(ownerBlock).toContain("id: 'source-text'");
+    expect(ownerBlock).toContain("id: 'sentence-frame-' + index");
+    expect(ownerBlock).toContain("id: 'math-work-' + index");
+    expect(ownerBlock).toContain('setValue: (next) => setInputText(next)');
+    expect(ownerBlock).toContain('setValue: (next) => handleStudentInput(generatedContent.id, index, next)');
+    expect(ownerBlock).not.toMatch(/\.click\s*\(|querySelector|activeElement|\.focus\s*\(/);
+  });
+
+  it('keeps all extended writing families in the extracted registry', async () => {
+    const fs = await import('node:fs');
+    const owner = fs.readFileSync('allo_commands_source.jsx', 'utf8');
+    const block = owner.slice(owner.indexOf('function listMainVoiceEditableFields'), owner.indexOf('function normalizeVoiceEditableFields'));
     expect(block).toContain("id: 'persona-reflection'");
     expect(block).toContain('setValue: (next) => setPersonaReflectionInput(next)');
     expect(block).toContain("id: 'persona-chat-message'");

@@ -1,29 +1,35 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { loadAlloModule } from './setup.js';
 
 const host = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8');
+const generationSource = readFileSync(resolve(process.cwd(), 'generation_helpers_source.jsx'), 'utf8');
 const privacyStart = host.indexOf('// BEGIN GENERATION_DIAGNOSTIC_PRIVACY');
 const privacyEnd = host.indexOf('// END GENERATION_DIAGNOSTIC_PRIVACY');
 if (privacyStart < 0 || privacyEnd < privacyStart) throw new Error('Production diagnostic privacy section was not found');
 const privacySource = host.slice(privacyStart, privacyEnd);
 
-const builderStart = host.indexOf('  const buildSanitizedFullPackDiagnostic = () => {');
-const builderEnd = host.indexOf('  const handleCopyFullPackDiagnostics', builderStart);
-if (builderStart < 0 || builderEnd < builderStart) throw new Error('Production Full Pack diagnostic builder was not found');
-const builderSource = host.slice(builderStart, builderEnd);
+loadAlloModule('generation_helpers_module.js');
+const GenerationHelpers = window.AlloModules.GenerationHelpers;
+const diagnosticDeps = new Function([
+  "const ALLO_FULL_PACK_CAPABILITY_FINGERPRINT = 'full-pack-plan-v2';",
+  privacySource,
+  'return {',
+  '  diagnosticReason: _alloDiagnosticReason,',
+  '  diagnosticResourceType: _alloDiagnosticResourceType,',
+  '  diagnosticBoundedInt: _alloDiagnosticBoundedInt,',
+  '  diagnosticTimestamp: _alloDiagnosticTimestamp,',
+  '  diagnosticRunId: _alloDiagnosticRunId,',
+  '  sanitizeFullPackPreflight: _alloSanitizeFullPackPreflight,',
+  '};',
+].join(String.fromCharCode(10)))();
 
-const buildFullPackDiagnostic = (fullPackRun, observability = {}) => new Function(
-  'fullPackRun',
-  'observability',
-  `
-    const ALLO_FULL_PACK_CAPABILITY_FINGERPRINT = 'full-pack-plan-v2';
-    const ALLO_GENERATION_METRICS = { snapshot: () => observability };
-    ${privacySource}
-    ${builderSource}
-    return buildSanitizedFullPackDiagnostic();
-  `,
-)(fullPackRun, observability);
+const buildFullPackDiagnostic = (fullPackRun, observability = {}) =>
+  GenerationHelpers.buildSanitizedFullPackDiagnostic(fullPackRun, {
+    ...diagnosticDeps,
+    metricsSnapshot: () => observability,
+  });
 const extractCompactor = marker => {
   const start = host.indexOf(marker);
   const end = host.indexOf('  useEffect(() => {', start);
@@ -47,6 +53,22 @@ const { compactBlueprint, compactFullPack } = new Function(`
 `)();
 
 describe('generation diagnostic privacy', () => {
+  it('keeps the Full Pack diagnostic implementation in GenerationHelpers', () => {
+    expect(generationSource).toContain('const buildSanitizedFullPackDiagnostic = (fullPackRun, deps = {}) =>');
+    expect(generationSource).toContain('buildSanitizedFullPackDiagnostic,');
+    expect(host).toContain("_m && typeof _m.buildSanitizedFullPackDiagnostic === 'function'");
+    expect(host).not.toContain('const safeGradeBand = value => {');
+    expect(host).not.toContain('const sanitizeGroup = (group, index) => {');
+  });
+
+  it('fails closed when the host privacy sanitizers are unavailable', () => {
+    expect(GenerationHelpers.buildSanitizedFullPackDiagnostic({
+      runId: 'full-pack-test',
+      status: 'failed',
+      reason: 'Bearer SENTINEL_SECRET was rejected',
+    }, {})).toBeNull();
+  });
+
   it('removes source, directives, student values, group identities, resource ids, and raw provider errors', () => {
     const report = buildFullPackDiagnostic({
       runId: 'run-safe-id',

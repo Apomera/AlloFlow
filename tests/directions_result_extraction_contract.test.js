@@ -8,6 +8,7 @@ const read = file => readFileSync(resolve(ROOT, file), 'utf8');
 const source = read('view_directions_result_source.jsx');
 const moduleCode = read('view_directions_result_module.js');
 const host = read('AlloFlowANTI.txt');
+const restoreOwner = read('misc_handlers_source.jsx');
 const build = read('build.js');
 const builder = read('_build_view_directions_result_module.js');
 
@@ -171,9 +172,10 @@ describe('Directions Result safe view extraction', () => {
   it('is lazy, non-core, prewarmed on assignment open, and recoverable', () => {
     expect(host).toContain("loadModule('DirectionsResult', 'https://alloflow-cdn.pages.dev/view_directions_result_module.js");
     expect(host).toContain('window.__alloLazyDirectionsResult');
-    const restoreStart = host.indexOf('const handleRestoreView =');
-    const restoreSlice = host.slice(restoreStart, restoreStart + 1600);
+    const restoreStart = restoreOwner.indexOf('function handleRestoreView(');
+    const restoreSlice = restoreOwner.slice(restoreStart, restoreStart + 2200);
     expect(restoreSlice).toMatch(/item\.type === ['"]directions['"][\s\S]*?__alloLazyDirectionsResult/);
+    expect(host).toContain('moduleApi.handleRestoreView(item, options, _alloMiscHandlersDeps())');
     const core = host.match(/const CORE_BOOT_MODULES = \[([^\]]+)\]/)?.[1] || '';
     expect(core).not.toContain('DirectionsResult');
     expect(host).toContain('Directions could not load');

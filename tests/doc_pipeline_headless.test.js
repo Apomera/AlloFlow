@@ -127,6 +127,36 @@ describe('REAL generateAuditReportHtml (Generator A) renders the honest, parity-
   });
 });
 
+describe('REAL generateAuditReportHtml preserves the foundation evidence matrix', () => {
+  it('exports deterministic, AI, axe-core, and Equal Access provenance without converting not-tested to pass', () => {
+    const html = pipeline.generateAuditReportHtml({
+      ...beforeAfter,
+      htmlFoundations: {
+        summary: { passed: 1, missing: 1, notApplicable: 16, total: 18 },
+        items: [{
+          id: 'main',
+          label: 'Main-content landmark',
+          status: 'missing',
+          detail: 'No main landmark was detected.',
+          evidence: {
+            deterministic: { state: 'fail', detail: 'Expected HTML pattern was not detected.' },
+            ai: { state: 'fail', detail: 'Matching finding: main-landmark' },
+            axe: { state: 'not-tested', detail: 'The configured WCAG-only ruleset does not test this presence check.' },
+            equalAccess: { state: 'unavailable', detail: 'No completed result is bound to the current HTML.' },
+          },
+        }],
+      },
+    }, 'foundations.pdf', true);
+
+    expect(html).toContain('HTML Foundations: all 18 checks');
+    expect(html).toContain('HTML detector');
+    expect(html).toContain('axe-core');
+    expect(html).toContain('Equal Access');
+    expect(html).toContain('Not tested');
+    expect(html).toContain('No main landmark was detected.');
+  });
+});
+
 describe('REAL generateAccessibilityReportHtml (Generator B, the conformance report)', () => {
   let html;
   beforeAll(() => {

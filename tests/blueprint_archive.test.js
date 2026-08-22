@@ -194,7 +194,11 @@ describe('module wiring guardrails (red-team i + ii)', () => {
 
   it('udl_chat destructures archiveLivePlan from deps — not a free identifier', () => {
     const src = read('udl_chat_source.jsx');
-    const destructure = src.slice(0, src.indexOf('} = deps;'));
+    const handlerStart = src.indexOf('const handleSendUDLMessage = async');
+    const destructureEnd = src.indexOf('} = deps;', handlerStart);
+    expect(handlerStart).toBeGreaterThan(-1);
+    expect(destructureEnd).toBeGreaterThan(handlerStart);
+    const destructure = src.slice(handlerStart, destructureEnd);
     expect(destructure).toContain('archiveLivePlan,');
   });
 

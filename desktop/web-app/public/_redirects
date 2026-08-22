@@ -94,6 +94,7 @@
 /nuclear-lab /app/?tool=nuclearLab 302
 /numberline /app/?tool=numberline 302
 /nutrition-lab /app/?tool=nutritionLab 302
+/open-bim /app/?tool=openBim 302
 /optics-lab /app/?tool=opticsLab 302
 /oratory /app/?tool=oratory 302
 /organism-id /app/?tool=organismId 302

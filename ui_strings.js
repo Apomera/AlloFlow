@@ -3401,7 +3401,7 @@
     "reading_theme": "🎨 Reading Theme",
     "reading_theme_desc": "Background & text color for all content views",
     "voice": {
-      "label": "Narrator Voice",
+      "label": "Voice & Audio",
       "helper": "Applies to text-to-speech reading, adventure mode narration, flashcard audio, and the AI Assistant."
     }
   },
@@ -10399,7 +10399,7 @@
     "mood_sad": "Oh no...",
     "sleep_title": "Sleep (Minimize)",
     "sleep_aria": "Minimize Assistant",
-    "chat_title": "Voice Settings",
+    "chat_title": "Voice & Audio Settings",
     "chat_aria": "Open voice and TTS settings",
     "mute_on_title": "Mute Voice",
     "mute_on_aria": "Mute Voice",

@@ -5233,6 +5233,14 @@
                 color: 'amber', ready: true
               },
               {
+                // @tool openBim. This is an accessible planning and exchange
+                // companion for Bonsai, not a browser reimplementation of it.
+                id: 'openBim', icon: '\u2302', label: 'OpenBIM Companion',
+                desc: 'Turn a building idea into a reviewed semantic IFC proposal, then prepare an open project for the Bonsai authoring environment.',
+                aliases: ['Bonsai', 'BIM', 'OpenBIM', 'IFC', 'building information modeling', 'accessible architecture'],
+                color: 'teal', ready: true
+              },
+              {
                 // @tool cityLab. Architecture Studio stops at one building and GIS Studio
                 // analyses places that already exist, so nothing in the catalog let a
                 // student design a settlement under constraints that genuinely conflict.
@@ -6999,7 +7007,7 @@
             // Aug 2026: Machine Lab — simple machines, forces and mechanical advantage.
             machineLab: true,
             // Engineering & CS
-            archStudio: true, bridgeLab: true, circuit: true, codingPlayground: true,
+            archStudio: true, openBim: true, bridgeLab: true, circuit: true, codingPlayground: true,
             trajectoryComputing: true,
             cyberDefense: true, magnetism: true, semiconductor: true,
             // Aug 2026: City Planning Lab — settlement-scale design under conflicting

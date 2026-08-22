@@ -1409,6 +1409,321 @@ function _namedFieldOrdinal(value) {
   return match ? Number(match[1]) : null;
 }
 
+function listMainVoiceEditableFields(context = {}) {
+  const {
+    activeSidebarTab,
+    activeView,
+    generatedContent,
+    handleNoteUpdate,
+    handleStudentInput,
+    inputText,
+    isEditingScaffolds,
+    isGeneratingReflectionPrompt,
+    isGradingReflection,
+    isPersonaChatOpen,
+    isPersonaFreeResponse,
+    isPersonaReflectionOpen,
+    personaInput,
+    personaReflectionInput,
+    personaState,
+    setInputText,
+    setPersonaInput,
+    setPersonaReflectionInput,
+    showNotebook,
+    showSourceGen,
+    showUrlInput,
+    studentResponses = {},
+    t: translate
+  } = context || {};
+  const t = typeof translate === 'function' ? translate : () => '';
+  const fields = [];
+  // Modal isolation: Persona owns the editable-field surface while its
+  // interview is open. The transcript is private, and only the unsent chat
+  // draft or the visible reflection draft is published to the adapter.
+  if (isPersonaChatOpen) {
+    if (isPersonaReflectionOpen) {
+      fields.push({
+        id: 'persona-reflection',
+        label: t('persona.reflection_input') || 'Write your reflection',
+        aliases: ['persona reflection', 'reflection response', 'reflection draft'],
+        value: personaReflectionInput,
+        maxLength: 4000,
+        disabled: !!(isGradingReflection || isGeneratingReflectionPrompt),
+        setValue: (next) => setPersonaReflectionInput(next)
+      });
+    } else if (isPersonaFreeResponse) {
+      fields.push({
+        id: 'persona-chat-message',
+        label: t('common.enter_persona_input') || 'Enter Persona message',
+        aliases: ['persona message', 'interview question', 'chat message'],
+        value: personaInput,
+        maxLength: 2000,
+        disabled: !!(personaState && personaState.isLoading),
+        setValue: (next) => setPersonaInput(next)
+      });
+    }
+    return fields;
+  }
+  // The Notebook overlay is a saved-entry chooser, not an editor. Returning
+  // no fields prevents commands from changing content hidden behind it. Once
+  // an entry is selected, its note-taking view publishes the fields below.
+  if (showNotebook) return fields;
+  const sourceOpen = activeSidebarTab === 'create' && activeView === 'input' && !showUrlInput && !showSourceGen;
+  if (sourceOpen) {
+    fields.push({
+      id: 'source-text',
+      label: 'Source text',
+      aliases: ['source input', 'source material', 'reading text'],
+      value: inputText,
+      maxLength: 20000,
+      setValue: (next) => setInputText(next)
+    });
+  }
+  if (generatedContent && generatedContent.id && generatedContent.type === 'sentence-frames' && !isEditingScaffolds) {
+    const responses = studentResponses[generatedContent.id] || {};
+    if (generatedContent.data && generatedContent.data.mode === 'list') {
+      (generatedContent.data.items || []).forEach((item, index) => {
+        fields.push({
+          id: 'sentence-frame-' + index,
+          label: 'Sentence frame response ' + (index + 1),
+          aliases: ['response ' + (index + 1), 'answer ' + (index + 1), 'sentence frame ' + (index + 1)],
+          value: responses[index] || '',
+          maxLength: 8000,
+          setValue: (next) => handleStudentInput(generatedContent.id, index, next)
+        });
+      });
+    } else if (generatedContent.data && typeof generatedContent.data.text === 'string') {
+      let responseIndex = 0;
+      generatedContent.data.text.split(/(\[.*?\])/).forEach((part, renderIndex) => {
+        if (!part.startsWith('[')) return;
+        responseIndex += 1;
+        const key = 'paragraph-' + renderIndex;
+        fields.push({
+          id: 'sentence-frame-' + renderIndex,
+          label: 'Sentence frame response ' + responseIndex,
+          aliases: ['response ' + responseIndex, 'answer ' + responseIndex, 'sentence frame ' + responseIndex],
+          value: responses[key] || '',
+          maxLength: 2000,
+          setValue: (next) => handleStudentInput(generatedContent.id, key, next)
+        });
+      });
+    }
+  }
+  if (generatedContent && generatedContent.id && generatedContent.type === 'math') {
+    const responses = studentResponses[generatedContent.id] || {};
+    const problems = Array.isArray(generatedContent.data) ? generatedContent.data : [];
+    problems.forEach((problem, index) => {
+      if (problem && problem.manipulativeResponse) return;
+      fields.push({
+        id: 'math-work-' + index,
+        label: 'Show your work for problem ' + (index + 1),
+        aliases: ['math response ' + (index + 1), 'problem ' + (index + 1), 'student work ' + (index + 1)],
+        value: responses[index] || '',
+        maxLength: 8000,
+        setValue: (next) => handleStudentInput(generatedContent.id, index, next)
+      });
+    });
+  }
+  if (generatedContent && generatedContent.id && generatedContent.type === 'dbq') {
+    const dbq = generatedContent.data || {};
+    const responses = studentResponses[generatedContent.id] || {};
+    const documents = Array.isArray(dbq.documents) ? dbq.documents : [];
+    const happ = responses._happNotes || {};
+    const corroboration = responses._corrobNotes || {};
+    const setDbqResponse = (key, next) => handleStudentInput(generatedContent.id, key, next);
+    fields.push({
+      id: 'dbq-synthesis-essay',
+      label: 'Synthesis essay',
+      aliases: ['DBQ essay', 'essay draft', 'synthesis response'],
+      value: responses._essayText || '',
+      maxLength: 20000,
+      setValue: (next) => setDbqResponse('_essayText', next)
+    });
+    if (Array.isArray(dbq.perspectives) && dbq.perspectives.length >= 2) {
+      fields.push({
+        id: 'dbq-perspective-comparison',
+        label: t('a11y.perspective_comparison') || 'Perspective comparison',
+        aliases: ['perspective response', 'competing perspectives'],
+        value: responses._perspectiveResponse || '',
+        maxLength: 8000,
+        setValue: (next) => setDbqResponse('_perspectiveResponse', next)
+      });
+    }
+    documents.forEach((document, documentIndex) => {
+      const documentId = String(document && document.id != null ? document.id : documentIndex + 1);
+      const documentName = 'Document ' + documentId;
+      [
+        ['historical', 'Historical Context'],
+        ['audience', 'Audience'],
+        ['purpose', 'Purpose'],
+        ['pointOfView', 'Point of View']
+      ].forEach(([key, name]) => {
+        fields.push({
+          id: 'dbq-happ-' + documentId + '-' + key,
+          label: name + ' analysis for ' + documentName,
+          aliases: [documentName + ' ' + name, name + ' for ' + documentName],
+          value: (happ[documentId] || {})[key] || '',
+          maxLength: 8000,
+          setValue: (next) => setDbqResponse('_happNotes', {
+            ...happ,
+            [documentId]: { ...(happ[documentId] || {}), [key]: next }
+          })
+        });
+      });
+      (Array.isArray(document && document.sourcingQuestions) ? document.sourcingQuestions : []).forEach((question, questionIndex) => {
+        const responseKey = 'doc-' + documentId + '-sourcing-' + questionIndex;
+        fields.push({
+          id: 'dbq-' + responseKey,
+          label: 'Sourcing question ' + (questionIndex + 1) + ' for ' + documentName,
+          aliases: [documentName + ' sourcing question ' + (questionIndex + 1), documentName + ' sourcing answer ' + (questionIndex + 1)],
+          value: responses[responseKey] || '',
+          maxLength: 8000,
+          setValue: (next) => setDbqResponse(responseKey, next)
+        });
+      });
+      (Array.isArray(document && document.analysisQuestions) ? document.analysisQuestions : []).forEach((question, questionIndex) => {
+        const responseKey = 'doc-' + documentId + '-analysis-' + questionIndex;
+        fields.push({
+          id: 'dbq-' + responseKey,
+          label: 'Analysis question ' + (questionIndex + 1) + ' for ' + documentName,
+          aliases: [documentName + ' analysis question ' + (questionIndex + 1), documentName + ' analysis answer ' + (questionIndex + 1)],
+          value: responses[responseKey] || '',
+          maxLength: 8000,
+          setValue: (next) => setDbqResponse(responseKey, next)
+        });
+      });
+      const reliabilityKey = '_reliability_' + documentId;
+      fields.push({
+        id: 'dbq-reliability-' + documentId,
+        label: 'Source reliability reasoning for ' + documentName,
+        aliases: [documentName + ' reliability reasoning', documentName + ' source reliability'],
+        value: (responses[reliabilityKey] || {}).reasoning || '',
+        maxLength: 8000,
+        setValue: (next) => setDbqResponse(reliabilityKey, {
+          ...(responses[reliabilityKey] || {}),
+          reasoning: next
+        })
+      });
+    });
+    const claims = Array.isArray(dbq.corroborationClaims) ? dbq.corroborationClaims : [];
+    if (claims.length) {
+      claims.forEach((claim, claimIndex) => {
+        fields.push({
+          id: 'dbq-corroboration-' + claimIndex,
+          label: 'Corroboration analysis for claim ' + (claimIndex + 1),
+          aliases: ['corroboration claim ' + (claimIndex + 1), 'claim ' + (claimIndex + 1) + ' analysis'],
+          value: corroboration[claimIndex] || '',
+          maxLength: 8000,
+          setValue: (next) => setDbqResponse('_corrobNotes', { ...corroboration, [claimIndex]: next })
+        });
+      });
+    } else {
+      documents.forEach((document, documentIndex) => {
+        const documentId = String(document && document.id != null ? document.id : documentIndex + 1);
+        [
+          ['claim', 'Key claim from Document '],
+          ['agree', 'Documents agreeing with Document '],
+          ['disagree', 'Documents disagreeing with Document ']
+        ].forEach(([kind, labelPrefix]) => {
+          const responseKey = 'corrob-' + kind + '-' + documentId;
+          fields.push({
+            id: 'dbq-' + responseKey,
+            label: labelPrefix + documentId,
+            aliases: ['Document ' + documentId + ' corroboration ' + kind],
+            value: responses[responseKey] || '',
+            maxLength: 8000,
+            setValue: (next) => setDbqResponse(responseKey, next)
+          });
+        });
+      });
+    }
+  }
+  if (generatedContent && generatedContent.id && generatedContent.type === 'note-taking') {
+    const noteData = generatedContent.data || {};
+    const template = noteData.templateType || 'cornell-notes';
+    const addNoteField = (id, label, aliases, value, setValue, maxLength = 8000) => fields.push({
+      id: 'notes-' + id,
+      label,
+      aliases: Array.isArray(aliases) ? aliases : [],
+      value: typeof value === 'string' ? value : '',
+      maxLength,
+      setValue
+    });
+    const setNoteValue = (key, next) => handleNoteUpdate(key, next);
+    const setListValue = (key, list, index, property, next, fallback) => {
+      const updated = list.slice();
+      while (updated.length <= index) updated.push({ ...(fallback || {}) });
+      updated[index] = { ...(updated[index] || {}), [property]: next };
+      setNoteValue(key, updated);
+    };
+    const addConnections = () => addNoteField(
+      'connections',
+      t('a11y.notes_connections') || 'Connections and memory hooks',
+      ['connections', 'memory hooks'],
+      noteData.connections || '',
+      (next) => setNoteValue('connections', next)
+    );
+    if (template === 'cornell-notes') {
+      const cues = Array.isArray(noteData.cues) ? noteData.cues : [];
+      const notes = Array.isArray(noteData.notes) ? noteData.notes : [];
+      const rowCount = Math.max(cues.length, notes.length, 1);
+      addNoteField('cornell-title', t('a11y.cornell_title') || 'Cornell notes title', ['lesson title', 'notes title'], noteData.title || '', (next) => setNoteValue('title', next), 2000);
+      Array.from({ length: rowCount }).forEach((unused, index) => {
+        addNoteField('cornell-cue-' + index, 'Cue ' + (index + 1), ['question cue ' + (index + 1)], (cues[index] || {}).text || '', (next) => setListValue('cues', cues, index, 'text', next, { text: '' }));
+        addNoteField('cornell-note-' + index, 'Notes for row ' + (index + 1), ['Cornell note ' + (index + 1), 'note row ' + (index + 1)], (notes[index] || {}).text || '', (next) => setListValue('notes', notes, index, 'text', next, { text: '' }));
+      });
+      addNoteField('cornell-summary', t('a11y.cornell_summary') || 'Cornell summary', ['summary'], noteData.summary || '', (next) => setNoteValue('summary', next));
+      addConnections();
+    } else if (template === 'lab-report') {
+      addNoteField('lab-title', t('a11y.lab_report_title') || 'Lab report title', ['experiment title'], noteData.title || '', (next) => setNoteValue('title', next), 2000);
+      addNoteField('lab-question', t('a11y.research_question') || 'Research question', ['lab question'], noteData.question || '', (next) => setNoteValue('question', next));
+      addNoteField('lab-hypothesis', t('a11y.hypothesis') || 'Hypothesis', ['lab hypothesis'], noteData.hypothesis || '', (next) => setNoteValue('hypothesis', next));
+      const materials = Array.isArray(noteData.materials) ? noteData.materials : [];
+      materials.forEach((material, index) => addNoteField('lab-material-' + index, 'Material ' + (index + 1), ['lab material ' + (index + 1)], (material || {}).text || '', (next) => setListValue('materials', materials, index, 'text', next, { text: '' }), 2000));
+      const procedure = Array.isArray(noteData.procedure) ? noteData.procedure : [];
+      procedure.forEach((step, index) => addNoteField('lab-procedure-' + index, 'Procedure step ' + (index + 1), ['lab step ' + (index + 1)], (step || {}).text || '', (next) => setListValue('procedure', procedure, index, 'text', next, { text: '' })));
+      addNoteField('lab-observations', t('a11y.data_observations') || 'Data and observations', ['observations', 'lab data'], noteData.data || '', (next) => setNoteValue('data', next));
+      addNoteField('lab-analysis', 'Analysis (Claim, Evidence, Reasoning)', ['CER analysis', 'lab analysis'], noteData.analysis || '', (next) => setNoteValue('analysis', next));
+      addNoteField('lab-conclusion', 'Conclusion', ['lab conclusion'], noteData.conclusion || '', (next) => setNoteValue('conclusion', next));
+      addConnections();
+    } else if (template === 'reading-response') {
+      const connection = noteData.connection || { type: 'text-to-self', text: '' };
+      addNoteField('reading-title', 'Reading title', ['title'], noteData.title || '', (next) => setNoteValue('title', next), 2000);
+      addNoteField('reading-author', 'Author', ['reading author'], noteData.author || '', (next) => setNoteValue('author', next), 2000);
+      addNoteField('reading-pages', 'Pages or chapter', ['page range', 'chapter'], noteData.pageRange || '', (next) => setNoteValue('pageRange', next), 2000);
+      addNoteField('reading-favorite-line', 'Favorite line or passage', ['favorite passage', 'quote'], noteData.favoriteLine || '', (next) => setNoteValue('favoriteLine', next));
+      addNoteField('reading-thinking', 'What this made me think about', ['reading reflection', 'my thinking'], noteData.thinkings || '', (next) => setNoteValue('thinkings', next));
+      addNoteField('reading-connection', 'Connection text', ['reading connection'], connection.text || '', (next) => setNoteValue('connection', { ...connection, text: next }));
+      addNoteField('reading-question', 'Question', ['reading question', 'one question I have'], noteData.question || '', (next) => setNoteValue('question', next));
+    } else if (template === 'double-entry') {
+      const entries = Array.isArray(noteData.entries) ? noteData.entries : [];
+      const rowCount = Math.max(entries.length, 1);
+      addNoteField('double-title', 'Reading title', ['journal title'], noteData.title || '', (next) => setNoteValue('title', next), 2000);
+      addNoteField('double-author', 'Author', ['reading author'], noteData.author || '', (next) => setNoteValue('author', next), 2000);
+      addNoteField('double-pages', 'Pages or chapter', ['page range', 'chapter'], noteData.pageRange || '', (next) => setNoteValue('pageRange', next), 2000);
+      Array.from({ length: rowCount }).forEach((unused, index) => {
+        addNoteField('double-quote-' + index, 'Quote ' + (index + 1), ['passage ' + (index + 1)], (entries[index] || {}).quote || '', (next) => setListValue('entries', entries, index, 'quote', next, { quote: '', response: '' }));
+        addNoteField('double-response-' + index, 'Response ' + (index + 1), ['journal response ' + (index + 1)], (entries[index] || {}).response || '', (next) => setListValue('entries', entries, index, 'response', next, { quote: '', response: '' }));
+      });
+    } else if (template === 'guided-notes') {
+      const blanks = Array.isArray(noteData.blanks) ? noteData.blanks : [];
+      addNoteField('guided-title', 'Lesson title', ['guided notes title'], noteData.title || '', (next) => setNoteValue('title', next), 2000);
+      blanks.forEach((blank, index) => addNoteField('guided-blank-' + index, 'Blank ' + (index + 1), ['guided note blank ' + (index + 1)], (blank || {}).studentAnswer || '', (next) => setListValue('blanks', blanks, index, 'studentAnswer', next, {}), 2000));
+      addNoteField('guided-own-notes', 'My own notes', ['extra notes', 'guided notes response'], noteData.notesExtra || '', (next) => setNoteValue('notesExtra', next));
+    } else if (template === 'q-and-a') {
+      const pairs = Array.isArray(noteData.pairs) ? noteData.pairs : [];
+      const rowCount = Math.max(pairs.length, 1);
+      addNoteField('qanda-title', 'Study set title', ['study notes title'], noteData.title || '', (next) => setNoteValue('title', next), 2000);
+      Array.from({ length: rowCount }).forEach((unused, index) => {
+        addNoteField('qanda-question-' + index, 'Question ' + (index + 1), ['study question ' + (index + 1)], (pairs[index] || {}).question || '', (next) => setListValue('pairs', pairs, index, 'question', next, { question: '', answer: '' }));
+        addNoteField('qanda-answer-' + index, 'Answer ' + (index + 1), ['study answer ' + (index + 1)], (pairs[index] || {}).answer || '', (next) => setListValue('pairs', pairs, index, 'answer', next, { question: '', answer: '' }));
+      });
+      addConnections();
+    }
+  }
+  return fields;
+}
+
 function normalizeVoiceEditableFields(rawFields) {
   const list = Array.isArray(rawFields) ? rawFields : [];
   const ids = new Set();

@@ -58,7 +58,7 @@ expect(source).toContain('{!pending && <button type="button" onClick={() => dism
     expect(source).toContain("aria-label={cancelLabel}");
     expect(source).toContain("const retryLabel = (t('cmd.retry', 'Retry') + ' ' + commandLabel).trim()");
     expect(source).toContain("aria-label={retryLabel}");
-    expect(source).toContain('>Cancel</button>');
+    expect(source).toContain(">{t('cmd.cancel', 'Cancel')}</button>");
 expect(source).toContain("const reason = cmd.unavailableReason || t('palette.unavailable', 'This command is not available in the current context.')");
     expect(source).toContain("announce(reason, 'info')");
   });

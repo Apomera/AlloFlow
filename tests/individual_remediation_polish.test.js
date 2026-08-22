@@ -235,7 +235,7 @@ describe('M23 — nested dialogs trap Tab and peel Escape one layer at a time', 
     }
   });
   it('each dialog owns its Escape with stopPropagation (no fall-through to the close-audit confirm)', () => {
-    expect(view).toContain("if (e.key === 'Escape') { e.stopPropagation(); setPdfPreviewOpen(false); }");
+    expect(view).toContain("if (e.key === 'Escape') { e.stopPropagation(); _cancelRemediationOperationPrefix('preview-'); setPdfPreviewOpen(false); }");
     expect(view).toContain("if (e.key === 'Escape') { e.stopPropagation(); setPdfFieldCandidates(null); }");
     expect(view).toContain("if (e.key === 'Escape') { e.stopPropagation(); setFillableCandidates(null); }");
     expect(view).toContain("if (e.key === 'Escape') { e.stopPropagation(); setShowPlainCompare(false); }");

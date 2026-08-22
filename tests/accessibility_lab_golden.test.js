@@ -314,11 +314,12 @@ describe('artifact accessibility scorecards', () => {
 describe('authentic workspace host contract', () => {
   it('uses the canonical restore handler without pushing accessibility previews to live sessions', () => {
     const hostSource = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8');
-    const handlerStart = hostSource.indexOf('const handleRestoreView = (item, options = {}) => {');
-    const handlerEnd = hostSource.indexOf('if (!pendingQrAssignmentResource || isTeacherMode) return;', handlerStart);
+    const ownerSource = readFileSync(resolve(process.cwd(), 'misc_handlers_source.jsx'), 'utf8');
+    const handlerStart = ownerSource.indexOf('function handleRestoreView(item, options = {}, deps = {}) {');
+    const handlerEnd = ownerSource.indexOf('const detectClimaxArchetype', handlerStart);
     expect(handlerStart).toBeGreaterThan(-1);
     expect(handlerEnd).toBeGreaterThan(handlerStart);
-    const handler = hostSource.slice(handlerStart, handlerEnd);
+    const handler = ownerSource.slice(handlerStart, handlerEnd);
     // Assert the CONTRACT, not the head-count. The rule is that no live-follow
     // call inside this handler may fire when suppressLiveFollow is set; the
     // number of such calls is an implementation detail. Pinning it to 3 broke
@@ -328,6 +329,7 @@ describe('authentic workspace host contract', () => {
     const liveFollowCalls = handler.match(/[^\n]*_alloFollowResourceLive\s*\(/g) || [];
     expect(liveFollowCalls.length).toBeGreaterThanOrEqual(3);
     expect(liveFollowCalls.filter((call) => !/!options\.suppressLiveFollow/.test(call))).toEqual([]);
+    expect(hostSource).toContain('moduleApi.handleRestoreView(item, options, _alloMiscHandlersDeps())');
     expect(hostSource).toContain('onOpenAuthenticView: (item, reviewContext = {}) => {');
     expect(hostSource).toContain('handleRestoreView(item, { suppressLiveFollow: true })');
     expect(hostSource).toContain("const ACCESSIBILITY_REVIEW_SESSION_KEY = 'alloflow_accessibility_review_session_v1'");

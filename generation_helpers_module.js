@@ -3688,6 +3688,134 @@ const _fullPackRunNeedsMatrixUpgrade = (run) => {
   return _fullPackRecordNeedsMatrixUpgrade(run);
 };
 
+// Full Pack diagnostics are generation-owned and deliberately fail closed if
+// the host's privacy sanitizers are unavailable. Raw prompts, directives,
+// roster identifiers, provider errors, and credentials must never fall
+// through into an exported report.
+const buildSanitizedFullPackDiagnostic = (fullPackRun, deps = {}) => {
+  if (!fullPackRun) return null;
+  const {
+    diagnosticReason,
+    diagnosticResourceType,
+    diagnosticBoundedInt,
+    diagnosticTimestamp,
+    diagnosticRunId,
+    sanitizeFullPackPreflight,
+    metricsSnapshot,
+  } = deps;
+  if ([
+    diagnosticReason,
+    diagnosticResourceType,
+    diagnosticBoundedInt,
+    diagnosticTimestamp,
+    diagnosticRunId,
+    sanitizeFullPackPreflight,
+  ].some(helper => typeof helper !== 'function')) return null;
+
+  const safeGradeBand = value => {
+    const grade = String(value || '').toLowerCase();
+    if (!grade) return null;
+    if (/pre[ -]?k|preschool/.test(grade)) return 'pre-k';
+    if (/kindergarten/.test(grade) || grade === 'k') return 'kindergarten';
+    const match = grade.match(/\b(\d{1,2})(?:st|nd|rd|th)?\b/);
+    const numeric = match ? Number(match[1]) : NaN;
+    if (Number.isInteger(numeric) && numeric >= 1 && numeric <= 12) return 'grade-' + numeric;
+    if (/college|university|adult|postsecondary/.test(grade)) return 'postsecondary';
+    return 'custom';
+  };
+  const safeDok = value => {
+    const match = String(value || '').match(/[1-4]/);
+    return match ? 'dok-' + match[0] : (value ? 'custom' : null);
+  };
+  const sanitizeSettings = settings => {
+    const source = settings && typeof settings === 'object' ? settings : {};
+    const language = String(source.leveledTextLanguage || '');
+    const resourceCountValue = String(source.resourceCount || '');
+    return {
+      gradeBand: safeGradeBand(source.gradeLevel),
+      primaryLanguageConfigured: Boolean(language),
+      primaryLanguageIsEnglish: /^english$/i.test(language),
+      dokLevel: safeDok(source.dokLevel),
+      selectedLanguageCount: Array.isArray(source.selectedLanguages) ? Math.min(200, source.selectedLanguages.length) : 0,
+      targetStandardCount: Array.isArray(source.targetStandards) ? Math.min(200, source.targetStandards.length) : 0,
+      studentInterestCount: Array.isArray(source.studentInterests) ? Math.min(200, source.studentInterests.length) : (source.studentInterests ? 1 : 0),
+      useEmojis: source.useEmojis === true,
+      textFormatConfigured: Boolean(source.textFormat),
+      differentiationRange: ['None', '1', '2', 'Both', 'Custom'].includes(source.differentiationRange) ? source.differentiationRange : 'unknown',
+      differentiationTypes: Array.isArray(source.differentiationTypes)
+        ? source.differentiationTypes.slice(0, 30).map(diagnosticResourceType)
+        : [],
+      differentiationCustomGradeCount: Array.isArray(source.differentiationCustomGrades) ? Math.min(30, source.differentiationCustomGrades.length) : 0,
+      packSize: /^auto$/i.test(resourceCountValue)
+        ? 'auto'
+        : (diagnosticBoundedInt(resourceCountValue, 1000) || null),
+      isAutoConfigEnabled: source.isAutoConfigEnabled !== false,
+      targetMode: source.fullPackTargetGroup === 'all' ? 'all-groups' : 'current-settings',
+    };
+  };
+  const resourceStatuses = ['planned', 'running', 'retrying', 'landed', 'failed', 'interrupted', 'stopped', 'skipped'];
+  const runStatuses = ['planning', 'ready', 'running', 'retrying', 'completed', 'partial', 'failed', 'stopped', 'interrupted'];
+  const sanitizeResource = resource => {
+    if (!resource || typeof resource !== 'object') return { status: 'unknown' };
+    const safeReason = resource.reason ? diagnosticReason(resource.reason) : null;
+    return {
+      type: diagnosticResourceType(resource.type),
+      index: diagnosticBoundedInt(resource.index, 100000),
+      status: resourceStatuses.includes(resource.status) ? resource.status : 'unknown',
+      failureCode: safeReason ? safeReason.code : null,
+      reason: safeReason ? safeReason.summary : null,
+      failureCategory: ['transient', 'configuration', 'unknown'].includes(resource.failureCategory) ? resource.failureCategory : null,
+      retryable: resource.retryable !== false,
+      suggestedDelayMs: diagnosticBoundedInt(resource.suggestedDelayMs, 24 * 60 * 60 * 1000),
+      elapsedMs: diagnosticBoundedInt(resource.elapsedMs, 24 * 60 * 60 * 1000),
+      attempts: diagnosticBoundedInt(resource.attempts, 100),
+      startedAt: diagnosticTimestamp(resource.startedAt),
+      finishedAt: diagnosticTimestamp(resource.finishedAt),
+    };
+  };
+  const sanitizeResources = resources => Object.fromEntries(
+    Object.values(resources || {}).slice(0, 1000).map((resource, index) => ['resource-' + (index + 1), sanitizeResource(resource)])
+  );
+  const sanitizeGroup = (group, index) => {
+    if (!group) return null;
+    const safeReason = group.reason ? diagnosticReason(group.reason) : null;
+    return {
+      group: index + 1,
+      status: runStatuses.includes(group.status) ? group.status : 'unknown',
+      failureCode: safeReason ? safeReason.code : null,
+      reason: safeReason ? safeReason.summary : null,
+      elapsedMs: diagnosticBoundedInt(group.elapsedMs, 24 * 60 * 60 * 1000),
+      settingsSnapshot: sanitizeSettings(group.settingsSnapshot),
+      preflight: sanitizeFullPackPreflight(group.preflight),
+      resources: sanitizeResources(group.resources),
+    };
+  };
+  const rootReason = fullPackRun.reason ? diagnosticReason(fullPackRun.reason) : null;
+  return {
+    reportVersion: 2,
+    generatorCapability: FULL_PACK_CAPABILITY_FINGERPRINT,
+    exportedAt: new Date().toISOString(),
+    runId: diagnosticRunId(fullPackRun.runId, 'full-pack'),
+    wasRetry: Boolean(fullPackRun.retryOf),
+    usedApprovedPlan: Boolean(fullPackRun.approvedFrom),
+    status: runStatuses.includes(fullPackRun.status) ? fullPackRun.status : 'unknown',
+    failureCode: rootReason ? rootReason.code : null,
+    reason: rootReason ? rootReason.summary : null,
+    startedAt: diagnosticTimestamp(fullPackRun.startedAt),
+    finishedAt: diagnosticTimestamp(fullPackRun.finishedAt),
+    elapsedMs: diagnosticBoundedInt(fullPackRun.elapsedMs, 24 * 60 * 60 * 1000),
+    failureCount: diagnosticBoundedInt(fullPackRun.failureCount, 100000),
+    persistenceWarning: fullPackRun.persistenceWarning ? 'Compact persistence fallback was used.' : null,
+    settingsSnapshot: sanitizeSettings(fullPackRun.settingsSnapshot),
+    preflight: sanitizeFullPackPreflight(fullPackRun.preflight),
+    resources: sanitizeResources(fullPackRun.resources),
+    groups: Object.fromEntries(
+      Object.values(fullPackRun.groups || {}).slice(0, 100).map((group, index) => ['group-' + (index + 1), sanitizeGroup(group, index)])
+    ),
+    observability: typeof metricsSnapshot === 'function' ? metricsSnapshot() : {},
+  };
+};
+
 const handleApproveFullPack = async (priorRun, deps) => {
   let run = priorRun && typeof priorRun === 'object' ? priorRun : null;
   if (!run || run.status !== 'ready') {
@@ -3801,6 +3929,7 @@ window.AlloModules.GenerationHelpers = {
   handleApproveFullPack,
   handleRetryFailedFullPack,
   handleStopFullPack,
+  buildSanitizedFullPackDiagnostic,
   getFullPackGenerationConfigSnapshot: deps => _cloneFullPackValue(_captureFullPackGenerationConfig(deps || {})),
   estimateFullPackRowProviderWork: (row, settings) => _cloneFullPackValue(_estimateFullPackRowProviderWork(row, settings || {})),
   estimateFullPackCapacity: _estimateFullPackCapacity,

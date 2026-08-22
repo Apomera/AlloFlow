@@ -44,23 +44,75 @@ describe('host: result survives close and is re-openable in-session', () => {
   it('the floating "Return to remediation" pill is gated on result-exists-but-modal-closed (and never mid-run)', () => {
     // includes the run-state terms (defense-in-depth: the pill is structurally incapable of
     // appearing while any run is in flight, so an overlooked close door can't surface a mid-run pill).
-    // L9/D6 (2026-08-16): + !pdfReturnPillDismissed. The pill sat at bottom-4 right-4
-    // z-[1000], directly on top of the student-tools launcher (bottom-24 md:bottom-8
-    // right-6 z-[180]), so it covered a real control. It is dismissible now. Dismissal
-    // is only safe because the cached remediation is ALSO reachable from the Storage
-    // and recovery manager, and the flag resets whenever a newer result lands.
+    // The pill is dismissible, but never while a remediation run is active. Its X is
+    // first in DOM/visual order and the group moves inward on wider Canvas viewports so
+    // Gemini's lower-right floating toolbar cannot cover the only dismiss control.
     expect(host).toContain('{(pdfFixResult || lastPdfAuditResultRef.current) && !pdfAuditResult && !pdfAuditLoading && !pdfFixLoading && !pdfAutoContinueRunning && !pdfReturnPillDismissed && (');
-    expect(host).toContain('const [pdfReturnPillDismissed, setPdfReturnPillDismissed] = useState(false);');
-    expect(host).toContain('useEffect(() => { if (pdfFixResult) setPdfReturnPillDismissed(false); }, [pdfFixResult]);');
+    expect(host).toContain("ALLO_PDF_REMEDIATION_CACHE.isLatestDismissed(localStorage)");
+    expect(host).toContain('right-3 sm:right-24');
+    const pillStart = host.indexOf('{(pdfFixResult || lastPdfAuditResultRef.current) && !pdfAuditResult && !pdfAuditLoading');
+    const pill = host.slice(pillStart, pillStart + 3600);
+    expect(pill.indexOf('onClick={dismissCachedPdfRemediationShortcut}')).toBeGreaterThan(-1);
+    expect(pill.indexOf('onClick={dismissCachedPdfRemediationShortcut}')).toBeLessThan(pill.indexOf('onClick={() => openCachedPdfRemediation(false)}'));
     // The second door: dismissing must not be able to lose the work.
     expect(host).toContain("t('storage.remediation_open')");
-    expect(host).toContain('aria-labelledby="storage-remediation-title"');
-    // pill re-mounts via the stash, with a proven-renderable fallback shape (mirrors the
+    expect(host).toContain('aria-labelledby="storage-local-documents-title"');
+    // Both doors use one re-entry function, with a proven-renderable fallback shape (mirrors the
     // Load-Project pdfAuditResult shape) for the post-reload case where the ref is empty.
-    expect(host).toContain('const _restore = lastPdfAuditResultRef.current || {');
-    expect(host).toMatch(/const _restore = lastPdfAuditResultRef\.current \|\|[\s\S]{0,400}setPdfAuditResult\(_restore\)/);
+    expect(host).toContain('const restoredAudit = lastPdfAuditResultRef.current || {');
+    expect(host).toMatch(/const restoredAudit = lastPdfAuditResultRef\.current \|\|[\s\S]{0,500}setPdfAuditResult\(restoredAudit\)/);
     // the fallback carries the fields the results view reads
-    expect(host).toMatch(/const _restore = lastPdfAuditResultRef\.current \|\|[\s\S]{0,400}hasSearchableText: true/);
+    expect(host).toMatch(/const restoredAudit = lastPdfAuditResultRef\.current \|\|[\s\S]{0,500}hasSearchableText: true/);
+  });
+
+  it('dismissal preserves the exact cache, while Managed Local Storage owns confirmed deletion', () => {
+    const dismissStart = host.indexOf('const dismissCachedPdfRemediationShortcut = () => {');
+    const dismissBody = host.slice(dismissStart, host.indexOf('\n  };', dismissStart));
+    expect(dismissBody).toContain('ALLO_PDF_REMEDIATION_CACHE.dismissLatest(localStorage)');
+    expect(dismissBody).not.toContain('ALLO_PDF_REMEDIATION_CACHE.clear(localStorage)');
+    expect(dismissBody).toContain('More information → Manage Local Storage');
+    // Reload restoration must keep the original key; otherwise the persistence effect
+    // would create an "unknown" duplicate and wrongly reveal the just-hidden shortcut.
+    expect(host).toContain('restored._cacheStorageKey = latestKey;');
+    expect(host).toContain('const storageKey = restoredStorageKey || `allo.lastPdfAudit__${fname}__${fsize}__${fingerprint}`;');
+
+    expect(host).toContain("t('storage.remediation_delete') || 'Delete'");
+    expect(host).toContain("t('storage.remediation_delete_warning')");
+    expect(host).toContain('onClick={deleteCachedPdfRemediation}');
+    expect(host).toContain('pdfRemediationCacheEntries.map(entry => {');
+    expect(host).toContain('restoreCachedPdfRemediation(entry.storageKey, true)');
+    expect(host).toContain('deleteCachedPdfRemediationEntry(entry.storageKey)');
+    const deleteStart = host.indexOf('const deleteCachedPdfRemediation = () => {');
+    const deleteBody = host.slice(deleteStart, host.indexOf('\n  };', deleteStart));
+    expect(deleteBody).toContain('ALLO_PDF_REMEDIATION_CACHE.clear(localStorage)');
+    expect(deleteBody).toContain('startNewPdfAudit()');
+    expect(deleteBody).toContain('refreshStorageManagerInventory()');
+  });
+
+  it('surfaces normal Document Hub drafts from workspace recovery and opens them directly', () => {
+    // History-backed Document Hub edits are already captured in builderDraft; the local
+    // documents view now identifies those snapshots and restores the draft before opening it.
+    expect(host).toContain("if (typeof window !== 'undefined' && window.__alloBuilderEditedPack) builderDraft = await _getBuilderDraftForProject();");
+    expect(host).toContain('builderDraft,');
+    expect(host).toContain('await _restoreBuilderDraftFromProject(workspace.builderDraft || null, restoredHistory);');
+    expect(host).toContain('const openCanvasDocumentHubDraft = async (snapshot) => {');
+    expect(host).toMatch(/const openCanvasDocumentHubDraft = async \(snapshot\) => \{[\s\S]{0,500}restoreCanvasWorkspaceSnapshot\(snapshot\)[\s\S]{0,300}openExportPreview\('print'\)/);
+    expect(host).toContain('Document Hub draft</span>');
+    expect(host).toContain('onClick={() => void openCanvasDocumentHubDraft(snapshot)}');
+    expect(host).toContain("Document Hub drafts are stored with their saved workspaces below.");
+  });
+
+  it('stores and restores the exact audit context for each remediation generation', () => {
+    // A score-only fallback keeps very old caches usable, but current caches retain the
+    // complete audit object so reopening a different document cannot show another run's details.
+    expect(host).toContain("auditResult: (pdfAuditResult && !pdfAuditResult._choosing) ? pdfAuditResult : (lastPdfAuditResultRef.current || null)");
+    expect(host).toContain('}, [pdfFixResult, pendingPdfFile, pdfAuditResult]);');
+    const restoreStart = host.indexOf('const restoreCachedPdfRemediation = async (storageKey, closeStorageManager = true) => {');
+    const restoreBody = host.slice(restoreStart, host.indexOf('\n  };', restoreStart));
+    expect(restoreStart).toBeGreaterThan(-1);
+    expect(restoreBody).toContain('const restoredAudit = entry.auditResult || {');
+    expect(restoreBody).toContain('lastPdfAuditResultRef.current = entry.auditResult || null;');
+    expect(restoreBody).toContain('setPdfAuditResult(restoredAudit);');
   });
 
   it('starting a NEW audit drops the stash (no stale re-entry for a cleared result)', () => {
@@ -70,7 +122,8 @@ describe('host: result survives close and is re-openable in-session', () => {
     const startNewBody = host.slice(startNewStart, host.indexOf('\n  };', startNewStart));
     expect(invalidateStart).toBeGreaterThan(-1);
     expect(invalidateBody).toMatch(/const documentIntakeEpoch = \+\+pdfDocumentSelectionEpochRef\.current;[\s\S]*invalidatePdfAuditRun\(\);/);
-    expect(startNewBody).toMatch(/const documentIntakeEpoch = invalidatePdfDocumentOperations\(\);\s*lastPdfAuditResultRef\.current = null;/);
+    expect(startNewBody).toMatch(/const documentIntakeEpoch = invalidatePdfDocumentOperations\(\);[\s\S]{0,400}lastPdfAuditResultRef\.current = null;/);
+    expect(startNewBody).toContain('ALLO_PDF_REMEDIATION_CACHE.clearDismissal(localStorage)');
   });
 });
 

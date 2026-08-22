@@ -2,7 +2,7 @@
 'use strict';
 if (window.AlloModules && window.AlloModules.MiscHandlersModule) { console.log('[CDN] MiscHandlersModule already loaded, skipping'); return; }
 // misc_handlers_source.jsx - Phase H.3 of CDN modularization.
-// handleFileUpload + handleLoadProject + detectClimaxArchetype
+// handleFileUpload + handleLoadProject + handleRestoreView + detectClimaxArchetype
 // extracted from AlloFlowANTI.txt 2026-04-25.
 
 const _MISC_MIB = 1024 * 1024;
@@ -1160,6 +1160,256 @@ const handleLoadProject = (e, deps) => {
     return projectLoadOwner;
 };
 
+function handleRestoreView(item, options = {}, deps = {}) {
+  const {
+    _alloBuildLocalAacPayload,
+    _alloEvaluateObjectives,
+    _alloFollowResourceLive,
+    _alloNormalizeDirectionsData,
+    _alloObjectiveSignals,
+    _alloRequestStemPlugin,
+    _softGateNudgedRef,
+    addToast,
+    debugLog,
+    directionsProgress,
+    history,
+    isTeacherMode,
+    isWide,
+    setActiveSidebarTab,
+    setActiveView,
+    setAdventureState,
+    setCurrentWordSoundsWord,
+    setDirectionsProgress,
+    setExpandedTools,
+    setGeneratedContent,
+    setInputText,
+    setIsLinguaPracticeOpen,
+    setIsMapLocked,
+    setIsProbeMode,
+    setIsReadingLibraryOpen,
+    setIsWordSoundsMode,
+    setLabToolData,
+    setPendingReadingBookSlug,
+    setPendingReadingSet,
+    setProbeActivity,
+    setProbeTargetStudent,
+    setShowLitLab,
+    setShowPoetTree,
+    setShowStemLab,
+    setShowStoryForge,
+    setSourceTopic,
+    setStemLabTool,
+    setVideoRefPlayerItem,
+    setVisualSupportsPayload,
+    setWordSoundsActivity,
+    setWordSoundsAutoReview,
+    setWorkspacePane,
+    setWsActivitySequence,
+    setWsPreloadedWords,
+    t,
+    visualSupportsDismissedIdsRef,
+    visualSupportsLastTimestampRef,
+  } = deps || {};
+    // True route prewarm: request the presentation module before the state
+    // swap renders its recoverable in-place shell. Directions is deliberately
+    // not part of CORE_BOOT_MODULES, so unrelated cold starts stay lean.
+    if (item && item.type === 'directions') {
+        try { if (window.__alloLazyDirectionsResult) window.__alloLazyDirectionsResult(); } catch (_) {}
+    }
+    if (item && item.type === 'aac-board') {
+        const localAacPayload = _alloBuildLocalAacPayload(item.data, item.id, Date.now());
+        if (!localAacPayload) {
+            addToast('This AAC Board could not be opened because its portable data is invalid.', 'error');
+            return;
+        }
+        visualSupportsDismissedIdsRef.current.delete(localAacPayload.payloadId);
+        visualSupportsLastTimestampRef.current = Math.max(visualSupportsLastTimestampRef.current, localAacPayload.timestamp);
+        setVisualSupportsPayload(localAacPayload);
+        if (!options.suppressLiveFollow) _alloFollowResourceLive(item);
+        return;
+    }
+    // Reading Library book pinned to the lesson (2026-07-05): open the reader
+    // on the saved book. Surface-opener — early return, no activeView swap.
+    // Reading sets are metadata-only ordered resource lists. Restore opens
+    // the first title in the shared reader while retaining the complete set
+    // in lesson history for teachers to export or reopen later.
+    if (item && item.type === 'readingSet' && item.data && Array.isArray(item.data.books) && item.data.books.length) {
+        setPendingReadingBookSlug(null);
+        setPendingReadingSet(item.data);
+        setIsReadingLibraryOpen(true);
+        if (!options.suppressLiveFollow) _alloFollowResourceLive(item);
+        return;
+    }
+    if (item && item.type === 'readingBook' && item.data && item.data.slug) {
+        setPendingReadingBookSlug(item.data.slug);
+        setIsReadingLibraryOpen(true);
+        if (!options.suppressLiveFollow) _alloFollowResourceLive(item);
+        return;
+    }
+    // Phase 2 — DA-generated math manipulative resource. Open the STEAM Lab to
+    // the right tool with the preset slotted into labToolData. We ALSO set
+    // generatedContent so the floating "Return to Dynamic Assessment" pill
+    // (which checks generatedContent.fromDA) keeps working from inside StemLab.
+    if (item && item.type === 'manipulative-resource' && item.toolId) {
+        const presetKey = '_' + item.toolId; // _numberline, _fractions, _areamodel
+        const incomingPreset = (item.data && item.data.preset) || {};
+        setLabToolData(prev => Object.assign({}, prev, {
+            [presetKey]: Object.assign({}, (prev && prev[presetKey]) || {}, incomingPreset)
+        }));
+        _alloRequestStemPlugin(item.toolId);
+        setStemLabTool(item.toolId);
+        setShowStemLab(true);
+        setGeneratedContent({ ...item, type: item.type, data: item.data, id: item.id });
+        // Teacher-mode session push so DA-generated manipulatives appear on student devices.
+        if (!options.suppressLiveFollow) _alloFollowResourceLive(item);
+        return; // do NOT fall through to the default activeView swap
+    }
+    if (item && item.type === 'video-ref') {
+        // No activeView renderer exists for this type — open the player
+        // overlay instead of falling through to the default swap.
+        try { if (window.__alloLazyVideoRefPlayer) window.__alloLazyVideoRefPlayer(); } catch (_) {}
+        setVideoRefPlayerItem(item);
+        return;
+    }
+    if (item && item.type === 'video-transcript') {
+        const transcript = String(item.text || item.content || item.data?.transcript || '').trim();
+        if (transcript) setInputText(transcript);
+        setSourceTopic(String(item.data?.title || item.title || 'Video transcript').replace(/\s+transcript$/i, '').slice(0, 120));
+        setGeneratedContent({ ...item, type: item.type, data: item.data, id: item.id });
+        setActiveSidebarTab('create');
+        if (!isWide) setWorkspacePane('create');
+        setExpandedTools(prev => prev.includes('source-input') ? prev : ['source-input', ...prev]);
+        setActiveView('input');
+        addToast('Video transcript loaded into Source. Use the existing quiz and support tools from there.', 'success');
+        return;
+    }
+    // Quest map: remember which pack resources this device has OPENED (the map's nodes light
+    // up as students travel the web). Reserved '_visited' key in the progress store — NOT a
+    // per-directions record. Device-local like everything else here.
+    if (!isTeacherMode && item && item.id) {
+        setDirectionsProgress(prev => {
+            const vis = (prev._visited && typeof prev._visited === 'object') ? prev._visited : {};
+            if (vis[item.id]) return prev;
+            return { ...prev, _visited: { ...vis, [item.id]: true } };
+        });
+    }
+    // Phase 2 SOFT gate: a once-per-resource friendly tip when the teacher asked students to
+    // finish goals first. Purely informational — the open proceeds unconditionally below
+    // (hard gates are Phase 3, opt-in, with a recorded escape hatch).
+    if (!isTeacherMode && item && item.id && item.type !== 'directions') {
+        try {
+            const _sgDir = (Array.isArray(history) ? history : []).find(h => h && h.type === 'directions' && _alloNormalizeDirectionsData(h.data).softGate);
+            if (_sgDir && !_softGateNudgedRef.current.has(item.id)) {
+                const _sgNorm = _alloNormalizeDirectionsData(_sgDir.data);
+                const _sgEval = _alloEvaluateObjectives(_sgNorm.objectives, _alloObjectiveSignals, directionsProgress[_sgDir.id] || {});
+                const _sgDone = _sgEval.filter(o => o.done).length;
+                if (_sgEval.length && _sgDone < _sgEval.length) {
+                    _softGateNudgedRef.current.add(item.id);
+                    addToast(t('directions.soft_gate_nudge', { done: _sgDone, total: _sgEval.length }) || ('💡 Tip from your teacher: finish your goals first (' + _sgDone + '/' + _sgEval.length + ' done). You can keep going!'), 'info');
+                }
+            }
+        } catch (_) {}
+    }
+    if (!isWide) {
+        setWorkspacePane('preview');
+        const focusPreview = () => {
+            const previewPane = document.getElementById('workspace-preview-pane');
+            if (previewPane?.focus) previewPane.focus({ preventScroll: true });
+        };
+        if (typeof window !== 'undefined' && window.requestAnimationFrame) {
+            window.requestAnimationFrame(() => window.requestAnimationFrame(focusPreview));
+        } else setTimeout(focusPreview, 0);
+    }
+    setGeneratedContent({ ...item, type: item.type, data: item.data, id: item.id, lessonPlanConfig: item.lessonPlanConfig || null, lessonPlanSequence: item.lessonPlanSequence || [] });
+    setActiveView(item.type === 'word-sounds' ? 'word-sounds-generator' : item.type);
+    setIsMapLocked(false);
+    if (item.type === 'word-sounds') {
+        // Saved/shared probe resources are anonymous by design. A local
+        // Assessment Center selection from an earlier run must not receive
+        // this result merely because the resource was reopened.
+        if (item.isProbeMode) setProbeTargetStudent(null);
+        if (item.wsPreloadedWords && Array.isArray(item.wsPreloadedWords) && item.wsPreloadedWords.length > 0) {
+            debugLog("📥 Restoring preloaded words from saved wsPreloadedWords:", item.wsPreloadedWords.length);
+            // ttsReady means "a portable clip is in _ttsAssets", and it is
+            // not safe to take a saved file's word for it: the player used to
+            // write the same field to mean "audio played a moment ago", so
+            // packs exist that claim five ready words while holding clips for
+            // none of them. Recompute it from what the pack actually carries.
+            // That repairs those files on open instead of carrying the claim
+            // forward, and it is cheap — the asset map is already in memory.
+            const _portableKeys = new Set();
+            item.wsPreloadedWords.forEach(w => {
+                if (w && w._ttsAssets && typeof w._ttsAssets === 'object') {
+                    Object.keys(w._ttsAssets).forEach(k => {
+                        if (w._ttsAssets[k]) _portableKeys.add(String(k).trim().toLowerCase().replace(/\s+/g, ' '));
+                    });
+                }
+            });
+            const wordsWithFreshTtsFlags = item.wsPreloadedWords.map(w => ({
+                ...w,
+                ttsReady: _portableKeys.has(String((w && (w.targetWord || w.word || w.term)) || '').trim().toLowerCase().replace(/\s+/g, ' ')),
+                _runtimeAudioReady: false,
+                _audioRequested: false
+            }));
+            setWsPreloadedWords(wordsWithFreshTtsFlags);
+        } else if (item.data && Array.isArray(item.data) && item.data.length > 0) {
+            debugLog("📥 Restoring preloaded words from item.data:", item.data.length);
+            setWsPreloadedWords(item.data);
+        }
+        if (isTeacherMode) {
+            setIsWordSoundsMode(false);
+            setWordSoundsAutoReview(false);
+        } else {
+            setIsWordSoundsMode(false);
+            setWordSoundsAutoReview(false);
+            // Honor the saved lesson-plan sequence on student self-open
+            // (parity with the live-push hydration): start at sequence[0],
+            // not always 'counting', and hydrate wsActivitySequence so the
+            // modal can advance through the plan.
+            const _selfOpenSeq = Array.isArray(item.lessonPlanSequence) ? item.lessonPlanSequence : [];
+            if (_selfOpenSeq.length > 0) setWsActivitySequence(_selfOpenSeq);
+            setTimeout(() => {
+                setIsWordSoundsMode(true);
+                setCurrentWordSoundsWord(null);
+                setWordSoundsActivity(_selfOpenSeq.length > 0 ? _selfOpenSeq[0] : 'counting');
+                setWordSoundsAutoReview(false);
+            }, 50);
+        }
+        // Phase 3 — DA-generated word-sounds PROBE entry. Drop into the
+        // clinician-guided probe flow at the activity the probe specifies.
+        if (item.isProbeMode && item.probeActivity) {
+            setIsProbeMode(true);
+            setProbeActivity(item.probeActivity);
+            setTimeout(() => {
+                setWordSoundsActivity(item.probeActivity);
+                setIsWordSoundsMode(true);
+            }, 50);
+        }
+    }
+    if (item.type === 'adventure' && item.data?.snapshot) {
+        setAdventureState(prev => ({
+            ...prev,
+            ...item.data.snapshot,
+            isLoading: false,
+            isImageLoading: false
+        }));
+        addToast(t('adventure.toasts.state_restored'), "info");
+    }
+    if (item.type === 'storyforge-config' || item.type === 'storyforge-submission') {
+        setShowStoryForge(true);
+    }
+    if (item.type === 'poettree-config' || item.type === 'poettree-submission') {
+        setShowPoetTree(true);
+    }
+    if (item.type === 'litlab-config' || item.type === 'litlab-submission') {
+        setShowLitLab(true);
+    }
+    if (item.type === 'lingua-config' || item.type === 'lingua-submission') {
+        setIsLinguaPracticeOpen(true);
+    }
+    if (!options.suppressLiveFollow) _alloFollowResourceLive(item, { blockedToast: t('adventure.toasts.teacher_sync_warning') });
+}
+
 const detectClimaxArchetype = async (text, instructions, deps) => {
   const { callGemini, warnLog } = deps;
   try { if (window._DEBUG_MISC_HANDLERS) console.log("[MiscHandlers] detectClimaxArchetype fired"); } catch(_) {}
@@ -1195,6 +1445,7 @@ window.AlloModules = window.AlloModules || {};
 window.AlloModules.MiscHandlers = { runAutoFixLoop,
   handleFileUpload,
   handleLoadProject,
+  handleRestoreView,
   cancelProjectLoad,
   cancelFileIntakeOperations,
   detectClimaxArchetype,
@@ -1675,5 +1926,5 @@ async function runAutoFixLoop(maxRounds, deps) {
 }
 
 window.AlloModules.MiscHandlersModule = true;
-console.log('[MiscHandlers] 3 handlers registered (handleFileUpload + handleLoadProject + detectClimaxArchetype)');
+console.log('[MiscHandlers] 4 handlers registered (handleFileUpload + handleLoadProject + handleRestoreView + detectClimaxArchetype)');
 })();

@@ -33,6 +33,11 @@ const hostBlueprintFiles = [
   'desktop/web-app/src/AlloFlowANTI.txt',
 ];
 
+const unitGenerationFiles = [
+  'mind_map_module.js',
+  'desktop/web-app/public/mind_map_module.js',
+];
+
 describe('blueprint mode guardrails', () => {
   it.each(plannerFiles)('%s keeps resourcePlan as the ordered canonical plan', (file) => {
     const src = read(file);
@@ -81,9 +86,10 @@ describe('blueprint mode guardrails', () => {
     expect(src).not.toContain('step-${idx}-${Date.now()}');
   });
 
-  it.each(hostBlueprintFiles)('%s normalizes blueprint AI edits back into resourcePlan', (file) => {
+  it.each(chatFiles)('%s owns blueprint AI-edit normalization', (file) => {
     const src = read(file);
 
+    expect(src).toContain('const _modifyBlueprintWithAI = async (currentConfig, userInstruction, deps = {}) =>');
     expect(src).toContain('const normalizeBlueprintPlan = (config) =>');
     expect(src).toContain('Update "resourcePlan" array to add/remove/reorder steps');
     expect(src).toContain('compatibility mirrors of "resourcePlan"');
@@ -91,15 +97,25 @@ describe('blueprint mode guardrails', () => {
     expect(src).not.toContain('Update "recommendedResources" array to add/remove tools');
   });
 
-  it.each(hostBlueprintFiles)('%s builds Generate Unit lessons with canonical resourcePlan', (file) => {
+  it.each(hostBlueprintFiles)('%s delegates both UDL Chat helpers without retaining their implementations', (file) => {
     const src = read(file);
 
-    expect(src).toContain('const resourcePlan = types.map(tp => ({');
-    expect(src).toContain('tool: tp,');
-    expect(src).toContain('directive: _lessonFocus,');
-    expect(src).toContain('instructionalText: _ic && typeof _ic.normalizeInstructionalText');
-    expect(src).toContain('recommendedResources: resourcePlan.map(r => r.tool)');
-    expect(src).toContain('toolDirectives: resourcePlan.reduce');
+    expect(src).not.toContain('const generateStandardChatResponse = async');
+    expect(src).not.toContain('const modifyBlueprintWithAI = async');
+    expect(src).not.toContain('generateDynamicBridge, generateStandardChatResponse, getReadableContent');
+    expect(src).not.toContain('handleStartAdventure, handleUrlFetch, modifyBlueprintWithAI');
+    expect(src).toContain('getGroupDifferentiationContext: typeof getGroupDifferentiationContext');
+  });
+
+  it.each(unitGenerationFiles)('%s builds Generate Unit lessons with canonical resourcePlan', (file) => {
+    const src = read(file);
+
+    expect(src).toContain('var resourcePlan = types.map(function (type) {');
+    expect(src).toContain('tool: type,');
+    expect(src).toContain('directive: lessonFocus,');
+    expect(src).toContain("instructionalText: instructionalContext && typeof instructionalContext.normalizeInstructionalText === 'function'");
+    expect(src).toContain('recommendedResources: resourcePlan.map(function (resource) { return resource.tool; })');
+    expect(src).toContain('toolDirectives: resourcePlan.reduce(function (directives, item) {');
     expect(src).not.toContain('const blueprint = { recommendedResources: types, toolDirectives');
   });
 });

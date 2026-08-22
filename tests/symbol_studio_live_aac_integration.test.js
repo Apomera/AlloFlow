@@ -3,6 +3,7 @@ import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 const source = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8');
+const restoreSource = readFileSync(resolve(process.cwd(), 'misc_handlers_source.jsx'), 'utf8');
 const liveAacSource = readFileSync(resolve(process.cwd(), 'live_aac_source.jsx'), 'utf8');
 const helperStart = liveAacSource.indexOf(`const ALLO_AAC_BOARD_FORMAT = 'alloflow.aac-board';`);
 const helperEnd = liveAacSource.indexOf('const LiveAacBoardDialog =', helperStart);
@@ -18,22 +19,17 @@ const {
   buildLive,
   readLive,
   buildLocal,
+  serializeStudentResourceRaw,
 } = new Function(
   'atob',
   `${helperSource}\nreturn {
     normalizePortable: _alloNormalizePortableAacBoardPackage,
     buildLive: _alloBuildLiveAacPayload,
     readLive: _alloReadLiveAacPayload,
-    buildLocal: _alloBuildLocalAacPayload
+    buildLocal: _alloBuildLocalAacPayload,
+    serializeStudentResourceRaw: _alloSerializeResourceForStudentPack
   };`,
 )(decodeBase64);
-
-const serializerStart = source.indexOf('const _alloSerializeResourceForStudentPack = (item) => {');
-const serializerEnd = source.indexOf('const describeSavedFollowUpLiveFailure =', serializerStart);
-if (serializerStart < 0 || serializerEnd < 0) {
-  throw new Error('AAC student-pack serializer was not found in AlloFlowANTI.txt');
-}
-const serializerSource = source.slice(serializerStart, serializerEnd);
 const stripUndefined = (value) => {
   if (Array.isArray(value)) return value.map(stripUndefined);
   if (!value || typeof value !== 'object') return value;
@@ -43,18 +39,12 @@ const stripUndefined = (value) => {
       .map(([key, nested]) => [key, stripUndefined(nested)]),
   );
 };
-const serializeStudentResource = new Function(
-  'atob',
-  'stripUndefined',
-  'sanitizeHistoryForCloud',
-  helperSource + '\n' + serializerSource + '\nreturn _alloSerializeResourceForStudentPack;',
-)(
-  decodeBase64,
+const serializeStudentResource = item => serializeStudentResourceRaw(item, {
   stripUndefined,
-  () => {
+  sanitizeHistoryForCloud: () => {
     throw new Error('AAC resources must return before the generic cloud sanitizer');
   },
-);
+});
 
 const safePng = 'data:image/png;base64,' + 'A'.repeat(96);
 const packOnlyPng = 'data:image/png;base64,' + 'D'.repeat(180 * 1024);
@@ -468,7 +458,10 @@ describe('Symbol Studio live AAC source contracts', () => {
 
   it('rejects stale reappearance and resets freshness state across sessions', () => {
     const stateAt = source.indexOf('const [visualSupportsPayload, setVisualSupportsPayload] = useState(null)');
-    const stateBlock = source.slice(stateAt, stateAt + 2_300);
+    const stateEnd = source.indexOf('const [storyForgeSubmissions, setStoryForgeSubmissions]', stateAt);
+    expect(stateAt).toBeGreaterThan(-1);
+    expect(stateEnd).toBeGreaterThan(stateAt);
+    const stateBlock = source.slice(stateAt, stateEnd);
     expect(stateBlock).toContain('visualSupportsPayloadRef');
     expect(stateBlock).toContain('visualSupportsDismissedIdsRef');
     expect(stateBlock).toContain('visualSupportsLastTimestampRef');
@@ -522,12 +515,13 @@ describe('Symbol Studio live AAC source contracts', () => {
   });
 
   it('restores AAC History resources into the same runtime with the default title and icon', () => {
-    const restoreStart = source.indexOf('const handleRestoreView = (item, options = {}) =>');
-    const restore = source.slice(restoreStart, restoreStart + 1_350);
+    const restoreStart = restoreSource.indexOf('function handleRestoreView(item, options = {}, deps = {})');
+    const restore = restoreSource.slice(restoreStart, restoreStart + 2_900);
     expect(restore).toContain(`item.type === 'aac-board'`);
     expect(restore).toContain('_alloBuildLocalAacPayload(item.data, item.id, Date.now())');
     expect(restore).toContain('setVisualSupportsPayload(localAacPayload)');
     expect(restore).toContain('_alloFollowResourceLive(item)');
+    expect(source).toContain('moduleApi.handleRestoreView(item, options, _alloMiscHandlersDeps())');
     expect(source).toContain(`case 'aac-board': return 'AAC Board';`);
     expect(source).toContain(`case 'aac-board': return <Layout size={16} />;`);
   });

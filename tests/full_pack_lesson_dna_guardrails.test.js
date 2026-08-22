@@ -16,6 +16,12 @@ const fullPackFiles = [
   'desktop/web-app/public/generation_helpers_module.js',
 ];
 
+const blueprintChatFiles = [
+  'udl_chat_source.jsx',
+  'udl_chat_module.js',
+  'desktop/web-app/public/udl_chat_module.js',
+];
+
 describe('full-pack and blueprint lesson DNA guardrails', () => {
   it.each(plannerFiles)('%s treats custom pack guidance as bounded teacher intent', (file) => {
     const src = read(file);
@@ -37,11 +43,17 @@ describe('full-pack and blueprint lesson DNA guardrails', () => {
     expect(src).not.toContain('if (resultItem.data.concepts && Array.isArray(resultItem.data.concepts))');
   });
 
-  it('blueprint modification preserves lessonDNA unless the teacher explicitly asks for a DNA change', () => {
-    const src = read('AlloFlowANTI.txt');
+  it.each(blueprintChatFiles)('%s preserves lessonDNA unless the teacher explicitly asks for a DNA change', (file) => {
+    const src = read(file);
 
     expect(src).toContain('Preserve "lessonDNA" exactly unless');
     expect(src).toContain('prefer updating resourcePlan directives and resource choices');
     expect(src).toContain('Never remove "lessonDNA" from the blueprint');
+  });
+
+  it('keeps the extracted blueprint prompt out of the host', () => {
+    const src = read('AlloFlowANTI.txt');
+    expect(src).not.toContain('Preserve "lessonDNA" exactly unless');
+    expect(src).not.toContain('Never remove "lessonDNA" from the blueprint');
   });
 });

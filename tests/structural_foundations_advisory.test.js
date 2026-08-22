@@ -58,6 +58,8 @@ describe('structural foundations advisory — best-practice gaps (NOT WCAG, neve
     expect(Array.isArray(r.present)).toBe(true);
     expect(r.checked).toBe(18);
     expect(Array.isArray(r.advisory)).toBe(true);
+    expect(r.items).toHaveLength(18);
+    expect(r.summary.passed + r.summary.missing + r.summary.notApplicable).toBe(18);
   });
   it('every advisory item carries an id + a human label', () => {
     const items = structuralFoundations('<body><h2>A</h2><h4>B</h4></body>').advisory; // missing main + missing h1 + skip
@@ -94,7 +96,9 @@ describe('region + landmark-nesting (best-practice advisory completeness, 2026-0
 describe('anti-drift: advisory is computed in the engine + rendered honestly in the view', () => {
   it('the engine returns an advisory array of best-practice gaps', () => {
     expect(dp).toContain('notDetected: _notDetected');
-    expect(dp).toContain('checked: 18');
+    expect(dp).toContain('items: _foundationItems');
+    expect(dp).toContain('summary: _foundationSummary');
+    expect(dp).toContain('checked: _foundationCatalog.length');
     expect(dp).toContain('imageSummary: { total: _fImgTotal');
     expect(dp).toContain("id: 'landmark-main'");
     expect(dp).toContain("id: 'page-has-heading-one'");

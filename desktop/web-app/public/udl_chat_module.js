@@ -69,6 +69,175 @@ const resolveBlueprintSourceChoice = (options = {}) => {
   };
 };
 
+// Standard coaching replies are exclusively a UDL Chat concern. Keeping the
+// prompt builder here avoids routing chat-owned state back through the host.
+const _generateStandardChatResponse = async (userText, deps = {}) => {
+  const {
+    udlMessages, history, inputText, isParentMode, isIndependentMode,
+    currentUiLanguage, gradeLevel, getGroupDifferentiationContext,
+    callGemini, setUdlMessages, warnLog,
+  } = deps;
+  try {
+    const historyText = udlMessages.map(m => `${m.role === 'user' ? 'User' : 'Expert'}: ${m.text}`).join('\n');
+    const resourceContext = history.length > 0
+      ? history.map(h => `- ${h.type}: ${h.title}`).join('\n')
+      : 'No resources generated yet.';
+    const latestAnalysis = history.slice().reverse().find(h => h && h.type === 'analysis');
+    const sourceText = (latestAnalysis && latestAnalysis.data && latestAnalysis.data.originalText)
+      ? latestAnalysis.data.originalText
+      : inputText;
+    const truncatedInput = sourceText.length > 1500 ? sourceText.substring(0, 1500) + '...' : sourceText;
+    const parentSystemPrompt = 'You are a helpful Family Tutor and Child Development Guide. Explain concepts simply. Focus on fun, bonding activities, and reinforcement rather than strict assessment. If the parent mentions an IEP, explain the goals in plain English.';
+    // Independent mode previously fell through to the TEACHER prompt, so the
+    // guide asked self-study learners what barrier "their students" faced.
+    // Voice here is a study coach speaking to the learner directly.
+    const independentSystemPrompt = 'You are a supportive Study Coach for a self-directed learner working through this material on their own. Speak to them directly. Help them plan their study, check their own understanding (self-testing beats re-reading), break big goals into steps, and reflect on what is and is not working. Encourage without inflating; when they are stuck, shrink the next step.';
+    const teacherSystemPrompt = 'You are a Universal Design for Learning (UDL) specialist and supportive pedagogical coach. Your goal is to partner with educators to design accessible, engaging, and rigorous learning experiences.';
+    const systemPrompt = isParentMode ? parentSystemPrompt : (isIndependentMode ? independentSystemPrompt : teacherSystemPrompt);
+    const fullPrompt = `${systemPrompt}
+          Respond to the user in ${currentUiLanguage}.
+          Current Lesson Context:
+          - Grade Level: ${gradeLevel}
+           ${getGroupDifferentiationContext()}
+          - Source Material (Excerpt): "${truncatedInput || 'No source text provided yet.'}"
+          - Generated Resources History:
+          ${resourceContext}
+          INTERACTION PROTOCOL (Follow these phases strictly):
+          **PHASE 1: DISCOVERY & COACHING**
+          If the user's request is broad or lacks specific context, do NOT provide a list of strategies yet.
+          - Ask 1-2 probing questions to help the ${isParentMode ? 'parent' : (isIndependentMode ? 'learner' : 'teacher')} clarify their goal, ${isIndependentMode ? 'sticking point' : 'student barrier'}, or specific need.
+          - Example: "${isParentMode ? 'That sounds fun! What part does your child find tricky?' : (isIndependentMode ? 'Great goal! Which part of this topic feels shakiest when you try to explain it out loud?' : 'That sounds like a great topic. What is the specific barrier your students are facing?')}",
+          **PHASE 2: CONFIRMATION**
+          Once you feel you have sufficient context from the conversation, explicitly ASK the user if they are ready for the solution.
+          - Example: "I have a clear picture now. Shall I generate the specific actionable steps for you?",
+          **PHASE 3: DELIVERY (Rigid Format)**
+          IF (and ONLY IF) the user confirms (e.g. "Yes", "Go ahead", "Please do"), output the advice in a STRICT, SAVABLE FORMAT.
+          - REMOVE ALL CONVERSATIONAL FILLER. Do not say "Here is the plan" or "I hope this helps".
+          - Start immediately with the first strategy.
+          - Use Bold Headers and Bullet Points only.
+          Example of Phase 3 Output:
+          **Strategy: [Name]**
+          - **Action:** [Specific Step]
+          - **Rationale:** [Why it works]
+          Conversation History:
+          ${historyText}
+          User: ${userText}
+          Expert:`;
+    const responseText = await callGemini(fullPrompt);
+    const hasStrategyHeader = /[*]{2}Strategy:.*[*]{2}/i.test(responseText);
+    const hasActionableBullets = /-\s+[*]{2}.*[*]{2}:/i.test(responseText);
+    const isActionable = hasStrategyHeader || hasActionableBullets;
+    setUdlMessages(prev => [...prev, {
+      role: 'model',
+      text: responseText,
+      isActionable,
+    }]);
+  } catch (error) {
+    warnLog('Unhandled error in generateStandardChatResponse:', error);
+  }
+};
+
+// Blueprint revision is also chat-owned: the host contributes only its AI and
+// JSON helpers, while this module owns normalization and prompt semantics.
+const _modifyBlueprintWithAI = async (currentConfig, userInstruction, deps = {}) => {
+  const { callGemini, cleanJson, warnLog } = deps;
+  const normalizeBlueprintPlan = (config) => {
+    if (!config || typeof config !== 'object') return currentConfig;
+    const currentPlan = Array.isArray(currentConfig?.resourcePlan) && currentConfig.resourcePlan.length > 0
+      ? currentConfig.resourcePlan
+      : (Array.isArray(currentConfig?.recommendedResources) ? currentConfig.recommendedResources : []);
+    const currentTools = currentPlan.map(item => typeof item === 'string' ? item : (item && (item.tool || item.type || item.id))).filter(Boolean);
+    const returnedPlanTools = (Array.isArray(config.resourcePlan) ? config.resourcePlan : [])
+      .map(item => typeof item === 'string' ? item : (item && (item.tool || item.type || item.id))).filter(Boolean);
+    const legacyTools = Array.isArray(config.recommendedResources) ? config.recommendedResources.filter(Boolean) : [];
+    const planUnchanged = returnedPlanTools.length > 0 && JSON.stringify(returnedPlanTools) === JSON.stringify(currentTools);
+    const legacyChanged = legacyTools.length > 0 && JSON.stringify(legacyTools) !== JSON.stringify(currentTools);
+    const toolDirectivesChanged = JSON.stringify(config.toolDirectives || {}) !== JSON.stringify(currentConfig?.toolDirectives || {});
+    const useLegacyTools = legacyTools.length > 0 && (!returnedPlanTools.length || (planUnchanged && legacyChanged));
+    const useLegacyDirectives = !useLegacyTools && planUnchanged && toolDirectivesChanged;
+    const rawPlan = useLegacyTools
+      ? legacyTools
+      : (Array.isArray(config.resourcePlan) && config.resourcePlan.length > 0 ? config.resourcePlan : legacyTools);
+    const normalizeItem = (item) => {
+      const tool = typeof item === 'string' ? item : (item && (item.tool || item.type || item.id));
+      if (!tool) return null;
+      return {
+        tool,
+        directive: useLegacyDirectives
+          ? ((config.toolDirectives && config.toolDirectives[tool]) || (typeof item === 'object' ? (item.directive || item.instructions || item.customInstructions) : '') || '')
+          : (typeof item === 'string'
+            ? ((config.toolDirectives && config.toolDirectives[tool]) || '')
+            : (item.directive || item.instructions || item.customInstructions || (config.toolDirectives && config.toolDirectives[tool]) || '')),
+      };
+    };
+    const resourcePlan = rawPlan.map(normalizeItem).filter(Boolean);
+    const analysisItems = resourcePlan.filter(item => item.tool === 'analysis');
+    const planItems = resourcePlan.filter(item => item.tool === 'lesson-plan');
+    const otherItems = resourcePlan.filter(item => item.tool !== 'analysis' && item.tool !== 'lesson-plan');
+    const orderedPlan = [...analysisItems, ...otherItems, ...planItems];
+    return {
+      ...config,
+      resourcePlan: orderedPlan,
+      recommendedResources: orderedPlan.map(item => item.tool),
+      toolDirectives: orderedPlan.reduce((acc, item) => {
+        if (!acc[item.tool]) acc[item.tool] = item.directive || '';
+        return acc;
+      }, {}),
+    };
+  };
+  // Pull tool catalog from the shared ToolCatalog module. Falls back to a
+  // minimal inline list if the catalog has not loaded yet.
+  const toolList = (typeof window !== 'undefined' && typeof window.formatToolCatalogInline === 'function')
+    ? window.formatToolCatalogInline()
+    : `        - analysis — Always recommended first.
+        - simplified — Adapt text to a reading level.
+        - glossary — Key vocabulary.
+        - outline — Visual organizer.
+        - image — AI-generated illustration.
+        - quiz — Assessment questions.
+        - sentence-frames — Scaffolded writing prompts.
+        - brainstorm — Open-ended idea generation.
+        - timeline — Chronological sequence.
+        - concept-sort — Categorization activity.
+        - adventure — Choose-your-own-adventure narrative.
+        - faq — FAQs from source text.
+        - persona — Interview historical figures.
+        - dbq — Document-Based Question activity.
+        - note-taking — Scaffolded note templates (Cornell / Lab Report / Reading Response).
+        - anchor-chart — classroom visual reference poster.
+        - math — Opens STEAM Lab.
+        - lesson-plan — Teacher synthesis. ALWAYS place LAST.
+        - gemini-bridge — Interactive sim/app generator.
+        - alignment-report — Post-hoc audit (only if explicit standards + audit requested).`;
+  const prompt = `
+      You are a Curriculum Designer adjusting a lesson plan blueprint based on teacher feedback.
+      Current Blueprint JSON:
+      ${JSON.stringify(currentConfig)}
+      Teacher Instruction: "${userInstruction}",
+      Task:
+      1. Interpret the request (e.g., "Add a quiz", "Remove glossary", "Focus on vocabulary", "Change grade to 5th", "Add note-taking templates", "Make an anchor chart").
+      2. Modify the JSON:
+         - Update "resourcePlan" array to add/remove/reorder steps. Each item must be { "tool": "<valid tool id>", "directive": "<step-specific instruction>" }.
+         - Update "globalSettings" (gradeLevel, tone) if requested.
+         - Update step "directive" values inside "resourcePlan" for specific tool instructions.
+         - Keep "recommendedResources" and "toolDirectives" as compatibility mirrors of "resourcePlan"; if unsure, make "resourcePlan" correct.
+         - Preserve "lessonDNA" exactly unless the teacher explicitly asks to revise the golden thread, essential question, or key vocabulary.
+         - When the teacher asks for a focus or emphasis, prefer updating resourcePlan directives and resource choices. Only revise "lessonDNA" if the request clearly requires it and remains compatible with the source, standards, and grade level.
+         - Never remove "lessonDNA" from the blueprint.
+      Valid Tools (tool_id — when to use):
+${toolList}
+      Return ONLY the updated valid JSON.
+      `;
+  try {
+    const result = await callGemini(prompt, true);
+    const parsed = JSON.parse(cleanJson(result));
+    return normalizeBlueprintPlan(parsed);
+  } catch (error) {
+    warnLog('Blueprint modification failed', error);
+    return currentConfig;
+  }
+};
+
 const handleSendUDLMessage = async (manualText = null, deps) => {
   // Phase E hotfix: comprehensive deps list (was missing isShowMeMode, isBotVisible,
   // history, inputText, standardsInput, targetStandards, dokLevel, sourceLength,
@@ -77,7 +246,8 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
   const {
     // State VALUES
     activeBlueprint, activeView, alloBotRef, currentUiLanguage, guidedFlowState,
-    isAutoFillMode, isShowMeMode, isBotVisible, sourceTopic, udlMessages, udlInput,
+    isAutoFillMode, isShowMeMode, isBotVisible, isParentMode, isIndependentMode,
+    sourceTopic, udlMessages, udlInput,
     leveledTextLanguage, persistedLessonDNA, history, inputText, standardsInput,
     targetStandards, dokLevel, useEmojis, imageGenerationStyle, imageAspectRatio, universalImageStyle,
     sourceLength, sourceTone, quizMcqCount,
@@ -117,17 +287,41 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
     addToast, t, warnLog, callGemini, callGeminiVision, cleanJson,
     applyAIConfig, applyWorkflowModification, autoConfigureSettings,
     captureIntentSnapshot, detectWorkflowIntent, flyToElement,
-    generateDynamicBridge, generateStandardChatResponse, getReadableContent,
+    generateDynamicBridge, generateStandardChatResponse: generateStandardChatResponseOverride, getReadableContent,
     getStageElementId, getWorkflowContext, handleExecuteBlueprint,
     handleGenerate, handleGenerateFullPack, handleGenerateLessonPlan,
     handleGenerateSource, handleSettingsIntent, handleShowUiIntent,
-    handleStartAdventure, handleUrlFetch, modifyBlueprintWithAI,
+    handleStartAdventure, handleUrlFetch, modifyBlueprintWithAI: modifyBlueprintWithAIOverride,
     parseUserIntent, performHighlight, restoreIntentSnapshot,
-    formatLessonDNA, handleScoreUpdate, getDifferentiationGrades,
+    formatLessonDNA, handleScoreUpdate, getDifferentiationGrades, getGroupDifferentiationContext,
     extractSourceTextForProcessing, processGrounding, sanitizeTruncatedCitations,
     normalizeCitationPlacement, fixCitationPlacement, generateBibliographyString,
     storageDB,
   } = deps;
+  // Optional overrides keep the direct module tests deterministic. Production
+  // no longer sends host-owned implementations; the module owns both defaults.
+  const generateStandardChatResponse = typeof generateStandardChatResponseOverride === 'function'
+    ? generateStandardChatResponseOverride
+    : (userText) => _generateStandardChatResponse(userText, {
+      udlMessages,
+      history,
+      inputText,
+      isParentMode,
+      isIndependentMode,
+      currentUiLanguage,
+      gradeLevel,
+      getGroupDifferentiationContext,
+      callGemini,
+      setUdlMessages,
+      warnLog,
+    });
+  const modifyBlueprintWithAI = typeof modifyBlueprintWithAIOverride === 'function'
+    ? modifyBlueprintWithAIOverride
+    : (currentConfig, userInstruction) => _modifyBlueprintWithAI(currentConfig, userInstruction, {
+      callGemini,
+      cleanJson,
+      warnLog,
+    });
   // Phase E hotfix: surface real errors to console so we can debug missing deps
   // instead of silently degrading to "Sorry, something went wrong".
   const _DEBUG_UDL_CHAT = true;
@@ -1645,7 +1839,13 @@ Return ONLY JSON.`;
 };
 
 window.AlloModules = window.AlloModules || {};
-window.AlloModules.UdlChat = { planAndSendUdlMessage, handleSendUDLMessage, resolveBlueprintSourceChoice };
+window.AlloModules.UdlChat = {
+  planAndSendUdlMessage,
+  handleSendUDLMessage,
+  resolveBlueprintSourceChoice,
+  generateStandardChatResponse: _generateStandardChatResponse,
+  modifyBlueprintWithAI: _modifyBlueprintWithAI,
+};
 
 
 // CommandWorkflow bridge: Agent Core owns the versioned draft/review

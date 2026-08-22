@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import parser from '@babel/parser';
 
 const source = readFileSync('view_header_source.jsx', 'utf8');
+const uiStringsSource = readFileSync('ui_strings.js', 'utf8');
 
 const openingElements = [];
 const ast = parser.parse(source, { sourceType: 'script', plugins: ['jsx', 'optionalChaining', 'nullishCoalescingOperator', 'classProperties', 'objectRestSpread'] });
@@ -38,6 +39,14 @@ describe('header control accessibility', () => {
     expect(source).toContain("muteTitle={t('a11y.mute_all_audio_title') || 'Mute all audio'}");
     expect(source).toContain("unmuteTitle={t('a11y.unmute_all_audio_title') || 'Unmute all audio'}");
   });
+
+  it('names the combined speech controls Voice & Audio instead of Narrator Voice', () => {
+    expect(uiStringsSource).toContain('"label": "Voice & Audio"');
+    expect(uiStringsSource).toContain('"chat_title": "Voice & Audio Settings"');
+    expect(uiStringsSource).not.toContain('"label": "Narrator Voice"');
+    expect(source).toContain("'Close voice and audio settings'");
+  });
+
   it('localizes the remaining header control names and reading-theme options', () => {
     expect(source).toContain("const readThisPageTitle = t('read_this_page.title')");
     expect(source).toContain("const notebookLabel = t('cmd.open_notebook')");

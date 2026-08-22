@@ -1,7 +1,7 @@
 // Two reports from a real session, both about "the app is not using the voice I
 // picked":
 //
-//   1. The Narrator Voice dropdown did not come back on the last choice. The
+//   1. The Voice & Audio dropdown did not come back on the last choice. The
 //      write was guarded by `if (storedVoice && storedVoice !== selectedVoice &&
 //      !catalogsReady) return;`, which cannot tell a transient default apart
 //      from a deliberate pick, so a voice chosen before the catalogs loaded was

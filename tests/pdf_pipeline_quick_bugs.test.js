@@ -476,9 +476,10 @@ describe('B8: 2026-06-29 scorecard fixes (export honesty + OCR/foundations/basel
     expect(vpx).toMatch(/afterScoreBasis: _jsonVerification\.afterScoreVerified \?/);
   });
   // #4: foundations "All images have alt" is count-aware, not a single-match overclaim
-  it('foundations card claims "All images have alt" ONLY when every image has it (else honest fraction)', () => {
+  it('foundations card claims "All images have alt" ONLY when every image has it (partial coverage is missing)', () => {
     expect(dpx).toMatch(/_fImgAlt === _fImgTotal\) _markFoundation\('image-alt', 'All images have a non-empty alt/);
-    expect(dpx).toMatch(/of ' \+ _fImgTotal \+ ' images have a non-empty alt/);
+    expect(dpx).toMatch(/_fImgAlt \+ ' of ' \+ _fImgTotal \+ ' images have non-empty alt text/);
+    expect(dpx).toMatch(/status === 'missing' \? _missingFoundationDetail/);
   });
   // #3: OCR low-confidence net is engine-agnostic (catches garbled Vision-won / all-Vision pages)
   it('OCR low-confidence flag also fires on garbled Vision pages via an absolute junk-ratio gate', () => {

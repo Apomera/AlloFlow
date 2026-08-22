@@ -10,10 +10,26 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const anti = fs.readFileSync(path.join(ROOT, 'AlloFlowANTI.txt'), 'utf8');
+const liveAacSource = fs.readFileSync(path.join(ROOT, 'live_aac_source.jsx'), 'utf8');
 const sharedActivitySource = fs.readFileSync(path.join(ROOT, 'shared_activity_source.jsx'), 'utf8');
 const assignmentCenterSource = fs.readFileSync(path.join(ROOT, 'view_assignment_center_source.jsx'), 'utf8');
 const gsSource = fs.readFileSync(path.join(ROOT, 'apps_script', 'session_mailbox', 'Code.gs'), 'utf8');
 const headerSource = fs.readFileSync(path.join(ROOT, 'view_header_source.jsx'), 'utf8');
+
+function loadStudentPackSerializer(win) {
+    const start = liveAacSource.indexOf('const _alloSerializeResourceForStudentPack = (item, deps = {}) => {');
+    const end = liveAacSource.indexOf('const LiveAacBoardDialog =', start);
+    expect(start).toBeGreaterThan(-1);
+    expect(end).toBeGreaterThan(start);
+    const raw = new Function(
+        'window',
+        liveAacSource.slice(start, end) + '\nreturn _alloSerializeResourceForStudentPack;'
+    )(win);
+    return item => raw(item, {
+        sanitizeHistoryForCloud: win.sanitizeHistoryForCloud,
+        stripUndefined: win.stripUndefined,
+    });
+}
 
 function makeGsSandbox() {
     const cacheStore = new Map();
@@ -867,6 +883,13 @@ describe('student-pack serialization (full-fidelity)', () => {
         expect(anti).not.toContain('meta: it.meta, data: it.data');
         const uses = anti.split('_alloSerializeResourceForStudentPack').length - 1;
         expect(uses).toBeGreaterThanOrEqual(7); // 1 definition + 6 call sites
+        const wrapperStart = anti.indexOf('const _alloSerializeResourceForStudentPack = (item) => {');
+        const wrapperEnd = anti.indexOf('const describeSavedFollowUpLiveFailure', wrapperStart);
+        const wrapper = anti.slice(wrapperStart, wrapperEnd);
+        expect(wrapper).toContain('moduleApi.serializeResourceForStudentPack(item, { sanitizeHistoryForCloud, stripUndefined })');
+        expect(wrapper).not.toContain('safePortableTtsAssets');
+        expect(liveAacSource).toContain('const _alloSerializeResourceForStudentPack = (item, deps = {}) => {');
+        expect(liveAacSource).toContain('serializeResourceForStudentPack: _alloSerializeResourceForStudentPack');
     });
 
     it('keeps lesson-plan/probe/game fields, strips student audio, nulls binary payloads', () => {
@@ -879,15 +902,7 @@ describe('student-pack serialization (full-fidelity)', () => {
         expect(typeof win.sanitizeSessionValue).toBe('function');
         expect(typeof win.stripUndefined).toBe('function');
 
-        const start = anti.indexOf('const _alloSerializeResourceForStudentPack = (item) => {');
-        const end = anti.indexOf('\n  };', start);
-        expect(start).toBeGreaterThan(-1);
-        expect(end).toBeGreaterThan(start);
-        const helperSrc = anti.slice(start, end + 5);
-        const helper = new Function(
-            'sanitizeHistoryForCloud', 'stripUndefined', 'window',
-            helperSrc + '\nreturn _alloSerializeResourceForStudentPack;'
-        )(win.sanitizeHistoryForCloud, win.stripUndefined, win);
+        const helper = loadStudentPackSerializer(win);
 
         const packed = helper({
             id: 'ws-1', type: 'word-sounds', title: 'Word Sounds (3 words)',
@@ -934,13 +949,7 @@ describe('student-pack serialization (full-fidelity)', () => {
         const win = {};
         const syncSrc = fs.readFileSync(path.join(ROOT, 'firestore_sync_module.js'), 'utf8');
         new Function('window', syncSrc)(win);
-        const start = anti.indexOf('const _alloSerializeResourceForStudentPack = (item) => {');
-        const end = anti.indexOf('\n  };', start);
-        const helperSrc = anti.slice(start, end + 5);
-        const helper = new Function(
-            'sanitizeHistoryForCloud', 'stripUndefined', 'window',
-            helperSrc + '\nreturn _alloSerializeResourceForStudentPack;'
-        )(win.sanitizeHistoryForCloud, win.stripUndefined, win);
+        const helper = loadStudentPackSerializer(win);
         const questionImage = 'data:image/png;base64,' + 'A'.repeat(512);
         const optionImage = 'data:image/webp;base64,' + 'B'.repeat(256);
         const remoteImage = 'https://images.example.edu/choice.png';

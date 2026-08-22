@@ -303,6 +303,140 @@ const _alloBuildLocalAacPayload = (raw, resourceId, now = Date.now()) => {
     package: portable
   };
 };
+// Student homework/QR packs share the same portable AAC media contract as
+// live delivery. Generic resources receive the host Firestore sanitizers;
+// pack-only quiz images and prepared Word Sounds audio remain tightly bounded.
+const _alloSerializeResourceForStudentPack = (item, deps = {}) => {
+  const sanitizeHistoryForCloud = deps && deps.sanitizeHistoryForCloud;
+  const stripUndefined = deps && deps.stripUndefined;
+    if (!item || typeof item !== 'object' || !item.id || !item.type) return null;
+    // AAC homework and QR packs use an explicit portable-media contract.
+    // The package privacy flag is the teacher's per-export consent boundary:
+    // prepared speech may travel only when that flag is true. Custom voice
+    // recordings are never serialized to a student pack.
+    if (item.type === 'aac-board') {
+        const portable = _alloNormalizePortableAacBoardPackage(item.data, {
+            allowAudio: true,
+            preparedOnly: true,
+            maxImageChars: ALLO_AAC_PACK_IMAGE_CHARS,
+            maxImageItemChars: ALLO_AAC_PACK_IMAGE_ITEM_CHARS,
+            maxAudioChars: ALLO_AAC_PACK_AUDIO_CHARS,
+            maxAudioItemChars: ALLO_AAC_PACK_AUDIO_ITEM_CHARS
+        });
+        if (!portable) return null;
+        portable.pages.forEach((page) => {
+            page.cells.forEach((cell) => {
+                if (cell.audio) {
+                    cell.audio = {
+                        kind: cell.audio.kind,
+                        mime: cell.audio.mime,
+                        data: cell.audio.data
+                    };
+                }
+            });
+        });
+        const timestamp = _alloAacTimestamp(item.timestamp);
+        const meta = typeof item.meta === 'string' ? _alloAacText(item.meta, 240) : String();
+        const source = typeof item.source === 'string' && /^[a-z0-9][a-z0-9._-]{0,63}$/i.test(item.source.trim())
+            ? item.source.trim()
+            : String();
+        return stripUndefined({
+            id: _alloAacId(item.id, 'aac-board-' + _alloAacHash(portable)),
+            type: 'aac-board',
+            title: _alloAacText(item.title, 160) || portable.board.title || 'AAC Board',
+            data: portable,
+            meta: meta || undefined,
+            timestamp: timestamp > 0 ? timestamp : undefined,
+            source: source || undefined
+        });
+    }
+    let cleaned = item;
+    try {
+        const viaCloud = sanitizeHistoryForCloud([item]);
+        if (!Array.isArray(viaCloud) || viaCloud.length === 0) return null; // private item — never packs
+        cleaned = viaCloud[0] || item;
+    } catch (_) {}
+    try {
+        if (typeof window !== 'undefined' && typeof window.sanitizeSessionValue === 'function') {
+            cleaned = window.sanitizeSessionValue(cleaned, 'resource');
+        }
+    } catch (_) {}
+    // The shared Firestore sanitizer must stay conservative because session
+    // documents have a strict size ceiling. Mailbox/P2P packs are already
+    // chunked, so restore only the quiz media fields that the existing visual
+    // quiz model owns. Fail closed to HTTPS or non-SVG base64 images, and keep
+    // enough headroom for the mailbox host's 8 MB assembled-pack ceiling.
+    if (item.type === 'quiz'
+        && Array.isArray(item?.data?.questions)
+        && Array.isArray(cleaned?.data?.questions)) {
+        let remainingQuizImageChars = 5 * 1024 * 1024;
+        const safeQuizImageSource = (value) => {
+            if (typeof value !== 'string') return null;
+            const source = value.trim();
+            if (!source || source.length > remainingQuizImageChars) return null;
+            const isHttps = source.length <= 4096 && /^https:\/\/[^\s]+$/i.test(source);
+            const isSafeInline = /^data:image\/(?:png|jpe?g|webp|gif|avif);base64,[a-z0-9+/=\r\n]+$/i.test(source);
+            if (!isHttps && !isSafeInline) return null;
+            remainingQuizImageChars -= source.length;
+            return source;
+        };
+        item.data.questions.forEach((sourceQuestion, questionIndex) => {
+            const packedQuestion = cleaned.data.questions[questionIndex];
+            if (!sourceQuestion || !packedQuestion || typeof packedQuestion !== 'object') return;
+            packedQuestion.imageUrl = safeQuizImageSource(sourceQuestion.imageUrl);
+            if (Array.isArray(sourceQuestion.optionImageUrls)) {
+                packedQuestion.optionImageUrls = sourceQuestion.optionImageUrls.map(safeQuizImageSource);
+            }
+        });
+    }
+    // Word Sounds packs are chunked, so they may carry teacher-prepared
+    // speech. The shared session sanitizer removes nested `base64` fields;
+    // restore only this tool-owned, tightly validated audio map. Microphone
+    // recordings and arbitrary resource audio remain excluded.
+    if (item.type === 'word-sounds' && Array.isArray(item?.data) && Array.isArray(cleaned?.data)) {
+        let remainingAudioChars = 6 * 1024 * 1024;
+        let remainingAudioItems = 512;
+        const safePortableTtsAssets = (value) => {
+            if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+            const safeAssets = {};
+            for (const [rawKey, rawAsset] of Object.entries(value)) {
+                if (remainingAudioItems <= 0 || remainingAudioChars <= 0) break;
+                const key = String(rawKey || '').trim().replace(/[\u0000-\u001f\u007f]/g, '').slice(0, 240);
+                if (!key || !rawAsset || typeof rawAsset !== 'object' || Array.isArray(rawAsset)) continue;
+                const mime = String(rawAsset.mime || '').trim().toLowerCase();
+                const base64 = typeof rawAsset.base64 === 'string' ? rawAsset.base64.replace(/\s+/g, '') : '';
+                if (!/^audio\/[a-z0-9.+-]{1,48}$/i.test(mime)) continue;
+                if (!base64 || base64.length > 512 * 1024 || base64.length > remainingAudioChars) continue;
+                if (!/^[a-z0-9+/]+={0,2}$/i.test(base64)) continue;
+                safeAssets[key] = { mime, base64 };
+                remainingAudioChars -= base64.length;
+                remainingAudioItems -= 1;
+            }
+            return Object.keys(safeAssets).length > 0 ? safeAssets : null;
+        };
+        const safeRequiredTtsKeys = (value) => {
+            if (!Array.isArray(value)) return null;
+            const keys = Array.from(new Set(value
+                .map(rawKey => String(rawKey || '').trim().toLowerCase().replace(/\s+/g, ' ').replace(/[\u0000-\u001f\u007f]/g, '').slice(0, 240))
+                .filter(Boolean)))
+                .slice(0, 1024);
+            return keys.length > 0 ? keys : null;
+        };
+        item.data.forEach((sourceWord, wordIndex) => {
+            const packedWord = cleaned.data[wordIndex];
+            if (!sourceWord || !packedWord || typeof packedWord !== 'object') return;
+            const safeAssets = safePortableTtsAssets(sourceWord._ttsAssets);
+            if (safeAssets) packedWord._ttsAssets = safeAssets;
+            else delete packedWord._ttsAssets;
+            const requiredKeys = safeRequiredTtsKeys(sourceWord._ttsRequiredKeys);
+            if (requiredKeys) packedWord._ttsRequiredKeys = requiredKeys;
+            else delete packedWord._ttsRequiredKeys;
+        });
+    }
+    const { karaokeStudentAudio, ...safe } = cleaned || {};
+    return stripUndefined(safe);
+};
+
 const LiveAacBoardDialog = ({ payload, onDismiss, onSpeak }) => {
   const portable = payload && payload.package;
   const pages = portable && Array.isArray(portable.pages) ? portable.pages : [];
@@ -496,5 +630,6 @@ window.AlloModules.LiveAac = {
   id: _alloAacId,
   locale: _alloAacLocale,
   timestamp: _alloAacTimestamp,
+  serializeResourceForStudentPack: _alloSerializeResourceForStudentPack,
   LiveAacBoardDialog
 };

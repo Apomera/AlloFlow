@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>OpenBIM Companion visual harness</title>
+  <style>
+    html, body, #root { width: 100%; height: 100%; margin: 0; }
+    body { font-family: system-ui, sans-serif; background: #f4f7f8; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script src="/desktop/web-app/node_modules/react/umd/react.production.min.js"></script>
+  <script src="/desktop/web-app/node_modules/react-dom/umd/react-dom.production.min.js"></script>
+  <script src="/stem_lab/stem_tool_openbim.js"></script>
+  <script>
+    window.__openBimHarness = { errors: [], announcements: [], toasts: [] };
+    window.addEventListener('error', function (event) {
+      window.__openBimHarness.errors.push(String(event.message || event.error || 'unknown error'));
+    });
+    window.__toolData = {
+      openBim: {},
+      archStudio: {
+        blocks: [
+          { x: 0, y: 0, z: 0, shape: 'slab', material: 'stone' },
+          { x: 1, y: 0, z: 0, shape: 'block', material: 'stone' },
+          { x: 0, y: 1, z: 2, shape: 'window', material: 'glass' }
+        ]
+      }
+    };
+
+    function Harness() {
+      var redraw = React.useState(0)[1];
+      var ctx = {
+        React: React,
+        get toolData() { return window.__toolData; },
+        updateMulti: function (toolId, patch) {
+          window.__toolData = Object.assign({}, window.__toolData);
+          window.__toolData[toolId] = Object.assign({}, window.__toolData[toolId] || {}, patch);
+          redraw(function (value) { return value + 1; });
+        },
+        update: function (toolId, key, value) {
+          var patch = {}; patch[key] = value; this.updateMulti(toolId, patch);
+        },
+        announceToSR: function (message) { window.__openBimHarness.announcements.push(String(message)); },
+        addToast: function (message, type) { window.__openBimHarness.toasts.push({ message: String(message), type: type }); },
+        generateText: function () {
+          return Promise.resolve(JSON.stringify({
+            name: 'Accessible Science Studio',
+            storeys: [{ name: 'Ground Floor', elevationMetres: 0, spaces: ['Entry and Circulation', 'Science Studio', 'Quiet Space'] }],
+            elements: [
+              { ifcClass: 'IfcWall', name: 'Reviewed walls', count: 6, storey: 'Ground Floor', reason: 'Define the envelope and learning areas.' },
+              { ifcClass: 'IfcDoor', name: 'Doors', count: 2, storey: 'Ground Floor', reason: 'Support circulation and two planned exits.' },
+              { ifcClass: 'IfcWindow', name: 'Daylight windows', count: 6, storey: 'Ground Floor', reason: 'Record the daylight intention for later placement.' }
+            ],
+            goals: ['Inclusive circulation', 'Flexible participation'],
+            assumptions: ['Concept only; qualified review is still required.']
+          }));
+        }
+      };
+      return window.StemLab._registry.openBim.render(ctx);
+    }
+
+    window.__openBimRoot = ReactDOM.createRoot(document.getElementById('root'));
+    window.__openBimRoot.render(React.createElement(Harness));
+  </script>
+</body>
+</html>

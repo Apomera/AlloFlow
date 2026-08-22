@@ -994,7 +994,7 @@ function HeaderBar(props) {
                                         <div className="space-y-3">
                                             <div className={`flex justify-between items-center border-b ${_skin.divider} pb-2`}>
                                                 <h4 id="header-voice-settings-title" className="font-bold text-sm">{t('settings.voice.label')}</h4>
-                                                <button type="button" onClick={handleSetShowVoiceSettingsToFalse} className={`min-w-6 min-h-6 rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${_skin.dismiss}`} aria-label={t('common.close') || 'Close voice settings'}>&times;</button>
+                                                <button type="button" onClick={handleSetShowVoiceSettingsToFalse} className={`min-w-6 min-h-6 rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${_skin.dismiss}`} aria-label={t('common.close') || 'Close voice and audio settings'}>&times;</button>
                                             </div>
                                             <div className={`rounded-lg border p-2 ${_skin.surface}`}>
                                                 <label htmlFor="header-voice-input-engine" className={`text-[11px] uppercase font-bold ${_skin.label} block mb-1`}>{t('header.voice_input') || 'Voice input'}</label>

@@ -1125,8 +1125,8 @@ var _alloStructuralFoundations = function (html) {
   // Keep a stable catalog beside the detectors so the view can explain what was NOT detected without
   // pretending every absent pattern is a failure. Several are conditional or optional: a document with
   // no navigation, sequence, table, image or form should not be pushed toward meaningless markup merely
-  // to make an 18/18 badge. `checked: 18` remains below for backward compatibility; the UI renders this as
-  // an inventory, not a score or target. (2026-08-22)
+  // to make an 18/18 badge. The numeric `checked` field remains for backward compatibility; the UI renders
+  // the catalog as an inventory, not a score or target. (2026-08-22)
   var _foundationCatalog = [
     { id: 'html-lang', label: 'HTML language attribute' },
     { id: 'page-title', label: 'Document title' },
@@ -1147,7 +1147,13 @@ var _alloStructuralFoundations = function (html) {
     { id: 'form-label', label: 'Form labels (when form controls exist)' },
     { id: 'aria-landmark', label: 'Explicit ARIA landmark roles (optional when native landmarks are used)' }
   ];
-  var _markFoundation = function (id, label) { presentIds.push(id); present.push(label); };
+  var _foundationDetailById = Object.create(null);
+  var _markFoundation = function (id, label) {
+    if (presentIds.indexOf(id) >= 0) return;
+    presentIds.push(id);
+    present.push(label);
+    _foundationDetailById[id] = label;
+  };
   if (/<html[^>]*lang\s*=\s*["'][a-z]{2,3}/.test(lc)) _markFoundation('html-lang', 'HTML lang attribute is present');
   if (/<title>[^<]+<\/title>/.test(lc)) _markFoundation('page-title', 'Page title is present and descriptive');
   if (/<main[\s>]/.test(lc)) _markFoundation('main', 'A <main> landmark defines the primary content area');
@@ -1171,10 +1177,34 @@ var _alloStructuralFoundations = function (html) {
     return /\balt\s*=\s*(?:"[^"]*\S[^"]*"|'[^']*\S[^']*'|[^\s"'=<>]+)/i.test(tag);
   }).length;
   var _fFigcaptionTotal = (htmlContent.match(/<figcaption[\s>]/gi) || []).length;
+  var _fControlTags = (htmlContent.match(/<(?:input|select|textarea)\b[^>]*>/gi) || []).filter(function (tag) {
+    return !/\btype\s*=\s*(?:"hidden"|'hidden'|hidden)(?:\s|\/?>)/i.test(tag);
+  });
+  var _fControlTotal = _fControlTags.length;
+  var _fControlNamed = 0;
+  // Count controls, not free-floating labels. The old `/<label|aria-label/` check let an
+  // aria-label on an unrelated button claim that every form field was labeled.
+  try {
+    if (_fControlTotal > 0 && typeof DOMParser !== 'undefined') {
+      var _formDoc = new DOMParser().parseFromString(htmlContent, 'text/html');
+      var _formControls = Array.prototype.slice.call(_formDoc.querySelectorAll('input:not([type="hidden"]), select, textarea'));
+      _fControlTotal = _formControls.length;
+      for (var _fci = 0; _fci < _formControls.length; _fci++) {
+        var _fc = _formControls[_fci];
+        var _ariaName = String(_fc.getAttribute('aria-label') || '').trim() || String(_fc.getAttribute('aria-labelledby') || '').trim();
+        var _wrappedLabel = _fc.closest && _fc.closest('label');
+        var _fcId = String(_fc.getAttribute('id') || '').trim();
+        var _forLabel = _fcId && _formDoc.querySelector('label[for="' + _fcId.replace(/(["\\])/g, '\\$1') + '"]');
+        if (_ariaName || _wrappedLabel || _forLabel) _fControlNamed++;
+      }
+    } else if (_fControlTotal > 0) {
+      _fControlNamed = _fControlTags.filter(function (tag) { return /\baria-(?:label|labelledby)\s*=\s*(?:"[^"]+"|'[^']+'|[^\s"'=<>]+)/i.test(tag); }).length;
+      if (_fControlNamed < _fControlTotal && /<label[\s>]/i.test(htmlContent)) _fControlNamed = Math.max(_fControlNamed, 1);
+    }
+  } catch (_) {}
   if (_fImgTotal > 0 && _fImgAlt === _fImgTotal) _markFoundation('image-alt', 'All images have a non-empty alt attribute (description quality not verified)');
-  else if (_fImgAlt > 0) _markFoundation('image-alt', _fImgAlt + ' of ' + _fImgTotal + ' images have a non-empty alt attribute (the rest may be missing it)');
   if (_fFigcaptionTotal > 0) _markFoundation('figure-caption', 'Figure captions provide image descriptions');
-  if (/<label[\s>]/.test(lc) || /aria-label/.test(lc)) _markFoundation('form-label', 'Form elements have associated labels');
+  if (_fControlTotal > 0 && _fControlNamed === _fControlTotal) _markFoundation('form-label', 'All form controls have an associated label or accessible-name pattern (name quality not verified)');
   if (/role\s*=\s*["'](main|navigation|banner|contentinfo|complementary)["']/.test(lc)) _markFoundation('aria-landmark', 'ARIA landmark roles are used for page structure');
   // ADVISORY (best-practice, NOT WCAG): the structural gaps the WCAG-tagged audit can't see — axe's
   // region / landmark-one-main / page-has-heading-one / heading-order are best-practice rules that
@@ -1215,16 +1245,87 @@ var _alloStructuralFoundations = function (html) {
       }
     }
   } catch (_) {}
-  // checked = the number of distinct foundation TYPES this looks for (the denominator for "N of M present").
+  // Turn the stable catalog into an honest three-state matrix. A detected pattern is a
+  // presence-level pass, not proof that its value/content is correct. Conditional and optional
+  // structures are N/A when the document contains no evidence that they are needed; they are not
+  // silently counted as failures just to manufacture an 18/18 target. (2026-08-22)
   var _presentIdSet = new Set(presentIds);
+  var _anchorCount = (lc.match(/<a\b[^>]*href\s*=/g) || []).length;
+  var _tableCount = (lc.match(/<table[\s>]/g) || []).length;
+  var _controlCount = _fControlTotal;
+  var _headingCount = (lc.match(/<h[1-6][\s>]/g) || []).length;
+  var _sectionCount = (lc.match(/<section[\s>]/g) || []).length;
+  var _hasHigherSectionHeading = /<h[3-6][\s>]/.test(lc);
+  var _longStructuredDocument = _bodyTextLen > 400 && (_headingCount >= 2 || /<main[\s>]/.test(lc));
+  var _applicability = function (id) {
+    if (id === 'html-lang' || id === 'page-title') return { applies: true };
+    if (id === 'main' || id === 'h1') return { applies: _bodyTextLen > 0, na: 'No meaningful body content was detected.' };
+    if (id === 'h2') return { applies: _presentIdSet.has(id) || _sectionCount > 1 || _hasHigherSectionHeading, na: 'No multi-section hierarchy was detected.' };
+    if (id === 'links') return { applies: _anchorCount > 0, na: 'The document contains no links.' };
+    if (id === 'unordered-list') return { applies: /<ul[\s>]/.test(lc), na: 'No unordered-list content was detected.' };
+    if (id === 'ordered-list') return { applies: /<ol[\s>]/.test(lc), na: 'No ordered sequence was detected.' };
+    if (id === 'table-headers' || id === 'table-scope') return { applies: _tableCount > 0, na: 'The document contains no data tables.' };
+    if (id === 'skip-link') return { applies: _presentIdSet.has(id) || _longStructuredDocument, na: 'A skip link is not needed for this short or minimally structured document.' };
+    if (id === 'image-alt') return { applies: _fImgTotal > 0, na: 'The remediated HTML contains no images.' };
+    if (id === 'form-label') return { applies: _controlCount > 0, na: 'The document contains no form controls.' };
+    // Native header/footer/nav and explicit ARIA landmarks are optional patterns. A native
+    // landmark can be preferable to adding a duplicate role, so absence alone is not a miss.
+    if (id === 'nav') return { applies: _presentIdSet.has(id), na: 'No navigation region was detected.' };
+    if (id === 'header' || id === 'footer') return { applies: _presentIdSet.has(id), na: 'This landmark is optional for this document.' };
+    if (id === 'figure-caption') return { applies: _presentIdSet.has(id), na: 'No figure caption is required; captions are optional and do not replace alt text.' };
+    if (id === 'aria-landmark') return { applies: _presentIdSet.has(id), na: 'Explicit ARIA roles are optional when native landmark elements are used.' };
+    return { applies: _presentIdSet.has(id) };
+  };
+  var _missingFoundationDetail = function (id) {
+    if (id === 'html-lang') return 'Add a valid lang attribute to the <html> element.';
+    if (id === 'page-title') return 'Add a non-empty <title> in the document head.';
+    if (id === 'main') return 'Wrap the primary document content in one <main> landmark.';
+    if (id === 'h1') return 'Add one level-1 heading that identifies the document topic.';
+    if (id === 'h2') return 'Section structure exists, but no level-2 section heading was detected.';
+    if (id === 'links') return 'Links exist, but the descriptive-link presence check did not pass.';
+    if (id === 'unordered-list') return 'An unordered list exists without complete <ul>/<li> semantics.';
+    if (id === 'ordered-list') return 'An ordered list exists without complete <ol>/<li> semantics.';
+    if (id === 'table-headers') return 'A data table exists, but no <th> header cells were detected.';
+    if (id === 'table-scope') return 'A data table exists, but no table-header scope attributes were detected.';
+    if (id === 'skip-link') return 'This long or structured document has no skip-to-content link.';
+    if (id === 'image-alt') return _fImgAlt > 0
+      ? (_fImgAlt + ' of ' + _fImgTotal + ' images have non-empty alt text; ' + (_fImgTotal - _fImgAlt) + ' still need it.')
+      : (_fImgTotal + ' image' + (_fImgTotal === 1 ? ' has' : 's have') + ' no non-empty alt text.');
+    if (id === 'form-label') return _fControlNamed > 0
+      ? (_fControlNamed + ' of ' + _fControlTotal + ' form controls have a label or accessible-name pattern; ' + (_fControlTotal - _fControlNamed) + ' still need one.')
+      : ('No label or accessible-name pattern was detected for ' + _fControlTotal + ' form control' + (_fControlTotal === 1 ? '.' : 's.'));
+    return 'This applicable structure was not detected.';
+  };
+  var _foundationItems = _foundationCatalog.map(function (item) {
+    var detected = _presentIdSet.has(item.id);
+    var applicability = _applicability(item.id);
+    var status = detected ? 'passed' : (applicability.applies ? 'missing' : 'not-applicable');
+    return {
+      id: item.id,
+      label: item.label,
+      status: status,
+      detected: detected,
+      applicable: status !== 'not-applicable',
+      detail: detected ? _foundationDetailById[item.id] : (status === 'missing' ? _missingFoundationDetail(item.id) : applicability.na)
+    };
+  });
+  var _foundationSummary = _foundationItems.reduce(function (acc, item) {
+    if (item.status === 'passed') acc.passed++;
+    else if (item.status === 'missing') acc.missing++;
+    else acc.notApplicable++;
+    return acc;
+  }, { passed: 0, missing: 0, notApplicable: 0, total: _foundationCatalog.length });
   var _notDetected = _foundationCatalog.filter(function (item) { return !_presentIdSet.has(item.id); });
   var _foundations = {
     present: present,
     presentIds: presentIds,
     notDetected: _notDetected,
-    checked: 18,
+    items: _foundationItems,
+    summary: _foundationSummary,
+    checked: _foundationCatalog.length,
     advisory: advisory,
-    imageSummary: { total: _fImgTotal, withAlt: _fImgAlt, missingAlt: Math.max(0, _fImgTotal - _fImgAlt), captions: _fFigcaptionTotal }
+    imageSummary: { total: _fImgTotal, withAlt: _fImgAlt, missingAlt: Math.max(0, _fImgTotal - _fImgAlt), captions: _fFigcaptionTotal },
+    formSummary: { total: _fControlTotal, named: _fControlNamed, missingName: Math.max(0, _fControlTotal - _fControlNamed) }
   };
   return _foundations;
 };
@@ -3160,11 +3261,21 @@ function _alloOrderTextItems(items, opts) {
       // mostly short-code side paired with substantially longer labels is a
       // key/value table even when both sides otherwise look list-like.
       var LL = _listLike(lSide, LS), RL = _listLike(rSide, RS);
+      if (LL && RL) _t('  listLike stats: L{align=' + LL.alignedShare.toFixed(2) + ' pitch=' + LL.pitchShare.toFixed(2) + ' code=' + LL.codeLikeShare.toFixed(2) + '} R{align=' + RL.alignedShare.toFixed(2) + ' pitch=' + RL.pitchShare.toFixed(2) + ' code=' + RL.codeLikeShare.toFixed(2) + '}');
       var _codeLabelRows = !!(LL && RL) && (
         (LL.codeLikeShare >= 0.6 && LS.medianChars <= 16 && RS.medianChars >= Math.max(18, LS.medianChars * 2))
         || (RL.codeLikeShare >= 0.6 && RS.medianChars <= 16 && LS.medianChars >= Math.max(18, RS.medianChars * 2))
       );
-      if (LL && RL && LL.pass && RL.pass && !_codeLabelRows) {
+      // pdf.js baseline rounding leaves the right side of the real i1040 p124
+      // index at 0.49 pitch regularity even though both sides have >=96% stable
+      // left stops and the peer side is strongly regular (0.78). Admit that
+      // narrow boundary only as a two-sided high-alignment pair; ordinary
+      // forms/figures still need the original 0.50 floor on both sides.
+      var _highAlignmentListPair = !!(LL && RL)
+        && LL.alignedShare >= 0.9 && RL.alignedShare >= 0.9
+        && Math.min(LL.pitchShare, RL.pitchShare) >= 0.45
+        && Math.max(LL.pitchShare, RL.pitchShare) >= 0.5;
+      if (LL && RL && ((LL.pass && RL.pass) || _highAlignmentListPair) && !_codeLabelRows) {
         _t('  listLike both sides (align ' + LL.alignedShare.toFixed(2) + '/' + RL.alignedShare.toFixed(2) + ', pitch ' + LL.pitchShare.toFixed(2) + '/' + RL.pitchShare.toFixed(2) + ') -> cut allowed');
         return true;
       }
@@ -5219,6 +5330,194 @@ function _collapseHeadingSkipsStrict(htmlContent) {
   const _out = { html: result, fixCount };
   return _out;
 }
+
+// Actionable HTML-foundation remediation (2026-08-22). This deliberately fixes only
+// foundations whose meaning is already corroborated by the document or the completed
+// source-language audit. It never invents alt text, link purpose, headings, list meaning,
+// or landmark regions merely to improve the 18-item inventory. The same pure function
+// powers an individual "Fix this" action and the guarded "Fix all safe" batch action.
+// Requested IDs that cannot be repaired without judgment are returned in remainingIds.
+var _alloFixStructuralFoundations = function (html, options) {
+  var source = String(html == null ? '' : html);
+  var opts = options || {};
+  var requestedRaw = Array.isArray(opts.foundationIds) ? opts.foundationIds : (Array.isArray(opts.ids) ? opts.ids : []);
+  var requested = Array.from(new Set(requestedRaw.map(function (id) { return String(id || '').trim(); }).filter(Boolean)));
+  var requestedSet = new Set(requested);
+  var out = source;
+  var mutations = [];
+  var _wanted = function (id) { return requestedSet.has(id); };
+  var _changed = function (id, next, note) {
+    if (typeof next !== 'string' || next === out) return false;
+    out = next;
+    mutations.push({ id: id, note: note || 'Applied a deterministic structural repair.' });
+    return true;
+  };
+  var _plain = function (value) {
+    return String(value || '').replace(/<[^>]+>/g, ' ').replace(/&nbsp;/gi, ' ').replace(/\s+/g, ' ').trim();
+  };
+  var _norm = function (value) { return _plain(value).toLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ').trim(); };
+  var _textEsc = function (value) {
+    return String(value || '').replace(/&(?!(?:#\d+|#x[0-9a-f]+|[a-z][a-z0-9]+);)/gi, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  };
+  var _attrEsc = function (value) { return _textEsc(value).replace(/"/g, '&quot;'); };
+
+  // Language is safe only when the already-completed source audit supplied a valid
+  // BCP-47-ish tag. There is intentionally no "en" guess in this user-invoked lane.
+  if (_wanted('html-lang') && /<html[\s>]/i.test(out) && !/<html\b[^>]*\slang\s*=/i.test(out)) {
+    var detectedLanguage = String(opts.documentLanguage || '').trim().toLowerCase().replace(/_/g, '-');
+    if (/^[a-z]{2,3}(?:-[a-z0-9]{2,8})*$/i.test(detectedLanguage)) {
+      _changed('html-lang', out.replace(/<html\b([^>]*)>/i, '<html$1 lang="' + _attrEsc(detectedLanguage) + '">'), 'Added the language detected by the source audit.');
+    }
+  }
+
+  // A non-empty existing h1/heading is a trustworthy source for a missing page title.
+  if (_wanted('page-title') && /<head[\s>]/i.test(out) && !/<title>[^<]+<\/title>/i.test(out)) {
+    var headingMatch = out.match(/<h1\b[^>]*>([\s\S]*?)<\/h1>/i) || out.match(/<h[1-6]\b[^>]*>([\s\S]*?)<\/h[1-6]>/i);
+    var titleText = headingMatch ? _plain(headingMatch[1]).slice(0, 240) : '';
+    if (titleText) _changed('page-title', out.replace(/<\/head>/i, '<title>' + _textEsc(titleText) + '</title>\n</head>'), 'Derived the page title from an existing heading.');
+  }
+
+  // Promote an existing heading only when its text exactly matches the existing title.
+  // That is corroboration, not a guess about which paragraph is the document topic.
+  if (_wanted('h1') && !/<h1[\s>]/i.test(out)) {
+    var existingTitle = out.match(/<title\b[^>]*>([\s\S]*?)<\/title>/i);
+    var normalizedTitle = existingTitle ? _norm(existingTitle[1]) : '';
+    if (normalizedTitle) {
+      var promoted = false;
+      var promotedHtml = out.replace(/<h([2-6])\b([^>]*)>([\s\S]*?)<\/h\1>/gi, function (full, level, attrs, inner) {
+        if (promoted || _norm(inner) !== normalizedTitle) return full;
+        promoted = true;
+        return '<h1' + attrs + '>' + inner + '</h1>';
+      });
+      if (promoted) _changed('h1', promotedHtml, 'Promoted the heading whose text exactly matches the document title.');
+    }
+  }
+
+  // If a hierarchy has h1 then jumps directly to h3+, introducing h2 closes the
+  // objective gap without creating new wording or changing reading order.
+  if (_wanted('h2') && /<h1[\s>]/i.test(out) && !/<h2[\s>]/i.test(out) && /<h[3-6][\s>]/i.test(out)) {
+    var h2Done = false;
+    var h2Html = out.replace(/<h([3-6])\b([^>]*)>([\s\S]*?)<\/h\1>/i, function (full, level, attrs, inner) {
+      h2Done = true;
+      return '<h2' + attrs + '>' + inner + '</h2>';
+    });
+    if (h2Done) _changed('h2', h2Html, 'Closed an objective h1-to-h3+ heading-level gap.');
+  }
+
+  // A whole-body main wrapper is safe only when it will not nest banner/contentinfo.
+  // Documents with header/footer placement questions remain explicitly manual.
+  if (_wanted('main') && /<body[\s>]/i.test(out) && !/<main[\s>]/i.test(out) && !/role\s*=\s*["']main["']/i.test(out) && !/<(?:header|footer)[\s>]/i.test(out)) {
+    var mainHtml = out.replace(/(<body\b[^>]*>)([\s\S]*?)(<\/body>)/i, function (full, open, inner, close) {
+      return open + '\n<main id="main-content" role="main">' + inner + '</main>\n' + close;
+    });
+    _changed('main', mainHtml, 'Wrapped the unambiguous body content in one main landmark.');
+  }
+
+  // A <thead> is explicit author evidence that its cells are headers. Only that
+  // narrow case is promoted; first-row guessing is not part of this action.
+  if (_wanted('table-headers') && /<table[\s>]/i.test(out)) {
+    var tableHeaderCount = 0;
+    var tableHeaderHtml = out.replace(/<thead\b([^>]*)>([\s\S]*?)<\/thead>/gi, function (full, attrs, inner) {
+      var fixedInner = inner.replace(/<td\b([^>]*)>([\s\S]*?)<\/td>/gi, function (cell, cellAttrs, cellInner) {
+        tableHeaderCount++;
+        var cleaned = String(cellAttrs || '').replace(/\sscope\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, '');
+        return '<th scope="col"' + cleaned + '>' + cellInner + '</th>';
+      });
+      return '<thead' + attrs + '>' + fixedInner + '</thead>';
+    });
+    if (tableHeaderCount > 0) _changed('table-headers', tableHeaderHtml, 'Promoted cells already placed in <thead> to column headers.');
+  }
+
+  if (_wanted('table-scope') && /<th\b(?![^>]*\bscope\s*=)/i.test(out)) {
+    _changed('table-scope', _stampThScopeGeometryAware(out), 'Added geometry-aware row/column scope to existing table headers.');
+  }
+
+  // A figure caption can safely name its single image. Multi-image figures stay
+  // manual because one caption may describe the group rather than each image.
+  if (_wanted('image-alt') && /<figure[\s>]/i.test(out)) {
+    var altCount = 0;
+    var imageHtml = out.replace(/<figure\b([^>]*)>([\s\S]*?)<\/figure>/gi, function (full, attrs, inner) {
+      var images = inner.match(/<img\b[^>]*>/gi) || [];
+      var caption = inner.match(/<figcaption\b[^>]*>([\s\S]*?)<\/figcaption>/i);
+      var captionText = caption ? _plain(caption[1]).slice(0, 500) : '';
+      if (images.length !== 1 || !captionText || /\balt\s*=\s*(?:"[^"\s][^"]*"|'[^'\s][^']*'|[^\s"'=<>]+)/i.test(images[0])) return full;
+      var fixedInner = inner.replace(/<img\b([^>]*)>/i, function (img, imgAttrs) {
+        altCount++;
+        var cleaned = String(imgAttrs || '').replace(/\salt\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, '');
+        return '<img' + cleaned + ' alt="' + _attrEsc(captionText) + '">';
+      });
+      return '<figure' + attrs + '>' + fixedInner + '</figure>';
+    });
+    if (altCount > 0) _changed('image-alt', imageHtml, 'Reused an existing single-image figure caption as its alt text.');
+  }
+
+  // Label only fields that already expose a meaningful placeholder, title, or name.
+  // Generic field numbers/types are intentionally never manufactured here.
+  if (_wanted('form-label') && /<(?:input|select|textarea)\b/i.test(out)) {
+    var fieldCounter = 0;
+    var labelCount = 0;
+    var labelSource = out;
+    var formHtml = out.replace(/<(input|select|textarea)\b([^>]*?)(\/?)>/gi, function (full, tag, attrs, selfClose) {
+      if (/\btype\s*=\s*["']?(?:hidden|submit|button|image|reset)["']?/i.test(attrs)) return full;
+      if (/\saria-(?:label|labelledby)\s*=/i.test(attrs)) return full;
+      var idMatch = attrs.match(/\bid\s*=\s*["']([^"']+)["']/i);
+      if (idMatch) {
+        var safeId = idMatch[1].replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        if (new RegExp('<label\\b[^>]*\\bfor\\s*=\\s*["\']' + safeId + '["\']', 'i').test(labelSource)) return full;
+      }
+      var sourceMatch = attrs.match(/\bplaceholder\s*=\s*["']([^"']+)["']/i)
+        || attrs.match(/\btitle\s*=\s*["']([^"']+)["']/i)
+        || attrs.match(/\bname\s*=\s*["']([^"']+)["']/i);
+      var label = sourceMatch ? _plain(sourceMatch[1].replace(/[_-]+/g, ' ')) : '';
+      if (!label || /^(?:field|input|select|textarea|text|value)\s*\d*$/i.test(label)) return full;
+      fieldCounter++;
+      var fieldId = idMatch ? idMatch[1] : ('alloflow-foundation-field-' + fieldCounter);
+      var nextAttrs = idMatch ? attrs : (' id="' + fieldId + '"' + attrs);
+      labelCount++;
+      return '<label for="' + _attrEsc(fieldId) + '" class="sr-only">' + _textEsc(label) + '</label><' + tag + nextAttrs + selfClose + '>';
+    });
+    if (labelCount > 0) _changed('form-label', formHtml, 'Associated fields with labels derived from their existing placeholder, title, or name.');
+  }
+
+  // Skip navigation runs after main so one batch can safely establish the target
+  // and then add the link. Existing main IDs are preserved and used as the target.
+  if (_wanted('skip-link') && !/skip[^<]{0,30}(?:content|nav)|class\s*=\s*["'][^"']*skip/i.test(out)) {
+    var mainOpen = out.match(/<main\b([^>]*)>/i) || out.match(/<(\w+)\b([^>]*\srole\s*=\s*["']main["'][^>]*)>/i);
+    if (mainOpen) {
+      var mainTag = mainOpen[0];
+      var idFound = mainTag.match(/\bid\s*=\s*["']([^"']+)["']/i);
+      var targetId = idFound ? idFound[1] : 'main-content';
+      var skipHtml = out;
+      if (!idFound) skipHtml = skipHtml.replace(mainTag, mainTag.replace(/>$/, ' id="main-content">'));
+      skipHtml = skipHtml.replace(/<body\b([^>]*)>/i, '<body$1>\n<a href="#' + _attrEsc(targetId) + '" class="sr-only skip-link">Skip to main content</a>');
+      _changed('skip-link', skipHtml, 'Added a skip link to the existing main-content target.');
+    }
+  }
+
+  var before = typeof _alloStructuralFoundations === 'function' ? _alloStructuralFoundations(source) : null;
+  var after = typeof _alloStructuralFoundations === 'function' ? _alloStructuralFoundations(out) : null;
+  var beforeById = Object.create(null);
+  var afterById = Object.create(null);
+  ((before && before.items) || []).forEach(function (item) { beforeById[item.id] = item; });
+  ((after && after.items) || []).forEach(function (item) { afterById[item.id] = item; });
+  var changedIds = Array.from(new Set(mutations.map(function (entry) { return entry.id; })));
+  var appliedIds = requested.filter(function (id) {
+    return beforeById[id] && beforeById[id].status === 'missing' && afterById[id] && afterById[id].status === 'passed';
+  });
+  var remainingIds = requested.filter(function (id) { return afterById[id] && afterById[id].status === 'missing'; });
+  var result = {
+    html: out,
+    changed: out !== source,
+    requestedIds: requested,
+    changedFoundationIds: changedIds,
+    appliedFoundationIds: appliedIds,
+    remainingIds: remainingIds,
+    mutations: mutations,
+    before: before,
+    after: after
+  };
+  return result;
+};
 
 // Derive the screen-reader-announced label (/TU + /Alt) for a tagged form field. The raw
 // field.getName() is the MACHINE identifier (a default like "Text1"/"Check Box 3"/"undefined_2",
@@ -30384,6 +30683,40 @@ tr { page-break-inside: avoid; }
     const _noTextRpt = !isBeforeAfter && d.hasSearchableText === false;
     html += _honestReportBlocks(_structScore, _semScore, d.integrityCoverage, undefined, (typeof _eaScore === 'number' ? _eaScore : undefined), { automatedNA: _noTextRpt, integrityWarning: d.integrityWarning, fidelityNotes: d.fidelityNotes, axeIncomplete: ((_axeAuditForReport || {}).totalIncomplete || 0), verificationCoverage: _reportCoverage, verificationState: _reportState, verificationReasons: _reportVerification.reasons, requiresManualReview: _reportRequiresReview, secondEngineAudit: _eaAuditForReport });
 
+    // The teacher-visible 18-item matrix is also report evidence, not UI chrome.
+    // Keep the deterministic detector and all three verification sources separate
+    // so a downloaded report cannot collapse "not tested" into an implied pass.
+    const _foundationReport = d.htmlFoundations || (d.verificationResult && d.verificationResult.htmlFoundations) || null;
+    const _foundationItems = _foundationReport && Array.isArray(_foundationReport.items) ? _foundationReport.items : [];
+    if (_foundationItems.length) {
+      const _foundationState = (entry) => {
+        const state = entry && entry.state ? String(entry.state) : 'unavailable';
+        const label = state === 'pass' ? 'Pass' : state === 'fail' ? 'Finding' : state === 'review' ? 'Review' : state === 'not-tested' ? 'Not tested' : state === 'not-applicable' ? 'N/A' : 'Unavailable';
+        const color = state === 'pass' ? '#166534' : state === 'fail' ? '#9f1239' : state === 'review' ? '#92400e' : '#475569';
+        const detail = entry && entry.detail ? '<div style="margin-top:2px;color:#64748b;font-size:8px;line-height:1.25">' + esc(entry.detail) + '</div>' : '';
+        return '<strong style="color:' + color + '">' + label + '</strong>' + detail;
+      };
+      const _sum = _foundationReport.summary || {};
+      html += '<h2>HTML Foundations: all 18 checks</h2>'
+        + '<p style="font-size:11px;color:#64748b">Presence-level HTML inventory, not a WCAG score or exported-PDF verdict. Evidence stays separate for the deterministic HTML detector, AI, axe-core, and IBM Equal Access; “Not tested” means that engine’s configured ruleset does not cover the foundation.</p>'
+        + '<p style="font-size:11px;font-weight:700;color:#334155">' + esc(_sum.passed || 0) + ' passed · ' + esc(_sum.missing || 0) + ' missing · ' + esc(_sum.notApplicable || 0) + ' not applicable</p>'
+        + '<table style="table-layout:fixed;width:100%;font-size:9px"><thead><tr><th style="width:15%">Foundation</th><th style="width:9%">Presence</th><th style="width:16%">HTML detector</th><th style="width:15%">AI</th><th style="width:15%">axe-core</th><th style="width:15%">Equal Access</th><th style="width:15%">Detail</th></tr></thead><tbody>';
+      _foundationItems.forEach((item) => {
+        const evidence = item.evidence || {};
+        const presence = item.status === 'passed' ? 'Passed / detected' : item.status === 'missing' ? 'Missing' : 'Not applicable';
+        html += '<tr>'
+          + '<th scope="row" style="padding:6px;border:1px solid #e2e8f0;background:#fff">' + esc(item.label || item.id) + '</th>'
+          + '<td style="padding:6px;border:1px solid #e2e8f0">' + esc(presence) + '</td>'
+          + '<td style="padding:6px;border:1px solid #e2e8f0">' + _foundationState(evidence.deterministic) + '</td>'
+          + '<td style="padding:6px;border:1px solid #e2e8f0">' + _foundationState(evidence.ai) + '</td>'
+          + '<td style="padding:6px;border:1px solid #e2e8f0">' + _foundationState(evidence.axe) + '</td>'
+          + '<td style="padding:6px;border:1px solid #e2e8f0">' + _foundationState(evidence.equalAccess) + '</td>'
+          + '<td style="padding:6px;border:1px solid #e2e8f0;color:#475569">' + esc(item.detail || '') + '</td>'
+          + '</tr>';
+      });
+      html += '</tbody></table>';
+    }
+
     // Reliability metrics
     const audit = isBeforeAfter ? (d.before?.audit || d) : d;
     if (audit.scores && audit.scores.length > 1) {
@@ -44299,6 +44632,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     computeHeadline: _alloComputeHeadline, // single source of truth for the weakest-layer headline (the view reaches it via this instance prop)
     ocrBlockLayout: _alloOcrBlockLayout, // exposed for tests: the scanned-OCR block-fallback line distribution
     structuralFoundations: _alloStructuralFoundations, // the view's foundations scorecard calls this (single source for the regex set)
+    fixStructuralFoundations: _alloFixStructuralFoundations, // individual + guarded batch foundation repairs (pure, evidence-gated)
     tableCellDrift: _alloTableCellDrift, // phase-2 cell-position gate (pure; blocking in acceptFixedHtmlDetailed)
     weightedDeductions: _alloWeightedDeductions, // #5: single source for the output-audit deduction (single-chunk + chunked-merge)
     contrastFixPair: _alloContrastFixPair, // deterministic which-colour-to-move contrast fixer (auto | preserve fg/bg/both)
@@ -44335,6 +44669,7 @@ window.AlloModules.createDocPipeline.INTERACTIVE_OBJECT_PROFILE_VERSION = ALLO_I
 window.AlloModules.createDocPipeline.computeHeadline = _alloComputeHeadline; // static: the AlloFlowANTI monolith delegates blendAiAxe here so its copy can never re-drift to a mean
 window.AlloModules.createDocPipeline.ocrBlockLayout = _alloOcrBlockLayout; // static: exposed for tests (scanned-OCR block-fallback layout)
 window.AlloModules.createDocPipeline.structuralFoundations = _alloStructuralFoundations; // static: exposed for tests
+window.AlloModules.createDocPipeline.fixStructuralFoundations = _alloFixStructuralFoundations; // static: safe foundation action/batch helper
 window.AlloModules.createDocPipeline.tableCellDrift = _alloTableCellDrift; // static: exposed for tests
 window.AlloModules.createDocPipeline.weightedDeductions = _alloWeightedDeductions; // static: exposed for tests (#5)
 window.AlloModules.createDocPipeline.contrastFixPair = _alloContrastFixPair; // static: exposed for tests (contrast pair-fixer)

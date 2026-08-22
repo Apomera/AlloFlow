@@ -84,6 +84,9 @@ var X = _lazyIcon('X');
 ${compiled}
 window.AlloModules = window.AlloModules || {};
 window.AlloModules.PdfAuditView = (typeof PdfAuditView !== 'undefined') ? PdfAuditView : null;
+window.AlloModules.PdfAuditVerificationEngineList = (typeof _PdfAuditVerificationEngineList !== 'undefined') ? _PdfAuditVerificationEngineList : null;
+window.AlloModules.PdfHtmlFoundationMatrix = (typeof _PdfHtmlFoundationMatrix !== 'undefined') ? _PdfHtmlFoundationMatrix : null;
+window.AlloModules.PdfFoundationEvidence = (typeof _viewFoundationEvidence !== 'undefined') ? _viewFoundationEvidence : null;
 window.AlloModules.AccessibleOfficeExport = { build: _buildAccessibleOfficeExport };
 // Alternative-format builders (2026-07-29). These were reachable only by clicking a
 // button inside PdfAuditView, which put ePub / DAISY / braille out of reach of the MCP

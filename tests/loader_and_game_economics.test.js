@@ -69,8 +69,8 @@ describe('module readiness loader', () => {
     });
 
     it('renders the still-loading pill with a failed-retry affordance after splash only', () => {
-        expect(anti).toMatch(/Loading tools… \{moduleLoadInfo\.pending\.length\} left/);
-        expect(anti).toMatch(/\{moduleLoadInfo\.failed\.length\} failed — retry/);
+        expect(anti).toMatch(/t\('mailbox\.loading_tools'\)[\s\S]{0,80}moduleLoadInfo\.pending\.length/);
+        expect(anti).toMatch(/moduleLoadInfo\.failed\.length[\s\S]{0,80}t\('mailbox\.failed_retry'\)/);
         expect(anti).toMatch(/isAppReady && \(moduleLoadInfo\.pending\.length > 0 \|\| moduleLoadInfo\.failed\.length > 0\)/);
         expect(anti).toMatch(/window\.__alloRetryFailedModules\?\.\(\)/);
     });
@@ -89,7 +89,7 @@ describe('mailbox live-session parity', () => {
         // readingBook, manipulative, and navigation follow sites.
         expect(anti).toMatch(/const _alloFollowResourceLive = \(item, options = \{\}\) => \{/);
         expect(anti).toContain("if (mbLive && mbMode === 'sync') {");
-        expect(anti).toContain('pushResourceToMailbox(item, { silentTeacher: true })');
+        expect(anti).toMatch(/pushResourceToMailbox\(item, \{\s*silentTeacher: true,[^}]*allowIncompleteAudio: true\s*\}\)/);
     });
 
     it('full-pack sharing delivers quietly without yanking the student view (async parity)', () => {
@@ -135,7 +135,7 @@ describe('mailbox live-session parity', () => {
         expect(anti).toMatch(/a: 'mysessions', admin/);
         expect(anti).toMatch(/setMbResumable\(open\)/);
         expect(anti).toMatch(/resumeMailboxLiveSession/);
-        expect(anti).toMatch(/Resume class \{String\(s\.c\)\.toUpperCase\(\)\}/);
+        expect(anti).toMatch(/t\('mailbox\.resume_class'\)[\s\S]{0,80}String\(s\.c\)\.toUpperCase\(\)/);
         // localStorage is documented as the non-Canvas fast path only.
         expect(anti).toMatch(/unavailable in the sandboxed Gemini Canvas iframe/);
     });

@@ -139,6 +139,41 @@ describe('blueprint_review lanes', () => {
     expect(last(store).type).toBe('choices'); // pills re-offered after the edit
   });
 
+  it('uses the module-owned blueprint reviser when the host sends no implementation override', async () => {
+    const { deps, store } = makeDeps({ messages: [], guidedFlowState: REVIEWING, intent: 'QUESTION' });
+    delete deps.modifyBlueprintWithAI;
+    deps.cleanJson = value => value;
+    deps.callGemini = vi.fn(async () => JSON.stringify({
+      ...BP,
+      resourcePlan: [{ tool: 'analysis', directive: 'Inspect the source' }, { tool: 'lesson-plan', directive: 'Synthesize' }],
+    }));
+
+    await handleSendUDLMessage('replace the quiz with an analysis', deps);
+
+    expect(deps.callGemini).toHaveBeenCalledWith(expect.stringContaining('replace the quiz with an analysis'), true);
+    expect(store.blueprint.resourcePlan.map(item => item.tool)).toEqual(['analysis', 'lesson-plan']);
+    expect(last(store).stage).toBe('blueprint_review');
+  });
+
+  it('uses the module-owned standard responder when the host sends no implementation override', async () => {
+    const { deps, store } = makeDeps({
+      messages: [reviewChoicesMsg()],
+      guidedFlowState: { ...REVIEWING, pendingContext: 'blueprint_question' },
+    });
+    delete deps.generateStandardChatResponse;
+    deps.currentUiLanguage = 'English';
+    deps.isParentMode = false;
+    deps.isIndependentMode = false;
+    deps.getGroupDifferentiationContext = () => '- Group context: mixed readiness';
+    deps.callGemini = vi.fn(async () => '**Strategy: Compare**\n- **Action:** Contrast the two resources.');
+
+    await handleSendUDLMessage('why these resources?', deps);
+
+    expect(deps.callGemini).toHaveBeenCalledWith(expect.stringContaining('why these resources?'));
+    expect(store.messages.some(message => message.text && message.text.includes('**Strategy: Compare**'))).toBe(true);
+    expect(last(store).stage).toBe('blueprint_review');
+  });
+
   it('the Generate pill executes', async () => {
     const { deps, store } = makeDeps({ messages: [reviewChoicesMsg()], guidedFlowState: REVIEWING });
     await handleSendUDLMessage('go', deps);

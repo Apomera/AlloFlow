@@ -512,8 +512,10 @@ describe('Canvas workspace recovery integration contracts', () => {
     const recoveryGateHeader = anti.slice(recoveryGate, anti.indexOf('role="dialog"', recoveryGate));
     // 2026-08: both landing gates additionally wait for the recovery DECISION —
     // the same invariant this test guards, now explicit in the predicate.
-    const launchPadGate = anti.indexOf('{isAppReady && canvasRecoveryDecisionMade && !hasSelectedMode && window.AlloModules && window.AlloModules.LaunchPadView', recoveryGate);
-    const coachGate = anti.indexOf('{isAppReady && canvasRecoveryDecisionMade && !hasSelectedMode && window.AlloModules && window.AlloModules.OnboardingCoach', launchPadGate + 1);
+    // Shell deep links now suppress both landing surfaces, but do not change their
+    // recovery-first ordering. Include that shared guard in the canonical anchor.
+    const launchPadGate = anti.indexOf('{isAppReady && canvasRecoveryDecisionMade && !hasSelectedMode && !shellDeepLinkTool && window.AlloModules && window.AlloModules.LaunchPadView', recoveryGate);
+    const coachGate = anti.indexOf('{isAppReady && canvasRecoveryDecisionMade && !hasSelectedMode && !shellDeepLinkTool && window.AlloModules && window.AlloModules.OnboardingCoach', launchPadGate + 1);
 
     expect(recoveryGate).toBeGreaterThan(-1);
     expect(launchPadGate).toBeGreaterThan(recoveryGate);

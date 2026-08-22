@@ -112,6 +112,9 @@ describe('#3 structural foundations — length-independent checks on their own a
     expect(f.presentIds).toContain('image-alt');
     expect(f.notDetected.some((item) => item.id === 'ordered-list')).toBe(true);
     expect(f.imageSummary).toEqual({ total: 1, withAlt: 1, missingAlt: 0, captions: 0 });
+    expect(f.items).toHaveLength(18);
+    expect(f.summary.total).toBe(18);
+    expect(f.summary.passed + f.summary.missing + f.summary.notApplicable).toBe(18);
   });
   it('a bare doc detects (almost) none', async () => {
     const fn = await liveFoundations();
@@ -124,6 +127,18 @@ describe('#3 structural foundations — length-independent checks on their own a
     expect(f.present.some((p) => /alt attribute/.test(p) && /not verified/.test(p))).toBe(true);
     const partial = fn("<img alt='x'><img alt=''>");
     expect(partial.imageSummary).toEqual({ total: 2, withAlt: 1, missingAlt: 1, captions: 0 });
+    expect(partial.items.find((item) => item.id === 'image-alt')).toMatchObject({ status: 'missing', applicable: true });
+  });
+  it('does not let an unrelated aria-label hide unlabeled form controls', async () => {
+    const fn = await liveFoundations();
+    const unrelated = fn('<button aria-label="Open menu"></button><input id="student-name"><textarea aria-label="Notes"></textarea>');
+    expect(unrelated.formSummary).toEqual({ total: 2, named: 1, missingName: 1 });
+    expect(unrelated.items.find((item) => item.id === 'form-label')).toMatchObject({ status: 'missing', applicable: true });
+    expect(unrelated.items.find((item) => item.id === 'form-label').detail).toContain('1 of 2 form controls');
+
+    const complete = fn('<label for="student-name">Student name</label><input id="student-name"><textarea aria-label="Notes"></textarea>');
+    expect(complete.formSummary).toEqual({ total: 2, named: 2, missingName: 0 });
+    expect(complete.items.find((item) => item.id === 'form-label')).toMatchObject({ status: 'passed', applicable: true });
   });
 });
 
@@ -136,14 +151,15 @@ describe('anti-drift: structural foundations are single-sourced + wired (never a
   });
   it('the view renders an expandable inventory from _docPipeline.structuralFoundations', () => {
     expect(viewSrc).toMatch(/const _fn = _docPipeline && _docPipeline\.structuralFoundations;/);
-    expect(viewSrc).toMatch(/_structuralFoundations\.present\.length/);
-    expect(viewSrc).toContain('HTML structure inventory');
-    expect(viewSrc).toContain('Not detected (not automatically failures)');
-    expect(viewSrc).not.toMatch(/_structuralFoundations\.present\.length\}\{_structuralFoundations\.checked/);
+    expect(viewSrc).toContain('<_PdfHtmlFoundationMatrix');
+    expect(viewSrc).toContain('HTML foundations: all 18 checks');
+    expect(viewSrc).toContain('Passed / detected');
+    expect(viewSrc).toContain('Not applicable');
+    expect(viewSrc).toContain('data-testid="pdf-html-foundation-chip"');
   });
   it('the inventory explicitly says it is not a score or remediation target', () => {
-    expect(viewSrc).toMatch(/presence inventory, not an accessibility score or remediation target/);
-    expect(viewSrc).toMatch(/content score and exported-PDF validation are separate checks/);
+    expect(viewSrc).toContain('This is not a WCAG score, remediation target, or exported-PDF validation result.');
+    expect(viewSrc).toContain('it does not prove that its value or wording is correct');
   });
   it('surfaces source-image versus remediated-HTML fidelity mismatches', () => {
     expect(viewSrc).toContain("const _imageFoundationConcern = _sourceImageCount > _htmlImageCount || _htmlImagesWithAlt < _htmlImageCount;");
