@@ -225,4 +225,17 @@ describe('deploy freshness coverage', () => {
     expect(modules).toContain('view_pdf_audit_module.js');
     expect(modules).toContain('view_export_preview_module.js');
   });
+
+  it('rebuilds and stages every AppStyles artifact after docsuite theme self-healing', () => {
+    const deploy = readFileSync(resolve(process.cwd(), 'deploy.sh'), 'utf8');
+    const selfHealingGate = deploy.match(
+      /if ! node dev-tools\/gen_docsuite_theme\.cjs --check; then([\s\S]*?)\n  fi/
+    )?.[1] || '';
+
+    expect(selfHealingGate).toContain('node dev-tools/_apply_docsuite_theme.cjs');
+    expect(selfHealingGate).toContain('node _build_app_styles_module.js');
+    expect(selfHealingGate).toContain(
+      'git add app_styles_source.jsx app_styles_module.js desktop/web-app/public/app_styles_module.js'
+    );
+  });
 });

@@ -169,11 +169,14 @@ if [[ "${SKIP_RENDER_CHECK:-0}" != "1" ]]; then
   node dev-tools/check_retired_paths.cjs --quiet
   echo "  ✓ no retired tree growing back (the pre-rename web-app dir rebuilt itself from the reading-library sync scripts and reached 3,536 tracked files before anyone noticed; the vitest guard that covered it never ran here; 2026-07-26)."
   # Self-healing (2026-07-20): this gate names its own fix — run it instead of
-  # aborting. A stale block regenerates + stages, then the check must pass.
+  # aborting. Rebuild and stage the AppStyles source, root CDN module, and public
+  # mirror together; staging the app-shell files here left the actual regenerated
+  # files dirty and the CDN one release behind (2026-08-22).
   if ! node dev-tools/gen_docsuite_theme.cjs --check; then
     echo "  ⚠ docsuite theme CSS stale — regenerating (the gate's own prescribed fix)…"
     node dev-tools/_apply_docsuite_theme.cjs
-    git add AlloFlowANTI.txt desktop/web-app/src/AlloFlowANTI.txt desktop/web-app/src/App.jsx 2>/dev/null || true
+    node _build_app_styles_module.js
+    git add app_styles_source.jsx app_styles_module.js desktop/web-app/public/app_styles_module.js 2>/dev/null || true
     node dev-tools/gen_docsuite_theme.cjs --check
   fi
   echo "  ✓ docsuite theme CSS current (new color utilities in scanned files regenerate the scoped remap — stale block = pastel-in-dark modals; self-healing since 2026-07-20)."
