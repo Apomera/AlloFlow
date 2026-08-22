@@ -1524,7 +1524,7 @@ function AIBackendModalBody(props) {
       { "data-help-key": "ai_backend_guided_card_canvas" },
       () => {
         try {
-          window.open("https://share.gemini.google/6pWmAMhFRXsH", "_blank", "noopener");
+          window.open("https://share.gemini.google/gKRsMKVR6MO4", "_blank", "noopener");
         } catch (e) {
         }
       },
