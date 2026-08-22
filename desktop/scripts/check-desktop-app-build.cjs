@@ -50,7 +50,7 @@ const MODULE_CONTRACTS = [
 if (window.AlloModules && window.AlloModules.MiscHandlersModule) { console.log('[CDN] MiscHandlersModule already loaded, skipping'); return; }
 ${source}
 window.AlloModules.MiscHandlersModule = true;
-console.log('[MiscHandlers] 3 handlers registered (handleFileUpload + handleLoadProject + detectClimaxArchetype)');
+console.log('[MiscHandlers] 4 handlers registered (handleFileUpload + handleLoadProject + handleRestoreView + detectClimaxArchetype)');
 })();
 `;
     },
