@@ -846,7 +846,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
           h('div', { className: 'text-right' },
             h('div', { className: 'text-[11px] text-slate-600 font-mono' }, 'MET ' + getMissionElapsed()),
             missionStartTime && h('button', { type: 'button', 'aria-label': missionPausedAt ? t('stem.moonmission.resume_mission_clock', 'Resume mission clock') : t('stem.moonmission.pause_mission_clock', 'Pause mission clock'), onClick: toggleMissionClock, className: 'text-[10px] font-bold text-indigo-700 underline focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded' }, missionPausedAt ? t('stem.moonmission.resume', '\\u25B6 Resume') : t('stem.moonmission.pause', '\\u23F8 Pause')),
-            h('div', { className: 'text-[11px] text-indigo-500 font-bold' }, '\u2B50 ' + missionXP + ' XP')
+            h('div', { className: 'text-[11px] text-indigo-700 font-bold' }, '\u2B50 ' + missionXP + ' XP')
           )
         ),
 
@@ -6735,9 +6735,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
           var deltaV = iq.isp * g * Math.log(iq.massRatio);
           var orbit = deltaV < 7800 ? 'insufficient' : (deltaV < 11200 ? 'leo' : 'escape');
           var orbitMeta = {
-            insufficient: { label: t('stem.moonmission.insufficient_suborbital', '🔴 Insufficient — suborbital'), color: '#dc2626', bg: 'rgba(220,38,38,0.10)', border: '#ef4444' },
-            leo:          { label: t('stem.moonmission.leo_earth_orbit', '🟢 LEO / Earth orbit'),          color: '#059669', bg: 'rgba(16,185,129,0.10)', border: '#10b981' },
-            escape:       { label: t('stem.moonmission.escape_velocity_lunar_beyond', '🚀 Escape velocity (lunar/beyond)'), color: '#0ea5e9', bg: 'rgba(14,165,233,0.10)', border: '#0ea5e9' }
+            insufficient: { label: t('stem.moonmission.insufficient_suborbital', '🔴 Insufficient — suborbital'), color: '#b91c1c', bg: 'rgba(220,38,38,0.10)', border: '#ef4444' },
+            leo:          { label: t('stem.moonmission.leo_earth_orbit', '🟢 LEO / Earth orbit'),          color: '#047857', bg: 'rgba(16,185,129,0.10)', border: '#10b981' },
+            escape:       { label: t('stem.moonmission.escape_velocity_lunar_beyond', '🚀 Escape velocity (lunar/beyond)'), color: '#0369a1', bg: 'rgba(14,165,233,0.10)', border: '#0ea5e9' }
           }[orbit];
           function logObs() {
             setIQ({ log: (iq.log || []).concat([{ mr: iq.massRatio, bd: iq.burnDur, isp: iq.isp, dv: Math.round(deltaV), o: orbit }]).slice(-8) });

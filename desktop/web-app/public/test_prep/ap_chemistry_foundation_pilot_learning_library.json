@@ -3,7 +3,7 @@
   "librarySchemaVersion": 1,
   "libraryId": "ap-chemistry-foundation-pilot-learning-library",
   "packId": "ap-chemistry-foundation-pilot",
-  "version": "0.2.0-internal-preview",
+  "version": "0.4.0-internal-preview",
   "title": "AP Chemistry Independent Foundation Study Library",
   "description": "An original text-first nine-chapter study library paired with the internal AP Chemistry foundation pilot. It supports retrieval, calculation setup, model analysis, and evidence-based feedback without reproducing protected course or assessment content.",
   "status": "preview",
@@ -22,7 +22,7 @@
     "examModeReference": "hybrid-digital",
     "officialSectionOne": "60 multiple-choice questions in 90 minutes; 50% of the official exam score.",
     "officialSectionTwo": "7 free-response questions in 105 minutes; 50% of the official exam score.",
-    "pilotAlignment": "360-item internal foundation sampler across nine official units; 72 five-item banks; six chemistry science practices; text-first chapters; no FRQ scoring or laboratory competency claim.",
+    "pilotAlignment": "600-item internal foundation sampler across nine official units; 120 five-item banks; six chemistry science practices; four layered practice angles; data-interpretation and argumentation capstone; text-first chapters; no FRQ scoring or laboratory competency claim.",
     "lastVerifiedAt": "2026-08-20",
     "sourceDigest": "pending-build-generation",
     "bigIdeas": [
@@ -5986,7 +5986,7 @@
   "transitionNotice": "Reverify the current AP Chemistry CED, clarifications, exam format, calculator/reference policies, laboratory boundaries, and public-use boundaries before any release.",
   "contentMigration": {
     "schemaVersion": 1,
-    "contentVersion": "ap-chemistry-foundation-v2",
+    "contentVersion": "ap-chemistry-foundation-v3",
     "sections": 9,
     "completeSections": 9,
     "richLessonPrototypes": 9,

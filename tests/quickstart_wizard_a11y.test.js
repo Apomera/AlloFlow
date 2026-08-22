@@ -23,7 +23,8 @@ describe('Quick Start wizard accessibility', () => {
     expect(source).toContain('role="status" aria-live="polite" aria-atomic="true"');
     expect(source).toContain('role="progressbar"');
     expect(source).toContain('aria-valuemin={1} aria-valuemax={4} aria-valuenow={step}');
-    expect(source).toContain('aria-valuetext={`Step ${step} of 4`}');
+    expect(source).toContain("aria-valuetext={(wt('wizard.progress_value', 'Step {current} of {total}'))");
+    expect(source).toContain(".replace('{current}', String(step)).replace('{total}', '4')}");
   });
 
   it('uses accurate Back and Finish names and 24px small-action targets', () => {

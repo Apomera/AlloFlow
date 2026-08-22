@@ -26,4 +26,15 @@ describe('Coordinate Grid text accessibility', () => {
     expect(html).not.toMatch(/font-size="(?:[0-9](?:\.[0-9]+)?)"/);
     expect(html).toContain('text-[10px]');
   });
+
+  it('names the grid visualization and exposes a keyboard coordinate-entry path', () => {
+    loadTool('stem_lab/stem_tool_coordgrid.js', 'coordinate');
+    const html = renderTool('coordinate', { _coordGrid: { cgTab: 'explore', coordinateInputX: 2, coordinateInputY: -3 } });
+    expect(html).toContain('role="img"');
+    expect(html).toContain('Use the X and Y controls below for keyboard operation.');
+    expect(html).toContain('aria-label="Coordinate entry"');
+    expect(html).toContain('value="2"');
+    expect(html).toContain('value="-3"');
+    expect(html).toContain('Plot or remove point');
+  });
 });

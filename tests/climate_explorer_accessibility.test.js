@@ -38,7 +38,7 @@ describe('Climate Explorer reduced motion', () => {
     const source = fs.readFileSync('stem_lab/stem_tool_climateExplorer.js', 'utf8');
 
     expect(source).toContain('heroDraw();');
-    expect(source).toContain('if (!heroRM) requestAnimationFrame(heroDraw);');
+    expect(source).toContain('if (!heroRM && !cv._cePaused) requestAnimationFrame(heroDraw);');
     expect(source).not.toContain('requestAnimationFrame(heroDraw);\n                requestAnimationFrame(heroDraw);');
   });
 });

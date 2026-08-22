@@ -42,6 +42,11 @@ describe('AP Statistics internal foundation pilot', () => {
     expect(pack.domains).toHaveLength(5);
     expect(pack.blueprint.officialFrameworkTopicCount).toBe(55);
     expect(pack.blueprint.officialFrameworkTopicIds).toHaveLength(55);
+    expect(pack.learningRouteMode).toBe('section-linked-item-routes');
+    expect(pack.practiceRouting).toMatchObject({ sectionCount: 15, itemCount: 240, uniqueItemCount: 240, foundationItemCount: 100, depthItemCount: 100, transferItemCount: 40 });
+    expect(pack.practiceRouteCount).toBe(15);
+    expect(pack.studyRouteCount).toBe(4);
+    expect(pack.quickReferenceCount).toBe(5);
   });
 
   it('contains a balanced 240-item single-choice pilot with transfer depth for every topic', () => {
@@ -86,6 +91,8 @@ describe('AP Statistics internal foundation pilot', () => {
     expect(library.chapters.flatMap((chapter) => chapter.sections.map((section) => section.practiceRoute)).every((route) => route.foundationItemIds.length > 0 && route.depthItemIds.length > 0 && route.transferItemIds.length > 0)).toBe(true);
     expect(library.studyRoutes).toHaveLength(4);
     expect(library.studyRoutes.every((route) => route.itemIds.length > 0 && route.releaseEligible === false)).toBe(true);
+    expect(library.quickReference).toHaveLength(5);
+    expect(library.quickReference.every((reference) => reference.originalStudyAid === true && reference.officialExamReference === false && reference.checklist.length >= 2 && reference.formulas.length >= 2)).toBe(true);
     expect(library.diagrams).toHaveLength(5);
     expect(library.diagramPlacements).toHaveLength(5);
     expect(library.diagrams.every((diagram) => diagram.unscored === true && diagram.accessibility.fallbackMode === 'ordered-text-equivalent')).toBe(true);
@@ -93,7 +100,7 @@ describe('AP Statistics internal foundation pilot', () => {
     expect(library.diagramPlacements.every((placement) => placement.requiredForComprehension === false && placement.fallbackMode === 'diagram-text-equivalent')).toBe(true);
     expect(qa.automatedAssessment).toBe('pass');
     expect(qa.structuralFindings).toEqual([]);
-    expect(qa.metrics).toMatchObject({ itemCount: 240, unitCount: 5, chapterCount: 5, sectionCount: 15, practiceRouteCount: 15, studyRouteCount: 4, practiceRoutedItemCount: 240, diagramCount: 5, diagramPlacementCount: 5 });
+    expect(qa.metrics).toMatchObject({ itemCount: 240, unitCount: 5, chapterCount: 5, sectionCount: 15, practiceRouteCount: 15, studyRouteCount: 4, quickReferenceCount: 5, practiceRoutedItemCount: 240, diagramCount: 5, diagramPlacementCount: 5 });
   });
 
   it('binds the generated pack and QA record into the lazy manifest', () => {

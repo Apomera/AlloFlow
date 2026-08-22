@@ -401,7 +401,7 @@ window.StemLab = window.StemLab || {
                   })
                 ),
                 React.createElement("span", {
-                  className: "text-[11px] font-bold " + (isDark ? "text-slate-200" : "text-slate-700")
+                  className: "text-[11px] font-bold text-white"
                 }, term.formula || '')
               ))
             );
@@ -1769,7 +1769,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                   React.createElement("p", { className: "mt-2 text-xs leading-relaxed text-slate-600" }, "The lab is easier when students choose a mode by task: inspect, combine, build, research, or balance."),
                   React.createElement("div", { className: "mt-3 grid grid-cols-3 gap-2" },
                     [
-                      ['Compounds', discovered.length + '/' + COMPOUNDS.length, '#059669'],
+                      ['Compounds', discovered.length + '/' + COMPOUNDS.length, '#047857'],
                       ['Research points', totalRP, '#d97706'],
                       ['Formula', d.formula || '-', '#2563eb']
                     ].map(function(stat) {
@@ -1783,9 +1783,9 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                 React.createElement("div", { className: "grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6" },
                   [
                     { id: 'viewer', title: 'View', body: '3D model and formula readout.', tone: '#0f766e' },
-                    { id: 'realStructures', title: 'Real Structures', body: 'Open Mol* protein and DNA viewer.', tone: '#0891b2', action: function() { if (typeof setLabToolData === 'function') setLabToolData(function(prev) { var cur = Object.assign({}, (prev && prev._moleculeShelf) || {}); cur.returnTool = 'molecule'; var next = Object.assign({}, prev); next._moleculeShelf = cur; return next; }); if (typeof setStemLabTab === 'function') setStemLabTab('explore'); if (typeof setStemLabTool === 'function') { setStemLabTool('moleculeShelf'); if (typeof announceToSR === 'function') announceToSR('Opening Molecule Shelf real structures viewer.'); } else if (typeof addToast === 'function') addToast('Real structures viewer is not available right now.', 'info'); } },
+                    { id: 'realStructures', title: 'Real Structures', body: 'Open Mol* protein and DNA viewer.', tone: '#0e7490', action: function() { if (typeof setLabToolData === 'function') setLabToolData(function(prev) { var cur = Object.assign({}, (prev && prev._moleculeShelf) || {}); cur.returnTool = 'molecule'; var next = Object.assign({}, prev); next._moleculeShelf = cur; return next; }); if (typeof setStemLabTab === 'function') setStemLabTab('explore'); if (typeof setStemLabTool === 'function') { setStemLabTool('moleculeShelf'); if (typeof announceToSR === 'function') announceToSR('Opening Molecule Shelf real structures viewer.'); } else if (typeof addToast === 'function') addToast('Real structures viewer is not available right now.', 'info'); } },
                     { id: 'creator', title: 'Create', body: 'Combine atoms and discover compounds.', tone: '#9333ea' },
-                    { id: 'build', title: 'Build', body: 'Drag atoms and sketch bonds.', tone: '#d97706' },
+                    { id: 'build', title: 'Build', body: 'Drag atoms and sketch bonds.', tone: '#92400e' },
                     { id: 'table', title: 'Research', body: 'Use the periodic table as reference.', tone: '#2563eb' },
                     { id: 'reactions', title: 'React', body: 'Balance equations and products.', tone: '#dc2626' }
                   ].map(function(route) {
@@ -1999,7 +1999,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
 
                     React.createElement("span", { className: "text-sm font-black" }, sym),
 
-                    React.createElement("span", { className: "text-[11px] opacity-70" }, el?.n || '')
+                    React.createElement("span", { className: "text-[11px]" }, el?.n || '')
 
                   );
 
@@ -2139,7 +2139,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
 
                   className: "px-2 py-1.5 rounded-lg text-xs font-bold border-2 transition-all hover:scale-105 hover:shadow-md active:scale-95",
 
-                  style: { borderColor: a.color, color: a.color, backgroundColor: a.color + '18' },
+                  style: { borderColor: a.color, color: '#0f172a', backgroundColor: a.color + '18' },
 
                   title: 'Add ' + a.label
 
@@ -3296,7 +3296,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
 
                         React.createElement("span", { className: "font-black text-[11px] leading-none" }, el.s),
 
-                        React.createElement("span", { className: "opacity-60 leading-none" }, el.n)
+                        React.createElement("span", { className: "leading-none" }, el.n)
 
                       );
 

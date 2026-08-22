@@ -244,6 +244,14 @@ describe('canonical VerificationPolicy facade', () => {
       requiresManualReview: false,
     });
   });
+
+  it('owns the user-facing reason formatter used by final audit surfaces', () => {
+    const policy = window.AlloModules.VerificationPolicy;
+    expect(policy.formatVerificationReason('axe-incomplete:1')).toBe('1 axe-core rule needs manual review.');
+    expect(policy.formatVerificationReason('equal-access-manual:3')).toBe('3 IBM Equal Access items need manual review.');
+    expect(policy.formatVerificationReason('verification-html-binding-mismatch')).toContain('does not match this document');
+    expect(policy.formatVerificationReason('future-policy-reason')).toBe('Verification evidence needs manual review.');
+  });
 });
 describe('profile-aware verification', () => {
   const manualPass = { executed: true, findingCount: 0, reviewCount: 0 };

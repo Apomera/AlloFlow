@@ -322,7 +322,7 @@
       var useState = React.useState, useEffect = React.useEffect, useRef = React.useRef;
       var bucket = (ctx.toolData && ctx.toolData.particleLab3d) || {};
       var prefersReducedMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
-      var canvasRef = useRef(null), stageRef = useRef(null), runtimeRef = useRef(null), frameRef = useRef(null), settingsRef = useRef(null), keysDialogRef = useRef(null), keysCloseRef = useRef(null), keysOpenerRef = useRef(null);
+      var canvasRef = useRef(null), stageRef = useRef(null), runtimeRef = useRef(null), frameRef = useRef(null), settingsRef = useRef(null), replaySnapshotRef = useRef(null), keysDialogRef = useRef(null), keysCloseRef = useRef(null), keysOpenerRef = useRef(null);
       var [preset, setPreset] = useState(bucket.preset || 'gas');
       var [temperature, setTemperature] = useState(bucket.temperature || 300);
       var [count, setCount] = useState(bucket.count || 64);
@@ -385,6 +385,7 @@
       var [diffusionInfo, setDiffusionInfo] = useState({ mixing: 0, exchange: 0, leftA: 1, rightA: 0, leftCount: 0, rightCount: 0, profileA: new Array(10).fill(0.5), profileTotal: new Array(10).fill(0), entropy: 0, msd: 0, msdA: 0, msdB: 0, coefficient: 0, coefficientA: 0, coefficientB: 0, elapsed: 0, spreadA: 0, spreadB: 0, solventRight: 0.5, osmoticShift: 0, soluteLeak: 0, milestoneTime: null, flux: 0, fluxA: 0, fluxB: 0, netFluxA: 0, netFluxB: 0, assayPassedA: 0, assayPassedB: 0, assayBlockedA: 0, assayBlockedB: 0, assayConditionKey: '', blocked: 0 });
       var [history, setHistory] = useState([]);
       var [historyCursor, setHistoryCursor] = useState(-1);
+      var [replayPlaying, setReplayPlaying] = useState(false);
       var [resetKey, setResetKey] = useState(0);
       var runRef = useRef(false), stepRef = useRef(false), lastUiRef = useRef(0);
       settingsRef.current = { preset: preset, temperature: temperature, count: count, attraction: attraction, gravity: gravity, membrane: membrane, permeability: permeability, membraneSelectivity: membraneSelectivity, massRatioB: massRatioB, boxSize: boxSize, particleDiameter: particleDiameter, trace: trace, vectors: vectors, flowTrails: flowTrails, energyColors: energyColors, wallSensors: wallSensors, autoCamera: autoCamera, followTracer: followTracer, systemProbe: systemProbe, timeScale: timeScale, selectedParticle: Math.min(selectedParticle, count - 1) };
@@ -393,6 +394,25 @@
         if (!history.length && historyCursor !== -1) setHistoryCursor(-1);
         else if (history.length && historyCursor >= history.length) setHistoryCursor(-1);
       }, [history.length]);
+      useEffect(function () {
+        if (!history.length && replayPlaying) setReplayPlaying(false);
+      }, [history.length, replayPlaying]);
+      useEffect(function () {
+        if (!replaySnapshotRef.current && historyCursor < 0) return;
+        exitReplayMode();
+        if (replayPlaying) setReplayPlaying(false);
+        if (historyCursor >= 0) setHistoryCursor(-1);
+      }, [ready, preset, count, boxSize, particleDiameter, massRatioB, resetKey, quality]);
+      useEffect(function () {
+        if (!replayPlaying || history.length < 2 || historyCursor < 0) return;
+        if (historyCursor >= history.length - 1) {
+          setReplayPlaying(false);
+          if (ctx.announceToSR) ctx.announceToSR('Replay reached the latest measurement sample.');
+          return;
+        }
+        var timer = window.setTimeout(function () { applyReplayIndex(historyCursor + 1); }, prefersReducedMotion ? 720 : 520);
+        return function () { window.clearTimeout(timer); };
+      }, [replayPlaying, history.length, historyCursor]);
 
       function persist(patch) {
         if (!ctx.setToolData) return;
@@ -521,11 +541,38 @@
         var waypointGeo = new THREE.RingGeometry(0.13, 0.23, quality === 'eco' ? 16 : 28), collisionWaypoints = [], waypointCursor = 0;
         for (var wi = 0; wi < (quality === 'eco' ? 6 : 10); wi += 1) { var waypointMat = new THREE.MeshBasicMaterial({ color: wi % 2 ? 0xfde047 : 0x67e8f9, transparent: true, opacity: 0, side: THREE.DoubleSide, blending: THREE.AdditiveBlending, depthWrite: false }); var waypoint = new THREE.Mesh(waypointGeo, waypointMat); waypoint.visible = false; waypoint.userData.life = 0; waypoint.userData.flight = 0; scene.add(waypoint); collisionWaypoints.push(waypoint); }
         function clearTracerVisuals(anchor) { trailPoints.length = 0; trailGeo.setFromPoints([]); lastTracerCollision = anchor ? new THREE.Vector3(anchor.x, anchor.y, anchor.z) : null; currentFlightLine.visible = false; collisionWaypoints.forEach(function (waypoint) { waypoint.visible = false; waypoint.userData.life = 0; }); }
+        function captureParticleSnapshot(list) {
+          return (list || []).map(function (particle) { return { x: particle.x, y: particle.y, z: particle.z, vx: particle.vx, vy: particle.vy, vz: particle.vz, type: particle.type }; });
+        }
+        function applyParticleSnapshot(snapshot) {
+          if (!Array.isArray(snapshot)) return;
+          snapshot.forEach(function (frame, index) {
+            var particle = particles[index]; if (!particle || !frame) return;
+            particle.x = Number(frame.x) || 0; particle.y = Number(frame.y) || 0; particle.z = Number(frame.z) || 0;
+            particle.vx = Number(frame.vx) || 0; particle.vy = Number(frame.vy) || 0; particle.vz = Number(frame.vz) || 0;
+          });
+        }
         var flowLines = [], flowHistories = [];
         for (var ti = 0; ti < Math.min(qualityProfile.flow, particles.length); ti += 1) {
           var fg = new THREE.BufferGeometry(), fc = new THREE.Color().setHSL(0.52 + ti * 0.025, 0.9, 0.63);
           var fmLine = new THREE.LineBasicMaterial({ color: fc, transparent: true, opacity: 0.48, blending: THREE.AdditiveBlending, depthWrite: false });
           var fl = new THREE.Line(fg, fmLine); fl.visible = false; scene.add(fl); flowLines.push(fl); flowHistories.push([]);
+        }
+        var liveSnapshot = null, replayActive = false;
+        function enterReplay(snapshot) {
+          if (!Array.isArray(snapshot) || !snapshot.length) return false;
+          if (!replayActive) liveSnapshot = captureParticleSnapshot(particles);
+          replayActive = true; replaySnapshotRef.current = snapshot; applyParticleSnapshot(snapshot);
+          trailPoints.length = 0; trailGeo.setFromPoints([]); flowHistories.forEach(function (history) { history.length = 0; });
+          return true;
+        }
+        function exitReplay() {
+          replaySnapshotRef.current = null;
+          if (!replayActive) return;
+          if (liveSnapshot) applyParticleSnapshot(liveSnapshot);
+          liveSnapshot = null; replayActive = false;
+          trailPoints.length = 0; trailGeo.setFromPoints([]); flowHistories.forEach(function (history) { history.length = 0; });
+          clearTracerVisuals(particles[settingsRef.current.selectedParticle] || particles[0]);
         }
         var clock = performance.now(), accumulator = 0, collisionTotal = 0, impulseTotal = 0, metricElapsed = 0, simulationElapsed = 0, transportMilestone = null, membranePassedTotal = 0, membraneBlockedTotal = 0, membranePassedATotal = 0, membranePassedBTotal = 0, membraneNetATotal = 0, membraneNetBTotal = 0, assayPassedA = 0, assayPassedB = 0, assayBlockedA = 0, assayBlockedB = 0, membranePulseA = 0, membranePulseB = 0, membraneBlockPulse = 0, dropletMergePulse = 0, previousClusterSnapshot = null, clusterVisualData = { groups: [] }, assayConditionKey = [settingsRef.current.preset, settingsRef.current.membrane, settingsRef.current.permeability, settingsRef.current.membraneSelectivity].join('|'), pendingFlashEvents = [], fpsFrames = 0, fpsClock = clock;
         var followTarget = new THREE.Vector3(), followDelta = new THREE.Vector3();
@@ -549,7 +596,10 @@
           var cameraTracer = particles[settingsRef.current.selectedParticle] || particles[0];
           if (settingsRef.current.followTracer && settingsRef.current.trace && cameraTracer && !reducedMotion) { followTarget.set(cameraTracer.x, cameraTracer.y, cameraTracer.z); followDelta.copy(followTarget).sub(controls.target).multiplyScalar(reducedMotion ? 1 : clamp(elapsed * 4.2, 0.03, 0.24)); controls.target.add(followDelta); camera.position.add(followDelta); }
           controls.autoRotate = !!settingsRef.current.autoCamera && !settingsRef.current.followTracer && !reducedMotion; controls.autoRotateSpeed = 0.62; controls.update(); fpsFrames += 1; if (now - fpsClock >= 1000) { setFps(Math.round(fpsFrames * 1000 / (now - fpsClock))); fpsFrames = 0; fpsClock = now; }
-          if (runRef.current || stepRef.current) {
+          var replayFrame = replaySnapshotRef.current;
+          if (replayFrame) {
+            applyParticleSnapshot(replayFrame); stepRef.current = false;
+          } else if (runRef.current || stepRef.current) {
             accumulator += stepRef.current ? 1 / 60 : elapsed * settingsRef.current.timeScale; stepRef.current = false;
             while (accumulator >= 1 / 120) {
               var result = advanceParticles(particles, settingsRef.current, 1 / 120);
@@ -629,11 +679,11 @@
             if (!enabled || !fp) { flowHistories[li].length = 0; return; }
             var hist = flowHistories[li]; hist.push(new THREE.Vector3(fp.x, fp.y, fp.z)); if (hist.length > 32) hist.shift(); line.geometry.setFromPoints(hist);
           });
-          if (now - lastUiRef.current > 400) {
+          if (now - lastUiRef.current > 400 && !replaySnapshotRef.current) {
             lastUiRef.current = now; var m = metrics(particles, impulseTotal, settingsRef.current.boxSize, metricElapsed, settingsRef.current.massRatioB);
             var next = { temperature: m.temperature, pressure: m.pressure, energy: m.energy, collisions: collisionTotal };
             var diffusion = liveDiffusion; diffusion.elapsed = simulationElapsed; diffusion.coefficient = diffusion.msd / (6 * Math.max(0.001, simulationElapsed)); diffusion.coefficientA = diffusion.msdA / (6 * Math.max(0.001, simulationElapsed)); diffusion.coefficientB = diffusion.msdB / (6 * Math.max(0.001, simulationElapsed)); diffusion.flux = membranePassedTotal / Math.max(0.001, metricElapsed); diffusion.blocked = membraneBlockedTotal / Math.max(0.001, metricElapsed); diffusion.fluxA = membranePassedATotal / Math.max(0.001, metricElapsed); diffusion.fluxB = membranePassedBTotal / Math.max(0.001, metricElapsed); diffusion.netFluxA = membraneNetATotal / Math.max(0.001, metricElapsed); diffusion.netFluxB = membraneNetBTotal / Math.max(0.001, metricElapsed); diffusion.assayPassedA = assayPassedA; diffusion.assayPassedB = assayPassedB; diffusion.assayBlockedA = assayBlockedA; diffusion.assayBlockedB = assayBlockedB; diffusion.assayConditionKey = assayConditionKey; if (transportMilestone == null && ((settingsRef.current.preset === 'diffusion' && diffusion.mixing >= 0.8) || (settingsRef.current.preset === 'osmosis' && diffusion.osmoticShift >= 0.05 && diffusion.soluteLeak < 0.15))) transportMilestone = simulationElapsed; diffusion.milestoneTime = transportMilestone;
-            var kinetic = speciesKinetics(particles, settingsRef.current.massRatioB, 12), ensemble = ensembleFreeFlightStats(particles), clusters = clusterMetrics(particles, Math.max(1.1, settingsRef.current.particleDiameter * 1.9)), clusterMerged = isCoalescence(previousClusterSnapshot, clusters, Math.max(2, Math.round(settingsRef.current.count * 0.02))); if (clusterMerged && !reducedMotion && clusters.groups[0]) pendingFlashEvents = pendingFlashEvents.concat([{ kind: 'droplet-merge', x: clusters.groups[0].x, y: clusters.groups[0].y, z: clusters.groups[0].z, power: clusters.largest - Number(previousClusterSnapshot.largest || 0) }]).slice(-14); previousClusterSnapshot = clusters; setStats(next); setDistribution(speedDistribution(particles, 12)); setSpeciesMotion(kinetic); setEnsembleFlights(ensemble); setDiffusionInfo(diffusion); clusterVisualData = clusters; setClusterInfo(clusters); setHistory(function (old) { return old.concat([{ temperature: m.temperature, temperatureA: kinetic.a.temperature, temperatureB: kinetic.b.temperature, pressure: m.pressure, energy: m.energy, collisions: collisionTotal, mixing: diffusion.mixing, entropy: diffusion.entropy, solventRight: diffusion.solventRight, soluteLeak: diffusion.soluteLeak, coefficientA: diffusion.coefficientA, coefficientB: diffusion.coefficientB, msdA: diffusion.msdA, msdB: diffusion.msdB, netFluxA: diffusion.netFluxA, netFluxB: diffusion.netFluxB, heightCenter: verticalDensity.centerY, heightRatio: verticalDensity.bottomTopRatio, clusterFraction: clusters.largestFraction, clusterCount: clusters.clusterCount, clusterLargest: clusters.largest, clusterMerge: clusterMerged, bondedFraction: clusters.bondedFraction, attraction: settingsRef.current.attraction, gravity: settingsRef.current.gravity, elapsed: diffusion.elapsed }]).slice(-36); });
+            var kinetic = speciesKinetics(particles, settingsRef.current.massRatioB, 12), ensemble = ensembleFreeFlightStats(particles), clusters = clusterMetrics(particles, Math.max(1.1, settingsRef.current.particleDiameter * 1.9)), clusterMerged = isCoalescence(previousClusterSnapshot, clusters, Math.max(2, Math.round(settingsRef.current.count * 0.02))); if (clusterMerged && !reducedMotion && clusters.groups[0]) pendingFlashEvents = pendingFlashEvents.concat([{ kind: 'droplet-merge', x: clusters.groups[0].x, y: clusters.groups[0].y, z: clusters.groups[0].z, power: clusters.largest - Number(previousClusterSnapshot.largest || 0) }]).slice(-14); previousClusterSnapshot = clusters; var particleSnapshot = captureParticleSnapshot(particles); setStats(next); setDistribution(speedDistribution(particles, 12)); setSpeciesMotion(kinetic); setEnsembleFlights(ensemble); setDiffusionInfo(diffusion); clusterVisualData = clusters; setClusterInfo(clusters); setHistory(function (old) { return old.concat([{ temperature: m.temperature, temperatureA: kinetic.a.temperature, temperatureB: kinetic.b.temperature, pressure: m.pressure, energy: m.energy, collisions: collisionTotal, mixing: diffusion.mixing, entropy: diffusion.entropy, solventRight: diffusion.solventRight, soluteLeak: diffusion.soluteLeak, coefficientA: diffusion.coefficientA, coefficientB: diffusion.coefficientB, msdA: diffusion.msdA, msdB: diffusion.msdB, netFluxA: diffusion.netFluxA, netFluxB: diffusion.netFluxB, heightCenter: verticalDensity.centerY, heightRatio: verticalDensity.bottomTopRatio, clusterFraction: clusters.largestFraction, clusterCount: clusters.clusterCount, clusterLargest: clusters.largest, clusterMerge: clusterMerged, bondedFraction: clusters.bondedFraction, attraction: settingsRef.current.attraction, gravity: settingsRef.current.gravity, elapsed: diffusion.elapsed, snapshot: particleSnapshot }]).slice(-36); });
             setSystemInfo({ x: collective.x, y: collective.y, z: collective.z, spread: collective.spread, density: collective.density, drift: collective.drift }); setHeightInfo(verticalDensity);
             setWallFaceInfo({ 'x+': sensorEnergy['x+'], 'x-': sensorEnergy['x-'], 'y+': sensorEnergy['y+'], 'y-': sensorEnergy['y-'], 'z+': sensorEnergy['z+'], 'z-': sensorEnergy['z-'] });
             if (selected) { var journey = particleJourney(selected); setSelectedInfo({ speed: Math.sqrt(selected.vx * selected.vx + selected.vy * selected.vy + selected.vz * selected.vz), x: selected.x, y: selected.y, z: selected.z, type: selected.type ? 1 : 0, pathLength: journey.pathLength, displacement: journey.displacement, efficiency: journey.efficiency, journeyTime: journey.journeyTime, meanFreePath: journey.meanFreePath, meanFreePathError: journey.meanFreePathError, relativeUncertainty: journey.relativeUncertainty, freeFlightSamples: journey.freeFlightSamples, freeFlights: journey.freeFlights, currentFreeFlight: journey.currentFreeFlight, collisionRate: journey.collisionRate, wallHits: journey.wallHits, particleHits: journey.particleHits, membraneHits: journey.membraneHits }); }
@@ -641,7 +691,7 @@
           }
           renderer.render(scene, camera);
         }
-        runtimeRef.current = { renderer: renderer, scene: scene, particles: particles, camera: camera, controls: controls, clearTracerVisuals: clearTracerVisuals };
+        runtimeRef.current = { renderer: renderer, scene: scene, particles: particles, camera: camera, controls: controls, clearTracerVisuals: clearTracerVisuals, enterReplay: enterReplay, exitReplay: exitReplay };
         frameRef.current = requestAnimationFrame(animate);
         return function () {
           cancelAnimationFrame(frameRef.current); canvas.removeEventListener('pointerdown', onPointerDown); canvas.removeEventListener('pointerup', onPointerUp); controls.dispose(); boxGeo.dispose(); edgeGeo.dispose(); baseGeo.dispose(); shadowGeo.dispose(); sensorGeo.dispose(); sphereGeo.dispose(); beaconGeo.dispose(); focusGeo.dispose(); probeGeo.dispose(); haloGeo.dispose(); densityGeo.dispose(); dropletHaloGeo.dispose(); attractionGeo.dispose(); energyRingGeo.dispose(); gravityFieldGeo.dispose(); membraneGeo.dispose(); membranePoreGeo.dispose(); speciesHaloGeo.dispose(); starGeo.dispose(); trailGeo.dispose(); trailMat.dispose(); currentFlightGeo.dispose(); currentFlightMat.dispose(); waypointGeo.dispose(); collisionWaypoints.forEach(function (waypoint) { waypoint.material.dispose(); }); flowLines.forEach(function (line) { line.geometry.dispose(); line.material.dispose(); }); edgeMat.dispose(); chamberMat.dispose(); baseMat.dispose(); shadowMat.dispose(); beaconMat.dispose(); holoMat.dispose(); holoTexture.dispose(); sensorFaces.forEach(function (sensor) { sensor.material.dispose(); }); focusMat.dispose(); probeMat.dispose(); haloMat.dispose(); densityMat.dispose(); dropletHalos.forEach(function (halo) { halo.material.dispose(); }); attractionMat.dispose(); energyRingMat.dispose(); gravityFieldMat.dispose(); membraneMat.dispose(); membranePoreAMat.dispose(); membranePoreBMat.dispose(); speciesHaloAMat.dispose(); speciesHaloBMat.dispose(); starMat.dispose(); glowTexture.dispose(); flashPool.forEach(function (f) { f.sprite.material.dispose(); }); glows.forEach(function (g) { g.material.dispose(); }); particleMaterials.forEach(function (m) { m.dispose(); }); arrows.forEach(function (a) { scene.remove(a); }); mats.forEach(function (m) { m.dispose(); }); driftArrow.line.geometry.dispose(); driftArrow.line.material.dispose(); driftArrow.cone.geometry.dispose(); driftArrow.cone.material.dispose(); gravityArrow.line.geometry.dispose(); gravityArrow.line.material.dispose(); gravityArrow.cone.geometry.dispose(); gravityArrow.cone.material.dispose(); renderer.dispose(); runtimeRef.current = null;
@@ -756,8 +806,8 @@
         var target = event.target, tag = target && target.tagName;
         if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || tag === 'BUTTON' || (target && target.isContentEditable)) return;
         if (event.key === 'Escape' && cssFsRef.current) { event.preventDefault(); event.stopPropagation(); setCssFullscreen(false); if (ctx.announceToSR) ctx.announceToSR('Exited immersive view.'); return; }
-        if (event.code === 'Space') { event.preventDefault(); setRunning(function (value) { var next = !value; if (ctx.announceToSR) ctx.announceToSR(next ? 'Particle simulation running.' : 'Particle simulation paused.'); return next; }); }
-        else if (event.key === 'r' || event.key === 'R') { setRunning(false); setHistory([]); setCameraView('hero'); setResetKey(function (k) { return k + 1; }); if (ctx.announceToSR) ctx.announceToSR('Particle chamber reset.'); }
+        if (event.code === 'Space') { event.preventDefault(); toggleRun(); }
+        else if (event.key === 'r' || event.key === 'R') { exitReplayMode(); setRunning(false); setHistoryCursor(-1); setHistory([]); setCameraView('hero'); setResetKey(function (k) { return k + 1; }); if (ctx.announceToSR) ctx.announceToSR('Particle chamber reset.'); }
         else if (event.key === 't' || event.key === 'T') { setTrace(function (value) { var next = !value; if (!next) setFollowTracer(false); persist({ trace: next, followTracer: false, traced: next || bucket.traced }); return next; }); }
         else if (event.key === 'v' || event.key === 'V') { setVectors(function (value) { persist({ vectors: !value }); return !value; }); }
         else if (event.key === 'e' || event.key === 'E') { setEnergyColors(function (value) { persist({ energyColors: !value }); return !value; }); }
@@ -782,21 +832,45 @@
         persist(Object.assign({ preset: next, presetsSeen: seen }, next === 'osmosis' ? { membrane: true, permeability: 0.72, membraneSelectivity: 'a', gravity: 0 } : {}));
         if (ctx.announceToSR) ctx.announceToSR('Loaded the ' + next + ' particle experiment.');
       }
+      function exitReplayMode() {
+        var rt = runtimeRef.current;
+        if (rt && rt.exitReplay) rt.exitReplay(); else replaySnapshotRef.current = null;
+        setReplayPlaying(false);
+      }
       function toggleRun() {
-        var next = !running; setRunning(next);
+        var next = !running; if (next) exitReplayMode(); setRunning(next);
         if (next) setHistoryCursor(-1);
         if (next) persist({ runs: (bucket.runs || 0) + 1 });
         if (ctx.announceToSR) ctx.announceToSR(next ? 'Particle simulation running.' : 'Particle simulation paused.');
       }
-      function selectTimelineIndex(nextIndex) {
+      function applyReplayIndex(nextIndex) {
         if (!history.length) return;
         var index = clamp(Math.round(Number(nextIndex) || 0), 0, history.length - 1), sample = history[index];
+        if (sample && sample.snapshot) { var rt = runtimeRef.current; if (rt && rt.enterReplay) rt.enterReplay(sample.snapshot); else replaySnapshotRef.current = sample.snapshot; }
         setHistoryCursor(index); setRunning(false);
-        if (ctx.announceToSR && sample) ctx.announceToSR('Inspecting measurement at ' + Number(sample.elapsed || 0).toFixed(1) + ' seconds. Simulation paused.');
+        return sample;
+      }
+      function selectTimelineIndex(nextIndex) {
+        if (!history.length) return;
+        setReplayPlaying(false);
+        var index = clamp(Math.round(Number(nextIndex) || 0), 0, history.length - 1), sample = applyReplayIndex(index);
+        if (ctx.announceToSR && sample) ctx.announceToSR('Inspecting the three-dimensional chamber at ' + Number(sample.elapsed || 0).toFixed(1) + ' seconds. Simulation paused in replay mode.');
+      }
+      function toggleReplayPlayback() {
+        if (history.length < 2) return;
+        if (replayPlaying) {
+          setReplayPlaying(false);
+          if (ctx.announceToSR) ctx.announceToSR('Three-dimensional replay paused.');
+          return;
+        }
+        var startIndex = historyCursor >= 0 && historyCursor < history.length - 1 ? historyCursor : 0;
+        applyReplayIndex(startIndex);
+        setReplayPlaying(true);
+        if (ctx.announceToSR) ctx.announceToSR('Playing the three-dimensional chamber replay from ' + Number(history[startIndex].elapsed || 0).toFixed(1) + ' seconds.');
       }
       function followLatestTimeline() {
-        setHistoryCursor(-1);
-        if (ctx.announceToSR) ctx.announceToSR('Following the latest measurement sample.');
+        exitReplayMode(); setHistoryCursor(-1);
+        if (ctx.announceToSR) ctx.announceToSR('Returned to the live chamber. Following the latest measurement sample.');
       }
       function setTemp(next) {
         var value = Number(next); setTemperature(value); persist({ temperature: value });
@@ -931,11 +1005,16 @@
           : (!observation.trim() ? { label: 'Write an observation', target: 'particle-observation-input', kind: 'focus' }
             : (conclusion.trim().length < 20 ? { label: 'Write a conclusion', target: 'particle-conclusion-input', kind: 'focus' } : { label: 'Review the evidence', target: 'particle-evidence-timeline', kind: 'focus' })));
       var cameraViewLabel = activeCameraView === 'follow' ? 'Follow tracer' : (activeCameraView === 'showcase' ? 'Showcase orbit' : (activeCameraView === 'top' ? 'Top-down' : (activeCameraView === 'close' ? 'Detail' : 'Overview')));
+      var replaySample = historyCursor >= 0 ? history[historyCursor] : null;
+      var replayMode = !!(replaySample && replaySample.snapshot);
+      var displayTemperature = replaySample ? Number(replaySample.temperature || 0) : Number(stats.temperature || 0), displayPressure = replaySample ? Number(replaySample.pressure || 0) : Number(stats.pressure || 0);
       var evidenceCue = currentProtocol ? currentProtocol.watch : (preset === 'diffusion' ? 'Watch the two populations mix and compare their transport rates.' : (preset === 'osmosis' ? 'Watch solvent A shift while membrane selectivity limits solute B.' : 'Watch collisions, speed, and pressure change as the conditions move.'));
-      var stageActivityLabel = running
+      var stageActivityLabel = replayMode ? 'Replay historical chamber' : running
         ? (preset === 'osmosis' ? 'Watch solvent A shift' : (preset === 'diffusion' ? 'Watch A and B mix' : (preset === 'solid' ? 'Watch the lattice vibrate' : (preset === 'liquid' ? 'Watch particles flow' : 'Watch collisions and wall impacts'))))
         : (hasEvidence ? 'Pause to inspect measurements' : 'Press Run or Space to begin');
-      var stageActivityDetail = running
+      var stageActivityDetail = replayMode
+        ? 'Paused at ' + Number(replaySample.elapsed || 0).toFixed(1) + ' s; scrub to inspect another sample.'
+        : running
         ? (preset === 'osmosis'
           ? 'A on solution side ' + Math.round(diffusionInfo.solventRight * 100) + '% • B leak ' + Math.round(diffusionInfo.soluteLeak * 100) + '%'
           : (preset === 'diffusion'
@@ -946,9 +1025,9 @@
                 ? selectedInfo.freeFlightSamples + ' flights • uncertainty ' + Math.round(selectedInfo.relativeUncertainty * 100) + '%'
                 : (stats.collisions > 0 ? stats.collisions + ' collisions in the latest sample' : 'Collecting the first collision sample')))))
         : (experimentStep === 0 ? 'Make a prediction before changing the chamber.' : 'Change one condition, then run again.');
-      var temperatureGap = Math.round(Number(stats.temperature || 0) - Number(temperature || 0));
+      var temperatureGap = Math.round(displayTemperature - Number(temperature || 0));
       var temperatureSignal = Math.abs(temperatureGap) <= 5 ? 'at setpoint' : ((temperatureGap > 0 ? '+' : '') + temperatureGap + ' K settling');
-      var temperatureProgress = clamp(Number(stats.temperature || 0) / Math.max(1, Number(temperature || 0)), 0, 1);
+      var temperatureProgress = clamp(displayTemperature / Math.max(1, Number(temperature || 0)), 0, 1);
       var temperatureProgressTone = Math.abs(temperatureGap) <= 5 ? 'bg-emerald-300' : (temperatureGap > 0 ? 'bg-amber-300' : 'bg-cyan-300');
       var advancedConditionSummary = boxSize + ' u edge • d ' + particleDiameter.toFixed(2) + ' • gravity ' + (gravity > 0.01 ? gravity.toFixed(1) + ' g*' : 'off') + (transportMode ? ' • membrane ' + (membrane ? Math.round(permeability * 100) + '%' : 'off') : '');
       var visualOverlayCount = [vectors, flowTrails, energyColors, wallSensors, systemProbe].filter(Boolean).length;
@@ -960,7 +1039,7 @@
         { key: 'collisions', label: 'Collision activity', short: 'HITS', unit: '/ sample', color: '#fb7185', glow: 'rgba(251,113,133,0.2)', decimals: 0 }
       ].map(function (metric) {
         var values = history.map(function (sample) { return typeof sample === 'number' ? (metric.key === 'temperature' ? sample : 0) : Number(sample[metric.key] || 0); });
-        return Object.assign({}, metric, { values: values, trend: seriesTrend(values), current: Number(stats[metric.key] || 0) });
+        return Object.assign({}, metric, { values: values, trend: seriesTrend(values), current: Number((replaySample ? replaySample[metric.key] : stats[metric.key]) || 0) });
       });
       var trialComparison = trials.length === 2 ? compareTrials(trials[0], trials[1]) : null, transportMode = isTransportPreset(preset);
       var transportTimeline = history.filter(function (sample) { return sample && sample.elapsed != null; }), transportPrimary = transportTimeline.map(function (sample) { return preset === 'osmosis' ? sample.solventRight : sample.mixing; }), transportSecondary = transportTimeline.map(function (sample) { return preset === 'osmosis' ? sample.soluteLeak : sample.entropy; }), transportTarget = preset === 'osmosis' ? 0.55 : 0.8;
@@ -970,6 +1049,10 @@
       var evidenceBaseline = evidenceBaselineIndex >= 0 ? history[evidenceBaselineIndex] : null;
       var evidenceDeltaTemperature = timelineSample && evidenceBaseline ? Number(timelineSample.temperature || 0) - Number(evidenceBaseline.temperature || 0) : 0;
       var evidenceDeltaPressure = timelineSample && evidenceBaseline ? Number(timelineSample.pressure || 0) - Number(evidenceBaseline.pressure || 0) : 0;
+      var evidenceMotionCue = evidenceDeltaTemperature > 4 ? 'particles speeding up' : (evidenceDeltaTemperature < -4 ? 'particles slowing down' : 'particle speed steady');
+      var evidenceImpactCue = evidenceDeltaPressure > 0.5 ? 'more wall impacts' : (evidenceDeltaPressure < -0.5 ? 'fewer wall impacts' : 'steady wall impacts');
+      var evidenceCueLabel = hasEvidence && timelineSample && evidenceBaseline ? 'Particle cue: ' + evidenceMotionCue + ' • ' + evidenceImpactCue : '';
+      var evidenceCueAriaLabel = hasEvidence && timelineSample && evidenceBaseline ? '; ' + evidenceMotionCue + '; ' + evidenceImpactCue : '';
       var evidenceDeltaLabel = hasEvidence && timelineSample && evidenceBaseline ? ' • Since run start: ΔT ' + (evidenceDeltaTemperature >= 0 ? '+' : '') + evidenceDeltaTemperature.toFixed(0) + ' K • ΔP ' + (evidenceDeltaPressure >= 0 ? '+' : '') + evidenceDeltaPressure.toFixed(1) + ' u' : '';
       var timelineMarkers = [];
       if (evidenceBaselineIndex >= 0) timelineMarkers.push({ index: evidenceBaselineIndex, label: 'Run start', icon: '\u25B6', tone: 'text-cyan-200' });
@@ -1038,7 +1121,7 @@
             ),
             h('div', { id: 'particle-experiment-runway', role: 'region', 'aria-label': 'Experiment loop', className: 'border-b border-slate-800 bg-slate-900/80 px-4 py-2.5' },
               h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
-                h('div', { className: 'flex items-center gap-2' }, h('span', { className: 'text-[11px] font-black uppercase tracking-[0.18em] text-cyan-300' }, 'Experiment loop'), h('span', { className: 'text-[11px] font-bold text-slate-300' }, currentProtocol ? currentProtocol.title : 'Free laboratory')),
+                h('div', { className: 'flex items-center gap-2' }, h('span', { className: 'text-[11px] font-black uppercase tracking-[0.18em] text-cyan-300' }, 'Experiment loop'), h('span', { className: 'text-[11px] font-bold text-slate-300' }, currentProtocol ? currentProtocol.title : 'Free laboratory'), replayMode && h('span', { id: 'particle-replay-indicator', className: 'rounded-md border border-amber-300/50 bg-amber-300/10 px-2 py-1 text-[10px] font-black uppercase tracking-wide text-amber-200', role: 'status', 'aria-live': 'polite', 'aria-label': 'Replay view at ' + Number(replaySample.elapsed || 0).toFixed(1) + ' seconds' }, (replayPlaying ? 'Replay • playing • ' : 'Replay • ') + Number(replaySample.elapsed || 0).toFixed(1) + ' s')),
                 h('div', { className: 'flex flex-wrap items-center justify-end gap-2' },
                   h('div', { id: 'particle-stage-status', role: 'status', 'aria-live': 'polite', className: 'text-[11px] font-bold text-slate-300' }, 'Now: ', h('span', { className: 'text-cyan-200' }, experimentStepLabel), ' • ', experimentStepHint),
                   h('button', { type: 'button', onClick: function () { if (nextAction.kind === 'run') toggleRun(); else focusGuidedTarget(nextAction.target); }, className: 'min-h-11 rounded-lg bg-cyan-300 px-3 py-1.5 text-[11px] font-black text-slate-950 shadow-[0_0_16px_rgba(34,211,238,0.18)] transition hover:bg-cyan-200 sm:min-h-6', 'aria-label': nextAction.label + '. Guided experiment next action' }, nextAction.label + ' →')
@@ -1049,7 +1132,7 @@
                   var active = index === experimentStep, complete = experimentStepComplete[index];
                   return h('div', { key: step[0], role: 'listitem', className: 'flex min-w-0 items-center gap-2 rounded-lg border px-2 py-1.5 ' + (active ? 'border-cyan-300/60 bg-cyan-300/10' : (complete ? 'border-emerald-300/30 bg-emerald-300/5' : 'border-white/10 bg-white/[0.03]')) },
                     h('span', { className: 'flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-black ' + (complete ? 'bg-emerald-300 text-emerald-950' : (active ? 'bg-cyan-300 text-slate-950' : 'bg-slate-700 text-slate-300')) }, complete ? '✓' : index + 1),
-                    h('span', { className: 'min-w-0' }, h('span', { className: 'block truncate text-[10px] font-black uppercase tracking-wide ' + (active ? 'text-cyan-100' : 'text-slate-300') }, step[0]), h('span', { className: 'block truncate text-[10px] text-slate-500' }, step[1]))
+                    h('span', { className: 'min-w-0' }, h('span', { className: 'block truncate text-[10px] font-black uppercase tracking-wide ' + (active ? 'text-cyan-100' : 'text-slate-300') }, step[0]), h('span', { className: 'block truncate text-[10px] text-slate-300' }, step[1]))
                   );
                 })
               ),
@@ -1063,10 +1146,10 @@
               h('div', { className: 'pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-cyan-300/80 to-transparent shadow-[0_0_18px_4px_rgba(34,211,238,0.35)]' }),
               h('div', { className: 'pointer-events-none absolute right-3 top-16 w-[min(9.5rem,calc(100%-1.5rem))] rounded-xl border border-cyan-300/20 bg-slate-950/65 p-3 text-right shadow-lg backdrop-blur-md sm:top-3 sm:w-auto sm:min-w-[150px]' },
                 h('div', { className: 'flex items-center justify-end gap-2 text-[10px] font-black uppercase tracking-[0.22em] text-cyan-300' }, h('span', null, preset + ' chamber'), h('span', { className: 'rounded bg-cyan-300/10 px-1.5 py-0.5 font-mono tracking-normal text-cyan-100' }, (fps || '--') + ' FPS \u2022 ' + quality)),
-                h('div', { className: 'mt-1 flex items-baseline justify-end gap-2' }, h('span', { className: 'font-mono text-xl font-black text-white' }, stats.temperature + ' K'), h('span', { className: 'text-[10px] font-bold uppercase tracking-wide text-cyan-200' }, 'measured')),
+                h('div', { className: 'mt-1 flex items-baseline justify-end gap-2' }, h('span', { className: 'font-mono text-xl font-black text-white' }, displayTemperature + ' K'), h('span', { className: 'text-[10px] font-bold uppercase tracking-wide text-cyan-200' }, replayMode ? 'replay sample' : 'measured')),
                 h('div', { className: 'mt-0.5 text-right font-mono text-[10px] text-slate-400' }, 'setpoint ' + temperature + ' K • ' + temperatureSignal),
-                h('div', { className: 'mt-2', role: 'progressbar', 'aria-label': 'Temperature settling toward setpoint', 'aria-valuemin': 0, 'aria-valuemax': temperature, 'aria-valuenow': Math.min(Number(stats.temperature || 0), Number(temperature || 0)), 'aria-valuetext': stats.temperature + ' K measured; setpoint ' + temperature + ' K' }, h('div', { className: 'h-1.5 overflow-hidden rounded-full bg-white/10' }, h('div', { className: 'h-full rounded-full transition-[width] duration-500 motion-reduce:transition-none ' + temperatureProgressTone, style: { width: Math.round(temperatureProgress * 100) + '%' } }))),
-                h('div', { className: 'mt-1 flex flex-wrap justify-end gap-x-3 gap-y-1 font-mono text-[10px] text-slate-300' }, h('span', null, 'P ' + stats.pressure), h('span', null, 'N ' + count), h('span', null, 'V ' + Math.round(boxSize * boxSize * boxSize)), h('span', { className: 'text-cyan-200' }, 'View ' + cameraViewLabel), transportMode && h('span', null, preset === 'osmosis' ? 'Osm ' + (diffusionInfo.osmoticShift >= 0 ? '+' : '') + Math.round(diffusionInfo.osmoticShift * 100) + '%' : 'Mix ' + Math.round(diffusionInfo.mixing * 100) + '%'))
+                h('div', { className: 'mt-2', role: 'progressbar', 'aria-label': 'Temperature settling toward setpoint', 'aria-valuemin': 0, 'aria-valuemax': temperature, 'aria-valuenow': Math.min(displayTemperature, Number(temperature || 0)), 'aria-valuetext': displayTemperature + ' K ' + (replayMode ? 'in replay sample' : 'measured') + '; setpoint ' + temperature + ' K' }, h('div', { className: 'h-1.5 overflow-hidden rounded-full bg-white/10' }, h('div', { className: 'h-full rounded-full transition-[width] duration-500 motion-reduce:transition-none ' + temperatureProgressTone, style: { width: Math.round(temperatureProgress * 100) + '%' } }))),
+                h('div', { className: 'mt-1 flex flex-wrap justify-end gap-x-3 gap-y-1 font-mono text-[10px] text-slate-300' }, h('span', null, 'P ' + displayPressure.toFixed(1)), h('span', null, 'N ' + count), h('span', null, 'V ' + Math.round(boxSize * boxSize * boxSize)), h('span', { className: 'text-cyan-200' }, 'View ' + cameraViewLabel), transportMode && h('span', null, preset === 'osmosis' ? 'Osm ' + (diffusionInfo.osmoticShift >= 0 ? '+' : '') + Math.round(diffusionInfo.osmoticShift * 100) + '%' : 'Mix ' + Math.round(diffusionInfo.mixing * 100) + '%'))
               ),
               transportMode && membrane && h('div', { className: 'pointer-events-none absolute left-3 top-24 w-[7.75rem] rounded-xl border border-violet-300/20 bg-slate-950/70 p-2 shadow-[0_0_24px_rgba(167,139,250,0.12)] backdrop-blur-md sm:left-auto sm:right-3 sm:top-24 sm:w-[150px] sm:p-2.5', role: 'img', 'aria-label': 'Live membrane pore lattice. Species A channel openness ' + Math.round(poreOpennessA * 100) + ' percent. Species B channel openness ' + Math.round(poreOpennessB * 100) + ' percent. Cyan and pink bursts show successful crossings by A and B; coral bursts show reflections.' },
                 h('div', { className: 'text-[10px] font-black uppercase tracking-[0.18em] text-violet-200' }, 'Pore lattice'),
@@ -1121,7 +1204,7 @@
             ),
             showHud && h('div', { className: 'flex flex-wrap items-center gap-2 border-t border-slate-700 p-3' },
               h('button', { type: 'button', onClick: toggleRun, className: 'rounded-lg bg-cyan-500 px-4 py-2 text-sm font-black text-slate-950 hover:bg-cyan-400' }, running ? '\u23F8 Pause' : '\u25B6 Run'),
-              h('button', { type: 'button', onClick: function () { setRunning(false); stepRef.current = true; }, className: 'rounded-lg bg-slate-800 px-3 py-2 text-sm font-bold text-white hover:bg-slate-700' }, '\u23ED Step'),
+              h('button', { type: 'button', onClick: function () { exitReplayMode(); setHistoryCursor(-1); setRunning(false); stepRef.current = true; }, className: 'rounded-lg bg-slate-800 px-3 py-2 text-sm font-bold text-white hover:bg-slate-700' }, '\u23ED Step'),
               h('button', { type: 'button', onClick: function () { setRunning(false); setHistory([]); setCameraView('hero'); setResetKey(function (k) { return k + 1; }); }, className: 'rounded-lg bg-slate-800 px-3 py-2 text-sm font-bold text-white hover:bg-slate-700' }, '\u21BB Reset'),
               h('button', { type: 'button', onClick: function () { var next = !trace; setTrace(next); if (!next) setFollowTracer(false); persist({ trace: next, followTracer: false, traced: next || bucket.traced }); }, 'aria-pressed': trace, className: 'rounded-lg px-3 py-2 text-sm font-bold ' + (trace ? 'bg-yellow-300 text-slate-950' : 'bg-slate-800 text-white hover:bg-slate-700') }, '\uD83D\uDCCD Trace'),
               trace && h('button', { type: 'button', onClick: resetTracerJourney, className: 'rounded-lg border border-yellow-300/40 bg-yellow-300/10 px-3 py-2 text-sm font-bold text-yellow-200 hover:bg-yellow-300/20', 'aria-label': 'Start a new random walk measurement for the selected particle' }, '\u25CE New walk'),
@@ -1192,7 +1275,7 @@
             h('div', { className: 'rounded-2xl border border-slate-200 bg-white p-4 shadow-sm' },
               h('h3', { className: 'font-black text-slate-900' }, 'Live measurements'),
               h('div', { className: 'mt-3 grid grid-cols-2 gap-2' },
-                [['Temperature', stats.temperature + ' K'], ['Pressure', stats.pressure + ' u'], ['Kinetic energy', stats.energy + ' u'], ['Collisions', stats.collisions + ' / sample']].map(function (m) { return h('div', { key: m[0], className: 'rounded-xl bg-slate-100 p-3' }, h('div', { className: 'text-[10px] font-bold uppercase tracking-wide text-slate-500' }, m[0]), h('div', { className: 'mt-1 text-lg font-black text-slate-900' }, m[1])); })
+                [['Temperature', stats.temperature + ' K'], ['Pressure', stats.pressure + ' u'], ['Kinetic energy', stats.energy + ' u'], ['Collisions', stats.collisions + ' / sample']].map(function (m) { return h('div', { key: m[0], className: 'rounded-xl bg-slate-100 p-3' }, h('div', { className: 'text-[10px] font-bold uppercase tracking-wide text-slate-600' }, m[0]), h('div', { className: 'mt-1 text-lg font-black text-slate-900' }, m[1])); })
               ),
               transportMode && h('div', { className: 'mt-3 rounded-xl border border-violet-200 bg-gradient-to-br from-slate-950 to-violet-950 p-3 text-white', role: 'img', 'aria-label': (preset === 'osmosis' ? 'Osmosis monitor. Net solvent shift ' + Math.round(diffusionInfo.osmoticShift * 100) + ' percent and solute leakage ' + Math.round(diffusionInfo.soluteLeak * 100) + ' percent.' : 'Diffusion monitor. Mixing index ' + Math.round(diffusionInfo.mixing * 100) + ' percent.') + ' Particle B has a relative mass of ' + massRatioB.toFixed(1) + ' times particle A. Particle A concentration is ' + Math.round(diffusionInfo.leftA * 100) + ' percent on the left and ' + Math.round(diffusionInfo.rightA * 100) + ' percent on the right. Particle A crossing flux ' + diffusionInfo.fluxA.toFixed(1) + ' per second and particle B crossing flux ' + diffusionInfo.fluxB.toFixed(1) + ' per second. Spatial mixing entropy is ' + Math.round(diffusionInfo.entropy * 100) + ' percent. Particle A diffusion coefficient is ' + diffusionInfo.coefficientA.toFixed(2) + ' and particle B diffusion coefficient is ' + diffusionInfo.coefficientB.toFixed(2) + '. Mean squared displacement is ' + diffusionInfo.msd.toFixed(1) + ' square model units. ' + (diffusionInfo.milestoneTime == null ? 'The transport milestone has not been reached.' : 'The transport milestone was reached at ' + diffusionInfo.milestoneTime.toFixed(1) + ' seconds.') },
                 h('div', { className: 'flex items-end justify-between gap-3' }, h('div', null, h('div', { className: 'text-[10px] font-black uppercase tracking-[0.16em] text-violet-300' }, preset === 'osmosis' ? 'Osmotic transport' : 'Concentration gradient'), h('div', { className: 'mt-1 text-xl font-black' }, preset === 'osmosis' ? (diffusionInfo.osmoticShift >= 0 ? '+' : '') + Math.round(diffusionInfo.osmoticShift * 100) + '% solvent shift' : Math.round(diffusionInfo.mixing * 100) + '% mixed')), h('div', { className: 'text-right font-mono text-[10px] text-violet-200' }, h('div', null, 'A ' + diffusionInfo.fluxA.toFixed(1) + '/s'), h('div', null, 'B ' + diffusionInfo.fluxB.toFixed(1) + '/s'), h('div', { className: 'text-fuchsia-300' }, 'mB ' + massRatioB.toFixed(1) + '\u00d7'))),
@@ -1376,18 +1459,19 @@
                hasEvidence && history.length > 0 && h('section', { id: 'particle-evidence-timeline', className: 'mt-3 rounded-xl border border-cyan-200/20 bg-slate-950 p-3 text-white', 'aria-label': 'Evidence timeline' },
                 h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
                   h('div', null, h('div', { className: 'text-[10px] font-black uppercase tracking-[0.16em] text-cyan-300' }, 'Evidence timeline'), h('div', { className: 'mt-0.5 text-[10px] text-slate-400' }, history.length + ' measurements • ' + Number(history[history.length - 1].elapsed || 0).toFixed(1) + ' s window')),
-                  historyCursor >= 0 && h('button', { type: 'button', onClick: followLatestTimeline, className: 'min-h-11 rounded-md border border-cyan-300/30 bg-cyan-300/10 px-2 py-1 text-[10px] font-black text-cyan-100 hover:bg-cyan-300/20 sm:min-h-6', 'aria-label': 'Follow the latest measurement sample' }, 'Follow latest')
+                  h('div', { className: 'flex flex-wrap items-center gap-1.5' }, history.length > 1 && h('button', { type: 'button', onClick: toggleReplayPlayback, className: 'min-h-11 rounded-md border border-amber-300/35 bg-amber-300/10 px-2 py-1 text-[10px] font-black text-amber-100 hover:bg-amber-300/20 sm:min-h-6', 'aria-label': replayPlaying ? 'Pause three-dimensional replay' : (replayMode && historyCursor >= history.length - 1 ? 'Replay measurements from the beginning' : 'Play three-dimensional replay') }, replayPlaying ? 'Pause replay' : (replayMode && historyCursor >= history.length - 1 ? 'Replay again' : 'Play replay')), historyCursor >= 0 && h('button', { type: 'button', onClick: followLatestTimeline, className: 'min-h-11 rounded-md border border-cyan-300/30 bg-cyan-300/10 px-2 py-1 text-[10px] font-black text-cyan-100 hover:bg-cyan-300/20 sm:min-h-6', 'aria-label': replayMode ? 'Return to live simulation' : 'Follow the latest measurement sample' }, replayMode ? 'Return to live' : 'Follow latest'))
                 ),
                 h('label', { className: 'mt-2 block', htmlFor: 'particle-evidence-scrubber' },
                   h('span', { className: 'sr-only' }, 'Evidence timeline sample'),
-                  h('input', { id: 'particle-evidence-scrubber', type: 'range', min: 0, max: Math.max(0, history.length - 1), step: 1, value: timelineIndex, onChange: function (event) { selectTimelineIndex(event.target.value); }, className: 'mt-1 block min-h-11 w-full accent-cyan-400 sm:min-h-6', 'aria-label': 'Evidence timeline sample', 'aria-valuetext': timelineSample ? Number(timelineSample.elapsed || 0).toFixed(1) + ' seconds; ' + Number(timelineSample.temperature || 0).toFixed(0) + ' kelvin; ' + Number(timelineSample.collisions || 0) + ' collisions in sample' : 'No measurements yet' })
+                  h('input', { id: 'particle-evidence-scrubber', type: 'range', min: 0, max: Math.max(0, history.length - 1), step: 1, value: timelineIndex, onChange: function (event) { selectTimelineIndex(event.target.value); }, className: 'mt-1 block min-h-11 w-full accent-cyan-400 sm:min-h-6', 'aria-label': 'Evidence timeline sample', 'aria-valuetext': timelineSample ? Number(timelineSample.elapsed || 0).toFixed(1) + ' seconds; ' + Number(timelineSample.temperature || 0).toFixed(0) + ' kelvin; ' + Number(timelineSample.collisions || 0) + ' collisions in sample' + evidenceCueAriaLabel : 'No measurements yet' })
                 ),
                 h('div', { className: 'mt-1 flex justify-between font-mono text-[10px] text-slate-500' }, h('span', null, 'start'), h('span', null, timelineSample ? Number(timelineSample.elapsed || 0).toFixed(1) + ' s' : 'latest')),
                 timelineMarkers.length ? h('div', { className: 'mt-2 flex flex-wrap gap-1.5', role: 'group', 'aria-label': 'Evidence markers' }, timelineMarkers.map(function (marker) { var markerSample = history[marker.index]; return h('button', { key: marker.index + '-' + marker.label, type: 'button', onClick: function () { selectTimelineIndex(marker.index); }, className: 'min-h-11 rounded-md border border-white/10 bg-white/5 px-2 py-1 text-[10px] font-black hover:bg-white/10 sm:min-h-6 ' + marker.tone, 'aria-label': marker.label + ' at ' + Number(markerSample && markerSample.elapsed || 0).toFixed(1) + ' seconds' }, marker.icon + ' ' + marker.label); })) : h('p', { className: 'mt-2 text-[10px] text-slate-400' }, 'Markers appear for collision bursts, transport milestones, and coalescence events.'),
                 h('div', { className: 'mt-2 flex flex-wrap items-center justify-between gap-2 border-t border-white/10 pt-2 text-[10px]', role: 'status', 'aria-live': 'polite' },
                   h('span', { className: 'font-bold text-cyan-100' }, timelineMarker ? timelineMarker.icon + ' ' + timelineMarker.label : (historyCursor < 0 ? 'Latest measurement' : 'Measurement sample')),
-                  h('span', { className: 'font-mono text-slate-300' }, timelineSample ? Number(timelineSample.temperature || 0).toFixed(0) + ' K • P ' + Number(timelineSample.pressure || 0).toFixed(1) + ' • ' + Number(timelineSample.collisions || 0) + ' collisions' : 'Run the chamber to collect evidence'),
-                  evidenceDeltaLabel && h('span', { className: 'w-full font-mono text-[11px] text-cyan-200' }, evidenceDeltaLabel)
+                  h('span', { className: 'font-mono text-slate-300' }, timelineSample ? 'At ' + Number(timelineSample.elapsed || 0).toFixed(1) + ' s • ' + Number(timelineSample.temperature || 0).toFixed(0) + ' K • P ' + Number(timelineSample.pressure || 0).toFixed(1) + ' • ' + Number(timelineSample.collisions || 0) + ' collisions' : 'Run the chamber to collect evidence'),
+                  evidenceDeltaLabel && h('span', { className: 'w-full font-mono text-[11px] text-cyan-200' }, evidenceDeltaLabel),
+                  evidenceCueLabel && h('span', { className: 'w-full font-medium text-[11px] text-slate-200' }, evidenceCueLabel)
                 )
               ),
               h('p', { role: 'note', className: 'mt-3 rounded-lg bg-cyan-50 p-2 text-xs leading-relaxed text-cyan-950' }, modelSummary()),
@@ -1423,7 +1507,7 @@
           ),
           coachFeedback && h('div', { className: 'border-t border-indigo-100 bg-indigo-950 px-5 py-4 text-white', role: 'status', 'aria-live': 'polite' }, h('div', { className: 'flex items-start gap-3' }, h('span', { className: 'flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-cyan-300 to-violet-400 text-lg text-slate-950 shadow-lg' }, '\u2728'), h('div', null, h('div', { className: 'text-[10px] font-black uppercase tracking-[0.18em] text-cyan-300' }, ctx.aiHintsEnabled ? 'Socratic lab coach' : 'Built-in lab coach'), h('p', { className: 'mt-1 max-w-4xl text-sm leading-relaxed text-indigo-50' }, coachFeedback)))),
           h('div', { className: 'flex flex-wrap items-center justify-between gap-3 border-t border-indigo-100 bg-slate-950 px-5 py-4 text-white' },
-            h('div', null, h('div', { className: 'text-xs text-slate-300' }, h('strong', { className: 'text-cyan-300' }, trials.length + ' trial' + (trials.length === 1 ? '' : 's') + ' recorded'), ' \u2022 ', conclusion.trim().length, ' conclusion characters'), h('div', { className: 'mt-1 text-[10px] text-slate-500' }, ctx.aiHintsEnabled ? 'Notebook text is sent to the coach only when you press Ask lab coach.' : 'AI hints are off; Ask lab coach uses built-in prompts and sends nothing.')),
+            h('div', null, h('div', { className: 'text-xs text-slate-300' }, h('strong', { className: 'text-cyan-300' }, trials.length + ' trial' + (trials.length === 1 ? '' : 's') + ' recorded'), ' \u2022 ', conclusion.trim().length, ' conclusion characters'), h('div', { className: 'mt-1 text-[10px] text-slate-300' }, ctx.aiHintsEnabled ? 'Notebook text is sent to the coach only when you press Ask lab coach.' : 'AI hints are off; Ask lab coach uses built-in prompts and sends nothing.')),
             h('div', { className: 'flex flex-wrap gap-2' }, h('button', { type: 'button', onClick: requestLabCoach, disabled: isCoaching, className: 'rounded-xl border border-violet-400/40 bg-violet-500/20 px-4 py-2 text-xs font-black text-violet-100 hover:bg-violet-500/30 disabled:cursor-wait disabled:opacity-60' }, isCoaching ? '\u2728 Coach is thinking\u2026' : '\u2728 Ask lab coach'), h('button', { type: 'button', onClick: copyLabReport, className: 'rounded-xl bg-gradient-to-r from-cyan-400 to-indigo-400 px-4 py-2 text-xs font-black text-slate-950 shadow-lg hover:from-cyan-300 hover:to-indigo-300' }, '\uD83D\uDCCB Copy complete lab report'))
           )
         )

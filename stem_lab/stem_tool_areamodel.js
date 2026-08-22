@@ -453,14 +453,14 @@ window.StemLab = window.StemLab || {
               })
             ),
             // Grid with column-label header
-            h('div', { className: 'flex flex-col gap-1 flex-shrink-0' },
+            h('div', { className: 'flex flex-col gap-1 flex-1 min-w-0', style: { maxWidth: 340 } },
               // Column labels (1..cols)
               h('div', {
                 className: 'grid gap-1',
                 'aria-hidden': 'true',
                 style: (function() {
                   var w = (cols <= 6 ? Math.min(cols * 52, 340) : cols <= 9 ? cols * 38 : cols * 32);
-                  return { gridTemplateColumns: 'repeat(' + cols + ', minmax(0, 1fr))', width: w + 'px', maxWidth: '100%' };
+                  return { gridTemplateColumns: 'repeat(' + cols + ', minmax(0, 1fr))', width: '100%', maxWidth: w + 'px' };
                 })()
               },
                 Array.from({ length: cols }, function(_, ci) {
@@ -478,8 +478,8 @@ window.StemLab = window.StemLab || {
                   var w = (cols <= 6 ? Math.min(cols * 52, 340) : cols <= 9 ? cols * 38 : cols * 32);
                   return {
                     gridTemplateColumns: 'repeat(' + cols + ', minmax(0, 1fr))',
-                    width: w + 'px',
-                    maxWidth: '100%'
+                    width: '100%',
+                    maxWidth: w + 'px'
                   };
                 })()
               }, cells),
@@ -540,7 +540,7 @@ window.StemLab = window.StemLab || {
               rightCols > 0 && h('div', { className: 'text-center', style: { flex: rightCols, minWidth: 0, transition: 'flex-grow 0.3s ease' } },
                 h('div', { className: 'text-xs font-bold text-emerald-700 mb-1' }, rows + ' \u00d7 ' + rightCols),
                 h('div', { className: 'grid gap-1 sm:gap-2', style: { gridTemplateColumns: 'repeat(' + rightCols + ', minmax(0, 1fr))' } }, rightCells),
-                h('div', { className: 'text-sm font-bold text-emerald-600 mt-1' }, '= ' + rightProduct)
+                h('div', { className: 'text-sm font-bold text-emerald-700 mt-1' }, '= ' + rightProduct)
               )
             )
           ),
@@ -615,22 +615,22 @@ window.StemLab = window.StemLab || {
                 h('tr', null,
                   h('td', { className: 'p-2 text-sm font-bold text-indigo-700 bg-indigo-50 border border-indigo-200' }, aTens),
                   h('td', { className: 'p-3 text-center border border-indigo-200 ' + pp[0].color + ' bg-opacity-60' },
-                    h('div', { className: 'text-xs font-bold text-slate-600' }, pp[0].label),
+                    h('div', { className: 'text-xs font-bold text-slate-700' }, pp[0].label),
                     h('div', { className: 'text-xl font-bold ' + pp[0].text }, (challenge && !feedback) ? '?' : pp[0].value)
                   ),
                   h('td', { className: 'p-3 text-center border border-indigo-200 ' + pp[1].color + ' bg-opacity-60' },
-                    h('div', { className: 'text-xs font-bold text-slate-600' }, pp[1].label),
+                    h('div', { className: 'text-xs font-bold text-slate-700' }, pp[1].label),
                     h('div', { className: 'text-xl font-bold ' + pp[1].text }, (challenge && !feedback) ? '?' : pp[1].value)
                   )
                 ),
                 h('tr', null,
                   h('td', { className: 'p-2 text-sm font-bold text-indigo-700 bg-indigo-50 border border-indigo-200' }, aOnes),
                   h('td', { className: 'p-3 text-center border border-indigo-200 ' + pp[2].color + ' bg-opacity-60' },
-                    h('div', { className: 'text-xs font-bold text-slate-600' }, pp[2].label),
+                    h('div', { className: 'text-xs font-bold text-slate-700' }, pp[2].label),
                     h('div', { className: 'text-xl font-bold ' + pp[2].text }, (challenge && !feedback) ? '?' : pp[2].value)
                   ),
                   h('td', { className: 'p-3 text-center border border-indigo-200 ' + pp[3].color + ' bg-opacity-60' },
-                    h('div', { className: 'text-xs font-bold text-slate-600' }, pp[3].label),
+                    h('div', { className: 'text-xs font-bold text-slate-700' }, pp[3].label),
                     h('div', { className: 'text-xl font-bold ' + pp[3].text }, (challenge && !feedback) ? '?' : pp[3].value)
                   )
                 )
@@ -749,7 +749,7 @@ window.StemLab = window.StemLab || {
                     ' = ',
                     h('span', { className: 'text-2xl font-bold text-emerald-900' }, product)
                   ),
-                  h('p', { className: 'text-[10px] text-emerald-600 italic mt-1' }, t('stem.areamodel.the_grid_is_the_picture_multiplication', 'The grid is the picture. Multiplication is the math.'))
+                  h('p', { className: 'text-[10px] text-emerald-700 italic mt-1' }, t('stem.areamodel.the_grid_is_the_picture_multiplication', 'The grid is the picture. Multiplication is the math.'))
                 )
           ),
 
@@ -897,7 +897,7 @@ window.StemLab = window.StemLab || {
             var active = viewMode === m.id;
             return h('button', { key: m.id, id: 'stem-areamodel-tab-' + m.id,
               role: 'tab', 'aria-selected': active,
-              'aria-controls': 'stem-areamodel-panel-' + viewMode,
+              'aria-controls': 'stem-areamodel-panel-' + m.id,
               tabIndex: active ? 0 : -1,
               onKeyDown: function(e) {
                 var next = tabIndex;

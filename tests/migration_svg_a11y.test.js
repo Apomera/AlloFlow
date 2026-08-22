@@ -9,7 +9,7 @@ describe('Migration fat-reserve chart accessibility', () => {
   it('names the chart as an image', () => {
     for (const file of [sourcePath, publicPath]) {
       const source = fs.readFileSync(file, 'utf8');
-      expect(source).toContain("role: 'img', 'aria-label': t('stem.migration.fat_reserve_chart'");
+      expect(source).toMatch(/role:\s*'img'[\s\S]{0,160}'aria-label':\s*t\('stem\.migration\.fat_reserve_chart'/);
     }
   });
 

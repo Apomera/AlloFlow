@@ -134,8 +134,17 @@
       '.opticslab-status-label{font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:0;color:#94a3b8;margin:0 0 4px;}',
       '.opticslab-status-value{font-size:15px;font-weight:900;color:#f8fafc;margin:0;}',
       '.opticslab-library-toggle{margin-top:8px;width:100%;border-radius:8px;border:1px solid rgba(125,211,252,.32);background:rgba(14,165,233,.10);color:#bae6fd;padding:8px 10px;font-size:11px;font-weight:900;cursor:pointer;}',
+      // The original inline accent palette targets the dark canvas. These
+      // narrowly-scoped light-theme translations preserve each hue while
+      // meeting text contrast on the variable-backed light surfaces.
+      ':is(.theme-default,.theme-light) .opticslab-tool-shell [style*="color:#7dd3fc"]{color:#0369a1!important;}',
+      ':is(.theme-default,.theme-light) .opticslab-tool-shell [style*="color:#86efac"]{color:#166534!important;}',
+      ':is(.theme-default,.theme-light) .opticslab-tool-shell [style*="color:#fbbf24"]{color:#92400e!important;}',
+      ':is(.theme-default,.theme-light) .opticslab-tool-shell [style*="color:#a5b4fc"]{color:#4338ca!important;}',
+      ':is(.theme-default,.theme-light) .opticslab-tool-shell [style*="color:#d8b4fe"]{color:#6b21a8!important;}',
       '@media (max-width:760px){.opticslab-focus-grid{grid-template-columns:1fr;}.opticslab-status-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}',
       '@media (max-width:760px){.opticslab-topic-grid{grid-template-columns:1fr;}.opticslab-topic-grid > *{min-width:0;}}',
+      '@media (max-width:760px){.opticslab-quantum-grid,.opticslab-control-grid{grid-template-columns:minmax(0,1fr)!important;}.opticslab-quantum-grid > *,.opticslab-control-grid > *{min-width:0;}.opticslab-control-grid label{min-width:0;flex-wrap:wrap;}.opticslab-control-grid input[type="range"]{min-width:0;width:100%;flex:1 1 120px;}}',
       '.opticslab-tool-shell button,.opticslab-tool-shell summary{min-block-size:24px;min-inline-size:24px;}',
       '@media(forced-colors:active){.opticslab-tool-shell button,.opticslab-tool-shell input,.opticslab-tool-shell select,.opticslab-tool-shell summary{background:Canvas!important;color:CanvasText!important;border:1px solid ButtonText!important;box-shadow:none!important}.opticslab-tool-shell [role=tab][aria-selected=true]{outline:2px solid Highlight!important}.opticslab-tool-shell [data-op-focusable]:focus-visible{outline:3px solid Highlight!important}}',
       'input[type="range"][data-op-focusable], input[type="checkbox"][data-op-focusable] { accent-color: #38bdf8; }'
@@ -315,6 +324,10 @@
     var f = mt === 'plane' ? Infinity : (mt === 'concave' ? Math.abs(state.reflFocal || 10) : -Math.abs(state.reflFocal || 10));
     var d_o = state.reflDo || 25;
     var hObj = state.reflObjH || 6;
+    // Sample problems may use real-world distances well beyond the schematic's
+    // 45 cm window. Keep the range control truthful instead of feeding it an
+    // out-of-range value whose thumb silently appears at 45 cm.
+    var reflDoSliderMax = Math.max(45, Math.ceil(d_o / 25) * 25);
     var lens = thinLens(d_o, f === Infinity ? 1e9 : f);
     var d_i = (f === Infinity) ? -d_o : (lens.error ? null : lens.d_i);
     var m = (f === Infinity) ? 1 : (lens.error ? null : lens.m);
@@ -341,7 +354,7 @@
             value: mt,
             onChange: function(e) { upd('reflMirrorType', e.target.value); },
             'data-op-focusable': 'true', 'aria-label': 'Mirror type',
-            style: { padding: '4px 8px', background: 'var(--allo-stem-canvas, #0f172a)', color: '#e0e7ff', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, fontSize: 12 }
+            style: { padding: '4px 8px', background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--allo-stem-text, #e0e7ff)', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, fontSize: 12 }
           },
             h('option', { value: 'plane' }, 'Plane'),
             h('option', { value: 'concave' }, 'Concave (converging)'),
@@ -358,19 +371,19 @@
             'aria-valuetext': (state.reflFocal || 10).toFixed(1) + ' cm focal length. ' + _mirrorVT,
             style: { width: 110 }
           }),
-          h('span', { style: { fontFamily: 'monospace', color: '#fbbf24', fontWeight: 700, minWidth: 36, textAlign: 'right' } }, (state.reflFocal || 10).toFixed(1))
+          h('span', { style: { fontFamily: 'monospace', color: 'var(--op-amber-text, #fbbf24)', fontWeight: 700, minWidth: 36, textAlign: 'right' } }, (state.reflFocal || 10).toFixed(1))
         ),
         h('label', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', display: 'flex', alignItems: 'center', gap: 6 } },
           'd_o (cm):',
           h('input', {
-            type: 'range', min: 1, max: 45, step: 0.5,
+            type: 'range', min: 1, max: reflDoSliderMax, step: 0.5,
             value: d_o,
             onChange: function(e) { upd('reflDo', parseFloat(e.target.value)); },
             'data-op-focusable': 'true', 'aria-label': 'Object distance',
             'aria-valuetext': d_o.toFixed(1) + ' cm object distance. ' + _mirrorVT,
             style: { width: 110 }
           }),
-          h('span', { style: { fontFamily: 'monospace', color: '#fbbf24', fontWeight: 700, minWidth: 36, textAlign: 'right' } }, d_o.toFixed(1))
+          h('span', { style: { fontFamily: 'monospace', color: 'var(--op-amber-text, #fbbf24)', fontWeight: 700, minWidth: 36, textAlign: 'right' } }, d_o.toFixed(1))
         )
       ),
       h('svg', {
@@ -595,7 +608,7 @@
         onClick: function() { upd('reflShowMath', !state.reflShowMath); },
         'data-op-focusable': 'true',
         'aria-expanded': !!state.reflShowMath,
-        style: { marginTop: 8, background: 'transparent', color: '#a5b4fc', border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 800, padding: 0 }
+        style: { marginTop: 8, background: 'transparent', color: 'var(--op-indigo-text, #a5b4fc)', border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 800, padding: 0 }
       }, (state.reflShowMath ? '▼' : '▶') + ' 📐 Show me the math'),
       state.reflShowMath && !lens.error && h('div', { style: { marginTop: 8, padding: 10, background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 6, fontFamily: 'monospace', fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7, whiteSpace: 'pre' } },
         (function() {
@@ -644,10 +657,10 @@
   // pair of lines. The compression of an entire hemisphere into a disc is the
   // whole phenomenon and it is exactly the part a slice cannot carry.
   //
-  // NOTE for whoever is here next: this is the second viewer in this file with
-  // the same lifecycle as OpticsGL (singleton + stable ref + pending/sig +
-  // exact projected-corner camera fit), and BridgeGL is a third elsewhere.
-  // That is the rule of three — the lifecycle wants extracting into
+  // NOTE for whoever is here next: OpticsWindowGL, OpticsLensGL, and OpticsGL
+  // now share the same lifecycle (singleton + stable ref + pending/signature +
+  // projected-corner camera fit), while BridgeGL is another viewer elsewhere.
+  // The shared lifecycle is ready to extract into
   // stem_lab_module.js next to makeBayViewer. Not done here only because the
   // host module had uncommitted work from another session at the time.
   // ──────────────────────────────────────────────────────────────────
@@ -1156,7 +1169,7 @@
               if (sel) upd('refrN1', sel.n);
             },
             'data-op-focusable': 'true', 'aria-label': 'Top medium',
-            style: { padding: '4px 6px', background: 'var(--allo-stem-canvas, #0f172a)', color: '#e0e7ff', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, fontSize: 11 }
+            style: { padding: '4px 6px', background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--allo-stem-text, #e0e7ff)', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, fontSize: 11 }
           },
             COMMON_N.map(function(c) { return h('option', { key: c.label, value: c.label }, c.label + ' (n=' + c.n.toFixed(3) + ')'); }),
             h('option', { value: 'custom' }, 'custom')
@@ -1165,7 +1178,7 @@
             type: 'number', step: 0.001, min: 1.0, max: 3.5, value: n1, 'aria-label': 'Top refractive index',
             onChange: function(e) { upd('refrN1', parseFloat(e.target.value) || 1.0); },
             'data-op-focusable': 'true',
-            style: { width: 60, padding: '4px 6px', background: 'var(--allo-stem-canvas, #0f172a)', color: '#fbbf24', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, fontSize: 11, fontWeight: 700 }
+            style: { width: 60, padding: '4px 6px', background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--op-amber-text, #fbbf24)', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, fontSize: 11, fontWeight: 700 }
           })
         ),
         h('label', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', display: 'flex', alignItems: 'center', gap: 6 } }, 'Bottom n₂:',
@@ -1176,7 +1189,7 @@
               if (sel) upd('refrN2', sel.n);
             },
             'data-op-focusable': 'true', 'aria-label': 'Bottom medium',
-            style: { padding: '4px 6px', background: 'var(--allo-stem-canvas, #0f172a)', color: '#e0e7ff', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, fontSize: 11 }
+            style: { padding: '4px 6px', background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--allo-stem-text, #e0e7ff)', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, fontSize: 11 }
           },
             COMMON_N.map(function(c) { return h('option', { key: c.label, value: c.label }, c.label + ' (n=' + c.n.toFixed(3) + ')'); }),
             h('option', { value: 'custom' }, 'custom')
@@ -1185,7 +1198,7 @@
             type: 'number', step: 0.001, min: 1.0, max: 3.5, value: n2, 'aria-label': 'Bottom refractive index',
             onChange: function(e) { upd('refrN2', parseFloat(e.target.value) || 1.0); },
             'data-op-focusable': 'true',
-            style: { width: 60, padding: '4px 6px', background: 'var(--allo-stem-canvas, #0f172a)', color: '#fbbf24', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, fontSize: 11, fontWeight: 700 }
+            style: { width: 60, padding: '4px 6px', background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--op-amber-text, #fbbf24)', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, fontSize: 11, fontWeight: 700 }
           })
         )
       ),
@@ -1199,7 +1212,7 @@
             'aria-valuetext': theta1Deg.toFixed(1) + ' degrees incidence. ' + (isTIR ? 'Total internal reflection; no refracted ray.' : 'Refracted angle ' + radToDeg(theta2).toFixed(1) + ' degrees.'),
             style: { width: 200 }
           }),
-          h('span', { style: { fontFamily: 'monospace', color: '#fbbf24', fontWeight: 700, minWidth: 36 } }, theta1Deg.toFixed(1) + '°')
+          h('span', { style: { fontFamily: 'monospace', color: 'var(--op-amber-text, #fbbf24)', fontWeight: 700, minWidth: 36 } }, theta1Deg.toFixed(1) + '°')
         )
       ),
       h('svg', {
@@ -1513,7 +1526,7 @@
         onClick: function() { upd('refrShowMath', !state.refrShowMath); },
         'data-op-focusable': 'true',
         'aria-expanded': !!state.refrShowMath,
-        style: { marginTop: 8, background: 'transparent', color: '#a5b4fc', border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 800, padding: 0 }
+        style: { marginTop: 8, background: 'transparent', color: 'var(--op-indigo-text, #a5b4fc)', border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 800, padding: 0 }
       }, (state.refrShowMath ? '▼' : '▶') + ' 📐 Show me the math'),
       state.refrShowMath && h('div', { style: { marginTop: 8, padding: 10, background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 6, fontFamily: 'monospace', fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7, whiteSpace: 'pre' } },
         (function() {
@@ -1553,6 +1566,356 @@
   //   d_i > 0 → real image on the RIGHT side (light actually converges there).
   //   d_i < 0 → virtual image on the LEFT side (extension lines appear to converge there).
   //   m = -d_i / d_o.  m > 0 = upright, m < 0 = inverted.
+  // Demand-rendered 3D thin-lens bench. The lens aperture is schematic, but
+  // every ray segment uses the same d_i and magnification as the calculator.
+  // A ring of aperture samples makes the usually-flat ray diagram spatial: a
+  // point on the object sends light across the whole lens and an ideal lens
+  // reunites that bundle at one image point (or only its backward extensions
+  // meet for a virtual image).
+  var OpticsLensGL = (function () {
+    var S = null, status = 'idle', pending = null, node = null, sig = '';
+    var notify = null, restoreAttempts = 0;
+
+    function setStatus(next) {
+      if (status === next) return;
+      status = next;
+      if (notify) { try { notify(next); } catch (e) {} }
+    }
+
+    function disposeMaterial(material) {
+      if (!material) return;
+      if (Array.isArray(material)) {
+        material.forEach(disposeMaterial);
+      } else if (material.dispose) {
+        material.dispose();
+      }
+    }
+
+    function disposeGroup(group) {
+      if (!group) return;
+      for (var i = group.children.length - 1; i >= 0; i--) {
+        var child = group.children[i];
+        if (child.geometry) child.geometry.dispose();
+        disposeMaterial(child.material);
+        group.remove(child);
+      }
+    }
+
+    function addLine(THREE, points, color, opacity, dashed) {
+      var geometry = new THREE.BufferGeometry().setFromPoints(points);
+      var material = dashed
+        ? new THREE.LineDashedMaterial({ color: color, transparent: true, opacity: opacity, dashSize: 0.22, gapSize: 0.15 })
+        : new THREE.LineBasicMaterial({ color: color, transparent: opacity < 1, opacity: opacity });
+      var line = new THREE.Line(geometry, material);
+      if (dashed && line.computeLineDistances) line.computeLineDistances();
+      line.frustumCulled = false;
+      S.model.add(line);
+      return line;
+    }
+
+    function addMarker(THREE, x, color) {
+      var marker = new THREE.Mesh(
+        new THREE.SphereGeometry(0.12, 12, 8),
+        new THREE.MeshBasicMaterial({ color: color })
+      );
+      marker.position.set(x, 0, 0);
+      S.model.add(marker);
+    }
+
+    function addArrow(THREE, x, height, color, opacity, dashed) {
+      var base = new THREE.Vector3(x, 0, 0);
+      var tip = new THREE.Vector3(x, height, 0);
+      addLine(THREE, [base, tip], color, opacity, dashed);
+      var cone = new THREE.Mesh(
+        new THREE.ConeGeometry(0.16, 0.42, 16),
+        new THREE.MeshBasicMaterial({ color: color, transparent: opacity < 1, opacity: opacity })
+      );
+      cone.position.set(x, height + (height >= 0 ? 0.18 : -0.18), 0);
+      if (height < 0) cone.rotation.z = Math.PI;
+      S.model.add(cone);
+    }
+
+    function pointAtX(THREE, start, toward, xTarget) {
+      var dx = toward.x - start.x;
+      if (Math.abs(dx) < 1e-6) return start.clone();
+      var t = (xTarget - start.x) / dx;
+      return new THREE.Vector3(
+        xTarget,
+        start.y + (toward.y - start.y) * t,
+        start.z + (toward.z - start.z) * t
+      );
+    }
+
+    function pointAtBenchEdge(THREE, start, toward, xTarget) {
+      var end = pointAtX(THREE, start, toward, xTarget);
+      var delta = end.clone().sub(start);
+      var fraction = 1;
+      function crop(component, limit) {
+        var endValue = end[component];
+        var deltaValue = delta[component];
+        if (Math.abs(endValue) <= limit || Math.abs(deltaValue) < 1e-8) return;
+        var candidate = ((endValue < 0 ? -limit : limit) - start[component]) / deltaValue;
+        if (candidate > 0) fraction = Math.min(fraction, candidate);
+      }
+      crop('y', 4.35);
+      crop('z', 3.0);
+      return start.clone().addScaledVector(delta, fraction);
+    }
+
+    function applyModel(model) {
+      if (!S || !S.THREE) return;
+      var THREE = S.THREE;
+      disposeGroup(S.model);
+      S.rayCount = 0;
+
+      // Keep near-focus cases readable. The outgoing direction still uses the
+      // exact image point even when that point lies beyond the displayed bench.
+      var finiteImage = typeof model.imageDistance === 'number' && isFinite(model.imageDistance)
+        && typeof model.imageHeight === 'number' && isFinite(model.imageHeight);
+      var cappedImageDistance = finiteImage ? Math.min(Math.abs(model.imageDistance), 80) : 0;
+      var extentCm = Math.max(model.objectDistance, model.focalAbs * 2, cappedImageDistance, 20);
+      var unit = 8 / Math.max(1, extentCm);
+      var leftEdge = -9, rightEdge = 9;
+      var objectPoint = new THREE.Vector3(-model.objectDistance * unit, model.objectHeight * unit, 0);
+      var imagePoint = finiteImage
+        ? new THREE.Vector3(model.imageDistance * unit, model.imageHeight * unit, 0)
+        : null;
+      var imageVisible = !!(imagePoint && Math.abs(imagePoint.x) <= 8.7 && Math.abs(imagePoint.y) <= 4.2);
+
+      addLine(THREE, [new THREE.Vector3(leftEdge, 0, 0), new THREE.Vector3(rightEdge, 0, 0)], 0x64748b, 0.75, true);
+
+      // Convex glass reads as a flattened ellipsoid; concave glass uses a thin
+      // disc plus a bright rim so the two lens families remain distinguishable.
+      var lensMaterial = new THREE.MeshPhongMaterial({
+        color: model.type === 'converging' ? 0x67e8f9 : 0x818cf8,
+        transparent: true, opacity: 0.30, shininess: 90, side: THREE.DoubleSide,
+        depthWrite: false
+      });
+      var lensMesh;
+      if (model.type === 'converging') {
+        lensMesh = new THREE.Mesh(new THREE.SphereGeometry(1, 40, 24), lensMaterial);
+        lensMesh.scale.set(0.34, 2.45, 2.45);
+      } else {
+        lensMesh = new THREE.Mesh(new THREE.CylinderGeometry(2.45, 2.45, 0.20, 48), lensMaterial);
+        lensMesh.rotation.z = Math.PI / 2;
+        var rim = new THREE.Mesh(
+          new THREE.TorusGeometry(2.34, 0.13, 10, 48),
+          new THREE.MeshBasicMaterial({ color: 0xa5b4fc, transparent: true, opacity: 0.72 })
+        );
+        rim.rotation.y = Math.PI / 2;
+        S.model.add(rim);
+      }
+      S.model.add(lensMesh);
+
+      var fWorld = model.focalAbs * unit;
+      if (fWorld <= 8.7) {
+        addMarker(THREE, -fWorld, 0xfbbf24);
+        addMarker(THREE, fWorld, 0xfbbf24);
+      }
+
+      addArrow(THREE, objectPoint.x, objectPoint.y, 0xfbbf24, 1, false);
+      if (imageVisible) {
+        addArrow(THREE, imagePoint.x, imagePoint.y, model.imageDistance > 0 ? 0xef4444 : 0xfca5a5,
+          model.imageDistance > 0 ? 1 : 0.72, model.imageDistance < 0);
+      }
+
+      var aperturePoints = [new THREE.Vector3(0, 0, 0)];
+      for (var a = 0; a < 8; a++) {
+        var theta = a / 8 * Math.PI * 2;
+        aperturePoints.push(new THREE.Vector3(0, Math.cos(theta) * 1.72, Math.sin(theta) * 1.72));
+      }
+      aperturePoints.forEach(function (hit) {
+        addLine(THREE, [objectPoint, hit], 0xfbbf24, 0.46, false);
+        if (!imagePoint && model.atInfinity) {
+          // Object point in the focal plane: every post-lens ray has the same
+          // slope, so the bundle is collimated and the image is at infinity.
+          var parallelDirection = new THREE.Vector3(
+            1, hit.y - (model.objectHeight / model.focalAbs), hit.z
+          );
+          var infinityEnd = pointAtBenchEdge(THREE, hit, parallelDirection, rightEdge);
+          addLine(THREE, [hit, infinityEnd], 0x22d3ee, 0.82, false);
+          S.rayCount++;
+          return;
+        }
+        if (!imagePoint) return;
+        if (model.imageDistance > 0) {
+          var realEnd = imageVisible ? imagePoint : pointAtBenchEdge(THREE, hit, imagePoint, rightEdge);
+          addLine(THREE, [hit, realEnd], 0x22d3ee, 0.82, false);
+        } else {
+          // The physical ray travels rightward away from the virtual image;
+          // only its dashed backward extension intersects that image point.
+          var outgoing = pointAtBenchEdge(THREE, hit, imagePoint, rightEdge);
+          var virtualEnd = imageVisible ? imagePoint : pointAtBenchEdge(THREE, hit, imagePoint, leftEdge);
+          addLine(THREE, [hit, outgoing], 0x22d3ee, 0.82, false);
+          addLine(THREE, [hit, virtualEnd], 0xfca5a5, 0.50, true);
+        }
+        S.rayCount++;
+      });
+
+      S.imageVisible = imageVisible;
+      S.target.set(0, 0, 0);
+      S.half.set(9.5, 4.8, 3.2);
+    }
+
+    function scheduleFrame() {
+      if (!S || S.raf || S.contextLost) return;
+      S.raf = requestAnimationFrame(frame);
+    }
+
+    function frame() {
+      if (!S) return;
+      S.raf = 0;
+      if (S.contextLost || !S.renderer) return;
+      if (typeof document !== 'undefined' && document.hidden) return;
+      if (pending) {
+        var next = pending; pending = null;
+        if (next.sig !== sig) { sig = next.sig; applyModel(next); }
+        S.rotY = next.rotY; S.rotX = next.rotX; S.zoom = next.zoom;
+      }
+      var el = S.renderer.domElement;
+      var width = el.clientWidth || 1, height = el.clientHeight || 1;
+      if (width !== S.lastW || height !== S.lastH) {
+        S.lastW = width; S.lastH = height;
+        S.renderer.setSize(width, height, false);
+        S.camera.aspect = width / Math.max(1, height);
+      }
+      var ry = (S.rotY || 0) * Math.PI / 180, rx = (S.rotX || 0) * Math.PI / 180;
+      var direction = new S.THREE.Vector3(
+        Math.cos(rx) * Math.sin(ry), Math.sin(rx), Math.cos(rx) * Math.cos(ry)
+      ).normalize();
+      var up0 = new S.THREE.Vector3(0, 1, 0);
+      var right = new S.THREE.Vector3().crossVectors(up0, direction);
+      if (right.lengthSq() < 1e-6) right.set(1, 0, 0);
+      right.normalize();
+      var upv = new S.THREE.Vector3().crossVectors(direction, right).normalize();
+      var tanV = Math.tan(S.camera.fov * Math.PI / 360);
+      var tanH = tanV * Math.max(0.2, S.camera.aspect);
+      var fit = 1;
+      for (var sx = -1; sx <= 1; sx += 2) {
+        for (var sy = -1; sy <= 1; sy += 2) {
+          for (var sz = -1; sz <= 1; sz += 2) {
+            var corner = new S.THREE.Vector3(sx * S.half.x, sy * S.half.y, sz * S.half.z);
+            var along = corner.dot(direction);
+            fit = Math.max(fit, Math.abs(corner.dot(right)) / tanH + along, Math.abs(corner.dot(upv)) / tanV + along);
+          }
+        }
+      }
+      var distance = fit * 1.04 / Math.max(0.45, S.zoom || 1);
+      S.camera.position.copy(S.target).addScaledVector(direction, distance);
+      S.camera.near = Math.max(0.05, distance * 0.01);
+      S.camera.far = distance * 8 + 100;
+      S.camera.updateProjectionMatrix();
+      S.camera.lookAt(S.target);
+      try { S.renderer.render(S.scene, S.camera); } catch (e) {}
+    }
+
+    function build(THREE, host) {
+      var renderer;
+      try { renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false }); }
+      catch (e) { return false; }
+      var width = host.clientWidth || 460, height = host.clientHeight || 280;
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+      renderer.setSize(width, height);
+      renderer.setClearColor(0x08111f, 1);
+      var canvas = renderer.domElement;
+      canvas.style.display = 'block';
+      canvas.style.width = '100%';
+      canvas.style.height = '100%';
+      canvas.style.borderRadius = '8px';
+      canvas.style.touchAction = 'pan-y';
+      canvas.setAttribute('data-optics-lens-gl', 'true');
+      canvas.setAttribute('aria-hidden', 'true');
+      host.appendChild(canvas);
+
+      var scene = new THREE.Scene();
+      var camera = new THREE.PerspectiveCamera(42, width / Math.max(1, height), 0.1, 2000);
+      scene.add(new THREE.AmbientLight(0xffffff, 0.92));
+      var keyLight = new THREE.DirectionalLight(0xbfe8ff, 1.15);
+      keyLight.position.set(5, 7, 8);
+      scene.add(keyLight);
+      var model = new THREE.Group();
+      scene.add(model);
+      S = {
+        THREE: THREE, renderer: renderer, scene: scene, camera: camera, model: model,
+        rotY: 34, rotX: 20, zoom: 1, target: new THREE.Vector3(),
+        half: new THREE.Vector3(9.5, 4.8, 3.2), contextLost: false,
+        lastW: width, lastH: height, raf: 0, rayCount: 0, imageVisible: false
+      };
+
+      canvas.addEventListener('webglcontextlost', function (ev) {
+        ev.preventDefault(); S.contextLost = true; setStatus('failed');
+      });
+      canvas.addEventListener('webglcontextrestored', function () {
+        if (restoreAttempts >= 1) return;
+        restoreAttempts++; S.contextLost = false; sig = ''; setStatus('ready'); scheduleFrame();
+      });
+      var visibilityHandler = function () {
+        if (typeof document === 'undefined' || !document.hidden) scheduleFrame();
+      };
+      if (typeof document !== 'undefined' && document.addEventListener) {
+        document.addEventListener('visibilitychange', visibilityHandler);
+      }
+      S.visibilityHandler = visibilityHandler;
+      if (typeof ResizeObserver === 'function') {
+        S.resizeObserver = new ResizeObserver(function () { scheduleFrame(); });
+        S.resizeObserver.observe(host);
+      }
+      sig = '';
+      scheduleFrame();
+      return true;
+    }
+
+    return {
+      attach: function (host) {
+        if (!host) { this.dispose(); return; }
+        if (node === host && S) return;
+        if (S) this.dispose();
+        node = host;
+        setStatus('loading');
+        var ensure = window.StemLab && window.StemLab.ensureThree
+          ? window.StemLab.ensureThree({ orbit: false, failMessage: '3D lens bench unavailable' })
+          : Promise.reject(new Error('no host loader'));
+        ensure.then(function (THREE) {
+          if (node !== host) return;
+          if (!THREE) { setStatus('failed'); return; }
+          setStatus(build(THREE, host) ? 'ready' : 'failed');
+        }).catch(function () { setStatus('failed'); });
+      },
+      push: function (data) { pending = data; scheduleFrame(); },
+      onStatusChange: function (fn) { notify = fn; },
+      status: function () { return status; },
+      debug: function () {
+        return { state: status, rayCount: S ? S.rayCount : 0, imageVisible: !!(S && S.imageVisible), contextLost: !!(S && S.contextLost) };
+      },
+      dispose: function () {
+        if (S) {
+          if (S.raf) cancelAnimationFrame(S.raf);
+          if (S.visibilityHandler && typeof document !== 'undefined' && document.removeEventListener) {
+            document.removeEventListener('visibilitychange', S.visibilityHandler);
+          }
+          if (S.resizeObserver) {
+            try { S.resizeObserver.disconnect(); } catch (e) {}
+          }
+          disposeGroup(S.model);
+          if (S.renderer) {
+            try { S.renderer.forceContextLoss(); } catch (e) {}
+            try { S.renderer.dispose(); } catch (e) {}
+            if (S.renderer.domElement && S.renderer.domElement.parentNode) {
+              S.renderer.domElement.parentNode.removeChild(S.renderer.domElement);
+            }
+          }
+        }
+        S = null; node = null; pending = null; sig = ''; restoreAttempts = 0;
+        notify = null;
+        setStatus('idle');
+      }
+    };
+  })();
+
+  function opticsLensGlRef(nodeOrNull) { OpticsLensGL.attach(nodeOrNull); }
+  var opticsLensDrag = { current: null };
+  if (typeof window !== 'undefined') window.__alloOpticsLensGL = OpticsLensGL;
+
   function _renderLensSim(state, upd, h) {
     var W = 460, H = 280;
     var pad = { l: 12, r: 12, t: 12, b: 28 };
@@ -1565,6 +1928,30 @@
     var d_i = lens.error ? null : lens.d_i;
     var m = lens.error ? null : lens.m;
     var hImg = (m == null) ? null : m * hObj;
+    var showLens3D = !!state.lensShow3D;
+    var lensGlLive = showLens3D && OpticsLensGL.status() === 'ready';
+    if (showLens3D) {
+      OpticsLensGL.onStatusChange(function () { upd('lensGlTick', ((state.lensGlTick || 0) + 1)); });
+      OpticsLensGL.push({
+        sig: [lt, fAbs.toFixed(3), d_o.toFixed(3), hObj.toFixed(3),
+          d_i == null ? 'infinity' : d_i.toFixed(3), m == null ? 'none' : m.toFixed(4)].join('|'),
+        type: lt, focalAbs: fAbs, objectDistance: d_o, objectHeight: hObj,
+        imageDistance: d_i, imageHeight: hImg, atInfinity: !!lens.error,
+        rotY: state.lensGlRot ? state.lensGlRot.rotY : 34,
+        rotX: state.lensGlRot ? state.lensGlRot.rotX : 20,
+        zoom: state.lensGlZoom || 1
+      });
+    }
+    var lensGlAlt = lens.error
+      ? ('Three-dimensional ' + lt + ' lens bench. ' + lens.error
+        + ' The outgoing cyan rays are parallel, showing why no finite image forms.')
+      : ('Three-dimensional ' + lt + ' lens bench. An object point ' + d_o.toFixed(1)
+        + ' centimeters to the left sends a bundle across the lens aperture. '
+        + (d_i > 0
+          ? 'The physical rays reunite ' + d_i.toFixed(1) + ' centimeters to the right at a real, '
+            + (m < 0 ? 'inverted' : 'upright') + ' image.'
+          : 'The rays leave diverging; their dashed backward extensions meet ' + Math.abs(d_i).toFixed(1)
+            + ' centimeters to the left at a virtual, ' + (m < 0 ? 'inverted' : 'upright') + ' image.'));
     // Spoken image result for the slider aria-valuetext (so screen-reader users hear
     // the computed image as they adjust the controls, not just the raw number).
     var _lensVT = lens.error ? lens.error
@@ -1583,6 +1970,117 @@
       var newDo = clamp(-newCm, 1, 40);
       upd('lensDo', Math.round(newDo * 10) / 10);
     }
+    var lens3dPanel = h('div', { style: { marginBottom: 10, maxWidth: 460 } },
+      h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: showLens3D ? 6 : 0 } },
+        h('label', {
+          style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', display: 'flex', alignItems: 'center', gap: 6 }
+        },
+          h('input', {
+            type: 'checkbox', checked: showLens3D,
+            onChange: function (e) { upd('lensShow3D', e.target.checked); },
+            'data-op-focusable': 'true',
+            'aria-label': 'Show the interactive three-dimensional thin-lens ray bench'
+          }),
+          '3D ray-space bench'
+        ),
+        showLens3D && h('button', {
+          type: 'button',
+          onClick: function () { upd({ lensGlRot: { rotY: 34, rotX: 20 }, lensGlZoom: 1 }); },
+          'data-op-focusable': 'true',
+          style: {
+            fontSize: 10, padding: '3px 8px', borderRadius: 999, cursor: 'pointer',
+            border: '1px solid var(--allo-stem-border, #475569)', background: 'rgba(15,23,42,.65)',
+            color: 'var(--allo-stem-text-soft, #cbd5e1)'
+          }
+        }, 'Reset 3D view')
+      ),
+      showLens3D && h('div', null,
+        h('div', {
+          style: {
+            position: 'relative', height: 280, maxWidth: 460, borderRadius: 8, overflow: 'hidden',
+            background: 'var(--allo-stem-deeper, #08111f)', border: '1px solid var(--allo-stem-border, #334155)'
+          }
+        },
+          h('div', {
+            ref: opticsLensGlRef,
+            role: 'img', tabIndex: 0,
+            'data-a11y-static': 'true',
+            'aria-label': lensGlAlt + ' Drag or use arrow keys to orbit; use the mouse wheel, plus, or minus to zoom.',
+            'aria-keyshortcuts': 'ArrowLeft ArrowRight ArrowUp ArrowDown + -',
+            style: { position: 'absolute', inset: 0, outlineOffset: -3 },
+            onPointerDown: function (ev) {
+              opticsLensDrag.current = {
+                x: ev.clientX, y: ev.clientY,
+                rotY: state.lensGlRot ? state.lensGlRot.rotY : 34,
+                rotX: state.lensGlRot ? state.lensGlRot.rotX : 20
+              };
+              try { ev.currentTarget.setPointerCapture(ev.pointerId); } catch (e) {}
+            },
+            onPointerMove: function (ev) {
+              var drag = opticsLensDrag.current;
+              if (!drag) return;
+              upd('lensGlRot', {
+                rotY: drag.rotY + (ev.clientX - drag.x) * 0.5,
+                rotX: Math.max(-80, Math.min(80, drag.rotX + (ev.clientY - drag.y) * 0.35))
+              });
+            },
+            onPointerUp: function () { opticsLensDrag.current = null; },
+            onPointerCancel: function () { opticsLensDrag.current = null; },
+            onWheel: function (ev) {
+              ev.preventDefault();
+              upd('lensGlZoom', Math.max(0.5, Math.min(3, (state.lensGlZoom || 1) * (ev.deltaY < 0 ? 1.12 : 0.89))));
+            },
+            onKeyDown: function (ev) {
+              var rotation = state.lensGlRot || { rotY: 34, rotX: 20 };
+              var nextRotation = { rotY: rotation.rotY, rotX: rotation.rotX };
+              if (ev.key === 'ArrowLeft') nextRotation.rotY -= 6;
+              else if (ev.key === 'ArrowRight') nextRotation.rotY += 6;
+              else if (ev.key === 'ArrowUp') nextRotation.rotX = Math.max(-80, nextRotation.rotX - 6);
+              else if (ev.key === 'ArrowDown') nextRotation.rotX = Math.min(80, nextRotation.rotX + 6);
+              else if (ev.key === '+' || ev.key === '=') {
+                ev.preventDefault();
+                ev.stopPropagation();
+                upd('lensGlZoom', Math.min(3, (state.lensGlZoom || 1) * 1.12));
+                return;
+              } else if (ev.key === '-' || ev.key === '_') {
+                ev.preventDefault();
+                ev.stopPropagation();
+                upd('lensGlZoom', Math.max(0.5, (state.lensGlZoom || 1) * 0.89));
+                return;
+              } else return;
+              ev.preventDefault();
+              ev.stopPropagation();
+              upd('lensGlRot', nextRotation);
+            }
+          }),
+          !lensGlLive ? h('div', {
+            role: 'status', 'aria-live': 'polite',
+            style: {
+              position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
+              textAlign: 'center', padding: 12, pointerEvents: 'none',
+              color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11
+            }
+          }, OpticsLensGL.status() === 'failed'
+              ? '3D lens bench unavailable on this device; the accessible description and 2D ray diagram remain available.'
+              : 'Loading 3D lens bench...') : null,
+          lensGlLive ? h('div', {
+            'aria-hidden': 'true',
+            style: {
+              position: 'absolute', left: 8, bottom: 6, pointerEvents: 'none', fontSize: 10,
+              color: 'var(--allo-stem-text-soft, #94a3b8)', background: 'rgba(8,17,31,.76)',
+              padding: '2px 7px', borderRadius: 999
+            }
+          }, 'Drag / arrows: orbit  -  Scroll / +/-: zoom') : null
+        ),
+        h('p', {
+          style: { margin: '6px 0 0', fontSize: 11, lineHeight: 1.5, color: 'var(--allo-stem-text-soft, #94a3b8)' }
+        },
+          'Yellow rays spread from one object point across the circular aperture; cyan rays are the physical light after the lens. ',
+          d_i < 0 ? 'Dashed pink lines are backward extensions, not physical rays. ' : '',
+          'The camera scale adapts to the distances; lens thickness and aperture are schematic.'
+        )
+      )
+    );
     return h('div', null,
       h('div', { style: { display: 'flex', gap: 8, marginBottom: 10, flexWrap: 'wrap', alignItems: 'center' } },
         h('label', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', display: 'flex', alignItems: 'center', gap: 6 } }, 'Lens:',
@@ -1590,7 +2088,7 @@
             value: lt,
             onChange: function(e) { upd('lensType', e.target.value); },
             'data-op-focusable': 'true', 'aria-label': 'Lens type',
-            style: { padding: '4px 8px', background: 'var(--allo-stem-canvas, #0f172a)', color: '#e0e7ff', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, fontSize: 12 }
+            style: { padding: '4px 8px', background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--allo-stem-text, #e0e7ff)', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, fontSize: 12 }
           },
             h('option', { value: 'converging' }, 'Converging (f > 0)'),
             h('option', { value: 'diverging' }, 'Diverging (f < 0)')
@@ -1606,7 +2104,7 @@
             'aria-valuetext': fAbs.toFixed(1) + ' cm focal length. ' + _lensVT,
             style: { width: 110 }
           }),
-          h('span', { style: { fontFamily: 'monospace', color: '#fbbf24', fontWeight: 700, minWidth: 36, textAlign: 'right' } }, fAbs.toFixed(1))
+          h('span', { style: { fontFamily: 'monospace', color: 'var(--op-amber-text, #fbbf24)', fontWeight: 700, minWidth: 36, textAlign: 'right' } }, fAbs.toFixed(1))
         ),
         h('label', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', display: 'flex', alignItems: 'center', gap: 6 } },
           'd_o (cm):',
@@ -1618,9 +2116,10 @@
             'aria-valuetext': d_o.toFixed(1) + ' cm object distance. ' + _lensVT,
             style: { width: 110 }
           }),
-          h('span', { style: { fontFamily: 'monospace', color: '#fbbf24', fontWeight: 700, minWidth: 36, textAlign: 'right' } }, d_o.toFixed(1))
+          h('span', { style: { fontFamily: 'monospace', color: 'var(--op-amber-text, #fbbf24)', fontWeight: 700, minWidth: 36, textAlign: 'right' } }, d_o.toFixed(1))
         )
       ),
+      lens3dPanel,
       h('svg', {
         width: '100%', height: H, viewBox: '0 0 ' + W + ' ' + H,
         role: 'img',
@@ -1869,7 +2368,7 @@
         onClick: function() { upd('lensShowMath', !state.lensShowMath); },
         'data-op-focusable': 'true',
         'aria-expanded': !!state.lensShowMath,
-        style: { marginTop: 8, background: 'transparent', color: '#a5b4fc', border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 800, padding: 0 }
+        style: { marginTop: 8, background: 'transparent', color: 'var(--op-indigo-text, #a5b4fc)', border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 800, padding: 0 }
       }, (state.lensShowMath ? '▼' : '▶') + ' 📐 Show me the math'),
       state.lensShowMath && !lens.error && h('div', { style: { marginTop: 8, padding: 10, background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 6, fontFamily: 'monospace', fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7, whiteSpace: 'pre' } },
         [
@@ -1941,7 +2440,7 @@
     var screenHeight = screenBot - screenTop;
     return h('div', null,
       // Sliders
-      h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8, marginBottom: 10 } },
+      h('div', { className: 'opticslab-control-grid', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 190px), 1fr))', gap: 8, marginBottom: 10 } },
         h('label', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', display: 'flex', alignItems: 'center', gap: 6 } },
           'λ (nm):',
           h('input', {
@@ -1952,7 +2451,7 @@
             'aria-valuetext': lambdaNm.toFixed(0) + ' nanometers; fringe spacing ' + fringeSpacing_mm.toFixed(2) + ' millimeters.',
             style: { flex: 1 }
           }),
-          h('span', { style: { fontFamily: 'monospace', color: '#fbbf24', fontWeight: 700, minWidth: 36, textAlign: 'right' } }, lambdaNm.toFixed(0))
+          h('span', { style: { fontFamily: 'monospace', color: 'var(--op-amber-text, #fbbf24)', fontWeight: 700, minWidth: 36, textAlign: 'right' } }, lambdaNm.toFixed(0))
         ),
         h('label', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', display: 'flex', alignItems: 'center', gap: 6 } },
           'd (mm):',
@@ -1964,7 +2463,7 @@
             'aria-valuetext': d_mm.toFixed(2) + ' millimeters; fringe spacing ' + fringeSpacing_mm.toFixed(2) + ' millimeters.',
             style: { flex: 1 }
           }),
-          h('span', { style: { fontFamily: 'monospace', color: '#fbbf24', fontWeight: 700, minWidth: 36, textAlign: 'right' } }, d_mm.toFixed(2))
+          h('span', { style: { fontFamily: 'monospace', color: 'var(--op-amber-text, #fbbf24)', fontWeight: 700, minWidth: 36, textAlign: 'right' } }, d_mm.toFixed(2))
         ),
         h('label', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', display: 'flex', alignItems: 'center', gap: 6 } },
           'L (m):',
@@ -1976,7 +2475,7 @@
             'aria-valuetext': L_m.toFixed(1) + ' meters; fringe spacing ' + fringeSpacing_mm.toFixed(2) + ' millimeters.',
             style: { flex: 1 }
           }),
-          h('span', { style: { fontFamily: 'monospace', color: '#fbbf24', fontWeight: 700, minWidth: 36, textAlign: 'right' } }, L_m.toFixed(1))
+          h('span', { style: { fontFamily: 'monospace', color: 'var(--op-amber-text, #fbbf24)', fontWeight: 700, minWidth: 36, textAlign: 'right' } }, L_m.toFixed(1))
         ),
         h('label', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', display: 'flex', alignItems: 'center', gap: 6 } },
           'a (μm):',
@@ -1988,7 +2487,7 @@
             'aria-valuetext': slitWidth_um.toFixed(0) + ' micrometers; the single-slit envelope shapes the fringe intensity.',
             style: { flex: 1 }
           }),
-          h('span', { style: { fontFamily: 'monospace', color: '#fbbf24', fontWeight: 700, minWidth: 36, textAlign: 'right' } }, slitWidth_um.toFixed(0))
+          h('span', { style: { fontFamily: 'monospace', color: 'var(--op-amber-text, #fbbf24)', fontWeight: 700, minWidth: 36, textAlign: 'right' } }, slitWidth_um.toFixed(0))
         )
       ),
       h('svg', {
@@ -2033,14 +2532,14 @@
               fill: 'none', stroke: color, strokeWidth: 1.2, opacity: 0.7,
               filter: 'url(#opt-soft-glow)',
               className: 'opticslab-wavefront ' + extraCls,
-              'clip-path': 'url(#' + clipId + ')'
+              clipPath: 'url(#' + clipId + ')'
             }));
             rings.push(h('circle', {
               key: 'wb' + ki, cx: barX + 6, cy: slitBotY, r: 4,
               fill: 'none', stroke: color, strokeWidth: 1.2, opacity: 0.7,
               filter: 'url(#opt-soft-glow)',
               className: 'opticslab-wavefront ' + extraCls,
-              'clip-path': 'url(#' + clipId + ')'
+              clipPath: 'url(#' + clipId + ')'
             }));
           });
           return [defs].concat(rings);
@@ -2160,7 +2659,7 @@
         onClick: function() { upd('intShowMath', !state.intShowMath); },
         'data-op-focusable': 'true',
         'aria-expanded': !!state.intShowMath,
-        style: { marginTop: 8, background: 'transparent', color: '#a5b4fc', border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 800, padding: 0 }
+        style: { marginTop: 8, background: 'transparent', color: 'var(--op-indigo-text, #a5b4fc)', border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 800, padding: 0 }
       }, (state.intShowMath ? '▼' : '▶') + ' 📐 Show me the math'),
       state.intShowMath && h('div', { style: { marginTop: 8, padding: 10, background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 6, fontFamily: 'monospace', fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7, whiteSpace: 'pre' } },
         [
@@ -2247,7 +2746,7 @@
               style: {
                 padding: '4px 10px',
                 background: sel ? 'linear-gradient(135deg,#0284c7,#0369a1)' : 'rgba(56,189,248,0.10)',
-                color: sel ? '#fff' : '#7dd3fc',
+                color: sel ? '#fff' : 'var(--op-accent-text, #7dd3fc)',
                 border: '1px solid ' + (sel ? '#0369a1' : 'rgba(56,189,248,0.40)'),
                 borderRadius: 6, cursor: 'pointer', fontSize: 11, fontWeight: 700
               }
@@ -2255,7 +2754,7 @@
           })
         )
       ),
-      h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8, marginBottom: 10 } },
+      h('div', { className: 'opticslab-control-grid', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 190px), 1fr))', gap: 8, marginBottom: 10 } },
         h('label', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', display: 'flex', alignItems: 'center', gap: 6 } },
           'λ (nm):',
           h('input', {
@@ -2265,7 +2764,7 @@
             'aria-valuetext': lambdaNm.toFixed(0) + ' nanometers; ' + (mode === 'single' ? 'first minimum at ' + (firstMin_m * 1000).toFixed(2) + ' millimeters.' : 'grating mode is active.'),
             style: { flex: 1 }
           }),
-          h('span', { style: { fontFamily: 'monospace', color: '#fbbf24', fontWeight: 700, minWidth: 36, textAlign: 'right' } }, lambdaNm.toFixed(0))
+          h('span', { style: { fontFamily: 'monospace', color: 'var(--op-amber-text, #fbbf24)', fontWeight: 700, minWidth: 36, textAlign: 'right' } }, lambdaNm.toFixed(0))
         ),
         h('label', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', display: 'flex', alignItems: 'center', gap: 6 } },
           'a (μm):',
@@ -2278,7 +2777,7 @@
               : 'finite single-slit envelope shapes each grating order.'),
             style: { flex: 1 }
           }),
-          h('span', { style: { fontFamily: 'monospace', color: '#fbbf24', fontWeight: 700, minWidth: 36, textAlign: 'right' } }, slitWidth_um.toFixed(0))
+          h('span', { style: { fontFamily: 'monospace', color: 'var(--op-amber-text, #fbbf24)', fontWeight: 700, minWidth: 36, textAlign: 'right' } }, slitWidth_um.toFixed(0))
         ),
         mode === 'grating' && h('label', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', display: 'flex', alignItems: 'center', gap: 6 } },
           'lines/mm:',
@@ -2289,7 +2788,7 @@
             'aria-valuetext': grooveDensity.toFixed(0) + ' lines per millimeter; line spacing ' + (dGrating * 1e6).toFixed(2) + ' micrometers.',
             style: { flex: 1 }
           }),
-          h('span', { style: { fontFamily: 'monospace', color: '#fbbf24', fontWeight: 700, minWidth: 40, textAlign: 'right' } }, grooveDensity.toFixed(0))
+          h('span', { style: { fontFamily: 'monospace', color: 'var(--op-amber-text, #fbbf24)', fontWeight: 700, minWidth: 40, textAlign: 'right' } }, grooveDensity.toFixed(0))
         ),
         h('label', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', display: 'flex', alignItems: 'center', gap: 6 } },
           'L (m):',
@@ -2300,7 +2799,7 @@
             'aria-valuetext': L_m.toFixed(1) + ' meters; ' + (mode === 'single' ? 'first minimum at ' + (firstMin_m * 1000).toFixed(2) + ' millimeters.' : 'grating orders are measured on the screen.'),
             style: { flex: 1 }
           }),
-          h('span', { style: { fontFamily: 'monospace', color: '#fbbf24', fontWeight: 700, minWidth: 36, textAlign: 'right' } }, L_m.toFixed(1))
+          h('span', { style: { fontFamily: 'monospace', color: 'var(--op-amber-text, #fbbf24)', fontWeight: 700, minWidth: 36, textAlign: 'right' } }, L_m.toFixed(1))
         )
       ),
       h('svg', {
@@ -2386,7 +2885,7 @@
                 opacity: mode === 'single' ? 0.7 : 0.45,
                 filter: 'url(#opt-diff-glow)',
                 className: 'opticslab-wavefront ' + extraCls,
-                'clip-path': 'url(#' + clipId + ')'
+                clipPath: 'url(#' + clipId + ')'
               }));
             });
           });
@@ -2487,7 +2986,7 @@
         onClick: function() { upd('diffShowMath', !state.diffShowMath); },
         'data-op-focusable': 'true',
         'aria-expanded': !!state.diffShowMath,
-        style: { marginTop: 8, background: 'transparent', color: '#a5b4fc', border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 800, padding: 0 }
+        style: { marginTop: 8, background: 'transparent', color: 'var(--op-indigo-text, #a5b4fc)', border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 800, padding: 0 }
       }, (state.diffShowMath ? '▼' : '▶') + ' 📐 Show me the math'),
       state.diffShowMath && h('div', { style: { marginTop: 8, padding: 10, background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 6, fontFamily: 'monospace', fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7, whiteSpace: 'pre' } },
         (function() {
@@ -3125,7 +3624,7 @@
             'aria-valuetext': theta2.toFixed(0) + ' degrees; transmitted intensity after P2 ' + (afterP2 * 100).toFixed(1) + ' percent of I0.',
             style: { width: 130 }
           }),
-          h('span', { style: { fontFamily: 'monospace', color: '#fbbf24', fontWeight: 700, minWidth: 36 } }, theta2.toFixed(0) + '°')
+          h('span', { style: { fontFamily: 'monospace', color: 'var(--op-amber-text, #fbbf24)', fontWeight: 700, minWidth: 36 } }, theta2.toFixed(0) + '°')
         ),
         h('label', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', display: 'flex', alignItems: 'center', gap: 6 } },
           h('input', {
@@ -3332,7 +3831,7 @@
         onClick: function() { upd('polShowMath', !state.polShowMath); },
         'data-op-focusable': 'true',
         'aria-expanded': !!state.polShowMath,
-        style: { marginTop: 8, background: 'transparent', color: '#a5b4fc', border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 800, padding: 0 }
+        style: { marginTop: 8, background: 'transparent', color: 'var(--op-indigo-text, #a5b4fc)', border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 800, padding: 0 }
       }, (state.polShowMath ? '▼' : '▶') + ' 📐 Show me the math'),
       state.polShowMath && h('div', { style: { marginTop: 8, padding: 10, background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 6, fontFamily: 'monospace', fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7, whiteSpace: 'pre' } },
         (function() {
@@ -3764,6 +4263,13 @@
       var addToast = ctx.addToast;
       var awardXP = ctx.awardXP;
       var callGemini = ctx.callGemini;
+      var opIsContrast = ctx.isContrast || ctx.theme === 'contrast';
+      var opIsDark = ctx.isDark || ctx.theme === 'dark';
+      var opAccentText = opIsContrast ? '#ffff00' : (opIsDark ? '#7dd3fc' : '#0369a1');
+      var opGreenText = opIsContrast ? '#00ff00' : (opIsDark ? '#86efac' : '#166534');
+      var opAmberText = opIsContrast ? '#ffff00' : (opIsDark ? '#fbbf24' : '#92400e');
+      var opIndigoText = opIsContrast ? '#ffff00' : (opIsDark ? '#a5b4fc' : '#4338ca');
+      var opPurpleText = opIsContrast ? '#ffff00' : (opIsDark ? '#d8b4fe' : '#6b21a8');
       // ── State init ──
       // Seed defaults, but DO NOT early-return a Loading screen here: this render
       // calls hooks (useRef/useEffect/useState) on the lines below, so a conditional
@@ -3784,7 +4290,7 @@
             refrShowMath: false,
             // Lenses
             lensType: 'converging', lensFocal: 12, lensDo: 25, lensObjH: 5,
-            lensShowMath: false,
+            lensShowMath: false, lensShow3D: false,
             // Interference (Young's double-slit)
             intLambda: 600, intSlitSep: 0.10, intScreenL: 1.0, intSlitWidth: 50,
             intShowMath: false,
@@ -3903,7 +4409,9 @@
             patch[k] = v;
           }
           next.opticsLab = Object.assign({}, prev.opticsLab, patch);
-          if (next.opticsLab.mode !== 'home') next.opticsLab.simRunOnce = true;
+          if (['reflection', 'refraction', 'lenses', 'interference', 'diffraction', 'polarization'].indexOf(next.opticsLab.mode) !== -1) {
+            next.opticsLab.simRunOnce = true;
+          }
           // Remember the last topic tab visited (for the quiz tab to anchor questions)
           if (['reflection', 'refraction', 'lenses', 'interference', 'diffraction', 'polarization'].indexOf(next.opticsLab.mode) !== -1) {
             next.opticsLab.lastTopicTab = next.opticsLab.mode;
@@ -4018,6 +4526,11 @@
         style: {
           fontFamily: 'system-ui, sans-serif',
           color: 'var(--allo-stem-text, #e2e8f0)',
+          '--op-accent-text': opAccentText,
+          '--op-green-text': opGreenText,
+          '--op-amber-text': opAmberText,
+          '--op-indigo-text': opIndigoText,
+          '--op-purple-text': opPurpleText,
           padding: 20,
           maxWidth: 1100,
           margin: '0 auto'
@@ -4027,7 +4540,7 @@
         h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16, flexWrap: 'wrap' } },
           h('div', { style: { fontSize: 36 } }, '🔆'),
           h('div', { style: { flex: 1 } },
-            h('h2', { style: { margin: 0, color: '#7dd3fc', fontSize: 24, fontWeight: 900 } }, t('stem.optics.optics_lab', 'Optics Lab')),
+            h('h2', { style: { margin: 0, color: 'var(--op-accent-text, #7dd3fc)', fontSize: 24, fontWeight: 900 } }, t('stem.optics.optics_lab', 'Optics Lab')),
             h('p', { style: { margin: '4px 0 0', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12 } }, t('stem.optics.ap_physics_2_ray_diagrams_snell_s_law_', 'AP Physics 2: ray diagrams, Snell\'s law, mirrors, lenses, interference, diffraction, polarization. Side-by-side sims + calculators.'))
           )
         ),
@@ -4136,7 +4649,7 @@
               style: {
                 padding: '8px 12px',
                 background: sel ? 'linear-gradient(135deg,#0284c7,#0369a1)' : 'rgba(56,189,248,0.10)',
-                color: sel ? '#fff' : '#7dd3fc',
+                color: sel ? '#fff' : 'var(--op-accent-text, #7dd3fc)',
                 border: '1px solid ' + (sel ? '#0369a1' : 'rgba(56,189,248,0.40)'),
                 borderRadius: 8, cursor: 'pointer', fontSize: 12, fontWeight: 700, minHeight: 36
               }
@@ -4384,7 +4897,7 @@
           borderRadius: 10, padding: 14, marginBottom: 16
         }
       },
-        h('div', { style: { fontSize: 14, fontWeight: 800, color: '#7dd3fc', marginBottom: 6 } }, '🚀 Welcome to the Optics Lab'),
+        h('div', { style: { fontSize: 14, fontWeight: 800, color: 'var(--op-accent-text, #7dd3fc)', marginBottom: 6 } }, '🚀 Welcome to the Optics Lab'),
         h('p', { style: { margin: 0, fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55 } },
           'Pick a sample problem below — each loads the parameters into the right tab and primes the simulation. Or jump straight into a topic at the top to explore on your own. Every panel pairs a draggable visualization with a calculator that shows the math step-by-step.'
         )
@@ -4423,7 +4936,7 @@
       ),
       // Sample problem library
       h('div', { style: { marginBottom: 18 } },
-        h('div', { style: { fontSize: 13, fontWeight: 800, color: '#7dd3fc', marginBottom: 8 } }, '📚 AP Physics 2 sample problems'),
+        h('div', { style: { fontSize: 13, fontWeight: 800, color: 'var(--op-accent-text, #7dd3fc)', marginBottom: 8 } }, '📚 AP Physics 2 sample problems'),
         h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 10 } },
           SAMPLE_PROBLEMS.map(function(s) {
             return h('button', {
@@ -4438,7 +4951,7 @@
                 display: 'flex', flexDirection: 'column', gap: 6
               }
             },
-              h('div', { style: { fontSize: 10, fontWeight: 800, color: '#7dd3fc', letterSpacing: '0.06em', textTransform: 'uppercase' } }, s.topic),
+              h('div', { style: { fontSize: 10, fontWeight: 800, color: 'var(--op-accent-text, #7dd3fc)', letterSpacing: '0.06em', textTransform: 'uppercase' } }, s.topic),
               h('div', { style: { fontSize: 14, fontWeight: 800, color: 'var(--allo-stem-text, #fef3c7)' } }, s.title),
               h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } }, s.research_question),
               h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', marginTop: 2 } }, '→ ' + s.tab.charAt(0).toUpperCase() + s.tab.slice(1) + ' tab')
@@ -4448,7 +4961,7 @@
       ),
       // Topic shortcuts
       h('div', null,
-        h('div', { style: { fontSize: 13, fontWeight: 800, color: '#7dd3fc', marginBottom: 8 } }, '🎯 Or jump to a topic'),
+        h('div', { style: { fontSize: 13, fontWeight: 800, color: 'var(--op-accent-text, #7dd3fc)', marginBottom: 8 } }, '🎯 Or jump to a topic'),
         h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 10 } },
           [
             { mode: 'reflection', icon: '🪞', label: 'Reflection', sub: 'Plane + curved mirrors' },
@@ -4497,7 +5010,7 @@
         onClick: function() { upd('showGlossary', !d.showGlossary); },
         'data-op-focusable': 'true',
         'aria-expanded': !!d.showGlossary,
-        style: { background: 'transparent', color: '#d8b4fe', border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 800, padding: 0 }
+        style: { background: 'transparent', color: 'var(--op-purple-text, #d8b4fe)', border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 800, padding: 0 }
       }, (d.showGlossary ? '▼' : '▶') + ' 📖 Glossary (' + keys.length + ' terms for this topic)'),
       d.showGlossary && h('div', { style: { marginTop: 8 } },
         keys.map(function(k) {
@@ -4519,7 +5032,7 @@
         borderRadius: 10, padding: 12, marginTop: 12
       }
     },
-      h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fbbf24', marginBottom: 8 } }, '⚠ Common misconceptions'),
+      h('div', { style: { fontSize: 13, fontWeight: 800, color: 'var(--op-amber-text, #fbbf24)', marginBottom: 8 } }, '⚠ Common misconceptions'),
       items.map(function(it, i) {
         return h('div', { key: i, style: { fontSize: 11, color: 'var(--allo-stem-text, #fde68a)', lineHeight: 1.55, marginBottom: 8, paddingLeft: 8, borderLeft: '2px solid rgba(245,158,11,0.45)' } },
           h('div', { style: { fontWeight: 700, color: 'var(--allo-stem-text, #fef3c7)', marginBottom: 2 } }, '✗ ' + it.wrong),
@@ -4592,7 +5105,7 @@
         borderRadius: 10, padding: 12, marginTop: 12
       }
     },
-      h('div', { style: { fontSize: 13, fontWeight: 800, color: '#d8b4fe', marginBottom: 6 } }, '🤖 AI-graded explanation'),
+      h('div', { style: { fontSize: 13, fontWeight: 800, color: 'var(--op-purple-text, #d8b4fe)', marginBottom: 6 } }, '🤖 AI-graded explanation'),
       h('p', { style: { margin: '0 0 8px', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55 } },
         'Write a 2-3 sentence physics explanation of what you just observed. AI feedback grades the physics accuracy and points out common errors.'
       ),
@@ -4906,7 +5419,7 @@
       },
         h('div', { style: { display: 'flex', alignItems: 'center', gap: 18, flexWrap: 'wrap' } },
           h('div', { style: { textAlign: 'center', minWidth: 110 } },
-            h('div', { style: { fontSize: 38, fontWeight: 900, color: '#a5b4fc', lineHeight: 1 } }, masteredCount + ' / ' + totalQuestions),
+            h('div', { style: { fontSize: 38, fontWeight: 900, color: 'var(--op-indigo-text, #a5b4fc)', lineHeight: 1 } }, masteredCount + ' / ' + totalQuestions),
             h('div', { style: { fontSize: 9, fontWeight: 800, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.1em', marginTop: 4 } }, 'Quiz questions mastered')
           ),
           h('div', { style: { flex: 1, minWidth: 240 } },
@@ -4929,20 +5442,20 @@
         )
       ),
       // Per-concept cards
-      h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 10 } },
+      h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 320px), 1fr))', gap: 10 } },
         conceptStats.map(function (cs) {
           var pct = cs.questions.length > 0 ? Math.round((cs.doneCount / cs.questions.length) * 100) : 0;
           var statusLabel = cs.doneCount === 0 ? 'Untouched'
             : cs.doneCount === cs.questions.length ? '✓ All mastered'
             : cs.doneCount + ' / ' + cs.questions.length;
-          var statusColor = cs.doneCount === 0 ? '#94a3b8'
-            : cs.doneCount === cs.questions.length ? '#22c55e'
-            : cs.concept.color;
+          var statusColor = cs.doneCount === 0 ? 'var(--allo-stem-text-soft, #94a3b8)'
+            : cs.doneCount === cs.questions.length ? 'var(--op-green-text, #22c55e)'
+            : 'var(--allo-stem-text, #e2e8f0)';
           return h('div', {
             key: cs.concept.id,
             style: {
               padding: 12, borderRadius: 12,
-              background: 'rgba(15,23,42,0.6)',
+              background: 'var(--allo-stem-panel, #1e293b)',
               border: '1px solid ' + (cs.doneCount > 0 ? cs.concept.color + 'aa' : 'rgba(148,163,184,0.25)')
             }
           },
@@ -4963,7 +5476,7 @@
                   style: {
                     display: 'flex', alignItems: 'flex-start', gap: 6,
                     fontSize: 11,
-                    color: done ? '#cbd5e1' : '#94a3b8',
+                    color: done ? 'var(--allo-stem-text, #cbd5e1)' : 'var(--allo-stem-text-soft, #94a3b8)',
                     lineHeight: 1.45
                   }
                 },
@@ -5000,7 +5513,7 @@
   function _renderQuizPanel(d, upd, h, addToast, awardXP, setOpCeleb) {
     if (!d.quizQuestions) {
       return h('div', null,
-        h('h3', { style: { color: '#7dd3fc', fontSize: 16, fontWeight: 800, margin: '0 0 12px' } }, '📝 AP exam practice quiz'),
+        h('h3', { style: { color: 'var(--op-accent-text, #7dd3fc)', fontSize: 16, fontWeight: 800, margin: '0 0 12px' } }, '📝 AP exam practice quiz'),
         h('div', {
           style: {
             background: 'rgba(168,85,247,0.08)', border: '1px solid rgba(168,85,247,0.40)',
@@ -5009,7 +5522,7 @@
         },
           h('p', { style: { margin: '0 0 10px', fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55 } },
             'Take a 5-question AP-style multiple-choice quiz. Two questions are tied to whichever topic you most recently visited (',
-            h('b', { style: { color: '#fbbf24' } }, d.lastTopicTab || 'pick a topic above'),
+            h('b', { style: { color: 'var(--op-amber-text, #fbbf24)' } }, d.lastTopicTab || 'pick a topic above'),
             '), two are universal anchors on core concepts, and one is random. Per-question rationales appear after submit.'
           ),
           h('button', {
@@ -5031,7 +5544,7 @@
       );
     }
     return h('div', null,
-      h('h3', { style: { color: '#7dd3fc', fontSize: 16, fontWeight: 800, margin: '0 0 12px' } }, '📝 AP exam practice quiz'),
+      h('h3', { style: { color: 'var(--op-accent-text, #7dd3fc)', fontSize: 16, fontWeight: 800, margin: '0 0 12px' } }, '📝 AP exam practice quiz'),
       h('div', { style: { background: 'rgba(168,85,247,0.06)', border: '1px solid rgba(168,85,247,0.40)', borderRadius: 10, padding: 14 } },
         d.quizQuestions.map(function(q, qi) {
           var pickedIdx = (d.quizAnswers || [])[qi];
@@ -5328,7 +5841,7 @@
       },
         h('span', { 'aria-hidden': 'true', style: { fontSize: 16, lineHeight: '20px', flexShrink: 0 } }, '🎯'),
         h('div', null,
-          h('div', { style: { fontSize: 11, fontWeight: 800, color: '#86efac', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 2 } }, 'Try this'),
+          h('div', { style: { fontSize: 11, fontWeight: 800, color: 'var(--op-green-text, #86efac)', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 2 } }, 'Try this'),
           h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55 } }, meta.tryThis)
         )
       ),
@@ -5340,7 +5853,7 @@
           borderRadius: 10, padding: '9px 12px', marginBottom: 12
         }
       },
-        h('div', { style: { fontSize: 11, fontWeight: 800, color: '#7dd3fc', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 3 } }, 'Prediction notebook'),
+        h('div', { style: { fontSize: 11, fontWeight: 800, color: 'var(--op-accent-text, #7dd3fc)', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 3 } }, 'Prediction notebook'),
         h('p', { style: { margin: '0 0 6px', fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.45 } }, 'Before changing a control, write what you expect to happen. Save it, run the simulation, then compare the result with your prediction.'),
         h('textarea', {
           value: predictionDraft,
@@ -5365,7 +5878,7 @@
             type: 'button', onClick: clearPrediction, 'data-op-focusable': 'true',
             style: { padding: '5px 10px', background: 'transparent', color: 'var(--allo-stem-text-soft, #94a3b8)', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, cursor: 'pointer', fontSize: 11 }
           }, 'Clear'),
-          predictionNote && h('span', { role: 'status', 'aria-live': 'polite', style: { fontSize: 11, color: '#86efac', lineHeight: 1.4 } }, 'Saved: ' + predictionNote)
+          predictionNote && h('span', { role: 'status', 'aria-live': 'polite', style: { fontSize: 11, color: 'var(--op-green-text, #86efac)', lineHeight: 1.4 } }, 'Saved: ' + predictionNote)
         )
       ),
       researchQuestion && h('div', {
@@ -5376,7 +5889,7 @@
         },
         role: 'note', 'aria-label': 'Sample problem context'
       },
-        h('div', { style: { fontSize: 11, fontWeight: 800, color: '#fbbf24', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 4 } }, '📚 ' + researchQuestion.topic),
+        h('div', { style: { fontSize: 11, fontWeight: 800, color: 'var(--op-amber-text, #fbbf24)', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 4 } }, '📚 ' + researchQuestion.topic),
         h('div', { style: { fontSize: 13, fontWeight: 800, color: 'var(--allo-stem-text, #fef3c7)', marginBottom: 4 } }, researchQuestion.title),
         h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55, marginBottom: 6 } }, researchQuestion.research_question),
         researchQuestion.hint && h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, '💡 ' + researchQuestion.hint),
@@ -5395,7 +5908,7 @@
             borderRadius: 10, padding: 14
           }
         },
-          h('div', { style: { fontSize: 13, fontWeight: 800, color: '#7dd3fc', marginBottom: 8 } }, '🎮 Simulation'),
+          h('div', { style: { fontSize: 13, fontWeight: 800, color: 'var(--op-accent-text, #7dd3fc)', marginBottom: 8 } }, '🎮 Simulation'),
           opts.sim
         ),
         // Right: calculator
@@ -5406,7 +5919,7 @@
             borderRadius: 10, padding: 14
           }
         },
-          h('div', { style: { fontSize: 13, fontWeight: 800, color: '#a5b4fc', marginBottom: 8 } }, '🧮 Calculator'),
+          h('div', { style: { fontSize: 13, fontWeight: 800, color: 'var(--op-indigo-text, #a5b4fc)', marginBottom: 8 } }, '🧮 Calculator'),
           opts.calc
         )
       ),
@@ -7060,7 +7573,7 @@
       h('button', {
         onClick: function() { upd({ phenoQuantumPlaying: !playing }); },
         'data-op-focusable': 'true',
-        style: { padding: '6px 14px', background: playing ? '#dc2626' : '#0ea5e9', color: '#fff', border: 'none', borderRadius: 6, fontSize: 12, fontWeight: 700, cursor: 'pointer' }
+        style: { padding: '6px 14px', background: playing ? '#b91c1c' : '#0369a1', color: '#fff', border: 'none', borderRadius: 6, fontSize: 12, fontWeight: 700, cursor: 'pointer' }
       }, playing ? '⏸ Pause' : '▶ Auto-fire'),
       playing && h('div', { style: { display: 'flex', gap: 4 } },
         h('button', {
@@ -7077,7 +7590,7 @@
       h('button', {
         onClick: function() { upd({ phenoQuantumDots: [], phenoQuantumCount: 0, phenoQuantumPlaying: false }); },
         'data-op-focusable': 'true',
-        style: { padding: '6px 14px', background: 'transparent', color: 'var(--allo-stem-text-soft, #94a3b8)', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, fontSize: 12, cursor: 'pointer', marginLeft: 'auto' }
+        style: { padding: '6px 14px', background: 'var(--allo-stem-panel, #1e293b)', color: 'var(--allo-stem-text, #e2e8f0)', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, fontSize: 12, cursor: 'pointer', marginLeft: 'auto' }
       }, '↺ Reset')
     );
     return h('div', {
@@ -7090,22 +7603,22 @@
       }
     },
       h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 8, flexWrap: 'wrap' } },
-        h('h3', { style: { color: '#c4b5fd', fontSize: 16, fontWeight: 900, margin: 0 } }, '🌌 Quantum twist — fire one photon at a time'),
+        h('h3', { style: { color: 'var(--op-purple-text, #c4b5fd)', fontSize: 16, fontWeight: 900, margin: 0 } }, '🌌 Quantum twist — fire one photon at a time'),
         h('span', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, 'beyond AP — but it earns its keep')
       ),
       h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55, margin: '0 0 10px' } },
         'The classical sim above shows what happens with a continuous beam. But what if you dim the source until photons leave the laser ONE AT A TIME, with seconds between them? Each photon should "obviously" go through one slit and land somewhere predictable. Press Fire one at a time, then auto-fire — and watch what your eye is convinced couldn\'t happen.'),
-      h('div', { style: { display: 'grid', gridTemplateColumns: 'minmax(340px,1fr) minmax(240px,1fr)', gap: 12 } },
+      h('div', { className: 'opticslab-quantum-grid', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 340px), 1fr))', gap: 12 } },
         h('div', { style: { background: 'rgba(15,23,42,0.55)', border: '1px solid rgba(99,102,241,0.30)', borderRadius: 10, padding: 12 } }, svg, controls),
         h('div', { style: { background: 'rgba(99,102,241,0.05)', border: '1px solid rgba(99,102,241,0.30)', borderRadius: 10, padding: 14 } },
-          h('div', { style: { fontSize: 13, fontWeight: 800, color: '#c4b5fd', marginBottom: 6 } }, 'Why this is weird'),
+          h('div', { style: { fontSize: 13, fontWeight: 800, color: 'var(--op-purple-text, #c4b5fd)', marginBottom: 6 } }, 'Why this is weird'),
           h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55, margin: '0 0 8px' } },
             'A single photon is indivisible — it can\'t literally split and go through both slits at once. Yet the pattern that builds up over thousands of single-photon events is the SAME interference pattern you get from a continuous wave. Each photon "knows" the geometry of both slits.'),
           h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55, margin: '0 0 8px' } },
             'The standard interpretation: a photon\'s position before detection is described by a probability amplitude (a wave). The wave passes through both slits, interferes with itself, and the probability of detection at any point is |amplitude|². Random individually; deterministic in the long run.'),
           h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55, margin: '0 0 8px' } },
             'Add a "which-path" detector at the slits — and the interference pattern vanishes. Measurement collapses the amplitude to a single path. This is the famous quantum measurement problem: observation changes the outcome.'),
-          h('p', { style: { fontSize: 11, color: '#86efac', fontStyle: 'italic', margin: 0 } },
+          h('p', { style: { fontSize: 11, color: 'var(--op-green-text, #86efac)', fontStyle: 'italic', margin: 0 } },
             'Real experiments: Tonomura 1989 (single electrons, same result). Modern reproductions with single photons, neutrons, even C₆₀ buckyballs. The biggest object yet to show single-particle interference: a 25,000-atom organic molecule (Vienna, 2019).')
         )
       )

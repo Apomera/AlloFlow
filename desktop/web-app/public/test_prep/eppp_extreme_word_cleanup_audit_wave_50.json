@@ -1,0 +1,207 @@
+{
+  "schemaVersion": 1,
+  "reviewWave": "eppp-extreme-word-cleanup-wave-50",
+  "reviewedAt": "2026-08-21",
+  "scope": "A final distractor pass that removes absolute-word answer tells while preserving keyed answers and replay-safe feedback.",
+  "summary": {
+    "totalItems": 1500,
+    "rewrittenItems": 27,
+    "extremeCandidatesBefore": 27,
+    "extremeCandidatesAfter": 0,
+    "lexicalCandidatesAfter": 0,
+    "duplicatePairsAfter": 0,
+    "feedbackWarningsAfter": {
+      "totalItems": 1500,
+      "totalIncorrectOptions": 4500,
+      "itemsWithWarnings": 0,
+      "incorrectOptionsWithWarnings": 0,
+      "insufficientDetailOptions": 0,
+      "genericTemplateOptions": 0,
+      "choiceRestatementOptions": 0,
+      "fullKeyEchoOptions": 0,
+      "currentWaveIncorrectOptions": 24,
+      "currentWaveOptionsWithWarnings": 0,
+      "previousWaveIncorrectOptions": 24,
+      "previousWaveOptionsWithWarnings": 0,
+      "latestWaveIncorrectOptions": 48,
+      "latestWaveOptionsWithWarnings": 0,
+      "activeWaveIncorrectOptions": 48,
+      "activeWaveOptionsWithWarnings": 0,
+      "wave09IncorrectOptions": 48,
+      "wave09OptionsWithWarnings": 0,
+      "wave10IncorrectOptions": 48,
+      "wave10OptionsWithWarnings": 0,
+      "wave11IncorrectOptions": 48,
+      "wave11OptionsWithWarnings": 0,
+      "priorityDocketItems": 0
+    },
+    "status": "pass"
+  },
+  "items": [
+    {
+      "id": "eppp-v2-cognitive-affective-037",
+      "domainId": "cognitive-affective",
+      "answerIndex": 2,
+      "extremeWordCleanupWave": "eppp-extreme-word-cleanup-wave-50"
+    },
+    {
+      "id": "eppp-v2-professional-008",
+      "domainId": "professional",
+      "answerIndex": 1,
+      "extremeWordCleanupWave": "eppp-extreme-word-cleanup-wave-50"
+    },
+    {
+      "id": "eppp-v2-professional-011",
+      "domainId": "professional",
+      "answerIndex": 0,
+      "extremeWordCleanupWave": "eppp-extreme-word-cleanup-wave-50"
+    },
+    {
+      "id": "eppp-v2-professional-044",
+      "domainId": "professional",
+      "answerIndex": 1,
+      "extremeWordCleanupWave": "eppp-extreme-word-cleanup-wave-50"
+    },
+    {
+      "id": "eppp-v2-professional-046",
+      "domainId": "professional",
+      "answerIndex": 3,
+      "extremeWordCleanupWave": "eppp-extreme-word-cleanup-wave-50"
+    },
+    {
+      "id": "eppp-v2-professional-071",
+      "domainId": "professional",
+      "answerIndex": 0,
+      "extremeWordCleanupWave": "eppp-extreme-word-cleanup-wave-50"
+    },
+    {
+      "id": "eppp-v2-professional-074",
+      "domainId": "professional",
+      "answerIndex": 0,
+      "extremeWordCleanupWave": "eppp-extreme-word-cleanup-wave-50"
+    },
+    {
+      "id": "eppp-v3-assessment-069",
+      "domainId": "assessment",
+      "answerIndex": 2,
+      "extremeWordCleanupWave": "eppp-extreme-word-cleanup-wave-50"
+    },
+    {
+      "id": "eppp-v3-assessment-075",
+      "domainId": "assessment",
+      "answerIndex": 0,
+      "extremeWordCleanupWave": "eppp-extreme-word-cleanup-wave-50"
+    },
+    {
+      "id": "eppp-v3-cognitive-affective-047",
+      "domainId": "cognitive-affective",
+      "answerIndex": 1,
+      "extremeWordCleanupWave": "eppp-extreme-word-cleanup-wave-50"
+    },
+    {
+      "id": "eppp-v3-cognitive-affective-053",
+      "domainId": "cognitive-affective",
+      "answerIndex": 2,
+      "extremeWordCleanupWave": "eppp-extreme-word-cleanup-wave-50"
+    },
+    {
+      "id": "eppp-v3-cognitive-affective-063",
+      "domainId": "cognitive-affective",
+      "answerIndex": 0,
+      "extremeWordCleanupWave": "eppp-extreme-word-cleanup-wave-50"
+    },
+    {
+      "id": "eppp-v3-intervention-061",
+      "domainId": "intervention",
+      "answerIndex": 2,
+      "extremeWordCleanupWave": "eppp-extreme-word-cleanup-wave-50"
+    },
+    {
+      "id": "eppp-v3-professional-004",
+      "domainId": "professional",
+      "answerIndex": 3,
+      "extremeWordCleanupWave": "eppp-extreme-word-cleanup-wave-50"
+    },
+    {
+      "id": "eppp-v3-professional-005",
+      "domainId": "professional",
+      "answerIndex": 0,
+      "extremeWordCleanupWave": "eppp-extreme-word-cleanup-wave-50"
+    },
+    {
+      "id": "eppp-v3-professional-007",
+      "domainId": "professional",
+      "answerIndex": 2,
+      "extremeWordCleanupWave": "eppp-extreme-word-cleanup-wave-50"
+    },
+    {
+      "id": "eppp-v3-professional-008",
+      "domainId": "professional",
+      "answerIndex": 3,
+      "extremeWordCleanupWave": "eppp-extreme-word-cleanup-wave-50"
+    },
+    {
+      "id": "eppp-v3-professional-012",
+      "domainId": "professional",
+      "answerIndex": 3,
+      "extremeWordCleanupWave": "eppp-extreme-word-cleanup-wave-50"
+    },
+    {
+      "id": "eppp-v3-professional-016",
+      "domainId": "professional",
+      "answerIndex": 3,
+      "extremeWordCleanupWave": "eppp-extreme-word-cleanup-wave-50"
+    },
+    {
+      "id": "eppp-v3-professional-018",
+      "domainId": "professional",
+      "answerIndex": 1,
+      "extremeWordCleanupWave": "eppp-extreme-word-cleanup-wave-50"
+    },
+    {
+      "id": "eppp-v3-professional-021",
+      "domainId": "professional",
+      "answerIndex": 0,
+      "extremeWordCleanupWave": "eppp-extreme-word-cleanup-wave-50"
+    },
+    {
+      "id": "eppp-v3-professional-028",
+      "domainId": "professional",
+      "answerIndex": 3,
+      "extremeWordCleanupWave": "eppp-extreme-word-cleanup-wave-50"
+    },
+    {
+      "id": "eppp-v3-professional-038",
+      "domainId": "professional",
+      "answerIndex": 1,
+      "extremeWordCleanupWave": "eppp-extreme-word-cleanup-wave-50"
+    },
+    {
+      "id": "eppp-v3-professional-049",
+      "domainId": "professional",
+      "answerIndex": 0,
+      "extremeWordCleanupWave": "eppp-extreme-word-cleanup-wave-50"
+    },
+    {
+      "id": "eppp-v3-professional-056",
+      "domainId": "professional",
+      "answerIndex": 3,
+      "extremeWordCleanupWave": "eppp-extreme-word-cleanup-wave-50"
+    },
+    {
+      "id": "eppp-v3-professional-057",
+      "domainId": "professional",
+      "answerIndex": 0,
+      "extremeWordCleanupWave": "eppp-extreme-word-cleanup-wave-50"
+    },
+    {
+      "id": "eppp-v3-professional-080",
+      "domainId": "professional",
+      "answerIndex": 3,
+      "extremeWordCleanupWave": "eppp-extreme-word-cleanup-wave-50"
+    }
+  ],
+  "limitations": [
+    "Extreme-word heuristics are editorial triage aids and do not replace independent psychometric or licensed-psychologist review."
+  ]
+}

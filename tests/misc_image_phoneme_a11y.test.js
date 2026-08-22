@@ -19,7 +19,8 @@ describe('shared image and phoneme control accessibility', () => {
   it('provides named non-drag phoneme reorder controls', () => {
     expect(source).toContain('handlePhonemeReorder(idx, i, i - 1)');
     expect(source).toContain('handlePhonemeReorder(idx, i, i + 1)');
-    expect(source).toContain("aria-label={`Move ${typeof p === 'string' ? p : 'phoneme'} earlier`}");
-    expect(source).toContain('role="group" aria-label={`${typeof p');
+    expect(source).toContain("aria-label={`Move ${phonemeLabel(p) || 'phoneme'} earlier`}");
+    expect(source).toContain("aria-label={`Move ${phonemeLabel(p) || 'phoneme'} later`}");
+    expect(source).toContain('role="group" aria-label={`${phonemeLabel(p)');
   });
 });

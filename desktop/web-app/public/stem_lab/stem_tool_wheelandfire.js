@@ -44,6 +44,7 @@
   })();
 
   var RING_COUNT = 36;
+  var DIMENSION_MODEL_VERSION = 2;
   var STAGES = ['wet', 'leather-hard', 'bone-dry', 'bisque', 'glazed', 'glaze-fired'];
   var CLAY_BODIES = {
     earthenware: { id: 'earthenware', name: 'Earthenware', plasticity: 0.78, maturity: 1040, shrinkage: 0.075, density: 1.78, color: '#b96543', fired: '#c87550', porosity: 0.16, expansion: 0.58, thermalSensitivity: 0.46 },
@@ -296,6 +297,23 @@
     for (var i = 1; i < cones.length; i++) if (Math.abs(cones[i].temperature - effectiveTemp) < Math.abs(nearest.temperature - effectiveTemp)) nearest = cones[i];
     return { target: target, ramp: ramp, soak: soak, effectiveTemp: effectiveTemp, cone: nearest.label };
   }
+  function estimateThermalHistory(settings) {
+    settings = settings || {};
+    var target = clamp(finite(settings.temperature, 950), 600, 1350);
+    var ramp = clamp(finite(settings.ramp, 110), 30, 300);
+    var soak = clamp(finite(settings.soak, 10), 0, 90);
+    var coolingRate = clamp(finite(settings.coolingRate, 100), 30, 300);
+    var roomTemperature = 20;
+    var coolingReference = 100;
+    var segments = [
+      { id: 'ramp', label: 'Ramp up', startC: roomTemperature, endC: target, durationHours: Math.max(0, target - roomTemperature) / ramp },
+      { id: 'soak', label: 'Peak soak', startC: target, endC: target, durationHours: soak / 60 },
+      { id: 'cool', label: 'Controlled cool', startC: target, endC: coolingReference, durationHours: Math.max(0, target - coolingReference) / coolingRate }
+    ];
+    var totalHours = segments.reduce(function (sum, segment) { return sum + segment.durationHours; }, 0);
+    segments = segments.map(function (segment) { return Object.assign({}, segment, { relativePct: totalHours ? segment.durationHours / totalHours * 100 : 0 }); });
+    return { roomTemperature: roomTemperature, coolingReference: coolingReference, totalHours: totalHours, segments: segments };
+  }
   function estimateFiredPorosity(bodyOrId, effectiveTemp, kilnType) {
     var body = typeof bodyOrId === 'string' ? clayBody(bodyOrId) : (bodyOrId || CLAY_BODIES.stoneware);
     var maturation = clamp((finite(effectiveTemp, 950) - (body.maturity - 210)) / 210, 0, 1);
@@ -361,6 +379,7 @@
     var kilnType = settings.kilnType || 'electric';
     var atmosphere = kilnType === 'electric' ? 'oxidation' : (settings.atmosphere || 'oxidation');
     var heatwork = estimateHeatwork({ temperature: target, ramp: ramp, soak: soak });
+    var thermalHistory = estimateThermalHistory({ temperature: target, ramp: ramp, soak: soak, coolingRate: coolingRate });
     var fired = estimateFiredPorosity(body, heatwork.effectiveTemp, kilnType);
     var thermalRisk = clamp((coolingRate * body.thermalSensitivity) / 140 * 100, 0, 100);
     var rampRisk = clamp((ramp - 150) / 150 * 100, 0, 100);
@@ -384,6 +403,7 @@
       kilnType: kilnType,
       atmosphere: atmosphere,
       heatwork: heatwork,
+      thermalHistory: thermalHistory,
       maturationPct: fired.maturation * 100,
       porosityPct: fired.porosity * 100,
       thermalRiskPct: thermalRisk,
@@ -622,17 +642,22 @@
     }
     return vessel;
   }
+  function estimateDryingRisk(vessel, settings) {
+    vessel = normalizeVessel(vessel);
+    settings = settings || {};
+    var humidity = clamp(finite(settings.humidity, 45), 10, 95) / 100;
+    var dryingRate = clamp(finite(settings.dryingRate, 48), 0, 100) / 100;
+    var stats = analyzeVessel(vessel, settings);
+    return clamp((100 - stats.uniformity) / 100 * 0.34 + dryingRate * 0.28 + (1 - humidity) * 0.18 + Math.max(0, stats.maxWallCm - 2.2) * 0.08 + (1 - vessel.compression) * 0.12 + (1 - vessel.coilBond) * 0.22, 0, 1);
+  }
   function dryVessel(vessel, settings) {
     var next = normalizeVessel(vessel);
     if (next.stage !== 'wet' && next.stage !== 'leather-hard') return next;
     settings = settings || {};
-    var humidity = clamp(finite(settings.humidity, 45), 10, 95) / 100;
-    var dryingRate = clamp(finite(settings.dryingRate, 48), 0, 100) / 100;
-    var stats = analyzeVessel(next, settings);
     var body = materialProfile(next);
+    var crackRisk = estimateDryingRisk(next, settings);
     var stepShrink = body.shrinkage * (next.stage === 'wet' ? 0.28 : 0.24);
     scaleVessel(next, 1 - stepShrink);
-    var crackRisk = clamp((100 - stats.uniformity) / 100 * 0.34 + dryingRate * 0.28 + (1 - humidity) * 0.18 + Math.max(0, stats.maxWallCm - 2.2) * 0.08 + (1 - next.compression) * 0.12 + (1 - next.coilBond) * 0.22, 0, 1);
     if (crackRisk > 0.66 && next.defects.indexOf('drying crack') === -1) next.defects.push('drying crack');
     if (next.coilBond < 0.46 && crackRisk > 0.54 && next.defects.indexOf('coil separation') === -1) next.defects.push('coil separation');
     if (next.stage === 'wet') {
@@ -645,6 +670,58 @@
       next.lastOutcome = crackRisk > 0.66 ? 'The piece reached bone-dry with visible drying stress.' : 'The piece reached bone-dry and is ready for a cautious bisque firing.';
     }
     return next;
+  }
+  function estimateDryingHistory(vessel, settings) {
+    vessel = normalizeVessel(vessel);
+    settings = settings || {};
+    var result = {
+      ready: vessel.stage === 'wet' || vessel.stage === 'leather-hard',
+      stage: vessel.stage,
+      humidity: clamp(finite(settings.humidity, 45), 10, 95),
+      dryingRate: clamp(finite(settings.dryingRate, 48), 0, 100),
+      segments: [],
+      totalMoistureLossPct: 0,
+      hotspots: []
+    };
+    if (!result.ready) {
+      result.summary = 'No modeled drying steps remain after the piece reaches ' + vessel.stage + '.';
+      return result;
+    }
+    var current = copyVessel(vessel);
+    var guard = 0;
+    while ((current.stage === 'wet' || current.stage === 'leather-hard') && guard < 2) {
+      var before = copyVessel(current);
+      var crackRisk = estimateDryingRisk(before, settings);
+      var after = dryVessel(before, settings);
+      var moistureStartPct = before.moisture * 100;
+      var moistureEndPct = after.moisture * 100;
+      var moistureLossPct = Math.max(0, moistureStartPct - moistureEndPct);
+      var newDefects = copyArray(after.defects).filter(function (defect) { return copyArray(before.defects).indexOf(defect) === -1; });
+      var dryingMultiplier = 0.78 + result.dryingRate / 100 * 0.32 + (1 - result.humidity / 100) * 0.22;
+      var hotspots = analyzeRingRisks(before, settings).map(function (ring) {
+        var reason = ring.thinRisk >= ring.overhangRisk && ring.thinRisk >= ring.irregularity ? 'thin wall' : (ring.overhangRisk >= ring.irregularity ? 'outward overhang' : 'wall irregularity');
+        return { index: ring.index, wallCm: ring.wallCm, riskPct: clamp(ring.risk * dryingMultiplier * 100, 0, 100), reason: reason };
+      }).sort(function (a, b) { return b.riskPct - a.riskPct; }).slice(0, 3);
+      result.segments.push({
+        id: before.stage,
+        label: before.stage + ' to ' + after.stage,
+        moistureStartPct: moistureStartPct,
+        moistureEndPct: moistureEndPct,
+        moistureLossPct: moistureLossPct,
+        shrinkagePct: before.heightCm ? Math.max(0, (before.heightCm - after.heightCm) / before.heightCm * 100) : 0,
+        crackRiskPct: crackRisk * 100,
+        hotspots: hotspots,
+        newDefects: newDefects
+      });
+      result.totalMoistureLossPct += moistureLossPct;
+      current = after;
+      guard += 1;
+    }
+    result.segments = result.segments.map(function (segment) { return Object.assign({}, segment, { relativePct: result.totalMoistureLossPct ? segment.moistureLossPct / result.totalMoistureLossPct * 100 : 0 }); });
+    result.finalStage = current.stage;
+    result.hotspots = result.segments.length ? copyArray(result.segments[0].hotspots) : [];
+    result.summary = 'The model removes ' + result.totalMoistureLossPct.toFixed(1) + ' moisture percentage points across ' + result.segments.length + ' drying step' + (result.segments.length === 1 ? '' : 's') + '; drying risk is comparative, not a guarantee against cracking.';
+    return result;
   }
   function fireVessel(vessel, settings) {
     var next = normalizeVessel(vessel);
@@ -715,6 +792,258 @@
     next.glazeThickness = clamp(finite(thickness, 50), 5, 100);
     next.lastOutcome = glazeById(next.glazeId).name + ' applied at ' + Math.round(next.glazeThickness) + '% thickness. The piece is ready for glaze firing.';
     return next;
+  }
+  function dimensionModelSettings(settings) {
+    settings = settings || {};
+    var kilnType = ['electric', 'gas', 'wood', 'open'].indexOf(settings.kilnType) >= 0 ? settings.kilnType : 'electric';
+    return {
+      modelVersion: Math.round(finite(settings.modelVersion, DIMENSION_MODEL_VERSION)),
+      clayBody: CLAY_BODIES[settings.clayBody] ? settings.clayBody : '',
+      materialRecipe: normalizeRecipe(settings.materialRecipe),
+      method: settings.method === 'coil' ? 'coil' : 'wheel',
+      humidity: clamp(finite(settings.humidity, 48), 10, 95),
+      dryingRate: clamp(finite(settings.dryingRate, 45), 0, 100),
+      temperature: clamp(finite(settings.temperature, 1220), 600, 1350),
+      ramp: clamp(finite(settings.ramp, 110), 30, 300),
+      soak: clamp(finite(settings.soak, 10), 0, 90),
+      coolingRate: clamp(finite(settings.coolingRate, 100), 30, 300),
+      kilnType: kilnType,
+      atmosphere: kilnType === 'electric' ? 'oxidation' : (settings.atmosphere === 'reduction' ? 'reduction' : 'oxidation')
+    };
+  }
+  function compareDimensionModelSettings(recordedSettings, currentSettings) {
+    var current = dimensionModelSettings(currentSettings || {});
+    if (!recordedSettings || typeof recordedSettings !== 'object') {
+      return { status: 'legacy', stale: false, needsReview: true, changedFields: [], missingFields: ['model context'], recorded: null, current: current, summary: 'No model context was stored with this record. Treat comparisons as legacy evidence and recheck the controls before drawing conclusions.' };
+    }
+    var recorded = dimensionModelSettings(recordedSettings);
+    var missingFields = [];
+    ['modelVersion', 'clayBody', 'materialRecipe', 'method'].forEach(function (field) {
+      if (!Object.prototype.hasOwnProperty.call(recordedSettings, field)) missingFields.push(field === 'modelVersion' ? 'model version' : (field === 'clayBody' ? 'clay body' : (field === 'materialRecipe' ? 'material recipe' : 'forming method')));
+    });
+    if (missingFields.length) {
+      return { status: 'incomplete', stale: false, needsReview: true, changedFields: [], missingFields: missingFields, recorded: recorded, current: current, summary: 'Model context is incomplete; missing ' + missingFields.join(', ') + '. The frozen dimensions remain available, but the comparison needs review.' };
+    }
+    var changedFields = [];
+    var fields = [
+      { id: 'modelVersion', label: 'model version' },
+      { id: 'clayBody', label: 'clay body' },
+      { id: 'materialRecipe', label: 'material recipe' },
+      { id: 'method', label: 'forming method' },
+      { id: 'humidity', label: 'humidity' },
+      { id: 'dryingRate', label: 'drying rate' },
+      { id: 'temperature', label: 'temperature' },
+      { id: 'ramp', label: 'heating ramp' },
+      { id: 'soak', label: 'peak soak' },
+      { id: 'coolingRate', label: 'cooling rate' },
+      { id: 'kilnType', label: 'kiln type' },
+      { id: 'atmosphere', label: 'atmosphere' }
+    ];
+    fields.forEach(function (field) {
+      var left = field.id === 'materialRecipe' ? JSON.stringify(recorded[field.id]) : recorded[field.id];
+      var right = field.id === 'materialRecipe' ? JSON.stringify(current[field.id]) : current[field.id];
+      if (left !== right) changedFields.push(field.label);
+    });
+    return {
+      status: changedFields.length ? 'stale' : 'current',
+      stale: changedFields.length > 0,
+      needsReview: changedFields.length > 0,
+      changedFields: changedFields,
+      missingFields: [],
+      recorded: recorded,
+      current: current,
+      summary: changedFields.length ? 'Model inputs changed since this record: ' + changedFields.join(', ') + '. Residuals remain tied to the frozen record, but do not treat them as a same-condition comparison.' : 'Model inputs match the logged record.'
+    };
+  }
+  function dimensionSnapshot(vessel, label, baseline) {
+    vessel = normalizeVessel(vessel);
+    var stats = analyzeVessel(vessel, { rpm: 0 });
+    var heightCm = finite(vessel.heightCm, 0);
+    var diameterCm = Math.max.apply(Math, vessel.radii) * 2;
+    var capacityMl = stats.capacityMl;
+    return {
+      label: label,
+      stage: vessel.stage,
+      heightCm: heightCm,
+      diameterCm: diameterCm,
+      capacityMl: capacityMl,
+      minWallCm: stats.minWallCm,
+      massG: stats.massG,
+      heightChangePct: baseline && baseline.heightCm ? (heightCm - baseline.heightCm) / baseline.heightCm * 100 : 0,
+      diameterChangePct: baseline && baseline.diameterCm ? (diameterCm - baseline.diameterCm) / baseline.diameterCm * 100 : 0,
+      capacityChangePct: baseline && baseline.capacityMl ? (capacityMl - baseline.capacityMl) / baseline.capacityMl * 100 : 0
+    };
+  }
+  function estimateDimensionalHistory(vessel, settings) {
+    vessel = normalizeVessel(vessel);
+    settings = settings || {};
+    var dryingSettings = { humidity: clamp(finite(settings.humidity, 48), 10, 95), dryingRate: clamp(finite(settings.dryingRate, 45), 0, 100), method: settings.method };
+    var firingSettings = { temperature: clamp(finite(settings.temperature, materialProfile(vessel).maturity), 600, 1350), ramp: clamp(finite(settings.ramp, 110), 30, 300), soak: clamp(finite(settings.soak, 10), 0, 90), coolingRate: clamp(finite(settings.coolingRate, 100), 30, 300), kilnType: settings.kilnType || 'electric', atmosphere: settings.atmosphere || 'oxidation' };
+    var baseline = dimensionSnapshot(vessel, 'Current piece', null);
+    var snapshots = [baseline];
+    var current = copyVessel(vessel);
+    var guard = 0;
+    while (guard < 5) {
+      var next = null;
+      var label = '';
+      if (current.stage === 'wet' || current.stage === 'leather-hard') {
+        next = dryVessel(current, dryingSettings);
+        label = next.stage === 'leather-hard' ? 'Leather-hard projection' : 'Bone-dry projection';
+      } else if (current.stage === 'bone-dry') {
+        next = fireVessel(current, firingSettings);
+        label = next.stage === 'bisque' ? 'Bisque projection' : 'Fired projection';
+      } else if (current.stage === 'glazed') {
+        next = fireVessel(current, firingSettings);
+        label = next.stage === 'glaze-fired' ? 'Glaze-fired projection' : 'Fired projection';
+      }
+      if (!next || next.stage === current.stage) break;
+      snapshots.push(dimensionSnapshot(next, label, baseline));
+      current = next;
+      guard += 1;
+    }
+    return {
+      baseline: baseline,
+      snapshots: snapshots,
+      finalStage: snapshots[snapshots.length - 1].stage,
+      projectedSteps: Math.max(0, snapshots.length - 1),
+      summary: snapshots.length > 1 ? 'Forward model projects ' + snapshots.length + ' dimensional checkpoints from ' + vessel.stage + ' to ' + snapshots[snapshots.length - 1].stage + '. Compare the trend with calipers, a scale, or measured water capacity.' : 'No forward dimensional steps remain after ' + vessel.stage + '.'
+    };
+  }
+  function compareDimensionalMeasurements(history, measurements, currentSettings) {
+    history = history || {};
+    var snapshots = Array.isArray(history.snapshots) ? history.snapshots : [];
+    var entries = Array.isArray(measurements) ? measurements : [];
+    var contextEnabled = !!(currentSettings && typeof currentSettings === 'object');
+    var metrics = [
+      { id: 'heightCm', label: 'Height', unit: 'cm' },
+      { id: 'diameterCm', label: 'Diameter', unit: 'cm' },
+      { id: 'capacityMl', label: 'Capacity', unit: 'mL' },
+      { id: 'minWallCm', label: 'Min wall', unit: 'cm' }
+    ];
+    var rows = [];
+    entries.slice(0, 16).forEach(function (entry) {
+      if (!entry || typeof entry !== 'object') return;
+      var index = Math.round(finite(entry.checkpointIndex, -1));
+      var snapshot = index >= 0 && index < snapshots.length ? snapshots[index] : null;
+      if (!snapshot && entry.checkpointLabel) {
+        snapshot = snapshots.filter(function (candidate) { return candidate.label === entry.checkpointLabel; })[0] || null;
+      }
+      var storedModel = entry.modeled && typeof entry.modeled === 'object' ? entry.modeled : null;
+      if (!snapshot && !storedModel) return;
+      var measuredValues = entry.measured && typeof entry.measured === 'object' ? entry.measured : entry;
+      var measured = {};
+      var modeled = {};
+      var residuals = {};
+      var relativeErrors = {};
+      var compared = [];
+      var uncertaintyValues = entry.uncertainty && typeof entry.uncertainty === 'object' ? entry.uncertainty : {};
+      metrics.forEach(function (metric) {
+        var raw = measuredValues[metric.id];
+        if (raw === '' || raw === null || raw === undefined) return;
+        var measuredValue = Number(raw);
+        var modeledValue = Number(storedModel && storedModel[metric.id] !== undefined ? storedModel[metric.id] : (snapshot && snapshot[metric.id]));
+        if (!isFinite(measuredValue) || !isFinite(modeledValue)) return;
+        var uncertaintyRaw = uncertaintyValues[metric.id];
+        var uncertainty = uncertaintyRaw === '' || uncertaintyRaw === null || uncertaintyRaw === undefined ? null : Number(uncertaintyRaw);
+        if (!isFinite(uncertainty) || uncertainty < 0) uncertainty = null;
+        measured[metric.id] = measuredValue;
+        modeled[metric.id] = modeledValue;
+        residuals[metric.id] = measuredValue - modeledValue;
+        relativeErrors[metric.id] = modeledValue ? (measuredValue - modeledValue) / modeledValue * 100 : 0;
+        compared.push({ id: metric.id, label: metric.label, unit: metric.unit, measured: measuredValue, modeled: modeledValue, residual: residuals[metric.id], relativeErrorPct: relativeErrors[metric.id], uncertainty: uncertainty, withinUncertainty: uncertainty === null ? null : Math.abs(residuals[metric.id]) <= uncertainty, uncertaintyRatio: uncertainty !== null && uncertainty > 0 ? Math.abs(residuals[metric.id]) / uncertainty : null });
+      });
+      if (!compared.length) return;
+      var absoluteTotal = compared.reduce(function (sum, item) { return sum + Math.abs(item.residual); }, 0);
+      var signedTotal = compared.reduce(function (sum, item) { return sum + item.residual; }, 0);
+      var context = contextEnabled ? compareDimensionModelSettings(entry.modelSettings, currentSettings) : null;
+      var declaredUncertainty = compared.filter(function (item) { return item.uncertainty !== null; });
+      var withinUncertainty = declaredUncertainty.filter(function (item) { return item.withinUncertainty; });
+      rows.push({
+        id: entry.id || ('measurement-' + rows.length), checkpoint: entry.checkpointLabel || (snapshot && snapshot.label) || 'Recorded checkpoint', stage: entry.stage || (snapshot && snapshot.stage) || 'unknown', modelSource: storedModel ? 'logged' : 'current', context: context, measured: measured, modeled: modeled, residuals: residuals, relativeErrors: relativeErrors, compared: compared,
+        meanAbsoluteResidual: absoluteTotal / compared.length, meanSignedResidual: signedTotal / compared.length, uncertaintyCount: declaredUncertainty.length, withinUncertaintyCount: withinUncertainty.length, outOfBandCount: declaredUncertainty.length - withinUncertainty.length, uncertaintyCoveragePct: declaredUncertainty.length ? withinUncertainty.length / declaredUncertainty.length * 100 : null,
+        note: String(entry.note || '').slice(0, 240), savedAt: entry.savedAt || ''
+      });
+    });
+    var byMetric = {};
+    metrics.forEach(function (metric) {
+      var values = [];
+      rows.forEach(function (row) {
+        row.compared.forEach(function (item) { if (item.id === metric.id) values.push(item); });
+      });
+      byMetric[metric.id] = {
+        label: metric.label, unit: metric.unit, count: values.length,
+        meanAbsoluteResidual: values.length ? values.reduce(function (sum, item) { return sum + Math.abs(item.residual); }, 0) / values.length : 0,
+        meanSignedResidual: values.length ? values.reduce(function (sum, item) { return sum + item.residual; }, 0) / values.length : 0,
+        meanAbsoluteRelativeErrorPct: values.length ? values.reduce(function (sum, item) { return sum + Math.abs(item.relativeErrorPct); }, 0) / values.length : 0,
+        uncertaintyCount: values.filter(function (item) { return item.uncertainty !== null; }).length,
+        withinUncertaintyCount: values.filter(function (item) { return item.withinUncertainty === true; }).length,
+        outOfBandCount: values.filter(function (item) { return item.uncertainty !== null && item.withinUncertainty === false; }).length,
+        withinUncertaintyPct: values.filter(function (item) { return item.uncertainty !== null; }).length ? values.filter(function (item) { return item.uncertainty !== null && item.withinUncertainty === true; }).length / values.filter(function (item) { return item.uncertainty !== null; }).length * 100 : null
+      };
+    });
+    var allCompared = rows.reduce(function (items, row) { return items.concat(row.compared); }, []);
+    var meanAbsoluteResidual = allCompared.length ? allCompared.reduce(function (sum, item) { return sum + Math.abs(item.residual); }, 0) / allCompared.length : 0;
+    var meanSignedResidual = allCompared.length ? allCompared.reduce(function (sum, item) { return sum + item.residual; }, 0) / allCompared.length : 0;
+    var meanAbsoluteRelativeErrorPct = allCompared.length ? allCompared.reduce(function (sum, item) { return sum + Math.abs(item.relativeErrorPct); }, 0) / allCompared.length : 0;
+    var meanSignedRelativeErrorPct = allCompared.length ? allCompared.reduce(function (sum, item) { return sum + item.relativeErrorPct; }, 0) / allCompared.length : 0;
+    var declaredUncertainty = allCompared.filter(function (item) { return item.uncertainty !== null; });
+    var withinUncertainty = declaredUncertainty.filter(function (item) { return item.withinUncertainty; });
+    var uncertaintyCoveragePct = declaredUncertainty.length ? withinUncertainty.length / declaredUncertainty.length * 100 : null;
+    var staleCount = rows.filter(function (row) { return row.context && row.context.status === 'stale'; }).length;
+    var incompleteCount = rows.filter(function (row) { return row.context && row.context.status === 'incomplete'; }).length;
+    var needsReviewCount = rows.filter(function (row) { return row.context && row.context.needsReview; }).length;
+    return {
+      rows: rows,
+      measurementCount: rows.length,
+      dimensionCount: allCompared.length,
+      meanAbsoluteResidual: meanAbsoluteResidual,
+      meanSignedResidual: meanSignedResidual,
+      meanAbsoluteRelativeErrorPct: meanAbsoluteRelativeErrorPct,
+      meanSignedRelativeErrorPct: meanSignedRelativeErrorPct,
+      staleCount: staleCount,
+      incompleteCount: incompleteCount,
+      needsReviewCount: needsReviewCount,
+      uncertaintyCount: declaredUncertainty.length,
+      withinUncertaintyCount: withinUncertainty.length,
+      outOfBandCount: declaredUncertainty.length - withinUncertainty.length,
+      uncertaintyCoveragePct: uncertaintyCoveragePct,
+      byMetric: byMetric,
+      contextSummary: staleCount || incompleteCount ? (staleCount ? staleCount + ' logged checkpoint' + (staleCount === 1 ? ' uses' : 's use') + ' changed model inputs.' : '') + (staleCount && incompleteCount ? ' ' : '') + (incompleteCount ? incompleteCount + ' checkpoint' + (incompleteCount === 1 ? ' has' : 's have') + ' incomplete model context.' : '') + ' Frozen values are retained; review the controls before treating records as a same-condition comparison.' : (rows.length ? 'All logged checkpoints have complete model context matching the current controls.' : ''),
+      uncertaintySummary: declaredUncertainty.length ? 'Declared uncertainty contains ' + withinUncertainty.length + ' of ' + declaredUncertainty.length + ' compared dimensions (' + uncertaintyCoveragePct.toFixed(0) + '%).' + (declaredUncertainty.length - withinUncertainty.length ? ' Out-of-band residuals may indicate model drift, technique error, or an uncertainty range that was set too narrowly.' : ' Every declared residual is inside its recorded range.') : 'No measurement uncertainty ranges declared yet. Add optional +/- values when logging a checkpoint so residuals can be interpreted against instrument or technique precision.',
+      summary: rows.length ? 'Compared ' + allCompared.length + ' measured dimensions across ' + rows.length + ' checkpoint' + (rows.length === 1 ? '' : 's') + '. Mean absolute relative error is ' + meanAbsoluteRelativeErrorPct.toFixed(1) + '%; positive residual means the measurement was larger than the model.' : 'No measured checkpoints logged yet. Enter one or more real dimensions to make the model accountable to evidence.'
+    };
+  }
+  function estimateDimensionalTargets(history, targets) {
+    history = history || {};
+    targets = targets || {};
+    var snapshots = Array.isArray(history.snapshots) ? history.snapshots : [];
+    var baseline = history.baseline || snapshots[0] || null;
+    var finalSnapshot = snapshots[snapshots.length - 1] || baseline;
+    var metrics = [
+      { id: 'heightCm', label: 'Height', unit: 'cm' },
+      { id: 'diameterCm', label: 'Diameter', unit: 'cm' },
+      { id: 'capacityMl', label: 'Capacity', unit: 'mL' },
+      { id: 'minWallCm', label: 'Min wall', unit: 'cm' }
+    ];
+    var results = [];
+    if (baseline && finalSnapshot) metrics.forEach(function (metric) {
+      var rawTarget = targets[metric.id];
+      if (rawTarget === '' || rawTarget === null || rawTarget === undefined) return;
+      var target = Number(rawTarget);
+      var currentValue = Number(baseline[metric.id]);
+      var finalValue = Number(finalSnapshot[metric.id]);
+      if (!isFinite(target) || target <= 0 || !isFinite(currentValue) || currentValue <= 0 || !isFinite(finalValue) || finalValue <= 0) return;
+      var retentionPct = finalValue / currentValue * 100;
+      var recommendedCurrent = target / (finalValue / currentValue);
+      results.push({ id: metric.id, label: metric.label, unit: metric.unit, targetFinal: target, currentValue: currentValue, finalValue: finalValue, retentionPct: retentionPct, recommendedCurrent: recommendedCurrent, currentChangePct: (recommendedCurrent - currentValue) / currentValue * 100 });
+    });
+    return {
+      baseline: baseline,
+      final: finalSnapshot,
+      results: results,
+      targetedCount: results.length,
+      summary: results.length ? 'Reverse scaling estimates the current-stage dimensions needed for ' + results.length + ' target metric' + (results.length === 1 ? '' : 's') + ' at the modeled ' + (finalSnapshot && finalSnapshot.stage || 'final') + ' checkpoint. Recheck the target after forming because shape changes and wall adjustments can break this assumption.' : 'Enter one or more desired final dimensions to estimate a current-stage starting target.'
+    };
   }
   function evaluateVesselUse(vessel, testType, settings) {
     vessel = normalizeVessel(vessel);
@@ -887,6 +1216,7 @@
 
   window.__alloPotteryPure = {
     RING_COUNT: RING_COUNT,
+    DIMENSION_MODEL_VERSION: DIMENSION_MODEL_VERSION,
     STAGES: STAGES.slice(),
     CLAY_BODIES: CLAY_BODIES,
     GLAZES: GLAZES,
@@ -899,6 +1229,7 @@
     vesselVolume: vesselVolume,
     vesselCapacity: vesselCapacity,
     estimateHeatwork: estimateHeatwork,
+    estimateThermalHistory: estimateThermalHistory,
     estimateFiredPorosity: estimateFiredPorosity,
     analyzeGlazeOutcome: analyzeGlazeOutcome,
     analyzeFiringSchedule: analyzeFiringSchedule,
@@ -909,6 +1240,13 @@
     dryVessel: dryVessel,
     fireVessel: fireVessel,
     glazeVessel: glazeVessel,
+    dimensionModelSettings: dimensionModelSettings,
+    compareDimensionModelSettings: compareDimensionModelSettings,
+    estimateDryingRisk: estimateDryingRisk,
+    estimateDryingHistory: estimateDryingHistory,
+    estimateDimensionalHistory: estimateDimensionalHistory,
+    compareDimensionalMeasurements: compareDimensionalMeasurements,
+    estimateDimensionalTargets: estimateDimensionalTargets,
     evaluateVesselUse: evaluateVesselUse,
     compareCycleProtocols: compareCycleProtocols,
     compareCycleSensitivity: compareCycleSensitivity,
@@ -942,6 +1280,17 @@
       var settings = { pressure: pressure, rpm: rpm, method: method };
       var stats = analyzeVessel(vessel, settings);
       var geometry = profileGeometry(vessel);
+      function currentDimensionSettings() {
+        var body = materialProfile(vessel);
+        var kilnType = data.kilnType || 'electric';
+        return dimensionModelSettings({
+          clayBody: vessel.clayBody, materialRecipe: vessel.materialRecipe, method: method,
+          humidity: data.humidity, dryingRate: data.dryingRate,
+          temperature: data.kilnTemp === undefined ? (vessel.stage === 'bone-dry' ? 950 : body.maturity) : data.kilnTemp,
+          ramp: data.ramp, soak: data.soak, coolingRate: data.coolingRate,
+          kilnType: kilnType, atmosphere: kilnType === 'electric' ? 'oxidation' : data.atmosphere
+        });
+      }
       var tt = function (key, fallback) {
         try { return typeof ctx.t === 'function' ? (ctx.t(key, fallback) || fallback) : fallback; } catch (error) { return fallback; }
       };
@@ -1412,6 +1761,7 @@
         var coolingRate = clamp(finite(data.coolingRate, 100), 30, 300);
         var kilnType = data.kilnType || 'electric';
         var atmosphere = kilnType === 'electric' ? 'oxidation' : (data.atmosphere || 'oxidation');
+        var dimensionalSettings = currentDimensionSettings();
         var glazeId = data.glazeId || 'clear';
         var glazeThickness = clamp(finite(data.glazeThickness, 50), 5, 100);
         var heatwork = estimateHeatwork({ temperature: kilnTemp, ramp: ramp, soak: soak });
@@ -1461,6 +1811,207 @@
             h('figcaption', { className: 'text-[11px] text-orange-950' }, 'Modeled effective heatwork: ' + Math.round(heatwork.effectiveTemp) + '°C equivalent · rough cone neighborhood ' + heatwork.cone + '. Witness cones remain the real kiln check.')
           );
         }
+        function focusDryingHotspot(index) {
+          patchData({ view: 'shape', workRing: index });
+          announce('Focused ring ' + (index + 1) + ' for drying inspection.');
+        }
+        function dryingHistory() {
+          var history = estimateDryingHistory(vessel, { humidity: humidity, dryingRate: dryingRate });
+          return h('section', { className: 'rounded-xl border border-sky-200 bg-white p-3 space-y-3', 'aria-labelledby': 'wheel-fire-drying-history-title' },
+            h('div', null,
+              h('h3', { id: 'wheel-fire-drying-history-title', className: 'font-black text-sky-950' }, 'Modeled drying history'),
+              h('p', { className: 'text-xs text-sky-950 mt-1' }, 'Relative bars show the share of modeled moisture removal, not elapsed time. Humidity and drying speed change the comparative crack-risk signal.')
+            ),
+            history.ready ? h('div', { className: 'space-y-2', 'aria-label': 'Modeled drying history steps' }, history.segments.map(function (segment) {
+              return h('div', { key: segment.id },
+                h('div', { className: 'flex flex-wrap items-center justify-between gap-2 text-xs font-bold text-slate-700' },
+                  h('span', null, segment.label.charAt(0).toUpperCase() + segment.label.slice(1) + ' Â· ' + Math.round(segment.moistureStartPct) + 'â†’' + Math.round(segment.moistureEndPct) + '% moisture'),
+                  h('span', null, segment.moistureLossPct.toFixed(1) + ' points Â· ' + Math.round(segment.crackRiskPct) + '% crack-risk signal')
+                ),
+                h('div', { className: 'h-3 overflow-hidden rounded-full bg-sky-100', 'aria-hidden': 'true' }, h('div', { className: 'h-full rounded-full bg-sky-600', style: { width: Math.max(0, Math.min(100, segment.relativePct)).toFixed(1) + '%' } })),
+                h('div', { className: 'text-[11px] text-slate-600' }, 'Modeled shrinkage: ' + segment.shrinkagePct.toFixed(2) + '%' + (segment.newDefects.length ? ' Â· New flags: ' + segment.newDefects.join(', ') : ' Â· No new modeled flags'))
+              );
+            })) : h('p', { className: 'rounded-lg border border-dashed border-sky-300 bg-sky-50 p-3 text-xs text-sky-950' }, history.summary),
+            history.ready ? h('div', { className: 'grid grid-cols-2 gap-2 text-xs' },
+              h('div', { className: 'rounded-lg border border-sky-100 bg-sky-50 p-2' }, h('strong', null, 'Modeled moisture removed'), h('div', { className: 'text-lg font-black text-sky-950' }, history.totalMoistureLossPct.toFixed(1) + ' points')),
+              h('div', { className: 'rounded-lg border border-sky-100 bg-sky-50 p-2' }, h('strong', null, 'Projected final stage'), h('div', { className: 'text-lg font-black text-sky-950' }, history.finalStage))
+            ) : null,
+            history.hotspots.length ? h('div', { className: 'rounded-lg border border-sky-200 bg-sky-50 p-3 space-y-2', 'aria-label': 'Drying hotspots to inspect' },
+              h('h4', { className: 'font-black text-sky-950' }, 'Drying hotspots to inspect'),
+              h('p', { className: 'text-[11px] text-sky-950' }, 'These rings combine local wall geometry with the selected drying conditions. Focus one in Shape to inspect the profile.'),
+              h('div', { className: 'space-y-1' }, history.hotspots.map(function (hotspot) {
+                return h('button', { type: 'button', key: hotspot.index, onClick: function () { focusDryingHotspot(hotspot.index); }, className: 'w-full rounded-lg border border-sky-300 bg-white p-2 text-left text-xs hover:bg-sky-100' }, h('span', { className: 'font-black text-sky-950' }, 'Ring ' + (hotspot.index + 1)), ' Â· ', Math.round(hotspot.riskPct) + '% local signal Â· ' + hotspot.wallCm.toFixed(2) + ' cm wall Â· ' + hotspot.reason)
+              }))
+            ) : null,
+            h('p', { className: 'text-[11px] text-slate-600' }, history.ready ? history.summary : 'Drying history is a comparative teaching model; real outcomes depend on airflow, thickness, support, clay body, and studio conditions.')
+          );
+        }
+        function dimensionalHistory() {
+          var history = estimateDimensionalHistory(vessel, dimensionalSettings);
+          function pct(value) { return (value >= 0 ? '+' : '') + value.toFixed(1) + '%'; }
+          var measurementLog = copyArray(data.dimensionMeasurementLog);
+          var calibration = compareDimensionalMeasurements(history, measurementLog, dimensionalSettings);
+          var checkpointMax = Math.max(0, history.snapshots.length - 1);
+          var checkpointIndex = Math.round(clamp(finite(data.dimensionMeasureCheckpoint, 0), 0, checkpointMax));
+          var checkpoint = history.snapshots[checkpointIndex] || history.baseline;
+          var targetPlan = estimateDimensionalTargets(history, { heightCm: data.dimensionTargetHeight, diameterCm: data.dimensionTargetDiameter, capacityMl: data.dimensionTargetCapacity, minWallCm: data.dimensionTargetMinWall });
+          function inputValue(key) { return data[key] === null || data[key] === undefined ? '' : data[key]; }
+          function readMeasurement(key) {
+            var raw = data[key];
+            if (raw === '' || raw === null || raw === undefined) return null;
+            var value = Number(raw);
+            return isFinite(value) && value > 0 ? value : null;
+          }
+          function readUncertainty(key) {
+            var raw = data[key];
+            if (raw === '' || raw === null || raw === undefined) return null;
+            var value = Number(raw);
+            return isFinite(value) && value >= 0 ? value : null;
+          }
+          function metricDigits(id) { return id === 'capacityMl' ? 0 : (id === 'minWallCm' ? 2 : 1); }
+          function delta(value, digits) { return (value >= 0 ? '+' : '') + value.toFixed(digits); }
+          function saveDimensionMeasurement() {
+            var measured = { heightCm: readMeasurement('dimensionMeasureHeight'), diameterCm: readMeasurement('dimensionMeasureDiameter'), capacityMl: readMeasurement('dimensionMeasureCapacity'), minWallCm: readMeasurement('dimensionMeasureMinWall') };
+            var uncertainty = { heightCm: readUncertainty('dimensionUncertaintyHeight'), diameterCm: readUncertainty('dimensionUncertaintyDiameter'), capacityMl: readUncertainty('dimensionUncertaintyCapacity'), minWallCm: readUncertainty('dimensionUncertaintyMinWall') };
+            var hasValue = Object.keys(measured).some(function (key) { return measured[key] !== null; });
+            if (!hasValue) { announce('Enter at least one positive measured dimension before logging the checkpoint.'); return; }
+            var entry = { id: Date.now(), checkpointIndex: checkpointIndex, checkpointLabel: checkpoint.label, stage: checkpoint.stage, modeled: { heightCm: checkpoint.heightCm, diameterCm: checkpoint.diameterCm, capacityMl: checkpoint.capacityMl, minWallCm: checkpoint.minWallCm }, modelSettings: dimensionalSettings, measured: measured, uncertainty: uncertainty, note: String(data.dimensionMeasureNote || '').trim().slice(0, 240), savedAt: new Date().toISOString() };
+            patchData({ dimensionMeasurementLog: [entry].concat(measurementLog).slice(0, 12), dimensionMeasureHeight: '', dimensionMeasureDiameter: '', dimensionMeasureCapacity: '', dimensionMeasureMinWall: '', dimensionUncertaintyHeight: '', dimensionUncertaintyDiameter: '', dimensionUncertaintyCapacity: '', dimensionUncertaintyMinWall: '', dimensionMeasureNote: '' });
+            announce('Measured dimensions saved for ' + checkpoint.label + '.');
+          }
+          function metricCell(row, id) {
+            var item = row.compared.filter(function (candidate) { return candidate.id === id; })[0];
+            if (!item) return '—';
+            var digits = metricDigits(id);
+            var uncertaintyNote = item.uncertainty === null ? '' : '; +/- ' + item.uncertainty.toFixed(digits) + ' ' + item.unit + (item.withinUncertainty ? ' in range' : ' outside range');
+            return item.measured.toFixed(digits) + ' ' + item.unit + ' (Δ ' + delta(item.residual, digits) + '; ' + delta(item.relativeErrorPct, 1) + '%' + uncertaintyNote + ')';
+          }
+          function contextLabel(row) {
+            if (!row.context) return 'Frozen model';
+            return row.context.status === 'current' ? 'Current controls' : (row.context.status === 'stale' ? 'Needs review' : 'Incomplete context');
+          }
+          function clearDimensionTargets() {
+            patchData({ dimensionTargetHeight: '', dimensionTargetDiameter: '', dimensionTargetCapacity: '', dimensionTargetMinWall: '' });
+            announce('Dimensional targets cleared.');
+          }
+          return h('section', { className: 'rounded-xl border border-indigo-200 bg-indigo-50 p-3 space-y-3', 'aria-labelledby': 'wheel-fire-dimensional-history-title' },
+            h('div', null,
+              h('h3', { id: 'wheel-fire-dimensional-history-title', className: 'font-black text-indigo-950' }, 'Dimensional shrinkage budget'),
+              h('p', { className: 'text-xs text-indigo-950 mt-1' }, 'Forward projection from the current stage. Height, diameter, capacity, and minimum wall are model checkpoints—not a substitute for measuring the real piece.')
+            ),
+            h('div', { className: 'overflow-x-auto rounded-lg border border-indigo-200 bg-white' },
+              h('table', { className: 'w-full text-xs border-collapse' },
+                h('caption', { className: 'text-left p-2 font-black text-indigo-950' }, 'Projected dimensional checkpoints'),
+                h('thead', null, h('tr', { className: 'bg-indigo-100' }, ['Checkpoint', 'Height', 'Diameter', 'Capacity', 'Min wall', 'Height Δ', 'Capacity Δ'].map(function (label) { return h('th', { key: label, scope: 'col', className: 'text-left p-2 border-b border-indigo-200' }, label); }))),
+                h('tbody', null, history.snapshots.map(function (snapshot) { return h('tr', { key: snapshot.label }, h('th', { scope: 'row', className: 'text-left p-2 border-b align-top font-black' }, snapshot.label), h('td', { className: 'p-2 border-b align-top' }, snapshot.heightCm.toFixed(1) + ' cm'), h('td', { className: 'p-2 border-b align-top' }, snapshot.diameterCm.toFixed(1) + ' cm'), h('td', { className: 'p-2 border-b align-top' }, Math.round(snapshot.capacityMl) + ' mL'), h('td', { className: 'p-2 border-b align-top' }, snapshot.minWallCm.toFixed(2) + ' cm'), h('td', { className: 'p-2 border-b align-top' }, pct(snapshot.heightChangePct)), h('td', { className: 'p-2 border-b align-top' }, pct(snapshot.capacityChangePct))); }))
+              )
+            ),
+            h('div', { className: 'rounded-lg border border-fuchsia-300 bg-fuchsia-50 p-3 space-y-3', 'aria-labelledby': 'wheel-fire-dimensional-target-title' },
+              h('div', null,
+                h('h4', { id: 'wheel-fire-dimensional-target-title', className: 'font-black text-fuchsia-950' }, 'Plan backward from a target'),
+                h('p', { className: 'text-xs text-fuchsia-950 mt-1' }, 'Enter a desired final dimension. The inverse budget estimates the current-stage target using the modeled retention ratio for this piece and schedule; it does not replace test throwing or later trimming.')
+              ),
+              h('div', { className: 'grid sm:grid-cols-2 lg:grid-cols-4 gap-2' },
+                h('label', { className: 'block text-xs font-bold text-slate-700' }, 'Desired final height (cm)', h('input', { type: 'number', min: '0.01', step: '0.1', value: inputValue('dimensionTargetHeight'), onChange: function (event) { patchData({ dimensionTargetHeight: event.target.value }); }, className: 'block w-full mt-1 rounded-lg border border-fuchsia-300 p-2 bg-white', placeholder: targetPlan.final.heightCm.toFixed(1) })),
+                h('label', { className: 'block text-xs font-bold text-slate-700' }, 'Desired final diameter (cm)', h('input', { type: 'number', min: '0.01', step: '0.1', value: inputValue('dimensionTargetDiameter'), onChange: function (event) { patchData({ dimensionTargetDiameter: event.target.value }); }, className: 'block w-full mt-1 rounded-lg border border-fuchsia-300 p-2 bg-white', placeholder: targetPlan.final.diameterCm.toFixed(1) })),
+                h('label', { className: 'block text-xs font-bold text-slate-700' }, 'Desired final capacity (mL)', h('input', { type: 'number', min: '0.01', step: '1', value: inputValue('dimensionTargetCapacity'), onChange: function (event) { patchData({ dimensionTargetCapacity: event.target.value }); }, className: 'block w-full mt-1 rounded-lg border border-fuchsia-300 p-2 bg-white', placeholder: Math.round(targetPlan.final.capacityMl) })),
+                h('label', { className: 'block text-xs font-bold text-slate-700' }, 'Desired final min wall (cm)', h('input', { type: 'number', min: '0.01', step: '0.01', value: inputValue('dimensionTargetMinWall'), onChange: function (event) { patchData({ dimensionTargetMinWall: event.target.value }); }, className: 'block w-full mt-1 rounded-lg border border-fuchsia-300 p-2 bg-white', placeholder: targetPlan.final.minWallCm.toFixed(2) }))
+              ),
+              targetPlan.results.length ? h('div', { className: 'overflow-x-auto rounded-lg border border-fuchsia-200 bg-white' },
+                h('table', { className: 'w-full text-xs border-collapse' },
+                  h('caption', { className: 'text-left p-2 font-black text-fuchsia-950' }, 'Current-stage target estimates'),
+                  h('thead', null, h('tr', { className: 'bg-fuchsia-100' }, ['Metric', 'Desired final', 'Current-stage target', 'Modeled retention', 'Target change'].map(function (label) { return h('th', { key: label, scope: 'col', className: 'text-left p-2 border-b border-fuchsia-200' }, label); }))),
+                  h('tbody', null, targetPlan.results.map(function (result) { var digits = metricDigits(result.id); return h('tr', { key: result.id }, h('th', { scope: 'row', className: 'text-left p-2 border-b font-black' }, result.label), h('td', { className: 'p-2 border-b' }, result.targetFinal.toFixed(digits) + ' ' + result.unit), h('td', { className: 'p-2 border-b font-black' }, result.recommendedCurrent.toFixed(digits) + ' ' + result.unit), h('td', { className: 'p-2 border-b' }, result.retentionPct.toFixed(1) + '%'), h('td', { className: 'p-2 border-b' }, delta(result.currentChangePct, 1) + '%')); }))
+                )
+              ) : null,
+              h('p', { className: 'text-[11px] text-fuchsia-950' }, targetPlan.summary),
+              h('button', { type: 'button', onClick: clearDimensionTargets, className: 'rounded-lg border border-fuchsia-300 bg-white px-3 py-2 text-xs font-black text-fuchsia-900' }, 'Clear target fields')
+            ),
+            h('div', { className: 'rounded-lg border border-indigo-300 bg-white p-3 space-y-3' },
+              h('div', null,
+                h('h4', { className: 'font-black text-indigo-950' }, 'Calibrate with a real measurement'),
+                h('p', { className: 'text-xs text-indigo-950 mt-1' }, 'Choose the checkpoint you actually measured. Log caliper readings, a scale-based capacity estimate, or one dimension at a time; blank fields stay blank rather than becoming zero. The modeled values and controls are frozen in the record for a stable comparison.')
+              ),
+              h('div', { className: 'grid sm:grid-cols-2 lg:grid-cols-4 gap-2' },
+                h('label', { className: 'block text-xs font-bold text-slate-700' }, 'Checkpoint', h('select', { id: 'wheel-fire-dimension-checkpoint', value: String(checkpointIndex), onChange: function (event) { patchData({ dimensionMeasureCheckpoint: event.target.value }); }, className: 'block w-full mt-1 rounded-lg border border-indigo-300 p-2 bg-white' }, history.snapshots.map(function (snapshot, index) { return h('option', { key: snapshot.label, value: String(index) }, snapshot.label + ' · ' + snapshot.stage); }))),
+                h('label', { className: 'block text-xs font-bold text-slate-700' }, 'Measured height (cm)', h('input', { type: 'number', min: '0.01', step: '0.1', value: inputValue('dimensionMeasureHeight'), onChange: function (event) { patchData({ dimensionMeasureHeight: event.target.value }); }, className: 'block w-full mt-1 rounded-lg border border-indigo-300 p-2 bg-white', placeholder: checkpoint.heightCm.toFixed(1) })),
+                h('label', { className: 'block text-xs font-bold text-slate-700' }, 'Measured diameter (cm)', h('input', { type: 'number', min: '0.01', step: '0.1', value: inputValue('dimensionMeasureDiameter'), onChange: function (event) { patchData({ dimensionMeasureDiameter: event.target.value }); }, className: 'block w-full mt-1 rounded-lg border border-indigo-300 p-2 bg-white', placeholder: checkpoint.diameterCm.toFixed(1) })),
+                h('label', { className: 'block text-xs font-bold text-slate-700' }, 'Measured capacity (mL)', h('input', { type: 'number', min: '0.01', step: '1', value: inputValue('dimensionMeasureCapacity'), onChange: function (event) { patchData({ dimensionMeasureCapacity: event.target.value }); }, className: 'block w-full mt-1 rounded-lg border border-indigo-300 p-2 bg-white', placeholder: Math.round(checkpoint.capacityMl) }))
+              ),
+              h('div', { className: 'grid sm:grid-cols-2 gap-2' },
+                h('label', { className: 'block text-xs font-bold text-slate-700' }, 'Measured minimum wall (cm)', h('input', { type: 'number', min: '0.01', step: '0.01', value: inputValue('dimensionMeasureMinWall'), onChange: function (event) { patchData({ dimensionMeasureMinWall: event.target.value }); }, className: 'block w-full mt-1 rounded-lg border border-indigo-300 p-2 bg-white', placeholder: checkpoint.minWallCm.toFixed(2) })),
+                h('label', { className: 'block text-xs font-bold text-slate-700' }, 'Measurement note (optional)', h('input', { value: inputValue('dimensionMeasureNote'), maxLength: 240, onChange: function (event) { patchData({ dimensionMeasureNote: event.target.value }); }, className: 'block w-full mt-1 rounded-lg border border-indigo-300 p-2 bg-white', placeholder: 'e.g. calipers after glaze firing' }))
+              ),
+              h('div', { className: 'rounded-lg border border-indigo-200 bg-indigo-50 p-2 space-y-2' },
+                h('div', null,
+                  h('h5', { className: 'font-black text-indigo-950' }, 'Measurement uncertainty (optional)'),
+                  h('p', { className: 'text-[11px] text-indigo-950 mt-1' }, 'Enter a non-negative +/- range for each reading based on instrument resolution, technique, or repeatability. Leave blank when unknown.')
+                ),
+                h('div', { className: 'grid sm:grid-cols-2 lg:grid-cols-4 gap-2' },
+                  h('label', { className: 'block text-xs font-bold text-slate-700' }, 'Height +/- (cm)', h('input', { type: 'number', min: '0', step: '0.01', value: inputValue('dimensionUncertaintyHeight'), onChange: function (event) { patchData({ dimensionUncertaintyHeight: event.target.value }); }, className: 'block w-full mt-1 rounded-lg border border-indigo-300 p-2 bg-white', placeholder: 'e.g. 0.1' })),
+                  h('label', { className: 'block text-xs font-bold text-slate-700' }, 'Diameter +/- (cm)', h('input', { type: 'number', min: '0', step: '0.01', value: inputValue('dimensionUncertaintyDiameter'), onChange: function (event) { patchData({ dimensionUncertaintyDiameter: event.target.value }); }, className: 'block w-full mt-1 rounded-lg border border-indigo-300 p-2 bg-white', placeholder: 'e.g. 0.1' })),
+                  h('label', { className: 'block text-xs font-bold text-slate-700' }, 'Capacity +/- (mL)', h('input', { type: 'number', min: '0', step: '1', value: inputValue('dimensionUncertaintyCapacity'), onChange: function (event) { patchData({ dimensionUncertaintyCapacity: event.target.value }); }, className: 'block w-full mt-1 rounded-lg border border-indigo-300 p-2 bg-white', placeholder: 'e.g. 5' })),
+                  h('label', { className: 'block text-xs font-bold text-slate-700' }, 'Min wall +/- (cm)', h('input', { type: 'number', min: '0', step: '0.01', value: inputValue('dimensionUncertaintyMinWall'), onChange: function (event) { patchData({ dimensionUncertaintyMinWall: event.target.value }); }, className: 'block w-full mt-1 rounded-lg border border-indigo-300 p-2 bg-white', placeholder: 'e.g. 0.02' }))
+                )
+              ),
+              h('button', { type: 'button', onClick: saveDimensionMeasurement, className: 'rounded-lg bg-indigo-800 text-white px-3 py-2 text-xs font-black' }, 'Log measured checkpoint')
+            ),
+            h('div', { className: 'rounded-lg border border-indigo-300 bg-indigo-100 p-3 space-y-3', 'aria-live': 'polite' },
+              h('div', null,
+                h('h4', { className: 'font-black text-indigo-950' }, 'Model calibration evidence'),
+                h('p', { className: 'text-xs text-indigo-950 mt-1' }, calibration.summary)
+              ),
+              calibration.needsReviewCount ? h('p', { className: 'rounded-lg border border-amber-300 bg-amber-50 p-2 text-xs text-amber-950', role: 'alert' }, calibration.contextSummary) : null,
+              h('p', { className: 'rounded-lg border border-indigo-200 bg-white p-2 text-xs text-indigo-950' }, calibration.uncertaintySummary),
+              calibration.rows.length ? h('div', { className: 'space-y-3' },
+                h('div', { className: 'grid grid-cols-2 md:grid-cols-5 gap-2 text-xs' },
+                  h('div', { className: 'rounded-lg border border-indigo-200 bg-white p-2' }, h('strong', null, 'Checkpoints logged'), h('div', { className: 'text-lg font-black text-indigo-950' }, calibration.measurementCount)),
+                  h('div', { className: 'rounded-lg border border-indigo-200 bg-white p-2' }, h('strong', null, 'Dimensions compared'), h('div', { className: 'text-lg font-black text-indigo-950' }, calibration.dimensionCount)),
+                  h('div', { className: 'rounded-lg border border-indigo-200 bg-white p-2' }, h('strong', null, 'Mean absolute error'), h('div', { className: 'text-lg font-black text-indigo-950' }, calibration.meanAbsoluteRelativeErrorPct.toFixed(1) + '%')),
+                  h('div', { className: 'rounded-lg border border-indigo-200 bg-white p-2' }, h('strong', null, 'Mean signed error'), h('div', { className: 'text-lg font-black text-indigo-950' }, delta(calibration.meanSignedRelativeErrorPct, 1) + '%')),
+                  h('div', { className: 'rounded-lg border border-indigo-200 bg-white p-2' }, h('strong', null, 'Within uncertainty'), h('div', { className: 'text-lg font-black text-indigo-950' }, calibration.uncertaintyCoveragePct === null ? 'not set' : calibration.uncertaintyCoveragePct.toFixed(0) + '%'), h('div', { className: 'text-[11px] text-slate-600' }, calibration.outOfBandCount + ' outside range'))
+                ),
+                h('div', { className: 'overflow-x-auto rounded-lg border border-indigo-200 bg-white' },
+                  h('table', { className: 'w-full text-xs border-collapse' },
+                    h('caption', { className: 'text-left p-2 font-black text-indigo-950' }, 'Per-metric calibration summary'),
+                    h('thead', null, h('tr', { className: 'bg-indigo-50' }, ['Metric', 'Checks', 'Mean absolute residual', 'Mean absolute relative error', 'Within +/- range'].map(function (label) { return h('th', { key: label, scope: 'col', className: 'text-left p-2 border-b border-indigo-200' }, label); }))),
+                    h('tbody', null, [['heightCm', 'Height'], ['diameterCm', 'Diameter'], ['capacityMl', 'Capacity'], ['minWallCm', 'Min wall']].map(function (metric) { var summary = calibration.byMetric[metric[0]]; var digits = metricDigits(metric[0]); return h('tr', { key: metric[0] }, h('th', { scope: 'row', className: 'text-left p-2 border-b font-black' }, metric[1]), h('td', { className: 'p-2 border-b' }, summary.count), h('td', { className: 'p-2 border-b' }, summary.count ? summary.meanAbsoluteResidual.toFixed(digits) + ' ' + (metric[0] === 'capacityMl' ? 'mL' : 'cm') : '—'), h('td', { className: 'p-2 border-b' }, summary.count ? summary.meanAbsoluteRelativeErrorPct.toFixed(1) + '%' : '—'), h('td', { className: 'p-2 border-b' }, summary.withinUncertaintyPct === null ? 'not set' : summary.withinUncertaintyPct.toFixed(0) + '% (' + summary.outOfBandCount + ' out)')); }))
+                  )
+                ),
+                h('div', { className: 'overflow-x-auto rounded-lg border border-indigo-200 bg-white' },
+                  h('table', { className: 'w-full text-xs border-collapse' },
+                    h('caption', { className: 'text-left p-2 font-black text-indigo-950' }, 'Measured checkpoint log'),
+                    h('thead', null, h('tr', { className: 'bg-indigo-50' }, ['Checkpoint', 'Height', 'Diameter', 'Capacity', 'Min wall', 'Context', 'Note'].map(function (label) { return h('th', { key: label, scope: 'col', className: 'text-left p-2 border-b border-indigo-200' }, label); }))),
+                    h('tbody', null, calibration.rows.map(function (row) { return h('tr', { key: row.id }, h('th', { scope: 'row', className: 'text-left p-2 border-b align-top font-black' }, row.checkpoint), h('td', { className: 'p-2 border-b align-top' }, metricCell(row, 'heightCm')), h('td', { className: 'p-2 border-b align-top' }, metricCell(row, 'diameterCm')), h('td', { className: 'p-2 border-b align-top' }, metricCell(row, 'capacityMl')), h('td', { className: 'p-2 border-b align-top' }, metricCell(row, 'minWallCm')), h('td', { className: 'p-2 border-b align-top font-bold' }, contextLabel(row)), h('td', { className: 'p-2 border-b align-top max-w-xs' }, row.note || '—')); }))
+                  )
+                )
+              ) : null
+            ),
+            h('p', { className: 'text-[11px] text-slate-600' }, history.summary)
+          );
+        }
+        function thermalHistory() {
+          var history = currentSchedule.thermalHistory;
+          return h('section', { className: 'rounded-xl border border-orange-200 bg-white p-3 space-y-3', 'aria-labelledby': 'wheel-fire-thermal-history-title' },
+            h('div', null,
+              h('h3', { id: 'wheel-fire-thermal-history-title', className: 'font-black text-orange-950' }, 'Modeled thermal history'),
+              h('p', { className: 'text-xs text-orange-950 mt-1' }, 'An approximate time sequence from room temperature to the selected peak and back toward ' + Math.round(history.coolingReference) + 'Â°C. The model does not include kiln load, controller cycling, thermocouple lag, or witness-cone behavior.')
+            ),
+            h('div', { className: 'space-y-2', 'aria-label': 'Modeled thermal history segments' }, history.segments.map(function (segment) {
+              return h('div', { key: segment.id },
+                h('div', { className: 'flex flex-wrap items-center justify-between gap-2 text-xs font-bold text-slate-700' },
+                  h('span', null, segment.label + ' Â· ' + Math.round(segment.startC) + 'â†’' + Math.round(segment.endC) + 'Â°C'),
+                  h('span', null, segment.durationHours.toFixed(1) + ' h Â· ' + Math.round(segment.relativePct) + '% of modeled time')
+                ),
+                h('div', { className: 'h-3 overflow-hidden rounded-full bg-orange-100', 'aria-hidden': 'true' }, h('div', { className: segment.id === 'cool' ? 'h-full rounded-full bg-sky-600' : (segment.id === 'soak' ? 'h-full rounded-full bg-red-600' : 'h-full rounded-full bg-orange-600'), style: { width: Math.max(0, Math.min(100, segment.relativePct)).toFixed(1) + '%' } }))
+              );
+            })),
+            h('div', { className: 'grid grid-cols-2 gap-2 text-xs' },
+              h('div', { className: 'rounded-lg border border-orange-100 bg-orange-50 p-2' }, h('strong', null, 'Total modeled schedule time'), h('div', { className: 'text-lg font-black text-orange-950' }, history.totalHours.toFixed(1) + ' h')),
+              h('div', { className: 'rounded-lg border border-orange-100 bg-orange-50 p-2' }, h('strong', null, 'Cooling risk signal'), h('div', { className: 'text-lg font-black text-orange-950' }, Math.round(currentSchedule.thermalRiskPct) + '%'), h('div', { className: 'text-[11px] text-slate-600' }, 'comparative only'))
+            )
+          );
+        }
         return h('section', { id: 'wheel-fire-panel-kiln', role: 'tabpanel', 'aria-labelledby': 'wheel-fire-tab-kiln', className: 'space-y-3' },
           h('div', { className: 'rounded-2xl border border-orange-300 bg-orange-50 p-4' },
             h('h2', { className: 'text-xl font-black text-orange-950' }, 'Drying shelf & kiln'),
@@ -1474,6 +2025,7 @@
               rangeControl('wheel-fire-humidity', 'Room humidity', humidity, 10, 95, '%', function (value) { patchData({ humidity: value }); }),
               rangeControl('wheel-fire-drying-rate', 'Drying speed', dryingRate, 0, 100, '%', function (value) { patchData({ dryingRate: value }); }),
               h('button', { type: 'button', disabled: vessel.stage !== 'wet' && vessel.stage !== 'leather-hard', onClick: advanceDrying, className: 'w-full rounded-lg bg-sky-800 text-white px-3 py-2 text-xs font-black disabled:opacity-40' }, vessel.stage === 'wet' ? 'Dry to leather-hard' : 'Dry to bone-dry'),
+              dryingHistory(),
               h('p', { className: 'text-xs text-sky-950' }, 'Uneven walls, thick sections, low humidity, and fast drying raise the modeled crack risk.')
             ),
             h('div', { className: 'rounded-xl border border-orange-300 bg-white p-3 space-y-3' },
@@ -1487,6 +2039,8 @@
               h('label', { className: 'block text-xs font-bold text-slate-700' }, 'Schedule label', h('input', { maxLength: 48, value: scheduleLabel, onChange: function (event) { patchData({ scheduleLabel: event.target.value }); }, placeholder: 'e.g. slow stoneware test', className: 'block w-full mt-1 rounded-lg border border-slate-400 p-2 font-normal' })),
               h('button', { type: 'button', onClick: saveFiringSchedule, className: 'w-full rounded-lg border border-orange-400 bg-orange-50 text-orange-950 px-3 py-2 text-xs font-black' }, 'Save firing scenario'),
               firingCurve(),
+              thermalHistory(),
+              dimensionalHistory(),
               vessel.stage === 'bone-dry' ? h('button', { type: 'button', onClick: fire, className: 'w-full rounded-lg bg-orange-800 text-white px-3 py-2 text-xs font-black' }, 'Run bisque firing') : null,
               vessel.stage === 'glazed' ? h('button', { type: 'button', onClick: fire, className: 'w-full rounded-lg bg-red-700 text-white px-3 py-2 text-xs font-black' }, 'Run glaze firing') : null
             )
@@ -1591,6 +2145,8 @@
         var cycleTemperatureDelta = clamp(finite(data.testCycleTemperatureDelta, 80), 10, 220);
         var savedCycleProtocols = copyArray(data.cycleProtocols);
         var cycleProtocolLabel = String(data.cycleProtocolLabel || '').slice(0, 48);
+        var sensitivityLog = copyArray(data.sensitivityLog);
+        var sensitivityObservation = String(data.sensitivityObservation || '').slice(0, 240);
         var testSettings = { durationHours: durationHours, temperatureDelta: temperatureDelta, loadKg: loadKg, cycles: cycles, dryingRate: cycleDryingRate, cycleTemperatureDelta: cycleTemperatureDelta };
         var preview = evaluateVesselUse(vessel, testType, testSettings);
         var performanceLog = copyArray(data.performanceLog);
@@ -1601,6 +2157,19 @@
           var entry = Object.assign({ id: Date.now(), label: labels[testType], stage: vessel.stage, clayBody: vessel.clayBody, materialRecipe: normalizeRecipe(vessel.materialRecipe), observation: observation }, preview);
           patchData({ performanceLog: [entry].concat(performanceLog).slice(0, 12), testObservation: '' });
           announce(labels[testType] + ' simulation logged. ' + preview.status + (observation ? '. Observation note saved.' : '.'));
+        }
+        function logSensitivitySweep() {
+          if (testType !== 'cycles' || !preview.ready) { announce('Fire the piece and select repeated wet-dry cycles before logging a sensitivity sweep.'); return; }
+          var sweep = compareCycleSensitivity(vessel, testSettings);
+          var entry = {
+            id: Date.now(), label: 'Cycle sensitivity sweep', stage: vessel.stage, clayBody: vessel.clayBody,
+            materialRecipe: normalizeRecipe(vessel.materialRecipe), cycles: preview.cycles, dryingRate: preview.dryingRate,
+            cycleTemperatureDelta: preview.cycleTemperatureDelta, damagePct: preview.damagePct, damageRange: preview.damageRange,
+            axes: sweep.map(function (axis) { return { id: axis.id, label: axis.label, unit: axis.unit, points: axis.points.map(function (point) { return { id: point.id, label: point.label, value: point.value, damagePct: point.result.damagePct, damageRange: point.result.damageRange }; }) }; }),
+            observation: sensitivityObservation.trim(), savedAt: new Date().toISOString()
+          };
+          patchData({ sensitivityLog: [entry].concat(sensitivityLog).slice(0, 8), sensitivityObservation: '' });
+          announce('Sensitivity sweep logged.' + (entry.observation ? ' Observation note saved.' : ' Add a field note when you have one.'));
         }
         function resultMetrics() {
           if (!preview.ready) return h('p', { className: 'rounded-xl border border-dashed border-slate-400 p-5 text-center text-sm text-slate-600' }, preview.summary);
@@ -1668,7 +2237,30 @@
                 }))
               )
             ),
+            h('div', { className: 'rounded-lg border border-teal-200 bg-white p-3 space-y-2' },
+              h('label', { htmlFor: 'wheel-fire-sensitivity-observation', className: 'block text-xs font-bold text-slate-700' }, 'Sensitivity observation (optional)', h('textarea', { id: 'wheel-fire-sensitivity-observation', rows: 3, maxLength: 240, value: sensitivityObservation, onChange: function (event) { patchData({ sensitivityObservation: event.target.value }); }, placeholder: 'Record what changed in the real piece when you varied one condition. Keep this separate from the model result.', className: 'block w-full mt-1 rounded-lg border border-slate-400 p-2 font-normal' })),
+              h('p', { className: 'text-[11px] text-slate-600' }, 'A field note is evidence to compare later; it does not calibrate or validate the simulation.'),
+              h('button', { type: 'button', onClick: logSensitivitySweep, className: 'rounded-lg bg-teal-800 text-white px-3 py-2 text-xs font-black' }, 'Log sweep as experiment')
+            ),
             h('p', { className: 'text-[11px] text-slate-600' }, 'This is a controlled comparison of the teaching model. For a real studio study, pair each run with measured drying conditions, fired test pieces, and field notes.')
+          );
+        }
+        function sensitivityEvidenceLog() {
+          if (!sensitivityLog.length) return null;
+          return h('section', { className: 'rounded-xl border border-cyan-300 bg-cyan-50 p-3 space-y-3', 'aria-labelledby': 'wheel-fire-sensitivity-log-title' },
+            h('div', null,
+              h('h3', { id: 'wheel-fire-sensitivity-log-title', className: 'font-black text-cyan-950' }, 'Sensitivity experiment log'),
+              h('p', { className: 'text-xs text-cyan-950 mt-1' }, 'Saved model comparisons and field notes stay together so you can revisit the question without confusing a prediction with an observation.')
+            ),
+            h('div', { className: 'space-y-2' }, sensitivityLog.map(function (entry) {
+              var axes = copyArray(entry.axes);
+              return h('article', { key: entry.id, className: 'rounded-lg border border-cyan-200 bg-white p-3 space-y-2' },
+                h('div', { className: 'flex flex-wrap items-baseline justify-between gap-2' }, h('strong', { className: 'text-sm text-slate-900' }, entry.label || 'Cycle sensitivity sweep'), h('span', { className: 'text-[11px] text-slate-600' }, String(entry.savedAt || '').slice(0, 10) + ' Â· ' + (entry.stage || 'unknown stage'))),
+                h('p', { className: 'text-xs font-bold text-cyan-900' }, 'Baseline: ' + Math.round(finite(entry.damagePct, 0)) + '% damage; ' + Math.round(finite(entry.cycles, 0)) + ' cycles Â· ' + Math.round(finite(entry.dryingRate, 0)) + '% dry Â· ' + Math.round(finite(entry.cycleTemperatureDelta, 0)) + ' C swing'),
+                axes.length ? h('ul', { className: 'list-disc pl-5 text-[11px] text-slate-700' }, axes.map(function (axis) { return h('li', { key: axis.id }, axis.label + ': ' + copyArray(axis.points).map(function (point) { return Math.round(finite(point.value, 0)) + axis.unit + ' â†’ ' + Math.round(finite(point.damagePct, 0)) + '%'; }).join(' Â· ')); })) : null,
+                h('p', { className: 'text-xs text-slate-700' }, h('strong', null, 'Field note: '), entry.observation || 'No field note saved.')
+              );
+            }))
           );
         }
         function cycleProgression() {
@@ -1803,7 +2395,7 @@
               h('button', { type: 'button', disabled: !preview.ready, onClick: runPerformanceTest, className: 'w-full rounded-lg bg-blue-800 text-white px-3 py-2 text-xs font-black disabled:opacity-40' }, 'Run and log ' + labels[testType].toLowerCase()),
               h('p', { className: 'text-[11px] text-slate-600' }, preview.ready ? 'Change one variable or load another fired piece, then repeat the same test.' : 'Complete at least a bisque firing before testing.')
             ),
-            h('div', null, resultMetrics(), cycleSensitivityExplainer(), cycleSensitivitySweep(), cycleProgression(), cycleProtocolComparison(), cycleProtocolShelf())
+            h('div', null, resultMetrics(), cycleSensitivityExplainer(), cycleSensitivitySweep(), sensitivityEvidenceLog(), cycleProgression(), cycleProtocolComparison(), cycleProtocolShelf())
           ),
           performanceLog.length ? h('div', { className: 'overflow-x-auto rounded-xl border border-blue-300 bg-white' },
             h('table', { className: 'w-full text-xs border-collapse' },
@@ -1817,10 +2409,33 @@
       function journalPanel() {
         var saved = copyArray(data.gallery);
         var journalRecipe = normalizeRecipe(vessel.materialRecipe);
+        var journalModelSettings = currentDimensionSettings();
+        var journalTargets = { heightCm: data.dimensionTargetHeight, diameterCm: data.dimensionTargetDiameter, capacityMl: data.dimensionTargetCapacity, minWallCm: data.dimensionTargetMinWall };
+        var journalTargetCount = Object.keys(journalTargets).filter(function (key) { return journalTargets[key] !== '' && journalTargets[key] !== null && journalTargets[key] !== undefined && Number(journalTargets[key]) > 0; }).length;
+        function loadJournalEntry(entry) {
+          var extra = { method: entry.method, studyLabel: entry.studyLabel || '', performanceLog: copyArray(entry.performanceTests), materialScenarios: copyArray(entry.materialScenarios), firingSchedules: copyArray(entry.firingSchedules), cycleProtocols: copyArray(entry.cycleProtocols), sensitivityLog: copyArray(entry.sensitivityStudies), dimensionMeasurementLog: copyArray(entry.dimensionMeasurements), recipeDraft: normalizeRecipe(entry.materialRecipe || (entry.vessel && entry.vessel.materialRecipe)) };
+          var recordedSettings = entry.modelSettings ? dimensionModelSettings(entry.modelSettings) : null;
+          if (recordedSettings) {
+            extra.humidity = recordedSettings.humidity;
+            extra.dryingRate = recordedSettings.dryingRate;
+            extra.kilnTemp = recordedSettings.temperature;
+            extra.ramp = recordedSettings.ramp;
+            extra.soak = recordedSettings.soak;
+            extra.coolingRate = recordedSettings.coolingRate;
+            extra.kilnType = recordedSettings.kilnType;
+            extra.atmosphere = recordedSettings.atmosphere;
+          }
+          var targets = entry.dimensionTargets || {};
+          extra.dimensionTargetHeight = targets.heightCm === undefined ? '' : targets.heightCm;
+          extra.dimensionTargetDiameter = targets.diameterCm === undefined ? '' : targets.diameterCm;
+          extra.dimensionTargetCapacity = targets.capacityMl === undefined ? '' : targets.capacityMl;
+          extra.dimensionTargetMinWall = targets.minWallCm === undefined ? '' : targets.minWallCm;
+          commitVessel(copyVessel(entry.vessel), entry.name + ' loaded from the journal.', extra);
+        }
         function savePiece() {
           var name = String(data.pieceName || '').trim().slice(0, 48);
           if (!name) { announce('Name the piece before saving it.'); return; }
-          var entry = { id: Date.now(), name: name, vessel: copyVessel(vessel), materialRecipe: normalizeRecipe(vessel.materialRecipe), materialScenarios: copyArray(data.materialScenarios).slice(0, 8), firingSchedules: copyArray(data.firingSchedules).slice(0, 8), cycleProtocols: copyArray(data.cycleProtocols).slice(0, 8), method: method, studyLabel: data.studyLabel || '', statement: data.artistStatement || '', performanceTests: copyArray(data.performanceLog).slice(0, 4), savedAt: new Date().toISOString() };
+          var entry = { id: Date.now(), name: name, vessel: copyVessel(vessel), materialRecipe: normalizeRecipe(vessel.materialRecipe), materialScenarios: copyArray(data.materialScenarios).slice(0, 8), firingSchedules: copyArray(data.firingSchedules).slice(0, 8), cycleProtocols: copyArray(data.cycleProtocols).slice(0, 8), sensitivityStudies: copyArray(data.sensitivityLog).slice(0, 8), dimensionMeasurements: copyArray(data.dimensionMeasurementLog).slice(0, 12), dimensionTargets: journalTargets, modelVersion: DIMENSION_MODEL_VERSION, modelSettings: journalModelSettings, method: method, studyLabel: data.studyLabel || '', statement: data.artistStatement || '', performanceTests: copyArray(data.performanceLog).slice(0, 4), savedAt: new Date().toISOString() };
           patchData({ gallery: [entry].concat(saved).slice(0, 8), pieceName: '' });
           announce(name + ' saved to the pottery journal.');
         }
@@ -1848,13 +2463,18 @@
                 h('div', null, h('dt', { className: 'font-bold' }, 'Function tests'), h('dd', null, copyArray(data.performanceLog).length)),
                 h('div', null, h('dt', { className: 'font-bold' }, 'Saved scenarios'), h('dd', null, copyArray(data.materialScenarios).length)),
                 h('div', null, h('dt', { className: 'font-bold' }, 'Firing schedules'), h('dd', null, copyArray(data.firingSchedules).length)),
-                h('div', null, h('dt', { className: 'font-bold' }, 'Reuse protocols'), h('dd', null, copyArray(data.cycleProtocols).length))
+                h('div', null, h('dt', { className: 'font-bold' }, 'Reuse protocols'), h('dd', null, copyArray(data.cycleProtocols).length)),
+                h('div', null, h('dt', { className: 'font-bold' }, 'Sensitivity studies'), h('dd', null, copyArray(data.sensitivityLog).length)),
+                h('div', null, h('dt', { className: 'font-bold' }, 'Dimensional measurements'), h('dd', null, copyArray(data.dimensionMeasurementLog).length)),
+                h('div', null, h('dt', { className: 'font-bold' }, 'Dimensional targets'), h('dd', null, journalTargetCount)),
+                h('div', null, h('dt', { className: 'font-bold' }, 'Model provenance'), h('dd', null, 'v' + journalModelSettings.modelVersion + ' · current controls'))
               )
             )
           ),
           saved.length ? h('div', { className: 'wheel-fire-culture-grid' }, saved.map(function (entry) {
             var entryStats = analyzeVessel(entry.vessel, { rpm: 0 });
             var entryRecipe = normalizeRecipe(entry.materialRecipe || (entry.vessel && entry.vessel.materialRecipe));
+            var entryContext = compareDimensionModelSettings(entry.modelSettings, journalModelSettings);
             return h('article', { key: entry.id, className: 'rounded-xl border border-emerald-300 bg-white p-3' },
               h('h3', { className: 'font-black text-slate-900' }, entry.name),
               h('p', { className: 'text-[11px] text-slate-600' }, entry.vessel.stage + ' · ' + entryStats.shape + ' · ' + entry.method),
@@ -1863,10 +2483,13 @@
               copyArray(entry.materialScenarios).length ? h('p', { className: 'text-[11px] font-bold text-indigo-800 mt-1' }, copyArray(entry.materialScenarios).length + ' saved material scenario' + (copyArray(entry.materialScenarios).length === 1 ? '' : 's')) : null,
               copyArray(entry.firingSchedules).length ? h('p', { className: 'text-[11px] font-bold text-orange-800 mt-1' }, copyArray(entry.firingSchedules).length + ' saved firing schedule' + (copyArray(entry.firingSchedules).length === 1 ? '' : 's')) : null,
               copyArray(entry.cycleProtocols).length ? h('p', { className: 'text-[11px] font-bold text-violet-800 mt-1' }, copyArray(entry.cycleProtocols).length + ' saved reuse protocol' + (copyArray(entry.cycleProtocols).length === 1 ? '' : 's')) : null,
+              copyArray(entry.sensitivityStudies).length ? h('p', { className: 'text-[11px] font-bold text-cyan-800 mt-1' }, copyArray(entry.sensitivityStudies).length + ' saved sensitivity stud' + (copyArray(entry.sensitivityStudies).length === 1 ? 'y' : 'ies')) : null,
+              copyArray(entry.dimensionMeasurements).length ? h('p', { className: 'text-[11px] font-bold text-indigo-800 mt-1' }, copyArray(entry.dimensionMeasurements).length + ' measured checkpoint' + (copyArray(entry.dimensionMeasurements).length === 1 ? '' : 's')) : null,
+              h('p', { className: 'text-[11px] font-bold ' + (entryContext.status === 'current' ? 'text-emerald-800' : 'text-amber-800') + ' mt-1' }, 'Model context: ' + (entryContext.status === 'current' ? 'matches current controls' : (entryContext.status === 'stale' ? 'needs review — controls changed' : (entryContext.status === 'incomplete' ? 'incomplete — review before comparing' : 'legacy — no context stored')))),
               copyArray(entry.performanceTests).length ? h('p', { className: 'text-[11px] font-bold text-blue-800 mt-1' }, copyArray(entry.performanceTests).length + ' saved function test' + (copyArray(entry.performanceTests).length === 1 ? '' : 's')) : null,
               entry.statement ? h('p', { className: 'text-xs text-slate-700 mt-2' }, entry.statement) : null,
               h('div', { className: 'flex gap-2 mt-3' },
-                h('button', { type: 'button', onClick: function () { commitVessel(copyVessel(entry.vessel), entry.name + ' loaded from the journal.', { method: entry.method, studyLabel: entry.studyLabel || '', performanceLog: copyArray(entry.performanceTests), materialScenarios: copyArray(entry.materialScenarios), firingSchedules: copyArray(entry.firingSchedules), cycleProtocols: copyArray(entry.cycleProtocols), recipeDraft: normalizeRecipe(entry.materialRecipe || (entry.vessel && entry.vessel.materialRecipe)) }); }, className: 'rounded-lg border border-emerald-300 px-2 py-1 text-xs font-bold text-emerald-900' }, 'Load'),
+                h('button', { type: 'button', onClick: function () { loadJournalEntry(entry); }, className: 'rounded-lg border border-emerald-300 px-2 py-1 text-xs font-bold text-emerald-900' }, 'Load'),
                 h('button', { type: 'button', onClick: function () { patchData({ gallery: saved.filter(function (piece) { return piece.id !== entry.id; }) }); announce(entry.name + ' removed from the journal.'); }, className: 'rounded-lg border border-red-300 px-2 py-1 text-xs font-bold text-red-800' }, 'Delete')
               )
             );

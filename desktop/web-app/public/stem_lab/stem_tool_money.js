@@ -1544,15 +1544,18 @@ window.StemLab = window.StemLab || {
 
             // ── Budget planner state ──
             var budgetIncome = typeof d.budgetIncome === 'number' ? d.budgetIncome : (isJPY ? 300000 : (grade === 'elementary' ? 100 : grade === 'middle' ? 500 : grade === 'high' ? 1500 : 4000));
-            var budgetCats = d.budgetCats || [
-              { name: __alloT('stem.money.housing', '\uD83C\uDFE0 Housing'), pct: 30, color: '#3b82f6' },
-              { name: __alloT('stem.money.food', '\uD83C\uDF5E Food'), pct: 20, color: '#10b981' },
-              { name: __alloT('stem.money.transport', '\uD83D\uDE97 Transport'), pct: 15, color: '#f59e0b' },
-              { name: __alloT('stem.money.education', '\uD83D\uDCDA Education'), pct: 10, color: '#8b5cf6' },
-              { name: __alloT('stem.money.entertainment', '\uD83C\uDFAE Entertainment'), pct: 10, color: '#ec4899' },
-              { name: __alloT('stem.money.savings', '\uD83D\uDCB0 Savings'), pct: 10, color: '#06b6d4' },
-              { name: __alloT('stem.money.other', '\u2764\uFE0F Other'), pct: 5, color: 'var(--allo-stem-text-soft, #94a3b8)' }
-            ];
+            var budgetPalette = ['#1d4ed8', '#047857', '#92400e', '#6d28d9', '#be185d', '#155e75', '#334155'];
+            var budgetCats = (d.budgetCats || [
+              { name: __alloT('stem.money.housing', '\uD83C\uDFE0 Housing'), pct: 30 },
+              { name: __alloT('stem.money.food', '\uD83C\uDF5E Food'), pct: 20 },
+              { name: __alloT('stem.money.transport', '\uD83D\uDE97 Transport'), pct: 15 },
+              { name: __alloT('stem.money.education', '\uD83D\uDCDA Education'), pct: 10 },
+              { name: __alloT('stem.money.entertainment', '\uD83C\uDFAE Entertainment'), pct: 10 },
+              { name: __alloT('stem.money.savings', '\uD83D\uDCB0 Savings'), pct: 10 },
+              { name: __alloT('stem.money.other', '\u2764\uFE0F Other'), pct: 5 }
+            ]).map(function (cat, index) {
+              return Object.assign({}, cat, { color: budgetPalette[index] || '#334155' });
+            });
             var budgetUsed = budgetCats.reduce(function (s, c) { return s + c.pct; }, 0);
             var budgetAllocatedAmount = budgetIncome * budgetUsed / 100;
             var budgetSavingsPct = budgetCats[5] ? budgetCats[5].pct : 0;
@@ -1789,6 +1792,13 @@ window.StemLab = window.StemLab || {
               upd('fqIdx', idx); upd('fqAnswer', null); upd('fqFb', null);
             };
             var finSub = d.finSub || 'compound';
+            var financeTabs = [
+              { id: 'compound', label: __alloT('stem.money.compound_interest', '\uD83D\uDCC8 Compound Interest') },
+              { id: 'retire', label: __alloT('stem.money.retirement', '\uD83C\uDFD6\uFE0F Retirement') },
+              { id: 'loans', label: __alloT('stem.money.loans_debt', '\uD83C\uDFE6 Loans & Debt') },
+              { id: 'goals', label: __alloT('stem.money.savings_goals', '\uD83C\uDFAF Savings Goals') },
+              { id: 'quiz', label: __alloT('stem.money.fin_quiz', '\uD83E\uDDE0 Fin. Quiz') }
+            ];
             // Compound interest defaults
             var ciPrincipal = typeof d.ciPrincipal === 'number' ? d.ciPrincipal : 1000;
             var ciRate = typeof d.ciRate === 'number' ? d.ciRate : 7;
@@ -1898,6 +1908,46 @@ window.StemLab = window.StemLab || {
               { id: 'finance', label: __alloT('stem.money.personal_finance', '\uD83D\uDCB0 Personal Finance'), icon: '\uD83D\uDCB0' },
               { id: 'inquiry', label: __alloT('stem.money.compound_inquiry', '\uD83D\uDD2C Compound Inquiry'), icon: '\uD83D\uDD2C' }
             ];
+            var moneyPanelProps = function(className) {
+              return {
+                id: 'money-tool-panel',
+                role: 'tabpanel',
+                'aria-labelledby': 'money-tool-tab-' + tab,
+                tabIndex: 0,
+                className: className + ' focus:outline-none focus:ring-2 focus:ring-emerald-500'
+              };
+            };
+            var moveMoneyTab = function(event, index) {
+              var next = -1;
+              if (event.key === 'ArrowRight' || event.key === 'ArrowDown') next = (index + 1) % tabs.length;
+              else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') next = (index + tabs.length - 1) % tabs.length;
+              else if (event.key === 'Home') next = 0;
+              else if (event.key === 'End') next = tabs.length - 1;
+              if (next < 0) return;
+              event.preventDefault();
+              var tabButtons = event.currentTarget.parentNode.querySelectorAll('[role="tab"]');
+              if (tabButtons[next]) { tabButtons[next].focus(); tabButtons[next].click(); }
+            };
+            var financePanelProps = function(className) {
+              return {
+                id: 'money-finance-panel',
+                role: 'tabpanel',
+                'aria-labelledby': 'money-finance-tab-' + finSub,
+                tabIndex: 0,
+                className: className + ' focus:outline-none focus:ring-2 focus:ring-blue-600'
+              };
+            };
+            var moveFinanceTab = function(event, index) {
+              var next = -1;
+              if (event.key === 'ArrowRight' || event.key === 'ArrowDown') next = (index + 1) % financeTabs.length;
+              else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') next = (index + financeTabs.length - 1) % financeTabs.length;
+              else if (event.key === 'Home') next = 0;
+              else if (event.key === 'End') next = financeTabs.length - 1;
+              if (next < 0) return;
+              event.preventDefault();
+              var tabButtons = event.currentTarget.parentNode.querySelectorAll('[role="tab"]');
+              if (tabButtons[next]) { tabButtons[next].focus(); tabButtons[next].click(); }
+            };
 
             var renderMoneyStudioFocus = function () {
               var activeTab = tabs.filter(function (entry) { return entry.id === tab; })[0] || tabs[0];
@@ -2081,8 +2131,8 @@ window.StemLab = window.StemLab || {
               renderMoneyStudioFocus(),
 
               React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-1 bg-slate-100 rounded-xl p-1", role: 'tablist', 'aria-label': __alloT('stem.money.money_tool_sections', 'Money Tool sections') },
-                tabs.map(function (t) {
-                  return React.createElement("button", { key: t.id, onClick: function () { upd('tab', t.id); }, role: 'tab', 'aria-selected': tab === t.id,
+                tabs.map(function (t, tabIndex) {
+                  return React.createElement("button", { key: t.id, id: 'money-tool-tab-' + t.id, onClick: function () { upd('tab', t.id); }, onKeyDown: function(event) { moveMoneyTab(event, tabIndex); }, role: 'tab', 'aria-selected': tab === t.id, 'aria-controls': 'money-tool-panel', tabIndex: tab === t.id ? 0 : -1,
                     className: "min-h-[42px] px-2 py-2 rounded-lg text-xs font-bold transition-all " + (tab === t.id ? 'bg-white text-emerald-700 shadow-sm' : 'text-slate-700 hover:text-emerald-700 hover:bg-white/60')
                   }, t.label);
                 })
@@ -2123,7 +2173,7 @@ window.StemLab = window.StemLab || {
               })(),
 
               // ═══ COINS & BILLS TAB ═══
-              tab === 'coins' && React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-2 gap-4" },
+              tab === 'coins' && React.createElement("div", moneyPanelProps("grid grid-cols-1 md:grid-cols-2 gap-4"),
                 // Coin palette
                 React.createElement("div", { className: "bg-gradient-to-br from-amber-50 to-yellow-50 rounded-xl p-4 border border-amber-200" },
                   React.createElement("h3", { className: "text-sm font-bold text-amber-800 mb-3" }, "\uD83E\uDE99 " + cur.flag + " " + cur.name + " Coins"),
@@ -2241,7 +2291,7 @@ window.StemLab = window.StemLab || {
                       React.createElement('div', { className: 'rounded-lg bg-emerald-50 border border-emerald-200 p-2 text-center' }, React.createElement('p', { className: 'text-[10px] text-emerald-800 font-bold' }, __alloT('stem.money.bills_subtotal', 'Bills')), React.createElement('p', { className: 'text-xs font-black text-emerald-700' }, fmt(cashBillSubtotal))),
                       React.createElement('div', { className: 'rounded-lg bg-sky-50 border border-sky-200 p-2 text-center' }, React.createElement('p', { className: 'text-[10px] text-sky-800 font-bold' }, __alloT('stem.money.total_3', 'Total')), React.createElement('p', { className: 'text-xs font-black text-sky-700' }, fmt(boardTotal)))
                     ),
-                    React.createElement('div', { className: 'mt-2 rounded-lg bg-slate-900 px-3 py-2 text-center overflow-x-auto' },
+                    React.createElement('div', { className: 'mt-2 rounded-lg bg-slate-900 px-3 py-2 text-center overflow-x-auto focus:outline-none focus:ring-2 focus:ring-emerald-500', role: 'region', tabIndex: 0, 'aria-label': __alloT('stem.money.cash_grouping_equation', 'Cash grouping equation') },
                       React.createElement('p', { className: 'text-[10px] uppercase tracking-wide font-bold text-slate-300 mb-1' }, __alloT('stem.money.grouped_equation', 'Grouped equation')),
                       React.createElement('p', { className: 'text-xs font-mono font-bold text-emerald-300 whitespace-nowrap' }, cashGroups.map(function (group) { return group.count + ' × ' + fmt(group.value); }).join(' + ') + ' = ' + fmt(boardTotal))
                     )
@@ -2250,7 +2300,7 @@ window.StemLab = window.StemLab || {
               ),
 
               // ═══ MAKING CHANGE TAB ═══
-              tab === 'change' && React.createElement("div", { className: "bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-5 border border-blue-200" },
+              tab === 'change' && React.createElement("div", moneyPanelProps("bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-5 border border-blue-200"),
                 React.createElement("h3", { className: "text-base font-bold text-blue-800 mb-4" }, __alloT('stem.money.making_change_practice', "\uD83D\uDCB5 Making Change Practice")),
                 !changePrice
                   ? React.createElement("div", { className: "text-center py-8" },
@@ -2360,7 +2410,7 @@ window.StemLab = window.StemLab || {
               ),
 
               // ═══ GROCERY STORE TAB ═══
-              tab === 'store' && React.createElement("div", { className: "space-y-4" },
+              tab === 'store' && React.createElement("div", moneyPanelProps("space-y-4"),
                 
                 // ── ⚡ Cashier Rush Header ──
                 React.createElement("div", { className: "flex items-center justify-between bg-zinc-900 text-white rounded-xl p-3 shadow-md border border-zinc-700 mx-1 mt-1" },
@@ -2671,7 +2721,7 @@ window.StemLab = window.StemLab || {
                             React.createElement('p', { className: 'text-sm font-black text-emerald-100' }, fmt(crCustomer.correctTotal))
                           )
                         ),
-                        React.createElement('p', { className: 'mt-2 rounded-lg bg-zinc-950 px-2 py-1.5 text-center text-[10px] font-mono font-bold text-amber-300 overflow-x-auto whitespace-nowrap' },
+                        React.createElement('p', { className: 'mt-2 rounded-lg bg-zinc-950 px-2 py-1.5 text-center text-[10px] font-mono font-bold text-amber-300 overflow-x-auto whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-amber-300', role: 'region', tabIndex: 0, 'aria-label': __alloT('stem.money.cashier_calculation', 'Cashier calculation') },
                           fmt(crCustomer.subtotal) + (crCustomer.coupon ? ' - ' + fmt(crCustomer.subtotal - crCustomer.afterCoupon) : '') + (crCustomer.hasTax ? ' + ' + fmt(crCustomer.taxAmt) : '') + ' = ' + fmt(crCustomer.correctTotal)
                         )
                       ),
@@ -2867,7 +2917,7 @@ window.StemLab = window.StemLab || {
                       ),
                       React.createElement("span", { className: "text-[11px] text-slate-600 font-bold" }, filteredStoreItems.length + " items")
                     ),
-                    React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-[480px] overflow-y-auto pr-1" },
+                    React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-[480px] overflow-y-auto pr-1 focus:outline-none focus:ring-2 focus:ring-orange-500", role: 'region', tabIndex: 0, 'aria-label': __alloT('stem.money.grocery_products', 'Grocery products') },
                       filteredStoreItems.map(function (item, ii) {
                         var isWeighed = item.pricePer && item.pricePer !== 'each';
                         var isAdding = d.weightItemIdx === ii && isWeighed;
@@ -2896,10 +2946,10 @@ window.StemLab = window.StemLab || {
                             React.createElement("div", { className: "text-2xl mb-1" }, item.name.split(' ')[0]),
                             React.createElement("p", { className: "text-xs font-bold text-slate-700 truncate" }, item.name.substring(item.name.indexOf(' ') + 1)),
                             React.createElement("div", { className: "flex items-baseline gap-1" },
-                              React.createElement("span", { className: "text-sm font-black text-emerald-600" }, fmt(displayPrice)),
+                              React.createElement("span", { className: "text-sm font-black text-emerald-700" }, fmt(displayPrice)),
                               isWeighed && React.createElement("span", { className: "text-[11px] text-orange-700 font-bold" }, "/" + item.pricePer)
                             ),
-                            React.createElement("span", { className: "text-[11px] font-bold " + (isWeighed ? 'text-orange-500' : 'transition-colors text-orange-400 group-hover:text-orange-600') }, isWeighed ? '\u2696 Enter weight' : '+ Add to cart')
+                            React.createElement("span", { className: "text-[11px] font-bold " + (isWeighed ? 'text-orange-700' : 'transition-colors text-orange-700 group-hover:text-orange-800') }, isWeighed ? '\u2696 Enter weight' : '+ Add to cart')
                           ),
                           // Weight entry popup for per-lb items
                           isAdding && React.createElement("div", { className: "absolute z-20 left-0 right-0 -bottom-2 translate-y-full bg-white rounded-xl p-3 shadow-xl border-2 border-orange-300 space-y-2" },
@@ -2910,7 +2960,7 @@ window.StemLab = window.StemLab || {
                               React.createElement("button", { "aria-label": __alloT('stem.money.add_to_cart', "Add to Cart"), onClick: function () { upd('weightInput', (d.weightInput || 1) + 0.25); }, className: "transition-colors px-2 py-1 bg-slate-100 rounded-lg text-xs font-bold hover:bg-slate-200" }, "+"),
                               React.createElement("span", { className: "text-[11px] text-slate-600 font-bold" }, item.pricePer)
                             ),
-                            React.createElement("p", { className: "text-xs font-bold text-center text-emerald-600" }, "= " + fmt(displayPrice * (d.weightInput || 1))),
+                            React.createElement("p", { className: "text-xs font-bold text-center text-emerald-700" }, "= " + fmt(displayPrice * (d.weightInput || 1))),
                             React.createElement("button", { "aria-label": __alloT('stem.money.add_to_cart_2', "Add to Cart"), onClick: function () {
                               var w = d.weightInput || 1;
                               upd('cart', [].concat(cart, [{ name: item.name, price: displayPrice, weight: w, pricePer: item.pricePer, qty: 1 }]));
@@ -2936,7 +2986,7 @@ window.StemLab = window.StemLab || {
                               ),
                               React.createElement('span', { 'aria-hidden': true, className: 'text-2xl' }, '\u2705')
                             ),
-                            React.createElement('div', { className: 'divide-y divide-dashed divide-slate-200 max-h-[230px] overflow-y-auto pr-1' },
+                            React.createElement('div', { className: 'divide-y divide-dashed divide-slate-200 max-h-[230px] overflow-y-auto pr-1 focus:outline-none focus:ring-2 focus:ring-emerald-500', role: 'region', tabIndex: 0, 'aria-label': __alloT('stem.money.completed_receipt_items', 'Completed receipt items') },
                               (lastReceipt.items || []).map(function (line, receiptIndex) {
                                 return React.createElement('div', { key: 'receipt-line-' + receiptIndex, className: 'flex items-center justify-between gap-3 py-2' },
                                   React.createElement('div', { className: 'min-w-0' },
@@ -2962,7 +3012,7 @@ window.StemLab = window.StemLab || {
                             React.createElement('button', { type: 'button', onClick: function () { upd('lastReceipt', null); }, className: 'w-full mt-3 px-3 py-2 rounded-lg bg-emerald-700 text-white text-xs font-bold hover:bg-emerald-800 transition-colors' }, __alloT('stem.money.shop_again', 'Shop again'))
                           )
                         : React.createElement("p", { className: "text-xs text-slate-600 text-center py-4" }, recipeMode && selectedRecipe ? "Shop for the recipe ingredients!" : "Cart is empty. Click items to add!"))
-                      : React.createElement("div", { className: "space-y-1.5 max-h-[320px] overflow-y-auto" },
+                      : React.createElement("div", { className: "space-y-1.5 max-h-[320px] overflow-y-auto focus:outline-none focus:ring-2 focus:ring-emerald-500", role: 'region', tabIndex: 0, 'aria-label': __alloT('stem.money.current_cart_items', 'Current cart items') },
                           cart.map(function (item, ci) {
                             var isWeighted = item.pricePer && item.pricePer !== 'each';
                             var lineTotal = isWeighted ? item.price * (item.weight || 1) : item.price * (item.qty || 1);
@@ -2976,7 +3026,7 @@ window.StemLab = window.StemLab || {
                               ),
                               challengeMode
                                 ? React.createElement("span", { className: "text-xs font-bold text-amber-500 ml-2 whitespace-nowrap" }, isWeighted ? fmt(item.price) + '/' + item.pricePer : fmt(item.price) + '/ea')
-                                : React.createElement("span", { className: "text-xs font-bold text-emerald-600 ml-2 whitespace-nowrap" }, fmt(lineTotal)),
+                                : React.createElement("span", { className: "text-xs font-bold text-emerald-700 ml-2 whitespace-nowrap" }, fmt(lineTotal)),
                               React.createElement("button", { type: "button", disabled: checkoutActive, "aria-label": (isWeighted || (item.qty || 1) <= 1 ? "Remove " : "Decrease quantity of ") + item.name, onClick: function () {
                                   if (!isWeighted && item.qty > 1) { upd('cart', cart.map(function (c, idx) { return idx === ci ? Object.assign({}, c, { qty: c.qty - 1 }) : c; })); }
                                   else { upd('cart', cart.filter(function (_, idx) { return idx !== ci; })); }
@@ -3192,7 +3242,7 @@ window.StemLab = window.StemLab || {
               ),
 
               // ═══ WORD PROBLEMS TAB ═══
-              tab === 'word' && React.createElement("div", { className: "bg-gradient-to-br from-violet-50 to-purple-50 rounded-xl p-5 border border-violet-200" },
+              tab === 'word' && React.createElement("div", moneyPanelProps("bg-gradient-to-br from-violet-50 to-purple-50 rounded-xl p-5 border border-violet-200"),
                 React.createElement("h3", { className: "text-base font-bold text-violet-800 mb-2" }, __alloT('stem.money.money_word_problems', "\uD83D\uDCDD Money Word Problems")),
                 React.createElement("p", { className: "text-xs text-violet-500 mb-4" }, "AI-generated problems at " + gc.label + " level using " + cur.flag + " " + cur.name),
                 !d.wpProblem && !d.wpLoading
@@ -3245,12 +3295,12 @@ window.StemLab = window.StemLab || {
               ,
 
               // ═══ CURRENCY EXCHANGE TAB ═══
-              tab === 'exchange' && React.createElement("div", { className: "bg-gradient-to-br from-sky-50 to-cyan-50 rounded-xl p-5 border border-sky-200" },
+              tab === 'exchange' && React.createElement("div", moneyPanelProps("bg-gradient-to-br from-sky-50 to-cyan-50 rounded-xl p-5 border border-sky-200"),
                 React.createElement("h3", { className: "text-base font-bold text-sky-800 mb-2" }, __alloT('stem.money.currency_exchange_3', "\uD83C\uDF0D Currency Exchange")),
                 React.createElement("p", { className: "text-xs text-sky-500 mb-4" }, __alloT('stem.money.practice_converting_between_world_curr', "Practice converting between world currencies (approximate rates)")),
                 // Exchange rate reference
                 React.createElement("div", { className: "bg-white rounded-xl p-3 border border-sky-100 mb-4" },
-                  React.createElement("p", { className: "text-[11px] font-bold text-sky-400 uppercase mb-2" }, __alloT('stem.money.reference_rates_vs_1_usd', "Reference Rates (vs 1 USD)")),
+                  React.createElement("p", { className: "text-[11px] font-bold text-sky-700 uppercase mb-2" }, __alloT('stem.money.reference_rates_vs_1_usd', "Reference Rates (vs 1 USD)")),
                   React.createElement("div", { className: "flex flex-wrap gap-2" },
                     Object.entries(CURRENCIES).map(function (entry) {
                       return React.createElement("span", { key: entry[0], className: "text-[11px] font-bold px-2 py-1 rounded-full " + (entry[0] === currency ? 'bg-sky-200 text-sky-800' : 'bg-slate-100 text-slate-600') },
@@ -3277,7 +3327,7 @@ window.StemLab = window.StemLab || {
                           React.createElement("span", { className: "text-xl text-slate-600 font-bold" }, "\u2192"),
                           React.createElement("div", { className: "bg-emerald-100 rounded-xl px-4 py-2" },
                             React.createElement("p", { className: "text-2xl font-black text-emerald-700" }, CURRENCIES[d.exchTo].symbol + '?'),
-                            React.createElement("p", { className: "text-xs text-emerald-500" }, CURRENCIES[d.exchTo].flag + ' ' + d.exchTo)
+                            React.createElement("p", { className: "text-xs text-emerald-700" }, CURRENCIES[d.exchTo].flag + ' ' + d.exchTo)
                           )
                         )
                       ),
@@ -3311,7 +3361,7 @@ window.StemLab = window.StemLab || {
               ),
 
               // ═══ TIPS & DISCOUNTS TAB ═══
-              tab === 'tips' && React.createElement("div", { className: "space-y-4" },
+              tab === 'tips' && React.createElement("div", moneyPanelProps("space-y-4"),
                 React.createElement("div", { className: "bg-gradient-to-br from-pink-50 to-rose-50 rounded-xl p-5 border border-pink-200" },
                   React.createElement("h3", { className: "text-base font-bold text-pink-800 mb-3" }, __alloT('stem.money.tips_discounts_3', "\uD83D\uDCB3 Tips & Discounts")),
                   React.createElement("div", { className: "flex gap-2 mb-4" },
@@ -3401,9 +3451,9 @@ window.StemLab = window.StemLab || {
               ),
 
               // ═══ BUDGET PLANNER TAB ═══
-              tab === 'budget' && React.createElement("div", { className: "bg-gradient-to-br from-indigo-50 to-blue-50 rounded-xl p-5 border border-indigo-200" },
+              tab === 'budget' && React.createElement("div", moneyPanelProps("bg-gradient-to-br from-indigo-50 to-blue-50 rounded-xl p-5 border border-indigo-200"),
                 React.createElement("h3", { className: "text-base font-bold text-indigo-800 mb-2" }, __alloT('stem.money.budget_planner', "\uD83D\uDCCA Budget Planner")),
-                React.createElement("p", { className: "text-xs text-indigo-500 mb-4" }, __alloT('stem.money.allocate_your_monthly_income_across_sp', "Allocate your monthly income across spending categories")),
+                React.createElement("p", { className: "text-xs text-indigo-700 mb-4" }, __alloT('stem.money.allocate_your_monthly_income_across_sp', "Allocate your monthly income across spending categories")),
                 // Income input
                 React.createElement("div", { className: "flex items-center gap-3 mb-4" },
                   React.createElement("label", { className: "text-sm font-bold text-slate-600" }, __alloT('stem.money.monthly_income', "Monthly Income:")),
@@ -3412,7 +3462,7 @@ window.StemLab = window.StemLab || {
                     onChange: function (e) { upd('budgetIncome', parseFloat(e.target.value) || 0); upd('budgetEventChoice', null); upd('budgetEventFb', null); upd('budgetEventResolved', false); },
                     className: "px-4 py-2 border border-slate-400 rounded-xl text-sm font-bold w-40 focus:ring-2 focus:ring-indigo-400 outline-none"
                   }),
-                  React.createElement("span", { className: "text-xs font-bold " + (budgetUsed === 100 ? 'text-emerald-600' : budgetUsed > 100 ? 'text-red-500' : 'text-amber-500') }, budgetUsed + '% allocated' + (budgetUsed !== 100 ? ' (' + (100 - budgetUsed) + '% remaining)' : ' \u2714'))
+                  React.createElement("span", { className: "text-xs font-bold " + (budgetUsed === 100 ? 'text-emerald-700' : budgetUsed > 100 ? 'text-red-700' : 'text-amber-700') }, budgetUsed + '% allocated' + (budgetUsed !== 100 ? ' (' + (100 - budgetUsed) + '% remaining)' : ' \u2714'))
                 ),
                 // Category sliders
                 React.createElement("div", { className: "space-y-2 mb-4" },
@@ -3454,14 +3504,14 @@ window.StemLab = window.StemLab || {
                     })
                   ),
                   budgetUsed > 100 && React.createElement("p", { className: "text-xs font-bold text-red-500 text-center mt-3" }, "\u26A0\uFE0F Over budget by " + (budgetUsed - 100) + '%! Reduce some categories.'),
-                  budgetUsed === 100 && React.createElement("p", { className: "text-xs font-bold text-emerald-500 text-center mt-3" }, __alloT('stem.money.perfectly_balanced_budget', "\u2705 Perfectly balanced budget!"))
+                  budgetUsed === 100 && React.createElement("p", { className: "text-xs font-bold text-emerald-700 text-center mt-3" }, __alloT('stem.money.perfectly_balanced_budget', "\u2705 Perfectly balanced budget!"))
                 ),
 
                 // Visual monthly snapshot
                 React.createElement('div', { className: 'mt-4 rounded-2xl border border-indigo-200 bg-white p-4 shadow-sm' },
                   React.createElement('div', { className: 'flex flex-wrap items-center justify-between gap-2 mb-3' },
                     React.createElement('div', null,
-                      React.createElement('p', { className: 'text-[10px] font-black uppercase tracking-widest text-indigo-500' }, __alloT('stem.money.monthly_snapshot', 'Monthly snapshot')),
+                      React.createElement('p', { className: 'text-[10px] font-black uppercase tracking-widest text-indigo-700' }, __alloT('stem.money.monthly_snapshot', 'Monthly snapshot')),
                       React.createElement('p', { className: 'text-sm font-black text-slate-800' }, __alloT('stem.money.where_income_goes', 'Where your income goes'))
                     ),
                     React.createElement('span', { className: 'rounded-full border px-2.5 py-1 text-[10px] font-black ' + (budgetReadiness.color === 'emerald' ? 'border-emerald-300 bg-emerald-50 text-emerald-800' : budgetReadiness.color === 'amber' ? 'border-amber-300 bg-amber-50 text-amber-800' : 'border-rose-300 bg-rose-50 text-rose-800') }, budgetReadiness.icon + ' ' + budgetReadiness.label)
@@ -3500,13 +3550,13 @@ window.StemLab = window.StemLab || {
                 React.createElement('div', { className: 'mt-4 rounded-2xl border-2 border-violet-200 bg-gradient-to-br from-violet-50 to-fuchsia-50 p-4 shadow-sm' },
                   React.createElement('div', { className: 'flex flex-wrap items-start justify-between gap-2 mb-3' },
                     React.createElement('div', null,
-                      React.createElement('p', { className: 'text-[10px] font-black uppercase tracking-widest text-violet-500' }, __alloT('stem.money.real_life_budget_lab', 'Real-life budget lab')),
+                      React.createElement('p', { className: 'text-[10px] font-black uppercase tracking-widest text-violet-700' }, __alloT('stem.money.real_life_budget_lab', 'Real-life budget lab')),
                       React.createElement('h4', { className: 'text-sm font-black text-violet-900' }, __alloT('stem.money.unexpected_expense', '\u26A1 Unexpected Expense')),
                       React.createElement('p', { className: 'text-xs text-violet-700' }, __alloT('stem.money.choose_tradeoff', 'Choose a response and see the tradeoff.'))
                     ),
                     React.createElement('div', { className: 'rounded-xl border border-violet-200 bg-white px-3 py-2 text-center' },
-                      React.createElement('p', { className: 'text-[10px] font-bold text-violet-500' }, __alloT('stem.money.resilience_score', 'Resilience score')),
-                      React.createElement('p', { className: 'text-lg font-black text-violet-800' }, budgetEventScore, React.createElement('span', { className: 'text-xs text-violet-400' }, ' pts'))
+                      React.createElement('p', { className: 'text-[10px] font-bold text-violet-700' }, __alloT('stem.money.resilience_score', 'Resilience score')),
+                      React.createElement('p', { className: 'text-lg font-black text-violet-800' }, budgetEventScore, React.createElement('span', { className: 'text-xs text-violet-700' }, ' pts'))
                     )
                   ),
                   !budgetEvent ? React.createElement('div', { className: 'rounded-xl border border-dashed border-violet-300 bg-white/80 p-5 text-center' },
@@ -3556,7 +3606,7 @@ window.StemLab = window.StemLab || {
                   budgetEventHistory.length ? React.createElement('div', { className: 'mt-3 border-t border-violet-200 pt-3' },
                     React.createElement('div', { className: 'flex items-center justify-between gap-2 mb-2' },
                       React.createElement('p', { className: 'text-[10px] font-black uppercase tracking-wide text-violet-600' }, __alloT('stem.money.recent_decisions', 'Recent decisions')),
-                      React.createElement('span', { className: 'text-[10px] font-bold text-violet-500' }, budgetEventHistory.length + ' / 5')
+                      React.createElement('span', { className: 'text-[10px] font-bold text-violet-700' }, budgetEventHistory.length + ' / 5')
                     ),
                     React.createElement('div', { role: 'list', className: 'flex flex-wrap gap-2' },
                       budgetEventHistory.map(function (entry, historyIndex) {
@@ -3571,7 +3621,7 @@ window.StemLab = window.StemLab || {
               ),
 
               // ═══ CHALLENGES TAB ═══
-              tab === 'cents' && React.createElement("div", { className: "space-y-4" },
+              tab === 'cents' && React.createElement("div", moneyPanelProps("space-y-4"),
                 React.createElement("h3", { className: "text-base font-bold text-amber-800 mb-2" }, __alloT('stem.money.common_cents_3', "\uD83E\uDE99 Common Cents")),
                 // Fewest Coins challenge
                 React.createElement("div", { className: "bg-gradient-to-br from-amber-50 to-yellow-50 rounded-xl p-4 border border-amber-200" },
@@ -3912,25 +3962,27 @@ window.StemLab = window.StemLab || {
 
                 // Score tracker
                 React.createElement("div", { className: "bg-gradient-to-r from-violet-50 to-purple-50 rounded-xl p-3 border border-violet-200 text-center" },
-                  React.createElement("p", { className: "text-[11px] font-bold text-violet-500" }, __alloT('stem.money.complete_challenges_across_all_tabs_to', "\uD83C\uDFC6 Complete challenges across all tabs to earn XP and build real-world money skills!"))
+                  React.createElement("p", { className: "text-[11px] font-bold text-violet-700" }, __alloT('stem.money.complete_challenges_across_all_tabs_to', "\uD83C\uDFC6 Complete challenges across all tabs to earn XP and build real-world money skills!"))
                 )
               ),
 
               // ═══ PERSONAL FINANCE TAB ═══
-              tab === 'finance' && React.createElement("div", { className: "space-y-4" },
+              tab === 'finance' && React.createElement("div", moneyPanelProps("space-y-4"),
                 // Sub-tab navigation
-                React.createElement("div", { className: "flex flex-wrap gap-2 mb-2" },
-                  [{ id: 'compound', label: __alloT('stem.money.compound_interest', '\uD83D\uDCC8 Compound Interest') }, { id: 'retire', label: __alloT('stem.money.retirement', '\uD83C\uDFD6\uFE0F Retirement') }, { id: 'loans', label: __alloT('stem.money.loans_debt', '\uD83C\uDFE6 Loans & Debt') }, { id: 'goals', label: __alloT('stem.money.savings_goals', '\uD83C\uDFAF Savings Goals') }, { id: 'quiz', label: __alloT('stem.money.fin_quiz', '\uD83E\uDDE0 Fin. Quiz') }].map(function (s) {
-                    return React.createElement("button", { "aria-label": s.label.replace(/^[^\s]+\s/, ''), key: s.id, onClick: function () { upd('finSub', s.id); },
+                React.createElement("div", { className: "flex flex-wrap gap-2 mb-2", role: "tablist", "aria-label": __alloT('stem.money.personal_finance_sections', "Personal finance sections") },
+                  financeTabs.map(function (s, index) {
+                    return React.createElement("button", { "aria-label": s.label.replace(/^[^\s]+\s/, ''), key: s.id, id: 'money-finance-tab-' + s.id, role: 'tab',
+                      'aria-selected': finSub === s.id, 'aria-controls': 'money-finance-panel', tabIndex: finSub === s.id ? 0 : -1,
+                      onKeyDown: function (event) { moveFinanceTab(event, index); }, onClick: function () { upd('finSub', s.id); },
                       className: "px-3 py-1.5 rounded-xl text-xs font-bold transition-all " + (finSub === s.id ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg' : 'bg-white text-slate-600 border border-slate-400 hover:bg-blue-50')
                     }, s.label);
                   })
                 ),
 
                 // ── Compound Interest ──
-                finSub === 'compound' && React.createElement("div", { className: "bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-5 border border-blue-200" },
+                finSub === 'compound' && React.createElement("div", financePanelProps("bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-5 border border-blue-200"),
                   React.createElement("h3", { className: "text-base font-bold text-blue-800 mb-1" }, __alloT('stem.money.compound_interest_visualizer_2', "\uD83D\uDCC8 Compound Interest Visualizer")),
-                  React.createElement("p", { className: "text-xs text-blue-500 mb-4" }, __alloT('stem.money.see_how_your_money_grows_simple_vs_com', "See how your money grows \u2014 simple vs compound interest")),
+                  React.createElement("p", { className: "text-xs text-blue-700 mb-4" }, __alloT('stem.money.see_how_your_money_grows_simple_vs_com', "See how your money grows \u2014 simple vs compound interest")),
                   // Controls
                   React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4" },
                     React.createElement("div", null,
@@ -3964,7 +4016,7 @@ window.StemLab = window.StemLab || {
                     React.createElement("div", { className: "bg-white rounded-xl p-4 border border-blue-100 text-center" },
                       React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase" }, __alloT('stem.money.compound_interest_2', "Compound Interest")),
                       React.createElement("p", { className: "text-2xl font-black text-blue-600" }, cur.symbol + Math.round(ciCompound).toLocaleString()),
-                      React.createElement("p", { className: "text-xs text-emerald-500 font-bold" }, "+" + cur.symbol + Math.round(ciCompoundInterest).toLocaleString() + " earned")
+                      React.createElement("p", { className: "text-xs text-emerald-700 font-bold" }, "+" + cur.symbol + Math.round(ciCompoundInterest).toLocaleString() + " earned")
                     ),
                     React.createElement("div", { className: "bg-white rounded-xl p-4 border border-slate-100 text-center" },
                       React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase" }, __alloT('stem.money.simple_interest', "Simple Interest")),
@@ -3972,7 +4024,7 @@ window.StemLab = window.StemLab || {
                       React.createElement("p", { className: "text-xs text-slate-600 font-bold" }, "+" + cur.symbol + Math.round(ciSimpleInterest).toLocaleString() + " earned")
                     )
                   ),
-                  React.createElement("p", { className: "text-xs font-bold text-center " + (ciCompoundInterest > ciSimpleInterest * 1.1 ? 'text-emerald-600' : 'text-slate-600'), style: { marginBottom: 8 } },
+                  React.createElement("p", { className: "text-xs font-bold text-center " + (ciCompoundInterest > ciSimpleInterest * 1.1 ? 'text-emerald-700' : 'text-slate-600'), style: { marginBottom: 8 } },
                     "\uD83D\uDCA1 Compound earns " + cur.symbol + Math.round(ciCompoundInterest - ciSimpleInterest).toLocaleString() + " MORE than simple interest!"
                   ),
                   // Growth table
@@ -3983,7 +4035,7 @@ window.StemLab = window.StemLab || {
                           React.createElement("th", { scope: "col", className: "px-3 py-2 text-left font-bold text-slate-600" }, __alloT('stem.money.year', "Year")),
                           React.createElement("th", { scope: "col", className: "px-3 py-2 text-right font-bold text-blue-600" }, __alloT('stem.money.compound', "Compound")),
                           React.createElement("th", { scope: "col", className: "px-3 py-2 text-right font-bold text-slate-600" }, __alloT('stem.money.simple', "Simple")),
-                          React.createElement("th", { scope: "col", className: "px-3 py-2 text-right font-bold text-emerald-500" }, __alloT('stem.money.advantage', "Advantage"))
+                          React.createElement("th", { scope: "col", className: "px-3 py-2 text-right font-bold text-emerald-700" }, __alloT('stem.money.advantage', "Advantage"))
                         )
                       ),
                       React.createElement("tbody", null,
@@ -3992,7 +4044,7 @@ window.StemLab = window.StemLab || {
                             React.createElement("td", { className: "px-3 py-1.5 font-bold text-slate-600" }, r.year),
                             React.createElement("td", { className: "px-3 py-1.5 text-right font-bold text-blue-600" }, cur.symbol + Math.round(r.compound).toLocaleString()),
                             React.createElement("td", { className: "px-3 py-1.5 text-right text-slate-600" }, cur.symbol + Math.round(r.simple).toLocaleString()),
-                            React.createElement("td", { className: "px-3 py-1.5 text-right font-bold text-emerald-500" }, "+" + cur.symbol + Math.round(r.compound - r.simple).toLocaleString())
+                            React.createElement("td", { className: "px-3 py-1.5 text-right font-bold text-emerald-700" }, "+" + cur.symbol + Math.round(r.compound - r.simple).toLocaleString())
                           );
                         })
                       )
@@ -4001,9 +4053,9 @@ window.StemLab = window.StemLab || {
                 ),
 
                 // ── Retirement Planner ──
-                finSub === 'retire' && React.createElement("div", { className: "bg-gradient-to-br from-violet-50 to-purple-50 rounded-xl p-5 border border-violet-200" },
+                finSub === 'retire' && React.createElement("div", financePanelProps("bg-gradient-to-br from-violet-50 to-purple-50 rounded-xl p-5 border border-violet-200"),
                   React.createElement("h3", { className: "text-base font-bold text-violet-800 mb-1" }, __alloT('stem.money.retirement_savings_planner', "\uD83C\uDFD6\uFE0F Retirement Savings Planner")),
-                  React.createElement("p", { className: "text-xs text-violet-500 mb-4" }, __alloT('stem.money.see_why_starting_early_makes_a_massive', "See why starting early makes a massive difference")),
+                  React.createElement("p", { className: "text-xs text-violet-700 mb-4" }, __alloT('stem.money.see_why_starting_early_makes_a_massive', "See why starting early makes a massive difference")),
                   // Controls
                   React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4" },
                     React.createElement("div", null,
@@ -4026,10 +4078,10 @@ window.StemLab = window.StemLab || {
                   // Two-scenario comparison
                   React.createElement("div", { className: "grid grid-cols-2 gap-3 mb-4" },
                     React.createElement("div", { className: "bg-white rounded-xl p-4 border-2 border-violet-300 text-center" },
-                      React.createElement("p", { className: "text-[11px] font-bold text-violet-400 uppercase" }, "Start at " + retAge),
+                      React.createElement("p", { className: "text-[11px] font-bold text-violet-700 uppercase" }, "Start at " + retAge),
                       React.createElement("p", { className: "text-2xl font-black text-violet-600" }, cur.symbol + Math.round(retResult.total).toLocaleString()),
                       React.createElement("p", { className: "text-[11px] text-slate-600" }, "Contributed: " + cur.symbol + Math.round(retResult.contributed).toLocaleString()),
-                      React.createElement("p", { className: "text-[11px] font-bold text-emerald-500" }, "Growth: " + cur.symbol + Math.round(retResult.growth).toLocaleString())
+                      React.createElement("p", { className: "text-[11px] font-bold text-emerald-700" }, "Growth: " + cur.symbol + Math.round(retResult.growth).toLocaleString())
                     ),
                     React.createElement("div", { className: "bg-white rounded-xl p-4 border border-slate-400 text-center opacity-75" },
                       React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase" }, "Start at " + (retAge + 10)),
@@ -4041,7 +4093,7 @@ window.StemLab = window.StemLab || {
                   retResult.total > retLateResult.total && React.createElement("div", { className: "bg-violet-100 rounded-xl p-3 text-center border border-violet-200" },
                     React.createElement("p", { className: "text-xs font-bold text-violet-700" },
                       "\uD83D\uDCA1 Starting 10 years earlier = " + cur.symbol + Math.round(retResult.total - retLateResult.total).toLocaleString() + " MORE at retirement!"),
-                    React.createElement("p", { className: "text-[11px] text-violet-500 mt-1" }, "That's " + Math.round((retResult.total / Math.max(1, retLateResult.total) - 1) * 100) + "% more money \u2014 and you only contributed " + cur.symbol + Math.round(retResult.contributed - retLateResult.contributed).toLocaleString() + " extra.")
+                    React.createElement("p", { className: "text-[11px] text-violet-700 mt-1" }, "That's " + Math.round((retResult.total / Math.max(1, retLateResult.total) - 1) * 100) + "% more money \u2014 and you only contributed " + cur.symbol + Math.round(retResult.contributed - retLateResult.contributed).toLocaleString() + " extra.")
                   ),
                   // Milestone table
                   React.createElement("div", { className: "bg-white rounded-xl border border-slate-400 overflow-hidden mt-4" },
@@ -4068,9 +4120,9 @@ window.StemLab = window.StemLab || {
                 ),
 
                 // ── Loan & Debt Calculator ──
-                finSub === 'loans' && React.createElement("div", { className: "bg-gradient-to-br from-rose-50 to-red-50 rounded-xl p-5 border border-rose-200" },
+                finSub === 'loans' && React.createElement("div", financePanelProps("bg-gradient-to-br from-rose-50 to-red-50 rounded-xl p-5 border border-rose-200"),
                   React.createElement("h3", { className: "text-base font-bold text-rose-800 mb-1" }, __alloT('stem.money.loan_debt_calculator', "\uD83C\uDFE6 Loan & Debt Calculator")),
-                  React.createElement("p", { className: "text-xs text-rose-500 mb-4" }, __alloT('stem.money.understand_what_loans_really_cost_the_', "Understand what loans really cost \u2014 the total interest is eye-opening")),
+                  React.createElement("p", { className: "text-xs text-rose-700 mb-4" }, __alloT('stem.money.understand_what_loans_really_cost_the_', "Understand what loans really cost \u2014 the total interest is eye-opening")),
                   // Loan type presets
                   React.createElement("div", { className: "flex flex-wrap gap-2 mb-4" },
                     Object.keys(loanPresets).map(function (k) {
@@ -4105,7 +4157,7 @@ window.StemLab = window.StemLab || {
                     ),
                     React.createElement("div", { className: "bg-white rounded-xl p-3 text-center border border-red-200" },
                       React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase" }, __alloT('stem.money.total_interest', "Total Interest")),
-                      React.createElement("p", { className: "text-xl font-black text-red-500" }, cur.symbol + Math.round(loanTotalInterest).toLocaleString()),
+                      React.createElement("p", { className: "text-xl font-black text-red-700" }, cur.symbol + Math.round(loanTotalInterest).toLocaleString()),
                       React.createElement("p", { className: "text-[11px] text-red-600" }, "That's " + Math.round(loanTotalInterest / loanAmt * 100) + "% of the loan!")
                     ),
                     React.createElement("div", { className: "bg-white rounded-xl p-3 text-center border border-slate-100" },
@@ -4128,8 +4180,8 @@ window.StemLab = window.StemLab || {
                         React.createElement("tr", { className: "bg-slate-50" },
                           React.createElement("th", { scope: "col", className: "px-2 py-2 text-left font-bold text-slate-600" }, __alloT('stem.money.month', "Month")),
                           React.createElement("th", { scope: "col", className: "px-2 py-2 text-right font-bold text-slate-600" }, __alloT('stem.money.payment', "Payment")),
-                          React.createElement("th", { scope: "col", className: "px-2 py-2 text-right font-bold text-blue-500" }, __alloT('stem.money.principal_3', "Principal")),
-                          React.createElement("th", { scope: "col", className: "px-2 py-2 text-right font-bold text-red-500" }, __alloT('stem.money.interest_2', "Interest")),
+                          React.createElement("th", { scope: "col", className: "px-2 py-2 text-right font-bold text-blue-700" }, __alloT('stem.money.principal_3', "Principal")),
+                          React.createElement("th", { scope: "col", className: "px-2 py-2 text-right font-bold text-red-700" }, __alloT('stem.money.interest_2', "Interest")),
                           React.createElement("th", { scope: "col", className: "px-2 py-2 text-right font-bold text-slate-600" }, __alloT('stem.money.balance', "Balance"))
                         )
                       ),
@@ -4139,7 +4191,7 @@ window.StemLab = window.StemLab || {
                             React.createElement("td", { className: "px-2 py-1.5 font-bold text-slate-600" }, r.month),
                             React.createElement("td", { className: "px-2 py-1.5 text-right text-slate-600" }, cur.symbol + Math.round(r.payment).toLocaleString()),
                             React.createElement("td", { className: "px-2 py-1.5 text-right text-blue-600 font-bold" }, cur.symbol + Math.round(r.principal).toLocaleString()),
-                            React.createElement("td", { className: "px-2 py-1.5 text-right text-red-500" }, cur.symbol + Math.round(r.interest).toLocaleString()),
+                            React.createElement("td", { className: "px-2 py-1.5 text-right text-red-700" }, cur.symbol + Math.round(r.interest).toLocaleString()),
                             React.createElement("td", { className: "px-2 py-1.5 text-right text-slate-600" }, cur.symbol + Math.round(r.balance).toLocaleString())
                           );
                         })
@@ -4149,9 +4201,9 @@ window.StemLab = window.StemLab || {
                 ),
 
                 // ── Savings Goals ──
-                finSub === 'goals' && React.createElement("div", { className: "bg-gradient-to-br from-emerald-50 to-green-50 rounded-xl p-5 border border-emerald-200" },
+                finSub === 'goals' && React.createElement("div", financePanelProps("bg-gradient-to-br from-emerald-50 to-green-50 rounded-xl p-5 border border-emerald-200"),
                   React.createElement("h3", { className: "text-base font-bold text-emerald-800 mb-1" }, __alloT('stem.money.savings_goal_planner', "\uD83C\uDFAF Savings Goal Planner")),
-                  React.createElement("p", { className: "text-xs text-emerald-500 mb-4" }, __alloT('stem.money.pick_a_goal_and_see_exactly_how_much_t', "Pick a goal and see exactly how much to save each day, week, or month")),
+                  React.createElement("p", { className: "text-xs text-emerald-700 mb-4" }, __alloT('stem.money.pick_a_goal_and_see_exactly_how_much_t', "Pick a goal and see exactly how much to save each day, week, or month")),
                   // Goal picker
                   React.createElement("div", { className: "flex flex-wrap gap-2 mb-4" },
                     Object.keys(sgGoals).map(function (k) {
@@ -4187,7 +4239,7 @@ window.StemLab = window.StemLab || {
                   React.createElement("div", { className: "mb-4" },
                     React.createElement("div", { className: "flex items-center justify-between mb-1" },
                       React.createElement("span", { className: "text-[11px] font-bold text-slate-600" }, "Progress" + (sgRemaining > 0 ? " · " + cur.symbol + Math.round(sgRemaining).toLocaleString() + " to go" : "")),
-                      React.createElement("span", { className: "text-[11px] font-bold " + (sgHave >= sgTarget ? "text-amber-500" : "text-emerald-600") }, (sgHave >= sgTarget ? "🎉 " : "") + Math.min(100, Math.round(sgHave / Math.max(1, sgTarget) * 100)) + "%")
+                      React.createElement("span", { className: "text-[11px] font-bold " + (sgHave >= sgTarget ? "text-amber-700" : "text-emerald-700") }, (sgHave >= sgTarget ? "🎉 " : "") + Math.min(100, Math.round(sgHave / Math.max(1, sgTarget) * 100)) + "%")
                     ),
                     React.createElement("div", { className: "relative h-4 bg-slate-100 rounded-full overflow-hidden" },
                       React.createElement("div", { style: { width: Math.min(100, sgHave / Math.max(1, sgTarget) * 100) + '%', transition: 'width 0.3s' }, className: "h-full rounded-full " + (sgHave >= sgTarget ? "bg-gradient-to-r from-amber-300 to-yellow-400" : "bg-gradient-to-r from-emerald-400 to-green-500") }),
@@ -4198,31 +4250,31 @@ window.StemLab = window.StemLab || {
                   React.createElement("div", { className: "grid grid-cols-3 gap-3 mb-4" },
                     React.createElement("div", { className: "bg-white rounded-xl p-3 text-center border border-emerald-100" },
                       React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase" }, __alloT('stem.money.per_day', "Per Day")),
-                      React.createElement("p", { className: "text-lg font-black text-emerald-600" }, cur.symbol + (Math.round(sgDailyNeeded * 100) / 100).toFixed(2)),
+                      React.createElement("p", { className: "text-lg font-black text-emerald-700" }, cur.symbol + (Math.round(sgDailyNeeded * 100) / 100).toFixed(2)),
                       React.createElement("p", { className: "text-[11px] text-slate-600" }, __alloT('stem.money.skip_a_coffee', "\u2248 skip a coffee"))
                     ),
                     React.createElement("div", { className: "bg-white rounded-xl p-3 text-center border-2 border-emerald-300" },
                       React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase" }, __alloT('stem.money.per_week', "Per Week")),
-                      React.createElement("p", { className: "text-lg font-black text-emerald-600" }, cur.symbol + Math.round(sgWeeklyNeeded).toLocaleString())
+                      React.createElement("p", { className: "text-lg font-black text-emerald-700" }, cur.symbol + Math.round(sgWeeklyNeeded).toLocaleString())
                     ),
                     React.createElement("div", { className: "bg-white rounded-xl p-3 text-center border border-emerald-100" },
                       React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase" }, __alloT('stem.money.per_month', "Per Month")),
-                      React.createElement("p", { className: "text-lg font-black text-emerald-600" }, cur.symbol + Math.round(sgMonthlyNeeded).toLocaleString())
+                      React.createElement("p", { className: "text-lg font-black text-emerald-700" }, cur.symbol + Math.round(sgMonthlyNeeded).toLocaleString())
                     )
                   ),
                   // "What if" scenarios
                   React.createElement("div", { className: "bg-white rounded-xl p-4 border border-emerald-100" },
                     React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase mb-2" }, __alloT('stem.money.what_if_scenarios', "\uD83D\uDCA1 What If Scenarios")),
                     React.createElement("div", { className: "space-y-2" },
-                      React.createElement("p", { className: "text-xs text-slate-600" }, "\u2022 Save " + cur.symbol + "5 more/week? Reach goal in ", React.createElement("strong", { className: "text-emerald-600" }, Math.max(1, Math.round(sgRemaining / ((sgWeeklyNeeded + 5) * 52 / 12))) + " months"), " instead of " + sgMonths),
-                      React.createElement("p", { className: "text-xs text-slate-600" }, "\u2022 Save " + cur.symbol + "10 more/week? Reach goal in ", React.createElement("strong", { className: "text-emerald-600" }, Math.max(1, Math.round(sgRemaining / ((sgWeeklyNeeded + 10) * 52 / 12))) + " months")),
-                      React.createElement("p", { className: "text-xs text-slate-600" }, __alloT('stem.money.double_your_savings_reach_goal_in', "\u2022 Double your savings? Reach goal in "), React.createElement("strong", { className: "text-emerald-600" }, Math.max(1, Math.round(sgMonths / 2)) + " months"))
+                      React.createElement("p", { className: "text-xs text-slate-600" }, "\u2022 Save " + cur.symbol + "5 more/week? Reach goal in ", React.createElement("strong", { className: "text-emerald-700" }, Math.max(1, Math.round(sgRemaining / ((sgWeeklyNeeded + 5) * 52 / 12))) + " months"), " instead of " + sgMonths),
+                      React.createElement("p", { className: "text-xs text-slate-600" }, "\u2022 Save " + cur.symbol + "10 more/week? Reach goal in ", React.createElement("strong", { className: "text-emerald-700" }, Math.max(1, Math.round(sgRemaining / ((sgWeeklyNeeded + 10) * 52 / 12))) + " months")),
+                      React.createElement("p", { className: "text-xs text-slate-600" }, __alloT('stem.money.double_your_savings_reach_goal_in', "\u2022 Double your savings? Reach goal in "), React.createElement("strong", { className: "text-emerald-700" }, Math.max(1, Math.round(sgMonths / 2)) + " months"))
                     )
                   )
                 ),
 
                 // ── Financial Literacy Quiz ──
-                finSub === 'quiz' && React.createElement("div", { className: "bg-gradient-to-br from-yellow-50 to-amber-50 rounded-xl p-5 border border-yellow-200 space-y-4" },
+                finSub === 'quiz' && React.createElement("div", financePanelProps("bg-gradient-to-br from-yellow-50 to-amber-50 rounded-xl p-5 border border-yellow-200 space-y-4"),
                   React.createElement("div", { className: "flex items-center justify-between" },
                     React.createElement("h3", { className: "text-base font-bold text-amber-800" }, __alloT('stem.money.financial_literacy_quiz', "\uD83E\uDDE0 Financial Literacy Quiz")),
                     React.createElement("button", { "aria-label": __alloT('stem.money.gen_fin_quiz', "Gen Fin Quiz"), onClick: genFinQuiz, className: "px-3 py-1.5 bg-amber-700 text-white text-xs font-bold rounded-lg hover:bg-amber-800 transition-all" }, d.fqIdx == null ? '\u2728 Start Quiz' : '\u21BB Next Question')
@@ -4304,7 +4356,7 @@ window.StemLab = window.StemLab || {
                   var c = iq.principal + iq.contribMonthly * 12 * yr2;
                   contribPts.push((30 + (yr2 / n) * 280) + ',' + (130 - (c / maxY) * 110));
                 }
-                return React.createElement("div", { className: "p-3 rounded-xl", style: { background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5' } },
+                return React.createElement("div", Object.assign(moneyPanelProps("p-3 rounded-xl"), { style: { background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5' } }),
                   React.createElement("h4", { className: "text-xs font-black uppercase tracking-wider mb-1", style: { color: sm.color } }, __alloT('stem.money.compound_interest_inquiry_2', '🔬 Compound Interest Inquiry')),
                   React.createElement("p", { className: "text-[10px] opacity-85 mb-2 leading-snug" }, __alloT('stem.money.set_starting_balance_rate_time_horizon', 'Set starting balance, rate, time horizon, and monthly contribution. Predict the growth ratio before reading it. No score, no reveal.')),
                   React.createElement("div", { className: "inline-block px-2 py-1 rounded-full text-[10px] font-bold mb-2", style: { background: sm.color, color: '#000' } }, sm.label + ' · FV $' + fv.toFixed(0) + ' (' + growthRatio.toFixed(2) + 'x contributions)'),

@@ -20047,6 +20047,7 @@ React.createElement("div", {
                       React.createElement("div", {
                         className: "wc-signal-track",
                         role: "progressbar",
+                        "aria-label": reservoir.label + " relative teaching signal",
                         "aria-valuemin": 0,
                         "aria-valuemax": 100,
                         "aria-valuenow": reservoir.value,

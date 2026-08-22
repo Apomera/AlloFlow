@@ -36,7 +36,9 @@ describe('A1: FERPA egress disclosure shows above the audit CTA (audit, 2026-06-
     expect(view).toMatch(/sent to Google Gemini/);
     // it sits inside the gradient CTA box, before the Make-Accessible button (so it's seen first)
     const discIdx = view.indexOf("t('pdf_audit.gemini_disclosure')");
-    const btnIdx = view.indexOf('pdf_audit_view_make_accessible_btn');
+    // The lazy tour catalog also names this help key near the top of the module;
+    // the final occurrence is the rendered Make Accessible control.
+    const btnIdx = view.lastIndexOf('pdf_audit_view_make_accessible_btn');
     expect(discIdx).toBeGreaterThan(-1);
     expect(discIdx).toBeLessThan(btnIdx);
   });

@@ -14,8 +14,9 @@ const deployPackPath = path.join(root, 'desktop', 'web-app', 'public', 'test_pre
 const deployLibraryPath = path.join(root, 'desktop', 'web-app', 'public', 'test_prep', 'ap_us_government_foundation_pilot_learning_library.json');
 
 const PACK_ID = 'ap-us-government-foundation-pilot';
-const VERSION = '0.6.0-internal-preview';
+const VERSION = '0.8.0-internal-preview';
 const CED_URL = 'https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description.pdf';
+const CLARIFICATIONS_URL = 'https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description-clarifications-effective-fall-2026.pdf';
 const COURSE_URL = 'https://apcentral.collegeboard.org/courses/ap-united-states-government-and-politics';
 const OPENSTAX_URL = 'https://openstax.org/details/books/american-government-3e';
 const expectedDomains = [
@@ -31,6 +32,21 @@ const expectedTopicIds = [
   ...Array.from({ length: 13 }, (_, index) => '3.' + (index + 1)),
   ...Array.from({ length: 10 }, (_, index) => '4.' + (index + 1)),
   ...Array.from({ length: 13 }, (_, index) => '5.' + (index + 1)),
+];
+const expectedFoundationalDocumentIds = [
+  'articles-of-confederation',
+  'brutus-no-1',
+  'constitution-of-the-united-states',
+  'declaration-of-independence',
+  'emancipation-proclamation',
+  'federalist-no-10',
+  'federalist-no-39',
+  'federalist-no-51',
+  'federalist-no-70',
+  'federalist-no-78',
+  'gettysburg-address',
+  'letter-from-a-birmingham-jail',
+  'adam-smith-wealth-of-nations',
 ];
 const expectedSkillIds = [
   ...['1.A', '1.B', '1.C', '1.D', '1.E'],
@@ -153,6 +169,17 @@ requireCondition(
   pack.blueprint?.officialFrameworkTopicIds?.every((topicId) => expectedTopicIds.includes(topicId)),
   'blueprint-and-topic-coverage', 'The current five-unit, sixty-topic public framework declaration is incomplete.'
 );
+const packFoundationalDocuments = Array.isArray(pack.blueprint?.foundationalDocumentCatalog) ? pack.blueprint.foundationalDocumentCatalog : [];
+const libraryFoundationalDocuments = Array.isArray(library.blueprint?.foundationalDocumentCatalog) ? library.blueprint.foundationalDocumentCatalog : [];
+const packFoundationalDocumentRoutes = Array.isArray(pack.blueprint?.foundationalDocumentRoutes) ? pack.blueprint.foundationalDocumentRoutes : [];
+const libraryFoundationalDocumentRoutes = Array.isArray(library.blueprint?.foundationalDocumentRoutes) ? library.blueprint.foundationalDocumentRoutes : [];
+requireCondition(pack.blueprint?.foundationalDocumentCatalogVersion === 'ap-us-government-foundation-v8' && pack.blueprint?.foundationalDocumentCount === 13 && pack.foundationalDocumentCount === 13 && packFoundationalDocuments.length === 13 && libraryFoundationalDocuments.length === 13 && JSON.stringify(packFoundationalDocuments) === JSON.stringify(libraryFoundationalDocuments), 'foundational-document-crosswalk', 'The pack and library must carry the same thirteen-document public foundational-document crosswalk.');
+requireCondition(pack.blueprint?.foundationalDocumentRouteVersion === 'ap-us-government-foundation-v8' && pack.blueprint?.foundationalDocumentRouteCount === 13 && pack.foundationalDocumentRouteCount === 13 && packFoundationalDocumentRoutes.length === 13 && libraryFoundationalDocumentRoutes.length === 13 && JSON.stringify(packFoundationalDocumentRoutes) === JSON.stringify(libraryFoundationalDocumentRoutes) && JSON.stringify(pack.foundationalDocumentRoutes) === JSON.stringify(packFoundationalDocumentRoutes) && JSON.stringify(library.foundationalDocumentRoutes) === JSON.stringify(libraryFoundationalDocumentRoutes), 'foundational-document-routing', 'The pack and library must carry the same thirteen foundational-document study routes at both top level and blueprint level.');
+requireCondition(new Set(packFoundationalDocuments.map((document) => document.id)).size === 13 && expectedFoundationalDocumentIds.every((documentId) => packFoundationalDocuments.some((document) => document.id === documentId)), 'foundational-document-crosswalk', 'The current thirteen foundational-document IDs are incomplete or duplicated.');
+for (const document of packFoundationalDocuments) {
+  requireCondition(Array.isArray(document.topicIds) && document.topicIds.length > 0 && document.topicIds.every((topicId) => expectedTopicIds.includes(topicId)) && Array.isArray(document.unitNumbers) && document.unitNumbers.length > 0 && document.unitNumbers.every((unitNumber) => unitNumber >= 1 && unitNumber <= 5) && document.requiredForAcademicYear === '2026-27' && document.requirementSource === CED_URL && document.clarificationSource === CLARIFICATIONS_URL && document.officialItem === false && document.reproducedText === false && document.releaseEligible === false && document.reviewStatus === 'source-reviewed-editorial-pass' && document.independentExpertReviewStatus === 'pending', 'foundational-document-crosswalk', document.id + ' has an incomplete public-document crosswalk.');
+}
+requireCondition(pack.clarificationsUrl === CLARIFICATIONS_URL && pack.sourceCatalog?.some((source) => source.url === CLARIFICATIONS_URL) && library.sourceCatalog?.some((source) => source.url === CLARIFICATIONS_URL), 'source-and-provenance', 'The Fall 2026 foundational-document clarification source must be present in the pack and both source catalogs.');
 requireCondition(
   /unofficial/i.test(pack.disclaimer || '') && /not affiliated with|not endorsed by|not authored by/i.test(pack.disclaimer || '') &&
   /official scores|score predictions/i.test(pack.disclaimer || ''),
@@ -173,6 +200,7 @@ const sections = chapters.flatMap((chapter) => Array.isArray(chapter.sections) ?
 const checks = chapters.flatMap((chapter) => Array.isArray(chapter.knowledgeChecks) ? chapter.knowledgeChecks : []);
 const objectiveCatalog = Array.isArray(pack.blueprint?.learningObjectiveCatalog) ? pack.blueprint.learningObjectiveCatalog : [];
 const objectiveById = new Map(objectiveCatalog.map((objective) => [objective.id, objective]));
+const foundationalDocumentIdSet = new Set(expectedFoundationalDocumentIds);
 
 const domainCounts = countBy(items, (item) => item.domainId);
 const topicCounts = countBy(items.flatMap((item) => item.topicIds || []), (topicId) => topicId);
@@ -181,6 +209,7 @@ const practiceCounts = countBy(items, (item) => item.practiceId);
 const answerCounts = countBy(items, (item) => item.answerIndex);
 const practiceSliceCounts = countBy(items, (item) => item.practiceSlice);
 const transferTopicCounts = countBy(items.filter((item) => item.practiceSlice === 'transfer-slice').flatMap((item) => item.topicIds || []), (topicId) => topicId);
+const foundationalDocumentCounts = countBy(items.flatMap((item) => item.foundationalDocumentIds || []), (documentId) => documentId);
 
 requireCondition(items.length === 260 && new Set(items.map((item) => item.id)).size === 260, 'item-inventory', 'The pilot must contain exactly 260 uniquely identified items.');
 requireCondition(domains.length === 5 && Math.abs(domains.reduce((sum, domain) => sum + Number(domain.weight || 0), 0) - 1) < 1e-10, 'blueprint-and-unit-balance', 'Five unique domains with midpoint weights totaling 1.0 are required.');
@@ -194,6 +223,8 @@ requireCondition(missingTopics.length === 0 && shallowTopics.length === 0 && une
 requireCondition(pack.depthCoverage?.baseItemCount === 100 && pack.depthCoverage?.depthItemCount === 100 && pack.depthCoverage?.transferItemCount === 60 && pack.depthCoverage?.topicsWithAtLeastTwoItems === 60 && pack.depthCoverage?.topicsWithAtLeastThreeItems === 60 && pack.depthCoverage?.topicCount === 60, 'depth-coverage', 'The third-angle coverage declaration must report 100 foundation, 100 depth, 60 transfer items, and 60 topics covered at least three times.');
 requireCondition(practiceSliceCounts['foundation-slice'] === 100 && practiceSliceCounts['depth-slice'] === 100 && practiceSliceCounts['transfer-slice'] === 60 && items.every((item) => (item.practiceSlice === 'foundation-slice' && item.practiceAngle === 'foundation') || (item.practiceSlice === 'depth-slice' && item.practiceAngle === 'depth') || (item.practiceSlice === 'transfer-slice' && item.practiceAngle === 'transfer')), 'practice-slice-coverage', 'The pack must label exactly 100 foundation-slice, 100 depth-slice, and 60 transfer-slice items with matching practice angles.');
 requireCondition(Object.keys(transferTopicCounts).length === 60 && expectedTopicIds.every((topicId) => transferTopicCounts[topicId] === 1), 'transfer-topic-coverage', 'The transfer layer must contain exactly one item for each of the sixty current topics.');
+requireCondition(Object.keys(foundationalDocumentCounts).length === 13 && expectedFoundationalDocumentIds.every((documentId) => foundationalDocumentCounts[documentId] > 0), 'foundational-document-crosswalk', 'Every required foundational document must route to at least one generated practice item.');
+requireCondition(packFoundationalDocumentRoutes.every((route) => expectedFoundationalDocumentIds.includes(route.documentId) && route.id === 'ap-usg-document-route-' + route.documentId && route.title === packFoundationalDocuments.find((document) => document.id === route.documentId)?.title && route.academicYearReference === '2026-27' && Array.isArray(route.itemIds) && route.itemIds.length === route.itemCount && route.itemCount > 0 && Array.isArray(route.chapterIds) && route.chapterIds.length > 0 && Array.isArray(route.sectionIds) && route.sectionIds.length > 0 && Array.isArray(route.references) && route.references.includes(CED_URL) && route.references.includes(COURSE_URL) && route.references.includes(CLARIFICATIONS_URL) && route.officialItem === false && route.reproducedText === false && route.releaseEligible === false && route.reviewStatus === 'source-reviewed-editorial-pass' && route.independentExpertReviewStatus === 'pending'), 'foundational-document-routing', 'Each foundational document route must carry usable item, lesson, source, and review metadata.');
 requireCondition(pack.learningRouteMode === 'section-linked-item-routes' && pack.practiceRouting?.sectionCount === 15 && pack.practiceRouting?.itemCount === 260 && pack.practiceRouting?.uniqueItemCount === 260 && pack.practiceRouting?.foundationItemCount === 100 && pack.practiceRouting?.depthItemCount === 100 && pack.practiceRouting?.transferItemCount === 60 && pack.practiceRouting?.topicDrillMapCount === 60, 'study-routing', 'The pack must declare complete section-linked, three-angle, and topic-level practice routing.');
 requireCondition(pack.sections?.length === 52 && pack.sections.every((section) => Array.isArray(section.itemIds) && section.itemIds.length === 5), 'bank-inventory', 'The fifty-two five-item internal banks are incomplete.');
 requireCondition(answerCounts[0] === 65 && answerCounts[1] === 65 && answerCounts[2] === 65 && answerCounts[3] === 65, 'answer-balance', 'Answer positions must be balanced at 65/65/65/65.');
@@ -217,7 +248,7 @@ for (const item of items) {
   requireCondition(item.provenance === 'native-original' && item.officialItem === false && item.releaseEligible === false && item.rights?.secureContentUsed === false && item.rights?.copiedOfficialQuestion === false, 'rights-boundary', item.id + ' must remain original and unreleased.', record);
   requireCondition(item.accessibility?.textOnly === true && item.accessibility?.linearReadingOrder === true && item.accessibility?.handsFreeContentCompatible === true, 'accessibility-boundary', item.id + ' must remain text-first and linear.', record);
   requireCondition(item.expertReview?.status === 'pending' && item.expertReview?.releaseBlocked === true && item.psychometricStatus === 'not-calibrated', 'review-boundary', item.id + ' must remain review-blocked and uncalibrated.', record);
-  requireCondition(Array.isArray(item.topicIds) && item.topicIds.length === 1 && expectedTopicIds.includes(item.topicIds[0]) && objective && objective.topicId === item.topicIds[0] && objective.domainId === item.domainId && item.learningSectionId === objective.sectionId, 'learning-alignment', item.id + ' has an incomplete topic or learning route.', record);
+  requireCondition(Array.isArray(item.topicIds) && item.topicIds.length === 1 && expectedTopicIds.includes(item.topicIds[0]) && objective && objective.topicId === item.topicIds[0] && objective.domainId === item.domainId && item.learningSectionId === objective.sectionId && Array.isArray(item.foundationalDocumentIds) && item.foundationalDocumentIds.every((documentId) => foundationalDocumentIdSet.has(documentId)), 'learning-alignment', item.id + ' has an incomplete topic or learning route.', record);
   requireCondition(/^C[1-5]$/.test(String(item.practiceId || '')) && /^[1-5]\.[A-F]$/.test(String(item.skillId || '')) && item.skillId.startsWith(item.practiceId.slice(1) + '.'), 'subskill-coverage', item.id + ' has an invalid category/subskill pairing.', record);
   const normalizedPrompt = normalizeText(item.prompt);
   if (prompts.has(normalizedPrompt)) addFinding('prompt-originality', item.id + ' duplicates ' + prompts.get(normalizedPrompt) + ' after normalization.', record);
@@ -226,7 +257,7 @@ for (const item of items) {
 
 requireCondition(chapters.length === 5 && sections.length === 15 && checks.length === 15, 'library-inventory', 'The native library must contain five chapters, fifteen sections, and fifteen checks.', { asset: 'learning-library' });
 requireCondition(library.flashcards?.length === 15 && library.memoryAids?.length === 5, 'library-inventory', 'The native library flashcard and memory-aid inventory is incomplete.', { asset: 'learning-library' });
-requireCondition(library.summary?.chapters === 5 && library.summary?.sections === 15 && library.summary?.knowledgeChecks === 15 && library.summary?.flashcards === 15 && library.summary?.memoryAids === 5 && library.summary?.constructedResponseWorkshops === 5 && library.summary?.sourceReviewedConstructedResponseWorkshops === 5 && library.summary?.richLessonPrototypes === 5 && library.summary?.releaseEligibleRecords === 0, 'library-inventory', 'The declared learning-library summary does not match the generated inventory.', { asset: 'learning-library' });
+requireCondition(library.summary?.chapters === 5 && library.summary?.sections === 15 && library.summary?.knowledgeChecks === 15 && library.summary?.flashcards === 15 && library.summary?.memoryAids === 5 && library.summary?.constructedResponseWorkshops === 5 && library.summary?.sourceReviewedConstructedResponseWorkshops === 5 && library.summary?.foundationalDocuments === 13 && library.summary?.sourceReviewedFoundationalDocuments === 13 && library.summary?.foundationalDocumentRoutes === 13 && library.summary?.sourceReviewedFoundationalDocumentRoutes === 13 && library.summary?.richLessonPrototypes === 5 && library.summary?.releaseEligibleRecords === 0, 'library-inventory', 'The declared learning-library summary does not match the generated inventory.', { asset: 'learning-library' });
 const workshops = Array.isArray(library.constructedResponseWorkshops) ? library.constructedResponseWorkshops : [];
 requireCondition(pack.capabilities?.frqWorkshopsIncluded === true && pack.constructedResponseWorkshopCount === 5 && library.workshopLabel && /unscored/i.test(library.workshopPracticeNote || ''), 'workshop-unscored-safeguards', 'The pack and library must declare five unscored response-planning workshops.', { asset: 'learning-library' });
 requireCondition(workshops.length === 5 && new Set(workshops.map((workshop) => workshop.id)).size === 5, 'workshop-unscored-safeguards', 'The native library must contain five uniquely identified response-planning workshops.', { asset: 'learning-library' });
@@ -236,10 +267,20 @@ for (const workshop of workshops) {
   requireCondition(Array.isArray(workshop.taskParts) && workshop.taskParts.length === 3 && workshop.taskParts.every((part) => hasText(part, 20)) && Array.isArray(workshop.planningFrame) && workshop.planningFrame.length === 4 && workshop.planningFrame.every((step) => hasText(step?.label, 3) && hasText(step?.guidance, 20)), 'workshop-content-depth', workshop.id + ' must contain three task parts and four planning-frame steps.', record);
   requireCondition(Array.isArray(workshop.successCriteria) && workshop.successCriteria.length === 4 && workshop.successCriteria.every((criterion) => hasText(criterion, 20)) && Array.isArray(workshop.commonPitfalls) && workshop.commonPitfalls.length === 4 && workshop.commonPitfalls.every((pitfall) => hasText(pitfall, 20)) && Array.isArray(workshop.sampleOutline) && workshop.sampleOutline.length === 3 && workshop.sampleOutline.every((point) => hasText(point, 20)), 'workshop-content-depth', workshop.id + ' must contain self-check criteria, pitfalls, and a sample outline.', record);
   requireCondition(workshop.syntheticStimulus === true && workshop.unscored === true && workshop.automatedScoring === false && workshop.scorePrediction === false && workshop.officialItem === false && workshop.expertReviewStatus === 'pending' && workshop.releaseEligible === false, 'workshop-unscored-safeguards', workshop.id + ' must remain synthetic, unscored, non-predictive, and review-blocked.', record);
-  requireCondition(workshop.rights?.secureCollegeBoardContentUsed === false && workshop.rights?.copiedOrRephrasedOfficialPrompt === false && workshop.rights?.copiedOfficialRubric === false && workshop.rights?.originalStimulus === true && workshop.accessibility?.stimulusFormat === 'plain text' && workshop.accessibility?.essentialVisualContent === false && workshop.accessibility?.readingOrder === 'linear' && workshop.accessibility?.independentReviewStatus === 'pending', 'workshop-unscored-safeguards', workshop.id + ' must declare original rights-safe and text-first accessibility boundaries.', record);
+  requireCondition(Array.isArray(workshop.foundationalDocumentIds) && workshop.foundationalDocumentIds.every((documentId) => foundationalDocumentIdSet.has(documentId)) && workshop.rights?.secureCollegeBoardContentUsed === false && workshop.rights?.copiedOrRephrasedOfficialPrompt === false && workshop.rights?.copiedOfficialRubric === false && workshop.rights?.originalStimulus === true && workshop.accessibility?.stimulusFormat === 'plain text' && workshop.accessibility?.essentialVisualContent === false && workshop.accessibility?.readingOrder === 'linear' && workshop.accessibility?.independentReviewStatus === 'pending', 'workshop-unscored-safeguards', workshop.id + ' must declare original rights-safe and text-first accessibility boundaries.', record);
   requireCondition(Array.isArray(workshop.references) && workshop.references.includes(CED_URL) && workshop.references.includes(COURSE_URL) && workshop.reviewStatus === 'source-reviewed-editorial-pass' && /not an official College Board prompt/i.test(workshop.reviewNote || ''), 'source-and-provenance', workshop.id + ' must carry public framework references and an explicit unofficial boundary.', record);
 }
 const itemById = new Map(items.map((item) => [item.id, item]));
+for (const route of packFoundationalDocumentRoutes) {
+  const record = { recordId: route.id };
+  const routeIds = Array.isArray(route.itemIds) ? route.itemIds : [];
+  const foundationIds = Array.isArray(route.foundationItemIds) ? route.foundationItemIds : [];
+  const depthIds = Array.isArray(route.depthItemIds) ? route.depthItemIds : [];
+  const transferIds = Array.isArray(route.transferItemIds) ? route.transferItemIds : [];
+  const routeDocumentId = route.documentId;
+  requireCondition(new Set(routeIds).size === routeIds.length && routeIds.every((itemId) => itemById.has(itemId) && itemById.get(itemId).foundationalDocumentIds.includes(routeDocumentId)) && foundationIds.length + depthIds.length + transferIds.length === routeIds.length && foundationIds.every((itemId) => routeIds.includes(itemId) && itemById.get(itemId).practiceSlice === 'foundation-slice') && depthIds.every((itemId) => routeIds.includes(itemId) && itemById.get(itemId).practiceSlice === 'depth-slice') && transferIds.every((itemId) => routeIds.includes(itemId) && itemById.get(itemId).practiceSlice === 'transfer-slice') && route.practiceSliceCounts?.['foundation-slice'] === foundationIds.length && route.practiceSliceCounts?.['depth-slice'] === depthIds.length && route.practiceSliceCounts?.['transfer-slice'] === transferIds.length, 'foundational-document-routing', route.id + ' must link valid, uniquely partitioned practice items.', record);
+  requireCondition(Array.isArray(route.chapterIds) && Array.isArray(route.sectionIds) && Array.isArray(route.workshopIds) && route.chapterIds.every((chapterId) => chapters.some((chapter) => chapter.id === chapterId)) && route.sectionIds.every((sectionId) => sections.some((section) => section.id === sectionId && route.chapterIds.includes(sectionId.split('-section-')[0]))) && route.workshopIds.every((workshopId) => workshops.some((workshop) => workshop.id === workshopId)), 'foundational-document-routing', route.id + ' must link existing chapters, lesson sections, and workshops.', record);
+}
 const practiceRoutes = sections.map((section) => section.practiceRoute);
 const routedItemIds = practiceRoutes.flatMap((route) => Array.isArray(route?.itemIds) ? route.itemIds : []);
 const routesAreComplete = practiceRoutes.length === 15 && practiceRoutes.every((route) => {
@@ -298,7 +339,7 @@ for (const result of deploymentParity) {
 
 const report = {
   schemaVersion: 1,
-  qaVersion: 'ap-usg-foundation-qa-v6',
+  qaVersion: 'ap-usg-foundation-qa-v8',
   packId: PACK_ID,
   version: VERSION,
   generatedAt: '2026-08-20T00:00:00.000Z',
@@ -318,6 +359,10 @@ const report = {
     flashcardCount: library.flashcards?.length || 0,
     memoryAidCount: library.memoryAids?.length || 0,
     constructedResponseWorkshopCount: workshops.length,
+    foundationalDocumentCount: packFoundationalDocuments.length,
+    representedFoundationalDocumentCount: Object.keys(foundationalDocumentCounts).length,
+    foundationalDocumentRouteCount: packFoundationalDocumentRoutes.length,
+    representedFoundationalDocumentRouteCount: new Set(packFoundationalDocumentRoutes.map((route) => route.documentId)).size,
     skillCategoryCount: Object.keys(practiceCounts).length,
     subskillCount: Object.keys(skillCounts).length,
     practiceSliceCounts,

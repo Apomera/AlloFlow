@@ -37,6 +37,14 @@ describe('static audit UI heuristics', () => {
     expect(report).toContain('TABS-001');
   });
 
+  it('recognizes a tablist inside an escaped HTML string', () => {
+    const report = scanFixture([
+      'const [activeTab, setActiveTab] = useState("summary");',
+      'const html = "<nav role=\\\"tablist\\\"><button role=\\\"tab\\\">Summary</button></nav>";',
+    ].join('\n'));
+    expect(report).not.toContain('TABS-001');
+  });
+
   it('recognizes labels later in a multi-line createElement property block', () => {
     const report = scanFixture([
       "h('input', {",
@@ -51,8 +59,17 @@ describe('static audit UI heuristics', () => {
     expect(report).not.toContain('INPUT-001');
   });
 
-  it('ignores explicitly marked diagnostic-only native confirms', () => {
-    const report = scanFixture('button data-a11y-ignore="diagnostic-confirm" onclick="window.confirm(Test)">Test</button>');
+  it('does not misclassify a native confirmation mechanism as a 3.3.4 failure', () => {
+    const report = scanFixture('button.onclick = () => window.confirm("Delete this item?");');
+    expect(report).not.toContain('CONFIRM-001');
+  });
+
+  it('does not misclassify custom confirmation APIs or prose', () => {
+    const report = scanFixture([
+      'return ux.confirm(message);',
+      '// no window.confirm is used in this flow',
+      'function confirm(answer) { return answer === "yes"; }',
+    ].join('\n'));
     expect(report).not.toContain('CONFIRM-001');
   });
 
@@ -79,6 +96,10 @@ describe('static audit UI heuristics', () => {
     const report = scanFixture("const icon = h('svg', { viewBox: '0 0 20 20' });");
     expect(report).toContain('SVG-001');
   });
+  it('does not report an SVG mentioned only in source documentation', () => {
+    const report = scanFixture("// Rendered with React.createElement('svg', ...) after the library loads.");
+    expect(report).not.toContain('SVG-001');
+  });
   it('does not flag motion-safe utility animations', () => {
     const report = scanFixture('<div className="motion-safe:animate-spin">Loading</div>');
     expect(report).not.toContain('MOTION-001');
@@ -86,6 +107,11 @@ describe('static audit UI heuristics', () => {
 
   it('recognizes conditional dialog semantics for full-screen shells', () => {
     const report = scanFixture('<div className="fixed inset-0 z-[9999]" role={presenting ? "dialog" : undefined} aria-modal={presenting ? "true" : undefined}></div>');
+    expect(report).not.toContain('DIALOG-001');
+  });
+
+  it('does not treat a named full-screen status boundary as a modal', () => {
+    const report = scanFixture("h('div', { role: 'status', 'aria-live': 'polite', className: 'fixed inset-0 z-[260]' }, 'Loading');");
     expect(report).not.toContain('DIALOG-001');
   });
 
@@ -133,6 +159,39 @@ describe('static audit UI heuristics', () => {
       "}, 'Item');",
     ].join('\n'));
     expect(report).toContain('DRAGDROP-001');
+  });
+
+  it('recognizes a lift-and-move button nested in a draggable list item', () => {
+    const report = scanFixture([
+      '<div draggable={true} onDragStart={startDrag} role="listitem">',
+      '  <button aria-pressed={isLifted} onKeyDown={moveWithArrows} onClick={toggleLift}>',
+      '    Lift or drop this position',
+      '  </button>',
+      '</div>',
+    ].join('\n'));
+    expect(report).not.toContain('DRAGDROP-001');
+  });
+
+  it('recognizes a documented keyboard contract for a pointer-draggable application surface', () => {
+    const report = scanFixture([
+      'canvas.tabIndex = 0;',
+      "canvas.setAttribute('role', 'application');",
+      "canvas.setAttribute('aria-label', 'Keyboard: Q and E rotate the view.');",
+      "canvas.setAttribute('aria-keyshortcuts', 'Q E');",
+      'function onMouseDown(event) { dragging = true; }',
+    ].join('\n'));
+    expect(report).not.toContain('DRAGDROP-001');
+  });
+
+  it('recognizes rotate and zoom buttons provided above a draggable 3-D view', () => {
+    const report = scanFixture([
+      '<button onClick={() => setCubeRotation(value => value - 15)}>Rotate left</button>',
+      '<button onClick={() => setCubeRotation(value => value + 15)}>Tilt up</button>',
+      '<button onClick={() => setCubeScale(value => value + 0.1)}>Zoom in</button>',
+      ...Array.from({ length: 40 }, () => '// layout'),
+      '<div onMouseDown={(event) => { cubeDragRef.current = event.clientX; }}>3-D view</div>',
+    ].join('\n'));
+    expect(report).not.toContain('DRAGDROP-001');
   });
 
   it('does not require a live region inside a headless status service', () => {

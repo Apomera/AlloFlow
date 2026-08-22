@@ -1352,7 +1352,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
           // Header
           h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 } },
             h('div', null,
-              h('h2', { style: { margin: 0, color: '#86efac', fontSize: 22, fontWeight: 900 } }, __alloT('stem.stewardship.welcome_to_environmental_stewardship_c', '🌍 Welcome to Environmental Stewardship Campaigns')),
+              h('h2', { style: { margin: 0, color: 'var(--allo-stem-text, #166534)', fontSize: 22, fontWeight: 900 } }, __alloT('stem.stewardship.welcome_to_environmental_stewardship_c', '🌍 Welcome to Environmental Stewardship Campaigns')),
               h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4 } }, __alloT('stem.stewardship.a_5_step_tour_before_your_first_campai', 'A 5-step tour before your first campaign or scenario.'))
             ),
             h('button', { onClick: dismissTutorial, 'aria-label': __alloT('stem.stewardship.skip_tutorial', 'Skip tutorial'),

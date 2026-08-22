@@ -99,8 +99,8 @@ const wave01 = JSON.parse(wave01Text);
 if (!Array.isArray(bank) || bank.length !== 1500) {
   throw new Error('Expected the 1,500-item EPPP native bank.');
 }
-if (!Array.isArray(diagnostics.priorityDocket) || diagnostics.priorityDocket.length !== 20) {
-  throw new Error('Expected the bounded 20-item raw diagnostic docket.');
+if (!Array.isArray(diagnostics.priorityDocket) || ![0, 20].includes(diagnostics.priorityDocket.length)) {
+  throw new Error('Expected either the bounded 20-item raw diagnostic docket or a cleared zero-item docket.');
 }
 if (diagnostics.sourceSha256 !== sha256(bankText)) {
   throw new Error('The distractor diagnostic does not match the current native-bank bytes.');

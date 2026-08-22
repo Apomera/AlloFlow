@@ -16,6 +16,7 @@ import { readFileSync } from 'node:fs';
 
 const HEADER = readFileSync('view_header_source.jsx', 'utf8');
 const ASSIGNMENT_CENTER = readFileSync('view_assignment_center_source.jsx', 'utf8');
+const SHARED_ACTIVITY = readFileSync('shared_activity_source.jsx', 'utf8');
 const COPIES = ['AlloFlowANTI.txt', 'desktop/web-app/src/AlloFlowANTI.txt'];
 
 describe('setup is out of the dropdown menu', () => {
@@ -112,28 +113,31 @@ describe('the dialog does not close by accident', () => {
 });
 
 describe('an activity can be sent on its own', () => {
+  it('does not require a resource pack', () => {
+    expect(SHARED_ACTIVITY).toContain('const activityOnly = includeSharedActivity');
+    // Both refusals have to yield, not just the first: the second one fires
+    // when resources exist but none are shareable.
+    expect(SHARED_ACTIVITY).toContain('if (!resourcesToAssign.length && !activityOnly) {');
+    expect(SHARED_ACTIVITY).toContain('if (!resources.length && !activityOnly) {');
+  });
+
+  it('still names an activity-only link something meaningful', () => {
+    // With no resource to borrow a title from, the prompt is the only sensible
+    // name; without this the link would be titled "AlloFlow homework".
+    expect(SHARED_ACTIVITY).toMatch(/activityOnly \? \(sharedAssignmentActivity\?\.prompt \|\| 'Shared activity'\)/);
+  });
+
+  it('still refuses an empty share with nothing attached at all', () => {
+    // activityOnly requires an ENABLED activity, so "no resources and no
+    // activity" is still refused rather than producing an empty link.
+    expect(SHARED_ACTIVITY).toMatch(/activityOnly = includeSharedActivity[\s\S]{0,140}enabled === true/);
+  });
+
   for (const f of COPIES) {
-    it(`${f} does not require a resource pack`, () => {
+    it(`${f} delegates packet shaping to SharedActivity`, () => {
       const src = readFileSync(f, 'utf8');
-      expect(src).toContain('const activityOnly = includeSharedActivity');
-      // Both refusals have to yield, not just the first: the second one fires
-      // when resources exist but none are shareable.
-      expect(src).toContain('if (!resourcesToAssign.length && !activityOnly) {');
-      expect(src).toContain('if (!resources.length && !activityOnly) {');
-    });
-
-    it(`${f} still names an activity-only link something meaningful`, () => {
-      const src = readFileSync(f, 'utf8');
-      // With no resource to borrow a title from, the prompt is the only sensible
-      // name; without this the link would be titled "AlloFlow homework".
-      expect(src).toMatch(/activityOnly \? \(sharedAssignmentActivity\?\.prompt \|\| 'Shared activity'\)/);
-    });
-
-    it(`${f} still refuses an empty share with nothing attached at all`, () => {
-      const src = readFileSync(f, 'utf8');
-      // activityOnly requires an ENABLED activity, so "no resources and no
-      // activity" is still refused rather than producing an empty link.
-      expect(src).toMatch(/activityOnly = includeSharedActivity[\s\S]{0,120}enabled === true/);
+      expect(src).toContain('api.buildAssignmentPackEncoded(options, {');
+      expect(src).not.toContain('const activityOnly = includeSharedActivity');
     });
   }
 });

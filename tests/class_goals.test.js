@@ -12,10 +12,12 @@ import { createRequire } from 'node:module';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { loadAlloModule } from './setup.js';
+import { loadSessionSummaryApi } from './session_summary_test_utils.js';
 
 const require = createRequire(import.meta.url);
 let M;
 const ANTI = readFileSync('AlloFlowANTI.txt', 'utf8');
+const sessionSummaryApi = loadSessionSummaryApi();
 
 beforeAll(() => {
   const React = require(resolve(process.cwd(), 'desktop/web-app/node_modules/react'));
@@ -162,15 +164,8 @@ describe('Ring B/C: teams, tracked criteria, independent checklist (ANTI contrac
 });
 
 describe('session record: goals met land in the roster summary', () => {
-  // Run the REAL builder extracted from ANTI (same harness as
-  // roster_session_history.test.js).
-  const helperStart = ANTI.indexOf('const normalizeRosterSessionCodename');
-  const helperEnd = ANTI.indexOf('const generateSessionCode', helperStart);
-  // eslint-disable-next-line no-new-func
-  const helpers = new Function(ANTI.slice(helperStart, helperEnd) + '\nreturn { buildRosterSessionSummary };')();
-
   it('summary includes only THIS session’s goal awards, schema-clamped', () => {
-    const summary = helpers.buildRosterSessionSummary({
+    const summary = sessionSummaryApi.buildRosterSessionSummary({
       sessionCode: 'AB123', mode: 'firebase', endedAt: '2026-07-21T11:00:00.000Z',
       rosterKey: {
         students: { 'Brave Otter': 'blue' },

@@ -100,7 +100,7 @@ window.StemLab = window.StemLab || {
       '.dna-route-name{color:#1f3035;font-size:10px;font-weight:950}',
       '.dna-route-state{color:var(--route-accent);font-size:7px;font-weight:950;letter-spacing:.07em;text-transform:uppercase}',
       '.dna-route-tools{display:block;margin-top:5px;overflow:hidden;color:#69777a;font-size:8px;text-overflow:ellipsis;white-space:nowrap}',
-      '.dna-tool-rail{position:sticky;top:0;z-index:6;display:flex;gap:6px;overflow-x:auto;padding:7px;border:1px solid #273548;border-radius:13px;background:#111c2b;box-shadow:0 10px 24px rgba(15,23,42,.16);scroll-snap-type:x proximity;scrollbar-width:thin}',
+      '.dna-tool-rail{position:sticky;top:0;z-index:6;display:flex;width:100%;max-width:100%;box-sizing:border-box;gap:6px;overflow-x:auto;padding:7px;border:1px solid #273548;border-radius:13px;background:#111c2b;box-shadow:0 10px 24px rgba(15,23,42,.16);scroll-snap-type:x proximity;scrollbar-width:thin}',
       '.dna-tool-tab{position:relative;flex:1 0 88px;min-height:50px!important;display:flex;align-items:center;justify-content:center;gap:7px;padding:6px 9px;border:1px solid transparent;border-radius:9px;background:transparent;color:#aeb9c8;font-size:10px;font-weight:850;scroll-snap-align:start}',
       '.dna-tool-tab:hover{background:#1e2b3d;color:#fff}',
       '.dna-tool-tab[data-active="true"]{border-color:#a78bfa;background:#f8fafc;color:#4c1d95;box-shadow:0 5px 12px rgba(0,0,0,.18)}',
@@ -125,7 +125,7 @@ window.StemLab = window.StemLab || {
       '.dna-preset-picker{display:flex;align-items:center;gap:7px;flex-wrap:wrap}.dna-preset-picker label{color:#64748b;font-size:9px;font-weight:850}.dna-preset-picker select{min-height:36px;max-width:220px;padding:0 30px 0 10px;border:1px solid #cbd5e1;border-radius:8px;background:#fff;color:#334155;font-size:10px;font-weight:750}',
       '.dna-reference-library{border:1px solid var(--dna-line);border-radius:12px;background:#fff}.dna-reference-library>summary{display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer;list-style:none;color:#334155;font-size:11px;font-weight:900}.dna-reference-library>summary::-webkit-details-marker{display:none}.dna-reference-library>summary:after{content:"+";margin-left:auto;color:#059669;font-size:17px}.dna-reference-library[open]>summary:after{content:"−"}',
       '@media (max-width:980px){.dna-mission-body{grid-template-columns:1fr}.dna-route-panel{border-left:0;border-top:1px solid var(--dna-line)}.dna-stat-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.dna-tool-rail{position:relative;top:auto}}',
-      '@media (max-width:640px){[data-dna-tool]{margin-left:-4px;margin-right:-4px}.dna-command-header{grid-template-columns:auto minmax(0,1fr);padding:13px;gap:10px}.dna-command-actions{grid-column:1/-1;justify-content:flex-start;padding-top:2px}.dna-command-title{font-size:17px}.dna-command-subtitle{font-size:10px}.dna-brand-mark{width:38px;height:38px}.dna-live-status{display:none}.dna-grade-level{display:none}.dna-mission-summary{padding:10px 12px}.dna-mission-desc{display:none}.dna-active-tool{padding:6px 8px}.dna-stat-grid{gap:6px;padding:12px}.dna-stat{padding:9px}.dna-route-grid{grid-template-columns:1fr 1fr}.dna-tool-tab{flex-basis:82px;min-height:48px!important}[data-dna-workspace]{padding:9px}.dna-snapshot-button{margin-left:auto}.dna-preset-picker{width:100%}.dna-preset-picker select{max-width:none;flex:1}}',
+      '@media (max-width:640px){[data-dna-tool]{margin-left:0;margin-right:0}.dna-command-header{grid-template-columns:auto minmax(0,1fr);padding:13px;gap:10px}.dna-command-actions{grid-column:1/-1;justify-content:flex-start;padding-top:2px}.dna-command-title{font-size:17px}.dna-command-subtitle{font-size:10px}.dna-brand-mark{width:38px;height:38px}.dna-live-status{display:none}.dna-grade-level{display:none}.dna-mission-summary{padding:10px 12px}.dna-mission-desc{display:none}.dna-active-tool{padding:6px 8px}.dna-stat-grid{gap:6px;padding:12px}.dna-stat{padding:9px}.dna-route-grid{grid-template-columns:1fr 1fr}.dna-tool-tab{flex-basis:82px;min-height:48px!important}[data-dna-workspace]{padding:9px}.dna-snapshot-button{margin-left:auto}.dna-preset-picker{width:100%}.dna-preset-picker select{max-width:none;flex:1}}',
       '@media (max-width:430px){.dna-route-grid{grid-template-columns:1fr}.dna-xp-chip{margin-left:auto}.dna-snapshot-button{width:100%}.dna-stat-value{font-size:15px}}'
     ].join('');
     document.head.appendChild(st);
@@ -3845,7 +3845,7 @@ window.StemLab = window.StemLab || {
                   h("span", { className: "grid h-5 w-5 place-items-center rounded-full bg-white text-[10px] font-black text-slate-700", "aria-hidden": "true" }, String(stepIndex + 1)),
                   h("span", { className: "text-[11px] font-black text-slate-800" }, step.label)
                 ),
-                h("div", { className: "mt-1 text-[10px] font-black uppercase tracking-wide text-slate-500" }, stateLabel)
+                h("div", { className: "mt-1 text-[10px] font-black uppercase tracking-wide text-slate-700" }, stateLabel)
               );
             })
           ),
@@ -4079,6 +4079,12 @@ window.StemLab = window.StemLab || {
             learn:      { accent: '#64748b', soft: 'rgba(100,116,139,0.10)', icon: '\uD83D\uDCDA', title: t('stem.dna.reference_glossary', 'Reference + glossary'),         hint: t('stem.dna.codon_table_base_pairing_rules_key_ter', 'Codon table, base-pairing rules, key terms (ORF, intron, exon, promoter, repressor) - the cheat sheet you keep coming back to.') }
           };
           var meta = TAB_META[tab] || TAB_META.build;
+          var metaInk = (!!ctx.isDark || ctx.theme === 'dark') ? meta.accent : ({
+            '#a855f7': '#7e22ce', '#3b82f6': '#1d4ed8', '#0ea5e9': '#0369a1',
+            '#22c55e': '#15803d', '#f59e0b': '#92400e', '#ef4444': '#b91c1c',
+            '#06b6d4': '#0e7490', '#8b5cf6': '#6d28d9', '#fbbf24': '#854d0e',
+            '#dc2626': '#b91c1c', '#64748b': '#475569'
+          }[meta.accent] || meta.accent);
           return h('div', {
             className: 'flex items-center gap-3 flex-wrap px-4 py-3',
             'data-dna-topic': true,
@@ -4090,7 +4096,7 @@ window.StemLab = window.StemLab || {
           },
             h('div', { style: { fontSize: 25, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
             h('div', { style: { flex: 1, minWidth: 220 } },
-              h('div', { style: { color: meta.accent, fontSize: 8, fontWeight: 950, letterSpacing: '.12em', textTransform: 'uppercase' } }, 'Now exploring'),
+              h('div', { style: { color: metaInk, fontSize: 8, fontWeight: 950, letterSpacing: '.12em', textTransform: 'uppercase' } }, 'Now exploring'),
               h('h3', { style: { color: 'var(--allo-stem-text, #172033)', fontSize: 15, fontWeight: 900, margin: '2px 0 0', lineHeight: 1.2 } }, meta.title),
               h('p', { style: { margin: '3px 0 0', color: 'var(--allo-stem-text-soft, #475569)', fontSize: 10, lineHeight: 1.45 } }, meta.hint)
             )
@@ -4198,14 +4204,14 @@ window.StemLab = window.StemLab || {
             ),
             h("div", { className: "rounded-lg border border-violet-100 bg-violet-50 p-2 text-[11px] text-slate-700" },
               h("strong", { className: "text-violet-800" }, strandLabel + ': '), h("span", { className: "font-mono" }, strandSequence),
-              h("span", { className: "ml-2 text-slate-500" }, strandPairLabel + ' | ' + dnaSeq.length + ' bp')
+              h("span", { className: "ml-2 text-slate-600" }, strandPairLabel + ' | ' + dnaSeq.length + ' bp')
             ),
             h("div", { className: "text-xs text-slate-600" }, "Complement: ", h("span", { className: "font-mono font-bold text-slate-600" }, complementStrand), " | Coding: ", h("span", { className: "font-mono font-bold text-slate-600" }, dnaSeq)),
             h("div", { className: "flex gap-2 text-[11px] text-slate-600 pt-2 border-t border-slate-100" },
               h("span", null, "GC: " + Math.round((dnaSeq.split('').filter(function(b) { return b === 'G' || b === 'C'; }).length / dnaSeq.length) * 100) + "%"),
               h("span", null, "AT: " + Math.round((dnaSeq.split('').filter(function(b) { return b === 'A' || b === 'T'; }).length / dnaSeq.length) * 100) + "%")
             ),
-            h("div", { className: "flex gap-4 text-[11px] text-slate-600 pt-2 border-t border-slate-100" },
+            h("div", { className: "flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-slate-600 pt-2 border-t border-slate-100" },
               ['A', 'T', 'G', 'C'].map(function(b) { var names = { A: 'Adenine', T: 'Thymine', G: 'Guanine', C: 'Cytosine' }; return h("span", { key: b, className: "flex items-center gap-1" }, h("span", { className: "w-3 h-3 rounded-full", style: { background: BASE_COLORS[b] } }), b + "=" + names[b] + " \u2194 " + BASE_COMPLEMENT[b]); })
             )
           )

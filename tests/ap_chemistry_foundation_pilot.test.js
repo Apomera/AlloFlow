@@ -31,7 +31,7 @@ const qa = readJson(qaPath);
 describe('AP Chemistry internal foundation pilot', () => {
   it('crosswalks the current nine-unit blueprint without presenting itself as official', () => {
     expect(pack.id).toBe('ap-chemistry-foundation-pilot');
-    expect(pack.version).toBe('0.2.0-internal-preview');
+    expect(pack.version).toBe('0.4.0-internal-preview');
     expect(pack.status).toBe('preview');
     expect(pack.visibility).toBe('internal');
     expect(pack.released).toBe(false);
@@ -47,20 +47,29 @@ describe('AP Chemistry internal foundation pilot', () => {
     expect(pack.blueprint.sciencePractices).toHaveLength(6);
   });
 
-  it('contains a balanced 360-item pilot across all units and science practices', () => {
+  it('contains a balanced 600-item pilot across all units and science practices', () => {
     const unitCounts = countsBy(pack.items.map((item) => item.domainId));
     const practiceCounts = countsBy(pack.items.map((item) => item.practiceId));
     const answerCounts = countsBy(pack.items.map((item) => String(item.answerIndex)));
 
-    expect(pack.items).toHaveLength(360);
-    expect(new Set(pack.items.map((item) => item.id)).size).toBe(360);
-    expect(Object.values(unitCounts)).toEqual([40, 40, 40, 40, 40, 40, 40, 40, 40]);
+    expect(pack.items).toHaveLength(600);
+    expect(new Set(pack.items.map((item) => item.id)).size).toBe(600);
+    expect(Object.values(unitCounts)).toEqual([64, 62, 79, 62, 64, 66, 68, 77, 58]);
     expect(Object.keys(practiceCounts).sort()).toEqual(['SP1', 'SP2', 'SP3', 'SP4', 'SP5', 'SP6']);
-    expect(answerCounts).toEqual({ 0: 90, 1: 90, 2: 90, 3: 90 });
-    expect(pack.sections).toHaveLength(72);
+    expect(answerCounts).toEqual({ 0: 150, 1: 150, 2: 150, 3: 150 });
+    expect(pack.sections).toHaveLength(120);
     expect(pack.sections.every((section) => section.itemIds.length === 5)).toBe(true);
     expect(pack.items.every((item) => item.choices.length === 4 && item.choiceRationales.length === 4)).toBe(true);
     expect(pack.items.every((item) => item.provenance === 'native-original' && item.releaseEligible === false)).toBe(true);
+  });
+
+  it('adds a 100-item capstone layer centered on data interpretation and argumentation', () => {
+    const capstone = pack.items.filter((item) => Number(item.id.match(/-(\d{3})$/)?.[1]) >= 501);
+    const capstonePractices = countsBy(capstone.map((item) => item.practiceId));
+
+    expect(capstone).toHaveLength(100);
+    expect(capstonePractices).toEqual({ SP3: 50, SP6: 50 });
+    expect(capstone.every((item) => item.stimulus && item.editorialChecks.scenarioBased)).toBe(true);
   });
 
   it('routes every item to a topic-level remediation target and a native chapter', () => {
@@ -89,6 +98,8 @@ describe('AP Chemistry internal foundation pilot', () => {
     expect(library.memoryAids).toHaveLength(9);
     expect(library.sourceCatalog).toHaveLength(3);
     expect(library.summary).toMatchObject({ chapters: 9, sections: 9, knowledgeChecks: 9, richLessonPrototypes: 9 });
+    expect(library.contentMigration).toMatchObject({ contentVersion: 'ap-chemistry-foundation-v3', richLessonPrototypes: 9 });
+    expect(library.blueprint.pilotAlignment).toMatch(/600-item/);
     expect(library.chapters.every((chapter) => {
       const section = chapter.sections[0];
       return section.contentBlocks.length >= 8 && section.examples.length >= 3 && section.nonExamples.length >= 3 &&
@@ -99,12 +110,12 @@ describe('AP Chemistry internal foundation pilot', () => {
   it('passes deterministic QA and binds byte-identical deployment mirrors', () => {
     expect(qa.automatedAssessment).toBe('pass');
     expect(qa.structuralFindings).toEqual([]);
-    expect(qa.metrics).toMatchObject({ itemCount: 360, unitCount: 9, topicCount: 91, chapterCount: 9, richLessonPrototypeCount: 9, nearDuplicatePairCount: 0 });
+    expect(qa.metrics).toMatchObject({ itemCount: 600, unitCount: 9, topicCount: 91, chapterCount: 9, richLessonPrototypeCount: 9, nearDuplicatePairCount: 0 });
     for (const parity of qa.deploymentParity) expect(parity.status).toBe('pass');
 
     const manifest = readJson(manifestPath);
     const entry = manifest.entries.find((candidate) => candidate.id === pack.id);
-    expect(entry).toMatchObject({ loadMode: 'lazy', visibility: 'internal', itemCount: 360, domainCount: 9 });
+    expect(entry).toMatchObject({ loadMode: 'lazy', visibility: 'internal', itemCount: 600, domainCount: 9 });
     expect(entry.sha256).toBe(sha256(packPath));
     expect(entry.nativeQaSha256).toBe(sha256(qaPath));
   });

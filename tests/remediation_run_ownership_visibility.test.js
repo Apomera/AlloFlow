@@ -197,7 +197,16 @@ describe('the audit modal reads the combined signal', () => {
   it('gates the start controls and the progress panel on the combined signal', () => {
     expect(view).toContain('disabled={_remediationBusy || remediationReady === false}');
     expect(view).toContain('{_remediationBusy && (');
-    expect(view).toContain('if (_oneClickRemediationBusyRef.current || pdfAuditLoading || _remediationBusy || pdfAutoContinueRunning) {');
+    // The one-click guard now reports the exact owner that blocked the start. Its helper
+    // inlines _remediationBusy into the host flag + authoritative pipeline probe so the
+    // diagnostic remains specific without weakening the original OR contract.
+    expect(view).toContain('const _gateBlockers = _oneClickGateBlockers();');
+    expect(view).toContain('if (_gateBlockers.length) {');
+    expect(view).toContain('if (_oneClickRemediationBusyRef.current) blockers.push(');
+    expect(view).toContain('if (pdfAuditLoading) blockers.push(');
+    expect(view).toContain('if (pdfFixLoading) blockers.push(');
+    expect(view).toContain('if (pipelineRunActive) blockers.push(');
+    expect(view).toContain('if (pdfAutoContinueRunning) blockers.push(');
     // The destructive "Start New Audit" control must not be reachable over a live run either.
     expect(view).toContain('disabled={_remediationBusy}');
   });

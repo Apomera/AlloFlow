@@ -197,6 +197,38 @@ function _alloDeriveVerificationState(input) {
   return result;
 }
 
+function _alloFormatVerificationReason(reason) {
+    const value = String(reason == null ? '' : reason).trim();
+    let match;
+    if (!value) return '';
+    if (value === 'ai-unavailable') return 'AI semantic verification was unavailable.';
+    if (value === 'ai-verification-incomplete' || value === 'ai-partial-audit' || value === 'ai-score-degraded' || value === 'ai-synthesized') return 'AI semantic verification was incomplete.';
+    if (value === 'axe-unavailable') return 'axe-core verification was unavailable.';
+    if (value === 'axe-review-count-unknown') return 'axe-core returned findings with an unknown review count.';
+    match = value.match(/^axe-incomplete:(\d+)$/);
+    if (match) return match[1] + ' axe-core rule' + (match[1] === '1' ? ' needs' : 's need') + ' manual review.';
+    if (value === 'equal-access-unavailable') return 'IBM Equal Access verification was unavailable.';
+    if (value === 'equal-access-review-count-unknown') return 'IBM Equal Access returned findings with an unknown review count.';
+    match = value.match(/^equal-access-(?:potential|manual|review-findings):(\d+)$/);
+    if (match) return match[1] + ' IBM Equal Access item' + (match[1] === '1' ? ' needs' : 's need') + ' manual review.';
+    if (value === 'document-language-needs-review') return 'The document language needs manual confirmation.';
+    if (value === 'verification-html-binding-missing-or-stale') return 'The document changed after verification, or its saved verification binding could not be confirmed. Run verification again.';
+    if (value === 'verification-html-binding-unavailable') return 'A cryptographic link to the verified document could not be created. Run verification again in a supported browser.';
+    if (value === 'verification-html-binding-mismatch') return 'The saved verification evidence does not match this document. Run verification again.';
+    if (value === 'ai-finding-count-unknown') return 'AI verification did not report a complete issue count.';
+    match = value.match(/^ai-confirmed-issues:(\d+)$/);
+    if (match) return match[1] + ' AI-confirmed accessibility issue' + (match[1] === '1' ? '' : 's') + ' remain.';
+    if (value === 'axe-violation-count-unknown') return 'axe-core verification did not report a complete violation count.';
+    match = value.match(/^axe-confirmed-violations:(\d+)$/);
+    if (match) return match[1] + ' confirmed axe-core violation' + (match[1] === '1' ? '' : 's') + ' remain.';
+    if (value === 'equal-access-failure-count-unknown') return 'IBM Equal Access did not report a complete failure count.';
+    match = value.match(/^equal-access-confirmed-failures:(\d+)$/);
+    if (match) return match[1] + ' confirmed IBM Equal Access failure' + (match[1] === '1' ? '' : 's') + ' remain.';
+    if (value === 'secondary-action-requires-canonical-verification') return 'This edit needs a fresh three-engine verification before its score can be certified.';
+    if (/^[a-z0-9-]+(?::\d+)?$/i.test(value)) return 'Verification evidence needs manual review.';
+    return value;
+}
+
 function _alloUnavailableVerificationState(reason) {
   var _sharedEvidence = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.AccessibilityEvidence;
   if (_sharedEvidence && typeof _sharedEvidence.unavailableVerificationState === 'function') {
@@ -240,6 +272,7 @@ window.AlloModules = window.AlloModules || {};
 window.AlloModules.VerificationPolicy = {
   deriveVerificationState: _alloDeriveVerificationState,
   unavailableVerificationState: _alloUnavailableVerificationState,
+  formatVerificationReason: _alloFormatVerificationReason,
 };
 window.AlloModules.VerificationPolicyModule = true;
 })();

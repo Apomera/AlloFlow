@@ -26,4 +26,15 @@ describe('Base Ten text accessibility', () => {
     expect(html).not.toMatch(/text-\[(?:7|8|9)px\]/);
     expect(html).toContain('text-[10px]');
   });
+
+  it('provides named, keyboard-operable slide-rule controls', () => {
+    loadTool('stem_lab/stem_tool_manipulatives.js', 'base10');
+    const html = renderTool('base10', { _manipulatives: { mode: 'slideRule', slideRule: { cOffset: 0, cursorPos: 0 } } });
+    expect(html).toContain('role="img"');
+    expect(html).toContain('Use the two sliders below for keyboard operation.');
+    expect(html).toContain('aria-label="Slide rule keyboard controls"');
+    expect(html).toContain('C scale position');
+    expect(html).toContain('Red cursor position');
+    expect(html).toContain('aria-valuetext="D scale 1.00"');
+  });
 });

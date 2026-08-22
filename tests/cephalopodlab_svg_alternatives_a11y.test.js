@@ -39,13 +39,14 @@ describe('Cephalopod Lab SVG alternatives', () => {
   });
 
   it('describes selected anatomy and timeline states with keyboard alternatives', () => {
-    const anatomy = renderSection('anatomy').querySelector('svg[role="img"]');
+    const anatomy = renderSection('anatomy').querySelector(
+      '[role="group"][aria-label*="Octopus anatomy"], svg[role="img"]'
+    );
     const timeline = renderSection('time').querySelector('svg[role="img"]');
 
-    expect(anatomy.getAttribute('aria-label')).toContain('Selected region:');
-    expect(anatomy.getAttribute('aria-label')).toContain(
-      'Use the All regions buttons below to explore.'
-    );
+    expect(anatomy).toBeTruthy();
+    expect(anatomy.getAttribute('aria-label')).toContain('Octopus anatomy');
+    expect(anatomy.getAttribute('aria-label')).toContain('All regions');
     expect(timeline.getAttribute('aria-label')).toContain(
       'Cephalopod evolutionary timeline from 538 million years ago to present'
     );

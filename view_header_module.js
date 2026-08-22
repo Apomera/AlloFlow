@@ -214,6 +214,7 @@ function HeaderBar(props) {
     leveledTextLanguage,
     notebookEntryCount,
     openExportPreview,
+    onReturnToStart,
     pptxLoaded,
     resetFontSize,
     safeRemoveItem,
@@ -404,6 +405,10 @@ function HeaderBar(props) {
   _headerUseFocusTrap(_textSettingsRef, showTextSettings, handleSetShowTextSettingsToFalse);
   _headerUseFocusTrap(_voiceSettingsRef, showVoiceSettings, handleSetShowVoiceSettingsToFalse);
   _headerUseFocusTrap(_joinPopoverRef, isJoinPopoverOpen, handleSetIsJoinPopoverOpenToFalse);
+  const returnToStartFromHeader = () => {
+    setShowSetupPathMenu(false);
+    if (typeof onReturnToStart === "function") onReturnToStart();
+  };
   const openQuickStartSetup = () => {
     try {
       if (safeRemoveItem) safeRemoveItem("allo_wizard_completed");
@@ -649,11 +654,11 @@ function HeaderBar(props) {
       onClick: () => setShowSetupPathMenu(true),
       "data-help-key": "header_rerun_wizard",
       className: "hidden sm:inline-flex shrink-0 items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/10 px-3 text-xs font-black text-white hover:bg-white/20 transition-colors",
-      title: t("toolbar.setup_options") || "Setup and Guided Mode",
-      "aria-label": t("toolbar.setup_options_aria") || "Open setup and Guided Mode options"
+      title: t("toolbar.start_setup") || "Start & setup",
+      "aria-label": t("toolbar.start_setup_aria") || "Open Start and setup options"
     },
     /* @__PURE__ */ React.createElement(Sparkles, { size: 16, "aria-hidden": "true" }),
-    /* @__PURE__ */ React.createElement("span", { className: "max-w-[10rem] truncate" }, t("toolbar.setup_options") || "Setup and Guided Mode")
+    /* @__PURE__ */ React.createElement("span", { className: "max-w-[10rem] truncate" }, t("toolbar.start_setup") || "Start & setup")
   ), /* @__PURE__ */ React.createElement(
     "button",
     {
@@ -1161,8 +1166,8 @@ function HeaderBar(props) {
       onClick: () => setShowSetupPathMenu(true),
       "data-help-key": "header_rerun_wizard",
       className: "p-2 rounded-xl hover:bg-white/10 text-white transition-colors",
-      title: t("toolbar.setup_options") || "Setup and Guided Mode",
-      "aria-label": t("toolbar.setup_options_aria") || "Open setup and Guided Mode options"
+      title: t("toolbar.start_setup") || "Start & setup",
+      "aria-label": t("toolbar.start_setup_aria") || "Open Start and setup options"
     },
     /* @__PURE__ */ React.createElement(Sparkles, { size: 20 })
   )), /* @__PURE__ */ React.createElement(
@@ -1512,7 +1517,7 @@ function HeaderBar(props) {
         className: "w-full max-w-sm rounded-2xl border border-white/15 bg-slate-950 text-white shadow-2xl overflow-hidden outline-none",
         onClick: (e) => e.stopPropagation()
       },
-      /* @__PURE__ */ React.createElement("div", { className: "px-5 py-4 border-b border-white/10 flex items-start justify-between gap-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { id: "header-setup-options-title", className: "text-sm font-black" }, t("toolbar.setup_options_title") || "Choose a setup path"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-300 mt-1 leading-relaxed" }, t("toolbar.setup_options_desc") || "Restart the setup wizard or turn on Guided Mode for step-by-step lesson building.")), /* @__PURE__ */ React.createElement(
+      /* @__PURE__ */ React.createElement("div", { className: "px-5 py-4 border-b border-white/10 flex items-start justify-between gap-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { id: "header-setup-options-title", className: "text-sm font-black" }, t("toolbar.start_setup_title") || "Start & setup"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-300 mt-1 leading-relaxed" }, t("toolbar.start_setup_desc") || "Return to Start, adjust setup, or use Guided Mode. Your current workspace stays saved.")), /* @__PURE__ */ React.createElement(
         "button",
         {
           type: "button",
@@ -1523,6 +1528,16 @@ function HeaderBar(props) {
         /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u2715")
       )),
       /* @__PURE__ */ React.createElement("div", { className: "p-4 space-y-3" }, /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          type: "button",
+          onClick: returnToStartFromHeader,
+          "data-help-key": "header_return_to_start",
+          className: "w-full text-start rounded-xl border border-sky-300/30 bg-sky-500/15 hover:bg-sky-500/25 px-4 py-3 transition-colors"
+        },
+        /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-2 text-sm font-black" }, /* @__PURE__ */ React.createElement(Layout, { size: 16 }), t("toolbar.back_to_start") || "Back to Start"),
+        /* @__PURE__ */ React.createElement("span", { className: "block text-xs text-sky-100 mt-1 leading-relaxed" }, t("toolbar.back_to_start_desc") || "Choose another pathway from the Start page. Your current workspace stays saved.")
+      ), /* @__PURE__ */ React.createElement(
         "button",
         {
           type: "button",

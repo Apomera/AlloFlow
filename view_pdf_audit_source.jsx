@@ -16,6 +16,29 @@
 // no-op fallback keeps the modal working on hosts that predate the hook.
 const _alloUseFocusTrap = (typeof window !== 'undefined' && window.__alloHooks && window.__alloHooks.useFocusTrap) || function(){};
 
+// Static PDF-tour copy lives with the lazy PDF surface that owns its anchors.
+// The root keeps only the three-setter bridge that starts the shared tour UI.
+function buildPdfPipelineTourSteps(kind, translate) {
+  const t = typeof translate === 'function' ? translate : () => '';
+  return kind === 'results' ? [
+      { helpKey: 'pdf_audit_results_whatnow', title: t('ptour.whatnow_title') || 'Start here', text: t('ptour.whatnow_text') || 'This strip is your map: grab the recommended download, optionally compare before/after, and treat everything else on this screen as optional polish.\n**Why it matters:** this screen has over 300 elements — most are for digging deeper, not required. The strip names the one action that gets a usable document into students\' hands.' },
+      { helpKey: 'pdf_audit_dashboard_bar', title: t('ptour.dashboard_title') || 'Your navigation bar', text: t('ptour.dashboard_text') || 'This bar sticks to the top while you scroll. The score shows before → after; the chips jump straight to any section — Downloads is the one you\'ll use most.\n**Why it matters:** everything below is organized into sections (verification, recovered content, remaining issues, downloads, the tag inspector) — the chips mean you never scroll hunting for one.' },
+      { helpKey: 'pdf_audit_results_score_badge', title: t('ptour.score_title') || 'The score, honestly', text: t('ptour.score_text') || 'AlloFlow\'s own estimate: several independent AI reviews averaged, blended 50/50 with TWO deterministic rule engines (axe-core + IBM Equal Access — when they disagree, the lower score wins).\n**Why it matters:** it\'s honest but it\'s not a certification. For an official verdict, open the file in PAC 2024 (free) or send the report to your district accessibility coordinator — the report itself says how.' },
+      { helpKey: 'pdf_audit_results_tab_original_btn', title: t('ptour.tabs_title') || 'Before and after', text: t('ptour.tabs_text') || 'Flip to the Original tab anytime to see what the document looked like before the fixes.\n**Why it matters:** when a parent, administrator, or IEP team asks "what actually changed?", the answer is one click — and the Compare view shows both versions side by side.' },
+      { helpKey: 'pdf_audit_view_report_menu_btn', title: t('ptour.report_title') || 'Reports & records', text: t('ptour.report_text') || 'Printable accessibility reports — for your records, an IEP file, or your district accessibility coordinator. There\'s also a tamper-evident signed version.\n**Why it matters:** public schools have legal accessibility obligations (ADA Title II). A dated report showing what was checked and fixed is the paper trail your district wants to have.' },
+      { helpKey: 'pdf_audit_translate_doc_btn', title: t('ptour.translate_title') || 'Any language, verified', text: t('ptour.translate_text') || 'Translate the whole document for families — type ANY language. The structure is checked section by section, the copy gets compare/audio/tagged-PDF downloads of its own, and a review banner keeps it honest.\n**Why it matters:** IDEA requires parent-language access to key documents — districts pay per page for this.' },
+      { helpKey: 'pdf_audit_plain_language_btn', title: t('ptour.plain_title') || 'Easy-read version', text: t('ptour.plain_text') || 'Rewrites the full document in plain language (pick the grade band). Facts kept, structure verified, original stays authoritative — and it gets its own compare, audio, and tagged PDF.' },
+      { helpKey: 'pdf_audit_make_fillable_btn', title: t('ptour.fillable_title') || 'Make it fillable', text: t('ptour.fillable_text') || 'Turns blanks and checkboxes into REAL typed-into form fields — review the detected list first, then download fillable HTML or a tagged fillable PDF. Students with dysgraphia type instead of handwriting.' },
+      { helpKey: 'pdf_audit_alt_formats_summary', title: t('ptour.altformats_title') || 'More ways to share', text: t('ptour.altformats_text') || 'The same accessible content as braille-ready text, ePub for e-readers, plain text, and Markdown.\n**Why it matters:** accessibility isn\'t one format — a student with low vision may want ePub\'s reflowing text, while your district\'s braille transcriber wants the braille-ready file as a starting point. That\'s the tour — the ? button gives per-button help anywhere.' },
+    ] : [
+      { helpKey: 'pdf_audit_view_make_accessible_btn', title: t('ptour.hero_title') || 'The one-click path', text: t('ptour.hero_text') || 'Make Accessible runs everything automatically: audit → fix → re-check until it hits the target → downloads ready. For most documents, this is all you need.\n**Why it matters:** the pipeline is built to be safe unattended — content is never silently dropped (anything unplaceable lands in a visible Recovery section), and the AI\'s work is re-checked by rule engines every pass.' },
+      { helpKey: 'pdf_audit_view_start_btn', title: t('ptour.audit_title') || 'The careful path', text: t('ptour.audit_text') || 'Prefer to look before fixing? Run Audit scores the document and shows every issue first — you choose Fix & Verify when you\'re ready.\n**Why it matters:** for sensitive documents (IEP-adjacent, anything going in a student file), seeing the issues before any rewriting happens keeps you in control of every change.' },
+      { helpKey: 'pdf_audit_view_settings_panel', title: t('ptour.settings_title') || 'Settings (optional)', text: t('ptour.settings_text') || 'The defaults are sensible. If you ever need to: more audit passes = steadier score, the target score decides when the automatic loop stops.\n**Why it matters:** more passes cost more of your daily AI quota and more time — the defaults balance reliability against both. The usage meter in AI settings shows what a run actually costs.' },
+      { helpKey: 'pdf_audit_view_branding_panel', title: t('ptour.branding_title') || 'Make it look right', text: t('ptour.branding_text') || 'The accessible copy can match your original\'s colors, use a clean preset, or pick up your school\'s branding from a letterhead.\n**Why it matters:** every option is contrast-checked before it ships — a document students can\'t read isn\'t accessible no matter how good its tags are. Accessibility and looking professional aren\'t in tension here.' },
+      { helpKey: 'pdf_audit_view_save_project_btn', title: t('ptour.save_title') || 'You can always come back', text: t('ptour.save_text') || 'Save Project keeps the whole session as one file — reload it later and everything returns. A backup also saves automatically after each remediation.\n**Why it matters:** in Gemini Canvas, nothing survives closing the tab EXCEPT downloaded files — the project file IS your save, and it carries your remediation history and settings too. That\'s the tour — hit Make Accessible when ready!' },
+    ];
+}
+
 // OCR language picker options (2026-06-20). Every code here is supported by the pipeline's
 // _toTesseractLang map, so picking one makes the scanned-PDF OCR use the right Tesseract model
 // (its word boxes drive the searchable text layer; 'eng' mis-segments non-Latin scripts). '' = the
@@ -3323,6 +3346,8 @@ function PdfDiagnosticsLog(props) {
   );
 }
 
+PdfAuditView.buildPipelineTourSteps = buildPdfPipelineTourSteps;
+
 function PdfAuditView(props) {
   const {
     STYLE_SEEDS, _buildMissingList, _closePdfAuditModal, _discardAndCloseAudit,
@@ -3357,7 +3382,7 @@ function PdfAuditView(props) {
     setExpertCommandInput, setExtractionData, setFidelityResult, setImageReinsertionReport,
     setInputText, setInsertBlockFilter, setInsertBlockOpenCats, setInsertBlockRecent,
     setIsAgentRunning, setIsGeneratingStyle, setLiveChunkExpanded, setLiveChunkRejected,
-    setLiveChunkStream, setPdfAuditResult, setPdfAuditTab, setPdfAuditorCount,
+    setLiveChunkStream, setPdfAuditLoading, setPdfAuditResult, setPdfAuditTab, setPdfAuditorCount,
     setPdfAutoContinue, setPdfAutoFixPasses, setPdfAutoSaveProject, setPdfBatchMode,
     setPdfBatchQueue, setPdfBatchSummary, setPdfFixLoading, setPdfFixMode,
     setPdfFixResult, setPdfFixStep, setPdfMultiSession, setPdfPageRange,
@@ -4051,6 +4076,21 @@ function PdfAuditView(props) {
         _docPipeline.logHostDiagnostic('AuditGate', event + (json ? ' ' + json : ''), detail || null);
       }
     } catch (_) {}
+  };
+  // Keep the host modal continuously owned while an audit crosses from the chooser
+  // into the async pipeline. Clearing pdfAuditResult first used to make the root
+  // `(pdfAuditResult || pdfAuditLoading)` gate false on a cold/slow first start; the
+  // pipeline's later loading write could arrive only after the modal had unmounted.
+  // Assert loading synchronously before removing the chooser/result owner. This is
+  // deliberately shared by Run Audit, Retry Audit, and Make Accessible.
+  const _beginVisibleAuditRun = (event, detail) => {
+    _auditGateLog(event, detail);
+    if (typeof setPdfAuditLoading === 'function') setPdfAuditLoading(true);
+    setPdfAuditResult(null);
+  };
+  const _restoreVisibleAuditAfterFailure = (snapshot) => {
+    if (typeof setPdfAuditLoading === 'function') setPdfAuditLoading(false);
+    setPdfAuditResult(_viewAuditFallbackResult(snapshot, pendingPdfFile));
   };
   const _remediationDependencies = remediationDependencyState || { pending: [], failed: [] };
 
@@ -7921,7 +7961,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         ))}
                       </div>
                       <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">{t('pdf_audit.media.instructions_label') || 'Custom instructions (optional)'}</label>
-                      <textarea value={mediaInstructions} onChange={(e) => setMediaInstructions(e.target.value)} rows={2} placeholder={t('pdf_audit.media.instructions_ph') || 'e.g. "Focus on the lab demonstration steps" or "Ignore the Q&A at the end"'} className="w-full border border-slate-300 rounded-lg p-2 text-xs mt-0.5 mb-2" />
+                      <textarea aria-label={t('pdf_audit.media.instructions_label') || 'Custom instructions (optional)'} value={mediaInstructions} onChange={(e) => setMediaInstructions(e.target.value)} rows={2} placeholder={t('pdf_audit.media.instructions_ph') || 'e.g. "Focus on the lab demonstration steps" or "Ignore the Q&A at the end"'} className="w-full border border-slate-300 rounded-lg p-2 text-xs mt-0.5 mb-2" />
                       <button disabled={mediaDigesting || typeof transcribeMediaToPayload !== 'function'} onClick={async () => {
                         if (_viewDocumentJobIsActive()) { addToast('Another document operation is already running.', 'info'); return; }
                         const _mediaToken = _beginViewDocumentJob();
@@ -8021,7 +8061,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                     // path): audit → Fix & Verify → auto-continue to target → autosave.
                     setPdfFixMode('auto');
                     const _auditChooserSnapshot = pdfAuditResult;
-                    setPdfAuditResult(null);
+                    _beginVisibleAuditRun('audit ONE-CLICK started - loading asserted before clearing chooser', { docEpoch: _oneClickDocumentEpoch, freshRun: pdfDiagnosticFreshRun });
                     addToast(t('toasts.auditing_remediating_pdf'), 'info');
                     // Capture the audit result and hand it DIRECTLY to the fix. fixAndVerifyPdf
                     // REQUIRES an audit result and otherwise reads it from React state (pdfAuditResult),
@@ -8035,13 +8075,13 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       _audit = await runPdfAccessibilityAudit(pendingPdfBase64, { fileName: pendingPdfFile?.name, mimeType: _inputMimeType, skipCache: pdfDiagnosticFreshRun });
                     } catch (auditErr) {
                       if (!_oneClickDocumentIsCurrent()) return;
-                      setPdfAuditResult(_viewAuditFallbackResult(_auditChooserSnapshot, pendingPdfFile));
+                      _restoreVisibleAuditAfterFailure(_auditChooserSnapshot);
                       addToast((t('toasts.audit_error_stopped') || 'The accessibility audit failed, so remediation was not started. Retry the audit and try again.') + (auditErr?.message ? ' ' + auditErr.message : ''), 'error');
                       return;
                     }
                     if (!_audit) {
                       if (!_oneClickDocumentIsCurrent()) return;
-                      setPdfAuditResult(_viewAuditFallbackResult(_auditChooserSnapshot, pendingPdfFile));
+                      _restoreVisibleAuditAfterFailure(_auditChooserSnapshot);
                       addToast(t('toasts.audit_error_stopped') || 'The accessibility audit did not complete, so remediation was not started. Retry the audit and try again.', 'error');
                       return;
                     }
@@ -8660,7 +8700,29 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                     <input type="checkbox" checked={pdfDiagnosticFreshRun} onChange={(e) => setPdfDiagnosticFreshRun(e.target.checked)} className="accent-indigo-600" />
                     {t('pdf_audit.fresh_run') || 'Run fresh (skip cached results)'}
                   </label>
-                  <button data-help-key="pdf_audit_view_start_btn" disabled={pdfAuditLoading || !_auditInputReady} onClick={async () => { if (!_requireAuditReady()) return; if (pdfAuditResult?._mediaPending) { addToast(t('toasts.digest_first') || 'Digest the recording first (Step 0 above).', 'info'); return; } const _auditSnapshot = pdfAuditResult; const _auditEpoch = typeof capturePdfDocumentIntakeEpoch === 'function' ? capturePdfDocumentIntakeEpoch() : null; const _auditCurrent = () => _auditEpoch == null || typeof isPdfDocumentIntakeCurrent !== 'function' || isPdfDocumentIntakeCurrent(_auditEpoch); _auditGateLog('audit START clicked — clearing prior result for the run', { docEpoch: _auditEpoch, freshRun: pdfDiagnosticFreshRun }); setPdfAuditResult(null); addToast(t('toasts.auditing_remediating_pdf'), 'info'); try { const _result = await runPdfAccessibilityAudit(pendingPdfBase64, { fileName: pendingPdfFile?.name, mimeType: _inputMimeType, skipCache: pdfDiagnosticFreshRun }); if (!_auditCurrent()) { _auditGateLog('audit result DROPPED — document intake epoch went stale mid-audit (modal will not open this attempt)', { docEpoch: _auditEpoch }); return; } if (!_result) { setPdfAuditResult(_viewAuditFallbackResult(_auditSnapshot, pendingPdfFile)); addToast(t('toasts.audit_retryable_error') || 'The audit did not complete. Please retry.', 'error'); } else if (_result?.score === -1) { addToast(t('toasts.audit_retryable_error') || 'The audit could not complete. Please retry.', 'error'); } } catch (error) { if (!_auditCurrent()) { _auditGateLog('audit ERROR result DROPPED — document intake epoch went stale mid-audit', { docEpoch: _auditEpoch }); return; } setPdfAuditResult(_viewAuditFallbackResult(_auditSnapshot, pendingPdfFile)); addToast((t('toasts.audit_retryable_error') || 'The audit failed. Please retry.') + ' ' + ((error && error.message) || error || ''), 'error'); } }} className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-bold text-sm hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                  <button data-help-key="pdf_audit_view_start_btn" disabled={pdfAuditLoading || !_auditInputReady} onClick={async () => {
+                    if (!_requireAuditReady()) return;
+                    if (pdfAuditResult?._mediaPending) { addToast(t('toasts.digest_first') || 'Digest the recording first (Step 0 above).', 'info'); return; }
+                    const _auditSnapshot = pdfAuditResult;
+                    const _auditEpoch = typeof capturePdfDocumentIntakeEpoch === 'function' ? capturePdfDocumentIntakeEpoch() : null;
+                    const _auditCurrent = () => _auditEpoch == null || typeof isPdfDocumentIntakeCurrent !== 'function' || isPdfDocumentIntakeCurrent(_auditEpoch);
+                    _beginVisibleAuditRun('audit START clicked - loading asserted before clearing chooser', { docEpoch: _auditEpoch, freshRun: pdfDiagnosticFreshRun });
+                    addToast(t('toasts.auditing_remediating_pdf'), 'info');
+                    try {
+                      const _result = await runPdfAccessibilityAudit(pendingPdfBase64, { fileName: pendingPdfFile?.name, mimeType: _inputMimeType, skipCache: pdfDiagnosticFreshRun });
+                      if (!_auditCurrent()) { _auditGateLog('audit result DROPPED — document intake epoch went stale mid-audit (modal will not open this attempt)', { docEpoch: _auditEpoch }); return; }
+                      if (!_result) {
+                        _restoreVisibleAuditAfterFailure(_auditSnapshot);
+                        addToast(t('toasts.audit_retryable_error') || 'The audit did not complete. Please retry.', 'error');
+                      } else if (_result?.score === -1) {
+                        addToast(t('toasts.audit_retryable_error') || 'The audit could not complete. Please retry.', 'error');
+                      }
+                    } catch (error) {
+                      if (!_auditCurrent()) { _auditGateLog('audit ERROR result DROPPED — document intake epoch went stale mid-audit', { docEpoch: _auditEpoch }); return; }
+                      _restoreVisibleAuditAfterFailure(_auditSnapshot);
+                      addToast((t('toasts.audit_retryable_error') || 'The audit failed. Please retry.') + ' ' + ((error && error.message) || error || ''), 'error');
+                    }
+                  }} className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-bold text-sm hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
                     ♿ {t('pdf_audit.run_audit_label') || 'Run Audit (step 1 of 2)'}
                   </button>
                   {!_remediationMode && <button data-help-key="pdf_audit_view_skip_to_extract_btn" onClick={() => { if (pdfAuditResult?._mediaPending) { addToast(t('toasts.digest_first') || 'Digest the recording first (Step 0 above).', 'info'); return; } setPdfAuditResult(null); proceedWithPdfTransform(); }} className="px-6 py-3 bg-slate-100 text-slate-700 rounded-xl font-bold text-sm hover:bg-slate-200 transition-all shadow-sm flex items-center gap-2 border border-slate-400">
@@ -9277,7 +9339,29 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                 <div className="p-4 bg-white space-y-3">
                   <p className="text-xs text-slate-600 text-center">{t('pdf_audit.unavailable.retry_hint') || 'A completed baseline audit is required before remediation. Retry the audit, or cancel and re-export the source document before trying again.'}</p>
                   <div className="flex gap-2 justify-center">
-                    <button disabled={pdfAuditLoading || !_auditInputReady} onClick={async () => { if (!_requireAuditReady()) return; const _auditSnapshot = pdfAuditResult; const _auditEpoch = typeof capturePdfDocumentIntakeEpoch === 'function' ? capturePdfDocumentIntakeEpoch() : null; const _auditCurrent = () => _auditEpoch == null || typeof isPdfDocumentIntakeCurrent !== 'function' || isPdfDocumentIntakeCurrent(_auditEpoch); _auditGateLog('audit RETRY clicked — fresh (skipCache)', { docEpoch: _auditEpoch }); setPdfAuditResult(null); addToast(t('toasts.retrying_audit'), 'info'); try { /* Retry means RETRY: a user pressing this after a cached replay wants a fresh audit, and the content-hash cache would otherwise hand back the identical result instantly (2026-08-10). */ const _result = await runPdfAccessibilityAudit(pendingPdfBase64, { fileName: pendingPdfFile?.name, mimeType: _inputMimeType, skipCache: true }); if (!_auditCurrent()) { _auditGateLog('audit RETRY result DROPPED — document intake epoch went stale mid-audit', { docEpoch: _auditEpoch }); return; } if (!_result) { setPdfAuditResult(_viewAuditFallbackResult(_auditSnapshot, pendingPdfFile)); addToast(t('toasts.audit_retryable_error') || 'The audit retry did not complete. Please try again.', 'error'); } else if (_result?.score === -1) { addToast(t('toasts.audit_retryable_error') || 'The audit retry could not complete. Please try again.', 'error'); } } catch (error) { if (!_auditCurrent()) { _auditGateLog('audit ERROR result DROPPED — document intake epoch went stale mid-audit', { docEpoch: _auditEpoch }); return; } setPdfAuditResult(_viewAuditFallbackResult(_auditSnapshot, pendingPdfFile)); addToast('Audit retry failed: ' + ((error && error.message) || error), 'error'); } }} className="px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm font-bold hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">🔄 Retry Audit</button>
+                    <button disabled={pdfAuditLoading || !_auditInputReady} onClick={async () => {
+                      if (!_requireAuditReady()) return;
+                      const _auditSnapshot = pdfAuditResult;
+                      const _auditEpoch = typeof capturePdfDocumentIntakeEpoch === 'function' ? capturePdfDocumentIntakeEpoch() : null;
+                      const _auditCurrent = () => _auditEpoch == null || typeof isPdfDocumentIntakeCurrent !== 'function' || isPdfDocumentIntakeCurrent(_auditEpoch);
+                      _beginVisibleAuditRun('audit RETRY clicked - loading asserted before clearing result (fresh, skipCache)', { docEpoch: _auditEpoch });
+                      addToast(t('toasts.retrying_audit'), 'info');
+                      try {
+                        /* Retry means RETRY: a user pressing this after a cached replay wants a fresh audit, and the content-hash cache would otherwise hand back the identical result instantly (2026-08-10). */
+                        const _result = await runPdfAccessibilityAudit(pendingPdfBase64, { fileName: pendingPdfFile?.name, mimeType: _inputMimeType, skipCache: true });
+                        if (!_auditCurrent()) { _auditGateLog('audit RETRY result DROPPED — document intake epoch went stale mid-audit', { docEpoch: _auditEpoch }); return; }
+                        if (!_result) {
+                          _restoreVisibleAuditAfterFailure(_auditSnapshot);
+                          addToast(t('toasts.audit_retryable_error') || 'The audit retry did not complete. Please try again.', 'error');
+                        } else if (_result?.score === -1) {
+                          addToast(t('toasts.audit_retryable_error') || 'The audit retry could not complete. Please try again.', 'error');
+                        }
+                      } catch (error) {
+                        if (!_auditCurrent()) { _auditGateLog('audit ERROR result DROPPED — document intake epoch went stale mid-audit', { docEpoch: _auditEpoch }); return; }
+                        _restoreVisibleAuditAfterFailure(_auditSnapshot);
+                        addToast('Audit retry failed: ' + ((error && error.message) || error), 'error');
+                      }
+                    }} className="px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm font-bold hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">🔄 Retry Audit</button>
                     <button onClick={() => { _closePdfAuditModal(); }} className="px-4 py-2 bg-slate-100 text-slate-600 rounded-xl text-sm font-bold hover:bg-slate-200 transition-colors">Cancel</button>
                   </div>
                 </div>
@@ -12304,7 +12388,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               {it.src && <img src={it.src} alt="" className="max-h-36 max-w-[220px] object-contain border border-slate-200 rounded-lg bg-slate-50" />}
                               <div className="flex-1 min-w-[240px]">
                                 <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">{t('pdf_audit.imgreview.alt_label') || 'Description (what a screen reader says)'}</label>
-                                <textarea value={imgReviewDraft} onChange={(e) => setImgReviewDraft(e.target.value)} rows={3} className="w-full border border-slate-300 rounded-lg p-2 text-xs mt-0.5" />
+                                <textarea aria-label={t('pdf_audit.imgreview.alt_label') || 'Description (what a screen reader says)'} value={imgReviewDraft} onChange={(e) => setImgReviewDraft(e.target.value)} rows={3} className="w-full border border-slate-300 rounded-lg p-2 text-xs mt-0.5" />
                                 {(() => {
                                   // M20 (2026-07-13): live quality feedback on the DRAFT — the same heuristics
                                   // that flag alts in the final audit run here as the teacher types, so the

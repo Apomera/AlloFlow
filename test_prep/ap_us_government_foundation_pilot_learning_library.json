@@ -3,9 +3,9 @@
   "librarySchemaVersion": 1,
   "libraryId": "ap-us-government-foundation-pilot-learning-library",
   "packId": "ap-us-government-foundation-pilot",
-  "version": "0.6.0-internal-preview",
+  "version": "0.8.0-internal-preview",
   "title": "AP U.S. Government and Politics Foundation Pilot Learning Library",
-  "description": "A text-first, independently authored AP U.S. Government and Politics foundation library with five unit chapters, structured lessons, item-linked study routes, retrieval checks, study cards, reasoning aids, and five explicitly unscored response-planning workshops. It is not released, official, calibrated, or score-predictive.",
+  "description": "A text-first, independently authored AP U.S. Government and Politics foundation library with five unit chapters, structured lessons, item-linked study routes, thirteen foundational-document study routes, retrieval checks, study cards, reasoning aids, and five explicitly unscored response-planning workshops. It is not released, official, calibrated, or score-predictive.",
   "status": "preview",
   "visibility": "internal",
   "released": false,
@@ -17,8 +17,1848 @@
     "cedFrameworkVersion": "V.1",
     "officialBlueprintUrl": "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description.pdf",
     "officialCourseUrl": "https://apcentral.collegeboard.org/courses/ap-united-states-government-and-politics",
-    "pilotVersion": "ap-us-government-foundation-v6",
-    "pilotNote": "A 260-item foundation across all five units and all 60 current public framework topic IDs, with at least three practice angles per topic, item-linked study routes for all fifteen lesson sections, topic-level drill maps, and five explicitly unscored response-planning workshops. It is a study and architecture foundation, not a complete exam simulation.",
+    "foundationalDocumentCatalogVersion": "ap-us-government-foundation-v8",
+    "foundationalDocumentCatalog": [
+      {
+        "id": "articles-of-confederation",
+        "title": "The Articles of Confederation",
+        "unitNumbers": [
+          1
+        ],
+        "topicIds": [
+          "1.4",
+          "1.6",
+          "1.7",
+          "1.8"
+        ],
+        "bigIdeaIds": [
+          "BI1",
+          "BI4"
+        ],
+        "skillIds": [
+          "C4",
+          "C5"
+        ],
+        "requiredForAcademicYear": "2026-27",
+        "requirementSource": "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description.pdf",
+        "clarificationSource": "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description-clarifications-effective-fall-2026.pdf",
+        "sourceUse": "Title, public requirement metadata, and internal topic crosswalk only; no official document text, excerpt, or assessment content is reproduced.",
+        "officialItem": false,
+        "reproducedText": false,
+        "releaseEligible": false,
+        "reviewStatus": "source-reviewed-editorial-pass",
+        "independentExpertReviewStatus": "pending"
+      },
+      {
+        "id": "brutus-no-1",
+        "title": "Brutus No. 1",
+        "unitNumbers": [
+          1
+        ],
+        "topicIds": [
+          "1.2",
+          "1.3",
+          "1.5"
+        ],
+        "bigIdeaIds": [
+          "BI1",
+          "BI2",
+          "BI5"
+        ],
+        "skillIds": [
+          "C4",
+          "C5"
+        ],
+        "requiredForAcademicYear": "2026-27",
+        "requirementSource": "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description.pdf",
+        "clarificationSource": "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description-clarifications-effective-fall-2026.pdf",
+        "sourceUse": "Title, public requirement metadata, and internal topic crosswalk only; no official document text, excerpt, or assessment content is reproduced.",
+        "officialItem": false,
+        "reproducedText": false,
+        "releaseEligible": false,
+        "reviewStatus": "source-reviewed-editorial-pass",
+        "independentExpertReviewStatus": "pending"
+      },
+      {
+        "id": "constitution-of-the-united-states",
+        "title": "The Constitution of the United States, including the Bill of Rights and subsequent amendments",
+        "unitNumbers": [
+          1,
+          2,
+          3
+        ],
+        "topicIds": [
+          "1.5",
+          "1.6",
+          "1.7",
+          "1.8",
+          "1.9",
+          "2.2",
+          "2.5",
+          "2.8",
+          "3.1",
+          "3.2",
+          "3.3",
+          "3.4",
+          "3.5",
+          "3.6",
+          "3.7",
+          "3.8",
+          "3.9",
+          "3.10",
+          "3.11",
+          "3.12",
+          "3.13"
+        ],
+        "bigIdeaIds": [
+          "BI1",
+          "BI2"
+        ],
+        "skillIds": [
+          "C4",
+          "C5"
+        ],
+        "requiredForAcademicYear": "2026-27",
+        "requirementSource": "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description.pdf",
+        "clarificationSource": "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description-clarifications-effective-fall-2026.pdf",
+        "sourceUse": "Title, public requirement metadata, and internal topic crosswalk only; no official document text, excerpt, or assessment content is reproduced.",
+        "officialItem": false,
+        "reproducedText": false,
+        "releaseEligible": false,
+        "reviewStatus": "source-reviewed-editorial-pass",
+        "independentExpertReviewStatus": "pending"
+      },
+      {
+        "id": "declaration-of-independence",
+        "title": "The Declaration of Independence",
+        "unitNumbers": [
+          1
+        ],
+        "topicIds": [
+          "1.1",
+          "1.3"
+        ],
+        "bigIdeaIds": [
+          "BI1",
+          "BI2"
+        ],
+        "skillIds": [
+          "C4",
+          "C5"
+        ],
+        "requiredForAcademicYear": "2026-27",
+        "requirementSource": "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description.pdf",
+        "clarificationSource": "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description-clarifications-effective-fall-2026.pdf",
+        "sourceUse": "Title, public requirement metadata, and internal topic crosswalk only; no official document text, excerpt, or assessment content is reproduced.",
+        "officialItem": false,
+        "reproducedText": false,
+        "releaseEligible": false,
+        "reviewStatus": "source-reviewed-editorial-pass",
+        "independentExpertReviewStatus": "pending"
+      },
+      {
+        "id": "emancipation-proclamation",
+        "title": "The Emancipation Proclamation",
+        "unitNumbers": [
+          3
+        ],
+        "topicIds": [
+          "3.10",
+          "3.11",
+          "3.12"
+        ],
+        "bigIdeaIds": [
+          "BI2",
+          "BI4"
+        ],
+        "skillIds": [
+          "C4",
+          "C5"
+        ],
+        "requiredForAcademicYear": "2026-27",
+        "requirementSource": "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description.pdf",
+        "clarificationSource": "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description-clarifications-effective-fall-2026.pdf",
+        "sourceUse": "Title, public requirement metadata, and internal topic crosswalk only; no official document text, excerpt, or assessment content is reproduced.",
+        "officialItem": false,
+        "reproducedText": false,
+        "releaseEligible": false,
+        "reviewStatus": "source-reviewed-editorial-pass",
+        "independentExpertReviewStatus": "pending"
+      },
+      {
+        "id": "federalist-no-10",
+        "title": "Federalist No. 10",
+        "unitNumbers": [
+          1
+        ],
+        "topicIds": [
+          "1.2",
+          "1.3",
+          "5.3",
+          "5.6"
+        ],
+        "bigIdeaIds": [
+          "BI1",
+          "BI3",
+          "BI4"
+        ],
+        "skillIds": [
+          "C4",
+          "C5"
+        ],
+        "requiredForAcademicYear": "2026-27",
+        "requirementSource": "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description.pdf",
+        "clarificationSource": "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description-clarifications-effective-fall-2026.pdf",
+        "sourceUse": "Title, public requirement metadata, and internal topic crosswalk only; no official document text, excerpt, or assessment content is reproduced.",
+        "officialItem": false,
+        "reproducedText": false,
+        "releaseEligible": false,
+        "reviewStatus": "source-reviewed-editorial-pass",
+        "independentExpertReviewStatus": "pending"
+      },
+      {
+        "id": "federalist-no-39",
+        "title": "Federalist No. 39",
+        "unitNumbers": [
+          1
+        ],
+        "topicIds": [
+          "1.2",
+          "1.5",
+          "1.6"
+        ],
+        "bigIdeaIds": [
+          "BI1",
+          "BI5"
+        ],
+        "skillIds": [
+          "C4",
+          "C5"
+        ],
+        "requiredForAcademicYear": "2026-27",
+        "requirementSource": "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description.pdf",
+        "clarificationSource": "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description-clarifications-effective-fall-2026.pdf",
+        "sourceUse": "Title, public requirement metadata, and internal topic crosswalk only; no official document text, excerpt, or assessment content is reproduced.",
+        "officialItem": false,
+        "reproducedText": false,
+        "releaseEligible": false,
+        "reviewStatus": "source-reviewed-editorial-pass",
+        "independentExpertReviewStatus": "pending"
+      },
+      {
+        "id": "federalist-no-51",
+        "title": "Federalist No. 51",
+        "unitNumbers": [
+          1,
+          2
+        ],
+        "topicIds": [
+          "1.6",
+          "2.1",
+          "2.2",
+          "2.5",
+          "2.8",
+          "2.11",
+          "2.15"
+        ],
+        "bigIdeaIds": [
+          "BI1",
+          "BI4"
+        ],
+        "skillIds": [
+          "C4",
+          "C5"
+        ],
+        "requiredForAcademicYear": "2026-27",
+        "requirementSource": "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description.pdf",
+        "clarificationSource": "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description-clarifications-effective-fall-2026.pdf",
+        "sourceUse": "Title, public requirement metadata, and internal topic crosswalk only; no official document text, excerpt, or assessment content is reproduced.",
+        "officialItem": false,
+        "reproducedText": false,
+        "releaseEligible": false,
+        "reviewStatus": "source-reviewed-editorial-pass",
+        "independentExpertReviewStatus": "pending"
+      },
+      {
+        "id": "federalist-no-70",
+        "title": "Federalist No. 70",
+        "unitNumbers": [
+          2
+        ],
+        "topicIds": [
+          "2.4",
+          "2.5",
+          "2.6",
+          "2.7",
+          "2.15"
+        ],
+        "bigIdeaIds": [
+          "BI1",
+          "BI4"
+        ],
+        "skillIds": [
+          "C4",
+          "C5"
+        ],
+        "requiredForAcademicYear": "2026-27",
+        "requirementSource": "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description.pdf",
+        "clarificationSource": "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description-clarifications-effective-fall-2026.pdf",
+        "sourceUse": "Title, public requirement metadata, and internal topic crosswalk only; no official document text, excerpt, or assessment content is reproduced.",
+        "officialItem": false,
+        "reproducedText": false,
+        "releaseEligible": false,
+        "reviewStatus": "source-reviewed-editorial-pass",
+        "independentExpertReviewStatus": "pending"
+      },
+      {
+        "id": "federalist-no-78",
+        "title": "Federalist No. 78",
+        "unitNumbers": [
+          2
+        ],
+        "topicIds": [
+          "2.8",
+          "2.9",
+          "2.10",
+          "2.11"
+        ],
+        "bigIdeaIds": [
+          "BI1",
+          "BI5"
+        ],
+        "skillIds": [
+          "C4",
+          "C5"
+        ],
+        "requiredForAcademicYear": "2026-27",
+        "requirementSource": "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description.pdf",
+        "clarificationSource": "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description-clarifications-effective-fall-2026.pdf",
+        "sourceUse": "Title, public requirement metadata, and internal topic crosswalk only; no official document text, excerpt, or assessment content is reproduced.",
+        "officialItem": false,
+        "reproducedText": false,
+        "releaseEligible": false,
+        "reviewStatus": "source-reviewed-editorial-pass",
+        "independentExpertReviewStatus": "pending"
+      },
+      {
+        "id": "gettysburg-address",
+        "title": "The Gettysburg Address",
+        "unitNumbers": [
+          3
+        ],
+        "topicIds": [
+          "3.10",
+          "3.12",
+          "4.1"
+        ],
+        "bigIdeaIds": [
+          "BI2",
+          "BI3"
+        ],
+        "skillIds": [
+          "C4",
+          "C5"
+        ],
+        "requiredForAcademicYear": "2026-27",
+        "requirementSource": "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description.pdf",
+        "clarificationSource": "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description-clarifications-effective-fall-2026.pdf",
+        "sourceUse": "Title, public requirement metadata, and internal topic crosswalk only; no official document text, excerpt, or assessment content is reproduced.",
+        "officialItem": false,
+        "reproducedText": false,
+        "releaseEligible": false,
+        "reviewStatus": "source-reviewed-editorial-pass",
+        "independentExpertReviewStatus": "pending"
+      },
+      {
+        "id": "letter-from-a-birmingham-jail",
+        "title": "Letter from a Birmingham Jail",
+        "unitNumbers": [
+          3
+        ],
+        "topicIds": [
+          "3.10",
+          "3.11",
+          "3.12",
+          "5.1",
+          "5.6"
+        ],
+        "bigIdeaIds": [
+          "BI2",
+          "BI3",
+          "BI5"
+        ],
+        "skillIds": [
+          "C4",
+          "C5"
+        ],
+        "requiredForAcademicYear": "2026-27",
+        "requirementSource": "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description.pdf",
+        "clarificationSource": "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description-clarifications-effective-fall-2026.pdf",
+        "sourceUse": "Title, public requirement metadata, and internal topic crosswalk only; no official document text, excerpt, or assessment content is reproduced.",
+        "officialItem": false,
+        "reproducedText": false,
+        "releaseEligible": false,
+        "reviewStatus": "source-reviewed-editorial-pass",
+        "independentExpertReviewStatus": "pending"
+      },
+      {
+        "id": "adam-smith-wealth-of-nations",
+        "title": "Core Principles from Adam Smith's The Wealth of Nations",
+        "unitNumbers": [
+          4,
+          5
+        ],
+        "topicIds": [
+          "4.7",
+          "4.8",
+          "4.9",
+          "5.6",
+          "5.7"
+        ],
+        "bigIdeaIds": [
+          "BI4",
+          "BI5"
+        ],
+        "skillIds": [
+          "C4",
+          "C5"
+        ],
+        "requiredForAcademicYear": "2026-27",
+        "requirementSource": "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description.pdf",
+        "clarificationSource": "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description-clarifications-effective-fall-2026.pdf",
+        "sourceUse": "Title, public requirement metadata, and internal topic crosswalk only; no official document text, excerpt, or assessment content is reproduced.",
+        "officialItem": false,
+        "reproducedText": false,
+        "releaseEligible": false,
+        "reviewStatus": "source-reviewed-editorial-pass",
+        "independentExpertReviewStatus": "pending"
+      }
+    ],
+    "foundationalDocumentRouteVersion": "ap-us-government-foundation-v8",
+    "foundationalDocumentRouteCount": 13,
+    "foundationalDocumentRoutes": [
+      {
+        "id": "ap-usg-document-route-articles-of-confederation",
+        "documentId": "articles-of-confederation",
+        "title": "The Articles of Confederation",
+        "academicYearReference": "2026-27",
+        "unitNumbers": [
+          1
+        ],
+        "topicIds": [
+          "1.4",
+          "1.6",
+          "1.7",
+          "1.8"
+        ],
+        "bigIdeaIds": [
+          "BI1",
+          "BI4"
+        ],
+        "skillIds": [
+          "C4",
+          "C5"
+        ],
+        "chapterIds": [
+          "ap-usg-ch-01"
+        ],
+        "sectionIds": [
+          "ap-usg-ch-01-section-02",
+          "ap-usg-ch-01-section-03"
+        ],
+        "workshopIds": [
+          "ap-usg-workshop-concept-application"
+        ],
+        "itemIds": [
+          "ap-usg-u1-004",
+          "ap-usg-u1-006",
+          "ap-usg-u1-007",
+          "ap-usg-u1-008",
+          "ap-usg-u1-013",
+          "ap-usg-u1-015",
+          "ap-usg-u1-016",
+          "ap-usg-u1-017",
+          "ap-usg-u1-104",
+          "ap-usg-u1-106",
+          "ap-usg-u1-107",
+          "ap-usg-u1-108",
+          "ap-usg-u1-113",
+          "ap-usg-u1-115",
+          "ap-usg-u1-116",
+          "ap-usg-u1-117",
+          "ap-usg-u1-204",
+          "ap-usg-u1-206",
+          "ap-usg-u1-207",
+          "ap-usg-u1-208"
+        ],
+        "foundationItemIds": [
+          "ap-usg-u1-004",
+          "ap-usg-u1-006",
+          "ap-usg-u1-007",
+          "ap-usg-u1-008",
+          "ap-usg-u1-013",
+          "ap-usg-u1-015",
+          "ap-usg-u1-016",
+          "ap-usg-u1-017"
+        ],
+        "depthItemIds": [
+          "ap-usg-u1-104",
+          "ap-usg-u1-106",
+          "ap-usg-u1-107",
+          "ap-usg-u1-108",
+          "ap-usg-u1-113",
+          "ap-usg-u1-115",
+          "ap-usg-u1-116",
+          "ap-usg-u1-117"
+        ],
+        "transferItemIds": [
+          "ap-usg-u1-204",
+          "ap-usg-u1-206",
+          "ap-usg-u1-207",
+          "ap-usg-u1-208"
+        ],
+        "itemCount": 20,
+        "practiceSliceCounts": {
+          "foundation-slice": 8,
+          "depth-slice": 8,
+          "transfer-slice": 4
+        },
+        "studyMove": "Use the document title as a retrieval cue: identify the constitutional principle or argument, connect it to the linked topics, and qualify the conclusion using the source purpose and context.",
+        "accessNote": "This route contains public requirement metadata and original practice links only; it does not reproduce official document text, excerpts, prompts, or rubrics.",
+        "references": [
+          "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description.pdf",
+          "https://apcentral.collegeboard.org/courses/ap-united-states-government-and-politics",
+          "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description-clarifications-effective-fall-2026.pdf"
+        ],
+        "sourceUse": "Title, public requirement metadata, and internal topic crosswalk only; no official document text, excerpt, or assessment content is reproduced.",
+        "officialItem": false,
+        "reproducedText": false,
+        "releaseEligible": false,
+        "reviewStatus": "source-reviewed-editorial-pass",
+        "independentExpertReviewStatus": "pending"
+      },
+      {
+        "id": "ap-usg-document-route-brutus-no-1",
+        "documentId": "brutus-no-1",
+        "title": "Brutus No. 1",
+        "academicYearReference": "2026-27",
+        "unitNumbers": [
+          1
+        ],
+        "topicIds": [
+          "1.2",
+          "1.3",
+          "1.5"
+        ],
+        "bigIdeaIds": [
+          "BI1",
+          "BI2",
+          "BI5"
+        ],
+        "skillIds": [
+          "C4",
+          "C5"
+        ],
+        "chapterIds": [
+          "ap-usg-ch-01"
+        ],
+        "sectionIds": [
+          "ap-usg-ch-01-section-01",
+          "ap-usg-ch-01-section-02"
+        ],
+        "workshopIds": [
+          "ap-usg-workshop-source-analysis"
+        ],
+        "itemIds": [
+          "ap-usg-u1-002",
+          "ap-usg-u1-003",
+          "ap-usg-u1-005",
+          "ap-usg-u1-011",
+          "ap-usg-u1-012",
+          "ap-usg-u1-014",
+          "ap-usg-u1-102",
+          "ap-usg-u1-103",
+          "ap-usg-u1-105",
+          "ap-usg-u1-111",
+          "ap-usg-u1-112",
+          "ap-usg-u1-114",
+          "ap-usg-u1-202",
+          "ap-usg-u1-203",
+          "ap-usg-u1-205"
+        ],
+        "foundationItemIds": [
+          "ap-usg-u1-002",
+          "ap-usg-u1-003",
+          "ap-usg-u1-005",
+          "ap-usg-u1-011",
+          "ap-usg-u1-012",
+          "ap-usg-u1-014"
+        ],
+        "depthItemIds": [
+          "ap-usg-u1-102",
+          "ap-usg-u1-103",
+          "ap-usg-u1-105",
+          "ap-usg-u1-111",
+          "ap-usg-u1-112",
+          "ap-usg-u1-114"
+        ],
+        "transferItemIds": [
+          "ap-usg-u1-202",
+          "ap-usg-u1-203",
+          "ap-usg-u1-205"
+        ],
+        "itemCount": 15,
+        "practiceSliceCounts": {
+          "foundation-slice": 6,
+          "depth-slice": 6,
+          "transfer-slice": 3
+        },
+        "studyMove": "Use the document title as a retrieval cue: identify the constitutional principle or argument, connect it to the linked topics, and qualify the conclusion using the source purpose and context.",
+        "accessNote": "This route contains public requirement metadata and original practice links only; it does not reproduce official document text, excerpts, prompts, or rubrics.",
+        "references": [
+          "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description.pdf",
+          "https://apcentral.collegeboard.org/courses/ap-united-states-government-and-politics",
+          "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description-clarifications-effective-fall-2026.pdf"
+        ],
+        "sourceUse": "Title, public requirement metadata, and internal topic crosswalk only; no official document text, excerpt, or assessment content is reproduced.",
+        "officialItem": false,
+        "reproducedText": false,
+        "releaseEligible": false,
+        "reviewStatus": "source-reviewed-editorial-pass",
+        "independentExpertReviewStatus": "pending"
+      },
+      {
+        "id": "ap-usg-document-route-constitution-of-the-united-states",
+        "documentId": "constitution-of-the-united-states",
+        "title": "The Constitution of the United States, including the Bill of Rights and subsequent amendments",
+        "academicYearReference": "2026-27",
+        "unitNumbers": [
+          1,
+          2,
+          3
+        ],
+        "topicIds": [
+          "1.5",
+          "1.6",
+          "1.7",
+          "1.8",
+          "1.9",
+          "2.2",
+          "2.5",
+          "2.8",
+          "3.1",
+          "3.2",
+          "3.3",
+          "3.4",
+          "3.5",
+          "3.6",
+          "3.7",
+          "3.8",
+          "3.9",
+          "3.10",
+          "3.11",
+          "3.12",
+          "3.13"
+        ],
+        "bigIdeaIds": [
+          "BI1",
+          "BI2"
+        ],
+        "skillIds": [
+          "C4",
+          "C5"
+        ],
+        "chapterIds": [
+          "ap-usg-ch-01",
+          "ap-usg-ch-02",
+          "ap-usg-ch-03"
+        ],
+        "sectionIds": [
+          "ap-usg-ch-01-section-02",
+          "ap-usg-ch-01-section-03",
+          "ap-usg-ch-02-section-01",
+          "ap-usg-ch-02-section-02",
+          "ap-usg-ch-03-section-01",
+          "ap-usg-ch-03-section-02",
+          "ap-usg-ch-03-section-03"
+        ],
+        "workshopIds": [
+          "ap-usg-workshop-concept-application",
+          "ap-usg-workshop-case-comparison",
+          "ap-usg-workshop-source-analysis"
+        ],
+        "itemIds": [
+          "ap-usg-u1-005",
+          "ap-usg-u1-006",
+          "ap-usg-u1-007",
+          "ap-usg-u1-008",
+          "ap-usg-u1-009",
+          "ap-usg-u1-014",
+          "ap-usg-u1-015",
+          "ap-usg-u1-016",
+          "ap-usg-u1-017",
+          "ap-usg-u1-018",
+          "ap-usg-u2-020",
+          "ap-usg-u2-023",
+          "ap-usg-u2-026",
+          "ap-usg-u2-035",
+          "ap-usg-u2-038",
+          "ap-usg-u2-041",
+          "ap-usg-u3-049",
+          "ap-usg-u3-050",
+          "ap-usg-u3-051",
+          "ap-usg-u3-052",
+          "ap-usg-u3-053",
+          "ap-usg-u3-054",
+          "ap-usg-u3-055",
+          "ap-usg-u3-056",
+          "ap-usg-u3-057",
+          "ap-usg-u3-058",
+          "ap-usg-u3-059",
+          "ap-usg-u3-060",
+          "ap-usg-u3-061",
+          "ap-usg-u3-062",
+          "ap-usg-u3-063",
+          "ap-usg-u1-105",
+          "ap-usg-u1-106",
+          "ap-usg-u1-107",
+          "ap-usg-u1-108",
+          "ap-usg-u1-109",
+          "ap-usg-u1-114",
+          "ap-usg-u1-115",
+          "ap-usg-u1-116",
+          "ap-usg-u1-117",
+          "ap-usg-u1-118",
+          "ap-usg-u2-120",
+          "ap-usg-u2-123",
+          "ap-usg-u2-126",
+          "ap-usg-u2-135",
+          "ap-usg-u2-138",
+          "ap-usg-u2-141",
+          "ap-usg-u3-149",
+          "ap-usg-u3-150",
+          "ap-usg-u3-151",
+          "ap-usg-u3-152",
+          "ap-usg-u3-153",
+          "ap-usg-u3-154",
+          "ap-usg-u3-155",
+          "ap-usg-u3-156",
+          "ap-usg-u3-157",
+          "ap-usg-u3-158",
+          "ap-usg-u3-159",
+          "ap-usg-u3-160",
+          "ap-usg-u3-161",
+          "ap-usg-u3-162",
+          "ap-usg-u3-163",
+          "ap-usg-u1-205",
+          "ap-usg-u1-206",
+          "ap-usg-u1-207",
+          "ap-usg-u1-208",
+          "ap-usg-u1-209",
+          "ap-usg-u2-211",
+          "ap-usg-u2-214",
+          "ap-usg-u2-217",
+          "ap-usg-u3-225",
+          "ap-usg-u3-226",
+          "ap-usg-u3-227",
+          "ap-usg-u3-228",
+          "ap-usg-u3-229",
+          "ap-usg-u3-230",
+          "ap-usg-u3-231",
+          "ap-usg-u3-232",
+          "ap-usg-u3-233",
+          "ap-usg-u3-234",
+          "ap-usg-u3-235",
+          "ap-usg-u3-236",
+          "ap-usg-u3-237"
+        ],
+        "foundationItemIds": [
+          "ap-usg-u1-005",
+          "ap-usg-u1-006",
+          "ap-usg-u1-007",
+          "ap-usg-u1-008",
+          "ap-usg-u1-009",
+          "ap-usg-u1-014",
+          "ap-usg-u1-015",
+          "ap-usg-u1-016",
+          "ap-usg-u1-017",
+          "ap-usg-u1-018",
+          "ap-usg-u2-020",
+          "ap-usg-u2-023",
+          "ap-usg-u2-026",
+          "ap-usg-u2-035",
+          "ap-usg-u2-038",
+          "ap-usg-u2-041",
+          "ap-usg-u3-049",
+          "ap-usg-u3-050",
+          "ap-usg-u3-051",
+          "ap-usg-u3-052",
+          "ap-usg-u3-053",
+          "ap-usg-u3-054",
+          "ap-usg-u3-055",
+          "ap-usg-u3-056",
+          "ap-usg-u3-057",
+          "ap-usg-u3-058",
+          "ap-usg-u3-059",
+          "ap-usg-u3-060",
+          "ap-usg-u3-061",
+          "ap-usg-u3-062",
+          "ap-usg-u3-063"
+        ],
+        "depthItemIds": [
+          "ap-usg-u1-105",
+          "ap-usg-u1-106",
+          "ap-usg-u1-107",
+          "ap-usg-u1-108",
+          "ap-usg-u1-109",
+          "ap-usg-u1-114",
+          "ap-usg-u1-115",
+          "ap-usg-u1-116",
+          "ap-usg-u1-117",
+          "ap-usg-u1-118",
+          "ap-usg-u2-120",
+          "ap-usg-u2-123",
+          "ap-usg-u2-126",
+          "ap-usg-u2-135",
+          "ap-usg-u2-138",
+          "ap-usg-u2-141",
+          "ap-usg-u3-149",
+          "ap-usg-u3-150",
+          "ap-usg-u3-151",
+          "ap-usg-u3-152",
+          "ap-usg-u3-153",
+          "ap-usg-u3-154",
+          "ap-usg-u3-155",
+          "ap-usg-u3-156",
+          "ap-usg-u3-157",
+          "ap-usg-u3-158",
+          "ap-usg-u3-159",
+          "ap-usg-u3-160",
+          "ap-usg-u3-161",
+          "ap-usg-u3-162",
+          "ap-usg-u3-163"
+        ],
+        "transferItemIds": [
+          "ap-usg-u1-205",
+          "ap-usg-u1-206",
+          "ap-usg-u1-207",
+          "ap-usg-u1-208",
+          "ap-usg-u1-209",
+          "ap-usg-u2-211",
+          "ap-usg-u2-214",
+          "ap-usg-u2-217",
+          "ap-usg-u3-225",
+          "ap-usg-u3-226",
+          "ap-usg-u3-227",
+          "ap-usg-u3-228",
+          "ap-usg-u3-229",
+          "ap-usg-u3-230",
+          "ap-usg-u3-231",
+          "ap-usg-u3-232",
+          "ap-usg-u3-233",
+          "ap-usg-u3-234",
+          "ap-usg-u3-235",
+          "ap-usg-u3-236",
+          "ap-usg-u3-237"
+        ],
+        "itemCount": 83,
+        "practiceSliceCounts": {
+          "foundation-slice": 31,
+          "depth-slice": 31,
+          "transfer-slice": 21
+        },
+        "studyMove": "Use the document title as a retrieval cue: identify the constitutional principle or argument, connect it to the linked topics, and qualify the conclusion using the source purpose and context.",
+        "accessNote": "This route contains public requirement metadata and original practice links only; it does not reproduce official document text, excerpts, prompts, or rubrics.",
+        "references": [
+          "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description.pdf",
+          "https://apcentral.collegeboard.org/courses/ap-united-states-government-and-politics",
+          "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description-clarifications-effective-fall-2026.pdf"
+        ],
+        "sourceUse": "Title, public requirement metadata, and internal topic crosswalk only; no official document text, excerpt, or assessment content is reproduced.",
+        "officialItem": false,
+        "reproducedText": false,
+        "releaseEligible": false,
+        "reviewStatus": "source-reviewed-editorial-pass",
+        "independentExpertReviewStatus": "pending"
+      },
+      {
+        "id": "ap-usg-document-route-declaration-of-independence",
+        "documentId": "declaration-of-independence",
+        "title": "The Declaration of Independence",
+        "academicYearReference": "2026-27",
+        "unitNumbers": [
+          1
+        ],
+        "topicIds": [
+          "1.1",
+          "1.3"
+        ],
+        "bigIdeaIds": [
+          "BI1",
+          "BI2"
+        ],
+        "skillIds": [
+          "C4",
+          "C5"
+        ],
+        "chapterIds": [
+          "ap-usg-ch-01"
+        ],
+        "sectionIds": [
+          "ap-usg-ch-01-section-01"
+        ],
+        "workshopIds": [
+          "ap-usg-workshop-source-analysis"
+        ],
+        "itemIds": [
+          "ap-usg-u1-001",
+          "ap-usg-u1-003",
+          "ap-usg-u1-010",
+          "ap-usg-u1-012",
+          "ap-usg-u1-101",
+          "ap-usg-u1-103",
+          "ap-usg-u1-110",
+          "ap-usg-u1-112",
+          "ap-usg-u1-201",
+          "ap-usg-u1-203"
+        ],
+        "foundationItemIds": [
+          "ap-usg-u1-001",
+          "ap-usg-u1-003",
+          "ap-usg-u1-010",
+          "ap-usg-u1-012"
+        ],
+        "depthItemIds": [
+          "ap-usg-u1-101",
+          "ap-usg-u1-103",
+          "ap-usg-u1-110",
+          "ap-usg-u1-112"
+        ],
+        "transferItemIds": [
+          "ap-usg-u1-201",
+          "ap-usg-u1-203"
+        ],
+        "itemCount": 10,
+        "practiceSliceCounts": {
+          "foundation-slice": 4,
+          "depth-slice": 4,
+          "transfer-slice": 2
+        },
+        "studyMove": "Use the document title as a retrieval cue: identify the constitutional principle or argument, connect it to the linked topics, and qualify the conclusion using the source purpose and context.",
+        "accessNote": "This route contains public requirement metadata and original practice links only; it does not reproduce official document text, excerpts, prompts, or rubrics.",
+        "references": [
+          "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description.pdf",
+          "https://apcentral.collegeboard.org/courses/ap-united-states-government-and-politics",
+          "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description-clarifications-effective-fall-2026.pdf"
+        ],
+        "sourceUse": "Title, public requirement metadata, and internal topic crosswalk only; no official document text, excerpt, or assessment content is reproduced.",
+        "officialItem": false,
+        "reproducedText": false,
+        "releaseEligible": false,
+        "reviewStatus": "source-reviewed-editorial-pass",
+        "independentExpertReviewStatus": "pending"
+      },
+      {
+        "id": "ap-usg-document-route-emancipation-proclamation",
+        "documentId": "emancipation-proclamation",
+        "title": "The Emancipation Proclamation",
+        "academicYearReference": "2026-27",
+        "unitNumbers": [
+          3
+        ],
+        "topicIds": [
+          "3.10",
+          "3.11",
+          "3.12"
+        ],
+        "bigIdeaIds": [
+          "BI2",
+          "BI4"
+        ],
+        "skillIds": [
+          "C4",
+          "C5"
+        ],
+        "chapterIds": [
+          "ap-usg-ch-03"
+        ],
+        "sectionIds": [
+          "ap-usg-ch-03-section-03"
+        ],
+        "workshopIds": [],
+        "itemIds": [
+          "ap-usg-u3-058",
+          "ap-usg-u3-059",
+          "ap-usg-u3-060",
+          "ap-usg-u3-063",
+          "ap-usg-u3-158",
+          "ap-usg-u3-159",
+          "ap-usg-u3-160",
+          "ap-usg-u3-234",
+          "ap-usg-u3-235",
+          "ap-usg-u3-236"
+        ],
+        "foundationItemIds": [
+          "ap-usg-u3-058",
+          "ap-usg-u3-059",
+          "ap-usg-u3-060",
+          "ap-usg-u3-063"
+        ],
+        "depthItemIds": [
+          "ap-usg-u3-158",
+          "ap-usg-u3-159",
+          "ap-usg-u3-160"
+        ],
+        "transferItemIds": [
+          "ap-usg-u3-234",
+          "ap-usg-u3-235",
+          "ap-usg-u3-236"
+        ],
+        "itemCount": 10,
+        "practiceSliceCounts": {
+          "foundation-slice": 4,
+          "depth-slice": 3,
+          "transfer-slice": 3
+        },
+        "studyMove": "Use the document title as a retrieval cue: identify the constitutional principle or argument, connect it to the linked topics, and qualify the conclusion using the source purpose and context.",
+        "accessNote": "This route contains public requirement metadata and original practice links only; it does not reproduce official document text, excerpts, prompts, or rubrics.",
+        "references": [
+          "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description.pdf",
+          "https://apcentral.collegeboard.org/courses/ap-united-states-government-and-politics",
+          "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description-clarifications-effective-fall-2026.pdf"
+        ],
+        "sourceUse": "Title, public requirement metadata, and internal topic crosswalk only; no official document text, excerpt, or assessment content is reproduced.",
+        "officialItem": false,
+        "reproducedText": false,
+        "releaseEligible": false,
+        "reviewStatus": "source-reviewed-editorial-pass",
+        "independentExpertReviewStatus": "pending"
+      },
+      {
+        "id": "ap-usg-document-route-federalist-no-10",
+        "documentId": "federalist-no-10",
+        "title": "Federalist No. 10",
+        "academicYearReference": "2026-27",
+        "unitNumbers": [
+          1
+        ],
+        "topicIds": [
+          "1.2",
+          "1.3",
+          "5.3",
+          "5.6"
+        ],
+        "bigIdeaIds": [
+          "BI1",
+          "BI3",
+          "BI4"
+        ],
+        "skillIds": [
+          "C4",
+          "C5"
+        ],
+        "chapterIds": [
+          "ap-usg-ch-01",
+          "ap-usg-ch-05"
+        ],
+        "sectionIds": [
+          "ap-usg-ch-01-section-01",
+          "ap-usg-ch-05-section-01",
+          "ap-usg-ch-05-section-02"
+        ],
+        "workshopIds": [
+          "ap-usg-workshop-source-analysis"
+        ],
+        "itemIds": [
+          "ap-usg-u1-002",
+          "ap-usg-u1-003",
+          "ap-usg-u1-011",
+          "ap-usg-u1-012",
+          "ap-usg-u5-078",
+          "ap-usg-u5-081",
+          "ap-usg-u5-091",
+          "ap-usg-u5-094",
+          "ap-usg-u1-102",
+          "ap-usg-u1-103",
+          "ap-usg-u1-111",
+          "ap-usg-u1-112",
+          "ap-usg-u5-178",
+          "ap-usg-u5-181",
+          "ap-usg-u5-190",
+          "ap-usg-u5-193",
+          "ap-usg-u1-202",
+          "ap-usg-u1-203",
+          "ap-usg-u5-250",
+          "ap-usg-u5-253"
+        ],
+        "foundationItemIds": [
+          "ap-usg-u1-002",
+          "ap-usg-u1-003",
+          "ap-usg-u1-011",
+          "ap-usg-u1-012",
+          "ap-usg-u5-078",
+          "ap-usg-u5-081",
+          "ap-usg-u5-091",
+          "ap-usg-u5-094"
+        ],
+        "depthItemIds": [
+          "ap-usg-u1-102",
+          "ap-usg-u1-103",
+          "ap-usg-u1-111",
+          "ap-usg-u1-112",
+          "ap-usg-u5-178",
+          "ap-usg-u5-181",
+          "ap-usg-u5-190",
+          "ap-usg-u5-193"
+        ],
+        "transferItemIds": [
+          "ap-usg-u1-202",
+          "ap-usg-u1-203",
+          "ap-usg-u5-250",
+          "ap-usg-u5-253"
+        ],
+        "itemCount": 20,
+        "practiceSliceCounts": {
+          "foundation-slice": 8,
+          "depth-slice": 8,
+          "transfer-slice": 4
+        },
+        "studyMove": "Use the document title as a retrieval cue: identify the constitutional principle or argument, connect it to the linked topics, and qualify the conclusion using the source purpose and context.",
+        "accessNote": "This route contains public requirement metadata and original practice links only; it does not reproduce official document text, excerpts, prompts, or rubrics.",
+        "references": [
+          "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description.pdf",
+          "https://apcentral.collegeboard.org/courses/ap-united-states-government-and-politics",
+          "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description-clarifications-effective-fall-2026.pdf"
+        ],
+        "sourceUse": "Title, public requirement metadata, and internal topic crosswalk only; no official document text, excerpt, or assessment content is reproduced.",
+        "officialItem": false,
+        "reproducedText": false,
+        "releaseEligible": false,
+        "reviewStatus": "source-reviewed-editorial-pass",
+        "independentExpertReviewStatus": "pending"
+      },
+      {
+        "id": "ap-usg-document-route-federalist-no-39",
+        "documentId": "federalist-no-39",
+        "title": "Federalist No. 39",
+        "academicYearReference": "2026-27",
+        "unitNumbers": [
+          1
+        ],
+        "topicIds": [
+          "1.2",
+          "1.5",
+          "1.6"
+        ],
+        "bigIdeaIds": [
+          "BI1",
+          "BI5"
+        ],
+        "skillIds": [
+          "C4",
+          "C5"
+        ],
+        "chapterIds": [
+          "ap-usg-ch-01"
+        ],
+        "sectionIds": [
+          "ap-usg-ch-01-section-01",
+          "ap-usg-ch-01-section-02"
+        ],
+        "workshopIds": [
+          "ap-usg-workshop-source-analysis"
+        ],
+        "itemIds": [
+          "ap-usg-u1-002",
+          "ap-usg-u1-005",
+          "ap-usg-u1-006",
+          "ap-usg-u1-011",
+          "ap-usg-u1-014",
+          "ap-usg-u1-015",
+          "ap-usg-u1-102",
+          "ap-usg-u1-105",
+          "ap-usg-u1-106",
+          "ap-usg-u1-111",
+          "ap-usg-u1-114",
+          "ap-usg-u1-115",
+          "ap-usg-u1-202",
+          "ap-usg-u1-205",
+          "ap-usg-u1-206"
+        ],
+        "foundationItemIds": [
+          "ap-usg-u1-002",
+          "ap-usg-u1-005",
+          "ap-usg-u1-006",
+          "ap-usg-u1-011",
+          "ap-usg-u1-014",
+          "ap-usg-u1-015"
+        ],
+        "depthItemIds": [
+          "ap-usg-u1-102",
+          "ap-usg-u1-105",
+          "ap-usg-u1-106",
+          "ap-usg-u1-111",
+          "ap-usg-u1-114",
+          "ap-usg-u1-115"
+        ],
+        "transferItemIds": [
+          "ap-usg-u1-202",
+          "ap-usg-u1-205",
+          "ap-usg-u1-206"
+        ],
+        "itemCount": 15,
+        "practiceSliceCounts": {
+          "foundation-slice": 6,
+          "depth-slice": 6,
+          "transfer-slice": 3
+        },
+        "studyMove": "Use the document title as a retrieval cue: identify the constitutional principle or argument, connect it to the linked topics, and qualify the conclusion using the source purpose and context.",
+        "accessNote": "This route contains public requirement metadata and original practice links only; it does not reproduce official document text, excerpts, prompts, or rubrics.",
+        "references": [
+          "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description.pdf",
+          "https://apcentral.collegeboard.org/courses/ap-united-states-government-and-politics",
+          "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description-clarifications-effective-fall-2026.pdf"
+        ],
+        "sourceUse": "Title, public requirement metadata, and internal topic crosswalk only; no official document text, excerpt, or assessment content is reproduced.",
+        "officialItem": false,
+        "reproducedText": false,
+        "releaseEligible": false,
+        "reviewStatus": "source-reviewed-editorial-pass",
+        "independentExpertReviewStatus": "pending"
+      },
+      {
+        "id": "ap-usg-document-route-federalist-no-51",
+        "documentId": "federalist-no-51",
+        "title": "Federalist No. 51",
+        "academicYearReference": "2026-27",
+        "unitNumbers": [
+          1,
+          2
+        ],
+        "topicIds": [
+          "1.6",
+          "2.1",
+          "2.2",
+          "2.5",
+          "2.8",
+          "2.11",
+          "2.15"
+        ],
+        "bigIdeaIds": [
+          "BI1",
+          "BI4"
+        ],
+        "skillIds": [
+          "C4",
+          "C5"
+        ],
+        "chapterIds": [
+          "ap-usg-ch-01",
+          "ap-usg-ch-02"
+        ],
+        "sectionIds": [
+          "ap-usg-ch-01-section-02",
+          "ap-usg-ch-02-section-01",
+          "ap-usg-ch-02-section-02",
+          "ap-usg-ch-02-section-03"
+        ],
+        "workshopIds": [
+          "ap-usg-workshop-case-comparison"
+        ],
+        "itemIds": [
+          "ap-usg-u1-006",
+          "ap-usg-u1-015",
+          "ap-usg-u2-019",
+          "ap-usg-u2-020",
+          "ap-usg-u2-023",
+          "ap-usg-u2-026",
+          "ap-usg-u2-029",
+          "ap-usg-u2-033",
+          "ap-usg-u2-034",
+          "ap-usg-u2-035",
+          "ap-usg-u2-038",
+          "ap-usg-u2-041",
+          "ap-usg-u2-044",
+          "ap-usg-u2-048",
+          "ap-usg-u1-106",
+          "ap-usg-u1-115",
+          "ap-usg-u2-119",
+          "ap-usg-u2-120",
+          "ap-usg-u2-123",
+          "ap-usg-u2-126",
+          "ap-usg-u2-129",
+          "ap-usg-u2-133",
+          "ap-usg-u2-134",
+          "ap-usg-u2-135",
+          "ap-usg-u2-138",
+          "ap-usg-u2-141",
+          "ap-usg-u2-144",
+          "ap-usg-u2-148",
+          "ap-usg-u1-206",
+          "ap-usg-u2-210",
+          "ap-usg-u2-211",
+          "ap-usg-u2-214",
+          "ap-usg-u2-217",
+          "ap-usg-u2-220",
+          "ap-usg-u2-224"
+        ],
+        "foundationItemIds": [
+          "ap-usg-u1-006",
+          "ap-usg-u1-015",
+          "ap-usg-u2-019",
+          "ap-usg-u2-020",
+          "ap-usg-u2-023",
+          "ap-usg-u2-026",
+          "ap-usg-u2-029",
+          "ap-usg-u2-033",
+          "ap-usg-u2-034",
+          "ap-usg-u2-035",
+          "ap-usg-u2-038",
+          "ap-usg-u2-041",
+          "ap-usg-u2-044",
+          "ap-usg-u2-048"
+        ],
+        "depthItemIds": [
+          "ap-usg-u1-106",
+          "ap-usg-u1-115",
+          "ap-usg-u2-119",
+          "ap-usg-u2-120",
+          "ap-usg-u2-123",
+          "ap-usg-u2-126",
+          "ap-usg-u2-129",
+          "ap-usg-u2-133",
+          "ap-usg-u2-134",
+          "ap-usg-u2-135",
+          "ap-usg-u2-138",
+          "ap-usg-u2-141",
+          "ap-usg-u2-144",
+          "ap-usg-u2-148"
+        ],
+        "transferItemIds": [
+          "ap-usg-u1-206",
+          "ap-usg-u2-210",
+          "ap-usg-u2-211",
+          "ap-usg-u2-214",
+          "ap-usg-u2-217",
+          "ap-usg-u2-220",
+          "ap-usg-u2-224"
+        ],
+        "itemCount": 35,
+        "practiceSliceCounts": {
+          "foundation-slice": 14,
+          "depth-slice": 14,
+          "transfer-slice": 7
+        },
+        "studyMove": "Use the document title as a retrieval cue: identify the constitutional principle or argument, connect it to the linked topics, and qualify the conclusion using the source purpose and context.",
+        "accessNote": "This route contains public requirement metadata and original practice links only; it does not reproduce official document text, excerpts, prompts, or rubrics.",
+        "references": [
+          "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description.pdf",
+          "https://apcentral.collegeboard.org/courses/ap-united-states-government-and-politics",
+          "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description-clarifications-effective-fall-2026.pdf"
+        ],
+        "sourceUse": "Title, public requirement metadata, and internal topic crosswalk only; no official document text, excerpt, or assessment content is reproduced.",
+        "officialItem": false,
+        "reproducedText": false,
+        "releaseEligible": false,
+        "reviewStatus": "source-reviewed-editorial-pass",
+        "independentExpertReviewStatus": "pending"
+      },
+      {
+        "id": "ap-usg-document-route-federalist-no-70",
+        "documentId": "federalist-no-70",
+        "title": "Federalist No. 70",
+        "academicYearReference": "2026-27",
+        "unitNumbers": [
+          2
+        ],
+        "topicIds": [
+          "2.4",
+          "2.5",
+          "2.6",
+          "2.7",
+          "2.15"
+        ],
+        "bigIdeaIds": [
+          "BI1",
+          "BI4"
+        ],
+        "skillIds": [
+          "C4",
+          "C5"
+        ],
+        "chapterIds": [
+          "ap-usg-ch-02"
+        ],
+        "sectionIds": [
+          "ap-usg-ch-02-section-01",
+          "ap-usg-ch-02-section-02",
+          "ap-usg-ch-02-section-03"
+        ],
+        "workshopIds": [
+          "ap-usg-workshop-case-comparison"
+        ],
+        "itemIds": [
+          "ap-usg-u2-022",
+          "ap-usg-u2-023",
+          "ap-usg-u2-024",
+          "ap-usg-u2-025",
+          "ap-usg-u2-033",
+          "ap-usg-u2-037",
+          "ap-usg-u2-038",
+          "ap-usg-u2-039",
+          "ap-usg-u2-040",
+          "ap-usg-u2-048",
+          "ap-usg-u2-122",
+          "ap-usg-u2-123",
+          "ap-usg-u2-124",
+          "ap-usg-u2-125",
+          "ap-usg-u2-133",
+          "ap-usg-u2-137",
+          "ap-usg-u2-138",
+          "ap-usg-u2-139",
+          "ap-usg-u2-140",
+          "ap-usg-u2-148",
+          "ap-usg-u2-213",
+          "ap-usg-u2-214",
+          "ap-usg-u2-215",
+          "ap-usg-u2-216",
+          "ap-usg-u2-224"
+        ],
+        "foundationItemIds": [
+          "ap-usg-u2-022",
+          "ap-usg-u2-023",
+          "ap-usg-u2-024",
+          "ap-usg-u2-025",
+          "ap-usg-u2-033",
+          "ap-usg-u2-037",
+          "ap-usg-u2-038",
+          "ap-usg-u2-039",
+          "ap-usg-u2-040",
+          "ap-usg-u2-048"
+        ],
+        "depthItemIds": [
+          "ap-usg-u2-122",
+          "ap-usg-u2-123",
+          "ap-usg-u2-124",
+          "ap-usg-u2-125",
+          "ap-usg-u2-133",
+          "ap-usg-u2-137",
+          "ap-usg-u2-138",
+          "ap-usg-u2-139",
+          "ap-usg-u2-140",
+          "ap-usg-u2-148"
+        ],
+        "transferItemIds": [
+          "ap-usg-u2-213",
+          "ap-usg-u2-214",
+          "ap-usg-u2-215",
+          "ap-usg-u2-216",
+          "ap-usg-u2-224"
+        ],
+        "itemCount": 25,
+        "practiceSliceCounts": {
+          "foundation-slice": 10,
+          "depth-slice": 10,
+          "transfer-slice": 5
+        },
+        "studyMove": "Use the document title as a retrieval cue: identify the constitutional principle or argument, connect it to the linked topics, and qualify the conclusion using the source purpose and context.",
+        "accessNote": "This route contains public requirement metadata and original practice links only; it does not reproduce official document text, excerpts, prompts, or rubrics.",
+        "references": [
+          "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description.pdf",
+          "https://apcentral.collegeboard.org/courses/ap-united-states-government-and-politics",
+          "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description-clarifications-effective-fall-2026.pdf"
+        ],
+        "sourceUse": "Title, public requirement metadata, and internal topic crosswalk only; no official document text, excerpt, or assessment content is reproduced.",
+        "officialItem": false,
+        "reproducedText": false,
+        "releaseEligible": false,
+        "reviewStatus": "source-reviewed-editorial-pass",
+        "independentExpertReviewStatus": "pending"
+      },
+      {
+        "id": "ap-usg-document-route-federalist-no-78",
+        "documentId": "federalist-no-78",
+        "title": "Federalist No. 78",
+        "academicYearReference": "2026-27",
+        "unitNumbers": [
+          2
+        ],
+        "topicIds": [
+          "2.8",
+          "2.9",
+          "2.10",
+          "2.11"
+        ],
+        "bigIdeaIds": [
+          "BI1",
+          "BI5"
+        ],
+        "skillIds": [
+          "C4",
+          "C5"
+        ],
+        "chapterIds": [
+          "ap-usg-ch-02"
+        ],
+        "sectionIds": [
+          "ap-usg-ch-02-section-02",
+          "ap-usg-ch-02-section-03"
+        ],
+        "workshopIds": [],
+        "itemIds": [
+          "ap-usg-u2-026",
+          "ap-usg-u2-027",
+          "ap-usg-u2-028",
+          "ap-usg-u2-029",
+          "ap-usg-u2-041",
+          "ap-usg-u2-042",
+          "ap-usg-u2-043",
+          "ap-usg-u2-044",
+          "ap-usg-u2-126",
+          "ap-usg-u2-127",
+          "ap-usg-u2-128",
+          "ap-usg-u2-129",
+          "ap-usg-u2-141",
+          "ap-usg-u2-142",
+          "ap-usg-u2-143",
+          "ap-usg-u2-144",
+          "ap-usg-u2-217",
+          "ap-usg-u2-218",
+          "ap-usg-u2-219",
+          "ap-usg-u2-220"
+        ],
+        "foundationItemIds": [
+          "ap-usg-u2-026",
+          "ap-usg-u2-027",
+          "ap-usg-u2-028",
+          "ap-usg-u2-029",
+          "ap-usg-u2-041",
+          "ap-usg-u2-042",
+          "ap-usg-u2-043",
+          "ap-usg-u2-044"
+        ],
+        "depthItemIds": [
+          "ap-usg-u2-126",
+          "ap-usg-u2-127",
+          "ap-usg-u2-128",
+          "ap-usg-u2-129",
+          "ap-usg-u2-141",
+          "ap-usg-u2-142",
+          "ap-usg-u2-143",
+          "ap-usg-u2-144"
+        ],
+        "transferItemIds": [
+          "ap-usg-u2-217",
+          "ap-usg-u2-218",
+          "ap-usg-u2-219",
+          "ap-usg-u2-220"
+        ],
+        "itemCount": 20,
+        "practiceSliceCounts": {
+          "foundation-slice": 8,
+          "depth-slice": 8,
+          "transfer-slice": 4
+        },
+        "studyMove": "Use the document title as a retrieval cue: identify the constitutional principle or argument, connect it to the linked topics, and qualify the conclusion using the source purpose and context.",
+        "accessNote": "This route contains public requirement metadata and original practice links only; it does not reproduce official document text, excerpts, prompts, or rubrics.",
+        "references": [
+          "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description.pdf",
+          "https://apcentral.collegeboard.org/courses/ap-united-states-government-and-politics",
+          "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description-clarifications-effective-fall-2026.pdf"
+        ],
+        "sourceUse": "Title, public requirement metadata, and internal topic crosswalk only; no official document text, excerpt, or assessment content is reproduced.",
+        "officialItem": false,
+        "reproducedText": false,
+        "releaseEligible": false,
+        "reviewStatus": "source-reviewed-editorial-pass",
+        "independentExpertReviewStatus": "pending"
+      },
+      {
+        "id": "ap-usg-document-route-gettysburg-address",
+        "documentId": "gettysburg-address",
+        "title": "The Gettysburg Address",
+        "academicYearReference": "2026-27",
+        "unitNumbers": [
+          3
+        ],
+        "topicIds": [
+          "3.10",
+          "3.12",
+          "4.1"
+        ],
+        "bigIdeaIds": [
+          "BI2",
+          "BI3"
+        ],
+        "skillIds": [
+          "C4",
+          "C5"
+        ],
+        "chapterIds": [
+          "ap-usg-ch-03",
+          "ap-usg-ch-04"
+        ],
+        "sectionIds": [
+          "ap-usg-ch-03-section-03",
+          "ap-usg-ch-04-section-01"
+        ],
+        "workshopIds": [],
+        "itemIds": [
+          "ap-usg-u3-058",
+          "ap-usg-u3-060",
+          "ap-usg-u3-063",
+          "ap-usg-u4-064",
+          "ap-usg-u3-158",
+          "ap-usg-u3-160",
+          "ap-usg-u4-164",
+          "ap-usg-u3-234",
+          "ap-usg-u3-236",
+          "ap-usg-u4-238"
+        ],
+        "foundationItemIds": [
+          "ap-usg-u3-058",
+          "ap-usg-u3-060",
+          "ap-usg-u3-063",
+          "ap-usg-u4-064"
+        ],
+        "depthItemIds": [
+          "ap-usg-u3-158",
+          "ap-usg-u3-160",
+          "ap-usg-u4-164"
+        ],
+        "transferItemIds": [
+          "ap-usg-u3-234",
+          "ap-usg-u3-236",
+          "ap-usg-u4-238"
+        ],
+        "itemCount": 10,
+        "practiceSliceCounts": {
+          "foundation-slice": 4,
+          "depth-slice": 3,
+          "transfer-slice": 3
+        },
+        "studyMove": "Use the document title as a retrieval cue: identify the constitutional principle or argument, connect it to the linked topics, and qualify the conclusion using the source purpose and context.",
+        "accessNote": "This route contains public requirement metadata and original practice links only; it does not reproduce official document text, excerpts, prompts, or rubrics.",
+        "references": [
+          "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description.pdf",
+          "https://apcentral.collegeboard.org/courses/ap-united-states-government-and-politics",
+          "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description-clarifications-effective-fall-2026.pdf"
+        ],
+        "sourceUse": "Title, public requirement metadata, and internal topic crosswalk only; no official document text, excerpt, or assessment content is reproduced.",
+        "officialItem": false,
+        "reproducedText": false,
+        "releaseEligible": false,
+        "reviewStatus": "source-reviewed-editorial-pass",
+        "independentExpertReviewStatus": "pending"
+      },
+      {
+        "id": "ap-usg-document-route-letter-from-a-birmingham-jail",
+        "documentId": "letter-from-a-birmingham-jail",
+        "title": "Letter from a Birmingham Jail",
+        "academicYearReference": "2026-27",
+        "unitNumbers": [
+          3
+        ],
+        "topicIds": [
+          "3.10",
+          "3.11",
+          "3.12",
+          "5.1",
+          "5.6"
+        ],
+        "bigIdeaIds": [
+          "BI2",
+          "BI3",
+          "BI5"
+        ],
+        "skillIds": [
+          "C4",
+          "C5"
+        ],
+        "chapterIds": [
+          "ap-usg-ch-03",
+          "ap-usg-ch-05"
+        ],
+        "sectionIds": [
+          "ap-usg-ch-03-section-03",
+          "ap-usg-ch-05-section-01",
+          "ap-usg-ch-05-section-02"
+        ],
+        "workshopIds": [
+          "ap-usg-workshop-argumentation"
+        ],
+        "itemIds": [
+          "ap-usg-u3-058",
+          "ap-usg-u3-059",
+          "ap-usg-u3-060",
+          "ap-usg-u3-063",
+          "ap-usg-u5-076",
+          "ap-usg-u5-081",
+          "ap-usg-u5-089",
+          "ap-usg-u5-094",
+          "ap-usg-u3-158",
+          "ap-usg-u3-159",
+          "ap-usg-u3-160",
+          "ap-usg-u5-176",
+          "ap-usg-u5-181",
+          "ap-usg-u5-188",
+          "ap-usg-u5-193",
+          "ap-usg-u3-234",
+          "ap-usg-u3-235",
+          "ap-usg-u3-236",
+          "ap-usg-u5-248",
+          "ap-usg-u5-253"
+        ],
+        "foundationItemIds": [
+          "ap-usg-u3-058",
+          "ap-usg-u3-059",
+          "ap-usg-u3-060",
+          "ap-usg-u3-063",
+          "ap-usg-u5-076",
+          "ap-usg-u5-081",
+          "ap-usg-u5-089",
+          "ap-usg-u5-094"
+        ],
+        "depthItemIds": [
+          "ap-usg-u3-158",
+          "ap-usg-u3-159",
+          "ap-usg-u3-160",
+          "ap-usg-u5-176",
+          "ap-usg-u5-181",
+          "ap-usg-u5-188",
+          "ap-usg-u5-193"
+        ],
+        "transferItemIds": [
+          "ap-usg-u3-234",
+          "ap-usg-u3-235",
+          "ap-usg-u3-236",
+          "ap-usg-u5-248",
+          "ap-usg-u5-253"
+        ],
+        "itemCount": 20,
+        "practiceSliceCounts": {
+          "foundation-slice": 8,
+          "depth-slice": 7,
+          "transfer-slice": 5
+        },
+        "studyMove": "Use the document title as a retrieval cue: identify the constitutional principle or argument, connect it to the linked topics, and qualify the conclusion using the source purpose and context.",
+        "accessNote": "This route contains public requirement metadata and original practice links only; it does not reproduce official document text, excerpts, prompts, or rubrics.",
+        "references": [
+          "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description.pdf",
+          "https://apcentral.collegeboard.org/courses/ap-united-states-government-and-politics",
+          "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description-clarifications-effective-fall-2026.pdf"
+        ],
+        "sourceUse": "Title, public requirement metadata, and internal topic crosswalk only; no official document text, excerpt, or assessment content is reproduced.",
+        "officialItem": false,
+        "reproducedText": false,
+        "releaseEligible": false,
+        "reviewStatus": "source-reviewed-editorial-pass",
+        "independentExpertReviewStatus": "pending"
+      },
+      {
+        "id": "ap-usg-document-route-adam-smith-wealth-of-nations",
+        "documentId": "adam-smith-wealth-of-nations",
+        "title": "Core Principles from Adam Smith's The Wealth of Nations",
+        "academicYearReference": "2026-27",
+        "unitNumbers": [
+          4,
+          5
+        ],
+        "topicIds": [
+          "4.7",
+          "4.8",
+          "4.9",
+          "5.6",
+          "5.7"
+        ],
+        "bigIdeaIds": [
+          "BI4",
+          "BI5"
+        ],
+        "skillIds": [
+          "C4",
+          "C5"
+        ],
+        "chapterIds": [
+          "ap-usg-ch-04",
+          "ap-usg-ch-05"
+        ],
+        "sectionIds": [
+          "ap-usg-ch-04-section-03",
+          "ap-usg-ch-05-section-02"
+        ],
+        "workshopIds": [
+          "ap-usg-workshop-argumentation"
+        ],
+        "itemIds": [
+          "ap-usg-u4-070",
+          "ap-usg-u4-071",
+          "ap-usg-u4-072",
+          "ap-usg-u5-081",
+          "ap-usg-u5-082",
+          "ap-usg-u5-094",
+          "ap-usg-u5-095",
+          "ap-usg-u4-170",
+          "ap-usg-u4-171",
+          "ap-usg-u4-172",
+          "ap-usg-u5-181",
+          "ap-usg-u5-182",
+          "ap-usg-u5-193",
+          "ap-usg-u5-194",
+          "ap-usg-u4-244",
+          "ap-usg-u4-245",
+          "ap-usg-u4-246",
+          "ap-usg-u5-253",
+          "ap-usg-u5-254"
+        ],
+        "foundationItemIds": [
+          "ap-usg-u4-070",
+          "ap-usg-u4-071",
+          "ap-usg-u4-072",
+          "ap-usg-u5-081",
+          "ap-usg-u5-082",
+          "ap-usg-u5-094",
+          "ap-usg-u5-095"
+        ],
+        "depthItemIds": [
+          "ap-usg-u4-170",
+          "ap-usg-u4-171",
+          "ap-usg-u4-172",
+          "ap-usg-u5-181",
+          "ap-usg-u5-182",
+          "ap-usg-u5-193",
+          "ap-usg-u5-194"
+        ],
+        "transferItemIds": [
+          "ap-usg-u4-244",
+          "ap-usg-u4-245",
+          "ap-usg-u4-246",
+          "ap-usg-u5-253",
+          "ap-usg-u5-254"
+        ],
+        "itemCount": 19,
+        "practiceSliceCounts": {
+          "foundation-slice": 7,
+          "depth-slice": 7,
+          "transfer-slice": 5
+        },
+        "studyMove": "Use the document title as a retrieval cue: identify the constitutional principle or argument, connect it to the linked topics, and qualify the conclusion using the source purpose and context.",
+        "accessNote": "This route contains public requirement metadata and original practice links only; it does not reproduce official document text, excerpts, prompts, or rubrics.",
+        "references": [
+          "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description.pdf",
+          "https://apcentral.collegeboard.org/courses/ap-united-states-government-and-politics",
+          "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description-clarifications-effective-fall-2026.pdf"
+        ],
+        "sourceUse": "Title, public requirement metadata, and internal topic crosswalk only; no official document text, excerpt, or assessment content is reproduced.",
+        "officialItem": false,
+        "reproducedText": false,
+        "releaseEligible": false,
+        "reviewStatus": "source-reviewed-editorial-pass",
+        "independentExpertReviewStatus": "pending"
+      }
+    ],
+    "pilotVersion": "ap-us-government-foundation-v8",
+    "pilotNote": "A 260-item foundation across all five units and all 60 current public framework topic IDs, with at least three practice angles per topic, a thirteen-document foundational-document crosswalk with deterministic study routes, item-linked study routes for all fifteen lesson sections, topic-level drill maps, and five explicitly unscored response-planning workshops. It is a study and architecture foundation, not a complete exam simulation.",
     "bigIdeas": [
       {
         "id": "BI1",
@@ -106,7 +1946,7 @@
         ]
       }
     ],
-    "learningObjectiveCatalogVersion": "ap-us-government-foundation-v6",
+    "learningObjectiveCatalogVersion": "ap-us-government-foundation-v8",
     "learningObjectiveCatalog": [
       {
         "id": "ap-usg-lo-1-1",
@@ -147,6 +1987,9 @@
           "5.B",
           "5.C",
           "5.D"
+        ],
+        "foundationalDocumentIds": [
+          "declaration-of-independence"
         ],
         "nextStep": "Review the linked unit section, explain the governing principle, and retry a targeted practice set using a new scenario.",
         "status": "internal-remediation-route",
@@ -199,6 +2042,11 @@
           "5.C",
           "5.D"
         ],
+        "foundationalDocumentIds": [
+          "brutus-no-1",
+          "federalist-no-10",
+          "federalist-no-39"
+        ],
         "nextStep": "Review the linked unit section, explain the governing principle, and retry a targeted practice set using a new scenario.",
         "status": "internal-remediation-route",
         "officialItem": false,
@@ -249,6 +2097,11 @@
           "5.B",
           "5.C",
           "5.D"
+        ],
+        "foundationalDocumentIds": [
+          "brutus-no-1",
+          "declaration-of-independence",
+          "federalist-no-10"
         ],
         "nextStep": "Review the linked unit section, explain the governing principle, and retry a targeted practice set using a new scenario.",
         "status": "internal-remediation-route",
@@ -301,6 +2154,9 @@
           "5.C",
           "5.D"
         ],
+        "foundationalDocumentIds": [
+          "articles-of-confederation"
+        ],
         "nextStep": "Review the linked unit section, explain the governing principle, and retry a targeted practice set using a new scenario.",
         "status": "internal-remediation-route",
         "officialItem": false,
@@ -351,6 +2207,11 @@
           "5.B",
           "5.C",
           "5.D"
+        ],
+        "foundationalDocumentIds": [
+          "brutus-no-1",
+          "constitution-of-the-united-states",
+          "federalist-no-39"
         ],
         "nextStep": "Review the linked unit section, explain the governing principle, and retry a targeted practice set using a new scenario.",
         "status": "internal-remediation-route",
@@ -403,6 +2264,12 @@
           "5.C",
           "5.D"
         ],
+        "foundationalDocumentIds": [
+          "articles-of-confederation",
+          "constitution-of-the-united-states",
+          "federalist-no-39",
+          "federalist-no-51"
+        ],
         "nextStep": "Review the linked unit section, explain the governing principle, and retry a targeted practice set using a new scenario.",
         "status": "internal-remediation-route",
         "officialItem": false,
@@ -453,6 +2320,10 @@
           "5.B",
           "5.C",
           "5.D"
+        ],
+        "foundationalDocumentIds": [
+          "articles-of-confederation",
+          "constitution-of-the-united-states"
         ],
         "nextStep": "Review the linked unit section, explain the governing principle, and retry a targeted practice set using a new scenario.",
         "status": "internal-remediation-route",
@@ -505,6 +2376,10 @@
           "5.C",
           "5.D"
         ],
+        "foundationalDocumentIds": [
+          "articles-of-confederation",
+          "constitution-of-the-united-states"
+        ],
         "nextStep": "Review the linked unit section, explain the governing principle, and retry a targeted practice set using a new scenario.",
         "status": "internal-remediation-route",
         "officialItem": false,
@@ -555,6 +2430,9 @@
           "5.B",
           "5.C",
           "5.D"
+        ],
+        "foundationalDocumentIds": [
+          "constitution-of-the-united-states"
         ],
         "nextStep": "Review the linked unit section, explain the governing principle, and retry a targeted practice set using a new scenario.",
         "status": "internal-remediation-route",
@@ -607,6 +2485,9 @@
           "5.C",
           "5.D"
         ],
+        "foundationalDocumentIds": [
+          "federalist-no-51"
+        ],
         "nextStep": "Review the linked unit section, explain the governing principle, and retry a targeted practice set using a new scenario.",
         "status": "internal-remediation-route",
         "officialItem": false,
@@ -657,6 +2538,10 @@
           "5.B",
           "5.C",
           "5.D"
+        ],
+        "foundationalDocumentIds": [
+          "constitution-of-the-united-states",
+          "federalist-no-51"
         ],
         "nextStep": "Review the linked unit section, explain the governing principle, and retry a targeted practice set using a new scenario.",
         "status": "internal-remediation-route",
@@ -709,6 +2594,7 @@
           "5.C",
           "5.D"
         ],
+        "foundationalDocumentIds": [],
         "nextStep": "Review the linked unit section, explain the governing principle, and retry a targeted practice set using a new scenario.",
         "status": "internal-remediation-route",
         "officialItem": false,
@@ -759,6 +2645,9 @@
           "5.B",
           "5.C",
           "5.D"
+        ],
+        "foundationalDocumentIds": [
+          "federalist-no-70"
         ],
         "nextStep": "Review the linked unit section, explain the governing principle, and retry a targeted practice set using a new scenario.",
         "status": "internal-remediation-route",
@@ -811,6 +2700,11 @@
           "5.C",
           "5.D"
         ],
+        "foundationalDocumentIds": [
+          "constitution-of-the-united-states",
+          "federalist-no-51",
+          "federalist-no-70"
+        ],
         "nextStep": "Review the linked unit section, explain the governing principle, and retry a targeted practice set using a new scenario.",
         "status": "internal-remediation-route",
         "officialItem": false,
@@ -861,6 +2755,9 @@
           "5.B",
           "5.C",
           "5.D"
+        ],
+        "foundationalDocumentIds": [
+          "federalist-no-70"
         ],
         "nextStep": "Review the linked unit section, explain the governing principle, and retry a targeted practice set using a new scenario.",
         "status": "internal-remediation-route",
@@ -913,6 +2810,9 @@
           "5.C",
           "5.D"
         ],
+        "foundationalDocumentIds": [
+          "federalist-no-70"
+        ],
         "nextStep": "Review the linked unit section, explain the governing principle, and retry a targeted practice set using a new scenario.",
         "status": "internal-remediation-route",
         "officialItem": false,
@@ -963,6 +2863,11 @@
           "5.B",
           "5.C",
           "5.D"
+        ],
+        "foundationalDocumentIds": [
+          "constitution-of-the-united-states",
+          "federalist-no-51",
+          "federalist-no-78"
         ],
         "nextStep": "Review the linked unit section, explain the governing principle, and retry a targeted practice set using a new scenario.",
         "status": "internal-remediation-route",
@@ -1015,6 +2920,9 @@
           "5.C",
           "5.D"
         ],
+        "foundationalDocumentIds": [
+          "federalist-no-78"
+        ],
         "nextStep": "Review the linked unit section, explain the governing principle, and retry a targeted practice set using a new scenario.",
         "status": "internal-remediation-route",
         "officialItem": false,
@@ -1065,6 +2973,9 @@
           "5.B",
           "5.C",
           "5.D"
+        ],
+        "foundationalDocumentIds": [
+          "federalist-no-78"
         ],
         "nextStep": "Review the linked unit section, explain the governing principle, and retry a targeted practice set using a new scenario.",
         "status": "internal-remediation-route",
@@ -1117,6 +3028,10 @@
           "5.C",
           "5.D"
         ],
+        "foundationalDocumentIds": [
+          "federalist-no-51",
+          "federalist-no-78"
+        ],
         "nextStep": "Review the linked unit section, explain the governing principle, and retry a targeted practice set using a new scenario.",
         "status": "internal-remediation-route",
         "officialItem": false,
@@ -1168,6 +3083,7 @@
           "5.C",
           "5.D"
         ],
+        "foundationalDocumentIds": [],
         "nextStep": "Review the linked unit section, explain the governing principle, and retry a targeted practice set using a new scenario.",
         "status": "internal-remediation-route",
         "officialItem": false,
@@ -1219,6 +3135,7 @@
           "5.C",
           "5.D"
         ],
+        "foundationalDocumentIds": [],
         "nextStep": "Review the linked unit section, explain the governing principle, and retry a targeted practice set using a new scenario.",
         "status": "internal-remediation-route",
         "officialItem": false,
@@ -1270,6 +3187,7 @@
           "5.C",
           "5.D"
         ],
+        "foundationalDocumentIds": [],
         "nextStep": "Review the linked unit section, explain the governing principle, and retry a targeted practice set using a new scenario.",
         "status": "internal-remediation-route",
         "officialItem": false,
@@ -1320,6 +3238,10 @@
           "5.B",
           "5.C",
           "5.D"
+        ],
+        "foundationalDocumentIds": [
+          "federalist-no-51",
+          "federalist-no-70"
         ],
         "nextStep": "Review the linked unit section, explain the governing principle, and retry a targeted practice set using a new scenario.",
         "status": "internal-remediation-route",
@@ -1372,6 +3294,9 @@
           "5.C",
           "5.D"
         ],
+        "foundationalDocumentIds": [
+          "constitution-of-the-united-states"
+        ],
         "nextStep": "Review the linked unit section, explain the governing principle, and retry a targeted practice set using a new scenario.",
         "status": "internal-remediation-route",
         "officialItem": false,
@@ -1422,6 +3347,9 @@
           "5.B",
           "5.C",
           "5.D"
+        ],
+        "foundationalDocumentIds": [
+          "constitution-of-the-united-states"
         ],
         "nextStep": "Review the linked unit section, explain the governing principle, and retry a targeted practice set using a new scenario.",
         "status": "internal-remediation-route",
@@ -1474,6 +3402,9 @@
           "5.C",
           "5.D"
         ],
+        "foundationalDocumentIds": [
+          "constitution-of-the-united-states"
+        ],
         "nextStep": "Review the linked unit section, explain the governing principle, and retry a targeted practice set using a new scenario.",
         "status": "internal-remediation-route",
         "officialItem": false,
@@ -1524,6 +3455,9 @@
           "5.B",
           "5.C",
           "5.D"
+        ],
+        "foundationalDocumentIds": [
+          "constitution-of-the-united-states"
         ],
         "nextStep": "Review the linked unit section, explain the governing principle, and retry a targeted practice set using a new scenario.",
         "status": "internal-remediation-route",
@@ -1576,6 +3510,9 @@
           "5.C",
           "5.D"
         ],
+        "foundationalDocumentIds": [
+          "constitution-of-the-united-states"
+        ],
         "nextStep": "Review the linked unit section, explain the governing principle, and retry a targeted practice set using a new scenario.",
         "status": "internal-remediation-route",
         "officialItem": false,
@@ -1626,6 +3563,9 @@
           "5.B",
           "5.C",
           "5.D"
+        ],
+        "foundationalDocumentIds": [
+          "constitution-of-the-united-states"
         ],
         "nextStep": "Review the linked unit section, explain the governing principle, and retry a targeted practice set using a new scenario.",
         "status": "internal-remediation-route",
@@ -1678,6 +3618,9 @@
           "5.C",
           "5.D"
         ],
+        "foundationalDocumentIds": [
+          "constitution-of-the-united-states"
+        ],
         "nextStep": "Review the linked unit section, explain the governing principle, and retry a targeted practice set using a new scenario.",
         "status": "internal-remediation-route",
         "officialItem": false,
@@ -1728,6 +3671,9 @@
           "5.B",
           "5.C",
           "5.D"
+        ],
+        "foundationalDocumentIds": [
+          "constitution-of-the-united-states"
         ],
         "nextStep": "Review the linked unit section, explain the governing principle, and retry a targeted practice set using a new scenario.",
         "status": "internal-remediation-route",
@@ -1780,6 +3726,9 @@
           "5.C",
           "5.D"
         ],
+        "foundationalDocumentIds": [
+          "constitution-of-the-united-states"
+        ],
         "nextStep": "Review the linked unit section, explain the governing principle, and retry a targeted practice set using a new scenario.",
         "status": "internal-remediation-route",
         "officialItem": false,
@@ -1830,6 +3779,12 @@
           "5.B",
           "5.C",
           "5.D"
+        ],
+        "foundationalDocumentIds": [
+          "constitution-of-the-united-states",
+          "emancipation-proclamation",
+          "gettysburg-address",
+          "letter-from-a-birmingham-jail"
         ],
         "nextStep": "Review the linked unit section, explain the governing principle, and retry a targeted practice set using a new scenario.",
         "status": "internal-remediation-route",
@@ -1882,6 +3837,11 @@
           "5.C",
           "5.D"
         ],
+        "foundationalDocumentIds": [
+          "constitution-of-the-united-states",
+          "emancipation-proclamation",
+          "letter-from-a-birmingham-jail"
+        ],
         "nextStep": "Review the linked unit section, explain the governing principle, and retry a targeted practice set using a new scenario.",
         "status": "internal-remediation-route",
         "officialItem": false,
@@ -1932,6 +3892,12 @@
           "5.B",
           "5.C",
           "5.D"
+        ],
+        "foundationalDocumentIds": [
+          "constitution-of-the-united-states",
+          "emancipation-proclamation",
+          "gettysburg-address",
+          "letter-from-a-birmingham-jail"
         ],
         "nextStep": "Review the linked unit section, explain the governing principle, and retry a targeted practice set using a new scenario.",
         "status": "internal-remediation-route",
@@ -1984,6 +3950,9 @@
           "5.C",
           "5.D"
         ],
+        "foundationalDocumentIds": [
+          "constitution-of-the-united-states"
+        ],
         "nextStep": "Review the linked unit section, explain the governing principle, and retry a targeted practice set using a new scenario.",
         "status": "internal-remediation-route",
         "officialItem": false,
@@ -2034,6 +4003,9 @@
           "5.B",
           "5.C",
           "5.D"
+        ],
+        "foundationalDocumentIds": [
+          "gettysburg-address"
         ],
         "nextStep": "Review the linked unit section, explain the governing principle, and retry a targeted practice set using a new scenario.",
         "status": "internal-remediation-route",
@@ -2086,6 +4058,7 @@
           "5.C",
           "5.D"
         ],
+        "foundationalDocumentIds": [],
         "nextStep": "Review the linked unit section, explain the governing principle, and retry a targeted practice set using a new scenario.",
         "status": "internal-remediation-route",
         "officialItem": false,
@@ -2137,6 +4110,7 @@
           "5.C",
           "5.D"
         ],
+        "foundationalDocumentIds": [],
         "nextStep": "Review the linked unit section, explain the governing principle, and retry a targeted practice set using a new scenario.",
         "status": "internal-remediation-route",
         "officialItem": false,
@@ -2188,6 +4162,7 @@
           "5.C",
           "5.D"
         ],
+        "foundationalDocumentIds": [],
         "nextStep": "Review the linked unit section, explain the governing principle, and retry a targeted practice set using a new scenario.",
         "status": "internal-remediation-route",
         "officialItem": false,
@@ -2239,6 +4214,7 @@
           "5.C",
           "5.D"
         ],
+        "foundationalDocumentIds": [],
         "nextStep": "Review the linked unit section, explain the governing principle, and retry a targeted practice set using a new scenario.",
         "status": "internal-remediation-route",
         "officialItem": false,
@@ -2290,6 +4266,7 @@
           "5.C",
           "5.D"
         ],
+        "foundationalDocumentIds": [],
         "nextStep": "Review the linked unit section, explain the governing principle, and retry a targeted practice set using a new scenario.",
         "status": "internal-remediation-route",
         "officialItem": false,
@@ -2340,6 +4317,9 @@
           "5.B",
           "5.C",
           "5.D"
+        ],
+        "foundationalDocumentIds": [
+          "adam-smith-wealth-of-nations"
         ],
         "nextStep": "Review the linked unit section, explain the governing principle, and retry a targeted practice set using a new scenario.",
         "status": "internal-remediation-route",
@@ -2392,6 +4372,9 @@
           "5.C",
           "5.D"
         ],
+        "foundationalDocumentIds": [
+          "adam-smith-wealth-of-nations"
+        ],
         "nextStep": "Review the linked unit section, explain the governing principle, and retry a targeted practice set using a new scenario.",
         "status": "internal-remediation-route",
         "officialItem": false,
@@ -2442,6 +4425,9 @@
           "5.B",
           "5.C",
           "5.D"
+        ],
+        "foundationalDocumentIds": [
+          "adam-smith-wealth-of-nations"
         ],
         "nextStep": "Review the linked unit section, explain the governing principle, and retry a targeted practice set using a new scenario.",
         "status": "internal-remediation-route",
@@ -2494,6 +4480,7 @@
           "5.C",
           "5.D"
         ],
+        "foundationalDocumentIds": [],
         "nextStep": "Review the linked unit section, explain the governing principle, and retry a targeted practice set using a new scenario.",
         "status": "internal-remediation-route",
         "officialItem": false,
@@ -2544,6 +4531,9 @@
           "5.B",
           "5.C",
           "5.D"
+        ],
+        "foundationalDocumentIds": [
+          "letter-from-a-birmingham-jail"
         ],
         "nextStep": "Review the linked unit section, explain the governing principle, and retry a targeted practice set using a new scenario.",
         "status": "internal-remediation-route",
@@ -2596,6 +4586,7 @@
           "5.C",
           "5.D"
         ],
+        "foundationalDocumentIds": [],
         "nextStep": "Review the linked unit section, explain the governing principle, and retry a targeted practice set using a new scenario.",
         "status": "internal-remediation-route",
         "officialItem": false,
@@ -2646,6 +4637,9 @@
           "5.B",
           "5.C",
           "5.D"
+        ],
+        "foundationalDocumentIds": [
+          "federalist-no-10"
         ],
         "nextStep": "Review the linked unit section, explain the governing principle, and retry a targeted practice set using a new scenario.",
         "status": "internal-remediation-route",
@@ -2698,6 +4692,7 @@
           "5.C",
           "5.D"
         ],
+        "foundationalDocumentIds": [],
         "nextStep": "Review the linked unit section, explain the governing principle, and retry a targeted practice set using a new scenario.",
         "status": "internal-remediation-route",
         "officialItem": false,
@@ -2749,6 +4744,7 @@
           "5.C",
           "5.D"
         ],
+        "foundationalDocumentIds": [],
         "nextStep": "Review the linked unit section, explain the governing principle, and retry a targeted practice set using a new scenario.",
         "status": "internal-remediation-route",
         "officialItem": false,
@@ -2799,6 +4795,11 @@
           "5.B",
           "5.C",
           "5.D"
+        ],
+        "foundationalDocumentIds": [
+          "federalist-no-10",
+          "letter-from-a-birmingham-jail",
+          "adam-smith-wealth-of-nations"
         ],
         "nextStep": "Review the linked unit section, explain the governing principle, and retry a targeted practice set using a new scenario.",
         "status": "internal-remediation-route",
@@ -2851,6 +4852,9 @@
           "5.C",
           "5.D"
         ],
+        "foundationalDocumentIds": [
+          "adam-smith-wealth-of-nations"
+        ],
         "nextStep": "Review the linked unit section, explain the governing principle, and retry a targeted practice set using a new scenario.",
         "status": "internal-remediation-route",
         "officialItem": false,
@@ -2902,6 +4906,7 @@
           "5.C",
           "5.D"
         ],
+        "foundationalDocumentIds": [],
         "nextStep": "Review the linked unit section, explain the governing principle, and retry a targeted practice set using a new scenario.",
         "status": "internal-remediation-route",
         "officialItem": false,
@@ -2953,6 +4958,7 @@
           "5.C",
           "5.D"
         ],
+        "foundationalDocumentIds": [],
         "nextStep": "Review the linked unit section, explain the governing principle, and retry a targeted practice set using a new scenario.",
         "status": "internal-remediation-route",
         "officialItem": false,
@@ -3004,6 +5010,7 @@
           "5.C",
           "5.D"
         ],
+        "foundationalDocumentIds": [],
         "nextStep": "Review the linked unit section, explain the governing principle, and retry a targeted practice set using a new scenario.",
         "status": "internal-remediation-route",
         "officialItem": false,
@@ -3055,6 +5062,7 @@
           "5.C",
           "5.D"
         ],
+        "foundationalDocumentIds": [],
         "nextStep": "Review the linked unit section, explain the governing principle, and retry a targeted practice set using a new scenario.",
         "status": "internal-remediation-route",
         "officialItem": false,
@@ -3106,6 +5114,7 @@
           "5.C",
           "5.D"
         ],
+        "foundationalDocumentIds": [],
         "nextStep": "Review the linked unit section, explain the governing principle, and retry a targeted practice set using a new scenario.",
         "status": "internal-remediation-route",
         "officialItem": false,
@@ -3157,6 +5166,7 @@
           "5.C",
           "5.D"
         ],
+        "foundationalDocumentIds": [],
         "nextStep": "Review the linked unit section, explain the governing principle, and retry a targeted practice set using a new scenario.",
         "status": "internal-remediation-route",
         "officialItem": false,
@@ -3234,6 +5244,15 @@
       "reviewedAt": "2026-08-20"
     },
     {
+      "id": "ap-gov-ced-clarifications",
+      "title": "AP U.S. Government and Politics Course and Exam Description Clarifications and Corrections, Effective Fall 2026",
+      "organization": "College Board",
+      "url": "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description-clarifications-effective-fall-2026.pdf",
+      "credibility": "The public clarification document records the Fall 2026 additions to the required foundational-document list. It is used for metadata crosswalk only; no document text or official assessment content is reproduced.",
+      "sourceType": "official-blueprint-clarifications",
+      "reviewedAt": "2026-08-20"
+    },
+    {
       "id": "american-government-3e",
       "title": "American Government 3e",
       "organization": "OpenStax, Rice University",
@@ -3241,6 +5260,1843 @@
       "credibility": "An openly accessible introductory government text used for factual cross-checking and links. No textbook prose, figures, or assessment content is reproduced.",
       "sourceType": "open-factual-cross-check",
       "reviewedAt": "2026-08-20"
+    }
+  ],
+  "foundationalDocumentCatalog": [
+    {
+      "id": "articles-of-confederation",
+      "title": "The Articles of Confederation",
+      "unitNumbers": [
+        1
+      ],
+      "topicIds": [
+        "1.4",
+        "1.6",
+        "1.7",
+        "1.8"
+      ],
+      "bigIdeaIds": [
+        "BI1",
+        "BI4"
+      ],
+      "skillIds": [
+        "C4",
+        "C5"
+      ],
+      "requiredForAcademicYear": "2026-27",
+      "requirementSource": "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description.pdf",
+      "clarificationSource": "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description-clarifications-effective-fall-2026.pdf",
+      "sourceUse": "Title, public requirement metadata, and internal topic crosswalk only; no official document text, excerpt, or assessment content is reproduced.",
+      "officialItem": false,
+      "reproducedText": false,
+      "releaseEligible": false,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "independentExpertReviewStatus": "pending"
+    },
+    {
+      "id": "brutus-no-1",
+      "title": "Brutus No. 1",
+      "unitNumbers": [
+        1
+      ],
+      "topicIds": [
+        "1.2",
+        "1.3",
+        "1.5"
+      ],
+      "bigIdeaIds": [
+        "BI1",
+        "BI2",
+        "BI5"
+      ],
+      "skillIds": [
+        "C4",
+        "C5"
+      ],
+      "requiredForAcademicYear": "2026-27",
+      "requirementSource": "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description.pdf",
+      "clarificationSource": "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description-clarifications-effective-fall-2026.pdf",
+      "sourceUse": "Title, public requirement metadata, and internal topic crosswalk only; no official document text, excerpt, or assessment content is reproduced.",
+      "officialItem": false,
+      "reproducedText": false,
+      "releaseEligible": false,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "independentExpertReviewStatus": "pending"
+    },
+    {
+      "id": "constitution-of-the-united-states",
+      "title": "The Constitution of the United States, including the Bill of Rights and subsequent amendments",
+      "unitNumbers": [
+        1,
+        2,
+        3
+      ],
+      "topicIds": [
+        "1.5",
+        "1.6",
+        "1.7",
+        "1.8",
+        "1.9",
+        "2.2",
+        "2.5",
+        "2.8",
+        "3.1",
+        "3.2",
+        "3.3",
+        "3.4",
+        "3.5",
+        "3.6",
+        "3.7",
+        "3.8",
+        "3.9",
+        "3.10",
+        "3.11",
+        "3.12",
+        "3.13"
+      ],
+      "bigIdeaIds": [
+        "BI1",
+        "BI2"
+      ],
+      "skillIds": [
+        "C4",
+        "C5"
+      ],
+      "requiredForAcademicYear": "2026-27",
+      "requirementSource": "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description.pdf",
+      "clarificationSource": "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description-clarifications-effective-fall-2026.pdf",
+      "sourceUse": "Title, public requirement metadata, and internal topic crosswalk only; no official document text, excerpt, or assessment content is reproduced.",
+      "officialItem": false,
+      "reproducedText": false,
+      "releaseEligible": false,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "independentExpertReviewStatus": "pending"
+    },
+    {
+      "id": "declaration-of-independence",
+      "title": "The Declaration of Independence",
+      "unitNumbers": [
+        1
+      ],
+      "topicIds": [
+        "1.1",
+        "1.3"
+      ],
+      "bigIdeaIds": [
+        "BI1",
+        "BI2"
+      ],
+      "skillIds": [
+        "C4",
+        "C5"
+      ],
+      "requiredForAcademicYear": "2026-27",
+      "requirementSource": "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description.pdf",
+      "clarificationSource": "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description-clarifications-effective-fall-2026.pdf",
+      "sourceUse": "Title, public requirement metadata, and internal topic crosswalk only; no official document text, excerpt, or assessment content is reproduced.",
+      "officialItem": false,
+      "reproducedText": false,
+      "releaseEligible": false,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "independentExpertReviewStatus": "pending"
+    },
+    {
+      "id": "emancipation-proclamation",
+      "title": "The Emancipation Proclamation",
+      "unitNumbers": [
+        3
+      ],
+      "topicIds": [
+        "3.10",
+        "3.11",
+        "3.12"
+      ],
+      "bigIdeaIds": [
+        "BI2",
+        "BI4"
+      ],
+      "skillIds": [
+        "C4",
+        "C5"
+      ],
+      "requiredForAcademicYear": "2026-27",
+      "requirementSource": "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description.pdf",
+      "clarificationSource": "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description-clarifications-effective-fall-2026.pdf",
+      "sourceUse": "Title, public requirement metadata, and internal topic crosswalk only; no official document text, excerpt, or assessment content is reproduced.",
+      "officialItem": false,
+      "reproducedText": false,
+      "releaseEligible": false,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "independentExpertReviewStatus": "pending"
+    },
+    {
+      "id": "federalist-no-10",
+      "title": "Federalist No. 10",
+      "unitNumbers": [
+        1
+      ],
+      "topicIds": [
+        "1.2",
+        "1.3",
+        "5.3",
+        "5.6"
+      ],
+      "bigIdeaIds": [
+        "BI1",
+        "BI3",
+        "BI4"
+      ],
+      "skillIds": [
+        "C4",
+        "C5"
+      ],
+      "requiredForAcademicYear": "2026-27",
+      "requirementSource": "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description.pdf",
+      "clarificationSource": "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description-clarifications-effective-fall-2026.pdf",
+      "sourceUse": "Title, public requirement metadata, and internal topic crosswalk only; no official document text, excerpt, or assessment content is reproduced.",
+      "officialItem": false,
+      "reproducedText": false,
+      "releaseEligible": false,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "independentExpertReviewStatus": "pending"
+    },
+    {
+      "id": "federalist-no-39",
+      "title": "Federalist No. 39",
+      "unitNumbers": [
+        1
+      ],
+      "topicIds": [
+        "1.2",
+        "1.5",
+        "1.6"
+      ],
+      "bigIdeaIds": [
+        "BI1",
+        "BI5"
+      ],
+      "skillIds": [
+        "C4",
+        "C5"
+      ],
+      "requiredForAcademicYear": "2026-27",
+      "requirementSource": "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description.pdf",
+      "clarificationSource": "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description-clarifications-effective-fall-2026.pdf",
+      "sourceUse": "Title, public requirement metadata, and internal topic crosswalk only; no official document text, excerpt, or assessment content is reproduced.",
+      "officialItem": false,
+      "reproducedText": false,
+      "releaseEligible": false,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "independentExpertReviewStatus": "pending"
+    },
+    {
+      "id": "federalist-no-51",
+      "title": "Federalist No. 51",
+      "unitNumbers": [
+        1,
+        2
+      ],
+      "topicIds": [
+        "1.6",
+        "2.1",
+        "2.2",
+        "2.5",
+        "2.8",
+        "2.11",
+        "2.15"
+      ],
+      "bigIdeaIds": [
+        "BI1",
+        "BI4"
+      ],
+      "skillIds": [
+        "C4",
+        "C5"
+      ],
+      "requiredForAcademicYear": "2026-27",
+      "requirementSource": "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description.pdf",
+      "clarificationSource": "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description-clarifications-effective-fall-2026.pdf",
+      "sourceUse": "Title, public requirement metadata, and internal topic crosswalk only; no official document text, excerpt, or assessment content is reproduced.",
+      "officialItem": false,
+      "reproducedText": false,
+      "releaseEligible": false,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "independentExpertReviewStatus": "pending"
+    },
+    {
+      "id": "federalist-no-70",
+      "title": "Federalist No. 70",
+      "unitNumbers": [
+        2
+      ],
+      "topicIds": [
+        "2.4",
+        "2.5",
+        "2.6",
+        "2.7",
+        "2.15"
+      ],
+      "bigIdeaIds": [
+        "BI1",
+        "BI4"
+      ],
+      "skillIds": [
+        "C4",
+        "C5"
+      ],
+      "requiredForAcademicYear": "2026-27",
+      "requirementSource": "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description.pdf",
+      "clarificationSource": "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description-clarifications-effective-fall-2026.pdf",
+      "sourceUse": "Title, public requirement metadata, and internal topic crosswalk only; no official document text, excerpt, or assessment content is reproduced.",
+      "officialItem": false,
+      "reproducedText": false,
+      "releaseEligible": false,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "independentExpertReviewStatus": "pending"
+    },
+    {
+      "id": "federalist-no-78",
+      "title": "Federalist No. 78",
+      "unitNumbers": [
+        2
+      ],
+      "topicIds": [
+        "2.8",
+        "2.9",
+        "2.10",
+        "2.11"
+      ],
+      "bigIdeaIds": [
+        "BI1",
+        "BI5"
+      ],
+      "skillIds": [
+        "C4",
+        "C5"
+      ],
+      "requiredForAcademicYear": "2026-27",
+      "requirementSource": "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description.pdf",
+      "clarificationSource": "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description-clarifications-effective-fall-2026.pdf",
+      "sourceUse": "Title, public requirement metadata, and internal topic crosswalk only; no official document text, excerpt, or assessment content is reproduced.",
+      "officialItem": false,
+      "reproducedText": false,
+      "releaseEligible": false,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "independentExpertReviewStatus": "pending"
+    },
+    {
+      "id": "gettysburg-address",
+      "title": "The Gettysburg Address",
+      "unitNumbers": [
+        3
+      ],
+      "topicIds": [
+        "3.10",
+        "3.12",
+        "4.1"
+      ],
+      "bigIdeaIds": [
+        "BI2",
+        "BI3"
+      ],
+      "skillIds": [
+        "C4",
+        "C5"
+      ],
+      "requiredForAcademicYear": "2026-27",
+      "requirementSource": "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description.pdf",
+      "clarificationSource": "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description-clarifications-effective-fall-2026.pdf",
+      "sourceUse": "Title, public requirement metadata, and internal topic crosswalk only; no official document text, excerpt, or assessment content is reproduced.",
+      "officialItem": false,
+      "reproducedText": false,
+      "releaseEligible": false,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "independentExpertReviewStatus": "pending"
+    },
+    {
+      "id": "letter-from-a-birmingham-jail",
+      "title": "Letter from a Birmingham Jail",
+      "unitNumbers": [
+        3
+      ],
+      "topicIds": [
+        "3.10",
+        "3.11",
+        "3.12",
+        "5.1",
+        "5.6"
+      ],
+      "bigIdeaIds": [
+        "BI2",
+        "BI3",
+        "BI5"
+      ],
+      "skillIds": [
+        "C4",
+        "C5"
+      ],
+      "requiredForAcademicYear": "2026-27",
+      "requirementSource": "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description.pdf",
+      "clarificationSource": "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description-clarifications-effective-fall-2026.pdf",
+      "sourceUse": "Title, public requirement metadata, and internal topic crosswalk only; no official document text, excerpt, or assessment content is reproduced.",
+      "officialItem": false,
+      "reproducedText": false,
+      "releaseEligible": false,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "independentExpertReviewStatus": "pending"
+    },
+    {
+      "id": "adam-smith-wealth-of-nations",
+      "title": "Core Principles from Adam Smith's The Wealth of Nations",
+      "unitNumbers": [
+        4,
+        5
+      ],
+      "topicIds": [
+        "4.7",
+        "4.8",
+        "4.9",
+        "5.6",
+        "5.7"
+      ],
+      "bigIdeaIds": [
+        "BI4",
+        "BI5"
+      ],
+      "skillIds": [
+        "C4",
+        "C5"
+      ],
+      "requiredForAcademicYear": "2026-27",
+      "requirementSource": "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description.pdf",
+      "clarificationSource": "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description-clarifications-effective-fall-2026.pdf",
+      "sourceUse": "Title, public requirement metadata, and internal topic crosswalk only; no official document text, excerpt, or assessment content is reproduced.",
+      "officialItem": false,
+      "reproducedText": false,
+      "releaseEligible": false,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "independentExpertReviewStatus": "pending"
+    }
+  ],
+  "foundationalDocumentRoutes": [
+    {
+      "id": "ap-usg-document-route-articles-of-confederation",
+      "documentId": "articles-of-confederation",
+      "title": "The Articles of Confederation",
+      "academicYearReference": "2026-27",
+      "unitNumbers": [
+        1
+      ],
+      "topicIds": [
+        "1.4",
+        "1.6",
+        "1.7",
+        "1.8"
+      ],
+      "bigIdeaIds": [
+        "BI1",
+        "BI4"
+      ],
+      "skillIds": [
+        "C4",
+        "C5"
+      ],
+      "chapterIds": [
+        "ap-usg-ch-01"
+      ],
+      "sectionIds": [
+        "ap-usg-ch-01-section-02",
+        "ap-usg-ch-01-section-03"
+      ],
+      "workshopIds": [
+        "ap-usg-workshop-concept-application"
+      ],
+      "itemIds": [
+        "ap-usg-u1-004",
+        "ap-usg-u1-006",
+        "ap-usg-u1-007",
+        "ap-usg-u1-008",
+        "ap-usg-u1-013",
+        "ap-usg-u1-015",
+        "ap-usg-u1-016",
+        "ap-usg-u1-017",
+        "ap-usg-u1-104",
+        "ap-usg-u1-106",
+        "ap-usg-u1-107",
+        "ap-usg-u1-108",
+        "ap-usg-u1-113",
+        "ap-usg-u1-115",
+        "ap-usg-u1-116",
+        "ap-usg-u1-117",
+        "ap-usg-u1-204",
+        "ap-usg-u1-206",
+        "ap-usg-u1-207",
+        "ap-usg-u1-208"
+      ],
+      "foundationItemIds": [
+        "ap-usg-u1-004",
+        "ap-usg-u1-006",
+        "ap-usg-u1-007",
+        "ap-usg-u1-008",
+        "ap-usg-u1-013",
+        "ap-usg-u1-015",
+        "ap-usg-u1-016",
+        "ap-usg-u1-017"
+      ],
+      "depthItemIds": [
+        "ap-usg-u1-104",
+        "ap-usg-u1-106",
+        "ap-usg-u1-107",
+        "ap-usg-u1-108",
+        "ap-usg-u1-113",
+        "ap-usg-u1-115",
+        "ap-usg-u1-116",
+        "ap-usg-u1-117"
+      ],
+      "transferItemIds": [
+        "ap-usg-u1-204",
+        "ap-usg-u1-206",
+        "ap-usg-u1-207",
+        "ap-usg-u1-208"
+      ],
+      "itemCount": 20,
+      "practiceSliceCounts": {
+        "foundation-slice": 8,
+        "depth-slice": 8,
+        "transfer-slice": 4
+      },
+      "studyMove": "Use the document title as a retrieval cue: identify the constitutional principle or argument, connect it to the linked topics, and qualify the conclusion using the source purpose and context.",
+      "accessNote": "This route contains public requirement metadata and original practice links only; it does not reproduce official document text, excerpts, prompts, or rubrics.",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description.pdf",
+        "https://apcentral.collegeboard.org/courses/ap-united-states-government-and-politics",
+        "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description-clarifications-effective-fall-2026.pdf"
+      ],
+      "sourceUse": "Title, public requirement metadata, and internal topic crosswalk only; no official document text, excerpt, or assessment content is reproduced.",
+      "officialItem": false,
+      "reproducedText": false,
+      "releaseEligible": false,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "independentExpertReviewStatus": "pending"
+    },
+    {
+      "id": "ap-usg-document-route-brutus-no-1",
+      "documentId": "brutus-no-1",
+      "title": "Brutus No. 1",
+      "academicYearReference": "2026-27",
+      "unitNumbers": [
+        1
+      ],
+      "topicIds": [
+        "1.2",
+        "1.3",
+        "1.5"
+      ],
+      "bigIdeaIds": [
+        "BI1",
+        "BI2",
+        "BI5"
+      ],
+      "skillIds": [
+        "C4",
+        "C5"
+      ],
+      "chapterIds": [
+        "ap-usg-ch-01"
+      ],
+      "sectionIds": [
+        "ap-usg-ch-01-section-01",
+        "ap-usg-ch-01-section-02"
+      ],
+      "workshopIds": [
+        "ap-usg-workshop-source-analysis"
+      ],
+      "itemIds": [
+        "ap-usg-u1-002",
+        "ap-usg-u1-003",
+        "ap-usg-u1-005",
+        "ap-usg-u1-011",
+        "ap-usg-u1-012",
+        "ap-usg-u1-014",
+        "ap-usg-u1-102",
+        "ap-usg-u1-103",
+        "ap-usg-u1-105",
+        "ap-usg-u1-111",
+        "ap-usg-u1-112",
+        "ap-usg-u1-114",
+        "ap-usg-u1-202",
+        "ap-usg-u1-203",
+        "ap-usg-u1-205"
+      ],
+      "foundationItemIds": [
+        "ap-usg-u1-002",
+        "ap-usg-u1-003",
+        "ap-usg-u1-005",
+        "ap-usg-u1-011",
+        "ap-usg-u1-012",
+        "ap-usg-u1-014"
+      ],
+      "depthItemIds": [
+        "ap-usg-u1-102",
+        "ap-usg-u1-103",
+        "ap-usg-u1-105",
+        "ap-usg-u1-111",
+        "ap-usg-u1-112",
+        "ap-usg-u1-114"
+      ],
+      "transferItemIds": [
+        "ap-usg-u1-202",
+        "ap-usg-u1-203",
+        "ap-usg-u1-205"
+      ],
+      "itemCount": 15,
+      "practiceSliceCounts": {
+        "foundation-slice": 6,
+        "depth-slice": 6,
+        "transfer-slice": 3
+      },
+      "studyMove": "Use the document title as a retrieval cue: identify the constitutional principle or argument, connect it to the linked topics, and qualify the conclusion using the source purpose and context.",
+      "accessNote": "This route contains public requirement metadata and original practice links only; it does not reproduce official document text, excerpts, prompts, or rubrics.",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description.pdf",
+        "https://apcentral.collegeboard.org/courses/ap-united-states-government-and-politics",
+        "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description-clarifications-effective-fall-2026.pdf"
+      ],
+      "sourceUse": "Title, public requirement metadata, and internal topic crosswalk only; no official document text, excerpt, or assessment content is reproduced.",
+      "officialItem": false,
+      "reproducedText": false,
+      "releaseEligible": false,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "independentExpertReviewStatus": "pending"
+    },
+    {
+      "id": "ap-usg-document-route-constitution-of-the-united-states",
+      "documentId": "constitution-of-the-united-states",
+      "title": "The Constitution of the United States, including the Bill of Rights and subsequent amendments",
+      "academicYearReference": "2026-27",
+      "unitNumbers": [
+        1,
+        2,
+        3
+      ],
+      "topicIds": [
+        "1.5",
+        "1.6",
+        "1.7",
+        "1.8",
+        "1.9",
+        "2.2",
+        "2.5",
+        "2.8",
+        "3.1",
+        "3.2",
+        "3.3",
+        "3.4",
+        "3.5",
+        "3.6",
+        "3.7",
+        "3.8",
+        "3.9",
+        "3.10",
+        "3.11",
+        "3.12",
+        "3.13"
+      ],
+      "bigIdeaIds": [
+        "BI1",
+        "BI2"
+      ],
+      "skillIds": [
+        "C4",
+        "C5"
+      ],
+      "chapterIds": [
+        "ap-usg-ch-01",
+        "ap-usg-ch-02",
+        "ap-usg-ch-03"
+      ],
+      "sectionIds": [
+        "ap-usg-ch-01-section-02",
+        "ap-usg-ch-01-section-03",
+        "ap-usg-ch-02-section-01",
+        "ap-usg-ch-02-section-02",
+        "ap-usg-ch-03-section-01",
+        "ap-usg-ch-03-section-02",
+        "ap-usg-ch-03-section-03"
+      ],
+      "workshopIds": [
+        "ap-usg-workshop-concept-application",
+        "ap-usg-workshop-case-comparison",
+        "ap-usg-workshop-source-analysis"
+      ],
+      "itemIds": [
+        "ap-usg-u1-005",
+        "ap-usg-u1-006",
+        "ap-usg-u1-007",
+        "ap-usg-u1-008",
+        "ap-usg-u1-009",
+        "ap-usg-u1-014",
+        "ap-usg-u1-015",
+        "ap-usg-u1-016",
+        "ap-usg-u1-017",
+        "ap-usg-u1-018",
+        "ap-usg-u2-020",
+        "ap-usg-u2-023",
+        "ap-usg-u2-026",
+        "ap-usg-u2-035",
+        "ap-usg-u2-038",
+        "ap-usg-u2-041",
+        "ap-usg-u3-049",
+        "ap-usg-u3-050",
+        "ap-usg-u3-051",
+        "ap-usg-u3-052",
+        "ap-usg-u3-053",
+        "ap-usg-u3-054",
+        "ap-usg-u3-055",
+        "ap-usg-u3-056",
+        "ap-usg-u3-057",
+        "ap-usg-u3-058",
+        "ap-usg-u3-059",
+        "ap-usg-u3-060",
+        "ap-usg-u3-061",
+        "ap-usg-u3-062",
+        "ap-usg-u3-063",
+        "ap-usg-u1-105",
+        "ap-usg-u1-106",
+        "ap-usg-u1-107",
+        "ap-usg-u1-108",
+        "ap-usg-u1-109",
+        "ap-usg-u1-114",
+        "ap-usg-u1-115",
+        "ap-usg-u1-116",
+        "ap-usg-u1-117",
+        "ap-usg-u1-118",
+        "ap-usg-u2-120",
+        "ap-usg-u2-123",
+        "ap-usg-u2-126",
+        "ap-usg-u2-135",
+        "ap-usg-u2-138",
+        "ap-usg-u2-141",
+        "ap-usg-u3-149",
+        "ap-usg-u3-150",
+        "ap-usg-u3-151",
+        "ap-usg-u3-152",
+        "ap-usg-u3-153",
+        "ap-usg-u3-154",
+        "ap-usg-u3-155",
+        "ap-usg-u3-156",
+        "ap-usg-u3-157",
+        "ap-usg-u3-158",
+        "ap-usg-u3-159",
+        "ap-usg-u3-160",
+        "ap-usg-u3-161",
+        "ap-usg-u3-162",
+        "ap-usg-u3-163",
+        "ap-usg-u1-205",
+        "ap-usg-u1-206",
+        "ap-usg-u1-207",
+        "ap-usg-u1-208",
+        "ap-usg-u1-209",
+        "ap-usg-u2-211",
+        "ap-usg-u2-214",
+        "ap-usg-u2-217",
+        "ap-usg-u3-225",
+        "ap-usg-u3-226",
+        "ap-usg-u3-227",
+        "ap-usg-u3-228",
+        "ap-usg-u3-229",
+        "ap-usg-u3-230",
+        "ap-usg-u3-231",
+        "ap-usg-u3-232",
+        "ap-usg-u3-233",
+        "ap-usg-u3-234",
+        "ap-usg-u3-235",
+        "ap-usg-u3-236",
+        "ap-usg-u3-237"
+      ],
+      "foundationItemIds": [
+        "ap-usg-u1-005",
+        "ap-usg-u1-006",
+        "ap-usg-u1-007",
+        "ap-usg-u1-008",
+        "ap-usg-u1-009",
+        "ap-usg-u1-014",
+        "ap-usg-u1-015",
+        "ap-usg-u1-016",
+        "ap-usg-u1-017",
+        "ap-usg-u1-018",
+        "ap-usg-u2-020",
+        "ap-usg-u2-023",
+        "ap-usg-u2-026",
+        "ap-usg-u2-035",
+        "ap-usg-u2-038",
+        "ap-usg-u2-041",
+        "ap-usg-u3-049",
+        "ap-usg-u3-050",
+        "ap-usg-u3-051",
+        "ap-usg-u3-052",
+        "ap-usg-u3-053",
+        "ap-usg-u3-054",
+        "ap-usg-u3-055",
+        "ap-usg-u3-056",
+        "ap-usg-u3-057",
+        "ap-usg-u3-058",
+        "ap-usg-u3-059",
+        "ap-usg-u3-060",
+        "ap-usg-u3-061",
+        "ap-usg-u3-062",
+        "ap-usg-u3-063"
+      ],
+      "depthItemIds": [
+        "ap-usg-u1-105",
+        "ap-usg-u1-106",
+        "ap-usg-u1-107",
+        "ap-usg-u1-108",
+        "ap-usg-u1-109",
+        "ap-usg-u1-114",
+        "ap-usg-u1-115",
+        "ap-usg-u1-116",
+        "ap-usg-u1-117",
+        "ap-usg-u1-118",
+        "ap-usg-u2-120",
+        "ap-usg-u2-123",
+        "ap-usg-u2-126",
+        "ap-usg-u2-135",
+        "ap-usg-u2-138",
+        "ap-usg-u2-141",
+        "ap-usg-u3-149",
+        "ap-usg-u3-150",
+        "ap-usg-u3-151",
+        "ap-usg-u3-152",
+        "ap-usg-u3-153",
+        "ap-usg-u3-154",
+        "ap-usg-u3-155",
+        "ap-usg-u3-156",
+        "ap-usg-u3-157",
+        "ap-usg-u3-158",
+        "ap-usg-u3-159",
+        "ap-usg-u3-160",
+        "ap-usg-u3-161",
+        "ap-usg-u3-162",
+        "ap-usg-u3-163"
+      ],
+      "transferItemIds": [
+        "ap-usg-u1-205",
+        "ap-usg-u1-206",
+        "ap-usg-u1-207",
+        "ap-usg-u1-208",
+        "ap-usg-u1-209",
+        "ap-usg-u2-211",
+        "ap-usg-u2-214",
+        "ap-usg-u2-217",
+        "ap-usg-u3-225",
+        "ap-usg-u3-226",
+        "ap-usg-u3-227",
+        "ap-usg-u3-228",
+        "ap-usg-u3-229",
+        "ap-usg-u3-230",
+        "ap-usg-u3-231",
+        "ap-usg-u3-232",
+        "ap-usg-u3-233",
+        "ap-usg-u3-234",
+        "ap-usg-u3-235",
+        "ap-usg-u3-236",
+        "ap-usg-u3-237"
+      ],
+      "itemCount": 83,
+      "practiceSliceCounts": {
+        "foundation-slice": 31,
+        "depth-slice": 31,
+        "transfer-slice": 21
+      },
+      "studyMove": "Use the document title as a retrieval cue: identify the constitutional principle or argument, connect it to the linked topics, and qualify the conclusion using the source purpose and context.",
+      "accessNote": "This route contains public requirement metadata and original practice links only; it does not reproduce official document text, excerpts, prompts, or rubrics.",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description.pdf",
+        "https://apcentral.collegeboard.org/courses/ap-united-states-government-and-politics",
+        "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description-clarifications-effective-fall-2026.pdf"
+      ],
+      "sourceUse": "Title, public requirement metadata, and internal topic crosswalk only; no official document text, excerpt, or assessment content is reproduced.",
+      "officialItem": false,
+      "reproducedText": false,
+      "releaseEligible": false,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "independentExpertReviewStatus": "pending"
+    },
+    {
+      "id": "ap-usg-document-route-declaration-of-independence",
+      "documentId": "declaration-of-independence",
+      "title": "The Declaration of Independence",
+      "academicYearReference": "2026-27",
+      "unitNumbers": [
+        1
+      ],
+      "topicIds": [
+        "1.1",
+        "1.3"
+      ],
+      "bigIdeaIds": [
+        "BI1",
+        "BI2"
+      ],
+      "skillIds": [
+        "C4",
+        "C5"
+      ],
+      "chapterIds": [
+        "ap-usg-ch-01"
+      ],
+      "sectionIds": [
+        "ap-usg-ch-01-section-01"
+      ],
+      "workshopIds": [
+        "ap-usg-workshop-source-analysis"
+      ],
+      "itemIds": [
+        "ap-usg-u1-001",
+        "ap-usg-u1-003",
+        "ap-usg-u1-010",
+        "ap-usg-u1-012",
+        "ap-usg-u1-101",
+        "ap-usg-u1-103",
+        "ap-usg-u1-110",
+        "ap-usg-u1-112",
+        "ap-usg-u1-201",
+        "ap-usg-u1-203"
+      ],
+      "foundationItemIds": [
+        "ap-usg-u1-001",
+        "ap-usg-u1-003",
+        "ap-usg-u1-010",
+        "ap-usg-u1-012"
+      ],
+      "depthItemIds": [
+        "ap-usg-u1-101",
+        "ap-usg-u1-103",
+        "ap-usg-u1-110",
+        "ap-usg-u1-112"
+      ],
+      "transferItemIds": [
+        "ap-usg-u1-201",
+        "ap-usg-u1-203"
+      ],
+      "itemCount": 10,
+      "practiceSliceCounts": {
+        "foundation-slice": 4,
+        "depth-slice": 4,
+        "transfer-slice": 2
+      },
+      "studyMove": "Use the document title as a retrieval cue: identify the constitutional principle or argument, connect it to the linked topics, and qualify the conclusion using the source purpose and context.",
+      "accessNote": "This route contains public requirement metadata and original practice links only; it does not reproduce official document text, excerpts, prompts, or rubrics.",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description.pdf",
+        "https://apcentral.collegeboard.org/courses/ap-united-states-government-and-politics",
+        "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description-clarifications-effective-fall-2026.pdf"
+      ],
+      "sourceUse": "Title, public requirement metadata, and internal topic crosswalk only; no official document text, excerpt, or assessment content is reproduced.",
+      "officialItem": false,
+      "reproducedText": false,
+      "releaseEligible": false,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "independentExpertReviewStatus": "pending"
+    },
+    {
+      "id": "ap-usg-document-route-emancipation-proclamation",
+      "documentId": "emancipation-proclamation",
+      "title": "The Emancipation Proclamation",
+      "academicYearReference": "2026-27",
+      "unitNumbers": [
+        3
+      ],
+      "topicIds": [
+        "3.10",
+        "3.11",
+        "3.12"
+      ],
+      "bigIdeaIds": [
+        "BI2",
+        "BI4"
+      ],
+      "skillIds": [
+        "C4",
+        "C5"
+      ],
+      "chapterIds": [
+        "ap-usg-ch-03"
+      ],
+      "sectionIds": [
+        "ap-usg-ch-03-section-03"
+      ],
+      "workshopIds": [],
+      "itemIds": [
+        "ap-usg-u3-058",
+        "ap-usg-u3-059",
+        "ap-usg-u3-060",
+        "ap-usg-u3-063",
+        "ap-usg-u3-158",
+        "ap-usg-u3-159",
+        "ap-usg-u3-160",
+        "ap-usg-u3-234",
+        "ap-usg-u3-235",
+        "ap-usg-u3-236"
+      ],
+      "foundationItemIds": [
+        "ap-usg-u3-058",
+        "ap-usg-u3-059",
+        "ap-usg-u3-060",
+        "ap-usg-u3-063"
+      ],
+      "depthItemIds": [
+        "ap-usg-u3-158",
+        "ap-usg-u3-159",
+        "ap-usg-u3-160"
+      ],
+      "transferItemIds": [
+        "ap-usg-u3-234",
+        "ap-usg-u3-235",
+        "ap-usg-u3-236"
+      ],
+      "itemCount": 10,
+      "practiceSliceCounts": {
+        "foundation-slice": 4,
+        "depth-slice": 3,
+        "transfer-slice": 3
+      },
+      "studyMove": "Use the document title as a retrieval cue: identify the constitutional principle or argument, connect it to the linked topics, and qualify the conclusion using the source purpose and context.",
+      "accessNote": "This route contains public requirement metadata and original practice links only; it does not reproduce official document text, excerpts, prompts, or rubrics.",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description.pdf",
+        "https://apcentral.collegeboard.org/courses/ap-united-states-government-and-politics",
+        "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description-clarifications-effective-fall-2026.pdf"
+      ],
+      "sourceUse": "Title, public requirement metadata, and internal topic crosswalk only; no official document text, excerpt, or assessment content is reproduced.",
+      "officialItem": false,
+      "reproducedText": false,
+      "releaseEligible": false,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "independentExpertReviewStatus": "pending"
+    },
+    {
+      "id": "ap-usg-document-route-federalist-no-10",
+      "documentId": "federalist-no-10",
+      "title": "Federalist No. 10",
+      "academicYearReference": "2026-27",
+      "unitNumbers": [
+        1
+      ],
+      "topicIds": [
+        "1.2",
+        "1.3",
+        "5.3",
+        "5.6"
+      ],
+      "bigIdeaIds": [
+        "BI1",
+        "BI3",
+        "BI4"
+      ],
+      "skillIds": [
+        "C4",
+        "C5"
+      ],
+      "chapterIds": [
+        "ap-usg-ch-01",
+        "ap-usg-ch-05"
+      ],
+      "sectionIds": [
+        "ap-usg-ch-01-section-01",
+        "ap-usg-ch-05-section-01",
+        "ap-usg-ch-05-section-02"
+      ],
+      "workshopIds": [
+        "ap-usg-workshop-source-analysis"
+      ],
+      "itemIds": [
+        "ap-usg-u1-002",
+        "ap-usg-u1-003",
+        "ap-usg-u1-011",
+        "ap-usg-u1-012",
+        "ap-usg-u5-078",
+        "ap-usg-u5-081",
+        "ap-usg-u5-091",
+        "ap-usg-u5-094",
+        "ap-usg-u1-102",
+        "ap-usg-u1-103",
+        "ap-usg-u1-111",
+        "ap-usg-u1-112",
+        "ap-usg-u5-178",
+        "ap-usg-u5-181",
+        "ap-usg-u5-190",
+        "ap-usg-u5-193",
+        "ap-usg-u1-202",
+        "ap-usg-u1-203",
+        "ap-usg-u5-250",
+        "ap-usg-u5-253"
+      ],
+      "foundationItemIds": [
+        "ap-usg-u1-002",
+        "ap-usg-u1-003",
+        "ap-usg-u1-011",
+        "ap-usg-u1-012",
+        "ap-usg-u5-078",
+        "ap-usg-u5-081",
+        "ap-usg-u5-091",
+        "ap-usg-u5-094"
+      ],
+      "depthItemIds": [
+        "ap-usg-u1-102",
+        "ap-usg-u1-103",
+        "ap-usg-u1-111",
+        "ap-usg-u1-112",
+        "ap-usg-u5-178",
+        "ap-usg-u5-181",
+        "ap-usg-u5-190",
+        "ap-usg-u5-193"
+      ],
+      "transferItemIds": [
+        "ap-usg-u1-202",
+        "ap-usg-u1-203",
+        "ap-usg-u5-250",
+        "ap-usg-u5-253"
+      ],
+      "itemCount": 20,
+      "practiceSliceCounts": {
+        "foundation-slice": 8,
+        "depth-slice": 8,
+        "transfer-slice": 4
+      },
+      "studyMove": "Use the document title as a retrieval cue: identify the constitutional principle or argument, connect it to the linked topics, and qualify the conclusion using the source purpose and context.",
+      "accessNote": "This route contains public requirement metadata and original practice links only; it does not reproduce official document text, excerpts, prompts, or rubrics.",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description.pdf",
+        "https://apcentral.collegeboard.org/courses/ap-united-states-government-and-politics",
+        "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description-clarifications-effective-fall-2026.pdf"
+      ],
+      "sourceUse": "Title, public requirement metadata, and internal topic crosswalk only; no official document text, excerpt, or assessment content is reproduced.",
+      "officialItem": false,
+      "reproducedText": false,
+      "releaseEligible": false,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "independentExpertReviewStatus": "pending"
+    },
+    {
+      "id": "ap-usg-document-route-federalist-no-39",
+      "documentId": "federalist-no-39",
+      "title": "Federalist No. 39",
+      "academicYearReference": "2026-27",
+      "unitNumbers": [
+        1
+      ],
+      "topicIds": [
+        "1.2",
+        "1.5",
+        "1.6"
+      ],
+      "bigIdeaIds": [
+        "BI1",
+        "BI5"
+      ],
+      "skillIds": [
+        "C4",
+        "C5"
+      ],
+      "chapterIds": [
+        "ap-usg-ch-01"
+      ],
+      "sectionIds": [
+        "ap-usg-ch-01-section-01",
+        "ap-usg-ch-01-section-02"
+      ],
+      "workshopIds": [
+        "ap-usg-workshop-source-analysis"
+      ],
+      "itemIds": [
+        "ap-usg-u1-002",
+        "ap-usg-u1-005",
+        "ap-usg-u1-006",
+        "ap-usg-u1-011",
+        "ap-usg-u1-014",
+        "ap-usg-u1-015",
+        "ap-usg-u1-102",
+        "ap-usg-u1-105",
+        "ap-usg-u1-106",
+        "ap-usg-u1-111",
+        "ap-usg-u1-114",
+        "ap-usg-u1-115",
+        "ap-usg-u1-202",
+        "ap-usg-u1-205",
+        "ap-usg-u1-206"
+      ],
+      "foundationItemIds": [
+        "ap-usg-u1-002",
+        "ap-usg-u1-005",
+        "ap-usg-u1-006",
+        "ap-usg-u1-011",
+        "ap-usg-u1-014",
+        "ap-usg-u1-015"
+      ],
+      "depthItemIds": [
+        "ap-usg-u1-102",
+        "ap-usg-u1-105",
+        "ap-usg-u1-106",
+        "ap-usg-u1-111",
+        "ap-usg-u1-114",
+        "ap-usg-u1-115"
+      ],
+      "transferItemIds": [
+        "ap-usg-u1-202",
+        "ap-usg-u1-205",
+        "ap-usg-u1-206"
+      ],
+      "itemCount": 15,
+      "practiceSliceCounts": {
+        "foundation-slice": 6,
+        "depth-slice": 6,
+        "transfer-slice": 3
+      },
+      "studyMove": "Use the document title as a retrieval cue: identify the constitutional principle or argument, connect it to the linked topics, and qualify the conclusion using the source purpose and context.",
+      "accessNote": "This route contains public requirement metadata and original practice links only; it does not reproduce official document text, excerpts, prompts, or rubrics.",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description.pdf",
+        "https://apcentral.collegeboard.org/courses/ap-united-states-government-and-politics",
+        "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description-clarifications-effective-fall-2026.pdf"
+      ],
+      "sourceUse": "Title, public requirement metadata, and internal topic crosswalk only; no official document text, excerpt, or assessment content is reproduced.",
+      "officialItem": false,
+      "reproducedText": false,
+      "releaseEligible": false,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "independentExpertReviewStatus": "pending"
+    },
+    {
+      "id": "ap-usg-document-route-federalist-no-51",
+      "documentId": "federalist-no-51",
+      "title": "Federalist No. 51",
+      "academicYearReference": "2026-27",
+      "unitNumbers": [
+        1,
+        2
+      ],
+      "topicIds": [
+        "1.6",
+        "2.1",
+        "2.2",
+        "2.5",
+        "2.8",
+        "2.11",
+        "2.15"
+      ],
+      "bigIdeaIds": [
+        "BI1",
+        "BI4"
+      ],
+      "skillIds": [
+        "C4",
+        "C5"
+      ],
+      "chapterIds": [
+        "ap-usg-ch-01",
+        "ap-usg-ch-02"
+      ],
+      "sectionIds": [
+        "ap-usg-ch-01-section-02",
+        "ap-usg-ch-02-section-01",
+        "ap-usg-ch-02-section-02",
+        "ap-usg-ch-02-section-03"
+      ],
+      "workshopIds": [
+        "ap-usg-workshop-case-comparison"
+      ],
+      "itemIds": [
+        "ap-usg-u1-006",
+        "ap-usg-u1-015",
+        "ap-usg-u2-019",
+        "ap-usg-u2-020",
+        "ap-usg-u2-023",
+        "ap-usg-u2-026",
+        "ap-usg-u2-029",
+        "ap-usg-u2-033",
+        "ap-usg-u2-034",
+        "ap-usg-u2-035",
+        "ap-usg-u2-038",
+        "ap-usg-u2-041",
+        "ap-usg-u2-044",
+        "ap-usg-u2-048",
+        "ap-usg-u1-106",
+        "ap-usg-u1-115",
+        "ap-usg-u2-119",
+        "ap-usg-u2-120",
+        "ap-usg-u2-123",
+        "ap-usg-u2-126",
+        "ap-usg-u2-129",
+        "ap-usg-u2-133",
+        "ap-usg-u2-134",
+        "ap-usg-u2-135",
+        "ap-usg-u2-138",
+        "ap-usg-u2-141",
+        "ap-usg-u2-144",
+        "ap-usg-u2-148",
+        "ap-usg-u1-206",
+        "ap-usg-u2-210",
+        "ap-usg-u2-211",
+        "ap-usg-u2-214",
+        "ap-usg-u2-217",
+        "ap-usg-u2-220",
+        "ap-usg-u2-224"
+      ],
+      "foundationItemIds": [
+        "ap-usg-u1-006",
+        "ap-usg-u1-015",
+        "ap-usg-u2-019",
+        "ap-usg-u2-020",
+        "ap-usg-u2-023",
+        "ap-usg-u2-026",
+        "ap-usg-u2-029",
+        "ap-usg-u2-033",
+        "ap-usg-u2-034",
+        "ap-usg-u2-035",
+        "ap-usg-u2-038",
+        "ap-usg-u2-041",
+        "ap-usg-u2-044",
+        "ap-usg-u2-048"
+      ],
+      "depthItemIds": [
+        "ap-usg-u1-106",
+        "ap-usg-u1-115",
+        "ap-usg-u2-119",
+        "ap-usg-u2-120",
+        "ap-usg-u2-123",
+        "ap-usg-u2-126",
+        "ap-usg-u2-129",
+        "ap-usg-u2-133",
+        "ap-usg-u2-134",
+        "ap-usg-u2-135",
+        "ap-usg-u2-138",
+        "ap-usg-u2-141",
+        "ap-usg-u2-144",
+        "ap-usg-u2-148"
+      ],
+      "transferItemIds": [
+        "ap-usg-u1-206",
+        "ap-usg-u2-210",
+        "ap-usg-u2-211",
+        "ap-usg-u2-214",
+        "ap-usg-u2-217",
+        "ap-usg-u2-220",
+        "ap-usg-u2-224"
+      ],
+      "itemCount": 35,
+      "practiceSliceCounts": {
+        "foundation-slice": 14,
+        "depth-slice": 14,
+        "transfer-slice": 7
+      },
+      "studyMove": "Use the document title as a retrieval cue: identify the constitutional principle or argument, connect it to the linked topics, and qualify the conclusion using the source purpose and context.",
+      "accessNote": "This route contains public requirement metadata and original practice links only; it does not reproduce official document text, excerpts, prompts, or rubrics.",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description.pdf",
+        "https://apcentral.collegeboard.org/courses/ap-united-states-government-and-politics",
+        "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description-clarifications-effective-fall-2026.pdf"
+      ],
+      "sourceUse": "Title, public requirement metadata, and internal topic crosswalk only; no official document text, excerpt, or assessment content is reproduced.",
+      "officialItem": false,
+      "reproducedText": false,
+      "releaseEligible": false,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "independentExpertReviewStatus": "pending"
+    },
+    {
+      "id": "ap-usg-document-route-federalist-no-70",
+      "documentId": "federalist-no-70",
+      "title": "Federalist No. 70",
+      "academicYearReference": "2026-27",
+      "unitNumbers": [
+        2
+      ],
+      "topicIds": [
+        "2.4",
+        "2.5",
+        "2.6",
+        "2.7",
+        "2.15"
+      ],
+      "bigIdeaIds": [
+        "BI1",
+        "BI4"
+      ],
+      "skillIds": [
+        "C4",
+        "C5"
+      ],
+      "chapterIds": [
+        "ap-usg-ch-02"
+      ],
+      "sectionIds": [
+        "ap-usg-ch-02-section-01",
+        "ap-usg-ch-02-section-02",
+        "ap-usg-ch-02-section-03"
+      ],
+      "workshopIds": [
+        "ap-usg-workshop-case-comparison"
+      ],
+      "itemIds": [
+        "ap-usg-u2-022",
+        "ap-usg-u2-023",
+        "ap-usg-u2-024",
+        "ap-usg-u2-025",
+        "ap-usg-u2-033",
+        "ap-usg-u2-037",
+        "ap-usg-u2-038",
+        "ap-usg-u2-039",
+        "ap-usg-u2-040",
+        "ap-usg-u2-048",
+        "ap-usg-u2-122",
+        "ap-usg-u2-123",
+        "ap-usg-u2-124",
+        "ap-usg-u2-125",
+        "ap-usg-u2-133",
+        "ap-usg-u2-137",
+        "ap-usg-u2-138",
+        "ap-usg-u2-139",
+        "ap-usg-u2-140",
+        "ap-usg-u2-148",
+        "ap-usg-u2-213",
+        "ap-usg-u2-214",
+        "ap-usg-u2-215",
+        "ap-usg-u2-216",
+        "ap-usg-u2-224"
+      ],
+      "foundationItemIds": [
+        "ap-usg-u2-022",
+        "ap-usg-u2-023",
+        "ap-usg-u2-024",
+        "ap-usg-u2-025",
+        "ap-usg-u2-033",
+        "ap-usg-u2-037",
+        "ap-usg-u2-038",
+        "ap-usg-u2-039",
+        "ap-usg-u2-040",
+        "ap-usg-u2-048"
+      ],
+      "depthItemIds": [
+        "ap-usg-u2-122",
+        "ap-usg-u2-123",
+        "ap-usg-u2-124",
+        "ap-usg-u2-125",
+        "ap-usg-u2-133",
+        "ap-usg-u2-137",
+        "ap-usg-u2-138",
+        "ap-usg-u2-139",
+        "ap-usg-u2-140",
+        "ap-usg-u2-148"
+      ],
+      "transferItemIds": [
+        "ap-usg-u2-213",
+        "ap-usg-u2-214",
+        "ap-usg-u2-215",
+        "ap-usg-u2-216",
+        "ap-usg-u2-224"
+      ],
+      "itemCount": 25,
+      "practiceSliceCounts": {
+        "foundation-slice": 10,
+        "depth-slice": 10,
+        "transfer-slice": 5
+      },
+      "studyMove": "Use the document title as a retrieval cue: identify the constitutional principle or argument, connect it to the linked topics, and qualify the conclusion using the source purpose and context.",
+      "accessNote": "This route contains public requirement metadata and original practice links only; it does not reproduce official document text, excerpts, prompts, or rubrics.",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description.pdf",
+        "https://apcentral.collegeboard.org/courses/ap-united-states-government-and-politics",
+        "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description-clarifications-effective-fall-2026.pdf"
+      ],
+      "sourceUse": "Title, public requirement metadata, and internal topic crosswalk only; no official document text, excerpt, or assessment content is reproduced.",
+      "officialItem": false,
+      "reproducedText": false,
+      "releaseEligible": false,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "independentExpertReviewStatus": "pending"
+    },
+    {
+      "id": "ap-usg-document-route-federalist-no-78",
+      "documentId": "federalist-no-78",
+      "title": "Federalist No. 78",
+      "academicYearReference": "2026-27",
+      "unitNumbers": [
+        2
+      ],
+      "topicIds": [
+        "2.8",
+        "2.9",
+        "2.10",
+        "2.11"
+      ],
+      "bigIdeaIds": [
+        "BI1",
+        "BI5"
+      ],
+      "skillIds": [
+        "C4",
+        "C5"
+      ],
+      "chapterIds": [
+        "ap-usg-ch-02"
+      ],
+      "sectionIds": [
+        "ap-usg-ch-02-section-02",
+        "ap-usg-ch-02-section-03"
+      ],
+      "workshopIds": [],
+      "itemIds": [
+        "ap-usg-u2-026",
+        "ap-usg-u2-027",
+        "ap-usg-u2-028",
+        "ap-usg-u2-029",
+        "ap-usg-u2-041",
+        "ap-usg-u2-042",
+        "ap-usg-u2-043",
+        "ap-usg-u2-044",
+        "ap-usg-u2-126",
+        "ap-usg-u2-127",
+        "ap-usg-u2-128",
+        "ap-usg-u2-129",
+        "ap-usg-u2-141",
+        "ap-usg-u2-142",
+        "ap-usg-u2-143",
+        "ap-usg-u2-144",
+        "ap-usg-u2-217",
+        "ap-usg-u2-218",
+        "ap-usg-u2-219",
+        "ap-usg-u2-220"
+      ],
+      "foundationItemIds": [
+        "ap-usg-u2-026",
+        "ap-usg-u2-027",
+        "ap-usg-u2-028",
+        "ap-usg-u2-029",
+        "ap-usg-u2-041",
+        "ap-usg-u2-042",
+        "ap-usg-u2-043",
+        "ap-usg-u2-044"
+      ],
+      "depthItemIds": [
+        "ap-usg-u2-126",
+        "ap-usg-u2-127",
+        "ap-usg-u2-128",
+        "ap-usg-u2-129",
+        "ap-usg-u2-141",
+        "ap-usg-u2-142",
+        "ap-usg-u2-143",
+        "ap-usg-u2-144"
+      ],
+      "transferItemIds": [
+        "ap-usg-u2-217",
+        "ap-usg-u2-218",
+        "ap-usg-u2-219",
+        "ap-usg-u2-220"
+      ],
+      "itemCount": 20,
+      "practiceSliceCounts": {
+        "foundation-slice": 8,
+        "depth-slice": 8,
+        "transfer-slice": 4
+      },
+      "studyMove": "Use the document title as a retrieval cue: identify the constitutional principle or argument, connect it to the linked topics, and qualify the conclusion using the source purpose and context.",
+      "accessNote": "This route contains public requirement metadata and original practice links only; it does not reproduce official document text, excerpts, prompts, or rubrics.",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description.pdf",
+        "https://apcentral.collegeboard.org/courses/ap-united-states-government-and-politics",
+        "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description-clarifications-effective-fall-2026.pdf"
+      ],
+      "sourceUse": "Title, public requirement metadata, and internal topic crosswalk only; no official document text, excerpt, or assessment content is reproduced.",
+      "officialItem": false,
+      "reproducedText": false,
+      "releaseEligible": false,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "independentExpertReviewStatus": "pending"
+    },
+    {
+      "id": "ap-usg-document-route-gettysburg-address",
+      "documentId": "gettysburg-address",
+      "title": "The Gettysburg Address",
+      "academicYearReference": "2026-27",
+      "unitNumbers": [
+        3
+      ],
+      "topicIds": [
+        "3.10",
+        "3.12",
+        "4.1"
+      ],
+      "bigIdeaIds": [
+        "BI2",
+        "BI3"
+      ],
+      "skillIds": [
+        "C4",
+        "C5"
+      ],
+      "chapterIds": [
+        "ap-usg-ch-03",
+        "ap-usg-ch-04"
+      ],
+      "sectionIds": [
+        "ap-usg-ch-03-section-03",
+        "ap-usg-ch-04-section-01"
+      ],
+      "workshopIds": [],
+      "itemIds": [
+        "ap-usg-u3-058",
+        "ap-usg-u3-060",
+        "ap-usg-u3-063",
+        "ap-usg-u4-064",
+        "ap-usg-u3-158",
+        "ap-usg-u3-160",
+        "ap-usg-u4-164",
+        "ap-usg-u3-234",
+        "ap-usg-u3-236",
+        "ap-usg-u4-238"
+      ],
+      "foundationItemIds": [
+        "ap-usg-u3-058",
+        "ap-usg-u3-060",
+        "ap-usg-u3-063",
+        "ap-usg-u4-064"
+      ],
+      "depthItemIds": [
+        "ap-usg-u3-158",
+        "ap-usg-u3-160",
+        "ap-usg-u4-164"
+      ],
+      "transferItemIds": [
+        "ap-usg-u3-234",
+        "ap-usg-u3-236",
+        "ap-usg-u4-238"
+      ],
+      "itemCount": 10,
+      "practiceSliceCounts": {
+        "foundation-slice": 4,
+        "depth-slice": 3,
+        "transfer-slice": 3
+      },
+      "studyMove": "Use the document title as a retrieval cue: identify the constitutional principle or argument, connect it to the linked topics, and qualify the conclusion using the source purpose and context.",
+      "accessNote": "This route contains public requirement metadata and original practice links only; it does not reproduce official document text, excerpts, prompts, or rubrics.",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description.pdf",
+        "https://apcentral.collegeboard.org/courses/ap-united-states-government-and-politics",
+        "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description-clarifications-effective-fall-2026.pdf"
+      ],
+      "sourceUse": "Title, public requirement metadata, and internal topic crosswalk only; no official document text, excerpt, or assessment content is reproduced.",
+      "officialItem": false,
+      "reproducedText": false,
+      "releaseEligible": false,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "independentExpertReviewStatus": "pending"
+    },
+    {
+      "id": "ap-usg-document-route-letter-from-a-birmingham-jail",
+      "documentId": "letter-from-a-birmingham-jail",
+      "title": "Letter from a Birmingham Jail",
+      "academicYearReference": "2026-27",
+      "unitNumbers": [
+        3
+      ],
+      "topicIds": [
+        "3.10",
+        "3.11",
+        "3.12",
+        "5.1",
+        "5.6"
+      ],
+      "bigIdeaIds": [
+        "BI2",
+        "BI3",
+        "BI5"
+      ],
+      "skillIds": [
+        "C4",
+        "C5"
+      ],
+      "chapterIds": [
+        "ap-usg-ch-03",
+        "ap-usg-ch-05"
+      ],
+      "sectionIds": [
+        "ap-usg-ch-03-section-03",
+        "ap-usg-ch-05-section-01",
+        "ap-usg-ch-05-section-02"
+      ],
+      "workshopIds": [
+        "ap-usg-workshop-argumentation"
+      ],
+      "itemIds": [
+        "ap-usg-u3-058",
+        "ap-usg-u3-059",
+        "ap-usg-u3-060",
+        "ap-usg-u3-063",
+        "ap-usg-u5-076",
+        "ap-usg-u5-081",
+        "ap-usg-u5-089",
+        "ap-usg-u5-094",
+        "ap-usg-u3-158",
+        "ap-usg-u3-159",
+        "ap-usg-u3-160",
+        "ap-usg-u5-176",
+        "ap-usg-u5-181",
+        "ap-usg-u5-188",
+        "ap-usg-u5-193",
+        "ap-usg-u3-234",
+        "ap-usg-u3-235",
+        "ap-usg-u3-236",
+        "ap-usg-u5-248",
+        "ap-usg-u5-253"
+      ],
+      "foundationItemIds": [
+        "ap-usg-u3-058",
+        "ap-usg-u3-059",
+        "ap-usg-u3-060",
+        "ap-usg-u3-063",
+        "ap-usg-u5-076",
+        "ap-usg-u5-081",
+        "ap-usg-u5-089",
+        "ap-usg-u5-094"
+      ],
+      "depthItemIds": [
+        "ap-usg-u3-158",
+        "ap-usg-u3-159",
+        "ap-usg-u3-160",
+        "ap-usg-u5-176",
+        "ap-usg-u5-181",
+        "ap-usg-u5-188",
+        "ap-usg-u5-193"
+      ],
+      "transferItemIds": [
+        "ap-usg-u3-234",
+        "ap-usg-u3-235",
+        "ap-usg-u3-236",
+        "ap-usg-u5-248",
+        "ap-usg-u5-253"
+      ],
+      "itemCount": 20,
+      "practiceSliceCounts": {
+        "foundation-slice": 8,
+        "depth-slice": 7,
+        "transfer-slice": 5
+      },
+      "studyMove": "Use the document title as a retrieval cue: identify the constitutional principle or argument, connect it to the linked topics, and qualify the conclusion using the source purpose and context.",
+      "accessNote": "This route contains public requirement metadata and original practice links only; it does not reproduce official document text, excerpts, prompts, or rubrics.",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description.pdf",
+        "https://apcentral.collegeboard.org/courses/ap-united-states-government-and-politics",
+        "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description-clarifications-effective-fall-2026.pdf"
+      ],
+      "sourceUse": "Title, public requirement metadata, and internal topic crosswalk only; no official document text, excerpt, or assessment content is reproduced.",
+      "officialItem": false,
+      "reproducedText": false,
+      "releaseEligible": false,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "independentExpertReviewStatus": "pending"
+    },
+    {
+      "id": "ap-usg-document-route-adam-smith-wealth-of-nations",
+      "documentId": "adam-smith-wealth-of-nations",
+      "title": "Core Principles from Adam Smith's The Wealth of Nations",
+      "academicYearReference": "2026-27",
+      "unitNumbers": [
+        4,
+        5
+      ],
+      "topicIds": [
+        "4.7",
+        "4.8",
+        "4.9",
+        "5.6",
+        "5.7"
+      ],
+      "bigIdeaIds": [
+        "BI4",
+        "BI5"
+      ],
+      "skillIds": [
+        "C4",
+        "C5"
+      ],
+      "chapterIds": [
+        "ap-usg-ch-04",
+        "ap-usg-ch-05"
+      ],
+      "sectionIds": [
+        "ap-usg-ch-04-section-03",
+        "ap-usg-ch-05-section-02"
+      ],
+      "workshopIds": [
+        "ap-usg-workshop-argumentation"
+      ],
+      "itemIds": [
+        "ap-usg-u4-070",
+        "ap-usg-u4-071",
+        "ap-usg-u4-072",
+        "ap-usg-u5-081",
+        "ap-usg-u5-082",
+        "ap-usg-u5-094",
+        "ap-usg-u5-095",
+        "ap-usg-u4-170",
+        "ap-usg-u4-171",
+        "ap-usg-u4-172",
+        "ap-usg-u5-181",
+        "ap-usg-u5-182",
+        "ap-usg-u5-193",
+        "ap-usg-u5-194",
+        "ap-usg-u4-244",
+        "ap-usg-u4-245",
+        "ap-usg-u4-246",
+        "ap-usg-u5-253",
+        "ap-usg-u5-254"
+      ],
+      "foundationItemIds": [
+        "ap-usg-u4-070",
+        "ap-usg-u4-071",
+        "ap-usg-u4-072",
+        "ap-usg-u5-081",
+        "ap-usg-u5-082",
+        "ap-usg-u5-094",
+        "ap-usg-u5-095"
+      ],
+      "depthItemIds": [
+        "ap-usg-u4-170",
+        "ap-usg-u4-171",
+        "ap-usg-u4-172",
+        "ap-usg-u5-181",
+        "ap-usg-u5-182",
+        "ap-usg-u5-193",
+        "ap-usg-u5-194"
+      ],
+      "transferItemIds": [
+        "ap-usg-u4-244",
+        "ap-usg-u4-245",
+        "ap-usg-u4-246",
+        "ap-usg-u5-253",
+        "ap-usg-u5-254"
+      ],
+      "itemCount": 19,
+      "practiceSliceCounts": {
+        "foundation-slice": 7,
+        "depth-slice": 7,
+        "transfer-slice": 5
+      },
+      "studyMove": "Use the document title as a retrieval cue: identify the constitutional principle or argument, connect it to the linked topics, and qualify the conclusion using the source purpose and context.",
+      "accessNote": "This route contains public requirement metadata and original practice links only; it does not reproduce official document text, excerpts, prompts, or rubrics.",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description.pdf",
+        "https://apcentral.collegeboard.org/courses/ap-united-states-government-and-politics",
+        "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description-clarifications-effective-fall-2026.pdf"
+      ],
+      "sourceUse": "Title, public requirement metadata, and internal topic crosswalk only; no official document text, excerpt, or assessment content is reproduced.",
+      "officialItem": false,
+      "reproducedText": false,
+      "releaseEligible": false,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "independentExpertReviewStatus": "pending"
     }
   ],
   "workshopLabel": "Unscored AP Government response-planning workshops",
@@ -3698,7 +7554,7 @@
           "accessibilityReviewStatus": "pending-independent-review",
           "contentComplete": true,
           "releaseEligible": false,
-          "contentEnhancementVersion": "ap-usg-foundation-v6"
+          "contentEnhancementVersion": "ap-usg-foundation-v8"
         },
         {
           "id": "ap-usg-ch-01-section-02",
@@ -4113,7 +7969,7 @@
           "accessibilityReviewStatus": "pending-independent-review",
           "contentComplete": true,
           "releaseEligible": false,
-          "contentEnhancementVersion": "ap-usg-foundation-v6"
+          "contentEnhancementVersion": "ap-usg-foundation-v8"
         },
         {
           "id": "ap-usg-ch-01-section-03",
@@ -4528,7 +8384,7 @@
           "accessibilityReviewStatus": "pending-independent-review",
           "contentComplete": true,
           "releaseEligible": false,
-          "contentEnhancementVersion": "ap-usg-foundation-v6"
+          "contentEnhancementVersion": "ap-usg-foundation-v8"
         }
       ],
       "knowledgeChecks": [
@@ -5101,7 +8957,7 @@
           "accessibilityReviewStatus": "pending-independent-review",
           "contentComplete": true,
           "releaseEligible": false,
-          "contentEnhancementVersion": "ap-usg-foundation-v6"
+          "contentEnhancementVersion": "ap-usg-foundation-v8"
         },
         {
           "id": "ap-usg-ch-02-section-02",
@@ -5554,7 +9410,7 @@
           "accessibilityReviewStatus": "pending-independent-review",
           "contentComplete": true,
           "releaseEligible": false,
-          "contentEnhancementVersion": "ap-usg-foundation-v6"
+          "contentEnhancementVersion": "ap-usg-foundation-v8"
         },
         {
           "id": "ap-usg-ch-02-section-03",
@@ -6007,7 +9863,7 @@
           "accessibilityReviewStatus": "pending-independent-review",
           "contentComplete": true,
           "releaseEligible": false,
-          "contentEnhancementVersion": "ap-usg-foundation-v6"
+          "contentEnhancementVersion": "ap-usg-foundation-v8"
         }
       ],
       "knowledgeChecks": [
@@ -6541,7 +10397,7 @@
           "accessibilityReviewStatus": "pending-independent-review",
           "contentComplete": true,
           "releaseEligible": false,
-          "contentEnhancementVersion": "ap-usg-foundation-v6"
+          "contentEnhancementVersion": "ap-usg-foundation-v8"
         },
         {
           "id": "ap-usg-ch-03-section-02",
@@ -6954,7 +10810,7 @@
           "accessibilityReviewStatus": "pending-independent-review",
           "contentComplete": true,
           "releaseEligible": false,
-          "contentEnhancementVersion": "ap-usg-foundation-v6"
+          "contentEnhancementVersion": "ap-usg-foundation-v8"
         },
         {
           "id": "ap-usg-ch-03-section-03",
@@ -7380,7 +11236,7 @@
           "accessibilityReviewStatus": "pending-independent-review",
           "contentComplete": true,
           "releaseEligible": false,
-          "contentEnhancementVersion": "ap-usg-foundation-v6"
+          "contentEnhancementVersion": "ap-usg-foundation-v8"
         }
       ],
       "knowledgeChecks": [
@@ -7892,7 +11748,7 @@
           "accessibilityReviewStatus": "pending-independent-review",
           "contentComplete": true,
           "releaseEligible": false,
-          "contentEnhancementVersion": "ap-usg-foundation-v6"
+          "contentEnhancementVersion": "ap-usg-foundation-v8"
         },
         {
           "id": "ap-usg-ch-04-section-02",
@@ -8301,7 +12157,7 @@
           "accessibilityReviewStatus": "pending-independent-review",
           "contentComplete": true,
           "releaseEligible": false,
-          "contentEnhancementVersion": "ap-usg-foundation-v6"
+          "contentEnhancementVersion": "ap-usg-foundation-v8"
         },
         {
           "id": "ap-usg-ch-04-section-03",
@@ -8711,7 +12567,7 @@
           "accessibilityReviewStatus": "pending-independent-review",
           "contentComplete": true,
           "releaseEligible": false,
-          "contentEnhancementVersion": "ap-usg-foundation-v6"
+          "contentEnhancementVersion": "ap-usg-foundation-v8"
         }
       ],
       "knowledgeChecks": [
@@ -9263,7 +13119,7 @@
           "accessibilityReviewStatus": "pending-independent-review",
           "contentComplete": true,
           "releaseEligible": false,
-          "contentEnhancementVersion": "ap-usg-foundation-v6"
+          "contentEnhancementVersion": "ap-usg-foundation-v8"
         },
         {
           "id": "ap-usg-ch-05-section-02",
@@ -9697,7 +13553,7 @@
           "accessibilityReviewStatus": "pending-independent-review",
           "contentComplete": true,
           "releaseEligible": false,
-          "contentEnhancementVersion": "ap-usg-foundation-v6"
+          "contentEnhancementVersion": "ap-usg-foundation-v8"
         },
         {
           "id": "ap-usg-ch-05-section-03",
@@ -10144,7 +14000,7 @@
           "accessibilityReviewStatus": "pending-independent-review",
           "contentComplete": true,
           "releaseEligible": false,
-          "contentEnhancementVersion": "ap-usg-foundation-v6"
+          "contentEnhancementVersion": "ap-usg-foundation-v8"
         }
       ],
       "knowledgeChecks": [
@@ -10726,6 +14582,10 @@
         "1.9",
         "3.6"
       ],
+      "foundationalDocumentIds": [
+        "articles-of-confederation",
+        "constitution-of-the-united-states"
+      ],
       "type": "unscored-planning-workshop",
       "references": [
         "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description.pdf",
@@ -10808,6 +14668,7 @@
         "4.6",
         "5.2"
       ],
+      "foundationalDocumentIds": [],
       "type": "unscored-planning-workshop",
       "references": [
         "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description.pdf",
@@ -10890,6 +14751,11 @@
         "3.6",
         "2.15"
       ],
+      "foundationalDocumentIds": [
+        "constitution-of-the-united-states",
+        "federalist-no-51",
+        "federalist-no-70"
+      ],
       "type": "unscored-planning-workshop",
       "references": [
         "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description.pdf",
@@ -10970,6 +14836,13 @@
         "1.1",
         "1.3",
         "1.5"
+      ],
+      "foundationalDocumentIds": [
+        "declaration-of-independence",
+        "brutus-no-1",
+        "federalist-no-10",
+        "constitution-of-the-united-states",
+        "federalist-no-39"
       ],
       "type": "unscored-planning-workshop",
       "references": [
@@ -11053,6 +14926,10 @@
         "5.2",
         "4.8"
       ],
+      "foundationalDocumentIds": [
+        "letter-from-a-birmingham-jail",
+        "adam-smith-wealth-of-nations"
+      ],
       "type": "unscored-planning-workshop",
       "references": [
         "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description.pdf",
@@ -11090,11 +14967,15 @@
     "diagrams": 0,
     "diagramPlacements": 0,
     "constructedResponseWorkshops": 5,
+    "foundationalDocuments": 13,
+    "foundationalDocumentRoutes": 13,
     "richLessonPrototypes": 5,
     "sourceReviewedChapters": 5,
     "sourceReviewedFlashcards": 15,
     "sourceReviewedMemoryAids": 5,
     "sourceReviewedConstructedResponseWorkshops": 5,
+    "sourceReviewedFoundationalDocuments": 13,
+    "sourceReviewedFoundationalDocumentRoutes": 13,
     "releaseEligibleRecords": 0
   },
   "accessibility": {
@@ -11138,11 +15019,11 @@
   "transitionNotice": "Reverify the current AP U.S. Government and Politics CED, exam format, cases, required foundational documents, policies, and public-use boundaries before any release or expansion.",
   "contentMigration": {
     "schemaVersion": 1,
-    "contentVersion": "ap-us-government-foundation-v6",
+    "contentVersion": "ap-us-government-foundation-v8",
     "sections": 15,
     "completeSections": 15,
     "richLessonPrototypes": 5,
     "status": "foundation-prototype",
-    "note": "All five unit chapters and fifteen structured sections are navigable; the companion 260-item bank adds a third transfer/application angle for every current topic, and five synthetic response-planning workshops remain explicitly unscored; independent review remains pending."
+    "note": "All five unit chapters and fifteen structured sections are navigable; the companion 260-item bank adds a third transfer/application angle for every current topic, the thirteen-document public foundational-document list is crosswalked without reproducing document text, and five synthetic response-planning workshops remain explicitly unscored; independent review remains pending."
   }
 }

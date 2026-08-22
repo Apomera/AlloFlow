@@ -10,7 +10,10 @@ describe('Shared UI modal error announcements', () => {
     expect(source).toContain("const [submitError, setSubmitError] = useState('');");
     expect(source).toContain('id="quiz-submit-error" role="alert"');
     expect(source).toContain("setSubmitError(t('errors.quiz_submit_failed') || 'Your answer could not be submitted. Please try again.');");
-    expect(source.match(/setSubmitError\(''\);/g) || []).toHaveLength(2);
+    const responseSubmit = source.slice(source.indexOf('const submitQuizResponse ='), source.indexOf('const submitQuizConfidence ='));
+    const confidenceSubmit = source.slice(source.indexOf('const submitQuizConfidence ='), source.indexOf('const getModeStyles ='));
+    expect(responseSubmit).toContain("setSubmitError('');");
+    expect(confidenceSubmit).toContain("setSubmitError('');");
     expect(source).not.toContain("else alert(t('errors.quiz_submit_failed'))");
   });
 

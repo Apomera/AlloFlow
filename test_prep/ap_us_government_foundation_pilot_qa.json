@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "qaVersion": "ap-usg-foundation-qa-v6",
+  "qaVersion": "ap-usg-foundation-qa-v8",
   "packId": "ap-us-government-foundation-pilot",
-  "version": "0.6.0-internal-preview",
+  "version": "0.8.0-internal-preview",
   "generatedAt": "2026-08-20T00:00:00.000Z",
   "automatedAssessment": "pass",
   "structuralFindings": [],
@@ -28,6 +28,10 @@
     "flashcardCount": 15,
     "memoryAidCount": 5,
     "constructedResponseWorkshopCount": 5,
+    "foundationalDocumentCount": 13,
+    "representedFoundationalDocumentCount": 13,
+    "foundationalDocumentRouteCount": 13,
+    "representedFoundationalDocumentRouteCount": 13,
     "skillCategoryCount": 5,
     "subskillCount": 23,
     "practiceSliceCounts": {
@@ -153,16 +157,16 @@
       "asset": "pack",
       "status": "pass",
       "blocking": false,
-      "sourceSha256": "d104d5a47b3e798a0cb1c1fd47b887f12f398f6cbf31b8be6d0b7867cb8f691a",
-      "deploySha256": "d104d5a47b3e798a0cb1c1fd47b887f12f398f6cbf31b8be6d0b7867cb8f691a",
+      "sourceSha256": "1fecef6d4d815f65c6befece50d932afd69b9d4d756467872f89773f5649a368",
+      "deploySha256": "1fecef6d4d815f65c6befece50d932afd69b9d4d756467872f89773f5649a368",
       "note": "Source and deployment bytes are identical."
     },
     {
       "asset": "learning-library",
       "status": "pass",
       "blocking": false,
-      "sourceSha256": "f5b57a381db9d3f5e3d82afb8607714a2a4b365395b9bda105ba751e5bc6b30f",
-      "deploySha256": "f5b57a381db9d3f5e3d82afb8607714a2a4b365395b9bda105ba751e5bc6b30f",
+      "sourceSha256": "a06f24fd72c1d94af58ac7a349a8f114893482ffb5cdddfb11b2660304992834",
+      "deploySha256": "a06f24fd72c1d94af58ac7a349a8f114893482ffb5cdddfb11b2660304992834",
       "note": "Source and deployment bytes are identical."
     }
   ],

@@ -35,7 +35,7 @@
     var st = document.createElement('style');
     st.id = 'allo-graphcalc-contrast-css';
     st.textContent = [
-      '.graphcalc-shell{--gc-panel:var(--allo-stem-panel,#f8fafc);--gc-deeper:var(--allo-stem-deeper,#e2e8f0);--gc-card:#eef2ff;--gc-card-strong:#e0e7ff;--gc-text:var(--allo-stem-text,#0f172a);--gc-muted:#475569;--gc-border:var(--allo-stem-border,#cbd5e1);--gc-accent:#4338ca;--gc-accent-soft:#e0e7ff;--gc-accent-border:#818cf8;--gc-button-bg:#eef2ff;--gc-button-text:#3730a3;--gc-danger:#b91c1c;}',
+      '.graphcalc-shell{--gc-panel:var(--allo-stem-panel,#f8fafc);--gc-deeper:var(--allo-stem-deeper,#e2e8f0);--gc-card:#eef2ff;--gc-card-strong:#e0e7ff;--gc-text:var(--allo-stem-text,#0f172a);--gc-muted:#475569;--gc-border:var(--allo-stem-border,#cbd5e1);--gc-accent:#4338ca;--gc-accent-soft:#e0e7ff;--gc-accent-border:#818cf8;--gc-button-bg:#eef2ff;--gc-button-text:#3730a3;--gc-danger:#991b1b;}',
       '.theme-dark .graphcalc-shell{--gc-card:rgba(99,102,241,.16);--gc-card-strong:rgba(99,102,241,.24);--gc-muted:#cbd5e1;--gc-accent:#c7d2fe;--gc-accent-soft:rgba(99,102,241,.22);--gc-accent-border:#818cf8;--gc-button-bg:rgba(99,102,241,.18);--gc-button-text:#c7d2fe;--gc-danger:#fca5a5;}',
       '.theme-contrast .graphcalc-shell{--gc-card:var(--allo-stem-panel,#fff);--gc-card-strong:var(--allo-stem-panel,#fff);--gc-muted:var(--allo-stem-text,#000);--gc-accent:var(--allo-stem-text,#000);--gc-accent-soft:var(--allo-stem-button-bg,#fff);--gc-accent-border:var(--allo-stem-border,#000);--gc-button-bg:var(--allo-stem-button-bg,#fff);--gc-button-text:var(--allo-stem-button-text,#000);--gc-danger:var(--allo-stem-text,#000);}'
     ].join('');
@@ -163,6 +163,26 @@
     // after a digit — '2ln(x)' — because digit→letter is not a word boundary.)
     e = e.replace(/(^|[^A-Za-z_])log\s*\(/gi, '$1log10(').replace(/(^|[^A-Za-z_])ln\s*\(/gi, '$1log(');
     return e;
+  }
+
+  function gcFiniteNumber(raw, fallback) {
+    if (raw === '' || raw === null || raw === undefined) return fallback;
+    var value = typeof raw === 'number' ? raw : Number(raw);
+    return isFinite(value) ? value : fallback;
+  }
+
+  function gcNormalizeTableStep(raw) {
+    var step = gcFiniteNumber(raw, 1);
+    return step === 0 ? 1 : step;
+  }
+
+  function gcBuildTableXValues(start, step, count) {
+    var first = gcFiniteNumber(start, -5);
+    var increment = gcNormalizeTableStep(step);
+    var length = Math.max(0, Math.floor(gcFiniteNumber(count, 11)));
+    var values = [];
+    for (var i = 0; i < length; i++) values.push(first + i * increment);
+    return values;
   }
 
   /* ═══════════════════════════════════════════════════════════
@@ -343,7 +363,7 @@
         var showSliders = d.showSliders || false;
         var focusedInput = d.focusedInput || 0;
         var tableX = d.tableX != null ? d.tableX : -5;
-        var tableStep = d.tableStep || 1;
+        var tableStep = d.tableStep != null ? d.tableStep : 1;
         var badges = d.badges || [];
         var aiMessages = d.aiMessages || [];
         var aiInput = d.aiInput || '';
@@ -451,7 +471,7 @@
         if (showTable && funcs[0] && funcs[0].expr && window.math) {
           try {
             var tCompiled = math.compile(gcCleanExpr(funcs[0].expr));
-            for (var tx = tableX; tx <= tableX + 10 * tableStep; tx += tableStep) {
+            gcBuildTableXValues(tableX, tableStep, 11).forEach(function(tx) {
               try {
                 var _tScope = { x: tx };
                 if (d.sliderA != null) _tScope.a = d.sliderA;
@@ -460,7 +480,7 @@
                 var ty = tCompiled.evaluate(_tScope);
                 tableRows.push({ x: Number(tx.toFixed(4)), y: typeof ty === 'number' && isFinite(ty) ? Number(ty.toFixed(4)) : '---' });
               } catch (e) { tableRows.push({ x: tx, y: 'ERR' }); }
-            }
+            });
           } catch (e) { tableRows = [{ x: 0, y: 'Invalid expression' }]; }
         }
 
@@ -832,7 +852,7 @@
                   var key = 'slider' + p.toUpperCase(); var val = d[key] != null ? d[key] : (p === 'a' ? 1 : 0);
                   return h('div', { key: p, style: { display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' } },
                     h('span', { style: { fontFamily: 'monospace', fontWeight: 'bold', color: gcAccent, fontSize: '12px', width: '16px' } }, p),
-                    h('input', { type: 'range', min: -10, max: 10, step: 0.1, value: val, 'aria-label': 'Parameter ' + p + ': ' + Number(val.toFixed(1)), onChange: function(e) { upd(key, parseFloat(e.target.value)); }, style: { flex: 1, accentColor: gcAccent } }),
+                    h('input', { type: 'range', min: -10, max: 10, step: 0.1, value: val, 'aria-label': 'Parameter ' + p + ': ' + Number(val.toFixed(1)), onChange: function(e) { upd(key, parseFloat(e.target.value)); }, style: { flex: 1, minHeight: '24px', accentColor: gcAccent } }),
                     h('span', { style: { fontFamily: 'monospace', fontSize: '11px', color: gcText, minWidth: '36px', textAlign: 'right', fontWeight: 'bold' } }, Number(val.toFixed(1)))
                   );
                 })
@@ -842,7 +862,7 @@
                 h('div', { style: { fontSize: '11px', color: gcAccent, fontWeight: 'bold', marginBottom: '4px' } }, __alloT('stem.graphcalc.tangent_to_y', '\u2202 TANGENT to y\u2081')),
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: '6px' } },
                   h('span', { style: { fontSize: '10px', color: gcText } }, 'x='),
-                  h('input', { type: 'range', min: win.xmin, max: win.xmax, step: graphStep, value: derivX, 'aria-label': 'Tangent x position: ' + Number(derivX.toPrecision(4)), onChange: function(e) { upd('derivX', parseFloat(e.target.value)); }, style: { flex: 1, accentColor: gcAccent } }),
+                  h('input', { type: 'range', min: win.xmin, max: win.xmax, step: graphStep, value: derivX, 'aria-label': 'Tangent x position: ' + Number(derivX.toPrecision(4)), onChange: function(e) { upd('derivX', parseFloat(e.target.value)); }, style: { flex: 1, minHeight: '24px', accentColor: gcAccent } }),
                   h('span', { style: { fontFamily: 'monospace', fontSize: '11px', color: gcAccent, fontWeight: 'bold' } }, Number(derivX.toPrecision(4)))
                 )
               ) : null,
@@ -890,8 +910,8 @@
               showTable ? h('div', { style: { maxHeight: '150px', overflowY: 'auto', borderTop: '1px solid ' + gcBorder, background: gcPanel } },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 12px', borderBottom: '1px solid ' + gcBorder } },
                   h('span', { style: { fontSize: '10px', fontWeight: 'bold', color: gcAccent } }, __alloT('stem.graphcalc.table_2', '\uD83D\uDCCA TABLE')),
-                  h('label', { style: { fontSize: '11px', color: gcText, display: 'flex', alignItems: 'center', gap: '3px', fontWeight: 700 } }, 'Start:', h('input', { type: 'number', value: tableX, onChange: function(e) { upd('tableX', parseFloat(e.target.value) || 0); }, style: { width: '40px', padding: '1px 3px', borderRadius: '3px', border: '1px solid ' + gcBorder, background: gcPanel, color: gcText, fontFamily: 'monospace', fontSize: '11px' } })),
-                  h('label', { style: { fontSize: '11px', color: gcText, display: 'flex', alignItems: 'center', gap: '3px', fontWeight: 700 } }, 'Step:', h('input', { type: 'number', value: tableStep, onChange: function(e) { upd('tableStep', parseFloat(e.target.value) || 1); }, style: { width: '40px', padding: '1px 3px', borderRadius: '3px', border: '1px solid ' + gcBorder, background: gcPanel, color: gcText, fontFamily: 'monospace', fontSize: '11px' } }))
+                  h('label', { style: { fontSize: '11px', color: gcText, display: 'flex', alignItems: 'center', gap: '3px', fontWeight: 700 } }, 'Start:', h('input', { type: 'number', step: 'any', value: tableX, onChange: function(e) { upd('tableX', e.target.value); }, onBlur: function(e) { upd('tableX', gcFiniteNumber(e.target.value, -5)); }, style: { width: '40px', padding: '1px 3px', borderRadius: '3px', border: '1px solid ' + gcBorder, background: gcPanel, color: gcText, fontFamily: 'monospace', fontSize: '11px' } })),
+                  h('label', { style: { fontSize: '11px', color: gcText, display: 'flex', alignItems: 'center', gap: '3px', fontWeight: 700 } }, 'Step:', h('input', { type: 'number', step: 'any', value: tableStep, onChange: function(e) { upd('tableStep', e.target.value); }, onBlur: function(e) { upd('tableStep', gcNormalizeTableStep(e.target.value)); }, style: { width: '40px', padding: '1px 3px', borderRadius: '3px', border: '1px solid ' + gcBorder, background: gcPanel, color: gcText, fontFamily: 'monospace', fontSize: '11px' } }))
                 ),
                 h('table', { style: { width: '100%', fontSize: '11px', fontFamily: 'monospace', borderCollapse: 'collapse' } },
                   h('caption', { className: 'sr-only' }, __alloT('stem.graphcalc.graphcalc_data_table', 'graphcalc data table')), h('thead', null, h('tr', null, h('th', { scope: 'col', style: { padding: '3px 10px', textAlign: 'right', color: gcAccent, fontWeight: 'bold', borderBottom: '1px solid ' + gcBorder } }, 'x'), h('th', { scope: 'col', style: { padding: '3px 10px', textAlign: 'right', color: funcs[0] ? funcs[0].color : gcAccent, fontWeight: 'bold', borderBottom: '1px solid ' + gcBorder } }, 'y\u2081'))),

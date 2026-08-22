@@ -33,11 +33,12 @@ describe('Story Forge comic production controls', () => {
     expect(source).toContain('const handlePanelResizeKeyDown =');
     expect(source).toContain('onKeyDown={(e) => handlePanelResizeKeyDown(e, p.id, idx, previewLayout, pageIndex)}');
     expect(source).toContain("onKeyDown={(e) => handleBubbleControlKeyDown(e, p.id, 'resize')}");
-    expect(source).toContain('Use arrow keys, Home for 1 by 1, or End for the largest frame.');
+    expect(source).toContain("ta('a11y.storyforge_aria_resize_panel_use_arrow_keys_home_for')");
+    expect(source).toContain("ta('a11y.storyforge_aria_resize_bubble_for_panel_use_left_and')");
   });
 
   it('uses an accessible single-page comic preview navigator', () => {
-    expect(source).toContain('role="tablist" aria-label="Comic pages"');
+    expect(source).toContain("role=\"tablist\" aria-label={ta('a11y.storyforge_attr_comic_pages')}");
     expect(source).toContain('role="tabpanel"');
     expect(source).toContain('aria-controls={`sf-comic-preview-page-${page.page}`}');
     expect(source).toContain('aria-selected={comicPreviewPage === page.page}');
@@ -49,14 +50,14 @@ describe('Story Forge comic production controls', () => {
     expect(source).toContain('onDrop={(e) => finishPanelSequenceDrop(e, idx)}');
     expect(source).toContain('draggable="true"');
     expect(source).toContain('data-sf-panel-drag-handle={p.id}');
-    expect(source).toContain('Use arrow keys, Home, or End.');
+    expect(source).toContain("ta('a11y.storyforge_aria_reorder_panel_use_arrow_keys_home_or')");
   });
 
   it('exposes bounded comic undo and redo without overriding native text undo', () => {
     expect(source).toContain('const comicHistoryRef = useRef(');
     expect(source).toContain('const nativeTextUndo = Boolean(');
-    expect(source).toContain('aria-label="Undo comic production edit"');
-    expect(source).toContain('aria-label="Redo comic production edit"');
+    expect(source).toContain("aria-label={ta('a11y.storyforge_attr_undo_comic_production_edit')}");
+    expect(source).toContain("aria-label={ta('a11y.storyforge_attr_redo_comic_production_edit')}");
     expect(source).toContain('aria-keyshortcuts="Control+Z Meta+Z"');
     expect(source).toContain('aria-keyshortcuts="Control+Shift+Z Meta+Shift+Z Control+Y"');
   });
@@ -75,7 +76,8 @@ describe('Story Forge draft recovery controls', () => {
   it('keeps the close dialog open on save failure and preserves the last confirmed draft', () => {
     expect(source).toContain('data-sf-save-close');
     expect(source).toContain('if (await persistDraftToStorage({ announce: true, allowDuringHydration: true }))');
-    expect(source).toContain('close and keep the last confirmed draft');
+    expect(source).toContain("ta('a11y.storyforge_ui_your_latest_changes_have_not_finished')");
+    expect(source).toContain('{draftSaveError && <p role="alert"');
     expect(source).not.toContain('setShowCloseConfirm(false); try { localStorage.removeItem(SAVE_KEY);');
   });
 

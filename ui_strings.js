@@ -3156,8 +3156,8 @@
     "share_button": "Share"
   },
   "input": {
-    "placeholder": "Paste curriculum text here, upload a PDF/Image/Text/Audio file (max 20MB), or use 'Generate Source Text'...",
-    "upload_tooltip": "Upload PDF, Image, Text, Audio, or Video file",
+    "placeholder": "Paste curriculum text here, upload a document or lesson deck, image, audio, or video, or use 'Generate Source Text'...",
+    "upload_tooltip": "Upload a document, editable PowerPoint lesson deck, image, audio, or video",
     "topic": "Topic / Subject",
     "tone": "Tone / Style",
     "target_level": "Target Level",
@@ -10471,7 +10471,13 @@
     "guided_mode_setup_desc": "Highlight one tool at a time and build a resource pack with prompts, examples, and progress checks.",
     "guided_mode_resume": "Resume Guided Mode",
     "guided_mode_resume_desc": "Pick the tour back up where you left off.",
-    "guided_mode_start_over": "Start the tour over from step 1"
+    "guided_mode_start_over": "Start the tour over from step 1",
+    "back_to_start": "Back to Start",
+    "back_to_start_desc": "Choose another pathway from the Start page. Your current workspace stays saved.",
+    "start_setup": "Start & setup",
+    "start_setup_aria": "Open Start and setup options",
+    "start_setup_desc": "Return to Start, adjust setup, or use Guided Mode. Your current workspace stays saved.",
+    "start_setup_title": "Start & setup"
   },
   "about": {
     "title": "About AlloFlow v1.0",

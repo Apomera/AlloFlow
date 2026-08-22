@@ -7349,7 +7349,7 @@ var geographyGroup = new THREE.Group();
                     onClick: function () { viewStation(item.id); },
                     'aria-pressed': active,
                     className: 'min-h-14 rounded-lg border px-3 py-2 text-left text-xs font-bold transition-colors motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-yellow-300 focus-visible:outline-none ' + (active ? 'border-sky-400 bg-sky-700 text-white' : (dark ? 'border-slate-700 bg-slate-900 hover:bg-slate-800' : 'border-sky-200 bg-white hover:bg-sky-50'))
-                  }, item.name, h('span', { className: 'mt-0.5 block text-xs font-normal opacity-80' }, item.elevation + ' m'));
+                  }, item.name, h('span', { className: 'mt-0.5 block text-xs font-normal' }, item.elevation + ' m'));
                 })
               )
             ),

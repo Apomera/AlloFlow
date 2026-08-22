@@ -269,11 +269,11 @@
       border: dark ? '#1e293b' : '#e2e8f0',
       grid: dark ? '#1e293b' : '#e5e7eb',
       dead: dark ? '#111827' : '#f1f5f9',
-      live: contrast ? (dark ? '#ffffff' : '#000000') : (dark ? '#34d399' : '#059669'),
+      live: contrast ? (dark ? '#ffffff' : '#000000') : (dark ? '#34d399' : '#047857'),
       live2: contrast ? (dark ? '#fde047' : '#1d4ed8') : (dark ? '#22d3ee' : '#0ea5e9'),
       text: dark ? '#e2e8f0' : '#1e293b',
-      sub: dark ? '#94a3b8' : '#64748b',
-      accent: dark ? '#34d399' : '#059669',
+      sub: dark ? '#94a3b8' : '#475569',
+      accent: dark ? '#34d399' : '#047857',
       accentBg: dark ? '#064e3b' : '#d1fae5',
       cursor: '#f59e0b'
     };
@@ -769,7 +769,7 @@
         h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))', gap: '10px' } },
           h('section', { style: { background: C.panel, border: '1px solid ' + C.border, borderRadius: '13px', padding: '11px' } }, h('div', { style: { fontSize: '11px', fontWeight: 900, color: C.accent, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '8px' } }, 'World controls'), h('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '9px' } }, btn('Draw', function () { setBrush(1); }, { pressed: brush === 1 }), btn('Erase', function () { setBrush(0); }, { pressed: brush === 0 }), btn(wrap ? 'Wrap on' : 'Wrap off', function () { setWrap(function (w) { return !w; }); }, { pressed: wrap })), h('label', { style: { display: 'block', fontSize: '11px', color: C.sub, fontWeight: 800 } }, 'Speed: ' + Math.round(1000 / speed) + ' generations/sec', h('input', { type: 'range', min: 1, max: 25, value: Math.round(1000 / speed), onChange: function (e) { setSpeed(Math.round(1000 / parseInt(e.target.value, 10))); }, 'aria-label': 'Generations per second', style: { width: '100%', marginTop: '5px' } })), h('div', { style: { marginTop: '9px', fontSize: '11px', color: C.sub, fontWeight: 800 } }, 'Grid size'), h('div', { style: { display: 'flex', gap: '5px', flexWrap: 'wrap', marginTop: '5px' } }, [40,60,80,120].map(function (n) { return btn(n + ' x ' + n, function () { resizeLife(n); }, { pressed: lifeSize === n }); }))),
           h('section', { style: { background: C.panel, border: '1px solid ' + C.border, borderRadius: '13px', padding: '11px' } },
-            h('div', { style: { fontSize: '11px', fontWeight: 900, color: '#8b5cf6', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '8px' } }, 'Scientific lens'),
+            h('div', { style: { fontSize: '11px', fontWeight: 900, color: '#6d28d9', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '8px' } }, 'Scientific lens'),
             h('div', { style: { display: 'flex', gap: '5px', flexWrap: 'wrap' } }, [{ id:'normal',label:'Normal' },{ id:'forecast',label:'Next forecast' },{ id:'field',label:'Colony scan' },{ id:'change',label:'Change map' },{ id:'age',label:'Age map' },{ id:'xray',label:'Neighbor X-ray' }].map(function (v) { return btn(v.label, function () { setVizMode(v.id); }, { pressed: vizMode === v.id }); })),
             h('p', { style: { margin: '7px 0', fontSize: '10px', color: C.sub, lineHeight: 1.4 } }, vizMode === 'forecast' ? 'Look up to eight generations ahead without changing the experiment. Green cells appear by the inspected horizon; cyan cells remain; rose cells are gone. Gold residency glow strengthens where cells recur, while the dashed comet trail follows the projected center of mass and the ghost frame measures its future footprint.' : vizMode === 'field' ? 'Measure the colony footprint and center of mass. The gold trail tracks movement across generations.' : vizMode === 'change' ? 'See exactly what the last rule application changed. Rewind to compare earlier transitions.' : vizMode === 'age' ? 'Yellow cells are newborn; violet cells have survived many generations.' : vizMode === 'xray' ? 'Numbers are live-neighbor counts. Green outcomes satisfy the current B/S rule.' : 'Cell brightness responds to local neighborhood density.'),
             vizMode === 'forecast' && h('label', { style: { display: 'block', marginBottom: '7px', fontSize: '10px', color: C.text, fontWeight: 900 } },

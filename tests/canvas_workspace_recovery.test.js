@@ -645,7 +645,7 @@ describe('Canvas workspace recovery integration contracts', () => {
     expect(autosave).not.toContain('const baseStore = ALLO_WORKSPACE_RECOVERY.normalizeStore(rawStore)');
 
     const reset = anti.slice(anti.indexOf('const resetCanvasWorkspaceSettings'), anti.indexOf('const clearCanvasWorkspaceState'));
-    expect(reset).toContain("setGradeLevel('3rd Grade')");
+    expect(reset).toContain("setGradeLevel('5th Grade')");
     expect(reset).toContain('setStudentInterests([])');
     expect(reset).toContain("setSourceCustomInstructions('')");
     expect(reset).toContain("setResourceCount('Auto')");

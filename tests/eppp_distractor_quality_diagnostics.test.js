@@ -36,12 +36,10 @@ describe('EPPP distractor-quality warning diagnostics', () => {
     expect(report.policy.hardGate).toContain('remain prohibited');
   });
 
-  it('clears lexical leakage, advanced-recall, and semantic-duplicate findings while retaining warning-only extreme candidates', () => {
-    const bankIds = new Set(bank.map((item) => item.id));
+  it('clears lexical leakage, advanced-recall, semantic-duplicate, and extreme-word findings', () => {
     expect(report.uniqueKeyStemLexicalLeakage).toEqual([]);
 
-    expect(report.asymmetricExtremeDistractors.length).toBeGreaterThan(0);
-    expect(report.asymmetricExtremeDistractors.every((entry) => bankIds.has(entry.id) && entry.extremeDistractorIndexes.length >= 2)).toBe(true);
+    expect(report.asymmetricExtremeDistractors).toEqual([]);
 
     expect(report.advancedDirectRecall).toEqual([]);
 
@@ -49,9 +47,8 @@ describe('EPPP distractor-quality warning diagnostics', () => {
     expect(report.semanticConceptDuplicates.clusters).toEqual([]);
   });
 
-  it('publishes a bounded active docket and tracks the original editorial anchors separately', () => {
-    expect(report.priorityDocket).toHaveLength(20);
-    expect(report.priorityDocket.every((entry) => entry.diagnostics.length > 0 && entry.score > 0)).toBe(true);
+  it('publishes a cleared active docket and tracks the original editorial anchors separately', () => {
+    expect(report.priorityDocket).toHaveLength(0);
     expect(report.editorialAnchorOutcomes).toHaveLength(10);
     expect(report.editorialAnchorOutcomes.map((entry) => entry.id)).toEqual([
       'eppp-b006-biological-2',

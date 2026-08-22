@@ -856,11 +856,11 @@ window.StemLab = window.StemLab || {
                         (i === 0 ? 'bg-violet-200 border-violet-400 shadow-sm' : 'bg-white border-violet-200 hover:bg-violet-50')
                     },
                       h('span', { className: 'text-sm font-bold ' + (i === 0 ? 'text-violet-800' : 'text-violet-700') }, val),
-                      h('span', { className: 'text-[11px] text-violet-400 block' }, i === 0 ? 'start' : '+' + skipBy)
+                      h('span', { className: 'text-[11px] text-violet-700 block' }, i === 0 ? 'start' : '+' + skipBy)
                     );
                   })
                 ),
-                h('p', { className: 'text-xs text-violet-500 mt-2' },
+                h('p', { className: 'text-xs text-violet-700 mt-2' },
                   '\uD83D\uDCA1 Pattern: ' + skipFrom + ', ' + (skipFrom + skipBy) + ', ' + (skipFrom + 2 * skipBy) + ', ... (adding ' + skipBy + ' each time)')
               ),
               // Toggle
@@ -2114,9 +2114,9 @@ window.StemLab = window.StemLab || {
               else state = 'bSmaller';
               var stateMeta = {
                 equal:          { label: t('stem.numberline.equivalent_fractions', '🟰 Equivalent fractions'),    color: '#7c3aed', bg: '#f5f3ff', border: '#c4b5fd' },
-                halfLandmark:   { label: t('stem.numberline.one_is_the_landmark', '⭐ One is the ½ landmark'),    color: '#0891b2', bg: '#ecfeff', border: '#67e8f9' },
+                halfLandmark:   { label: t('stem.numberline.one_is_the_landmark', '⭐ One is the ½ landmark'),    color: '#0e7490', bg: '#ecfeff', border: '#67e8f9' },
                 aSmaller:       { label: t('stem.numberline.a_b', '🔼 A < B'),                    color: '#dc2626', bg: '#fef2f2', border: '#fca5a5' },
-                bSmaller:       { label: t('stem.numberline.a_b_2', '🔽 A > B'),                    color: '#059669', bg: '#ecfdf5', border: '#86efac' }
+                bSmaller:       { label: t('stem.numberline.a_b_2', '🔽 A > B'),                    color: '#047857', bg: '#ecfdf5', border: '#86efac' }
               }[state];
               function logObs() {
                 setIQ({ log: (iq.log || []).concat([{ a: iq.numA + '/' + iq.denA, b: iq.numB + '/' + iq.denB, va: fracA.toFixed(2), vb: fracB.toFixed(2), st: state }]).slice(-8) });

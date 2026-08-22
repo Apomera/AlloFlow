@@ -1,15 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { loadSessionSummaryApi } from './session_summary_test_utils.js';
 
 const app = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8');
 const teacher = readFileSync(resolve(process.cwd(), 'teacher_source.jsx'), 'utf8');
 const modal = readFileSync(resolve(process.cwd(), 'view_session_modal_source.jsx'), 'utf8');
 const endSessionPreviewSource = readFileSync(resolve(process.cwd(), 'view_end_session_preview_source.jsx'), 'utf8');
-const helperStart = app.indexOf('const normalizeRosterSessionCodename');
-const helperEnd = app.indexOf('const generateSessionCode', helperStart);
-const helperSource = app.slice(helperStart, helperEnd);
-const helpers = new Function(helperSource + '\nreturn { buildRosterSessionInsightBrief, buildRosterSessionSummary, saveRosterSessionSummary };')();
+const helpers = loadSessionSummaryApi();
 
 describe('privacy-safe roster session summaries', () => {
   it('matches normalized codenames and omits transient IDs and raw answers', () => {

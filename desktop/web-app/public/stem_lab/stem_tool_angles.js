@@ -250,13 +250,13 @@ window.StemLab = window.StemLab || {
 
       // ── Class colors ──
       var classColors = {};
-      classColors['Zero'] = { text: 'text-gray-500', bg: 'bg-gray-50', border: 'border-gray-200' };
-      classColors['Acute'] = { text: 'text-blue-600', bg: 'bg-blue-50', border: 'border-blue-200' };
-      classColors[t('stem.calculus.right') || 'Right'] = { text: 'text-green-600', bg: 'bg-green-50', border: 'border-green-200' };
-      classColors['Obtuse'] = { text: 'text-orange-600', bg: 'bg-orange-50', border: 'border-orange-200' };
-      classColors['Straight'] = { text: 'text-rose-600', bg: 'bg-rose-50', border: 'border-rose-200' };
-      classColors['Reflex'] = { text: 'text-red-600', bg: 'bg-red-50', border: 'border-red-200' };
-      classColors['Full'] = { text: 'text-purple-600', bg: 'bg-purple-50', border: 'border-purple-200' };
+      classColors['Zero'] = { text: 'text-gray-700', bg: 'bg-gray-50', border: 'border-gray-200' };
+      classColors['Acute'] = { text: 'text-blue-700', bg: 'bg-blue-50', border: 'border-blue-200' };
+      classColors[t('stem.calculus.right') || 'Right'] = { text: 'text-green-700', bg: 'bg-green-50', border: 'border-green-200' };
+      classColors['Obtuse'] = { text: 'text-orange-700', bg: 'bg-orange-50', border: 'border-orange-200' };
+      classColors['Straight'] = { text: 'text-rose-700', bg: 'bg-rose-50', border: 'border-rose-200' };
+      classColors['Reflex'] = { text: 'text-red-700', bg: 'bg-red-50', border: 'border-red-200' };
+      classColors['Full'] = { text: 'text-purple-700', bg: 'bg-purple-50', border: 'border-purple-200' };
       var cc = classColors[angleClass] || classColors['Acute'];
 
       // ── Angle conversion ──
@@ -755,7 +755,7 @@ window.StemLab = window.StemLab || {
         ),
         h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
           h('div', { className: 'flex items-center gap-2' },
-            h('div', { className: 'text-xs font-bold text-emerald-600' }, '\u2714 ' + exploreScore.correct + '/' + exploreScore.total),
+            h('div', { className: 'text-xs font-bold text-emerald-700' }, '\u2714 ' + exploreScore.correct + '/' + exploreScore.total),
             streak > 0 && h('div', { className: 'text-xs font-bold text-amber-700' }, '\uD83D\uDD25 ' + streak),
             bestStreak > 0 && h('div', { className: 'text-[11px] text-slate-600' }, 'Best: ' + bestStreak)
           ),
@@ -843,7 +843,7 @@ window.StemLab = window.StemLab || {
           activeTab === 'explore' && h('div', { className: 'space-y-3' },
           // ── SVG Protractor ──
           h('div', { className: 'bg-white rounded-xl border-2 border-purple-200 p-2 sm:p-3 flex justify-center relative overflow-x-auto' },
-            h('div', { 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, convertedAngle + ', ' + angleClass + ' angle'), h('svg', { width: 400, height: 420, className: 'select-none', role: 'img', 'aria-label': convertedAngle + ' ' + angleClass + ' protractor', 'data-protractor-svg': true },
+            h('div', { 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, convertedAngle + ', ' + angleClass + ' angle'), h('svg', { width: 400, height: 420, className: 'select-none', role: 'group', 'aria-label': convertedAngle + ' ' + angleClass + ' interactive protractor', 'data-protractor-svg': true },
               // Outer circle + semi-circle fills
               h('circle', { cx: cx, cy: cy, r: r, fill: 'none', stroke: '#e9d5ff', strokeWidth: 1 }),
               // Filled angle wedge
@@ -959,19 +959,19 @@ window.StemLab = window.StemLab || {
           // ── Supplementary / Complementary / Relationships ──
           h('div', { className: 'flex gap-2 flex-wrap' },
             complementary != null && h('div', { className: 'flex-1 bg-blue-50 rounded-lg p-2 border border-blue-100 text-center min-w-[120px]' },
-              h('div', { className: 'text-[11px] font-bold text-blue-500 uppercase' }, t('stem.angles.complementary_2', 'Complementary')),
+              h('div', { className: 'text-[11px] font-bold text-blue-700 uppercase' }, t('stem.angles.complementary_2', 'Complementary')),
               h('div', { className: 'text-sm font-bold text-blue-700' }, complementary + '\u00B0'),
-              h('div', { className: 'text-[11px] text-blue-400' }, angleValue + '\u00B0 + ' + complementary + '\u00B0 = 90\u00B0')
+              h('div', { className: 'text-[11px] text-blue-800' }, angleValue + '\u00B0 + ' + complementary + '\u00B0 = 90\u00B0')
             ),
             supplementary != null && h('div', { className: 'flex-1 bg-teal-50 rounded-lg p-2 border border-teal-100 text-center min-w-[120px]' },
-              h('div', { className: 'text-[11px] font-bold text-teal-500 uppercase' }, t('stem.angles.supplementary', 'Supplementary')),
+              h('div', { className: 'text-[11px] font-bold text-teal-700 uppercase' }, t('stem.angles.supplementary', 'Supplementary')),
               h('div', { className: 'text-sm font-bold text-teal-700' }, supplementary + '\u00B0'),
               h('div', { className: 'text-[11px] text-teal-700' }, angleValue + '\u00B0 + ' + supplementary + '\u00B0 = 180\u00B0')
             ),
             h('div', { className: 'flex-1 bg-indigo-50 rounded-lg p-2 border border-indigo-100 text-center min-w-[120px]' },
-              h('div', { className: 'text-[11px] font-bold text-indigo-500 uppercase' }, t('stem.angles.vertical_angle', 'Vertical Angle')),
+              h('div', { className: 'text-[11px] font-bold text-indigo-700 uppercase' }, t('stem.angles.vertical_angle', 'Vertical Angle')),
               h('div', { className: 'text-sm font-bold text-indigo-700' }, verticalAngle + '\u00B0'),
-              h('div', { className: 'text-[11px] text-indigo-400' }, t('stem.angles.vertical_angles_are_equal', 'Vertical angles are equal!'))
+              h('div', { className: 'text-[11px] text-indigo-800' }, t('stem.angles.vertical_angles_are_equal', 'Vertical angles are equal!'))
             )
           ),
 
@@ -1171,8 +1171,8 @@ window.StemLab = window.StemLab || {
                     h('span', { className: 'text-lg' }, ref.icon),
                     h('span', { className: 'font-bold text-sm text-' + ref.color + '-700' }, ref.type)
                   ),
-                  h('div', { className: 'text-[11px] text-' + ref.color + '-500 font-mono' }, ref.range),
-                  h('div', { className: 'text-[11px] text-' + ref.color + '-400 mt-0.5' }, 'Example: ' + ref.ex)
+                  h('div', { className: 'text-[11px] text-' + ref.color + '-700 font-mono' }, ref.range),
+                  h('div', { className: 'text-[11px] text-' + ref.color + '-700 mt-0.5' }, 'Example: ' + ref.ex)
                 );
               })
             )
@@ -1193,8 +1193,8 @@ window.StemLab = window.StemLab || {
                     h('span', { className: 'text-base' }, rel.icon),
                     h('span', { className: 'text-sm font-bold text-' + rel.color + '-700' }, rel.name)
                   ),
-                  h('div', { className: 'text-[11px] text-' + rel.color + '-600 mb-1' }, rel.desc),
-                  h('div', { className: 'text-[11px] text-' + rel.color + '-400 font-mono' }, rel.example)
+                  h('div', { className: 'text-[11px] text-' + rel.color + '-700 mb-1' }, rel.desc),
+                  h('div', { className: 'text-[11px] text-' + rel.color + '-700 font-mono' }, rel.example)
                 );
               })
             )
@@ -1205,27 +1205,27 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'text-xs font-bold text-emerald-700 uppercase mb-3' }, t('stem.angles.triangle_angle_sum_a_b_c_180', '\uD83D\uDD3A Triangle Angle Sum (\u2220A + \u2220B + \u2220C = 180\u00B0)')),
             h('div', { className: 'grid grid-cols-3 gap-3 mb-3' },
               h('div', null,
-                h('div', { className: 'text-[11px] font-bold text-emerald-600 mb-1' }, '\u2220A'),
+                h('div', { className: 'text-[11px] font-bold text-emerald-700 mb-1' }, '\u2220A'),
                 h('input', { type: 'range', min: 5, max: 170, value: triAngle1, onChange: function(e) { upd('triAngle1', parseInt(e.target.value)); }, className: 'w-full accent-emerald-500', 'aria-valuetext': triAngle1 + '°', 'aria-label': 'Angle A: ' + triAngle1 + ' degrees' }),
                 h('div', { className: 'text-center text-sm font-bold text-emerald-800' }, triAngle1 + '\u00B0')
               ),
               h('div', null,
-                h('div', { className: 'text-[11px] font-bold text-emerald-600 mb-1' }, '\u2220B'),
+                h('div', { className: 'text-[11px] font-bold text-emerald-700 mb-1' }, '\u2220B'),
                 h('input', { type: 'range', min: 5, max: 170, value: triAngle2, onChange: function(e) { upd('triAngle2', parseInt(e.target.value)); }, className: 'w-full accent-emerald-500', 'aria-valuetext': triAngle2 + '°', 'aria-label': 'Angle B: ' + triAngle2 + ' degrees' }),
                 h('div', { className: 'text-center text-sm font-bold text-emerald-800' }, triAngle2 + '\u00B0')
               ),
               h('div', null,
-                h('div', { className: 'text-[11px] font-bold text-emerald-600 mb-1' }, t('stem.angles.c_computed', '\u2220C (computed)')),
+                h('div', { className: 'text-[11px] font-bold text-emerald-700 mb-1' }, t('stem.angles.c_computed', '\u2220C (computed)')),
                 h('div', { className: 'text-center text-2xl font-bold mt-1 ' + (triValid ? 'text-emerald-700' : 'text-red-600') }, triAngle3 + '\u00B0')
               )
             ),
-            h('div', { className: 'text-center text-xs font-bold ' + (triValid ? 'text-emerald-600' : 'text-red-500') },
+            h('div', { className: 'text-center text-xs font-bold ' + (triValid ? 'text-emerald-700' : 'text-red-700') },
               triValid
                 ? '\u2705 ' + triAngle1 + '\u00B0 + ' + triAngle2 + '\u00B0 + ' + triAngle3 + '\u00B0 = 180\u00B0'
                 : '\u26A0\uFE0F Invalid triangle! \u2220C must be > 0\u00B0'
             ),
             // Triangle classification
-            triValid && h('div', { className: 'mt-2 text-[11px] text-emerald-500 text-center' },
+            triValid && h('div', { className: 'mt-2 text-[11px] text-emerald-700 text-center' },
               'This is a ' +
               (triAngle1 === 60 && triAngle2 === 60 ? 'Equilateral' :
                (triAngle1 === triAngle2 || triAngle1 === triAngle3 || triAngle2 === triAngle3) ? 'Isosceles' : 'Scalene') +
@@ -1256,19 +1256,19 @@ window.StemLab = window.StemLab || {
             ),
             h('div', { className: 'grid grid-cols-3 gap-3' },
               h('div', { className: 'bg-violet-50 rounded-lg p-3 text-center' },
-                h('div', { className: 'text-[11px] font-bold text-violet-500 uppercase' }, t('stem.angles.interior_angle', 'Interior Angle')),
+                h('div', { className: 'text-[11px] font-bold text-violet-700 uppercase' }, t('stem.angles.interior_angle', 'Interior Angle')),
                 h('div', { className: 'text-xl font-bold text-violet-800' }, polyInterior(selectedPolygon).toFixed(1) + '\u00B0')
               ),
               h('div', { className: 'bg-violet-50 rounded-lg p-3 text-center' },
-                h('div', { className: 'text-[11px] font-bold text-violet-500 uppercase' }, t('stem.angles.exterior_angle', 'Exterior Angle')),
+                h('div', { className: 'text-[11px] font-bold text-violet-700 uppercase' }, t('stem.angles.exterior_angle', 'Exterior Angle')),
                 h('div', { className: 'text-xl font-bold text-violet-800' }, polyExterior(selectedPolygon).toFixed(1) + '\u00B0')
               ),
               h('div', { className: 'bg-violet-50 rounded-lg p-3 text-center' },
-                h('div', { className: 'text-[11px] font-bold text-violet-500 uppercase' }, t('stem.angles.angle_sum', 'Angle Sum')),
+                h('div', { className: 'text-[11px] font-bold text-violet-700 uppercase' }, t('stem.angles.angle_sum', 'Angle Sum')),
                 h('div', { className: 'text-xl font-bold text-violet-800' }, polyAngleSum(selectedPolygon) + '\u00B0')
               )
             ),
-            h('div', { className: 'mt-2 text-[11px] text-violet-500 text-center' },
+            h('div', { className: 'mt-2 text-[11px] text-violet-700 text-center' },
               'Formula: Interior = (n\u22122)\u00D7180\u00B0 \u00F7 n, where n = ' + selectedPolygon)
           )
         ),
@@ -1283,14 +1283,14 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'text-xs font-bold text-sky-700 uppercase mb-3' }, t('stem.angles.clock_angle_calculator', '\uD83D\uDD52 Clock Angle Calculator')),
             h('div', { className: 'flex gap-4 items-center justify-center mb-3' },
               h('div', null,
-                h('div', { className: 'text-[11px] font-bold text-sky-600 mb-1' }, t('stem.angles.hour', 'Hour')),
+                h('div', { className: 'text-[11px] font-bold text-sky-700 mb-1' }, t('stem.angles.hour', 'Hour')),
                 h('select', { value: clockHour, onChange: function(e) { upd('clockHour', parseInt(e.target.value)); }, 'aria-label': t('stem.angles.clock_hour', 'Clock hour'), className: 'px-3 py-1.5 border-2 border-sky-500 rounded-lg text-sm font-bold text-sky-800 outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1' },
                   [1,2,3,4,5,6,7,8,9,10,11,12].map(function(hr) { return h('option', { key: hr, value: hr }, hr); })
                 )
               ),
               h('span', { className: 'text-2xl font-bold text-sky-700' }, ':'),
               h('div', null,
-                h('div', { className: 'text-[11px] font-bold text-sky-600 mb-1' }, t('stem.angles.minute', 'Minute')),
+                h('div', { className: 'text-[11px] font-bold text-sky-700 mb-1' }, t('stem.angles.minute', 'Minute')),
                 h('select', { value: clockMinute, onChange: function(e) { upd('clockMinute', parseInt(e.target.value)); }, 'aria-label': t('stem.angles.clock_minute', 'Clock minute'), className: 'px-3 py-1.5 border-2 border-sky-500 rounded-lg text-sm font-bold text-sky-800 outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1' },
                   [0,5,10,15,20,25,30,35,40,45,50,55].map(function(m) { return h('option', { key: m, value: m }, m < 10 ? '0' + m : m); })
                 )
@@ -1303,7 +1303,7 @@ window.StemLab = window.StemLab || {
                 // Hour numbers
                 [1,2,3,4,5,6,7,8,9,10,11,12].map(function(n) {
                   var na = (n * 30 - 90) * Math.PI / 180;
-                  return h('text', { key: n, x: 60 + 42 * Math.cos(na), y: 60 + 42 * Math.sin(na) + 4, textAnchor: 'middle', className: 'text-[11px] fill-sky-600 font-bold select-none' }, n);
+                  return h('text', { key: n, x: 60 + 42 * Math.cos(na), y: 60 + 42 * Math.sin(na) + 4, textAnchor: 'middle', className: 'text-[11px] fill-sky-700 font-bold select-none' }, n);
                 }),
                 // Hour hand
                 (function() {
@@ -1320,9 +1320,9 @@ window.StemLab = window.StemLab || {
             ),
             h('div', { className: 'text-center' },
               h('div', { className: 'text-2xl font-bold text-sky-800' }, clockAngle.toFixed(1) + '\u00B0'),
-              h('div', { className: 'text-xs text-sky-500' }, 'Angle between hands at ' + clockHour + ':' + (clockMinute < 10 ? '0' : '') + clockMinute),
+              h('div', { className: 'text-xs text-sky-700' }, 'Angle between hands at ' + clockHour + ':' + (clockMinute < 10 ? '0' : '') + clockMinute),
               h('div', { className: 'text-[11px] mt-1 font-bold ' + (classColors[classifyAngle(Math.round(clockAngle))] || classColors['Acute']).text }, classifyAngle(Math.round(clockAngle)) + ' angle'),
-              h('button', { 'aria-label': t('stem.angles.show_on_protractor', 'Show on protractor'), onClick: function() { setAngleValue(Math.round(clockAngle)); upd('activeTab', 'explore'); }, className: 'mt-2 text-[11px] font-bold text-sky-600 underline' }, t('stem.angles.show_on_protractor_2', '\u2192 Show on protractor'))
+              h('button', { 'aria-label': t('stem.angles.show_on_protractor', 'Show on protractor'), onClick: function() { setAngleValue(Math.round(clockAngle)); upd('activeTab', 'explore'); }, className: 'mt-2 text-[11px] font-bold text-sky-700 underline' }, t('stem.angles.show_on_protractor_2', '\u2192 Show on protractor'))
             )
           ),
 
@@ -1331,23 +1331,23 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'text-xs font-bold text-green-700 uppercase mb-3' }, t('stem.angles.angle_unit_converter', '\uD83D\uDD04 Angle Unit Converter')),
             h('div', { className: 'grid grid-cols-4 gap-3' },
               h('div', { className: 'bg-green-50 rounded-lg p-3 text-center' },
-                h('div', { className: 'text-[11px] font-bold text-green-500 uppercase' }, t('stem.angles.degrees_2', 'Degrees')),
+                h('div', { className: 'text-[11px] font-bold text-green-700 uppercase' }, t('stem.angles.degrees_2', 'Degrees')),
                 h('div', { className: 'text-lg font-bold text-green-800' }, angleValue + '\u00B0')
               ),
               h('div', { className: 'bg-green-50 rounded-lg p-3 text-center' },
-                h('div', { className: 'text-[11px] font-bold text-green-500 uppercase' }, t('stem.angles.radians_2', 'Radians')),
+                h('div', { className: 'text-[11px] font-bold text-green-700 uppercase' }, t('stem.angles.radians_2', 'Radians')),
                 h('div', { className: 'text-lg font-bold text-green-800' }, toRadians(angleValue))
               ),
               h('div', { className: 'bg-green-50 rounded-lg p-3 text-center' },
-                h('div', { className: 'text-[11px] font-bold text-green-500 uppercase' }, t('stem.angles.gradians_2', 'Gradians')),
+                h('div', { className: 'text-[11px] font-bold text-green-700 uppercase' }, t('stem.angles.gradians_2', 'Gradians')),
                 h('div', { className: 'text-lg font-bold text-green-800' }, toGradians(angleValue))
               ),
               h('div', { className: 'bg-green-50 rounded-lg p-3 text-center' },
-                h('div', { className: 'text-[11px] font-bold text-green-500 uppercase' }, t('stem.angles.turns_2', 'Turns')),
+                h('div', { className: 'text-[11px] font-bold text-green-700 uppercase' }, t('stem.angles.turns_2', 'Turns')),
                 h('div', { className: 'text-lg font-bold text-green-800' }, toTurns(angleValue))
               )
             ),
-            h('div', { className: 'mt-2 text-[11px] text-green-500 text-center' },
+            h('div', { className: 'mt-2 text-[11px] text-green-700 text-center' },
               t('stem.angles.rad_180_200_grad_0_5_turns', '\u03C0 rad = 180\u00B0 = 200 grad = 0.5 turns'))
           ),
 

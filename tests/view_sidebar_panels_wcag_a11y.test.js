@@ -7,7 +7,12 @@ const deployed = readFileSync('desktop/web-app/public/view_sidebar_panels_module
 
 describe('Sidebar Panels WCAG 2.2 controls', () => {
   it('retains visible focus and explicit non-submit button behavior', () => {
-    expect(source).not.toMatch(/(?:focus(?:-visible)?:)?outline-none/);
+    const outlineSuppressions = source
+      .split(/\r?\n/)
+      .filter((line) => /(?:focus(?:-visible)?:)?outline-none/.test(line));
+
+    expect(outlineSuppressions.length).toBeGreaterThan(0);
+    expect(outlineSuppressions.every((line) => /focus(?:-visible)?:ring(?:-|\b)/.test(line))).toBe(true);
     expect(source).not.toMatch(/<button\b(?![^>]*\btype=)/gs);
   });
 

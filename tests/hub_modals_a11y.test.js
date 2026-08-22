@@ -52,15 +52,14 @@ describe('Learning Hub launcher grid accessibility', () => {
 
 describe('Educator Hub launcher grid accessibility', () => {
   const source = fs.readFileSync('view_educator_hub_modal_source.jsx', 'utf8');
-  it('uses visible naming, explicit controls, reduced motion, and a separate status summary', () => {
+  it('uses visible naming, explicit controls, reduced motion, and an announced result count', () => {
     expect(source).toContain('aria-labelledby="educator-hub-title" aria-describedby="educator-hub-subtitle"');
     expect(source.match(/<button\b/g).length).toBeGreaterThanOrEqual(19);
     expect(source.match(/type="button"/g).length).toBe(source.match(/<button\b/g).length);
     expect(source.match(/motion-reduce:transform-none/g).length)
       .toBe((source.match(/(?<!disabled:)hover:scale-/g) || []).length);
-    expect(source).toContain('role="region" aria-labelledby="educator-platform-results-title"');
-    expect(source).toContain('role="status" aria-live="polite" aria-atomic="true">Platform check complete.');
-    expect(source).not.toContain('rounded-lg p-2 text-[11px]" role="status"');
+    expect(source).toContain('<p className="sr-only" aria-live="polite">{hubVisibleCount}');
+    expect(source).toContain("{tr('hub.tools_available', 'tools available')}</p>");
     expect(source).toContain('min-w-11 min-h-11');
     expect(source).toMatch(/<span aria-hidden="true">[^<]+<\/span> \{t\('pdf_audit\.view_last_audit'\)/);
   });

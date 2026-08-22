@@ -72,7 +72,7 @@ describe('student-facing accessibility contracts', () => {
     expect(src).toContain("theme === 'dark'");
     expect(src).toContain('headerText');
     expect(src).toContain("submissionMethod === 'mailbox'");
-    expect(src).toContain('Submit to teacher’s Drive');
+    expect(src).toContain("Submit to teacher's Drive");
     expect(src).toContain('await Promise.resolve(onSubmit(fullName, stats))');
     expect(src).toContain("submissionContext === 'standard-live'");
     expect(src).toContain('If delivery fails, a backup file downloads instead.');
@@ -101,13 +101,10 @@ describe('student-facing accessibility contracts', () => {
     });
   });
 
-  it('canonical and deploy loaders both stamp the CURRENT content hash of each student module', () => {
-    // Design call (2026-07-16, was a stale assertion): build.js now stamps the deploy
-    // App.jsx/ANTI with ABSOLUTE CDN URLs (`https://alloflow-cdn.pages.dev/<file>?v=<hash8>`)
-    // rather than the old `./local` form — deploy serves student modules from the CDN with
-    // cache busting. We assert the evolved form, and the stronger invariant it enables:
-    // every copy's ?v= stamp must equal the sha256-8 of the module bytes ON DISK, so a
-    // module edit without a loader restamp (stale cache-buster) fails here.
+  it('pins canonical student-module URLs by content while dev loaders stay local', () => {
+    // Root AlloFlowANTI is the production source and keeps content-hash CDN pins.
+    // build.js defaults to dev mode for App.jsx and its backup, where local URLs
+    // are intentional so edits hot-reload without a CDN round trip.
     const host = read('AlloFlowANTI.txt');
     const deployHost = read('desktop/web-app/src/AlloFlowANTI.txt');
     const deployApp = read('desktop/web-app/src/App.jsx');
@@ -119,8 +116,8 @@ describe('student-facing accessibility contracts', () => {
     ].forEach((file) => {
       const tag = `${file}?v=${hash8(file)}`;
       expect(host).toContain(tag);
-      expect(deployHost).toContain(`https://alloflow-cdn.pages.dev/${tag}`);
-      expect(deployApp).toContain(`https://alloflow-cdn.pages.dev/${tag}`);
+      expect(deployHost).toContain(`'./${file}'`);
+      expect(deployApp).toContain(`'./${file}'`);
     });
   });
 });

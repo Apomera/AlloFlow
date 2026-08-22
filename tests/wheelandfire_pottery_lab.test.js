@@ -139,8 +139,52 @@ describe('Wheel & Fire pottery lab', () => {
     const pure = window.__alloPotteryPure;
     const shortFast = pure.estimateHeatwork({ temperature: 1200, ramp: 280, soak: 0 });
     const longSlow = pure.estimateHeatwork({ temperature: 1200, ramp: 80, soak: 60 });
+    const history = pure.estimateThermalHistory({ temperature: 1200, ramp: 80, soak: 60, coolingRate: 80 });
+    const dimensions = pure.estimateDimensionalHistory(pure.makeVessel('stoneware', 'bowl'), { humidity: 48, dryingRate: 45, temperature: 1220, ramp: 110, soak: 15, coolingRate: 90, kilnType: 'electric' });
     expect(longSlow.effectiveTemp).toBeGreaterThan(shortFast.effectiveTemp);
     expect(longSlow.cone).toMatch(/^\d+$/);
+    expect(history.segments.map((segment) => segment.label)).toEqual(['Ramp up', 'Peak soak', 'Controlled cool']);
+    expect(history.segments.reduce((sum, segment) => sum + segment.relativePct, 0)).toBeCloseTo(100, 5);
+    expect(history.totalHours).toBeGreaterThan(history.segments[0].durationHours);
+    expect(dimensions.snapshots.map((snapshot) => snapshot.label)).toEqual(['Current piece', 'Leather-hard projection', 'Bone-dry projection', 'Bisque projection']);
+    expect(dimensions.snapshots.at(-1).capacityChangePct).toBeLessThan(0);
+    expect(dimensions.summary).toContain('dimensional checkpoints');
+    const targetPlan = pure.estimateDimensionalTargets(dimensions, { capacityMl: dimensions.snapshots.at(-1).capacityMl + 100, heightCm: dimensions.snapshots.at(-1).heightCm + 2 });
+    expect(targetPlan.targetedCount).toBe(2);
+    expect(targetPlan.results.find((result) => result.id === 'capacityMl').recommendedCurrent).toBeGreaterThan(dimensions.baseline.capacityMl);
+    expect(targetPlan.results.find((result) => result.id === 'capacityMl').retentionPct).toBeLessThan(100);
+    expect(targetPlan.summary).toContain('Reverse scaling');
+    const modelSettings = pure.dimensionModelSettings({ clayBody: 'stoneware', materialRecipe: null, method: 'wheel', humidity: 48, dryingRate: 45, temperature: 1220, ramp: 110, soak: 15, coolingRate: 90, kilnType: 'electric', atmosphere: 'oxidation' });
+    expect(modelSettings.modelVersion).toBe(pure.DIMENSION_MODEL_VERSION);
+    expect(pure.compareDimensionModelSettings(modelSettings, modelSettings).status).toBe('current');
+    const changedSettings = { ...modelSettings, temperature: 1180 };
+    expect(pure.compareDimensionModelSettings(modelSettings, changedSettings).changedFields).toContain('temperature');
+    expect(pure.compareDimensionModelSettings(modelSettings, changedSettings).status).toBe('stale');
+    expect(pure.compareDimensionModelSettings({ humidity: 48 }, modelSettings).status).toBe('incomplete');
+    const contextCalibration = pure.compareDimensionalMeasurements(dimensions, [{ id: 'context-1', checkpointIndex: 0, modeled: { heightCm: dimensions.baseline.heightCm }, measured: { heightCm: dimensions.baseline.heightCm + 0.2 }, modelSettings }], changedSettings);
+    expect(contextCalibration.staleCount).toBe(1);
+    expect(contextCalibration.rows[0].context.status).toBe('stale');
+    const uncertaintyCalibration = pure.compareDimensionalMeasurements(dimensions, [{ id: 'uncertainty-1', checkpointIndex: 0, modeled: { heightCm: dimensions.baseline.heightCm, capacityMl: dimensions.baseline.capacityMl }, measured: { heightCm: dimensions.baseline.heightCm + 0.2, capacityMl: dimensions.baseline.capacityMl - 12 }, uncertainty: { heightCm: 0.25, capacityMl: 5 }, modelSettings }], modelSettings);
+    expect(uncertaintyCalibration.uncertaintyCount).toBe(2);
+    expect(uncertaintyCalibration.withinUncertaintyCount).toBe(1);
+    expect(uncertaintyCalibration.outOfBandCount).toBe(1);
+    expect(uncertaintyCalibration.uncertaintyCoveragePct).toBeCloseTo(50, 5);
+    expect(uncertaintyCalibration.rows[0].compared.find((item) => item.id === 'heightCm').withinUncertainty).toBe(true);
+    expect(uncertaintyCalibration.rows[0].compared.find((item) => item.id === 'capacityMl').withinUncertainty).toBe(false);
+    const zeroRangeCalibration = pure.compareDimensionalMeasurements(dimensions, [{ id: 'uncertainty-zero', checkpointIndex: 0, modeled: { heightCm: dimensions.baseline.heightCm }, measured: { heightCm: dimensions.baseline.heightCm }, uncertainty: { heightCm: 0 }, modelSettings }], modelSettings);
+    expect(zeroRangeCalibration.rows[0].compared[0].withinUncertainty).toBe(true);
+    expect(zeroRangeCalibration.rows[0].compared[0].uncertaintyRatio).toBeNull();
+    const calibration = pure.compareDimensionalMeasurements(dimensions, [{ id: 'measure-1', checkpointIndex: 0, measured: { heightCm: dimensions.baseline.heightCm + 0.2, capacityMl: dimensions.baseline.capacityMl - 12 }, note: 'calipers and water fill' }]);
+    expect(calibration.measurementCount).toBe(1);
+    expect(calibration.dimensionCount).toBe(2);
+    expect(calibration.rows[0].residuals.heightCm).toBeCloseTo(0.2, 5);
+    expect(calibration.rows[0].residuals.capacityMl).toBeCloseTo(-12, 5);
+    expect(calibration.meanAbsoluteRelativeErrorPct).toBeGreaterThan(0);
+    expect(calibration.summary).toContain('Mean absolute relative error');
+    const shiftedHistory = { ...dimensions, snapshots: dimensions.snapshots.map((snapshot, index) => index === 0 ? { ...snapshot, heightCm: snapshot.heightCm + 5 } : snapshot) };
+    const frozenCalibration = pure.compareDimensionalMeasurements(shiftedHistory, [{ id: 'measure-frozen', checkpointIndex: 0, checkpointLabel: 'Current piece', modeled: { heightCm: dimensions.baseline.heightCm, capacityMl: dimensions.baseline.capacityMl }, measured: { heightCm: dimensions.baseline.heightCm + 0.2, capacityMl: dimensions.baseline.capacityMl - 12 } }]);
+    expect(frozenCalibration.rows[0].modelSource).toBe('logged');
+    expect(frozenCalibration.rows[0].residuals.heightCm).toBeCloseTo(0.2, 5);
 
     const underfired = pure.estimateFiredPorosity('stoneware', 1000, 'electric');
     const mature = pure.estimateFiredPorosity('stoneware', 1230, 'electric');
@@ -176,6 +220,8 @@ describe('Wheel & Fire pottery lab', () => {
     expect(slow.heatwork.effectiveTemp).toBeGreaterThan(fast.heatwork.effectiveTemp);
     expect(fast.rampRiskPct).toBeGreaterThan(slow.rampRiskPct);
     expect(fast.thermalRiskPct).toBeGreaterThan(slow.thermalRiskPct);
+    expect(slow.thermalHistory.segments).toHaveLength(3);
+    expect(slow.thermalHistory.totalHours).toBeGreaterThan(fast.thermalHistory.totalHours);
     expect(slow.glazeOutcome).toMatchObject({ glazeId: 'clear' });
     expect(glazed.stage).toBe('glazed');
   });
@@ -235,7 +281,8 @@ describe('Wheel & Fire pottery lab', () => {
       materialScenarios: [{ id: 7, label: 'Saved temper trial', clayBody: 'earthenware', materialRecipe: { temperPercent: 16 } }],
       firingSchedules: [{ id: 9, label: 'Slow test', temperature: 1220, ramp: 80, soak: 30, coolingRate: 80, kilnType: 'electric' }],
       cycleProtocols: [{ id: 10, label: 'Slow rinse', cycles: 12, dryingRate: 20, cycleTemperatureDelta: 30 }],
-      gallery: [{ id: 8, name: 'Recipe record', vessel: recipeState, materialRecipe: recipeState.materialRecipe, materialScenarios: [{ id: 7 }], firingSchedules: [{ id: 9 }], cycleProtocols: [{ id: 10 }], method: 'wheel', performanceTests: [] }]
+      sensitivityLog: [{ id: 11, label: 'Cycle sensitivity sweep', stage: 'glaze-fired', cycles: 24, dryingRate: 45, cycleTemperatureDelta: 80, damagePct: 18, axes: [], observation: 'Observed no visible change after the short comparison.' }],
+      gallery: [{ id: 8, name: 'Recipe record', vessel: recipeState, materialRecipe: recipeState.materialRecipe, materialScenarios: [{ id: 7 }], firingSchedules: [{ id: 9 }], cycleProtocols: [{ id: 10 }], sensitivityStudies: [{ id: 11 }], method: 'wheel', performanceTests: [] }]
     } });
     expect(journalHtml).toContain('Saved scenarios');
     expect(journalHtml).toContain('1 saved material scenario');
@@ -243,11 +290,25 @@ describe('Wheel & Fire pottery lab', () => {
     expect(journalHtml).toContain('1 saved firing schedule');
     expect(journalHtml).toContain('Reuse protocols');
     expect(journalHtml).toContain('1 saved reuse protocol');
+    expect(journalHtml).toContain('Sensitivity studies');
+    expect(journalHtml).toContain('1 saved sensitivity study');
   });
 
   it('enforces drying, bisque, glazing, and glaze-firing order with modeled defects', () => {
     const pure = window.__alloPotteryPure;
     let vessel = pure.makeVessel('stoneware', 'bowl');
+    const gentleDrying = pure.estimateDryingHistory(vessel, { humidity: 70, dryingRate: 20 });
+    const harshDrying = pure.estimateDryingHistory(vessel, { humidity: 10, dryingRate: 100 });
+    expect(gentleDrying.segments).toHaveLength(2);
+    expect(gentleDrying.segments.reduce((sum, segment) => sum + segment.relativePct, 0)).toBeCloseTo(100, 5);
+    expect(harshDrying.segments[0].crackRiskPct).toBeGreaterThan(gentleDrying.segments[0].crackRiskPct);
+    expect(gentleDrying.finalStage).toBe('bone-dry');
+    const thinWallVessel = { ...vessel, thickness: [...vessel.thickness] };
+    thinWallVessel.thickness[18] = 0.22;
+    const hotspotHistory = pure.estimateDryingHistory(thinWallVessel, { humidity: 48, dryingRate: 45 });
+    expect(hotspotHistory.hotspots).toHaveLength(3);
+    expect(hotspotHistory.hotspots[0].index).toBe(18);
+    expect(hotspotHistory.hotspots[0].reason).toBe('thin wall');
     vessel = pure.dryVessel(vessel, { humidity: 42, dryingRate: 45 });
     expect(vessel.stage).toBe('leather-hard');
     vessel = pure.dryVessel(vessel, { humidity: 42, dryingRate: 45 });
@@ -268,10 +329,34 @@ describe('Wheel & Fire pottery lab', () => {
   });
 
   it('renders heatwork and cooling controls with an accessible schedule diagram', () => {
-    const html = renderTool('wheelAndFire', { wheelAndFire: { view: 'kiln', kilnTemp: 1220, soak: 30, coolingRate: 90 } });
+    const html = renderTool('wheelAndFire', { wheelAndFire: { view: 'kiln', kilnTemp: 1220, soak: 30, coolingRate: 90, dimensionTargetCapacity: 220 } });
     expect(html).toContain('Peak soak');
     expect(html).toContain('Cooling rate');
+    expect(html).toContain('Modeled drying history');
+    expect(html).toContain('Wet to leather-hard');
+    expect(html).toContain('Modeled moisture removed');
+    expect(html).toContain('Projected final stage');
+    expect(html).toContain('crack-risk signal');
+    expect(html).toContain('Drying hotspots to inspect');
+    expect(html).toContain('Focus one in Shape');
     expect(html).toContain('Simplified kiln schedule');
+    expect(html).toContain('Modeled thermal history');
+    expect(html).toContain('Ramp up');
+    expect(html).toContain('Controlled cool');
+    expect(html).toContain('Total modeled schedule time');
+    expect(html).toContain('Cooling risk signal');
+    expect(html).toContain('Dimensional shrinkage budget');
+    expect(html).toContain('Projected dimensional checkpoints');
+    expect(html).toContain('Capacity');
+    expect(html).toContain('Min wall');
+    expect(html).toContain('Plan backward from a target');
+    expect(html).toContain('Current-stage target');
+    expect(html).toContain('Clear target fields');
+    expect(html).toContain('Calibrate with a real measurement');
+    expect(html).toContain('Measurement uncertainty');
+    expect(html).toContain('Log measured checkpoint');
+    expect(html).toContain('Model calibration evidence');
+    expect(html).toContain('No measurement uncertainty ranges declared yet');
     expect(html).toContain('rough cone neighborhood');
     expect(html).toContain('Projected maturation');
     expect(html).toContain('Glaze outcome preview');
@@ -279,6 +364,9 @@ describe('Wheel & Fire pottery lab', () => {
     expect(html).toContain('Fit score');
     expect(html).toContain('Firing schedule shelf');
     expect(html).toContain('Save firing scenario');
+    const journalHtml = renderTool('wheelAndFire', { wheelAndFire: { view: 'journal' } });
+    expect(journalHtml).toContain('Model provenance');
+    expect(journalHtml).toContain('Dimensional targets');
   });
 
   it('requires fired clay for use tests and models glaze sealing without claiming certification', () => {
@@ -375,6 +463,12 @@ describe('Wheel & Fire pottery lab', () => {
     expect(html).toContain('Counterfactual cycle comparison');
     expect(html).toContain('The cells show point damage followed by the uncalibrated band');
     expect(html).toContain('Temperature swing');
+    expect(html).toContain('Sensitivity observation (optional)');
+    expect(html).toContain('Log sweep as experiment');
+    const loggedHtml = renderTool('wheelAndFire', { wheelAndFire: { view: 'performance', vessel: fired, performanceTest: 'cycles', sensitivityLog: [{ id: 91, label: 'Logged comparison', stage: 'glaze-fired', cycles: 24, dryingRate: 45, cycleTemperatureDelta: 80, damagePct: 18, axes: [], observation: 'Observed no visible change.' }] } });
+    expect(loggedHtml).toContain('Sensitivity experiment log');
+    expect(loggedHtml).toContain('Logged comparison');
+    expect(loggedHtml).toContain('Observed no visible change.');
     expect(html).toContain('Drying severity');
     expect(html).toContain('Cycle temperature swing');
     expect(html).toContain('Exposure profile');

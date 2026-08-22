@@ -1,15 +1,38 @@
 import { describe, expect, it } from 'vitest';
 import fs from 'node:fs';
+import parser from '@babel/parser';
 
 const source = fs.readFileSync('teacher_source.jsx', 'utf8');
 const moduleSource = fs.readFileSync('teacher_module.js', 'utf8');
 const publicModule = fs.readFileSync('desktop/web-app/public/teacher_module.js', 'utf8');
+const teacherAst = parser.parse(source, {
+  sourceType: 'script',
+  plugins: ['jsx', 'optionalChaining', 'nullishCoalescingOperator', 'classProperties', 'objectRestSpread'],
+});
+const teacherButtons = [];
+const visit = (node) => {
+  if (!node || typeof node !== 'object') return;
+  if (node.type === 'JSXOpeningElement' && node.name.type === 'JSXIdentifier' && node.name.name === 'button') {
+    teacherButtons.push(node);
+  }
+  for (const [key, value] of Object.entries(node)) {
+    if (key === 'loc' || key === 'start' || key === 'end') continue;
+    if (Array.isArray(value)) value.forEach(visit);
+    else if (value && typeof value === 'object') visit(value);
+  }
+};
+visit(teacherAst);
 
 describe('Teacher interface control semantics', () => {
-  it('uses exactly one explicit type for every native button', () => {
-    expect(source.match(/<button\b/g)).toHaveLength(89);
-    expect(source.match(/<button\s+type="button"/g)).toHaveLength(88);
-    expect(source.match(/<button\s+type="submit"/g)).toHaveLength(1);
+  it('uses an explicit valid type for every native button', () => {
+    expect(teacherButtons.length).toBeGreaterThan(0);
+    const typeAttributes = teacherButtons.map((button) =>
+      button.attributes.find((attribute) => attribute.type === 'JSXAttribute' && attribute.name.name === 'type')
+    );
+    expect(typeAttributes.flatMap((attribute, index) => attribute ? [] : [teacherButtons[index].loc.start.line])).toEqual([]);
+    const typeValues = typeAttributes.map((attribute) => attribute.value?.value);
+    expect(typeValues.filter((value) => value !== 'button' && value !== 'submit')).toEqual([]);
+    expect(typeValues.filter((value) => value === 'submit')).toHaveLength(1);
   });
 
   it('exposes the donut visualization as a named progress value', () => {
@@ -28,8 +51,13 @@ describe('Teacher interface control semantics', () => {
 
 describe('Teacher and Escape Room motion and focus', () => {
   it('provides a local fallback for every animation and transition utility', () => {
-    expect(source.match(/motion-reduce:animate-none/g)).toHaveLength(41);
-    expect(source.match(/motion-reduce:transition-none/g)).toHaveLength(102);
+    const lines = source.split(/\r?\n/);
+    const animated = lines.filter((line) => /animate-(?:spin|pulse|bounce|ping)/.test(line));
+    const transitioning = lines.filter((line) => /transition-(?:all|colors|opacity|shadow|transform)/.test(line));
+    expect(animated.length).toBeGreaterThan(0);
+    expect(transitioning.length).toBeGreaterThan(0);
+    expect(animated.filter((line) => !line.includes('motion-reduce:animate-none'))).toEqual([]);
+    expect(transitioning.filter((line) => !line.includes('motion-reduce:transition-none'))).toEqual([]);
   });
 
   it('suppresses custom confetti when reduced motion is requested', () => {

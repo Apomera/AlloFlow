@@ -31,6 +31,13 @@ describe('Optics Lab improvement regressions', () => {
     const html = render({ mode: 'home' });
     expect(html).toContain('aria-controls="op-panel-home"');
     expect(html).not.toContain('aria-controls="op-panel-reflection"');
+    expect(source).not.toContain("color: '#e0e7ff'");
+    expect(source).toContain("color: 'var(--allo-stem-text, #e0e7ff)'");
+  });
+
+  it('only awards the simulation milestone from actual simulation tabs', () => {
+    expect(source).toContain("['reflection', 'refraction', 'lenses', 'interference', 'diffraction', 'polarization'].indexOf(next.opticsLab.mode) !== -1");
+    expect(source).not.toContain("if (next.opticsLab.mode !== 'home') next.opticsLab.simRunOnce = true;");
   });
 
   it('announces computed outcomes on the main simulation sliders', () => {
@@ -72,10 +79,44 @@ describe('Optics Lab improvement regressions', () => {
   });
 
   it('renders static WebGL scenes on demand and pauses animation when hidden', () => {
-    expect(source.match(/function scheduleFrame\(\)/g)).toHaveLength(2);
+    expect(source.match(/function scheduleFrame\(\)/g)).toHaveLength(3);
     expect(source).toContain("if (typeof document !== 'undefined' && document.hidden) return;");
     expect(source).toContain('push: function (data) { pending = data; scheduleFrame(); }');
     expect(source).toContain('if (S.animate) scheduleFrame();');
+  });
+
+  it('adds an accessible, demand-rendered 3D lens bench with exact thin-lens outcomes', () => {
+    expect(source).toContain('var OpticsLensGL = (function ()');
+    expect(source).toContain("canvas.setAttribute('data-optics-lens-gl', 'true')");
+    expect(source).toContain("failMessage: '3D lens bench unavailable'");
+    expect(source).toContain('imageDistance: d_i, imageHeight: hImg');
+    expect(source).toContain('S.resizeObserver.disconnect()');
+    expect(source).toContain("window.__alloOpticsLensGL = OpticsLensGL");
+
+    const collapsed = render({ mode: 'lenses', lensShow3D: false });
+    expect(collapsed).toContain('3D ray-space bench');
+    expect(collapsed).not.toContain('Loading 3D lens bench');
+
+    const expanded = render({
+      mode: 'lenses', lensShow3D: true, lensType: 'diverging', lensFocal: 12, lensDo: 25
+    });
+    expect(expanded).toContain('Loading 3D lens bench');
+    expect(expanded).toContain('Dashed pink lines are backward extensions');
+    expect(expanded).toContain('aria-keyshortcuts="ArrowLeft ArrowRight ArrowUp ArrowDown + -"');
+    expect(expanded).toContain('virtual, upright image');
+
+    const focalPlane = render({
+      mode: 'lenses', lensShow3D: true, lensType: 'converging', lensFocal: 12, lensDo: 12
+    });
+    expect(focalPlane).toContain('image at infinity');
+    expect(focalPlane).toContain('outgoing cyan rays are parallel');
+  });
+
+  it('keeps long-distance mirror samples inside the range control domain', () => {
+    expect(source).toContain('var reflDoSliderMax = Math.max(45, Math.ceil(d_o / 25) * 25);');
+    const sample = render({ mode: 'reflection', reflMirrorType: 'convex', reflFocal: 25, reflDo: 200 });
+    expect(sample).toContain('max="200"');
+    expect(sample).toContain('200.0 cm object distance');
   });
 
   it('makes the inquiry reset complete and announces its computed state', () => {

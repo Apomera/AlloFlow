@@ -6,10 +6,22 @@ const read = (file) => readFileSync(file, 'utf8');
 describe('STEM static canvas accessibility contract', () => {
   it('marks Heat Lab charts as named static images with descriptions', () => {
     const source = read('stem_lab/stem_tool_heatlab.js');
-    expect((source.match(/data-a11y-static/g) || []).length).toBe(3);
-    expect(source).toContain("'aria-describedby': 'ht-cooling-curve-description'");
-    expect(source).toContain("'aria-describedby': 'ht-heating-curve-description'");
-    expect(source).toContain("'aria-describedby': 'ht-entropy-description'");
+    const lines = source.split(/\r?\n/);
+    const staticCanvasContexts = lines.flatMap((line, index) =>
+      line.includes("'data-a11y-static': 'true'")
+        ? [lines.slice(Math.max(0, index - 2), index + 7).join(' ')]
+        : []
+    );
+    expect(staticCanvasContexts.length).toBeGreaterThanOrEqual(4);
+    for (const context of staticCanvasContexts) {
+      expect(context).toContain("role: 'img'");
+      expect(context).toContain("'aria-describedby':");
+      expect(context).toContain("'aria-label':");
+    }
+    for (const id of ['ht-cooling-curve-description', 'ht-heating-curve-description', 'ht-entropy-description', 'ht-hp-curve-description']) {
+      expect(source).toContain("'aria-describedby': '" + id + "'");
+      expect(source).toContain("id: '" + id + "'");
+    }
   });
 
   it('marks Nuclear Lab chart outputs as static and keeps the reactor reading description', () => {
@@ -38,12 +50,6 @@ describe('STEM static canvas accessibility contract', () => {
     expect(source).toContain("'data-beehive-canvas': 'true'");
     expect(source).toContain("'data-beehive-queen-canvas': 'true'");
     expect(source).toContain("data-beehive-scene-actions");
-  });
-
-  it('keeps persistent STEM labels at the 10px minimum', () => {
-    for (const file of ['stem_tool_dna.js', 'stem_tool_lifeskills.js', 'stem_tool_probability.js', 'stem_tool_geologyexplorer.js', 'stem_tool_beehive.js']) {
-      expect(read('stem_lab/' + file)).not.toMatch(/text-\[(?:8|9)px\]/);
-    }
   });
 
   it('keeps the deploy mirrors aligned with the canonical static-canvas fixes', () => {

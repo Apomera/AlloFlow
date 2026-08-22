@@ -2629,7 +2629,7 @@
         };
         return h('nav', {
           key: 'routefoot',
-          'aria-label': nkPath.q + ', route progress',
+          'aria-label': nkPath.q + ', route progress, step ' + (at + 1) + ' of ' + nkPath.steps.length,
           className: 'flex flex-wrap items-center gap-2 mt-3 pt-2',
           style: { borderTop: '1px dashed ' + accent + '66' }
         },

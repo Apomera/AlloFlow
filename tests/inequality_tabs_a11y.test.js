@@ -20,6 +20,8 @@ describe('Inequality Lab graph mode tabs accessibility', () => {
     expect(source).toContain("onKeyDown: function(e) { inequalityTabKeyDown(e, tabIndex); }");
     expect(source).toContain("e.key === 'ArrowRight' || e.key === 'ArrowDown'");
     expect(source).toContain("e.key === 'ArrowLeft' || e.key === 'ArrowUp'");
+    expect(source).toContain("nextIndex = (index - 1 + 2) % 2");
+    expect(source).not.toContain("else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = (index + 1) % 2");
     expect(source).toContain("e.key === 'Home'");
     expect(source).toContain("e.key === 'End'");
   });

@@ -27,11 +27,11 @@ describe('Floating student-tools stack accessibility', () => {
 
   it('groups labeled actions without changing the Guided Mode selectors', () => {
     expect(source).toContain('alloflow-student-tools-read-heading');
-    expect(source).toContain('>Read</h3>');
+    expect(source).toContain("{t('student_tools.read') || 'Read'}</h3>");
     expect(source).toContain('alloflow-student-tools-focus-heading');
-    expect(source).toContain('>Focus</h3>');
+    expect(source).toContain("{t('student_tools.focus') || 'Focus'}</h3>");
     expect(source).toContain('alloflow-student-tools-input-heading');
-    expect(source).toContain('>Input &amp; practice</h3>');
+    expect(source).toContain("{t('student_tools.input_practice') || 'Input & practice'}</h3>");
     for (const helpKey of [
       'tool_read_mode', 'tool_define_mode', 'tool_explain_mode', 'tool_syntax_game',
       'fab_ruler', 'fab_timer', 'fab_focus', 'fab_line_focus', 'fab_dictation',

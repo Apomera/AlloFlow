@@ -3492,13 +3492,13 @@ var d = labToolData || {};
             React.createElement('p',{className:'text-xs text-slate-600 mb-2'},'Each mission guides you to discover a theorem through measurement and prediction — no formulas given away!'),
             React.createElement('div',{className:'space-y-2'}, MISSIONS.map(m=>React.createElement('button',{key:m.id,onClick:()=>startMission(m.id),className:'w-full flex items-center gap-3 p-3 bg-white border-2 border-violet-100 rounded-xl hover:border-violet-400 hover:bg-violet-50 text-left transition-all'},
               React.createElement('span',{className:'text-2xl w-10 text-center shrink-0'},m.icon),
-              React.createElement('div',null, React.createElement('p',{className:'text-sm font-bold text-violet-800'},m.title), React.createElement('p',{className:'text-[11px] text-slate-200'},'Discover the rule yourself through measurement & prediction'))
+              React.createElement('div',null, React.createElement('p',{className:'text-sm font-bold text-violet-800'},m.title), React.createElement('p',{className:'text-[11px] text-slate-600'},'Discover the rule yourself through measurement & prediction'))
             ))),
             React.createElement('div',{className:'mt-3 pt-3 border-t-2 border-violet-100'},
               React.createElement('p',{className:'text-sm font-bold text-orange-700 mb-2'},'🎲 Quick Activities'),
               React.createElement('button',{onClick:function(){gpUpd('mission',{id:'angle_sorter',step:0,data:{}});startAngleSorter();},className:'w-full flex items-center gap-3 p-3 bg-white border-2 border-orange-100 rounded-xl hover:border-orange-400 hover:bg-orange-50 text-left transition-all'},
                 React.createElement('span',{className:'text-2xl w-10 text-center shrink-0'},'📐'),
-                React.createElement('div',null,React.createElement('p',{className:'text-sm font-bold text-orange-700'},'Angle Sorter'),React.createElement('p',{className:'text-[11px] text-slate-200'},'Drag angles into the correct category — acute, right, obtuse, straight, or reflex!'))
+                React.createElement('div',null,React.createElement('p',{className:'text-sm font-bold text-orange-700'},'Angle Sorter'),React.createElement('p',{className:'text-[11px] text-slate-600'},'Drag angles into the correct category — acute, right, obtuse, straight, or reflex!'))
               )
             )
           );
@@ -3537,20 +3537,33 @@ var d = labToolData || {};
         };
 
         // ── MAIN RENDER ──
+        const gpTabs=[{id:'build',label:'🔨 Build'},{id:'discover',label:'🧭 Discover'},{id:'challenge',label:'🎯 Challenge'}];
+        const moveGpTab=(event,index)=>{
+          let next=index;
+          if(event.key==='ArrowRight'||event.key==='ArrowDown') next=(index+1)%gpTabs.length;
+          else if(event.key==='ArrowLeft'||event.key==='ArrowUp') next=(index-1+gpTabs.length)%gpTabs.length;
+          else if(event.key==='Home') next=0;
+          else if(event.key==='End') next=gpTabs.length-1;
+          else return;
+          event.preventDefault();
+          const nextId=gpTabs[next].id;
+          gpUpd('tab',nextId);
+          requestAnimationFrame(()=>{const nextTab=document.getElementById('geometry-prover-tab-'+nextId);if(nextTab)nextTab.focus();});
+        };
         return React.createElement('div',{className:'space-y-3 max-w-3xl mx-auto animate-in fade-in duration-200'},
           // Header
           React.createElement('div',{className:'flex items-center gap-3'},
             React.createElement('button',{onClick:()=>setStemLabTool(null),className:'p-1.5 hover:bg-slate-100 rounded-lg transition-colors','aria-label':'Back'},React.createElement(ArrowLeft,{size:18,className:'text-slate-600'})),
             React.createElement('h3',{className:'text-lg font-bold text-violet-800'},'📐 Geometry Prover'),
             React.createElement('div',{className:'flex items-center gap-2 ml-auto'},
-              React.createElement('div',{className:'text-xs font-bold text-emerald-600'},exploreScore.correct+'/'+exploreScore.total),
+              React.createElement('div',{className:'text-xs font-bold text-emerald-700'},exploreScore.correct+'/'+exploreScore.total),
               React.createElement('button',{onClick:()=>{ const snap={id:'snap-'+Date.now(),tool:'geometryProver',label:`Proof: ${gpPoints.length} pts`,data:{points:[...gpPoints],segments:[...gpSegments],theorems:theorems.map(t=>t.label)},timestamp:Date.now()}; setToolSnapshots(prev=>[...prev,snap]); addToast('📸 Snapshot saved!','success'); },className:'text-[11px] font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 border border-slate-400 rounded-full px-2 py-0.5'},'📸 Snapshot')
             )
           ),
           // Tab bar
-          React.createElement('div',{className:'flex gap-1 bg-slate-100 p-1 rounded-xl'},
-            [{id:'build',label:'🔨 Build'},{id:'discover',label:'🧭 Discover'},{id:'challenge',label:'🎯 Challenge'}].map(tab=>
-              React.createElement('button',{key:tab.id,onClick:()=>gpUpd('tab',tab.id),className:`flex-1 py-1.5 px-2 text-xs font-bold rounded-lg transition-all ${gpTab===tab.id?'bg-white text-violet-700 shadow-sm':'text-slate-600 hover:text-violet-600'}`},tab.label)
+          React.createElement('div',{className:'flex gap-1 bg-slate-100 p-1 rounded-xl',role:'tablist','aria-label':'Geometry Prover sections'},
+            gpTabs.map((tab,index)=>
+              React.createElement('button',{key:tab.id,id:'geometry-prover-tab-'+tab.id,role:'tab','aria-selected':gpTab===tab.id,'aria-controls':'geometry-prover-panel',tabIndex:gpTab===tab.id?0:-1,onClick:()=>gpUpd('tab',tab.id),onKeyDown:event=>moveGpTab(event,index),className:`flex-1 py-1.5 px-2 text-xs font-bold rounded-lg transition-all ${gpTab===tab.id?'bg-white text-violet-700 shadow-sm':'text-slate-600 hover:text-violet-600'}`},tab.label)
             )
           ),
           // Canvas — always visible
@@ -3562,7 +3575,7 @@ var d = labToolData || {};
             React.createElement('span',{className:'text-[11px] font-bold text-violet-700 bg-violet-100 px-2 py-0.5 rounded-full'},gpMode)
           ),
           // BUILD TAB
-          gpTab==='build'&&React.createElement('div',{className:'space-y-3'},
+          gpTab==='build'&&React.createElement('div',{id:'geometry-prover-panel',role:'tabpanel','aria-labelledby':'geometry-prover-tab-build',tabIndex:0,className:'space-y-3'},
             React.createElement('div',{className:'flex items-center gap-2'},
               React.createElement('button',{'aria-pressed':gpInvestigate?'true':'false',onClick:()=>{gpUpd('investigate',!gpInvestigate);gpUpd('revealed',false);gpUpd('prediction','');},className:`px-3 py-1.5 text-xs font-bold rounded-lg transition-all focus:ring-2 focus:ring-amber-400 focus:outline-none ${gpInvestigate?'bg-amber-700 text-white shadow':'bg-amber-50 text-amber-700 border border-amber-600 hover:bg-amber-100'}`},gpInvestigate?'🔮 Investigate ON':'🔮 Investigate Mode'),
               React.createElement('span',{className:'text-[11px] text-slate-600 italic'},gpInvestigate?'Theorems hidden — predict first!':'Auto-show theorems')
@@ -3592,9 +3605,9 @@ var d = labToolData || {};
             gpMode==='guided'&&renderGuidedProof()
           ),
           // DISCOVER TAB
-          gpTab==='discover'&&React.createElement('div',null,renderDiscover()),
+          gpTab==='discover'&&React.createElement('div',{id:'geometry-prover-panel',role:'tabpanel','aria-labelledby':'geometry-prover-tab-discover',tabIndex:0},renderDiscover()),
           // CHALLENGE TAB
-          gpTab==='challenge'&&React.createElement('div',{className:'space-y-3'},
+          gpTab==='challenge'&&React.createElement('div',{id:'geometry-prover-panel',role:'tabpanel','aria-labelledby':'geometry-prover-tab-challenge',tabIndex:0,className:'space-y-3'},
             React.createElement('p',{className:'text-xs text-slate-600'},'Answer without looking up the formula — use what you know from exploring!'),
             React.createElement('div',{className:'flex gap-2'},
               React.createElement('button',{onClick:generateChallenge,className:'flex-1 py-2 bg-gradient-to-r from-violet-600 to-purple-600 text-white font-bold rounded-lg text-sm hover:from-violet-600 hover:to-purple-600 transition-all shadow-md'},'🎯 New Challenge'),

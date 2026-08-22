@@ -120,6 +120,7 @@
 /singing /app/?tool=singing 302
 /skatelab /app/?tool=skatelab 302
 /solar-system /app/?tool=solarSystem 302
+/sourcebook /app/?tool=sourcebook 302
 /space-colony /app/?tool=spaceColony 302
 /space-explorer /app/?tool=spaceExplorer 302
 /space-station /app/?tool=spaceStation 302

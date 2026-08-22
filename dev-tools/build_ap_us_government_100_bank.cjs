@@ -13,13 +13,14 @@ const packPath = path.join(root, 'test_prep', 'ap_us_government_foundation_pilot
 const libraryPath = path.join(root, 'test_prep', 'ap_us_government_foundation_pilot_learning_library.json');
 
 const PACK_ID = 'ap-us-government-foundation-pilot';
-const VERSION = '0.6.0-internal-preview';
+const VERSION = '0.8.0-internal-preview';
 const VERIFIED_AT = '2026-08-20';
 const CED_URL = 'https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description.pdf';
+const CLARIFICATIONS_URL = 'https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description-clarifications-effective-fall-2026.pdf';
 const COURSE_URL = 'https://apcentral.collegeboard.org/courses/ap-united-states-government-and-politics';
 const EXAM_URL = 'https://apcentral.collegeboard.org/courses/ap-united-states-government-and-politics/exam';
 const OPENSTAX_URL = 'https://openstax.org/details/books/american-government-3e';
-const LIBRARY_VERSION = 'ap-us-government-foundation-v6';
+const LIBRARY_VERSION = 'ap-us-government-foundation-v8';
 
 function assert(condition, message) {
   if (!condition) throw new Error('[AP U.S. Government foundation builder] ' + message);
@@ -216,6 +217,15 @@ const sourceCatalog = [
     reviewedAt: VERIFIED_AT,
   },
   {
+    id: 'ap-gov-ced-clarifications',
+    title: 'AP U.S. Government and Politics Course and Exam Description Clarifications and Corrections, Effective Fall 2026',
+    organization: 'College Board',
+    url: CLARIFICATIONS_URL,
+    credibility: 'The public clarification document records the Fall 2026 additions to the required foundational-document list. It is used for metadata crosswalk only; no document text or official assessment content is reproduced.',
+    sourceType: 'official-blueprint-clarifications',
+    reviewedAt: VERIFIED_AT,
+  },
+  {
     id: 'american-government-3e',
     title: 'American Government 3e',
     organization: 'OpenStax, Rice University',
@@ -225,6 +235,36 @@ const sourceCatalog = [
     reviewedAt: VERIFIED_AT,
   },
 ];
+
+const foundationalDocumentCatalog = [
+  { id: 'articles-of-confederation', title: 'The Articles of Confederation', unitNumbers: [1], topicIds: ['1.4', '1.6', '1.7', '1.8'], bigIdeaIds: ['BI1', 'BI4'], skillIds: ['C4', 'C5'] },
+  { id: 'brutus-no-1', title: 'Brutus No. 1', unitNumbers: [1], topicIds: ['1.2', '1.3', '1.5'], bigIdeaIds: ['BI1', 'BI2', 'BI5'], skillIds: ['C4', 'C5'] },
+  { id: 'constitution-of-the-united-states', title: 'The Constitution of the United States, including the Bill of Rights and subsequent amendments', unitNumbers: [1, 2, 3], topicIds: ['1.5', '1.6', '1.7', '1.8', '1.9', '2.2', '2.5', '2.8', '3.1', '3.2', '3.3', '3.4', '3.5', '3.6', '3.7', '3.8', '3.9', '3.10', '3.11', '3.12', '3.13'], bigIdeaIds: ['BI1', 'BI2'], skillIds: ['C4', 'C5'] },
+  { id: 'declaration-of-independence', title: 'The Declaration of Independence', unitNumbers: [1], topicIds: ['1.1', '1.3'], bigIdeaIds: ['BI1', 'BI2'], skillIds: ['C4', 'C5'] },
+  { id: 'emancipation-proclamation', title: 'The Emancipation Proclamation', unitNumbers: [3], topicIds: ['3.10', '3.11', '3.12'], bigIdeaIds: ['BI2', 'BI4'], skillIds: ['C4', 'C5'] },
+  { id: 'federalist-no-10', title: 'Federalist No. 10', unitNumbers: [1], topicIds: ['1.2', '1.3', '5.3', '5.6'], bigIdeaIds: ['BI1', 'BI3', 'BI4'], skillIds: ['C4', 'C5'] },
+  { id: 'federalist-no-39', title: 'Federalist No. 39', unitNumbers: [1], topicIds: ['1.2', '1.5', '1.6'], bigIdeaIds: ['BI1', 'BI5'], skillIds: ['C4', 'C5'] },
+  { id: 'federalist-no-51', title: 'Federalist No. 51', unitNumbers: [1, 2], topicIds: ['1.6', '2.1', '2.2', '2.5', '2.8', '2.11', '2.15'], bigIdeaIds: ['BI1', 'BI4'], skillIds: ['C4', 'C5'] },
+  { id: 'federalist-no-70', title: 'Federalist No. 70', unitNumbers: [2], topicIds: ['2.4', '2.5', '2.6', '2.7', '2.15'], bigIdeaIds: ['BI1', 'BI4'], skillIds: ['C4', 'C5'] },
+  { id: 'federalist-no-78', title: 'Federalist No. 78', unitNumbers: [2], topicIds: ['2.8', '2.9', '2.10', '2.11'], bigIdeaIds: ['BI1', 'BI5'], skillIds: ['C4', 'C5'] },
+  { id: 'gettysburg-address', title: 'The Gettysburg Address', unitNumbers: [3], topicIds: ['3.10', '3.12', '4.1'], bigIdeaIds: ['BI2', 'BI3'], skillIds: ['C4', 'C5'] },
+  { id: 'letter-from-a-birmingham-jail', title: 'Letter from a Birmingham Jail', unitNumbers: [3], topicIds: ['3.10', '3.11', '3.12', '5.1', '5.6'], bigIdeaIds: ['BI2', 'BI3', 'BI5'], skillIds: ['C4', 'C5'] },
+  { id: 'adam-smith-wealth-of-nations', title: 'Core Principles from Adam Smith\'s The Wealth of Nations', unitNumbers: [4, 5], topicIds: ['4.7', '4.8', '4.9', '5.6', '5.7'], bigIdeaIds: ['BI4', 'BI5'], skillIds: ['C4', 'C5'] },
+].map((document) => ({
+  ...document,
+  requiredForAcademicYear: '2026-27',
+  requirementSource: CED_URL,
+  clarificationSource: CLARIFICATIONS_URL,
+  sourceUse: 'Title, public requirement metadata, and internal topic crosswalk only; no official document text, excerpt, or assessment content is reproduced.',
+  officialItem: false,
+  reproducedText: false,
+  releaseEligible: false,
+  reviewStatus: 'source-reviewed-editorial-pass',
+  independentExpertReviewStatus: 'pending',
+}));
+const allTopicIds = new Set(units.flatMap((unit) => unit.topics.map((topic) => topic.id)));
+assert(foundationalDocumentCatalog.length === 13 && new Set(foundationalDocumentCatalog.map((document) => document.id)).size === 13, 'The current public framework must declare thirteen foundational documents.');
+assert(foundationalDocumentCatalog.every((document) => document.topicIds.length > 0 && document.topicIds.every((topicId) => allTopicIds.has(topicId))), 'Foundational-document crosswalk contains an unknown or empty topic route.');
 
 function q(unit, topicId, skillId, prompt, answer, distractors, rationale, options = {}) {
   assert(/^([1-5])\.[A-F]$/.test(skillId), 'Invalid AP U.S. Government subskill: ' + skillId);
@@ -471,6 +511,7 @@ function buildObjectiveCatalog() {
       label: 'Explain and apply ' + topic.label.toLowerCase() + ' in a constitutional, institutional, or civic context.',
       practiceIds: skills.map((skill) => skill.id),
       skillIds: skills.flatMap((skill) => skill.subskills),
+      foundationalDocumentIds: foundationalDocumentCatalog.filter((document) => document.topicIds.includes(topic.id)).map((document) => document.id),
       nextStep: 'Review the linked unit section, explain the governing principle, and retry a targeted practice set using a new scenario.',
       status: 'internal-remediation-route',
       officialItem: false,
@@ -505,6 +546,7 @@ function buildItem(spec, index, objectiveCatalog) {
     taskForm: 'single-choice-foundation',
     domainId: unit.id,
     topicIds: [spec.topicId],
+    foundationalDocumentIds: foundationalDocumentCatalog.filter((document) => document.topicIds.includes(spec.topicId)).map((document) => document.id),
     practiceId,
     practiceIds: [practiceId],
     skillId: spec.skillId,
@@ -764,6 +806,7 @@ function buildConstructedResponseWorkshops() {
 
   return workshops.map((workshop) => ({
     ...workshop,
+    foundationalDocumentIds: [...new Set(workshop.topicIds.flatMap((topicId) => foundationalDocumentCatalog.filter((document) => document.topicIds.includes(topicId)).map((document) => document.id)))],
     type: 'unscored-planning-workshop',
     references: [CED_URL, COURSE_URL],
     unscored: true,
@@ -788,6 +831,60 @@ function buildConstructedResponseWorkshops() {
     reviewStatus: 'source-reviewed-editorial-pass',
     reviewNote: 'Original synthetic planning workshop; not an official College Board prompt, rubric, score, or prediction. Independent AP U.S. Government subject-expert and accessibility review remain pending.',
   }));
+}
+
+function buildFoundationalDocumentRoutes(chapters, workshops) {
+  const sectionRecords = chapters.flatMap((chapter) => chapter.sections || []);
+  return foundationalDocumentCatalog.map((document) => {
+    const routedCandidates = itemSpecs.flatMap((spec, index) => document.topicIds.includes(spec.topicId) ? [{
+      id: 'ap-usg-u' + spec.unit + '-' + String(index + 1).padStart(3, '0'),
+      topicId: spec.topicId,
+      practiceSlice: practiceSliceForIndex(index),
+    }] : []);
+    const itemIds = routedCandidates.map((candidate) => candidate.id);
+    const foundationItemIds = routedCandidates.filter((candidate) => candidate.practiceSlice === 'foundation-slice').map((candidate) => candidate.id);
+    const depthItemIds = routedCandidates.filter((candidate) => candidate.practiceSlice === 'depth-slice').map((candidate) => candidate.id);
+    const transferItemIds = routedCandidates.filter((candidate) => candidate.practiceSlice === 'transfer-slice').map((candidate) => candidate.id);
+    const sectionIds = sectionRecords
+      .filter((section) => (section.topicCoverage || []).some((topicId) => document.topicIds.includes(topicId)))
+      .map((section) => section.id);
+    const chapterIds = [...new Set(sectionIds.map((sectionId) => sectionId.split('-section-')[0]))];
+    const workshopIds = workshops
+      .filter((workshop) => (workshop.foundationalDocumentIds || []).includes(document.id))
+      .map((workshop) => workshop.id);
+    return {
+      id: 'ap-usg-document-route-' + document.id,
+      documentId: document.id,
+      title: document.title,
+      academicYearReference: document.requiredForAcademicYear,
+      unitNumbers: document.unitNumbers,
+      topicIds: document.topicIds,
+      bigIdeaIds: document.bigIdeaIds,
+      skillIds: document.skillIds,
+      chapterIds,
+      sectionIds,
+      workshopIds,
+      itemIds,
+      foundationItemIds,
+      depthItemIds,
+      transferItemIds,
+      itemCount: itemIds.length,
+      practiceSliceCounts: {
+        'foundation-slice': foundationItemIds.length,
+        'depth-slice': depthItemIds.length,
+        'transfer-slice': transferItemIds.length,
+      },
+      studyMove: 'Use the document title as a retrieval cue: identify the constitutional principle or argument, connect it to the linked topics, and qualify the conclusion using the source purpose and context.',
+      accessNote: 'This route contains public requirement metadata and original practice links only; it does not reproduce official document text, excerpts, prompts, or rubrics.',
+      references: [CED_URL, COURSE_URL, CLARIFICATIONS_URL],
+      sourceUse: document.sourceUse,
+      officialItem: false,
+      reproducedText: false,
+      releaseEligible: false,
+      reviewStatus: 'source-reviewed-editorial-pass',
+      independentExpertReviewStatus: 'pending',
+    };
+  });
 }
 
 function buildLibrary(objectiveCatalog) {
@@ -882,7 +979,7 @@ function buildLibrary(objectiveCatalog) {
         accessibilityReviewStatus: 'pending-independent-review',
         contentComplete: true,
         releaseEligible: false,
-        contentEnhancementVersion: 'ap-usg-foundation-v6',
+        contentEnhancementVersion: 'ap-usg-foundation-v8',
       };
     });
     const chapterObjective = objectiveCatalog.find((objective) => objective.domainId === unit.id);
@@ -961,6 +1058,7 @@ function buildLibrary(objectiveCatalog) {
     reviewNote: 'Original foundation retrieval aid; AP U.S. Government and accessibility validation remain pending.',
   }));
   const constructedResponseWorkshops = buildConstructedResponseWorkshops();
+  const foundationalDocumentRoutes = buildFoundationalDocumentRoutes(chapters, constructedResponseWorkshops);
   const practiceRoutes = chapters.flatMap((chapter) => chapter.sections.map((section) => section.practiceRoute));
   const routedItemIds = practiceRoutes.flatMap((route) => route.itemIds);
   const practiceRouting = {
@@ -983,7 +1081,7 @@ function buildLibrary(objectiveCatalog) {
     packId: PACK_ID,
     version: VERSION,
     title: 'AP U.S. Government and Politics Foundation Pilot Learning Library',
-    description: 'A text-first, independently authored AP U.S. Government and Politics foundation library with five unit chapters, structured lessons, item-linked study routes, retrieval checks, study cards, reasoning aids, and five explicitly unscored response-planning workshops. It is not released, official, calibrated, or score-predictive.',
+    description: 'A text-first, independently authored AP U.S. Government and Politics foundation library with five unit chapters, structured lessons, item-linked study routes, thirteen foundational-document study routes, retrieval checks, study cards, reasoning aids, and five explicitly unscored response-planning workshops. It is not released, official, calibrated, or score-predictive.',
     status: 'preview',
     visibility: 'internal',
     released: false,
@@ -995,8 +1093,13 @@ function buildLibrary(objectiveCatalog) {
       cedFrameworkVersion: 'V.1',
       officialBlueprintUrl: CED_URL,
       officialCourseUrl: COURSE_URL,
+      foundationalDocumentCatalogVersion: LIBRARY_VERSION,
+      foundationalDocumentCatalog,
+      foundationalDocumentRouteVersion: LIBRARY_VERSION,
+      foundationalDocumentRouteCount: foundationalDocumentRoutes.length,
+      foundationalDocumentRoutes,
       pilotVersion: LIBRARY_VERSION,
-      pilotNote: 'A 260-item foundation across all five units and all 60 current public framework topic IDs, with at least three practice angles per topic, item-linked study routes for all fifteen lesson sections, topic-level drill maps, and five explicitly unscored response-planning workshops. It is a study and architecture foundation, not a complete exam simulation.',
+      pilotNote: 'A 260-item foundation across all five units and all 60 current public framework topic IDs, with at least three practice angles per topic, a thirteen-document foundational-document crosswalk with deterministic study routes, item-linked study routes for all fifteen lesson sections, topic-level drill maps, and five explicitly unscored response-planning workshops. It is a study and architecture foundation, not a complete exam simulation.',
       bigIdeas,
       skills,
       learningObjectiveCatalogVersion: LIBRARY_VERSION,
@@ -1006,6 +1109,8 @@ function buildLibrary(objectiveCatalog) {
     reviewStandard: 'Independent source and editorial review against the public AP U.S. Government and Politics Course and Exam Description and openly available factual references. Independent subject-expert, accessibility, rights, production, field-testing, and psychometric review remain required.',
     disclaimer: 'Independent, unofficial AP U.S. Government and Politics preparation material for internal foundation-pilot development only. Not affiliated with, endorsed by, or authored by College Board. AP and Advanced Placement are trademarks of College Board. No secure AP Classroom, Question Bank, Progress Check, official question, official rubric, or official source-set stimulus was used or reproduced. This pilot does not provide official scores, score predictions, college-credit predictions, or a substitute for civics instruction.',
     sourceCatalog,
+    foundationalDocumentCatalog,
+    foundationalDocumentRoutes,
     workshopLabel: 'Unscored AP Government response-planning workshops',
     workshopPracticeNote: 'These explicitly unscored workshops use original synthetic scenarios, data, and source descriptions for planning and self-check. AlloFlow does not score written responses, apply an official College Board rubric, estimate an AP score, or predict credit or placement.',
     chapters,
@@ -1024,11 +1129,15 @@ function buildLibrary(objectiveCatalog) {
       diagrams: 0,
       diagramPlacements: 0,
       constructedResponseWorkshops: constructedResponseWorkshops.length,
+      foundationalDocuments: foundationalDocumentCatalog.length,
+      foundationalDocumentRoutes: foundationalDocumentRoutes.length,
       richLessonPrototypes: chapters.length,
       sourceReviewedChapters: chapters.length,
       sourceReviewedFlashcards: flashcards.length,
       sourceReviewedMemoryAids: memoryAids.length,
       sourceReviewedConstructedResponseWorkshops: constructedResponseWorkshops.length,
+      sourceReviewedFoundationalDocuments: foundationalDocumentCatalog.length,
+      sourceReviewedFoundationalDocumentRoutes: foundationalDocumentRoutes.length,
       releaseEligibleRecords: 0,
     },
     accessibility: {
@@ -1077,7 +1186,7 @@ function buildLibrary(objectiveCatalog) {
       completeSections: chapters.reduce((sum, chapter) => sum + chapter.sections.length, 0),
       richLessonPrototypes: chapters.length,
       status: 'foundation-prototype',
-      note: 'All five unit chapters and fifteen structured sections are navigable; the companion 260-item bank adds a third transfer/application angle for every current topic, and five synthetic response-planning workshops remain explicitly unscored; independent review remains pending.',
+      note: 'All five unit chapters and fifteen structured sections are navigable; the companion 260-item bank adds a third transfer/application angle for every current topic, the thirteen-document public foundational-document list is crosswalked without reproducing document text, and five synthetic response-planning workshops remain explicitly unscored; independent review remains pending.',
     },
   };
 }
@@ -1113,7 +1222,7 @@ function buildPack(library) {
     id: PACK_ID,
     title: 'AP U.S. Government and Politics Independent Foundation Pilot',
     shortTitle: 'AP U.S. Government Foundation Pilot',
-    description: 'An independently authored 260-question AP U.S. Government and Politics foundation pilot spanning all five current units and all 60 current public framework topic IDs. Every topic has at least three practice angles, including a transfer/application layer, with expanded constitutional, institutional, source, data, argumentation, and item-linked study-route coverage for internal QA and study-route testing.',
+    description: 'An independently authored 260-question AP U.S. Government and Politics foundation pilot spanning all five current units and all 60 current public framework topic IDs. Every topic has at least three practice angles, including a transfer/application layer, with a thirteen-document foundational-document crosswalk, expanded constitutional, institutional, source, data, argumentation, and item-linked study-route coverage for internal QA and study-route testing.',
     disclaimer: 'Independent, unofficial AP U.S. Government and Politics preparation material for internal foundation-pilot development only. Not affiliated with, endorsed by, or authored by College Board. This pilot does not provide official scores, score predictions, college-credit predictions, or a substitute for civics instruction.',
     credentialOwner: 'College Board',
     version: VERSION,
@@ -1127,11 +1236,11 @@ function buildPack(library) {
     itemSchemaVersion: 2,
     responseTypes: ['single-choice'],
     examModes: ['fully-digital'],
-    contentReview: 'Two hundred sixty original, source-aligned draft multiple-choice items: all five current units and all sixty current public framework topics are represented at least three times, with all five course skill categories and twenty-three named subskills sampled. Each of the fifteen native lesson sections carries a linked foundation/depth/transfer study route and topic-level drill map, and the learning library adds five explicitly unscored response-planning workshops. This is an internal foundation, not an official exam form or calibrated readiness measure.',
+    contentReview: 'Two hundred sixty original, source-aligned draft multiple-choice items: all five current units and all sixty current public framework topics are represented at least three times, with all five course skill categories and twenty-three named subskills sampled. Each of the fifteen native lesson sections carries a linked foundation/depth/transfer study route and topic-level drill map; a thirteen-document public foundational-document list is crosswalked by title and topic with deterministic item, section, and workshop study routes without reproducing document text; and the learning library adds five explicitly unscored response-planning workshops. This is an internal foundation, not an official exam form or calibrated readiness measure.',
     blueprintLabel: 'AP U.S. Government and Politics Course and Exam Description, effective Fall 2026, Course Framework V.1',
     blueprintEffective: 'Fall 2026 CED; current official public reference reviewed 2026-08-20.',
     officialBlueprintUrl: CED_URL,
-    clarificationsUrl: '',
+    clarificationsUrl: CLARIFICATIONS_URL,
     officialExamUrl: EXAM_URL,
     domains,
     sections,
@@ -1141,6 +1250,8 @@ function buildPack(library) {
     learningRouteMode: library.practiceRouting.mode,
     practiceRouting: library.practiceRouting,
     sourceCatalog,
+    foundationalDocumentCatalog,
+    foundationalDocumentRoutes: library.foundationalDocumentRoutes,
     capabilities: {
       currentEngineSchemaVersion: 1,
       itemSchemaVersion: 2,
@@ -1165,9 +1276,15 @@ function buildPack(library) {
       examModeReference: 'fully-digital',
       officialFrameworkTopicCount: topicCatalog.length,
       officialFrameworkTopicIds: topicCatalog.map((topic) => topic.id),
+      foundationalDocumentCatalogVersion: LIBRARY_VERSION,
+      foundationalDocumentCount: foundationalDocumentCatalog.length,
+      foundationalDocumentCatalog,
+      foundationalDocumentRouteVersion: LIBRARY_VERSION,
+      foundationalDocumentRouteCount: library.foundationalDocumentRoutes.length,
+      foundationalDocumentRoutes: library.foundationalDocumentRoutes,
       officialUnitCount: units.length,
       unitWeights: units.map((unit) => ({ id: unit.id, label: unit.label, officialWeightRange: [unit.officialWeightMin, unit.officialWeightMax] })),
-      pilotAlignment: '260-item text-first foundation across all five units and all 60 current public framework topic IDs, with at least three practice angles per topic; fifteen native lesson sections carry linked foundation/depth/transfer routes and sixty topic-level drill maps; 52 five-item internal banks; five unscored response-planning workshops; all five course skill categories represented; no official stimulus sets or FRQ scoring.',
+      pilotAlignment: '260-item text-first foundation across all five units and all 60 current public framework topic IDs, with at least three practice angles per topic; thirteen required public foundational documents crosswalked by title and topic with item, section, and workshop study routes; fifteen native lesson sections carry linked foundation/depth/transfer routes and sixty topic-level drill maps; 52 five-item internal banks; five unscored response-planning workshops; all five course skill categories represented; no official stimulus sets or FRQ scoring.',
       lastVerifiedAt: VERIFIED_AT,
       sourceDigest: 'pending-build-generation',
       bigIdeas,
@@ -1187,6 +1304,8 @@ function buildPack(library) {
       topicCount: topicCatalog.length,
       status: 'third-angle-transfer-topic-coverage',
     },
+    foundationalDocumentCount: foundationalDocumentCatalog.length,
+    foundationalDocumentRouteCount: library.foundationalDocumentRoutes.length,
     rightsPolicy: library.rightsPolicy,
     releaseGates: library.releaseGates,
     accessibilityGate: {
@@ -1216,6 +1335,7 @@ function main() {
   assert(new Set(pack.items.map((item) => item.id)).size === 260, 'AP U.S. Government item IDs must be unique.');
   assert(pack.domains.every((domain) => domain.itemCount === expectedItemCountsByUnit[units.find((unit) => unit.id === domain.id).number]), 'Unit counts are incorrect.');
   assert(library.chapters.length === 5 && library.summary.sections === 15 && library.constructedResponseWorkshops.length === 5, 'AP U.S. Government library inventory is incorrect.');
+  assert(library.foundationalDocumentRoutes.length === 13 && library.foundationalDocumentRoutes.every((route) => route.itemCount > 0 && route.sectionIds.length > 0), 'AP U.S. Government foundational-document routes are incomplete.');
   writeJson(packPath, pack);
   writeJson(libraryPath, library);
   console.log('Built ' + pack.id + ' ' + pack.version + ' with ' + pack.items.length + ' items across ' + pack.domains.length + ' units and ' + library.summary.sections + ' structured sections.');

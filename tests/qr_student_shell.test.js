@@ -483,13 +483,13 @@ describe('homework QR hardening', () => {
     expect(assignmentCenterSource).toContain('People answer without an account.');
     //  - the review-queue radio is gone, but the SAFER DEFAULT it offered is
     //    now unconditional: word clouds publish only via explicit opt-in.
-    expect(rootSource).toContain("revealPolicy === 'auto_publish' ? 'auto_publish' : 'teacher_review'");
+    expect(sharedActivitySource).toContain("revealPolicy === 'auto_publish' ? 'auto_publish' : 'teacher_review'");
     expect(rootSource).toContain("enabled: false,\n      type: 'word_cloud'");
     expect(rootSource).toContain('buildAssignmentPackEncoded({ includeSharedActivity: true, resourceIds: selectedResou');
     expect(rootSource).toContain('activities: built.sharedActivities');
     expect(rootSource).toContain('sharedActivity: built.sharedActivities[0] || null');
     expect(rootSource).toContain('if (sharedAssignmentActivity.enabled) {\n          return hostPackOnMailbox(selectedResourceIds);');
-    expect(rootSource).toContain('sharedActivities: sharedActivities.length ? sharedActivities : undefined');
+    expect(sharedActivitySource).toContain('sharedActivities: sharedActivities.length ? sharedActivities : undefined');
     expect(sharedActivitySource).toContain("a: 'joinactivity'");
     expect(sharedActivitySource).toContain("a: 'activityupsert'");
     expect(sharedActivitySource).toContain("a: 'getactivityadmin', admin, id: packId, aid: activityId");

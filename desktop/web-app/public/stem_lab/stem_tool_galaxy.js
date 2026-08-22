@@ -6128,6 +6128,21 @@ if (!window._galaxyHasLoadedOnce) {
             return INSPECT_TARGETS[inspectTarget] || INSPECT_TARGETS.galaxyType;
           };
           var currentInspector = getInspector();
+          var currentInspectorInk = (function(hex) {
+            var match = /^#([0-9a-f]{6})$/i.exec(String(hex || ''));
+            if (!match) return '#334155';
+            var value = parseInt(match[1], 16);
+            var rgb = [(value >> 16) & 255, (value >> 8) & 255, value & 255];
+            function luminance(channels) {
+              var linear = channels.map(function(channel) {
+                var normalized = channel / 255;
+                return normalized <= 0.04045 ? normalized / 12.92 : Math.pow((normalized + 0.055) / 1.055, 2.4);
+              });
+              return 0.2126 * linear[0] + 0.7152 * linear[1] + 0.0722 * linear[2];
+            }
+            while (luminance(rgb) > 0.13) rgb = rgb.map(function(channel) { return Math.round(channel * 0.82); });
+            return '#' + rgb.map(function(channel) { return channel.toString(16).padStart(2, '0'); }).join('');
+          })(currentInspector && currentInspector.color);
           var inspectButtons = [
             { key: 'galaxyType', label: __alloT('stem.galaxy.inspect_btn_shape', 'Shape'), icon: gType.icon },
             { key: 'spiralArms', label: __alloT('stem.galaxy.inspect_btn_arms', 'Arms'), icon: '\uD83C\uDF00' },
@@ -6394,7 +6409,7 @@ if (!window._galaxyHasLoadedOnce) {
 
 
 
-          return React.createElement("div", { "data-galaxy-root": "true", role: "region", "aria-labelledby": "galaxy-tool-title", className: "max-w-7xl mx-auto animate-in fade-in duration-200", style: { position: 'relative' } },
+          return React.createElement("div", { "data-galaxy-root": "true", role: "region", "aria-labelledby": "galaxy-tool-title", className: "max-w-7xl mx-auto animate-in fade-in duration-200", style: { position: 'relative', overflowX: 'clip' } },
 
             renderTutorial('galaxy', _tutGalaxy),
 
@@ -6889,7 +6904,7 @@ if (!window._galaxyHasLoadedOnce) {
                     React.createElement("p", { className: "text-xs font-black text-slate-800" }, __alloT('stem.galaxy.observation_guide_title', 'Observe - compare - explain')),
                     React.createElement("p", { className: "mt-0.5 text-xs leading-relaxed text-slate-600" }, activeObserveGuide.question)
                   ),
-                  React.createElement("span", { className: "rounded-full px-2 py-1 text-[11px] font-black", style: { background: activeObserve.accent + '16', color: activeObserve.accent } }, Array.from(new Set(observeHistory)).length + '/5')
+                  React.createElement("span", { className: "rounded-full px-2 py-1 text-[11px] font-black", style: { background: activeObserve.accent + '16', color: '#4338ca' } }, Array.from(new Set(observeHistory)).length + '/5')
                 ),
                 React.createElement("div", { className: "mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-1" },
                   React.createElement("div", { className: "rounded-lg bg-emerald-50 p-2 text-xs text-emerald-950" }, React.createElement("span", { className: "font-black" }, __alloT('stem.galaxy.guide_strong_signal', 'Strong signal: ')), activeObserveGuide.sees),
@@ -7479,7 +7494,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                 React.createElement("span", { className: "text-slate-600" }, gType.desc),
 
-                React.createElement("span", { className: "text-indigo-400 ml-1" }, "(e.g. " + gType.example + ")"),
+                React.createElement("span", { className: "text-indigo-700 ml-1" }, "(e.g. " + gType.example + ")"),
 
               ),
 
@@ -7700,9 +7715,9 @@ if (!window._galaxyHasLoadedOnce) {
 
                     React.createElement("div", { className: "flex flex-wrap items-center gap-2" },
 
-                      React.createElement("h4", { className: "font-black text-sm", style: { color: currentInspector.color } }, __alloT('stem.galaxy.object_inspector_title', 'Object Inspector')),
+                      React.createElement("h4", { className: "font-black text-sm", style: { color: currentInspectorInk } }, __alloT('stem.galaxy.object_inspector_title', 'Object Inspector')),
 
-                      React.createElement("span", { className: "px-2 py-0.5 rounded-full text-[11px] font-bold", style: { background: currentInspector.color + '18', color: currentInspector.color } }, currentInspector.type)
+                      React.createElement("span", { className: "px-2 py-0.5 rounded-full text-[11px] font-bold", style: { background: currentInspector.color + '18', color: currentInspectorInk } }, currentInspector.type)
 
                     ),
 
@@ -7754,7 +7769,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                       factLabel ? React.createElement("div", { className: "text-[11px] font-black uppercase tracking-wider text-slate-500" }, factLabel) : null,
 
-                      React.createElement("div", { className: "font-bold leading-tight" + (factLabel ? " mt-0.5" : ""), style: { color: currentInspector.color } }, fact)
+                      React.createElement("div", { className: "font-bold leading-tight" + (factLabel ? " mt-0.5" : ""), style: { color: currentInspectorInk } }, fact)
 
                     );
 

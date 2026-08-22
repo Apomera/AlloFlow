@@ -27,8 +27,41 @@ describe('GuidedModeConfig extraction contract', () => {
     expect(Object.keys(moduleApi()).sort()).toEqual([
       'GUIDED_STEP_IDS', 'GUIDED_DELIVERY_EVIDENCE_KEYS', 'GUIDED_PHASES',
       'GUIDED_DELIVERY_GROUPS', 'GUIDED_STEPS', 'GUIDED_PRESETS', 'GUIDED_TOUR_MAP',
-      'normalizeGuidedPlanBrief', 'normalizeGuidedProgress',
+      'normalizeGuidedPlanBrief', 'normalizeGuidedProgress', 'generateGuidedPlanFromGoal',
     ].sort());
+  });
+
+  it('runs AI planning only through injected dependencies and retains the local fallback', async () => {
+    const api = moduleApi();
+    let capturedPrompt = '';
+    const aiPlan = await api.generateGuidedPlanFromGoal(
+      'Build an accessible science lesson about the water cycle.',
+      null,
+      {
+        callGemini: async prompt => {
+          capturedPrompt = prompt;
+          return JSON.stringify({
+            title: 'Water cycle path',
+            summary: 'A visual, accessible lesson.',
+            stepIds: ['analysis', 'image', 'quiz'],
+            estimatedMinutes: 25,
+            deliverySetting: 'live',
+            deliveryPriority: 'accessible',
+          });
+        },
+        cleanJson: value => value,
+      },
+    );
+    expect(capturedPrompt).toContain('SUPPORTED OPTIONAL STEPS');
+    expect(aiPlan).toMatchObject({ source: 'ai', stepIds: ['analysis', 'image', 'quiz'] });
+
+    const fallback = await api.generateGuidedPlanFromGoal(
+      'Build an offline science lesson about the water cycle.',
+      null,
+      { callGemini: async () => { throw new Error('throttled'); }, cleanJson: value => value },
+    );
+    expect(fallback).toMatchObject({ source: 'fallback', deliverySetting: 'print' });
+    expect(fallback.fallbackReason).toContain('local goal-matched plan');
   });
 
   it('keeps catalog IDs, phases, presets, and tour anchors internally aligned', () => {

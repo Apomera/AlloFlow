@@ -632,8 +632,10 @@ window.StemLab = window.StemLab || {
 
       // ═══ SLIDE RULE STATE ═══
       var sr = _m.slideRule || { cOffset: 0, cursorPos: 0.301 };
-      var dVal = Math.pow(10, sr.cursorPos || 0.301);
-      var cVal = Math.pow(10, (sr.cursorPos || 0.301) - (sr.cOffset || 0));
+      var srCursorPos = Number.isFinite(Number(sr.cursorPos)) ? Math.max(0, Math.min(1, Number(sr.cursorPos))) : 0.301;
+      var srCOffset = Number.isFinite(Number(sr.cOffset)) ? Math.max(-1, Math.min(1, Number(sr.cOffset))) : 0;
+      var dVal = Math.pow(10, srCursorPos);
+      var cVal = Math.pow(10, srCursorPos - srCOffset);
       // On a real rule the answer to a x b is read DIRECTLY on D under the
       // cursor: with C's index over a (cOffset = log a) and the cursor on b
       // along C, D shows 10^(log a + log b) = a*b. The old formula multiplied
@@ -642,11 +644,11 @@ window.StemLab = window.StemLab || {
       // the slide at 1 and pointing the cursor at 6 was marked right.
       // A negative offset is the right-index wrap (C's 10 over a), which
       // shifts the decade: read D x 10 - how answers past 10 land on-scale.
-      var srWrapped = (sr.cOffset || 0) < 0;
+      var srWrapped = srCOffset < 0;
       var product = dVal * (srWrapped ? 10 : 1);
       // The factor the slide itself is set to: the D value under C's active
       // index. Displayed so the readout states the true equation a x b = D.
-      var srSlideFactor = Math.pow(10, (sr.cOffset || 0) + (srWrapped ? 1 : 0));
+      var srSlideFactor = Math.pow(10, srCOffset + (srWrapped ? 1 : 0));
       var srProblem = _m.srProblem || null;
       var srFeedback = _m.srFeedback || null;
 
@@ -1597,7 +1599,7 @@ window.StemLab = window.StemLab || {
           return ticks;
         };
 
-        var cursorX = PAD + (sr.cursorPos || 0.301) * RULER_W;
+        var cursorX = PAD + srCursorPos * RULER_W;
 
         return h('div', { className: 'space-y-4 max-w-3xl mx-auto animate-in fade-in duration-200' },
           headerEl,
@@ -1605,6 +1607,8 @@ window.StemLab = window.StemLab || {
             h('svg', {
               viewBox: '0 0 ' + SW + ' ' + SH, className: 'w-full rounded-xl border-2 border-amber-300 cursor-crosshair shadow-md',
               style: { maxWidth: '600px', background: '#fffbeb' },
+              role: 'img', focusable: 'false',
+              'aria-label': __alloT('stem.manipulatives.slide_rule_visual_label', 'Interactive slide rule visualization. Use the two sliders below for keyboard operation.'),
               onClick: function(e) {
                 var rect = e.currentTarget.getBoundingClientRect();
                 var svgX = (e.clientX - rect.left) * (SW / rect.width);
@@ -1615,7 +1619,7 @@ window.StemLab = window.StemLab || {
                   // Range +/-1 so the right-index wrap (cOffset = log a - 1,
                   // as low as -0.7 for a=2) stays reachable; +/-0.5 cut off
                   // every wrapped problem with a >= 3.2 (e.g. 3x7).
-                  upd({ slideRule: Object.assign({}, sr, { cOffset: Math.max(-1, Math.min(1, normX - (sr.cursorPos || 0.301))) }) });
+                  upd({ slideRule: Object.assign({}, sr, { cOffset: Math.max(-1, Math.min(1, normX - srCursorPos)) }) });
                 } else {
                   upd({ slideRule: Object.assign({}, sr, { cursorPos: Math.max(0, Math.min(1, normX)) }) });
                 }
@@ -1624,11 +1628,22 @@ window.StemLab = window.StemLab || {
             },
               h('rect', { x: 0, y: 0, width: SW, height: SH * 0.45, fill: '#f0fdf4', rx: 4 }),
               h('rect', { x: 0, y: SH * 0.45, width: SW, height: SH * 0.55, fill: '#fffbeb', rx: 4 }),
-              renderScale(SH * 0.3, '#16a34a', 'C', sr.cOffset || 0),
+              renderScale(SH * 0.3, '#16a34a', 'C', srCOffset),
               renderScale(SH * 0.7, '#d97706', 'D', 0),
               h('line', { x1: cursorX, y1: 0, x2: cursorX, y2: SH, stroke: '#ef4444', strokeWidth: 2, strokeDasharray: '4 2' }),
               h('circle', { cx: cursorX, cy: SH * 0.3, r: 4, fill: '#ef4444' }),
               h('circle', { cx: cursorX, cy: SH * 0.7, r: 4, fill: '#ef4444' })
+            )
+          ),
+          h('div', { role: 'group', 'aria-label': __alloT('stem.manipulatives.slide_rule_controls', 'Slide rule keyboard controls'), className: 'rounded-xl border border-amber-200 bg-amber-50 p-3' },
+            h('p', { id: 'slide-rule-controls-help', className: 'mb-3 text-xs text-amber-900' }, __alloT('stem.manipulatives.slide_rule_controls_help', 'Keyboard alternative: use arrow keys on these sliders to shift the C scale and move the red cursor.')),
+            h('label', { className: 'mb-3 block text-xs font-bold text-green-800' },
+              __alloT('stem.manipulatives.c_scale_position', 'C scale position'),
+              h('input', { type: 'range', min: -1, max: 1, step: 0.01, value: srCOffset, 'aria-describedby': 'slide-rule-controls-help', 'aria-valuetext': srCOffset.toFixed(2), onChange: function(e) { var value = Number(e.target.value); upd({ slideRule: Object.assign({}, sr, { cOffset: value }) }); if (soundEnabled) sfxTick(); }, className: 'mt-1 min-h-11 w-full accent-green-700' })
+            ),
+            h('label', { className: 'block text-xs font-bold text-orange-800' },
+              __alloT('stem.manipulatives.red_cursor_position', 'Red cursor position'),
+              h('input', { type: 'range', min: 0, max: 1, step: 0.01, value: srCursorPos, 'aria-describedby': 'slide-rule-controls-help', 'aria-valuetext': 'D scale ' + dVal.toFixed(2), onChange: function(e) { var value = Number(e.target.value); upd({ slideRule: Object.assign({}, sr, { cursorPos: value }) }); if (soundEnabled) sfxTick(); }, className: 'mt-1 min-h-11 w-full accent-orange-700' })
             )
           ),
           // Readout
@@ -1675,7 +1690,7 @@ window.StemLab = window.StemLab || {
               h('p', null, '3\uFE0F\u20E3 ', h('strong', null, __alloT('stem.manipulatives.click_the_bottom_d_area', 'Click the bottom (D) area')), __alloT('stem.manipulatives.to_move_the_red_cursor', ' to move the red cursor.')),
               h('p', null, __alloT('stem.manipulatives.4_read_where_the', '4\uFE0F\u20E3 Read where the '), h('strong', null, __alloT('stem.manipulatives.cursor_crosses_both_scales', 'cursor crosses both scales')), __alloT('stem.manipulatives.the_readout_shows_exact_values', '. The readout shows exact values.'))
             ),
-            h('p', { className: 'text-[11px] text-amber-600 italic mt-1' }, __alloT('stem.manipulatives.nasa_engineers_used_slide_rules_for_ap', '\uD83D\uDE80 NASA engineers used slide rules for Apollo moon mission trajectories!'))
+            h('p', { className: 'text-[11px] text-amber-800 italic mt-1' }, __alloT('stem.manipulatives.nasa_engineers_used_slide_rules_for_ap', '\uD83D\uDE80 NASA engineers used slide rules for Apollo moon mission trajectories!'))
           )
         );
       }

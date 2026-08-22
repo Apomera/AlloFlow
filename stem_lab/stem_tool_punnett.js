@@ -1517,10 +1517,10 @@ window.StemLab = window.StemLab || {
           var homoR = isSexLinked ? 0 : flatGrid.filter(function(g) { return g[0] === g[1] && g[0] === g[0].toLowerCase(); }).length;
 
           var phenoColor = function(p) {
-            if (p === 'Dominant') return { bg: 'bg-emerald-50', text: 'text-emerald-700', sub: 'text-emerald-400', border: 'border-emerald-300' };
-            if (p === 'Recessive') return { bg: 'bg-amber-50', text: 'text-amber-700', sub: 'text-amber-400', border: 'border-amber-300' };
-            if (p === 'Blended') return { bg: 'bg-pink-50', text: 'text-pink-700', sub: 'text-pink-400', border: 'border-pink-300' };
-            return { bg: 'bg-purple-50', text: 'text-purple-700', sub: 'text-purple-400', border: 'border-purple-300' };
+            if (p === 'Dominant') return { bg: 'bg-emerald-50', text: 'text-emerald-700', sub: 'text-emerald-700', border: 'border-emerald-300' };
+            if (p === 'Recessive') return { bg: 'bg-amber-50', text: 'text-amber-700', sub: 'text-amber-700', border: 'border-amber-300' };
+            if (p === 'Blended') return { bg: 'bg-pink-50', text: 'text-pink-700', sub: 'text-pink-700', border: 'border-pink-300' };
+            return { bg: 'bg-purple-50', text: 'text-purple-700', sub: 'text-purple-700', border: 'border-purple-300' };
           };
 
           var trackCross = function(nextMode, nextParent1, nextParent2) {
@@ -1547,9 +1547,9 @@ window.StemLab = window.StemLab || {
           var parent1Gametes = isSexLinked ? ['X' + parent1[0], 'X' + parent1[1]] : parent1.slice();
           var parent2Gametes = isSexLinked ? ['X' + parent2[0], 'Y'] : parent2.slice();
           var phenotypeMix = [
-            { id: 'dom', label: displayDomLabel, count: domCount, color: '#16a34a', soft: '#ecfdf5', border: '#86efac' },
-            { id: 'blend', label: displayBlendLabel, count: blendCount, color: inheritMode === 'incomplete' ? '#db2777' : '#7c3aed', soft: inheritMode === 'incomplete' ? '#fdf2f8' : '#f5f3ff', border: inheritMode === 'incomplete' ? '#f9a8d4' : '#c4b5fd' },
-            { id: 'rec', label: displayRecLabel, count: recCount, color: '#b45309', soft: '#fffbeb', border: '#fcd34d' }
+            { id: 'dom', label: displayDomLabel, count: domCount, color: '#047857', soft: '#ecfdf5', border: '#86efac' },
+            { id: 'blend', label: displayBlendLabel, count: blendCount, color: inheritMode === 'incomplete' ? '#be185d' : '#6d28d9', soft: inheritMode === 'incomplete' ? '#fdf2f8' : '#f5f3ff', border: inheritMode === 'incomplete' ? '#f9a8d4' : '#c4b5fd' },
+            { id: 'rec', label: displayRecLabel, count: recCount, color: '#92400e', soft: '#fffbeb', border: '#fcd34d' }
           ].filter(function(item) { return item.count > 0 || item.id !== 'blend'; });
           var maximumPhenotypeCount = phenotypeMix.reduce(function(maximum, item) {
             return Math.max(maximum, item.count);

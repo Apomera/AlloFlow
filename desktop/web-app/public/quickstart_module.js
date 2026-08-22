@@ -414,7 +414,7 @@ const QuickStartWizard = React.memo(({
   useQuickStartDialogFocus(wizardRef, isOpen, handleClose);
   const [localData, setLocalData] = useState({
     topic: '',
-    grade: '3rd Grade',
+    grade: '5th Grade',
     materialType: 'text',
     length: '500',
     standards: [],

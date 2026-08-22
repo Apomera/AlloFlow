@@ -281,6 +281,196 @@ function _alloBuildAssignmentCenterCsv(rows) {
     return [header.join(','), ...body].join('\n');
 }
 
+// Assignment packet shaping belongs beside the shared-activity contracts it
+// emits. Host-owned state, privacy filtering and compression stay injected so
+// this module cannot bypass the current student-pack safety boundary.
+async function _alloBuildAssignmentPackEncoded(options = {}, dependencies = {}) {
+    const request = options && typeof options === 'object' ? options : {};
+    const includeSharedActivity = request.includeSharedActivity === true;
+    const resourceIds = Object.prototype.hasOwnProperty.call(request, 'resourceIds') ? request.resourceIds : null;
+    const {
+        resolveAssignmentResources,
+        sharedAssignmentActivity = {},
+        addToast = () => {},
+        sourceTopic = '',
+        generatedContent = null,
+        homeworkExpiryDays = 7,
+        serializeResourceForStudentPack,
+        stripUndefined,
+        generateUUID,
+        studentAiPolicyForShare = 'off',
+        workStoryEnabled = false,
+        encodeAlloPack,
+    } = dependencies && typeof dependencies === 'object' ? dependencies : {};
+    const requiredFunctions = {
+        resolveAssignmentResources,
+        serializeResourceForStudentPack,
+        stripUndefined,
+        generateUUID,
+        encodeAlloPack,
+    };
+    const missingDependency = Object.keys(requiredFunctions).find(name => typeof requiredFunctions[name] !== 'function');
+    if (missingDependency) {
+        throw new Error(`[SharedActivity.buildAssignmentPackEncoded] Missing dependency: ${missingDependency}`);
+    }
+
+    const resourcesToAssign = resolveAssignmentResources(resourceIds);
+    // An activity can stand alone. A scheduling poll or sign-up sheet has no
+    // lesson attached, so requiring a resource pack makes that use unreachable.
+    const activityOnly = includeSharedActivity
+        && sharedAssignmentActivity?.enabled === true
+        && !resourcesToAssign.length;
+    if (!resourcesToAssign.length && !activityOnly) {
+        addToast('Create or restore a teacher resource before making a homework link, or add a shared activity to send on its own.', 'info');
+        return null;
+    }
+    const explicitSelection = Array.isArray(resourceIds);
+    const title = String((activityOnly ? (sharedAssignmentActivity?.prompt || 'Shared activity') : null)
+        || (explicitSelection ? resourcesToAssign[0]?.title : (sourceTopic || generatedContent?.title))
+        || resourcesToAssign[0]?.title
+        || 'AlloFlow homework').trim().slice(0, 140) || 'AlloFlow homework';
+    const resources = resourcesToAssign.map(item => serializeResourceForStudentPack(item)).filter(Boolean);
+    if (!resources.length && !activityOnly) {
+        addToast('None of the selected resources can be shared with students. Choose a different History resource.', 'info');
+        return null;
+    }
+    const expiresAt = new Date(Date.now() + homeworkExpiryDays * 24 * 60 * 60 * 1000).toISOString();
+    const ALLO_ACTIVITY_TYPES = ['rating', 'availability', 'signup', 'word_cloud', 'survey'];
+    const sharedActivityType = ALLO_ACTIVITY_TYPES.indexOf(sharedAssignmentActivity.type) >= 0
+        ? sharedAssignmentActivity.type
+        : 'word_cloud';
+    // One label per line is the whole authoring story for slots. A suffix such
+    // as "Tue 3:15pm x 2" gives that option two seats; a bare line gets one.
+    const pollOptions = String(sharedAssignmentActivity.optionsText || '')
+        .split(/\r?\n/)
+        .map(line => line.replace(/[\u0000-\u001f\u007f]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 80))
+        .filter(Boolean)
+        .slice(0, 50)
+        .map((label, index) => {
+            const seats = label.match(/\s+x\s*(\d{1,3})\s*$/i);
+            const capacity = seats ? Math.max(1, Math.min(500, parseInt(seats[1], 10))) : 1;
+            const clean = seats ? label.slice(0, seats.index).trim() : label;
+            return { id: `o${index + 1}`, label: clean, capacity };
+        });
+    const ratingMin = Math.max(1, Math.min(9, Math.trunc(Number(sharedAssignmentActivity.minValue) || 1)));
+    const ratingMax = Math.max(ratingMin + 1, Math.min(10, Math.trunc(Number(sharedAssignmentActivity.maxValue) || 5)));
+    const ratingLabels = Array.from({ length: ratingMax - ratingMin + 1 }, (_, index) => (
+        String(Array.isArray(sharedAssignmentActivity.labels) ? (sharedAssignmentActivity.labels[index] || '') : '')
+            .replace(/[\u0000-\u001f\u007f]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 40)
+    ));
+    // Survey rows are shaped here, then the server revalidates them and creates
+    // item and option ids. Likert labels remain positional.
+    const surveyWireItems = sharedAssignmentActivity?.type === 'survey'
+        ? (Array.isArray(sharedAssignmentActivity.surveyItems) ? sharedAssignmentActivity.surveyItems : [])
+            .map(surveyItem => {
+                const text = String(surveyItem?.text || '').replace(/\s+/g, ' ').trim().slice(0, 240);
+                if (!text) return null;
+                const kind = ['likert', 'choice', 'freetext', 'numeric'].indexOf(surveyItem?.type) >= 0 ? surveyItem.type : 'likert';
+                const entry = { type: kind, text, required: surveyItem?.required === true };
+                if (kind === 'likert') {
+                    const steps = Math.max(2, Math.min(10, Math.trunc(Number(surveyItem?.steps) || 5)));
+                    const low = String(surveyItem?.lowLabel ?? 'Strongly disagree').trim().slice(0, 60);
+                    const high = String(surveyItem?.highLabel ?? 'Strongly agree').trim().slice(0, 60);
+                    const fullLabels = Array.isArray(surveyItem?.labels)
+                        ? surveyItem.labels.map(label => String(label == null ? '' : label).trim().slice(0, 60))
+                        : null;
+                    if (fullLabels && fullLabels.length === steps && steps >= 2) {
+                        entry.steps = steps;
+                        entry.labels = [low, ...fullLabels.slice(1, -1), high];
+                    } else {
+                        entry.steps = steps;
+                        entry.labels = Array.from({ length: steps }, (_, at) => (at === 0 ? low : at === steps - 1 ? high : ''));
+                    }
+                } else if (kind === 'choice') {
+                    entry.options = String(surveyItem?.optionsText || '')
+                        .split(/\r?\n/)
+                        .map(line => line.replace(/\s+/g, ' ').trim().slice(0, 80))
+                        .filter(Boolean)
+                        .slice(0, 12)
+                        .map(label => ({ label }));
+                    if (entry.options.length < 2) return null;
+                } else if (kind === 'numeric') {
+                    const min = Number(surveyItem?.min);
+                    const max = Number(surveyItem?.max);
+                    if (isFinite(min)) entry.min = min;
+                    if (isFinite(max)) entry.max = max;
+                }
+                return entry;
+            })
+            .filter(Boolean)
+            .slice(0, 12)
+        : [];
+    const sharedActivity = includeSharedActivity && sharedAssignmentActivity.enabled
+        ? stripUndefined({
+            v: 1,
+            activityId: 'AC-' + generateUUID(),
+            type: sharedActivityType,
+            delivery: 'shared_async',
+            prompt: String(sharedAssignmentActivity.prompt || '').replace(/\s+/g, ' ').trim().slice(0, 240)
+                || (sharedActivityType === 'rating' ? 'How would you rate your understanding?'
+                    : sharedActivityType === 'availability' ? 'Which of these times could you make?'
+                    : sharedActivityType === 'signup' ? 'Choose a time that works for you'
+                    : 'What word or short phrase best captures your thinking?'),
+            minParticipants: Math.max(3, Math.min(10, Number(sharedAssignmentActivity.minParticipants) || 3)),
+            revealPolicy: sharedActivityType === 'word_cloud'
+                ? (sharedAssignmentActivity.revealPolicy === 'auto_publish' ? 'auto_publish' : 'teacher_review')
+                : undefined,
+            minValue: sharedActivityType === 'rating' ? ratingMin : undefined,
+            maxValue: sharedActivityType === 'rating' ? ratingMax : undefined,
+            labels: sharedActivityType === 'rating' ? ratingLabels : undefined,
+            identityMode: (sharedActivityType === 'availability' || sharedActivityType === 'signup' || sharedActivityType === 'survey') ? String(sharedAssignmentActivity.identityMode || '') : undefined,
+            options: (sharedActivityType === 'availability' || sharedActivityType === 'signup') ? pollOptions : undefined,
+            items: sharedActivityType === 'survey' ? surveyWireItems : undefined,
+            info: sharedActivityType === 'survey' ? (String(sharedAssignmentActivity.surveyInfo || '').replace(/\s+/g, ' ').trim().slice(0, 600) || undefined) : undefined,
+            allowMaybe: sharedActivityType === 'availability' ? sharedAssignmentActivity.allowMaybe !== false : undefined,
+            multiSelect: sharedActivityType === 'availability' ? sharedAssignmentActivity.multiSelect !== false : undefined,
+            maxPerPerson: sharedActivityType === 'signup'
+                ? Math.max(1, Math.min(10, Number(sharedAssignmentActivity.maxPerPerson) || 1))
+                : undefined,
+            // Voting closes when the assignment link does; rows are erased one
+            // week later because collection and retention are separate events.
+            closesAt: (sharedActivityType === 'availability' || sharedActivityType === 'signup' || sharedActivityType === 'survey') ? expiresAt : undefined,
+            deleteAt: (sharedActivityType === 'availability' || sharedActivityType === 'signup' || sharedActivityType === 'survey')
+                ? new Date(Date.parse(expiresAt) + 7 * 24 * 60 * 60 * 1000).toISOString()
+                : undefined,
+        })
+        : null;
+    if (sharedActivity && sharedActivity.type === 'survey') {
+        if (!surveyWireItems.length) {
+            addToast('Add at least one survey question first.', 'info');
+            return null;
+        }
+        if (!sharedActivity.identityMode) {
+            addToast('Pick who is answering before you share this survey.', 'info');
+            return null;
+        }
+    }
+    const sharedActivities = sharedActivity ? [sharedActivity] : [];
+    const packet = stripUndefined({
+        v: 1,
+        kind: 'assignment',
+        title,
+        createdAt: new Date().toISOString(),
+        expiresAt,
+        currentResourceId: resources[0]?.id || null,
+        resources,
+        aiPolicy: { studentAi: studentAiPolicyForShare, defaultStudentAi: 'off', teacherPrepared: true },
+        workStory: workStoryEnabled === true,
+        sharedActivities: sharedActivities.length ? sharedActivities : undefined,
+    });
+    const encoded = await encodeAlloPack(JSON.stringify(packet));
+    return {
+        encoded,
+        title,
+        count: resources.length,
+        resourceTitles: resources.map(item => item.title || item.type || 'Untitled resource'),
+        createdAt: packet.createdAt,
+        expiresAt: packet.expiresAt,
+        aiPolicy: studentAiPolicyForShare,
+        sharedActivities,
+    };
+}
+
 function _alloNextSharedActivitySummaryOrder(currentValue, result, requestSequence, requestScope, activeScope) {
     if (!result || typeof result !== 'object') return null;
     const scope = String(requestScope || '');
@@ -1298,6 +1488,7 @@ window.AlloModules.SharedActivity = {
   buildAssignmentCenterRows: _alloBuildAssignmentCenterRows,
   filterAssignmentCenterRows: _alloFilterAssignmentCenterRows,
   buildAssignmentCenterCsv: _alloBuildAssignmentCenterCsv,
+  buildAssignmentPackEncoded: _alloBuildAssignmentPackEncoded,
   nextSummaryOrder: _alloNextSharedActivitySummaryOrder,
   normalizeCredentialStore: alloNormalizeCredentialStore,
   credentialSlotKey: alloCredentialSlotKey,

@@ -64,11 +64,13 @@ const diagrams = library.diagrams || [];
 const diagramPlacements = library.diagramPlacements || [];
 const practiceRoutes = (library.chapters || []).flatMap((chapter) => (chapter.sections || []).map((section) => section.practiceRoute).filter(Boolean));
 const studyRoutes = library.studyRoutes || [];
+const quickReference = library.quickReference || [];
 const packItemIds = new Set((pack.items || []).map((item) => item.id));
 if (diagrams.length !== 5) findings.push({ code: 'diagram-count', actual: diagrams.length, expected: 5 });
 if (diagramPlacements.length !== 5) findings.push({ code: 'diagram-placement-count', actual: diagramPlacements.length, expected: 5 });
 if (practiceRoutes.length !== 15) findings.push({ code: 'practice-route-count', actual: practiceRoutes.length, expected: 15 });
 if (studyRoutes.length !== 4) findings.push({ code: 'study-route-count', actual: studyRoutes.length, expected: 4 });
+if (quickReference.length !== 5) findings.push({ code: 'quick-reference-count', actual: quickReference.length, expected: 5 });
 const routedItemIds = practiceRoutes.flatMap((route) => route.itemIds || []);
 if (routedItemIds.length !== pack.items.length || new Set(routedItemIds).size !== pack.items.length || routedItemIds.some((itemId) => !packItemIds.has(itemId))) findings.push({ code: 'practice-route-item-coverage', actual: { routed: routedItemIds.length, unique: new Set(routedItemIds).size, pack: pack.items.length } });
 for (const route of practiceRoutes) {
@@ -77,6 +79,10 @@ for (const route of practiceRoutes) {
 }
 for (const route of studyRoutes) {
   if (!route.itemIds?.length || route.itemIds.some((itemId) => !packItemIds.has(itemId)) || route.releaseEligible !== false) findings.push({ code: 'study-route-boundary', routeId: route.id });
+}
+for (const reference of quickReference) {
+  if (!reference.originalStudyAid || reference.officialExamReference || reference.releaseEligible !== false) findings.push({ code: 'quick-reference-boundary', referenceId: reference.id });
+  if (!reference.purpose || !Array.isArray(reference.checklist) || reference.checklist.length < 2 || !Array.isArray(reference.formulas) || reference.formulas.length < 2 || !Array.isArray(reference.decisionRules) || reference.decisionRules.length < 2 || !Array.isArray(reference.cautions) || reference.cautions.length < 2) findings.push({ code: 'quick-reference-structure', referenceId: reference.id });
 }
 for (const diagram of diagrams) {
   if (!diagram.unscored || diagram.officialItem || diagram.releaseEligible) findings.push({ code: 'diagram-score-boundary', diagramId: diagram.id });
@@ -121,6 +127,7 @@ const report = {
     memoryAidCount: library.summary.memoryAids,
     practiceRouteCount: practiceRoutes.length,
     studyRouteCount: studyRoutes.length,
+    quickReferenceCount: quickReference.length,
     practiceRoutedItemCount: routedItemIds.length,
     studyRouteReferenceCount: studyRoutes.reduce((sum, route) => sum + route.itemIds.length, 0),
     diagramCount: diagrams.length,

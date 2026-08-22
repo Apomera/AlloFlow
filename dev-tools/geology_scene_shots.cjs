@@ -70,6 +70,7 @@ const shots = [
   { name: '07-geode-dark', scene: 'geode', slice: 7, dark: true },
   { name: '08-hotspot-island-chain-top', scene: 'hotspot', slice: 0, view: 'top' },
   { name: '09-subduction-arc-surface', scene: 'subduction', slice: 0 },
+  { name: '10-ridge-bathymetry-top', scene: 'ridge', slice: 0, view: 'top' },
 ];
 
 function viewportClip(page) {
@@ -113,6 +114,10 @@ function viewportClip(page) {
         surface: canvas && canvas.dataset.geologySurfaceRendering,
         landform: canvas && canvas.dataset.geologyLandformRendering,
         landformCount: canvas && canvas.dataset.geologyLandformCount,
+        bathymetry: canvas && canvas.dataset.geologyBathymetryRendering,
+        bathymetryCount: canvas && canvas.dataset.geologyBathymetryCount,
+        hydrothermal: canvas && canvas.dataset.geologyHydrothermalRendering,
+        hydrothermalCount: canvas && canvas.dataset.geologyHydrothermalCount,
         water: canvas && canvas.dataset.geologyWaterRendering,
         waterMotion: canvas && canvas.dataset.geologyWaterMotionRendering,
         surfaceEffect: canvas && canvas.dataset.geologySurfaceEffectRendering,
@@ -140,7 +145,7 @@ function viewportClip(page) {
   await mobile.waitForFunction(() => !!window.__alloGeologyEngine && !!document.querySelector('canvas[data-geology-material-rendering]'));
   await mobile.evaluate(() => window.__alloGeologyEngine.setSlice(2));
   await mobile.waitForTimeout(1000);
-  await mobile.screenshot({ path: path.join(OUT, '10-subduction-mobile.png'), fullPage: true, animations: 'disabled' });
+  await mobile.screenshot({ path: path.join(OUT, '11-subduction-mobile.png'), fullPage: true, animations: 'disabled' });
   const mobileState = await mobile.evaluate(() => ({
     documentWidth: document.documentElement.scrollWidth,
     viewportWidth: window.innerWidth,
@@ -149,7 +154,7 @@ function viewportClip(page) {
   if (mobileState.documentWidth > mobileState.viewportWidth + 1) {
     throw new Error('mobile horizontal overflow: ' + JSON.stringify(mobileState));
   }
-  console.log('10-subduction-mobile ' + JSON.stringify(mobileState));
+  console.log('11-subduction-mobile ' + JSON.stringify(mobileState));
 
   await browser.close();
   if (errors.length) {

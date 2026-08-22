@@ -25,7 +25,7 @@ describe('Throughline confirmation accessibility', () => {
   it('routes all seven confirmation sites through the accessible service', () => {
     expect(source.match(/askThroughlineConfirmation\(/g)).toHaveLength(8);
     for (const title of ['Replace current canvas', 'Open lesson in live session', 'Replace current unit', 'Clear entire unit', 'Stop unit generation']) {
-      expect(source).toContain(`title: '${title}'`);
+      expect(source).toMatch(new RegExp(`title:\\s*t\\([^)]*\\)\\s*\\|\\|\\s*'${title}'`));
     }
   });
 

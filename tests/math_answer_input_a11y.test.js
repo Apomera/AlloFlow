@@ -9,7 +9,9 @@ describe('math answer editor accessibility', () => {
     const answerAnchor = "placeholder: t('common.placeholder_enter_answer')";
     const answerIndex = SOURCE.indexOf(answerAnchor);
     expect(answerIndex).toBeGreaterThan(-1);
-    const preceding = SOURCE.slice(Math.max(0, answerIndex - 180), answerIndex);
-    expect(preceding).toContain("\"aria-label\": t('math.edit_answer') || `Edit answer for problem ${pIdx + 1}`");
+    const inputIndex = SOURCE.lastIndexOf('React.createElement("input"', answerIndex);
+    expect(inputIndex).toBeGreaterThan(-1);
+    const answerInput = SOURCE.slice(inputIndex, answerIndex + answerAnchor.length);
+    expect(answerInput).toContain("\"aria-label\": t('math.edit_answer') || `Edit answer for problem ${pIdx + 1}`");
   });
 });

@@ -63,13 +63,13 @@
       "warningOnly": true,
       "forbiddenAggregateChoices": 0,
       "uniqueKeyStemLexicalLeakageCandidates": 0,
-      "asymmetricExtremeDistractorCandidates": 27,
+      "asymmetricExtremeDistractorCandidates": 0,
       "advancedDirectRecallCandidates": 0,
       "semanticConceptDuplicatePairs": 0,
       "semanticConceptDuplicateClusters": 0,
       "editorialAnchorsWithActiveWarnings": 0,
       "editorialAnchorsWithNoCurrentWarning": 10,
-      "priorityDocketItems": 20
+      "priorityDocketItems": 0
     },
     "selectedDistractorWarningsAfter": 0,
     "selectedFeedbackWarningsAfter": 0,

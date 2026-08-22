@@ -25,6 +25,26 @@ var Wrench = _lazyIcon('Wrench');
 var X = _lazyIcon('X');
 const _alloUseFocusTrap = typeof window !== "undefined" && window.__alloHooks && window.__alloHooks.useFocusTrap || function() {
 };
+function buildPdfPipelineTourSteps(kind, translate) {
+  const t = typeof translate === "function" ? translate : () => "";
+  return kind === "results" ? [
+    { helpKey: "pdf_audit_results_whatnow", title: t("ptour.whatnow_title") || "Start here", text: t("ptour.whatnow_text") || "This strip is your map: grab the recommended download, optionally compare before/after, and treat everything else on this screen as optional polish.\n**Why it matters:** this screen has over 300 elements \u2014 most are for digging deeper, not required. The strip names the one action that gets a usable document into students' hands." },
+    { helpKey: "pdf_audit_dashboard_bar", title: t("ptour.dashboard_title") || "Your navigation bar", text: t("ptour.dashboard_text") || "This bar sticks to the top while you scroll. The score shows before \u2192 after; the chips jump straight to any section \u2014 Downloads is the one you'll use most.\n**Why it matters:** everything below is organized into sections (verification, recovered content, remaining issues, downloads, the tag inspector) \u2014 the chips mean you never scroll hunting for one." },
+    { helpKey: "pdf_audit_results_score_badge", title: t("ptour.score_title") || "The score, honestly", text: t("ptour.score_text") || "AlloFlow's own estimate: several independent AI reviews averaged, blended 50/50 with TWO deterministic rule engines (axe-core + IBM Equal Access \u2014 when they disagree, the lower score wins).\n**Why it matters:** it's honest but it's not a certification. For an official verdict, open the file in PAC 2024 (free) or send the report to your district accessibility coordinator \u2014 the report itself says how." },
+    { helpKey: "pdf_audit_results_tab_original_btn", title: t("ptour.tabs_title") || "Before and after", text: t("ptour.tabs_text") || 'Flip to the Original tab anytime to see what the document looked like before the fixes.\n**Why it matters:** when a parent, administrator, or IEP team asks "what actually changed?", the answer is one click \u2014 and the Compare view shows both versions side by side.' },
+    { helpKey: "pdf_audit_view_report_menu_btn", title: t("ptour.report_title") || "Reports & records", text: t("ptour.report_text") || "Printable accessibility reports \u2014 for your records, an IEP file, or your district accessibility coordinator. There's also a tamper-evident signed version.\n**Why it matters:** public schools have legal accessibility obligations (ADA Title II). A dated report showing what was checked and fixed is the paper trail your district wants to have." },
+    { helpKey: "pdf_audit_translate_doc_btn", title: t("ptour.translate_title") || "Any language, verified", text: t("ptour.translate_text") || "Translate the whole document for families \u2014 type ANY language. The structure is checked section by section, the copy gets compare/audio/tagged-PDF downloads of its own, and a review banner keeps it honest.\n**Why it matters:** IDEA requires parent-language access to key documents \u2014 districts pay per page for this." },
+    { helpKey: "pdf_audit_plain_language_btn", title: t("ptour.plain_title") || "Easy-read version", text: t("ptour.plain_text") || "Rewrites the full document in plain language (pick the grade band). Facts kept, structure verified, original stays authoritative \u2014 and it gets its own compare, audio, and tagged PDF." },
+    { helpKey: "pdf_audit_make_fillable_btn", title: t("ptour.fillable_title") || "Make it fillable", text: t("ptour.fillable_text") || "Turns blanks and checkboxes into REAL typed-into form fields \u2014 review the detected list first, then download fillable HTML or a tagged fillable PDF. Students with dysgraphia type instead of handwriting." },
+    { helpKey: "pdf_audit_alt_formats_summary", title: t("ptour.altformats_title") || "More ways to share", text: t("ptour.altformats_text") || "The same accessible content as braille-ready text, ePub for e-readers, plain text, and Markdown.\n**Why it matters:** accessibility isn't one format \u2014 a student with low vision may want ePub's reflowing text, while your district's braille transcriber wants the braille-ready file as a starting point. That's the tour \u2014 the ? button gives per-button help anywhere." }
+  ] : [
+    { helpKey: "pdf_audit_view_make_accessible_btn", title: t("ptour.hero_title") || "The one-click path", text: t("ptour.hero_text") || "Make Accessible runs everything automatically: audit \u2192 fix \u2192 re-check until it hits the target \u2192 downloads ready. For most documents, this is all you need.\n**Why it matters:** the pipeline is built to be safe unattended \u2014 content is never silently dropped (anything unplaceable lands in a visible Recovery section), and the AI's work is re-checked by rule engines every pass." },
+    { helpKey: "pdf_audit_view_start_btn", title: t("ptour.audit_title") || "The careful path", text: t("ptour.audit_text") || "Prefer to look before fixing? Run Audit scores the document and shows every issue first \u2014 you choose Fix & Verify when you're ready.\n**Why it matters:** for sensitive documents (IEP-adjacent, anything going in a student file), seeing the issues before any rewriting happens keeps you in control of every change." },
+    { helpKey: "pdf_audit_view_settings_panel", title: t("ptour.settings_title") || "Settings (optional)", text: t("ptour.settings_text") || "The defaults are sensible. If you ever need to: more audit passes = steadier score, the target score decides when the automatic loop stops.\n**Why it matters:** more passes cost more of your daily AI quota and more time \u2014 the defaults balance reliability against both. The usage meter in AI settings shows what a run actually costs." },
+    { helpKey: "pdf_audit_view_branding_panel", title: t("ptour.branding_title") || "Make it look right", text: t("ptour.branding_text") || "The accessible copy can match your original's colors, use a clean preset, or pick up your school's branding from a letterhead.\n**Why it matters:** every option is contrast-checked before it ships \u2014 a document students can't read isn't accessible no matter how good its tags are. Accessibility and looking professional aren't in tension here." },
+    { helpKey: "pdf_audit_view_save_project_btn", title: t("ptour.save_title") || "You can always come back", text: t("ptour.save_text") || "Save Project keeps the whole session as one file \u2014 reload it later and everything returns. A backup also saves automatically after each remediation.\n**Why it matters:** in Gemini Canvas, nothing survives closing the tab EXCEPT downloaded files \u2014 the project file IS your save, and it carries your remediation history and settings too. That's the tour \u2014 hit Make Accessible when ready!" }
+  ];
+}
 const OCR_LANG_OPTIONS = [
   { code: "es", label: "\u{1F1EA}\u{1F1F8} Spanish \u2014 Espa\xF1ol" },
   { code: "so", label: "\u{1F1F8}\u{1F1F4} Somali \u2014 Soomaali" },
@@ -3289,6 +3309,7 @@ function PdfDiagnosticsLog(props) {
     ), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: _diagnosticBundle, disabled: bundleBusy, className: "px-2.5 py-1 rounded bg-emerald-700 hover:bg-emerald-600 disabled:opacity-60 text-xs", title: "Download a privacy-safe developer diagnostic bundle" }, bundleBusy ? "Building..." : "Diagnostic bundle"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setOpen(false), className: "ml-auto px-2.5 py-1 rounded bg-slate-700 hover:bg-slate-600 text-xs", "aria-label": t("pdf_audit.diag.close_aria") || "Close diagnostics log" }, t("pdf_audit.diag.close") || "Close"))
   );
 }
+PdfAuditView.buildPipelineTourSteps = buildPdfPipelineTourSteps;
 function PdfAuditView(props) {
   const {
     STYLE_SEEDS,
@@ -3435,6 +3456,7 @@ function PdfAuditView(props) {
     setLiveChunkExpanded,
     setLiveChunkRejected,
     setLiveChunkStream,
+    setPdfAuditLoading,
     setPdfAuditResult,
     setPdfAuditTab,
     setPdfAuditorCount,
@@ -4123,6 +4145,15 @@ function PdfAuditView(props) {
       }
     } catch (_) {
     }
+  };
+  const _beginVisibleAuditRun = (event, detail) => {
+    _auditGateLog(event, detail);
+    if (typeof setPdfAuditLoading === "function") setPdfAuditLoading(true);
+    setPdfAuditResult(null);
+  };
+  const _restoreVisibleAuditAfterFailure = (snapshot) => {
+    if (typeof setPdfAuditLoading === "function") setPdfAuditLoading(false);
+    setPdfAuditResult(_viewAuditFallbackResult(snapshot, pendingPdfFile));
   };
   const _remediationDependencies = remediationDependencyState || { pending: [], failed: [] };
   const pdfModalRef = useRef(null);
@@ -8207,7 +8238,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
       const mp = pdfAuditResult._mediaPending;
       const effMode = mp.chunked ? "speech" : mediaMode || (mp.isVideo ? "dual" : "speech");
       const MODES = mp.chunked ? [["speech", "\u{1F399} Speech transcript (long recording \u2014 transcribed in segments; visual analysis needs files under 15MB)"]] : mp.isVideo ? [["speech", "\u{1F399} Speech only"], ["visual", "\u{1F3AC} Visuals only"], ["dual", "\u{1F39E} Dual-track (spoken + shown + divergences)"], ["synthesis", "\u{1F4D6} Synthesized narrative"]] : [["speech", "\u{1F399} Speech transcript"], ["synthesis", "\u{1F4D6} Cleaned narrative"]];
-      return /* @__PURE__ */ React.createElement("div", { className: "mb-4 bg-gradient-to-br from-cyan-50 to-sky-50 border-2 border-cyan-300 rounded-2xl p-4 text-left", "data-help-key": "pdf_audit_media_digestion_card" }, /* @__PURE__ */ React.createElement("h4", { className: "font-black text-cyan-900 text-sm mb-1" }, "\u{1F399} ", t("pdf_audit.media.heading") || "Step 0: how should AlloFlow digest this recording?"), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 mb-2" }, mp.isVideo ? t("pdf_audit.media.video_note") || "Video carries two tracks \u2014 what is said and what is shown \u2014 and they can diverge. Dual-track keeps them separate (with a divergence check); Synthesized weaves them into one narrative." : t("pdf_audit.media.audio_note") || "The recording will be transcribed by AI \u2014 review the result for transcription errors before distributing."), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-1 mb-2" }, MODES.map(([k, label]) => /* @__PURE__ */ React.createElement("label", { key: k, className: "flex items-center gap-2 text-xs cursor-pointer" }, /* @__PURE__ */ React.createElement("input", { type: "radio", name: "allo-media-mode", checked: effMode === k, onChange: () => setMediaMode(k) }), /* @__PURE__ */ React.createElement("span", { className: effMode === k ? "font-bold text-cyan-900" : "text-slate-700" }, label)))), /* @__PURE__ */ React.createElement("label", { className: "text-[10px] font-bold text-slate-500 uppercase tracking-wider" }, t("pdf_audit.media.instructions_label") || "Custom instructions (optional)"), /* @__PURE__ */ React.createElement("textarea", { value: mediaInstructions, onChange: (e) => setMediaInstructions(e.target.value), rows: 2, placeholder: t("pdf_audit.media.instructions_ph") || 'e.g. "Focus on the lab demonstration steps" or "Ignore the Q&A at the end"', className: "w-full border border-slate-300 rounded-lg p-2 text-xs mt-0.5 mb-2" }), /* @__PURE__ */ React.createElement("button", { disabled: mediaDigesting || typeof transcribeMediaToPayload !== "function", onClick: async () => {
+      return /* @__PURE__ */ React.createElement("div", { className: "mb-4 bg-gradient-to-br from-cyan-50 to-sky-50 border-2 border-cyan-300 rounded-2xl p-4 text-left", "data-help-key": "pdf_audit_media_digestion_card" }, /* @__PURE__ */ React.createElement("h4", { className: "font-black text-cyan-900 text-sm mb-1" }, "\u{1F399} ", t("pdf_audit.media.heading") || "Step 0: how should AlloFlow digest this recording?"), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 mb-2" }, mp.isVideo ? t("pdf_audit.media.video_note") || "Video carries two tracks \u2014 what is said and what is shown \u2014 and they can diverge. Dual-track keeps them separate (with a divergence check); Synthesized weaves them into one narrative." : t("pdf_audit.media.audio_note") || "The recording will be transcribed by AI \u2014 review the result for transcription errors before distributing."), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-1 mb-2" }, MODES.map(([k, label]) => /* @__PURE__ */ React.createElement("label", { key: k, className: "flex items-center gap-2 text-xs cursor-pointer" }, /* @__PURE__ */ React.createElement("input", { type: "radio", name: "allo-media-mode", checked: effMode === k, onChange: () => setMediaMode(k) }), /* @__PURE__ */ React.createElement("span", { className: effMode === k ? "font-bold text-cyan-900" : "text-slate-700" }, label)))), /* @__PURE__ */ React.createElement("label", { className: "text-[10px] font-bold text-slate-500 uppercase tracking-wider" }, t("pdf_audit.media.instructions_label") || "Custom instructions (optional)"), /* @__PURE__ */ React.createElement("textarea", { "aria-label": t("pdf_audit.media.instructions_label") || "Custom instructions (optional)", value: mediaInstructions, onChange: (e) => setMediaInstructions(e.target.value), rows: 2, placeholder: t("pdf_audit.media.instructions_ph") || 'e.g. "Focus on the lab demonstration steps" or "Ignore the Q&A at the end"', className: "w-full border border-slate-300 rounded-lg p-2 text-xs mt-0.5 mb-2" }), /* @__PURE__ */ React.createElement("button", { disabled: mediaDigesting || typeof transcribeMediaToPayload !== "function", onClick: async () => {
         if (_viewDocumentJobIsActive()) {
           addToast("Another document operation is already running.", "info");
           return;
@@ -8270,20 +8301,20 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
         }
         setPdfFixMode("auto");
         const _auditChooserSnapshot = pdfAuditResult;
-        setPdfAuditResult(null);
+        _beginVisibleAuditRun("audit ONE-CLICK started - loading asserted before clearing chooser", { docEpoch: _oneClickDocumentEpoch, freshRun: pdfDiagnosticFreshRun });
         addToast(t("toasts.auditing_remediating_pdf"), "info");
         let _audit = null;
         try {
           _audit = await runPdfAccessibilityAudit(pendingPdfBase64, { fileName: pendingPdfFile?.name, mimeType: _inputMimeType, skipCache: pdfDiagnosticFreshRun });
         } catch (auditErr) {
           if (!_oneClickDocumentIsCurrent()) return;
-          setPdfAuditResult(_viewAuditFallbackResult(_auditChooserSnapshot, pendingPdfFile));
+          _restoreVisibleAuditAfterFailure(_auditChooserSnapshot);
           addToast((t("toasts.audit_error_stopped") || "The accessibility audit failed, so remediation was not started. Retry the audit and try again.") + (auditErr?.message ? " " + auditErr.message : ""), "error");
           return;
         }
         if (!_audit) {
           if (!_oneClickDocumentIsCurrent()) return;
-          setPdfAuditResult(_viewAuditFallbackResult(_auditChooserSnapshot, pendingPdfFile));
+          _restoreVisibleAuditAfterFailure(_auditChooserSnapshot);
           addToast(t("toasts.audit_error_stopped") || "The accessibility audit did not complete, so remediation was not started. Retry the audit and try again.", "error");
           return;
         }
@@ -8754,8 +8785,7 @@ Return ONLY JSON:
       const _auditSnapshot = pdfAuditResult;
       const _auditEpoch = typeof capturePdfDocumentIntakeEpoch === "function" ? capturePdfDocumentIntakeEpoch() : null;
       const _auditCurrent = () => _auditEpoch == null || typeof isPdfDocumentIntakeCurrent !== "function" || isPdfDocumentIntakeCurrent(_auditEpoch);
-      _auditGateLog("audit START clicked \u2014 clearing prior result for the run", { docEpoch: _auditEpoch, freshRun: pdfDiagnosticFreshRun });
-      setPdfAuditResult(null);
+      _beginVisibleAuditRun("audit START clicked - loading asserted before clearing chooser", { docEpoch: _auditEpoch, freshRun: pdfDiagnosticFreshRun });
       addToast(t("toasts.auditing_remediating_pdf"), "info");
       try {
         const _result = await runPdfAccessibilityAudit(pendingPdfBase64, { fileName: pendingPdfFile?.name, mimeType: _inputMimeType, skipCache: pdfDiagnosticFreshRun });
@@ -8764,7 +8794,7 @@ Return ONLY JSON:
           return;
         }
         if (!_result) {
-          setPdfAuditResult(_viewAuditFallbackResult(_auditSnapshot, pendingPdfFile));
+          _restoreVisibleAuditAfterFailure(_auditSnapshot);
           addToast(t("toasts.audit_retryable_error") || "The audit did not complete. Please retry.", "error");
         } else if (_result?.score === -1) {
           addToast(t("toasts.audit_retryable_error") || "The audit could not complete. Please retry.", "error");
@@ -8774,7 +8804,7 @@ Return ONLY JSON:
           _auditGateLog("audit ERROR result DROPPED \u2014 document intake epoch went stale mid-audit", { docEpoch: _auditEpoch });
           return;
         }
-        setPdfAuditResult(_viewAuditFallbackResult(_auditSnapshot, pendingPdfFile));
+        _restoreVisibleAuditAfterFailure(_auditSnapshot);
         addToast((t("toasts.audit_retryable_error") || "The audit failed. Please retry.") + " " + (error && error.message || error || ""), "error");
       }
     }, className: "px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-bold text-sm hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed" }, "\u267F ", t("pdf_audit.run_audit_label") || "Run Audit (step 1 of 2)"), !_remediationMode && /* @__PURE__ */ React.createElement("button", { "data-help-key": "pdf_audit_view_skip_to_extract_btn", onClick: () => {
@@ -9153,8 +9183,7 @@ Return ONLY JSON:
       const _auditSnapshot = pdfAuditResult;
       const _auditEpoch = typeof capturePdfDocumentIntakeEpoch === "function" ? capturePdfDocumentIntakeEpoch() : null;
       const _auditCurrent = () => _auditEpoch == null || typeof isPdfDocumentIntakeCurrent !== "function" || isPdfDocumentIntakeCurrent(_auditEpoch);
-      _auditGateLog("audit RETRY clicked \u2014 fresh (skipCache)", { docEpoch: _auditEpoch });
-      setPdfAuditResult(null);
+      _beginVisibleAuditRun("audit RETRY clicked - loading asserted before clearing result (fresh, skipCache)", { docEpoch: _auditEpoch });
       addToast(t("toasts.retrying_audit"), "info");
       try {
         const _result = await runPdfAccessibilityAudit(pendingPdfBase64, { fileName: pendingPdfFile?.name, mimeType: _inputMimeType, skipCache: true });
@@ -9163,7 +9192,7 @@ Return ONLY JSON:
           return;
         }
         if (!_result) {
-          setPdfAuditResult(_viewAuditFallbackResult(_auditSnapshot, pendingPdfFile));
+          _restoreVisibleAuditAfterFailure(_auditSnapshot);
           addToast(t("toasts.audit_retryable_error") || "The audit retry did not complete. Please try again.", "error");
         } else if (_result?.score === -1) {
           addToast(t("toasts.audit_retryable_error") || "The audit retry could not complete. Please try again.", "error");
@@ -9173,7 +9202,7 @@ Return ONLY JSON:
           _auditGateLog("audit ERROR result DROPPED \u2014 document intake epoch went stale mid-audit", { docEpoch: _auditEpoch });
           return;
         }
-        setPdfAuditResult(_viewAuditFallbackResult(_auditSnapshot, pendingPdfFile));
+        _restoreVisibleAuditAfterFailure(_auditSnapshot);
         addToast("Audit retry failed: " + (error && error.message || error), "error");
       }
     }, className: "px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm font-bold hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed" }, "\u{1F504} Retry Audit"), /* @__PURE__ */ React.createElement("button", { onClick: () => {
@@ -10830,7 +10859,7 @@ Return ONLY JSON:
       return /* @__PURE__ */ React.createElement("div", { className: "bg-white border-2 border-violet-300 rounded-xl p-3 text-xs", role: "dialog", "aria-label": t("pdf_audit.imgreview.aria") || "Review AI image description" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-2" }, /* @__PURE__ */ React.createElement("span", { className: "font-black text-violet-800" }, "\u{1F50D} ", t("pdf_audit.imgreview.heading") || "Image", " ", imgReviewIdx + 1, " / ", imgReviewItems.length, " ", /* @__PURE__ */ React.createElement("span", { className: "ml-2 px-1.5 py-0.5 bg-violet-100 text-violet-700 rounded font-bold uppercase text-[10px]" }, it.kind)), /* @__PURE__ */ React.createElement("button", { onClick: () => {
         setImgReviewIdx(null);
         setImgReviewItems([]);
-      }, className: "text-slate-500 hover:text-red-600 font-bold" }, "\u2715 ", t("pdf_audit.imgreview.close") || "Close")), /* @__PURE__ */ React.createElement("div", { className: "flex gap-3 flex-wrap" }, it.src && /* @__PURE__ */ React.createElement("img", { src: it.src, alt: "", className: "max-h-36 max-w-[220px] object-contain border border-slate-200 rounded-lg bg-slate-50" }), /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-[240px]" }, /* @__PURE__ */ React.createElement("label", { className: "text-[10px] font-bold text-slate-500 uppercase tracking-wider" }, t("pdf_audit.imgreview.alt_label") || "Description (what a screen reader says)"), /* @__PURE__ */ React.createElement("textarea", { value: imgReviewDraft, onChange: (e) => setImgReviewDraft(e.target.value), rows: 3, className: "w-full border border-slate-300 rounded-lg p-2 text-xs mt-0.5" }), (() => {
+      }, className: "text-slate-500 hover:text-red-600 font-bold" }, "\u2715 ", t("pdf_audit.imgreview.close") || "Close")), /* @__PURE__ */ React.createElement("div", { className: "flex gap-3 flex-wrap" }, it.src && /* @__PURE__ */ React.createElement("img", { src: it.src, alt: "", className: "max-h-36 max-w-[220px] object-contain border border-slate-200 rounded-lg bg-slate-50" }), /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-[240px]" }, /* @__PURE__ */ React.createElement("label", { className: "text-[10px] font-bold text-slate-500 uppercase tracking-wider" }, t("pdf_audit.imgreview.alt_label") || "Description (what a screen reader says)"), /* @__PURE__ */ React.createElement("textarea", { "aria-label": t("pdf_audit.imgreview.alt_label") || "Description (what a screen reader says)", value: imgReviewDraft, onChange: (e) => setImgReviewDraft(e.target.value), rows: 3, className: "w-full border border-slate-300 rounded-lg p-2 text-xs mt-0.5" }), (() => {
         const _aqFn = typeof window !== "undefined" && window.AlloModules && window.AlloModules.createDocPipeline && window.AlloModules.createDocPipeline.altQuality || null;
         let _q = null;
         try {

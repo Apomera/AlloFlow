@@ -3741,7 +3741,7 @@
                 h('span', { className: 'rounded-full bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-600 sm:hidden' },
                   __alloT('stem.chembalance.scroll_to_explore', 'Scroll to explore \u2192'))
               ),
-              h('div', { className: 'overflow-x-auto pb-2' },
+              h('div', { className: 'overflow-x-auto pb-2', tabIndex: 0, role: 'region', 'aria-label': __alloT('stem.chembalance.scrollable_periodic_table', 'Scrollable periodic table') },
                 h('div', { style: { minWidth: '720px' }, 'aria-hidden': 'true' },
                   h('div', { style: gridStyle },
                     h('div', { className: 'flex items-end justify-center pb-1 text-xs font-black uppercase tracking-wide text-slate-500' },
@@ -3960,7 +3960,7 @@
                 boxShadow: selected ? '0 0 0 3px #0f172a' : related && focusMode !== 'element' ? 'inset 0 0 0 2px #10b981' : 'none'
               }
             },
-              h('span', { className: 'absolute left-1 top-0.5 text-xs font-bold leading-none opacity-80' }, element.z),
+              h('span', { className: 'absolute left-1 top-0.5 text-xs font-bold leading-none' }, element.z),
               h('span', { className: 'text-sm font-black leading-none' }, element.sym)
             );
           }
@@ -4596,7 +4596,7 @@
                     !match && h('div', { className: 'text-xs font-bold text-red-700 leading-tight mt-0.5' },
                       deficitSide === 'L' ? ('+' + delta + ' need \u2190') : ('\u2192 need +' + delta)
                     ),
-                    match && h('div', { className: 'text-xs font-bold text-emerald-600 leading-tight mt-0.5' }, __alloT('stem.chembalance.balanced_2', '\u2713 balanced'))
+                    match && h('div', { className: 'text-xs font-bold text-emerald-700 leading-tight mt-0.5' }, __alloT('stem.chembalance.balanced_2', '\u2713 balanced'))
                   );
                 })
               ),

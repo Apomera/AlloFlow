@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "campaignId": "eppp-quality-halving-final-verification-v1",
-  "generatedAt": "2026-08-21T15:53:54.861Z",
+  "generatedAt": "2026-08-21T23:39:08.067Z",
   "reportType": "read-only-cross-artifact-eppp-quality-halving-verification",
   "status": "pass",
   "reviewStatus": "Automated repository gates passed; no independent human, psychometric, expert, or licensed-psychologist validation is claimed.",
@@ -42,7 +42,7 @@
   "currentMetrics": {
     "distractor": {
       "uniqueKeyStemLexicalLeakageCandidates": 0,
-      "asymmetricExtremeDistractorCandidates": 27,
+      "asymmetricExtremeDistractorCandidates": 0,
       "advancedDirectRecallCandidates": 0,
       "semanticConceptDuplicatePairs": 0,
       "semanticConceptDuplicateClusters": 0
@@ -67,7 +67,7 @@
       "asymmetricExtremeDistractorCandidates": {
         "baseline": 295,
         "ceiling": 147,
-        "value": 27,
+        "value": 0,
         "met": true
       },
       "advancedDirectRecallCandidates": {
@@ -160,16 +160,16 @@
     }
   },
   "artifactSha256": {
-    "bank": "635ef27ea526a6bd6e4c4626514ab6ab1ce1e77ab00d097782657c8048d81f42",
+    "bank": "7d3f436bd2fd517b15c93a686dff18a38824f665bdc987a5d60836b836e83e31",
     "catalog": "2fc4a0822c34a195ef581ad87ecc69d9aa172bbde748246162d9bf8033629d57",
-    "distractorDiagnostics": "ab56651e7834987a3295213146912102765773426e275d0813b868e850bb0f2c",
+    "distractorDiagnostics": "13d2e767716100db8c90518e5cec1a41266b0a64d0bba27f9a2390b79bfea404",
     "feedbackDiagnostics": "d85db15826839bb9c93891e27e2b05847689aef690db14d5d9838434385e5744",
     "qa": "981e177c05e1cd9ccc8b6b76a71d517414d4ba5e7e63139660547a99385787bc",
-    "distractorAudit": "18210a3e4aee99386a43077686588db76bd20577a50af0ef19c68f88813bed41",
-    "feedbackAudit": "cb0996abf92ca04c94062a497c08c57a06f10f2650afb0c306236ec3caaad3df",
-    "runtime": "ca80b76cf7527c097f925f60fb8a05907eb8b0d1fbaab93b4de6ec1fb1764027",
-    "pack": "4e7bddd8538bf0a553f0daa85b91f06db9fcb33f34cc696c33ef7c1a8ff9b4be",
-    "manifest": "2926014bde96fa276efd8823a645c487da736c55b39b977c849da323c1c09944"
+    "distractorAudit": "7d30823032fc9152af4bc6e94f698728766faf5b922117c2d378a1c0098432eb",
+    "feedbackAudit": "1c1dad8cba3ce540ffe3f70623dbb44745873d11f9c8b75b5eeaa54a40b49027",
+    "runtime": "898b4bd2a2866954401999366797d71779de0926dfd8f204a04faeffb73def24",
+    "pack": "7a47d1be1d264d172f4baba3f2284de0d3543335cedffde664708a6bf13fa691",
+    "manifest": "a0b9c71bbc135b3dabe40e88396f8239fbeaee2c5d3204699cbd33006cc7cfff"
   },
   "limitations": [
     "These gates verify repository invariants and heuristic metric ceilings; they are not psychometric calibration or evidence of exam-score validity.",

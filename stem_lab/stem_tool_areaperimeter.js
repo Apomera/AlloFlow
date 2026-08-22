@@ -811,7 +811,7 @@
               h('strong', { key: 'lead', style: { color: COLORS.green } }, t('stem.areaperimeter.pattern_spotted', "Pattern spotted: ")),
               t('stem.areaperimeter.for_area', "For area ") + targetArea + t('stem.areaperimeter.the', ", the ") + smallest.w + ' \u00D7 ' + smallest.h + t('stem.areaperimeter.rectangle_has_the_least_perimeter', " rectangle has the least perimeter (") + smallest.p + t('stem.areaperimeter.units_because_its_side_lengths_are_clo', " units) because its side lengths are closest together.")
             ]),
-            h('div', { key: 'table', style: { overflowX: 'auto', marginTop: '14px' } },
+            h('div', { key: 'table', role: 'region', tabIndex: 0, 'aria-label': t('stem.areaperimeter.factor_pair_rectangles_for_area', "Factor-pair rectangles for area ") + targetArea, className: 'focus:outline-none focus:ring-2 focus:ring-teal-500', style: { overflowX: 'auto', marginTop: '14px' } },
               h('table', { style: { width: '100%', borderCollapse: 'collapse', color: COLORS.text, minWidth: '470px' } }, [
                 h('caption', { key: 'cap', style: { textAlign: 'left', fontWeight: 800, marginBottom: '8px' } }, t('stem.areaperimeter.factor_pair_rectangles_for_area', "Factor-pair rectangles for area ") + targetArea),
                 h('thead', { key: 'head' }, h('tr', null, [t('stem.areaperimeter.dimensions', "Dimensions"), t('stem.areaperimeter.area', "Area"), t('stem.areaperimeter.perimeter', "Perimeter"), t('stem.areaperimeter.observation', "Observation")].map(function(item) {

@@ -114,32 +114,32 @@ describe('source-material step (step 2)', () => {
 
 describe('reading-catalog flow', () => {
   it('preselects the reading level from the chosen grade, then loads a book as source content', async () => {
-    await mountAtSourceStep(); // wizard grade defaults to '3rd Grade'
+    await mountAtSourceStep(); // wizard grade defaults to '5th Grade'
     clickByText('Reading Catalog');
     await flush();
     // two selects now: level (first) + language (second)
     const selects = host.querySelectorAll('select');
     expect(selects.length).toBe(2);
-    // 3rd Grade → Level 3 preselect, with the grade note shown
-    expect(selects[0].value).toBe('3');
+    // 5th Grade → catalog Level 4 (grades 4–5), with the grade note shown
+    expect(selects[0].value).toBe('4');
     expect(host.textContent).toContain('matched to your grade');
     expect(Array.from(selects[0].querySelectorAll('option')).map((o) => o.value)).toContain('6');
     // language dropdown still carries every language
     expect(selects[1].querySelectorAll('option').length).toBe(index.languages.length + 1);
-    // the whole (uncapped) level-3 set is rendered — count line reflects it
-    const lvl3books = index.books.filter((b) => String(b.level) === '3');
-    expect(host.textContent).toContain(lvl3books.length + ' resources');
+    // the whole (uncapped) level-4 set is rendered — count line reflects it
+    const lvl4books = index.books.filter((b) => String(b.level) === '4');
+    expect(host.textContent).toContain(lvl4books.length + ' resources');
     const cards = host.querySelectorAll('.grid button');
-    expect(cards.length).toBe(lvl3books.length); // no 30-cap
+    expect(cards.length).toBe(lvl4books.length); // no 30-cap
     // a book with a description renders it in the card
-    const described = lvl3books.find((b) => b.description && b.description.length > 12);
+    const described = lvl4books.find((b) => b.description && b.description.length > 12);
     if (described) expect(host.textContent).toContain(described.description.slice(0, 12));
-    // pick a level-3 book
-    clickByText(lvl3books[0].title);
+    // pick a level-4 book
+    clickByText(lvl4books[0].title);
     await flush();
     const text = host.textContent || '';
     expect(text).toContain('Content loaded and ready');
-    expect(text).toContain(lvl3books[0].title);
+    expect(text).toContain(lvl4books[0].title);
     expect(text).toContain('CC BY 4.0');
   });
 
@@ -147,8 +147,8 @@ describe('reading-catalog flow', () => {
     const calls = await mountAtSourceStep();
     clickByText('Reading Catalog');
     await flush();
-    const lvl3 = index.books.filter((b) => String(b.level) === '3')[0];
-    clickByText(lvl3.title);
+    const lvl4 = index.books.filter((b) => String(b.level) === '4')[0];
+    clickByText(lvl4.title);
     await flush();
     clickByText('Next');   // green confirm → step 4 (review)
     await flush();
@@ -158,12 +158,12 @@ describe('reading-catalog flow', () => {
     const done = calls.complete[0];
     expect(done.sourceMode).toBe('storybook');
     expect(done.storybookRef).toBeTruthy();
-    expect(done.storybookRef.slug).toBe(lvl3.slug);
-    expect(done.storybookRef.title).toBe(lvl3.title);
+    expect(done.storybookRef.slug).toBe(lvl4.slug);
+    expect(done.storybookRef.title).toBe(lvl4.title);
     // the ref carries what the host needs to build a readingBook history item
-    expect(done.storybookRef.language).toBe(lvl3.language);
-    expect(String(done.storybookRef.level)).toBe(String(lvl3.level));
-    expect(done.storybookRef.sourceId).toBe(lvl3.sourceId || 'storyweaver');
+    expect(done.storybookRef.language).toBe(lvl4.language);
+    expect(String(done.storybookRef.level)).toBe(String(lvl4.level));
+    expect(done.storybookRef.sourceId).toBe(lvl4.sourceId || 'storyweaver');
     expect(done.storybookRef.sourceName).toBeTruthy();
   });
 
@@ -172,7 +172,7 @@ describe('reading-catalog flow', () => {
     clickByText('Reading Catalog');
     await flush();
     const levelSelect = host.querySelectorAll('select')[0];
-    expect(levelSelect.value).toBe('3');
+    expect(levelSelect.value).toBe('4');
     act(() => {
       levelSelect.value = '';
       levelSelect.dispatchEvent(new window.Event('change', { bubbles: true }));

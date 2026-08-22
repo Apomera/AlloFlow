@@ -5,7 +5,7 @@
   "packId": "ap-statistics-foundation-pilot",
   "version": "0.3.0-internal-preview",
   "title": "AP Statistics Foundation Pilot Learning Library",
-  "description": "A text-first, independently authored AP Statistics foundation library with five unit chapters, section-linked practice routes, guided study routes, retrieval checks, study cards, memory aids, and explicitly unscored FRQ-planning workshops. It is not released, official, calibrated, or score-predictive.",
+  "description": "A text-first, independently authored AP Statistics foundation library with five unit chapters, section-linked practice routes, guided study routes, original unit quick references, retrieval checks, study cards, memory aids, and explicitly unscored FRQ-planning workshops. It is not released, official, calibrated, or score-predictive.",
   "status": "preview",
   "visibility": "internal",
   "released": false,
@@ -18,7 +18,7 @@
     "officialBlueprintUrl": "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
     "officialCourseUrl": "https://apcentral.collegeboard.org/courses/ap-statistics",
     "pilotVersion": "ap-statistics-foundation-v3",
-    "pilotNote": "A 240-item foundation sampler across the five revised Fall 2026 units, with two hundred forty original single-choice items, fifteen section-linked practice routes, four guided study routes, native chapters, and nine unscored constructed-response planning workshops.",
+    "pilotNote": "A 240-item foundation sampler across the five revised Fall 2026 units, with two hundred forty original single-choice items, fifteen section-linked practice routes, four guided study routes, five original unit quick references, native chapters, and nine unscored constructed-response planning workshops.",
     "skills": [
       {
         "id": "practice-1",
@@ -5471,6 +5471,188 @@
       "releaseEligible": false
     }
   ],
+  "quickReference": [
+    {
+      "id": "ap-stats-reference-u1",
+      "chapterId": "ap-stats-ch-01",
+      "domainId": "exploring-one-variable-data-and-collecting-data",
+      "title": "One-Variable Data and Collecting Data quick reference",
+      "purpose": "Describe the variable and distribution before calculating.",
+      "checklist": [
+        "Classify the variable as categorical or quantitative.",
+        "Describe shape, center, spread, and unusual features.",
+        "Separate random sampling, random assignment, and observational evidence."
+      ],
+      "formulas": [
+        "z = (value - mean) / standard deviation",
+        "IQR = Q3 - Q1",
+        "Outlier fences: Q1 - 1.5(IQR) and Q3 + 1.5(IQR)"
+      ],
+      "decisionRules": [
+        "Use median and IQR for skewed distributions or outliers.",
+        "Use a segmented bar chart for conditional categorical comparisons.",
+        "Generalization needs random sampling; causation needs random assignment."
+      ],
+      "cautions": [
+        "The mean is not resistant to outliers.",
+        "A large convenience sample is still vulnerable to bias."
+      ],
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+        "https://apcentral.collegeboard.org/courses/ap-statistics",
+        "https://openstax.org/details/books/introductory-statistics-2e"
+      ],
+      "originalStudyAid": true,
+      "officialExamReference": false,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Original quick-reference wording; independent AP Statistics subject-expert, accessibility, rights, production, and psychometric review remain pending.",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-stats-reference-u2",
+      "chapterId": "ap-stats-ch-02",
+      "domainId": "probability-random-variables-and-probability-distributions",
+      "title": "Probability and Random Variables quick reference",
+      "purpose": "Define the event or random variable, then verify the model conditions.",
+      "checklist": [
+        "Write the sample space or event notation.",
+        "Check the denominator for conditional probability.",
+        "Verify fixed trials, independence, constant probability, or normal-model conditions."
+      ],
+      "formulas": [
+        "P(A given B) = P(A and B) / P(B)",
+        "Expected value = sum of (outcome)(probability)",
+        "For a binomial variable: mean = np and standard deviation = square root of np(1-p)"
+      ],
+      "decisionRules": [
+        "Use complements for at least one or none when appropriate.",
+        "A probability describes long-run behavior, not a guarantee for one outcome.",
+        "The Central Limit Theorem describes a sampling distribution, not every individual observation."
+      ],
+      "cautions": [
+        "Mutually exclusive positive-probability events are not independent.",
+        "Do not call a model binomial when trials or success probabilities change."
+      ],
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+        "https://apcentral.collegeboard.org/courses/ap-statistics",
+        "https://openstax.org/details/books/introductory-statistics-2e"
+      ],
+      "originalStudyAid": true,
+      "officialExamReference": false,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Original quick-reference wording; independent AP Statistics subject-expert, accessibility, rights, production, and psychometric review remain pending.",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-stats-reference-u3",
+      "chapterId": "ap-stats-ch-03",
+      "domainId": "inference-for-categorical-data-proportions",
+      "title": "Inference for Proportions quick reference",
+      "purpose": "Name the population proportion or difference, check conditions, and interpret evidence.",
+      "checklist": [
+        "State the parameter and hypotheses in population language.",
+        "Check randomization, independence, and large-count conditions.",
+        "Match a one-proportion, two-proportion, or chi-square procedure to the design."
+      ],
+      "formulas": [
+        "One-proportion standard error under a null: square root of p0(1-p0)/n",
+        "Two-proportion standard error: square root of p-hat1(1-p-hat1)/n1 + p-hat2(1-p-hat2)/n2",
+        "Chi-square statistic = sum of (observed - expected)^2 / expected"
+      ],
+      "decisionRules": [
+        "A p-value is calculated assuming the null model.",
+        "A confidence interval gives plausible values for a population parameter.",
+        "A large p-value is not proof that the null is true."
+      ],
+      "cautions": [
+        "Do not use a sample statistic as the parameter in a hypothesis.",
+        "Expected counts come from the categorical null model."
+      ],
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+        "https://apcentral.collegeboard.org/courses/ap-statistics",
+        "https://openstax.org/details/books/introductory-statistics-2e"
+      ],
+      "originalStudyAid": true,
+      "officialExamReference": false,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Original quick-reference wording; independent AP Statistics subject-expert, accessibility, rights, production, and psychometric review remain pending.",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-stats-reference-u4",
+      "chapterId": "ap-stats-ch-04",
+      "domainId": "inference-for-quantitative-data-means",
+      "title": "Inference for Means quick reference",
+      "purpose": "Identify the mean target and data design before selecting a t procedure.",
+      "checklist": [
+        "Decide between one-sample, paired, and two-sample data.",
+        "Define the order of a mean difference.",
+        "Check randomization, independence, shape, outliers, and sample size."
+      ],
+      "formulas": [
+        "t = (statistic - null value) / standard error",
+        "One-mean standard error = sample standard deviation / square root of n",
+        "Confidence interval = statistic plus or minus (critical t)(standard error)"
+      ],
+      "decisionRules": [
+        "Paired data become one sample of within-pair differences.",
+        "Use t procedures when population standard deviation is estimated from the sample.",
+        "Interpret results in the original measurement units."
+      ],
+      "cautions": [
+        "A t procedure does not repair a biased design.",
+        "Statistical significance does not automatically imply practical importance."
+      ],
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+        "https://apcentral.collegeboard.org/courses/ap-statistics",
+        "https://openstax.org/details/books/introductory-statistics-2e"
+      ],
+      "originalStudyAid": true,
+      "officialExamReference": false,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Original quick-reference wording; independent AP Statistics subject-expert, accessibility, rights, production, and psychometric review remain pending.",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-stats-reference-u5",
+      "chapterId": "ap-stats-ch-05",
+      "domainId": "regression-analysis",
+      "title": "Regression Analysis quick reference",
+      "purpose": "Describe the association, inspect residuals, and limit predictions to what the design supports.",
+      "checklist": [
+        "Describe direction, form, strength, clusters, outliers, and leverage.",
+        "Interpret slope, intercept, residuals, and r-squared with units.",
+        "Check residual patterns and the observed x-range before predicting."
+      ],
+      "formulas": [
+        "Residual = observed response - predicted response",
+        "r-squared = proportion of response variation explained by the fitted line",
+        "Predicted response = intercept + slope(explanatory value)"
+      ],
+      "decisionRules": [
+        "Random residual scatter supports a linear form.",
+        "Extrapolation is prediction outside the observed explanatory-variable range.",
+        "Association or r-squared does not establish causation."
+      ],
+      "cautions": [
+        "The intercept may lack meaning outside the observed x-range.",
+        "A strong correlation can coexist with lurking variables or a noncausal design."
+      ],
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
+        "https://apcentral.collegeboard.org/courses/ap-statistics",
+        "https://openstax.org/details/books/introductory-statistics-2e"
+      ],
+      "originalStudyAid": true,
+      "officialExamReference": false,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Original quick-reference wording; independent AP Statistics subject-expert, accessibility, rights, production, and psychometric review remain pending.",
+      "releaseEligible": false
+    }
+  ],
   "diagrams": [
     {
       "id": "ap-stats-diagram-u1-design-scope",
@@ -7144,6 +7326,7 @@
     "memoryAids": 10,
     "practiceRoutes": 15,
     "studyRoutes": 4,
+    "quickReference": 5,
     "diagrams": 5,
     "diagramPlacements": 5,
     "constructedResponseWorkshops": 9,

@@ -569,6 +569,18 @@
         /* ═══════════════════════════════════════════════════
            Materials Database  (15 compounds)
            ═══════════════════════════════════════════════════ */
+        function readableInk(hex) {
+          var match = /^#([0-9a-f]{6})$/i.exec(String(hex || ''));
+          if (!match) return '#0f172a';
+          var value = parseInt(match[1], 16);
+          var channels = [(value >> 16) & 255, (value >> 8) & 255, value & 255].map(function(channel) {
+            var normalized = channel / 255;
+            return normalized <= 0.04045 ? normalized / 12.92 : Math.pow((normalized + 0.055) / 1.055, 2.4);
+          });
+          var luminance = 0.2126 * channels[0] + 0.7152 * channels[1] + 0.0722 * channels[2];
+          return luminance > 0.179 ? '#000000' : '#ffffff';
+        }
+
         var MATERIALS = [
           {
             name: 'Water', formula: 'H\u2082O', emoji: '\uD83D\uDCA7', color: '#60a5fa',
@@ -1484,9 +1496,9 @@
                 },
                 className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all '
                   + (sel.name === m.name
-                    ? 'text-white shadow-md scale-105'
+                    ? 'shadow-md scale-105'
                     : 'transition-colors bg-slate-50 text-slate-600 border border-slate-400 hover:border-amber-600'),
-                style: sel.name === m.name ? { background: m.color } : {}
+                style: sel.name === m.name ? { background: m.color, color: readableInk(m.color) } : {}
               }, m.emoji + ' ' + m.name);
             })
           ),
@@ -1708,7 +1720,7 @@
             /* Safety info */
             MATERIAL_EXTRAS[sel.name] ? h('div', { className: 'rounded-xl border p-3 mb-3 ' + (MATERIAL_EXTRAS[sel.name].safety.indexOf('\u26A0') >= 0 || MATERIAL_EXTRAS[sel.name].safety.indexOf('\u2620') >= 0 ? 'bg-red-50 border-red-200' : 'bg-green-50 border-green-200') },
               h('div', { className: 'flex items-center gap-2' },
-                h('span', { className: 'text-[11px] font-bold uppercase tracking-wider ' + (MATERIAL_EXTRAS[sel.name].safety.indexOf('\u26A0') >= 0 || MATERIAL_EXTRAS[sel.name].safety.indexOf('\u2620') >= 0 ? 'text-red-600' : 'text-green-600') }, '\uD83D\uDEE1\uFE0F Safety'),
+                h('span', { className: 'text-[11px] font-bold uppercase tracking-wider ' + (MATERIAL_EXTRAS[sel.name].safety.indexOf('\u26A0') >= 0 || MATERIAL_EXTRAS[sel.name].safety.indexOf('\u2620') >= 0 ? 'text-red-600' : 'text-green-800') }, '\uD83D\uDEE1\uFE0F Safety'),
                 h('p', { className: 'text-xs text-slate-700 leading-relaxed' }, MATERIAL_EXTRAS[sel.name].safety)
               )
             ) : null,
@@ -3152,7 +3164,7 @@
                   className: 'rounded-xl border p-2 text-center transition-all '
                     + (earned
                       ? 'bg-amber-50 border-amber-300 shadow-sm'
-                      : 'bg-slate-50 border-slate-200 opacity-50'),
+                      : 'bg-slate-50 border-slate-300'),
                   title: b.desc
                 },
                   h('div', { className: 'text-xl' }, earned ? b.icon : '\uD83D\uDD12'),

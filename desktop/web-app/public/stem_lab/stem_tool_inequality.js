@@ -621,7 +621,7 @@ window.StemLab = window.StemLab || {
       var inequalityTabKeyDown = function(e, index) {
         var nextIndex = -1;
         if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = (index + 1) % 2;
-        else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = (index + 1) % 2;
+        else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = (index - 1 + 2) % 2;
         else if (e.key === 'Home') nextIndex = 0;
         else if (e.key === 'End') nextIndex = 1;
         if (nextIndex < 0) return;
@@ -735,7 +735,7 @@ window.StemLab = window.StemLab || {
               onKeyDown: function(e) { inequalityTabKeyDown(e, tabIndex); },
               onClick: function() { upd('graphMode', m); trackMode(m); },
               className: 'min-h-[2.5rem] whitespace-nowrap px-3 py-2 text-xs font-bold rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-fuchsia-400 ' +
-                (graphMode === m ? 'bg-fuchsia-600 text-white shadow' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'),
+                (graphMode === m ? 'bg-fuchsia-700 text-white shadow' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'),
               title: m === '1d' ? __alloT('stem.inequality.shortcut_1_key', '1 key') : __alloT('stem.inequality.shortcut_2_key', '2 key')
             }, labels[m]);
           })
@@ -990,10 +990,10 @@ window.StemLab = window.StemLab || {
         // ── Notation display ──
         ineq && h('div', { className: 'mt-3 grid grid-cols-2 gap-3' },
           h('div', { className: 'bg-fuchsia-50 rounded-lg p-3 border border-fuchsia-200 text-center' },
-            h('p', { className: 'text-[11px] font-bold text-fuchsia-500 uppercase tracking-wider mb-1' }, __alloT('stem.inequality.interval_notation', 'Interval Notation')),
+            h('p', { className: 'text-[11px] font-bold text-fuchsia-700 uppercase tracking-wider mb-1' }, __alloT('stem.inequality.interval_notation', 'Interval Notation')),
             h('p', { className: 'text-lg font-bold text-fuchsia-800 font-mono' }, intervalStr)),
           h('div', { className: 'bg-violet-50 rounded-lg p-3 border border-violet-200 text-center' },
-            h('p', { className: 'text-[11px] font-bold text-violet-500 uppercase tracking-wider mb-1' }, __alloT('stem.inequality.set_builder_notation', 'Set-Builder Notation')),
+            h('p', { className: 'text-[11px] font-bold text-violet-700 uppercase tracking-wider mb-1' }, __alloT('stem.inequality.set_builder_notation', 'Set-Builder Notation')),
             h('p', { className: 'text-sm font-bold text-violet-800 font-mono' }, setBuilderStr))
         ),
 
@@ -1054,14 +1054,14 @@ window.StemLab = window.StemLab || {
                   if (nt.easy && nt.medium && nt.hard) checkBadges({ allTiers: true });
                 },
                 className: 'px-2 py-0.5 rounded text-[11px] font-bold transition-all ' +
-                  (isActive ? 'bg-fuchsia-600 text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200')
+                  (isActive ? 'bg-fuchsia-700 text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200')
               }, labels[tier]);
             })
           ),
           h('div', { className: 'flex items-center gap-2 mb-2' },
             h('button', { 'aria-label': __alloT('stem.inequality.aria_iq_start_quiz', 'Iq Start Quiz'),
               onClick: iqStartQuiz,
-              className: 'px-3 py-1.5 rounded-lg text-xs font-bold ' + (d.quiz ? 'bg-fuchsia-100 text-fuchsia-700' : 'bg-fuchsia-600 text-white') + ' transition-all',
+              className: 'px-3 py-1.5 rounded-lg text-xs font-bold ' + (d.quiz ? 'bg-fuchsia-100 text-fuchsia-700' : 'bg-fuchsia-700 text-white') + ' transition-all',
               title: __alloT('stem.inequality.quiz_q', 'Quiz (Q)')
             }, d.quiz ? '\uD83D\uDD04 ' + __alloT('stem.inequality.next_challenge', 'Next Challenge') : '\uD83E\uDDE0 ' + __alloT('stem.inequality.challenge_mode', 'Challenge Mode')),
             d.quiz && d.quiz.score > 0 && h('span', { className: 'text-xs font-bold text-emerald-600' }, '\u2B50 ' + d.quiz.score + __alloT('stem.inequality.correct_suffix', ' correct')),

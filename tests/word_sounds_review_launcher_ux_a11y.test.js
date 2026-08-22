@@ -48,8 +48,9 @@ describe('Word Sounds review and launcher UX accessibility', () => {
     expect(launcherSource).toContain('{isTeacherMode && (');
     expect(launcherSource).toContain("isTeacherMode ? 'Student: Start Practice' : 'Start Activity'");
     expect(launcherSource).toContain('setWordSoundsAutoReview(false)');
-    expect(launcherSource).toContain('Audio ready: {wordSoundsAudioCoverage.ready}/{wordSoundsAudioCoverage.total} words');
-    expect(launcherSource).toContain('Missing: {wordSoundsAudioCoverage.missingWords.slice(0, 5).join(\', \')}');
+    expect(launcherSource).toContain('Audio ready: {wordSoundsAudioCoverage.ready}/{wordSoundsAudioCoverage.total} required clips');
+    expect(launcherSource).toContain("var missingAudioLabels = wordSoundsAudioCoverage && Array.isArray(wordSoundsAudioCoverage.missingLabels)");
+    expect(launcherSource).toContain("Missing: {missingAudioLabels.slice(0, 5).join(', ')}");
     expect(launcherSource).toContain("role=\"status\"");
     expect(launcherSource).toContain('requestIncompleteAudioConfirmation(wordSoundsAudioCoverage, launchPreparedActivity)');
   });

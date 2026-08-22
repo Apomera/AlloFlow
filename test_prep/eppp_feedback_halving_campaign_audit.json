@@ -59,7 +59,7 @@
   "fingerprints": {
     "selection": "796d90d0c26e71169497e3867bf8f9eb5575d33106aa156a8f5a41bb35e768e7",
     "composition": "86336c1c190009dfd3972a1da6411f805cdff04d9dae028e968adf052408da0a",
-    "protectedContent": "071bee4ff0c6642f2ca3027ec53139fca75e70fefe2eb9c191c26b5b1f843f46"
+    "protectedContent": "5ab5a2f6ae17c5be0c90856b44d16af8d2887639d5baa055028ed9c115f1f561"
   },
   "summary": {
     "selectedItems": 420,
@@ -2770,7 +2770,7 @@
       "id": "eppp-v2-biological-004",
       "family": "triple-insufficient",
       "expectedAnswerIndex": 3,
-      "protectedFingerprint": "525d1c78e4f046ff043b12a42e7503b8d12331732bc0d1f3885a23a41289611d",
+      "protectedFingerprint": "15122804ed7a1bb9db0ce3bbe7448c789d092d5d5447131a626cf9945acaf766",
       "modes": {
         "0": "source-reviewed-legacy-reason-expanded",
         "1": "source-reviewed-legacy-reason-expanded",
@@ -3562,7 +3562,7 @@
       "id": "eppp-v2-professional-008",
       "family": "triple-insufficient",
       "expectedAnswerIndex": 1,
-      "protectedFingerprint": "2422b3937243bf94e97cab6702ead115f0a1216a9d4794bf38eb23a5c97b37ee",
+      "protectedFingerprint": "492fb3af9ced8ed77244fe419bf84681fddd50bc0503225a55e08c9c15a81832",
       "modes": {
         "0": "rationale-grounded-option-contrast-draft",
         "2": "source-reviewed-legacy-reason-expanded",
@@ -3738,7 +3738,7 @@
       "id": "eppp-v2-professional-074",
       "family": "triple-insufficient",
       "expectedAnswerIndex": 0,
-      "protectedFingerprint": "d577798195460eacd164035888541c550f5cda6d030fb180aae61394c1a51448",
+      "protectedFingerprint": "4fc51141d07230d1bf023be73b34ece381b37d998fe8d853870d3a50d01b7a01",
       "modes": {
         "1": "rationale-grounded-option-contrast-draft",
         "2": "rationale-grounded-option-contrast-draft",
@@ -4409,7 +4409,7 @@
       "id": "eppp-v3-professional-012",
       "family": "triple-ceg",
       "expectedAnswerIndex": 3,
-      "protectedFingerprint": "4cfd4b68ebd617919fd13fc0fa39e02493cc79634d0708aad89ef22db3b038eb",
+      "protectedFingerprint": "a1708703d23dee231bc7519ce0017e1bf27f438f4e5a7699717e071ce359dbd6",
       "modes": {
         "0": "rationale-grounded-option-contrast-draft",
         "1": "rationale-grounded-option-contrast-draft",
@@ -4475,7 +4475,7 @@
       "id": "eppp-v3-professional-056",
       "family": "triple-ceg",
       "expectedAnswerIndex": 3,
-      "protectedFingerprint": "21d479960bcef1437628cb9d036e933995c10d36b42185d774441ce2dd1c5ccc",
+      "protectedFingerprint": "077ea0a49bd7051f07b588608eccecb43a8bd3c9b635d9c2fb77bf8918b74b17",
       "modes": {
         "0": "rationale-grounded-option-contrast-draft",
         "1": "rationale-grounded-option-contrast-draft",

@@ -12,8 +12,13 @@ describe('View Renderers WCAG safeguards', () => {
     expect(deployed).toBe(built);
   });
 
-  it('preserves visible native focus indicators', () => {
-    expect(source).not.toContain('outline-none');
+  it('replaces every suppressed native outline with a visible focus indicator', () => {
+    const outlineSuppressions = source
+      .split(/\r?\n/)
+      .filter((line) => /(?:focus(?:-visible)?:)?outline-none/.test(line));
+
+    expect(outlineSuppressions.length).toBeGreaterThan(0);
+    expect(outlineSuppressions.every((line) => /focus(?:-visible)?:ring(?:-|\b)/.test(line))).toBe(true);
   });
 
   it('contains and restores focus for the programmatic 3D dialog', () => {

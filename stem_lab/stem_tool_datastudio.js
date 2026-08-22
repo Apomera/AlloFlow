@@ -656,7 +656,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
           var _border = isDark || isContrast ? 'rgba(6,182,212,0.2)' : 'rgba(6,182,212,0.15)';
 
-          var _accent = isDark || isContrast ? '#22d3ee' : '#0891b2';
+          var _accent = isDark || isContrast ? '#22d3ee' : '#0e7490';
 
           var _muted = isDark || isContrast ? '#94a3b8' : '#475569';
 
@@ -674,11 +674,11 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
 
 
-          return React.createElement("div", { className: "p-4 space-y-4", style: { color: _text } },
+          return React.createElement("div", { className: "p-4 space-y-4 rounded-2xl", style: { color: _text, background: _bg } },
 
             // Header
 
-            React.createElement("div", { className: "flex items-center justify-between mb-2" },
+            React.createElement("div", { className: "flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-2" },
 
               React.createElement("div", null,
 
@@ -690,7 +690,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
               ),
 
-              React.createElement("div", { className: "flex gap-2" },
+              React.createElement("div", { className: "flex flex-wrap gap-2" },
 
                 React.createElement("button", { onClick: function () { updDS('workspaceTab', workspaceTab === 'analyze' ? 'chart' : 'analyze'); },
 
@@ -1491,7 +1491,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
               // Add row
 
-              React.createElement("div", { className: "flex gap-2 mb-2" },
+              React.createElement("div", { className: "flex flex-wrap gap-2 mb-2" },
 
                 React.createElement("input", {
 
@@ -1505,9 +1505,9 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                   onChange: function (e) { updDS('editRow', { label: e.target.value, x: editRow.x, value: editRow.value }); },
 
-                  className: "flex-1 px-2 py-1.5 rounded-lg text-xs",
+                  className: "min-w-0 flex-1 px-2 py-1.5 rounded-lg text-xs",
 
-                  style: { background: _svgBg, border: '1px solid ' + _border, color: _text, outline: 'none' },
+                  style: { background: _svgBg, border: '1px solid ' + _border, color: _text, outline: 'none', minWidth: '6rem' },
                   onFocus: function(e) { e.target.style.boxShadow = '0 0 0 2px #6366f1'; }, onBlur: function(e) { e.target.style.boxShadow = 'none'; }
 
                 }),
@@ -1861,7 +1861,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
               var sm = {
                 invisible:  { label: t('stem.datastudio.nearly_invisible_low_opacity', '\uD83D\uDC7B Nearly invisible (low opacity)'), color: '#94a3b8', bg: '#f1f5f9', border: '#cbd5e1' },
                 overzoomed: { label: t('stem.datastudio.over_zoomed_lose_context', '\uD83D\uDD0D Over-zoomed (lose context)'), color: '#dc2626', bg: '#fef2f2', border: '#fca5a5' },
-                tooBroad:   { label: t('stem.datastudio.too_broad_lose_detail', '\uD83D\uDD2D Too broad (lose detail)'), color: '#0891b2', bg: '#ecfeff', border: '#67e8f9' },
+                tooBroad:   { label: t('stem.datastudio.too_broad_lose_detail', '\uD83D\uDD2D Too broad (lose detail)'), color: '#0e7490', bg: '#ecfeff', border: '#67e8f9' },
                 legible:    { label: t('stem.datastudio.legible_visualization', '\uD83D\uDFE2 Legible visualization'), color: '#059669', bg: '#ecfdf5', border: '#86efac' }
               }[state];
               return React.createElement('div', { className: 'mt-3 p-3 rounded-xl bg-white border border-cyan-300 space-y-2' },

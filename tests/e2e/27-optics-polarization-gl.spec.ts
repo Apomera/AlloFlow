@@ -36,6 +36,8 @@ const HARNESS = `<!doctype html>
 <script src="/stem_lab/stem_lab_module.js"></script>
 <script>
   window.__events = { errors: [] };
+  window.__bubbledKeys = [];
+  document.addEventListener('keydown', function (e) { window.__bubbledKeys.push(e.key); });
   window.addEventListener('error', function (e) { window.__events.errors.push(String(e.message)); });
   window.StemLab.ensureThree = function () { return Promise.resolve(window.THREE); };
   window.StemLab.loadScriptResilient = function () { return new Promise(function () {}); };
@@ -85,6 +87,7 @@ const HARNESS = `<!doctype html>
   window.__destroy = function () { if (window.__root) { window.__root.unmount(); window.__root = null; } };
   window.__gl = function () { return window.__alloOpticsGL ? window.__alloOpticsGL.debug() : null; };
   window.__win = function () { return window.__alloOpticsWindowGL ? window.__alloOpticsWindowGL.debug() : null; };
+  window.__lens = function () { return window.__alloOpticsLensGL ? window.__alloOpticsLensGL.debug() : null; };
   window.__set = function (patch) {
     window.__toolData = Object.assign({}, window.__toolData);
     window.__toolData.opticsLab = Object.assign({}, window.__toolData.opticsLab, patch);
@@ -92,6 +95,7 @@ const HARNESS = `<!doctype html>
   };
   window.__bucket = function () { return window.__toolData.opticsLab; };
   window.__canvasCount = function () { return document.querySelectorAll('canvas[data-optics-gl]').length; };
+  window.__lensCanvasCount = function () { return document.querySelectorAll('canvas[data-optics-lens-gl]').length; };
   window.__text = function () { return document.body.innerText; };
 </script>
 </body></html>`;
@@ -364,5 +368,69 @@ test.describe("Optics Lab Snell's window — real WebGL", () => {
     await page.waitForTimeout(500);
     expect(await page.evaluate(() => document.querySelectorAll('canvas[data-optics-window-gl]').length)).toBe(0);
     expect(await page.evaluate(() => (window as any).__win().state)).toBe('idle');
+  });
+});
+
+/**
+ * Thin-lens ray-space bench. These checks pin the spatial model to the same
+ * thin-lens outcomes as the 2D diagram and verify its opt-in lifecycle.
+ */
+test.describe('Optics Lab thin-lens bench - real WebGL', () => {
+  test.afterEach(async ({ page }) => {
+    await page.evaluate(() => { try { (window as any).__destroy(); } catch { /* gone */ } }).catch(() => {});
+  });
+
+  async function mountLens(page: Pg, bucket: Record<string, unknown> = {}) {
+    await page.goto(`${base}/__harness`);
+    await page.waitForFunction(() => !!(window as any).StemLab?._registry?.opticsLab);
+    await page.evaluate(
+      (b) => (window as any).__mount(b),
+      Object.assign({
+        mode: 'lenses', lensShow3D: true, lensType: 'converging',
+        lensFocal: 12, lensDo: 25, lensObjH: 5
+      }, bucket)
+    );
+    await page.waitForSelector('canvas[data-optics-lens-gl="true"]', { timeout: 30000 });
+    await page.waitForFunction(() => (window as any).__lens()?.state === 'ready', null, { timeout: 30000 });
+    await page.waitForTimeout(400);
+  }
+
+  test('builds a full aperture bundle that converges to a real image', async ({ page }) => {
+    await mountLens(page);
+    const gl = await page.evaluate(() => (window as any).__lens());
+    expect(gl.state).toBe('ready');
+    expect(gl.contextLost).toBe(false);
+    expect(gl.rayCount).toBe(9);
+    expect(gl.imageVisible).toBe(true);
+    expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+    expect(await page.evaluate(() => (window as any).__lensCanvasCount())).toBe(1);
+  });
+
+  test('draws virtual-image extensions and handles the focal-plane limit', async ({ page }) => {
+    await mountLens(page, { lensType: 'diverging' });
+    expect(await page.evaluate(() => (window as any).__lens().rayCount)).toBe(9);
+    expect(await page.evaluate(() => (window as any).__text())).toContain('Dashed pink lines are backward extensions');
+
+    await page.evaluate(() => (window as any).__set({ lensType: 'converging', lensDo: 12 }));
+    await page.waitForTimeout(450);
+    const focal = await page.evaluate(() => (window as any).__lens());
+    expect(focal.rayCount).toBe(9);
+    expect(focal.imageVisible).toBe(false);
+    expect(await page.evaluate(() => (window as any).__text())).toContain('image at infinity');
+  });
+
+  test('supports keyboard orbit and disposes when switched off', async ({ page }) => {
+    await mountLens(page);
+    const host = page.locator('[aria-keyshortcuts*="ArrowLeft"]').first();
+    await host.press('ArrowRight');
+    await page.waitForTimeout(300);
+    const rotation = await page.evaluate(() => (window as any).__bucket().lensGlRot);
+    expect(rotation.rotY).toBe(40);
+    expect(await page.evaluate(() => (window as any).__bubbledKeys)).not.toContain('ArrowRight');
+
+    await page.evaluate(() => (window as any).__set({ lensShow3D: false }));
+    await page.waitForTimeout(400);
+    expect(await page.evaluate(() => (window as any).__lensCanvasCount())).toBe(0);
+    expect(await page.evaluate(() => (window as any).__lens().state)).toBe('idle');
   });
 });

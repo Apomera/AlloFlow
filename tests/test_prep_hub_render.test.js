@@ -1377,7 +1377,7 @@ describe('Test Prep Hub render flow', () => {
       await clickButton('Check answer');
       if (index === 0) {
         expect(host.textContent).toContain('Why the other options do not fit');
-        expect(host.textContent).toContain('Schwann cells myelinate axons in the peripheral nervous system');
+        expect(host.textContent).toContain('Schwann cells that myelinate peripheral axons');
         expect(host.textContent).toContain('Myelin in the Central Nervous System: Structure, Function, and Pathology');
         expect(host.textContent).toContain('PubMed, U.S. National Library of Medicine');
         expect(host.textContent).toContain('Why this source is credible:');

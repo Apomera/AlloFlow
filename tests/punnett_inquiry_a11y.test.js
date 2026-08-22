@@ -8,8 +8,8 @@ const publicPath = path.join(process.cwd(), 'desktop/web-app', 'public', 'stem_l
 describe('Punnett inquiry text accessibility', () => {
   it('names both reflection textareas in source and public mirrors', () => {
     const expected = [
-      "'aria-label': t('stem.punnett.hypothesis_input', 'Allele frequency hypothesis')",
-      "'aria-label': t('stem.punnett.explanation_input', 'Explain allele selection and mutation')"
+      "'aria-label': __alloT('stem.punnett.hypothesis_input', 'Allele frequency hypothesis')",
+      "'aria-label': __alloT('stem.punnett.explanation_input', 'Explain allele selection and mutation')"
     ];
     for (const file of [sourcePath, publicPath]) {
       const source = fs.readFileSync(file, 'utf8');

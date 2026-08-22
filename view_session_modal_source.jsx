@@ -32,6 +32,339 @@
  *
  * Icons (from window globals): Wifi, X, Copy, Users, ChevronRight, XCircle
  */
+
+// Privacy-safe end-session aggregation lives with the lazy session-management
+// surface so ordinary app startup does not parse code used only while ending a
+// live class. These helpers are intentionally pure: no React state, browser
+// storage, network calls, transient UIDs, or raw learner work cross the API.
+const normalizeRosterSessionCodename = (value) => String(value || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+
+const countValidRosterQuizResponses = (responseMap) => Object.entries(
+  responseMap && typeof responseMap === 'object' && !Array.isArray(responseMap) ? responseMap : {}
+).filter(([key, record]) => {
+  if (!/^(0|[1-9]\d{0,3})$/.test(String(key)) || Number(key) > 9999) return false;
+  const itemType = record && typeof record === 'object' && !Array.isArray(record)
+    ? String(record.itemType || '')
+    : '';
+  return itemType !== 'assessment-complete' && itemType !== 'reflection';
+}).length;
+
+const summarizeRosterLiveActivities = (activitySnapshots, liveRoster, rosterByNormalizedName) => {
+  const allowedKinds = new Set(['rating', 'multiple_choice', 'free_text', 'word_cloud', 'feedback_response', 'pictionary', 'sketch_response', 'session_qa', 'quiz']);
+  const allowedPhases = new Set(['collecting', 'paused', 'review', 'revealed', 'closed']);
+  const roster = liveRoster && typeof liveRoster === 'object' ? liveRoster : {};
+  const byName = rosterByNormalizedName && typeof rosterByNormalizedName === 'object' ? rosterByNormalizedName : {};
+  const participantTotals = {};
+  const activities = [];
+  const clampCount = (value, max = 10000) => {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? Math.max(0, Math.min(max, Math.floor(parsed))) : 0;
+  };
+  (Array.isArray(activitySnapshots) ? activitySnapshots : []).slice(-60).forEach(snapshot => {
+    if (!snapshot || typeof snapshot !== 'object' || !allowedKinds.has(snapshot.kind)) return;
+    const audienceUids = Array.from(new Set((Array.isArray(snapshot.audienceUids) ? snapshot.audienceUids : []).map(String).filter(Boolean))).slice(0, 250);
+    const statuses = snapshot.participantStatus && typeof snapshot.participantStatus === 'object' ? snapshot.participantStatus : {};
+    let submitted = 0;
+    let revised = 0;
+    audienceUids.forEach(uid => {
+      const status = statuses[uid] === 'revised'
+        ? 'revised'
+        : statuses[uid] === 'submitted'
+          ? 'submitted'
+          : statuses[uid] === 'working'
+            ? 'working'
+            : 'waiting';
+      if (status === 'submitted' || status === 'revised') submitted += 1;
+      if (status === 'revised') revised += 1;
+      const liveName = String(roster[uid]?.name || '').trim();
+      const rosterName = byName[normalizeRosterSessionCodename(liveName)];
+      if (!rosterName) return;
+      const current = participantTotals[rosterName] || { liveActivityCount: 0, liveSubmissionCount: 0, liveRevisionCount: 0 };
+      current.liveActivityCount += 1;
+      if (status === 'submitted' || status === 'revised') current.liveSubmissionCount += 1;
+      if (status === 'revised') current.liveRevisionCount += 1;
+      participantTotals[rosterName] = current;
+    });
+    const counts = snapshot.counts && typeof snapshot.counts === 'object' ? snapshot.counts : {};
+    activities.push({
+      kind: snapshot.kind,
+      phase: allowedPhases.has(snapshot.phase) ? snapshot.phase : 'closed',
+      invited: audienceUids.length,
+      submitted,
+      revised,
+      approved: clampCount(counts.approved),
+      hidden: clampCount(counts.hidden),
+      revealed: clampCount(counts.revealed),
+      feedbackSent: clampCount(counts.feedbackSent),
+      guesses: clampCount(counts.guesses),
+      showcased: clampCount(counts.showcased),
+      votesCast: clampCount(counts.votesCast),
+      startedAt: clampCount(snapshot.startedAt, Number.MAX_SAFE_INTEGER),
+      endedAt: clampCount(snapshot.endedAt, Number.MAX_SAFE_INTEGER),
+    });
+  });
+  return { activities, participantTotals };
+};
+
+const buildRosterSessionInsightBrief = (summary) => {
+  const source = summary && typeof summary === 'object' ? summary : {};
+  const participants = source.participants && typeof source.participants === 'object' && !Array.isArray(source.participants)
+    ? source.participants
+    : {};
+  const activities = Array.isArray(source.liveActivities) ? source.liveActivities : [];
+  const absentCodenames = Array.isArray(source.absentCodenames) ? source.absentCodenames.map(String).filter(Boolean).slice(0, 250) : [];
+  const unmatchedCodenames = Array.isArray(source.unmatchedCodenames) ? source.unmatchedCodenames.map(String).filter(Boolean).slice(0, 250) : [];
+  const clampCount = (value, max = 100000) => {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? Math.max(0, Math.min(max, Math.floor(parsed))) : 0;
+  };
+  const byKind = Object.create(null);
+  let submissions = 0;
+  let revisions = 0;
+  let feedbackSent = 0;
+  let votesCast = 0;
+  activities.slice(0, 60).forEach(activity => {
+    if (!activity || typeof activity !== 'object') return;
+    const kind = String(activity.kind || 'activity').replace(/[^a-z0-9_-]/gi, '').slice(0, 40) || 'activity';
+    const current = byKind[kind] || { kind, activityCount: 0, invited: 0, submitted: 0, revised: 0 };
+    current.activityCount += 1;
+    current.invited += clampCount(activity.invited);
+    current.submitted += clampCount(activity.submitted);
+    current.revised += clampCount(activity.revised);
+    byKind[kind] = current;
+    submissions += clampCount(activity.submitted);
+    revisions += clampCount(activity.revised);
+    feedbackSent += clampCount(activity.feedbackSent);
+    votesCast += clampCount(activity.votesCast);
+  });
+  const followUpCodenames = [];
+  const noEvidenceCodenames = [];
+  const partialParticipationCodenames = [];
+  const revisionGrowthCodenames = [];
+  const groupMap = Object.create(null);
+  let participantsWithRecordedResponse = 0;
+  Object.entries(participants).slice(0, 250).forEach(([rawCodename, rawRecord]) => {
+    const codename = String(rawCodename || '').trim().slice(0, 80);
+    const record = rawRecord && typeof rawRecord === 'object' ? rawRecord : {};
+    const activityCount = clampCount(record.liveActivityCount, 60);
+    const activitySubmissions = Math.min(activityCount, clampCount(record.liveSubmissionCount, 60));
+    const activityRevisions = Math.min(activitySubmissions, clampCount(record.liveRevisionCount, 60));
+    const quizResponses = clampCount(record.responseCount, 1000);
+    if (activitySubmissions > 0 || quizResponses > 0) participantsWithRecordedResponse += 1;
+    if (codename && activityCount > activitySubmissions) {
+      followUpCodenames.push(codename);
+      if (activitySubmissions === 0 && quizResponses === 0) noEvidenceCodenames.push(codename);
+      else partialParticipationCodenames.push(codename);
+    }
+    if (codename && activityRevisions > 0) revisionGrowthCodenames.push(codename);
+    const groupId = record.groupId === null || record.groupId === undefined ? '' : String(record.groupId).trim().slice(0, 80);
+    if (!groupId) return;
+    const group = groupMap[groupId] || { groupId, participantCount: 0, activityOpportunities: 0, submissions: 0, revisions: 0, followUpCount: 0 };
+    group.participantCount += 1;
+    group.activityOpportunities += activityCount;
+    group.submissions += activitySubmissions;
+    group.revisions += activityRevisions;
+    if (activityCount > activitySubmissions) group.followUpCount += 1;
+    groupMap[groupId] = group;
+  });
+  const evidenceCohorts = [];
+  const addEvidenceCohort = (code, intent, label, codenames, recommendedAction) => {
+    const safeCodenames = Array.from(new Set((Array.isArray(codenames) ? codenames : []).map(String).filter(Boolean))).slice(0, 250);
+    if (safeCodenames.length === 0) return;
+    evidenceCohorts.push({ code, intent, label, count: safeCodenames.length, codenames: safeCodenames, recommendedAction });
+  };
+  addEvidenceCohort('no-recorded-evidence', 'support', 'No recorded activity evidence', noEvidenceCodenames, 'Check access first, then send a smaller or alternative support resource.');
+  addEvidenceCohort('incomplete-participation', 'support', 'Partial activity participation', partialParticipationCodenames, 'Send a focused follow-up resource or reopen the activity with more time.');
+  addEvidenceCohort('absent-catch-up', 'support', 'Catch-up needed', absentCodenames, 'Prepare or send a catch-up resource in the current or next session.');
+  addEvidenceCohort('revision-growth', 'celebrate', 'Revision growth recorded', revisionGrowthCodenames, 'Acknowledge productive revision and preserve the successful support pattern.');
+  const nextMoves = [];
+  if (followUpCodenames.length > 0) nextMoves.push({ code: 'activity-follow-up', count: followUpCodenames.length, label: 'Review incomplete activity participation and send support while the session is still open.' });
+  if (absentCodenames.length > 0) nextMoves.push({ code: 'absent-catch-up', count: absentCodenames.length, label: 'Prepare a catch-up resource for learners who were not present.' });
+  if (feedbackSent > revisions) nextMoves.push({ code: 'revision-opportunity', count: feedbackSent - revisions, label: 'Leave time for learners to act on feedback that has not yet produced a recorded revision.' });
+  if (unmatchedCodenames.length > 0) nextMoves.push({ code: 'resolve-codenames', count: unmatchedCodenames.length, label: 'Resolve unmatched codenames before using this session longitudinally.' });
+  if (nextMoves.length === 0 && (activities.length > 0 || participantsWithRecordedResponse > 0)) {
+    nextMoves.push({ code: 'review-evidence', count: participantsWithRecordedResponse, label: 'Review the recorded participation evidence when choosing the next lesson step.' });
+  }
+  return {
+    schemaVersion: 2,
+    activityCount: Math.min(60, activities.length),
+    submissions,
+    revisions,
+    feedbackSent,
+    votesCast,
+    participantsWithRecordedResponse,
+    followUpCodenames: followUpCodenames.slice(0, 250),
+    evidenceCohorts: evidenceCohorts.slice(0, 8),
+    evidenceScope: 'teacher-device-derived-participation',
+    byKind: Object.values(byKind).map(item => ({
+      ...item,
+      completionPercent: item.invited > 0 ? Math.max(0, Math.min(100, Math.round((item.submitted / item.invited) * 100))) : 0,
+    })).sort((a, b) => a.kind.localeCompare(b.kind)),
+    groups: Object.values(groupMap).sort((a, b) => a.groupId.localeCompare(b.groupId)),
+    nextMoves: nextMoves.slice(0, 4),
+  };
+};
+
+const buildRosterSessionSummary = ({ sessionCode, sessionData, rosterKey, mode, activitySnapshots = [], quizResponseCountsByUid = {}, endedAt = new Date().toISOString() }) => {
+  const rosterStudents = rosterKey?.students && typeof rosterKey.students === 'object' ? rosterKey.students : {};
+  const rosterByNormalizedName = Object.create(null);
+  Object.keys(rosterStudents).forEach(name => {
+    const normalized = normalizeRosterSessionCodename(name);
+    if (!normalized) return;
+    if (!Object.prototype.hasOwnProperty.call(rosterByNormalizedName, normalized)) rosterByNormalizedName[normalized] = name;
+    else if (rosterByNormalizedName[normalized] !== name) rosterByNormalizedName[normalized] = null;
+  });
+  const liveRoster = sessionData?.roster && typeof sessionData.roster === 'object' ? sessionData.roster : {};
+  const allResponses = sessionData?.quizState?.allResponses && typeof sessionData.quizState.allResponses === 'object' ? sessionData.quizState.allResponses : {};
+  // A duplicated live codename cannot be attributed to one roster learner
+  // without risking a silent merge. Fail closed for both participant evidence
+  // and activity totals, retaining only the already-bounded unmatched name.
+  const liveCodenameCounts = Object.create(null);
+  Object.values(liveRoster).forEach(liveStudent => {
+    const normalized = normalizeRosterSessionCodename(liveStudent?.name);
+    if (normalized) liveCodenameCounts[normalized] = (liveCodenameCounts[normalized] || 0) + 1;
+  });
+  const evidenceRosterByNormalizedName = Object.assign(Object.create(null), rosterByNormalizedName);
+  Object.entries(liveCodenameCounts).forEach(([normalized, count]) => {
+    if (count !== 1) evidenceRosterByNormalizedName[normalized] = null;
+  });
+  const organizerStatuses = new Set(['loading', 'ready', 'failed', 'working', 'attempted', 'complete']);
+  const organizerTypes = new Set(['venn', 'tchart', 'cesort', 'pipeline', 'conceptmap', 'outline', 'fishbone', 'problemsolution', 'frayer', 'seethinkwonder', 'storymap', 'strandchallenge3d', 'conceptrecall3d', 'palacerecall']);
+  const boundedOrganizerNumber = (value, max = 100000) => Math.max(0, Math.min(max, Math.round(Number(value) || 0)));
+  const readOrganizerReceipt = value => {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+    const activityId = String(value.activityId || '').trim().slice(0, 160);
+    const type = String(value.type || '').trim();
+    const status = organizerStatuses.has(value.status) ? value.status : '';
+    const at = Number(value.at);
+    if (!activityId || !organizerTypes.has(type) || !status || !Number.isFinite(at) || at <= 0) return null;
+    const total = boundedOrganizerNumber(value.total);
+    return { activityId, type, status, score: boundedOrganizerNumber(value.score), correct: Math.min(total || 100000, boundedOrganizerNumber(value.correct)), total, attempts: boundedOrganizerNumber(value.attempts, 10000), at };
+  };
+  const activeOrganizer = sessionData?.interactiveOrganizer && typeof sessionData.interactiveOrganizer === 'object' ? sessionData.interactiveOrganizer : null;
+  let organizerActivityId = organizerTypes.has(String(activeOrganizer?.type || '')) ? String(activeOrganizer?.activityId || '').trim().slice(0, 160) : '';
+  let organizerType = organizerActivityId ? String(activeOrganizer.type) : '';
+  let latestOrganizerAt = 0;
+  if (!organizerActivityId) {
+    Object.values(liveRoster).forEach(liveStudent => {
+      const receipt = readOrganizerReceipt(liveStudent?.organizerProgress);
+      if (receipt && receipt.at > latestOrganizerAt) {
+        organizerActivityId = receipt.activityId;
+        organizerType = receipt.type;
+        latestOrganizerAt = receipt.at;
+      }
+    });
+  }
+  const organizerStatusCounts = { waiting: 0, loading: 0, ready: 0, failed: 0, working: 0, attempted: 0, complete: 0 };
+  const organizerFollowUpCodenames = [];
+  const participants = {};
+  const unmatchedCodenames = [];
+  const addUnmatchedCodename = value => {
+    if (unmatchedCodenames.length >= 250) return;
+    const codename = String(value || '').trim().slice(0, 80);
+    const normalized = normalizeRosterSessionCodename(codename);
+    if (!normalized || unmatchedCodenames.some(name => normalizeRosterSessionCodename(name) === normalized)) return;
+    unmatchedCodenames.push(codename);
+  };
+  Object.entries(liveRoster).forEach(([uid, liveStudent]) => {
+    const rawName = String(liveStudent?.name || '').trim();
+    const rosterName = evidenceRosterByNormalizedName[normalizeRosterSessionCodename(rawName)];
+    if (!rosterName) {
+      addUnmatchedCodename(rawName);
+      return;
+    }
+    const responseMap = allResponses[uid] && typeof allResponses[uid] === 'object' ? allResponses[uid] : {};
+    const organizerReceipt = readOrganizerReceipt(liveStudent?.organizerProgress);
+    const organizerMatches = !!(organizerActivityId && organizerReceipt?.activityId === organizerActivityId);
+    const organizerStatus = organizerMatches ? organizerReceipt.status : (activeOrganizer && organizerActivityId ? 'waiting' : '');
+    const organizer = organizerStatus ? {
+      type: organizerMatches ? organizerReceipt.type : organizerType,
+      status: organizerStatus,
+      score: organizerMatches ? organizerReceipt.score : 0,
+      correct: organizerMatches ? organizerReceipt.correct : 0,
+      total: organizerMatches ? organizerReceipt.total : 0,
+      attempts: organizerMatches ? organizerReceipt.attempts : 0,
+    } : null;
+    if (organizer) {
+      organizerStatusCounts[organizer.status] += 1;
+      if (organizer.status === 'waiting' || organizer.status === 'failed') organizerFollowUpCodenames.push(rosterName);
+    }
+    participants[rosterName] = { groupId: liveStudent?.groupId || rosterStudents[rosterName] || null, joinedAt: typeof liveStudent?.joinedAt === 'string' ? liveStudent.joinedAt : null, responseCount: Math.max(countValidRosterQuizResponses(responseMap), Number(quizResponseCountsByUid[uid]) || 0), resourcesOpened: liveStudent?.viewingResourceId ? 1 : 0, ...(organizer ? { organizer } : {}) };
+  });
+  const createdAt = typeof sessionData?.createdAt === 'string' ? sessionData.createdAt : null;
+  const startMs = createdAt ? Date.parse(createdAt) : NaN;
+  const endMs = Date.parse(endedAt);
+  const durationMinutes = Number.isFinite(startMs) && Number.isFinite(endMs) && endMs >= startMs ? Math.max(0, Math.round((endMs - startMs) / 60000)) : null;
+  const resourceTitles = Array.isArray(sessionData?.resources) ? Array.from(new Set(sessionData.resources.map(item => String(item?.title || '').trim()).filter(Boolean))).slice(0, 20) : [];
+  const absentCodenames = Object.keys(rosterStudents).filter(name => !participants[name]);
+  const classGoals = (Array.isArray(rosterKey?.classGoalLog) ? rosterKey.classGoalLog : [])
+    .filter(entry => entry && sessionCode && entry.sessionCode === sessionCode)
+    .slice(0, 40)
+    .map(entry => ({
+      label: String(entry.label || '').slice(0, 80),
+      mode: entry.mode === 'independent' ? 'independent' : 'interdependent',
+      tokens: Number(entry.tokens) === 2 ? 2 : 1,
+      delivered: Math.max(0, Math.floor(Number(entry.delivered) || 0)),
+      at: Number(entry.at) || 0,
+    }));
+  const liveActivityEvidence = summarizeRosterLiveActivities(activitySnapshots, liveRoster, evidenceRosterByNormalizedName);
+  Object.entries(liveActivityEvidence.participantTotals).forEach(([rosterName, totals]) => {
+    if (!participants[rosterName]) return;
+    participants[rosterName] = {
+      ...participants[rosterName],
+      liveActivityCount: totals.liveActivityCount,
+      liveSubmissionCount: totals.liveSubmissionCount,
+      liveRevisionCount: totals.liveRevisionCount,
+    };
+  });
+  const organizerParticipantCount = Object.values(organizerStatusCounts).reduce((sum, count) => sum + count, 0);
+  const organizerActivity = organizerActivityId && organizerParticipantCount > 0 ? {
+    type: organizerType,
+    wasLiveAtEnd: !!activeOrganizer,
+    participantCount: organizerParticipantCount,
+    statusCounts: organizerStatusCounts,
+    followUpCodenames: organizerFollowUpCodenames.slice(0, 250),
+  } : null;
+  const summary = { schemaVersion: 2, id: String(sessionCode || ('session-' + endMs)), startedAt: createdAt, endedAt, durationMinutes, mode: mode === 'mailbox' ? 'mailbox' : 'firebase', resourceTitles, participants, unmatchedCodenames, absentCodenames, classGoals, liveActivities: liveActivityEvidence.activities, ...(organizerActivity ? { organizerActivity } : {}) };
+  return { ...summary, insightBrief: buildRosterSessionInsightBrief(summary) };
+};
+
+const shouldSaveRosterSessionSummary = (summary, note = '') => Boolean(summary && (
+  String(note || '').trim()
+  || (Array.isArray(summary.resourceTitles) && summary.resourceTitles.length > 0)
+  || (summary.participants && Object.keys(summary.participants).length > 0)
+  || (Array.isArray(summary.unmatchedCodenames) && summary.unmatchedCodenames.length > 0)
+  || (Array.isArray(summary.classGoals) && summary.classGoals.length > 0)
+  || (Array.isArray(summary.liveActivities) && summary.liveActivities.length > 0)
+  || !!summary.organizerActivity
+));
+
+const saveRosterSessionSummary = (rosterKey, summary, note = '', retentionLimit = 30) => {
+  if (!rosterKey || !summary?.id) return rosterKey;
+  const cleanNote = String(note || '').trim().slice(0, 500);
+  const savedSummary = cleanNote ? { ...summary, teacherNote: cleanNote } : summary;
+  const existing = Array.isArray(rosterKey.sessionHistory) ? rosterKey.sessionHistory : [];
+  if (!shouldSaveRosterSessionSummary(summary, cleanNote)) return rosterKey;
+  const sessionHistory = [...existing.filter(item => item?.id !== savedSummary.id), savedSummary].slice(-Math.max(1, retentionLimit));
+  const progressHistory = { ...(rosterKey.progressHistory || {}) };
+  Object.entries(savedSummary.participants || {}).forEach(([codename, participant]) => {
+    const previous = Array.isArray(progressHistory[codename]) ? progressHistory[codename] : [];
+    const entry = {
+      sessionId: savedSummary.id,
+      timestamp: savedSummary.endedAt,
+      groupId: participant.groupId || null,
+      responseCount: participant.responseCount || 0,
+      resourcesOpened: participant.resourcesOpened || 0,
+      liveActivityCount: participant.liveActivityCount || 0,
+      liveSubmissionCount: participant.liveSubmissionCount || 0,
+      liveRevisionCount: participant.liveRevisionCount || 0,
+      ...(participant.organizer ? { organizer: { ...participant.organizer } } : {}),
+    };
+    progressHistory[codename] = [...previous.filter(item => item?.sessionId !== savedSummary.id), entry].slice(-Math.max(1, retentionLimit));
+  });
+  return { ...rosterKey, sessionHistory, progressHistory };
+};
+
 function SessionModal({
   activeSessionAppId,
   activeSessionCode,

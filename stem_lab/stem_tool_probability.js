@@ -1517,7 +1517,7 @@ var d = (labToolData.probability) || {};
                   return React.createElement("div", { key: stat.label, style: { padding: '9px 10px', borderRadius: 10, background: isDark || isContrast ? 'rgba(15,23,42,0.68)' : 'rgba(255,255,255,0.78)', border: '1px solid ' + (isDark || isContrast ? 'rgba(148,163,184,0.22)' : '#e9d5ff') } },
                     React.createElement("div", { style: { color: isDark || isContrast ? '#e9d5ff' : '#5b21b6', fontSize: 17, fontWeight: 900 } }, stat.value),
                     React.createElement("div", { style: { marginTop: 2, color: isDark || isContrast ? '#cbd5e1' : '#475569', fontSize: 11, fontWeight: 800 } }, stat.label),
-                    React.createElement("div", { style: { marginTop: 1, color: isDark || isContrast ? '#94a3b8' : '#64748b', fontSize: 10 } }, stat.hint)
+                    React.createElement("div", { style: { marginTop: 1, color: isDark || isContrast ? '#94a3b8' : '#475569', fontSize: 10 } }, stat.hint)
                   );
                 })),
                 React.createElement("div", { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
@@ -1552,7 +1552,7 @@ var d = (labToolData.probability) || {};
                   var active = route.modes.indexOf(d.mode) >= 0;
                   return React.createElement("button", { key: route.title, onClick: function() { selectMode(route.action); }, className: "text-left rounded-lg transition-all", style: { padding: 10, border: '1px solid ' + (active ? '#7c3aed' : (isDark || isContrast ? 'rgba(148,163,184,0.22)' : '#e2e8f0')), background: active ? (isDark || isContrast ? 'rgba(124,58,237,0.24)' : '#f5f3ff') : (isDark || isContrast ? 'rgba(15,23,42,0.56)' : 'rgba(255,255,255,0.72)'), color: isDark || isContrast ? '#f8fafc' : '#1e293b' } },
                     React.createElement("div", { style: { fontSize: 12, fontWeight: 900, color: active ? (isDark || isContrast ? '#ddd6fe' : '#5b21b6') : (isDark || isContrast ? '#e2e8f0' : '#334155') } }, route.title),
-                    React.createElement("div", { style: { marginTop: 3, fontSize: 10, lineHeight: 1.35, color: isDark || isContrast ? '#cbd5e1' : '#64748b' } }, route.note)
+                    React.createElement("div", { style: { marginTop: 3, fontSize: 10, lineHeight: 1.35, color: isDark || isContrast ? '#cbd5e1' : '#475569' } }, route.note)
                   );
                 }))
               )
@@ -1605,11 +1605,11 @@ var d = (labToolData.probability) || {};
 
             // Mode selector
 
-            React.createElement("div", { className: "flex flex-wrap gap-2 mb-3" },
+            React.createElement("div", { className: "flex flex-wrap gap-2 mb-3", role: "group", "aria-label": "Probability experiment mode" },
 
               [['coin', '\uD83E\uDE99 Coin'], ['dice', '\uD83C\uDFB2 Dice'], ['dice2', '\uD83C\uDFB2\u00D72 Two-Dice Sum'], ['spinner', '\uD83C\uDFA1 Spinner'], ['sports', '\uD83C\uDFC6 Sports'], ['marbleBag', '\uD83C\uDFB1 Marble Bag'], ['custom', '\u2699\uFE0F Custom'], ['tree', '\uD83C\uDF33 Tree'], ['pi', '\uD83E\uDD67 Pi'], ['birthday', '\uD83C\uDF82 Birthday'], ['monty', '\uD83D\uDEAA Monty Hall'], ['galton', '\u2699\uFE0F Galton Board'], ['volume3d', '\uD83E\uDDCA 3D Volume']].map(([m, label]) =>
 
-                React.createElement("button", { "aria-label": "Select mode: " + label, key: m, onClick: function() { selectMode(m); }, className: "px-4 py-2 rounded-lg text-sm font-bold transition-all", style: { background: d.mode === m ? _btnBg : (isDark || isContrast ? 'rgba(139,92,246,0.1)' : '#f1f5f9'), color: d.mode === m ? _btnText : (isDark || isContrast ? '#c4b5fd' : '#475569'), boxShadow: d.mode === m ? '0 4px 6px -1px rgba(139,92,246,0.3)' : 'none' } }, label)
+                React.createElement("button", { "aria-label": "Select mode: " + label, "aria-pressed": d.mode === m, key: m, onClick: function() { selectMode(m); }, className: "px-4 py-2 rounded-lg text-sm font-bold transition-all", style: { background: d.mode === m ? _btnBg : (isDark || isContrast ? 'rgba(139,92,246,0.1)' : '#f1f5f9'), color: d.mode === m ? _btnText : (isDark || isContrast ? '#c4b5fd' : '#475569'), boxShadow: d.mode === m ? '0 4px 6px -1px rgba(139,92,246,0.3)' : 'none' } }, label)
 
               )
 
@@ -1627,7 +1627,7 @@ var d = (labToolData.probability) || {};
                            // correct English rather than keep serving the wrong reason.
                            hint: t('stem.probability.roll_two_dice_sum_monopoly_orange_39', 'Roll TWO dice of the chosen type and add. The sum is no longer uniform: middle sums are MUCH more common. For 2d6, P(7)=6/36, P(2)=1/36. It is why Monopoly\u2019s orange properties get landed on more than any other colour group: they sit 6, 8 and 9 steps past Jail, and those three sums come up 14 times in 36 \u2014 so a player leaving Jail hits orange nearly 39% of the time.') },
                 spinner:   { accent: '#9333ea', soft: 'rgba(147,51,234,0.10)',  icon: '\uD83C\uDFA1', title: t('stem.probability.spinner_4_color_uniform', 'Spinner \u2014 4-color uniform'),                    hint: t('stem.probability.equal_area_sectors_equal_probability_u', 'Equal-area sectors = equal probability. Unequal sectors → weighted draws. Spinners are the gentlest path into discrete distributions for elementary students.') },
-                sports:    { accent: '#0891b2', soft: 'rgba(8,145,178,0.10)',   icon: '\uD83C\uDFC6', title: t('stem.probability.sports_weighted_real_world_odds', 'Sports \u2014 weighted real-world odds'),             hint: t('stem.probability.free_throw_77_nba_3_point_36_mlb_hit_2', 'Free-throw 77%, NBA 3-point 36%, MLB hit ~25%. Probability isn\u2019t always 50/50 \u2014 the math handles unequal weights the same way, just with different denominators.') },
+                sports:    { accent: '#0e7490', soft: 'rgba(8,145,178,0.10)',   icon: '\uD83C\uDFC6', title: t('stem.probability.sports_weighted_real_world_odds', 'Sports \u2014 weighted real-world odds'),             hint: t('stem.probability.free_throw_77_nba_3_point_36_mlb_hit_2', 'Free-throw 77%, NBA 3-point 36%, MLB hit ~25%. Probability isn\u2019t always 50/50 \u2014 the math handles unequal weights the same way, just with different denominators.') },
                 marbleBag: { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)',  icon: '\uD83C\uDFB1', title: t('stem.probability.marble_bag_with_vs_without_replacement', 'Marble Bag \u2014 with vs without replacement'),     hint: t('stem.probability.with_replacement_independent_draws_wit', 'With replacement: independent draws. Without: probabilities CHANGE each pull \u2014 conditional probability. The exact mechanism behind hypergeometric distribution and card-game odds.') },
                 custom:    { accent: '#d97706', soft: 'rgba(217,119,6,0.10)',   icon: '\u2699',         title: t('stem.probability.custom_design_your_own_outcome_set', 'Custom \u2014 design your own outcome set'),         hint: t('stem.probability.build_any_discrete_distribution_test_t', 'Build any discrete distribution. Test the law of large numbers with skewed odds, demonstrate that simulations can answer ANY closed-form question if you have enough trials. Monte Carlo in miniature.') },
                 tree:      { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)',   icon: '\uD83C\uDF33', title: t('stem.probability.tree_multi_stage_probability', 'Tree \u2014 multi-stage probability'),                 hint: t('stem.probability.multiply_along_branches_add_across_lea', 'Multiply along branches; add across leaves. Two coin flips: HH HT TH TT each 0.25. Tree diagrams scale up to medical-test base-rate problems and Bayes\u2019 theorem.') },
@@ -1928,7 +1928,7 @@ var d = (labToolData.probability) || {};
 
                   customOutcomes.map(function (o, i) {
 
-                    return React.createElement("div", { key: i, className: "flex items-center gap-2 bg-white/60 rounded-lg p-2" },
+                    return React.createElement("div", { key: i, className: "flex flex-wrap items-center gap-2 bg-white/60 rounded-lg p-2" },
 
                       React.createElement("input", { type: "color", value: o.color, 'aria-label': 'Color for outcome ' + (o.label || (i + 1)), onChange: function (e) { var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { color: e.target.value }); setProbabilityOutcomes(co); }, className: "w-7 h-7 rounded border-0 cursor-pointer flex-shrink-0" }),
 
@@ -2026,15 +2026,15 @@ var d = (labToolData.probability) || {};
 
                   customOutcomes.map(function (o, i) {
 
-                    return React.createElement("div", { key: i, className: "flex items-center gap-2" },
+                    return React.createElement("div", { key: i, className: "flex flex-wrap items-center gap-2" },
 
                       React.createElement("input", { type: "color", value: o.color, 'aria-label': 'Color for outcome ' + (o.label || (i + 1)), onChange: function (e) { var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { color: e.target.value }); setProbabilityOutcomes(co); }, className: "w-8 h-8 rounded border-0 cursor-pointer" }),
 
-                      React.createElement("input", { type: "text", value: o.label, placeholder: "Outcome " + (i + 1), 'aria-label': 'Name for outcome ' + (i + 1), onChange: function (e) { var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { label: e.target.value }); setProbabilityOutcomes(co); }, className: "flex-1 px-2 py-1.5 rounded-lg border border-amber-600 text-sm font-bold" }),
+                      React.createElement("input", { type: "text", value: o.label, placeholder: "Outcome " + (i + 1), 'aria-label': 'Name for outcome ' + (i + 1), onChange: function (e) { var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { label: e.target.value }); setProbabilityOutcomes(co); }, className: "min-w-0 flex-1 basis-32 px-2 py-1.5 rounded-lg border border-amber-600 text-sm font-bold" }),
 
-                      React.createElement("div", { className: "flex items-center gap-1" },
+                      React.createElement("div", { className: "flex min-w-0 flex-1 basis-32 items-center gap-1" },
 
-                        React.createElement("input", { type: "range", min: 1, max: 99, value: Math.round(o.prob * 100), 'aria-label': 'Probability for outcome ' + (o.label || (i + 1)), onChange: function (e) { var newProb = parseInt(e.target.value) / 100; var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { prob: newProb }); var remaining = 1 - newProb; var otherTotal = co.reduce(function (s, c, j) { return j === i ? s : s + c.prob; }, 0); if (otherTotal > 0) { co.forEach(function (c, j) { if (j !== i) co[j] = Object.assign({}, c, { prob: c.prob / otherTotal * remaining }); }); } setProbabilityOutcomes(co); }, className: "w-20 accent-amber-600" }),
+                        React.createElement("input", { type: "range", min: 1, max: 99, value: Math.round(o.prob * 100), 'aria-label': 'Probability for outcome ' + (o.label || (i + 1)), onChange: function (e) { var newProb = parseInt(e.target.value) / 100; var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { prob: newProb }); var remaining = 1 - newProb; var otherTotal = co.reduce(function (s, c, j) { return j === i ? s : s + c.prob; }, 0); if (otherTotal > 0) { co.forEach(function (c, j) { if (j !== i) co[j] = Object.assign({}, c, { prob: c.prob / otherTotal * remaining }); }); } setProbabilityOutcomes(co); }, className: "h-6 min-w-0 flex-1 accent-amber-600" }),
 
                         React.createElement("span", { className: "w-10 text-xs font-mono text-amber-700 text-right" }, Math.round(o.prob * 100) + '%')
 
@@ -2683,7 +2683,7 @@ var d = (labToolData.probability) || {};
                 return h('div', { style: statBox },
                   h('div', { className: 'text-[10px] font-bold uppercase tracking-wider', style: { color: head } }, label),
                   h('div', { className: 'text-lg font-black font-mono', style: { color: body } }, value),
-                  sub ? h('div', { className: 'text-[10px]', style: { color: isDark || isContrast ? '#94a3b8' : '#64748b' } }, sub) : null
+                  sub ? h('div', { className: 'text-[10px]', style: { color: isDark || isContrast ? '#94a3b8' : '#475569' } }, sub) : null
                 );
               }
 
@@ -2731,7 +2731,7 @@ var d = (labToolData.probability) || {};
                             'aria-keyshortcuts': 'ArrowLeft ArrowRight ArrowUp ArrowDown Plus Minus',
                             style: { outlineOffset: '2px' }
                           }),
-                          h('div', { className: 'text-[10px] text-center py-1', style: { color: isDark || isContrast ? '#94a3b8' : '#64748b' } },
+                          h('div', { className: 'text-[10px] text-center py-1', style: { color: isDark || isContrast ? '#94a3b8' : '#475569' } },
                             t('stem.probability.volume3d_drag', 'Drag to rotate · scroll to zoom · or focus the view and use arrow keys, + and −'))
                         )
                       : h('div', { className: 'rounded-lg p-4 text-center text-xs', style: { border: '1px dashed ' + (isDark || isContrast ? 'rgba(100,116,139,0.5)' : '#cbd5e1'), color: body, minHeight: 120 } },
@@ -2775,7 +2775,7 @@ var d = (labToolData.probability) || {};
                   h('label', { className: 'flex items-center gap-1 text-[11px] font-bold cursor-pointer ml-auto', style: { color: body } },
                     h('input', { type: 'checkbox', checked: showMiss, onChange: function(e) { upd('v3ShowMiss', e.target.checked); }, className: 'w-3 h-3' }),
                     t('stem.probability.volume3d_show_misses', 'show misses')),
-                  cloud.length >= 2400 * 4 && h('span', { className: 'text-[10px] italic w-full', style: { color: isDark || isContrast ? '#94a3b8' : '#64748b' } },
+                  cloud.length >= 2400 * 4 && h('span', { className: 'text-[10px] italic w-full', style: { color: isDark || isContrast ? '#94a3b8' : '#475569' } },
                     t('stem.probability.volume3d_cloud_cap', 'The picture shows the most recent 2,400 darts so it stays readable — every dart still counts toward the numbers.'))
                 ),
 
@@ -2809,7 +2809,7 @@ var d = (labToolData.probability) || {};
 
               var _bpct = (_bprob * 100).toFixed(1);
 
-              var _bColor = parseFloat(_bpct) >= 50 ? '#16a34a' : '#b45309';
+              var _bColor = parseFloat(_bpct) >= 50 ? '#166534' : '#b45309';
 
               var _bTable = [2, 5, 10, 15, 20, 23, 30, 40, 50, 57].map(function(nb) {
 
@@ -2831,7 +2831,7 @@ var d = (labToolData.probability) || {};
 
                   React.createElement("span", { className: "text-xs font-bold w-24 flex-shrink-0", style: { color: isDark||isContrast?'#fbbf24':'#b45309' } }, '👥 ' + _bn + ' people'),
 
-                  React.createElement("input", { type: "range", min: 2, max: 70, value: _bn, 'aria-label': t('stem.probability.number_of_people_in_room', 'Number of people in room'), onChange: function(e) { upd('birthdayN', parseInt(e.target.value)); }, className: "flex-1", style: { accentColor: '#f59e0b' } })
+                  React.createElement("input", { type: "range", min: 2, max: 70, value: _bn, 'aria-label': t('stem.probability.number_of_people_in_room', 'Number of people in room'), onChange: function(e) { upd('birthdayN', parseInt(e.target.value)); }, className: "min-w-0 flex-1", style: { accentColor: '#f59e0b' } })
 
                 ),
 
@@ -2863,7 +2863,7 @@ var d = (labToolData.probability) || {};
 
                     for (var _mk = 0; _mk < mn && _mk < 365; _mk++) mpb *= (365 - _mk) / 365;
 
-                    return React.createElement("button", { "aria-label": "Set group size to " + mn + " people", key: mn, onClick: function() { upd('birthdayN', mn); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all", style: { background: _bn === mn ? '#f59e0b' : (isDark||isContrast?'rgba(251,191,36,0.1)':'#fef9c3'), color: _bn === mn ? '#fff' : (isDark||isContrast?'#fbbf24':'#92400e'), border: '1px solid '+(isDark||isContrast?'rgba(251,191,36,0.2)':'#fde68a'), boxShadow: _bn === mn ? '0 2px 8px rgba(245,158,11,0.3)' : 'none' } }, 'n=' + mn + ' → ' + ((1 - mpb) * 100).toFixed(0) + '%');
+                    return React.createElement("button", { "aria-label": "Set group size to " + mn + " people", key: mn, onClick: function() { upd('birthdayN', mn); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all", style: { background: _bn === mn ? '#b45309' : (isDark||isContrast?'rgba(251,191,36,0.1)':'#fef9c3'), color: _bn === mn ? '#fff' : (isDark||isContrast?'#fbbf24':'#92400e'), border: '1px solid '+(isDark||isContrast?'rgba(251,191,36,0.2)':'#fde68a'), boxShadow: _bn === mn ? '0 2px 8px rgba(180,83,9,0.3)' : 'none' } }, 'n=' + mn + ' → ' + ((1 - mpb) * 100).toFixed(0) + '%');
 
                   })
 
@@ -2889,7 +2889,7 @@ var d = (labToolData.probability) || {};
 
                           React.createElement("td", { className: "px-3 py-1 font-bold font-mono", style:{color:_bn===row.n?'#b45309':_text} }, row.n + (_bn===row.n?' ◄':'')),
 
-                          React.createElement("td", { className: "px-3 py-1 text-right font-bold font-mono", style:{color:row.over50?'#16a34a':'#b45309'} }, row.pct + '%')
+                          React.createElement("td", { className: "px-3 py-1 text-right font-bold font-mono", style:{color:row.over50?'#166534':'#b45309'} }, row.pct + '%')
 
                         );
 
@@ -2931,7 +2931,7 @@ var d = (labToolData.probability) || {};
                   var matchGroups = Object.keys(groups).filter(function(k) { return groups[k].length >= 2; });
                   var anyMatch = matchGroups.length > 0;
                   // Color palette for match groups
-                  var matchColors = ['#dc2626', '#16a34a', '#7c3aed', '#ea580c', '#0891b2', '#db2777', '#65a30d', '#7e22ce'];
+                  var matchColors = ['#991b1b', '#166534', '#6b21a8', '#9a3412', '#155e75', '#9d174d', '#3f6212', '#581c87'];
                   function colorForBday(idx) {
                     var bday = sample[idx];
                     if (groups[bday].length < 2) return null;
@@ -2990,7 +2990,7 @@ var d = (labToolData.probability) || {};
                         : React.createElement('span', { className: 'text-[11px] font-bold px-2 py-1 rounded-full', style: { background: '#fbbf24', color: '#000' } }, t('stem.probability.no_matches_this_time', 'No matches this time'))
                     ),
                     // Avatar grid
-                    React.createElement('div', { className: 'mb-2', style: { display: 'grid', gridTemplateColumns: 'repeat(' + cols + ', 1fr)', gap: '4px' } },
+                    React.createElement('div', { className: 'mb-2', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(42px, 1fr))', gap: '4px' } },
                       sample.map(function(bday, idx) {
                         var mColor = colorForBday(idx);
                         var matched = mColor !== null;
@@ -3025,7 +3025,7 @@ var d = (labToolData.probability) || {};
                       }, t('stem.probability.run_100_rooms', '⚡ Run 100 rooms')),
                       batch.runs > 0 && React.createElement('div', { className: 'flex-1 text-[11px]', style: { color: isDark||isContrast?'#fde68a':'#92400e' } },
                         React.createElement('span', { className: 'font-bold' }, '📊 ' + batch.matches + ' / ' + batch.runs + ' rooms had a match'),
-                        React.createElement('span', { className: 'ml-2 font-mono font-bold', style: { color: '#16a34a' } }, '(' + batchPct + '%)'),
+                        React.createElement('span', { className: 'ml-2 font-mono font-bold', style: { color: isDark||isContrast?'#86efac':'#166534' } }, '(' + batchPct + '%)'),
                         React.createElement('span', { className: 'ml-1 italic' }, '— theory says ' + _bpct + '%')
                       ),
                       batch.runs > 0 && React.createElement('button', {
@@ -3115,27 +3115,37 @@ var d = (labToolData.probability) || {};
               else if (_treeMode === 'dice') { _treeOutcomes = [1,2,3,4,5,6].map(function(n,i){ return {label:String(n),prob:1/6,color:['#ef4444','#f97316','#eab308','#22c55e','#3b82f6','#8b5cf6'][i]}; }); }
               else if (_treeMode === 'sports') { _treeOutcomes = activeSport.outcomes.map(function(o,i){ return {label:o,prob:activeSport.probs[i],color:activeSport.colors[i]}; }); }
               else { _treeOutcomes = customOutcomes.slice(0, 4).map(function(o){ return {label:o.label,prob:o.prob,color:o.color}; }); }
+              function _treeTextOn(background) {
+                var match = String(background || '').match(/#([0-9a-f]{6})/i);
+                if (!match) return '#111827';
+                var rgb = [0, 2, 4].map(function(offset) {
+                  var channel = parseInt(match[1].slice(offset, offset + 2), 16) / 255;
+                  return channel <= 0.04045 ? channel / 12.92 : Math.pow((channel + 0.055) / 1.055, 2.4);
+                });
+                var luminance = 0.2126 * rgb[0] + 0.7152 * rgb[1] + 0.0722 * rgb[2];
+                return luminance > 0.179 ? '#111827' : '#ffffff';
+              }
               var _showFull = _treeOutcomes.length <= 3;
               var _pairs = [];
               _treeOutcomes.forEach(function(a){ _treeOutcomes.forEach(function(b){ _pairs.push({a:a,b:b,joint:a.prob*b.prob}); }); });
               return React.createElement("div", { className: "mb-4 rounded-xl p-4", style: { background: isDark || isContrast ? 'rgba(139,92,246,0.06)' : '#faf5ff', border: '1px solid ' + (isDark || isContrast ? 'rgba(139,92,246,0.25)' : '#ddd6fe') } },
                 React.createElement("p", { className: "text-xs font-bold uppercase tracking-wider mb-3", style: { color: isDark || isContrast ? '#c4b5fd' : '#7c3aed' } }, t('stem.probability.two_event_compound_probability_tree', '\uD83C\uDF33 Two-Event Compound Probability Tree')),
                 React.createElement("div", { className: "flex flex-wrap gap-1 mb-3" },
-                  _treeModes.map(function(pair){ return React.createElement("button", { key: pair[0], onClick: function(){ upd('treeEventMode', pair[0]); }, className: "px-3 py-1 rounded-lg text-xs font-bold transition-all", style: { background: _treeMode===pair[0] ? (isDark||isContrast?'#7c3aed':'#8b5cf6') : (isDark||isContrast?'rgba(139,92,246,0.1)':'#ede9fe'), color: _treeMode===pair[0] ? '#fff' : (isDark||isContrast?'#c4b5fd':'#6d28d9') } }, pair[1]); })
+                  _treeModes.map(function(pair){ return React.createElement("button", { key: pair[0], onClick: function(){ upd('treeEventMode', pair[0]); }, className: "px-3 py-1 rounded-lg text-xs font-bold transition-all", style: { background: _treeMode===pair[0] ? (isDark||isContrast?'#7c3aed':'#6d28d9') : (isDark||isContrast?'rgba(139,92,246,0.1)':'#ede9fe'), color: _treeMode===pair[0] ? '#fff' : (isDark||isContrast?'#c4b5fd':'#6d28d9') } }, pair[1]); })
                 ),
                 _treeMode === 'sports' && React.createElement("p", { className: "text-[11px] italic mb-2", style: { color: isDark||isContrast?'#a5b4fc':'#6d28d9' } }, '\uD83C\uDFC6 Using: ' + activeSport.label + ' \u2014 ' + activeSport.desc),
                 React.createElement("div", { className: "overflow-x-auto" },
                   React.createElement("div", { style: { display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'center' } },
                     _treeOutcomes.map(function(a) {
                       return React.createElement("div", { key: a.label, style: { display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'center' } },
-                        React.createElement("div", { style: { background: a.color, color: '#fff', borderRadius: '8px', padding: '6px 10px', fontSize: '11px', fontWeight: 700, textAlign: 'center', minWidth: '60px', boxShadow: '0 2px 6px ' + a.color + '60' } },
+                        React.createElement("div", { style: { background: a.color, color: _treeTextOn(a.color), borderRadius: '8px', padding: '6px 10px', fontSize: '11px', fontWeight: 700, textAlign: 'center', minWidth: '60px', boxShadow: '0 2px 6px ' + a.color + '60' } },
                           a.label + '\n' + (a.prob*100).toFixed(1) + '%'
                         ),
                         React.createElement("div", { style: { display: 'flex', gap: '3px', flexWrap: 'wrap', justifyContent: 'center', maxWidth: '280px' } },
                           _treeOutcomes.map(function(b) {
                             var joint = a.prob * b.prob;
                             return React.createElement("div", { key: b.label, style: { background: isDark||isContrast?'rgba(255,255,255,0.05)':'#fff', border: '2px solid ' + b.color, borderRadius: '6px', padding: '4px 6px', fontSize: '10px', fontWeight: 700, textAlign: 'center', minWidth: '52px' } },
-                              React.createElement("span", { style: { color: b.color } }, b.label),
+                              React.createElement("span", { style: { color: isDark||isContrast?'#e2e8f0':'#1e293b' } }, b.label),
                               React.createElement("br"),
                               React.createElement("span", { style: { color: isDark||isContrast?'#e2e8f0':'#1e293b', fontFamily: 'monospace' } }, (joint*100).toFixed(1) + '%')
                             );
@@ -3317,7 +3327,7 @@ var d = (labToolData.probability) || {};
 
                   return React.createElement("div", { key: k, className: "flex items-center gap-2" },
 
-                    React.createElement("span", { className: "w-14 text-right text-sm font-bold", style: { color: barColors[k] || '#6366f1' } },
+                    React.createElement("span", { className: "w-14 text-right text-sm font-bold", style: { color: _text } },
 
                       d.mode === 'coin' ? (k === 'H' ? '\uD83E\uDE99 H' : '\uD83E\uDE99 T') :
 
@@ -3339,7 +3349,7 @@ var d = (labToolData.probability) || {};
 
                     React.createElement("span", { className: "w-24 text-xs font-mono text-slate-600 text-right" }, count + " (" + pct.toFixed(1) + "%)"),
 
-                    React.createElement("span", { className: "w-16 text-[11px] font-bold " + (Math.abs(pct - expPct) < 3 ? 'text-emerald-500' : Math.abs(pct - expPct) < 8 ? 'text-amber-500' : 'text-red-500') }, (pct > expPct ? '+' : '') + (pct - expPct).toFixed(1) + '%')
+                    React.createElement("span", { className: "w-16 text-[11px] font-bold", style: { color: Math.abs(pct - expPct) < 3 ? (isDark||isContrast?'#86efac':'#047857') : Math.abs(pct - expPct) < 8 ? (isDark||isContrast?'#fcd34d':'#b45309') : (isDark||isContrast?'#fca5a5':'#b91c1c') } }, (pct > expPct ? '+' : '') + (pct - expPct).toFixed(1) + '%')
 
                   );
 
@@ -3405,7 +3415,7 @@ var d = (labToolData.probability) || {};
 
                 React.createElement("div", { className: "p-1.5 bg-white rounded-lg border" },
 
-                  React.createElement("p", { className: "text-[11px] font-bold text-violet-500" }, t('stem.probability.total_trials', "Total Trials")),
+                  React.createElement("p", { className: "text-[11px] font-bold text-violet-700" }, t('stem.probability.total_trials', "Total Trials")),
 
                   React.createElement("p", { className: "text-lg font-black text-violet-800" }, d.trials)
 
@@ -3413,7 +3423,7 @@ var d = (labToolData.probability) || {};
 
                 React.createElement("div", { className: "p-1.5 bg-white rounded-lg border" },
 
-                  React.createElement("p", { className: "text-[11px] font-bold text-violet-500" }, t('stem.probability.max_deviation', "Max Deviation")),
+                  React.createElement("p", { className: "text-[11px] font-bold text-violet-700" }, t('stem.probability.max_deviation', "Max Deviation")),
 
                   React.createElement("p", { className: "text-lg font-black text-violet-800" }, (function () {
 
@@ -3437,7 +3447,7 @@ var d = (labToolData.probability) || {};
 
                 React.createElement("div", { className: "p-1.5 bg-white rounded-lg border" },
 
-                  React.createElement("p", { className: "text-[11px] font-bold text-violet-500" }, t('stem.probability.statistic', "\u03C7\u00B2 Statistic")),
+                  React.createElement("p", { className: "text-[11px] font-bold text-violet-700" }, t('stem.probability.statistic', "\u03C7\u00B2 Statistic")),
 
                   React.createElement("p", { className: "text-lg font-black " + chiTone }, chiSq.toFixed(2)),
 
@@ -3447,7 +3457,7 @@ var d = (labToolData.probability) || {};
 
                 React.createElement("div", { className: "p-1.5 bg-white rounded-lg border" },
 
-                  React.createElement("p", { className: "text-[11px] font-bold text-violet-500" }, t('stem.probability.fairness_0_05', "Fairness (\u03B1=0.05)")),
+                  React.createElement("p", { className: "text-[11px] font-bold text-violet-700" }, t('stem.probability.fairness_0_05', "Fairness (\u03B1=0.05)")),
 
                   React.createElement("p", { className: "text-lg font-black " + chiTone },
                     !chiIndependent ? '\uD83D\uDEAB ' + t('stem.probability.chi_na', 'N/A here')
@@ -3568,7 +3578,7 @@ var d = (labToolData.probability) || {};
 
                 React.createElement("div", { className: "flex-1" },
 
-                  React.createElement("p", { className: "text-[11px] font-bold text-center mb-2", style: { color: isDark || isContrast ? '#86efac' : '#16a34a' } }, "\uD83D\uDD2C Observed (" + d.trials + " trials)"),
+                  React.createElement("p", { className: "text-[11px] font-bold text-center mb-2", style: { color: isDark || isContrast ? '#86efac' : '#047857' } }, "\uD83D\uDD2C Observed (" + d.trials + " trials)"),
 
                   React.createElement("div", { className: "space-y-1.5" },
 
@@ -3592,7 +3602,7 @@ var d = (labToolData.probability) || {};
 
                         ),
 
-                        React.createElement("span", { className: "text-[11px] font-mono w-10 text-right font-bold", style: { color: Math.abs(diff) < 3 ? (isDark || isContrast ? '#86efac' : '#16a34a') : Math.abs(diff) < 8 ? '#f59e0b' : '#ef4444' } }, obsPct.toFixed(1) + '%')
+                        React.createElement("span", { className: "text-[11px] font-mono w-10 text-right font-bold", style: { color: Math.abs(diff) < 3 ? (isDark || isContrast ? '#86efac' : '#047857') : Math.abs(diff) < 8 ? (isDark||isContrast?'#fcd34d':'#b45309') : (isDark||isContrast?'#fca5a5':'#b91c1c') } }, obsPct.toFixed(1) + '%')
 
                       );
 
@@ -3627,7 +3637,11 @@ var d = (labToolData.probability) || {};
 
               var _piErrV = _piTotV > 0 ? piError : 0;
 
-              var _piErrCol = _piErrV < 0.02 ? '#16a34a' : _piErrV < 0.1 ? '#f59e0b' : '#ef4444';
+              var _piErrCol = _piErrV < 0.02
+                ? (isDark||isContrast?'#86efac':'#047857')
+                : _piErrV < 0.1
+                  ? (isDark||isContrast?'#fcd34d':'#b45309')
+                  : (isDark||isContrast?'#fca5a5':'#b91c1c');
 
               return React.createElement("div", { className: "rounded-xl p-3 mb-3", style: { background: _cardBg, border: '1px solid ' + _border } },
 
@@ -3669,7 +3683,7 @@ var d = (labToolData.probability) || {};
 
                       React.createElement("div", { className:"p-1 rounded", style:{background:'#22c55e20'} },
 
-                        React.createElement("p", { className:"font-bold text-emerald-600" }, t('stem.probability.inside', '🟢 Inside')),
+                        React.createElement("p", { className:"font-bold", style:{color:isDark||isContrast?'#86efac':'#047857'} }, t('stem.probability.inside', '🟢 Inside')),
 
                         React.createElement("p", { className:"font-mono font-bold text-emerald-700" }, _piInV)
 
@@ -3677,7 +3691,7 @@ var d = (labToolData.probability) || {};
 
                       React.createElement("div", { className:"p-1 rounded", style:{background:'#ef444420'} },
 
-                        React.createElement("p", { className:"font-bold text-red-500" }, t('stem.probability.outside', '🔴 Outside')),
+                        React.createElement("p", { className:"font-bold", style:{color:isDark||isContrast?'#fca5a5':'#b91c1c'} }, t('stem.probability.outside', '🔴 Outside')),
 
                         React.createElement("p", { className:"font-mono font-bold text-red-600" }, _piTotV - _piInV)
 
@@ -3983,10 +3997,10 @@ var d = (labToolData.probability) || {};
                 else if (normLow > normHigh + 0.10 || normHigh > normLow + 0.10) shape = 'skewed';
                 else shape = 'mixed';
                 var shapeMeta = {
-                  uniform: { label: t('stem.probability.uniform_flat', '\u2B1B Uniform (flat)'),  color: '#0891b2', bg: 'rgba(8,145,178,0.08)', border: '#67e8f9', desc: t('stem.probability.all_outcomes_nearly_equal_in_probabili', 'All outcomes nearly equal in probability.') },
+                  uniform: { label: t('stem.probability.uniform_flat', '\u2B1B Uniform (flat)'),  color: '#0e7490', bg: 'rgba(8,145,178,0.08)', border: '#67e8f9', desc: t('stem.probability.all_outcomes_nearly_equal_in_probabili', 'All outcomes nearly equal in probability.') },
                   peaked:  { label: t('stem.probability.peaked_center', '\uD83D\uDD3A Peaked (center)'), color: '#7c3aed', bg: 'rgba(124,58,237,0.08)', border: '#c4b5fd', desc: t('stem.probability.middle_outcome_dominates_approaches_no', 'Middle outcome dominates. Approaches normal-like shape with more buckets.') },
                   skewed:  { label: t('stem.probability.skewed', '\u2197\uFE0F Skewed'),          color: '#f59e0b', bg: 'rgba(245,158,11,0.08)', border: '#fcd34d', desc: t('stem.probability.one_tail_much_heavier_than_the_other_a', 'One tail much heavier than the other. Asymmetric distribution.') },
-                  mixed:   { label: t('stem.probability.mixed', '\uD83D\uDD00 Mixed'),           color: '#64748b', bg: 'rgba(100,116,139,0.08)', border: '#cbd5e1', desc: t('stem.probability.two_outcomes_share_roughly_equal_proba', 'Two outcomes share roughly equal probability with the third much lower or higher.') }
+                  mixed:   { label: t('stem.probability.mixed', '\uD83D\uDD00 Mixed'),           color: '#475569', bg: 'rgba(100,116,139,0.08)', border: '#cbd5e1', desc: t('stem.probability.two_outcomes_share_roughly_equal_proba', 'Two outcomes share roughly equal probability with the third much lower or higher.') }
                 }[shape];
                 // ── Live sample dataset ──────────────────────────────────────
                 // The sliders used to move nothing but a text label, so "sweep and
@@ -4032,13 +4046,13 @@ var d = (labToolData.probability) || {};
                   setIQ({ log: (iq.log || []).concat([{ l: iq.pLow, m: iq.pMid, hi: iq.pHigh, sh: shape, obs: sampleCounts.join('/') }]).slice(-8) });
                 }
                 return h('div', { className: 'rounded-xl border p-3 mt-3', style: { background: isDark||isContrast?'rgba(8,145,178,0.06)':'#f0fdfa', borderColor: isDark||isContrast?'rgba(8,145,178,0.3)':'#a5f3fc' } },
-                  h('p', { className: 'text-[11px] font-bold uppercase tracking-wider mb-1', style: { color: isDark||isContrast?'#67e8f9':'#0891b2' } }, t('stem.probability.distribution_shape_discovery', '\u2754 Distribution shape discovery')),
+                  h('p', { className: 'text-[11px] font-bold uppercase tracking-wider mb-1', style: { color: isDark||isContrast?'#67e8f9':'#0e7490' } }, t('stem.probability.distribution_shape_discovery', '\u2754 Distribution shape discovery')),
                   h('p', { className: 'text-[11px] leading-relaxed mb-2', style: { color: isDark||isContrast?'#cbd5e1':'#475569' } },
                     t('stem.probability.three_sliders_set_the_relative_probabi', 'Three sliders set the relative probabilities of low / mid / high outcomes. The distribution shape is classified into one of four discrete shapes. No score, no reveal \u2014 sweep and notice.')),
                   h('div', { className: 'mb-2 p-2 rounded text-center', style: { background: shapeMeta.bg, border: '1px solid ' + shapeMeta.border } },
                     h('div', { className: 'text-sm font-black', style: { color: shapeMeta.color } }, shapeMeta.label),
                     h('div', { className: 'text-[10px] mt-1', style: { color: isDark||isContrast?'#cbd5e1':'#475569' } }, shapeMeta.desc),
-                    h('div', { className: 'text-[10px] mt-1 font-mono', style: { color: isDark||isContrast?'#94a3b8':'#64748b' } }, 'P(low)=' + (normLow*100).toFixed(0) + '%  P(mid)=' + (normMid*100).toFixed(0) + '%  P(high)=' + (normHigh*100).toFixed(0) + '%')
+                    h('div', { className: 'text-[10px] mt-1 font-mono', style: { color: isDark||isContrast?'#94a3b8':'#475569' } }, 'P(low)=' + (normLow*100).toFixed(0) + '%  P(mid)=' + (normMid*100).toFixed(0) + '%  P(high)=' + (normHigh*100).toFixed(0) + '%')
                   ),
                   // Expected (dashed rule) vs observed (solid bar) + the raw 60 draws.
                   h('div', { className: 'mb-2 p-2 rounded', style: { background: isDark||isContrast?'rgba(15,23,42,0.55)':'#ffffff', border: '1px solid ' + (isDark||isContrast?'rgba(100,116,139,0.4)':'#cbd5e1') } },
@@ -4069,7 +4083,7 @@ var d = (labToolData.probability) || {};
                         return h('span', { key: 'dw' + di, style: { display: 'inline-block', width: 8, height: 8, borderRadius: 2, background: BUCKETS[bk].color } });
                       })
                     ),
-                    h('p', { className: 'text-[10px] leading-snug mt-1', style: { color: isDark||isContrast?'#94a3b8':'#64748b' } },
+                    h('p', { className: 'text-[10px] leading-snug mt-1', style: { color: isDark||isContrast?'#94a3b8':'#475569' } },
                       t('stem.probability.dashed_expected_bar_observed', 'Dashed rule = expected. Bar = what these draws actually gave. Each square is one draw. Move a slider and both change together.'))
                   ),
                   h('div', { className: 'grid grid-cols-3 gap-2 mb-2' },
@@ -4080,7 +4094,7 @@ var d = (labToolData.probability) || {};
                     ].map(function(s) {
                       return h('div', { key: s.key },
                         h('label', { htmlFor: 'dh-' + s.key, className: 'block text-[10px] font-bold mb-0.5', style: { color: isDark||isContrast?'#cbd5e1':'#475569' } },
-                          s.label + ': ', h('span', { className: 'font-mono', style: { color: isDark||isContrast?'#67e8f9':'#0891b2' } }, s.val)),
+                          s.label + ': ', h('span', { className: 'font-mono', style: { color: isDark||isContrast?'#67e8f9':'#0e7490' } }, s.val)),
                         h('input', { id: 'dh-' + s.key, type: 'range', min: 0, max: 100, step: 1, value: s.val,
                           onChange: function(e) { var p = {}; p[s.key] = parseInt(e.target.value, 10); setIQ(p); },
                           className: 'w-full', 'aria-label': s.label }));
@@ -4089,8 +4103,8 @@ var d = (labToolData.probability) || {};
                   h('div', { className: 'flex gap-2 items-center mb-2 flex-wrap' },
                     h('button', { onClick: logObs, className: 'px-2 py-0.5 rounded text-[10px] font-bold', style: { background: isDark||isContrast?'rgba(8,145,178,0.2)':'#cffafe', color: isDark||isContrast?'#67e8f9':'#155e75' } }, t('stem.probability.log', '\uD83D\uDCCB Log')),
                     h('button', { onClick: function() { setIQ({ pLow: 33, pMid: 34, pHigh: 33, sampleNonce: 0, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); },
-                      className: 'px-2 py-0.5 rounded text-[10px] font-semibold border', style: { color: isDark||isContrast?'#94a3b8':'#64748b', borderColor: isDark||isContrast?'rgba(100,116,139,0.4)':'#cbd5e1' } }, t('stem.probability.reset_3', '\u21BA Reset')),
-                    (iq.log || []).length > 0 && h('span', { className: 'text-[10px] italic', style: { color: isDark||isContrast?'#94a3b8':'#64748b' } }, (iq.log || []).length + ' logged')
+                      className: 'px-2 py-0.5 rounded text-[10px] font-semibold border', style: { color: isDark||isContrast?'#94a3b8':'#475569', borderColor: isDark||isContrast?'rgba(100,116,139,0.4)':'#cbd5e1' } }, t('stem.probability.reset_3', '\u21BA Reset')),
+                    (iq.log || []).length > 0 && h('span', { className: 'text-[10px] italic', style: { color: isDark||isContrast?'#94a3b8':'#475569' } }, (iq.log || []).length + ' logged')
                   ),
                   (iq.log || []).length > 0 && h('table', { className: 'text-[10px] w-full border-collapse mb-2', style: { color: isDark||isContrast?'#cbd5e1':'#475569' } },
                     h('thead', null, h('tr', { style: { background: isDark||isContrast?'rgba(8,145,178,0.15)':'#cffafe' } },
@@ -4115,13 +4129,13 @@ var d = (labToolData.probability) || {};
                       h('li', null, t('stem.probability.find_two_settings_that_produce_the_sam', 'Find two settings that produce the same shape.')),
                       h('li', null, t('stem.probability.what_raw_weights_produce_a_peaked_shap', 'What raw weights produce a peaked shape?')))),
                   h('div', { className: 'p-2 rounded', style: { background: isDark||isContrast?'rgba(16,185,129,0.08)':'#ecfdf5', border: '1px solid ' + (isDark||isContrast?'rgba(16,185,129,0.3)':'#a7f3d0') } },
-                    h('label', { className: 'flex items-center gap-1 text-[11px] font-bold cursor-pointer', style: { color: isDark||isContrast?'#34d399':'#059669' } },
+                    h('label', { className: 'flex items-center gap-1 text-[11px] font-bold cursor-pointer', style: { color: isDark||isContrast?'#34d399':'#047857' } },
                       h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-3 h-3' }),
                       t('stem.probability.i_understand_explain_in_my_own_words', 'I understand \u2014 explain in my own words')),
                     iq.understood && h('textarea', { 'aria-label': t('stem.probability.explanation_label', 'Explain how relative weights produce the distribution shape'), value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); },
                       placeholder: t('stem.probability.explain_how_relative_weights_produce_s', 'Explain how relative weights produce shape.'),
                       className: 'w-full text-[11px] rounded p-1 font-mono leading-snug mt-1', style: { background: isDark||isContrast?'rgba(15,23,42,0.6)':'#ffffff', color: isDark||isContrast?'#e2e8f0':'#1e293b', border: '1px solid ' + (isDark||isContrast?'rgba(16,185,129,0.3)':'#a7f3d0') }, rows: 3 })),
-                  h('div', { className: 'mt-2 text-[10px] italic', style: { color: isDark||isContrast?'#94a3b8':'#64748b' } },
+                  h('div', { className: 'mt-2 text-[10px] italic', style: { color: isDark||isContrast?'#94a3b8':'#475569' } },
                     t('stem.probability.design_note_discrete_4_shape_classific', 'Design note: discrete 4-shape classification; no goodness-of-fit score; no reveal \u2014 by design.'))
                 );
               })()

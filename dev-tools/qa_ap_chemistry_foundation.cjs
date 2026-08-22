@@ -28,15 +28,15 @@ const expectedUnits = [
   'thermodynamics-and-electrochemistry',
 ];
 const expectedUnitCounts = {
-  'atomic-structure-and-properties': 40,
-  'compound-structure-and-properties': 40,
-  'properties-of-substances-and-mixtures': 40,
-  'chemical-reactions': 40,
-  kinetics: 40,
-  thermochemistry: 40,
-  equilibrium: 40,
-  'acids-and-bases': 40,
-  'thermodynamics-and-electrochemistry': 40,
+  'atomic-structure-and-properties': 64,
+  'compound-structure-and-properties': 62,
+  'properties-of-substances-and-mixtures': 79,
+  'chemical-reactions': 62,
+  kinetics: 64,
+  thermochemistry: 66,
+  equilibrium: 68,
+  'acids-and-bases': 77,
+  'thermodynamics-and-electrochemistry': 58,
 };
 const expectedPractices = ['SP1', 'SP2', 'SP3', 'SP4', 'SP5', 'SP6'];
 const allowedHosts = new Set(['apcentral.collegeboard.org', 'apstudents.collegeboard.org', 'openstax.org']);
@@ -133,7 +133,7 @@ function requireCondition(condition, check, message, detail) {
 
 requireCondition(
   pack.schemaVersion === 1 && pack.itemSchemaVersion === 2 && pack.id === 'ap-chemistry-foundation-pilot' &&
-    pack.version === '0.2.0-internal-preview' && pack.status === 'preview' && pack.visibility === 'internal',
+    pack.version === '0.4.0-internal-preview' && pack.status === 'preview' && pack.visibility === 'internal',
   'asset-identity', 'Pack schema, identity, version, or internal-preview state is invalid.'
 );
 requireCondition(
@@ -207,16 +207,22 @@ const answerCounts = countBy(items, (item) => item.answerIndex);
 const unitCounts = countBy(items, (item) => item.domainId);
 const practiceCounts = countBy(items, (item) => item.practiceId);
 const topicCounts = countBy(items, (item) => item.topicIds?.[0]);
-requireCondition(items.length === 360 && new Set(items.map((item) => item.id)).size === 360, 'asset-identity', 'The AP Chemistry foundation pilot must contain exactly 360 uniquely identified items.');
+const capstoneItems = items.filter((item) => Number(String(item.id).match(/-(\d{3})$/)?.[1]) >= 501);
+const capstonePracticeCounts = countBy(capstoneItems, (item) => item.practiceId);
+requireCondition(items.length === 600 && new Set(items.map((item) => item.id)).size === 600, 'asset-identity', 'The AP Chemistry foundation pilot must contain exactly 600 uniquely identified items.');
 requireCondition(expectedUnits.every((unit) => unitCounts[unit] === expectedUnitCounts[unit]), 'blueprint-and-unit-coverage', 'Every current AP Chemistry unit must receive its expected item count.');
 requireCondition(expectedPractices.every((practice) => practiceCounts[practice] > 0), 'blueprint-and-unit-coverage', 'All six AP Chemistry science practices must be represented.');
 requireCondition(
-  answerCounts[0] === 90 && answerCounts[1] === 90 && answerCounts[2] === 90 && answerCounts[3] === 90,
-  'one-best-answer', 'Answer keys must be intentionally balanced at 90/90/90/90 across A-D.'
+  capstoneItems.length === 100 && capstonePracticeCounts.SP3 === 50 && capstonePracticeCounts.SP6 === 50 && capstoneItems.every((item) => typeof item.stimulus === 'string' && item.stimulus.length >= 20),
+  'blueprint-and-unit-coverage', 'The 100-item capstone layer must be evenly split between SP3 and SP6 and carry substantive stimuli.'
 );
 requireCondition(
-  Array.isArray(pack.sections) && pack.sections.length === 72 && pack.sections.every((section) => Array.isArray(section.itemIds) && section.itemIds.length === 5 && section.itemIds.every((id) => items.some((item) => item.id === id))),
-  'asset-identity', 'The 360-item pilot must expose seventy-two complete five-item internal banks.'
+  answerCounts[0] === 150 && answerCounts[1] === 150 && answerCounts[2] === 150 && answerCounts[3] === 150,
+  'one-best-answer', 'Answer keys must be intentionally balanced at 150/150/150/150 across A-D.'
+);
+requireCondition(
+  Array.isArray(pack.sections) && pack.sections.length === 120 && pack.sections.every((section) => Array.isArray(section.itemIds) && section.itemIds.length === 5 && section.itemIds.every((id) => items.some((item) => item.id === id))),
+  'asset-identity', 'The 600-item pilot must expose one hundred twenty complete five-item internal banks.'
 );
 requireCondition(
   [...topicCoverage.keys()].every((topicId) => topicCounts[topicId] > 0),
@@ -327,7 +333,8 @@ requireCondition(
   library.rightsPolicy?.secureCollegeBoardContentUsed === false && library.rightsPolicy?.copiedOrRephrasedCollegeBoardQuestions === false &&
     library.accessibility?.independentReviewStatus === 'pending' && library.expertReviewGate?.status === 'pending' &&
     library.expertReviewGate?.releaseBlocked === true && library.releaseGates?.releaseEligible === false &&
-    library.releaseGates?.apChemistrySubjectExpertReview === 'pending' && library.contentMigration?.richLessonPrototypes === 9,
+    library.releaseGates?.apChemistrySubjectExpertReview === 'pending' && library.contentMigration?.richLessonPrototypes === 9 &&
+    library.contentMigration?.contentVersion === 'ap-chemistry-foundation-v3' && /600-item/.test(String(library.blueprint?.pilotAlignment || '')),
   'rights-boundary', 'Learning-library rights, accessibility, expert, release, or migration boundaries regressed.', { asset: 'learning-library' }
 );
 

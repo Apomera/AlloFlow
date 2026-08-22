@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { loadSessionSummaryApi } from './session_summary_test_utils.js';
 
 const app = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8');
 const sharedActivitySource = readFileSync(resolve(process.cwd(), 'shared_activity_source.jsx'), 'utf8');
@@ -11,10 +12,11 @@ const mailbox = readFileSync(resolve(process.cwd(), 'apps_script/session_mailbox
 const helperStart = app.indexOf('const normalizeRosterSessionCodename');
 const helperEnd = app.indexOf('const generateSessionCode', helperStart);
 if (helperStart < 0 || helperEnd < 0) throw new Error('Roster session helper markers are missing');
-const helpers = new Function(
+const shellHelpers = new Function(
   app.slice(helperStart, helperEnd)
-    + '\nreturn { normalizeRosterSessionCodename, buildStudentResourcePatchBatches, resolveLiveStudentResourceTarget, summarizeLiveSessionResourceDelivery, mergeLiveQuizEvidenceResponse, buildLiveQuizResponseCounts, countValidRosterQuizResponses, normalizeQuizReceiptQuestionIndexes, buildRosterSessionInsightBrief, buildRosterSessionSummary, classifyLiveRosterPresence, buildPublishedResourceFingerprintMap, enqueueLiveSessionResourcePublish, resolveRosterCodenamesToLiveUids, resolveSavedFollowUpLivePlanTarget };'
+    + '\nreturn { normalizeRosterSessionCodename, buildStudentResourcePatchBatches, resolveLiveStudentResourceTarget, summarizeLiveSessionResourceDelivery, mergeLiveQuizEvidenceResponse, buildLiveQuizResponseCounts, normalizeQuizReceiptQuestionIndexes, classifyLiveRosterPresence, buildPublishedResourceFingerprintMap, enqueueLiveSessionResourcePublish, resolveRosterCodenamesToLiveUids, resolveSavedFollowUpLivePlanTarget };'
 )();
+const helpers = { ...shellHelpers, ...loadSessionSummaryApi() };
 
 const csvHelperStart = teacher.indexOf('const rosterSessionCsvCell');
 const csvHelperEnd = teacher.indexOf('const downloadRosterSessionEvidenceCsv', csvHelperStart);
@@ -457,8 +459,8 @@ describe('session evidence report contract', () => {
     expect(previewSource).toContain('summary: latestSummary');
     expect(previewSource).toContain('const result = await handleSetStudentsResource(uids, resourceId);');
     expect(previewSource).not.toContain('updateDoc(');
-    expect(endSessionPreviewSource).toContain('aria-label="Choose the student-safe resource to send to an evidence cohort"');
-    expect(endSessionPreviewSource).toContain("aria-label={'Send the selected follow-up resource to ' + connectedCount");
+    expect(endSessionPreviewSource).toContain("aria-label={tx('end_session.choose_follow_up_resource', 'Choose the student-safe resource to send to an evidence cohort')}");
+    expect(endSessionPreviewSource).toContain("aria-label={tx('end_session.send_follow_up_resource', 'Send the selected follow-up resource to {count} connected learners in {cohort}'");
     expect(endSessionPreviewSource).toContain('disabled={endSessionPreview.busy || !!endSessionPreview.followUpBusy}');
   });
 
@@ -476,7 +478,7 @@ describe('session evidence report contract', () => {
     expect(completionSource).toContain('mode: endingMode');
     expect(completionSource).toContain('activitySnapshots: liveActivitySnapshots');
     expect(completionSource).toContain('endedAt,');
-    expect(completionSource).toContain('saveRosterSessionSummary(prev, latestSummary, endSessionNote, 30)');
+    expect(completionSource).toContain('sessionSummaryApi.saveRosterSessionSummary(prev, latestSummary, endSessionNote, 30)');
     expect(completionSource).not.toContain('const summary = endSessionPreview?.summary');
   });
   it('exports derived saved-history evidence as CSV without private activity fields', () => {
@@ -634,7 +636,7 @@ describe('live-session reliability refinements', () => {
     const completionStart = app.indexOf('const completeLiveSessionEnd = async');
     const completionSource = app.slice(completionStart);
     expect(completionSource).toContain('deliveryGuard: true');
-    expect(completionSource.indexOf('await endMailboxLiveSession')).toBeLessThan(completionSource.indexOf('saveRosterSessionSummary'));
+    expect(completionSource.indexOf('await endMailboxLiveSession')).toBeLessThan(completionSource.indexOf('sessionSummaryApi.saveRosterSessionSummary'));
     expect(endSessionPreviewSource).toContain('Save summary & end anyway');
   });
 });

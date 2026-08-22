@@ -14,7 +14,7 @@ const helpers = (() => {
   expect(start).toBeGreaterThan(-1);
   expect(end).toBeGreaterThan(start);
   // eslint-disable-next-line no-new-func
-  return new Function(src.slice(start, end) + '\nreturn { getGradeBand, gcCleanExpr };')();
+  return new Function(src.slice(start, end) + '\nreturn { getGradeBand, gcCleanExpr, gcFiniteNumber, gcNormalizeTableStep, gcBuildTableXValues };')();
 })();
 
 describe('grade band parsing', () => {
@@ -56,6 +56,22 @@ describe('expression cleanup', () => {
     // mathjs implicit multiplication handles the missing '*'.
     expect(clean('2ln(x) + log(x)')).toBe('2log(x) + log10(x)');
     expect(clean('x*ln(x)')).toBe('x*log(x)');
+  });
+});
+
+describe('value-table sampling', () => {
+  it('always creates a finite 11-row sequence, including for negative steps', () => {
+    expect(helpers.gcBuildTableXValues(2, -0.5, 11)).toEqual([
+      2, 1.5, 1, 0.5, 0, -0.5, -1, -1.5, -2, -2.5, -3,
+    ]);
+    expect(helpers.gcBuildTableXValues('-2', '0.25', 3)).toEqual([-2, -1.75, -1.5]);
+  });
+
+  it('normalizes blank, invalid, and zero steps without risking an infinite loop', () => {
+    expect(helpers.gcNormalizeTableStep('')).toBe(1);
+    expect(helpers.gcNormalizeTableStep('not-a-number')).toBe(1);
+    expect(helpers.gcNormalizeTableStep(0)).toBe(1);
+    expect(helpers.gcBuildTableXValues('', 1, 2)).toEqual([-5, -4]);
   });
 });
 

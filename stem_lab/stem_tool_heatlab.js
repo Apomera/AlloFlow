@@ -554,6 +554,25 @@
       var beep = ctx.beep;
       var ArrowLeft = ctx.icons && ctx.icons.ArrowLeft;
       var isDark = ctx.theme !== 'light';
+      // Accent hues were originally chosen for the dark lab canvas. Preserve
+      // those colors in dark mode, but use their deeper, WCAG-safe partners
+      // whenever the host supplies the light theme.
+      var lightInk = {
+        '#fb923c': '#c2410c', '#fbbf24': '#92400e', '#16a34a': '#166534',
+        '#84cc16': '#3f6212', '#4d7c0f': '#365314', '#f43f5e': '#be123c',
+        '#0284c7': '#0369a1', '#a78bfa': '#6d28d9', '#34d399': '#047857',
+        '#f59e0b': '#92400e', '#f472b6': '#9d174d', '#22d3ee': '#0e7490',
+        '#60a5fa': '#1d4ed8', '#0891b2': '#155e75', '#94a3b8': '#475569',
+        '#7dd3fc': '#0369a1', '#38bdf8': '#0369a1', '#c4b5fd': '#6d28d9', '#a3e635': '#3f6212'
+      };
+      var darkInk = {
+        '#64748b': '#94a3b8', '#a16207': '#fbbf24', '#71717a': '#d4d4d8',
+        '#1d4ed8': '#60a5fa', 'rgb(29,78,216)': '#60a5fa', '#0891b2': '#22d3ee'
+      };
+      function ink(color) {
+        if (typeof color !== 'string') return color;
+        return (isDark ? darkInk : lightInk)[color.toLowerCase()] || color;
+      }
 
       // Every hook is declared unconditionally, before any branching. Declaring a
       // hook after a render-time conditional is the TDZ crash class that has bitten
@@ -1663,7 +1682,7 @@
         });
       };
       var heading = function (accent, text) {
-        return h('h4', { className: 'text-xs font-black mb-2', style: { color: accent } }, text);
+        return h('h4', { className: 'text-xs font-black mb-2', style: { color: ink(accent) } }, text);
       };
       var pillTextColor = function (accent) { var m = String(accent || '').match(/^#([0-9a-f]{6})/i); if (!m) return '#0b1020'; var r = parseInt(m[1].slice(0, 2), 16) / 255; var g = parseInt(m[1].slice(2, 4), 16) / 255; var b = parseInt(m[1].slice(4, 6), 16) / 255; var linear = function (v) { return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }; var lum = 0.2126 * linear(r) + 0.7152 * linear(g) + 0.0722 * linear(b); var darkRatio = (lum + 0.05) / 0.05; var lightRatio = 1.05 / (lum + 0.05); return lightRatio >= darkRatio ? '#ffffff' : '#0b1020'; };
       var pill = function (on, accent, label, onClick, ariaLabel) {
@@ -2037,7 +2056,7 @@
                 coolingCurve(MATERIALS[0], thickness)[min].toFixed(1) + ' °C',
                 coolingCurve(MATERIALS[MATERIALS.length - 1], thickness)[min].toFixed(1) + ' °C'];
             })),
-          h('p', { className: 'text-[11px] mt-2', style: { color: after60 >= 65 ? '#16a34a' : (isDark ? '#cbd5e1' : '#475569') } },
+          h('p', { className: 'text-[11px] mt-2', style: { color: after60 >= 65 ? ink('#16a34a') : (isDark ? '#cbd5e1' : '#475569') } },
             after60 >= 65
               ? '✅ Still ' + fmt(after60, 1) + ' °C after an hour. In this series-resistance model, doubling the wrap from ' + thickness + ' to ' + (thickness * 2) + ' mm cuts wall heat flow by about ' + Math.round(doubledFlowReductionPct) + '%. It approaches a one-half reduction only when the wrap dominates the surface-film resistance. The model omits the lid, evaporation and thermal bridges.'
               : 'Down to ' + fmt(after60, 1) + ' °C. Try a material with a lower k, or more of it.')
@@ -2113,7 +2132,7 @@
                     }
                   },
                     roomy ? h('span', { className: 'text-[10px] font-bold text-center px-1', style: { color: isDark ? '#e2e8f0' : '#1e293b' } }, b.name) : null,
-                    roomy || narrow ? h('span', { className: 'text-[10px] font-mono', style: { color: isDark ? '#a3e635' : '#4d7c0f' } }, 'R ' + b.r.toFixed(2)) : null
+                    roomy || narrow ? h('span', { className: 'text-[10px] font-mono', style: { color: isDark ? '#a3e635' : '#365314' } }, 'R ' + b.r.toFixed(2)) : null
                   );
                 })
               ),
@@ -2130,7 +2149,7 @@
                 if (!L) return null;
                 return h('div', { key: i + '-' + id, role: 'listitem', className: 'flex items-center gap-2 rounded-lg px-2.5 py-1.5', style: { background: isDark ? 'rgba(148,163,184,0.09)' : 'rgba(132,204,22,0.08)', border: '1px solid rgba(132,204,22,0.3)' } },
                   h('span', { className: 'flex-1 text-[11px] font-bold', style: { color: isDark ? '#fff' : '#1e293b' } }, L.name),
-                  h('span', { className: 'text-[11px] font-mono', style: { color: '#84cc16' } }, 'R ' + L.r.toFixed(2)),
+                  h('span', { className: 'text-[11px] font-mono', style: { color: ink('#84cc16') } }, 'R ' + L.r.toFixed(2)),
                   h('button', {
                     type: 'button',
                     'aria-label': 'Remove this layer of ' + L.name,
@@ -2141,7 +2160,7 @@
                       if (typeof beep === 'function') beep();
                     },
                     className: 'min-h-11 px-2 rounded text-[11px] font-black',
-                    style: { color: '#f43f5e', background: 'transparent', border: 'none' }
+                    style: { color: ink('#f43f5e'), background: 'transparent', border: 'none' }
                   }, '✕')
                 );
               })
@@ -2154,7 +2173,7 @@
                 h('p', { className: 'text-sm font-black', style: { color: isDark ? '#a3e635' : '#4d7c0f' } }, p[1]));
             })
           ),
-          h('p', { className: 'text-[11px] mt-2 leading-relaxed', style: { color: wallU <= wallTarget ? '#16a34a' : (isDark ? '#e2e8f0' : '#334155') } },
+          h('p', { className: 'text-[11px] mt-2 leading-relaxed', style: { color: wallU <= wallTarget ? ink('#16a34a') : (isDark ? '#e2e8f0' : '#334155') } },
             wallU <= wallTarget
               ? '✅ ' + wallU.toFixed(3) + ' W/m²K meets the 0.18 target. Notice how much of that came from one insulating layer — the brick and plaster contribute almost nothing.'
               : 'At ' + wallU.toFixed(3) + ' W/m²K this wall is above the 0.18 target. Adding more brick will barely move it. Which layer would you reach for — and how much of it? One 100 mm batt is not enough on its own.'),
@@ -2195,7 +2214,7 @@
                       h('div', { style: { height: '100%', width: Math.max(2, frac * 100).toFixed(1) + '%', background: m.colour, borderRadius: '999px' } })),
                     // The pale swatch colours (aerogel's lavender, fibreglass's
                     // amber) are legible as a BAR on white but not as 11px text.
-                    h('span', { className: 'text-[11px] font-mono w-16 text-right', style: { color: isDark ? m.colour : '#334155' } }, m.k >= 1 ? m.k : m.k.toFixed(3))
+                    h('span', { className: 'text-[11px] font-mono w-16 text-right', style: { color: isDark ? ink(m.colour) : '#334155' } }, m.k >= 1 ? m.k : m.k.toFixed(3))
                   );
                 })
               ),
@@ -2236,7 +2255,7 @@
             [[1, sub1, m1, t1, 'sub1', 'm1', 't1'], [2, sub2, m2, t2, 'sub2', 'm2', 't2']].map(function (row) {
               var n = row[0], sub = row[1];
               return h('div', { key: n, className: 'rounded-lg p-2', style: { background: isDark ? 'rgba(148,163,184,0.08)' : 'rgba(56,189,248,0.07)', border: '1px solid rgba(56,189,248,0.28)' } },
-                h('p', { className: 'text-[11px] font-black mb-1', style: { color: sub.colour } }, 'Sample ' + n + ': ' + sub.name),
+                h('p', { className: 'text-[11px] font-black mb-1', style: { color: ink(sub.colour) } }, 'Sample ' + n + ': ' + sub.name),
                 h('div', { className: 'flex flex-wrap gap-1 mb-1' },
                   SUBSTANCES.map(function (s) {
                     return pill(sub.id === s.id, s.colour, s.name, function () {
@@ -2249,7 +2268,7 @@
                   function (e) { var p = {}; p[row[5]] = parseFloat(e.target.value); upd(p); setRevealed(false); }, row[2].toFixed(1) + ' kg'),
                 slider('heat-temp-' + n, 'Start temp', 0, 100, 1, row[3],
                   function (e) { var p = {}; p[row[6]] = parseFloat(e.target.value); upd(p); setRevealed(false); }, row[3] + ' °C'),
-                h('p', { className: 'text-[10px] mt-1 font-mono', style: { color: isDark ? '#94a3b8' : '#64748b' } }, 'c = ' + sub.c + ' J/kg·K'));
+                h('p', { className: 'text-[10px] mt-1 font-mono', style: { color: isDark ? '#94a3b8' : '#475569' } }, 'c = ' + sub.c + ' J/kg·K'));
             })
           ),
           h('div', { className: 'flex flex-wrap items-end gap-2 mt-2' },
@@ -2278,11 +2297,11 @@
                 }
               },
               className: 'min-h-11 px-4 py-2 rounded-lg text-[11px] font-black text-white',
-              style: { background: '#0284c7', border: '1px solid #0284c7' }
+              style: { background: '#0369a1', border: '1px solid #0369a1' }
             }, revealed ? 'Recalculate' : 'Reveal')
           ),
           revealed ? h('div', { role: 'status', className: 'mt-2 rounded-lg border p-2.5', style: { borderColor: 'rgba(56,189,248,0.5)', background: isDark ? 'rgba(15,23,42,0.7)' : 'rgba(240,249,255,0.9)' } },
-            h('p', { className: 'text-sm font-black', style: { color: '#0284c7' } }, 'Final temperature: ' + finalT.toFixed(1) + ' °C'),
+            h('p', { className: 'text-sm font-black', style: { color: ink('#0284c7') } }, 'Final temperature: ' + finalT.toFixed(1) + ' °C'),
             h('p', { className: 'text-[11px] mt-1 font-mono', style: { color: isDark ? '#cbd5e1' : '#475569' } },
               'Tf = (m₁c₁T₁ + m₂c₂T₂) / (m₁c₁ + m₂c₂)'),
             h('p', { className: 'text-[11px] mt-1 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
@@ -2345,7 +2364,7 @@
           },
             h('div', { className: 'flex flex-wrap items-baseline justify-between gap-1' },
               h('span', { className: 'text-[11px] font-black', style: { color: isDark ? '#e2e8f0' : '#334155' } }, 'Live thermal state'),
-              h('span', { className: 'text-[11px] font-black', style: { color: heatRampColour(curveTempFraction) } },
+              h('span', { className: 'text-[11px] font-black', style: { color: ink(heatRampColour(curveTempFraction)) } },
                 wstate.phase + ' · ' + wstate.temp.toFixed(1) + ' degrees C')
             ),
             h('div', { className: 'relative mt-2', 'aria-hidden': 'true' },
@@ -2379,7 +2398,7 @@
                    style: { left: left.toFixed(2) + '%', transform: edge, minWidth: '3rem' }
                  },
                    h('span', { className: 'block text-[10px] font-bold', style: { color: isDark ? '#cbd5e1' : '#475569' } }, mark.label),
-                   h('span', { className: 'block text-[10px]', style: { color: isDark ? '#94a3b8' : '#64748b' } }, mark.value)
+                   h('span', { className: 'block text-[10px]', style: { color: isDark ? '#94a3b8' : '#475569' } }, mark.value)
                  );
                })
             ),
@@ -2394,15 +2413,15 @@
           h('div', { className: 'mt-2 grid grid-cols-2 gap-2' },
             h('div', { className: 'rounded-lg p-2.5 text-center', style: { background: isDark ? 'rgba(148,163,184,0.1)' : 'rgba(167,139,250,0.1)', border: '1px solid rgba(167,139,250,0.35)' } },
               h('p', { className: 'text-[10px] font-bold', style: { color: isDark ? '#cbd5e1' : '#475569' } }, 'State'),
-              h('p', { className: 'text-sm font-black', style: { color: '#a78bfa' } }, wstate.phase)),
+              h('p', { className: 'text-sm font-black', style: { color: ink('#a78bfa') } }, wstate.phase)),
             h('div', { className: 'rounded-lg p-2.5 text-center', style: { background: isDark ? 'rgba(148,163,184,0.1)' : 'rgba(167,139,250,0.1)', border: '1px solid rgba(167,139,250,0.35)' } },
               h('p', { className: 'text-[10px] font-bold', style: { color: isDark ? '#cbd5e1' : '#475569' } }, 'Temperature'),
-              h('p', { className: 'text-sm font-black', style: { color: '#a78bfa' } }, wstate.temp.toFixed(1) + ' °C'))
+              h('p', { className: 'text-sm font-black', style: { color: ink('#a78bfa') } }, wstate.temp.toFixed(1) + ' °C'))
           ),
           wstate.frac > 0 ? h('div', { className: 'mt-2' },
             h('div', { className: 'h-2 rounded-full overflow-hidden', style: { background: 'rgba(148,163,184,0.25)' } },
               h('div', { style: { height: '100%', width: (wstate.frac * 100).toFixed(0) + '%', background: '#a78bfa', borderRadius: '999px' } })),
-            h('p', { className: 'text-[11px] mt-1 font-bold', style: { color: '#a78bfa' } },
+            h('p', { className: 'text-[11px] mt-1 font-bold', style: { color: ink('#a78bfa') } },
               (wstate.frac * 100).toFixed(0) + '% of the way through the change of state — and the temperature is not moving at all.')
           ) : null,
           h('p', { className: 'text-[11px] mt-2 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
@@ -2447,7 +2466,7 @@
               },
                 h('span', { className: 'flex items-center gap-2' },
                   h('span', { className: 'flex-1 text-[11px] font-bold', style: { color: isDark ? '#fff' : '#1e293b' } }, en.name),
-                  h('span', { className: 'text-[11px] font-mono', style: { color: '#34d399' } }, 'limit ' + carnot.toFixed(0) + '%'),
+                  h('span', { className: 'text-[11px] font-mono', style: { color: ink('#34d399') } }, 'limit ' + carnot.toFixed(0) + '%'),
                   h('span', { className: 'text-[11px] font-mono', style: { color: isDark ? '#fbbf24' : '#b45309' } }, 'real ' + en.real + '%')
                 ),
                 // The quest here is "compare three engines against the Carnot
@@ -2475,10 +2494,10 @@
             // instead of drawing a broken chart.
             if (useful > carnot) {
               return h('div', { className: 'mt-3 rounded-lg border p-2.5', style: { borderColor: 'rgba(251,191,36,0.45)', background: isDark ? 'rgba(15,23,42,0.6)' : 'rgba(255,251,235,0.9)' } },
-                h('p', { className: 'text-[11px] font-black mb-1', style: { color: '#f59e0b' } }, 'No energy-flow chart for this one — and that is the point'),
+                h('p', { className: 'text-[11px] font-black mb-1', style: { color: ink('#f59e0b') } }, 'No energy-flow chart for this one — and that is the point'),
                 h('p', { className: 'text-[11px] leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
                   en.name + ' converts ' + useful + '% of its chemical energy to work while the Carnot limit for its temperatures is only ' + carnot.toFixed(1) + '%. Nothing is broken: Carnot applies to engines that take in heat and dump some to a cold sink. Muscle skips that step and converts chemical energy directly, so the limit simply does not apply to it.'),
-                h('p', { className: 'text-[11px] mt-2 font-bold', style: { color: '#f59e0b' } },
+                h('p', { className: 'text-[11px] mt-2 font-bold', style: { color: ink('#f59e0b') } },
                   '🤔 If the second law does not cap muscle at 4.8%, what does cap it at around 25%?')
               );
             }
@@ -2495,7 +2514,7 @@
               { label: 'Lost to the second law', pct: lostToLaw, colour: '#f87171', note: 'Waste heat that must be dumped to the cold sink. No design can recover this; it is the price of running between two temperatures.' }
             ];
             return h('div', { className: 'mt-3 rounded-lg border p-2.5', style: { borderColor: 'rgba(52,211,153,0.4)', background: isDark ? 'rgba(15,23,42,0.6)' : 'rgba(240,253,244,0.85)' } },
-              h('p', { className: 'text-[11px] font-black mb-2', style: { color: '#34d399' } }, 'Where 100 units of fuel energy go in a ' + en.name.toLowerCase()),
+              h('p', { className: 'text-[11px] font-black mb-2', style: { color: ink('#34d399') } }, 'Where 100 units of fuel energy go in a ' + en.name.toLowerCase()),
               h('div', {
                 className: 'flex rounded-lg overflow-hidden',
                 style: { height: '30px', border: '1px solid ' + (isDark ? 'rgba(148,163,184,0.28)' : 'rgba(100,116,139,0.24)') },
@@ -2520,7 +2539,7 @@
                       h('span', { className: 'block text-[10px]', style: { color: isDark ? '#94a3b8' : '#64748b' } }, s.note)));
                 })
               ),
-              h('p', { className: 'text-[11px] mt-2 font-bold', style: { color: '#34d399' } },
+              h('p', { className: 'text-[11px] mt-2 font-bold', style: { color: ink('#34d399') } },
                 '🤔 The only ways to raise the ceiling are a hotter source or a colder sink. Which is easier to change on Earth, and why?')
             );
           })() : null
@@ -2606,11 +2625,11 @@
             })
           ),
           part3d ? h('div', { role: 'status', className: 'mt-2 rounded-lg border p-2.5', style: { borderColor: part3d.color + '80', background: isDark ? 'rgba(15,23,42,0.7)' : 'rgba(255,255,255,0.92)' } },
-            h('p', { className: 'text-[11px] font-black mb-1', style: { color: part3d.color } }, part3d.label),
+            h('p', { className: 'text-[11px] font-black mb-1', style: { color: ink(part3d.color) } }, part3d.label),
             h('p', { className: 'text-[11px] leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } }, part3d.desc)
           ) : h('p', { className: 'text-[11px] mt-2', style: { color: isDark ? '#94a3b8' : '#64748b' } },
             'Pick a part above, or click it directly in the 3D view.'),
-          h('p', { className: 'text-[11px] mt-2 font-bold', style: { color: '#fb923c' } },
+          h('p', { className: 'text-[11px] mt-2 font-bold', style: { color: ink('#fb923c') } },
             '🤔 Rotate until you are looking straight down. What shape is the flow from above, and why can this never happen in a solid?')
         ),
 
@@ -2636,7 +2655,7 @@
             ].map(function (p) {
               return h('div', { key: p[0], className: 'rounded-lg p-2 text-center', style: { background: isDark ? 'rgba(148,163,184,0.1)' : 'rgba(244,114,182,0.09)', border: '1px solid rgba(244,114,182,0.3)' } },
                 h('p', { className: 'text-[10px] font-bold', style: { color: isDark ? '#cbd5e1' : '#475569' } }, p[0]),
-                h('p', { className: 'text-sm font-black', style: { color: '#f472b6' } }, p[1]));
+                h('p', { className: 'text-sm font-black', style: { color: ink('#f472b6') } }, p[1]));
             })
           ),
           h('p', { className: 'text-[11px] mt-2 font-mono', style: { color: isDark ? '#94a3b8' : '#64748b' } },
@@ -2673,14 +2692,14 @@
             function (e) { upd({ expDT: parseFloat(e.target.value) }); }, expDT + ' K'),
           h('div', { className: 'mt-2 rounded-lg p-2.5 text-center', style: { background: isDark ? 'rgba(148,163,184,0.1)' : 'rgba(34,211,238,0.09)', border: '1px solid rgba(34,211,238,0.35)' } },
             h('p', { className: 'text-[10px] font-bold', style: { color: isDark ? '#cbd5e1' : '#475569' } }, 'It grows by'),
-            h('p', { className: 'text-lg font-black', style: { color: '#22d3ee' } },
+            h('p', { className: 'text-lg font-black', style: { color: ink('#22d3ee') } },
               expDelta >= 1 ? expDelta.toFixed(2) + ' m' : (expDelta * 1000).toFixed(1) + ' mm'),
-            h('p', { className: 'text-[10px] font-mono mt-0.5', style: { color: isDark ? '#94a3b8' : '#64748b' } },
+            h('p', { className: 'text-[10px] font-mono mt-0.5', style: { color: isDark ? '#94a3b8' : '#475569' } },
               'ΔL = αLΔT = ' + expMat.alpha.toExponential(1) + ' × ' + fmt(expLen, 0) + ' × ' + expDT)
           ),
           h('p', { className: 'text-[11px] mt-2 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
             h('b', null, expMat.name + ': '), expMat.note),
-          expDelta > 0.05 ? h('p', { className: 'text-[11px] mt-1.5 font-bold', style: { color: '#22d3ee' } },
+          expDelta > 0.05 ? h('p', { className: 'text-[11px] mt-1.5 font-bold', style: { color: ink('#22d3ee') } },
             '🤔 That is ' + (expDelta * 1000).toFixed(0) + ' mm of movement. Where does it go if the ends are bolted down — and what happens to the material instead?') : null
         ),
 
@@ -2711,7 +2730,7 @@
                   h('span', { className: 'flex-1' },
                     h('span', { className: 'block text-[11px] font-bold', style: { color: isDark ? '#fff' : '#1e293b' } }, ev.name),
                     h('span', { className: 'block text-[11px]', style: { color: isDark ? '#cbd5e1' : '#64748b' } }, ev.mech)),
-                  h('span', { className: 'text-[11px] font-bold', style: { color: '#60a5fa' } }, on ? '▾' : '›')
+                  h('span', { className: 'text-[11px] font-bold', style: { color: ink('#60a5fa') } }, on ? '▾' : '›')
                 ),
                 on ? h('span', { className: 'block text-[11px] mt-1.5 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } }, ev.desc) : null
               );
@@ -2739,10 +2758,10 @@
           h('div', { className: 'mt-2 grid grid-cols-2 gap-2' },
             h('div', { className: 'rounded-lg p-2.5 text-center', style: { background: isDark ? 'rgba(148,163,184,0.1)' : 'rgba(244,114,182,0.09)', border: '1px solid rgba(244,114,182,0.32)' } },
               h('p', { className: 'text-[10px] font-bold', style: { color: isDark ? '#cbd5e1' : '#475569' } }, 'Arrangements at this split'),
-              h('p', { className: 'text-sm font-black', style: { color: '#f472b6' } }, '10^' + (entHere / Math.LN10).toFixed(1))),
+              h('p', { className: 'text-sm font-black', style: { color: ink('#f472b6') } }, '10^' + (entHere / Math.LN10).toFixed(1))),
             h('div', { className: 'rounded-lg p-2.5 text-center', style: { background: isDark ? 'rgba(148,163,184,0.1)' : 'rgba(244,114,182,0.09)', border: '1px solid rgba(244,114,182,0.32)' } },
               h('p', { className: 'text-[10px] font-bold', style: { color: isDark ? '#cbd5e1' : '#475569' } }, 'Times rarer than even'),
-              h('p', { className: 'text-sm font-black', style: { color: entOddsLog10 < 0.5 ? '#34d399' : '#fbbf24' } }, entOddsLog10 < 0.05 ? 'at the peak' : '10^' + entOddsLog10.toFixed(1)))
+              h('p', { className: 'text-sm font-black', style: { color: ink(entOddsLog10 < 0.5 ? '#34d399' : '#fbbf24') } }, entOddsLog10 < 0.05 ? 'at the peak' : '10^' + entOddsLog10.toFixed(1)))
           ),
           h('p', { className: 'text-[11px] mt-2 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
             entAtPeak
@@ -2772,7 +2791,7 @@
             ].map(function (p) {
               return h('div', { key: p[0], className: 'rounded-lg p-2 text-center', style: { background: isDark ? 'rgba(148,163,184,0.1)' : 'rgba(34,211,238,0.09)', border: '1px solid rgba(34,211,238,0.32)' } },
                 h('p', { className: 'text-[10px] font-bold', style: { color: isDark ? '#cbd5e1' : '#475569' } }, p[0]),
-                h('p', { className: 'text-sm font-black', style: { color: p[2] } }, p[1]));
+                h('p', { className: 'text-sm font-black', style: { color: ink(p[2]) } }, p[1]));
             })
           ),
           h('div', { className: 'mt-2 rounded-lg overflow-hidden border', style: { borderColor: 'rgba(34,211,238,0.35)', height: '190px' } },
@@ -2796,11 +2815,11 @@
                 'No heating lift is required. Outdoor air is already as warm as or warmer than the indoor target, so heating-mode COP is undefined. Lower the outdoor temperature or raise the indoor target to model heating.')),
           hpModel.heating ? h('p', { className: 'text-[11px] mt-1.5 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
             'An electric bar heater is exactly 1.0: every joule of electricity becomes one joule of heat. The teaching estimate is ' + hpRealCOP.toFixed(1) + ', using a refrigerant 5 K colder than outdoors and 8 K hotter than the room, 45% of the resulting cycle limit, auxiliary power and a cold-weather defrost penalty. It is capped at ' + hpModel.practicalCap + ' and is not a product rating.') : null,
-          hpModel.heating ? h('p', { className: 'text-[11px] mt-1.5 leading-relaxed', style: { color: hpOut <= -10 ? '#fbbf24' : (isDark ? '#cbd5e1' : '#475569') } },
+          hpModel.heating ? h('p', { className: 'text-[11px] mt-1.5 leading-relaxed', style: { color: hpOut <= -10 ? ink('#fbbf24') : (isDark ? '#cbd5e1' : '#475569') } },
             hpOut <= -10
               ? '⚠️ Notice what the cold does. As the outdoor temperature falls the gap widens, the COP collapses, and the pump has to work far harder for the same warmth. This is the real engineering problem with heat pumps in cold climates, and it falls straight out of the Carnot expression.'
               : 'Drag the outdoor temperature down towards −20 °C and watch what happens to the COP. The reason is the same denominator that caps every heat engine.') : null,
-          h('p', { className: 'text-[11px] mt-1.5 font-bold', style: { color: '#22d3ee' } },
+          h('p', { className: 'text-[11px] mt-1.5 font-bold', style: { color: ink('#22d3ee') } },
             '🤔 A fridge is the same machine pointed the other way. Where does the heat it removes actually go, and why does leaving the door open warm the kitchen?')
         ),
 
@@ -2829,14 +2848,14 @@
                 h('span', { className: 'flex items-center gap-2' },
                   h('span', { className: 'text-sm', 'aria-hidden': 'true' }, b.icon),
                   h('span', { className: 'text-[11px] font-black', style: { color: isDark ? '#fff' : '#1e293b' } }, b.name),
-                  h('span', { className: 'ml-auto text-[11px] font-bold', style: { color: '#94a3b8' } }, '→')),
+                  h('span', { className: 'ml-auto text-[11px] font-bold', style: { color: ink('#94a3b8') } }, '→')),
                 h('span', { className: 'block text-[11px] mt-1 leading-relaxed', style: { color: isDark ? '#cbd5e1' : '#475569' } }, b.why)
               );
             })
           )
         ),
 
-        h('p', { className: 'text-[10px] mt-3 text-center', style: { color: isDark ? '#64748b' : '#94a3b8' } },
+        h('p', { className: 'text-[10px] mt-3 text-center', style: { color: isDark ? '#94a3b8' : '#475569' } },
           'Models are real: 1-D heat equation, R-values, Q = mcΔT, latent heats of water, and the Carnot limit. Figures are order-of-magnitude accurate for teaching, not for engineering design.')
       );
     }

@@ -11,7 +11,9 @@ const require = createRequire(import.meta.url);
 const axe = require(path.resolve(root, 'desktop/web-app/node_modules/axe-core'));
 
 describe('BehaviorLens app shell and visualization accessibility', () => {
-  const app = source.slice(source.indexOf('window.AlloModules.BehaviorLens ='));
+  const appStart = source.indexOf('const BehaviorLensApp =');
+  const appEnd = source.indexOf('const BehaviorLensRuntimeBoundary =');
+  const app = source.slice(appStart, appEnd);
   const guide = source.slice(
     source.indexOf('const ABAQuickGuide ='),
     source.indexOf('const HomeBehaviorLog =')
@@ -65,9 +67,15 @@ describe('BehaviorLens app shell and visualization accessibility', () => {
   });
 
   it('names every authored SVG visualization and excludes export canvases', () => {
-    const svgLines = source.split(/\r?\n/).filter((line) => line.includes("h('svg'"));
-    expect(svgLines).toHaveLength(13);
-    for (const line of svgLines) expect(line).toContain("'aria-label':");
+    const lines = source.split(/\r?\n/);
+    const svgContexts = lines.flatMap((line, index) =>
+      line.includes("h('svg'") ? [lines.slice(index, index + 8).join(' ')] : []
+    );
+    expect(svgContexts).toHaveLength(13);
+    for (const context of svgContexts) {
+      expect(context).toMatch(/role:\s*['"](?:img|group)['"]/);
+      expect(context).toContain("'aria-label':");
+    }
 
     const canvases = source.match(/document\.createElement\('canvas'\);/g) || [];
     const hiddenCanvases = source.match(/canvas\.setAttribute\('aria-hidden', 'true'\);/g) || [];

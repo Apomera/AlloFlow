@@ -93,6 +93,19 @@ describe('Geology Explorer 3D visual refinement', () => {
     expect(source).toContain('geologyVolcanicAtmosphereMaterials3d.forEach');
   });
 
+  it('sculpts tectonic bathymetry and builds a reduced-motion-safe black smoker field', () => {
+    expect(source).toContain('function addGeologyTectonicBathymetry3d');
+    expect(source).toContain("'sculpted-twin-ridge-shoulders-and-rift-valley'");
+    expect(source).toContain("'sculpted-trench-shoulders-and-channel'");
+    expect(source).toContain('ridgeBroad3d');
+    expect(source).toContain('trenchShoulder3d');
+    expect(source).toContain('function addGeologyHydrothermalField3d');
+    expect(source).toContain("'rugged-black-smoker-chimneys-and-mineral-plume'");
+    expect(source).toContain('function updateGeologyHydrothermalField3d');
+    expect(source).toContain('var hydrothermalTime3d = reducedMotion3d ? 0.79 : time3d;');
+    expect(source).toContain('geologyHydrothermalGeometries3d.forEach');
+  });
+
   it('freezes ambient motion and cleans up its listener for reduced-motion users', () => {
     expect(source).toContain("window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)')");
     expect(source).toContain('var geologyMotionTime3d = reducedMotion3d ? 0.86 : t;');

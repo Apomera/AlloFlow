@@ -417,7 +417,7 @@ describe('first-class image remediation view contract', () => {
     expect(remediationViewSource).toContain("const _VIEW_REMEDIATION_IMAGE_MIMES = new Set(['image/png', 'image/jpeg', 'image/webp']);");
     expect(remediationViewSource).toContain("mimeType: _viewRemediationMimeType(file), status: 'pending'");
     expect(remediationViewSource).toContain("mimeType: _viewRemediationMimeType({ name: descriptor.name, mimeType: readResult.mimeType || descriptor.mimeType })");
-    expect(remediationViewSource).toContain("runPdfAccessibilityAudit(pendingPdfBase64, { fileName: pendingPdfFile?.name, mimeType: _inputMimeType })");
+    expect(remediationViewSource).toMatch(/runPdfAccessibilityAudit\(pendingPdfBase64, \{ fileName: pendingPdfFile\?\.name, mimeType: _inputMimeType(?:, skipCache: (?:pdfDiagnosticFreshRun|true))? \}\)/);
     expect(remediationViewSource).toContain('fileSize: pendingPdfFile?.size || 0, mimeType: _inputMimeType, auditResult: _audit');
     expect(remediationViewSource).toContain('base64: freshBase64, fileName: pendingPdfFile?.name, fileSize: pendingPdfFile?.size || 0, mimeType: _inputMimeType');
   });

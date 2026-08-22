@@ -7,6 +7,7 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const teacherSource = fs.readFileSync(path.join(ROOT, 'teacher_source.jsx'), 'utf8');
 const teacherModule = fs.readFileSync(path.join(ROOT, 'teacher_module.js'), 'utf8');
 const teacherPublic = fs.readFileSync(path.join(ROOT, 'desktop/web-app/public/teacher_module.js'), 'utf8');
+const sharedActivitySource = fs.readFileSync(path.join(ROOT, 'shared_activity_source.jsx'), 'utf8');
 const shells = [
   fs.readFileSync(path.join(ROOT, 'AlloFlowANTI.txt'), 'utf8'),
   fs.readFileSync(path.join(ROOT, 'desktop/web-app/src/App.jsx'), 'utf8'),
@@ -176,6 +177,7 @@ describe('post-session follow-up planner', () => {
     expect(teacherSource).toContain('disabled={safeFollowUpResources.length === 0 || liveSending}');
     expect(teacherSource).toContain('const liveActionInFlight = Boolean(sessionLiveSendingId);');
     expect(teacherSource).toContain('disabled={liveActionInFlight}');
+    expect(sharedActivitySource).toContain('None of the selected resources can be shared with students.');
     shells.forEach(source => {
       expect(source).toContain('followUpResources={_alloStudentSafeResources(history)}');
       expect(source).toContain('createHomeworkAssignmentLink([resource.id])');
@@ -183,7 +185,6 @@ describe('post-session follow-up planner', () => {
       expect(source).toContain('const resolveAssignmentResources = useCallback((resourceIds = null) =>');
       expect(source).toContain('return resourceCandidates.filter(item => requestedIds.has(String(item.id || \'\')));');
       expect(source).toContain('hostPackOnMailboxRef.current(selectedResourceIds)');
-      expect(source).toContain('None of the selected resources can be shared with students.');
       expect(source).toContain('onSendFollowUpToLiveSession={sendSavedFollowUpPlanToLiveSession}');
       expect(source).toContain('savedFollowUpLiveSendLockRef.current');
       expect(source).toContain('resolveSavedFollowUpLiveDeliverySnapshot(cleanSessionId)');

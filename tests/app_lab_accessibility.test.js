@@ -8,6 +8,7 @@ globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
 const sourcePath = path.join(process.cwd(), 'stem_lab', 'stem_tool_applab.js');
 const publicPath = path.join(process.cwd(), 'desktop/web-app', 'public', 'stem_lab', 'stem_tool_applab.js');
+const themePath = path.join(process.cwd(), 'app_styles_source.jsx');
 
 function channel(value) {
   value /= 255;
@@ -65,18 +66,27 @@ describe('App Lab accessibility', () => {
 
   it('uses an AA contrast pair for shared disabled buttons', () => {
     const source = fs.readFileSync(sourcePath, 'utf8');
-    expect(source).toContain("background: dis ? '#e5e7eb' : bg");
-    expect(source).toContain("color: dis ? '#4b5563' : fg");
+    const themes = fs.readFileSync(themePath, 'utf8');
+    expect(source).toContain("background: dis ? 'var(--allo-stem-deeper, #e5e7eb)' :");
+    expect(source).toContain("color: dis ? 'var(--allo-stem-text-soft, #4b5563)' :");
     expect(source).toContain("'aria-label': __alloT('stem.applab.hypothesis_input', 'Prompt variance hypothesis')");
     expect(source).toContain("'aria-label': __alloT('stem.applab.explanation_input', 'Prompt variance explanation')");
-    expect(contrast('#4b5563', '#e5e7eb')).toBeGreaterThanOrEqual(4.5);
+    [
+      ['#475569', '#e2e8f0'], // default
+      ['#94a3b8', '#020617'], // dark
+      ['#ffff00', '#000000'], // high contrast
+    ].forEach(([foreground, background]) => {
+      expect(themes).toContain(`--allo-stem-text-soft:    ${foreground}`);
+      expect(themes).toContain(`--allo-stem-deeper:       ${background}`);
+      expect(contrast(foreground, background)).toBeGreaterThanOrEqual(4.5);
+    });
   });
 
-  it('renders the initially disabled Generate App control with readable text', () => {
+  it('renders the initially disabled Generate App control with theme-responsive colors', () => {
     const button = findButton(host, 'Generate app');
     expect(button).toBeTruthy();
     expect(button.disabled).toBe(true);
-    expect(button.style.background).toBe('rgb(229, 231, 235)');
-    expect(button.style.color).toBe('rgb(75, 85, 99)');
+    expect(button.style.background).toBe('var(--allo-stem-deeper, #e5e7eb)');
+    expect(button.style.color).toBe('var(--allo-stem-text-soft, #4b5563)');
   });
 });

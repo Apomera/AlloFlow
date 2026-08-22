@@ -43,6 +43,7 @@ function makeLiveFollowHarness(overrides = {}) {
     warnLog: vi.fn(),
     pushResourceToMailbox: vi.fn(),
     _mbPushOneResource: vi.fn(async () => ({ rtcCount: 0 })),
+    requestWordSoundsAudioConfirmation: vi.fn(() => false),
     ...overrides,
   };
   // eslint-disable-next-line no-new-func
@@ -332,8 +333,9 @@ describe('ANTI wiring pins', () => {
     // all continue through the same helper.
     // — the raw currentResourceId write survives ONLY inside the helper.
     const calls = anti.split('_alloFollowResourceLive(').length - 1;
-    // AAC Board History restore is the seventh class-follow surface.
-    expect(calls).toBe(7);
+    // AAC Board History restore is the seventh class-follow surface; the
+    // eighth reference is the confirmed retry owned by the portable-audio guard.
+    expect(calls).toBe(8);
     expect(anti.split('currentResourceId: item.id').length - 1).toBe(1);
     expect(anti).toContain('const _alloFollowResourceLive = (item, options = {}) => {');
     expect(anti).toContain('options.awaitDelivery === true');

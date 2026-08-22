@@ -7,19 +7,19 @@ exports[`math/logic graph cluster render goldens (default state) > renders + pin
   "inputs": 1,
   "lengthBucket": 38,
   "paths": 0,
-  "sha": "8b8617d7e672fc7b",
+  "sha": "27069b4bf5cc799f",
   "svgs": 0,
 }
 `;
 
 exports[`math/logic graph cluster render goldens (default state) > renders + pins a digest for calculus 1`] = `
 {
-  "buttons": 29,
+  "buttons": 30,
   "circles": 1,
   "inputs": 9,
-  "lengthBucket": 125,
+  "lengthBucket": 131,
   "paths": 0,
-  "sha": "c7fea9e0988d8733",
+  "sha": "106420b44dd5839a",
   "svgs": 2,
 }
 `;
@@ -43,7 +43,7 @@ exports[`math/logic graph cluster render goldens (default state) > renders + pin
   "inputs": 21,
   "lengthBucket": 97,
   "paths": 0,
-  "sha": "1aefdca36bb3efa3",
+  "sha": "d68e2275cf4e93fb",
   "svgs": 1,
 }
 `;
@@ -55,7 +55,7 @@ exports[`math/logic graph cluster render goldens (default state) > renders + pin
   "inputs": 8,
   "lengthBucket": 126,
   "paths": 0,
-  "sha": "b8aaea40b9022d88",
+  "sha": "b75b72defee8655b",
   "svgs": 1,
 }
 `;
@@ -79,7 +79,7 @@ exports[`math/logic graph cluster render goldens (default state) > renders + pin
   "inputs": 0,
   "lengthBucket": 39,
   "paths": 0,
-  "sha": "12fafa212925b7b2",
+  "sha": "9333fc1bd1cafa7c",
   "svgs": 1,
 }
 `;
@@ -103,7 +103,7 @@ exports[`math/logic graph cluster render goldens (default state) > renders + pin
   "inputs": 7,
   "lengthBucket": 94,
   "paths": 0,
-  "sha": "23f2408ee67ade8a",
+  "sha": "bc889d94743fc8ec",
   "svgs": 1,
 }
 `;
@@ -127,7 +127,7 @@ exports[`math/logic graph cluster render goldens (default state) > renders + pin
   "inputs": 4,
   "lengthBucket": 148,
   "paths": 1,
-  "sha": "52aad9477f6247bd",
+  "sha": "478a9cd97cf32ef5",
   "svgs": 2,
 }
 `;

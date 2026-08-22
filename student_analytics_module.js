@@ -1546,6 +1546,12 @@ try {
         if (orfProbeTimerRef.current) clearInterval(orfProbeTimerRef.current);
       };
     }, []);
+    // data-a11y-essential-timing: These NWF/LNF/RAN/ORF/maze-number/
+    // quantity-discrimination timers administer standardized curriculum-based
+    // measures. Their fixed duration is the construct being measured; extending
+    // it would invalidate score interpretation (WCAG 2.2.1 essential exception).
+    // Educators can end a probe early, and RAN records elapsed time rather than
+    // imposing a response deadline.
     // Start probe timer after ProbeOverlay countdown completes
     const startProbeTimer = React.useCallback(() => {
       if (!probeTimerPending) return;

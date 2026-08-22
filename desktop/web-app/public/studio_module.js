@@ -4611,25 +4611,46 @@
       addToast('📽️ ' + TT('studio.deck_built', 'Deck drafted: a title slide plus one slide per resource. Reorder, edit, then export to PowerPoint.') + (built.skipped ? ' (' + built.skipped + ' ' + TT('studio.deck_skipped', 'resources beyond the page limit were left out') + ')' : ''), 'success');
       stAnnounce(TT('studio.a11y_deck_built', 'Deck drafted from resources') + ': ' + built.used);
     };
-    var insertArtworkFromArtStudio = function (artwork) {
+    var insertArtworkFromTool = function (artwork) {
       var source = artwork && stSafeDataImage(artwork.src, ST_MAX_IMAGE_SRC_LENGTH);
       if (!source) {
-        addToast(TT('studio.artstudio_image_failed', 'That Art Studio image could not be added.'), 'error');
+        addToast(TT('studio.visual_asset_failed', 'That visual asset could not be added.'), 'error');
         return;
       }
       var now = Date.now();
-      var title = stCleanText(artwork.title || 'Art Studio artwork', 120) || 'Art Studio artwork';
+      var sourceTool = stCleanText(artwork.sourceTool || 'artStudio', 60) || 'artStudio';
+      var isSourcebook = sourceTool === 'sourcebook';
+      var title = stCleanText(artwork.title || (isSourcebook ? 'Sourcebook visual asset' : 'Art Studio artwork'), 120) || 'Visual asset';
       var created = stCreateDoc('letter-portrait', title, now);
-      stAppend(created, { type: 'doc.template', template: 'artstudio-artwork' }, 'import', now);
+      stAppend(created, { type: 'doc.template', template: isSourcebook ? 'sourcebook-asset' : 'artstudio-artwork' }, 'import', now);
       var frame = { x: 72, y: 120, w: Math.min(672, created.canvas.w - 144), h: Math.min(672, created.canvas.h - 240) };
-      var image = stMakeImage(source, stCleanText(artwork.altText || '', 300), frame, 'stem-artstudio');
+      var origin = isSourcebook ? 'stem-sourcebook' : 'stem-artstudio';
+      var image = stMakeImage(source, stCleanText(artwork.altText || '', 300), frame, origin);
+      image.fit = artwork.preparation && artwork.preparation.mode === 'fit' ? 'contain' : 'cover';
       image.provenance = {
-        origin: 'stem-artstudio',
-        sourceTool: stCleanText(artwork.sourceTool || 'artStudio', 60),
+        origin: origin,
+        sourceTool: sourceTool,
         sourceTab: stCleanText(artwork.sourceTab || '', 60),
+        assetId: stCleanText(artwork.assetId || '', 100),
+        provider: stCleanText(artwork.provider || '', 100),
+        sourceUrl: /^https:\/\//i.test(String(artwork.sourceUrl || '')) ? String(artwork.sourceUrl).slice(0, 2048) : '',
+        license: stCleanText(artwork.license || '', 160),
+        licenseUrl: /^https:\/\//i.test(String(artwork.licenseUrl || '')) ? String(artwork.licenseUrl).slice(0, 2048) : '',
+        rightsType: stCleanText(artwork.rightsType || '', 20),
+        rightsNote: stCleanText(artwork.rightsNote || '', 500),
+        attribution: stCleanText(artwork.attribution || '', 1200),
+        preparation: artwork.preparation && typeof artwork.preparation === 'object' ? stClone(artwork.preparation) : null,
         createdAt: Number(artwork.createdAt) || now,
       };
       var applied = stAppend(created, { type: 'object.add', object: image }, 'import', now);
+      if (isSourcebook) {
+        var credit = stCleanText(artwork.attribution || [artwork.provider, artwork.license, artwork.sourceUrl].filter(Boolean).join(' · '), 1200);
+        if (credit) {
+          var creditObject = stMakeText('body', credit, { x: 72, y: created.canvas.h - 150, w: created.canvas.w - 144, h: 90 }, { size: 12, color: '#334155' });
+          creditObject.provenance = { origin: 'stem-sourcebook-credit', assetId: stCleanText(artwork.assetId || '', 100), sourceUrl: image.provenance.sourceUrl };
+          stAppend(created, { type: 'object.add', object: creditObject }, 'import', now);
+        }
+      }
       _docRef.current = created;
       setPageIndex(0);
       setView('edit');
@@ -4637,8 +4658,12 @@
       var insertedId = applied && applied.object && applied.object.id;
       if (insertedId) selectOnly(insertedId);
       bump();
-      addToast(TT('studio.artstudio_image_added', 'Art Studio artwork added. Review its alt text before exporting.'), 'success');
-      stAnnounce(TT('studio.artstudio_image_added_a11y', 'Art Studio artwork added to Page Designer'));
+      addToast(isSourcebook
+        ? TT('studio.sourcebook_asset_added', 'Sourcebook asset added with its source and reuse information. Review its alt text before exporting.')
+        : TT('studio.artstudio_image_added', 'Art Studio artwork added. Review its alt text before exporting.'), 'success');
+      stAnnounce(isSourcebook
+        ? TT('studio.sourcebook_asset_added_a11y', 'Sourcebook asset added to Page Designer with provenance')
+        : TT('studio.artstudio_image_added_a11y', 'Art Studio artwork added to Page Designer'));
     };
     // Host routing ("Open in Page Designer" next to the main app's slide
     // export): the prop arrives once; the ref guard makes it one-shot so
@@ -4649,9 +4674,9 @@
       if (props.initialAction === 'deck-from-resources') {
         initialActionRef.current = true;
         buildDeckFromResources();
-      } else if (props.initialAction === 'insert-artstudio-artwork' && props.initialArtwork) {
+      } else if ((props.initialAction === 'insert-visual-asset' || props.initialAction === 'insert-artstudio-artwork') && props.initialArtwork) {
         initialActionRef.current = true;
-        insertArtworkFromArtStudio(props.initialArtwork);
+        insertArtworkFromTool(props.initialArtwork);
       } else if (props.initialAction === 'import-lesson-deck' && props.initialFile) {
         initialActionRef.current = true;
         onImportPptxFile({ target: { files: [props.initialFile], value: '' } });

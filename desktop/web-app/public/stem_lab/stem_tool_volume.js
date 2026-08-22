@@ -1407,10 +1407,11 @@ window.StemLab = window.StemLab || {
               (function(fx, fy) {
                 cubes.push(h('div', { 
                   key: 'g-'+fx+'-'+fy,
-                  role: 'button',
-                  tabIndex: 0,
-                  'aria-label': 'Place cube at column ' + fx + ', row ' + fy + ', layer 0',
-                  onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.currentTarget.click(); } },
+                  // Pointer shortcut only. The full-size layer grid below is the
+                  // keyboard/screen-reader control for every cube coordinate.
+                  // Keeping both surfaces in the tab order created dozens of
+                  // foreshortened targets that could not meet WCAG target size.
+                  'data-volume-visual-target': 'place',
                   onClick: function(e) {
                     e.stopPropagation();
                     toggleFreeformCube(fx, fy, 0);
@@ -1436,10 +1437,9 @@ window.StemLab = window.StemLab || {
             (function(ax, ay, az) {
               cubes.push(h('div', { 
                 key: 'stack-'+above,
-                role: 'button',
-                tabIndex: 0,
-                'aria-label': 'Stack cube on top at column ' + ax + ', row ' + ay + ', layer ' + az,
-                onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.currentTarget.click(); } },
+                // Supplementary pointer shortcut; the accessible layer grid
+                // provides the equivalent add/remove operation for this cell.
+                'data-volume-visual-target': 'stack',
                 onClick: function(e) {
                   e.stopPropagation();
                   toggleFreeformCube(ax, ay, az);
@@ -2951,7 +2951,7 @@ window.StemLab = window.StemLab || {
         ),
         h('div', { className: 'flex flex-wrap items-center gap-2 rounded-xl border border-emerald-100 bg-white/80 p-2' },
           h('div', { className: 'flex items-center gap-2' },
-            h('div', { className: 'text-xs font-bold text-emerald-600' }, score.correct + '/' + score.total),
+            h('div', { className: 'text-xs font-bold text-emerald-700' }, score.correct + '/' + score.total),
             (_v.attemptHist && _v.attemptHist.length > 1) && h('div', { className: 'flex items-center gap-px', title: __alloT('stem.volume.recent_attempts_newest_at_right', 'Recent attempts (newest at right)'), role: 'img', 'aria-label': _v.attemptHist.slice(-12).filter(function (x) { return x; }).length + ' correct of your last ' + Math.min(12, _v.attemptHist.length) + ' attempts' },
               _v.attemptHist.slice(-12).map(function (v, i) { return h('span', { key: i, className: 'inline-block w-1 h-3.5 rounded-sm ' + (v ? 'bg-emerald-500' : 'bg-rose-400') }); })),
             streak >= 2 && h('div', {
@@ -2968,14 +2968,14 @@ window.StemLab = window.StemLab || {
           ),
           h('div', { className: 'flex-1' }),
           // Mode toggle: dimensions, freeform, word problems, and displacement.
-          h('div', { className: 'flex items-center gap-1 overflow-x-auto bg-emerald-50 rounded-lg p-1 border border-emerald-200', role: 'tablist', 'aria-label': __alloT('stem.volume.volume_modes', 'Volume modes') },
+          h('div', { className: 'flex w-full min-w-0 max-w-full items-center gap-1 overflow-x-auto bg-emerald-50 rounded-lg p-1 border border-emerald-200 sm:w-auto', role: 'tablist', 'aria-label': __alloT('stem.volume.volume_modes', 'Volume modes') },
             h('button', { 'aria-label': __alloT('stem.volume.slider_mode', 'Slider mode'),
               id: 'stem-volume-tab-slider',
               onClick: function() { upd({ mode: 'slider', builderChallenge: null, builderFeedback: null }); },
               role: 'tab', 'aria-selected': mode === 'slider', 'aria-controls': 'stem-volume-panel-slider',
               tabIndex: mode === 'slider' ? 0 : -1,
               onKeyDown: function(e) { volumeTabKeyDown(e, 0); },
-              className: 'min-h-[2.5rem] whitespace-nowrap px-3 py-2 rounded-md text-xs font-bold transition-all focus:outline-none focus:ring-2 focus:ring-emerald-400 ' + (mode === 'slider' ? 'bg-white text-emerald-700 shadow-sm' : 'text-emerald-500 hover:text-emerald-700'),
+              className: 'min-h-[2.5rem] whitespace-nowrap px-3 py-2 rounded-md text-xs font-bold transition-all focus:outline-none focus:ring-2 focus:ring-emerald-400 ' + (mode === 'slider' ? 'bg-white text-emerald-700 shadow-sm' : 'text-emerald-700 hover:text-emerald-800'),
               title: __alloT('stem.volume.slider_mode_s', 'Slider mode (S)')
             }, __alloT('stem.volume.slider', '\uD83C\uDF9A\uFE0F Slider')),
             h('button', { 'aria-label': __alloT('stem.volume.freeform_mode', 'Freeform mode'),
@@ -2984,7 +2984,7 @@ window.StemLab = window.StemLab || {
               role: 'tab', 'aria-selected': isFreeform, 'aria-controls': 'stem-volume-panel-freeform',
               tabIndex: isFreeform ? 0 : -1,
               onKeyDown: function(e) { volumeTabKeyDown(e, 1); },
-              className: 'min-h-[2.5rem] whitespace-nowrap px-3 py-2 rounded-md text-xs font-bold transition-all focus:outline-none focus:ring-2 focus:ring-indigo-400 ' + (isFreeform ? 'bg-white text-indigo-700 shadow-sm' : 'text-emerald-500 hover:text-emerald-700'),
+              className: 'min-h-[2.5rem] whitespace-nowrap px-3 py-2 rounded-md text-xs font-bold transition-all focus:outline-none focus:ring-2 focus:ring-indigo-400 ' + (isFreeform ? 'bg-white text-indigo-700 shadow-sm' : 'text-emerald-700 hover:text-indigo-800'),
               title: __alloT('stem.volume.freeform_mode_f', 'Freeform mode (F)')
             }, __alloT('stem.volume.freeform', '\uD83E\uDDF1 Freeform')),
             h('button', { 'aria-label': __alloT('stem.volume.word_problems_mode', 'Word Problems mode'),
@@ -2996,7 +2996,7 @@ window.StemLab = window.StemLab || {
               role: 'tab', 'aria-selected': isWord, 'aria-controls': 'stem-volume-panel-word',
               tabIndex: isWord ? 0 : -1,
               onKeyDown: function(e) { volumeTabKeyDown(e, 2); },
-              className: 'min-h-[2.5rem] whitespace-nowrap px-3 py-2 rounded-md text-xs font-bold transition-all focus:outline-none focus:ring-2 focus:ring-amber-400 ' + (isWord ? 'bg-white text-amber-700 shadow-sm' : 'text-emerald-500 hover:text-emerald-700'),
+              className: 'min-h-[2.5rem] whitespace-nowrap px-3 py-2 rounded-md text-xs font-bold transition-all focus:outline-none focus:ring-2 focus:ring-amber-400 ' + (isWord ? 'bg-white text-amber-700 shadow-sm' : 'text-emerald-700 hover:text-amber-800'),
               title: __alloT('stem.volume.word_problems_mode_w', 'Word Problems mode (W)')
             }, __alloT('stem.volume.word', '\uD83D\uDCDD Word')),
             h('button', { 'aria-label': 'Water Displacement Lab mode',
@@ -3005,7 +3005,7 @@ window.StemLab = window.StemLab || {
               role: 'tab', 'aria-selected': isDisplacement, 'aria-controls': 'stem-volume-panel-displacement',
               tabIndex: isDisplacement ? 0 : -1,
               onKeyDown: function(e) { volumeTabKeyDown(e, 3); },
-              className: 'min-h-[2.5rem] whitespace-nowrap px-3 py-2 rounded-md text-xs font-bold transition-all focus:outline-none focus:ring-2 focus:ring-sky-400 ' + (isDisplacement ? 'bg-white text-sky-800 shadow-sm' : 'text-emerald-500 hover:text-sky-700'),
+              className: 'min-h-[2.5rem] whitespace-nowrap px-3 py-2 rounded-md text-xs font-bold transition-all focus:outline-none focus:ring-2 focus:ring-sky-400 ' + (isDisplacement ? 'bg-white text-sky-800 shadow-sm' : 'text-emerald-700 hover:text-sky-800'),
               title: 'Water Displacement Lab mode (D)'
             }, '\uD83E\uDDEA Displacement')),
           // Mute toggle
@@ -3166,7 +3166,7 @@ window.StemLab = window.StemLab || {
             // Story prompt + answer input
             h('div', { className: 'bg-white rounded-xl border-2 border-amber-200 p-4' },
               h('p', { className: 'text-base font-bold text-amber-900 leading-relaxed mb-3' }, '📖 ' + story),
-              h('div', { className: 'flex gap-2 items-center' },
+              h('div', { className: 'flex flex-wrap gap-2 items-center' },
                 h('input', { 'aria-label': __alloT('stem.volume.volume_answer_for_word_problem', 'Volume answer for word problem'),
                   type: 'number', value: wpAnswer,
                   onChange: function(e) { upd({ wpAnswer: e.target.value }); },
@@ -3193,7 +3193,7 @@ window.StemLab = window.StemLab || {
                     }
                   },
                   placeholder: __alloT('stem.volume.v', 'V = ?'),
-                  className: 'flex-1 px-3 py-2 border-2 border-amber-600 rounded-lg text-base font-mono'
+                  className: 'min-w-0 flex-1 px-3 py-2 border-2 border-amber-600 rounded-lg text-base font-mono'
                 }),
                 h('span', { className: 'text-xs font-bold text-amber-700' }, ctx2.unit),
                 h('button', {
@@ -3541,7 +3541,7 @@ window.StemLab = window.StemLab || {
             'aria-label': __alloT('stem.volume.visible_layers', 'Visible layers'),
             className: 'flex-1 h-1.5 bg-emerald-200 rounded-lg appearance-none cursor-pointer accent-emerald-600'
           }),
-          h('span', { className: 'text-xs font-mono text-emerald-600' },
+          h('span', { className: 'text-xs font-mono text-emerald-700' },
             (showLayers != null ? showLayers : dims.h) + ' / ' + dims.h)
         ),
 
@@ -3698,7 +3698,7 @@ window.StemLab = window.StemLab || {
         // Stats
         !isDisplacement && h('div', { className: 'grid grid-cols-2 gap-3' },
           h('div', { className: 'bg-white rounded-xl p-3 border border-emerald-100 text-center flex flex-col items-center justify-center' },
-            h('div', { className: 'text-xs font-bold text-emerald-600 uppercase mb-1' }, __alloT('stem.volume.volume', 'Volume')),
+            h('div', { className: 'text-xs font-bold text-emerald-700 uppercase mb-1' }, __alloT('stem.volume.volume', 'Volume')),
             h('div', { className: 'text-xl font-bold text-emerald-800' },
               // Armed predictions mask the whole breakdown, not just the total \u2014 the
               // "Area of Base x Height" line reconstructs the answer on its own.
@@ -3721,7 +3721,7 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'text-xs text-slate-600' }, volume + ' unit cube' + (volume !== 1 ? 's' : ''))
           ),
           h('div', { className: 'bg-white rounded-xl p-3 border border-teal-100 text-center' },
-            h('div', { className: 'text-xs font-bold text-teal-600 uppercase mb-1' }, __alloT('stem.volume.surface_area', 'Surface Area')),
+            h('div', { className: 'text-xs font-bold text-teal-700 uppercase mb-1' }, __alloT('stem.volume.surface_area', 'Surface Area')),
             h('div', { className: 'text-xl font-bold text-teal-800' },
               __alloT('stem.volume.sa', 'SA = '), h('span', { className: 'text-2xl text-teal-600' },
                 (isSlider && challenge && !feedback) ? '?' :

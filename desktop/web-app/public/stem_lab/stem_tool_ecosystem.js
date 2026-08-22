@@ -4910,7 +4910,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
           }, h(ArrowLeft, { size: 18 })),
           h('span', { className: 'text-lg font-bold tracking-tight' }, activeScenario.emoji + ' ' + __alloT('stem.ecosystem.title', 'Ecosystem Simulator')),
           h('span', { className: 'ml-auto px-2 py-0.5 text-[11px] font-bold bg-emerald-700 text-white rounded-full animate-pulse motion-reduce:animate-none' }, __alloT('stem.ecosystem.live', 'LIVE')),
-          h('span', { className: 'text-xs font-bold text-amber-600 dark:text-amber-400 ml-1' }, '\u2B50 ' + researchPoints + ' RP'),
+          h('span', { className: 'text-xs font-bold text-amber-800 dark:text-amber-300 ml-1' }, '\u2B50 ' + researchPoints + ' RP'),
         ),
 
         // ── Grade intro ──
@@ -4999,7 +4999,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
 
 
         // ── Mode tabs (4 tabs now) ──
-        h('div', { className: 'flex gap-1 bg-slate-100 dark:bg-slate-800 rounded-lg p-1', role: 'tablist', 'aria-label': __alloT('stem.ecosystem.aria_explorer_sections', 'Ecosystem Explorer sections') },
+        h('div', { className: 'grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-1 bg-slate-100 dark:bg-slate-800 rounded-lg p-1', role: 'tablist', 'aria-label': __alloT('stem.ecosystem.aria_explorer_sections', 'Ecosystem Explorer sections') },
           ECO_TAB_ORDER.map(function(t2, tabIndex) {
             var tabLabel = '';
             if (t2 === 'explore') tabLabel = '\uD83C\uDF3F ' + __alloT('stem.ecosystem.explore', 'Explore');
@@ -5014,7 +5014,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
               'aria-controls': 'stem-ecosystem-panel-' + t2,
               tabIndex: tab === t2 ? 0 : -1,
               onKeyDown: function(e) { ecoTabKeyDown(e, tabIndex); },
-              className: 'flex-1 px-2 py-1.5 text-xs font-semibold rounded-md transition-all ' +
+              className: 'w-full min-w-0 px-2 py-1.5 text-xs font-semibold rounded-md transition-all ' +
                 (tab === t2 ? 'bg-emerald-700 text-white shadow' : 'transition-colors text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 active:scale-[0.97]'),
               onClick: function() {
                 upd('tab', t2);
@@ -5364,7 +5364,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
           h('div', { className: 'space-y-1' },
             h('label', { className: 'text-[11px] font-semibold text-slate-600 dark:text-slate-300 flex justify-between' },
               h('span', null, '\uD83C\uDF31 ' + __alloT('stem.ecosystem.carrying_capacity_k', 'Carrying Capacity (K)')),
-              h('span', { className: 'text-amber-600 font-bold' }, carryingCapacity)
+              h('span', { className: 'text-amber-800 font-bold' }, carryingCapacity)
             ),
             h('input', {
               type: 'range', min: activeModelRanges.carryingCapacity.min, max: activeModelRanges.carryingCapacity.max, step: activeModelRanges.carryingCapacity.step, value: carryingCapacity,
@@ -5592,7 +5592,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             h('div', { className: 'space-y-1' },
               h('label', { className: 'text-[11px] font-semibold text-slate-600 dark:text-slate-300 flex justify-between' },
                 h('span', null, activeScenario.prey.emoji + ' ' + activeScenario.prey.label + ' \u2014 Prey Start'),
-                h('span', { className: 'text-emerald-600 font-bold' }, prey0)
+                h('span', { className: 'text-emerald-700 font-bold' }, prey0)
               ),
               h('input', {
                 type: 'range', min: activeModelRanges.prey0.min, max: activeModelRanges.prey0.max, step: activeModelRanges.prey0.step, value: prey0,
@@ -5618,7 +5618,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             h('div', { className: 'space-y-1' },
               h('label', { className: 'text-[11px] font-semibold text-slate-600 dark:text-slate-300 flex justify-between' },
                 h('span', null, activeScenario.prey.label + ' \u2014 Prey intrinsic growth (r)'),
-                h('span', { className: 'text-green-600 font-bold' }, preyBirth.toFixed(3))
+                h('span', { className: 'text-green-800 font-bold' }, preyBirth.toFixed(3))
               ),
               h('input', {
                 type: 'range', 'aria-label': __alloT('stem.ecosystem.aria_prey_growth_r', 'prey intrinsic growth rate r'), min: activeModelRanges.preyBirth.min, max: activeModelRanges.preyBirth.max, step: activeModelRanges.preyBirth.step, value: preyBirth,
@@ -5642,7 +5642,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             h('div', { className: 'space-y-1' },
               h('label', { className: 'text-[11px] font-semibold text-slate-600 dark:text-slate-300 flex justify-between' },
                 h('span', null, __alloT('stem.ecosystem.predation_coeff_a', 'Predation coefficient (a)')),
-                h('span', { className: 'text-orange-600 font-bold' }, preyDeath.toFixed(3))
+                h('span', { className: 'text-orange-800 font-bold' }, preyDeath.toFixed(3))
               ),
               h('input', {
                 type: 'range', 'aria-label': __alloT('stem.ecosystem.aria_predation_coeff_a', 'predation coefficient a'), min: activeModelRanges.preyDeath.min, max: activeModelRanges.preyDeath.max, step: activeModelRanges.preyDeath.step, value: preyDeath,
@@ -5736,7 +5736,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                 h('strong', { className: 'text-[11px] text-violet-900 dark:text-violet-200' }, 'Teacher / report mode'),
                 h('button', { type: 'button', 'aria-pressed': teacherMode, 'aria-controls': 'eco-teacher-tools', onClick: function() { upd('teacherMode', !teacherMode); }, className: 'px-2 py-1 rounded border border-violet-600 text-violet-800 dark:text-violet-200 text-[11px] font-semibold' }, teacherMode ? 'Hide tools' : 'Show tools')
               ),
-              teacherMode && h('div', { id: 'eco-teacher-tools', className: 'space-y-2' },
+              h('div', { id: 'eco-teacher-tools', hidden: !teacherMode, className: 'space-y-2' },
                 h('label', { htmlFor: 'eco-teacher-prompt', className: 'block text-[11px] font-bold text-slate-700 dark:text-slate-200' }, 'Guiding question or class prompt'),
                 h('textarea', { id: 'eco-teacher-prompt', value: teacherPrompt, onChange: function(e) { upd('teacherPrompt', e.target.value); }, rows: 2, maxLength: 400, placeholder: 'Example: How does reducing predator pressure change the prey trajectory?', className: 'w-full rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 p-2 text-[11px] text-slate-800 dark:text-slate-100' }),
                 h('p', { className: 'text-[11px] text-slate-700 dark:text-slate-200' }, data && data.length > 1 ? 'Report ready: ' + classifyRun(data).label : 'Run the model to populate the report.'),
@@ -6332,7 +6332,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
           h('div', { className: 'space-y-1' },
             h('label', { className: 'text-[11px] font-semibold text-slate-600 dark:text-slate-300 flex justify-between' },
               h('span', null, '\uD83C\uDF31 ' + __alloT('stem.ecosystem.carrying_capacity_k', 'Carrying Capacity (K)')),
-              h('span', { className: 'text-amber-600 font-bold' }, carryingCapacity)
+              h('span', { className: 'text-amber-800 font-bold' }, carryingCapacity)
             ),
             h('input', {
               type: 'range', 'aria-label': __alloT('stem.ecosystem.aria_carrying_capacity_lc', 'carrying capacity'), min: 30, max: 200, step: 5, value: carryingCapacity,
@@ -7524,7 +7524,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                 },
                   h('span', { className: 'font-semibold mr-2' }, String.fromCharCode(65 + idx) + '.'),
                   choice,
-                  showResult && isCorrectChoice && h('span', { className: 'ml-1 text-green-600' }, ' \u2714'),
+                  showResult && isCorrectChoice && h('span', { className: 'ml-1 text-green-800' }, ' \u2714'),
                   showResult && isSelected && !isCorrectChoice && h('span', { className: 'ml-1 text-red-600' }, ' \u2718')
                 );
               })

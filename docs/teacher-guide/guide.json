@@ -11,6 +11,7 @@
                 "the-workspace",
                 "start-here",
                 "prepare-a-lesson",
+                "worked-student-vignette",
                 "universal-settings",
                 "documents-and-printing"
             ]
@@ -38,6 +39,7 @@
             "title": "I need a routine for a specific classroom need",
             "description": "Start from a worked recipe and adapt it to your students and source.",
             "chapterSlugs": [
+                "worked-student-vignette",
                 "classroom-workflows",
                 "steam-lab",
                 "prepare-a-lesson"
@@ -97,7 +99,7 @@
         }
     ],
     "version": "2026.08",
-    "lastVerified": "2026-08-20",
+    "lastVerified": "2026-08-21",
     "chapters": [
         {
             "source": "chapters/01-start-here.md",
@@ -189,6 +191,13 @@
             "summary": "Use practical recipes for common middle-school teaching needs.",
             "audience": "Middle-school teacher",
             "time": "5-20 minutes per recipe"
+        },
+        {
+            "source": "chapters/25-worked-student-vignette.md",
+            "slug": "worked-student-vignette",
+            "summary": "Follow one fictional learner from a shared target through privacy-safe supports, live Canvas examples, evidence, and the next teaching decision.",
+            "audience": "Teachers planning differentiated instruction",
+            "time": "15-minute worked example"
         },
         {
             "source": "chapters/07-privacy-and-responsible-ai.md",

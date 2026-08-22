@@ -420,6 +420,397 @@ function getSimplifiedComplexityDisplay(item, ambientGrade) {
     target: target
   };
 }
+async function checkSimplifiedAlignment(deps) {
+  var options = deps || {};
+  var generatedContent = options.generatedContent;
+  var gradeLevel = options.gradeLevel;
+  var leveledTextLanguage = options.leveledTextLanguage;
+  var activeResolvedStandardsContext = options.activeResolvedStandardsContext;
+  var standardsInput = options.standardsInput;
+  var targetStandards = options.targetStandards;
+  var alloBotRef = options.alloBotRef;
+  var t = options.t;
+  var addToast = options.addToast;
+  var setIsCheckingAlignment = options.setIsCheckingAlignment;
+  var callGemini = options.callGemini;
+  var cleanJson = options.cleanJson;
+  var setGeneratedContent = options.setGeneratedContent;
+  var setHistory = options.setHistory;
+  var speak = options.speak;
+  var warnLog = options.warnLog;
+  var setError = options.setError;
+  if (!generatedContent || generatedContent.type !== 'simplified') return;
+  var contextModule = window.AlloModules && window.AlloModules.InstructionalContext;
+  var alignmentContext = contextModule && typeof contextModule.resolveArtifactContext === 'function' ? contextModule.resolveArtifactContext(generatedContent, {
+    grade: gradeLevel,
+    language: leveledTextLanguage,
+    standardsContext: activeResolvedStandardsContext,
+    standards: standardsInput || targetStandards || null
+  }) : {
+    grade: generatedContent?.targetGradeLevel || generatedContent?.config?.grade || gradeLevel,
+    standards: generatedContent?.config?.standardsContext || generatedContent?.config?.standards || activeResolvedStandardsContext || standardsInput || targetStandards || null
+  };
+  var alignmentGrade = alignmentContext.grade || gradeLevel;
+  var alignmentStandardsValue = alignmentContext.standards;
+  var alignmentStandardsText = function () {
+    if (!alignmentStandardsValue) return '';
+    if (typeof alignmentStandardsValue === 'string') return alignmentStandardsValue.trim();
+    if (typeof alignmentStandardsValue.promptText === 'string' && alignmentStandardsValue.promptText.trim()) {
+      return alignmentStandardsValue.promptText.trim();
+    }
+    var entries = Array.isArray(alignmentStandardsValue.standards) ? alignmentStandardsValue.standards : Array.isArray(alignmentStandardsValue) ? alignmentStandardsValue : [];
+    return entries.map(function (entry) {
+      return typeof entry === 'string' ? entry : [entry?.code || entry?.id, entry?.text || entry?.label].filter(Boolean).join(': ');
+    }).filter(Boolean).join('; ');
+  }().slice(0, 4000);
+  if (alloBotRef && alloBotRef.current) {
+    var contextMessage = t('bot_events.feedback_audit_start').replace('{standard}', alignmentStandardsText || 'Standard');
+    alloBotRef.current.speak(contextMessage);
+  }
+  if (!alignmentStandardsText) {
+    addToast(t('alignment.notifications.no_standard_error'), 'error');
+    return;
+  }
+  setIsCheckingAlignment(true);
+  try {
+    var textToCheck = typeof generatedContent?.data === 'string' ? generatedContent.data : '';
+    var prompt = `
+            You are a curriculum specialist. Evaluate the rigor of the following text against ALL provided standards.
+            Target Standards: "${alignmentStandardsText}"
+            Target Grade Level: ${alignmentGrade}
+            Text to Evaluate:
+            "${textToCheck.substring(0, 3000)}",
+            Task:
+            1. Think step-by-step. Analyze the cognitive demand (verbs) and content (nouns) of the standards.
+            2. Identify specific evidence in the text that matches these requirements.
+            3. Determine if the text supports the full rigor required by the standards, or if simplification has removed necessary depth.
+            Return ONLY JSON:
+            {
+                "evidence": "List specific phrases or sections from the text that serve as evidence of alignment...",
+                "status": "Aligned" or "Partially Aligned" or "Not Aligned",
+                "rigorReport": "Explanation of how the text meets or fails the cognitive demand based on the evidence...",
+                "missingElements": "Specific concepts or structures from the standard that are absent (or 'None')...",
+                "improvement": "One specific edit to increase rigor without breaking accessibility."
+            }
+        `;
+    var result = await callGemini(prompt, true);
+    var parsedAnalysis = JSON.parse(cleanJson(result));
+    var fingerprintText = contextModule && typeof contextModule.fingerprintText === 'function' ? contextModule.fingerprintText(textToCheck) : String(textToCheck.length) + '|' + textToCheck.slice(0, 64) + '|' + textToCheck.slice(-64);
+    var fingerprintStandards = contextModule && typeof contextModule.fingerprintValue === 'function' ? contextModule.fingerprintValue(alignmentStandardsValue) : '';
+    var analysis = {
+      ...parsedAnalysis,
+      contentFingerprint: fingerprintText,
+      checkedAt: new Date().toISOString(),
+      contextSnapshot: {
+        grade: alignmentGrade,
+        standardsFingerprint: fingerprintStandards,
+        standardsText: alignmentStandardsText
+      }
+    };
+    var updatedContent = {
+      ...generatedContent,
+      alignmentCheck: analysis
+    };
+    setGeneratedContent(updatedContent);
+    setHistory(function (previous) {
+      return previous.map(function (item) {
+        return item.id === generatedContent.id ? updatedContent : item;
+      });
+    });
+    addToast(t('alignment.notifications.check_complete'), 'success');
+    var feedbackKey = 'bot.rigor_feedback_misaligned';
+    if (analysis.status === 'Aligned') feedbackKey = 'bot.rigor_feedback_aligned';else if (analysis.status === 'Partially Aligned') feedbackKey = 'bot.rigor_feedback_partial';
+    speak(t(feedbackKey));
+  } catch (error) {
+    warnLog('Unhandled error:', error);
+    setError(t('alignment.notifications.error_check'));
+    addToast(t('alignment.notifications.check_failed'), 'error');
+  } finally {
+    setIsCheckingAlignment(false);
+  }
+}
+async function regenerateSimplifiedWithRigor(deps) {
+  var options = deps || {};
+  var generatedContent = options.generatedContent;
+  var setIsProcessing = options.setIsProcessing;
+  var splitReferencesFromBody = options.splitReferencesFromBody;
+  var extractSourceTextForProcessing = options.extractSourceTextForProcessing;
+  var activeResolvedStandardsContext = options.activeResolvedStandardsContext;
+  var standardsInput = options.standardsInput;
+  var targetStandards = options.targetStandards;
+  var gradeLevel = options.gradeLevel;
+  var leveledTextLanguage = options.leveledTextLanguage;
+  var translationTargetChoices = options.translationTargetChoices;
+  var currentUiLanguage = options.currentUiLanguage;
+  var selectedLanguages = options.selectedLanguages;
+  var resolveTranslationPolicy = options.resolveTranslationPolicy;
+  var translationMode = options.translationMode;
+  var generateBilingualText = options.generateBilingualText;
+  var callGemini = options.callGemini;
+  var applySimplifiedTextMutation = options.applySimplifiedTextMutation;
+  var setGeneratedContent = options.setGeneratedContent;
+  var setHistory = options.setHistory;
+  var addToast = options.addToast;
+  var t = options.t;
+  var warnLog = options.warnLog;
+  var setError = options.setError;
+  if (!generatedContent || !generatedContent.alignmentCheck || !generatedContent?.data) return;
+  setIsProcessing(true);
+  try {
+    var rawText = typeof generatedContent?.data === 'string' ? generatedContent.data : '';
+    var isLeveledText = generatedContent.type === 'simplified';
+    var originalParts = isLeveledText ? splitReferencesFromBody(rawText) : {
+      body: rawText,
+      references: ''
+    };
+    var sourceExtraction = extractSourceTextForProcessing(originalParts.body, false);
+    var currentText = sourceExtraction.text;
+    var countCitationMarkers = function (value) {
+      return (String(value || '').match(/\[\u207d[\u2070\u00b9\u00b2\u00b3\u2074-\u2079]+\u207e\]\(/g) || []).length;
+    };
+    var validateRigorCitations = function (original, candidate) {
+      var modules = typeof window !== 'undefined' && window.AlloModules;
+      var beforeCountFallback = countCitationMarkers(original);
+      var afterCountFallback = countCitationMarkers(candidate);
+      var citationShaped = beforeCountFallback > 0 || afterCountFallback > 0;
+      var unavailable = function (reason, error) {
+        return {
+          valid: !citationShaped,
+          ok: !citationShaped,
+          reason: reason,
+          error: error ? String(error?.message || error) : undefined,
+          beforeCount: beforeCountFallback,
+          afterCount: afterCountFallback,
+          orderChanged: false
+        };
+      };
+      var normalizeDecision = function (result) {
+        if (typeof result === 'boolean') return {
+          known: true,
+          valid: result
+        };
+        if (!result || typeof result !== 'object') return {
+          known: false,
+          valid: false
+        };
+        if (Object.prototype.hasOwnProperty.call(result, 'valid')) return {
+          known: true,
+          valid: result.valid === true
+        };
+        if (Object.prototype.hasOwnProperty.call(result, 'ok')) return {
+          known: true,
+          valid: result.ok === true
+        };
+        if (Object.prototype.hasOwnProperty.call(result, 'conserved')) return {
+          known: true,
+          valid: result.conserved === true
+        };
+        return {
+          known: false,
+          valid: false
+        };
+      };
+      var dispatcherValidate = modules?.GenDispatcher?.validateAdaptationCitationConservation;
+      if (typeof dispatcherValidate === 'function') {
+        try {
+          var dispatcherResult = dispatcherValidate(original, candidate);
+          var dispatcherDecision = normalizeDecision(dispatcherResult);
+          if (!dispatcherDecision.known) return unavailable('citation-validator-invalid-result');
+          var dispatcherDetails = dispatcherResult && typeof dispatcherResult === 'object' ? dispatcherResult : {};
+          return {
+            ...dispatcherDetails,
+            valid: dispatcherDecision.valid && !dispatcherDetails.orderChanged,
+            ok: dispatcherDecision.valid && !dispatcherDetails.orderChanged,
+            beforeCount: Number(dispatcherDetails.beforeCount ?? dispatcherDetails.originalLedger?.occurrences?.length ?? beforeCountFallback),
+            afterCount: Number(dispatcherDetails.afterCount ?? dispatcherDetails.candidateLedger?.occurrences?.length ?? afterCountFallback),
+            orderChanged: !!dispatcherDetails.orderChanged
+          };
+        } catch (error) {
+          return unavailable('citation-validator-error', error);
+        }
+      }
+      var pipeline = modules?.TextPipelineHelpers;
+      var pipelineValidate = pipeline?.validateCitationConservation;
+      var extractLedger = pipeline?.extractCitationLedger;
+      if (typeof pipelineValidate !== 'function' || typeof extractLedger !== 'function') {
+        return unavailable('citation-validator-unavailable');
+      }
+      try {
+        var pipelineResult = pipelineValidate(original, candidate);
+        var pipelineDecision = normalizeDecision(pipelineResult);
+        if (!pipelineDecision.known) return unavailable('citation-validator-invalid-result');
+        var originalOccurrences = extractLedger(original)?.occurrences || [];
+        var candidateOccurrences = extractLedger(candidate)?.occurrences || [];
+        var orderChanged = originalOccurrences.length !== candidateOccurrences.length || originalOccurrences.some(function (entry, index) {
+          return entry?.key !== candidateOccurrences[index]?.key;
+        });
+        var pipelineDetails = pipelineResult && typeof pipelineResult === 'object' ? pipelineResult : {};
+        return {
+          ...pipelineDetails,
+          valid: pipelineDecision.valid && !orderChanged,
+          ok: pipelineDecision.valid && !orderChanged,
+          beforeCount: originalOccurrences.length,
+          afterCount: candidateOccurrences.length,
+          orderChanged: orderChanged
+        };
+      } catch (error) {
+        return unavailable('citation-validator-error', error);
+      }
+    };
+    var contextModule = typeof window !== 'undefined' && window.AlloModules ? window.AlloModules.InstructionalContext : null;
+    var ambientStandardsContext = typeof activeResolvedStandardsContext !== 'undefined' ? activeResolvedStandardsContext : null;
+    var ambientStandards = typeof standardsInput !== 'undefined' ? standardsInput : typeof targetStandards !== 'undefined' ? targetStandards : null;
+    var rigorContext = contextModule && typeof contextModule.resolveArtifactContext === 'function' ? contextModule.resolveArtifactContext(generatedContent, {
+      grade: gradeLevel,
+      language: leveledTextLanguage,
+      standardsContext: ambientStandardsContext,
+      standards: ambientStandards
+    }) : {
+      grade: generatedContent?.instructionalText?.complexity?.requestedGrade || generatedContent?.targetGradeLevel || generatedContent?.config?.grade || gradeLevel,
+      language: generatedContent?.instructionalText?.complexity?.language || generatedContent?.config?.language || leveledTextLanguage || 'English',
+      standards: generatedContent?.config?.standardsContext || generatedContent?.config?.standards || ambientStandardsContext || ambientStandards || null
+    };
+    var rigorGrade = rigorContext.grade || gradeLevel;
+    var rigorLanguage = rigorContext.language || leveledTextLanguage || 'English';
+    var rigorStandardsValue = rigorContext.standards;
+    var rigorStandards = function () {
+      if (!rigorStandardsValue) return '';
+      if (typeof rigorStandardsValue === 'string') return rigorStandardsValue.trim();
+      if (typeof rigorStandardsValue.promptText === 'string' && rigorStandardsValue.promptText.trim()) {
+        return rigorStandardsValue.promptText.trim();
+      }
+      var entries = Array.isArray(rigorStandardsValue.standards) ? rigorStandardsValue.standards : Array.isArray(rigorStandardsValue) ? rigorStandardsValue : [];
+      return entries.map(function (entry) {
+        return typeof entry === 'string' ? entry : [entry?.code || entry?.id, entry?.text || entry?.label].filter(Boolean).join(': ');
+      }).filter(Boolean).join('; ');
+    }().slice(0, 2400);
+    var suggestion = generatedContent.alignmentCheck.improvement;
+    var prompt = `
+            Rewrite the following educational text to address specific feedback regarding standard alignment.
+            Current Text:
+            "${currentText}",
+            Feedback/Suggestion to Implement:
+            "${suggestion}",
+            Target Audience: ${rigorGrade} students.
+            ${rigorStandards ? `Standards Context: ${rigorStandards}` : ''}
+            Instructions:
+            - Incorporate the suggestion to increase rigor or alignment.
+            - Maintain the appropriate reading level for ${rigorGrade}.
+            - Preserve the disciplinary concepts and cognitive demand in the recorded standards context.
+            - Write the rewritten text in ${rigorLanguage}.
+            ${isLeveledText ? `- Preserve every inline Markdown citation exactly as written, including its superscript number, URL, occurrence count, and order.
+            - Keep each citation attached to the same supported claim; never add, remove, duplicate, rename, reorder, or alter a citation.
+            - Do not produce a Sources, References, Bibliography, or Works Cited section. AlloFlow appends the preserved reference trailer after validation.` : ''}
+        `;
+    var rigorTranslationChoices = typeof translationTargetChoices === 'function' ? translationTargetChoices(rigorLanguage, currentUiLanguage, typeof selectedLanguages !== 'undefined' ? selectedLanguages : []) : [];
+    var rigorTranslationPolicy = typeof resolveTranslationPolicy === 'function' ? resolveTranslationPolicy(translationMode, rigorLanguage, currentUiLanguage, rigorTranslationChoices) : {
+      enabled: false,
+      target: 'English',
+      mode: 'off'
+    };
+    var newText = await generateBilingualText(prompt, rigorLanguage, callGemini, rigorTranslationPolicy);
+    var rigorCitationAudit = null;
+    if (isLeveledText) {
+      var candidateParts = splitReferencesFromBody(newText);
+      var candidateBody = String(candidateParts.body || '').trim();
+      var candidateExtraction = extractSourceTextForProcessing(candidateBody, false);
+      var candidateTarget = candidateExtraction.targetLangBlock || candidateExtraction.text;
+      var originalForValidation = sourceExtraction.isBilingual ? originalParts.body : currentText;
+      var candidateForValidation = sourceExtraction.isBilingual ? candidateBody : candidateTarget;
+      var conservation = validateRigorCitations(originalForValidation, candidateForValidation);
+      var shouldValidateGeneratedEnglish = !sourceExtraction.isBilingual && (candidateExtraction.isBilingual || String(rigorLanguage || '').trim().toLowerCase() !== 'english');
+      if (shouldValidateGeneratedEnglish) {
+        var englishConservation = validateRigorCitations(candidateTarget, candidateExtraction.isBilingual ? candidateExtraction.englishBlock : '');
+        conservation = {
+          ...conservation,
+          valid: !!conservation.valid && !!englishConservation.valid,
+          ok: !!conservation.valid && !!englishConservation.valid,
+          beforeCount: Number(conservation.beforeCount || 0) + Number(englishConservation.beforeCount || 0),
+          afterCount: Number(conservation.afterCount || 0) + Number(englishConservation.afterCount || 0),
+          orderChanged: !!conservation.orderChanged || !!englishConservation.orderChanged,
+          english: englishConservation
+        };
+      }
+      rigorCitationAudit = {
+        stage: 'rigor-regeneration',
+        valid: !!conservation.valid,
+        beforeCount: Number(conservation.beforeCount ?? conservation.originalLedger?.occurrences?.length ?? countCitationMarkers(originalForValidation)),
+        afterCount: Number(conservation.afterCount ?? conservation.candidateLedger?.occurrences?.length ?? countCitationMarkers(candidateForValidation)),
+        orderChanged: !!conservation.orderChanged,
+        ...(conservation.reason ? {
+          reason: conservation.reason
+        } : {})
+      };
+      if (!conservation.valid) {
+        var citationError = new Error('Rigor regeneration changed or could not verify source citations.');
+        citationError.code = 'citation-conservation-failed';
+        citationError.details = conservation;
+        throw citationError;
+      }
+      newText = [candidateBody, originalParts.references].filter(Boolean).join('\n\n');
+    }
+    var priorConfig = generatedContent.config && typeof generatedContent.config === 'object' ? generatedContent.config : {};
+    var priorAudit = priorConfig.citationAudit && typeof priorConfig.citationAudit === 'object' ? priorConfig.citationAudit : null;
+    var updatedConfig = rigorCitationAudit ? {
+      ...priorConfig,
+      citationAudit: {
+        ...(priorAudit || {
+          version: 1,
+          policy: 'exact-marker-order',
+          enabled: rigorCitationAudit.beforeCount > 0,
+          status: 'valid',
+          fallbackCount: 0
+        }),
+        stages: [...(Array.isArray(priorAudit?.stages) ? priorAudit.stages : []), rigorCitationAudit]
+      }
+    } : generatedContent.config;
+    var updatedContent = {
+      ...generatedContent,
+      data: newText,
+      ...(rigorCitationAudit ? {
+        config: updatedConfig
+      } : {})
+    };
+    // Keep readability and AI-check evidence tied to the exact rewritten
+    // bytes, just as manual edits and undo/redo do.
+    if (isLeveledText && typeof applySimplifiedTextMutation === 'function') {
+      updatedContent = applySimplifiedTextMutation(updatedContent, newText);
+    } else {
+      delete updatedContent.localStats;
+      var fallbackContextModule = typeof window !== 'undefined' && window.AlloModules ? window.AlloModules.InstructionalContext : null;
+      if (fallbackContextModule && typeof fallbackContextModule.getInstructionalText === 'function' && typeof fallbackContextModule.invalidateComplexityEvidence === 'function') {
+        var baseInstructionalText = fallbackContextModule.getInstructionalText(updatedContent, {
+          complexity: {
+            requestedGrade: rigorGrade,
+            language: rigorLanguage
+          }
+        });
+        updatedContent.instructionalText = fallbackContextModule.invalidateComplexityEvidence(baseInstructionalText, newText, 'stale');
+        updatedContent.targetGradeLevel = rigorGrade;
+      }
+      delete updatedContent.alignmentCheck;
+      if (updatedContent.levelCheck) delete updatedContent.levelCheck;
+    }
+    setGeneratedContent(updatedContent);
+    setHistory(function (previous) {
+      return previous.map(function (item) {
+        return item.id === generatedContent.id ? updatedContent : item;
+      });
+    });
+    addToast(t('alignment.notifications.regenerated_success'), 'success');
+  } catch (error) {
+    if (error?.code === 'citation-conservation-failed') {
+      warnLog('[CitationConservation] Rigor regeneration rejected; original resource retained.', error.details || error);
+      addToast('The rigor rewrite could not preserve and verify every source citation, so the original citation-safe version was retained.', 'warning');
+      return;
+    }
+    warnLog('Unhandled error:', error);
+    setError(t('errors.text_regeneration_failed'));
+    addToast(t('alignment.notifications.regen_failed'), 'error');
+  } finally {
+    setIsProcessing(false);
+  }
+}
 function SimplifiedView(props) {
   // State reads
   var t = props.t;
@@ -3697,6 +4088,8 @@ SimplifiedView.updateInstructionalRole = updateSimplifiedInstructionalRole;
 SimplifiedView.upsertFullHistoryArtifact = upsertFullHistoryArtifact;
 SimplifiedView.resolveCompareSource = resolveSimplifiedCompareSource;
 SimplifiedView.getComplexityDisplay = getSimplifiedComplexityDisplay;
+SimplifiedView.checkAlignment = checkSimplifiedAlignment;
+SimplifiedView.regenerateWithRigor = regenerateSimplifiedWithRigor;
 
   window.AlloModules = window.AlloModules || {};
   window.AlloModules.SimplifiedView = SimplifiedView;

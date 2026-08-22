@@ -4707,11 +4707,17 @@
           }
         };
 
+        function finiteWorldCoordinate(value, fallback) {
+          if (value === null || value === undefined || (typeof value === 'string' && value.trim() === '')) return fallback;
+          var numeric = Number(value);
+          return Number.isFinite(numeric) ? numeric : fallback;
+        }
+
         function getStructureFocus(structure) {
           if (!structure) return null;
-          var x1 = Number(structure.x1) || 0, x2 = Number(structure.x2) || x1;
-          var y1 = Number(structure.y1) || 0, y2 = Number(structure.y2) || y1;
-          var z1 = Number(structure.z1) || 0, z2 = Number(structure.z2) || z1;
+          var x1 = finiteWorldCoordinate(structure.x1, 0), x2 = finiteWorldCoordinate(structure.x2, x1);
+          var y1 = finiteWorldCoordinate(structure.y1, 0), y2 = finiteWorldCoordinate(structure.y2, y1);
+          var z1 = finiteWorldCoordinate(structure.z1, 0), z2 = finiteWorldCoordinate(structure.z2, z1);
           return {
             x: (Math.min(x1, x2) + Math.max(x1, x2) + 1) / 2,
             y: Math.max(y1, y2) + 0.5,
@@ -4732,7 +4738,7 @@
           if (!target && structures.length) target = structures[0];
           if (target) return getStructureFocus(target);
           var spawn = lesson && lesson.spawnPoint ? lesson.spawnPoint : [2, 3, 2];
-          return { x: Number(spawn[0]) || 2, y: (Number(spawn[1]) || 3) + 0.5, z: Number(spawn[2]) || 2, radius: 9 };
+          return { x: finiteWorldCoordinate(spawn[0], 2), y: finiteWorldCoordinate(spawn[1], 3) + 0.5, z: finiteWorldCoordinate(spawn[2], 2), radius: 9 };
         }
         engine.startGuidedTour = function() {
           if (!engine.camera || !engine._currentLesson || engine._guidedTour) return false;
@@ -4830,9 +4836,9 @@
           return {
             title: lesson.title || 'Geometry World',
             structures: structures.map(function(structure, index) {
-              var x1 = Number(structure.x1) || 0, x2 = Number(structure.x2) || x1;
-              var y1 = Number(structure.y1) || 0, y2 = Number(structure.y2) || y1;
-              var z1 = Number(structure.z1) || 0, z2 = Number(structure.z2) || z1;
+              var x1 = finiteWorldCoordinate(structure.x1, 0), x2 = finiteWorldCoordinate(structure.x2, x1);
+              var y1 = finiteWorldCoordinate(structure.y1, 0), y2 = finiteWorldCoordinate(structure.y2, y1);
+              var z1 = finiteWorldCoordinate(structure.z1, 0), z2 = finiteWorldCoordinate(structure.z2, z1);
               return {
                 index: index,
                 label: structure.label || structure.name || ('Structure ' + (index + 1)),

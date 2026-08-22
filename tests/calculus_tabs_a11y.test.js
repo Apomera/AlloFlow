@@ -10,10 +10,11 @@ describe('Calculus Lab main tabs accessibility', () => {
     expect(fs.readFileSync(sourcePath, 'utf8')).toBe(fs.readFileSync(publicPath, 'utf8'));
   });
 
-  it('gives the five calculus sections roving focus and keyboard navigation', () => {
+  it('gives all six calculus sections roving focus and keyboard navigation', () => {
     const source = fs.readFileSync(sourcePath, 'utf8');
     expect(source).toContain("role: 'tablist', 'aria-label': 'Calculus Tool sections'");
-    expect(source).toContain(".map(function(item, tabIndex){");
+    expect(source).toContain("CALCULUS_TABS.map(function(item, tabIndex){");
+    expect(source).toContain("['derivHunt','\\u2753 Inquiry']");
     expect(source).toContain("id:'calculus-tab-'+item[0]");
     expect(source).toContain("'aria-controls':'calculus-panel-'+item[0]");
     expect(source).toContain("tabIndex:tab===item[0]?0:-1");
@@ -22,6 +23,8 @@ describe('Calculus Lab main tabs accessibility', () => {
     expect(source).toContain("e.key === 'ArrowLeft' || e.key === 'ArrowUp'");
     expect(source).toContain("e.key === 'Home'");
     expect(source).toContain("e.key === 'End'");
+    expect(source).toContain("% CALCULUS_TABS.length");
+    expect(source).toContain("CALCULUS_TABS.length - 1");
   });
 
   it('links the active calculus hero to its tabpanel', () => {
@@ -29,5 +32,20 @@ describe('Calculus Lab main tabs accessibility', () => {
     expect(source).toContain("role: 'tabpanel', id: 'calculus-panel-' + tab");
     expect(source).toContain("'aria-labelledby': 'calculus-tab-' + tab");
     expect(source).toContain("tabIndex: 0");
+  });
+
+  it('keeps the derivative inquiry reachable and updates its nested state correctly', () => {
+    const source = fs.readFileSync(sourcePath, 'utf8');
+    expect(source).toContain("derivHunt:  { accent:");
+    expect(source).toContain("tab === 'derivHunt' && (function()");
+    expect(source).toContain("function setIQ(patch) { upd('derivHunt', Object.assign({}, iq, patch)); }");
+    expect(source).not.toContain("upd({ derivHunt:");
+  });
+
+  it('uses normalized live values in the AI explanation prompt so zero coefficients stay zero', () => {
+    const source = fs.readFileSync(sourcePath, 'utf8');
+    expect(source).toContain("var fnStr = fa + 'x\\u00B2 + ' + fb + 'x + ' + fc;");
+    expect(source).toContain("' on [' + xMin + ', ' + xMax2 + '] with n=' + nRects");
+    expect(source).not.toContain("var fnStr = (d.a || 1)");
   });
 });

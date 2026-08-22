@@ -15,6 +15,14 @@ describe('Test Prep learning-library load gate source QA', () => {
     expect(source).toContain('const availableSkills = testPrepPackSkillCatalog(selectedPack, learningLibrary);');
     expect(source).toContain('function testPrepItemSkillIds(value)');
     expect(source).toContain('testPrepItemSkillIds(item).includes(normalizedSkillId)');
+    expect(source).toContain("['study-routes', 'Study routes']");
+    expect(source).toContain('function startStudyRoute(route)');
+    expect(source).toContain("libraryMode === 'study-routes'");
+    expect(source).toContain('const topicDrills = sectionRoute');
+    expect(source).toContain('Open topic drills');
+    expect(source).toContain("['quick-reference', 'Quick reference']");
+    expect(source).toContain("libraryMode === 'quick-reference'");
+    expect(source).toContain('AP Statistics quick reference');
   });
 
   it('binds visible content and validation to pack, version, visibility, URL, and manifest digest identity', () => {

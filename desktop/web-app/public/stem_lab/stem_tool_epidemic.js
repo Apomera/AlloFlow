@@ -76,6 +76,18 @@ window.StemLab = window.StemLab || {
     catch (e) { return false; }
   }
 
+  function epidemicReadableInk(hex) {
+    var match = /^#([0-9a-f]{6})$/i.exec(String(hex || ''));
+    if (!match) return '#0f172a';
+    var value = parseInt(match[1], 16);
+    var channels = [(value >> 16) & 255, (value >> 8) & 255, value & 255].map(function(channel) {
+      var normalized = channel / 255;
+      return normalized <= 0.04045 ? normalized / 12.92 : Math.pow((normalized + 0.055) / 1.055, 2.4);
+    });
+    var luminance = 0.2126 * channels[0] + 0.7152 * channels[1] + 0.0722 * channels[2];
+    return luminance > 0.179 ? '#000000' : '#ffffff';
+  }
+
   function nextMapAnalysisToken() {
     window._epiMapAnalysisToken = (Number(window._epiMapAnalysisToken) || 0) + 1;
     return window._epiMapAnalysisToken;
@@ -432,11 +444,11 @@ window.StemLab = window.StemLab || {
   }
 
   function r0Color(r0) {
-    if (r0 < 1) return '#22c55e';
-    if (r0 < 2) return '#84cc16';
-    if (r0 < 4) return '#f59e0b';
-    if (r0 < 8) return '#ef4444';
-    return '#dc2626';
+    if (r0 < 1) return '#15803d';
+    if (r0 < 2) return '#3f6212';
+    if (r0 < 4) return '#92400e';
+    if (r0 < 8) return '#b91c1c';
+    return '#991b1b';
   }
 
   function getGradeBand(ctx) {
@@ -2527,8 +2539,8 @@ window.StemLab = window.StemLab || {
                 'aria-pressed': active ? 'true' : 'false',
                 key: p.name,
                 onClick: function() { applyPreset(idx); },
-                className: 'px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all ' + (active ? 'text-white shadow-md' : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-400'),
-                style: active ? { backgroundColor: p.color } : {}
+                className: 'px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all ' + (active ? 'shadow-md' : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-400'),
+                style: active ? { backgroundColor: p.color, color: epidemicReadableInk(p.color) } : {}
               }, p.name);
             })
           ),
@@ -2590,10 +2602,10 @@ window.StemLab = window.StemLab || {
           // Stats
           h('div', { className: 'grid grid-cols-2 sm:grid-cols-4 gap-2' },
             [
-              { label: __alloT('stem.epidemic.peak_infected', 'Peak Infected'), value: peakI.toFixed(1) + '%', sub: 'Day ' + peakDay, color: '#ef4444' },
-              { label: __alloT('stem.epidemic.attack_rate', 'Attack Rate'), value: totalInf.toFixed(1) + '%', sub: fmtNum(Math.round(totalInf / 100 * popSize)) + ' ever infected', color: '#f59e0b' },
+              { label: __alloT('stem.epidemic.peak_infected', 'Peak Infected'), value: peakI.toFixed(1) + '%', sub: 'Day ' + peakDay, color: '#b91c1c' },
+              { label: __alloT('stem.epidemic.attack_rate', 'Attack Rate'), value: totalInf.toFixed(1) + '%', sub: fmtNum(Math.round(totalInf / 100 * popSize)) + ' ever infected', color: '#92400e' },
               { label: __alloT('stem.epidemic.initial_r_effective', 'Initial R-effective'), value: effR0.toFixed(2), sub: effR0 < 1 ? 'Initially declining' : 'Initially growing', color: r0Color(effR0) },
-              { label: __alloT('stem.epidemic.herd_threshold', 'Herd Threshold'), value: herdApplies ? herdThresh.toFixed(0) + '%' : 'n/a', sub: !herdApplies ? 'Not person-to-person' : (vaccRate >= herdThresh && herdThresh > 0 ? '\u2705 Achieved' : 'Not yet'), color: '#6366f1' }
+              { label: __alloT('stem.epidemic.herd_threshold', 'Herd Threshold'), value: herdApplies ? herdThresh.toFixed(0) + '%' : 'n/a', sub: !herdApplies ? 'Not person-to-person' : (vaccRate >= herdThresh && herdThresh > 0 ? '\u2705 Achieved' : 'Not yet'), color: '#4338ca' }
             ].map(function(s) {
               return h('div', { key: s.label, className: glassCard + ' text-center' },
                 h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase' }, s.label),
@@ -2664,10 +2676,10 @@ window.StemLab = window.StemLab || {
           ),
           h('div', { className: 'grid grid-cols-2 sm:grid-cols-4 gap-2' },
             [
-              { label: __alloT('stem.epidemic.peak_infected_2', 'Peak Infected'), value: peakI.toFixed(1) + '%', sub: 'Day ' + peakDay, color: '#ef4444' },
-              { label: __alloT('stem.epidemic.total_infected_2', 'Total Infected'), value: totalInf.toFixed(1) + '%', sub: fmtNum(Math.round(totalInf / 100 * popSize)), color: '#f59e0b' },
-              { label: __alloT('stem.epidemic.latent_period', 'Latent Period'), value: latentPeriod + 'd', sub: '\u03C3 = ' + (1/latentPeriod).toFixed(3), color: '#f59e0b' },
-              { label: __alloT('stem.epidemic.herd_threshold_2', 'Herd Threshold'), value: herdApplies ? herdThresh.toFixed(0) + '%' : 'n/a', sub: !herdApplies ? 'Not person-to-person' : (vaccRate >= herdThresh && herdThresh > 0 ? '\u2705 Achieved' : 'Not yet'), color: '#6366f1' }
+              { label: __alloT('stem.epidemic.peak_infected_2', 'Peak Infected'), value: peakI.toFixed(1) + '%', sub: 'Day ' + peakDay, color: '#b91c1c' },
+              { label: __alloT('stem.epidemic.total_infected_2', 'Total Infected'), value: totalInf.toFixed(1) + '%', sub: fmtNum(Math.round(totalInf / 100 * popSize)), color: '#92400e' },
+              { label: __alloT('stem.epidemic.latent_period', 'Latent Period'), value: latentPeriod + 'd', sub: '\u03C3 = ' + (1/latentPeriod).toFixed(3), color: '#92400e' },
+              { label: __alloT('stem.epidemic.herd_threshold_2', 'Herd Threshold'), value: herdApplies ? herdThresh.toFixed(0) + '%' : 'n/a', sub: !herdApplies ? 'Not person-to-person' : (vaccRate >= herdThresh && herdThresh > 0 ? '\u2705 Achieved' : 'Not yet'), color: '#4338ca' }
             ].map(function(s) {
               return h('div', { key: s.label, className: glassCard + ' text-center' },
                 h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase' }, s.label),

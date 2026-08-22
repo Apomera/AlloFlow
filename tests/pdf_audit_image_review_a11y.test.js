@@ -9,7 +9,9 @@ describe('PDF audit image review accessibility', () => {
     const anchor = 'value: imgReviewDraft, onChange: (e) => setImgReviewDraft(e.target.value)';
     const index = SOURCE.indexOf(anchor);
     expect(index).toBeGreaterThan(-1);
-    const following = SOURCE.slice(index, index + 280);
-    expect(following).toContain('"aria-label": t("pdf_audit.imgreview.alt_label") || "Description (what a screen reader says)"');
+    const textareaIndex = SOURCE.lastIndexOf('React.createElement("textarea"', index);
+    expect(textareaIndex).toBeGreaterThan(-1);
+    const reviewTextarea = SOURCE.slice(textareaIndex, index + anchor.length);
+    expect(reviewTextarea).toContain('"aria-label": t("pdf_audit.imgreview.alt_label") || "Description (what a screen reader says)"');
   });
 });

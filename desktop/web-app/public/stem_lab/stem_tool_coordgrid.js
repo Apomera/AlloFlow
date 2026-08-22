@@ -121,6 +121,8 @@ window.StemLab = window.StemLab || {
         if (typeof updater === 'function') updCG({ gridPoints: updater(_cg.gridPoints || []) });
         else updCG({ gridPoints: updater });
       };
+      var coordinateInputX = Number.isFinite(Number(_cg.coordinateInputX)) ? Math.max(gridRange.min, Math.min(gridRange.max, Math.round(Number(_cg.coordinateInputX)))) : 0;
+      var coordinateInputY = Number.isFinite(Number(_cg.coordinateInputY)) ? Math.max(gridRange.min, Math.min(gridRange.max, Math.round(Number(_cg.coordinateInputY)))) : 0;
       var gridChallenge = _cg.gridChallenge || null;
       var setGridChallenge = function(val) { updCG({ gridChallenge: val }); };
       var gridFeedback = _cg.gridFeedback || null;
@@ -362,10 +364,10 @@ window.StemLab = window.StemLab || {
       };
 
       // ── Click handler ──
-      var processClick = function(clientX, clientY, svgEl) {
-        var rect = svgEl.getBoundingClientRect();
-        var x = fromSvg(clientX - rect.left, 'x');
-        var y = fromSvg(clientY - rect.top, 'y');
+      var processGridCoordinate = function(x, y) {
+        x = Math.round(Number(x));
+        y = Math.round(Number(y));
+        if (!Number.isFinite(x) || !Number.isFinite(y)) return;
         if (x < gridRange.min || x > gridRange.max || y < gridRange.min || y > gridRange.max) return;
 
         sfxClick();
@@ -419,6 +421,11 @@ window.StemLab = window.StemLab || {
           setGridPoints(function(prev) { return prev.concat([{ x: x, y: y }]); });
         }
         setGridFeedback(null);
+      };
+
+      var processClick = function(clientX, clientY, svgEl) {
+        var rect = svgEl.getBoundingClientRect();
+        processGridCoordinate(fromSvg(clientX - rect.left, 'x'), fromSvg(clientY - rect.top, 'y'));
       };
 
       var handleGridClick = function(e) { processClick(e.clientX, e.clientY, e.currentTarget); };
@@ -911,7 +918,7 @@ window.StemLab = window.StemLab || {
           }, (qtPointY >= 0 ? '↑' : '↓') + ' ' + Math.abs(qtPointY)));
         }
 
-        return h('div', { className: 'space-y-4 allo-cg-bg-quadrants' },
+        return h('div', { id: 'coordinate-section-panel', role: 'tabpanel', 'aria-labelledby': 'coordinate-section-tab-quadrants', tabIndex: 0, className: 'space-y-4 allo-cg-bg-quadrants' },
 
           // Four-up quadrant cards
           h('div', { className: 'grid grid-cols-2 md:grid-cols-4 gap-2' },
@@ -1818,25 +1825,48 @@ window.StemLab = window.StemLab || {
           { id: 'world',      icon: '🌍', label: t('stem.coordgrid.lat_long', 'Lat / Long') }
         ];
 
-        return h('div', { className: 'space-y-4 allo-cg-bg-maps' },
+        var moveMapScenario = function(event, index) {
+          var next = index;
+          if (event.key === 'ArrowRight' || event.key === 'ArrowDown') next = (index + 1) % scenarios.length;
+          else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') next = (index - 1 + scenarios.length) % scenarios.length;
+          else if (event.key === 'Home') next = 0;
+          else if (event.key === 'End') next = scenarios.length - 1;
+          else return;
+          event.preventDefault();
+          var nextId = scenarios[next].id;
+          sfxClick();
+          updCG({ mapScenario: nextId });
+          requestAnimationFrame(function() {
+            var nextTab = document.getElementById('coordinate-map-tab-' + nextId);
+            if (nextTab) nextTab.focus();
+          });
+        };
+
+        return h('div', { id: 'coordinate-section-panel', role: 'tabpanel', 'aria-labelledby': 'coordinate-section-tab-maps', tabIndex: 0, className: 'space-y-4 allo-cg-bg-maps' },
           // Scenario selector
           h('div', { className: 'flex gap-1 bg-emerald-50 rounded-xl p-1 border border-emerald-200', role: 'tablist', 'aria-label': t('stem.coordgrid.real_world_coordinate_scenarios', 'Real-world coordinate scenarios') },
-            scenarios.map(function(s) {
+            scenarios.map(function(s, index) {
               return h('button', {
                 key: 'mscen-' + s.id,
+                id: 'coordinate-map-tab-' + s.id,
                 onClick: function() { sfxClick(); updCG({ mapScenario: s.id }); },
+                onKeyDown: function(event) { moveMapScenario(event, index); },
                 role: 'tab',
                 'aria-selected': mapScenario === s.id,
+                'aria-controls': 'coordinate-map-panel',
+                tabIndex: mapScenario === s.id ? 0 : -1,
                 className: 'min-h-[2.5rem] min-w-max flex-1 whitespace-nowrap py-2 px-3 rounded-lg text-xs font-bold transition-all focus:outline-none focus:ring-2 focus:ring-cyan-400 ' +
-                  (mapScenario === s.id ? 'bg-white text-emerald-800 shadow-sm' : 'text-emerald-600 hover:text-emerald-800')
+                  (mapScenario === s.id ? 'bg-white text-emerald-800 shadow-sm' : 'text-emerald-700 hover:text-emerald-900')
               }, s.icon + ' ' + s.label);
             })
           ),
 
           // Active scenario
-          mapScenario === 'chess' && renderChess(),
-          mapScenario === 'battleship' && renderBattleship(),
-          mapScenario === 'world' && renderWorld(),
+          h('div', { id: 'coordinate-map-panel', role: 'tabpanel', 'aria-labelledby': 'coordinate-map-tab-' + mapScenario, tabIndex: 0 },
+            mapScenario === 'chess' && renderChess(),
+            mapScenario === 'battleship' && renderBattleship(),
+            mapScenario === 'world' && renderWorld()
+          ),
 
           // Bottom pedagogy
           h('details', { className: 'bg-white rounded-xl border border-emerald-200 p-3' },
@@ -1852,7 +1882,30 @@ window.StemLab = window.StemLab || {
       };
 
       // ══════════ MAIN RENDER ══════════
-      var coordTabLabel = { explore: 'Explore', quadrants: 'Quadrant tour', maps: 'Real-world maps', quadHunt: 'Quadrant hunt' }[cgTab] || 'Explore';
+      var coordinateTabs = [
+        { id: 'explore', icon: '\uD83D\uDCCD', label: t('stem.coordgrid.explore', 'Explore') },
+        { id: 'quadrants', icon: '\uD83D\uDDFA', label: t('stem.coordgrid.quadrant_tour', 'Quadrant Tour') },
+        { id: 'maps', icon: '\uD83C\uDF10', label: t('stem.coordgrid.real_world_maps', 'Real-World Maps') },
+        { id: 'quadHunt', icon: '\uD83C\uDFAF', label: t('stem.coordgrid.quadrant_hunt', 'Quadrant Hunt') }
+      ];
+      var activeCoordinateTab = coordinateTabs.filter(function(tab) { return tab.id === cgTab; })[0] || coordinateTabs[0];
+      var coordTabLabel = activeCoordinateTab.label;
+      var moveCoordinateTab = function(event, index) {
+        var next = index;
+        if (event.key === 'ArrowRight' || event.key === 'ArrowDown') next = (index + 1) % coordinateTabs.length;
+        else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') next = (index - 1 + coordinateTabs.length) % coordinateTabs.length;
+        else if (event.key === 'Home') next = 0;
+        else if (event.key === 'End') next = coordinateTabs.length - 1;
+        else return;
+        event.preventDefault();
+        var nextId = coordinateTabs[next].id;
+        sfxClick();
+        updCG({ cgTab: nextId });
+        requestAnimationFrame(function() {
+          var nextTab = document.getElementById('coordinate-section-tab-' + nextId);
+          if (nextTab) nextTab.focus();
+        });
+      };
       var coordSolved = plotsSolved + slopesSolved + distanceSolved;
       var coordNext = gridPoints.length === 0
         ? 'Plot one point and describe its horizontal move before its vertical move.'
@@ -1910,7 +1963,7 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'flex flex-wrap items-center justify-end gap-2' },
             streak > 0 && h('span', { className: 'text-xs font-bold text-orange-600' }, '\uD83D\uDD25 ' + streak),
             bestStreak > 0 && h('span', { className: 'text-[11px] text-slate-600' }, 'Best: ' + bestStreak),
-            h('span', { className: 'text-xs font-bold text-emerald-600' }, exploreScore.correct + '/' + exploreScore.total),
+            h('span', { className: 'text-xs font-bold', style: { color: isContrast || isDark ? '#86efac' : '#047857' } }, exploreScore.correct + '/' + exploreScore.total),
             h('button', { onClick: function() {
                 var snap = { id: 'snap-' + Date.now(), tool: 'coordinate', label: 'Grid: ' + gridPoints.length + ' points', data: { points: gridPoints.slice() }, timestamp: Date.now() };
                 setToolSnapshots(function(prev) { return prev.concat([snap]); });
@@ -1961,29 +2014,33 @@ window.StemLab = window.StemLab || {
 
         // Tab bar
         h('div', { className: 'flex gap-1 overflow-x-auto bg-cyan-50 rounded-xl p-1 border border-cyan-200', role: 'tablist', 'aria-label': t('stem.coordgrid.coordinate_grid_sections', 'Coordinate Grid sections') },
-          [
-            { id: 'explore', icon: '\uD83D\uDCCD', label: t('stem.coordgrid.explore', 'Explore') },
-            { id: 'quadrants', icon: '\uD83D\uDDFA', label: t('stem.coordgrid.quadrant_tour', 'Quadrant Tour') },
-            { id: 'maps', icon: '\uD83C\uDF10', label: t('stem.coordgrid.real_world_maps', 'Real-World Maps') },
-            { id: 'quadHunt', icon: '\uD83C\uDFAF', label: t('stem.coordgrid.quadrant_hunt', 'Quadrant Hunt') }
-          ].map(function(t2) {
+          coordinateTabs.map(function(t2, index) {
             return h('button', {
               key: 't-' + t2.id,
+              id: 'coordinate-section-tab-' + t2.id,
               onClick: function() { sfxClick(); updCG({ cgTab: t2.id }); },
+              onKeyDown: function(event) { moveCoordinateTab(event, index); },
               role: 'tab',
               'aria-selected': cgTab === t2.id,
+              'aria-controls': 'coordinate-section-panel',
+              tabIndex: cgTab === t2.id ? 0 : -1,
               className: 'flex-1 py-2 px-2 rounded-lg text-xs font-bold transition-all ' +
-                (cgTab === t2.id ? 'bg-white text-cyan-800 shadow-sm' : 'text-cyan-600 hover:text-cyan-800')
+                (cgTab === t2.id ? 'bg-white text-cyan-800 shadow-sm' : 'text-cyan-700 hover:text-cyan-900')
             }, t2.icon + ' ' + t2.label);
           })
         ),
 
         // EXPLORE TAB content (wraps existing grid + tools + challenges + stats)
-        cgTab === 'explore' && h('div', { className: 'space-y-4 allo-cg-bg-explore' },
+        cgTab === 'explore' && h('div', { id: 'coordinate-section-panel', role: 'tabpanel', 'aria-labelledby': 'coordinate-section-tab-explore', tabIndex: 0, className: 'space-y-4 allo-cg-bg-explore' },
 
         // SVG Grid
         h('div', { className: 'bg-white rounded-xl border-2 border-cyan-200 p-2 sm:p-4 flex justify-center overflow-x-auto' },
-          h('svg', { width: gridW, height: gridH, onClick: handleGridClick, onTouchStart: handleGridTouch, className: 'cursor-crosshair', style: { background: themeSurface, touchAction: 'none' } },
+          h('svg', {
+            width: gridW, height: gridH, onClick: handleGridClick, onTouchStart: handleGridTouch,
+            role: 'img', focusable: 'false',
+            'aria-label': t('stem.coordgrid.grid_visual_label', 'Coordinate grid visualization') + '. ' + gridPoints.length + ' plotted point' + (gridPoints.length === 1 ? '' : 's') + ' and ' + gridLines.length + ' line' + (gridLines.length === 1 ? '' : 's') + '. Use the X and Y controls below for keyboard operation.',
+            className: 'cursor-crosshair', style: { background: themeSurface, touchAction: 'none' }
+          },
             gridElements,
             funcElements,
             lineElements,
@@ -1991,6 +2048,21 @@ window.StemLab = window.StemLab || {
             distChallengeElements,
             pointElements,
             labelElements
+          )
+        ),
+
+        h('div', { role: 'group', 'aria-label': t('stem.coordgrid.coordinate_entry', 'Coordinate entry'), className: 'rounded-xl border border-cyan-200 bg-cyan-50 p-3' },
+          h('p', { id: 'coordgrid-coordinate-entry-help', className: 'mb-2 text-xs text-cyan-900' }, t('stem.coordgrid.coordinate_entry_help', 'Keyboard alternative: enter X and Y, then use the button to plot, remove, or select that coordinate.')),
+          h('div', { className: 'flex flex-wrap items-end gap-2' },
+            h('label', { className: 'flex min-w-24 flex-1 flex-col gap-1 text-xs font-bold text-cyan-900' },
+              t('stem.coordgrid.x_coordinate', 'X coordinate'),
+              h('input', { type: 'number', min: gridRange.min, max: gridRange.max, step: 1, value: coordinateInputX, 'aria-describedby': 'coordgrid-coordinate-entry-help', onChange: function(e) { var value = parseInt(e.target.value, 10); if (Number.isFinite(value)) updCG({ coordinateInputX: Math.max(gridRange.min, Math.min(gridRange.max, value)) }); }, className: 'min-h-11 rounded-lg border border-cyan-500 bg-white px-3 py-2 text-base text-slate-900' })
+            ),
+            h('label', { className: 'flex min-w-24 flex-1 flex-col gap-1 text-xs font-bold text-cyan-900' },
+              t('stem.coordgrid.y_coordinate', 'Y coordinate'),
+              h('input', { type: 'number', min: gridRange.min, max: gridRange.max, step: 1, value: coordinateInputY, 'aria-describedby': 'coordgrid-coordinate-entry-help', onChange: function(e) { var value = parseInt(e.target.value, 10); if (Number.isFinite(value)) updCG({ coordinateInputY: Math.max(gridRange.min, Math.min(gridRange.max, value)) }); }, className: 'min-h-11 rounded-lg border border-cyan-500 bg-white px-3 py-2 text-base text-slate-900' })
+            ),
+            h('button', { type: 'button', onClick: function() { processGridCoordinate(coordinateInputX, coordinateInputY); announceToSR('Used coordinate ' + coordinateInputX + ', ' + coordinateInputY + '.'); }, className: 'min-h-11 rounded-lg bg-cyan-700 px-4 py-2 text-sm font-bold text-white hover:bg-cyan-800' }, connectMode ? t('stem.coordgrid.select_coordinate', 'Select coordinate') : t('stem.coordgrid.toggle_coordinate', 'Plot or remove point'))
           )
         ),
 
@@ -2188,15 +2260,15 @@ window.StemLab = window.StemLab || {
         // Stats
         h('div', { className: 'grid grid-cols-3 gap-3' },
           h('div', { className: 'bg-white rounded-xl p-3 border border-cyan-100 text-center' },
-            h('div', { className: 'text-xs font-bold text-cyan-600 uppercase mb-1' }, t('stem.coordgrid.points', 'Points')),
+            h('div', { className: 'text-xs font-bold text-cyan-700 uppercase mb-1' }, t('stem.coordgrid.points', 'Points')),
             h('div', { className: 'text-2xl font-bold text-cyan-800' }, gridPoints.length)
           ),
           h('div', { className: 'bg-white rounded-xl p-3 border border-cyan-100 text-center' },
-            h('div', { className: 'text-xs font-bold text-cyan-600 uppercase mb-1' }, t('stem.coordgrid.lines', 'Lines')),
+            h('div', { className: 'text-xs font-bold text-cyan-700 uppercase mb-1' }, t('stem.coordgrid.lines', 'Lines')),
             h('div', { className: 'text-2xl font-bold text-cyan-800' }, gridLines.length)
           ),
           h('div', { className: 'bg-white rounded-xl p-3 border border-cyan-100 text-center' },
-            h('div', { className: 'text-xs font-bold text-cyan-600 uppercase mb-1' }, t('stem.coordgrid.quadrants', 'Quadrants')),
+            h('div', { className: 'text-xs font-bold text-cyan-700 uppercase mb-1' }, t('stem.coordgrid.quadrants', 'Quadrants')),
             h('div', { className: 'text-sm font-bold text-cyan-700' },
               gridPoints.length > 0
                 ? (function() {
@@ -2229,15 +2301,15 @@ window.StemLab = window.StemLab || {
           else if (iq.x < 0 && iq.y < 0) quadrant = 'q3';
           else quadrant = 'q4';
           var qm = {
-            q1:     { label: t('stem.coordgrid.quadrant_i', '↗️ Quadrant I (+, +)'), color: '#059669', bg: '#ecfdf5', border: '#86efac' },
-            q2:     { label: t('stem.coordgrid.quadrant_ii', '↖️ Quadrant II (−, +)'), color: '#0891b2', bg: '#ecfeff', border: '#67e8f9' },
-            q3:     { label: t('stem.coordgrid.quadrant_iii', '↙️ Quadrant III (−, −)'), color: '#7c3aed', bg: '#f5f3ff', border: '#c4b5fd' },
-            q4:     { label: t('stem.coordgrid.quadrant_iv', '↘️ Quadrant IV (+, −)'), color: '#d97706', bg: '#fffbeb', border: '#fcd34d' },
+            q1:     { label: t('stem.coordgrid.quadrant_i', '↗️ Quadrant I (+, +)'), color: '#047857', bg: '#ecfdf5', border: '#86efac' },
+            q2:     { label: t('stem.coordgrid.quadrant_ii', '↖️ Quadrant II (−, +)'), color: '#0e7490', bg: '#ecfeff', border: '#67e8f9' },
+            q3:     { label: t('stem.coordgrid.quadrant_iii', '↙️ Quadrant III (−, −)'), color: '#6d28d9', bg: '#f5f3ff', border: '#c4b5fd' },
+            q4:     { label: t('stem.coordgrid.quadrant_iv', '↘️ Quadrant IV (+, −)'), color: '#b45309', bg: '#fffbeb', border: '#fcd34d' },
             xAxis:  { label: t('stem.coordgrid.on_x_axis_y_0', '↔️ on X-axis (y = 0)'),  color: '#475569', bg: '#f1f5f9', border: '#cbd5e1' },
             yAxis:  { label: t('stem.coordgrid.on_y_axis_x_0', '↕️ on Y-axis (x = 0)'),  color: '#475569', bg: '#f1f5f9', border: '#cbd5e1' },
             origin: { label: t('stem.coordgrid.at_the_origin_0_0', '🎯 at the Origin (0, 0)'), color: '#dc2626', bg: '#fef2f2', border: '#fca5a5' }
           }[quadrant];
-          return h('div', { className: 'p-4 rounded-xl bg-white border border-cyan-300 space-y-3' },
+          return h('div', { id: 'coordinate-section-panel', role: 'tabpanel', 'aria-labelledby': 'coordinate-section-tab-quadHunt', tabIndex: 0, className: 'p-4 rounded-xl bg-white border border-cyan-300 space-y-3' },
             h('h3', { className: 'text-sm font-black text-cyan-700' }, t('stem.coordgrid.quadrant_discovery', '🎯 Quadrant discovery')),
             h('p', { className: 'text-[12px] text-slate-700 leading-relaxed' }, t('stem.coordgrid.sliders_for_x_and_y_widget_tells_you_w', 'Sliders for x and y. Widget tells you which discrete region you are in. No score, no reveal.')),
             h('div', { className: 'p-3 rounded-lg text-center', style: { background: qm.bg, border: '2px solid ' + qm.border } },
@@ -2284,7 +2356,7 @@ window.StemLab = window.StemLab || {
         renderAITutor(),
 
         // Keyboard hints
-        h('div', { className: 'text-center text-[11px] text-slate-600 mt-2' },
+        h('div', { className: 'text-center text-[11px] mt-2', style: { color: isContrast ? '#f8fafc' : (isDark ? '#cbd5e1' : '#475569') } },
           t('stem.coordgrid.c_connect_mode_r_clear_ai_tutor', '\u2328\uFE0F C: connect mode | R: clear | ?: AI tutor')
         )
       );

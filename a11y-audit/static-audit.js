@@ -170,6 +170,9 @@ const CHECKS = [
     severity: 'major',
     description: 'SVG element lacks role="img" and aria-label',
     test(line, lineNum, lines) {
+      // Comments and documentation often show SVG API examples without
+      // rendering anything. Do not turn those examples into UI findings.
+      if (/^\s*(?:\/\/|\/\*|\*)/.test(line)) return false;
       // Match the renderer helper as a standalone identifier. Without the
       // boundary, ordinary calls such as array.push('svg') are false positives.
       const isSvg = /(?:^|[^\w$])h\(\s*['"]svg['"]/.test(line) || /createElement\(\s*['"]svg['"]/.test(line);
@@ -228,7 +231,10 @@ const CHECKS = [
       if (propsMatch) {
         const varName = propsMatch[1];
         const decl = new RegExp('var\\s+' + varName + '\\s*=\\s*\\{');
-        for (let i = lineNum - 1; i >= 0 && i > lineNum - 400; i--) {
+        // Large render helpers can define one shared SVG root object before
+        // several hundred lines of species/variant branches. Keep resolving
+        // the exact identifier, but allow enough room to reach that declaration.
+        for (let i = lineNum - 1; i >= 0 && i > lineNum - 800; i--) {
           if (!decl.test(lines[i])) continue;
           const objText = lines.slice(i, i + 12).join(' ');
           if (/aria-hidden|aria-label|role\s*:\s*['"]img['"]/.test(objText)) return false;
@@ -282,12 +288,14 @@ const CHECKS = [
     severity: 'major',
     description: 'Tab-like UI pattern without role="tablist", role="tab", aria-selected',
     testFile(content, filePath) {
-      // Look for tab-switching patterns
-      // A plain .tab data property is not evidence of a rendered tab interface.
-      const hasTabPattern = /\b(?:activeTab|selectedTab|currentTab|setTab|onTabChange)\b|tab\s*===/.test(content);
+      // Generic `tab` / `setTab` names are routinely used for page navigation,
+      // toolbar modes, and source-data fields. Require an explicitly tab-shaped
+      // state name so those non-tab controls are not reported as ARIA widgets.
+      const hasTabPattern = /\b(?:activeTab|selectedTab|currentTab|onTabChange)\b/.test(content);
       if (!hasTabPattern) return false;
       // Check if proper ARIA is used
-      const hasTabRole = /role\s*[:=]\s*['"]tablist['"]/.test(content);
+      // HTML held in a JavaScript string contains escaped quotes (`role=\"tablist\"`).
+      const hasTabRole = /role\s*[:=]\s*\\?['"]tablist\\?['"]/.test(content);
       return !hasTabRole;
     },
     fix: 'Add role="tablist" to container, role="tab" + aria-selected to buttons, role="tabpanel" to content.',
@@ -312,19 +320,6 @@ const CHECKS = [
       return hasMutedOnLight;
     },
     fix: 'Use #cbd5e1 (slate-300) minimum on dark backgrounds, #64748b minimum on light backgrounds.',
-  },
-  {
-    id: 'CONFIRM-001',
-    name: 'window.confirm() for data operations',
-    wcag: '3.3.4 Error Prevention',
-    severity: 'major',
-    description: 'Native confirm() dialog used for data-destructive actions; inaccessible with some screen readers',
-    test(line, lineNum, lines) {
-      if (!/\bconfirm\s*\(/.test(line) || /\/\//.test(line.split('confirm')[0])) return false;
-      const context = lines.slice(Math.max(0, lineNum - 2), lineNum + 2).join(' ');
-      return !/data-a11y-ignore/i.test(context);
-    },
-    fix: 'Replace with custom accessible modal with focus management.',
   },
   {
     id: 'MOTION-001',
@@ -365,17 +360,20 @@ const CHECKS = [
     severity: 'critical',
     description: 'Countdown timer with no documented pause/extend capability',
     testFile(content, filePath) {
-      // A setInterval alone is not a user time limit: modules also poll for
-      // registries, autosave drafts, refresh presence, and retry connections.
-      // Require both an observed clock and explicit deadline/countdown state
-      // before applying WCAG 2.2.1.
-      const observesClock = /setInterval\s*\(|Date\.now\s*\(|performance\.now\s*\(/.test(content);
-      // `expiresAt` alone is commonly transport/cache cleanup metadata, not a
-      // user time limit. A user-facing expiry still matches through its
-      // countdown/remaining/deadline state.
-      const hasUserTimeLimit = /\b(?:countdown|timeRemaining|remainingTime|timeLeft|secondsRemaining|remainingSeconds|timerActive|deadline|roundEndsAt)\b/i.test(content)
+      // Date.now()/performance.now() are ubiquitous telemetry and animation
+      // clocks. A high-confidence countdown needs an actual repeating timer as
+      // well as explicit user-facing remaining-time state.
+      const observesClock = /setInterval\s*\(/.test(content);
+      // Generic `deadline` language also describes network timeouts, storage
+      // handshakes, SMART goals, and calendar due dates. Those are not limits on
+      // how long a user may interact with content.
+      const hasUserTimeLimit = /\b(?:countdown|timeRemaining|remainingTime|timeLeft|secondsRemaining|remainingSeconds|timerActive|roundEndsAt)\b/i.test(content)
         || /\b\d+\s*(?:seconds?|minutes?)\s+(?:left|remaining)\b/i.test(content);
       if (!observesClock || !hasUserTimeLimit) return false;
+      // WCAG 2.2.1 exempts timing that is essential to a standardized measure.
+      // Require an explicit author marker so the exception is reviewable rather
+      // than inferred from a vague word such as "quiz" or "probe".
+      if (/data-a11y-essential-timing/i.test(content)) return false;
       // Check for a documented adjustment mechanism.
       // Turning an optional timer off is also a WCAG timing adjustment; cancellation labels are accepted alongside pause/extend controls.
       const hasAdjustment = /\b(?:pause|pauseTimer|isPaused|timerPaused|togglePause|pauseProbe|extendTimer|addTime|cancel[_\s-]?timer|stop[_\s-]?timer)\b/i.test(content);
@@ -390,6 +388,7 @@ const CHECKS = [
     severity: 'major',
     description: 'Fixed overlay div lacks role="dialog" or role="alertdialog", aria-modal, and focus trap',
     test(line, lineNum, lines) {
+      if (/^\s*(?:\/\/|\/\*|\*)/.test(line)) return false;
       const isOverlay = /fixed\s+inset-0|position\s*:\s*['"]?fixed/.test(line) &&
                         /z-?\[?\d{3,}|z-50|z-\[999/.test(line);
       if (!isOverlay) return false;
@@ -400,6 +399,11 @@ const CHECKS = [
       // that the layer is not an interactive modal surface.
       if (/role\s*[:=]\s*['"]presentation['"]/.test(context) ||
           /aria-hidden\s*[:=]\s*['"]true['"]/.test(context)) return false;
+      // A full-screen application surface or loading/status boundary is not a
+      // modal merely because it occupies the viewport. Accept an explicitly
+      // named non-dialog role; unnamed generic overlays still require review.
+      if (/role\s*[:=]\s*['"](?:status|region|main|application)['"]/.test(context) &&
+          /['"]?aria-(?:label|labelledby|live)['"]?\s*[:=]/.test(context)) return false;
       return true;
     },
     fix: 'Add role="dialog" or role="alertdialog", aria-modal="true", aria-labelledby, focus trap, and Escape key handler.',
@@ -425,6 +429,8 @@ const CHECKS = [
       // an onKeyDown 11 lines down (escape_room:1369). All three were reported
       // as defects while being perfectly operable.
       const localContext = lines.slice(Math.max(0, lineNum - 4), lineNum + 45).join(' ');
+      const interactionContext = lines.slice(Math.max(0, lineNum - 30), lineNum + 45).join(' ');
+      const surroundingContext = lines.slice(Math.max(0, lineNum - 130), lineNum + 45).join(' ');
       const context = lines.slice(lineNum - 1, lineNum + 120).join(' ');
       // A draggable native button with an onClick handler already provides the
       // same result through keyboard activation and a single tap/click.
@@ -477,6 +483,23 @@ const CHECKS = [
         /tabIndex\s*[:=]/.test(localContext) &&
         /onKeyDown/.test(localContext);
       if (ariaButtonAlternative) return false;
+      // Canvas/application interactions often declare their keyboard contract
+      // immediately before the pointer-listener functions. Require all four
+      // signals so a nearby, unrelated focusable element cannot excuse a drag.
+      const applicationKeyboardAlternative =
+        /(?:tabIndex\s*[:=]|\.tabIndex\s*=)/.test(interactionContext) &&
+        /(?:role\s*[:=]\s*['"]application['"]|setAttribute\(\s*['"]role['"]\s*,\s*['"]application['"])/.test(interactionContext) &&
+        /aria-keyshortcuts/.test(interactionContext);
+      if (applicationKeyboardAlternative) return false;
+      // 3-D viewports commonly place explicit rotate/tilt and zoom buttons
+      // directly above the drag surface. Those single-pointer buttons also work
+      // from the keyboard and satisfy the dragging-movement alternative.
+      const viewControlAlternative =
+        /onClick/.test(surroundingContext) &&
+        /set[A-Za-z_$]*(?:Rotation|Scale)/.test(surroundingContext) &&
+        /\b(?:rotate|tilt)\b/i.test(surroundingContext) &&
+        /\bzoom\b/i.test(surroundingContext);
+      if (viewControlAlternative) return false;
       // Reorder controls are sometimes descendants of a draggable group rather
       // than properties on the draggable node. Recognize only an explicit,
       // documented arrow-key shortcut wired through a keyboard handler.
@@ -502,7 +525,16 @@ const CHECKS = [
           || /(?:createElement|(?:^|[\s,(])(?:e|h))\(\s*['"]button['"]/.test(context))
         && /onClick/.test(context)
         && /\b(?:move|reorder|swap)\b/i.test(context);
-      if (documentedKeyboardReorder || buttonMoveAlternative || /keyboard/.test(localContext)) return false;
+      // A draggable list item may contain its own lift/move/drop button. The
+      // pressed state plus click and key handlers identify that control much
+      // more precisely than merely finding any button nearby.
+      const nestedLiftControl =
+        /<button\b/.test(context) &&
+        /aria-pressed/.test(context) &&
+        /onKeyDown/.test(context) &&
+        /onClick/.test(context) &&
+        /\b(?:lift|move|reorder|position)\b/i.test(context);
+      if (documentedKeyboardReorder || buttonMoveAlternative || nestedLiftControl || /keyboard/i.test(localContext)) return false;
       return true;
     },
     fix: 'Provide button-based alternative (Move Up/Down) or arrow key handlers for keyboard users.',

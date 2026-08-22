@@ -27,11 +27,26 @@ function countBy(values) {
 const pack = readJson(packPath);
 const library = readJson(libraryPath);
 const qa = readJson(qaPath);
+const expectedFoundationalDocumentIds = [
+  'articles-of-confederation',
+  'brutus-no-1',
+  'constitution-of-the-united-states',
+  'declaration-of-independence',
+  'emancipation-proclamation',
+  'federalist-no-10',
+  'federalist-no-39',
+  'federalist-no-51',
+  'federalist-no-70',
+  'federalist-no-78',
+  'gettysburg-address',
+  'letter-from-a-birmingham-jail',
+  'adam-smith-wealth-of-nations',
+];
 
 describe('AP U.S. Government and Politics internal foundation pilot', () => {
   it('crosswalks the current five-unit, sixty-topic public framework without presenting itself as official', () => {
     expect(pack.id).toBe('ap-us-government-foundation-pilot');
-    expect(pack.version).toBe('0.6.0-internal-preview');
+    expect(pack.version).toBe('0.8.0-internal-preview');
     expect(pack.status).toBe('preview');
     expect(pack.visibility).toBe('internal');
     expect(pack.released).toBe(false);
@@ -44,6 +59,16 @@ describe('AP U.S. Government and Politics internal foundation pilot', () => {
     expect(pack.blueprint.officialFrameworkTopicIds).toHaveLength(60);
     expect(pack.blueprint.bigIdeas).toHaveLength(5);
     expect(pack.blueprint.skills).toHaveLength(5);
+    expect(pack.blueprint.foundationalDocumentCatalog).toHaveLength(13);
+    expect(pack.blueprint.foundationalDocumentCount).toBe(13);
+    expect(pack.foundationalDocumentCount).toBe(13);
+    expect(pack.blueprint.foundationalDocumentRoutes).toHaveLength(13);
+    expect(pack.blueprint.foundationalDocumentRouteCount).toBe(13);
+    expect(pack.foundationalDocumentRouteCount).toBe(13);
+    expect(new Set(pack.blueprint.foundationalDocumentCatalog.map((document) => document.id))).toEqual(new Set(expectedFoundationalDocumentIds));
+    expect(pack.blueprint.foundationalDocumentCatalog.every((document) => document.requiredForAcademicYear === '2026-27' && document.reproducedText === false && document.releaseEligible === false && document.sourceUse.includes('no official document text'))).toBe(true);
+    expect(pack.sourceCatalog.some((source) => source.url.includes('course-and-exam-description-clarifications-effective-fall-2026.pdf'))).toBe(true);
+    expect(pack.clarificationsUrl).toContain('course-and-exam-description-clarifications-effective-fall-2026.pdf');
     expect(pack.capabilities.frqWorkshopsIncluded).toBe(true);
     expect(pack.constructedResponseWorkshopCount).toBe(5);
   });
@@ -93,6 +118,8 @@ describe('AP U.S. Government and Politics internal foundation pilot', () => {
       expect(item.chapterIds).toEqual([objective.chapterId]);
       expect(item.learningSectionId).toBe(objective.sectionId);
       expect(objective.practiceIds).toContain(item.practiceId);
+      expect(Array.isArray(item.foundationalDocumentIds)).toBe(true);
+      expect(item.foundationalDocumentIds.every((documentId) => expectedFoundationalDocumentIds.includes(documentId))).toBe(true);
     }
   });
 
@@ -104,9 +131,14 @@ describe('AP U.S. Government and Politics internal foundation pilot', () => {
     expect(library.flashcards).toHaveLength(15);
     expect(library.memoryAids).toHaveLength(5);
     expect(library.constructedResponseWorkshops).toHaveLength(5);
-    expect(library.constructedResponseWorkshops.every((workshop) => workshop.unscored === true && workshop.automatedScoring === false && workshop.scorePrediction === false && workshop.syntheticStimulus === true && workshop.releaseEligible === false && workshop.taskParts.length === 3 && workshop.planningFrame.length === 4 && workshop.successCriteria.length === 4 && workshop.commonPitfalls.length === 4 && workshop.sampleOutline.length === 3)).toBe(true);
+    expect(library.blueprint.foundationalDocumentCatalog).toHaveLength(13);
+    expect(library.foundationalDocumentCatalog).toHaveLength(13);
+    expect(library.blueprint.foundationalDocumentRoutes).toHaveLength(13);
+    expect(library.foundationalDocumentRoutes).toHaveLength(13);
+    expect(library.foundationalDocumentRoutes.every((route) => route.itemCount === route.itemIds.length && route.itemCount > 0 && route.sectionIds.length > 0 && route.references.length === 3 && route.accessNote.includes('does not reproduce official document text'))).toBe(true);
+    expect(library.constructedResponseWorkshops.every((workshop) => workshop.unscored === true && workshop.automatedScoring === false && workshop.scorePrediction === false && workshop.syntheticStimulus === true && workshop.releaseEligible === false && workshop.foundationalDocumentIds.every((documentId) => expectedFoundationalDocumentIds.includes(documentId)) && workshop.taskParts.length === 3 && workshop.planningFrame.length === 4 && workshop.successCriteria.length === 4 && workshop.commonPitfalls.length === 4 && workshop.sampleOutline.length === 3)).toBe(true);
     expect(library.constructedResponseWorkshops.every((workshop) => workshop.rights.originalStimulus === true && workshop.accessibility.stimulusFormat === 'plain text' && workshop.accessibility.readingOrder === 'linear')).toBe(true);
-    expect(library.summary).toMatchObject({ chapters: 5, sections: 15, knowledgeChecks: 15, constructedResponseWorkshops: 5, sourceReviewedConstructedResponseWorkshops: 5, richLessonPrototypes: 5 });
+    expect(library.summary).toMatchObject({ chapters: 5, sections: 15, knowledgeChecks: 15, constructedResponseWorkshops: 5, sourceReviewedConstructedResponseWorkshops: 5, foundationalDocuments: 13, sourceReviewedFoundationalDocuments: 13, foundationalDocumentRoutes: 13, sourceReviewedFoundationalDocumentRoutes: 13, richLessonPrototypes: 5 });
     expect(library.chapters.every((chapter) => chapter.sections.every((section) => section.contentBlocks.length >= 8))).toBe(true);
     const studySections = library.chapters.flatMap((chapter) => chapter.sections);
     expect(studySections.every((section) => section.practiceRoute.itemCount === section.practiceRoute.itemIds.length &&
@@ -117,7 +149,7 @@ describe('AP U.S. Government and Politics internal foundation pilot', () => {
     expect(library.practiceRouting).toMatchObject({ mode: 'section-linked-item-routes', sectionCount: 15, itemCount: 260, uniqueItemCount: 260, foundationItemCount: 100, depthItemCount: 100, transferItemCount: 60, topicDrillMapCount: 60 });
     expect(qa.automatedAssessment).toBe('pass');
     expect(qa.structuralFindings).toEqual([]);
-    expect(qa.metrics).toMatchObject({ itemCount: 260, unitCount: 5, topicCount: 60, topicsWithAtLeastTwoItems: 60, topicsWithAtLeastThreeItems: 60, chapterCount: 5, sectionCount: 15, constructedResponseWorkshopCount: 5, practiceSliceCounts: { 'foundation-slice': 100, 'depth-slice': 100, 'transfer-slice': 60 }, transferItemCount: 60, transferTopicCount: 60, topicDrillMapCount: 60 });
+    expect(qa.metrics).toMatchObject({ itemCount: 260, unitCount: 5, topicCount: 60, topicsWithAtLeastTwoItems: 60, topicsWithAtLeastThreeItems: 60, chapterCount: 5, sectionCount: 15, constructedResponseWorkshopCount: 5, foundationalDocumentCount: 13, representedFoundationalDocumentCount: 13, foundationalDocumentRouteCount: 13, representedFoundationalDocumentRouteCount: 13, practiceSliceCounts: { 'foundation-slice': 100, 'depth-slice': 100, 'transfer-slice': 60 }, transferItemCount: 60, transferTopicCount: 60, topicDrillMapCount: 60 });
   });
 
   it('binds the generated pack and QA record into the lazy manifest', () => {

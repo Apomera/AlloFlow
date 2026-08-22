@@ -267,7 +267,7 @@ window.StemLab = window.StemLab || {
       '.fraction-lab-equivalence-canvas{width:100%;height:100%;display:block}',
       '.fraction-lab-equivalence-canvas:focus-visible{outline:3px solid #0ea5e9;outline-offset:-4px}',
       '@media (max-width:780px){.fraction-lab-practice-grid{grid-template-columns:1fr}.fraction-lab-model-stage{min-height:236px}.fraction-lab-summary-grid{grid-template-columns:1fr 1fr}}',
-      '@media (max-width:480px){.fraction-lab-toolbar{align-items:flex-start}.fraction-lab-summary-grid{grid-template-columns:1fr}.fraction-lab-control-card{padding:11px}.fraction-lab-model-stage{min-height:210px;padding:10px}}'
+      '@media (max-width:480px){.fraction-lab-toolbar{align-items:flex-start}.fraction-lab-summary-grid{grid-template-columns:1fr}.fraction-lab-control-card{padding:11px}.fraction-lab-model-stage{min-height:210px;padding:10px}.fraction-lab-equivalence-canvas-wrap{aspect-ratio:auto;height:138px;min-height:0}}'
     ].join('');
     document.head.appendChild(st);
   })();
@@ -3396,7 +3396,7 @@ window.StemLab = window.StemLab || {
         ),
         // Equiv chains
         h('div', { className: 'bg-white rounded-xl border-2 border-orange-200 p-4' },
-          h('p', { className: 'text-[11px] font-bold text-orange-600 uppercase tracking-wider mb-2' }, '\uD83D\uDD17 Equivalent Fractions for ' + s1[0] + '/' + s1[1]),
+          h('p', { className: 'text-[11px] font-bold text-orange-700 uppercase tracking-wider mb-2' }, '\uD83D\uDD17 Equivalent Fractions for ' + s1[0] + '/' + s1[1]),
           h('div', { className: 'flex flex-wrap gap-2 mb-3' },
             equivChain(num1, den1, 8).map(function(eq, i) {
               return h('div', {
@@ -3408,7 +3408,7 @@ window.StemLab = window.StemLab || {
               );
             })
           ),
-          h('p', { className: 'text-[11px] font-bold text-orange-600 uppercase tracking-wider mb-2 mt-3' }, '\uD83D\uDD17 Equivalent Fractions for ' + s2[0] + '/' + s2[1]),
+          h('p', { className: 'text-[11px] font-bold text-orange-700 uppercase tracking-wider mb-2 mt-3' }, '\uD83D\uDD17 Equivalent Fractions for ' + s2[0] + '/' + s2[1]),
           h('div', { className: 'flex flex-wrap gap-2' },
             equivChain(num2, den2, 8).map(function(eq, i) {
               return h('div', {
@@ -3513,7 +3513,7 @@ window.StemLab = window.StemLab || {
               h('span', { className: 'text-xs font-bold text-slate-600 block mb-1' }, __alloT('stem.fractions.visual', 'Visual')),
               h('div', { className: 'h-6 bg-slate-200 rounded-full overflow-hidden' },
                 h('div', { 
-                  style: { width: Math.min(cPct, 100) + '%', backgroundColor: '#14b8a6', transition: 'width 0.3s' },
+                  style: { width: Math.min(cPct, 100) + '%', backgroundColor: '#0f766e', transition: 'width 0.3s' },
                   className: 'h-full rounded-full flex items-center justify-center'
                 },
                   cPct >= 15 && h('span', { className: 'text-[11px] font-bold text-white' }, cPct.toFixed(0) + '%')
@@ -3573,7 +3573,7 @@ window.StemLab = window.StemLab || {
         h('div', { className: 'border-t border-slate-200 pt-3' },
           h('button', { 'aria-label': __alloT('stem.fractions.fraction_2', 'Fraction'),
             onClick: function() { sfxClick(); upd({ showBenchmarks: !showBenchmarks }); },
-            className: 'text-xs font-bold text-teal-600 hover:text-teal-800 transition-colors'
+            className: 'text-xs font-bold text-teal-700 hover:text-teal-900 transition-colors'
           }, (showBenchmarks ? '\u25BC' : '\u25B6') + ' Benchmark Fractions Reference'),
           showBenchmarks && h('div', { className: 'mt-2 bg-white rounded-xl border p-3' },
             h('div', { className: 'grid grid-cols-3 gap-1 text-[11px] font-bold mb-1' },
@@ -3861,7 +3861,7 @@ window.StemLab = window.StemLab || {
             __alloT('stem.fractions.showing', 'Showing '), h('span', { className: 'font-mono text-rose-700' }, pieces.numerator + '/' + pieces.denominator),
             ' as ', h('b', null, (MODELS.find(function(m) { return m.id === currentModel; }) || {}).label)
           ),
-          h('p', { className: 'text-[11px] text-rose-600 italic mt-1' },
+          h('p', { className: 'text-[11px] text-rose-700 italic mt-1' },
             (MODELS.find(function(m) { return m.id === currentModel; }) || {}).desc
           )
         )
@@ -4073,7 +4073,7 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'flex-1' },
               h('h5', { className: 'text-sm font-black text-amber-900' }, problem.title),
               h('p', { className: 'text-sm text-slate-800 mt-1 leading-relaxed' }, problem.story),
-              standard && h('p', { className: 'text-[10px] text-amber-600 italic mt-1' }, 'Aligns with ' + standard.code + ' — ' + standard.title)
+              standard && h('p', { className: 'text-[10px] text-amber-700 italic mt-1' }, 'Aligns with ' + standard.code + ' — ' + standard.title)
             )
           ),
           // Answer input
@@ -4188,7 +4188,7 @@ window.StemLab = window.StemLab || {
           h('p', { className: 'text-[11px] text-indigo-700 mb-2' },
             __alloT('stem.fractions.each_tool_in_fraction_lab_is_mapped_to', 'Each tool in Fraction Lab is mapped to one or more CCSS standards. Use this view to plan instruction, find tools for a specific standard, or build evidence for IEP goal alignment.')
           ),
-          h('div', { className: 'flex gap-1' },
+          h('div', { className: 'flex gap-1 flex-wrap' },
             ['all', '1', '2', '3', '4', '5', '6', '7', '8'].map(function(g) {
               var label = g === 'all' ? 'All' : 'Grade ' + g;
               var active = stdGrade === g;
@@ -4201,12 +4201,12 @@ window.StemLab = window.StemLab || {
             })
           )
         ),
-        h('div', { className: 'space-y-2 max-h-[480px] overflow-y-auto' },
+        h('div', { className: 'space-y-2 max-h-[480px] overflow-y-auto focus:outline-none focus:ring-2 focus:ring-indigo-500', role: 'region', tabIndex: 0, 'aria-label': 'Fraction standards by grade' },
           filtered.map(function(c) {
             return h('div', { key: c.code, className: 'bg-white rounded-lg p-3 border border-indigo-100' },
               h('div', { className: 'flex items-start gap-2' },
                 h('span', { className: 'text-[11px] font-bold text-indigo-700 bg-indigo-100 px-1.5 py-0.5 rounded' }, c.code),
-                h('span', { className: 'text-[11px] text-indigo-500 italic' }, 'Grade ' + c.grade)
+                h('span', { className: 'text-[11px] text-indigo-700 italic' }, 'Grade ' + c.grade)
               ),
               h('p', { className: 'text-xs font-bold text-slate-800 mt-1' }, c.title),
               h('p', { className: 'text-[11px] text-slate-700 mt-0.5' }, c.desc),
@@ -6275,7 +6275,7 @@ window.StemLab = window.StemLab || {
               h('div', { className: 'flex items-center gap-2 flex-wrap' },
                 h('span', { className: 'text-[11px] font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded' }, 'Grade ' + g.grade),
                 h('span', { className: 'text-[11px] font-bold text-emerald-700' }, g.topic),
-                h('span', { className: 'text-[10px] text-emerald-500' }, g.ccss)
+                h('span', { className: 'text-[10px] text-emerald-700' }, g.ccss)
               ),
               h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, '🎯 ', h('b', null, g.goal)),
               h('details', { className: 'text-[11px]' },
@@ -7540,7 +7540,7 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'flex items-center gap-2 flex-wrap' },
             h('h5', { className: 'text-base font-black text-rose-900' }, mc.label),
             h('span', { className: 'text-[10px] font-bold text-rose-700 bg-rose-100 px-2 py-0.5 rounded uppercase' }, mc.severity),
-            h('span', { className: 'text-[10px] text-rose-500' }, 'Grade ' + mc.grade)
+            h('span', { className: 'text-[10px] text-rose-700' }, 'Grade ' + mc.grade)
           ),
           h('p', { className: 'text-sm text-slate-800' }, '📝 ' + mc.description),
           h('div', { className: 'bg-rose-50 rounded p-2 border border-rose-200' },
@@ -8106,7 +8106,7 @@ window.StemLab = window.StemLab || {
             }, tables[t].label.split(' ')[0]);
           })
         ),
-        h('div', { className: 'bg-white rounded-xl border-2 border-cyan-200 p-3 max-h-[500px] overflow-y-auto' },
+        h('div', { className: 'bg-white rounded-xl border-2 border-cyan-200 p-3 max-h-[500px] overflow-y-auto focus:outline-none focus:ring-2 focus:ring-cyan-600', role: 'region', tabIndex: 0, 'aria-label': 'Scrollable fraction conversion table' },
           h('h5', { className: 'text-sm font-black text-cyan-900 mb-2' }, current.label),
           h('table', { className: 'w-full text-sm' },
             h('thead', { className: 'sticky top-0 bg-white' },
@@ -8172,7 +8172,7 @@ window.StemLab = window.StemLab || {
           className: 'w-full px-3 py-2 rounded-lg border border-indigo-300 text-sm'
         }),
         h('p', { className: 'text-[11px] text-indigo-700' }, filtered.length + ' term' + (filtered.length === 1 ? '' : 's')),
-        h('div', { className: 'space-y-2 max-h-[500px] overflow-y-auto' },
+        h('div', { className: 'space-y-2 max-h-[500px] overflow-y-auto focus:outline-none focus:ring-2 focus:ring-indigo-600', role: 'region', tabIndex: 0, 'aria-label': 'Fraction glossary terms' },
           filtered.length === 0
             ? h('p', { className: 'text-xs italic text-slate-500 text-center py-4' }, __alloT('stem.fractions.no_matches_2', 'No matches.'))
             : filtered.map(function(v, i) {
@@ -8685,7 +8685,7 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'flex items-center gap-2 mb-2' },
               h('span', { className: 'text-2xl' }, r.level),
               h('h5', { className: 'text-sm font-black text-' + r.color + '-800' }, r.label),
-              h('span', { className: 'ml-auto text-[10px] font-bold text-' + r.color + '-600 bg-' + r.color + '-100 px-2 py-0.5 rounded' }, 'Level ' + r.level)
+              h('span', { className: 'ml-auto text-[10px] font-bold text-' + r.color + '-800 bg-' + r.color + '-100 px-2 py-0.5 rounded' }, 'Level ' + r.level)
             ),
             h('p', { className: 'text-xs text-slate-700' }, h('b', null, 'Criteria: '), r.criteria),
             h('p', { className: 'text-[11px] text-' + r.color + '-700 italic mt-1' }, h('b', null, 'Example: '), r.example)
@@ -9000,7 +9000,7 @@ window.StemLab = window.StemLab || {
         h('div', { className: 'bg-white rounded-xl border-2 border-emerald-200 p-4 text-center space-y-2' },
           h('p', { className: 'text-sm text-emerald-700' }, 'Today: ', h('b', null, today)),
           h('p', { className: 'text-3xl font-black text-emerald-800' }, dpDays.length + ' 🔥 day' + (dpDays.length === 1 ? '' : 's')),
-          h('p', { className: 'text-[11px] text-emerald-600' }, __alloT('stem.fractions.practice_streak', 'Practice streak')),
+          h('p', { className: 'text-[11px] text-emerald-700' }, __alloT('stem.fractions.practice_streak', 'Practice streak')),
           !dpTodayDone && h('button', { onClick: markComplete,
             className: 'transition-colors px-6 py-2 bg-emerald-700 text-white font-bold rounded-xl hover:bg-emerald-800' }, __alloT('stem.fractions.mark_today_complete', '✓ Mark today complete')),
           dpTodayDone && h('p', { className: 'text-base font-bold text-emerald-900' }, __alloT('stem.fractions.today_done_come_back_tomorrow', '✓ Today done! Come back tomorrow.'))
@@ -9397,7 +9397,7 @@ window.StemLab = window.StemLab || {
             var reached = totalXp >= lvl.xp;
             return h('div', { key: 'lvl-' + lvl.level,
               className: 'flex items-center gap-2 p-2 rounded ' +
-                (reached ? 'bg-' + lvl.color + '-50 border border-' + lvl.color + '-200' : 'bg-slate-50 border border-slate-100 opacity-50')
+                (reached ? 'bg-' + lvl.color + '-50 border border-' + lvl.color + '-200' : 'bg-slate-50 border border-slate-300')
             },
               h('span', { className: 'text-2xl' }, reached ? '⭐' : '🔒'),
               h('div', { className: 'flex-1' },
@@ -10395,7 +10395,7 @@ window.StemLab = window.StemLab || {
                 'aria-label': __alloT('stem.fractions.first_denominator_2', 'First denominator'),
                 className: 'w-16 px-2 py-1 rounded border border-teal-300 text-center' })
             ),
-            h('p', { className: 'text-[11px] text-center mt-1 text-teal-600 font-mono' }, '= ' + (dA.d > 0 ? (dA.n / dA.d).toFixed(4) : '—'))
+            h('p', { className: 'text-[11px] text-center mt-1 text-teal-700 font-mono' }, '= ' + (dA.d > 0 ? (dA.n / dA.d).toFixed(4) : '—'))
           ),
           h('div', { className: 'bg-white rounded-lg p-3 border border-teal-200' },
             h('p', { className: 'text-xs font-bold text-teal-700 mb-2' }, __alloT('stem.fractions.second_fraction', 'Second fraction')),
@@ -10410,7 +10410,7 @@ window.StemLab = window.StemLab || {
                 'aria-label': __alloT('stem.fractions.second_denominator_2', 'Second denominator'),
                 className: 'w-16 px-2 py-1 rounded border border-teal-300 text-center' })
             ),
-            h('p', { className: 'text-[11px] text-center mt-1 text-teal-600 font-mono' }, '= ' + (dB.d > 0 ? (dB.n / dB.d).toFixed(4) : '—'))
+            h('p', { className: 'text-[11px] text-center mt-1 text-teal-700 font-mono' }, '= ' + (dB.d > 0 ? (dB.n / dB.d).toFixed(4) : '—'))
           )
         ),
         h('div', { className: 'bg-white rounded-xl border-2 border-teal-200 p-4 space-y-2' },
@@ -10418,12 +10418,12 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'bg-teal-50 rounded p-2 border border-teal-200' },
             h('p', { className: 'text-xs font-bold text-teal-800' }, __alloT('stem.fractions.average_arithmetic_mean', '⚖ Average (arithmetic mean):')),
             h('p', { className: 'text-base font-mono text-teal-900 font-bold' }, avgSimp[0] + '/' + avgSimp[1] + ' = ' + (avgSimp[1] > 0 ? (avgSimp[0] / avgSimp[1]).toFixed(4) : '—')),
-            h('p', { className: 'text-[10px] text-teal-600 italic' }, __alloT('stem.fractions.add_the_fractions_and_divide_by_2', 'Add the fractions and divide by 2.'))
+            h('p', { className: 'text-[10px] text-teal-700 italic' }, __alloT('stem.fractions.add_the_fractions_and_divide_by_2', 'Add the fractions and divide by 2.'))
           ),
           h('div', { className: 'bg-teal-50 rounded p-2 border border-teal-200' },
             h('p', { className: 'text-xs font-bold text-teal-800' }, __alloT('stem.fractions.mediant_stern_brocot_tree', '🌳 Mediant (Stern-Brocot tree):')),
             h('p', { className: 'text-base font-mono text-teal-900 font-bold' }, medSimp[0] + '/' + medSimp[1] + ' = ' + (medSimp[1] > 0 ? (medSimp[0] / medSimp[1]).toFixed(4) : '—')),
-            h('p', { className: 'text-[10px] text-teal-600 italic' }, __alloT('stem.fractions.add_the_tops_add_the_bottoms_this_is_n', 'Add the tops, add the bottoms. (This is NOT addition — it\'s the mediant.) Always between the two fractions.'))
+            h('p', { className: 'text-[10px] text-teal-700 italic' }, __alloT('stem.fractions.add_the_tops_add_the_bottoms_this_is_n', 'Add the tops, add the bottoms. (This is NOT addition — it\'s the mediant.) Always between the two fractions.'))
           ),
           h('div', { className: 'bg-teal-50 rounded p-2 border border-teal-200' },
             h('p', { className: 'text-[11px] text-teal-800 italic' },
@@ -10672,15 +10672,15 @@ window.StemLab = window.StemLab || {
 
     var renderSubTabStrip = function(items, currentId, onSelect, accentColor) {
       accentColor = accentColor || 'rose';
-      return h('div', { className: 'flex gap-1 bg-' + accentColor + '-50 rounded-lg p-1 border border-' + accentColor + '-200 flex-wrap mb-3', role: 'tablist' },
+      return h('div', { className: 'flex gap-1 bg-' + accentColor + '-50 rounded-lg p-1 border border-' + accentColor + '-200 flex-wrap mb-3', role: 'group', 'aria-label': 'Choose a subsection' },
         items.map(function(s) {
           var active = currentId === s.id;
           return h('button', {
             key: 'sub-' + s.id,
-            role: 'tab', 'aria-selected': active,
+            'aria-pressed': active,
             onClick: function() { sfxClick(); onSelect(s.id); },
             className: 'px-2.5 py-1 rounded text-[11px] font-bold transition-all whitespace-nowrap ' +
-              (active ? 'bg-white text-' + accentColor + '-800 shadow-sm border border-' + accentColor + '-200' : 'text-' + accentColor + '-600 hover:text-' + accentColor + '-800 hover:bg-' + accentColor + '-100')
+              (active ? 'bg-white text-' + accentColor + '-800 shadow-sm border border-' + accentColor + '-200' : 'text-' + accentColor + '-700 hover:text-' + accentColor + '-900 hover:bg-' + accentColor + '-100')
           }, (s.icon ? s.icon + ' ' : '') + s.label);
         })
       );
@@ -10769,7 +10769,7 @@ window.StemLab = window.StemLab || {
     };
 
     var renderDrillTab = function() {
-      var sub = _f.drillSub || 'benchmarks';
+      var sub = _f.drillSub || 'pbank';
       var items = [
         { id: 'pbank', icon: '📚', label: __alloT('stem.fractions.practice_bank_2', 'Practice bank') },
         { id: 'vocabquiz', icon: '📝', label: __alloT('stem.fractions.vocab_quiz_2', 'Vocab quiz') },
@@ -10859,7 +10859,7 @@ window.StemLab = window.StemLab || {
     };
 
     var renderMyAccountTab = function() {
-      var sub = _f.maSub || 'settings';
+      var sub = _f.maSub || 'goals';
       var items = [
         { id: 'goals', icon: '🎯', label: __alloT('stem.fractions.goal_setter_3', 'Goal setter') },
         { id: 'daily', icon: '📅', label: __alloT('stem.fractions.daily_streak', 'Daily streak') },
@@ -11227,7 +11227,21 @@ window.StemLab = window.StemLab || {
           var active = navMode === mk;
           return h('button', {
             key: 'mode-' + mk,
-            role: 'tab', 'aria-selected': active, tabIndex: active ? 0 : -1,
+            id: 'fraction-mode-tab-' + mk,
+            role: 'tab', 'aria-selected': active, 'aria-controls': 'fraction-mode-panel', tabIndex: active ? 0 : -1,
+            onKeyDown: function(e) {
+              var modeKeys = Object.keys(MODE_LABELS);
+              var current = modeKeys.indexOf(mk);
+              var next = -1;
+              if (e.key === 'ArrowRight' || e.key === 'ArrowDown') next = (current + 1) % modeKeys.length;
+              else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') next = (current + modeKeys.length - 1) % modeKeys.length;
+              else if (e.key === 'Home') next = 0;
+              else if (e.key === 'End') next = modeKeys.length - 1;
+              if (next < 0) return;
+              e.preventDefault();
+              var modeTabs = e.currentTarget.parentNode.querySelectorAll('[role="tab"]');
+              if (modeTabs[next]) { modeTabs[next].focus(); modeTabs[next].click(); }
+            },
             onClick: function() {
               sfxClick();
               // Switch mode; also switch to first tab in that mode if current tab not in mode
@@ -11241,11 +11255,24 @@ window.StemLab = window.StemLab || {
         })
       ),
       // Second level — TAB within mode
+      h('div', { id: 'fraction-mode-panel', role: 'tabpanel', 'aria-labelledby': 'fraction-mode-tab-' + navMode, className: 'space-y-4' },
       h('div', { className: 'flex gap-1 bg-rose-50 rounded-xl p-1 border border-rose-200 flex-wrap', role: 'tablist', 'aria-label': __alloT('stem.fractions.fraction_lab_sections', 'Fraction Lab sections') },
-        visibleTabs.map(function(t2) {
+        visibleTabs.map(function(t2, tabIndex) {
           return h('button', { key: t2.id,
+            id: 'fraction-section-tab-' + t2.id,
             onClick: function() { sfxClick(); upd({ tab: t2.id }); trackTab(t2.id); },
-            role: 'tab', 'aria-selected': tab === t2.id, tabIndex: (tab === t2.id) ? 0 : -1,
+            onKeyDown: function(e) {
+              var next = -1;
+              if (e.key === 'ArrowRight' || e.key === 'ArrowDown') next = (tabIndex + 1) % visibleTabs.length;
+              else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') next = (tabIndex + visibleTabs.length - 1) % visibleTabs.length;
+              else if (e.key === 'Home') next = 0;
+              else if (e.key === 'End') next = visibleTabs.length - 1;
+              if (next < 0) return;
+              e.preventDefault();
+              var sectionTabs = e.currentTarget.parentNode.querySelectorAll('[role="tab"]');
+              if (sectionTabs[next]) { sectionTabs[next].focus(); sectionTabs[next].click(); }
+            },
+            role: 'tab', 'aria-selected': tab === t2.id, 'aria-controls': 'fraction-section-panel', tabIndex: (tab === t2.id) ? 0 : -1,
             className: 'py-1.5 px-2.5 rounded-lg text-[11px] sm:text-xs font-bold transition-all whitespace-nowrap ' +
               (tab === t2.id ? 'bg-white text-rose-800 shadow-sm border border-rose-200' : 'text-rose-700 hover:text-rose-900 hover:bg-rose-100')
           }, t2.icon + ' ' + t2.label);
@@ -11283,6 +11310,7 @@ window.StemLab = window.StemLab || {
       })(),
 
       // v3.1: Super-tab routing (added FIRST so consolidated tabs take precedence)
+      h('section', { id: 'fraction-section-panel', role: 'tabpanel', 'aria-labelledby': 'fraction-section-tab-' + tab, tabIndex: 0, className: 'space-y-4 focus:outline-none focus:ring-2 focus:ring-rose-500' },
       tab === 'reference' && renderReferenceTab(),
       tab === 'curiosities' && renderCuriositiesTab(),
       tab === 'aboutSuper' && renderAboutSuperTab(),
@@ -11369,7 +11397,7 @@ window.StemLab = window.StemLab || {
         var state = Math.abs(total - 1) < 0.01 ? 'whole' : (total > 1 ? 'over' : 'under');
         var sm = {
           whole: { label: __alloT('stem.fractions.equals_exactly_1_whole', '🟢 Equals exactly 1 whole'), color: '#059669', bg: '#ecfdf5', border: '#86efac' },
-          under: { label: __alloT('stem.fractions.less_than_1', '🟡 Less than 1'), color: '#d97706', bg: '#fffbeb', border: '#fcd34d' },
+          under: { label: __alloT('stem.fractions.less_than_1', '🟡 Less than 1'), color: '#b45309', bg: '#fffbeb', border: '#fcd34d' },
           over:  { label: __alloT('stem.fractions.more_than_1_mixed_number', '🔴 More than 1 (mixed number)'), color: '#dc2626', bg: '#fef2f2', border: '#fca5a5' }
         }[state];
         return h('div', { className: 'p-4 rounded-xl bg-white border border-rose-200' },
@@ -11465,6 +11493,8 @@ window.StemLab = window.StemLab || {
                 className: 'text-xs text-rose-600 font-bold hover:underline'
               }, __alloT('stem.fractions.next_challenge_2', '\u27A1\uFE0F Next Challenge'))
             )
+      ),
+      ),
       ),
 
       // Badges

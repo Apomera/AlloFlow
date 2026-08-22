@@ -11,9 +11,10 @@ describe('Geometry World animation runtime', () => {
   });
 
   it('stops a failed frame and exposes a recoverable error panel', () => {
-    expect(SOURCE).toContain('function stopAnimationAfterError(error)');
+    expect(SOURCE).toContain('function stopAnimationAfterError(error, failureKind)');
     expect(SOURCE).toContain('catch (error) { stopAnimationAfterError(error); }');
-    expect(SOURCE).toContain("window[engineKey + '_failure'] = { kind: 'runtime', message: detail };");
+    expect(SOURCE).toContain("var kind = failureKind || 'runtime';");
+    expect(SOURCE).toContain("window[engineKey + '_failure'] = { kind: kind, message: detail };");
     expect(SOURCE).toContain("'Technical details'");
   });
 
@@ -44,6 +45,21 @@ describe('Geometry World animation runtime', () => {
     expect(SOURCE).toContain('engine._pausedByVisibility = true;');
     expect(SOURCE).toContain('if (engine.clock) engine.clock.getDelta();');
     expect(SOURCE).toContain('if (engine && (engine._pausedByVisibility || engine._pausedByViewport)) return;');
+  });
+
+  it('preserves valid zero coordinates in camera focus and scene summaries', () => {
+    const helperSource = SOURCE.match(/function finiteWorldCoordinate\(value, fallback\) \{[\s\S]*?\n        \}/)?.[0];
+    expect(helperSource).toBeTruthy();
+    const finiteWorldCoordinate = new Function(`return (${helperSource})`)();
+    expect(finiteWorldCoordinate(0, 2)).toBe(0);
+    expect(finiteWorldCoordinate('0', 3)).toBe(0);
+    expect(finiteWorldCoordinate('', 4)).toBe(4);
+    expect(finiteWorldCoordinate(null, 4)).toBe(4);
+    expect(finiteWorldCoordinate('not-a-coordinate', 5)).toBe(5);
+    expect(SOURCE).toContain('x2 = finiteWorldCoordinate(structure.x2, x1)');
+    expect(SOURCE).toContain('x: finiteWorldCoordinate(spawn[0], 2)');
+    expect(SOURCE).not.toContain('Number(structure.x2) || x1');
+    expect(SOURCE).not.toContain('Number(spawn[0]) || 2');
   });
 });
 

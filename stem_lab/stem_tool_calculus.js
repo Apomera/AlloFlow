@@ -1807,7 +1807,18 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           '@keyframes calcCorrect{0%,100%{background:#dcfce7}50%{background:#86efac}}' +
           '@keyframes calcWrong{0%{transform:translateX(0)}20%{transform:translateX(-7px)}40%{transform:translateX(7px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}100%{transform:translateX(0)}}' +
           '@keyframes calcFade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}' +
-          '@keyframes spin{to{transform:rotate(360deg)}}';
+          '@keyframes spin{to{transform:rotate(360deg)}}' +
+          '.calculus-shell .text-red-400,.calculus-shell .text-red-500,.calculus-shell .text-red-600{color:#b91c1c!important}' +
+          '.calculus-shell .text-cyan-500,.calculus-shell .text-cyan-600{color:#155e75!important}' +
+          '.calculus-shell .text-amber-600{color:#92400e!important}' +
+          '.calculus-shell .text-emerald-400,.calculus-shell .text-emerald-600{color:#047857!important}' +
+          '.calculus-shell .text-violet-400,.calculus-shell .text-violet-500{color:#6d28d9!important}' +
+          '.calculus-shell .text-orange-500{color:#c2410c!important}' +
+          '.calculus-shell .text-yellow-600{color:#854d0e!important}' +
+          '.calculus-shell .text-rose-600{color:#be123c!important}' +
+          '.calculus-shell .bg-orange-600{background-color:#c2410c!important}' +
+          '.calculus-shell .bg-amber-600{background-color:#b45309!important}' +
+          '.calculus-shell .bg-emerald-600{background-color:#047857!important}';
 
         // ── MODES ────────────────────────────────────────────────────────
         var MODES = [
@@ -1856,12 +1867,12 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
         var cMode = d.calcChallengeMode || 'estimate';
         var cHint = d.calcHint || '';
         var CALC_CHALLENGES = [
-          { id: 'estimate',  label: '\uD83C\uDFAF Estimate \u222B',  color: 'red' },
-          { id: 'overunder', label: '\u2B06\u2B07 Over or Under?',    color: 'orange' },
-          { id: 'method',    label: '\u26A1 Best Method',             color: 'amber' },
-          { id: 'minN',      label: '\uD83D\uDD22 Min n',             color: 'blue' },
-          { id: 'exact',     label: '\u270F\uFE0F Exact \u222B',      color: 'emerald' },
-          { id: 'deriv',     label: '\uD83D\uDCC8 Find the Slope',    color: 'violet' },
+          { id: 'estimate',  label: '\uD83C\uDFAF Estimate \u222B',  activeClass: 'bg-red-700' },
+          { id: 'overunder', label: '\u2B06\u2B07 Over or Under?',    activeClass: 'bg-orange-700' },
+          { id: 'method',    label: '\u26A1 Best Method',             activeClass: 'bg-amber-700' },
+          { id: 'minN',      label: '\uD83D\uDD22 Min n',             activeClass: 'bg-blue-700' },
+          { id: 'exact',     label: '\u270F\uFE0F Exact \u222B',      activeClass: 'bg-emerald-700' },
+          { id: 'deriv',     label: '\uD83D\uDCC8 Find the Slope',    activeClass: 'bg-violet-700' },
         ];
 
         // ── CHALLENGE GENERATORS ─────────────────────────────────────────
@@ -2000,7 +2011,15 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
         };
 
         // ── RENDER ───────────────────────────────────────────────────────
-        var calcTabLabel = { integral: 'Integral', derivative: 'Derivative', visualize: 'Visualize', challenge: 'Challenge', discover: 'Discover' }[tab] || 'Integral';
+        var CALCULUS_TABS = [
+          ['integral','\u222B Integral'],
+          ['derivative','\uD83D\uDCC8 Derivative'],
+          ['visualize','\uD83C\uDFAC Visualize'],
+          ['challenge','\uD83C\uDFAF Challenge'],
+          ['discover','\uD83D\uDD2C Discover'],
+          ['derivHunt','\u2753 Inquiry']
+        ];
+        var calcTabLabel = { integral: 'Integral', derivative: 'Derivative', visualize: 'Visualize', challenge: 'Challenge', discover: 'Discover', derivHunt: 'Inquiry' }[tab] || 'Integral';
         var methodsTried = Object.keys(d.methodsUsed || {}).length;
         var calcNext = tab === 'integral' && methodsTried < 2
           ? 'Compare two approximation methods using the same function and interval.'
@@ -2010,14 +2029,16 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
               ? 'Choose a view, change one control, and describe what stays invariant.'
               : tab === 'challenge'
                 ? 'Solve one problem, then use the feedback to explain any error.'
-                : 'Connect rate and accumulation through the Fundamental Theorem.';
+                : tab === 'derivHunt'
+                  ? 'Change one coefficient at a time and explain how the derivative behavior changes.'
+                  : 'Connect rate and accumulation through the Fundamental Theorem.';
 
         var calculusTabKeyDown = function(e, index) {
           var nextIndex = -1;
-          if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = (index + 1) % 5;
-          else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = (index + 4) % 5;
+          if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = (index + 1) % CALCULUS_TABS.length;
+          else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = (index - 1 + CALCULUS_TABS.length) % CALCULUS_TABS.length;
           else if (e.key === 'Home') nextIndex = 0;
-          else if (e.key === 'End') nextIndex = 4;
+          else if (e.key === 'End') nextIndex = CALCULUS_TABS.length - 1;
           if (nextIndex < 0) return;
           e.preventDefault();
           var tabs = e.currentTarget.parentNode.querySelectorAll('[role="tab"]');
@@ -2025,7 +2046,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           if (nextTab) { nextTab.focus(); nextTab.click(); }
         };
 
-        return h('div', { className: 'max-w-5xl mx-auto animate-in fade-in duration-200' },
+        return h('div', { className: 'calculus-shell max-w-5xl mx-auto animate-in fade-in duration-200' },
 
           h('style', null, css),
 
@@ -2074,8 +2095,8 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           ),
 
           // Tab bar
-          h('div', { className: 'flex gap-0 mb-3 overflow-x-auto border-b border-slate-200', role: 'tablist', 'aria-label': 'Calculus Tool sections' },
-            [['integral','\u222B Integral'],['derivative','\uD83D\uDCC8 Derivative'],['visualize','\uD83C\uDFAC Visualize'],['challenge','\uD83C\uDFAF Challenge'],['discover','\uD83D\uDD2C Discover']].map(function(item, tabIndex){
+          h('div', { className: 'flex flex-wrap gap-1 mb-3 border-b border-slate-200', role: 'tablist', 'aria-label': 'Calculus Tool sections' },
+            CALCULUS_TABS.map(function(item, tabIndex){
               return h('button',{ key:item[0], id:'calculus-tab-'+item[0], 'aria-controls':'calculus-panel-'+item[0], onClick:function(){upd('tab',item[0]);}, onKeyDown:function(e){calculusTabKeyDown(e, tabIndex);}, role:'tab','aria-selected':tab===item[0], tabIndex:tab===item[0]?0:-1, className:'min-h-[2.5rem] whitespace-nowrap px-3 py-2 text-xs font-bold transition-all focus:outline-none focus:ring-2 focus:ring-red-400 '+(tab===item[0]?'border-b-2 border-red-600 text-red-700 -mb-px':'text-slate-600 hover:text-slate-700')},item[1]);
             })
           ),
@@ -2087,7 +2108,8 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
               derivative: { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '\uD83D\uDCC8', title: 'Derivative \u2014 slope at a point',     hint: 'lim(h\u21920) [f(x+h)\u2212f(x)]/h. Slope of the tangent line. Power rule + chain rule + product rule + quotient rule cover ~95% of AP Calc problems.' },
               visualize:  { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)', icon: '\uD83C\uDFAC', title: 'Visualize \u2014 see the math move',     hint: 'Watch a Riemann sum refine to the exact integral as n grows. Watch a tangent line slide along a curve. Calculus that looked abstract on paper becomes obvious in motion.' },
               challenge:  { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)', icon: '\uD83C\uDFAF', title: 'Challenge \u2014 graded problems',       hint: 'AP Calc AB / BC items with step-by-step feedback. Common traps: sign errors in chain rule, forgetting the +C in indefinite integrals, mixing up [f(x)]\u00b2 vs f(x\u00b2).' },
-              discover:   { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)',  icon: '\uD83D\uDD2C', title: 'Discover \u2014 the big ideas',           hint: 'Fundamental Theorem of Calculus: integration and differentiation are inverse operations. The single most beautiful result in mathematics. Newton + Leibniz, independently, ~1670s.' }
+              discover:   { accent: '#15803d', soft: 'rgba(22,163,74,0.10)',  icon: '\uD83D\uDD2C', title: 'Discover \u2014 the big ideas',           hint: 'Fundamental Theorem of Calculus: integration and differentiation are inverse operations. The single most beautiful result in mathematics. Newton + Leibniz, independently, ~1670s.' },
+              derivHunt:  { accent: '#6d28d9', soft: 'rgba(109,40,217,0.10)', icon: '\u2753', title: 'Inquiry \u2014 derivative behavior', hint: 'Vary one coefficient or the x-point at a time, log what you observe, and build a rule for when a quadratic increases, decreases, or reaches an extremum.' }
             };
             var meta = TAB_META[tab] || TAB_META.integral;
             return h('div', { role: 'tabpanel', id: 'calculus-panel-' + tab,
@@ -2214,15 +2236,15 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                 h('p', { className: 'text-[11px] font-bold text-red-700 uppercase tracking-wider mb-2' }, '\uD83D\uDCCA Analysis'),
                 h('div', { className: 'grid grid-cols-3 gap-2 text-center' },
                   h('div', { className: 'p-1.5 bg-white rounded-lg border', style:{animation:'calcPop 0.3s ease'} },
-                    h('p', { className: 'text-[11px] font-bold text-red-400' }, mode==='trapezoid'?'Trapezoidal':mode==='simpson'?"Simpson's":'Riemann ('+mode+')'),
+                    h('p', { className: 'text-[11px] font-bold text-red-700' }, mode==='trapezoid'?'Trapezoidal':mode==='simpson'?"Simpson's":'Riemann ('+mode+')'),
                     h('p', { className: 'text-sm font-bold text-red-800' }, area.toFixed(4))
                   ),
                   h('div', { className: 'p-1.5 bg-white rounded-lg border' },
-                    h('p', { className: 'text-[11px] font-bold text-red-400' }, 'Exact (\u222B)'),
+                    h('p', { className: 'text-[11px] font-bold text-red-700' }, 'Exact (\u222B)'),
                     h('p', { className: 'text-sm font-bold text-red-800' }, exact.toFixed(4))
                   ),
                   h('div', { className: 'p-1.5 bg-white rounded-lg border' },
-                    h('p', { id: 'err-stem_tool_calculus-474', role: 'alert', className: 'text-[11px] font-bold text-red-400' }, 'Error'),
+                    h('p', { id: 'err-stem_tool_calculus-474', role: 'alert', className: 'text-[11px] font-bold text-red-700' }, 'Error'),
                     h('p', { className: 'text-sm font-bold '+(err<0.01?'text-emerald-600':err<0.1?'text-yellow-600':'text-red-600') }, err.toFixed(6))
                   )
                 ),
@@ -2257,7 +2279,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             h('div', { className: 'mt-3 bg-cyan-50 rounded-xl border border-cyan-200 p-3' },
               h('div', { className: 'flex items-center justify-between mb-1' },
                 h('p', { className: 'text-[11px] font-bold text-cyan-700 uppercase tracking-wider' }, '\u270F\uFE0F Build the Antiderivative'),
-                h('p', { className: 'text-[11px] text-cyan-500 italic' }, 'Power rule: \u222B x\u207F dx = x\u207F\u207A\u00B9/(n+1)')
+                h('p', { className: 'text-[11px] text-cyan-800 italic' }, 'Power rule: \u222B x\u207F dx = x\u207F\u207A\u00B9/(n+1)')
               ),
               h('p', { className: 'text-xs text-cyan-800 mb-2' }, 'For f(x) = ' + buildFStr(fa, fb, fc) + ', complete F(x):'),
               h('div', { className: 'flex items-center gap-1 flex-wrap' },
@@ -2270,7 +2292,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                 h('span', { className: 'text-sm font-bold text-cyan-900' }, '\u00B7x + C'),
                 h('button', {"aria-label":"Check", disabled:antiA===''||antiB===''||antiC2==='', onClick:function(){upd('antiChecked',true);stemBeep&&stemBeep('click');}, className:'transition-colors ml-2 px-3 py-1 bg-cyan-700 text-white rounded-lg text-xs font-bold disabled:opacity-40 hover:bg-cyan-800' }, 'Check')
               ),
-              h('p', { className: 'mt-1.5 text-[11px] text-cyan-600 italic' }, 'Every antiderivative also carries a constant + C \u2014 but it cancels in F('+xMax2+') \u2212 F('+xMin+'), so a definite integral never needs it.'),
+              h('p', { className: 'mt-1.5 text-[11px] text-cyan-800 italic' }, 'Every antiderivative also carries a constant + C \u2014 but it cancels in F('+xMax2+') \u2212 F('+xMin+'), so a definite integral never needs it.'),
               antiChecked && (function(){
                 var okA=Math.abs(parseFloat(antiA)-fa)<0.01, okB=Math.abs(parseFloat(antiB)-fb)<0.01, okC=Math.abs(parseFloat(antiC2)-fc)<0.01, all=okA&&okB&&okC;
                 return h('div', { className:'mt-2', style:{animation:'calcPop 0.3s ease'} },
@@ -2318,20 +2340,20 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
 
             h('div', { className: 'bg-red-50 rounded-xl border border-red-100 p-3 mb-3 grid grid-cols-2 gap-3' },
               h('div', null,
-                h('p',{className:'text-[11px] font-bold text-red-400 uppercase mb-0.5'},'Function'),
+                h('p',{className:'text-[11px] font-bold text-red-700 uppercase mb-0.5'},'Function'),
                 h('p',{className:'text-sm font-bold text-slate-800 font-mono'},fStr)
               ),
               h('div', null,
-                h('p',{className:'text-[11px] font-bold text-red-400 uppercase mb-0.5'},'f\u2032(x\u2080='+x0+') = slope'),
+                h('p',{className:'text-[11px] font-bold text-red-700 uppercase mb-0.5'},'f\u2032(x\u2080='+x0+') = slope'),
                 h('p',{className:'text-base font-black text-red-700',style:{animation:'calcPop 0.3s ease'}},slope.toFixed(4))
               ),
               h('div', null,
-                h('p',{className:'text-[11px] font-bold text-red-400 uppercase mb-0.5'},'Tangent line'),
+                h('p',{className:'text-[11px] font-bold text-red-700 uppercase mb-0.5'},'Tangent line'),
                 h('p',{className:'text-xs font-bold text-slate-700 font-mono'},'y = '+slope.toFixed(2)+'(x\u2212'+x0+') + '+fy0.toFixed(2))
               ),
               h('div', null,
-                h('p',{className:'text-[11px] font-bold text-red-400 uppercase mb-0.5'},'Secant slope (h='+dh.toFixed(2)+')'),
-                h('p',{className:'text-sm font-bold text-amber-600'},secantSlope.toFixed(4)+' \u2192 '+slope.toFixed(4))
+                h('p',{className:'text-[11px] font-bold text-red-700 uppercase mb-0.5'},'Secant slope (h='+dh.toFixed(2)+')'),
+                h('p',{className:'text-sm font-bold text-amber-800'},secantSlope.toFixed(4)+' \u2192 '+slope.toFixed(4))
               )
             ),
 
@@ -2343,7 +2365,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                 h('input',{type:'range','aria-label':'Tangent point x0',min:(xMin-1).toFixed(1),max:(xMax2+1).toFixed(1),step:0.1,value:x0,onChange:function(e){upd('x0',parseFloat(e.target.value));upd('derivInputChecked',false);},className:'w-full accent-red-600'})
               ),
               h('div',{className:'bg-slate-50 rounded-lg border p-2'},
-                h('label',{className:'text-[11px] font-bold text-amber-600'},'h (secant gap): '+dh.toFixed(2)),
+                h('label',{className:'text-[11px] font-bold text-amber-800'},'h (secant gap): '+dh.toFixed(2)),
                 h('input',{type:'range','aria-label':'Secant gap h',min:'0.02',max:'2',step:'0.02',value:dh,onChange:function(e){upd('secantH',parseFloat(e.target.value));},className:'w-full accent-amber-500'})
               )
             ),
@@ -2369,7 +2391,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
               h('div', { className: 'flex items-center justify-between mb-2' },
                 h('p', { className: 'text-[11px] font-bold text-emerald-700 uppercase tracking-wider' }, '\u270F\uFE0F Power Rule Practice'),
                 h('button', { onClick: function(){ upd('showDerivTrainer', !d.showDerivTrainer); upd('derivInputChecked', false); upd('derivInput1', ''); upd('derivInput2', ''); },
-                  className: 'transition-colors text-xs font-bold text-emerald-600 hover:text-emerald-800'
+                  className: 'transition-colors text-xs font-bold text-emerald-800 hover:text-emerald-900'
                 }, d.showDerivTrainer ? 'Hide' : 'Try yourself \u2192')
               ),
               !d.showDerivTrainer && h('p', { className: 'text-xs text-emerald-700 italic' },
@@ -2421,7 +2443,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             ),
             h('div',{ className:'flex flex-wrap gap-1.5 mb-2'},
               CALC_CHALLENGES.map(function(cm){
-                return h('button',{ "aria-label": "Start "+cm.label+" challenge",'aria-pressed':cMode===cm.id,key:cm.id,onClick:function(){upd('calcChallengeMode',cm.id);upd('calcQuiz',null);upd('calcHint','');},className:'px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all '+(cMode===cm.id?'bg-'+cm.color+'-600 text-white shadow-md':'bg-slate-100 text-slate-600 hover:bg-slate-200')},cm.label);
+                return h('button',{ "aria-label": "Start "+cm.label+" challenge",'aria-pressed':cMode===cm.id,key:cm.id,onClick:function(){upd('calcChallengeMode',cm.id);upd('calcQuiz',null);upd('calcHint','');},className:'px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all '+(cMode===cm.id?cm.activeClass+' text-white shadow-md':'bg-slate-100 text-slate-600 hover:bg-slate-200')},cm.label);
               })
             ),
             h('p',{className:'text-[11px] text-slate-600 italic mb-3'},
@@ -2490,7 +2512,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
 
               return h('div',{style:{animation:'calcFade 0.3s ease'}},
                 h('div',{ className:'bg-red-50 rounded-xl border border-red-200 p-4 mb-3'},
-                  h('p',{ id: 'err-stem_tool_calculus-724', role: 'alert',className:'text-xs font-bold text-red-600 uppercase tracking-wider mb-1'},'\uD83D\uDD0D Mission 1: The Error Halving Law'),
+                  h('p',{ id: 'err-stem_tool_calculus-724', role: 'alert',className:'text-xs font-bold text-red-700 uppercase tracking-wider mb-1'},'\uD83D\uDD0D Mission 1: The Error Halving Law'),
                   h('p',{ id: 'err-stem_tool_calculus-725', role: 'alert',className:'text-xs text-red-800'},'Goal: Discover what happens to the error when you double the number of rectangles.'),
                   h('div',{ role:'progressbar', 'aria-label':'Mission 1 progress', 'aria-valuemin':0, 'aria-valuemax':5, 'aria-valuenow':Math.min(step,5), 'aria-valuetext':'Step '+Math.min(step+1,5)+' of 5'},
                     h('p',{className:'text-[10px] font-bold text-red-700 mb-1'},'Step '+Math.min(step+1,5)+' of 5'),
@@ -2988,7 +3010,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           // === H7b'' inquiry widget: derivative behavior ===
           tab === 'derivHunt' && (function() {
             var iq = d.derivHunt || { a: 1, b: 0, c: 0, xPoint: 1, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
-            function setIQ(patch) { upd({ derivHunt: Object.assign({}, iq, patch) }); }
+            function setIQ(patch) { upd('derivHunt', Object.assign({}, iq, patch)); }
             var derivAtX = 2 * iq.a * iq.xPoint + iq.b;
             var state;
             if (Math.abs(derivAtX) < 0.1) state = 'extremum';
@@ -2998,10 +3020,10 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             else state = 'decreasingDown';
             var sm = {
               extremum:        { label: '🎯 At extremum (slope ≈ 0)', color: '#7c3aed', bg: '#f5f3ff', border: '#c4b5fd' },
-              increasingUp:    { label: '↗️ Increasing on opens-up parabola', color: '#059669', bg: '#ecfdf5', border: '#86efac' },
-              decreasingUp:    { label: '↘️ Decreasing on opens-up parabola', color: '#0891b2', bg: '#ecfeff', border: '#67e8f9' },
-              increasingDown:  { label: '↗️ Increasing on opens-down', color: '#d97706', bg: '#fffbeb', border: '#fcd34d' },
-              decreasingDown:  { label: '↘️ Decreasing on opens-down', color: '#dc2626', bg: '#fef2f2', border: '#fca5a5' }
+              increasingUp:    { label: '↗️ Increasing on opens-up parabola', color: '#065f46', bg: '#ecfdf5', border: '#86efac' },
+              decreasingUp:    { label: '↘️ Decreasing on opens-up parabola', color: '#155e75', bg: '#ecfeff', border: '#67e8f9' },
+              increasingDown:  { label: '↗️ Increasing on opens-down', color: '#92400e', bg: '#fffbeb', border: '#fcd34d' },
+              decreasingDown:  { label: '↘️ Decreasing on opens-down', color: '#b91c1c', bg: '#fef2f2', border: '#fca5a5' }
             }[state];
             return h('div', { key: 'derivHunt' },
               h('div', { className: 'p-4 rounded-xl bg-white border border-violet-300 space-y-3' },
@@ -3011,7 +3033,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                   h('div', { className: 'text-base font-black', style: { color: sm.color } }, sm.label),
                   h('div', { className: 'text-[10px] text-slate-700 mt-1 font-mono' }, 'f(x)=' + iq.a + 'x² + ' + iq.b + 'x + ' + iq.c + ',  f\'(' + iq.xPoint + ')=' + derivAtX.toFixed(2))
                 ),
-                h('div', { className: 'grid grid-cols-4 gap-3' },
+                h('div', { className: 'grid grid-cols-2 gap-3 sm:grid-cols-4' },
                   [{ k: 'a', l: 'a', mn: -3, mx: 3 }, { k: 'b', l: 'b', mn: -10, mx: 10 }, { k: 'c', l: 'c', mn: -10, mx: 10 }, { k: 'xPoint', l: 'x', mn: -10, mx: 10 }].map(function(s) {
                     return h('div', { key: s.k },
                       h('label', { htmlFor: 'dh-' + s.k, className: 'block text-[11px] font-bold text-slate-700' }, s.l + ': ', h('span', { className: 'font-mono text-violet-700' }, iq[s.k])),
@@ -3059,10 +3081,10 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
               if (typeof callGemini !== 'function') { save('aiError', 'AI tutor not available.'); return; }
               save('aiLoading', true); save('aiError', ''); save('aiExplain', '');
               var lv = LEVELS.find(function (L) { return L.id === aiLevel; }) || LEVELS[1];
-              var fnStr = (d.a || 1) + 'x\u00B2 + ' + (d.b || 0) + 'x + ' + (d.c || 0);
-              var tabLabel = tab === 'integral' ? 'Integral (Riemann sums)' : tab === 'derivative' ? 'Derivative (slope)' : tab === 'challenge' ? 'Challenge' : 'Discover';
+              var fnStr = fa + 'x\u00B2 + ' + fb + 'x + ' + fc;
+              var tabLabel = tab === 'integral' ? 'Integral (Riemann sums)' : tab === 'derivative' ? 'Derivative (slope)' : tab === 'visualize' ? 'Visualization' : tab === 'challenge' ? 'Challenge' : tab === 'derivHunt' ? 'Derivative inquiry' : 'Discover';
               var prompt = 'Explain what this calculus tool is showing ' + lv.hint + '. '
-                + 'Current tab: ' + tabLabel + '. Function: f(x) = ' + fnStr + ' on [' + (d.xMin || 0) + ', ' + (d.xMax || 3) + '] with n=' + (d.n || 20) + ' ' + (mode || 'left') + ' rectangles. '
+                + 'Current tab: ' + tabLabel + '. Function: f(x) = ' + fnStr + ' on [' + xMin + ', ' + xMax2 + '] with n=' + nRects + ' ' + mode + ' rectangles. '
                 + 'In 3 short sentences: (1) What the student is computing. (2) Why this method works (intuition first). (3) One real-world place this shows up. '
                 + 'No markdown, no bullets, no headings. Plain prose.';
               callGemini(prompt, false, false, 0.5).then(function (resp) {

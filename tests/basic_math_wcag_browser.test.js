@@ -20,7 +20,9 @@ const CASES = [
   { name: 'number line invalid-range recovery', file: 'stem_lab/stem_tool_numberline.js', id: 'numberline', state: { _numberline: { tab: 'explore', range: { min: 7, max: 7 } } } },
   { name: 'area model word challenge', file: 'stem_lab/stem_tool_areamodel.js', id: 'areamodel', state: { _areamodel: { viewMode: 'word', wordDims: { a: 4, b: 6 }, challenge: { a: 4, b: 6, answer: 24, question: 'Four groups of six. How many?', mode: 'word' }, answer: '', feedback: null } } },
   { name: 'fraction wall', file: 'stem_lab/stem_tool_fractions.js', id: 'fractionViz', state: { _fractions: { tab: 'wall', wallHighlight: { n: 1, d: 2 } } } },
+  { name: 'coordinate grid keyboard entry', file: 'stem_lab/stem_tool_coordgrid.js', id: 'coordinate', state: { _coordGrid: { cgTab: 'explore', coordinateInputX: 2, coordinateInputY: -3 } } },
   { name: 'base ten manipulatives', file: 'stem_lab/stem_tool_manipulatives.js', id: 'base10', state: {} },
+  { name: 'slide rule keyboard controls', file: 'stem_lab/stem_tool_manipulatives.js', id: 'base10', state: { _manipulatives: { mode: 'slideRule', slideRule: { cOffset: 0, cursorPos: 0 } } } },
   { name: 'multiplication table', file: 'stem_lab/stem_tool_multtable.js', id: 'multtable', state: {} },
   { name: 'ratio lab', file: 'stem_lab/stem_tool_ratios.js', id: 'ratioLab', state: {} },
   { name: 'money math', file: 'stem_lab/stem_tool_money.js', id: 'moneyMath', state: {} },
@@ -42,8 +44,11 @@ const CASES = [
 
 function renderCase(testCase) {
   resetStemLab();
+  document.head.querySelectorAll('style').forEach((style) => style.remove());
   loadTool(testCase.file, testCase.id);
-  return renderTool(testCase.id, testCase.state, testCase.overrides);
+  const html = renderTool(testCase.id, testCase.state, testCase.overrides);
+  const toolCss = [...document.head.querySelectorAll('style')].map((style) => style.textContent || '').join('\n');
+  return { html, toolCss };
 }
 
 describe('Math fundamentals and advanced math WCAG regression in a real browser', () => {
@@ -59,14 +64,17 @@ describe('Math fundamentals and advanced math WCAG regression in a real browser'
 
   for (const testCase of CASES) {
     it(testCase.name + ' passes WCAG A/AA and 320px reflow checks', async () => {
+      const rendered = renderCase(testCase);
+      expect(rendered.html.length, testCase.name + ' rendered an unexpectedly small surface').toBeGreaterThan(500);
       const page = await browser.newPage({ viewport: { width: 320, height: 760 } });
       await page.emulateMedia({ reducedMotion: 'reduce' });
       await page.setContent(
         '<!doctype html><html lang="en"><head><meta name="viewport" content="width=device-width,initial-scale=1"><style>' +
           cssSource +
-          '</style></head><body><main id="tool-root">' + renderCase(testCase) + '</main></body></html>',
+          '</style></head><body><main id="tool-root">' + rendered.html + '</main></body></html>',
         { waitUntil: 'domcontentloaded' },
       );
+      if (rendered.toolCss) await page.addStyleTag({ content: rendered.toolCss });
       await page.addScriptTag({ content: axeSource });
       await page.evaluate(() => {
         for (const animation of document.getAnimations()) animation.cancel();
@@ -143,6 +151,17 @@ describe('Math fundamentals and advanced math WCAG regression in a real browser'
         expect(await page.locator('[data-unit-fraction="1/4"][data-highlighted-length="true"]').count()).toBe(2);
         await page.locator('[data-fraction="2/4"]').focus();
         expect(await page.locator('[data-fraction="2/4"]').evaluate((element) => element === document.activeElement)).toBe(true);
+      }
+
+      if (testCase.name === 'coordinate grid keyboard entry') {
+        expect(await page.locator('[role="img"][aria-label*="keyboard operation"]').count()).toBe(1);
+        expect(await page.getByRole('group', { name: 'Coordinate entry' }).locator('input[type="number"]').count()).toBe(2);
+        expect(await page.getByRole('button', { name: 'Plot or remove point' }).count()).toBe(1);
+      }
+
+      if (testCase.name === 'slide rule keyboard controls') {
+        expect(await page.locator('[role="img"][aria-label*="keyboard operation"]').count()).toBe(1);
+        expect(await page.getByRole('group', { name: 'Slide rule keyboard controls' }).locator('input[type="range"]').count()).toBe(2);
       }
 
       if (testCase.name === 'area model word challenge') {

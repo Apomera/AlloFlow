@@ -1920,7 +1920,7 @@ function MathPanel(props) {
                                 type="button"
                                 data-help-key="math_open_studio"
                                 onClick={openMathCreate}
-                                className="w-full mt-2 py-2 px-3 rounded-lg border-2 border-indigo-200 bg-white text-indigo-700 text-xs font-bold hover:border-indigo-400 hover:bg-indigo-50 transition-all flex items-center justify-center gap-2"
+                    className="w-full mt-2 py-2 px-3 rounded-lg border-2 border-indigo-200 bg-white text-indigo-700 text-xs font-bold hover:border-indigo-400 hover:bg-indigo-50 transition-colors motion-reduce:transition-none flex items-center justify-center gap-2"
                                 aria-label={t('math_create.open_aria') || 'Open Math Studio: create problems, assessments, and fluency practice'}
                             >🧮 {t('math_create.open_button') || 'Math Studio: problems & assessments'}</button>
                         )}

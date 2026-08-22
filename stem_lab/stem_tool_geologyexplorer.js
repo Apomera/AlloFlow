@@ -2188,7 +2188,19 @@
     var geologyFoamMeshes3d = [];
     var geologySurfaceEffectGeometries3d = [];
     var geologySurfaceEffectMaterials3d = [];
+    var geologyBathymetryMeshes3d = [];
+    var geologyHydrothermalGroup3d = new THREE.Group();
+    var geologyHydrothermalMeshes3d = [];
+    var geologyHydrothermalGeometries3d = [];
+    var geologyHydrothermalMaterials3d = [];
+    var geologyHydrothermalMeta3d = null;
+    var geologyHydrothermalPlumeGeometry3d = null;
+    var geologyHydrothermalPlumeMaterial3d = null;
+    var geologyHydrothermalPlumePositions3d = null;
+    var geologyHydrothermalPlumeOrigins3d = null;
+    var geologyHydrothermalPlumePhases3d = null;
     scene.add(geologyLandformGroup3d);
+    scene.add(geologyHydrothermalGroup3d);
     function registerGeologyLandform3d(mesh3d, surfaceZ3d, radius3d, cutawayPlane3d) {
       mesh3d.userData.geologySurfaceZ = Number(surfaceZ3d) || 0;
       mesh3d.userData.geologyRadius = Number(radius3d) || 0;
@@ -2292,6 +2304,72 @@
       geologyLandformMaterials3d.push(stripMaterial3d);
       return registerGeologyLandform3d(stripMesh3d, 0, width3d * 0.5, true);
     }
+    function addGeologyTectonicBathymetry3d(kind3d, x3d, width3d, seed3d) {
+      var bathymetryGeometry3d = new THREE.PlaneGeometry(
+        width3d,
+        WORLD.d * 0.94,
+        geologyHighDetail3d ? 38 : 22,
+        geologyHighDetail3d ? 36 : 20
+      );
+      var bathymetryPositions3d = bathymetryGeometry3d.attributes.position;
+      var bathymetryColors3d = new Float32Array(bathymetryPositions3d.count * 3);
+      var bathymetryLowColor3d = new THREE.Color(kind3d === 'ridge' ? 0x162f35 : 0x102735);
+      var bathymetryMidColor3d = new THREE.Color(kind3d === 'ridge' ? 0x28504e : 0x2d4651);
+      var bathymetryHighColor3d = new THREE.Color(kind3d === 'ridge' ? 0x4f7166 : 0x58656a);
+      for (var bathymetryVertex3d = 0; bathymetryVertex3d < bathymetryPositions3d.count; bathymetryVertex3d++) {
+        var bathymetryX3d = bathymetryPositions3d.getX(bathymetryVertex3d);
+        var bathymetryY3d = bathymetryPositions3d.getY(bathymetryVertex3d);
+        var bathymetryAbsX3d = Math.abs(bathymetryX3d);
+        var bathymetryEdge3d = Math.max(0, 1 - bathymetryAbsX3d / (width3d * 0.5));
+        var bathymetryRoughness3d =
+          Math.sin(bathymetryY3d * 1.45 + seed3d) * 0.024 +
+          Math.sin(bathymetryY3d * 3.1 - seed3d * 0.6 + bathymetryX3d * 1.8) * 0.012;
+        var bathymetryHeight3d;
+        var bathymetryColorRatio3d;
+        if (kind3d === 'ridge') {
+          var ridgeBroad3d = Math.exp(-Math.pow(bathymetryX3d / 1.85, 2)) * 0.28;
+          var ridgeRift3d = Math.exp(-Math.pow(bathymetryX3d / 0.29, 2)) * 0.23;
+          bathymetryHeight3d = (ridgeBroad3d - ridgeRift3d - 0.018 + bathymetryRoughness3d * (0.55 + ridgeBroad3d * 2.1)) * bathymetryEdge3d;
+          bathymetryColorRatio3d = Math.max(0, Math.min(1, bathymetryHeight3d / 0.24));
+          if (bathymetryAbsX3d < 0.33) bathymetryColorRatio3d *= 0.2;
+        } else {
+          var trenchShoulder3d = Math.exp(-Math.pow((bathymetryAbsX3d - width3d * 0.28) / (width3d * 0.15), 2)) * 0.18;
+          var trenchChannel3d = Math.exp(-Math.pow(bathymetryX3d / (width3d * 0.13), 2)) * 0.09;
+          bathymetryHeight3d = (0.08 + trenchShoulder3d - trenchChannel3d + bathymetryRoughness3d * 0.45) * bathymetryEdge3d;
+          bathymetryColorRatio3d = Math.max(0, Math.min(1, (bathymetryHeight3d + 0.01) / 0.17));
+          if (bathymetryAbsX3d < width3d * 0.16) bathymetryColorRatio3d *= 0.16;
+        }
+        bathymetryPositions3d.setZ(bathymetryVertex3d, bathymetryHeight3d);
+        var bathymetryColor3d = bathymetryColorRatio3d < 0.56
+          ? bathymetryLowColor3d.clone().lerp(bathymetryMidColor3d, bathymetryColorRatio3d / 0.56)
+          : bathymetryMidColor3d.clone().lerp(bathymetryHighColor3d, (bathymetryColorRatio3d - 0.56) / 0.44);
+        bathymetryColors3d[bathymetryVertex3d * 3] = bathymetryColor3d.r;
+        bathymetryColors3d[bathymetryVertex3d * 3 + 1] = bathymetryColor3d.g;
+        bathymetryColors3d[bathymetryVertex3d * 3 + 2] = bathymetryColor3d.b;
+      }
+      bathymetryGeometry3d.setAttribute('color', new THREE.BufferAttribute(bathymetryColors3d, 3));
+      bathymetryGeometry3d.computeVertexNormals();
+      var bathymetryMaterial3d = new THREE.MeshStandardMaterial({
+        color: 0xffffff,
+        vertexColors: true,
+        map: rockSurfaceTexture3d,
+        bumpMap: rockSurfaceTexture3d,
+        bumpScale: 0.045,
+        roughness: 0.91,
+        metalness: 0.025,
+        side: THREE.DoubleSide
+      });
+      var bathymetryMesh3d = new THREE.Mesh(bathymetryGeometry3d, bathymetryMaterial3d);
+      bathymetryMesh3d.rotation.x = -Math.PI / 2;
+      bathymetryMesh3d.position.set(x3d, surfTopY + (kind3d === 'ridge' ? 0.02 : 0.035), 0);
+      bathymetryMesh3d.castShadow = geologyHighDetail3d;
+      bathymetryMesh3d.receiveShadow = geologyHighDetail3d;
+      bathymetryMesh3d.renderOrder = 1;
+      geologyLandformGeometries3d.push(bathymetryGeometry3d);
+      geologyLandformMaterials3d.push(bathymetryMaterial3d);
+      geologyBathymetryMeshes3d.push(bathymetryMesh3d);
+      return registerGeologyLandform3d(bathymetryMesh3d, 0, width3d * 0.5, true);
+    }
     function addGeologyFoamRibbon3d(x3d, seed3d) {
       var foamGeometry3d = new THREE.PlaneGeometry(
         0.18,
@@ -2365,7 +2443,88 @@
       geologyFoamMeshes3d.push(coastMesh3d);
       return coastMesh3d;
     }
+    function addGeologyHydrothermalField3d(x3d, z3d, seed3d) {
+      geologyHydrothermalMeta3d = { x: x3d, z: z3d, radius: 0.34, seed: seed3d };
+      var chimneyGeometry3d = new THREE.CylinderGeometry(0.055, 0.12, 1, geologyHighDetail3d ? 9 : 7, 4, false);
+      var chimneyPositions3d = chimneyGeometry3d.attributes.position;
+      for (var chimneyVertex3d = 0; chimneyVertex3d < chimneyPositions3d.count; chimneyVertex3d++) {
+        var chimneyX3d = chimneyPositions3d.getX(chimneyVertex3d);
+        var chimneyY3d = chimneyPositions3d.getY(chimneyVertex3d);
+        var chimneyZ3d = chimneyPositions3d.getZ(chimneyVertex3d);
+        var chimneyAngle3d = Math.atan2(chimneyZ3d, chimneyX3d);
+        var chimneyRoughness3d = 1 + Math.sin(chimneyAngle3d * 5 + chimneyY3d * 7 + seed3d) * 0.09;
+        chimneyPositions3d.setX(chimneyVertex3d, chimneyX3d * chimneyRoughness3d);
+        chimneyPositions3d.setZ(chimneyVertex3d, chimneyZ3d * chimneyRoughness3d);
+      }
+      chimneyGeometry3d.computeVertexNormals();
+      var chimneyMaterial3d = new THREE.MeshStandardMaterial({
+        color: 0x1a292b,
+        emissive: 0x071719,
+        emissiveIntensity: 0.12,
+        map: rockSurfaceTexture3d,
+        bumpMap: rockSurfaceTexture3d,
+        bumpScale: 0.06,
+        roughness: 0.96,
+        metalness: 0.08
+      });
+      geologyHydrothermalGeometries3d.push(chimneyGeometry3d);
+      geologyHydrothermalMaterials3d.push(chimneyMaterial3d);
+      var chimneyOffsets3d = [[0, 0, 0.72], [-0.2, 0.08, 0.5], [0.18, -0.13, 0.58], [0.09, 0.2, 0.39]];
+      var plumeSourceHeights3d = [];
+      for (var chimneyIndex3d = 0; chimneyIndex3d < chimneyOffsets3d.length; chimneyIndex3d++) {
+        var chimneyOffset3d = chimneyOffsets3d[chimneyIndex3d];
+        var chimneyHeight3d = chimneyOffset3d[2];
+        var chimneyMesh3d = new THREE.Mesh(chimneyGeometry3d, chimneyMaterial3d);
+        chimneyMesh3d.scale.set(0.88 + chimneyIndex3d * 0.08, chimneyHeight3d, 0.9 + (chimneyIndex3d % 2) * 0.12);
+        chimneyMesh3d.position.set(
+          x3d + chimneyOffset3d[0],
+          surfTopY + 0.07 + chimneyHeight3d * 0.5,
+          z3d + chimneyOffset3d[1]
+        );
+        chimneyMesh3d.rotation.z = (chimneyIndex3d - 1.5) * 0.035;
+        chimneyMesh3d.castShadow = geologyHighDetail3d;
+        chimneyMesh3d.receiveShadow = geologyHighDetail3d;
+        geologyHydrothermalGroup3d.add(chimneyMesh3d);
+        geologyHydrothermalMeshes3d.push(chimneyMesh3d);
+        plumeSourceHeights3d.push(surfTopY + 0.07 + chimneyHeight3d);
+      }
+      var hydrothermalPlumeCount3d = geologyHighDetail3d ? 42 : 22;
+      geologyHydrothermalPlumePositions3d = new Float32Array(hydrothermalPlumeCount3d * 3);
+      geologyHydrothermalPlumeOrigins3d = new Float32Array(hydrothermalPlumeCount3d * 3);
+      geologyHydrothermalPlumePhases3d = new Float32Array(hydrothermalPlumeCount3d);
+      var hydrothermalRandom3d = geologyRandomFactory3d(geologyTextureSeed3d(SCENE.id + '-black-smoker'));
+      for (var plumeIndex3d = 0; plumeIndex3d < hydrothermalPlumeCount3d; plumeIndex3d++) {
+        var plumeChimneyIndex3d = plumeIndex3d % chimneyOffsets3d.length;
+        var plumeOriginX3d = x3d + chimneyOffsets3d[plumeChimneyIndex3d][0];
+        var plumeOriginY3d = plumeSourceHeights3d[plumeChimneyIndex3d];
+        var plumeOriginZ3d = z3d + chimneyOffsets3d[plumeChimneyIndex3d][1];
+        geologyHydrothermalPlumeOrigins3d[plumeIndex3d * 3] = plumeOriginX3d;
+        geologyHydrothermalPlumeOrigins3d[plumeIndex3d * 3 + 1] = plumeOriginY3d;
+        geologyHydrothermalPlumeOrigins3d[plumeIndex3d * 3 + 2] = plumeOriginZ3d;
+        geologyHydrothermalPlumePositions3d[plumeIndex3d * 3] = plumeOriginX3d;
+        geologyHydrothermalPlumePositions3d[plumeIndex3d * 3 + 1] = plumeOriginY3d;
+        geologyHydrothermalPlumePositions3d[plumeIndex3d * 3 + 2] = plumeOriginZ3d;
+        geologyHydrothermalPlumePhases3d[plumeIndex3d] = hydrothermalRandom3d();
+      }
+      geologyHydrothermalPlumeGeometry3d = new THREE.BufferGeometry();
+      geologyHydrothermalPlumeGeometry3d.setAttribute('position', new THREE.BufferAttribute(geologyHydrothermalPlumePositions3d, 3));
+      geologyHydrothermalPlumeMaterial3d = new THREE.PointsMaterial({
+        color: 0x53656c,
+        map: geologyDustTexture3d,
+        alphaTest: 0.006,
+        size: geologyHighDetail3d ? 0.31 : 0.25,
+        transparent: true,
+        opacity: 0.42,
+        depthWrite: false
+      });
+      var hydrothermalPlumePoints3d = new THREE.Points(geologyHydrothermalPlumeGeometry3d, geologyHydrothermalPlumeMaterial3d);
+      hydrothermalPlumePoints3d.renderOrder = 5;
+      geologyHydrothermalGroup3d.add(hydrothermalPlumePoints3d);
+      geologyHydrothermalGeometries3d.push(geologyHydrothermalPlumeGeometry3d);
+      geologyHydrothermalMaterials3d.push(geologyHydrothermalPlumeMaterial3d);
+    }
     if (SCENE.id === 'subduction') {
+      addGeologyTectonicBathymetry3d('trench', -2.75, 1.65, 2.1);
       addGeologySurfaceStrip3d(-2.75, 0.68, 0x12364b, 0x082f49, 0.78);
       addGeologyFoamRibbon3d(((0.3 * (NX - 1)) - (NX - 1) * 0.5) * VOXEL, 2.8);
       addRuggedGeologyCone3d(1.45, -3.05, 0.74, 0.82, 0x4e3e39, 1.1, 'volcanic-arc');
@@ -2373,9 +2532,11 @@
       addRuggedGeologyCone3d(1.48, 2.35, 0.76, 0.94, 0x544238, 3.7, 'volcanic-arc');
       cnv.dataset.geologyLandformRendering = 'trench-and-volcanic-arc-relief';
     } else if (SCENE.id === 'ridge') {
+      addGeologyTectonicBathymetry3d('ridge', 0, WORLD.w * 0.68, 1.7);
       addGeologySurfaceStrip3d(0, 0.62, 0x0f766e, 0x14b8a6, 0.62);
       var ridgeMeltStrip3d = addGeologySurfaceStrip3d(0, 0.12, 0xf97316, 0xfb923c, 0.7);
       ridgeMeltStrip3d.position.y += 0.025;
+      addGeologyHydrothermalField3d(1.55, 1.55, 4.2);
       cnv.dataset.geologyLandformRendering = 'luminous-rift-axis-relief';
     } else if (SCENE.id === 'hotspot') {
       addRuggedGeologyCone3d(2.75, 0.55, 1.72, 1.08, 0x274536, 1.6, 'shield-island');
@@ -2398,6 +2559,14 @@
       cnv.dataset.geologyLandformRendering = 'voxel-native-relief';
     }
     cnv.dataset.geologyLandformCount = String(geologyLandformMeshes3d.length);
+    cnv.dataset.geologyBathymetryRendering = SCENE.id === 'ridge'
+      ? 'sculpted-twin-ridge-shoulders-and-rift-valley'
+      : (SCENE.id === 'subduction' ? 'sculpted-trench-shoulders-and-channel' : 'not-applicable');
+    cnv.dataset.geologyBathymetryCount = String(geologyBathymetryMeshes3d.length);
+    cnv.dataset.geologyHydrothermalRendering = geologyHydrothermalMeta3d
+      ? 'rugged-black-smoker-chimneys-and-mineral-plume'
+      : 'not-applicable';
+    cnv.dataset.geologyHydrothermalCount = String(geologyHydrothermalMeshes3d.length);
     cnv.dataset.geologySurfaceEffectRendering = oceanScene3d
       ? (geologyFoamMeshes3d.length ? 'animated-wave-caustics-and-coastal-foam' : 'animated-wave-caustics')
       : 'ambient-surface-detail';
@@ -2433,6 +2602,30 @@
         }
         foamMesh3d.material.opacity = foamMesh3d.userData.geologyFoamBaseOpacity * (0.88 + foamPulse3d * 0.12);
       });
+    }
+    function updateGeologyHydrothermalField3d(time3d) {
+      if (!geologyHydrothermalMeta3d || !geologyHydrothermalPlumeGeometry3d) return;
+      var hydrothermalTime3d = reducedMotion3d ? 0.79 : time3d;
+      var hydrothermalFrontZ3d = WORLD.d * 0.5 - (Number(sliceZ) || 0) * VOXEL;
+      var hydrothermalVisible3d = !focusLens &&
+        geologyHydrothermalMeta3d.z < hydrothermalFrontZ3d + geologyHydrothermalMeta3d.radius;
+      geologyHydrothermalGroup3d.visible = hydrothermalVisible3d;
+      if (!hydrothermalVisible3d) return;
+      for (var hydrothermalIndex3d = 0; hydrothermalIndex3d < geologyHydrothermalPlumePhases3d.length; hydrothermalIndex3d++) {
+        var hydrothermalProgress3d = (geologyHydrothermalPlumePhases3d[hydrothermalIndex3d] + hydrothermalTime3d * 0.042) % 1;
+        var hydrothermalSpread3d = hydrothermalProgress3d * hydrothermalProgress3d;
+        geologyHydrothermalPlumePositions3d[hydrothermalIndex3d * 3] =
+          geologyHydrothermalPlumeOrigins3d[hydrothermalIndex3d * 3] +
+          Math.sin(hydrothermalTime3d * 0.46 + hydrothermalIndex3d * 1.37) * 0.22 * hydrothermalSpread3d;
+        geologyHydrothermalPlumePositions3d[hydrothermalIndex3d * 3 + 1] =
+          geologyHydrothermalPlumeOrigins3d[hydrothermalIndex3d * 3 + 1] + hydrothermalProgress3d * 1.48;
+        geologyHydrothermalPlumePositions3d[hydrothermalIndex3d * 3 + 2] =
+          geologyHydrothermalPlumeOrigins3d[hydrothermalIndex3d * 3 + 2] +
+          Math.cos(hydrothermalTime3d * 0.39 + hydrothermalIndex3d * 1.11) * 0.17 * hydrothermalSpread3d;
+      }
+      geologyHydrothermalPlumeGeometry3d.attributes.position.needsUpdate = true;
+      geologyHydrothermalPlumeMaterial3d.opacity = reducedMotion3d
+        ? 0.4 : 0.38 + Math.sin(time3d * 0.52) * 0.045;
     }
     var geologyVolcanicAtmosphereGroup3d = new THREE.Group();
     var geologyVolcanicVentRing3d = null;
@@ -2708,6 +2901,7 @@
       if (oceanCausticMesh3d) oceanCausticMesh3d.visible = !focusLens;
       updateGeologyLandformCutaway3d();
       updateGeologySurfaceEffects3d(reducedMotion3d ? 0.82 : t);
+      updateGeologyHydrothermalField3d(reducedMotion3d ? 0.79 : t);
       updateGeologyVolcanicAtmosphere3d(reducedMotion3d ? 0.74 : t);
       updateUndoPreview();
     }
@@ -2899,6 +3093,7 @@
       geologyWaterTexture3d.offset.y = reducedMotion3d ? 0 : (t * 0.004) % 1;
       updateGeologyOceanSurface3d(geologyMotionTime3d);
       updateGeologySurfaceEffects3d(geologyMotionTime3d);
+      updateGeologyHydrothermalField3d(geologyMotionTime3d);
       updateGeologyVolcanicAtmosphere3d(geologyMotionTime3d);
       for (var atmosphereUpdateIndex3d = 0; atmosphereUpdateIndex3d < atmosphereMoteCount3d; atmosphereUpdateIndex3d++) {
         var atmosphereUpdatePhase3d = atmosphereMotePhases3d[atmosphereUpdateIndex3d];
@@ -3012,7 +3207,7 @@
     eng.erupt = function () { startEruption(); };
     eng.setHighlight = function (k) { highlightKey = (k && SCENE.voxelKeys && SCENE.voxelKeys.indexOf(k) >= 0) ? k : null; hoverBox.visible = false; rebuild(); };
     eng.setFocusLens = function (b) { focusLens = !!b; if (focusLens) { excavate = false; undoPreviewRequested = false; } hoverBox.visible = false; rebuild(); };
-    eng.getVisualState = function () { return { focusLens: focusLens, highlightKey: highlightKey, visibleVoxels: mesh.count, sliceZ: sliceZ, excavate: excavate, excavatedCount: excavationHistory.length, undoPreview: undoPreviewBox.visible, undoPreviewKey: undoPreviewKey, processGuideCount: geologyProcessGuideGroup3d.children.length, landformCount: geologyLandformMeshes3d.length, surfaceEffectCount: geologyFoamMeshes3d.length + (oceanCausticMesh3d ? 1 : 0), volcanicAtmosphereCount: geologyVolcanicSteamSprites3d.length, oceanWaveVertexCount: oceanSurfaceGeometry3d ? oceanSurfaceGeometry3d.attributes.position.count : 0 }; };
+    eng.getVisualState = function () { return { focusLens: focusLens, highlightKey: highlightKey, visibleVoxels: mesh.count, sliceZ: sliceZ, excavate: excavate, excavatedCount: excavationHistory.length, undoPreview: undoPreviewBox.visible, undoPreviewKey: undoPreviewKey, processGuideCount: geologyProcessGuideGroup3d.children.length, landformCount: geologyLandformMeshes3d.length, bathymetryCount: geologyBathymetryMeshes3d.length, hydrothermalChimneyCount: geologyHydrothermalMeshes3d.length, hydrothermalPlumeCount: geologyHydrothermalPlumePhases3d ? geologyHydrothermalPlumePhases3d.length : 0, surfaceEffectCount: geologyFoamMeshes3d.length + (oceanCausticMesh3d ? 1 : 0), volcanicAtmosphereCount: geologyVolcanicSteamSprites3d.length, oceanWaveVertexCount: oceanSurfaceGeometry3d ? oceanSurfaceGeometry3d.attributes.position.count : 0 }; };
     eng.setStage = function (n) { showStage = (n == null) ? 99 : n; rebuild(); };
     eng.reset = function () {
       removed = {}; excavationHistory = []; undoPreviewRequested = false; undoPreviewKey = null; sliceZ = 0;
@@ -3055,6 +3250,8 @@
         geologyLandformMaterials3d.forEach(function (landformMaterial3d) { landformMaterial3d.dispose(); });
         geologySurfaceEffectGeometries3d.forEach(function (surfaceEffectGeometry3d) { surfaceEffectGeometry3d.dispose(); });
         geologySurfaceEffectMaterials3d.forEach(function (surfaceEffectMaterial3d) { surfaceEffectMaterial3d.dispose(); });
+        geologyHydrothermalGeometries3d.forEach(function (hydrothermalGeometry3d) { hydrothermalGeometry3d.dispose(); });
+        geologyHydrothermalMaterials3d.forEach(function (hydrothermalMaterial3d) { hydrothermalMaterial3d.dispose(); });
         geologyVolcanicAtmosphereGeometries3d.forEach(function (volcanicAtmosphereGeometry3d) { volcanicAtmosphereGeometry3d.dispose(); });
         geologyVolcanicAtmosphereMaterials3d.forEach(function (volcanicAtmosphereMaterial3d) { volcanicAtmosphereMaterial3d.dispose(); });
         excavationDustGeometry3d.dispose(); excavationDustMaterial3d.dispose();
@@ -3564,7 +3761,7 @@
 
       // ── styling helpers ──
       var cardBg = isDark ? 'bg-slate-800/70 border-slate-700 shadow-md shadow-black/20' : 'bg-white border-slate-200 shadow-sm';
-      var muted = isDark ? 'text-slate-400' : 'text-slate-500';
+      var muted = isDark ? 'text-slate-400' : 'text-slate-600';
       var ink = isDark ? 'text-slate-100' : 'text-slate-800';
 
       // ── selected info panel (shared by 3D + list) ──
@@ -4237,7 +4434,7 @@
                 return h('button', { key: item.key, type: 'button', 'aria-pressed': on ? 'true' : 'false', 'aria-label': 'Stage ' + (index + 1) + ': ' + item.label, 'data-geology-journey-step': item.key, 'data-geology-journey-complete': done ? 'true' : 'false', onClick: function () { chooseJourneyStep(index); }, className: 'min-w-0 rounded-lg border px-1.5 py-2 text-center transition-colors ' + (on ? 'border-violet-500 bg-violet-600 text-white shadow-sm' : (done ? (isDark ? 'border-emerald-500/60 bg-emerald-950/20 text-emerald-200 hover:border-emerald-400' : 'border-emerald-300 bg-emerald-50 text-emerald-800 hover:border-emerald-400') : (isDark ? 'border-slate-700 bg-slate-900/70 text-slate-200 hover:border-violet-400' : 'border-slate-200 bg-slate-50 text-slate-700 hover:border-violet-400'))) }, [
                   h('span', { key: 'number', className: 'mx-auto flex h-6 w-6 items-center justify-center rounded-full border text-[10px] font-black ' + (on ? 'border-white/60 bg-white/15' : (done ? (isDark ? 'border-emerald-400 text-emerald-200' : 'border-emerald-500 text-emerald-700') : (isDark ? 'border-slate-600 bg-slate-800' : 'border-slate-300 bg-white'))) }, done ? '✓' : index + 1),
                   h('span', { key: 'label', className: 'mt-1 block text-[10px] font-bold leading-tight' }, item.cueLabel),
-                  h('span', { key: 'status', className: 'mt-0.5 block text-[10px] font-semibold opacity-80', 'aria-hidden': 'true' }, done ? 'Evidence linked' : 'Explore next')
+                  h('span', { key: 'status', className: 'mt-0.5 block text-[10px] font-semibold', 'aria-hidden': 'true' }, done ? 'Evidence linked' : 'Explore next')
                 ]);
               }))
             ]),
@@ -4258,7 +4455,7 @@
                   return h('button', { key: entry.stage.key, type: 'button', 'aria-pressed': on ? 'true' : 'false', 'aria-label': 'Focus evidence beacon: ' + (entry.beacon ? entry.beacon.label : entry.stage.label), 'data-geology-evidence-trail-step': entry.stage.key, onClick: function () { if (entry.beacon) activateBeacon(entry.beacon); }, className: 'min-w-0 rounded-lg border px-1.5 py-2 text-center transition-colors ' + (on ? 'border-amber-500 bg-amber-500 text-amber-950' : (entry.saved ? (isDark ? 'border-emerald-500/60 bg-emerald-950/20 text-emerald-200' : 'border-emerald-300 bg-emerald-50 text-emerald-800') : btnIdle)) }, [
                     h('span', { key: 'dot', className: 'mx-auto flex h-6 w-6 items-center justify-center rounded-full border text-[10px] font-black' }, entry.saved ? '✓' : entry.index + 1),
                     h('span', { key: 'label', className: 'mt-1 block truncate text-[10px] font-bold' }, entry.beacon ? entry.beacon.label : entry.stage.label),
-                    h('span', { key: 'state', className: 'mt-0.5 block text-[10px] font-semibold opacity-80', 'aria-hidden': 'true' }, entry.saved ? 'Notebook saved' : 'Find landmark')
+                    h('span', { key: 'state', className: 'mt-0.5 block text-[10px] font-semibold', 'aria-hidden': 'true' }, entry.saved ? 'Notebook saved' : 'Find landmark')
                   ]);
                 }))
               ]),
@@ -4710,10 +4907,10 @@
             h('input', { key: 'range', type: 'range', min: 0, max: timeline.length - 1, step: 1, value: activeIndex, 'aria-label': 'Formation timeline stage', 'aria-valuetext': 'Stage ' + (activeIndex + 1) + ': ' + active.cueLabel, 'data-geology-timeline-range': 'true', onChange: function (e) { chooseStage(Number(e.target.value)); }, className: 'mt-3 w-full' }),
             h('div', { key: 'stages', className: 'mt-2 grid grid-cols-3 gap-1.5' }, timeline.map(function (item, index) {
               var on = index === activeIndex;
-              return h('button', { key: item.key, type: 'button', 'aria-pressed': on ? 'true' : 'false', 'aria-label': 'Timeline stage ' + (index + 1) + ': ' + item.cueLabel, 'data-geology-timeline-stage': item.key, onClick: function () { chooseStage(index); }, className: 'min-w-0 rounded-lg border px-1.5 py-2 text-center transition-colors ' + (on ? 'border-sky-500 bg-sky-600 text-white shadow-sm' : btnIdle) }, [
+              return h('button', { key: item.key, type: 'button', 'aria-pressed': on ? 'true' : 'false', 'aria-label': 'Timeline stage ' + (index + 1) + ': ' + item.cueLabel, 'data-geology-timeline-stage': item.key, onClick: function () { chooseStage(index); }, className: 'min-w-0 rounded-lg border px-1.5 py-2 text-center transition-colors ' + (on ? 'border-sky-600 bg-sky-700 text-white shadow-sm' : btnIdle) }, [
                 h('span', { key: 'number', className: 'mx-auto flex h-5 w-5 items-center justify-center rounded-full border text-[10px] font-black' }, index + 1),
                 h('span', { key: 'label', className: 'mt-1 block text-[10px] font-bold leading-tight' }, item.cueLabel),
-                h('span', { key: 'beacon', className: 'mt-0.5 block truncate text-[10px] font-semibold opacity-80' }, item.beaconLabel)
+                h('span', { key: 'beacon', className: 'mt-0.5 block truncate text-[10px] font-semibold' }, item.beaconLabel)
               ]);
             })),
             h('div', { key: 'detail', className: 'mt-3 rounded-lg border-l-2 border-sky-400 bg-sky-500/10 p-2.5', role: 'status', 'data-geology-timeline-detail': 'true' }, [
@@ -4743,7 +4940,7 @@
             h('span', { key: 'current', className: 'text-[10px] font-bold ' + ink, 'data-geology-camera-current': 'true' }, 'Viewing: ' + cameraViewLabel(cameraViewState)),
             h('div', { key: 'controls', className: 'flex flex-wrap gap-1.5', role: 'group', 'aria-label': 'Camera orientation choices' }, views.map(function (item) {
               var on = cameraViewState === item[0];
-              return h('button', { key: item[0], type: 'button', 'aria-pressed': on ? 'true' : 'false', 'aria-label': 'Set camera view: ' + item[1], onClick: function () { setCameraView(item[0]); }, className: 'rounded-md border px-2 py-1 text-[10px] font-bold ' + (on ? 'border-sky-500 bg-sky-600 text-white' : btnIdle) }, item[1]);
+              return h('button', { key: item[0], type: 'button', 'aria-pressed': on ? 'true' : 'false', 'aria-label': 'Set camera view: ' + item[1], onClick: function () { setCameraView(item[0]); }, className: 'rounded-md border px-2 py-1 text-[10px] font-bold ' + (on ? 'border-sky-600 bg-sky-700 text-white' : btnIdle) }, item[1]);
             }))
           ]));
       }
@@ -4874,7 +5071,7 @@
           h('div', { className: 'absolute top-2 left-2 z-10 flex gap-1' },
             [['iso', '3D'], ['front', 'Front'], ['top', 'Top']].map(function (vw) {
               var activeView = cameraViewState === vw[0];
-              return h('button', { key: vw[0], type: 'button', disabled: fpOn, 'aria-pressed': activeView ? 'true' : 'false', 'data-geology-camera-view': vw[0], onClick: function () { setCameraView(vw[0]); }, 'aria-label': 'Camera view: ' + vw[1], className: 'min-h-9 transition-colors active:scale-[0.97] text-[10px] font-bold px-2 py-1 rounded-md border ' + (fpOn ? 'opacity-40 cursor-not-allowed ' : '') + (activeView ? 'border-sky-400 bg-sky-600 text-white' : (isDark ? 'bg-slate-900/75 border-slate-600 text-slate-100 hover:bg-slate-800' : 'bg-white/80 border-slate-300 text-slate-700 hover:bg-white')) }, vw[1]);
+              return h('button', { key: vw[0], type: 'button', disabled: fpOn, 'aria-pressed': activeView ? 'true' : 'false', 'data-geology-camera-view': vw[0], onClick: function () { setCameraView(vw[0]); }, 'aria-label': 'Camera view: ' + vw[1], className: 'min-h-9 transition-colors active:scale-[0.97] text-[10px] font-bold px-2 py-1 rounded-md border ' + (fpOn ? 'opacity-40 cursor-not-allowed ' : '') + (activeView ? 'border-sky-500 bg-sky-700 text-white' : (isDark ? 'bg-slate-900/75 border-slate-600 text-slate-100 hover:bg-slate-800' : 'bg-white/80 border-slate-300 text-slate-700 hover:bg-white')) }, vw[1]);
             }).concat([
               h('button', { key: 'fp', ref: fpToggleRef, type: 'button', 'aria-pressed': fpOn ? 'true' : 'false', 'aria-label': fpOn ? 'Exit first-person explorer' : 'Drop into the world — first-person explorer', onClick: function () { setFpOn(function (v) { return !v; }); }, className: 'transition-colors active:scale-[0.97] text-[10px] font-bold px-2 py-1 rounded-md border ' + (fpOn ? 'bg-emerald-500 border-emerald-400 text-emerald-950' : (isDark ? 'bg-slate-900/75 border-slate-600 text-slate-100 hover:bg-slate-800' : 'bg-white/80 border-slate-300 text-slate-700 hover:bg-white')) }, fpOn ? ('🚪 ' + t('stem.geology.fp_exit', 'Exit')) : ('🚶 ' + t('stem.geology.fp_enter', 'Drop in')))
             ])),
@@ -4992,7 +5189,7 @@
           })
         ),
         h('div', { className: 'flex flex-wrap items-center gap-1.5', role: 'group', 'aria-label': t('stem.geology.lesson_group', 'Lesson tools') },
-          h('button', { type: 'button', 'aria-pressed': lessonGuideOpen ? 'true' : 'false', onClick: function () { var next = !lessonGuideOpen; setLessonGuideOpen(next); upd('lessonGuide', next); }, className: 'rounded-lg border px-3 py-1.5 text-xs font-bold transition-colors ' + (lessonGuideOpen ? 'border-sky-500 bg-sky-600 text-white' : btnIdle) }, lessonGuideOpen ? t('stem.geology.lesson_hide', 'Hide lesson guide') : t('stem.geology.lesson_open', 'Lesson guide'))),
+          h('button', { type: 'button', 'aria-pressed': lessonGuideOpen ? 'true' : 'false', onClick: function () { var next = !lessonGuideOpen; setLessonGuideOpen(next); upd('lessonGuide', next); }, className: 'rounded-lg border px-3 py-1.5 text-xs font-bold transition-colors ' + (lessonGuideOpen ? 'border-sky-600 bg-sky-700 text-white' : btnIdle) }, lessonGuideOpen ? t('stem.geology.lesson_hide', 'Hide lesson guide') : t('stem.geology.lesson_open', 'Lesson guide'))),
         lessonGuidePanel(),
         sceneMissionPanel(),
         sceneJourneyPanel(),

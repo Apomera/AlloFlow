@@ -24,6 +24,7 @@ describe('Wave Lab visual semantics and motion', () => {
     expect((source.match(/scope: 'col'/g) || []).length).toBeGreaterThanOrEqual(16);
     expect(source).toContain('var reducedMotion =');
     expect(source).toContain("reducedMotion ? '' : 'animate-pulse '");
-    expect(source).toContain("var anim = reducedMotion ? '' : 'animate-pulse'");
+    expect(source).toContain('var discoverReducedMotion = false;');
+    expect(source).toContain("var anim = discoverReducedMotion ? '' : 'animate-pulse'");
   });
 });

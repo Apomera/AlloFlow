@@ -757,7 +757,7 @@
       '.oid-detail-block h4{margin:0 0 6px;font-size:10px;font-weight:900;letter-spacing:.08em;text-transform:uppercase}',
       '.oid-species-list{margin:0;padding:0;list-style:none;font-size:13px}',
       '.oid-species-list li{margin:4px 0}',
-      '.oid-link{padding:0;border:0;background:none;font-weight:700;text-decoration:underline;text-underline-offset:2px}',
+      '.oid-link{display:inline-flex;align-items:center;min-width:24px;min-height:24px;padding:0;border:0;background:none;font-weight:700;text-decoration:underline;text-underline-offset:2px}',
       '.oid-lineage{margin:0;padding:0;list-style:none;font-size:12px}',
       '.oid-lineage li{display:flex;gap:8px;align-items:baseline;margin:3px 0}',
       '.oid-lineage-rank{flex:0 0 64px;font-size:9px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}',

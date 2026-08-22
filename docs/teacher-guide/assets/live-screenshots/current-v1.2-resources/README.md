@@ -10,6 +10,21 @@ Universal image style used for the run:
 
 See the [file-by-file screenshot quality audit](../../../current-v1.2-screenshot-quality-audit.md) before selecting images for publication.
 
+## Worked-vignette publication sequence
+
+The Teacher Guide chapter [Worked student vignette: water-cycle lesson](../../../chapters/25-worked-student-vignette.md) uses this live capture set as a decision story rather than as a button atlas. The fictional learner name and profile exist only in the manual narrative; they were never entered in Gemini Canvas or AlloFlow.
+
+The publication sequence is:
+
+1. `00-universal-settings.png` — show lesson-level defaults and the privacy boundary.
+2. `01-analyze-result.png` — inspect source demands without treating the estimate as a learner diagnosis.
+3. `02-glossary-panel.png` — generate broadly, then prune to the few terms students need.
+4. `13-sequence-builder-panel.png` — change automatic settings for a stated instructional reason.
+5. `19-standards-udl-alignment-result.png` — use a caught standards mismatch as a teacher-review example.
+6. `22-preview-package-deliver-result.png` — preview the real student route before export or assignment.
+
+For a future clean recapture, keep the same lesson source and viewport, remove transient overlays, and capture the complete Glossary, Sequence Builder, Exit Ticket, and populated Document Builder results. A result belongs in the vignette only when the matching controls, resource title, and final student-facing content are all visible and accurate.
+
 ## Capture matrix
 
 | # | Guided resource | Left panel | Resource view | Capture status |

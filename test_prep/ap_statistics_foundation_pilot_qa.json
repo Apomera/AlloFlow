@@ -37,6 +37,7 @@
     "memoryAidCount": 10,
     "practiceRouteCount": 15,
     "studyRouteCount": 4,
+    "quickReferenceCount": 5,
     "practiceRoutedItemCount": 240,
     "studyRouteReferenceCount": 181,
     "diagramCount": 5,
@@ -49,8 +50,8 @@
     "nativeLearningRoutes": 240
   },
   "inputs": {
-    "packSha256": "2e6f11afd9fb5e3fb35242521ea16507e37bcbbe26d08267996d5039b6c720b1",
-    "learningLibrarySha256": "df48a9230bb841e630665f4e877e86e520952f91f345040c113d37d972515864",
+    "packSha256": "a0df4e830a509901192b59b91ad2475b39d57dacc66cf311201280ee22c49142",
+    "learningLibrarySha256": "ce65e23e6f6735c9c8a5508049558864a853278c89abc52119bc7a7282947744",
     "officialBlueprintUrl": "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
     "reviewedAt": "2026-08-20"
   },

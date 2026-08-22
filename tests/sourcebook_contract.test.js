@@ -7,10 +7,11 @@ const root = path.resolve(import.meta.dirname, '..');
 const pluginPath = path.join(root, 'stem_lab', 'stem_tool_sourcebook.js');
 const pluginSource = fs.readFileSync(pluginPath, 'utf8');
 
-function loadSourcebook() {
+function loadSourcebook(fetchImpl) {
   const sandbox = {
     console,
     window: {
+      fetch: fetchImpl,
       StemLab: {
         _registry: {},
         _order: [],
@@ -59,6 +60,261 @@ describe('Sourcebook initial feature contract', () => {
     expect(Array.from(search('contour map', 'Maps', 'All')).every((item) => item.kind === 'Maps')).toBe(true);
   });
 
+  it('defaults the interface to public-domain-only and supports deliberate rights expansion', () => {
+    const window = loadSourcebook();
+    const search = window.SourcebookProviders.searchCurated;
+    expect(Array.from(search('', 'All', 'All', 'pd')).every((item) => item.rightsType === 'pd')).toBe(true);
+    expect(Array.from(search('', 'All', 'All', 'pd-cc0')).some((item) => item.rightsType === 'cc0')).toBe(true);
+    expect(pluginSource).toContain("rootState.rightsScope] ? rootState.rightsScope : 'pd'");
+    expect(pluginSource).toContain("'Public domain only'");
+    expect(pluginSource).toContain("'Add CC0'");
+    expect(pluginSource).toContain("'Add CC BY'");
+  });
+
+  it('admits live Commons results only when exact reusable-rights metadata is present', async () => {
+    const value = (text) => ({ value: text });
+    const payload = {
+      query: {
+        pages: [
+          {
+            pageid: 101,
+            title: 'File:Open contour drawing.svg',
+            imageinfo: [{
+              mediatype: 'DRAWING',
+              url: 'https://upload.wikimedia.org/open-contour.svg',
+              thumburl: 'https://upload.wikimedia.org/open-contour-thumb.png',
+              descriptionurl: 'https://commons.wikimedia.org/wiki/File:Open_contour_drawing.svg',
+              extmetadata: {
+                LicenseShortName: value('CC BY 4.0'),
+                LicenseUrl: value('https://creativecommons.org/licenses/by/4.0/'),
+                UsageTerms: value('Creative Commons Attribution 4.0'),
+                Artist: value('<b>Example Artist</b>'),
+                ImageDescription: value('<p>A reusable contour drawing.</p>'),
+                DateTimeOriginal: value('2024')
+              }
+            }]
+          },
+          {
+            pageid: 102,
+            title: 'File:Restricted texture.jpg',
+            imageinfo: [{
+              mediatype: 'BITMAP',
+              url: 'https://upload.wikimedia.org/restricted.jpg',
+              thumburl: 'https://upload.wikimedia.org/restricted-thumb.jpg',
+              descriptionurl: 'https://commons.wikimedia.org/wiki/File:Restricted_texture.jpg',
+              extmetadata: {
+                LicenseShortName: value('CC BY-NC 4.0'),
+                LicenseUrl: value('https://creativecommons.org/licenses/by-nc/4.0/'),
+                UsageTerms: value('Noncommercial')
+              }
+            }]
+          },
+          {
+            pageid: 103,
+            title: 'File:Unknown rights.jpg',
+            imageinfo: [{
+              mediatype: 'BITMAP',
+              url: 'https://upload.wikimedia.org/unknown.jpg',
+              thumburl: 'https://upload.wikimedia.org/unknown-thumb.jpg',
+              descriptionurl: 'https://commons.wikimedia.org/wiki/File:Unknown_rights.jpg',
+              extmetadata: { LicenseShortName: value('Unknown') }
+            }]
+          }
+        ]
+      }
+    };
+    const window = loadSourcebook(async () => ({ ok: true, json: async () => payload }));
+    const results = Array.from(await window.SourcebookProviders.searchOpen('contour drawing', { kind: 'Maps' }));
+    expect(results).toHaveLength(1);
+    expect(results[0]).toMatchObject({ rightsType: 'ccby', license: 'CC BY 4.0', creator: 'Example Artist', kind: 'Maps', live: true });
+    expect(results[0].rightsNote).toMatch(/Attribution is required/i);
+    expect(results[0].sourceUrl).toMatch(/^https:\/\/commons\.wikimedia\.org/);
+  });
+
+  it('rejects ambiguous and incompatible live license variants', () => {
+    const window = loadSourcebook();
+    const normalize = window.SourcebookProviders.normalizeCommonsRights;
+    const field = (value) => ({ value });
+    expect(normalize({ LicenseShortName: field('CC0 1.0'), LicenseUrl: field('https://creativecommons.org/publicdomain/zero/1.0/') })).toMatchObject({ rightsType: 'cc0' });
+    expect(normalize({ LicenseShortName: field('Public domain'), UsageTerms: field('Public domain') })).toMatchObject({ rightsType: 'pd' });
+    expect(normalize({ LicenseShortName: field('CC BY-SA 4.0'), LicenseUrl: field('https://creativecommons.org/licenses/by-sa/4.0/') })).toBeNull();
+    expect(normalize({ LicenseShortName: field('CC BY 4.0') })).toBeNull();
+    expect(normalize({ LicenseShortName: field('No known restrictions') })).toBeNull();
+  });
+
+  it('admits The Met images only when the object API explicitly marks them public domain', async () => {
+    const fetchImpl = async (url) => {
+      if (String(url).includes('/search?')) {
+        return { ok: true, json: async () => ({ total: 3, objectIDs: [501, 502, 503] }) };
+      }
+      const id = Number(String(url).match(/\/objects\/(\d+)/)?.[1]);
+      const objects = {
+        501: {
+          objectID: 501,
+          isPublicDomain: true,
+          title: 'Historic Textile Pattern',
+          artistDisplayName: 'Example Maker',
+          objectDate: '1890',
+          objectName: 'Textile sample',
+          medium: 'Woven cotton',
+          primaryImage: 'https://images.metmuseum.org/original.jpg',
+          primaryImageSmall: 'https://images.metmuseum.org/small.jpg',
+          objectURL: 'https://www.metmuseum.org/art/collection/search/501'
+        },
+        502: {
+          objectID: 502,
+          isPublicDomain: false,
+          title: 'Restricted Object',
+          primaryImage: 'https://images.metmuseum.org/restricted.jpg',
+          objectURL: 'https://www.metmuseum.org/art/collection/search/502'
+        },
+        503: {
+          objectID: 503,
+          isPublicDomain: true,
+          title: 'No Reusable Image',
+          primaryImage: '',
+          objectURL: 'https://www.metmuseum.org/art/collection/search/503'
+        }
+      };
+      return { ok: true, json: async () => objects[id] };
+    };
+    const window = loadSourcebook(fetchImpl);
+    const results = Array.from(await window.SourcebookProviders.searchMet('textile pattern', { kind: 'Patterns' }));
+    expect(results).toHaveLength(1);
+    expect(results[0]).toMatchObject({
+      id: 'met-live-501', provider: 'The Met Open Access', kind: 'Patterns',
+      rightsType: 'pd', rightsShort: 'Public domain', live: true
+    });
+    expect(results[0].rightsMetadataSource).toContain('isPublicDomain=true');
+    expect(results[0].license).toMatch(/Public Domain.*CC0/i);
+  });
+
+  it('admits Art Institute IIIF images only with an exact public-domain flag', async () => {
+    const urls = [];
+    const fetchImpl = async (url) => {
+      urls.push(String(url));
+      return {
+        ok: true,
+        json: async () => ({
+          data: [
+            {
+              id: 801,
+              title: 'Decorative Textile Fragment',
+              artist_display: 'Example Workshop',
+              date_display: '18th century',
+              medium_display: 'Silk and metallic thread',
+              classification_title: 'Textiles',
+              image_id: 'abc123-def456',
+              is_public_domain: true
+            },
+            {
+              id: 802,
+              title: 'Restricted Textile',
+              image_id: 'restricted-image',
+              is_public_domain: false
+            },
+            {
+              id: 803,
+              title: 'No Image',
+              image_id: '',
+              is_public_domain: true
+            }
+          ],
+          config: { iiif_url: 'https://www.artic.edu/iiif/2' }
+        })
+      };
+    };
+    const window = loadSourcebook(fetchImpl);
+    const results = Array.from(await window.SourcebookProviders.searchAic('decorative textile', { kind: 'Patterns' }));
+    expect(results).toHaveLength(1);
+    expect(results[0]).toMatchObject({
+      id: 'aic-live-801', provider: 'Art Institute of Chicago', kind: 'Patterns',
+      rightsType: 'pd', license: 'CC0 Public Domain Designation', live: true
+    });
+    expect(results[0].imageUrl).toMatch(/\/full\/843,\/0\/default\.jpg$/);
+    expect(results[0].downloadUrl).toMatch(/\/full\/1686,\/0\/default\.jpg$/);
+    expect(results[0].sourceUrl).toBe('https://www.artic.edu/artworks/801');
+    expect(urls[0]).toContain('is_public_domain%5D=true');
+  });
+
+  it('normalizes Cleveland Museum images only with exact CC0 status and trusted asset hosts', () => {
+    const window = loadSourcebook();
+    const normalize = window.SourcebookProviders.normalizeCmaArtwork;
+    const records = [
+            {
+              id: 901,
+              share_license_status: 'CC0',
+              title: 'Woven Textile Fragment',
+              creation_date: '1700s',
+              creators: [{ description: 'Example Weaver (French, 18th century)' }],
+              technique: 'silk and metallic thread',
+              type: 'Textile',
+              department: 'Textiles',
+              tombstone: 'A woven textile fragment with a repeating floral pattern.',
+              url: 'https://clevelandart.org/art/1920.1',
+              images: {
+                web: { url: 'https://openaccess-cdn.clevelandart.org/1920.1/1920.1_web.jpg' },
+                print: { url: 'https://openaccess-cdn.clevelandart.org/1920.1/1920.1_print.jpg' }
+              }
+            },
+            {
+              id: 902,
+              share_license_status: 'Copyrighted',
+              title: 'Restricted Textile',
+              url: 'https://clevelandart.org/art/2020.2',
+              images: { web: { url: 'https://openaccess-cdn.clevelandart.org/2020.2/2020.2_web.jpg' } }
+            },
+            {
+              id: 903,
+              share_license_status: 'CC0',
+              title: 'Untrusted Image Host',
+              url: 'https://clevelandart.org/art/1900.3',
+              images: { web: { url: 'https://example.com/not-a-cma-image.jpg' } }
+            },
+            {
+              id: 904,
+              share_license_status: 'Other',
+              title: 'Unclear Rights',
+              url: 'https://clevelandart.org/art/1900.4',
+              images: { web: { url: 'https://openaccess-cdn.clevelandart.org/1900.4/1900.4_web.jpg' } }
+            }
+    ];
+    const results = records.map((record) => normalize(record, 'woven textile pattern', 'Patterns')).filter(Boolean);
+    expect(results).toHaveLength(1);
+    expect(results[0]).toMatchObject({
+      id: 'cma-live-901', provider: 'Cleveland Museum of Art', kind: 'Patterns',
+      rightsType: 'pd', rightsShort: 'Public domain', live: true
+    });
+    expect(results[0].license).toMatch(/CC0 Open Access/i);
+    expect(results[0].rightsMetadataSource).toContain('share_license_status=CC0');
+    expect(results[0].sourceUrl).toBe('https://clevelandart.org/art/1920.1');
+    expect(results[0].downloadUrl).toMatch(/_print\.jpg$/);
+    expect(normalize({ ...records[0], id: 905, url: 'https://example.com/not-a-record' }, 'textile', 'Patterns')).toBeNull();
+  });
+
+  it('ships a verified Cleveland CC0 fallback shelf instead of an unusable browser-live search', () => {
+    const window = loadSourcebook();
+    const cma = Array.from(window.SourcebookProviders.materials).filter((item) => item.provider === 'Cleveland Museum of Art');
+    expect(cma).toHaveLength(5);
+    expect(new Set(cma.map((item) => item.kind))).toEqual(new Set(['Patterns', 'Botanical', 'Maps', 'Blueprints']));
+    expect(cma.every((item) => item.rightsType === 'pd' && /CC0/i.test(item.license))).toBe(true);
+    expect(cma.every((item) => /openaccess-cdn\.clevelandart\.org/.test(item.imageUrl))).toBe(true);
+    expect(cma.every((item) => /_print\.jpg$/.test(item.downloadUrl))).toBe(true);
+    expect(pluginSource).not.toContain('searchCmaLive');
+  });
+
+  it('caches identical live provider searches briefly to respect anonymous rate limits', async () => {
+    let requests = 0;
+    const window = loadSourcebook(async () => {
+      requests += 1;
+      return { ok: true, json: async () => ({ data: [], config: { iiif_url: 'https://www.artic.edu/iiif/2' } }) };
+    });
+    const options = { provider: 'Art Institute of Chicago', rightsScope: 'pd', kind: 'Patterns' };
+    await window.SourcebookProviders.searchOpen('woven ornament', options);
+    await window.SourcebookProviders.searchOpen('woven ornament', options);
+    expect(requests).toBe(1);
+  });
+
   it('exports a portable provenance-rich palette for future consumers', () => {
     const window = loadSourcebook();
     const materials = Array.from(window.SourcebookProviders.materials);
@@ -68,7 +324,65 @@ describe('Sourcebook initial feature contract', () => {
     expect(manifest.version).toBe(1);
     expect(manifest.assets).toHaveLength(2);
     expect(manifest.assets[0].preparation.mode).toBe('tile');
-    expect(manifest.assets.every((asset) => asset.sourceUrl && asset.license && asset.rightsNote)).toBe(true);
+    expect(manifest.assets.every((asset) => asset.sourceUrl && asset.license && asset.rightsNote && asset.attribution)).toBe(true);
+  });
+
+  it('builds a rights-checked Page Designer handoff with preparation and provenance', () => {
+    const window = loadSourcebook();
+    const item = Array.from(window.SourcebookProviders.materials)[0];
+    const artwork = window.SourcebookProviders.buildPageDesignerArtwork(
+      item,
+      { mode: 'crop', zoom: 145, x: 25, y: 80 },
+      'data:image/png;base64,AAAA'
+    );
+    expect(artwork).toMatchObject({
+      sourceTool: 'sourcebook',
+      assetId: item.id,
+      provider: item.provider,
+      sourceUrl: item.sourceUrl,
+      license: item.license,
+      rightsType: item.rightsType,
+      preparation: { mode: 'crop', zoom: 145, x: 25, y: 80, tile: 180 }
+    });
+    expect(artwork.attribution).toContain(item.sourceUrl);
+    expect(window.SourcebookProviders.buildPageDesignerArtwork(item, { mode: 'crop', x: 0, y: 0 }, 'data:image/png;base64,AAAA').preparation).toMatchObject({ x: 0, y: 0 });
+    expect(window.SourcebookProviders.buildPageDesignerArtwork({ ...item, rightsType: 'unknown' }, {}, 'data:image/png;base64,AAAA')).toBeNull();
+    expect(window.SourcebookProviders.buildPageDesignerArtwork(item, {}, 'https://example.com/image.png')).toBeNull();
+  });
+
+  it('resolves curated Commons redirects through the official API before embedding', async () => {
+    const requests = [];
+    const window = loadSourcebook(async (url) => {
+      requests.push(String(url));
+      return {
+        ok: true,
+        json: async () => ({
+          query: { pages: [{ imageinfo: [{ thumburl: 'https://upload.wikimedia.org/resolved-contour.png' }] }] }
+        })
+      };
+    });
+    const item = Array.from(window.SourcebookProviders.materials).find((asset) => asset.provider === 'Wikimedia Commons');
+    await expect(window.SourcebookProviders.resolveFetchableImageUrl(item)).resolves.toBe('https://upload.wikimedia.org/resolved-contour.png');
+    expect(requests[0]).toContain('commons.wikimedia.org/w/api.php');
+    expect(requests[0]).toContain('origin=*');
+    expect(requests[0]).toContain('iiurlwidth=1400');
+  });
+
+  it('supports two-axis crop preparation and attribution copying in the UI', () => {
+    expect(pluginSource).toContain("'aria-label': 'Horizontal crop focus'");
+    expect(pluginSource).toContain("'aria-label': 'Vertical crop focus'");
+    expect(pluginSource).toContain("'Copy credit'");
+    expect(pluginSource).toContain("'Open in Page Designer'");
+  });
+
+  it('routes the prepared asset through the existing host handoff and retains its credit in Page Designer', () => {
+    const appSource = fs.readFileSync(path.join(root, 'AlloFlowANTI.txt'), 'utf8');
+    const studioSource = fs.readFileSync(path.join(root, 'studio_module.js'), 'utf8');
+    expect(appSource).toContain("setAlloStudioInitialAction('insert-visual-asset')");
+    expect(appSource).toContain('attribution: String(artwork.attribution');
+    expect(studioSource).toContain("template: isSourcebook ? 'sourcebook-asset' : 'artstudio-artwork'");
+    expect(studioSource).toContain("origin: 'stem-sourcebook-credit'");
+    expect(studioSource).toContain('Sourcebook asset added with its source and reuse information');
   });
 
   it('is reachable from the loader, catalog, fallback renderer, and build mirror', () => {

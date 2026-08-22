@@ -447,7 +447,12 @@ onSpeak: function(formats) {
           { v: 'x\u00B2', cat: 'spc' }, { v: 'x\u00B3', cat: 'spc' }, { v: '\u221A', cat: 'spc' },
           { v: '(', cat: 'spc' }, { v: ')', cat: 'spc' }, { v: '=', cat: 'op' }
         ];
-        var TILE_COLORS = { num: '#3b82f6', 'var': '#8b5cf6', op: '#f59e0b', spc: '#10b981' };
+        // Darker tile colors preserve white-label contrast; the separate legend
+        // palette adapts to the surrounding light/dark surface.
+        var TILE_COLORS = { num: '#1d4ed8', 'var': '#6d28d9', op: '#92400e', spc: '#047857' };
+        var LEGEND_COLORS = (isDark || isContrast)
+          ? { num: '#93c5fd', 'var': '#c4b5fd', op: '#fcd34d', spc: '#6ee7b7' }
+          : TILE_COLORS;
 
         /* -- Grade-band intros -- */
         var GRADE_INTROS = {
@@ -618,7 +623,7 @@ onSpeak: function(formats) {
             if (isAns) return h('div', { key: i, style: { marginTop: '8px', padding: '8px', borderRadius: '8px', background: 'rgba(34,197,94,0.15)', border: '1px solid rgba(34,197,94,0.3)', fontWeight: '700', animation: 'casStepIn 300ms ease-out both', animationDelay: Math.min(i * 40, 320) + 'ms' } }, '\u2705 ' + trimmed);
             if (isStep) return h('div', { key: i, style: { display: 'flex', alignItems: 'flex-start', gap: '6px', padding: '4px 0', animation: 'casStepIn 240ms ease-out both', animationDelay: Math.min(i * 40, 280) + 'ms' } },
               h('span', { style: { flex: '1' } }, ruleM ? line.replace(ruleM[0], '').trim() : trimmed),
-              ruleM ? h('span', { style: { padding: '2px 6px', borderRadius: '99px', fontSize: '10px', fontWeight: '700', background: 'rgba(99,102,241,0.15)', color: '#a5b4fc', border: '1px solid rgba(99,102,241,0.2)', whiteSpace: 'nowrap' } }, ruleM[1]) : null
+              ruleM ? h('span', { style: { padding: '2px 6px', borderRadius: '99px', fontSize: '10px', fontWeight: '700', background: 'rgba(99,102,241,0.15)', color: ACCENT, border: '1px solid rgba(99,102,241,0.35)', whiteSpace: 'nowrap' } }, ruleM[1]) : null
             );
             if (/^SOLUTION:/i.test(trimmed)) return null;
             return h('div', { key: i, style: { padding: '2px 0' } }, trimmed);
@@ -661,7 +666,7 @@ onSpeak: function(formats) {
         /* ============ TAB: SOLVE ============ */
         var renderSolve = function() {
           return h('div', null,
-            h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '6px', marginBottom: '10px' } },
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))', gap: '6px', marginBottom: '10px' } },
               MODES.map(function(m) {
                 return h('button', { key: m.id, onClick: function() { updMulti({ mode: m.id, result: null }); }, title: m.desc, 'aria-pressed': mode === m.id, style: btnStyle(mode === m.id) }, m.label);
               })
@@ -799,10 +804,10 @@ onSpeak: function(formats) {
             ) : null,
             h('div', { style: { fontSize: '10px', color: MUTED, marginTop: '6px' } },
               h('span', { style: { fontWeight: '700' } }, 'Legend: '),
-              h('span', { style: { color: '#3b82f6' } }, t('stem.algebraCAS.numbers', '\u25CF Numbers ')),
-              h('span', { style: { color: '#8b5cf6' } }, t('stem.algebraCAS.variables', '\u25CF Variables ')),
-              h('span', { style: { color: '#f59e0b' } }, t('stem.algebraCAS.operators', '\u25CF Operators ')),
-              h('span', { style: { color: '#10b981' } }, t('stem.algebraCAS.special', '\u25CF Special'))
+              h('span', { style: { color: LEGEND_COLORS.num } }, t('stem.algebraCAS.numbers', '\u25CF Numbers ')),
+              h('span', { style: { color: LEGEND_COLORS['var'] } }, t('stem.algebraCAS.variables', '\u25CF Variables ')),
+              h('span', { style: { color: LEGEND_COLORS.op } }, t('stem.algebraCAS.operators', '\u25CF Operators ')),
+              h('span', { style: { color: LEGEND_COLORS.spc } }, t('stem.algebraCAS.special', '\u25CF Special'))
             )
           );
         };
@@ -899,12 +904,12 @@ onSpeak: function(formats) {
           return h('div', null,
             h('div', { style: { marginBottom: '8px' } },
               h('div', { style: { fontSize: '11px', fontWeight: '700', color: MUTED, textTransform: 'uppercase', marginBottom: '4px' } }, t('stem.algebraCAS.enter_equation', 'Enter Equation')),
-              h('div', { style: { display: 'flex', gap: '6px' } },
+              h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '6px' } },
                 h('input', { type: 'text', value: scaleEq, onChange: function(e) { upd('scaleEq', e.target.value); },
                   onKeyDown: function(e) { if (e.key === 'Enter') updMulti({ scaleSteps: [], scaleSolved: false }); },
                   placeholder: t('stem.algebraCAS.e_g_3x_5_14', 'e.g. 3x + 5 = 14'),
                   'aria-label': t('stem.algebraCAS.balance_scale_equation_input', 'Balance scale equation input'),
-                  style: { flex: '1', padding: '8px 12px', borderRadius: '10px', background: CARD, border: '1px solid ' + BORDER, color: TEXT, outline: 'none', fontFamily: 'monospace', fontSize: '13px' },
+                  style: { flex: '1 1 160px', minWidth: 0, padding: '8px 12px', borderRadius: '10px', background: CARD, border: '1px solid ' + BORDER, color: TEXT, outline: 'none', fontFamily: 'monospace', fontSize: '13px' },
                   onFocus: function(e) { e.target.style.boxShadow = '0 0 0 2px #7c3aed'; }, onBlur: function(e) { e.target.style.boxShadow = 'none'; } }),
                 mathInputButton(scaleEq, function(value) { upd('scaleEq', value); }, 'Enter a balance-scale equation'),
                 h('button', { 'aria-label': t('stem.algebraCAS.load', 'Load'), onClick: function() { updMulti({ scaleSteps: [], scaleSolved: false }); },

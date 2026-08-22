@@ -146,7 +146,7 @@ window.StemLab = window.StemLab || {
           function getGradeBand() {
             var ov = d.fgGradeOverride;
             if (ov && GRADE_BANDS.indexOf(ov) >= 0) return ov;
-            var gl = (gradeLevel || '5th Grade').toLowerCase();
+            var gl = String(gradeLevel || '5th Grade').toLowerCase();
             if (/k|1st|2nd|pre/.test(gl)) return 'K-2';
             if (/3rd|4th|5th/.test(gl)) return '3-5';
             if (/6th|7th|8th/.test(gl)) return '6-8';
@@ -639,7 +639,7 @@ window.StemLab = window.StemLab || {
               segments.map(function (seg, si) { return seg.length > 1 ? React.createElement("polyline", { key: 'seg' + si, points: seg.join(" "), fill: "none", stroke: isDark ? "#818cf8" : "#4f46e5", strokeWidth: 2.5, style: { filter: 'drop-shadow(0 0 3px rgba(' + (isDark ? '129,140,248,0.6' : '79,70,229,0.45') + '))' } }) : null; }),
 
               // Comparison curve (orange)
-              d.compare && compareSegs.map(function (seg, si) { return seg.length > 1 ? React.createElement("polyline", { key: 'cseg' + si, points: seg.join(" "), fill: "none", stroke: "#f97316", strokeWidth: 2, strokeDasharray: "8 4" }) : null; }),
+              d.compare && compareSegs.map(function (seg, si) { return seg.length > 1 ? React.createElement("polyline", { key: 'cseg' + si, points: seg.join(" "), fill: "none", stroke: "#c2410c", strokeWidth: 2, strokeDasharray: "8 4" }) : null; }),
 
               // Tangent line at traceX
               tangentInRange && (function() {
@@ -738,7 +738,7 @@ window.StemLab = window.StemLab || {
               React.createElement("text", { x: d.compare ? W / 3 : W / 2, y: H - 5, textAnchor: "middle", fill: isDark ? "#a5b4fc" : "#4f46e5", style: { fontSize: '10px', fontWeight: 'bold' } }, eqStr),
 
               // Comparison equation label
-              d.compare && eqStr2 && React.createElement("text", { x: W * 2 / 3, y: H - 5, textAnchor: "middle", fill: "#f97316", style: { fontSize: '10px', fontWeight: 'bold' } }, eqStr2)
+              d.compare && eqStr2 && React.createElement("text", { x: W * 2 / 3, y: H - 5, textAnchor: "middle", fill: "#c2410c", style: { fontSize: '10px', fontWeight: 'bold' } }, eqStr2)
 
             ),
 
@@ -829,7 +829,7 @@ window.StemLab = window.StemLab || {
                   __alloT('stem.funcgrapher.where_the_function_crosses_the_x_axis_', "Where the function crosses the x-axis. At these points, f(x) = 0. Solving for the roots is essential in algebra and calculus.")
                 ),
                 React.createElement("div", { className: "bg-white rounded-lg p-2 border border-emerald-100" },
-                  React.createElement("span", { className: "font-bold text-green-600" }, __alloT('stem.funcgrapher.y_intercept', "\uD83D\uDFE2 Y-intercept: ")),
+                  React.createElement("span", { className: "font-bold text-green-700" }, __alloT('stem.funcgrapher.y_intercept', "\uD83D\uDFE2 Y-intercept: ")),
                   __alloT('stem.funcgrapher.where_the_function_crosses_the_y_axis_', "Where the function crosses the y-axis. This is the value of f(0) — simply plug in x = 0.")
                 ),
                 React.createElement("div", { className: "bg-white rounded-lg p-2 border border-emerald-100" },
@@ -837,7 +837,7 @@ window.StemLab = window.StemLab || {
                   __alloT('stem.funcgrapher.the_slope_tells_you_how_steep_the_func', "The slope tells you how steep the function is at any point. The tangent line touches the curve at exactly one point. Use the trace slider to explore!")
                 ),
                 React.createElement("div", { className: "bg-white rounded-lg p-2 border border-emerald-100" },
-                  React.createElement("span", { className: "font-bold text-amber-600" }, __alloT('stem.funcgrapher.derivative_f_x', "\uD83D\uDCC9 Derivative f\u2032(x): ")),
+                  React.createElement("span", { className: "font-bold text-amber-800" }, __alloT('stem.funcgrapher.derivative_f_x', "\uD83D\uDCC9 Derivative f\u2032(x): ")),
                   __alloT('stem.funcgrapher.the_derivative_measures_the_rate_of_ch', "The derivative measures the rate of change. Toggle it on to see how the slope varies across the function. Where f\u2032(x) = 0, the function has a local max or min.")
                 ),
                 React.createElement("div", { className: "bg-white rounded-lg p-2 border border-emerald-100" },
@@ -874,9 +874,9 @@ window.StemLab = window.StemLab || {
             ),
 
             // ── Compare Mode Toggle + Sliders ──
-            React.createElement("div", { className: "mt-2 flex items-center gap-2" },
+            React.createElement("div", { className: "mt-2 flex flex-wrap items-center gap-2" },
               React.createElement("button", { onClick: function() { upd('compare', !d.compare); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.compare ? 'bg-orange-700 text-white shadow-md' : 'bg-orange-50 text-orange-700 border border-orange-600') }, d.compare ? '\u2705 Comparing' : '\uD83D\uDD00 Compare'),
-              d.compare && React.createElement("div", { className: "flex gap-1.5" },
+              d.compare && React.createElement("div", { className: "flex flex-wrap gap-1.5" },
                 TYPES.map(function(tp) {
                   return React.createElement("button", { key: 'cmp-' + tp.id, onClick: function() { upd('compareType', tp.id); }, className: "px-2 py-1 rounded text-[11px] font-bold transition-all " + (d.compareType === tp.id ? 'bg-orange-700 text-white' : 'bg-slate-100 text-slate-600') }, tp.emoji);
                 })
@@ -885,7 +885,7 @@ window.StemLab = window.StemLab || {
             d.compare && React.createElement("div", { className: "grid grid-cols-3 gap-3 mt-1" },
               [{ k: 'compareA', label: 'a\u2082', min: -5, max: 5, step: 0.1 }, { k: 'compareB', label: 'b\u2082', min: -5, max: 5, step: 0.1 }, { k: 'compareC', label: 'c\u2082', min: -5, max: 5, step: 0.1 }].map(function(s) {
                 return React.createElement("div", { key: s.k, className: "text-center bg-orange-50 rounded-lg p-2 border border-orange-200" },
-                  React.createElement("label", { className: "text-xs font-bold text-orange-600" }, s.label + ' = ' + (d[s.k] || 0)),
+                  React.createElement("label", { className: "text-xs font-bold text-orange-700" }, s.label + ' = ' + (d[s.k] || 0)),
                   React.createElement("input", { type: 'range', min: s.min, max: s.max, step: s.step, value: d[s.k] || 0, onChange: function(e) { upd(s.k, parseFloat(e.target.value)); }, className: 'w-full accent-orange-500', 'aria-label': 'Compare parameter ' + s.label })
                 );
               })
@@ -972,7 +972,7 @@ window.StemLab = window.StemLab || {
 
               d.showDeriv && React.createElement("span", null, __alloT('stem.funcgrapher.f_x_2', "- - - f\u2032(x)")),
 
-              d.compare && React.createElement("span", { style: { color: '#f97316' } }, __alloT('stem.funcgrapher.g_x', "- \u2500 - g(x)")),
+              d.compare && React.createElement("span", { style: { color: '#c2410c' } }, __alloT('stem.funcgrapher.g_x', "- \u2500 - g(x)")),
 
               React.createElement("span", null, __alloT('stem.funcgrapher.roots', "\uD83D\uDD34 Roots")),
 
@@ -1302,13 +1302,13 @@ window.StemLab = window.StemLab || {
 
                     return React.createElement("button", { key: cm.id, onClick: function () { upd('fgChallengeMode', cm.id); upd('fgQuiz', null); },
 
-                      className: "px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all " + (isActive ? (({ indigo: 'bg-indigo-600', violet: 'bg-violet-600', red: 'bg-red-600', emerald: 'bg-emerald-600', amber: 'bg-amber-600' }[cm.color]) || 'bg-indigo-600') + ' text-white shadow-md' : 'bg-slate-100 text-slate-600 hover:bg-slate-200')
+                      className: "px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all " + (isActive ? (({ indigo: 'bg-indigo-700', violet: 'bg-violet-700', red: 'bg-red-700', emerald: 'bg-emerald-700', amber: 'bg-amber-700' }[cm.color]) || 'bg-indigo-700') + ' text-white shadow-md' : 'bg-slate-100 text-slate-600 hover:bg-slate-200')
 
                     }, cm.label);
 
                   }),
 
-                  fgScore > 0 && React.createElement("span", { className: "text-xs font-bold text-emerald-600 ml-auto" }, '⭐ ' + fgScore + ' | 🔥 ' + fgStreak)
+                  fgScore > 0 && React.createElement("span", { className: "text-xs font-bold text-emerald-700 ml-auto" }, '⭐ ' + fgScore + ' | 🔥 ' + fgStreak)
 
                 ),
 

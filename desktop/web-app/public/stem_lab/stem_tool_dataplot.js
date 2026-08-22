@@ -986,9 +986,9 @@ window.StemLab = window.StemLab || {
           ),
 
           // Axis labels
-          h('div', { className: 'flex gap-2' },
-            h('input', { type: 'text', value: xLabel, onChange: function(e) { upd('xLabel', e.target.value); }, placeholder: t('stem.dataplot.x_axis_label', 'X-axis label'), 'aria-label': t('stem.dataplot.x_axis_label_2', 'X-axis label'), className: 'flex-1 px-2 py-1 text-xs border border-teal-600 rounded-lg outline-none focus:ring-1 focus:ring-teal-400' }),
-            h('input', { type: 'text', value: yLabel, onChange: function(e) { upd('yLabel', e.target.value); }, placeholder: t('stem.dataplot.y_axis_label', 'Y-axis label'), 'aria-label': t('stem.dataplot.y_axis_label_2', 'Y-axis label'), className: 'flex-1 px-2 py-1 text-xs border border-teal-600 rounded-lg outline-none focus:ring-1 focus:ring-teal-400' })
+          h('div', { className: 'grid grid-cols-1 gap-2 sm:grid-cols-2' },
+            h('input', { type: 'text', value: xLabel, onChange: function(e) { upd('xLabel', e.target.value); }, placeholder: t('stem.dataplot.x_axis_label', 'X-axis label'), 'aria-label': t('stem.dataplot.x_axis_label_2', 'X-axis label'), className: 'min-w-0 w-full px-2 py-1 text-xs border border-teal-600 rounded-lg outline-none focus:ring-1 focus:ring-teal-400' }),
+            h('input', { type: 'text', value: yLabel, onChange: function(e) { upd('yLabel', e.target.value); }, placeholder: t('stem.dataplot.y_axis_label', 'Y-axis label'), 'aria-label': t('stem.dataplot.y_axis_label_2', 'Y-axis label'), className: 'min-w-0 w-full px-2 py-1 text-xs border border-teal-600 rounded-lg outline-none focus:ring-1 focus:ring-teal-400' })
           ),
 
           // ── SVG Chart (scatter / line / bar) ──
@@ -1202,15 +1202,15 @@ window.StemLab = window.StemLab || {
             h('button', { 'aria-label': t('stem.dataplot.clear', 'Clear'), onClick: clearAll, disabled: !points.length, className: 'px-3 py-1.5 bg-red-50 text-red-700 font-bold rounded-lg text-sm disabled:opacity-40' }, t('stem.dataplot.clear_2', '\uD83D\uDDD1\uFE0F Clear')),
             h('label', { className: 'flex items-center gap-1 text-[11px] font-bold text-violet-600 cursor-pointer' },
               h('input', { type: 'checkbox', checked: showResiduals, onChange: function() { upd('showResiduals', !showResiduals); }, className: 'accent-violet-600' }), t('stem.dataplot.residuals', 'Residuals')),
-            h('label', { className: 'flex items-center gap-1 text-[11px] font-bold text-teal-600 cursor-pointer' },
+              h('label', { className: 'flex items-center gap-1 text-[11px] font-bold text-teal-700 cursor-pointer' },
               h('input', { type: 'checkbox', checked: showLabels, onChange: function() { upd('showLabels', !showLabels); }, className: 'accent-teal-600' }), t('stem.dataplot.labels', 'Labels')),
-            h('label', { className: 'flex items-center gap-1 text-[11px] font-bold text-sky-600 cursor-pointer' },
+              h('label', { className: 'flex items-center gap-1 text-[11px] font-bold text-sky-700 cursor-pointer' },
               h('input', { type: 'checkbox', checked: showGrid, onChange: function() { upd('showGrid', !showGrid); }, className: 'accent-sky-600' }), t('stem.dataplot.grid', 'Grid')),
-            h('label', { className: 'flex items-center gap-1 text-[11px] font-bold text-red-500 cursor-pointer' },
+              h('label', { className: 'flex items-center gap-1 text-[11px] font-bold text-red-700 cursor-pointer' },
               h('input', { type: 'checkbox', checked: showOutliers, onChange: function() { upd('showOutliers', !showOutliers); if (!showOutliers && outliers.length > 0) checkBadges({}); }, className: 'accent-red-500' }), 'Outliers' + (outliers.length > 0 ? ' (' + outliers.length + ')' : '')),
-            h('label', { className: 'flex items-center gap-1 text-[11px] font-bold text-rose-500 cursor-pointer' },
+              h('label', { className: 'flex items-center gap-1 text-[11px] font-bold text-rose-700 cursor-pointer' },
               h('input', { type: 'checkbox', checked: showCI, onChange: function() { upd('showCI', !showCI); }, className: 'accent-rose-500' }), t('stem.dataplot.95_ci', '95% CI')),
-            h('label', { className: 'flex items-center gap-1 text-[11px] font-bold text-violet-500 cursor-pointer' },
+              h('label', { className: 'flex items-center gap-1 text-[11px] font-bold text-violet-700 cursor-pointer' },
               h('input', { type: 'checkbox', checked: showResidualPlot, onChange: function() { upd('showResidualPlot', !showResidualPlot); }, className: 'accent-violet-500' }), t('stem.dataplot.resid_plot', 'Resid Plot')),
             chartType === 'histogram' && h('label', { className: 'flex items-center gap-1 text-[11px] font-bold text-purple-500 cursor-pointer' },
               h('input', { type: 'checkbox', checked: showNormalOverlay, onChange: function() { upd('showNormalOverlay', !showNormalOverlay); }, className: 'accent-purple-500' }), t('stem.dataplot.normal_curve', 'Normal Curve')),

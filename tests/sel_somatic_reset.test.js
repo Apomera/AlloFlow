@@ -272,6 +272,7 @@ describe('Body & Breath Reset plugin', () => {
   });
 
   it.each([
+    ['circle', 'Breathing circle'],
     ['wave', 'Flowing wave'],
     ['flower', 'Petal bloom'],
     ['horizon', 'Grounding horizon'],
@@ -291,8 +292,327 @@ describe('Body & Breath Reset plugin', () => {
     expect(html).toContain(`data-visual-mode="${visualMode}"`);
     expect(html).toContain('data-visual-motion="gentle"');
     expect(html).toContain('data-visual-phase="ready"');
-    expect(html).toContain(`${label}. Optional breath guide ready`);
+    expect(html).toContain('data-visual-phase-label="Ready"');
+    expect(html).toContain('data-visual-cadence="4-6-seconds"');
+    expect(html).toContain('aria-roledescription="breathing visual guide"');
+    expect(html).toContain(`${label}. Ready. Cadence: 4 seconds in, 6 seconds out.`);
     expect(html).toContain('<svg');
+  });
+
+  it('previews the phase- and pattern-coded Breathing Circle without starting the timer', async () => {
+    vi.useFakeTimers();
+    const host = document.createElement('div');
+    document.body.appendChild(host);
+    globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+    const toolData = {
+      somaticReset: {
+        view: 'setup',
+        selectedProtocol: 'shoulder_soften',
+        visualMode: 'circle',
+        visualMotion: 'gentle',
+        pacedBreathing: true,
+        soundEnabled: false
+      }
+    };
+    const ctx = makeCtx({ toolData });
+    const root = createRoot(host);
+    try {
+      await React.act(async () => {
+        root.render(React.createElement(function CirclePreviewHost() {
+          return window.SelHub.renderTool('somaticReset', ctx);
+        }));
+      });
+
+      const readyCircle = host.querySelector('[data-breath-circle="true"]');
+      expect(readyCircle?.getAttribute('data-circle-phase')).toBe('steady');
+      expect(readyCircle?.getAttribute('data-circle-session-state')).toBe('ready');
+      expect(readyCircle?.getAttribute('data-circle-line-pattern')).toBe('steady');
+      expect(readyCircle?.getAttribute('data-circle-center-shape')).toBe('dot');
+      expect(readyCircle?.querySelector('[data-circle-phase-cue="true"]')?.textContent).toBe('READY');
+      expect(host.querySelector('[role="timer"]')).toBeNull();
+
+      const preview = host.querySelector('button[data-visual-preview-toggle="true"]');
+      await React.act(async () => { preview.click(); });
+      const inhaleCircle = host.querySelector('[data-breath-circle="true"]');
+      expect(inhaleCircle?.getAttribute('data-circle-phase')).toBe('in');
+      expect(inhaleCircle?.getAttribute('data-circle-line-pattern')).toBe('solid');
+      expect(inhaleCircle?.getAttribute('data-circle-center-shape')).toBe('circle');
+      expect(inhaleCircle?.getAttribute('data-circle-phase-progress')).toBe('100');
+      expect(inhaleCircle?.querySelector('[data-circle-main-ring="true"]')?.getAttribute('data-circle-main-pattern')).toBe('solid');
+      expect(inhaleCircle?.querySelector('[data-circle-marker-core="circle"]')).toBeTruthy();
+      expect(inhaleCircle?.querySelector('[data-circle-phase-cue="true"]')?.textContent).toBe('IN · EXPAND');
+      expect(inhaleCircle?.querySelector('[data-circle-phase-cue="true"]')?.getAttribute('data-circle-cue-emphasis')).toBe('underlined');
+
+      await React.act(async () => { vi.advanceTimersByTime(4000); });
+      const exhaleCircle = host.querySelector('[data-breath-circle="true"]');
+      expect(exhaleCircle?.getAttribute('data-circle-phase')).toBe('out');
+      expect(exhaleCircle?.getAttribute('data-circle-line-pattern')).toBe('dotted');
+      expect(exhaleCircle?.getAttribute('data-circle-center-shape')).toBe('diamond');
+      expect(exhaleCircle?.getAttribute('data-circle-phase-progress')).toBe('100');
+      expect(exhaleCircle?.querySelector('[data-circle-main-ring="true"]')?.getAttribute('stroke-dasharray')).toBe('3 7');
+      expect(exhaleCircle?.querySelector('[data-circle-marker-core="diamond"]')).toBeTruthy();
+      expect(exhaleCircle?.querySelector('[data-circle-phase-cue="true"]')?.textContent).toBe('OUT · SOFTEN');
+
+      await React.act(async () => { vi.advanceTimersByTime(6000); });
+      const completedCircle = host.querySelector('[data-breath-circle="true"]');
+      expect(host.querySelector('[data-visual-preview="idle"]')).toBeTruthy();
+      expect(completedCircle?.getAttribute('data-circle-phase')).toBe('steady');
+      expect(completedCircle?.getAttribute('data-circle-center-shape')).toBe('dot');
+      expect(completedCircle?.querySelector('[data-circle-phase-cue="true"]')?.textContent).toBe('READY');
+    } finally {
+      await React.act(async () => { root.unmount(); });
+      host.remove();
+      vi.useRealTimers();
+    }
+  });
+
+  it('keeps Breathing Circle neutral for natural, still, and reduced motion and shows pause bars when paused', async () => {
+    const natural = renderSelTool('somaticReset', {
+      toolData: {
+        somaticReset: {
+          view: 'practice',
+          selectedProtocol: 'shoulder_soften',
+          visualMode: 'circle',
+          visualMotion: 'full',
+          pacedBreathing: false
+        }
+      }
+    });
+    const naturalHost = document.createElement('div');
+    naturalHost.innerHTML = natural;
+    const naturalCircle = naturalHost.querySelector('[data-breath-circle="true"]');
+    expect(naturalCircle?.getAttribute('data-circle-cadence')).toBe('natural');
+    expect(naturalCircle?.getAttribute('data-circle-phase')).toBe('steady');
+    expect(naturalCircle?.getAttribute('data-circle-line-pattern')).toBe('steady');
+    expect(naturalCircle?.getAttribute('data-circle-center-shape')).toBe('dot');
+    expect(naturalCircle?.querySelector('[data-circle-phase-cue]')).toBeNull();
+
+    const still = renderSelTool('somaticReset', {
+      toolData: {
+        somaticReset: {
+          view: 'practice',
+          selectedProtocol: 'shoulder_soften',
+          visualMode: 'circle',
+          visualMotion: 'still',
+          pacedBreathing: true
+        }
+      }
+    });
+    expect(still).toContain('data-visual-motion="still"');
+    expect(still).toContain('data-circle-phase="steady"');
+    expect(still).toContain('data-circle-line-pattern="steady"');
+    expect(still).toContain('data-circle-center-shape="dot"');
+
+    const reduced = renderSelTool('somaticReset', {
+      theme: { reduceMotion: true },
+      toolData: {
+        somaticReset: {
+          view: 'practice',
+          selectedProtocol: 'shoulder_soften',
+          visualMode: 'circle',
+          visualMotion: 'full',
+          pacedBreathing: true
+        }
+      }
+    });
+    expect(reduced).toContain('data-visual-motion="still"');
+    expect(reduced).toContain('data-circle-phase="steady"');
+    expect(reduced).toContain('data-circle-line-pattern="steady"');
+    expect(reduced).toContain('data-circle-center-shape="dot"');
+
+    vi.useFakeTimers();
+    const host = document.createElement('div');
+    document.body.appendChild(host);
+    globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+    const ctx = makeCtx({
+      toolData: {
+        somaticReset: {
+          view: 'practice',
+          selectedProtocol: 'shoulder_soften',
+          visualMode: 'circle',
+          visualMotion: 'gentle',
+          pacedBreathing: true,
+          soundEnabled: false
+        }
+      }
+    });
+    const root = createRoot(host);
+    try {
+      await React.act(async () => {
+        root.render(React.createElement(function CirclePracticeHost() {
+          return window.SelHub.renderTool('somaticReset', ctx);
+        }));
+      });
+      const start = Array.from(host.querySelectorAll('button')).find((button) => button.textContent === 'Start');
+      await React.act(async () => { start.click(); });
+      await React.act(async () => { vi.advanceTimersByTime(1250); });
+      expect(host.querySelector('[data-breath-circle="true"]')?.getAttribute('data-circle-center-shape')).toBe('circle');
+
+      await React.act(async () => { vi.advanceTimersByTime(3500); });
+      expect(host.querySelector('[data-breath-circle="true"]')?.getAttribute('data-circle-center-shape')).toBe('diamond');
+
+      const pause = Array.from(host.querySelectorAll('button')).find((button) => button.textContent === 'Pause');
+      await React.act(async () => { pause.click(); });
+      const pausedCircle = host.querySelector('[data-breath-circle="true"]');
+      expect(pausedCircle?.getAttribute('data-circle-phase')).toBe('steady');
+      expect(pausedCircle?.getAttribute('data-circle-session-state')).toBe('paused');
+      expect(pausedCircle?.getAttribute('data-circle-center-shape')).toBe('pause-bars');
+      expect(pausedCircle?.getAttribute('data-circle-line-pattern')).toBe('steady');
+      expect(pausedCircle?.querySelector('[data-circle-pause-bars="true"]')).toBeTruthy();
+      expect(pausedCircle?.querySelector('[data-circle-phase-cue="true"]')?.textContent).toBe('PAUSED');
+      expect(pausedCircle?.querySelector('[data-circle-phase-cue="true"]')?.getAttribute('data-circle-cue-shape')).toBe('pause-bars');
+    } finally {
+      await React.act(async () => { root.unmount(); });
+      host.remove();
+      vi.useRealTimers();
+    }
+  });
+
+  it('adds a compact phase rail that tracks preview inhale and exhale states', async () => {
+    vi.useFakeTimers();
+    const host = document.createElement('div');
+    document.body.appendChild(host);
+    globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+    const ctx = makeCtx({
+      toolData: {
+        somaticReset: {
+          view: 'setup',
+          selectedProtocol: 'shoulder_soften',
+          visualMode: 'wave',
+          visualMotion: 'gentle',
+          pacedBreathing: true,
+          soundEnabled: false
+        }
+      }
+    });
+    const root = createRoot(host);
+    try {
+      await React.act(async () => {
+        root.render(React.createElement(function PhaseRailPreviewHost() {
+          return window.SelHub.renderTool('somaticReset', ctx);
+        }));
+      });
+
+      const readyRail = host.querySelector('[data-breath-phase-rail="true"]');
+      expect(readyRail?.getAttribute('data-breath-phase')).toBe('ready');
+      expect(readyRail?.getAttribute('data-breath-phase-progress')).toBe('steady');
+      expect(readyRail?.getAttribute('data-breath-phase-label')).toBe('READY');
+      expect(readyRail?.getAttribute('data-breath-phase-cadence')).toBe('4-6');
+      expect(readyRail?.getAttribute('data-breath-phase-total-seconds')).toBe('10');
+      expect(readyRail?.querySelector('[data-breath-phase-label-text="in"]')?.textContent).toBe('IN 4s');
+      expect(readyRail?.querySelector('[data-breath-phase-label-text="out"]')?.textContent).toBe('OUT 6s');
+      const readyVisual = host.querySelector('[role="img"][data-visual-mode="wave"]');
+      expect(readyVisual?.getAttribute('data-visual-phase-label')).toBe('Ready');
+      expect(readyVisual?.getAttribute('data-visual-cadence')).toBe('4-6-seconds');
+      expect(readyVisual?.getAttribute('aria-roledescription')).toBe('breathing visual guide');
+      expect(readyVisual?.getAttribute('aria-label')).toContain('Cadence: 4 seconds in, 6 seconds out');
+      expect(readyRail?.querySelector('[data-breath-phase-segment="in"]')?.getAttribute('data-breath-phase-segment-state')).toBe('upcoming');
+      expect(readyRail?.querySelector('[data-breath-phase-segment="out"]')?.getAttribute('data-breath-phase-segment-state')).toBe('upcoming');
+      expect(readyRail?.querySelector('[data-breath-phase-segment="in"]')?.getAttribute('data-breath-phase-segment-seconds')).toBe('4');
+      expect(readyRail?.querySelector('[data-breath-phase-segment="in"]')?.getAttribute('data-breath-phase-segment-ratio')).toBe('40');
+      expect(readyRail?.querySelector('[data-breath-phase-segment="out"]')?.getAttribute('data-breath-phase-segment-seconds')).toBe('6');
+      expect(readyRail?.querySelector('[data-breath-phase-segment="out"]')?.getAttribute('data-breath-phase-segment-ratio')).toBe('60');
+
+      const preview = host.querySelector('button[data-visual-preview-toggle="true"]');
+      await React.act(async () => { preview.click(); });
+      const inhaleRail = host.querySelector('[data-breath-phase-rail="true"]');
+      expect(inhaleRail?.getAttribute('data-breath-phase')).toBe('in');
+      expect(inhaleRail?.getAttribute('data-breath-phase-progress')).toBe('100');
+      expect(inhaleRail?.getAttribute('data-breath-phase-label')).toBe('IN \u00b7 EXPAND');
+      const inhaleVisual = host.querySelector('[role="img"][data-visual-mode="wave"]');
+      expect(inhaleVisual?.getAttribute('data-visual-phase-label')).toBe('Preview inhale phase');
+      expect(inhaleVisual?.getAttribute('aria-label')).toContain('Preview inhale phase');
+      expect(inhaleRail?.querySelector('[data-breath-phase-segment="in"]')?.getAttribute('data-breath-phase-segment-state')).toBe('active');
+      expect(inhaleRail?.querySelector('[data-breath-phase-segment="out"]')?.getAttribute('data-breath-phase-segment-state')).toBe('upcoming');
+
+      await React.act(async () => { vi.advanceTimersByTime(4000); });
+      const exhaleRail = host.querySelector('[data-breath-phase-rail="true"]');
+      expect(exhaleRail?.getAttribute('data-breath-phase')).toBe('out');
+      expect(exhaleRail?.getAttribute('data-breath-phase-progress')).toBe('100');
+      expect(exhaleRail?.getAttribute('data-breath-phase-label')).toBe('OUT \u00b7 SOFTEN');
+      const exhaleVisual = host.querySelector('[role="img"][data-visual-mode="wave"]');
+      expect(exhaleVisual?.getAttribute('data-visual-phase-label')).toBe('Preview exhale phase');
+      expect(exhaleVisual?.getAttribute('aria-label')).toContain('Preview exhale phase');
+      expect(exhaleRail?.querySelector('[data-breath-phase-segment="in"]')?.getAttribute('data-breath-phase-segment-state')).toBe('complete');
+      expect(exhaleRail?.querySelector('[data-breath-phase-segment="out"]')?.getAttribute('data-breath-phase-segment-state')).toBe('active');
+    } finally {
+      await React.act(async () => { root.unmount(); });
+      host.remove();
+      vi.useRealTimers();
+    }
+  });
+
+  it('keeps the phase rail neutral for natural breathing and paused practice', async () => {
+    const natural = renderSelTool('somaticReset', {
+      toolData: {
+        somaticReset: {
+          view: 'practice',
+          selectedProtocol: 'shoulder_soften',
+          visualMode: 'wave',
+          pacedBreathing: false
+        }
+      }
+    });
+    expect(natural).not.toContain('data-breath-phase-rail="true"');
+
+    const still = renderSelTool('somaticReset', {
+      toolData: {
+        somaticReset: {
+          view: 'practice',
+          selectedProtocol: 'shoulder_soften',
+          visualMode: 'wave',
+          visualMotion: 'still',
+          pacedBreathing: true
+        }
+      }
+    });
+    const stillHost = document.createElement('div');
+    stillHost.innerHTML = still;
+    expect(stillHost.querySelector('[data-breath-phase-rail="true"]')?.getAttribute('data-breath-phase')).toBe('ready');
+    expect(stillHost.querySelector('[data-breath-phase-rail="true"]')?.getAttribute('data-breath-phase-progress')).toBe('steady');
+    expect(stillHost.querySelector('[data-breath-phase-segment="in"]')?.getAttribute('data-breath-phase-segment-state')).toBe('upcoming');
+
+    vi.useFakeTimers();
+    const host = document.createElement('div');
+    document.body.appendChild(host);
+    globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+    const ctx = makeCtx({
+      toolData: {
+        somaticReset: {
+          view: 'practice',
+          selectedProtocol: 'shoulder_soften',
+          visualMode: 'circle',
+          visualMotion: 'gentle',
+          pacedBreathing: true,
+          soundEnabled: false
+        }
+      }
+    });
+    const root = createRoot(host);
+    try {
+      await React.act(async () => {
+        root.render(React.createElement(function PhaseRailPracticeHost() {
+          return window.SelHub.renderTool('somaticReset', ctx);
+        }));
+      });
+      const start = Array.from(host.querySelectorAll('button')).find((button) => button.textContent === 'Start');
+      await React.act(async () => { start.click(); });
+      await React.act(async () => { vi.advanceTimersByTime(1000); });
+      expect(host.querySelector('[data-breath-phase-rail="true"]')?.getAttribute('data-breath-phase')).toBe('in');
+
+      const pause = Array.from(host.querySelectorAll('button')).find((button) => button.textContent === 'Pause');
+      await React.act(async () => { pause.click(); });
+      const pausedRail = host.querySelector('[data-breath-phase-rail="true"]');
+      expect(pausedRail?.getAttribute('data-breath-phase')).toBe('paused');
+      expect(pausedRail?.getAttribute('data-breath-phase-progress')).toBe('steady');
+      expect(pausedRail?.getAttribute('data-breath-phase-label')).toBe('PAUSED');
+      expect(pausedRail?.querySelector('[data-breath-phase-segment="in"]')?.getAttribute('data-breath-phase-segment-state')).toBe('upcoming');
+      expect(pausedRail?.querySelector('[data-breath-phase-segment="out"]')?.getAttribute('data-breath-phase-segment-state')).toBe('upcoming');
+    } finally {
+      await React.act(async () => { root.unmount(); });
+      host.remove();
+      vi.useRealTimers();
+    }
   });
 
   it('previews the shape- and pattern-coded Flowing Wave without starting the timer', async () => {
@@ -877,7 +1197,7 @@ describe('Body & Breath Reset plugin', () => {
     expect(orbit?.querySelector('[data-orbit-marker="true"]')?.getAttribute('data-orbit-marker-direction')).toBe('steady');
     expect(orbit?.querySelector('[data-orbit-marker-core="circle"]')).toBeTruthy();
     expect(orbit?.querySelector('[data-orbit-direction-cue="clockwise"]')).toBeNull();
-    expect(paced).toContain('Breath orbit. Optional breath guide ready');
+    expect(paced).toContain('Breath orbit. Ready. Cadence: 4 seconds in, 6 seconds out. Optional breath guide ready');
     expect(paced).toContain('Direct IN and OUT labels pair with solid inhale and dotted exhale patterns across the arcs and center ring; the center changes to pause bars when the session pauses');
     expect(paced).toContain('an outlined diamond or ring shows the next phase handoff');
     expect(paced).toContain('round and diamond markers move clockwise');
@@ -911,7 +1231,7 @@ describe('Body & Breath Reset plugin', () => {
     expect(natural).not.toContain('data-orbit-handoff="true"');
     expect(natural).not.toContain('data-orbit-return="true"');
     expect(natural).not.toContain('data-orbit-destination-halo');
-    expect(natural).toContain('Breath orbit. Steady guide; breathe naturally');
+    expect(natural).toContain('Breath orbit. Natural breathing. No timed cadence. Steady guide; breathe naturally');
 
     const reduced = renderSelTool('somaticReset', {
       theme: { reduceMotion: true },
@@ -1236,7 +1556,7 @@ describe('Body & Breath Reset plugin', () => {
     expect(natural).not.toContain('data-path-phase-labels="true"');
     expect(natural).not.toContain('data-path-destination-halo');
     expect(natural).not.toContain('data-path-trail=');
-    expect(natural).toContain('Breath path. Steady guide; breathe naturally and move only if comfortable');
+    expect(natural).toContain('Breath path. Natural breathing. No timed cadence. Steady guide; breathe naturally and move only if comfortable');
 
     const still = renderSelTool('somaticReset', {
       toolData: {
@@ -1588,14 +1908,14 @@ describe('Body & Breath Reset plugin', () => {
 
       const visualToggle = host.querySelector('button[data-visual-toggle="true"]');
       expect(visualToggle).toBeTruthy();
-      expect(visualToggle?.getAttribute('aria-label')).toBe('Start practice from Petal bloom.');
+      expect(visualToggle?.getAttribute('aria-label')).toBe('Start practice from Petal bloom. Ready. Cadence: 4 seconds in, 6 seconds out. Optional breath guide ready');
       expect(visualToggle?.getAttribute('aria-keyshortcuts')).toBe('Enter Space');
       expect(visualToggle?.getAttribute('data-visual-action')).toBe('start');
       expect(visualToggle?.textContent).toContain('Press visual to start');
 
       await React.act(async () => { visualToggle.click(); });
       expect(visualToggle?.getAttribute('data-visual-action')).toBe('pause');
-      expect(visualToggle?.getAttribute('aria-label')).toBe('Pause practice from Petal bloom.');
+      expect(visualToggle?.getAttribute('aria-label')).toBe('Pause practice from Petal bloom. Inhale phase. Cadence: 4 seconds in, 6 seconds out. Breathe in gently, count 4');
       expect(host.textContent).toContain('Press visual to pause');
       expect(Array.from(host.querySelectorAll('button')).some((button) => button.textContent === 'Pause')).toBe(true);
       expect(announcements).toContain('Practice started.');
@@ -1603,7 +1923,7 @@ describe('Body & Breath Reset plugin', () => {
       await React.act(async () => { vi.advanceTimersByTime(1250); });
       await React.act(async () => { visualToggle.click(); });
       expect(visualToggle?.getAttribute('data-visual-action')).toBe('resume');
-      expect(visualToggle?.getAttribute('aria-label')).toBe('Resume practice from Petal bloom.');
+      expect(visualToggle?.getAttribute('aria-label')).toBe('Resume practice from Petal bloom. Paused. Cadence: 4 seconds in, 6 seconds out. Breath guide paused');
       expect(host.textContent).toContain('Press visual to resume');
       expect(Array.from(host.querySelectorAll('button')).some((button) => button.textContent === 'Resume')).toBe(true);
       expect(announcements).toContain('Practice paused.');

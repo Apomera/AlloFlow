@@ -1759,6 +1759,49 @@ function recordTestPrepAttempt(progress, pack, answers, confidence, now, metadat
   return writeTestPrepProgress(next);
 }
 
+function testPrepFoundationalDocumentRouteProgress(attempts, route) {
+  const input = route && typeof route === 'object' && !Array.isArray(route) ? route : {};
+  const itemIds = Array.from(new Set((Array.isArray(input.itemIds) ? input.itemIds : [])
+    .map((id) => testPrepSlug(id, ''))
+    .filter(Boolean)));
+  const itemSet = new Set(itemIds);
+  const latestByItem = {};
+  const routeAttempts = [];
+  const title = String(input.title || '').trim();
+  (Array.isArray(attempts) ? attempts : []).forEach((attempt) => {
+    if (!attempt || attempt.mode === 'guided-review') return;
+    const touchedIds = Array.from(new Set((Array.isArray(attempt.itemIds) ? attempt.itemIds : [])
+      .map((id) => testPrepSlug(id, ''))
+      .filter((id) => itemSet.has(id))));
+    if (!touchedIds.length) return;
+    const completedAt = Math.max(0, testPrepFinite(attempt.completedAt, 0));
+    const itemResults = attempt.itemResults && typeof attempt.itemResults === 'object' && !Array.isArray(attempt.itemResults)
+      ? attempt.itemResults : {};
+    touchedIds.forEach((itemId) => {
+      const result = itemResults[itemId];
+      const previous = latestByItem[itemId];
+      if (!previous || completedAt >= previous.completedAt) {
+        latestByItem[itemId] = { completedAt, correct: result && result.correct === true };
+      }
+    });
+    const label = String(attempt.label || '').trim();
+    if (title && (label === title || label === 'Foundational document: ' + title)) routeAttempts.push(attempt);
+  });
+  const attemptedItemCount = Object.keys(latestByItem).length;
+  const totalItemCount = itemIds.length;
+  const attemptedPercent = totalItemCount ? Math.round(attemptedItemCount / totalItemCount * 100) : 0;
+  const latestRouteAttempt = routeAttempts.reduce((latest, attempt) => (
+    !latest || testPrepFinite(attempt.completedAt, 0) >= testPrepFinite(latest.completedAt, 0) ? attempt : latest
+  ), null);
+  return {
+    totalItemCount,
+    attemptedItemCount,
+    attemptedPercent,
+    status: attemptedItemCount === 0 ? 'not-started' : attemptedItemCount >= totalItemCount ? 'complete' : 'in-progress',
+    latestRouteScore: latestRouteAttempt ? Math.max(0, Math.min(100, Math.round(testPrepFinite(latestRouteAttempt.percent, 0)))) : null,
+  };
+}
+
 function testPrepBuildProgressAnalytics(progress, packId, contentIdentity) {
   const normalized = normalizeTestPrepProgress(progress);
   const requestedPack = packId && typeof packId === 'object' && !Array.isArray(packId) ? packId : null;
@@ -2136,8 +2179,9 @@ function testPrepSearchPack(pack, learningLibrary, query, options) {
   (Array.isArray(library.flashcards) ? library.flashcards : []).filter((card) => card.reviewStatus === 'source-reviewed-editorial-pass' && card.contentDisposition !== 'retire-redundant').forEach((card) => add('flashcard', card.id, card.front, card.back, card.domain, [card.front, card.back, card.domain].join(' '), card.reviewStatus));
   (Array.isArray(library.memoryAids) ? library.memoryAids : []).filter((aid) => aid.reviewStatus === 'source-reviewed-editorial-pass').forEach((aid) => add('memory-aid', aid.id, aid.title, aid.content, aid.domain, [aid.title, aid.content].concat(aid.tags || []).join(' '), aid.reviewStatus));
   (Array.isArray(library.constructedResponseWorkshops) ? library.constructedResponseWorkshops : []).forEach((workshop) => add('constructed-response', workshop.id, workshop.title, workshop.prompt, workshop.taskType, JSON.stringify(workshop), workshop.reviewStatus || 'source-reviewed-editorial-pass'));
+  (Array.isArray(library.foundationalDocumentRoutes) ? library.foundationalDocumentRoutes : []).forEach((route) => add('foundational-document', route.id, route.title, route.studyMove || route.accessNote, 'Foundational document', [route.title, route.documentId, route.topicIds, route.studyMove, route.accessNote].join(' '), route.reviewStatus || 'source-reviewed-editorial-pass'));
   normalizeTestPrepAnnotations(input.annotations).records.filter((record) => record.packId === normalizedPack.id).forEach((record) => add(record.kind, record.id, record.targetLabel || (record.kind === 'highlight' ? 'Highlight' : 'Note'), record.text, record.targetType, [record.targetLabel, record.text, record.targetType].join(' '), 'learner-created'));
-  const typeOrder = { question: 0, chapter: 1, diagram: 2, glossary: 3, flashcard: 4, 'memory-aid': 5, 'constructed-response': 6, note: 7, highlight: 8 };
+  const typeOrder = { question: 0, chapter: 1, 'foundational-document': 2, diagram: 3, glossary: 4, flashcard: 5, 'memory-aid': 6, 'constructed-response': 7, note: 8, highlight: 9 };
   results.sort((left, right) => (typeOrder[left.type] - typeOrder[right.type]) || left.title.localeCompare(right.title));
   const counts = {};
   results.forEach((result) => { counts[result.type] = (counts[result.type] || 0) + 1; });
@@ -4637,6 +4681,17 @@ function TestPrepHub(props) {
     });
   }
 
+  function startStudyRoute(route) {
+    const itemIds = route && Array.isArray(route.itemIds) ? route.itemIds : [];
+    const items = itemIds.map((itemId) => itemLookup.get(itemId)).filter(Boolean);
+    if (!items.length) { announce('No questions are available for that study route.', 'info'); return; }
+    startPracticeSet({
+      mode: 'custom',
+      label: route.title || 'Guided study route',
+      items,
+    });
+  }
+
   function toggleCustomQuizDomain(domainId) {
     if (!selectedPack) return;
     const allIds = selectedPack.domains.map((domain) => domain.id);
@@ -4664,6 +4719,12 @@ function TestPrepHub(props) {
     if (searchResult.type === 'chapter') {
       setLibraryMode('chapters');
       setLibraryChapterId(searchResult.id);
+      return;
+    }
+    if (searchResult.type === 'foundational-document') {
+      setLibraryMode('foundational-documents');
+      setLibraryChapterId('');
+      setLibrarySearch(searchResult.title);
       return;
     }
     if (searchResult.type === 'diagram') {
@@ -6528,7 +6589,7 @@ function TestPrepHub(props) {
               </div>
 
               {selectedPack.learningLibraryUrl && <nav className="flex flex-wrap gap-2" aria-label="Learning library modes">
-                {([['search', 'Search all'], ['chapters', 'Chapters'], ['flashcards', 'Flashcards'], ['memory-aids', 'Memory aids']].concat(learningLibrary && Array.isArray(learningLibrary.glossary) && learningLibrary.glossary.length ? [['glossary', 'Glossary']] : []).concat(learningLibrary && Array.isArray(learningLibrary.constructedResponseWorkshops) && learningLibrary.constructedResponseWorkshops.length ? [['constructed-response', learningLibrary.workshopLabel || 'Written-response workshops']] : [])).map(([id, label]) => <button key={id} type="button" aria-pressed={libraryMode === id} onClick={() => { setLibraryMode(id); setLibraryChapterId(''); setFlashcardRevealed(false); setMemoryAidOpen(''); }} className={'rounded-lg border px-4 py-2 text-sm font-black focus:ring-2 focus:ring-indigo-600 ' + (libraryMode === id ? 'border-indigo-700 bg-indigo-700 text-white' : 'border-slate-400 bg-white text-slate-800')}>{label}</button>)}
+                {([['search', 'Search all'], ['chapters', 'Chapters']].concat(learningLibrary && Array.isArray(learningLibrary.studyRoutes) && learningLibrary.studyRoutes.length ? [['study-routes', 'Study routes']] : []).concat(learningLibrary && Array.isArray(learningLibrary.quickReference) && learningLibrary.quickReference.length ? [['quick-reference', 'Quick reference']] : []).concat(learningLibrary && Array.isArray(learningLibrary.foundationalDocumentRoutes) && learningLibrary.foundationalDocumentRoutes.length ? [['foundational-documents', 'Foundational documents']] : []).concat([['flashcards', 'Flashcards'], ['memory-aids', 'Memory aids']]).concat(learningLibrary && Array.isArray(learningLibrary.glossary) && learningLibrary.glossary.length ? [['glossary', 'Glossary']] : []).concat(learningLibrary && Array.isArray(learningLibrary.constructedResponseWorkshops) && learningLibrary.constructedResponseWorkshops.length ? [['constructed-response', learningLibrary.workshopLabel || 'Written-response workshops']] : [])).map(([id, label]) => <button key={id} type="button" aria-pressed={libraryMode === id} onClick={() => { setLibraryMode(id); setLibraryChapterId(''); setFlashcardRevealed(false); setMemoryAidOpen(''); }} className={'rounded-lg border px-4 py-2 text-sm font-black focus:ring-2 focus:ring-indigo-600 ' + (libraryMode === id ? 'border-indigo-700 bg-indigo-700 text-white' : 'border-slate-400 bg-white text-slate-800')}>{label}</button>)}
               </nav>}
 
               {!selectedPack.learningLibraryUrl && <div className="rounded-xl border border-slate-300 bg-white p-5 text-sm text-slate-800">
@@ -6550,8 +6611,8 @@ function TestPrepHub(props) {
                   {globalSearch.query ? <p className="text-sm font-bold text-slate-700" role="status">Found {globalSearch.total} result{globalSearch.total === 1 ? '' : 's'}; showing {globalSearch.results.length}.</p> : <p className="rounded-xl border border-slate-300 bg-white p-5 text-sm text-slate-700">Enter a word or phrase to search all available content in this pack.</p>}
                   <div className="grid gap-3 md:grid-cols-2">
                     {globalSearch.results.map((searchResult) => {
-                      const typeLabel = searchResult.type === 'memory-aid' ? 'Memory aid' : searchResult.type === 'constructed-response' ? 'Written-response workshop' : searchResult.type.charAt(0).toUpperCase() + searchResult.type.slice(1);
-                      const actionLabel = searchResult.type === 'question' ? 'Practice this question' : searchResult.type === 'chapter' ? 'Open chapter' : searchResult.type === 'diagram' ? 'Open diagram' : searchResult.type === 'glossary' ? 'Open glossary term' : searchResult.type === 'flashcard' ? 'Study card' : searchResult.type === 'memory-aid' ? 'Open memory aid' : (searchResult.type === 'note' || searchResult.type === 'highlight') ? 'Open annotation' : 'Open workshops';
+                      const typeLabel = searchResult.type === 'memory-aid' ? 'Memory aid' : searchResult.type === 'constructed-response' ? 'Written-response workshop' : searchResult.type === 'foundational-document' ? 'Foundational document' : searchResult.type.charAt(0).toUpperCase() + searchResult.type.slice(1);
+                      const actionLabel = searchResult.type === 'question' ? 'Practice this question' : searchResult.type === 'chapter' ? 'Open chapter' : searchResult.type === 'foundational-document' ? 'Open document route' : searchResult.type === 'diagram' ? 'Open diagram' : searchResult.type === 'glossary' ? 'Open glossary term' : searchResult.type === 'flashcard' ? 'Study card' : searchResult.type === 'memory-aid' ? 'Open memory aid' : (searchResult.type === 'note' || searchResult.type === 'highlight') ? 'Open annotation' : 'Open workshops';
                       return <article key={searchResult.type + '-' + searchResult.id} className="flex flex-col rounded-xl border border-slate-300 bg-white p-4 shadow-sm"><div className="flex flex-wrap items-center gap-2"><span className="rounded-full bg-indigo-100 px-2 py-1 text-xs font-black text-indigo-900">{typeLabel}</span>{searchResult.domain && <span className="text-xs font-bold text-slate-600">{searchResult.domain}</span>}</div><h5 className="mt-2 font-black text-slate-900">{searchResult.title}</h5>{searchResult.snippet && <p className="mt-2 flex-1 text-sm leading-relaxed text-slate-700">{searchResult.snippet}</p>}<button type="button" onClick={() => openLibrarySearchResult(searchResult)} className="mt-4 rounded-lg bg-indigo-700 px-3 py-2 text-sm font-black text-white focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2">{actionLabel}</button></article>;
                     })}
                   </div>
@@ -6565,7 +6626,7 @@ function TestPrepHub(props) {
                 return <>
                   {retainedChapterProgressCount > 0 && <p className="rounded-xl border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950" role="status"><strong>{retainedChapterProgressCount} completed section marker{retainedChapterProgressCount === 1 ? '' : 's'} retained from an earlier or unidentified learning-content revision.</strong> Current chapter progress starts separately.</p>}
                   <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-6" aria-label="Learning library inventory">
-                    {([['Chapters', learningLibrary.summary.chapters], ['Sections', learningLibrary.summary.sections], ['Knowledge checks', learningLibrary.summary.knowledgeChecks], ['Flashcards', learningLibrary.summary.flashcards], ['Memory aids', learningLibrary.summary.memoryAids], ['Diagrams', learningLibrary.summary.nativeDiagramPayloads || learningLibrary.summary.diagrams], ['Glossary terms', learningLibrary.summary.glossaryTerms]].concat(learningLibrary.summary.constructedResponseWorkshops ? [['Response workshops', learningLibrary.summary.constructedResponseWorkshops]] : [])).map(([label, value]) => <div key={label} className="rounded-xl border border-slate-200 bg-white p-3 shadow-sm"><p className="text-2xl font-black text-slate-900">{Number(value || 0).toLocaleString()}</p><p className="text-xs font-bold text-slate-600">{label}</p></div>)}
+                    {([['Chapters', learningLibrary.summary.chapters], ['Sections', learningLibrary.summary.sections], ['Knowledge checks', learningLibrary.summary.knowledgeChecks], ['Flashcards', learningLibrary.summary.flashcards], ['Memory aids', learningLibrary.summary.memoryAids], ['Diagrams', learningLibrary.summary.nativeDiagramPayloads || learningLibrary.summary.diagrams], ['Glossary terms', learningLibrary.summary.glossaryTerms]].concat(learningLibrary.summary.practiceRoutes ? [['Practice routes', learningLibrary.summary.practiceRoutes]] : []).concat(learningLibrary.summary.studyRoutes ? [['Guided routes', learningLibrary.summary.studyRoutes]] : []).concat(learningLibrary.summary.foundationalDocuments ? [['Foundational docs', learningLibrary.summary.foundationalDocuments]] : []).concat(learningLibrary.summary.constructedResponseWorkshops ? [['Response workshops', learningLibrary.summary.constructedResponseWorkshops]] : [])).map(([label, value]) => <div key={label} className="rounded-xl border border-slate-200 bg-white p-3 shadow-sm"><p className="text-2xl font-black text-slate-900">{Number(value || 0).toLocaleString()}</p><p className="text-xs font-bold text-slate-600">{label}</p></div>)}
                   </div>
                   <div className="grid gap-3 rounded-xl border border-slate-300 bg-white p-4 sm:grid-cols-[1fr_260px]">
                     <label className="text-sm font-bold text-slate-800">Search chapters and section headings<input value={librarySearch} onChange={(event) => setLibrarySearch(event.target.value)} type="search" className="mt-1 w-full rounded-lg border border-slate-400 px-3 py-2 font-normal focus:ring-2 focus:ring-indigo-600" placeholder="Try evidence, fractions, revision…" /></label>
@@ -6581,6 +6642,99 @@ function TestPrepHub(props) {
                   </div>
                   {!visible.length && <p className="rounded-xl border border-slate-300 bg-white p-6 text-center text-sm text-slate-700">No chapters match those filters.</p>}
                 </>;
+              })()}
+
+              {learningLibrary && !libraryChapterId && libraryMode === 'study-routes' && (() => {
+                const routes = Array.isArray(learningLibrary.studyRoutes) ? learningLibrary.studyRoutes : [];
+                const routing = learningLibrary.practiceRouting || {};
+                return <section className="space-y-4" aria-labelledby="library-study-routes-title">
+                  <div className="rounded-2xl border border-violet-300 bg-violet-50 p-5">
+                    <p className="text-xs font-black uppercase tracking-wide text-violet-800">Guided practice map</p>
+                    <h4 id="library-study-routes-title" className="mt-1 text-xl font-black text-slate-900">Choose a study route</h4>
+                    <p className="mt-2 text-sm leading-relaxed text-violet-950">These routes connect the learning library to the pack’s questions. They are independent practice paths, not official forms, scaled scores, or readiness predictions.</p>
+                    <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                      <div className="rounded-xl border border-violet-200 bg-white p-3"><p className="text-2xl font-black text-slate-900">{Number(routing.sectionCount || 0).toLocaleString()}</p><p className="text-xs font-bold text-slate-600">Section routes</p></div>
+                      <div className="rounded-xl border border-violet-200 bg-white p-3"><p className="text-2xl font-black text-slate-900">{Number(routing.uniqueItemCount || 0).toLocaleString()}</p><p className="text-xs font-bold text-slate-600">Routed questions</p></div>
+                      <div className="rounded-xl border border-violet-200 bg-white p-3"><p className="text-2xl font-black text-slate-900">{routes.length.toLocaleString()}</p><p className="text-xs font-bold text-slate-600">Cumulative routes</p></div>
+                    </div>
+                  </div>
+                  {routes.length > 0 ? <div className="grid gap-4 md:grid-cols-2">
+                    {routes.map((route) => <article key={route.id} className="flex flex-col rounded-2xl border border-violet-300 bg-white p-5 shadow-sm">
+                      <p className="text-xs font-black uppercase tracking-wide text-violet-800">{String(route.mode || 'guided practice').replace(/-/g, ' ')}</p>
+                      <h5 className="mt-1 text-lg font-black text-slate-900">{route.title}</h5>
+                      <p className="mt-2 flex-1 text-sm leading-relaxed text-slate-700">{route.learnerPurpose}</p>
+                      <p className="mt-3 text-xs font-bold text-violet-900">{Array.isArray(route.itemIds) ? route.itemIds.length : 0} linked questions{route.estimatedMinutes ? ' · about ' + route.estimatedMinutes + ' minutes' : ''}</p>
+                      {Array.isArray(route.stepOrder) && route.stepOrder.length > 0 && <ol className="mt-3 list-decimal space-y-1 pl-5 text-sm text-slate-700">{route.stepOrder.map((step) => <li key={step}>{step}</li>)}</ol>}
+                      <button type="button" disabled={!Array.isArray(route.itemIds) || !route.itemIds.length} onClick={() => startStudyRoute(route)} className="mt-4 rounded-xl bg-violet-800 px-4 py-3 text-sm font-black text-white hover:bg-violet-900 disabled:cursor-not-allowed disabled:opacity-50 focus:ring-2 focus:ring-violet-700 focus:ring-offset-2">Start route</button>
+                    </article>)}
+                  </div> : <p className="rounded-xl border border-slate-300 bg-white p-6 text-center text-sm text-slate-700">This library does not currently include any guided study routes.</p>}
+                </section>;
+              })()}
+
+              {learningLibrary && !libraryChapterId && libraryMode === 'foundational-documents' && (() => {
+                const routes = Array.isArray(learningLibrary.foundationalDocumentRoutes) ? learningLibrary.foundationalDocumentRoutes : [];
+                const query = librarySearch.trim().toLowerCase();
+                const visible = routes.filter((route) => !query || [route.title, route.documentId, (route.topicIds || []).join(' '), route.studyMove, route.accessNote].join(' ').toLowerCase().includes(query));
+                const linkedQuestions = visible.reduce((sum, route) => sum + Number(route.itemCount || 0), 0);
+                const linkedWorkshops = visible.reduce((sum, route) => sum + (Array.isArray(route.workshopIds) ? route.workshopIds.length : 0), 0);
+                return <section className="space-y-4" aria-labelledby="foundational-document-routes-title">
+                  <div className="rounded-2xl border border-emerald-300 bg-emerald-50 p-5">
+                    <p className="text-xs font-black uppercase tracking-wide text-emerald-800">Public source map</p>
+                    <h4 id="foundational-document-routes-title" className="mt-1 text-xl font-black text-slate-900">Foundational-document study routes</h4>
+                    <p className="mt-2 max-w-4xl text-sm leading-relaxed text-emerald-950">Use each public document title as a retrieval cue, then practice the linked topics and reasoning moves. These routes contain original practice links and public metadata only; they do not reproduce official document text, excerpts, prompts, or rubrics.</p>
+                    <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                      <div className="rounded-xl border border-emerald-200 bg-white p-3"><p className="text-2xl font-black text-slate-900">{visible.length.toLocaleString()}</p><p className="text-xs font-bold text-slate-600">Documents shown</p></div>
+                      <div className="rounded-xl border border-emerald-200 bg-white p-3"><p className="text-2xl font-black text-slate-900">{linkedQuestions.toLocaleString()}</p><p className="text-xs font-bold text-slate-600">Linked questions</p></div>
+                      <div className="rounded-xl border border-emerald-200 bg-white p-3"><p className="text-2xl font-black text-slate-900">{linkedWorkshops.toLocaleString()}</p><p className="text-xs font-bold text-slate-600">Workshop links</p></div>
+                    </div>
+                  </div>
+                  <label className="block rounded-xl border border-slate-300 bg-white p-4 text-sm font-bold text-slate-800">Search document titles and topics<input value={librarySearch} onChange={(event) => setLibrarySearch(event.target.value)} type="search" className="mt-1 w-full rounded-lg border border-slate-400 px-3 py-2 font-normal focus:ring-2 focus:ring-emerald-600" placeholder="Try Constitution, Federalist, rights…" /></label>
+                  <p className="text-sm font-bold text-slate-700" role="status">Showing {visible.length} of {routes.length} foundational-document routes</p>
+                  {visible.length ? <div className="grid gap-4 md:grid-cols-2">
+                    {visible.map((route) => {
+                      const sliceCounts = route.practiceSliceCounts || {};
+                      const routeProgress = testPrepFoundationalDocumentRouteProgress(packAttempts, route);
+                      const routeProgressLabel = routeProgress.status === 'complete' ? 'Coverage complete' : routeProgress.status === 'in-progress' ? 'In progress' : 'Not started yet';
+                      const routeProgressScore = routeProgress.latestRouteScore == null ? '' : ' · last route score ' + routeProgress.latestRouteScore + '%';
+                      const routeSlices = [
+                        { id: 'foundation-slice', label: 'Foundation', itemIds: route.foundationItemIds },
+                        { id: 'depth-slice', label: 'Depth', itemIds: route.depthItemIds },
+                        { id: 'transfer-slice', label: 'Transfer', itemIds: route.transferItemIds },
+                      ].map((slice) => Object.assign({}, slice, { itemIds: Array.isArray(slice.itemIds) ? slice.itemIds : [] })).filter((slice) => slice.itemIds.length);
+                      return <article key={route.id} data-test-prep-foundational-route-id={route.id} className="flex flex-col rounded-2xl border border-emerald-300 bg-white p-5 shadow-sm">
+                        <div className="flex items-start justify-between gap-3"><div><p className="text-xs font-black uppercase tracking-wide text-emerald-800">Public foundational document · {route.academicYearReference || 'current framework'}</p><h5 className="mt-1 text-lg font-black text-slate-900">{route.title}</h5></div><span className="rounded-full border border-emerald-300 bg-emerald-50 px-2 py-1 text-xs font-black text-emerald-900">Source reviewed</span></div>
+                        <p className="mt-3 text-sm font-bold text-slate-700">{(route.topicIds || []).length} topic links · {(route.sectionIds || []).length} lesson sections · {(route.workshopIds || []).length} workshop links</p>
+                        <p className="mt-2 text-sm leading-relaxed text-slate-800">{route.studyMove}</p>
+                        <p className="mt-3 text-xs font-bold text-emerald-900">{Number(route.itemCount || 0).toLocaleString()} linked questions · {Number(sliceCounts['foundation-slice'] || 0).toLocaleString()} foundation · {Number(sliceCounts['depth-slice'] || 0).toLocaleString()} depth · {Number(sliceCounts['transfer-slice'] || 0).toLocaleString()} transfer</p>
+                        <div className="mt-3 flex flex-wrap gap-1">{(route.topicIds || []).slice(0, 10).map((topicId) => <span key={topicId} className="rounded-full bg-slate-100 px-2 py-1 text-xs font-bold text-slate-700">Topic {topicId}</span>)}{(route.topicIds || []).length > 10 && <span className="rounded-full bg-slate-100 px-2 py-1 text-xs font-bold text-slate-700">+{route.topicIds.length - 10} more</span>}</div>
+                        <div data-test-prep-foundational-route-progress={routeProgress.status} className="mt-4 rounded-lg border border-emerald-200 bg-emerald-50 p-3"><div className="flex items-center justify-between gap-3 text-xs"><span className="font-black uppercase tracking-wide text-emerald-900">Route progress</span><strong className="text-emerald-950">{routeProgressLabel}</strong></div><div className="mt-2 h-2 overflow-hidden rounded-full bg-emerald-100" role="progressbar" aria-label={route.title + ' route progress'} aria-valuemin={0} aria-valuemax={100} aria-valuenow={routeProgress.attemptedPercent}><div className="h-full rounded-full bg-emerald-700" style={{ width: routeProgress.attemptedPercent + '%' }} /></div><p className="mt-2 text-xs font-bold text-emerald-950">{routeProgress.attemptedItemCount} of {routeProgress.totalItemCount} linked questions practiced{routeProgressScore}</p></div>
+                        <p className="mt-4 flex-1 rounded-lg bg-slate-50 p-3 text-xs leading-relaxed text-slate-700">{route.accessNote}</p>
+                        <div className="mt-4 flex flex-wrap items-center gap-3"><div className="flex flex-wrap gap-2"><button type="button" disabled={!Array.isArray(route.itemIds) || !route.itemIds.length} onClick={() => startStudyRoute({ ...route, title: 'Foundational document: ' + route.title })} className="rounded-xl bg-emerald-700 px-4 py-3 text-sm font-black text-white hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-50 focus:ring-2 focus:ring-emerald-700 focus:ring-offset-2">Start document route</button>{routeSlices.map((slice) => <button key={slice.id} type="button" onClick={() => startStudyRoute({ ...route, title: 'Foundational document: ' + route.title + ' · ' + slice.label + ' set', itemIds: slice.itemIds })} className="rounded-xl border border-emerald-700 bg-white px-3 py-2 text-xs font-black text-emerald-900 hover:bg-emerald-50 focus:ring-2 focus:ring-emerald-700 focus:ring-offset-2">Start {slice.label.toLowerCase()} set <span className="font-bold">({slice.itemIds.length})</span></button>)}</div><ul className="flex flex-wrap gap-3 text-xs">{(route.references || []).map((reference) => { const source = testPrepDescribeReference(reference); return <li key={reference}><a href={reference} target="_blank" rel="noreferrer" className="font-bold text-indigo-800 underline">{source.title}</a></li>; })}</ul></div>
+                      </article>;
+                    })}
+                  </div> : <p className="rounded-xl border border-slate-300 bg-white p-6 text-center text-sm text-slate-700">No foundational-document routes match that search.</p>}
+                </section>;
+              })()}
+
+              {learningLibrary && !libraryChapterId && libraryMode === 'quick-reference' && (() => {
+                const references = Array.isArray(learningLibrary.quickReference) ? learningLibrary.quickReference : [];
+                return <section className="space-y-4" aria-labelledby="library-quick-reference-title">
+                  <div className="rounded-2xl border border-amber-300 bg-amber-50 p-5">
+                    <p className="text-xs font-black uppercase tracking-wide text-amber-800">Original internal study aid</p>
+                    <h4 id="library-quick-reference-title" className="mt-1 text-xl font-black text-slate-900">AP Statistics quick reference</h4>
+                    <p className="mt-2 text-sm leading-relaxed text-amber-950">Use these unit cards to retrieve method choices, relationships, and interpretation boundaries before practicing. This is not the official AP exam reference sheet and is not a substitute for current course materials.</p>
+                  </div>
+                  {references.length > 0 ? <div className="grid gap-4 lg:grid-cols-2">
+                    {references.map((reference) => <article key={reference.id} className="space-y-4 rounded-2xl border border-amber-300 bg-white p-5 shadow-sm">
+                      <div><p className="text-xs font-black uppercase tracking-wide text-amber-800">{reference.domainId || 'AP Statistics'}</p><h5 className="mt-1 text-lg font-black text-slate-900">{reference.title}</h5><p className="mt-2 text-sm leading-relaxed text-slate-700">{reference.purpose}</p></div>
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        <section><h6 className="font-black text-slate-900">Before calculating</h6><ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-700">{(reference.checklist || []).map((entry) => <li key={entry}>{entry}</li>)}</ul></section>
+                        <section><h6 className="font-black text-slate-900">Relationships</h6><ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-700">{(reference.formulas || []).map((entry) => <li key={entry}>{entry}</li>)}</ul></section>
+                      </div>
+                      <details className="rounded-xl border border-slate-200 bg-slate-50 p-3"><summary className="cursor-pointer font-black text-slate-900 focus:ring-2 focus:ring-amber-700">Decision rules and cautions</summary><div className="mt-3 grid gap-4 sm:grid-cols-2"><div><h6 className="font-black text-emerald-900">Choose or interpret</h6><ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-700">{(reference.decisionRules || []).map((entry) => <li key={entry}>{entry}</li>)}</ul></div><div><h6 className="font-black text-rose-900">Watch for</h6><ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-700">{(reference.cautions || []).map((entry) => <li key={entry}>{entry}</li>)}</ul></div></div></details>
+                    </article>)}
+                  </div> : <p className="rounded-xl border border-slate-300 bg-white p-6 text-center text-sm text-slate-700">This library does not currently include a quick-reference layer.</p>}
+                </section>;
               })()}
 
               {learningLibrary && !libraryChapterId && libraryMode === 'glossary' && Array.isArray(learningLibrary.glossary) && learningLibrary.glossary.length > 0 && <TestPrepNativeGlossaryLibrary
@@ -6764,6 +6918,13 @@ function TestPrepHub(props) {
                       const completeId = String(section.runtimeSectionId || section.id || '');
                       const complete = nativeChapterProgress[completeId] === true;
                       const caseRecord = section.expandableCase;
+                      const sectionRoute = section.practiceRoute && Array.isArray(section.practiceRoute.itemIds) && section.practiceRoute.itemIds.length ? section.practiceRoute : null;
+                      const objectiveCatalog = selectedPack && selectedPack.blueprint && Array.isArray(selectedPack.blueprint.learningObjectiveCatalog) ? selectedPack.blueprint.learningObjectiveCatalog : [];
+                      const topicDrills = sectionRoute && Array.isArray(section.topicCoverage) ? section.topicCoverage.map((topicId) => {
+                        const objective = objectiveCatalog.find((entry) => entry.id === topicId + '.A');
+                        const itemIds = sectionRoute.topicItemIds && Array.isArray(sectionRoute.topicItemIds[topicId]) ? sectionRoute.topicItemIds[topicId] : [];
+                        return { topicId, label: objective && objective.label ? objective.label : topicId, itemIds };
+                      }).filter((drill) => drill.itemIds.length > 0) : [];
                       return <section id={sectionDomId} tabIndex={-1} key={section.id} className="rounded-xl border border-slate-300 bg-slate-50 p-4 focus:ring-2 focus:ring-indigo-600" aria-labelledby={sectionDomId + '-title'}>
                         <p className="text-xs font-black uppercase tracking-wide text-indigo-700">Lesson {index + 1}</p>
                         <h6 id={sectionDomId + '-title'} className="mt-1 text-base font-black text-slate-900">{section.heading}</h6>
@@ -6781,6 +6942,8 @@ function TestPrepHub(props) {
                           </div>
                         </details>}
                         {(section.keyTerms || []).length > 0 && <div className="mt-3 flex flex-wrap gap-2" aria-label={'Key terms for ' + section.heading}>{section.keyTerms.map((term) => <span key={term} className="rounded-full border border-indigo-200 bg-white px-2 py-1 text-xs font-bold text-indigo-900">{term}</span>)}</div>}
+                        {sectionRoute && <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-violet-300 bg-violet-50 p-4" aria-label={'Practice route for ' + section.heading}><div><p className="text-xs font-black uppercase tracking-wide text-violet-800">Section practice route</p><p className="mt-1 text-sm font-bold text-violet-950">{sectionRoute.foundationItemCount || 0} foundation &middot; {sectionRoute.depthItemCount || 0} depth &middot; {sectionRoute.transferItemCount || 0} transfer questions</p><p className="mt-1 text-xs text-violet-900">Use the same target, method, conditions, and conclusion move in three levels of context.</p></div><button type="button" onClick={() => startStudyRoute({ title: section.heading + ' - section practice', itemIds: sectionRoute.itemIds })} className="rounded-lg bg-violet-800 px-4 py-2 text-sm font-black text-white hover:bg-violet-900 focus:ring-2 focus:ring-violet-700 focus:ring-offset-2">Start section practice</button></div>}
+                        {topicDrills.length > 0 && <details className="mt-3 rounded-xl border border-violet-200 bg-white p-3"><summary className="cursor-pointer font-black text-violet-950 focus:ring-2 focus:ring-violet-700">Open topic drills ({topicDrills.length})</summary><div className="mt-3 grid gap-2">{topicDrills.map((drill) => <div key={drill.topicId} className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-slate-200 bg-slate-50 p-3"><div><p className="text-sm font-black text-slate-900">{drill.topicId} - {drill.label}</p><p className="text-xs text-slate-600">{drill.itemIds.length} linked questions</p></div><button type="button" onClick={() => startStudyRoute({ title: drill.topicId + ' - topic drill', itemIds: drill.itemIds })} className="rounded-lg border border-violet-700 bg-white px-3 py-2 text-xs font-black text-violet-950 hover:bg-violet-50 focus:ring-2 focus:ring-violet-700">Practice topic</button></div>)}</div></details>}
                         <div className="mt-4 flex justify-end"><button type="button" aria-pressed={complete} onClick={() => toggleNativeChapterSection(section)} className={'rounded-lg border px-3 py-2 text-sm font-black focus:ring-2 focus:ring-indigo-600 ' + (complete ? 'border-emerald-600 bg-emerald-700 text-white' : 'border-indigo-400 bg-white text-indigo-900')}>{complete ? 'Section complete \u2713' : 'Mark section complete'}</button></div>
                       </section>;
                     })}

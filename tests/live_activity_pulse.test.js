@@ -2,6 +2,7 @@ import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { loadSessionSummaryApi } from './session_summary_test_utils.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const appSource = fs.readFileSync(path.join(ROOT, 'AlloFlowANTI.txt'), 'utf8');
@@ -806,13 +807,7 @@ describe('existing activity owners emit the shared contract', () => {
 });
 
 describe('device-local roster history refinement', () => {
-  const helperStart = appSource.indexOf('const normalizeRosterSessionCodename');
-  const helperEnd = appSource.indexOf('const generateSessionCode', helperStart);
-  // eslint-disable-next-line no-new-func
-  const helpers = new Function(
-    appSource.slice(helperStart, helperEnd)
-      + '\nreturn { buildRosterSessionSummary, summarizeRosterLiveActivities };'
-  )();
+  const helpers = loadSessionSummaryApi();
 
   it('persists aggregate activity evidence and codename-matched counts without UIDs or raw work', () => {
     const summary = helpers.buildRosterSessionSummary({

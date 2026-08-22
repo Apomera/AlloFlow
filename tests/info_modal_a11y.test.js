@@ -34,9 +34,11 @@ describe('Info modal accessibility', () => {
   it('names the dialog purpose and locks background scrolling while open', () => {
     expect(source).toContain('aria-describedby="info-modal-description"');
     expect(source).toContain('id="info-modal-description" className="sr-only"');
-    expect(source).toContain("const previousBodyOverflow = body?.style.overflow || ''");
-    expect(source).toContain("if (body) body.style.overflow = 'hidden'");
-    expect(source).toContain('if (body) body.style.overflow = previousBodyOverflow');
+    expect(source).toContain('window.__alloScrollLockState');
+    expect(source).toContain('if (body && ++scrollLock.count === 1)');
+    expect(source).toContain("body.style.overflow = 'hidden'");
+    expect(source).toContain('scrollLock.count = Math.max(0, scrollLock.count - 1)');
+    expect(source).toContain('if (scrollLock.count === 0) body.style.overflow = scrollLock.prev');
   });
 
   it('keeps collapsed disclosure content out of the focus trap', () => {

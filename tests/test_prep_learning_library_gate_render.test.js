@@ -84,6 +84,10 @@ function makeFixture(suffix, title = 'Gate Catalog') {
       sourceReviewedFlashcards: 0,
       sourceReviewedMemoryAids: 0,
       editorialReviewedSourcePendingMemoryAids: 0,
+      foundationalDocuments: 1,
+      sourceReviewedFoundationalDocuments: 1,
+      foundationalDocumentRoutes: 1,
+      sourceReviewedFoundationalDocumentRoutes: 1,
     },
     chapters: [{
       id: id + '-chapter',
@@ -94,6 +98,26 @@ function makeFixture(suffix, title = 'Gate Catalog') {
       objectives: [],
       sections: [],
       knowledgeChecks: [],
+    }],
+    foundationalDocumentRoutes: [{
+      id: id + '-document-route',
+      documentId: id + '-document',
+      title: 'Public Foundation Document ' + suffix,
+      academicYearReference: '2026-27',
+      topicIds: ['hazard-awareness'],
+      chapterIds: [id + '-chapter'],
+      sectionIds: [id + '-chapter-section'],
+      workshopIds: [],
+      itemIds: pack.items.map((item) => item.id),
+      foundationItemIds: pack.items.slice(0, 3).map((item) => item.id),
+      depthItemIds: pack.items.slice(3, 4).map((item) => item.id),
+      transferItemIds: pack.items.slice(4).map((item) => item.id),
+      itemCount: pack.items.length,
+      practiceSliceCounts: { 'foundation-slice': 3, 'depth-slice': 1, 'transfer-slice': 1 },
+      studyMove: 'Use this public document title as a retrieval cue, then connect it to the linked practice topics.',
+      accessNote: 'This route contains public metadata and original practice links only; it does not reproduce official document text.',
+      references: ['https://example.com/public-foundation-document'],
+      reviewStatus: 'source-reviewed-editorial-pass',
     }],
     skills: [],
     flashcards: [],
@@ -381,5 +405,89 @@ describe('Test Prep interaction-gated learning library', () => {
     await waitUntil(() => host.textContent.includes('Retried After Cancel Catalog'), 'Expected the next library action to retry after cancellation.');
     expect(libraryRequestCount).toBe(2);
     expect(libraryRequests(requestedUrls, fixture)).toHaveLength(2);
+  }, 30_000);
+
+  it('surfaces foundational-document routes and launches their linked practice set', async () => {
+    const fixture = makeFixture('document-routes', 'Document Route Catalog');
+    const requestedUrls = [];
+    setFetch(vi.fn(async (url) => {
+      requestedUrls.push(String(url));
+      if (String(url).includes('pack_manifest.json')) return response(fixture.manifest);
+      if (String(url).includes(fixture.entry.learningLibraryUrl.replace('./', ''))) return responseBytes(fixture.libraryBytes);
+      return response({}, 404);
+    }));
+
+    await mount();
+    await openFixture(fixture);
+    await clickTab('library');
+    await waitUntil(() => host.textContent.includes('Document Route Catalog'), 'Expected the document-route library to load.');
+    const modeButton = findButton('Foundational documents');
+    expect(modeButton).toBeTruthy();
+    await act(async () => { modeButton.click(); });
+    expect(host.textContent).toContain('Foundational-document study routes');
+    expect(host.textContent).toContain('Public Foundation Document document-routes');
+    expect(host.querySelector('[data-test-prep-foundational-route-id="learning-library-gate-document-routes-document-route"]')).toBeTruthy();
+    expect(host.querySelector('[data-test-prep-foundational-route-progress="not-started"]')).toBeTruthy();
+    expect(host.textContent).toContain('Not started yet');
+    expect(findButton('Start foundation set')).toBeTruthy();
+    expect(findButton('Start depth set')).toBeTruthy();
+    expect(findButton('Start transfer set')).toBeTruthy();
+
+    await act(async () => { findButton('Start foundation set').click(); });
+    await waitUntil(() => host.textContent.includes('Question 1 of 3'), 'Expected the foundation slice to open a focused practice set.');
+    const foundationSession = JSON.parse(localStorage.getItem('alloflow_test_prep_session_v1'));
+    expect(foundationSession.itemIds).toEqual(fixture.library.foundationalDocumentRoutes[0].foundationItemIds);
+    await clickTab('library');
+    await waitUntil(() => host.textContent.includes('Foundational-document study routes'), 'Expected the document route catalog to return after slice practice.');
+
+    const startButton = findButton('Start document route');
+    expect(startButton).toBeTruthy();
+    await act(async () => { startButton.click(); });
+    await waitUntil(() => host.textContent.includes('Question 1 of 5'), 'Expected the document route to open its linked practice set.');
+    const session = JSON.parse(localStorage.getItem('alloflow_test_prep_session_v1'));
+    expect(session).toMatchObject({ packId: fixture.pack.id, mode: 'custom' });
+    expect(session.label).toContain('Foundational document: Public Foundation Document document-routes');
+    expect(session.itemIds).toEqual(fixture.pack.items.map((item) => item.id));
+    expect(requestedUrls.filter((url) => url.includes(fixture.entry.learningLibraryUrl.replace('./', '')))).toHaveLength(1);
+  }, 30_000);
+
+  it('shows route coverage and the latest route score from current practice history', async () => {
+    const fixture = makeFixture('document-progress', 'Document Progress Catalog');
+    const route = fixture.library.foundationalDocumentRoutes[0];
+    const identity = Hub.resolvePackContentIdentity(fixture.pack, fixture.entry);
+    const itemIds = fixture.pack.items.map((item) => item.id);
+    localStorage.setItem('alloflow_test_prep_progress_v1', JSON.stringify({
+      attempts: [{
+        id: 'document-route-attempt',
+        packId: fixture.pack.id,
+        ...identity,
+        completedAt: 1_700_000_000_000,
+        correct: 3,
+        total: itemIds.length,
+        percent: 60,
+        mode: 'custom',
+        label: 'Foundational document: ' + route.title,
+        itemIds,
+        itemResults: Object.fromEntries(itemIds.map((itemId, index) => [itemId, { correct: index < 3, confidence: 'unrated' }])),
+      }],
+    }));
+    const requestedUrls = [];
+    setFetch(vi.fn(async (url) => {
+      requestedUrls.push(String(url));
+      if (String(url).includes('pack_manifest.json')) return response(fixture.manifest);
+      if (String(url).includes(fixture.entry.learningLibraryUrl.replace('./', ''))) return responseBytes(fixture.libraryBytes);
+      return response({}, 404);
+    }));
+
+    await mount();
+    await openFixture(fixture);
+    await clickTab('library');
+    await waitUntil(() => host.textContent.includes('Document Progress Catalog'), 'Expected the document-progress library to load.');
+    await act(async () => { findButton('Foundational documents').click(); });
+    expect(host.querySelector('[data-test-prep-foundational-route-progress="complete"]')).toBeTruthy();
+    expect(host.textContent).toContain('Coverage complete');
+    expect(host.textContent).toContain('5 of 5 linked questions practiced');
+    expect(host.textContent).toContain('last route score 60%');
+    expect(requestedUrls.filter((url) => url.includes(fixture.entry.learningLibraryUrl.replace('./', '')))).toHaveLength(1);
   }, 30_000);
 });

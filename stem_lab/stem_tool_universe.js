@@ -1267,6 +1267,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
 
 
 
+          function readableTextOn(hexColor) {
+
+            var hex = String(hexColor || '').replace('#', '');
+
+            if (hex.length !== 6) return '#ffffff';
+
+            var channels = [0, 2, 4].map(function (offset) {
+
+              var value = parseInt(hex.slice(offset, offset + 2), 16) / 255;
+
+              return value <= 0.04045 ? value / 12.92 : Math.pow((value + 0.055) / 1.055, 2.4);
+
+            });
+
+            var luminance = (0.2126 * channels[0]) + (0.7152 * channels[1]) + (0.0722 * channels[2]);
+
+            return luminance > 0.179 ? '#000000' : '#ffffff';
+
+          }
+
+
+
           function getCurrentEpoch(t) {
 
             for (var i = EPOCHS.length - 1; i >= 0; i--) { if (t >= EPOCHS[i].t) return EPOCHS[i]; }
@@ -2993,9 +3015,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
 
                     onClick: function () { upd("cosmicTime", ep.t); var cv = document.querySelector('[data-universe-canvas]'); if (cv) cv.dataset.time = String(ep.t); awardStemXP('universe_explore', 5, 'Visited epoch: ' + ep.name); },
 
-                    className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all hover:scale-105 " + (isCurrent ? "text-white shadow-sm" : "bg-white text-slate-600 border border-slate-400 hover:border-violet-600"),
+                    className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all hover:scale-105 " + (isCurrent ? "shadow-sm" : "bg-white text-slate-600 border border-slate-400 hover:border-violet-600"),
 
-                    style: isCurrent ? { backgroundColor: ep.border } : {}
+                    style: isCurrent ? { backgroundColor: ep.border, color: readableTextOn(ep.border) } : {}
 
                   }, ep.emoji + " " + ep.name);
 

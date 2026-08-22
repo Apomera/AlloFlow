@@ -3764,7 +3764,7 @@ const d = labToolData.rocks || {};
 
               // Rock cycle legend
 
-              React.createElement("div", { className: "flex justify-center gap-3 mt-3" },
+              React.createElement("div", { className: "flex flex-wrap justify-center gap-3 mt-3" },
 
                 Object.values(ROCK_TYPES).map(function (rt) {
 
@@ -7564,7 +7564,7 @@ const d = labToolData.rockCycle || {};
               React.createElement("p", { className: "text-[11px] text-slate-700 mb-2" },
                 __alloT('stem.rocks.processes_intro', "Every pathway is real. The first three are the familiar loop; the last three are marked direct branch and skip a step entirely.")),
 
-              React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-3 gap-2" },
+              React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-3 gap-2" },
 
                 PROCESSES.map(function (proc, i) {
 
@@ -7585,11 +7585,11 @@ const d = labToolData.rockCycle || {};
                     "aria-pressed": !!isActive,
                     "aria-label": processFromTo + " by " + proc.label + (isBranch ? " — a direct branch" : ""),
 
-                    className: "p-2 rounded-lg text-left border transition-colors " + (isActive ? 'bg-orange-100 border-orange-500 shadow-md' : 'bg-slate-50 border-slate-200 hover:bg-orange-50 active:scale-[0.97]')
+                    className: "min-w-0 p-2 rounded-lg text-left border transition-colors " + (isActive ? 'bg-orange-100 border-orange-500 shadow-md' : 'bg-slate-50 border-slate-200 hover:bg-orange-50 active:scale-[0.97]')
 
                   },
 
-                    React.createElement("p", { className: "text-sm font-bold " + (isActive ? 'text-orange-800' : 'text-slate-700') }, proc.emoji + " " + proc.label),
+                    React.createElement("p", { className: "text-sm font-bold break-words " + (isActive ? 'text-orange-800' : 'text-slate-700') }, proc.emoji + " " + proc.label),
 
                     // Show the two rock families rather than only naming them, so
                     // the pathway reads at a glance and matches the textures the
@@ -7600,7 +7600,7 @@ const d = labToolData.rockCycle || {};
                       rcFamilyChip(h, 'pt' + i, proc.to, 22)
                     ),
 
-                    React.createElement("p", { className: "text-[11px] text-slate-700" }, processFromTo),
+                    React.createElement("p", { className: "text-[11px] text-slate-700 break-words" }, processFromTo),
 
                     isBranch && React.createElement("p", { className: "text-[10px] font-bold text-violet-800 mt-0.5" }, __alloT('stem.rocks.process_direct_branch', "direct branch"))
 

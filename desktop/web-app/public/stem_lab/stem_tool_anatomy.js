@@ -113,7 +113,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
       '.anatomy-challenge-chip{height:22px;min-width:22px;display:inline-flex;align-items:center;justify-content:center;border-radius:6px;border:1px solid rgba(245,158,11,.26);background:#fff7ed;font-size:12px;}',
       '.anatomy-challenge-chip[data-done="false"]{opacity:.32;filter:grayscale(1);background:#f8fafc;border-color:#e2e8f0;}',
       '.anatomy-tab-strip,.anatomy-system-rail,.anatomy-layer-bar,.anatomy-controls-bar{border-radius:8px;border:1px solid rgba(15,23,42,.12);background:rgba(248,250,252,.86);padding:8px;}',
-      '.anatomy-tab-strip{position:sticky;top:0;z-index:3;display:flex!important;flex-wrap:nowrap!important;align-items:center;overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain;scroll-snap-type:x proximity;scroll-padding-inline:8px;scrollbar-width:thin;box-shadow:0 10px 22px rgba(15,23,42,.06);}',
+      '.anatomy-tab-strip{position:sticky;top:0;z-index:3;display:flex!important;flex-wrap:nowrap!important;align-items:center;width:100%;max-width:100%;min-width:0;box-sizing:border-box;overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain;scroll-snap-type:x proximity;scroll-padding-inline:8px;scrollbar-width:thin;box-shadow:0 10px 22px rgba(15,23,42,.06);}',
       '.anatomy-tab-strip>button{flex:0 0 auto;white-space:nowrap;scroll-snap-align:start}',
       '.anatomy-tab-strip>span{flex:0 0 auto;white-space:nowrap}',
       '.anatomy-tab-strip button,.anatomy-system-rail button,.anatomy-layer-bar button,.anatomy-controls-bar button{border-radius:8px;}',
@@ -310,7 +310,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
       '.anatomy-body-badges{min-width:0;align-items:flex-end;}.anatomy-body-badges>span{border:1px solid rgba(148,163,184,.24);background:rgba(255,255,255,.82);}',
       '.anatomy-view-toggle{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));width:100%;min-width:248px;gap:3px;padding:3px;border-color:rgba(148,163,184,.5);border-radius:11px;background:#e9eef5;box-shadow:inset 0 1px 2px rgba(15,23,42,.08);}',
       '.anatomy-view-toggle[data-has-clinical-atlas="true"]{grid-template-columns:repeat(4,minmax(0,1fr));}',
-      '.anatomy-view-toggle button{min-width:0;min-height:31px;padding:5px 7px;border:1px solid transparent;border-radius:8px;font-size:9px;line-height:1.15;letter-spacing:.01em;transition:background .16s ease,color .16s ease,box-shadow .16s ease,transform .16s ease;}',
+      '.anatomy-view-toggle button{min-width:44px;min-height:44px;padding:5px 7px;border:1px solid transparent;border-radius:8px;font-size:9px;line-height:1.15;letter-spacing:.01em;transition:background .16s ease,color .16s ease,box-shadow .16s ease,transform .16s ease;}',
       '.anatomy-view-toggle button:hover{background:rgba(255,255,255,.72);color:#0f172a;}.anatomy-view-toggle button[aria-pressed="true"]{border-color:var(--anatomy-accent);background:linear-gradient(135deg,#0f172a,#1e293b);color:#fff;box-shadow:0 0 0 1px var(--anatomy-accent),0 4px 12px rgba(15,23,42,.18);}',
       '.anatomy-view-model-controls{display:grid;gap:6px;width:100%}.anatomy-view-control-row{display:grid;grid-template-columns:44px minmax(0,1fr);gap:7px;align-items:center}.anatomy-view-control-label{color:#64748b;font-size:9px;font-weight:950;letter-spacing:.1em;text-transform:uppercase}.anatomy-view-switcher{grid-template-columns:repeat(2,minmax(0,1fr));min-width:0}.anatomy-model-switcher{grid-template-columns:repeat(2,minmax(0,1fr));min-width:0}.anatomy-model-switcher[data-has-clinical-atlas="true"]{grid-template-columns:repeat(3,minmax(0,1fr))}',
       '.anatomy-canvas-toolbar{width:min(400px,100%);margin-bottom:8px;padding:5px 6px;border:1px solid rgba(148,163,184,.32);border-radius:11px;background:rgba(248,250,252,.9);}',
@@ -351,7 +351,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
       '@media (max-width:560px){.anatomy-visual-presets button{min-height:44px}.anatomy-display-summary,.anatomy-appearance-summary,.anatomy-model-source-summary{min-height:44px}.anatomy-layer-options button{min-height:42px}}',
       '@media (max-width:900px){.anatomy-workspace{grid-template-columns:1fr}.anatomy-body-shell{max-width:560px;margin-inline:auto;width:100%;}}',
       '@media (max-width:560px){.anatomy-tool-shell{padding-inline:0}.anatomy-topbar{border-radius:11px}.anatomy-body-shell{padding:12px 10px 14px;border-radius:16px}.anatomy-body-header{display:block}.anatomy-body-badges{align-items:stretch;margin-top:8px}.anatomy-view-control-row{grid-template-columns:40px minmax(0,1fr);gap:5px}.anatomy-view-toggle{min-width:0}.anatomy-view-toggle button{min-height:44px;padding:5px 3px}.anatomy-canvas-frame{border-radius:14px}.anatomy-canvas-toolbar{padding:6px}.anatomy-canvas-mode-chip{top:7px;left:7px}}',
-      '@media (max-width:720px){.anatomy-tab-strip{display:flex!important;flex-wrap:nowrap!important;overflow-x:auto;scroll-snap-type:x proximity;scrollbar-width:thin;padding-bottom:4px}.anatomy-tab-strip>button{flex:0 0 116px!important;width:auto!important;scroll-snap-align:start}.anatomy-tab-strip>span{flex:0 0 auto}}',
+      '@media (max-width:720px){.anatomy-tab-strip{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr));overflow-x:visible;scroll-snap-type:none;padding-bottom:8px}.anatomy-tab-strip>button{width:100%!important;min-width:0;scroll-snap-align:none}.anatomy-tab-strip>span{grid-column:1/-1;margin-left:0!important;text-align:right}}',
+      '@media (max-width:560px){.anatomy-tab-strip{grid-template-columns:repeat(2,minmax(0,1fr))}}',
       '@media (max-width:560px){.anatomy-mission-actions,.anatomy-challenge-strip{flex-wrap:nowrap;overflow-x:auto;scroll-snap-type:x proximity;padding-bottom:4px;scrollbar-width:thin}.anatomy-mission-actions button,.anatomy-challenge-strip>*{flex:0 0 auto;scroll-snap-align:start}.anatomy-mission-actions button{min-height:44px}.anatomy-metric-grid{display:flex;overflow-x:auto;gap:6px;padding-bottom:4px;scroll-snap-type:x proximity;scrollbar-width:thin}.anatomy-metric{flex:0 0 128px;scroll-snap-align:start}.anatomy-system-rail{display:flex;overflow-x:auto;scroll-snap-type:x proximity;scrollbar-width:thin;padding-bottom:4px}.anatomy-system-rail>button{flex:0 0 136px;scroll-snap-align:start}.anatomy-mission-text{overflow-wrap:anywhere}.anatomy-clinical-search{grid-template-columns:1fr}.anatomy-clinical-search input{min-height:44px;font-size:16px}.anatomy-clinical-search button{min-height:44px}.anatomy-clinical-search>span{grid-column:1}.anatomy-clinical-visual-key{font-size:11px}}',
       '@media (min-width:901px) and (max-height:900px){.anatomy-body-shell{position:relative;top:auto}}',
       '.anatomy-body-title-row{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}.anatomy-model-focus-toggle{min-height:32px;padding:5px 9px;border:1px solid #cbd5e1;border-radius:9px;background:#fff;color:#334155;font-size:9px;font-weight:900;white-space:nowrap;box-shadow:0 2px 7px rgba(15,23,42,.06);transition:background .16s ease,border-color .16s ease,color .16s ease,transform .16s ease}.anatomy-model-focus-toggle:hover{border-color:#7c3aed;background:#f5f3ff;color:#5b21b6}.anatomy-model-focus-toggle[aria-pressed="true"]{border-color:#7c3aed;background:#6d28d9;color:#fff;box-shadow:0 5px 14px rgba(109,40,217,.22)}',
@@ -10739,7 +10740,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
               onClick: function() { activateAnatomyTab('homeoHunt'); },
               className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'homeoHunt' ? 'bg-indigo-700 text-white border border-indigo-700' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-300 active:scale-[0.97]')
             }, t('stem.anatomy.homeostasis', '\uD83C\uDFE0 Homeostasis')),
-            h('span', { className: 'ml-auto text-[11px] font-bold text-amber-600 self-center' }, '\uD83C\uDFC5 ' + badgesEarnedCount + '/' + BADGE_DEFS.length + ' badges')
+          h('span', { className: 'ml-auto text-[11px] font-bold text-amber-800 self-center' }, '\uD83C\uDFC5 ' + badgesEarnedCount + '/' + BADGE_DEFS.length + ' badges')
           ),
 
           // Challenges Progress Card
@@ -10969,7 +10970,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                   }
                   if (e.key === 'Enter' && anatomySearchIndex >= 0) { e.preventDefault(); applyAnatomySearchResult(anatomyGlobalSearchResults[anatomySearchIndex]); }
                 },
-                className: 'w-full px-3 py-1.5 text-xs border border-slate-400 rounded-lg focus:ring-2 focus:ring-rose-300 outline-none'
+                className: 'w-full px-3 py-1.5 text-xs text-slate-900 bg-white border border-slate-400 rounded-lg focus:ring-2 focus:ring-rose-300 outline-none'
               }),
               anatomyGlobalSearchResults.length ? h('div', { id: 'anatomy-global-search-results', className: 'anatomy-global-search-results', role: 'listbox', 'aria-label': 'Anatomy search results' },
                 anatomyGlobalSearchResults.map(function(result, resultIndex) {
@@ -12895,7 +12896,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           // ── Clinical Cases section (advanced only) ──
           !focusedAnatomyWorkspace && complexity >= 3 ? h('div', { className: 'mt-4 bg-rose-50 rounded-xl border border-rose-200 p-3' },
             h('div', { className: 'flex items-center justify-between mb-2' },
-              h('p', { className: 'text-[11px] font-bold text-rose-600 uppercase tracking-wider' }, '\uD83E\uDE7A Clinical Cases (' + clinicalSolved + ' reviewed)'),
+              h('p', { className: 'text-[11px] font-bold text-rose-700 uppercase tracking-wider' }, '\uD83E\uDE7A Clinical Cases (' + clinicalSolved + ' reviewed)'),
               h('button', { onClick: function() { upd('_showClinical', !showClinical); },
                 'aria-expanded': showClinical, 'aria-controls': 'anatomy-clinical-cases',
                 className: 'text-[11px] font-bold px-2 py-0.5 rounded bg-rose-100 text-rose-800 hover:bg-rose-200 transition-all active:scale-[0.97]'
@@ -12967,7 +12968,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
               ),
               // Systems Explored
               h('div', { className: 'bg-white rounded-lg p-2 text-center border border-indigo-100' },
-                h('p', { className: 'text-lg font-black text-emerald-600 tracking-tight' }, String(Object.keys(systemsExplored).length) + '/10'),
+                h('p', { className: 'text-lg font-black text-emerald-700 tracking-tight' }, String(Object.keys(systemsExplored).length) + '/10'),
                 h('p', { className: 'text-[11px] text-slate-600 font-semibold' }, t('stem.anatomy.systems', 'Systems'))
               ),
               // Quiz Score

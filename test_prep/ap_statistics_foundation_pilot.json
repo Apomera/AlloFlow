@@ -22,7 +22,7 @@
   "examModes": [
     "fully-digital"
   ],
-  "contentReview": "Two hundred forty original source-aligned draft multiple-choice items distributed evenly across the five revised Fall 2026 units and all fifty-five public framework topics, with transfer depth beyond the two-item topic floor. Native study routes cover five chapters, fifteen section-linked practice routes, and four guided cumulative routes; nine constructed-response planning workshops are explicitly unscored. Independent AP Statistics subject-expert review, rights review, accessibility review, production validation, field testing, and psychometric calibration remain pending.",
+  "contentReview": "Two hundred forty original source-aligned draft multiple-choice items distributed evenly across the five revised Fall 2026 units and all fifty-five public framework topics, with transfer depth beyond the two-item topic floor. Native study routes cover five chapters, fifteen section-linked practice routes, four guided cumulative routes, and five original unit quick references; nine constructed-response planning workshops are explicitly unscored. Independent AP Statistics subject-expert review, rights review, accessibility review, production validation, field testing, and psychometric calibration remain pending.",
   "blueprintLabel": "AP Statistics Course and Exam Description, effective Fall 2026, Course Framework V.1",
   "blueprintEffective": "Fall 2026 CED; current official public reference reviewed 2026-08-20.",
   "officialBlueprintUrl": "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
@@ -25659,6 +25659,22 @@
     }
   ],
   "learningLibraryUrl": "./test_prep/ap_statistics_foundation_pilot_learning_library.json",
+  "learningRouteMode": "section-linked-item-routes",
+  "practiceRouting": {
+    "mode": "section-linked-item-routes",
+    "sectionCount": 15,
+    "itemCount": 240,
+    "uniqueItemCount": 240,
+    "foundationItemCount": 100,
+    "depthItemCount": 100,
+    "transferItemCount": 40,
+    "sectionsWithDepth": 15,
+    "sectionsWithTransfer": 15,
+    "topicDrillMapCount": 55
+  },
+  "practiceRouteCount": 15,
+  "studyRouteCount": 4,
+  "quickReferenceCount": 5,
   "nativeQaUrl": "./test_prep/ap_statistics_foundation_pilot_qa.json",
   "sourceCatalog": [
     {
@@ -25815,7 +25831,7 @@
         ]
       }
     ],
-    "pilotAlignment": "240-item text-first foundation sampler across all five revised units and all fifty-five public framework topic IDs; forty-eight five-item internal banks; transfer practice beyond the two-item topic floor; nine unscored constructed-response planning workshops; no official stimulus sets or FRQ scoring.",
+    "pilotAlignment": "240-item text-first foundation sampler across all five revised units and all fifty-five public framework topic IDs; forty-eight five-item internal banks; fifteen section-linked practice routes; four guided cumulative routes; transfer practice beyond the two-item topic floor; nine unscored constructed-response planning workshops; no official stimulus sets or FRQ scoring.",
     "lastVerifiedAt": "2026-08-20",
     "sourceDigest": "pending-build-generation",
     "skills": [

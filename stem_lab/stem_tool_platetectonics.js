@@ -554,7 +554,7 @@
 
     return h('div', { className: containerClass, style: containerStyle, role: 'region', 'aria-label': 'Interactive epicenter triangulation', 'data-plate-theme': isContrast ? 'contrast' : (isDark ? 'dark' : 'light') },
       h('div', { className: 'px-3 py-2 flex items-center gap-2 border-b ' + (isDark ? 'border-slate-800' : 'border-emerald-300'), style: headerStyle },
-        h('span', { className: 'px-2 py-0.5 rounded-full text-[10px] font-bold text-white', style: { background: '#059669' } }, '🎮 INTERACTIVE'),
+        h('span', { className: 'px-2 py-0.5 rounded-full text-[10px] font-bold text-white', style: { background: '#047857' } }, '🎮 INTERACTIVE'),
         h('span', { className: titleClass }, 'Epicenter Triangulation'),
         h('span', { className: subtitleClass }, '- drag the red star; three stations triangulate the epicenter from S-P times')
       ),
@@ -587,11 +587,11 @@
           // Toggles
           h('div', { className: 'rounded-lg p-2 border ' + (isDark ? 'bg-slate-900/60 border-slate-800 text-slate-200' : 'bg-white border-emerald-300') },
             h('label', { className: 'flex items-center gap-2 text-[11px] cursor-pointer' },
-              h('input', { type: 'checkbox', checked: s.showCircles, onChange: function(e) { update({ showCircles: e.target.checked }); } }),
+              h('input', { type: 'checkbox', checked: s.showCircles, onChange: function(e) { update({ showCircles: e.target.checked }); }, className: 'h-6 w-6 shrink-0' }),
               'Show distance circles'
             ),
             h('label', { className: 'flex items-center gap-2 text-[11px] cursor-pointer mt-1' },
-              h('input', { type: 'checkbox', checked: s.showFit, onChange: function(e) { update({ showFit: e.target.checked }); } }),
+              h('input', { type: 'checkbox', checked: s.showFit, onChange: function(e) { update({ showFit: e.target.checked }); }, className: 'h-6 w-6 shrink-0' }),
               'Show triangulated fit'
             )
           ),
@@ -2263,7 +2263,7 @@
   var headerStyle = isDark ? { background: 'rgba(30,41,59,0.5)' } : { background: 'rgba(234,88,12,0.15)' };
   var headerBorderClass = isDark ? 'px-3 py-2 flex items-center gap-2 border-b border-slate-800' : 'px-3 py-2 flex items-center gap-2 border-b border-orange-300';
   var badgeClass = 'px-2 py-0.5 rounded-full text-[10px] font-bold text-white';
-  var badgeStyle = { background: '#ea580c' };
+  var badgeStyle = { background: '#c2410c' };
   var titleClass = 'text-sm font-bold ' + (isDark ? 'text-orange-400' : 'text-orange-900');
   var subtitleClass = 'text-[11px] ' + (isDark ? 'text-slate-400' : 'text-orange-800');
 
@@ -2510,9 +2510,9 @@
         (s.mode === 'convergent' ? 'Scenario note: this cross-section depicts oceanic lithosphere subducting beneath another plate. Continental collision looks different. ' : ''),
         'Model note: event cadence and landscape growth are accelerated qualitative cues, not forecasts or calibrated rates. ',
         h('span', { className: 'font-bold' }, 'Depth colors: '),
-        h('span', { style: { color: '#e11d48' } }, 'shallow'), ' | ',
-        h('span', { style: { color: '#ea580c' } }, 'intermediate'), ' | ',
-        h('span', { style: { color: '#7c3aed' } }, 'deep')
+        h('span', { style: { color: isDark ? '#fb7185' : '#be123c' } }, 'shallow'), ' | ',
+        h('span', { style: { color: isDark ? '#fdba74' : '#c2410c' } }, 'intermediate'), ' | ',
+        h('span', { style: { color: isDark ? '#c4b5fd' : '#6d28d9' } }, 'deep')
       )
     ),
     // Educational cards
@@ -8205,6 +8205,8 @@ var d = labToolData.plateTectonics || {};
 
           return React.createElement("div", {
               className: "pt-sim-shell max-w-6xl mx-auto",
+              style: isContrast ? { background: palette.bg, color: palette.text } : undefined,
+              'data-plate-theme': isContrast ? 'contrast' : (isDark ? 'dark' : 'light'),
               role: "region",
               "aria-label": __alloT('stem.platetectonics.plate_tectonics_keyboard_shortcuts_1_t', "Plate Tectonics. Keyboard shortcuts: 1 through 4 switch tabs, L toggles labels, C toggles convection currents. On the simulation canvas, up and down arrows pick a plate and left and right arrows move it."),
               tabIndex: 0,
@@ -8252,6 +8254,13 @@ var d = labToolData.plateTectonics || {};
                     desc: __alloT('stem.platetectonics.glossary_and_classroom_activities', "Glossary, activities, review, and FAQ"),
                     tabs: ["glossary", "lessons", "concepts", "review", "faq", "resources", "about"] }
                 ];
+                var PT_CATEGORY_INK = isDark ? {
+                  red: '#fca5a5', blue: '#93c5fd', emerald: '#6ee7b7', amber: '#fcd34d',
+                  teal: '#5eead4', cyan: '#67e8f9', indigo: '#a5b4fc', rose: '#fda4af'
+                } : {
+                  red: '#b91c1c', blue: '#1d4ed8', emerald: '#047857', amber: '#b45309',
+                  teal: '#0f766e', cyan: '#0e7490', indigo: '#4338ca', rose: '#be123c'
+                };
                 var PT_TAB_LABELS = {
                   sim: "🌍 Simulation", earthquake: "📈 Earthquake Lab", timeline: "⏳ Timeline", quiz: "❓ Quiz", boundaryHunt: "🔐 Boundary Stress",
                   encyclopedia: "🌍 Plate Encyclopedia", faults: "🔍 Faults", volcanoes: "🌋 Volcanoes", mountains: "⛰ Mountains",
@@ -8323,9 +8332,9 @@ var d = labToolData.plateTectonics || {};
                         className: "text-left p-3 rounded-xl transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (isDark ? "bg-slate-950/60 border-2 border-slate-800 hover:border-" + c.color + "-500 hover:bg-slate-900/60" : "bg-white border-2 border-" + c.color + "-200 hover:border-" + c.color + "-500 hover:bg-" + c.color + "-50")
                       },
                         React.createElement("div", { className: "text-2xl mb-1" }, c.icon),
-                        React.createElement("div", { className: "text-sm font-bold text-" + c.color + "-700 mb-1" }, c.label),
+                        React.createElement("div", { className: "text-sm font-bold mb-1", style: { color: PT_CATEGORY_INK[c.color] } }, c.label),
                         React.createElement("div", { className: "text-[10px] italic mb-1 " + (isDark ? "text-slate-400" : "text-slate-500") }, c.desc),
-                        React.createElement("div", { className: "text-[10px] text-" + c.color + "-600 font-mono" }, c.tabs.length + " tools")
+                        React.createElement("div", { className: "text-[10px] font-mono", style: { color: PT_CATEGORY_INK[c.color] } }, c.tabs.length + " tools")
                       );
                     })
                   ));
@@ -8363,7 +8372,7 @@ var d = labToolData.plateTectonics || {};
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("div", { className: "flex items-center gap-2" },
                   React.createElement("span", { style: { fontSize: '18px' } }, "⭐"),
-                  React.createElement("span", { className: "text-sm font-bold text-orange-700" }, (d.researchPoints || 0) + " RP")
+                  React.createElement("span", { className: "text-sm font-bold " + (isDark ? "text-orange-300" : "text-orange-700") }, (d.researchPoints || 0) + " RP")
                 ),
                 React.createElement("span", {
                   className: "text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-orange-100 text-orange-700"
@@ -9796,17 +9805,17 @@ var d = labToolData.plateTectonics || {};
 
                 onClick: function() { upd({ showEdu: !showEdu }); if (!showEdu && typeof awardStemXP === 'function') awardStemXP('plateTectonics', 5, 'Learned about tectonics'); },
 
-                className: "w-full p-4 rounded-2xl border-2 border-red-200 text-left transition-all hover:shadow-md flex items-center gap-3",
+                className: "w-full p-4 rounded-2xl border-2 text-left transition-all hover:shadow-md flex items-center gap-3 " + (isDark ? "border-slate-700" : "border-red-200"),
 
-                style: { background: showEdu ? 'linear-gradient(135deg, #fef2f2, #fee2e2)' : 'white' }
+                style: { background: isDark ? '#0f172a' : (showEdu ? 'linear-gradient(135deg, #fef2f2, #fee2e2)' : 'white') }
 
               },
 
                 React.createElement("span", { className: "text-xl" }, "\uD83D\uDCD6"),
 
-                React.createElement("span", { className: "font-black text-red-900 text-sm flex-1" }, __alloT('stem.platetectonics.learn_earth_s_layers_plate_boundaries', "Learn: Earth's Layers & Plate Boundaries")),
+                React.createElement("span", { className: "font-black text-sm flex-1 " + (isDark ? "text-red-300" : "text-red-900") }, __alloT('stem.platetectonics.learn_earth_s_layers_plate_boundaries', "Learn: Earth's Layers & Plate Boundaries")),
 
-                React.createElement("span", { className: "text-red-400 font-bold text-xs" }, showEdu ? "\u25B2 Hide" : "\u25BC Show")
+                React.createElement("span", { className: "font-bold text-xs " + (isDark ? "text-red-300" : "text-red-700") }, showEdu ? "\u25B2 Hide" : "\u25BC Show")
 
               ),
 

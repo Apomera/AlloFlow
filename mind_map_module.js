@@ -263,7 +263,7 @@
 
   // ── Generate Unit (the AI co-author flow) ───────────────────────────
   // The resource types the review editor lets a teacher toggle per lesson.
-  // Mirrors the host's _UNIT_KNOWN_TYPES allowlist; the host re-validates.
+  // Unit proposal sanitation uses the exact UNIT_PROPOSAL_KNOWN_TYPES allowlist below.
   var RESOURCE_TYPE_OPTIONS = [
     'analysis', 'simplified', 'glossary', 'outline', 'sentence-frames',
     'concept-sort', 'brainstorm', 'timeline', 'quiz', 'faq', 'note-taking',
@@ -702,6 +702,299 @@
       .then(function () { return _loadScriptOnce(loc.base + 'concept_graph_3d_module.js' + loc.query); })
       .then(function () { return !!(window.AlloModules && window.AlloModules.ConceptGraph3D && window.AlloModules.ConceptGraphEngine); })
       .catch(function () { return false; });
+  }
+
+  // ── Unit lesson generation ──────────────────────────────────────────
+  var UNIT_PROPOSAL_KNOWN_TYPES = new Set([
+    'analysis', 'simplified', 'glossary', 'outline', 'image', 'quiz',
+    'sentence-frames', 'brainstorm', 'timeline', 'concept-sort', 'adventure',
+    'faq', 'persona', 'dbq', 'note-taking', 'anchor-chart', 'math',
+    'lesson-plan', 'gemini-bridge', 'alignment-report'
+  ]);
+
+  // Draft and sanitize one editable UbD unit outline. The shell injects only
+  // the current grade and shared AI/JSON/catalog capabilities.
+  async function proposeUnit(input, dependencies) {
+    input = input || {};
+    dependencies = dependencies || {};
+    var gradeLevel = dependencies.gradeLevel;
+    var formatToolCatalogInline = dependencies.formatToolCatalogInline;
+    var callGemini = dependencies.callGemini;
+    var cleanJson = dependencies.cleanJson;
+    var warnLog = typeof dependencies.warnLog === 'function' ? dependencies.warnLog : function () {};
+    var toolList = typeof formatToolCatalogInline === 'function'
+      ? formatToolCatalogInline()
+      : 'analysis, simplified, glossary, outline, image, quiz, sentence-frames, brainstorm, timeline, concept-sort, adventure, faq, persona, dbq, note-taking, anchor-chart, lesson-plan';
+    var grade = input.gradeLevel || gradeLevel || '';
+    var count = Math.max(2, Math.min(8, parseInt(input.lessonCount, 10) || 4));
+    var prompt = `You are a Curriculum Designer using Understanding by Design (backward design) to propose a coherent multi-lesson UNIT (a teaching arc), NOT 15 representations of one text.
+Teacher input:
+- Topic: ${input.topic || ''}
+- Grade band: ${grade}
+- Standards: ${input.standards || ''}
+- Desired lessons: ${count}
+- Tone: ${input.tone || ''}
+- Notes: ${input.notes || ''}
+${input.sourceText ? 'Source text provided (use it):\n"""\n' + String(input.sourceText).slice(0, 4000) + '\n"""' : ''}
+
+Design BACKWARD: name the enduring understandings + the essential question FIRST, then sequence exactly ${count} lessons that build toward them. Each lesson is ONE teaching moment with a measurable objective, a one-line focus, and a LEAN set of 3-6 resource types (not everything).
+
+Return ONLY valid JSON of this exact shape:
+{
+  "title": "unit title",
+  "essentialQuestion": "one overarching UbD question",
+  "gradeBand": "${grade}",
+  "desiredResults": ["1-3 enduring understandings"],
+  "goldenThread": ["recurring concepts"],
+  "keyTerms": ["unit vocabulary"],
+  "sourceConfig": { "lengthWords": 350, "tone": "Informative", "readingLevel": "${grade}" },
+  "lessons": [ { "title": "short title", "objective": "measurable objective", "focus": "one-line focus directive", "suggestedResourceTypes": ["analysis","glossary","quiz"] } ]
+}
+Use ONLY these resource type ids (id — when to use):
+${toolList}
+For "sourceConfig", propose sensible DEFAULTS (the teacher edits them before building) for auto-writing each lesson's reading passage when no source text is loaded: lengthWords (per-lesson passage length suited to the grade, ~200-500), tone (one of: Informative, Engaging Narrative, Persuasive, Humorous, Step-by-Step, Dialogue), readingLevel (a grade or band).
+Place "lesson-plan" LAST in a lesson's resources when it is a full teaching block. Keep each lesson to 3-6 resources. Produce exactly ${count} lessons.`;
+    try {
+      var result = await callGemini(prompt, true);
+      var parsed = JSON.parse(cleanJson(result));
+      if (!parsed || !Array.isArray(parsed.lessons) || parsed.lessons.length === 0) throw new Error('empty proposal');
+      parsed.lessons = parsed.lessons.slice(0, 8).map(function (lesson) {
+        var types = (Array.isArray(lesson.suggestedResourceTypes) ? lesson.suggestedResourceTypes : [])
+          .filter(function (type) { return UNIT_PROPOSAL_KNOWN_TYPES.has(type); });
+        types = Array.from(new Set(types)).slice(0, 6);
+        if (!types.length) types = ['analysis', 'glossary', 'lesson-plan'];
+        return {
+          title: String(lesson.title || 'Lesson').slice(0, 120),
+          objective: String(lesson.objective || '').slice(0, 400),
+          focus: String(lesson.focus || '').slice(0, 400),
+          suggestedResourceTypes: types,
+          sourceStrategy: 'shared'
+        };
+      });
+      parsed.gradeBand = parsed.gradeBand || grade;
+      parsed.title = String(parsed.title || (input.topic || 'New Unit')).slice(0, 140);
+      parsed.essentialQuestion = String(parsed.essentialQuestion || '').slice(0, 300);
+      parsed.goldenThread = Array.isArray(parsed.goldenThread) ? parsed.goldenThread.slice(0, 12) : [];
+      parsed.keyTerms = Array.isArray(parsed.keyTerms) ? parsed.keyTerms.slice(0, 20) : [];
+      parsed.desiredResults = Array.isArray(parsed.desiredResults) ? parsed.desiredResults.slice(0, 4) : [];
+      var allowedTones = ['Informative', 'Engaging Narrative', 'Persuasive', 'Humorous', 'Step-by-Step', 'Dialogue'];
+      var sourceConfig = parsed.sourceConfig && typeof parsed.sourceConfig === 'object' ? parsed.sourceConfig : {};
+      parsed.sourceConfig = {
+        lengthWords: Math.max(100, Math.min(1500, parseInt(sourceConfig.lengthWords, 10) || 350)),
+        tone: allowedTones.indexOf(sourceConfig.tone) >= 0
+          ? sourceConfig.tone
+          : (allowedTones.indexOf(input.tone) >= 0 ? input.tone : 'Informative'),
+        readingLevel: String(sourceConfig.readingLevel || grade || gradeLevel || '').slice(0, 40)
+      };
+      return parsed;
+    } catch (error) {
+      warnLog('onProposeUnit failed', error);
+      throw error;
+    }
+  }
+
+  // Host-independent unit lesson generation. The shell injects its current
+  // settings/state and generation capabilities; keeping the orchestration here
+  // means it arrives with the already-lazy Learning Web artifact.
+  async function generateUnitLesson(lessonSpec, dna, opts, dependencies) {
+    opts = opts || {};
+    lessonSpec = lessonSpec || {};
+    dependencies = dependencies || {};
+
+    var modules = dependencies.modules || window.AlloModules || {};
+    var gradeLevel = dependencies.gradeLevel;
+    var activeResolvedStandardsContext = dependencies.activeResolvedStandardsContext;
+    var standardsInput = dependencies.standardsInput;
+    var targetStandards = dependencies.targetStandards;
+    var leveledTextLanguage = dependencies.leveledTextLanguage;
+    var inputText = dependencies.inputText;
+    var history = Array.isArray(dependencies.history) ? dependencies.history : [];
+    var aiConfig = dependencies.aiConfig;
+    var callGemini = dependencies.callGemini;
+    var warnLog = typeof dependencies.warnLog === 'function' ? dependencies.warnLog : function () {};
+    var calculateReadability = dependencies.calculateReadability;
+    var recordSourceProvenance = dependencies.recordSourceProvenance;
+    var handleGenerate = dependencies.handleGenerate;
+
+    var phaseO = modules.PhaseOHandlers;
+    if (!phaseO || typeof phaseO.executeOneBlueprint !== 'function') throw new Error('blueprint engine unavailable');
+    var instructionalContext = modules.InstructionalContext;
+    var standardsContext = modules.StandardsContext;
+    var unitGrade = instructionalContext && typeof instructionalContext.normalizeGradeLabel === 'function'
+      ? instructionalContext.normalizeGradeLabel((dna && dna.grade) || gradeLevel || '', gradeLevel || '')
+      : String((dna && dna.grade) || gradeLevel || '');
+    var unitSourceRequestedGrade = instructionalContext && typeof instructionalContext.normalizeGradeLabel === 'function'
+      ? instructionalContext.normalizeGradeLabel((dna && dna.sourceConfig && dna.sourceConfig.readingLevel) || unitGrade, unitGrade)
+      : String((dna && dna.sourceConfig && dna.sourceConfig.readingLevel) || unitGrade);
+    var unitStandardsRaw = activeResolvedStandardsContext || (dna && dna.standard) || standardsInput || targetStandards;
+    var unitStandardsContext = standardsContext && typeof standardsContext.resolve === 'function'
+      ? standardsContext.resolve(unitStandardsRaw)
+      : unitStandardsRaw;
+    var unitInstructionalContext = instructionalContext && typeof instructionalContext.normalizeInstructionalContext === 'function'
+      ? instructionalContext.normalizeInstructionalContext(null, {
+          instructionalGrade: unitGrade,
+          standardsContext: unitStandardsContext,
+          primaryTextPolicy: 'preserve-primary'
+        })
+      : {
+          schemaVersion: 1,
+          instructionalGrade: unitGrade,
+          primaryTextPolicy: 'preserve-primary',
+          standardsContext: unitStandardsContext || null,
+          standardsFingerprint: ''
+        };
+    var types = Array.isArray(lessonSpec.suggestedResourceTypes) && lessonSpec.suggestedResourceTypes.length
+      ? lessonSpec.suggestedResourceTypes.slice()
+      : ['analysis', 'glossary', 'lesson-plan'];
+    types.sort(function (a, b) {
+      function rank(type) { return type === 'analysis' ? 0 : (type === 'lesson-plan' ? 2 : 1); }
+      return rank(a) - rank(b);
+    });
+    var enduringUnderstandings = dna && Array.isArray(dna.desiredResults) ? dna.desiredResults.filter(Boolean) : [];
+    var lessonFocus = (lessonSpec.focus || '') + (enduringUnderstandings.length ? ' Unit enduring understandings: ' + enduringUnderstandings.join('; ') : '');
+    var resourcePlan = types.map(function (type) {
+      return {
+        tool: type,
+        directive: lessonFocus,
+        instructionalText: instructionalContext && typeof instructionalContext.normalizeInstructionalText === 'function'
+          ? instructionalContext.normalizeInstructionalText(null, {
+              role: type === 'simplified' ? 'supplemental' : (type === 'analysis' ? 'primary' : 'unspecified'),
+              form: type === 'simplified' ? 'adapted' : 'original',
+              designationSource: 'workflow-default',
+              complexity: {
+                requestedGrade: type === 'analysis' ? unitSourceRequestedGrade : unitGrade,
+                language: leveledTextLanguage || 'English'
+              }
+            })
+          : null
+      };
+    });
+    var blueprint = {
+      resourcePlan: resourcePlan,
+      recommendedResources: resourcePlan.map(function (resource) { return resource.tool; }),
+      toolDirectives: resourcePlan.reduce(function (directives, item) {
+        if (!directives[item.tool]) directives[item.tool] = item.directive;
+        return directives;
+      }, {}),
+      globalSettings: {
+        gradeLevel: unitGrade,
+        targetStandards: targetStandards,
+        standardsContext: unitStandardsContext,
+        instructionalContext: unitInstructionalContext
+      },
+      standardsContext: unitStandardsContext,
+      instructionalContext: unitInstructionalContext,
+      sourcePolicy: { primaryTextPolicy: unitInstructionalContext.primaryTextPolicy || 'preserve-primary' }
+    };
+    var seedDna = {
+      grade: unitGrade,
+      topic: lessonSpec.title || (dna && dna.topic) || '',
+      standard: (unitStandardsContext && unitStandardsContext.promptText) || (dna && dna.standard) || standardsInput || '',
+      concepts: dna && Array.isArray(dna.concepts) ? dna.concepts.slice() : [],
+      keyTerms: dna && Array.isArray(dna.keyTerms) ? dna.keyTerms.slice() : [],
+      visualContext: '',
+      essentialQuestion: (dna && dna.essentialQuestion) || '',
+      desiredResults: dna && Array.isArray(dna.desiredResults) ? dna.desiredResults.slice() : []
+    };
+    var initialSourceText = inputText;
+    var existingAnalysis = history.slice().reverse().find(function (item) { return item && item.type === 'analysis'; });
+    if (existingAnalysis && existingAnalysis.data && existingAnalysis.data.originalText) initialSourceText = existingAnalysis.data.originalText;
+    var generatedUnitSource = false;
+    if (!initialSourceText || !initialSourceText.trim()) {
+      var sourceConfig = (dna && dna.sourceConfig) || {};
+      var sourceLength = Math.max(100, Math.min(1500, parseInt(sourceConfig.lengthWords, 10) || 350));
+      var sourceTone = sourceConfig.tone || 'Informative';
+      var sourceLevel = unitSourceRequestedGrade || 'middle-school';
+      var sourceCalibration = instructionalContext && typeof instructionalContext.getSourceCalibrationTarget === 'function'
+        ? instructionalContext.getSourceCalibrationTarget(sourceLevel)
+        : { requestedGrade: sourceLevel, promptGrade: sourceLevel, policyVersion: 'legacy' };
+      var unitStandardsDirective = standardsContext && typeof standardsContext.buildResourceDirective === 'function'
+        ? standardsContext.buildResourceDirective(unitStandardsContext, { resourceType: 'source', textRole: 'primary' })
+        : '';
+      var enduringUnderstandingLine = enduringUnderstandings.length
+        ? '\nReinforce these enduring understandings: ' + enduringUnderstandings.join('; ') + '.'
+        : '';
+      var sourcePrompt = 'Write an original, factually careful ' + String(sourceTone).toLowerCase() + ' reading passage of about ' + sourceLength + ' words.\nREQUESTED INSTRUCTIONAL TARGET: ' + sourceCalibration.requestedGrade + '.\nINTERNAL GENERATION CALIBRATION: ' + sourceCalibration.promptGrade + '. This internal calibration compensates for model overshoot and is not the educator-facing grade label. Prefer shorter accurate sentences and direct vocabulary.\nLesson: "' + (lessonSpec.title || '') + '".\nFocus: ' + (lessonSpec.focus || lessonSpec.objective || '') + '.' + enduringUnderstandingLine + (unitStandardsDirective ? '\n' + unitStandardsDirective : '') + '\nWrite ONLY the passage prose — no title, headings, labels, or meta-commentary. Define any domain-specific term in-line with a concrete analogy a ' + sourceCalibration.requestedGrade + ' student would understand.';
+      try {
+        var sourceText = await callGemini(sourcePrompt, false, false, null, null, opts.signal || null);
+        if (sourceText && String(sourceText).trim()) {
+          initialSourceText = String(sourceText).trim();
+          generatedUnitSource = true;
+        }
+      } catch (error) {
+        warnLog('unit lesson source generation failed', error);
+      }
+    }
+    var unitSourceProfile = null;
+    var unitSourceStats = null;
+    if (initialSourceText && initialSourceText.trim() && instructionalContext) {
+      var sourceLanguage = (existingAnalysis && existingAnalysis.config && existingAnalysis.config.language) || leveledTextLanguage || 'English';
+      var measuredSourceCalibration = typeof instructionalContext.getSourceCalibrationTarget === 'function'
+        ? instructionalContext.getSourceCalibrationTarget(unitSourceRequestedGrade)
+        : { requestedGrade: unitSourceRequestedGrade, promptGrade: unitSourceRequestedGrade, policyVersion: 'legacy' };
+      unitSourceProfile = typeof instructionalContext.normalizeInstructionalText === 'function'
+        ? instructionalContext.normalizeInstructionalText(existingAnalysis && existingAnalysis.instructionalText, {
+            role: 'primary',
+            form: 'original',
+            designationSource: 'workflow-default',
+            complexity: {
+              requestedGrade: unitSourceRequestedGrade,
+              calibrationTarget: measuredSourceCalibration.promptGrade,
+              language: sourceLanguage
+            }
+          })
+        : null;
+      var canMeasure = typeof instructionalContext.isEnglishLanguage !== 'function' || instructionalContext.isEnglishLanguage(sourceLanguage);
+      unitSourceStats = canMeasure ? calculateReadability(initialSourceText) : null;
+      if (unitSourceProfile && unitSourceStats && typeof instructionalContext.withComplexityEvidence === 'function') {
+        unitSourceProfile = instructionalContext.withComplexityEvidence(unitSourceProfile, {
+          requestedGrade: unitSourceRequestedGrade,
+          calibrationTarget: measuredSourceCalibration.promptGrade,
+          measuredGrade: Number(unitSourceStats.score),
+          method: 'flesch-kincaid-en',
+          language: sourceLanguage
+        }, initialSourceText);
+      }
+      resourcePlan.forEach(function (item) {
+        if (item.tool === 'analysis' && unitSourceProfile) item.instructionalText = unitSourceProfile;
+      });
+      if (generatedUnitSource) {
+        recordSourceProvenance({
+          title: lessonSpec.title || seedDna.topic || 'Unit lesson source',
+          type: 'generated',
+          importMethod: 'unit-path-generation',
+          provider: String((aiConfig && aiConfig.backend) || 'gemini').toLowerCase(),
+          model: String((aiConfig && aiConfig.models && (aiConfig.models.default || aiConfig.models.text || aiConfig.models.flash)) || ''),
+          requestedGrade: unitSourceRequestedGrade,
+          calibrationTarget: measuredSourceCalibration.promptGrade,
+          calibrationPolicy: measuredSourceCalibration.policyVersion,
+          measuredGrade: unitSourceStats ? Number(unitSourceStats.score) : null,
+          standardsContext: unitStandardsContext || null
+        }, initialSourceText);
+      }
+    }
+    var unitSettingsSnapshot = Object.freeze({
+      gradeLevel: unitGrade,
+      leveledTextLanguage: leveledTextLanguage || 'English',
+      targetStandards: Array.isArray(targetStandards) ? targetStandards.slice() : [],
+      standardsInput: (unitStandardsContext && unitStandardsContext.promptText) || standardsInput || '',
+      standardsContext: unitStandardsContext,
+      instructionalContext: unitInstructionalContext
+    });
+    var result = await phaseO.executeOneBlueprint(blueprint, {
+      handleGenerate: handleGenerate,
+      historyOverride: history.slice(),
+      dna: seedDna,
+      initialSourceText: initialSourceText,
+      settingsSnapshot: unitSettingsSnapshot,
+      signal: opts.signal || null,
+      onResource: opts.onResource
+    });
+    var anchorItem = null;
+    if (Array.isArray(result.items) && result.items.length) {
+      anchorItem = result.items.find(function (item) { return item && item.type === 'lesson-plan'; }) || result.items[result.items.length - 1];
+    }
+    return { items: result.items, dnaOut: result.dnaOut, anchorItem: anchorItem, nulls: result.nulls };
   }
 
   // ── Component ───────────────────────────────────────────────────────
@@ -2761,6 +3054,8 @@
   // Register under MindMap (keeps the existing loadModule('MindMap', mind_map_module.js)
   // + CDNModuleGate moduleKey="MindMap" chain working — no rename churn) AND under the
   // forward name Throughline.
+  ThroughlineModal.proposeUnit = proposeUnit;
+  ThroughlineModal.generateUnitLesson = generateUnitLesson;
   window.AlloModules.MindMap = ThroughlineModal;
   window.AlloModules.Throughline = ThroughlineModal;
   console.log('[Throughline] Registered (spatial unit builder v1; aliased as MindMap for the existing gate)');

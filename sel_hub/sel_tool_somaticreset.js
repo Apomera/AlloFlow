@@ -202,7 +202,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('somaticReset')))
   ];
 
   var VISUALS = [
-    { id: 'circle', label: 'Breathing circle', symbol: '\u25EF', description: 'Expands and softens with the optional breath rhythm.' },
+    { id: 'circle', label: 'Breathing circle', symbol: '\u25EF', description: 'The circle pairs IN · EXPAND with a solid outline and circle center, then OUT · SOFTEN with a dotted outline and diamond center; pause bars keep stationary state clear.' },
     { id: 'ripples', label: 'Soft ripples', symbol: '\u223F', description: 'Three rings spread gently from a steady center.' },
     { id: 'glow', label: 'Focus glow', symbol: '\u25C9', description: 'A quiet center point brightens and softens.' },
     { id: 'wave', label: 'Flowing wave', symbol: '\u2248', description: 'Layered waves pair IN · RISE with a solid line and round marker, then OUT · SETTLE with a dotted line and diamond marker; pause bars keep stationary state clear.' },
@@ -1462,7 +1462,15 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('somaticReset')))
               ? (previewMode === 'in' ? 'Preview: breathe in gently' : 'Preview: breathe out slowly')
               : (isRunning ? breath.label + ', count ' + breath.count : (hasStarted ? 'Breath guide paused' : 'Optional breath guide ready')))
           : 'Steady guide; breathe naturally and move only if comfortable';
-        var visualLabel = currentVisual.label + '. ' + visualStatus;
+        var visualPhaseLabel = usesPace
+          ? (previewing
+              ? (previewMode === 'in' ? 'Preview inhale phase' : 'Preview exhale phase')
+              : (isRunning ? (breath.phase === 'in' ? 'Inhale phase' : 'Exhale phase') : (hasStarted ? 'Paused' : 'Ready')))
+          : 'Natural breathing';
+        var visualCadenceLabel = usesPace
+          ? 'Cadence: ' + protocol.cadence[0] + ' seconds in, ' + protocol.cadence[1] + ' seconds out'
+          : 'No timed cadence';
+        var visualLabel = currentVisual.label + '. ' + visualPhaseLabel + '. ' + visualCadenceLabel + '. ' + visualStatus;
         if (effectiveMotion === 'still') visualLabel += '. Visual motion is still.';
 
         if (currentVisual.id === 'none') {
@@ -1488,7 +1496,144 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('somaticReset')))
         }
 
         var visualBody;
-        if (currentVisual.id === 'ripples') {
+        if (currentVisual.id === 'circle') {
+          var circleCanMove = usesPace && effectiveMotion !== 'still';
+          var circleMoving = circleCanMove && (isRunning || previewing);
+          var circlePhase = circleMoving ? activeBreathPhase : 'steady';
+          var circleLinePattern = circlePhase === 'out' ? 'dotted' : (circlePhase === 'in' ? 'solid' : 'steady');
+          var circleSessionState = previewing
+            ? 'preview'
+            : (isRunning ? (circleMoving ? 'moving' : 'steady') : (hasStarted ? 'paused' : 'ready'));
+          var circleCenterShape = circleMoving
+            ? (circlePhase === 'out' ? 'diamond' : 'circle')
+            : (circleSessionState === 'paused' ? 'pause-bars' : 'dot');
+          var circleCueText = circleMoving
+            ? (circlePhase === 'in' ? 'IN · EXPAND' : 'OUT · SOFTEN')
+            : (circleSessionState === 'paused' ? 'PAUSED' : (circleSessionState === 'steady' ? 'STEADY' : 'READY'));
+          var circleCueState = circleMoving ? circlePhase : circleSessionState;
+          var circlePhaseProgress = circlePhase === 'in'
+            ? Math.min(1, Math.max(0, activeBreathAmount))
+            : (circlePhase === 'out' ? Math.min(1, Math.max(0, 1 - activeBreathAmount)) : 0);
+          var circlePatternTransition = circleMoving && motionStrength > 0
+            ? 'stroke-width 260ms ease-in-out, opacity 260ms ease-in-out'
+            : 'none';
+          var circleCenterX = 120;
+          var circleCenterY = 112;
+          var circleRadius = 44 + amount * 25;
+          visualBody = h('svg', {
+            viewBox: '0 0 240 210',
+            'aria-hidden': 'true',
+            focusable: 'false',
+            'data-breath-circle': 'true',
+            'data-circle-phase': circlePhase,
+            'data-circle-line-pattern': circleLinePattern,
+            'data-circle-center-shape': circleCenterShape,
+            'data-circle-session-state': circleSessionState,
+            'data-circle-phase-progress': circleMoving ? Math.round(circlePhaseProgress * 100) : 'steady',
+            'data-circle-cadence': usesPace ? protocol.cadence.join('-') : 'natural',
+            style: { width: frameCss, height: 'auto', overflow: 'visible', transition: visualTransition }
+          },
+            usesPace && h('text', {
+              x: circleCenterX,
+              y: 18,
+              textAnchor: 'middle',
+              fill: circleMoving ? colors.accent : colors.muted,
+              fontSize: compact ? 18 : 14,
+              fontWeight: circleMoving ? 500 : 400,
+              letterSpacing: compact ? 1.1 : 0.9,
+              opacity: circleMoving ? 1 : 0.78,
+              style: {
+                textDecoration: circleMoving ? 'underline' : 'none',
+                transition: circlePatternTransition
+              },
+              'data-circle-phase-cue': 'true',
+              'data-circle-cue-state': circleCueState,
+              'data-circle-cue-shape': circleCenterShape,
+              'data-circle-cue-emphasis': circleMoving ? 'underlined' : 'plain'
+            }, circleCueText),
+            h('circle', {
+              cx: circleCenterX,
+              cy: circleCenterY,
+              r: circleRadius + 12,
+              fill: colors.panelAlt,
+              stroke: colors.border,
+              strokeWidth: compact ? 2 : 3,
+              opacity: 0.72,
+              style: { transition: visualTransition },
+              'data-circle-halo': 'true'
+            }),
+            h('circle', {
+              cx: circleCenterX,
+              cy: circleCenterY,
+              r: circleRadius,
+              fill: colors.soft,
+              stroke: circleMoving ? colors.accent : colors.muted,
+              strokeWidth: circleMoving ? (compact ? 2.5 : 3.5) : (compact ? 2 : 3),
+              strokeDasharray: circleLinePattern === 'dotted' ? (compact ? '3 7' : '4 8') : undefined,
+              opacity: circleMoving ? 1 : 0.82,
+              style: { transition: visualTransition },
+              'data-circle-main-ring': 'true',
+              'data-circle-main-pattern': circleLinePattern
+            }),
+            h('g', {
+              'data-circle-center': 'true',
+              'data-circle-center-shape': circleCenterShape,
+              'data-circle-center-state': circleMoving ? 'active' : circleSessionState
+            },
+              circleCenterShape === 'diamond'
+                ? h('rect', {
+                    x: circleCenterX - 4.5,
+                    y: circleCenterY - 4.5,
+                    width: 9,
+                    height: 9,
+                    rx: 2,
+                    fill: colors.panelAlt,
+                    stroke: colors.accent,
+                    strokeWidth: compact ? 2 : 2.5,
+                    transform: 'rotate(45 ' + circleCenterX + ' ' + circleCenterY + ')',
+                    'data-circle-marker-core': 'diamond'
+                  })
+                : (circleCenterShape === 'circle'
+                    ? h('circle', {
+                        cx: circleCenterX,
+                        cy: circleCenterY,
+                        r: compact ? 5 : 6,
+                        fill: colors.panelAlt,
+                        stroke: colors.accent,
+                        strokeWidth: compact ? 2 : 2.5,
+                        'data-circle-marker-core': 'circle'
+                      })
+                    : (circleCenterShape === 'pause-bars'
+                        ? h('g', { 'data-circle-pause-bars': 'true' },
+                            h('line', {
+                              x1: circleCenterX - 3.5,
+                              y1: circleCenterY - 4.5,
+                              x2: circleCenterX - 3.5,
+                              y2: circleCenterY + 4.5,
+                              stroke: colors.accent,
+                              strokeWidth: compact ? 2 : 2.5,
+                              strokeLinecap: 'round'
+                            }),
+                            h('line', {
+                              x1: circleCenterX + 3.5,
+                              y1: circleCenterY - 4.5,
+                              x2: circleCenterX + 3.5,
+                              y2: circleCenterY + 4.5,
+                              stroke: colors.accent,
+                              strokeWidth: compact ? 2 : 2.5,
+                              strokeLinecap: 'round'
+                            })
+                          )
+                        : h('circle', {
+                            cx: circleCenterX,
+                            cy: circleCenterY,
+                            r: compact ? 3 : 4,
+                            fill: colors.accent,
+                            'data-circle-marker-core': 'dot'
+                          })))
+            )
+          );
+        } else if (currentVisual.id === 'ripples') {
           var ringSize = Math.round(frameSize * 0.72);
           visualBody = h('div', { style: { position: 'relative', width: frameCss, height: frameCss } },
             [0, 1, 2].map(function(index) {
@@ -2547,18 +2692,91 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('somaticReset')))
           }, '\u223F');
         }
 
+        var phaseRail = null;
+        if (usesPace) {
+          var railCanMove = effectiveMotion !== 'still';
+          var railPhase = railCanMove
+            ? (previewing ? previewMode : (isRunning ? breath.phase : (hasStarted ? 'paused' : 'ready')))
+            : (isRunning ? 'steady' : (hasStarted ? 'paused' : 'ready'));
+          var railProgress = railPhase === 'in' || railPhase === 'out'
+            ? (previewing ? 100 : Math.round(breath.phaseProgress * 100))
+            : 'steady';
+          var railLabel = railPhase === 'in'
+            ? 'IN \u00b7 EXPAND'
+            : (railPhase === 'out'
+                ? 'OUT \u00b7 SOFTEN'
+                : (railPhase === 'paused' ? 'PAUSED' : (railPhase === 'ready' ? 'READY' : 'STEADY')));
+          var inhaleSeconds = Math.max(1, Number(protocol.cadence[0]) || 1);
+          var exhaleSeconds = Math.max(1, Number(protocol.cadence[1]) || 1);
+          var cadenceTotalSeconds = inhaleSeconds + exhaleSeconds;
+          var railSegmentState = function(segment) {
+            if (railPhase === segment) return 'active';
+            if (railPhase === 'out' && segment === 'in') return 'complete';
+            return 'upcoming';
+          };
+          var railSegment = function(segment) {
+            var segmentState = railSegmentState(segment);
+            return h('div', {
+              'data-breath-phase-segment': segment,
+              'data-breath-phase-segment-state': segmentState,
+              'data-breath-phase-segment-seconds': String(segment === 'in' ? inhaleSeconds : exhaleSeconds),
+              'data-breath-phase-segment-ratio': String(Math.round(((segment === 'in' ? inhaleSeconds : exhaleSeconds) / cadenceTotalSeconds) * 100)),
+              style: {
+                flex: segment === 'in' ? inhaleSeconds : exhaleSeconds,
+                minWidth: 0,
+                height: compact ? 4 : 5,
+                borderRadius: 999,
+                background: segmentState === 'upcoming' ? colors.border : colors.accent,
+                opacity: segmentState === 'active' ? 1 : (segmentState === 'complete' ? 0.48 : 0.58),
+                transition: effectiveMotion === 'still' ? 'none' : 'background 260ms ease, opacity 260ms ease'
+              }
+            });
+          };
+          phaseRail = h('div', {
+            'aria-hidden': 'true',
+            'data-breath-phase-rail': 'true',
+            'data-breath-phase': railPhase,
+            'data-breath-phase-progress': railProgress,
+            'data-breath-phase-label': railLabel,
+            'data-breath-phase-cadence': inhaleSeconds + '-' + exhaleSeconds,
+            'data-breath-phase-total-seconds': String(cadenceTotalSeconds),
+            style: {
+              width: frameCss,
+              display: 'grid',
+              gap: 5,
+              marginTop: compact ? 2 : 4,
+              color: colors.muted,
+              fontSize: compact ? 9 : 10,
+              fontWeight: 850,
+              letterSpacing: 0.7,
+              textTransform: 'uppercase'
+            }
+          },
+            h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8 } },
+              h('span', { 'data-breath-phase-label-text': 'in', style: { color: railPhase === 'in' ? colors.accent : colors.muted } }, 'IN ' + inhaleSeconds + 's'),
+              h('span', { 'data-breath-phase-label-text': 'out', style: { color: railPhase === 'out' ? colors.accent : colors.muted } }, 'OUT ' + exhaleSeconds + 's')
+            ),
+            h('div', { style: { display: 'flex', gap: 4, width: '100%' } }, railSegment('in'), railSegment('out')),
+            h('div', { 'data-breath-phase-status': 'true', style: { textAlign: 'center', color: railPhase === 'in' || railPhase === 'out' ? colors.accent : colors.muted, letterSpacing: compact ? 0.85 : 0.9 } }, railLabel + (railPhase === 'in' || railPhase === 'out' ? ' \u00b7 ' + railProgress + '%' : ''))
+          );
+        }
+
         var visualAction = isRunning ? 'pause' : (hasStarted ? 'resume' : 'start');
         var visualContainerStyle = {
           minHeight: minimumHeight,
           display: 'flex',
+          flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
+          gap: 8,
           overflow: 'hidden'
         };
         var visualContainerProps = {
           'data-visual-mode': currentVisual.id,
           'data-visual-motion': effectiveMotion,
           'data-visual-phase': phaseToken,
+          'data-visual-phase-label': visualPhaseLabel,
+          'data-visual-cadence': usesPace ? protocol.cadence.join('-') + '-seconds' : 'natural',
           'data-visual-preview': previewing ? previewMode : 'idle',
           'data-visual-running': isRunning ? 'true' : 'false',
           'data-visual-size': compact ? 'preview' : (focused ? 'focus' : (expanded ? 'large' : 'standard')),
@@ -2567,7 +2785,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('somaticReset')))
         if (focused) {
           visualContainerProps.type = 'button';
           visualContainerProps.onClick = togglePracticeTimer;
-          visualContainerProps['aria-label'] = (visualAction === 'pause' ? 'Pause' : (visualAction === 'resume' ? 'Resume' : 'Start')) + ' practice from ' + currentVisual.label + '.';
+          visualContainerProps['aria-label'] = (visualAction === 'pause' ? 'Pause' : (visualAction === 'resume' ? 'Resume' : 'Start')) + ' practice from ' + visualLabel;
           visualContainerProps['aria-keyshortcuts'] = 'Enter Space';
           visualContainerProps['data-visual-toggle'] = 'true';
           visualContainerProps['data-visual-action'] = visualAction;
@@ -2585,10 +2803,12 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('somaticReset')))
           });
         } else {
           visualContainerProps.role = 'img';
+          visualContainerProps['aria-roledescription'] = 'breathing visual guide';
           visualContainerProps['aria-label'] = visualLabel;
         }
         return h(focused ? 'button' : 'div', visualContainerProps,
           visualBody,
+          phaseRail,
           focused && h('span', {
             'aria-hidden': 'true',
             style: { color: colors.muted, fontSize: 11, fontWeight: 750 }

@@ -76,8 +76,8 @@ describe('Particle Lab 3D interaction surface accessibility contract', () => {
   });
 
   it('surfaces a concise live activity cue inside the 3D stage', () => {
-    expect(source).toContain('var stageActivityLabel = running');
-    expect(source).toContain('var stageActivityDetail = running');
+    expect(source).toContain("var stageActivityLabel = replayMode ? 'Replay historical chamber' : running");
+    expect(source).toContain('var stageActivityDetail = replayMode');
     expect(source).toContain("id: 'particle-stage-activity'");
     expect(source).toContain("role: 'status', 'aria-live': 'polite'");
     expect(source).toContain('Press Run or Space to begin');
@@ -91,7 +91,7 @@ describe('Particle Lab 3D interaction surface accessibility contract', () => {
   it('turns temperature settling into a compact accessible progress cue', () => {
     expect(source).toContain('var temperatureProgress = clamp');
     expect(source).toContain("role: 'progressbar', 'aria-label': 'Temperature settling toward setpoint'");
-    expect(source).toContain("'aria-valuetext': stats.temperature + ' K measured; setpoint ' + temperature + ' K'");
+    expect(source).toContain("'aria-valuetext': displayTemperature + ' K '");
     expect(source).toContain('transition-[width] duration-500');
   });
 
@@ -101,16 +101,41 @@ describe('Particle Lab 3D interaction surface accessibility contract', () => {
     expect(source).toContain("id: 'particle-evidence-scrubber'");
     expect(source).toContain("'aria-label': 'Evidence timeline sample'");
     expect(source).toContain("'aria-label': 'Evidence markers'");
-    expect(source).toContain("'aria-label': 'Follow the latest measurement sample'");
+    expect(source).toContain("'aria-label': replayMode ? 'Return to live simulation' : 'Follow the latest measurement sample'");
+    expect(source).toContain("var [replayPlaying, setReplayPlaying] = useState(false)");
+    expect(source).toContain('function applyReplayIndex(nextIndex)');
+    expect(source).toContain('function toggleReplayPlayback()');
+    expect(source).toContain("'aria-label': replayPlaying ? 'Pause three-dimensional replay'");
+    expect(source).toContain("'Play three-dimensional replay'");
+    expect(source).toContain("'Replay measurements from the beginning'");
+    expect(source).toContain('Replay reached the latest measurement sample.');
     expect(source).toContain("label: 'Collision burst'");
     expect(source).toContain("label: 'Transport milestone'");
     expect(source).toContain("label: 'Run start'");
     expect(source).toContain('evidenceDeltaLabel = hasEvidence');
     expect(source).toContain('Since run start: ΔT ');
+    expect(source).toContain('evidenceCueLabel = hasEvidence');
+    expect(source).toContain('evidenceCueAriaLabel = hasEvidence');
+    expect(source).toContain('Particle cue: ');
+    expect(source).toContain('particles speeding up');
+    expect(source).toContain("timelineSample ? 'At ' + Number(timelineSample.elapsed || 0).toFixed(1) + ' s");
     expect(source).toContain('function selectTimelineIndex(nextIndex)');
     expect(source).toContain('Following the latest measurement sample.');
     expect(source).toContain('selectedX = metric.values.length > 1');
     expect(source).toContain("historyCursor >= 0 && metric.values.length > 1 && h('line'");
+  });
+
+  it('turns evidence scrubbing into a labeled three-dimensional replay', () => {
+    expect(source).toContain('captureParticleSnapshot');
+    expect(source).toContain('applyParticleSnapshot');
+    expect(source).toContain('enterReplay: enterReplay');
+    expect(source).toContain('exitReplay: exitReplay');
+    expect(source).toContain('snapshot: particleSnapshot');
+    expect(source).toContain("id: 'particle-replay-indicator'");
+    expect(source).toContain("'aria-label': 'Replay view at '");
+    expect(source).toContain("'aria-label': replayMode ? 'Return to live simulation'");
+    expect(source).toContain("replayMode ? 'Return to live' : 'Follow latest'");
+    expect(source).toContain('Returned to the live chamber.');
   });
 
   it('turns the experiment loop into a guided next-action control', () => {
@@ -258,9 +283,10 @@ describe('STEM Lab Three.js loading — single canonical path (sweep)', () => {
       return !(viaShared && sharedKey && guarded);
     });
     expect(offenders).toEqual([]);
-    // the host keeps exactly one canonical reference (inside ensureThree)
+    // The host keeps one local-first reference plus two network fallbacks,
+    // all inside the single canonical ensureThree path.
     const moduleSource = readFileSync(resolve(process.cwd(), 'stem_lab/stem_lab_module.js'), 'utf8');
-    expect((moduleSource.match(/three\.min\.js/g) || []).length).toBe(2); // cdnjs + jsDelivr fallback
+    expect((moduleSource.match(/three\.min\.js/g) || []).length).toBe(3); // local + cdnjs + jsDelivr
     expect(moduleSource).toContain('ensureThree: function (opts)');
   });
 

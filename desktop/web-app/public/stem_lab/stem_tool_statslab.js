@@ -2458,7 +2458,7 @@ window.StemLab = window.StemLab || {
         }
       },
         h('div', { style: { fontSize: 13, fontWeight: 800, color: 'var(--sl-heading)', marginBottom: 8 } }, 'Two-column data (paired t-test, independent t-test, correlation, regression)'),
-        h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 8 } },
+        h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10, marginBottom: 8 } },
           h('div', null,
             h('input', {
               type: 'text', value: t.aLabel,
@@ -2628,7 +2628,7 @@ window.StemLab = window.StemLab || {
         h('p', { style: { margin: '0 0 8px', fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.5 } },
           'Enter category labels and counts. Expected counts can be raw numbers OR proportions that sum to 1 (we\'ll auto-scale).'
         ),
-        h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr auto', gap: 6, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 4 } },
+        h('div', { style: { display: 'grid', gridTemplateColumns: 'minmax(0, 1.25fr) minmax(0, 1fr) minmax(0, 1fr) auto', gap: 6, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 4 } },
           h('div', null, 'Category'),
           h('div', null, 'Observed'),
           h('div', null, 'Expected'),
@@ -2639,7 +2639,7 @@ window.StemLab = window.StemLab || {
             return { label: (d.chiGofData.labels && d.chiGofData.labels[i]) || ('Cat ' + (i + 1)), obs: o, exp: d.chiGofData.expected[i] || 0 };
           })
         ).map(function(row, i) {
-          return h('div', { key: 'gof-' + i, style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr auto', gap: 6, marginBottom: 4 } },
+          return h('div', { key: 'gof-' + i, style: { display: 'grid', gridTemplateColumns: 'minmax(0, 1.25fr) minmax(0, 1fr) minmax(0, 1fr) auto', gap: 6, marginBottom: 4 } },
             h('input', {
               type: 'text', value: row.label,
               onChange: function(e) {
@@ -2649,7 +2649,7 @@ window.StemLab = window.StemLab || {
                 upd('chiGofData', Object.assign({}, d.chiGofData, { labels: labels }));
               },
               'data-sl-focusable': 'true', 'aria-label': 'Category ' + (i + 1) + ' label',
-              style: { padding: 6, background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--allo-stem-text, #fef3c7)', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, fontSize: 11, boxSizing: 'border-box' }
+              style: { width: '100%', minWidth: 0, padding: 6, background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--allo-stem-text, #fef3c7)', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, fontSize: 11, boxSizing: 'border-box' }
             }),
             h('input', {
               type: 'number', value: row.obs,
@@ -2660,7 +2660,7 @@ window.StemLab = window.StemLab || {
                 upd('chiGofData', Object.assign({}, d.chiGofData, { observed: obs }));
               },
               'data-sl-focusable': 'true', 'aria-label': 'Observed count for ' + row.label,
-              style: { padding: 6, background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--sl-heading)', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, fontSize: 11, fontWeight: 700, boxSizing: 'border-box' }
+              style: { width: '100%', minWidth: 0, padding: 6, background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--sl-heading)', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, fontSize: 11, fontWeight: 700, boxSizing: 'border-box' }
             }),
             h('input', {
               type: 'number', step: 'any', value: row.exp,
@@ -2671,7 +2671,7 @@ window.StemLab = window.StemLab || {
                 upd('chiGofData', Object.assign({}, d.chiGofData, { expected: exp }));
               },
               'data-sl-focusable': 'true', 'aria-label': 'Expected count for ' + row.label,
-              style: { padding: 6, background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--sl-warning)', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, fontSize: 11, fontWeight: 700, boxSizing: 'border-box' }
+              style: { width: '100%', minWidth: 0, padding: 6, background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--sl-warning)', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, fontSize: 11, fontWeight: 700, boxSizing: 'border-box' }
             }),
             h('button', {
               onClick: function() {
@@ -3190,7 +3190,7 @@ window.StemLab = window.StemLab || {
         )
       ),
       // Concept cards
-      h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 10 } },
+      h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 10 } },
         conceptStats.map(function (cs) {
           var pct = cs.questions.length > 0 ? Math.round((cs.doneCount / cs.questions.length) * 100) : 0;
           var statusLabel = cs.doneCount === 0 ? 'Untouched'

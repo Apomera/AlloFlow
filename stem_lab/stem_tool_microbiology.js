@@ -1103,6 +1103,16 @@
       var setLabToolData = ctx.setToolData;
       var addToast = ctx.addToast;
       var awardXP = ctx.awardXP;
+      var microbiologyDark = !!ctx.isDark || ctx.theme === 'dark';
+      var microbiologyAccentInk = {
+        '#ef4444': '#b91c1c', '#0ea5e9': '#0369a1', '#a855f7': '#7e22ce',
+        '#fbbf24': '#92400e', '#10b981': '#047857', '#06b6d4': '#0e7490',
+        '#7c3aed': '#6d28d9', '#22c55e': '#15803d', '#f59e0b': '#92400e',
+        '#a78bfa': '#6d28d9'
+      };
+      function microAccentText(color) {
+        return microbiologyDark ? color : (microbiologyAccentInk[color] || color);
+      }
 
       var savedMicrobiology = (labToolData && labToolData.microbiology) || {};
       var d = Object.assign({}, DEFAULT_MICROBIOLOGY_STATE, savedMicrobiology);
@@ -1360,7 +1370,7 @@
                   { age: '~300 kya', name: __alloT('stem.microbiology.homo_sapiens', 'Homo sapiens'), desc: __alloT('stem.microbiology.our_species_appears_in_africa_about_30', 'Our species appears in Africa about 300,000 years ago. We are recent newcomers; microbes have been here for ~14,000× longer.'), color: '#a78bfa' }
                 ].map(function(e, i) {
                   return h('div', { key: i, style: { display: 'grid', gridTemplateColumns: '90px 1fr', gap: 12, padding: 8, borderRadius: 8, background: 'var(--allo-stem-canvas, #0f172a)', borderTop: '1px solid var(--allo-stem-border, #334155)', borderRight: '1px solid var(--allo-stem-border, #334155)', borderBottom: '1px solid var(--allo-stem-border, #334155)', borderLeft: '3px solid ' + e.color } },
-                    h('div', { style: { fontSize: 13, fontWeight: 800, color: e.color, paddingTop: 2 } }, e.age),
+                    h('div', { style: { fontSize: 13, fontWeight: 800, color: microAccentText(e.color), paddingTop: 2 } }, e.age),
                     h('div', null,
                       h('div', { style: { fontSize: 13, fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 2 } }, e.name),
                       h('div', { style: { fontSize: 11.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55 } }, e.desc)
@@ -1368,11 +1378,11 @@
                   );
                 })
               ),
-              h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.3)', fontSize: 12, color: '#e9d5ff', lineHeight: 1.65 } },
+              h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.3)', fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.65 } },
                 h('strong', null, __alloT('stem.microbiology.a_perspective_trick', 'A perspective trick: ')),
                 __alloT('stem.microbiology.compress_all_4_6_billion_years_of_eart', 'compress all 4.6 billion years of Earth history into one calendar year. January 1 = Earth forms. February = oceans. March-April = first life. October = first eukaryotes. November = multicellular. December 14 = Cambrian explosion. December 26 = dinosaurs. December 31, 11:58 pm = first humans. The entire history of recorded civilization fits in the last 13 seconds of that cosmic year.')
               ),
-              h('div', { style: { marginTop: 8, padding: 10, borderRadius: 8, background: 'rgba(16,185,129,0.10)', border: '1px solid rgba(16,185,129,0.3)', fontSize: 12, color: '#a7f3d0', lineHeight: 1.65 } },
+              h('div', { style: { marginTop: 8, padding: 10, borderRadius: 8, background: 'rgba(16,185,129,0.10)', border: '1px solid rgba(16,185,129,0.3)', fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.65 } },
                 h('strong', null, __alloT('stem.microbiology.the_rna_world_hypothesis', 'The RNA world hypothesis: ')),
                 __alloT('stem.microbiology.how_do_you_get_a_self_replicating_cell', 'how do you get a self-replicating cell from chemistry? The current best guess: RNA can both store information (like DNA) AND catalyze chemical reactions (like enzymes). RNA molecules that happen to catalyze their own copying are selected for; over millions of years, increasingly elaborate RNA chemistry could have evolved before DNA and proteins took over. The 1989 Nobel Prize (Cech + Altman) was for proving RNA can act as an enzyme - direct lab evidence for the RNA-world idea.')
               )
@@ -1408,7 +1418,7 @@
                 ].map(function(m, i) {
                   return h('div', { key: i, style: { padding: 10, borderRadius: 8, background: 'var(--allo-stem-canvas, #0f172a)', borderTop: '1px solid var(--allo-stem-border, #334155)', borderRight: '1px solid var(--allo-stem-border, #334155)', borderBottom: '1px solid var(--allo-stem-border, #334155)', borderLeft: '3px solid ' + m.color } },
                     h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 4, gap: 8, flexWrap: 'wrap' } },
-                      h('div', { style: { fontSize: 12.5, fontWeight: 800, color: m.color } }, m.name),
+                      h('div', { style: { fontSize: 12.5, fontWeight: 800, color: microAccentText(m.color) } }, m.name),
                       h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 0.5 } }, m.kind)
                     ),
                     h('div', { style: { fontSize: 11.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.55, marginBottom: 6 } }, m.desc),
@@ -1416,7 +1426,7 @@
                   );
                 })
               ),
-              h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(16,185,129,0.10)', border: '1px solid rgba(16,185,129,0.3)', fontSize: 11.5, color: '#a7f3d0', lineHeight: 1.65 } },
+              h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(16,185,129,0.10)', border: '1px solid rgba(16,185,129,0.3)', fontSize: 11.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.65 } },
                 h('strong', null, __alloT('stem.microbiology.climate_and_maine_microbes', 'Climate and Maine microbes: ')),
                 __alloT('stem.microbiology.the_gulf_of_maine_is_warming_faster_th', 'The Gulf of Maine is warming faster than 99% of the world ocean. This is reshaping bacterial communities in shellfish, the geographic range of tick-borne pathogens, the timing of mosquito-borne disease seasons, and the disease ecology of the lobster fishery. Public health and ecological microbiology are converging in Maine in real time.')
               )

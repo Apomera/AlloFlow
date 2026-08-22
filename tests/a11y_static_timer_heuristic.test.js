@@ -44,6 +44,14 @@ describe('static audit timer rule', () => {
     expect(report).not.toContain('TIMER-001');
   });
 
+  it('does not combine an operational poll with unrelated deadline prose', () => {
+    const report = scanFixture([
+      'setInterval(sendHandshake, 250);',
+      '// The network approval deadline is extended while consent is open.',
+    ].join('\n'));
+    expect(report).not.toContain('TIMER-001');
+  });
+
   it('reports a ticking user countdown without adjustment controls', () => {
     const report = scanFixture([
       'let timeLeft = 60;',
@@ -72,5 +80,14 @@ describe('static audit timer rule', () => {
     ].join('\n'));
     expect(paused).not.toContain('TIMER-001');
     expect(extended).not.toContain('TIMER-001');
+  });
+
+  it('accepts explicitly documented essential timing for a standardized measure', () => {
+    const report = scanFixture([
+      '// data-a11y-essential-timing: standardized fluency probe; extending time invalidates the measure.',
+      'let timeLeft = 60;',
+      'setInterval(() => { timeLeft -= 1; }, 1000);',
+    ].join('\n'));
+    expect(report).not.toContain('TIMER-001');
   });
 });

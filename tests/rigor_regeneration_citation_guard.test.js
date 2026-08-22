@@ -1,6 +1,7 @@
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
-import { parse } from '@babel/parser';
+import { createRequire } from 'node:module';
+import { resolve } from 'node:path';
 import { loadAlloModule } from './setup.js';
 
 const HOST_PATHS = [
@@ -13,27 +14,23 @@ const FIRST = '[\u207d\u00b9\u207e](https://example.org/one)';
 const SECOND = '[\u207d\u00b2\u207e](https://example.org/two)';
 let pipeline;
 let dispatcher;
+let regenerateWithRigor;
+const require = createRequire(import.meta.url);
 
-const readHandler = (path) => {
-  const source = readFileSync(path, 'utf8');
-  const start = source.indexOf('  const handleRegenerateWithRigor = async () => {');
-  const end = source.indexOf('  const handleAnalysisTextChange = (value) => {', start);
-  expect(start, `${path}: rigor handler start`).toBeGreaterThanOrEqual(0);
-  expect(end, `${path}: rigor handler end`).toBeGreaterThan(start);
-  return source.slice(start, end).replace(/^  const handleRegenerateWithRigor/, 'const handleRegenerateWithRigor');
-};
-
-const makeHandler = (deps) => new Function(
-  ...Object.keys(deps),
-  `${readHandler(HOST_PATHS[0])}\nreturn handleRegenerateWithRigor;`,
-)(...Object.values(deps));
+const makeHandler = deps => () => regenerateWithRigor(deps);
 
 beforeAll(() => {
+  const React = require(resolve(process.cwd(), 'desktop/web-app/node_modules/react'));
+  global.React = window.React = React;
   loadAlloModule('text_pipeline_helpers_module.js');
   loadAlloModule('generate_dispatcher_module.js');
+  loadAlloModule('view_simplified_module.js');
   pipeline = window.AlloModules?.TextPipelineHelpers;
   dispatcher = window.AlloModules?.GenDispatcher;
-  if (!pipeline || !dispatcher) throw new Error('Citation modules failed to register');
+  regenerateWithRigor = window.AlloModules?.SimplifiedView?.regenerateWithRigor;
+  if (!pipeline || !dispatcher || typeof regenerateWithRigor !== 'function') {
+    throw new Error('Citation or SimplifiedView rigor modules failed to register');
+  }
 });
 
 function makeHarness(candidate, options = {}) {
@@ -225,18 +222,20 @@ describe('rigor regeneration citation guard', () => {
     });
   });
 
-  it('keeps all three source copies aligned and pins the fail-closed contract', () => {
-    const handlers = HOST_PATHS.map(path => readHandler(path).replace(/\r\n/g, '\n'));
-    expect(handlers[1]).toBe(handlers[0]);
-    expect(handlers[2]).toBe(handlers[0]);
-    for (const handler of handlers) {
-      expect(() => parse(handler, { sourceType: 'script' })).not.toThrow();
-      expect(handler).toContain('splitReferencesFromBody(rawText)');
-      expect(handler).toContain('validateAdaptationCitationConservation');
-      expect(handler).toContain("unavailable('citation-validator-unavailable')");
-      expect(handler).toContain("stage: 'rigor-regeneration'");
-      expect(handler).toContain("newText = [candidateBody, originalParts.references]");
-      expect(handler).toContain("citationError.code = 'citation-conservation-failed'");
+  it('keeps the citation guard in the CDN source and only fail-closed wrappers in every host', () => {
+    const moduleSource = readFileSync('view_simplified_source.jsx', 'utf8');
+    expect(moduleSource).toContain('splitReferencesFromBody(rawText)');
+    expect(moduleSource).toContain('validateAdaptationCitationConservation');
+    expect(moduleSource).toContain("unavailable('citation-validator-unavailable')");
+    expect(moduleSource).toContain("stage: 'rigor-regeneration'");
+    expect(moduleSource).toContain("newText = [candidateBody, originalParts.references]");
+    expect(moduleSource).toContain("citationError.code = 'citation-conservation-failed'");
+    expect(moduleSource).toContain('SimplifiedView.regenerateWithRigor = regenerateSimplifiedWithRigor');
+    for (const path of HOST_PATHS) {
+      const host = readFileSync(path, 'utf8');
+      expect(host, path).toContain('return api.regenerateWithRigor({');
+      expect(host, path).toContain("addToast('Leveled-text alignment tools are still loading. Try again in a moment.', 'info')");
+      expect(host, path).not.toContain('const validateRigorCitations = (original, candidate) => {');
     }
   });
 });

@@ -8,7 +8,8 @@ describe('Area Model mode tabs accessibility', () => {
     expect(source).toContain("role: 'tablist'");
     expect(source).toContain("].map(function(m, tabIndex)");
     expect(source).toContain("role: 'tab'");
-    expect(source).toContain("'aria-controls': 'stem-areamodel-panel-' + viewMode");
+    expect(source).toContain("'aria-controls': 'stem-areamodel-panel-' + m.id");
+    expect(source).not.toContain("'aria-controls': 'stem-areamodel-panel-' + viewMode");
     expect(source).toContain("tabIndex: active ? 0 : -1");
     expect(source).toContain("e.key === 'ArrowRight'");
     expect(source).toContain("e.key === 'ArrowLeft'");

@@ -123,10 +123,10 @@ describe('Throughline lanes + a11y (stateful mount)', () => {
     expect(panel).toBeTruthy();
     expect(panel.textContent).toContain('NGSS 5-LS1-1');
     expect(panel.textContent).toContain('explicit-attribution-only');
-    expect(panel.querySelector('select[aria-label="Alignment graph node type"]')).toBeTruthy();
-    expect(panel.querySelector('select[aria-label="Alignment graph attribution source"]')).toBeTruthy();
+    expect(panel.querySelector('select[aria-label="alignment_graph.node_type_aria"]')).toBeTruthy();
+    expect(panel.querySelector('select[aria-label="alignment_graph.source_aria"]')).toBeTruthy();
 
-    const typeSelect = panel.querySelector('select[aria-label="Alignment graph node type"]');
+    const typeSelect = panel.querySelector('select[aria-label="alignment_graph.node_type_aria"]');
     const setSelect = (select, value) => {
       const setter = Object.getOwnPropertyDescriptor(window.HTMLSelectElement.prototype, 'value').set;
       setter.call(select, value);
@@ -137,7 +137,7 @@ describe('Throughline lanes + a11y (stateful mount)', () => {
     expect(panel.textContent).not.toContain('Plants use structures.');
 
     act(() => { setSelect(typeSelect, 'all'); });
-    const sourceSelect = panel.querySelector('select[aria-label="Alignment graph attribution source"]');
+    const sourceSelect = panel.querySelector('select[aria-label="alignment_graph.source_aria"]');
     act(() => { setSelect(sourceSelect, 'teacher'); });
     expect(panel.textContent).toContain('Text evidence');
     expect(panel.textContent).toContain('Lesson Plan');
@@ -162,8 +162,8 @@ describe('Throughline lanes + a11y (stateful mount)', () => {
         onImportAlignmentGraph: (payload) => received.push(payload),
         onClearImportedAlignmentGraph: noop,
       });
-      expect(btn(m.host, 'Open graph')).toBeTruthy();
-      const input = m.host.querySelector('input[aria-label="Open saved alignment graph export"]');
+      expect(btn(m.host, 'alignment_graph.open_btn')).toBeTruthy();
+      const input = m.host.querySelector('input[aria-label="alignment_graph.open_input_aria"]');
       expect(input).toBeTruthy();
       const exportPayload = {
         schema: 'alloflow-alignment-graph-export/v1',

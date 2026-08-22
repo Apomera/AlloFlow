@@ -88,7 +88,7 @@ window.StemLab = window.StemLab || {
     var st = document.createElement('style');
     st.id = 'allo-geosandbox-contrast-css';
     st.textContent = [
-      '#allo-geo-sandbox { color: #f8fafc; }',
+      '#allo-geo-sandbox { color: #f8fafc; background: #0f172a; border-radius: 0.75rem; padding: 0.75rem; }',
       '#allo-geo-sandbox button:focus-visible, #allo-geo-sandbox input:focus-visible, #allo-geo-sandbox select:focus-visible, #allo-geo-sandbox textarea:focus-visible, #allo-geo-sandbox canvas:focus-visible { outline: 3px solid #facc15 !important; outline-offset: 2px !important; box-shadow: 0 0 0 5px rgba(250,204,21,0.28) !important; }',
       '#allo-geo-sandbox [class~="text-slate-600"], #allo-geo-sandbox [class~="text-slate-500"], #allo-geo-sandbox [class~="text-slate-400"] { color: #cbd5e1 !important; }',
       '#allo-geo-sandbox [class*="text-"][class*="/50"], #allo-geo-sandbox [class*="text-"][class*="/60"], #allo-geo-sandbox [class*="text-"][class*="/70"], #allo-geo-sandbox [class*="text-"][class*="/80"] { color: #e2e8f0 !important; }',

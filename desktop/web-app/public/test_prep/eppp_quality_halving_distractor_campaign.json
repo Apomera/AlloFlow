@@ -47,7 +47,7 @@
     },
     "metricsAfter": {
       "uniqueKeyStemLexicalLeakageCandidates": 0,
-      "asymmetricExtremeDistractorCandidates": 27,
+      "asymmetricExtremeDistractorCandidates": 0,
       "advancedDirectRecallCandidates": 0,
       "semanticConceptDuplicatePairs": 0,
       "semanticConceptDuplicateClusters": 0
@@ -60,7 +60,7 @@
         "bufferedTarget": 65
       },
       "asymmetricExtremeDistractorCandidates": {
-        "value": 27,
+        "value": 0,
         "ceiling": 147,
         "met": true,
         "bufferedTarget": 140

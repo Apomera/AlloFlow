@@ -721,7 +721,7 @@ describe('ANTI wiring pins', () => {
         expect(sharedActivitySource).not.toContain('<span aria-hidden="true">??</span> Class word cloud');
         expect(sharedActivitySource).toContain('const refreshed = await refresh({ quiet: true })');
         expect(sharedActivitySource).toContain('That change saved, but the moderation list could not refresh.');
-        expect(anti).toContain('sharedActivities: sharedActivities.length ? sharedActivities : undefined');
+        expect(sharedActivitySource).toContain('sharedActivities: sharedActivities.length ? sharedActivities : undefined');
         expect(anti).toContain('activities: built.sharedActivities');
         expect(anti).toContain('sharedActivity: built.sharedActivities[0] || null');
         // Surveys need the v13 script; gating HERE means a too-old mailbox is
@@ -774,8 +774,8 @@ describe('ANTI wiring pins', () => {
         // t('share_collect.type_rating') during the wave-2 i18n sweep; the
         // rating option itself is what this pin guards.
         expect(assignmentCenterSource).toContain('<option value="rating">{tx(\'share_collect.type_rating\', \'Rating scale (not scored)\')}</option>');
-        expect(anti).toContain('const ratingMin = Math.max(1, Math.min(9,');
-        expect(anti).toContain('const ratingMax = Math.max(ratingMin + 1, Math.min(10,');
+        expect(sharedActivitySource).toContain('const ratingMin = Math.max(1, Math.min(9,');
+        expect(sharedActivitySource).toContain('const ratingMax = Math.max(ratingMin + 1, Math.min(10,');
     });
 
     it('open/putpack are admin-gated in Code.gs and boxes are restricted to up/down', () => {

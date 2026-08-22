@@ -1984,6 +1984,102 @@
     "text": "After using a recipe: Save the source and reviewed resources as an AlloFlow project in an approved location. Record which support removed a barrier and which did not. Keep one student-facing direction template. Remove student-specific content before reusing or sharing the project. Recheck the resource after a product update or when moving to a different deployment. For interpreting the resulting classroom signals, return to Review evidence and plan next steps. For safe storage, sharing, and AI use, continue to Privacy and responsible AI. Keep the Quick reference nearby while a routine is still new."
   },
   {
+    "id": "worked-student-vignette:worked-student-vignette-water-cycle-lesson",
+    "title": "Worked student vignette: water-cycle lesson",
+    "chapter": "Worked student vignette: water-cycle lesson",
+    "level": 1,
+    "url": "worked-student-vignette.html#worked-student-vignette-water-cycle-lesson",
+    "text": "Follow one fictional learner from a shared target through privacy-safe supports, live Canvas examples, evidence, and the next teaching decision. This chapter follows one fictional learner through a complete planning decision. It shows how a teacher can turn a broad student need into a small, reviewable AlloFlow resource set without entering a student name, disability label, assessment record, or other personal information. The learner, classroom, and response samples are hypothetical. The live product images were captured in the signed-in Gemini Canvas release on August 20, 2026 with a synthetic third-grade water-cycle source and no student data. They demonstrate the workflow and the teacher's decisions; they are not evidence about a real child."
+  },
+  {
+    "id": "worked-student-vignette:case-snapshot",
+    "title": "Case snapshot",
+    "chapter": "Worked student vignette: water-cycle lesson",
+    "level": 2,
+    "url": "worked-student-vignette.html#case-snapshot",
+    "text": "Ms. Rivera is preparing a third-grade science lesson about the water cycle. The shared learning target is: Explain how water moves through evaporation, condensation, precipitation, and collection, using sequence and cause-and-effect language. One learner in the class, called Sam in this vignette, contributes accurate ideas during discussion but can lose the sequence when information is presented in a dense paragraph. Sam benefits from previewing a small number of academic terms, seeing a process laid out visually, and choosing between a short typed explanation and an oral response. The teacher wants those supports available to the whole class so Sam is not publicly singled out. Planning question Decision in this case What remains the same for everyone? The science target, source facts, four required process terms, and expectation to explain cause and effect. What barrier is the teacher addressing? Holding the process sequence and technical vocabulary in mind while reading and explaining. What supports will be offered? A reviewed glossary, a five-step visual sequence, read-aloud, and typed or oral response. What evidence will count? An explanation that puts the stages in a defensible order and connects the Sun's energy to evaporation. What is intentionally not entered in AlloFlow? Sam's name, diagnosis, plan, test scores, family details, and prior responses. This is an instructional vignette, not a recommendation for an individual education program, accommodation plan, diagnosis, or placement. A real learner's supports should follow the responsible team process and the student's established access methods."
+  },
+  {
+    "id": "worked-student-vignette:plan-the-smallest-useful-resource-set",
+    "title": "Plan the smallest useful resource set",
+    "chapter": "Worked student vignette: water-cycle lesson",
+    "level": 2,
+    "url": "worked-student-vignette.html#plan-the-smallest-useful-resource-set",
+    "text": "Ms. Rivera does not generate every available resource. She chooses four items that each have a distinct job: Analyze Source Material to identify the text demands she must review. Glossary to preview essential academic and domain terms. Sequence Builder to make order and cause visible. Exit Ticket to collect the same explanation target through more than one response route. The teacher will package only the reviewed student-facing items. The source analysis and answer guidance remain teacher-facing. Resource Teaching purpose Teacher review gate Next action if it does not help Source analysis Surface likely vocabulary, syntax, and concept demands. Compare every claim with the actual passage and grade context. Ignore or correct an automated estimate that does not match the source. Glossary Reduce the cost of entering the passage. Keep only terms students need for this task; verify definitions and examples. Replace a definition with a teacher-written one or remove the card. Visual sequence Keep the process order visible during explanation. Verify order, arrows, labels, and the role of the Sun. Edit the sequence or use a teacher-created diagram. Exit ticket Show whether students can explain the process, not merely recognize terms. Check the prompt, scoring guidance, and response options. Confer, accept another approved response mode, or reteach before scoring."
+  },
+  {
+    "id": "worked-student-vignette:step-1-enter-lesson-defaults-not-a-student-profile",
+    "title": "Step 1: enter lesson defaults, not a student profile",
+    "chapter": "Worked student vignette: water-cycle lesson",
+    "level": 2,
+    "url": "worked-student-vignette.html#step-1-enter-lesson-defaults-not-a-student-profile",
+    "text": "Ms. Rivera opens Universal Settings and enters only information that belongs to the lesson: third grade, English, the approved science target or standard, and a high-contrast educational image style. She leaves Student Interests blank because no interest theme is necessary for this task. AlloFlow Universal Settings in Gemini Canvas showing a third-grade lesson and the image-style field set to clean educational vector illustration, high contrast, and no embedded text Live Canvas decision shown: the universal image style is a lesson default, not a description of Sam. A resource-level exception should be used only when the resource has a real instructional need, such as a black-line image that must photocopy clearly. The teacher uses this planning translation: Private observation: \"Sam loses the sequence in dense text.\" Lesson-level support: \"Provide a five-step visual sequence and keep the original source available.\" Private observation: \"Sam explains more fully aloud.\" Lesson-level support: \"Allow a typed or oral explanation using the same success criteria.\" The second statement in each pair can guide a resource without exposing who prompted the decision."
+  },
+  {
+    "id": "worked-student-vignette:step-2-analyze-before-adapting",
+    "title": "Step 2: analyze before adapting",
+    "chapter": "Worked student vignette: water-cycle lesson",
+    "level": 2,
+    "url": "worked-student-vignette.html#step-2-analyze-before-adapting",
+    "text": "The source analysis identifies upper-elementary text demands and highlights terms such as evaporation, condensation, precipitation, transpiration, and surface runoff. Ms. Rivera treats those outputs as leads to inspect, not as a reading diagnosis or a command to simplify everything. AlloFlow source analysis in Gemini Canvas showing a third-to-fifth-grade complexity estimate and water-cycle key concepts including evaporation, condensation, and precipitation Live Canvas decision shown: the analysis places likely demands beside the source workflow. It does not decide what Sam can understand. Ms. Rivera checks the actual sentences and sees that the essential science is accessible when the process terms are previewed and the sequence remains visible. She keeps the original passage rather than replacing it automatically. Her review questions are: Are the important scientific facts and qualifiers represented accurately? Which terms must students learn, and which can be explained in ordinary language? Does a numerical readability estimate hide helpful context, diagrams, or teacher modeling? Would adaptation remove productive science language that belongs in the target?"
+  },
+  {
+    "id": "worked-student-vignette:step-3-preview-a-small-vocabulary-set",
+    "title": "Step 3: preview a small vocabulary set",
+    "chapter": "Worked student vignette: water-cycle lesson",
+    "level": 2,
+    "url": "worked-student-vignette.html#step-3-preview-a-small-vocabulary-set",
+    "text": "The live Glossary panel can generate both Tier 2 academic words and Tier 3 domain words. The screenshot shows a broad starting configuration of four Tier 2 and six Tier 3 terms while the source analysis remains visible on the right. AlloFlow Glossary panel in Gemini Canvas showing controls for Tier 2 and Tier 3 term counts, definition level, word roots, custom instructions, and words in images Live Canvas decision shown: generation breadth is not the same as the final student load. Ms. Rivera generates candidates, then reduces the delivered set to five terms: cycle, evaporation, condensation, precipitation, and collection. She checks each definition in the context of the passage and adds one familiar example. She does not require Sam to memorize ten disconnected cards before beginning the lesson. A privacy-safe Custom Instructions entry for this case is: Define only terms needed to explain the water-cycle sequence. Use one short definition and one familiar example. Preserve the scientific term. Do not add student names or ability labels."
+  },
+  {
+    "id": "worked-student-vignette:step-4-make-the-sequence-visible",
+    "title": "Step 4: make the sequence visible",
+    "chapter": "Worked student vignette: water-cycle lesson",
+    "level": 2,
+    "url": "worked-student-vignette.html#step-4-make-the-sequence-visible",
+    "text": "Ms. Rivera opens Sequence Builder. The panel lets her specify the topic, number of items, ordering mode, and whether visuals are included. In the captured starting state, item count is still automatic and visuals are not yet selected; the prior source analysis remains visible for comparison. AlloFlow Sequence Builder panel in Gemini Canvas showing topic, item-count, ordering-mode, and include-visuals controls beside the water-cycle source analysis Live Canvas decision shown: the teacher changes the automatic starting state for an instructional reason. She requests five items, selects process order, turns on visuals, and asks for arrows or connection language that makes cause and effect explicit. After generation, she verifies that evaporation follows warming, condensation follows cooling, and the sequence does not imply that the cycle has one permanent starting point. Her Custom Instructions entry is: Create five age-respectful steps for a third-grade science lesson. Include the Sun's energy, evaporation, condensation, precipitation, and collection. Use concise labels and a clear visual connection between steps. Keep all science claims consistent with the source. Students may keep this sequence open while reading, discussing, or responding. It is a support for the shared task, not an easier replacement task."
+  },
+  {
+    "id": "worked-student-vignette:step-5-collect-comparable-evidence-through-two-routes",
+    "title": "Step 5: collect comparable evidence through two routes",
+    "chapter": "Worked student vignette: water-cycle lesson",
+    "level": 2,
+    "url": "worked-student-vignette.html#step-5-collect-comparable-evidence-through-two-routes",
+    "text": "Ms. Rivera creates a short exit ticket with two content prompts and one unscored reflection. The key evidence prompt is: Explain how the Sun helps water move through the water cycle. Use at least three of these words: evaporation, condensation, precipitation, collection. You may type three or four sentences or record a short oral explanation. Both routes use the same criteria: the stages are in a scientifically defensible order; the explanation connects the Sun's energy to evaporation; at least three target terms are used meaningfully; the response explains a relationship rather than listing words. AlloFlow can help draft the prompt, options, and feedback, but Ms. Rivera checks them before students see them. She does not infer that a missing typed response means missing science understanding until she has checked the delivery route, access, language, and the offered oral option."
+  },
+  {
+    "id": "worked-student-vignette:step-6-let-the-alignment-check-challenge-the-plan",
+    "title": "Step 6: let the alignment check challenge the plan",
+    "chapter": "Worked student vignette: water-cycle lesson",
+    "level": 2,
+    "url": "worked-student-vignette.html#step-6-let-the-alignment-check-challenge-the-plan",
+    "text": "The live Curriculum Audit flags a mismatch between the water-cycle lesson and NGSS 3-ESS2-1, which addresses representing weather data. This is a useful failure: the tool has surfaced a planning problem rather than decorating the lesson with a standard label. AlloFlow Curriculum Audit in Gemini Canvas showing a score of 40 and a critical standards-alignment warning for a water-cycle lesson labeled with NGSS 3-ESS2-1 Live Canvas decision shown: Ms. Rivera does not click Apply suggested fixes automatically. She checks the district curriculum and makes one of two honest choices: If the lesson is intended as prerequisite concept-building, she labels it that way and does not claim that it assesses 3-ESS2-1. If the lesson must assess 3-ESS2-1, she replaces or extends the evidence task with weather data that students represent and interpret. The same review applies to UDL feedback. A low audit score is a prompt to inspect barriers and options; it is not proof that a lesson is inaccessible, and a high score would not certify the real student experience."
+  },
+  {
+    "id": "worked-student-vignette:step-7-preview-the-package-as-a-student",
+    "title": "Step 7: preview the package as a student",
+    "chapter": "Worked student vignette: water-cycle lesson",
+    "level": 2,
+    "url": "worked-student-vignette.html#step-7-preview-the-package-as-a-student",
+    "text": "After the content is corrected, Ms. Rivera opens Document Builder. The live interface provides student-document formats, appearance controls, navigation, focus mode, accessibility inspection, and a preview area. AlloFlow Document Builder in Gemini Canvas showing PDF, worksheet, HTML, and slide choices with accessibility inspection, focus mode, appearance controls, and live preview Live Canvas decision shown: opening Document Builder is not the final check. Ms. Rivera confirms that the preview contains the intended student content, that teacher analysis and answer material are absent, and that the exported or linked version works outside the teacher view. She tests keyboard navigation, zoom, read-aloud, and the oral-response route on the same kind of device students will use. The student package contains: the original passage with read-aloud available; the five-term reviewed glossary; the five-step visual sequence; the exit ticket with typed and oral response directions; one plain-language help route if technology fails. It does not contain the private vignette, an ability label, the source analysis, the alignment score, or a teacher answer key."
+  },
+  {
+    "id": "worked-student-vignette:hypothetical-classroom-evidence-and-next-move",
+    "title": "Hypothetical classroom evidence and next move",
+    "chapter": "Worked student vignette: water-cycle lesson",
+    "level": 2,
+    "url": "worked-student-vignette.html#hypothetical-classroom-evidence-and-next-move",
+    "text": "Sam gives this fictional oral response: The Sun warms water, so some water evaporates and goes into the air. It cools and condensation makes clouds. Then precipitation falls, and water collects so the cycle can keep going. Ms. Rivera records only the instructional evidence needed for her next move. She does not treat the wording as a standardized score or ask AlloFlow to diagnose the student. Evidence noticed Reasonable interpretation Next instructional move The sequence is complete and the Sun-to-evaporation link is accurate. The lesson target is demonstrated through the oral route. Ask for one transfer example, such as a puddle after rain. Terms are accurate but the explanation is a list. The relationship language may need modeling. Model one because/so sentence and ask for a revision. The order is accurate with the sequence visible but incomplete without it. The visual support is currently useful; independence is not yet established. Keep the support available and revisit after more practice. Several students reverse condensation and precipitation. This is likely a classwide instructional signal, not an individual deficit. Reteach with a model and collect a fresh sample. The typed route is blank but the oral explanation is accurate. The blank response does not establish missing science knowledge. Accept the approved oral evidence and inspect the writing or delivery barrier separately."
+  },
+  {
+    "id": "worked-student-vignette:reuse-the-decision-pattern",
+    "title": "Reuse the decision pattern",
+    "chapter": "Worked student vignette: water-cycle lesson",
+    "level": 2,
+    "url": "worked-student-vignette.html#reuse-the-decision-pattern",
+    "text": "The durable pattern is target, barrier, support, evidence, branch: Name the shared learning target. Describe the barrier without identifying a student in the tool. Generate the smallest support set that could remove that barrier. Review every output against the source, target, accessibility needs, and real delivery route. Collect comparable evidence through approved response options. Decide the next instructional move from the evidence, not from an AI label. For another vignette, change the subject and barrier while keeping that decision structure. A humanities case might pair a primary-source glossary with a DBQ evidence organizer. A mathematics case might pair a worked example with an alternate response format. A multilingual case might add a reviewed home-language support while preserving the shared content target. Return to Prepare a lesson for the full planning workflow, Classroom workflows for more recipes, and Privacy and responsible AI before entering or sharing any student-related information."
+  },
+  {
     "id": "privacy-and-responsible-ai:privacy-and-responsible-ai",
     "title": "Privacy and responsible AI",
     "chapter": "Privacy and responsible AI",

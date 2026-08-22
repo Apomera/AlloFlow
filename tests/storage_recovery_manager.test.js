@@ -1,22 +1,21 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { loadSessionSummaryApi } from './session_summary_test_utils.js';
 
 const anti = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8');
 
 function loadMailboxRetentionHelpers() {
   const liveStart = anti.indexOf('const ALLO_MB_LIVE_MAX_AGE_MS');
   const liveEnd = anti.indexOf('const ALLO_MB_POLL_MS', liveStart);
-  const summaryStart = anti.indexOf('const shouldSaveRosterSessionSummary');
-  const summaryEnd = anti.indexOf('const saveRosterSessionSummary', summaryStart);
-  if (liveStart < 0 || liveEnd < 0 || summaryStart < 0 || summaryEnd < 0) {
+  if (liveStart < 0 || liveEnd < 0) {
     throw new Error('Session retention helper blocks not found');
   }
-  return new Function(
-    anti.slice(liveStart, liveEnd) +
-    '\n' + anti.slice(summaryStart, summaryEnd) +
-    '\nreturn { normalizeLive: _alloNormalizeMailboxLiveRecord, shouldSaveSummary: shouldSaveRosterSessionSummary, ttl: ALLO_MB_LIVE_MAX_AGE_MS };'
+  const liveHelpers = new Function(
+    anti.slice(liveStart, liveEnd)
+    + '\nreturn { normalizeLive: _alloNormalizeMailboxLiveRecord, ttl: ALLO_MB_LIVE_MAX_AGE_MS };'
   )();
+  return { ...liveHelpers, shouldSaveSummary: loadSessionSummaryApi().shouldSaveRosterSessionSummary };
 }
 
 function loadInventoryHelpers() {

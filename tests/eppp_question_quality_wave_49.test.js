@@ -63,11 +63,11 @@ describe('EPPP final feedback and distractor cleanup wave 49', () => {
     expect(read('desktop/web-app/public/test_prep/eppp_question_quality_audit_wave_49.json')).toBe(read('test_prep/eppp_question_quality_audit_wave_49.json'));
   });
 
-  it('keeps wave 49 after wave 48 on both replay paths', () => {
+  it('keeps wave 49 before the extreme-word and challenge waves on both replay paths', () => {
     const builder = read('dev-tools/build_eppp_1500_expansion.cjs');
     const i48 = builder.indexOf('repair_eppp_native_quality_wave_48.cjs');
     const i49 = builder.indexOf('repair_eppp_native_quality_wave_49.cjs', i48);
     expect(i49).toBeGreaterThan(i48);
-    expect(builder).toContain("existingBank.some((item) => item.wordingCleanupWave === 'eppp-native-quality-wave-49')");
+    expect(builder).toContain("existingBank.some((item) => item.challengeEnhancementWave === 'eppp-challenge-enhancement-wave-51')");
   });
 });
