@@ -36323,7 +36323,7 @@
       "rst_m51_lesson1": "Trace the spiral arms and find the companion galaxy.",
       "rst_m51_lesson2": "Compare the bridge of material with the Galaxy Explorer interaction model.",
       "rst_m51_lesson3": "Predict where star formation is strongest before changing surveys.",
-      "rst_m87_name": "M87",
+      "rst_m87_name": "Virgo A",
       "rst_m87_type": "Giant elliptical galaxy",
       "rst_m87_bridge": "Home of the first imaged black-hole shadow, M87*.",
       "rst_m87_story": "A smooth elliptical galaxy that anchors the Virgo Cluster and hosts a supermassive black hole.",
