@@ -89,13 +89,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
       descr: 'Below 32°F (0°C). Bacteria are dormant — they don\'t die, but they don\'t grow either. Freezing is not a kill step.' };
     if (tempF < 40) return { zone: 'refrig', label: 'Refrigerated (safe)', color: '#38bdf8', rate: 0.05,
       descr: 'Below 40°F (4°C). The fridge zone. Most foodborne bacteria grow very slowly here — safe for short-term storage.' };
-    if (tempF < 140) return { zone: 'danger', label: 'DANGER ZONE', color: '#dc2626', rate: 1,
+    if (tempF < 140) return { zone: 'danger', label: 'DANGER ZONE', color: '#dc2626', ink: '#f87171', rate: 1,
       descr: '40°F–140°F (4°C–60°C). Bacteria can double every 20 minutes. Food should not stay here for more than 2 hours total (1 hour if ambient is over 90°F).' };
     if (tempF < 165) return { zone: 'cooking', label: 'Cooking (most foods)', color: '#f59e0b', rate: -0.5,
       descr: '140°F–165°F (60°C–74°C). Above the danger zone — bacteria die over time. Hold above 140°F for safe service.' };
     if (tempF < 212) return { zone: 'hot', label: 'Safe cook + hold', color: '#16a34a', rate: -1,
       descr: 'Above 165°F (74°C). Kills bacteria on contact. Most cooking happens here.' };
-    return { zone: 'boil', label: 'Boiling', color: '#15803d', rate: -1,
+    return { zone: 'boil', label: 'Boiling', color: '#15803d', ink: '#4ade80', rate: -1,
       descr: 'Water boils at 212°F (100°C) at sea level. Boiling kills bacteria instantly but doesn\'t neutralize all toxins — sometimes the bacteria die but the poisons they made survive.' };
   }
 
@@ -228,16 +228,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
     { maxF: 285, label: 'Maillard threshold', color: '#dcc18b', textColor: '#92400e',
       visual: 'First hint of golden color. Faint sweet aroma starts. Looks "cooked" but not "seared."',
       science: '250-285°F (120-140°C). The reaction has begun. Amino acids in the food are starting to react with reducing sugars (glucose, fructose, lactose), producing the first wave of brown pigment compounds (melanoidins) + dozens of volatile flavor molecules.' },
-    { maxF: 325, label: 'Active Maillard — golden brown', color: '#c08a3c', textColor: '#fef9c3',
+    { maxF: 325, label: 'Active Maillard — golden brown', color: '#c08a3c', ink: '#c08a3c', textColor: '#fef9c3',
       visual: 'Clear golden-brown surface. Aromas are rich + nutty. This is the "perfect cook" zone for most things.',
       science: '285-325°F (140-163°C). Reaction at full speed. The brown color comes from melanoidins; the smell from hundreds of volatile compounds (pyrazines, furans, thiophenes) — these don\'t exist in raw food at all.' },
-    { maxF: 375, label: 'Deep Maillard — mahogany', color: '#7c4a1f', textColor: '#fef3c7',
+    { maxF: 375, label: 'Deep Maillard — mahogany', color: '#7c4a1f', ink: '#cd8f55', textColor: '#fef3c7',
       visual: 'Deep brown crust, intense aromas — almost roasted-coffee territory. The reaction has produced thousands of compounds.',
       science: '325-375°F (163-190°C). Heavy reaction. Color compounds darken to brown-black. Some compounds start to bitter (pyrazines + carbonyls in higher concentration). Most "seared" outcomes happen here.' },
-    { maxF: 425, label: 'Bitter + charred', color: '#3f2419', textColor: '#fbbf24',
+    { maxF: 425, label: 'Bitter + charred', color: '#3f2419', ink: '#d2a679', textColor: '#fbbf24',
       visual: 'Charred, bitter, often acrid smell. Volatile aromatics are burning off; bitter degradation products dominate.',
       science: '375-425°F (190-218°C). Past the flavor peak. You\'re burning off the good volatiles + concentrating bitter degradation products. Smoke = vaporized oil + burned proteins.' },
-    { maxF: 600, label: '☠️ Acrylamide + acrolein zone', color: '#1c1410', textColor: '#fca5a5',
+    { maxF: 600, label: '☠️ Acrylamide + acrolein zone', color: '#1c1410', ink: '#fca5a5', textColor: '#fca5a5',
       visual: 'Black, smoking, often on fire. Inedible. Carcinogenic compounds (acrylamide) form from starch + amino acid asparagine.',
       science: 'Above 425°F (220°C). Starchy foods form acrylamide (probable human carcinogen per IARC). Oils break down to acrolein (toxic + bitter). This is why french fries should be deep golden, not dark brown — the FDA recommends "go for gold."' }
   ];
@@ -1941,7 +1941,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
             h('div', { style: { marginBottom: 14 } },
               h('label', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 6, fontWeight: 700 } },
                 h('span', null, __alloT('stem.kitchenlab.food_temperature', 'Food temperature')),
-                h('span', { style: { color: zone.color, fontFamily: 'ui-monospace, Menlo, monospace' } }, curTemp + '°F (' + Math.round((curTemp - 32) * 5 / 9) + '°C)')),
+                h('span', { style: { color: zone.ink || zone.color, fontFamily: 'ui-monospace, Menlo, monospace' } }, curTemp + '°F (' + Math.round((curTemp - 32) * 5 / 9) + '°C)')),
               h('input', { type: 'range', min: 32, max: 220, step: 1, value: curTemp,
                 onChange: function(e) { setKL({ safetyTemp: parseInt(e.target.value, 10) }); },
                 'aria-label': __alloT('stem.kitchenlab.food_temperature_in_fahrenheit', 'Food temperature in Fahrenheit'),
@@ -1951,7 +1951,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                 background: zone.color + '18', border: '1px solid ' + zone.color + '55',
                 borderLeft: '4px solid ' + zone.color,
                 padding: '14px 16px', borderRadius: 10, marginBottom: 12 } },
-              h('div', { style: { fontSize: 14, fontWeight: 800, color: zone.color, marginBottom: 6 } }, zone.label),
+              h('div', { style: { fontSize: 14, fontWeight: 800, color: zone.ink || zone.color, marginBottom: 6 } }, zone.label),
               h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.55 } }, zone.descr)),
             // Growth visualization
             zone.zone === 'danger' ? h('div', { style: { background: 'rgba(220,38,38,0.08)', border: '1px solid rgba(220,38,38,0.3)', padding: 12, borderRadius: 8 } },
@@ -2227,7 +2227,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
           if (Math.abs(diff) <= 25) return { label: '✅ Perfect for ' + tech.name, color: '#22c55e', note: __alloT('stem.kitchenlab.pan_is_at_the_right_temp_for_this_tech', 'Pan is at the right temp for this technique. Food browns + cooks evenly.') };
           if (diff < -25) return { label: __alloT('stem.kitchenlab.too_cold', '🥶 Too cold'), color: '#38bdf8', note: __alloT('stem.kitchenlab.below_threshold_food_will_steam_in_its', 'Below threshold — food will steam in its own juices instead of browning. No Maillard. Gray + soggy.') };
           if (diff > 25 && diff <= 75) return { label: __alloT('stem.kitchenlab.hot_but_tolerable', '🔥 Hot but tolerable'), color: '#fb923c', note: __alloT('stem.kitchenlab.workable_for_fast_cooks_but_easy_to_bu', 'Workable for fast cooks but easy to burn. Watch carefully.') };
-          return { label: __alloT('stem.kitchenlab.smoking_risky', '☠️ Smoking + risky'), color: '#dc2626', note: __alloT('stem.kitchenlab.past_the_smoke_point_of_most_cooking_o', 'Past the smoke point of most cooking oils. Acrolein-forming, bitter flavors, fire risk. Reduce heat or change oil to one with higher smoke point (avocado, refined peanut, ghee).') };
+          return { label: __alloT('stem.kitchenlab.smoking_risky', '☠️ Smoking + risky'), color: '#dc2626', ink: '#f87171', note: __alloT('stem.kitchenlab.past_the_smoke_point_of_most_cooking_o', 'Past the smoke point of most cooking oils. Acrolein-forming, bitter flavors, fire risk. Reduce heat or change oil to one with higher smoke point (avocado, refined peanut, ghee).') };
         })();
         return h('div', null,
           panelHeader('🔥 Heat & Technique',
@@ -2262,13 +2262,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
             h('div', { style: { marginBottom: 14 } },
               h('label', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 6, fontWeight: 700 } },
                 h('span', null, __alloT('stem.kitchenlab.your_pan_temperature', 'Your pan temperature')),
-                h('span', { style: { color: heatVerdict.color, fontFamily: 'ui-monospace, Menlo, monospace' } }, panTemp + '°F')),
+                h('span', { style: { color: heatVerdict.ink || heatVerdict.color, fontFamily: 'ui-monospace, Menlo, monospace' } }, panTemp + '°F')),
               h('input', { type: 'range', min: 100, max: 500, step: 5, value: panTemp,
                 onChange: function(e) { setKL({ heatPanTempF: parseInt(e.target.value, 10) }); },
                 'aria-label': __alloT('stem.kitchenlab.pan_temperature_in_fahrenheit', 'Pan temperature in Fahrenheit'),
                 style: { width: '100%', accentColor: heatVerdict.color } })),
             h('div', { style: { background: heatVerdict.color + '18', border: '1px solid ' + heatVerdict.color + '55', borderLeft: '4px solid ' + heatVerdict.color, padding: '10px 12px', borderRadius: 10 } },
-              h('div', { style: { fontSize: 13, fontWeight: 800, color: heatVerdict.color, marginBottom: 4 } }, heatVerdict.label),
+              h('div', { style: { fontSize: 13, fontWeight: 800, color: heatVerdict.ink || heatVerdict.color, marginBottom: 4 } }, heatVerdict.label),
               h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.55 } }, heatVerdict.note))),
 
           // ─── Technique deep dive ───
@@ -2343,7 +2343,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
             h('div', { style: { marginBottom: 16 } },
               h('label', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 6, fontWeight: 700 } },
                 h('span', null, __alloT('stem.kitchenlab.food_surface_temperature', 'Food surface temperature')),
-                h('span', { style: { color: zone.textColor === '#fef9c3' || zone.textColor === '#fef3c7' || zone.textColor === '#fbbf24' ? zone.color : '#fde68a', fontFamily: 'ui-monospace, Menlo, monospace' } },
+                h('span', { style: { color: zone.ink || '#fde68a', fontFamily: 'ui-monospace, Menlo, monospace' } },
                   surfF + '°F (' + surfC + '°C)')),
               h('input', { type: 'range', min: 100, max: 500, step: 5, value: surfF,
                 onChange: function(e) { setKL({ maillardSurfaceF: parseInt(e.target.value, 10) }); },
@@ -2359,7 +2359,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                   textAlign: 'center', padding: 8, transition: 'background 0.3s' } },
                 __alloT('stem.kitchenlab.visual_color', 'visual color')),
               h('div', { style: { flex: 1, minWidth: 220 } },
-                h('div', { style: { fontSize: 14, fontWeight: 800, color: zone.color, marginBottom: 4 } }, zone.label),
+                h('div', { style: { fontSize: 14, fontWeight: 800, color: zone.ink || zone.color, marginBottom: 4 } }, zone.label),
                 h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55 } }, zone.visual))),
             h('div', { style: { background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid #7dd3fc', padding: '10px 12px', borderRadius: 8 } },
               h('div', { style: { fontSize: 10, fontWeight: 800, color: '#7dd3fc', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 } }, __alloT('stem.kitchenlab.science', '⚗️ Science')),

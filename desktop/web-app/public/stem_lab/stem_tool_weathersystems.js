@@ -5412,7 +5412,7 @@ var geographyGroup = new THREE.Group();
       // #64748b measured 4.46:1 on the sky-50 backing several of these panels — just under
       // AA for 11px axis text. Stepped one notch darker so the same token clears 4.5:1 on
       // every light surface the charts land on (white 5.01, sky-50 4.70, emerald-50 4.75).
-      var chartMutedInk = dark ? '#94a3b8' : '#61708a';
+      var chartMutedInk = dark ? '#94a3b8' : '#475569';
       var chartGrid = dark ? '#1e293b' : '#e2e8f0';
       var chartBaseline = dark ? '#334155' : '#cbd5e1';
       var chartSurface = dark ? '#0f172a' : '#ffffff';
@@ -5434,7 +5434,7 @@ var geographyGroup = new THREE.Group();
       var featureChip = dark ? 'bg-white/10 ring-1 ring-white/10' : 'bg-white ring-1 ring-slate-200';
       var featureTrack = dark ? 'bg-black/30' : 'bg-slate-200';
       var featureMuted = dark ? 'text-slate-300' : 'text-slate-600';
-      var featureFaint = dark ? 'text-slate-400' : 'text-slate-500';
+      var featureFaint = dark ? 'text-slate-400' : 'text-slate-600';
 
       var panelClass = 'rounded-xl border shadow-sm ' + (dark ? 'bg-slate-900/80 border-slate-700' : 'bg-white border-sky-200');
       var mutedClass = dark ? 'text-slate-300' : 'text-slate-600';
@@ -6422,7 +6422,6 @@ var geographyGroup = new THREE.Group();
             altitudeBands.map(function (band) {
               return h('g', { key: band.label },
                 h('line', { x1: 20, y1: band.y, x2: 700, y2: band.y, stroke: dark ? 'rgba(148,163,184,.2)' : 'rgba(15,23,42,.1)', strokeWidth: 1 }),
-                h('text', { x: 24, y: band.y - 4, fill: mutedColor, fontSize: 9, fontWeight: 700 }, band.label)
               );
             }),
             h('line', { x1: 20, y1: GROUND, x2: 700, y2: GROUND, stroke: dark ? '#94a3b8' : '#475569', strokeWidth: 3 }),
@@ -6459,6 +6458,11 @@ var geographyGroup = new THREE.Group();
               ),
               h('text', { x: frontX, y: GROUND + 16, textAnchor: 'middle', fill: mutedColor, fontSize: 10, fontWeight: 700 }, '▲ boundary at T +' + state.simHour + ' h')
             ),
+            altitudeBands.map(function (band) {
+              return h('g', { key: 'band-label-' + band.label },
+                h('rect', { x: 20, y: band.y - 13, width: band.label.length * 5.4 + 9, height: 12, rx: 6, fill: dark ? '#0b1830' : '#e0f2fe' }),
+                h('text', { x: 24, y: band.y - 4, fill: mutedColor, fontSize: 9, fontWeight: 700 }, band.label));
+            }),
             h('text', { x: 700, y: GROUND + 30, textAnchor: 'end', fill: mutedColor, fontSize: 9 }, 'Vertical scale exaggerated; heights are schematic.')
           ),
           h('p', { className: 'mt-2 text-xs leading-relaxed ' + mutedClass }, detail)
@@ -8894,7 +8898,7 @@ var geographyGroup = new THREE.Group();
                   ),
                   h('p', { className: 'mt-2 border-t border-white/10 pt-2 text-[10px] leading-relaxed text-slate-300' }, geographicMode ? 'These layers are geographic evidence or derived terrain context.' : 'Colored channels explain what the 3D scene is encoding; teaching layers are simplified, not direct measurements.')
                 ),
-                immersivePresenterMode && h('div', { className: 'pointer-events-auto absolute right-3 top-3 z-30 max-w-[340px] rounded-2xl border border-fuchsia-300/35 bg-slate-950/92 p-3 shadow-2xl backdrop-blur-md', 'data-weather-presenter-overlay': true, role: 'region', 'aria-labelledby': 'weather-presenter-title' },
+                immersivePresenterMode && h('div', { className: 'pointer-events-auto absolute right-3 top-3 z-30 max-w-[340px] rounded-2xl border border-fuchsia-300/35 bg-slate-950/90 p-3 shadow-2xl backdrop-blur-md', 'data-weather-presenter-overlay': true, role: 'region', 'aria-labelledby': 'weather-presenter-title' },
                   h('div', { className: 'flex items-start justify-between gap-2' },
                     h('div', null, h('p', { className: 'text-[10px] font-black uppercase tracking-[0.16em] text-fuchsia-200' }, 'Presenter mode'), h('h4', { id: 'weather-presenter-title', className: 'mt-0.5 text-sm font-black text-white' }, geographicMode ? geographicFieldStep.label : tourStep.label)),
                     h('span', { className: 'rounded-full border border-fuchsia-300/30 bg-fuchsia-300/10 px-2 py-1 text-[10px] font-black text-fuchsia-100' }, geographicMode ? (geographicFieldStep.index + 1) + '/' + geographicFieldStep.total : (tourStep.index + 1) + '/' + tourStep.total)
@@ -8958,7 +8962,7 @@ var geographyGroup = new THREE.Group();
                   h('label', { htmlFor: 'weather-stage-timeline-slider', className: 'mt-2 block text-[10px] font-black text-violet-100' }, 'Selected hour', h('input', { id: 'weather-stage-timeline-slider', type: 'range', min: 0, max: liveTimeline.length - 1, step: 1, value: liveTimelineIndex, onChange: function (event) { setLiveWeatherTimelineIndex(event.target.value); }, 'aria-valuetext': timelineSelectionLabel + '. ' + timelineStageContext, className: 'mt-1 min-h-11 w-full accent-violet-300' }))
                 ),
                 !geographicMode && h('div', { className: 'pointer-events-none absolute inset-0 z-[1] bg-gradient-to-b from-cyan-950/10 via-transparent to-slate-950/50', 'data-weather-conceptual-vignette': true, 'aria-hidden': true }),
-                !geographicMode && comparisonAnchorFeature && h('div', { className: 'pointer-events-none absolute left-3 top-20 z-30 max-w-[280px] rounded-xl border border-fuchsia-300/45 bg-slate-950/92 px-3 py-2.5 text-left shadow-2xl backdrop-blur-md', 'data-weather-comparison-legend': comparisonAnchorFeature.id, role: 'status', 'aria-label': '3D feature comparison. Anchor A: ' + comparisonAnchorFeature.label + '. Inspecting B: ' + selectedGlossaryFeature.label + '.' },
+                !geographicMode && comparisonAnchorFeature && h('div', { className: 'pointer-events-none absolute left-3 top-20 z-30 max-w-[280px] rounded-xl border border-fuchsia-300/45 bg-slate-950/90 px-3 py-2.5 text-left shadow-2xl backdrop-blur-md', 'data-weather-comparison-legend': comparisonAnchorFeature.id, role: 'status', 'aria-label': '3D feature comparison. Anchor A: ' + comparisonAnchorFeature.label + '. Inspecting B: ' + selectedGlossaryFeature.label + '.' },
                   h('p', { className: 'text-[10px] font-black uppercase tracking-[0.16em] text-fuchsia-200' }, '3D feature comparison'),
                   h('div', { className: 'mt-1.5 space-y-1.5 text-[10px] font-bold' },
                     h('div', { className: 'flex items-center gap-2 text-fuchsia-100' }, h('span', { className: 'h-2.5 w-2.5 rounded-sm border border-white bg-fuchsia-400', 'aria-hidden': true }), h('span', null, 'Anchor A: ' + comparisonAnchorFeature.label)),
@@ -8966,7 +8970,7 @@ var geographyGroup = new THREE.Group();
                   ),
                   comparisonAnchorFeature.id === selectedGlossaryFeature.id && h('p', { className: 'mt-1.5 text-[10px] text-slate-300' }, 'Select another scene feature to complete the comparison.')
                 ),
-                !geographicMode && hoveredGlossaryFeature && h('div', { className: 'pointer-events-none absolute right-3 top-20 z-30 max-w-[260px] rounded-xl border border-cyan-200/50 bg-slate-950/92 px-3 py-2.5 text-left shadow-2xl backdrop-blur-md', 'data-weather-hover-inspector': hoveredGlossaryFeature.id, role: 'status', 'aria-live': 'polite' },
+                !geographicMode && hoveredGlossaryFeature && h('div', { className: 'pointer-events-none absolute right-3 top-20 z-30 max-w-[260px] rounded-xl border border-cyan-200/50 bg-slate-950/90 px-3 py-2.5 text-left shadow-2xl backdrop-blur-md', 'data-weather-hover-inspector': hoveredGlossaryFeature.id, role: 'status', 'aria-live': 'polite' },
                   h('p', { className: 'text-[10px] font-black uppercase tracking-[0.16em] text-cyan-300' }, d.immersiveHoverInput === 'keyboard' ? 'Keyboard preview' : 'Under pointer'),
                   h('div', { className: 'mt-1 flex items-center gap-2' },
                     h('span', { className: 'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-cyan-200/30 bg-cyan-300/10 text-lg text-cyan-100', 'aria-hidden': true }, hoveredGlossaryFeature.icon),
@@ -8982,7 +8986,7 @@ var geographyGroup = new THREE.Group();
                 geographicMode && h('div', { ref: geographicMapRef, className: 'absolute inset-0 min-h-[500px] w-full md:min-h-[600px] xl:min-h-[680px]', 'data-weather-geographic-map': true, role: 'region', 'aria-label': 'Interactive open geographic map and 3D terrain centered on ' + geographic.label + '. Use map controls, drag, or keyboard navigation to explore.', 'aria-describedby': 'weather-geographic-map-instructions' }),
                 geographicMode && h('div', { className: 'pointer-events-none absolute inset-0 z-[1] bg-gradient-to-b from-slate-950/20 via-transparent to-slate-950/45', 'data-weather-geographic-vignette': true, 'aria-hidden': true }),
                 geographicMode && h('div', { className: 'pointer-events-none absolute left-3 right-14 top-3 z-20 sm:right-auto', 'data-weather-geographic-camera-controls': true },
-                  h('div', { className: 'pointer-events-auto flex flex-wrap items-center gap-1 rounded-xl border border-white/15 bg-slate-950/88 p-1.5 shadow-2xl backdrop-blur-md', role: 'group', 'aria-label': 'Geographic camera views', 'data-weather-geographic-command-bar': true },
+                  h('div', { className: 'pointer-events-auto flex flex-wrap items-center gap-1 rounded-xl border border-white/15 bg-slate-950/90 p-1.5 shadow-2xl backdrop-blur-md', role: 'group', 'aria-label': 'Geographic camera views', 'data-weather-geographic-command-bar': true },
                     h('span', { className: 'px-2 text-[10px] font-black uppercase tracking-widest text-slate-400', 'aria-hidden': true }, 'View'),
                     [
                       { id: 'region', icon: '\u25A7', label: 'Region' },
@@ -9077,13 +9081,13 @@ var geographyGroup = new THREE.Group();
                 !geographicMode && h('div', { className: 'pointer-events-none absolute bottom-3 left-3 right-3 z-10 flex flex-wrap items-end justify-between gap-2' },
                   h('div', { className: 'rounded-xl bg-slate-950/75 px-3 py-2 backdrop-blur-sm' }, h('p', { className: 'text-[11px] font-black uppercase tracking-wide text-cyan-300' }, useLive ? timelineSelectionLabel + ' scene' : 'Teaching model scene'), h('p', { className: 'text-xs font-black' }, sceneLabel)),
                   h('div', { id: 'weather-conceptual-3d-instructions', className: 'rounded-xl bg-slate-950/75 px-3 py-2 text-right text-[11px] text-slate-300 backdrop-blur-sm', 'data-weather-object-picking-hint': true }, 'Click or tap an object to explain | Drag to orbit | Scroll or pinch to zoom'),
-h('div', { className: 'rounded-xl border border-cyan-300/30 bg-slate-950/78 px-4 py-3 text-left shadow-2xl backdrop-blur-md', 'data-weather-tour-overlay': true },
+h('div', { className: 'rounded-xl border border-cyan-300/30 bg-slate-950/80 px-4 py-3 text-left shadow-2xl backdrop-blur-md', 'data-weather-tour-overlay': true },
                     h('p', { className: 'text-[11px] font-black uppercase tracking-[0.18em] text-cyan-300' }, '3D investigation step ' + (tourStep.index + 1) + ' of ' + tourStep.total),
                     h('p', { className: 'mt-1 text-sm font-black text-white' }, tourStep.label),
                     h('p', { className: 'mt-1 text-xs leading-relaxed text-slate-300' }, tourStep.prompt)
                   )
                 ),
-                geographicMode && h('div', { className: 'pointer-events-none absolute bottom-8 left-3 right-3 z-10 rounded-2xl border border-white/15 bg-slate-950/88 px-4 py-3 shadow-2xl backdrop-blur-md sm:right-auto sm:max-w-[560px]', 'data-weather-geographic-hud': true, role: 'group', 'aria-label': geographicObservationSummary(live) },
+                geographicMode && h('div', { className: 'pointer-events-none absolute bottom-8 left-3 right-3 z-10 rounded-2xl border border-white/15 bg-slate-950/90 px-4 py-3 shadow-2xl backdrop-blur-md sm:right-auto sm:max-w-[560px]', 'data-weather-geographic-hud': true, role: 'group', 'aria-label': geographicObservationSummary(live) },
                   h('div', { className: 'flex flex-wrap items-start justify-between gap-2' },
                     h('div', { className: 'min-w-0' },
                       h('p', { className: 'text-[11px] font-black uppercase tracking-[0.18em] text-emerald-300' }, 'Weather command display'),

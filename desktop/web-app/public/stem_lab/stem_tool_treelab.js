@@ -6747,7 +6747,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
           }
         }, [
           h('div', { key: 'a', style: { flex: '1 1 330px', position: 'relative', zIndex: 1 } }, [
-            h('div', { key: 'eyebrow', style: { display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 9px', marginBottom: 8, borderRadius: 999, border: '1px solid ' + T.border, background: isContrast ? T.cardAlt : (isDark ? 'rgba(52,211,153,.1)' : 'rgba(255,255,255,.7)'), color: T.accent, fontSize: 10, fontWeight: 800, letterSpacing: '.09em', textTransform: 'uppercase' } },
+            h('div', { key: 'eyebrow', style: { display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 9px', marginBottom: 8, borderRadius: 999, border: '1px solid ' + T.border, background: isContrast ? T.cardAlt : (isDark ? 'rgba(52,211,153,.1)' : 'rgba(255,255,255,.7)'), color: (isDark || isContrast) ? T.accent : '#047857', fontSize: 10, fontWeight: 800, letterSpacing: '.09em', textTransform: 'uppercase' } },
               '● ' + __alloT('stem.treelab.studio_label', 'Living systems studio')),
             h('h3', { key: 't', style: { fontSize: 25, lineHeight: 1.08, fontWeight: 900, letterSpacing: '-0.035em', margin: 0, color: T.text } },
               '🌳 ' + __alloT('stem.treelab.title', 'Tree Life Lab')),
