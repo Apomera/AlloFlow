@@ -745,6 +745,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
       };
 
       // ── Reduced motion ──
+      // The CSS blanket at the top of this file does NOTHING for canvas: a rAF
+      // loop is not a CSS animation. This ref was written on mount and on media
+      // query change but never read anywhere - an orphan setter, so all six
+      // canvas loops ignored the preference. It now gates the three loops whose
+      // motion is decorative (wave scroll, reflection scroll, soundscape
+      // ambience): they keep redrawing, so slider changes still update the
+      // frozen picture. Deliberately NOT gated: the doppler sim (relative
+      // motion IS the lesson), the sonar hunt and the 3-D cave (motion the
+      // user directly drives; cave bloom already halves under this preference).
       var reducedMotion = useRef(false);
       useEffect(function() {
         var mq = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -3368,7 +3377,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
 
         function animate() {
           if (!running) return;
-          phase += 0.05;
+          if (!reducedMotion.current) phase += 0.05;
           var W = canvas.width;
           var H = canvas.height;
           gfx.fillStyle = isDark ? '#0f172a' : '#f8fafc';
@@ -3448,7 +3457,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
 
         function animate() {
           if (!running) return;
-          phase += 0.04;
+          if (!reducedMotion.current) phase += 0.04;
           var W = canvas.width;
           var H = canvas.height;
           gfx.fillStyle = isDark ? '#0f172a' : '#f8fafc';
@@ -5040,7 +5049,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
 
         function animate() {
           if (!running) return;
-          phase += 0.03;
+          if (!reducedMotion.current) phase += 0.03;
           var W = canvas.width;
           var H = canvas.height;
 
