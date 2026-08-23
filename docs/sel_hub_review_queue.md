@@ -331,3 +331,77 @@ call), the 3000 ms badge auto-dismiss (§2e, 10 tools), the Brain Gym cluster
 
 Full SEL suite green (67 files, 657 tests); `check_sel_render` 71/71; all 74
 sel_hub files byte-identical with their public mirrors.
+
+---
+
+## 7. 2026-08-23 PASS 3 — navigation and findability  (local, unpushed)
+
+The brief was to make all 71 tools intuitive to navigate. I measured before
+changing anything: 45 queries a student or teacher would plausibly type, scored
+against the tool each one should surface.
+
+**15 of 45 missed every intended tool, and 9 returned nothing at all.** The
+cause was that **43 of the 71 tools shipped with no search synonyms**, so the
+catalog only matched a tool's own marketing copy — you had to already know the
+tool's name to find it. `vaping`, `drugs`, `adhd`, `procrastination`, `lgbtq`,
+`nightmares`, `iep`, `504`, `gratitude`, `confidence` and `my friend died` all
+returned zero results while the right tool sat in the grid.
+
+Aliases now cover 71 of 71, written in student vocabulary. **45 of 45 queries
+now surface an intended tool and none dead-ends.**
+
+### 7a. The one that was not just a dead end
+
+`want to die` returned two unrelated regulation tools and no route to support.
+
+Crisis vocabulary now surfaces a support panel above the results: tell a trusted
+adult, 988 and Crisis Text Line for non-elementary bands (elementary is pointed
+at a person, following the crisis tool's existing convention), and a direct
+route into Crisis Companion. It says plainly that **searching does not tell
+anyone** — a person only knows if you tell them — so it cannot repeat the
+promise/delivery gap CRISIS‑1 closed. The vocabulary is 16 short unambiguous
+phrases at module scope, exposed as `SelHub.matchesCrisisVocabulary`, and
+verified against ordinary queries so `hope`, `cut paper` and `grief` do not trip
+it.
+
+**AARON — this needs your eyes before deploy:** the panel wording, and the
+elementary/non-elementary split on whether hotline numbers appear.
+
+### 7b. A filter chip that filtered to nothing
+
+Adding tool counts to the category chips exposed it: the filter matched a chip
+to a section by id substring, and `_cat_DecisionMaking` does not contain
+`responsibledecisionmaking`. **Clicking Responsible Decision-Making filtered the
+grid to an empty page** — and, being one of nine chips, it is exactly the one
+nobody re-tests. Chip and filter now resolve through one helper matching on the
+label both sides already share. Its 4 tools are reachable again and the chip
+counts now sum to all 71.
+
+### 7c. The catalog could not be skimmed by ear
+
+A card's accessible name carried the description, guidance mode, note, boundary
+and teacher cue at once: **17,132 characters to hear the whole grid**, median
+145, worst case 3,491 on one card. Every arrow-key press read a paragraph before
+reaching the next tool. The name is now the tool plus its grade band; the detail
+moved to `aria-describedby`, which is announced after the name and can be
+skipped. **Median 145 → 30, worst 3,491 → 49, whole grid 17,132 → 2,243.** The
+"use with care" flag stays in the name, because it changes whether you should
+open the tool at all.
+
+### 7d. Smaller things
+
+- The search box now has a live result summary tied to it by `aria-describedby`
+  ("13 tools of 71 match ..."), naming every active filter. Typing used to give
+  screen-reader users no feedback at all.
+- Category chips carry their tool count, so the shape of the catalog is visible.
+- The empty state was gated on the search string, so a grid emptied by a chip, a
+  pathway or a station rendered nothing at all. It now triggers on the count and
+  offers a **Show all 71 tools** button that clears everything at once.
+
+Guard: `tests/sel_hub_navigation.test.js` (52 tests) covering the alias data,
+the crisis vocabulary and its copy, one-derivation category matching, and the
+rendered affordances — including that the chip counts sum to the number of cards
+and that no card name exceeds 120 characters.
+
+Full SEL suite green (68 files, 709 tests); all three SEL gates pass; mirror
+byte-identical.
