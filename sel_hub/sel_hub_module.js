@@ -3450,6 +3450,42 @@
         }
 
         toolGrid = h('div', { role: 'main', 'aria-label': 'SEL Hub tool selection', style: { padding: isCompact ? 12 : 20 } },
+          // ── Bypass block (WCAG 2.4.1) ──
+          // Measured on the catalog: 46 tab stops sit between the top of this
+          // panel and the first tool card - quick actions, teacher launch plans,
+          // the search box, eleven need chips, ten category filters, eight
+          // pathways and the station builder. Every one of them is a real
+          // control, so the fix is not fewer stops, it is a way past them.
+          // A button rather than an anchor: this panel is a modal surface inside
+          // an SPA, and a #hash would change the URL under the host app.
+          h('button', {
+            type: 'button',
+            onClick: function () {
+              try {
+                var grid = document.getElementById('sel-tool-grid');
+                if (grid && grid.focus) grid.focus();
+                if (grid && grid.scrollIntoView) grid.scrollIntoView({ block: 'start' });
+                announceToSR('Jumped to the tool list. ' + _selResultSummary + '.');
+              } catch (e) {}
+            },
+            style: {
+              // Visible only while focused, the conventional skip-link treatment.
+              position: 'absolute', left: 8, top: 8, zIndex: 5,
+              width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)',
+              padding: 0, border: 'none', background: _t.accent, color: _t.accentText,
+              borderRadius: 8, fontSize: 13, fontWeight: 800, cursor: 'pointer'
+            },
+            onFocus: function (e) {
+              var st = e.currentTarget.style;
+              st.width = 'auto'; st.height = 'auto'; st.overflow = 'visible';
+              st.clip = 'auto'; st.padding = '8px 14px';
+            },
+            onBlur: function (e) {
+              var st = e.currentTarget.style;
+              st.width = '1px'; st.height = '1px'; st.overflow = 'hidden';
+              st.clip = 'rect(0,0,0,0)'; st.padding = '0';
+            }
+          }, 'Skip to the tool list'),
           // Active pathway banner
           activePathway && h('div', {
             style: { marginBottom: 16, padding: '12px 16px', borderRadius: 8, background: _t.bgSoft, border: '1px solid ' + _t.accent, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap' }
@@ -4208,7 +4244,13 @@
             )
           ),
           // Grid
-          h('div', { style: { display: 'grid', gridTemplateColumns: isCompact ? '1fr' : 'repeat(2, minmax(0, 1fr))', gap: isCompact ? 10 : 16 } },
+          h('div', {
+            id: 'sel-tool-grid',
+            // -1 so it is not itself a tab stop, but CAN receive focus when the
+            // skip control sends it here.
+            tabIndex: -1,
+            style: { display: 'grid', gridTemplateColumns: isCompact ? '1fr' : 'repeat(2, minmax(0, 1fr))', gap: isCompact ? 10 : 16 }
+          },
             _filteredTools.map(function(tool) {
               // Category header
               if (tool.category) {
