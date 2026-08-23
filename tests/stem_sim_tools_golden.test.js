@@ -49,6 +49,25 @@
 // making the gate seed defaults WITHOUT early-returning (the body reads state
 // only via the local `d`, now bucket-or-defaults), so all hooks run every
 // render. throwlab now renders its real body under plain 'ssr' like the rest.
+//
+// RE-BASELINED 2026-08-23. All 27 non-passing goldens had gone stale: the last
+// snapshot commit was 4bd84e375 and five releases of tool work landed after it
+// without anyone re-running this suite, so "27 red" had stopped meaning anything.
+// Each was classified before updating rather than blanket-`--update`d:
+//   • 15 GREW (feature work: anatomy +3 buttons, cyberDefense +8K chars,
+//     epidemicSim +9 inputs, semiconductor +2 buttons, titrationLab, …)
+//   • 10 changed CONTENT ONLY (identical element counts, new sha)
+//   • artStudio SHRANK (-6 buttons): its 13 flat mode buttons became 6 grouped
+//     categories + Explore. All 13 modes verified still present in the source —
+//     a navigation redesign, not a lost panel.
+//   • punnett SHRANK (-1 length bucket): rendering the tool's own baseline source
+//     through today's harness produces byte-identical output to the current
+//     source, so that entry had been wrong since before it was committed.
+// THREE ENTRIES ARE DELIBERATELY LEFT RED: galaxy, rocks and waterCycle carry
+// another session's UNCOMMITTED work (rocks 240+/63-, waterCycle 2016+/91-).
+// Re-baselining them would bake unpushed changes into the golden. Whoever lands
+// that work owns re-running `npx vitest run tests/stem_sim_tools_golden.test.js
+// --update` (path FIRST — the flag first rebaselines the whole repo).
 
 import { describe, it, expect, beforeAll, afterAll, beforeEach, vi } from 'vitest';
 import crypto from 'node:crypto';

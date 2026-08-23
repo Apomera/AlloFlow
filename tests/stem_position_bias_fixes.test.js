@@ -144,8 +144,75 @@ describe('companionplanting rotation', () => {
   });
 });
 
+describe('galaxy quiz answer position', () => {
+  const src = read('stem_lab/stem_tool_galaxy.js');
+
+  // The bank uses t()/__alloT() for many strings; resolving them is not needed to
+  // measure POSITION, only to compare answer-to-option, so a stub that returns the
+  // key is sufficient and keeps this independent of ui_strings.
+  function bank() {
+    const start = src.indexOf('var QUIZ_BANK = [');
+    expect(start, 'QUIZ_BANK').toBeGreaterThan(-1);
+    let i = src.indexOf('[', start), depth = 0, end = -1;
+    for (let p = i; p < src.length; p++) {
+      if (src[p] === '[') depth++;
+      else if (src[p] === ']') { depth--; if (depth === 0) { end = p + 1; break; } }
+    }
+    const idStub = (k, fb) => (typeof fb === 'string' ? fb : k);
+    // eslint-disable-next-line no-new-func
+    return new Function('t', '__alloT', 'return ' + src.slice(i, end))(idStub, idStub);
+  }
+
+  // Run the SHIPPED rotation, not a copy of it, so this cannot drift from the code
+  // it protects.
+  function shippedRotate() {
+    const start = src.indexOf('var GALAXY_ANSWER_SLOTS');
+    expect(start, 'GALAXY_ANSWER_SLOTS').toBeGreaterThan(-1);
+    const end = src.indexOf('\n          }', src.indexOf('function rotateAnswerPosition')) + 12;
+    // eslint-disable-next-line no-new-func
+    return new Function(src.slice(start, end) + '\nreturn rotateAnswerPosition;')();
+  }
+
+  it('the authored bank really is biased (calibration — if this passes, the measurement is broken)', () => {
+    const counts = [0, 0, 0, 0];
+    for (const q of bank()) counts[q.options.indexOf(q.a)]++;
+    // A held 1 of 20 when this was found. Pin the shape of the problem, not the sha.
+    expect(Math.max(...counts)).toBeGreaterThan(counts.reduce((a, b) => a + b, 0) / 4);
+    expect(Math.min(...counts)).toBeLessThan(3);
+  });
+
+  it('rotation spreads correct answers evenly across all four slots', () => {
+    const rotate = shippedRotate();
+    const counts = [0, 0, 0, 0];
+    bank().forEach((q, i) => { const r = rotate(q, i); counts[r.options.indexOf(r.a)]++; });
+    const expected = bank().length / 4;
+    for (const [slot, n] of counts.entries()) {
+      expect(Math.abs(n - expected), 'slot ' + slot + ' has ' + n + ' of ' + bank().length).toBeLessThanOrEqual(1);
+    }
+  });
+
+  it('rotation preserves each question option set exactly', () => {
+    const rotate = shippedRotate();
+    bank().forEach((q, i) => {
+      const r = rotate(q, i);
+      expect(r.options.slice().sort(), 'question ' + i).toEqual(q.options.slice().sort());
+      expect(new Set(r.options).size, 'duplicate option at question ' + i).toBe(q.options.length);
+      expect(r.options).toContain(q.a);
+    });
+  });
+
+  it('rotation is applied to the bank the tool actually renders', () => {
+    // ACTIVE_BANK, not QUIZ_BANK: the AI-generated bank must be rotated too.
+    expect(src).toMatch(/var ACTIVE_BANK = \(generatedBank\.length > 0 \? generatedBank : QUIZ_BANK\)[\s\S]{0,120}?rotateAnswerPosition/);
+  });
+
+  it('the quiz still grades by option text, which is what makes rotation safe', () => {
+    expect(src).toContain('var correct = opt === quizQ.a;');
+  });
+});
+
 describe('deployment copies', () => {
-  for (const name of ['solarsystem', 'behaviorlab', 'companionplanting']) {
+  for (const name of ['solarsystem', 'behaviorlab', 'companionplanting', 'galaxy']) {
     it(name + ' public mirror is byte-identical to the root copy', () => {
       expect(read('desktop/web-app/public/stem_lab/stem_tool_' + name + '.js'))
         .toBe(read('stem_lab/stem_tool_' + name + '.js'));

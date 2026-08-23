@@ -252,6 +252,7 @@ export function installThreeStub() {
     TorusGeometry: function () { return geometry('TorusGeometry'); },
     ConeGeometry: function () { return geometry('ConeGeometry'); },
     PlaneGeometry: function () { return geometry('PlaneGeometry'); },
+    CircleGeometry: function () { return geometry('CircleGeometry'); },
     BoxGeometry: function () { return geometry('BoxGeometry'); },
     CylinderGeometry: function () { return geometry('CylinderGeometry'); },
 

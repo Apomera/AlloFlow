@@ -406,12 +406,29 @@ if (!window._galaxyHasLoadedOnce) {
 
 
           // ── Star type data (OBAFGKM Harvard classification) ──
-
+          //
+          // `example` must be a MAIN-SEQUENCE star. The selected-type card renders
+          // "<class>-type (<example>)" immediately above tiles showing that class's
+          // main-sequence Mass Range and Luminosity, so an evolved star contradicts the
+          // numbers printed beside it, on screen, at the same time.
+          //   • was 'Rigel' for B — B8 Ia supergiant, ~21 M☉ and ~120,000 L☉ against a
+          //     row reading 2.1-16 M☉ / 25-30,000x Sun. Now Regulus (B8 V, ~3.8 M☉,
+          //     ~316 L☉), which sits inside both.
+          //   • was 'Arcturus' for K — K1.5 III giant, ~1.08 M☉ and ~170 L☉ against a
+          //     row reading 0.45-0.8 M☉ / 0.08-0.6x Sun. Now 61 Cygni A (K5 V, ~0.70 M☉,
+          //     ~0.15 L☉), the star whose parallax was the first ever measured.
+          // Naos (O) is evolved too but its mass and luminosity DO fall inside the O row,
+          // and main-sequence O stars are scarce enough that it stays.
+          //
+          // `pct` is dead data — the star population is drawn from
+          // getMorphologyAgeDistribution(), not from these values — so its O entry
+          // (0.003, against the usual 0.00003% of main-sequence stars) reaches no
+          // learner. Worth correcting if this field is ever wired up.
           var STAR_TYPES = [
 
             { id: 'O', label: t('stem.galaxy.otype'), color: '#9bb0ff', temp: '30,000+', pct: 0.003, example: 'Naos', desc: __alloT('stem.galaxy.otype_desc', 'Extremely hot, blue, massive. Rarest type \u2014 short lives of only a few million years.'), whyItMatters: __alloT('stem.galaxy.otype_why', 'O-type stars produce most of a galaxy\'s ultraviolet light and ionize surrounding gas, creating the glowing emission nebulae we see. Their supernovae seed the universe with heavy elements like iron and gold.'), luminosity: '30,000-1,000,000x Sun', mass: '16-150 M\u2609', lifetime: '1-10 Myr' },
 
-            { id: 'B', label: t('stem.galaxy.btype'), color: '#aabfff', temp: '10,000-30,000', pct: 0.13, example: 'Rigel', desc: __alloT('stem.galaxy.btype_desc', 'Blue-white giants. Often found in young OB associations and spiral arms.'), whyItMatters: __alloT('stem.galaxy.btype_why', 'B-type stars trace the spiral arms of galaxies because they are short-lived. Astronomers use them as markers for galactic structure and recent star formation.'), luminosity: '25-30,000x Sun', mass: '2.1-16 M\u2609', lifetime: '10-100 Myr' },
+            { id: 'B', label: t('stem.galaxy.btype'), color: '#aabfff', temp: '10,000-30,000', pct: 0.13, example: 'Regulus', desc: __alloT('stem.galaxy.btype_desc', 'Blue-white giants. Often found in young OB associations and spiral arms.'), whyItMatters: __alloT('stem.galaxy.btype_why', 'B-type stars trace the spiral arms of galaxies because they are short-lived. Astronomers use them as markers for galactic structure and recent star formation.'), luminosity: '25-30,000x Sun', mass: '2.1-16 M\u2609', lifetime: '10-100 Myr' },
 
             { id: 'A', label: t('stem.galaxy.atype'), color: '#cad7ff', temp: '7,500-10,000', pct: 0.6, example: 'Sirius', desc: __alloT('stem.galaxy.atype_desc', 'White stars with strong hydrogen absorption lines. Many are binary systems.'), whyItMatters: __alloT('stem.galaxy.atype_why', 'A-type stars like Sirius were among the first to have their spectra analyzed, helping astronomers develop the stellar classification system we use today.'), luminosity: '5-25x Sun', mass: '1.4-2.1 M\u2609', lifetime: '1-2 Gyr' },
 
@@ -419,7 +436,7 @@ if (!window._galaxyHasLoadedOnce) {
 
             { id: 'G', label: t('stem.galaxy.gtype'), color: '#fff4ea', temp: '5,200-6,000', pct: 7.6, example: 'Sun', desc: __alloT('stem.galaxy.gtype_desc', 'Our Sun is a G2V star! Yellow stars with lifespans of ~10 billion years.'), whyItMatters: __alloT('stem.galaxy.gtype_why', 'G-type stars like our Sun prove that modest stars can nurture life. Their 10-billion-year lifespan gives plenty of time for biological evolution.'), luminosity: '0.6-1.5x Sun', mass: '0.8-1.04 M\u2609', lifetime: '10 Gyr' },
 
-            { id: 'K', label: t('stem.galaxy.ktype'), color: '#ffd2a1', temp: '3,700-5,200', pct: 12.1, example: 'Arcturus', desc: __alloT('stem.galaxy.ktype_desc', 'Orange stars. Many have habitable zones \u2014 prime candidates for exoplanet searches.'), whyItMatters: __alloT('stem.galaxy.ktype_why', 'K-type stars are considered the best candidates for finding habitable exoplanets\u2014they are stable, long-lived, and common enough to offer many opportunities.'), luminosity: '0.08-0.6x Sun', mass: '0.45-0.8 M\u2609', lifetime: '15-30 Gyr' },
+            { id: 'K', label: t('stem.galaxy.ktype'), color: '#ffd2a1', temp: '3,700-5,200', pct: 12.1, example: '61 Cygni A', desc: __alloT('stem.galaxy.ktype_desc', 'Orange stars. Many have habitable zones \u2014 prime candidates for exoplanet searches.'), whyItMatters: __alloT('stem.galaxy.ktype_why', 'K-type stars are considered the best candidates for finding habitable exoplanets\u2014they are stable, long-lived, and common enough to offer many opportunities.'), luminosity: '0.08-0.6x Sun', mass: '0.45-0.8 M\u2609', lifetime: '15-30 Gyr' },
 
             { id: 'M', label: t('stem.galaxy.mtype'), color: '#ffcc6f', temp: '2,400-3,700', pct: 76.5, example: 'Proxima Centauri', desc: __alloT('stem.galaxy.mtype_desc', 'Red dwarfs \u2014 76% of all stars! Extremely long-lived (trillions of years).'), whyItMatters: __alloT('stem.galaxy.mtype_why', 'M-type red dwarfs will be the last stars shining in the universe. Proxima Centauri b, a potentially habitable exoplanet, orbits one of these stars\u2014our closest neighbor!'), luminosity: '0.001-0.08x Sun', mass: '0.08-0.45 M\u2609', lifetime: '100+ Gyr' }
 
@@ -431,6 +448,77 @@ if (!window._galaxyHasLoadedOnce) {
           function spectralTypeForMass(mass) {
             if (mass < HYDROGEN_FUSION_LIMIT) return null;
             return mass < M_DWARF_LIMIT ? 'M' : mass < 0.8 ? 'K' : mass < 1.04 ? 'G' : mass < 1.4 ? 'F' : mass < 2.1 ? 'A' : mass < 16 ? 'B' : 'O';
+          }
+
+          // A star's colour IS the lesson here, so it must stay on screen — but half
+          // the sequence is near-white (F #f8f7ff, G #fff4ea, A #cad7ff), and using
+          // those as TEXT colour on a white card lands at 1.06-1.43:1. The class
+          // letters and the Luminosity/Mass/Lifetime values were rendering invisible.
+          // So: keep the TRUE colour for swatches (a filled shape, judged as a
+          // graphic) and darken a hue-preserving copy for anything made of letters.
+          // Scaling RGB toward black keeps the hue and the relative channel mix, so
+          // a blue O star still reads blue and an orange M star still reads orange.
+          function starTextColor(hex) {
+            var m = /^#?([0-9a-fA-F]{6})$/.exec(String(hex || ''));
+            if (!m) return '#334155';
+            var n = parseInt(m[1], 16);
+            var r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
+            var lin = function (c) { c /= 255; return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); };
+            // contrast against white, which is what these cards sit on
+            var onWhite = function (rr, gg, bb) {
+              return 1.05 / ((0.2126 * lin(rr) + 0.7152 * lin(gg) + 0.0722 * lin(bb)) + 0.05);
+            };
+            var k = 1;
+            for (var i = 0; i < 48 && onWhite(r * k, g * k, b * k) < 4.5; i++) k *= 0.93;
+            var hx = function (c) {
+              var v = Math.max(0, Math.min(255, Math.round(c))).toString(16);
+              return v.length < 2 ? '0' + v : v;
+            };
+            return '#' + hx(r * k) + hx(g * k) + hx(b * k);
+          }
+
+          // The observe-mode accents are chosen to read on the WHITE control panel,
+          // where 500-level inks are right. The instrument HUD reuses the same accent
+          // as TEXT on a near-black scrim, and there indigo-500 measured 4.22:1
+          // against the real painted pixels. Lighten toward white until it clears AA
+          // on the brightest backdrop that scrim can produce — bg-slate-950/82 over a
+          // fully blown-out scene is still only about rgb(48,50,55), so lightening is
+          // always the safe direction here. Hue is preserved, so each filter keeps its
+          // identity colour.
+          function hudAccentText(hex) {
+            var m = /^#?([0-9a-fA-F]{6})$/.exec(String(hex || ''));
+            if (!m) return '#e2e8f0';
+            var n = parseInt(m[1], 16);
+            var r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
+            var lin = function (c) { c /= 255; return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); };
+            var L = function (rr, gg, bb) { return 0.2126 * lin(rr) + 0.7152 * lin(gg) + 0.0722 * lin(bb); };
+            var bgL = L(48, 50, 55);
+            var ratio = function (rr, gg, bb) {
+              var fl = L(rr, gg, bb);
+              return (Math.max(fl, bgL) + 0.05) / (Math.min(fl, bgL) + 0.05);
+            };
+            var t = 0;
+            for (var i = 0; i < 40 && ratio(r + (255 - r) * t, g + (255 - g) * t, b + (255 - b) * t) < 4.5; i++) t += 0.05;
+            var hx = function (c) {
+              var v = Math.max(0, Math.min(255, Math.round(c))).toString(16);
+              return v.length < 2 ? '0' + v : v;
+            };
+            return '#' + hx(r + (255 - r) * t) + hx(g + (255 - g) * t) + hx(b + (255 - b) * t);
+          }
+
+          // The picker used a ⭐ emoji tinted with `color`. Emoji paint their own
+          // glyph colours, so that tint did nothing and all seven spectral classes
+          // rendered as the SAME yellow star. A filled disc actually shows the
+          // colour; the inset ring keeps a near-white star visible on a white card.
+          function starSwatch(React, color, px) {
+            return React.createElement('span', {
+              'aria-hidden': 'true',
+              className: 'inline-block rounded-full align-middle',
+              style: {
+                width: px + 'px', height: px + 'px', background: color,
+                boxShadow: 'inset 0 0 0 1px rgba(15,23,42,0.45), 0 1px 2px rgba(15,23,42,0.18)'
+              }
+            });
           }
 
           // Main-sequence radius in solar radii. Piecewise because the mass-radius
@@ -742,7 +830,10 @@ if (!window._galaxyHasLoadedOnce) {
             { label: __alloT('stem.galaxy.doppler_fast_quasar', 'Fast quasar'), value: 1800, icon: '\u2728' }
           ];
           var dopplerDirection = dopplerVelocity < -8 ? 'blueshift' : dopplerVelocity > 8 ? 'redshift' : 'no shift';
-          var dopplerColor = dopplerVelocity < -8 ? '#2563eb' : dopplerVelocity > 8 ? '#dc2626' : '#64748b';
+          // The blue and red inks are 600-level and pass; the neutral was slate-500,
+          // which measured 4.37:1 on its own tinted chip. slate-600 matches the
+          // weight of the other two and clears AA.
+          var dopplerColor = dopplerVelocity < -8 ? '#2563eb' : dopplerVelocity > 8 ? '#dc2626' : '#475569';
           var dopplerZ = dopplerVelocity / 299792.458;
 
           var REAL_SKY_TARGETS = [
@@ -1314,6 +1405,23 @@ if (!window._galaxyHasLoadedOnce) {
               if ('outputEncoding' in renderer) renderer.outputEncoding = THREE.sRGBEncoding;
               if ('toneMapping' in renderer) { renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.28; }
 
+              // Same square-point problem as the galaxy scene, and worse here: these
+              // stars are size 0.032 (twice the galaxy field's), so an untextured
+              // PointsMaterial paints the sky with visible grey BOXES, and the polar
+              // jet reads as a chunky dotted line. This scene has its own closure, so
+              // it needs its own copy of the soft radial dot.
+              var bhDotCv = document.createElement('canvas');
+              bhDotCv.setAttribute('aria-hidden', 'true');
+              bhDotCv.width = bhDotCv.height = 32;
+              var bhDotCtx = bhDotCv.getContext('2d');
+              var bhDotGrad = bhDotCtx.createRadialGradient(16, 16, 0, 16, 16, 16);
+              bhDotGrad.addColorStop(0, 'rgba(255,255,255,1)');
+              bhDotGrad.addColorStop(0.35, 'rgba(255,255,255,0.72)');
+              bhDotGrad.addColorStop(0.7, 'rgba(255,255,255,0.18)');
+              bhDotGrad.addColorStop(1, 'rgba(255,255,255,0)');
+              bhDotCtx.fillStyle = bhDotGrad; bhDotCtx.fillRect(0, 0, 32, 32);
+              var bhDotTex = new THREE.CanvasTexture(bhDotCv);
+
               var starGeo = new THREE.BufferGeometry(), count = 2600, pos = new Float32Array(count * 3), col = new Float32Array(count * 3);
               for (var i = 0; i < count; i++) {
                 var radius = 7 + Math.random() * 18, a = Math.random() * Math.PI * 2, z = Math.random() * 2 - 1, rr = Math.sqrt(1 - z * z);
@@ -1321,7 +1429,7 @@ if (!window._galaxyHasLoadedOnce) {
                 var tint = Math.random(); col[i*3] = 0.55 + tint * 0.45; col[i*3+1] = 0.65 + tint * 0.3; col[i*3+2] = 1;
               }
               starGeo.setAttribute('position', new THREE.BufferAttribute(pos, 3)); starGeo.setAttribute('color', new THREE.BufferAttribute(col, 3));
-              stars = new THREE.Points(starGeo, new THREE.PointsMaterial({ size: 0.032, vertexColors: true, transparent: true, opacity: 0.9, depthWrite: false })); scene.add(stars);
+              stars = new THREE.Points(starGeo, new THREE.PointsMaterial({ size: 0.032, map: bhDotTex, vertexColors: true, transparent: true, opacity: 0.9, depthWrite: false })); scene.add(stars);
 
               var horizon = new THREE.Mesh(new THREE.SphereGeometry(0.43, 96, 64), new THREE.MeshBasicMaterial({ color: 0x000000 }));
               horizon.renderOrder = 5; scene.add(horizon);
@@ -1353,7 +1461,7 @@ if (!window._galaxyHasLoadedOnce) {
               var coronaCount=900, coronaGeo=new THREE.BufferGeometry(), coronaPos=new Float32Array(coronaCount*3), coronaCol=new Float32Array(coronaCount*3);
               for(var ci=0;ci<coronaCount;ci++){ var ca=Math.random()*Math.PI*2, cr=.58+Math.pow(Math.random(),1.7)*1.7, cy=(Math.random()-.5)*.075*(1+cr); coronaPos[ci*3]=Math.cos(ca)*cr; coronaPos[ci*3+1]=Math.sin(ca)*cr; coronaPos[ci*3+2]=cy; var ch=1-(cr-.58)/1.7; coronaCol[ci*3]=.45+.55*ch; coronaCol[ci*3+1]=.18+.7*ch; coronaCol[ci*3+2]=.35+.65*(1-ch); }
               coronaGeo.setAttribute('position',new THREE.BufferAttribute(coronaPos,3)); coronaGeo.setAttribute('color',new THREE.BufferAttribute(coronaCol,3));
-              corona=new THREE.Points(coronaGeo,new THREE.PointsMaterial({size:.018,vertexColors:true,transparent:true,opacity:.46,blending:THREE.AdditiveBlending,depthWrite:false})); corona.rotation.x=-Math.PI/2.45; scene.add(corona);
+              corona=new THREE.Points(coronaGeo,new THREE.PointsMaterial({size:.018,map:bhDotTex,vertexColors:true,transparent:true,opacity:.46,blending:THREE.AdditiveBlending,depthWrite:false})); corona.rotation.x=-Math.PI/2.45; scene.add(corona);
 
               var jetMat = new THREE.MeshBasicMaterial({ color: 0x65bfff, transparent: true, opacity: 0.13, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide });
               var jet1 = new THREE.Mesh(new THREE.ConeGeometry(0.07, 4.2, 48, 1, true), jetMat); jet1.position.y = 2.1; scene.add(jet1);
@@ -1364,7 +1472,7 @@ if (!window._galaxyHasLoadedOnce) {
               var jetCount=320, jetGeo=new THREE.BufferGeometry(), jetPos=new Float32Array(jetCount*3);
               for(var ji=0;ji<jetCount;ji++){ var side=ji%2?1:-1, jy=side*(.5+Math.random()*4.6), spread=.014+Math.abs(jy)*.025, ja=Math.random()*Math.PI*2, jr=Math.pow(Math.random(),2)*spread; jetPos[ji*3]=Math.cos(ja)*jr; jetPos[ji*3+1]=jy; jetPos[ji*3+2]=Math.sin(ja)*jr; }
               jetGeo.setAttribute('position',new THREE.BufferAttribute(jetPos,3));
-              var jetParticles=new THREE.Points(jetGeo,new THREE.PointsMaterial({color:0x9bdcff,size:.025,transparent:true,opacity:.48,blending:THREE.AdditiveBlending,depthWrite:false})); scene.add(jetParticles);
+              var jetParticles=new THREE.Points(jetGeo,new THREE.PointsMaterial({color:0x9bdcff,map:bhDotTex,size:.025,transparent:true,opacity:.48,blending:THREE.AdditiveBlending,depthWrite:false})); scene.add(jetParticles);
               function makeDropMaterial(color){ return new THREE.MeshBasicMaterial({color:color,transparent:true,opacity:1,depthWrite:false}); }
               disposeFalling=function(item){ scene.remove(item.group); scene.remove(item.trail); item.group.traverse(function(node){if(node.geometry)node.geometry.dispose();if(node.material)node.material.dispose();}); item.trail.geometry.dispose(); item.trail.material.dispose(); };
               canvas._dropIntoBlackHole=function(type,massMode){
@@ -1797,6 +1905,33 @@ if (!window._galaxyHasLoadedOnce) {
               return texture;
             }
 
+            // A PointsMaterial with NO map draws every point as a hard-edged SQUARE.
+            // The dust lanes were fixed for exactly this in an earlier pass; three
+            // star layers were missed and still render square stars — visible as a
+            // flat grey box in the background field, and as a blocky bulge and
+            // accretion disk up close. In an astronomy tool a square star is simply
+            // wrong, so they get the same soft radial alpha the dust grains use.
+            // Built once and shared: it is the same 32px gradient for every layer,
+            // and re-creating it per layer would upload duplicate textures.
+            var _softDotTex = null;
+            function softDotTexture() {
+              if (_softDotTex) return _softDotTex;
+              var dotCv = document.createElement('canvas');
+              dotCv.setAttribute('aria-hidden', 'true');
+              dotCv.width = 32; dotCv.height = 32;
+              var dotCtx = upscaleGalaxyCanvas(dotCv, dotCv.getContext('2d'));
+              if (!dotCtx) return null;
+              var dotGrad = dotCtx.createRadialGradient(16, 16, 0, 16, 16, 16);
+              dotGrad.addColorStop(0, 'rgba(255,255,255,1)');
+              dotGrad.addColorStop(0.35, 'rgba(255,255,255,0.72)');
+              dotGrad.addColorStop(0.7, 'rgba(255,255,255,0.18)');
+              dotGrad.addColorStop(1, 'rgba(255,255,255,0)');
+              dotCtx.fillStyle = dotGrad;
+              dotCtx.fillRect(0, 0, 32, 32);
+              _softDotTex = tuneGalaxyTexture(new THREE.CanvasTexture(dotCv));
+              return _softDotTex;
+            }
+
 
             // ── Layer groups ──
 
@@ -1855,7 +1990,7 @@ if (!window._galaxyHasLoadedOnce) {
 
             bgGeo.setAttribute('position', new THREE.BufferAttribute(bgPos, 3));
 
-            bgGroup.add(new THREE.Points(bgGeo, new THREE.PointsMaterial({ color: 0xccccff, size: 0.015, transparent: true, opacity: 0.3, sizeAttenuation: true })));
+            bgGroup.add(new THREE.Points(bgGeo, new THREE.PointsMaterial({ color: 0xccccff, map: softDotTexture(), size: 0.015, transparent: true, opacity: 0.3, sizeAttenuation: true, depthWrite: false })));
 
             var deepFieldGroup = new THREE.Group(); deepFieldGroup.name = 'deepField';
             var cosmicFilamentGroup = new THREE.Group(); cosmicFilamentGroup.name = 'cosmicFilaments';
@@ -2509,7 +2644,11 @@ if (!window._galaxyHasLoadedOnce) {
               diskSheen = null;
               if (isSpiralMorphology) {
                 diskSheenMat = new THREE.MeshBasicMaterial({ map: diskTex, transparent: true, opacity: visualGlow.disk, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide });
-                diskSheen = new THREE.Mesh(new THREE.PlaneGeometry(1.9, 1.9), diskSheenMat);
+                // The disk texture is a radial glow, so a square billboard leaks
+                // its corners through the transparent fade when the camera is
+                // tilted. Clip the backing geometry to a circle; this keeps the
+                // central sheen visible without making a fake square lensing box.
+                diskSheen = new THREE.Mesh(new THREE.CircleGeometry(0.95, 128), diskSheenMat);
                 diskSheen.rotation.x = Math.PI * 0.5;
               }
               if (diskSheen) {
@@ -2767,7 +2906,7 @@ if (!window._galaxyHasLoadedOnce) {
 
             bulgeGeo.setAttribute('color', new THREE.BufferAttribute(bulgeCol, 3));
 
-            bulgeGroup.add(new THREE.Points(bulgeGeo, new THREE.PointsMaterial({ size: 0.01, vertexColors: true, transparent: true, opacity: 0.8 * morphologyVisual.bulgeOpacity, blending: THREE.AdditiveBlending, depthWrite: false }))); // bulge stars sum to a radiant core (dust lanes untouched — absorption physics)
+            bulgeGroup.add(new THREE.Points(bulgeGeo, new THREE.PointsMaterial({ size: 0.01, map: softDotTexture(), vertexColors: true, transparent: true, opacity: 0.8 * morphologyVisual.bulgeOpacity, blending: THREE.AdditiveBlending, depthWrite: false }))); // bulge stars sum to a radiant core (dust lanes untouched — absorption physics)
 
             // Bulge glow sprite
 
@@ -3818,7 +3957,7 @@ if (!window._galaxyHasLoadedOnce) {
             }
             accGeo.setAttribute('position', new THREE.BufferAttribute(accPos, 3));
             accGeo.setAttribute('color', new THREE.BufferAttribute(accCol, 3));
-            var accMat = new THREE.PointsMaterial({size: 0.003, vertexColors: true, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending});
+            var accMat = new THREE.PointsMaterial({size: 0.003, map: softDotTexture(), vertexColors: true, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, depthWrite: false});
             var accPoints = new THREE.Points(accGeo, accMat);
             bhGroup.add(accPoints);
             var rings = [accPoints]; // Keep variable for animate loop
@@ -5995,7 +6134,42 @@ if (!window._galaxyHasLoadedOnce) {
           // Re-validate on read as well as on write: a bank persisted by an older
           // build (or restored from a snapshot) may predate the sanitizer.
           var generatedBank = sanitizeGeneratedQuiz(d.dynamicQuiz);
-          var ACTIVE_BANK = generatedBank.length > 0 ? generatedBank : QUIZ_BANK;
+
+          // The authored bank rewards position-guessing: measured across its 20
+          // questions the correct answer sat at A once (5%, against 25% expected —
+          // p≈0.024 on its own), with B and C carrying 75% between them and one run
+          // of FOUR consecutive answers at C. The catalog scanner did not flag it
+          // because its `hasShuffle` column is a crude grep and reported "yes"; this
+          // file contains no shuffle at all — `quizQ.options.map` renders the declared
+          // order on every render.
+          //
+          // Rotate by a deterministic per-question offset chosen so the answer lands
+          // on a target slot, which makes the distribution exactly uniform rather than
+          // merely decorrelated. Deterministic (not Math.random) because the question
+          // is re-derived from the bank on EVERY render — a random shuffle would deal
+          // new options under the student mid-question. Grading is by option TEXT
+          // (`opt === quizQ.a`), so rotating options alone is safe and nothing else
+          // in the question is positional.
+          //
+          // Applied to ACTIVE_BANK so it also covers the AI-generated bank, whose
+          // distribution nobody controls.
+          var GALAXY_ANSWER_SLOTS = [0, 2, 1, 3];
+          function rotateAnswerPosition(q, seedIdx) {
+            if (!q || !Array.isArray(q.options) || q.options.length < 2) return q;
+            var n = q.options.length;
+            var from = q.options.indexOf(q.a);
+            if (from < 0) return q; // answer not among its options: leave it for the sanitizer
+            var target = GALAXY_ANSWER_SLOTS[seedIdx % GALAXY_ANSWER_SLOTS.length] % n;
+            var shift = (target - from + n) % n;
+            if (shift === 0) return q;
+            var rotated = new Array(n);
+            for (var i = 0; i < n; i++) rotated[(i + shift) % n] = q.options[i];
+            var next = Object.assign({}, q);
+            next.options = rotated;
+            return next;
+          }
+          var ACTIVE_BANK = (generatedBank.length > 0 ? generatedBank : QUIZ_BANK)
+            .map(function (q, qi) { return rotateAnswerPosition(q, qi); });
           var quizIndex = Math.min(Math.max(0, d.quizIdx || 0), ACTIVE_BANK.length - 1);
           var quizQ = d.quizMode ? (ACTIVE_BANK[quizIndex] || null) : null;
 
@@ -6691,10 +6865,10 @@ if (!window._galaxyHasLoadedOnce) {
                 !galaxyHudHidden && React.createElement("div", { "data-galaxy-instrument-readout": "true", className: "absolute right-3 top-3 z-10 hidden w-52 rounded-xl border bg-slate-950/82 p-2.5 text-white shadow-xl backdrop-blur-md md:block", style: { borderColor: activeObserve.accent + '55' }, role: "img", "aria-label": activeObserve.label + ' instrument readout. ' + activeInstrument.detector + '. Band ' + activeInstrument.band + '. Traces ' + activeInstrument.tracer + '.' },
                   React.createElement("div", { className: "flex items-start justify-between gap-2" },
                     React.createElement("div", null,
-                      React.createElement("p", { className: "text-[11px] font-black uppercase tracking-[0.12em]", style: { color: activeObserve.accent } }, activeObserve.icon + " " + activeObserve.label),
+                      React.createElement("p", { className: "text-[11px] font-black uppercase tracking-[0.12em]", style: { color: hudAccentText(activeObserve.accent) } }, activeObserve.icon + " " + activeObserve.label),
                       React.createElement("p", { className: "mt-0.5 text-xs font-black text-white" }, activeInstrument.detector)
                     ),
-                    React.createElement("span", { className: "rounded-full border border-white/10 bg-white/[0.06] px-2 py-1 text-[11px] font-bold text-slate-200" }, activeInstrument.band)
+                    React.createElement("span", { className: "shrink-0 whitespace-nowrap rounded-full border border-white/10 bg-white/[0.06] px-2 py-1 text-[11px] font-bold text-slate-200" }, activeInstrument.band)
                   ),
                   React.createElement("div", { className: "mt-2 h-1.5 rounded-full opacity-90", style: { background: activeInstrument.gradient, boxShadow: '0 0 10px ' + activeObserve.accent + '55' }, "aria-hidden": true }),
                   React.createElement("div", { className: "mt-1.5 flex items-center justify-between gap-2 text-[11px]" },
@@ -7209,6 +7383,8 @@ if (!window._galaxyHasLoadedOnce) {
                   type: "range", min: 2500, max: 100000, step: 2500, value: starCount,
 
                   'aria-label': __alloT('stem.galaxy.aria_number_of_stars', 'Number of stars'),
+                  // Without this a screen reader announces the bare number "45000".
+                  'aria-valuetext': starCount.toLocaleString() + ' ' + __alloT('stem.galaxy.aria_stars_unit', 'stars'),
 
                   onChange: function (e) {
 
@@ -7224,7 +7400,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                   },
 
-                  className: "flex-1 h-1.5 accent-indigo-500"
+                  className: "flex-1 h-6 accent-indigo-500"
 
                 }),
 
@@ -7256,6 +7432,7 @@ if (!window._galaxyHasLoadedOnce) {
                     type: "range", min: 0.1, max: 14, step: 0.1, value: cosmicAge,
 
                     'aria-label': __alloT('stem.galaxy.aria_cosmic_age', 'Cosmic age in billion years'),
+                    'aria-valuetext': cosmicAge.toFixed(1) + ' ' + __alloT('stem.galaxy.aria_gyr_unit', 'billion years after the Big Bang'),
 
                     onChange: function (e) {
 
@@ -7277,7 +7454,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                     },
 
-                    className: "flex-1 h-1.5 accent-violet-500"
+                    className: "flex-1 h-6 accent-violet-500"
 
                   }),
 
@@ -7507,7 +7684,7 @@ if (!window._galaxyHasLoadedOnce) {
                 ),
                 React.createElement("div", { className: "grid grid-cols-1 gap-3 border-t border-slate-200 p-3 lg:grid-cols-2" },              // ── Hubble tuning-fork classification (highlights the current galaxy type) ──
               React.createElement("div", { className: "mb-3 p-2 rounded-lg border border-indigo-100 bg-white" },
-                React.createElement("p", { className: "text-[11px] font-bold text-indigo-700 uppercase tracking-wider mb-1" }, __alloT('stem.galaxy.hubble_tuning_fork_title', 'Hubble Tuning Fork — classified by shape')),
+                React.createElement("h5", { className: "text-[11px] font-bold text-indigo-700 uppercase tracking-wider mb-1" }, __alloT('stem.galaxy.hubble_tuning_fork_title', 'Hubble Tuning Fork — classified by shape')),
                 (function () {
                   var hl = { elliptical: { x: 78, y: 75 }, grandDesign: { x: 260, y: 40 }, barredSpiral: { x: 260, y: 112 }, irregular: { x: 338, y: 75 } }[galaxyType] || null;
                   return React.createElement("svg", { viewBox: "0 0 360 150", className: "w-full", style: { maxHeight: '150px' }, role: "img", "aria-label": __alloT('stem.galaxy.aria_hubble_tuning_fork', 'Hubble tuning fork: ellipticals on the handle, spirals on the top prong, barred spirals on the bottom prong, with the current galaxy type highlighted') },
@@ -7567,7 +7744,7 @@ if (!window._galaxyHasLoadedOnce) {
                 React.createElement("div", { className: "flex flex-wrap items-start gap-2 mb-2" },
                   React.createElement("span", { className: "text-lg", "aria-hidden": true }, dopplerVelocity < -8 ? "\uD83D\uDD35" : dopplerVelocity > 8 ? "\uD83D\uDD34" : "\u26AA"),
                   React.createElement("div", { className: "min-w-0 flex-1" },
-                    React.createElement("p", { className: "text-[11px] font-black uppercase tracking-wider", style: { color: dopplerColor } }, __alloT('stem.galaxy.doppler_lab_title', 'Doppler Shift Lab — toward = blue, away = red')),
+                    React.createElement("h5", { className: "text-[11px] font-black uppercase tracking-wider", style: { color: dopplerColor } }, __alloT('stem.galaxy.doppler_lab_title', 'Doppler Shift Lab — toward = blue, away = red')),
                     React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed" }, __alloT('stem.galaxy.doppler_lab_desc', 'Move the source along your line of sight. Negative radial velocity moves spectral lines toward blue; positive radial velocity moves them toward red.'))
                   ),
                   React.createElement("span", { className: "px-2 py-0.5 rounded-full text-xs font-black border", style: { color: dopplerColor, borderColor: dopplerColor + '66', background: dopplerColor + '12' } }, dopplerDirection + " • " + dopplerVelocity + " km/s")
@@ -7609,13 +7786,19 @@ if (!window._galaxyHasLoadedOnce) {
                   React.createElement("input", {
                     type: "range", min: -1800, max: 1800, step: 25, value: dopplerVelocity,
                     "aria-label": __alloT('stem.galaxy.aria_doppler_velocity', 'Doppler radial velocity in kilometers per second'),
+                    // The SIGN is the whole lesson here, and "minus four hundred and
+                    // fifty" does not carry it. Announce the direction with the number.
+                    "aria-valuetext": Math.abs(dopplerVelocity) + ' km/s, ' + (
+                      dopplerVelocity < -8 ? __alloT('stem.galaxy.aria_doppler_toward', 'moving toward you, light shifted blue')
+                        : dopplerVelocity > 8 ? __alloT('stem.galaxy.aria_doppler_away', 'moving away from you, light shifted red')
+                          : __alloT('stem.galaxy.aria_doppler_none', 'no measurable shift')),
                     onChange: function (e) {
                       var val = parseInt(e.target.value, 10);
                       var nextLog = addInspectKey('dopplerShift');
                       patchGalaxy({ dopplerVelocity: val, inspectLog: nextLog });
                       if (typeof canvasNarrate === 'function') canvasNarrate('galaxy', 'dopplerShift', (val < 0 ? 'Blueshift: source moving toward us at ' : val > 0 ? 'Redshift: source moving away at ' : 'No Doppler shift: source has zero radial velocity. ') + Math.abs(val) + ' kilometers per second.', { debounce: 500 });
                     },
-                    className: "w-full h-1.5 accent-indigo-500"
+                    className: "w-full h-6 accent-indigo-500"
                   })
                 ),
                 React.createElement("div", { className: "grid grid-cols-2 md:grid-cols-4 gap-1.5 mt-2" },
@@ -8101,10 +8284,10 @@ if (!window._galaxyHasLoadedOnce) {
                   React.createElement("p", { id: "black-hole-description", className: "mt-1 text-xs leading-relaxed text-slate-600" }, __alloT('stem.galaxy.blackhole_description', 'A teaching model near a rotating black hole. Distances are visual, not to scale.')),
                   React.createElement("p", { id: "black-hole-status", role: "status", "aria-live": "polite", "aria-atomic": "true", className: "mt-2 text-xs font-semibold text-indigo-800" }, blackHoleEffectivePaused ? (blackHoleReducedMotion && !blackHoleMotionAllowed ? __alloT('stem.galaxy.bh_status_reduced_motion', 'Animation paused to honor your reduced-motion preference.') : __alloT('stem.galaxy.bh_status_paused', 'Simulation paused.')) : __alloT('stem.galaxy.bh_status_running', 'Simulation running.')),
                   React.createElement("label", { htmlFor: "black-hole-spin", className: "mt-4 block text-xs font-bold text-slate-700" }, __alloT('stem.galaxy.bh_spin_label', 'Spin: '), React.createElement("span", { className: "font-mono text-indigo-700" }, blackHoleSpin.toFixed(2))),
-                  React.createElement("input", { id: "black-hole-spin", type: "range", min: 0, max: 0.99, step: 0.01, value: blackHoleSpin, "aria-valuetext": blackHoleSpin.toFixed(2) + " of 0.99", className: "w-full accent-indigo-600", onChange: function(e){ var v=parseFloat(e.target.value); upd('blackHoleSpin',v); var cv=blackHoleCanvasActive.current; if(cv&&cv._setBlackHoleSpin)cv._setBlackHoleSpin(v); } }),
+                  React.createElement("input", { id: "black-hole-spin", type: "range", min: 0, max: 0.99, step: 0.01, value: blackHoleSpin, "aria-valuetext": blackHoleSpin.toFixed(2) + " of 0.99", className: "w-full h-6 accent-indigo-600", onChange: function(e){ var v=parseFloat(e.target.value); upd('blackHoleSpin',v); var cv=blackHoleCanvasActive.current; if(cv&&cv._setBlackHoleSpin)cv._setBlackHoleSpin(v); } }),
                   React.createElement("p", { className: "text-xs text-slate-600" }, __alloT('stem.galaxy.bh_spin_desc', 'Higher spin speeds the inner disk and strengthens its bright approaching side.')),
                   React.createElement("label", { htmlFor: "black-hole-disk", className: "mt-3 block text-xs font-bold text-slate-700" }, __alloT('stem.galaxy.bh_disk_label', 'Disk brightness: '), React.createElement("span", { className: "font-mono text-indigo-700" }, Math.round(blackHoleDisk*100) + "%")),
-                  React.createElement("input", { id: "black-hole-disk", type: "range", min: 0.2, max: 1, step: 0.01, value: blackHoleDisk, "aria-valuetext": Math.round(blackHoleDisk*100) + " percent", className: "w-full accent-indigo-600", onChange: function(e){ var v=parseFloat(e.target.value); upd('blackHoleDisk',v); var cv=blackHoleCanvasActive.current; if(cv&&cv._setBlackHoleDisk)cv._setBlackHoleDisk(v); } }),
+                  React.createElement("input", { id: "black-hole-disk", type: "range", min: 0.2, max: 1, step: 0.01, value: blackHoleDisk, "aria-valuetext": Math.round(blackHoleDisk*100) + " percent", className: "w-full h-6 accent-indigo-600", onChange: function(e){ var v=parseFloat(e.target.value); upd('blackHoleDisk',v); var cv=blackHoleCanvasActive.current; if(cv&&cv._setBlackHoleDisk)cv._setBlackHoleDisk(v); } }),
                   React.createElement("button", { type: "button", className: "mt-4 min-h-[44px] w-full rounded-lg bg-indigo-600 px-3 py-2 text-xs font-bold text-white hover:bg-indigo-700", onClick: function(){ var next; if (!blackHoleMotionAllowed) { upd('blackHoleMotionAllowed',true); upd('blackHolePaused',false); next=false; } else { next=!blackHolePaused; upd('blackHolePaused',next); } var cv=blackHoleCanvasActive.current; if(cv&&cv._setBlackHolePaused)cv._setBlackHolePaused(next); }, "aria-label": blackHoleEffectivePaused ? __alloT('stem.galaxy.bh_start_anim', 'Start animation') : __alloT('stem.galaxy.bh_pause_anim', 'Pause animation'), "aria-pressed": !blackHoleEffectivePaused }, blackHoleEffectivePaused ? "\u25b6 " + __alloT('stem.galaxy.bh_start_anim', 'Start animation') : "\u23f8 " + __alloT('stem.galaxy.bh_pause_anim', 'Pause animation'))
                 ),
                 React.createElement("div", { className: "rounded-2xl border border-orange-200 bg-orange-50 p-4" },
@@ -8850,6 +9033,13 @@ if (!window._galaxyHasLoadedOnce) {
                   React.createElement("input", {
 
                     type: "range", min: 0.03, max: 50, step: 0.01, value: lifecycleMass, "aria-label": __alloT('stem.galaxy.aria_star_mass', 'Star or brown dwarf mass in solar masses'),
+                    // Announce the spectral class alongside the mass: the class is what
+                    // the slider is really selecting, and it is otherwise only conveyed
+                    // by the colour of the swatch that lights up.
+                    "aria-valuetext": lifecycleMass.toFixed(2) + ' ' + __alloT('stem.galaxy.aria_solar_masses', 'solar masses') + ', ' + (
+                      spectralTypeForMass(lifecycleMass)
+                        ? spectralTypeForMass(lifecycleMass) + '-type'
+                        : __alloT('stem.galaxy.aria_brown_dwarf', 'brown dwarf, below the hydrogen fusion limit')),
 
                     onChange: function (e) {
                       var massVal = parseFloat(e.target.value);
@@ -8861,7 +9051,7 @@ if (!window._galaxyHasLoadedOnce) {
                       }
                     },
 
-                    className: "flex-1 h-2 accent-amber-400 cursor-pointer"
+                    className: "flex-1 h-6 accent-amber-400 cursor-pointer"
 
                   }),
 
@@ -9269,9 +9459,9 @@ if (!window._galaxyHasLoadedOnce) {
 
                     },
 
-                      React.createElement("div", { className: "text-2xl mb-1", style: { color: st.color } }, "\u2B50"),
+                      React.createElement("div", { className: "mb-1 flex justify-center" }, starSwatch(React, st.color, 26)),
 
-                      React.createElement("p", { className: "text-xs font-black", style: { color: st.color } }, st.id),
+                      React.createElement("p", { className: "text-xs font-black", style: { color: starTextColor(st.color) } }, st.id),
 
                       React.createElement("p", { className: "text-xs text-slate-600 leading-tight" }, st.temp + "K"),
 
@@ -9307,9 +9497,9 @@ if (!window._galaxyHasLoadedOnce) {
 
                     React.createElement("div", { className: "flex items-center gap-2 mb-1.5" },
 
-                      React.createElement("span", { className: "text-lg", style: { color: st.color } }, "\u2B50"),
+                      starSwatch(React, st.color, 18),
 
-                      React.createElement("span", { className: "text-xs font-bold", style: { color: st.color } }, st.label + " (" + st.example + ")")
+                      React.createElement("span", { className: "text-xs font-bold", style: { color: starTextColor(st.color) } }, st.label + " (" + st.example + ")")
 
                     ),
 
@@ -9323,7 +9513,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                           React.createElement("div", { className: "text-slate-600 font-bold" }, item.l),
 
-                          React.createElement("div", { className: "font-bold", style: { color: st.color } }, item.v)
+                          React.createElement("div", { className: "font-bold", style: { color: starTextColor(st.color) } }, item.v)
 
                         );
 
@@ -9600,7 +9790,10 @@ if (!window._galaxyHasLoadedOnce) {
               var sm = {
                 popIII: { label: '🌌 ' + __alloT('stem.galaxy.mh_pop3_label', 'Population III (zero-metal)'), color: '#7c3aed', bg: '#f5f3ff', border: '#c4b5fd', desc: __alloT('stem.galaxy.mh_pop3_desc', 'The hypothetical first stars: hydrogen and helium only, and thought to be very massive. None has ever been observed.') },
                 poor:   { label: '🔵 ' + __alloT('stem.galaxy.mh_pop2_label', 'Metal-poor (Population II)'), color: '#0891b2', bg: '#ecfeff', border: '#67e8f9', desc: __alloT('stem.galaxy.mh_pop2_desc', 'Old halo and globular-cluster stars, formed before much enrichment. Long-lived and low in heavy elements.') },
-                solar:  { label: '🟡 ' + __alloT('stem.galaxy.mh_pop1_label', 'Solar-metallicity (Population I)'), color: '#facc15', bg: '#fefce8', border: '#fde047', desc: __alloT('stem.galaxy.mh_pop1_desc', 'Sun-like disk stars. Enough heavy elements for rocky planets to form.') },
+                // yellow-700, not yellow-400: this colour is used as TEXT on the
+                // yellow-50 card, where #facc15 measured 1.48:1. The other three
+                // states already use 600-level inks; this one was the odd one out.
+                solar:  { label: '🟡 ' + __alloT('stem.galaxy.mh_pop1_label', 'Solar-metallicity (Population I)'), color: '#a16207', bg: '#fefce8', border: '#fde047', desc: __alloT('stem.galaxy.mh_pop1_desc', 'Sun-like disk stars. Enough heavy elements for rocky planets to form.') },
                 rich:   { label: '🟠 ' + __alloT('stem.galaxy.mh_rich_label', 'Metal-rich (super-solar)'), color: '#ea580c', bg: '#fff7ed', border: '#fdba74', desc: __alloT('stem.galaxy.mh_rich_desc', 'Young inner-disk stars born from gas that generations of earlier stars already enriched.') }
               }[state];
 
@@ -9655,7 +9848,7 @@ if (!window._galaxyHasLoadedOnce) {
                       h('input', { id: 'mh-' + s.k, type: 'range', min: s.mn, max: s.mx, step: s.st, value: s.v,
                         'aria-valuetext': s.v + s.unit,
                         onChange: function(e) { var p = {}; p[s.k] = parseFloat(e.target.value); setIQ(p); },
-                        className: 'w-full accent-purple-400' }));
+                        className: 'w-full h-6 accent-purple-400' }));
                   })
                 ),
                 h('div', { className: 'rounded-lg border border-slate-600 bg-slate-950/60 p-3 space-y-2', role: 'status', 'aria-live': 'polite' },
@@ -9699,12 +9892,12 @@ if (!window._galaxyHasLoadedOnce) {
                     h('li', null, __alloT('stem.galaxy.mh_prompt1', 'Old globular clusters have very low metallicity. What does that say about when they formed?')),
                     h('li', null, __alloT('stem.galaxy.mh_prompt2', 'Rocky planets need heavy elements. Which population is the most planet-friendly, and why?')),
                     h('li', null, __alloT('stem.galaxy.mh_prompt3', 'Where did the metals in a Population I star come from, if the Big Bang made almost none?')))),
-                h('label', { className: 'flex items-center gap-2 text-[12px] font-bold text-emerald-300 cursor-pointer' },
+                h('label', { className: 'flex min-h-[24px] items-center gap-2 py-1 text-[12px] font-bold text-emerald-300 cursor-pointer' },
                   h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
                   __alloT('stem.galaxy.mh_understood_label', 'I understand — let me explain in my own words')),
                 iq.understood && h('textarea', { 'aria-label': __alloT('stem.galaxy.mh_explanation_label', 'Your explanation'), value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: __alloT('stem.galaxy.mh_explanation_placeholder', 'Explain how metallicity differed in the early universe compared with today.'),
                   className: 'w-full text-[12px] bg-slate-800 text-slate-100 border border-emerald-600 rounded p-2 leading-snug mt-2', rows: 4 }),
-                h('p', { className: 'text-[11px] italic leading-relaxed text-slate-500' }, __alloT('stem.galaxy.mh_model_note', 'This is a simplified teaching model: real enrichment histories vary by galaxy and by location within it. There is deliberately no score here — the point is the reasoning, not a right answer.'))
+                h('p', { className: 'text-[11px] italic leading-relaxed text-slate-400' }, __alloT('stem.galaxy.mh_model_note', 'This is a simplified teaching model: real enrichment histories vary by galaxy and by location within it. There is deliberately no score here — the point is the reasoning, not a right answer.'))
               );
             })()
 

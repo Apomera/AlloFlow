@@ -564,7 +564,7 @@ function EducatorHubModal(props) {
               </div>
               <div className="relative group" data-hub-id="assessment-center" data-hub-label="Assessment Center" data-hub-section="teach">
                 <button type="button" data-hub-launch="true" data-help-key="educator_hub_assessment_center_card" onClick={() => { setShowEducatorHub(false); setShowClassAnalytics(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-violet-50 to-indigo-50 border border-violet-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left">
-                <span className="text-3xl mt-1" aria-hidden="true">{'\uD83C\uDFAF'}</span>
+                <span className="text-3xl mt-1" aria-hidden="true">{'\uD83D\uDDD2\uFE0F'}</span>
                 <div>
                   <h3 className="font-bold text-violet-800">{t('educator_hub.assessment_center_title') || 'Assessment Center'}</h3>
                   <p className="text-xs text-violet-600 mt-1">{t('educator_hub.assessment_center_desc') || 'Screening batteries, CBM probes, RTI decision aids, intervention logs, and student progress.'}</p>
@@ -891,7 +891,7 @@ function EducatorHubModal(props) {
               {!hideSchoolProfessional && (
               <div className="relative group" data-hub-id="research-suite" data-hub-label="Research Suite" data-hub-section="extend">
                 <button type="button" data-hub-launch="true" data-help-key="educator_hub_research_suite_card" onClick={() => { setShowEducatorHub(false); setIsResearchSuiteOpen(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-purple-50 to-fuchsia-50 border border-purple-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left">
-                <span className="text-3xl mt-1" aria-hidden="true">{'\uD83E\uDDEA'}</span>
+                <span className="text-3xl mt-1" aria-hidden="true">{'\uD83D\uDCC7'}</span>
                 <div>
                   <h3 className="font-bold text-purple-800">{t('educator_hub.research_suite_title') || 'Research Suite'}</h3>
                   <p className="text-xs text-purple-700 mt-1">{t('educator_hub.research_suite_desc') || 'Run a named study: IRB tracking, consent provenance, Likert instruments, fidelity logs, and the study bundle export.'}</p>
