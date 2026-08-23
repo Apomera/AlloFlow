@@ -18,6 +18,7 @@ This tooling closes that gap with a committed **English baseline snapshot**.
 | `check_lang_staleness.cjs` | flags packs whose translations predate a reworded English string |
 | `lang_source_baseline.json` | **committed** snapshot: `{ "<key>": "<englishHash>" }` |
 | `lang_staleness/<lang>.json` | per-pack stale report (gitignored — regenerated on demand) |
+| `check_staleness_delta.cjs` | point-of-edit check: which packs the English edit you are *committing right now* strands (see below) |
 
 ## Workflow
 
@@ -69,3 +70,38 @@ same shape the `merge_*_missing` tools consume, so a re-translation pass can rea
   deploy the moment any English string is reworded until it's re-translated/re-blessed.
   That's a deliberate policy call — to opt in, append to the `verify:gate` chain in
   `package.json`: `&& node dev-tools/i18n/check_lang_staleness.cjs --gate --quiet`.
+
+## Point-of-edit detection (`check_staleness_delta.cjs`)
+
+`check_lang_staleness.cjs` is *cumulative*: it answers "what is stale right now, in
+total?" against the blessed baseline. That is the correct accounting, but it fires at
+`verify:gate` — by which time the English edit that caused the drift is several commits
+back, and the symptom reaches you as a "localization regression" report instead.
+
+`check_staleness_delta.cjs` answers the same question at the moment it is cheapest to
+answer: **the English strings I am about to commit — which packs do they make stale?**
+It diffs `ui_strings.js` + `help_strings.js` between a git ref and the version being
+committed, and for each key whose *wording* moved it lists the packs that already hold a
+real (non-passthrough) translation. Pure additions are counted but not flagged — those
+are gap-report territory.
+
+```bash
+npm run verify:stale-delta                                    # staged (index) vs HEAD
+npm run i18n:delta                                            # working tree vs HEAD
+node dev-tools/i18n/check_staleness_delta.cjs --base <ref> --worktree   # since any ref
+node dev-tools/i18n/check_staleness_delta.cjs --gate          # exit 1 on ANY stranding reword
+```
+
+Exit policy matches the cumulative gate: a reword in a **GUARDED** namespace (the same
+list `check_lang_staleness.cjs` hard-gates on) always exits 1, because there a stale pack
+value *overrides* the rename on a visible surface. Everything else reports and exits 0
+unless `--gate`.
+
+It is installed in `.git/hooks/pre-commit` (step 4). Cost is ~1.5s when the English
+sources are untouched — the 62 packs are only loaded once a reword is actually found.
+
+Output `lang_staleness/_delta.json` uses the same `{ key: { english, packs } }` shape the
+`merge_*` tools consume, so a re-translation pass can read the worklist directly.
+
+Coverage: `tests/i18n_cli_tools.test.js`, calibrated against a known-bad range of real
+history (the Nano Banana → Image Editor rename) so a silently-blind "0 findings" fails.

@@ -3609,7 +3609,7 @@
       "select_all_highlight": "ဃုထၢ/ထုးကွံၥ်ခဲလၢၥ်လၢ Adapted Text တၢ်မၤဆူၣ်အဂီၢ်",
       "select_highlight": "ပၥ်ဃုၥ်တၢ်ကတိၤအံၤလၢ Adapted Text တၢ်မၤဆူၣ်အပူၤ",
       "delete_term": "ဖျိၣ်ကွံာ် Term",
-      "apply_edit": "ဆီၣ်လီၤ Custom Nano Banana ဘှီတၢ်",
+      "apply_edit": "ဆီၣ်လီၤ တၢ်ဂီၤ ဘှီတၢ်",
       "generate_icon": "Generate visual icon လ၁် အံၤ term"
     },
     "auto_remove": "Auto-ထုးထီၣ်ကွံၥ် တၢ်ကတိၤ from တၢ်ဂီၤ",
@@ -4835,7 +4835,7 @@
     "image_stripped": "တၢ်ဂီၤ မ့ၢ် stripped ဆူ ပာ်ဖျါ space.",
     "prompt_label": "AI ဘှီထီၣ် Prompt",
     "art_style": "Art Style",
-    "nano_active_status": "Nano Banana active",
+    "nano_active_status": "တၢ်ဂီၤ ဘှီတၢ် active",
     "styles": {
       "default": "Default (Clean Vector)",
       "isometric": "Isometric Diagram",
@@ -4851,15 +4851,15 @@
     },
     "generate": "Generate Visual",
     "regenerate_prompt": "Regenerate from Prompt",
-    "refiner_title": "Nano Banana တၢ်ဂီၤ Refiner",
-    "refiner_desc": "Ask Nano Banana ဆူ ဘှီတၢ် text မ့တမ့် visual elements အ အံၤ တၢ်ဂီၤ directly လ၁် နၤ.",
+    "refiner_title": "တၢ်ဂီၤ ဘှီတၢ်",
+    "refiner_desc": "Describe the text or visual changes you want to make to this image.",
     "refiner_placeholder": "Describe ဆီတလဲ (e.g., 'ထၢနုၥ် more labels', 'Make background blue')...",
     "placeholder_instructions": "e.g., Focus လ၁်ဖီခိၣ် cellular structure...",
     "download": "Download တၢ်ဂီၤ",
     "warning": {
       "title": "Important: ပာ်ဖျါ နၤအ Work",
       "desc": "တၢ်ဂီၤ မ့ၢ် <strong>တ ပာ်ဖျါဝံၤ</strong> ဆူ နၤအ history if နၤ refresh လံ၁်ကဘျံး. Please download တၢ်ဂီၤ မ့တမ့် HTML Pack immediately if နၤ wish ဆူ keep it.",
-      "tip": "<strong>Pro Tip:</strong> AI-ဘှီထီၣ် text လ၁် diagrams can sometimes be inaccurate. Use <strong>Nano Banana Refiner</strong> above ဆူ 'fix spelling' မ့တမ့် 'ထုးထီၣ်ကွံၥ် text labels' before downloading."
+      "tip": "<strong>Pro Tip:</strong> AI-ဘှီထီၣ် text လ၁် diagrams can sometimes be inaccurate. Use <strong>တၢ်ဂီၤ ဘှီတၢ်</strong> above ဆူ 'fix spelling' မ့တမ့် 'ထုးထီၣ်ကွံၥ် text labels' before downloading."
     },
     "actions": {
       "refining_icon": "Refining icon...",
@@ -17031,7 +17031,7 @@
     "subtitle": "သင်ဖန်တီးသည့် ရင်းမြစ်တိုင်းတွင် အသုံးပြုပါ",
     "applies": "ရင်းမြစ်အမျိုးအစား {m} ခုအနက် {n} ခုတွင် အသုံးပြုသည်",
     "image_style": "ပုံစံ (မူလ)",
-    "image_style_hint": "ကိရိယာက ကိုယ်ပိုင်ပုံစံ မသတ်မှတ်ထားပါက Visuals၊ Glossary၊ Timeline နှင့် Concept Sort ပုံများတွင် အသုံးပြုသည်။",
+    "image_style_hint": "Lesson-wide default for new Visuals, Glossary, Timeline, Concept Sort, and Word Sounds images. Adventure can also choose this style.",
     "diff_custom": "စိတ်ကြိုက် — အတန်းအဆင့်အတိအကျ ရွေးပါ",
     "diff_custom_hint": "မည်သည့်ပေါင်းစပ်မှုကိုမဆို ရွေးပါ။ သင့်ပစ်မှတ်အတန်းအဆင့်သည် အမြဲပါဝင်သည်။",
     "diff_target_locked": "ပစ်မှတ်အတန်းအဆင့် — အမြဲပါဝင်သည်",

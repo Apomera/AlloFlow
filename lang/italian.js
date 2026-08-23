@@ -3649,7 +3649,7 @@
       "select_all_highlight": "Seleziona/deseleziona tutto per l’evidenziazione nel testo adattato",
       "select_highlight": "Includi questo termine nell’evidenziazione del testo adattato",
       "delete_term": "Elimina termini",
-      "apply_edit": "Applica Custom Nano Banana Modifica",
+      "apply_edit": "Applica modifica immagine",
       "generate_icon": "Genera un visivo icone per questo termini"
     },
     "auto_remove": "Auto-Rimuovi parole da immagini",
@@ -4875,7 +4875,7 @@
     "image_stripped": "immagini sono stripped un salva space.",
     "prompt_label": "AI Generato Prompt",
     "art_style": "Art stili",
-    "nano_active_status": "Nano Banana attivo",
+    "nano_active_status": "Modifica immagine attiva",
     "styles": {
       "default": "predefinito (Clean Vector)",
       "isometric": "Isometric diagrammi",
@@ -4891,15 +4891,15 @@
     },
     "generate": "Genera visivo",
     "regenerate_prompt": "Regenerare da Prompt",
-    "refiner_title": "Nano Banana immagini Refiner",
-    "refiner_desc": "Ask Nano Banana un modifica testo o visivo elements di questo immagini directly per tu.",
+    "refiner_title": "Editor di immagini",
+    "refiner_desc": "Descrivi le modifiche al testo o agli elementi visivi che vuoi apportare a questa immagine.",
     "refiner_placeholder": "Describe modifiche (es., 'Aggiungi altro labels', 'Crea background blue')...",
     "placeholder_instructions": "es., Focus su il cellular struttura...",
     "download": "Scarica immagini",
     "warning": {
       "title": "Important: Salva tuo Lavoro",
       "desc": "immagini sono <strong>non salvato</strong> un tuo storia se tu aggiorna il pagina. per favore scarica il immagini o il HTML Pack immediately se tu wish un keep it.",
-      "tip": "<strong>Pro consigli:</strong> AI-generato testo in diagrammi può sometimes be inaccurate. Usa il <strong>Nano Banana Refiner</strong> above un 'fix spelling' o 'rimuovi testo labels' prima downloading."
+      "tip": "<strong>Consiglio da esperto:</strong> il testo generato dall'IA nei diagrammi a volte può essere impreciso. Usa l'<strong>Editor di immagini</strong> qui sopra per 'correggere l'ortografia' o 'rimuovere le etichette di testo' prima di scaricare."
     },
     "actions": {
       "refining_icon": "Refining icone...",
@@ -32660,7 +32660,7 @@
     "subtitle": "Applica a ogni risorsa che generi",
     "applies": "Si applica a {n} di {m} tipi di risorsa",
     "image_style": "Stile immagine (predefinito)",
-    "image_style_hint": "Usato per le immagini di Visuals, Glossary, Timeline e Concept Sort, a meno che uno strumento non imposti il proprio stile.",
+    "image_style_hint": "Stile predefinito per l'intera lezione, applicato alle nuove immagini di Elementi visivi, Glossario, Linea del tempo, Ordina Concetti e Suoni delle Parole. Anche la Modalità Avventura può scegliere questo stile.",
     "diff_custom": "Personalizzato — scegli le classi esatte",
     "diff_custom_hint": "Scegli qualsiasi combinazione. La tua classe obiettivo è sempre inclusa.",
     "diff_target_locked": "Classe obiettivo — sempre inclusa",

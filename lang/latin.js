@@ -3644,7 +3644,7 @@
       "select_all_highlight": "Omnia eligere/deligere ad textum accommodatum illuminandum",
       "select_highlight": "Hoc verbum in textus accommodati illuminatione includere",
       "delete_term": "Dēlē terminus",
-      "apply_edit": "Adhibere Custom Nano Banana Recense",
+      "apply_edit": "Mutātiōnem imāginis adhibēre",
       "generate_icon": "Generā vīsuālis symbolum prō hoc terminus"
     },
     "auto_remove": "Auto-Remove verbum ā imāgō",
@@ -4870,7 +4870,7 @@
     "image_stripped": "imāgō sunt stripped ad servā space.",
     "prompt_label": "AI Generātus Prompt",
     "art_style": "Art stilus",
-    "nano_active_status": "Nano Banana āctīvus",
+    "nano_active_status": "Imāgō editur",
     "styles": {
       "default": "praedēfīnītus (Clean Vector)",
       "isometric": "Isometric diagramma",
@@ -4886,15 +4886,15 @@
     },
     "generate": "Generā vīsuālis",
     "regenerate_prompt": "Regenerate ā Prompt",
-    "refiner_title": "Nano Banana imāgō Refiner",
-    "refiner_desc": "Ask Nano Banana ad recense textus aut vīsuālis elements hoc imāgō directly prō tu.",
+    "refiner_title": "Imaginum Editor",
+    "refiner_desc": "Describe mutationes textus vel imaginis quas huic imaginī facere vīs.",
     "refiner_placeholder": "Describe mūtātiōnēs (e.g., 'Adde plūs labels', 'Fac background blue')...",
     "placeholder_instructions": "e.g., Focus in cellular structure...",
     "download": "Recipe imāgō",
     "warning": {
       "title": "Important: Servā tuus Work",
       "desc": "imāgō sunt <strong>nōn servātum</strong> ad tuus history sī tu renovā pāgina. amābō recipe imāgō aut HTML Pack immediately sī tu wish ad keep it.",
-      "tip": "<strong>Pro cōnsilium:</strong> AI-generātum textus in diagramma potest sometimes be inaccurate. Ūtere <strong>Nano Banana Refiner</strong> above ad 'fix spelling' aut 'remove textus labels' before downloading."
+      "tip": "<strong>Cōnsilium perītī:</strong> Textus ab AI generātus in diagrammatibus interdum falsus esse potest. Ūtere <strong>Imaginum Editōre</strong> suprā ad 'orthographiam corrigendam' vel 'titulōs textūs removendōs' antequam dēpōnās."
     },
     "actions": {
       "refining_icon": "Refining symbolum...",
@@ -32355,7 +32355,7 @@
     "subtitle": "Ad omnem opem quam generas applica",
     "applies": "Ad {n} ex {m} generibus opum pertinet",
     "image_style": "Stilus imaginis (praedefinitus)",
-    "image_style_hint": "Ad imagines Visuals, Glossary, Timeline et Concept Sort adhibetur, nisi instrumentum stilum proprium statuat.",
+    "image_style_hint": "Stilus praedefinītus tōtī lēctiōnī prō novīs imāginibus in Vīsuālibus, Glōssāriō, Ordine Temporum, Conceptuum Dispositiōne et Sonīs Verbōrum. Etiam Adventure modus hunc stilum ēligere potest.",
     "diff_custom": "Mos proprius — gradus certos elige",
     "diff_custom_hint": "Quodlibet mixtum elige. Gradus tuus destinatus semper includitur.",
     "diff_target_locked": "Gradus destinatus — semper inclusus",

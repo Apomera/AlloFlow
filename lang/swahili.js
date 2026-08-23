@@ -3648,7 +3648,7 @@
       "select_all_highlight": "Chagua/ondoa chaguo la yote kwa usisitizaji wa matini iliyorekebishwa",
       "select_highlight": "Jumuisha neno hili katika usisitizaji wa matini iliyorekebishwa",
       "delete_term": "Futa istilahi",
-      "apply_edit": "Tumia Custom Nano Banana Hariri",
+      "apply_edit": "Tumia Uhariri wa Picha",
       "generate_icon": "Tengeneza kuona aikoni kwa hii istilahi"
     },
     "auto_remove": "Otomatiki-Ondoa maneno kutoka picha",
@@ -4874,7 +4874,7 @@
     "image_stripped": "picha ni stripped kwa hifadhi space.",
     "prompt_label": "AI Imezalishwa Prompt",
     "art_style": "Art mtindo",
-    "nano_active_status": "Nano Banana inafanya kazi",
+    "nano_active_status": "Uhariri wa picha unaendelea",
     "styles": {
       "default": "chaguo-msingi (Clean Vector)",
       "isometric": "Isometric mchoro",
@@ -4890,15 +4890,15 @@
     },
     "generate": "Tengeneza kuona",
     "regenerate_prompt": "Regenerate kutoka Prompt",
-    "refiner_title": "Nano Banana picha Refiner",
-    "refiner_desc": "Ask Nano Banana kwa hariri maandishi au kuona elements ya hii picha directly kwa wewe.",
+    "refiner_title": "Kihariri cha Picha",
+    "refiner_desc": "Eleza mabadiliko ya maandishi au ya muonekano unayotaka kufanya kwenye picha hii.",
     "refiner_placeholder": "Describe mabadiliko (e.g., 'Ongeza zaidi labels', 'Tengeneza background blue')...",
     "placeholder_instructions": "e.g., Lengo juu ya cellular muundo...",
     "download": "Pakua picha",
     "warning": {
       "title": "Important: Hifadhi yako Kazi",
       "desc": "picha ni <strong>sio imehifadhiwa</strong> kwa yako historia kama wewe onyesha upya ukurasa. tafadhali pakua picha au HTML Pack immediately kama wewe wish kwa keep it.",
-      "tip": "<strong>Pro kidokezo:</strong> AI-imetengenezwa maandishi katika mchoro inaweza sometimes be inaccurate. Tumia <strong>Nano Banana Refiner</strong> above kwa 'fix spelling' au 'ondoa maandishi labels' kabla downloading."
+      "tip": "<strong>Kidokezo cha Kitaalamu:</strong> Maandishi yaliyotengenezwa na AI kwenye michoro wakati mwingine yanaweza kuwa si sahihi. Tumia <strong>Kihariri cha Picha</strong> hapo juu ili 'kurekebisha tahajia' au 'kuondoa lebo za maandishi' kabla ya kupakua."
     },
     "actions": {
       "refining_icon": "Refining aikoni...",
@@ -32783,7 +32783,7 @@
     "subtitle": "Tumia kwa kila rasilimali unayounda",
     "applies": "Inatumika kwa {n} kati ya aina {m} za rasilimali",
     "image_style": "Mtindo wa picha (chaguo-msingi)",
-    "image_style_hint": "Hutumika kwa picha za Visuals, Glossary, Timeline na Concept Sort isipokuwa zana itaweka mtindo wake.",
+    "image_style_hint": "Mtindo chaguo-msingi wa somo zima kwa picha mpya katika Msaada wa Kuona, Kamusi, Mjenzi wa Mfuatano, Dhana Panga na Sauti za Maneno. Safari hali pia inaweza kuchagua mtindo huu.",
     "diff_custom": "Maalum — chagua madarasa kamili",
     "diff_custom_hint": "Chagua mchanganyiko wowote. Darasa lako lengwa linajumuishwa kila wakati.",
     "diff_target_locked": "Darasa lengwa — linajumuishwa kila wakati",

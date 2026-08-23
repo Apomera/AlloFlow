@@ -97,3 +97,30 @@ describe('check_safety_string_spanglish.cjs --json — regression guard', () => 
     expect(status).toBe(0);
   }, 30000);
 });
+
+// 3. check_staleness_delta.cjs — point-of-edit staleness. The failure mode this file
+//    exists to prevent is a scanner that silently reports "0 findings" (a parse
+//    fallback, a namespace it never reaches), so the tool is CALIBRATED against a
+//    known-bad range of real history: the commit that renamed the Nano Banana image
+//    surfaces reworded English strings that packs already translated. Git history is
+//    immutable, so "the diff engine sees those rewords" stays true regardless of how
+//    much of the backlog gets re-translated later.
+describe('check_staleness_delta.cjs — point-of-edit English reword detection', () => {
+  const DELTA = resolve(ROOT, 'dev-tools/i18n/check_staleness_delta.cjs');
+  // Range endpoint: the last bless of lang_source_baseline.json (2026-08-17). The
+  // English rewords that landed after it are the calibration fixture.
+  const BLESSED_REF = 'f9031f88d';
+
+  it('detects the English rewords that landed after the last baseline bless', () => {
+    const { stdout } = runNode(DELTA, ['--base', BLESSED_REF, '--worktree', '--quiet']);
+    const m = stdout.match(/(\d+) English string\(s\) reworded/);
+    expect(m, `expected a reworded-count line, got:\n${stdout}`).toBeTruthy();
+    expect(Number(m[1])).toBeGreaterThan(0); // 0 here means the diff engine went blind
+  }, 120000);
+
+  it('reports no rewording when the index matches HEAD, and exits 0', () => {
+    const { stdout, status } = runNode(DELTA, []);
+    expect(stdout).toMatch(/no English rewording vs HEAD/);
+    expect(status).toBe(0);
+  }, 60000);
+});

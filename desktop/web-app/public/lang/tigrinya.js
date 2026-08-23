@@ -3643,7 +3643,7 @@
       "select_all_highlight": "ንምድማቕ እተመዓራረየ ጽሑፍ ኩሉ ምረጽ/ኣወግድ",
       "select_highlight": "ነዚ ቃል ኣብ ምድማቕ እተመዓራረየ ጽሑፍ ኣእትዎ",
       "delete_term": "ሰርዝ ቃል",
-      "apply_edit": "ኣተግብር Custom Nano Banana ኣርም",
+      "apply_edit": "ናይ ስእሊ ምእራም ኣተግብር",
       "generate_icon": "ፍጠር ሓደ ምርኢት ኣይኮን ንዓ እዚ ቃል"
     },
     "auto_remove": "ካብ ስእልታት ቃላት ኣውቶ-ኣወግድ",
@@ -4869,7 +4869,7 @@
     "image_stripped": "ስእሊ እዮም stripped ናብ ኣቐምጥ space.",
     "prompt_label": "AI ዝተፈጥረ Prompt",
     "art_style": "Art ኣገባብ",
-    "nano_active_status": "Nano Banana ንቑሕ",
+    "nano_active_status": "ናይ ስእሊ ምእራም ንጡፍ እዩ",
     "styles": {
       "default": "ቀዳማይ ምርጫ (Clean Vector)",
       "isometric": "Isometric መግለጺ ስእሊ",
@@ -4885,15 +4885,15 @@
     },
     "generate": "ፍጠር ምርኢት",
     "regenerate_prompt": "Regenerate ካብ Prompt",
-    "refiner_title": "Nano Banana ስእሊ Refiner",
-    "refiner_desc": "Ask Nano Banana ናብ ኣርም ጽሑፍ ወይ ምርኢት elements ናይ እዚ ስእሊ directly ንዓ ንስኻ.",
+    "refiner_title": "ናይ ስእሊ ኣርታዒ",
+    "refiner_desc": "ኣብዚ ስእሊ ክትገብሮ እትደሊ ናይ ጽሑፍ ወይ ናይ ትርኢት ለውጥታት ግለጽ።",
     "refiner_placeholder": "Describe ለውጢ (e.g., 'ወስኽ ተወሳኺ labels', 'ግበር background blue')...",
     "placeholder_instructions": "e.g., ኣተኩሮ ኣብ cellular ቅርጺ...",
     "download": "ኣውርድ ስእሊ",
     "warning": {
       "title": "Important: ኣቐምጥ ናትካ ስራሕ",
       "desc": "ናይዞም ስእልታት ናብ ናይ ታሪኽካ <strong>ኣይተደፍኑን</strong> ገጽ እንተሓዲስካ። ክተሓቑኒ እንተደሊኻ በቕጽበት ስእሊ ወይ HTML Pack ኣውርድ።",
-      "tip": "<strong>ናይ ሞያ ምኽሪ:</strong> ኣብ ዲያግራማት ብ AI-ዝፍጠረ ጽሑፍ ሓደ ሓደ ግዜ ዘይተኣማማኒ ክኸውን ይኽእል። ቅድሚ ምውራድ 'ስፔሊንግ ኣርም' ወይ 'ናይ ጽሑፍ ስም ኣወግድ' ንኽትገብር ኣብ ላዕሊ ዘሎ <strong>Nano Banana Refiner</strong> ተጠቐም።"
+      "tip": "<strong>ናይ ሞያ ምኽሪ:</strong> ኣብ ዲያግራማት ብ AI-ዝፍጠረ ጽሑፍ ሓደ ሓደ ግዜ ዘይተኣማማኒ ክኸውን ይኽእል። ቅድሚ ምውራድ 'ስፔሊንግ ኣርም' ወይ 'ናይ ጽሑፍ ስም ኣወግድ' ንኽትገብር ኣብ ላዕሊ ዘሎ <strong>ናይ ስእሊ ኣርታዒ</strong> ተጠቐም።"
     },
     "actions": {
       "refining_icon": "Refining ኣይኮን...",
@@ -30439,7 +30439,7 @@
     "subtitle": "ንኹሉ እትፈጥሮ ሃብቲ ተግብሮ",
     "applies": "ካብ {m} ዓይነታት ሃብቲ {n} ይምልከት",
     "image_style": "ቅዲ ስእሊ (ነባሪ)",
-    "image_style_hint": "ሓደ መሳርሒ ናይ ባዕሉ ቅዲ እንተዘይወሰነ፣ ንስእልታት Visuals፣ Glossary፣ Timeline እና Concept Sort ይጥቀመሉ።",
+    "image_style_hint": "ኣብ ምርኢት ደገፍ፣ መዝገበ ቃላት፣ ሰራሒ ቅደም ተኸተል፣ ሓሳብ ኣሰናዲ ከምኡ'ውን ድምጺ ቃላት ንዝኾኑ ሓደስቲ ስእልታት ናይ ምሉእ ትምህርቲ ነባሪ ኣገባብ። ናይ ኣድቨንቸር ኣገባብ እውን ነዚ ኣገባብ ክመርጽ ይኽእል።",
     "diff_custom": "ፍሉይ — ትክክለኛ ክፍልታት ምረጽ",
     "diff_custom_hint": "ዝኾነ ውህደት ምረጽ። ዕላማኻ ዝኾነ ክፍሊ ኩሉ ግዜ ይካተት።",
     "diff_target_locked": "ዕላማ ክፍሊ — ኩሉ ግዜ ይካተት",

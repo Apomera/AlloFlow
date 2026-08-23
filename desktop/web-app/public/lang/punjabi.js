@@ -3648,7 +3648,7 @@
       "select_all_highlight": "ਢਾਲੀ ਲਿਖਤ ਹਾਈਲਾਈਟ ਲਈ ਸਭ ਚੁਣੋ/ਹਟਾਓ",
       "select_highlight": "ਇਹ ਸ਼ਬਦ ਢਾਲੀ ਲਿਖਤ ਹਾਈਲਾਈਟ ਵਿੱਚ ਸ਼ਾਮਲ ਕਰੋ",
       "delete_term": "ਮਿਟਾਓ ਸ਼ਬਦ",
-      "apply_edit": "ਲਾਗੂ ਕਰੋ Custom Nano Banana ਸੰਪਾਦਿਤ ਕਰੋ",
+      "apply_edit": "ਚਿੱਤਰ ਸੰਪਾਦਨ ਲਾਗੂ ਕਰੋ",
       "generate_icon": "ਤਿਆਰ ਕਰੋ ਇੱਕ ਦ੍ਰਿਸ਼ਟੀ ਆਈਕਨ ਲਈ ਇਹ ਸ਼ਬਦ"
     },
     "auto_remove": "ਚਿੱਤਰਾਂ ਤੋਂ ਸ਼ਬਦ ਆਟੋ-ਹਟਾਓ",
@@ -4874,7 +4874,7 @@
     "image_stripped": "ਚਿੱਤਰ ਹਨ stripped ਨੂੰ ਸੰਭਾਲੋ space.",
     "prompt_label": "AI ਪੈਦਾ ਕੀਤਾ Prompt",
     "art_style": "Art ਸ਼ੈਲੀ",
-    "nano_active_status": "Nano Banana ਸਰਗਰਮ",
+    "nano_active_status": "ਚਿੱਤਰ ਸੰਪਾਦਨ ਚਾਲੂ ਹੈ",
     "styles": {
       "default": "ਡਿਫਾਲਟ (Clean Vector)",
       "isometric": "Isometric ਚਿੱਤਰ",
@@ -4890,15 +4890,15 @@
     },
     "generate": "ਤਿਆਰ ਕਰੋ ਦ੍ਰਿਸ਼ਟੀ",
     "regenerate_prompt": "Regenerate ਤੋਂ Prompt",
-    "refiner_title": "Nano Banana ਚਿੱਤਰ Refiner",
-    "refiner_desc": "Ask Nano Banana ਨੂੰ ਸੰਪਾਦਿਤ ਕਰੋ ਟੈਕਸਟ ਜਾਂ ਦ੍ਰਿਸ਼ਟੀ elements ਦਾ ਇਹ ਚਿੱਤਰ directly ਲਈ ਤੁਸੀਂ.",
+    "refiner_title": "ਚਿੱਤਰ ਸੰਪਾਦਕ",
+    "refiner_desc": "ਇਸ ਚਿੱਤਰ ਵਿੱਚ ਤੁਸੀਂ ਜੋ ਲਿਖਤ ਜਾਂ ਦ੍ਰਿਸ਼ ਬਦਲਾਅ ਕਰਨਾ ਚਾਹੁੰਦੇ ਹੋ, ਉਹਨਾਂ ਦਾ ਵਰਣਨ ਕਰੋ।",
     "refiner_placeholder": "Describe ਤਬਦੀਲੀਆਂ (e.g., 'ਜੋੜੋ ਹੋਰ labels', 'ਬਣਾਓ background blue')...",
     "placeholder_instructions": "e.g., ਫੋਕਸ ਉੱਤੇ cellular ਢਾਂਚਾ...",
     "download": "ਡਾਊਨਲੋਡ ਕਰੋ ਚਿੱਤਰ",
     "warning": {
       "title": "Important: ਸੰਭਾਲੋ ਤੁਹਾਡਾ ਕੰਮ",
       "desc": "ਜੇ ਤੁਸੀਂ ਪੰਨੇ ਨੂੰ ਰਿਫਰੈਸ਼ ਕਰਦੇ ਹੋ ਤਾਂ ਚਿੱਤਰ ਤੁਹਾਡੇ ਇਤਿਹਾਸ ਵਿੱਚ <strong>ਸੁਰੱਖਿਅਤ ਨਹੀਂ</strong> ਹੁੰਦੇ। ਜੇ ਤੁਸੀਂ ਇਸਨੂੰ ਰੱਖਣਾ ਚਾਹੁੰਦੇ ਹੋ ਤਾਂ ਕਿਰਪਾ ਕਰਕੇ ਚਿੱਤਰ ਜਾਂ HTML Pack ਨੂੰ ਤੁਰੰਤ ਡਾਊਨਲੋਡ ਕਰੋ।",
-      "tip": "<strong>ਪ੍ਰੋ ਟਿਪ:</strong> ਡਾਇਆਗ੍ਰਾਮਾਂ ਵਿੱਚ AI-ਜਨਰੇਟ ਟੈਕਸਟ ਕਈ ਵਾਰ ਗਲਤ ਹੋ ਸਕਦਾ ਹੈ। ਡਾਊਨਲੋਡ ਕਰਨ ਤੋਂ ਪਹਿਲਾਂ 'ਸਪੈਲਿੰਗ ਠੀਕ ਕਰਨ' ਜਾਂ 'ਟੈਕਸਟ ਲੇਬਲ ਹਟਾਉਣ' ਲਈ ਉੱਪਰ <strong>Nano Banana Refiner</strong> ਦੀ ਵਰਤੋਂ ਕਰੋ।"
+      "tip": "<strong>ਪ੍ਰੋ ਟਿਪ:</strong> ਡਾਇਆਗ੍ਰਾਮਾਂ ਵਿੱਚ AI-ਜਨਰੇਟ ਟੈਕਸਟ ਕਈ ਵਾਰ ਗਲਤ ਹੋ ਸਕਦਾ ਹੈ। ਡਾਊਨਲੋਡ ਕਰਨ ਤੋਂ ਪਹਿਲਾਂ 'ਸਪੈਲਿੰਗ ਠੀਕ ਕਰਨ' ਜਾਂ 'ਟੈਕਸਟ ਲੇਬਲ ਹਟਾਉਣ' ਲਈ ਉੱਪਰ ਦਿੱਤੇ <strong>ਚਿੱਤਰ ਸੰਪਾਦਕ</strong> ਦੀ ਵਰਤੋਂ ਕਰੋ।"
     },
     "actions": {
       "refining_icon": "Refining ਆਈਕਨ...",
@@ -32742,7 +32742,7 @@
     "subtitle": "ਤੁਹਾਡੇ ਬਣਾਏ ਹਰ ਸਰੋਤ ਉੱਤੇ ਲਾਗੂ ਕਰੋ",
     "applies": "{m} ਸਰੋਤ ਕਿਸਮਾਂ ਵਿੱਚੋਂ {n} ਉੱਤੇ ਲਾਗੂ ਹੁੰਦਾ ਹੈ",
     "image_style": "ਚਿੱਤਰ ਸ਼ੈਲੀ (ਡਿਫ਼ਾਲਟ)",
-    "image_style_hint": "ਜੇ ਕੋਈ ਟੂਲ ਆਪਣੀ ਸ਼ੈਲੀ ਸੈੱਟ ਨਾ ਕਰੇ ਤਾਂ Visuals, Glossary, Timeline ਅਤੇ Concept Sort ਦੇ ਚਿੱਤਰਾਂ ਲਈ ਵਰਤੀ ਜਾਂਦੀ ਹੈ।",
+    "image_style_hint": "ਦ੍ਰਿਸ਼ ਸਮੱਗਰੀ, ਸ਼ਬਦਕੋਸ਼, ਕ੍ਰਮ ਬਣਾਉਣ ਵਾਲਾ, ਸੰਕਲਪ ਕ੍ਰਮਬੱਧ ਕਰੋ ਅਤੇ ਸ਼ਬਦ ਧੁਨੀਆਂ ਦੀਆਂ ਨਵੀਆਂ ਤਸਵੀਰਾਂ ਲਈ ਪੂਰੇ ਪਾਠ ਦੀ ਮੂਲ ਸ਼ੈਲੀ। ਸਾਹਸ ਮੋਡ ਵੀ ਇਹ ਸ਼ੈਲੀ ਚੁਣ ਸਕਦਾ ਹੈ।",
     "diff_custom": "ਕਸਟਮ — ਸਹੀ ਜਮਾਤਾਂ ਚੁਣੋ",
     "diff_custom_hint": "ਕੋਈ ਵੀ ਮਿਲਾਪ ਚੁਣੋ। ਤੁਹਾਡੀ ਟੀਚਾ ਜਮਾਤ ਹਮੇਸ਼ਾਂ ਸ਼ਾਮਲ ਹੁੰਦੀ ਹੈ।",
     "diff_target_locked": "ਟੀਚਾ ਜਮਾਤ — ਹਮੇਸ਼ਾਂ ਸ਼ਾਮਲ",

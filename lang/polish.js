@@ -3648,7 +3648,7 @@
       "select_all_highlight": "Zaznacz/odznacz wszystko do wyróżnienia w tekście dostosowanym",
       "select_highlight": "Uwzględnij to pojęcie w wyróżnieniu tekstu dostosowanego",
       "delete_term": "Usuń termin",
-      "apply_edit": "Zastosuj niestandardową edycję Nano Banana",
+      "apply_edit": "Zastosuj edycję obrazu",
       "generate_icon": "Utwórz wizualny ikona dla tego terminu"
     },
     "auto_remove": "Automatycznie usuwaj słowa z obrazów",
@@ -4874,7 +4874,7 @@
     "image_stripped": "Obrazy zostały usunięte w celu zaoszczędzenia miejsca.",
     "prompt_label": "Polecenie wygenerowane przez AI",
     "art_style": "Styl artystyczny",
-    "nano_active_status": "Nano Banana aktywna",
+    "nano_active_status": "Edycja obrazu aktywna",
     "styles": {
       "default": "Domyślny (czysty wektor)",
       "isometric": "Diagram izometryczny",
@@ -4890,15 +4890,15 @@
     },
     "generate": "Utwórz wizualizacja",
     "regenerate_prompt": "Wygeneruj ponownie z wskazówki",
-    "refiner_title": "Nano Banana — narzędzie do dopracowywania obrazów",
-    "refiner_desc": "Poproś Nano Banana edytuj tekst lub wizualne elementy tego obrazy bezpośrednio dla ciebie.",
+    "refiner_title": "Edytor obrazów",
+    "refiner_desc": "Opisz zmiany tekstu lub elementów graficznych, które chcesz wprowadzić na tym obrazie.",
     "refiner_placeholder": "Opisz zmiany (np. „Dodaj więcej etykiet”, „Zmień tło na niebieskie”)...",
     "placeholder_instructions": "np. Skoncentruj się na strukturze komórkowej...",
     "download": "Pobierz obraz",
     "warning": {
       "title": "Ważne: zapisz swoją pracę",
       "desc": "Obrazy <strong>nie są zapisywane</strong> w historii po odświeżeniu strony. Proszę natychmiast pobrać obraz lub pakiet HTML, jeśli chce go Pan/Pani zachować.",
-      "tip": "<strong>Wskazówka:</strong> Tekst generowany przez AI na diagramach może być czasem nieprawidłowy. Użyj narzędzia <strong>Nano Banana Refiner</strong> powyżej, aby „poprawić pisownię” lub „usunąć etykiety tekstowe” przed pobraniem."
+      "tip": "<strong>Wskazówka:</strong> Tekst generowany przez AI na diagramach może być czasem nieprawidłowy. Użyj <strong>Edytora obrazów</strong> powyżej, aby 'poprawić pisownię' lub 'usunąć etykiety tekstowe' przed pobraniem."
     },
     "actions": {
       "refining_icon": "Dopracowywanie ikony...",
@@ -32906,7 +32906,7 @@
     "subtitle": "Zastosuj do każdego tworzonego zasobu",
     "applies": "Dotyczy {n} z {m} typów zasobów",
     "image_style": "Styl obrazu (domyślny)",
-    "image_style_hint": "Używany dla obrazów Visuals, Glossary, Timeline i Concept Sort, chyba że narzędzie ustawi własny styl.",
+    "image_style_hint": "Domyślny styl dla całej lekcji dla nowych obrazów w Materiałach wizualnych, Słowniczku, Osi czasu, Sortowaniu pojęć i Dźwiękach Słów. Tryb przygody również może wybrać ten styl.",
     "diff_custom": "Niestandardowe — wybierz dokładne klasy",
     "diff_custom_hint": "Wybierz dowolne połączenie. Klasa docelowa zawsze jest uwzględniona.",
     "diff_target_locked": "Klasa docelowa — zawsze uwzględniona",

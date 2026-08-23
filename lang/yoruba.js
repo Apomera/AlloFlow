@@ -3645,7 +3645,7 @@
       "select_all_highlight": "Yan/yọ gbogbo rẹ̀ fún ìsàmì ọ̀rọ̀ tí a ṣàtúnṣe",
       "select_highlight": "Fi ọ̀rọ̀ yìí sínú ìsàmì ọ̀rọ̀ tí a ṣàtúnṣe",
       "delete_term": "Parẹ ọrọ",
-      "apply_edit": "Lo Custom Nano Banana Ṣatunṣe",
+      "apply_edit": "Lo Ìṣàtúnṣe Àwòrán",
       "generate_icon": "Ṣẹda oju aami fun eyi ọrọ"
     },
     "auto_remove": "Auto-Yọ kuro ọrọ lati aworan",
@@ -4871,7 +4871,7 @@
     "image_stripped": "aworan jẹ stripped si pamọ space.",
     "prompt_label": "Àwíwí AI ti Pilẹ̀",
     "art_style": "Art ọna",
-    "nano_active_status": "Nano Banana lọwọ",
+    "nano_active_status": "Ìṣàtúnṣe àwòrán ń ṣiṣẹ́",
     "styles": {
       "default": "aiyipada (Clean Vector)",
       "isometric": "Isometric aworan",
@@ -4887,15 +4887,15 @@
     },
     "generate": "Ṣẹda oju",
     "regenerate_prompt": "Regenerate lati Prompt",
-    "refiner_title": "Nano Banana aworan Refiner",
-    "refiner_desc": "Ask Nano Banana si ṣatunṣe ọrọ tabi oju elements ti eyi aworan directly fun iwọ.",
+    "refiner_title": "Olóòtú Àwòrán",
+    "refiner_desc": "Ṣàpèjúwe àwọn ìyípadà ọ̀rọ̀ tàbí àwòrán tí o fẹ́ ṣe sí àwòrán yìí.",
     "refiner_placeholder": "Describe changes (e.g., 'Fikun sii labels', 'Ṣe background blue')...",
     "placeholder_instructions": "e.g., Focus lori cellular structure...",
     "download": "Gba sile aworan",
     "warning": {
       "title": "Important: Pamọ rẹ Work",
       "desc": "aworan jẹ <strong>ko ti pamọ</strong> si rẹ history ti o ba iwọ sọ di tuntun page. jọwọ gba sile aworan tabi HTML Pack immediately ti o ba iwọ wish si keep it.",
-      "tip": "<strong>Pro imọran:</strong> AI-ti ṣẹda ọrọ ninu aworan le sometimes be inaccurate. Lo <strong>Nano Banana Refiner</strong> above si 'fix spelling' tabi 'yọ kuro ọrọ labels' before downloading."
+      "tip": "<strong>Ìmọ̀ràn Ọ̀jáfáfá:</strong> Ọ̀rọ̀ tí AI ṣẹ̀dá nínú àwòrán lè jẹ́ àìtọ́ nígbà mìíràn. Lo <strong>Olóòtú Àwòrán</strong> lókè láti 'ṣàtúnṣe ìkọ̀wé' tàbí 'yọ àwọn àmì ọ̀rọ̀ kúrò' kí o tó gbà á sílẹ̀."
     },
     "actions": {
       "refining_icon": "Refining aami...",
@@ -32319,7 +32319,7 @@
     "subtitle": "Lo sí gbogbo ohun èlò tí o bá ṣẹ̀dá",
     "applies": "Ó kan {n} nínú àwọn irú ohun èlò {m}",
     "image_style": "Àṣà àwòrán (àìyípadà)",
-    "image_style_hint": "A máa ń lò fún àwọn àwòrán Visuals, Glossary, Timeline àti Concept Sort bí irinṣẹ́ kò bá ṣètò àṣà tirẹ̀.",
+    "image_style_hint": "Ìlànà àkọ́kọ́ fún gbogbo ẹ̀kọ́ fún àwọn àwòrán tuntun nínú Àtìlẹ́yìn Ojú, Ìwé ìtumọ̀ ọ̀rọ̀, Akọ́lé Ìtẹ̀lentẹ̀le, Concept Si àti Ìró Ọ̀rọ̀. Ìrìnàjò ọna náà lè yan ìlànà yìí pẹ̀lú.",
     "diff_custom": "Àṣà pàtó — yan àwọn kíláàsì gangan",
     "diff_custom_hint": "Yan àpapọ̀ èyíkéyìí. Kíláàsì ibi-afẹ́ rẹ máa ń wà nínú rẹ̀ nígbà gbogbo.",
     "diff_target_locked": "Kíláàsì ibi-afẹ́ — ó máa ń wà nínú rẹ̀",

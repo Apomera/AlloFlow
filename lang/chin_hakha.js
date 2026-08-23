@@ -3623,7 +3623,7 @@
       "select_all_highlight": "Remh mi ca langhternak caah vialte thim/thim lo",
       "select_highlight": "Hi biafang hi remh mi ca langhternak ah telh",
       "delete_term": "Hlonh Term",
-      "apply_edit": "Hman Custom Nano Banana Thlen",
+      "apply_edit": "Hman Limceu Thlennak",
       "generate_icon": "Generate visual icon caah hi term"
     },
     "auto_remove": "Auto-Lak biafang from limceu",
@@ -4849,7 +4849,7 @@
     "image_stripped": "limceu si stripped ah khoh space.",
     "prompt_label": "AI Tuah Prompt",
     "art_style": "Art Style",
-    "nano_active_status": "Nano Banana active",
+    "nano_active_status": "Limceu Thlennak active",
     "styles": {
       "default": "Default (Clean Vector)",
       "isometric": "Isometric Diagram",
@@ -4865,15 +4865,15 @@
     },
     "generate": "Generate Visual",
     "regenerate_prompt": "Regenerate from Prompt",
-    "refiner_title": "Nano Banana limceu Refiner",
-    "refiner_desc": "Ask Nano Banana ah thlen text asilole visual elements i hi limceu directly caah nang.",
+    "refiner_title": "Limceu Thlennak",
+    "refiner_desc": "Describe the text or visual changes you want to make to this image.",
     "refiner_placeholder": "Describe thlennak (e.g., 'Tel tampin labels', 'Make background blue')...",
     "placeholder_instructions": "e.g., Focus cung cellular structure...",
     "download": "Lakhrak limceu",
     "warning": {
       "title": "Important: Khoh nangmah Work",
       "desc": "limceu si <strong> si lo khoh cang</strong> ah nangmah history if nang refresh cazin. Please lakhrak limceu asilole HTML Pack immediately if nang wish ah keep it.",
-      "tip": "<strong>Pro Tip:</strong> AI-tuah text ah diagrams can sometimes be inaccurate. Hman <strong>Nano Banana Refiner</strong> above ah 'fix spelling' asilole 'lak text labels' before downloading."
+      "tip": "<strong>Pro Tip:</strong> AI-tuah text ah diagrams can sometimes be inaccurate. Hman <strong>Limceu Thlennak</strong> above ah 'fix spelling' asilole 'lak text labels' before downloading."
     },
     "actions": {
       "refining_icon": "Refining icon...",
@@ -24647,7 +24647,7 @@
     "subtitle": "Na tuahmi hmun kip ah hman",
     "applies": "Hmun phun {m} chungah {n} ah hman a si",
     "image_style": "Hmanrua style (default)",
-    "image_style_hint": "Tool in style dang a ruat lo ah Visuals, Glossary, Timeline le Concept Sort hmanrua ah hman a si.",
+    "image_style_hint": "Lesson-wide default for new Visuals, Glossary, Timeline, Concept Sort, and Word Sounds images. Adventure can also choose this style.",
     "diff_custom": "Duhdawtnak — grade dik te thlang",
     "diff_custom_hint": "Mix zeizat khal thlang. Na target grade cu a tel ringring.",
     "diff_target_locked": "Target grade — a tel ringring",

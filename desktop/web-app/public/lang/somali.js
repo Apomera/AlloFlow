@@ -3980,7 +3980,7 @@
       "select_all_highlight": "Dooro/ka saar dhammaan muujinta qoraalka la habeeyay",
       "select_highlight": "Ku dar eraygan muujinta qoraalka la habeeyay",
       "delete_term": "Tirtir Erayga",
-      "apply_edit": "Codso Tafatirka Gaarka ah ee Nano Banana",
+      "apply_edit": "Codso Tafatirka Sawirka",
       "generate_icon": "Samee astaan muuqaal eraygan"
     },
     "auto_remove": "Si Toos ah u Saar Erayada Sawirada",
@@ -4445,7 +4445,7 @@
     "image_stripped": "Sawiradu waa la saaray si loo kaydiyo boos.",
     "prompt_label": "Su'aasha AI-gu Sameeyay",
     "art_style": "Qaabka Farshaxanka",
-    "nano_active_status": "Nano Banana waa firfircoon",
+    "nano_active_status": "Tafatirka sawirka wuu shaqaynayaa",
     "styles": {
       "default": "Caadi (Vector Nadiif ah)",
       "isometric": "Jaantus Isometric",
@@ -4461,15 +4461,15 @@
     },
     "generate": "Samee Muuqaal",
     "regenerate_prompt": "Dib u Samee Su'aasha",
-    "refiner_title": "Sifeeyaha Sawirka Nano Banana",
-    "refiner_desc": "Weydii Nano Banana inay si toos ah u tafatirto qoraalka ama qaybaha muuqaalka sawirkan.",
+    "refiner_title": "Tafatiraha Sawirka",
+    "refiner_desc": "Sharax isbeddellada qoraalka ama muuqaalka ee aad rabto inaad ku samayso sawirkan.",
     "refiner_placeholder": "Sharax beddelada (tusaale, 'Ku dar calaamado dheeraad ah', 'Asalka ka dhig buluug')...",
     "placeholder_instructions": "tusaale, Diiradda saar qaab-dhismeedka unugga...",
     "download": "Soo Dejii Sawirka",
     "warning": {
       "title": "Muhiim: Kaydi Shaqadaada",
       "desc": "Sawiradu <strong>looma kaydin</strong> taariikhdaada haddii aad cusboonaysiiso bogga. Fadlan si degdeg ah u soo dejii sawirka ama HTML Pack haddii aad rabto inaad haysato.",
-      "tip": "<strong>Tilmaanta Xirfadleynta:</strong> Qoraalka AI-gu sameeyay jaantusyada wuxuu mararka qaarkood noqon karaa mid aan sax ahayn. Isticmaal <strong>Sifeeyaha Nano Banana</strong> ee kor ku yaalla si aad 'u hagaajiso higgaadinta' ama 'u saarto calaamadaha qoraalka' ka hor inta aanad soo dejin."
+      "tip": "<strong>Tilmaanta Xirfadleynta:</strong> Qoraalka AI-gu sameeyay jaantusyada wuxuu mararka qaarkood noqon karaa mid aan sax ahayn. Isticmaal <strong>Tafatiraha Sawirka</strong> ee kore si aad u 'saxdo higgaadda' ama u 'saartid summadaha qoraalka' ka hor inta aanad soo dejin."
     },
     "actions": {
       "refining_icon": "Astaanta waa la sifaynayaa...",
@@ -32240,7 +32240,7 @@
     "subtitle": "Ku dabaq kheyraad kasta oo aad abuurto",
     "applies": "Waxay khuseysaa {n} ka mid ah {m} nooc oo kheyraad ah",
     "image_style": "Qaabka sawirka (caadi)",
-    "image_style_hint": "Waxaa loo adeegsadaa sawirrada Visuals, Glossary, Timeline iyo Concept Sort haddii qalabku uusan dejin qaab u gaar ah.",
+    "image_style_hint": "Qaabka caadiga ah ee casharka oo dhan ee sawirrada cusub ee Taageero Muuqaal, Liiska Erayada, Dhise Jadwalka Waqtiga, Habayn Fikradeed iyo Dhawaaqyada Erayada. Habka Halganka sidoo kale wuu dooran karaa qaabkan.",
     "diff_custom": "Gaar ah — dooro fasallada saxda ah",
     "diff_custom_hint": "Isku-dar kasta dooro. Fasalka bartilmaameedka mar walba wuu ku jiraa.",
     "diff_target_locked": "Fasalka bartilmaameedka — mar walba ku jira",

@@ -3809,7 +3809,7 @@
       "select_all_highlight": "Elekti/malelekti ĉion por emfazo en adaptita teksto",
       "select_highlight": "Inkluzivi ĉi tiun terminon en la emfazo de adaptita teksto",
       "delete_term": "Forigi terminon",
-      "apply_edit": "Apliki propran Nano Banana redakton",
+      "apply_edit": "Apliki bildredaktadon",
       "generate_icon": "Generi vidan piktogramon por ĉi tiu termino"
     },
     "auto_remove": "Aŭtomate forigi vortojn el bildoj",
@@ -5035,7 +5035,7 @@
     "image_stripped": "Bildoj estas forigitaj por ŝpari spacon.",
     "prompt_label": "AI-Generita Instrukcio",
     "art_style": "Arta Stilo",
-    "nano_active_status": "Nano Banana aktiva",
+    "nano_active_status": "Bildredaktado aktiva",
     "styles": {
       "default": "Defaŭlta (Pura Vektoro)",
       "isometric": "Izometra Diagramo",
@@ -5051,15 +5051,15 @@
     },
     "generate": "Generi Bildon",
     "regenerate_prompt": "Regeneri el Instrukcio",
-    "refiner_title": "Nano Banana Bildrafinilo",
-    "refiner_desc": "Petu Nano Banana redakti tekston aŭ vidajn elementojn de ĉi tiu bildo rekte por vi.",
+    "refiner_title": "Bildredaktilo",
+    "refiner_desc": "Priskribu la tekstajn aŭ vidajn ŝanĝojn, kiujn vi volas fari al ĉi tiu bildo.",
     "refiner_placeholder": "Priskribu ŝanĝojn (ekz., 'Aldoni pli da etikedoj', 'Igi fonon blua')...",
     "placeholder_instructions": "ekz., Fokusiĝu sur la ĉela strukturo...",
     "download": "Elŝuti Bildon",
     "warning": {
       "title": "Grave: Konservu Vian Laboron",
       "desc": "Bildoj <strong>ne estas konservitaj</strong> en via historio se vi refreŝigas la paĝon. Bonvolu elŝuti la bildon aŭ la HTML-Pakaĵon tuj se vi deziras konservi ĝin.",
-      "tip": "<strong>Profesia Konsileto:</strong> AI-generita teksto en diagramoj povas foje esti malĝusta. Uzu la <strong>Nano Banana Rafinilon</strong> supre por 'korekti literumadon' aŭ 'forigi tekstajn etikedojn' antaŭ elŝuto."
+      "tip": "<strong>Profesia Konsileto:</strong> AI-generita teksto en diagramoj povas foje esti malĝusta. Uzu la <strong>Bildredaktilon</strong> supre por 'korekti literumadon' aŭ 'forigi tekstajn etikedojn' antaŭ ol elŝuti."
     },
     "actions": {
       "refining_icon": "Rafinante piktogramon...",
@@ -32714,7 +32714,7 @@
     "subtitle": "Apliku al ĉiu rimedo, kiun vi generas",
     "applies": "Aplikiĝas al {n} el {m} rimedtipoj",
     "image_style": "Bildstilo (defaŭlta)",
-    "image_style_hint": "Uzata por bildoj de Visuals, Glossary, Timeline kaj Concept Sort, krom se ilo elektas propran stilon.",
+    "image_style_hint": "Defaŭlta stilo por la tuta leciono por novaj bildoj en Vidaĵoj, Glosaro, Kronologio, Koncepto-ordigo kaj Vortsonoj. Ankaŭ la Aventura reĝimo povas elekti ĉi tiun stilon.",
     "diff_custom": "Propra — elektu precizajn klasojn",
     "diff_custom_hint": "Elektu ajnan miksaĵon. Via celklaso ĉiam estos inkluzivita.",
     "diff_target_locked": "Celklaso — ĉiam inkluzivita",

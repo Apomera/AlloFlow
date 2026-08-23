@@ -3810,7 +3810,7 @@
       "select_all_highlight": "Uyarlanmış metin vurgusu için tümünü seç/kaldır",
       "select_highlight": "Bu terimi uyarlanmış metin vurgusuna dahil et",
       "delete_term": "Terimi Sil",
-      "apply_edit": "Özel Nano Banana Düzenlemesini Uygula",
+      "apply_edit": "Görsel Düzenlemesini Uygula",
       "generate_icon": "Bu terim için görsel bir simge oluştur"
     },
     "auto_remove": "Kelimeleri Görsellerden Otomatik Kaldır",
@@ -5036,7 +5036,7 @@
     "image_stripped": "Alandan tasarruf etmek için görseller kaldırıldı.",
     "prompt_label": "AI Tarafından Oluşturulan İstem",
     "art_style": "Sanat Stili",
-    "nano_active_status": "Nano Banana etkin",
+    "nano_active_status": "Görsel düzenleme etkin",
     "styles": {
       "default": "Varsayılan (Temiz Vektör)",
       "isometric": "İzometrik Diyagram",
@@ -5052,15 +5052,15 @@
     },
     "generate": "Görsel Oluştur",
     "regenerate_prompt": "İstemden Yeniden Oluştur",
-    "refiner_title": "Nano Banana Görsel İyileştirici",
-    "refiner_desc": "Nano Banana'dan bu görselin metin veya görsel öğelerini doğrudan sizin için düzenlemesini isteyin.",
+    "refiner_title": "Görsel Düzenleyici",
+    "refiner_desc": "Bu görselde yapmak istediğiniz metin veya görsel değişiklikleri açıklayın.",
     "refiner_placeholder": "Değişiklikleri açıklayın (örn., 'Daha fazla etiket ekle', 'Arka planı mavi yap')...",
     "placeholder_instructions": "örn., Hücresel yapıya odaklan...",
     "download": "Görseli İndir",
     "warning": {
       "title": "Önemli: Çalışmanızı Kaydedin",
       "desc": "Sayfayı yenilerseniz görseller geçmişinize <strong>kaydedilmez</strong>. Saklamak istiyorsanız lütfen görseli veya HTML Paketini hemen indirin.",
-      "tip": "<strong>Profesyonel İpucu:</strong> Diyagramlardaki AI tarafından oluşturulan metinler bazen yanlış olabilir. İndirmeden önce 'yazımı düzeltmek' veya 'metin etiketlerini kaldırmak' için yukarıdaki <strong>Nano Banana İyileştirici</strong>'yi kullanın."
+      "tip": "<strong>Profesyonel İpucu:</strong> Diyagramlardaki yapay zeka tarafından oluşturulan metinler bazen yanlış olabilir. İndirmeden önce 'yazımı düzeltmek' veya 'metin etiketlerini kaldırmak' için yukarıdaki <strong>Görsel Düzenleyici</strong> aracını kullanın."
     },
     "actions": {
       "refining_icon": "Simge iyileştiriliyor...",
@@ -32814,7 +32814,7 @@
     "subtitle": "Oluşturduğunuz her kaynağa uygulayın",
     "applies": "{m} kaynak türünün {n} tanesine uygulanır",
     "image_style": "Görsel stili (varsayılan)",
-    "image_style_hint": "Bir araç kendi stilini belirlemediği sürece Visuals, Glossary, Timeline ve Concept Sort görsellerinde kullanılır.",
+    "image_style_hint": "Görseller, Sözlük, Zaman Çizelgesi, Kavram Tasnifi ve Kelime Sesleri için oluşturulan yeni görsellerde ders genelinde kullanılan varsayılan stil. Macera Modu da bu stili seçebilir.",
     "diff_custom": "Özel — kesin sınıfları seçin",
     "diff_custom_hint": "İstediğiniz karışımı seçin. Hedef sınıfınız her zaman dahil edilir.",
     "diff_target_locked": "Hedef sınıf — her zaman dahil",

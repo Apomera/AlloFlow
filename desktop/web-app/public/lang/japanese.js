@@ -3675,7 +3675,7 @@
       "select_all_highlight": "適応テキストのハイライト対象をすべて選択/解除",
       "select_highlight": "この語を適応テキストのハイライトに含める",
       "delete_term": "用語を削除",
-      "apply_edit": "カスタムNano Banana編集を適用",
+      "apply_edit": "画像編集を適用",
       "generate_icon": "この用語のビジュアルアイコンを生成"
     },
     "auto_remove": "画像から単語を自動削除",
@@ -4140,7 +4140,7 @@
     "image_stripped": "容量節約のために画像が削除されています。",
     "prompt_label": "AI生成プロンプト",
     "art_style": "アートスタイル",
-    "nano_active_status": "Nano Banana アクティブ",
+    "nano_active_status": "画像編集が有効です",
     "styles": {
       "default": "デフォルト (クリーンベクター)",
       "isometric": "アイソメトリック図",
@@ -4156,15 +4156,15 @@
     },
     "generate": "ビジュアルを生成",
     "regenerate_prompt": "プロンプトから再生成",
-    "refiner_title": "Nano Banana 画像リファイナー",
-    "refiner_desc": "Nano Bananaにこの画像のテキストやビジュアル要素を直接編集するように依頼します。",
+    "refiner_title": "画像エディター",
+    "refiner_desc": "この画像に加えたいテキストや見た目の変更を説明してください。",
     "refiner_placeholder": "変更を記述 (例： 「ラベルを増やす」、「背景を青に」)…",
     "placeholder_instructions": "例： 細胞構造に焦点…",
     "download": "画像をダウンロード",
     "warning": {
       "title": "重要： 作品を保存してください",
       "desc": "ページを更新すると画像は履歴に<strong>保存されません</strong>。保存したい場合は、画像またはHTMLパックをすぐにダウンロードしてください。",
-      "tip": "<strong>プロのヒント：</strong> 図のAI生成テキストは不正確な場合があります。ダウンロードする前に、上の<strong>Nano Banana リファイナー</strong>を使用して「スペルを修正」または「テキストラベルを削除」してください。"
+      "tip": "<strong>プロのヒント：</strong> 図のAI生成テキストは不正確な場合があります。ダウンロードする前に、上の<strong>画像エディター</strong>を使用して「スペルを修正」または「テキストラベルを削除」してください。"
     },
     "actions": {
       "refining_icon": "アイコンを洗練中...",
@@ -32822,7 +32822,7 @@
     "subtitle": "生成するすべてのリソースに適用",
     "applies": "{m} 種類のリソースのうち {n} 種類に適用",
     "image_style": "画像スタイル（デフォルト）",
-    "image_style_hint": "ツールが独自のスタイルを設定していない場合、Visuals、Glossary、Timeline、Concept Sort の画像に使用します。",
+    "image_style_hint": "ビジュアル、用語集、シーケンスビルダー、概念ソート、言葉の音の新しい画像に適用される、レッスン全体の既定スタイルです。アドベンチャーモードでもこのスタイルを選べます。",
     "diff_custom": "カスタム — 正確な学年を選択",
     "diff_custom_hint": "任意の組み合わせを選べます。対象学年は常に含まれます。",
     "diff_target_locked": "対象学年 — 常に含む",

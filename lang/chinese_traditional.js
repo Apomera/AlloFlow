@@ -4054,7 +4054,7 @@
       "select_all_highlight": "全選/取消全選適配文本標亮詞語",
       "select_highlight": "將此詞語加入適配文本標亮",
       "delete_term": "刪除術語",
-      "apply_edit": "應用自定義 Nano Banana 編辑",
+      "apply_edit": "套用圖像編輯",
       "generate_icon": "為此術語生成視覺圖標"
     },
     "edit_definition": "編辑定義",
@@ -4198,7 +4198,7 @@
     "image_stripped": "圖片已剥離以節省空間。",
     "prompt_label": "AI 生成的提示",
     "art_style": "藝術風格",
-    "nano_active_status": "Nano Banana 已激活",
+    "nano_active_status": "圖像編輯已啟用",
     "styles": {
       "default": "默認(簡潔矢量)",
       "isometric": "等距圖表",
@@ -4214,15 +4214,15 @@
     },
     "generate": "生成視覺",
     "regenerate_prompt": "從提示重新生成",
-    "refiner_title": "Nano Banana 圖像優化器",
-    "refiner_desc": "請 Nano Banana 直接為你編辑此圖像的文字或視覺元素。",
+    "refiner_title": "圖像編輯器",
+    "refiner_desc": "描述你想對這張圖片做的文字或畫面修改。",
     "refiner_placeholder": "描述更改(例如「添加更多標簽」「讓背景變藍」)...",
     "placeholder_instructions": "例如：專注於細胞結構...",
     "download": "下載圖片",
     "warning": {
       "title": "重要：儲存你的作業",
       "desc": "如果你刷新頁面,圖片<strong>不會</strong>儲存到歷史記錄。如果你想保留,請立即下載圖片或 HTML 包。",
-      "tip": "<strong>專業提示：</strong>圖表中 AI 生成的文字有時可能不準確。下載前使用上方的 <strong>Nano Banana 優化器</strong>「修正拼寫」或「移除文字標簽」。"
+      "tip": "<strong>專業提示：</strong>圖表中 AI 生成的文字有時可能不準確。下載前使用上方的 <strong>圖像編輯器</strong>「修正拼寫」或「移除文字標簽」。"
     },
     "actions": {
       "refining_icon": "正在優化圖標...",
@@ -32692,7 +32692,7 @@
     "subtitle": "套用至你產生的每個資源",
     "applies": "適用於 {m} 種資源類型中的 {n} 種",
     "image_style": "圖片樣式（預設）",
-    "image_style_hint": "除非工具設定自己的樣式，否則用於 Visuals、Glossary、Timeline 和 Concept Sort 圖片。",
+    "image_style_hint": "整節課的預設樣式，適用於視覺素材、詞彙表、時序構建器、概念分類和單词发音的新圖片。冒險模式也可以選擇此樣式。",
     "diff_custom": "自訂 — 選擇確切年級",
     "diff_custom_hint": "可選擇任意組合。你的目標年級一定會包含在內。",
     "diff_target_locked": "目標年級 — 一定包含",

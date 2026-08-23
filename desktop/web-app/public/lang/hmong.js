@@ -3646,7 +3646,7 @@
       "select_all_highlight": "Xaiv/tshem tag nrho rau kev ci teeb rau cov ntawv hloov kho",
       "select_highlight": "Muab lo lus no tso rau kev ci teeb ntawm cov ntawv hloov kho",
       "delete_term": "Lwv lo lus",
-      "apply_edit": "Siv Custom Nano Banana Kho",
+      "apply_edit": "Siv Kev Kho Duab",
       "generate_icon": "Tsim kev pom lub cim rau qhov no lo lus"
     },
     "auto_remove": "Auto-Tshem lo lus los ntawm duab",
@@ -4873,7 +4873,7 @@
     "image_stripped": "duab yog stripped mus khaws space.",
     "prompt_label": "AI Tsim tau Prompt",
     "art_style": "Art hom",
-    "nano_active_status": "Nano Banana qhib",
+    "nano_active_status": "Kev kho duab tab tom ua haujlwm",
     "styles": {
       "default": "default (Clean Vector)",
       "isometric": "Isometric duab piav qhia",
@@ -4889,15 +4889,15 @@
     },
     "generate": "Tsim kev pom",
     "regenerate_prompt": "Regenerate los ntawm Prompt",
-    "refiner_title": "Nano Banana duab Refiner",
-    "refiner_desc": "Ask Nano Banana mus kho cov ntawv los yog kev pom elements ntawm qhov no duab directly rau koj.",
+    "refiner_title": "Cuab Yeej Kho Duab",
+    "refiner_desc": "Piav qhia cov kev hloov ntawv lossis duab uas koj xav ua rau daim duab no.",
     "refiner_placeholder": "Describe kev hloov (e.g., 'Ntxiv ntau labels', 'Ua background blue')...",
     "placeholder_instructions": "e.g., Focus rau saum cellular structure...",
     "download": "Rub los duab",
     "warning": {
       "title": "Important: Khaws koj Work",
       "desc": "duab yog <strong>tsis tau khaws</strong> mus koj history yog tias koj tshiab dua phab ntawv. thov rub los duab los yog HTML Pack immediately yog tias koj wish mus keep it.",
-      "tip": "<strong>Pro cov lus qhia:</strong> AI-tau tsim cov ntawv hauv duab piav qhia tuaj yeem sometimes be inaccurate. Siv <strong>Nano Banana Refiner</strong> above mus 'fix spelling' los yog 'tshem cov ntawv labels' before downloading."
+      "tip": "<strong>Lus Qhia Tshwj Xeeb:</strong> Cov ntawv uas AI tsim hauv cov duab piav qhia qee zaus tuaj yeem tsis raug. Siv <strong>Cuab Yeej Kho Duab</strong> saum toj no los 'kho kev sau ntawv' lossis 'tshem cov npe ntawv' ua ntej rub tawm."
     },
     "actions": {
       "refining_icon": "Refining lub cim...",
@@ -31982,7 +31982,7 @@
     "subtitle": "Siv rau txhua yam khoom siv koj tsim",
     "applies": "Siv rau {n} ntawm {m} hom khoom siv",
     "image_style": "Tus qauv duab (ua ntej)",
-    "image_style_hint": "Siv rau cov duab hauv Visuals, Glossary, Timeline thiab Concept Sort tshwj tsis yog ib qho cuab yeej teeb nws tus qauv.",
+    "image_style_hint": "Tus qauv pib rau tag nrho cov lus qhia rau cov duab tshiab hauv kev pom kev txhawb, Phau ntawv qhia lus, Tus Tsim Kev Sib Xeem, Lub tswv yim Muab cais thiab lo lus Word Sounds. Kev mus ncig hom kuj xaiv tau tus qauv no.",
     "diff_custom": "Kev cai — xaiv cov qib kawm raug",
     "diff_custom_hint": "Xaiv ib qho kev sib xyaw twg los tau. Koj qib kawm hom phiaj yeej ib txwm muaj.",
     "diff_target_locked": "Qib kawm hom phiaj — yeej ib txwm muaj",

@@ -3621,7 +3621,7 @@
       "select_all_highlight": "Yer/Kwer weng pi ryeyo coc me Adapted Text",
       "select_highlight": "Ket nyig lok man i ryeyo coc me Adapted Text",
       "delete_term": "Wodo Term",
-      "apply_edit": "Tic ki Custom Nano Banana Loko",
+      "apply_edit": "Tic ki Loko Cal",
       "generate_icon": "Generate visual icon pi man term"
     },
     "auto_remove": "Auto-Kwany lok ki bot cal",
@@ -4847,7 +4847,7 @@
     "image_stripped": "cal tye stripped i gwoki space.",
     "prompt_label": "AI Yene Prompt",
     "art_style": "Art Style",
-    "nano_active_status": "Nano Banana active",
+    "nano_active_status": "Loko Cal active",
     "styles": {
       "default": "Default (Clean Vector)",
       "isometric": "Isometric Diagram",
@@ -4863,15 +4863,15 @@
     },
     "generate": "Generate Visual",
     "regenerate_prompt": "Regenerate ki bot Prompt",
-    "refiner_title": "Nano Banana cal Refiner",
-    "refiner_desc": "Ask Nano Banana i loko text onyo visual elements pa man cal directly pi in.",
+    "refiner_title": "Loko Cal",
+    "refiner_desc": "Describe the text or visual changes you want to make to this image.",
     "refiner_placeholder": "Describe aloka loka (e.g., 'Med mapol labels', 'Make background blue')...",
     "placeholder_instructions": "e.g., Focus wi cellular structure...",
     "download": "Gam piny cal",
     "warning": {
       "title": "Important: Gwoki mamegi Work",
       "desc": "cal tye <strong>pe gigwokki</strong> i mamegi history ka in refresh pot karatac. Please gam piny cal onyo HTML Pack immediately ka in wish i keep it.",
-      "tip": "<strong>Pro Tip:</strong> AI-yene text i diagrams can sometimes be inaccurate. Tii <strong>Nano Banana Refiner</strong> above i 'fix spelling' onyo 'kwany text labels' before downloading."
+      "tip": "<strong>Pro Tip:</strong> AI-yene text i diagrams can sometimes be inaccurate. Tii <strong>Loko Cal</strong> above i 'fix spelling' onyo 'kwany text labels' before downloading."
     },
     "actions": {
       "refining_icon": "Refining icon...",
@@ -25046,7 +25046,7 @@
     "subtitle": "Ket i jami weng ma iketo",
     "applies": "Tye i {n} ki {m} kit jami",
     "image_style": "Kit cal (ma nyen)",
-    "image_style_hint": "Tic ki Visuals, Glossary, Timeline ki Concept Sort, ka tool pe oketo kit pa kene.",
+    "image_style_hint": "Lesson-wide default for new Visuals, Glossary, Timeline, Concept Sort, and Word Sounds images. Adventure can also choose this style.",
     "diff_custom": "Mukene — yer grade matye",
     "diff_custom_hint": "Yer kit mo amite. Grade mamegi oyiko tye i kine.",
     "diff_target_locked": "Grade ma iketo — tye i kine",

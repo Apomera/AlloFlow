@@ -3658,7 +3658,7 @@
       "select_all_highlight": "অভিযোজিত লেখা হাইলাইটের জন্য সব নির্বাচন/বাতিল করুন",
       "select_highlight": "এই শব্দটি অভিযোজিত লেখা হাইলাইটে যুক্ত করুন",
       "delete_term": "মুছুন শব্দ",
-      "apply_edit": "প্রয়োগ করুন Custom Nano Banana সম্পাদনা",
+      "apply_edit": "চিত্র সম্পাদনা প্রয়োগ করুন",
       "generate_icon": "তৈরি করুন এক দৃশ্যমান icon জন্য এই শব্দ"
     },
     "auto_remove": "স্বয়ংক্রিয়-সরান শব্দ থেকে চিত্র",
@@ -4884,7 +4884,7 @@
     "image_stripped": "চিত্র হয় stripped এর সংরক্ষণ space.",
     "prompt_label": "এআই তৈরি করুন Prompt",
     "art_style": "Art শৈলী",
-    "nano_active_status": "Nano Banana সক্রিয়",
+    "nano_active_status": "চিত্র সম্পাদনা সক্রিয়",
     "styles": {
       "default": "ডিফল্ট (পরিচ্ছন্ন ভেক্টর)",
       "isometric": "আইসোমেট্রিক ডায়াগ্রাম",
@@ -4900,15 +4900,15 @@
     },
     "generate": "তৈরি করুন দৃশ্যমান",
     "regenerate_prompt": "পুনরায় তৈরি থেকে Prompt",
-    "refiner_title": "Nano Banana চিত্র Refiner",
-    "refiner_desc": "Ask Nano Banana এর সম্পাদনা পাঠ্য বা দৃশ্যমান elements এর এই চিত্র directly জন্য আপনি.",
+    "refiner_title": "চিত্র সম্পাদক",
+    "refiner_desc": "এই ছবিতে আপনি যে লেখা বা দৃশ্যগত পরিবর্তন করতে চান তা বর্ণনা করুন।",
     "refiner_placeholder": "Describe পরিবর্তন (যেমন, 'যোগ করুন more labels', 'তৈরি করুন background blue')...",
     "placeholder_instructions": "যেমন, ফোকাস on cellular গঠন...",
     "download": "ডাউনলোড করুন চিত্র",
     "warning": {
       "title": "important: সংরক্ষণ আপনার কাজ",
       "desc": "পৃষ্ঠা রিফ্রেশ করলে ছবিগুলি আপনার ইতিহাসে <strong>সংরক্ষিত হয় না</strong>। রাখতে চাইলে দয়া করে এখনই ছবি বা HTML Pack ডাউনলোড করুন।",
-      "tip": "<strong>প্রো টিপ:</strong> চিত্রে AI-উৎপাদিত পাঠ্য কখনো কখনো ভুল হতে পারে। ডাউনলোডের আগে 'বানান ঠিক করতে' বা 'টেক্সট লেবেল সরাতে' উপরের <strong>Nano Banana Refiner</strong> ব্যবহার করুন।"
+      "tip": "<strong>প্রো টিপ:</strong> চিত্রে AI-উৎপাদিত পাঠ্য কখনো কখনো ভুল হতে পারে। ডাউনলোডের আগে 'বানান ঠিক করতে' বা 'টেক্সট লেবেল সরাতে' উপরের <strong>চিত্র সম্পাদক</strong> ব্যবহার করুন।"
     },
     "actions": {
       "refining_icon": "আইকন পরিশোধন করা হচ্ছে...",
@@ -32632,7 +32632,7 @@
     "subtitle": "আপনার তৈরি করা প্রতিটি রিসোর্সে প্রয়োগ করুন",
     "applies": "{m} ধরনের রিসোর্সের মধ্যে {n}টিতে প্রযোজ্য",
     "image_style": "ছবির শৈলী (ডিফল্ট)",
-    "image_style_hint": "কোনো টুল নিজস্ব শৈলী নির্ধারণ না করলে Visuals, Glossary, Timeline এবং Concept Sort-এর ছবিতে এটি ব্যবহার হয়।",
+    "image_style_hint": "দৃশ্য উপকরণ, শব্দকোষ, ক্রম নির্মাতা, ধারণা সাজান এবং শব্দ ধ্বনি-এর নতুন ছবির জন্য পুরো পাঠের ডিফল্ট শৈলী। অ্যাডভেঞ্চার মোডও এই শৈলী বেছে নিতে পারে।",
     "diff_custom": "কাস্টম — নির্দিষ্ট গ্রেড বাছুন",
     "diff_custom_hint": "যেকোনো মিশ্রণ বাছুন। আপনার লক্ষ্য গ্রেড সবসময় অন্তর্ভুক্ত থাকবে।",
     "diff_target_locked": "লক্ষ্য গ্রেড — সবসময় অন্তর্ভুক্ত",

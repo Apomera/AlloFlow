@@ -3647,7 +3647,7 @@
       "select_all_highlight": "Piliin/alisin ang lahat para sa pag-highlight ng inangkop na teksto",
       "select_highlight": "Isama ang terminong ito sa pag-highlight ng inangkop na teksto",
       "delete_term": "Burahin termino",
-      "apply_edit": "Ilapat ang Custom Nano Banana I-edit",
+      "apply_edit": "Ilapat ang Pag-edit ng Larawan",
       "generate_icon": "Bumuo isang biswal icon para sa ito termino"
     },
     "auto_remove": "Awtomatiko-Tanggalin mga salita mula sa imahe",
@@ -4873,7 +4873,7 @@
     "image_stripped": "imahe ay stripped sa i-save space.",
     "prompt_label": "AI Nabuo Prompt",
     "art_style": "Art estilo",
-    "nano_active_status": "Nano Banana aktibo",
+    "nano_active_status": "Aktibo ang pag-edit ng larawan",
     "styles": {
       "default": "default (Clean Vector)",
       "isometric": "Isometric diagram",
@@ -4889,15 +4889,15 @@
     },
     "generate": "Bumuo biswal",
     "regenerate_prompt": "Regenerate mula sa Prompt",
-    "refiner_title": "Nano Banana imahe Refiner",
-    "refiner_desc": "Ask Nano Banana sa i-edit teksto o biswal elements ng ito imahe directly para sa ikaw.",
+    "refiner_title": "Editor ng Larawan",
+    "refiner_desc": "Ilarawan ang mga pagbabago sa teksto o larawan na nais mong gawin sa larawang ito.",
     "refiner_placeholder": "Describe mga pagbabago (e.g., 'Magdagdag higit pa labels', 'Gumawa background blue')...",
     "placeholder_instructions": "e.g., Tutok sa ang cellular istraktura...",
     "download": "I-download imahe",
     "warning": {
       "title": "Important: I-save iyong Trabaho",
       "desc": "Ang mga imahe ay <strong>hindi nai-save</strong> sa iyong kasaysayan kung ire-refresh mo ang pahina. Pakidownload agad ang imahe o ang HTML Pack kung nais mong itago ito.",
-      "tip": "<strong>Pro tip:</strong> AI-nabuo teksto sa diagram maaari sometimes be inaccurate. Gamitin ang <strong>Nano Banana Refiner</strong> above sa 'fix spelling' o 'tanggalin teksto labels' bago downloading."
+      "tip": "<strong>Pro tip:</strong> Ang tekstong nilikha ng AI sa mga diagram ay maaaring minsan ay mali. Gamitin ang <strong>Editor ng Larawan</strong> sa itaas upang 'ayusin ang baybay' o 'alisin ang mga label ng teksto' bago mag-download."
     },
     "actions": {
       "refining_icon": "Pinipino ang icon...",
@@ -32267,7 +32267,7 @@
     "subtitle": "Ilapat sa bawat resource na gagawin mo",
     "applies": "Nalalapat sa {n} sa {m} uri ng resource",
     "image_style": "Style ng larawan (default)",
-    "image_style_hint": "Ginagamit para sa mga larawan ng Visuals, Glossary, Timeline at Concept Sort maliban kung magtakda ang tool ng sarili nitong style.",
+    "image_style_hint": "Default na estilo para sa buong aralin para sa mga bagong larawan sa Biswal, Glosaryo, Tagabuo ng Pagkakasunod-sunod, Konsepto Ayusin, at Word Sounds. Maaari ring piliin ng Pakikipagsapalaran mode ang estilong ito.",
     "diff_custom": "Custom — piliin ang eksaktong grade",
     "diff_custom_hint": "Pumili ng anumang kombinasyon. Palaging kasama ang target mong grade.",
     "diff_target_locked": "Target na grade — palaging kasama",

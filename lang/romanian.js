@@ -3647,7 +3647,7 @@
       "select_all_highlight": "Selectează/deselectează tot pentru evidențierea în textul adaptat",
       "select_highlight": "Include acest termen în evidențierea textului adaptat",
       "delete_term": "Șterge termen",
-      "apply_edit": "Aplică Custom Nano Banana Editează",
+      "apply_edit": "Aplică editarea imaginii",
       "generate_icon": "Generează un vizual pictogramă pentru acesta termen"
     },
     "auto_remove": "Auto-Elimină cuvânt din imagine",
@@ -4873,7 +4873,7 @@
     "image_stripped": "imagine sunt stripped la salvează space.",
     "prompt_label": "Prompt generat de AI",
     "art_style": "Art stil",
-    "nano_active_status": "Nano Banana activ",
+    "nano_active_status": "Editare imagine activă",
     "styles": {
       "default": "implicit (Clean Vector)",
       "isometric": "Isometric diagramă",
@@ -4889,15 +4889,15 @@
     },
     "generate": "Generează vizual",
     "regenerate_prompt": "Regenerate din Prompt",
-    "refiner_title": "Nano Banana imagine Refiner",
-    "refiner_desc": "Ask Nano Banana la editează text sau vizual elements de acesta imagine directly pentru tu.",
+    "refiner_title": "Editor de imagini",
+    "refiner_desc": "Descrie modificările de text sau de elemente vizuale pe care vrei să le faci acestei imagini.",
     "refiner_placeholder": "Describe changes (e.g., 'Adaugă mai mult labels', 'Face background blue')...",
     "placeholder_instructions": "e.g., Focus pe cellular structure...",
     "download": "Descarcă imagine",
     "warning": {
       "title": "Important: Salvează tău Work",
       "desc": "imagine sunt <strong>nu salvat</strong> la tău history dacă tu actualizează page. vă rog descarcă imagine sau HTML Pack immediately dacă tu wish la keep it.",
-      "tip": "<strong>Pro sfat:</strong> AI-generat text în diagramă poate sometimes be inaccurate. Folosește <strong>Nano Banana Refiner</strong> above la 'fix spelling' sau 'elimină text labels' before downloading."
+      "tip": "<strong>Sfat util:</strong> Textul generat de IA în diagrame poate fi uneori inexact. Folosește <strong>Editorul de imagini</strong> de mai sus pentru a 'corecta ortografia' sau a 'elimina etichetele de text' înainte de descărcare."
     },
     "actions": {
       "refining_icon": "Refining pictogramă...",
@@ -32938,7 +32938,7 @@
     "subtitle": "Aplică fiecărei resurse pe care o generezi",
     "applies": "Se aplică la {n} din {m} tipuri de resurse",
     "image_style": "Stilul imaginii (implicit)",
-    "image_style_hint": "Folosit pentru imaginile Visuals, Glossary, Timeline și Concept Sort, cu excepția cazului în care un instrument își stabilește propriul stil.",
+    "image_style_hint": "Stil implicit pentru întreaga lecție, aplicat imaginilor noi din Materiale vizuale, Glosar, Cronologie, Sortare concepte și Sunetele Cuvintelor. Și Modul Aventură poate alege acest stil.",
     "diff_custom": "Personalizat — alege clasele exacte",
     "diff_custom_hint": "Alege orice combinație. Clasa țintă este inclusă întotdeauna.",
     "diff_target_locked": "Clasa țintă — inclusă întotdeauna",

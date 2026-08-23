@@ -3644,7 +3644,7 @@
       "select_all_highlight": "Hitamwo/kuraho vyose ku gutara inyandiko yahinduwe",
       "select_highlight": "Shira iri jambo mu gutara inyandiko yahinduwe",
       "delete_term": "Futa ijambo",
-      "apply_edit": "Shirira mu ngiro Custom Nano Banana Hindura",
+      "apply_edit": "Shirira mu ngiro Guhindura Ifoto",
       "generate_icon": "Kora ibibonwa ikimenyetso kuri iki ijambo"
     },
     "auto_remove": "Auto-Kuraho ijambo kuva ifoto",
@@ -4870,7 +4870,7 @@
     "image_stripped": "ifoto ni stripped ku bika space.",
     "prompt_label": "AI Vyakozwe Prompt",
     "art_style": "Art imiterere",
-    "nano_active_status": "Nano Banana gikora",
+    "nano_active_status": "Guhindura ifoto birakora",
     "styles": {
       "default": "gisanzwe (Clean Vector)",
       "isometric": "Isometric ishusho",
@@ -4886,15 +4886,15 @@
     },
     "generate": "Kora ibibonwa",
     "regenerate_prompt": "Regenerate kuva Prompt",
-    "refiner_title": "Nano Banana ifoto Refiner",
-    "refiner_desc": "Ask Nano Banana ku hindura inyandiko canke ibibonwa elements ca iki ifoto directly kuri wewe.",
+    "refiner_title": "Igikoresho co Guhindura Ifoto",
+    "refiner_desc": "Sigura impinduka z'inyandiko canke z'ifoto ushaka gukora kuri iyi foto.",
     "refiner_placeholder": "Describe ihinduka (e.g., 'Ongerako vyinshi labels', 'Kora background blue')...",
     "placeholder_instructions": "e.g., Focus kuri cellular structure...",
     "download": "Manura ifoto",
     "warning": {
       "title": "Important: Bika cawe Work",
       "desc": "ifoto ni <strong>ntibi vyabitswe</strong> ku cawe history niba wewe vugurura urupapuro. nakwinginze manura ifoto canke HTML Pack immediately niba wewe wish ku keep it.",
-      "tip": "<strong>Pro impanuro:</strong> AI-vyakozwe inyandiko muri ishusho can sometimes be inaccurate. Koresha <strong>Nano Banana Refiner</strong> above ku 'fix spelling' canke 'kuraho inyandiko labels' before downloading."
+      "tip": "<strong>Impanuro y'Umuhinga:</strong> Inyandiko yakozwe na AI mu bishushanyo rimwe na rimwe ishobora kuba itari yo. Koresha <strong>Igikoresho co Guhindura Ifoto</strong> kiri hejuru kugira 'utunganye imyandikire' canke 'ukure utumenyetso tw'inyandiko' imbere yo gukurura."
     },
     "actions": {
       "refining_icon": "Refining ikimenyetso...",
@@ -32127,7 +32127,7 @@
     "subtitle": "Bikoreshe ku gikoresho cose ukora",
     "applies": "Bikoreshwa kuri {n} muri {m} vyiciro vy’ibikoresho",
     "image_style": "Imiterere y’ishusho (isanzwe)",
-    "image_style_hint": "Bikoreshwa ku mashusho ya Visuals, Glossary, Timeline na Concept Sort kiretse igikoresho gishizeho imiterere yaco.",
+    "image_style_hint": "Imiterere isanzwe y'isomo ryose ku mafoto mashasha muri ibibonwa imfashanyo, Inkoranya, Umwubatsi w'Urutonde, Igitekerezo Shira mu rutonde na Amajwi y'Amajambo. Ingendo uburyo na bwo bushobora guhitamo iyi miterere.",
     "diff_custom": "Vyihariye — hitamwo ivyiciro nyavyo",
     "diff_custom_hint": "Hitamwo uruvange urwo ari rwo rwose. Iciciro ugamije gihora kirimwo.",
     "diff_target_locked": "Iciciro ugamije — gihora kirimwo",

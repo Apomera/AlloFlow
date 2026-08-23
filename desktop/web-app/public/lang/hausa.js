@@ -3645,7 +3645,7 @@
       "select_all_highlight": "Zaɓi/cire zaɓin duka don haskaka rubutun da aka daidaita",
       "select_highlight": "Haɗa wannan kalma cikin haskaka rubutun da aka daidaita",
       "delete_term": "Goge kalma",
-      "apply_edit": "Aiwatar Custom Nano Banana Gyara",
+      "apply_edit": "Aiwatar da Gyaran Hoto",
       "generate_icon": "Samar da gani alama don wannan kalma"
     },
     "auto_remove": "Auto-Cire kalma daga hoto",
@@ -4871,7 +4871,7 @@
     "image_stripped": "hoto su ne stripped zuwa ajiye space.",
     "prompt_label": "AI da Aka Samar da Sako",
     "art_style": "Art salo",
-    "nano_active_status": "Nano Banana mai aiki",
+    "nano_active_status": "Gyaran hoto yana aiki",
     "styles": {
       "default": "tsohuwa (Clean Vector)",
       "isometric": "Isometric zanen",
@@ -4887,15 +4887,15 @@
     },
     "generate": "Samar da gani",
     "regenerate_prompt": "Regenerate daga Prompt",
-    "refiner_title": "Nano Banana hoto Refiner",
-    "refiner_desc": "Ask Nano Banana zuwa gyara rubutu ko gani elements na wannan hoto directly don kai.",
+    "refiner_title": "Editan Hoto",
+    "refiner_desc": "Bayyana canje-canjen rubutu ko na kamanni da kake son yi a wannan hoton.",
     "refiner_placeholder": "Describe changes (e.g., 'Ƙara ƙari labels', 'Yi background blue')...",
     "placeholder_instructions": "e.g., Focus kan cellular structure...",
     "download": "Sauke hoto",
     "warning": {
       "title": "Important: Ajiye naka Work",
       "desc": "hoto su ne <strong>ba ajiye</strong> zuwa naka history idan kai sabunta page. don Allah sauke hoto ko HTML Pack immediately idan kai wish zuwa keep it.",
-      "tip": "<strong>Pro shawara:</strong> AI- samar rubutu zanen zai iya sometimes be inaccurate. Yi amfani <strong>Nano Banana Refiner</strong> above zuwa 'fix spelling' ko 'cire rubutu labels' before downloading."
+      "tip": "<strong>Shawarar Kwararru:</strong> Rubutun da AI ya samar a cikin zane-zane wani lokaci yana iya zama ba daidai ba. Yi amfani da <strong>Editan Hoto</strong> na sama don 'gyara rubutu' ko 'cire lakabin rubutu' kafin sauke fayil."
     },
     "actions": {
       "refining_icon": "Refining alama...",
@@ -32034,7 +32034,7 @@
     "subtitle": "Aiwatar ga kowace hanya da ka ƙirƙira",
     "applies": "Yana aiki ga nau’ikan albarkatu {n} cikin {m}",
     "image_style": "Salon hoto (na asali)",
-    "image_style_hint": "Ana amfani da shi ga hotunan Visuals, Glossary, Timeline da Concept Sort sai dai idan wani kayan aiki ya saita salon kansa.",
+    "image_style_hint": "Salon asali na dukan darasi don sabbin hotuna a cikin Tallafin Gani, Ƙamus, Mai Gina Jeri, Concept Tsara da Word Sounds. Bincike yanayi ma zai iya zaɓar wannan salon.",
     "diff_custom": "Na musamman — zaɓi aji takamaimai",
     "diff_custom_hint": "Zaɓi kowane haɗi. Ajin da ka nufa koyaushe yana ciki.",
     "diff_target_locked": "Ajin da ake nufi — koyaushe yana ciki",

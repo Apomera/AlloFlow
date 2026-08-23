@@ -3654,7 +3654,7 @@
       "select_all_highlight": "Chọn/bỏ chọn tất cả để tô sáng trong văn bản điều chỉnh",
       "select_highlight": "Đưa thuật ngữ này vào phần tô sáng của văn bản điều chỉnh",
       "delete_term": "Xóa thuật ngữ",
-      "apply_edit": "Áp dụng chỉnh sửa Nano Banana tùy chỉnh",
+      "apply_edit": "Áp dụng chỉnh sửa hình ảnh",
       "generate_icon": "Tạo biểu tượng trực quan cho thuật ngữ này"
     },
     "auto_remove": "Tự động xóa từ khỏi hình ảnh",
@@ -4880,7 +4880,7 @@
     "image_stripped": "Hình ảnh được loại bỏ để tiết kiệm không gian.",
     "prompt_label": "Lời nhắc do AI tạo",
     "art_style": "Phong cách Nghệ thuật",
-    "nano_active_status": "Nano Banana đang hoạt động",
+    "nano_active_status": "Đang chỉnh sửa hình ảnh",
     "styles": {
       "default": "Mặc định (Vector Sạch)",
       "isometric": "Sơ đồ Isometric",
@@ -4896,15 +4896,15 @@
     },
     "generate": "Tạo Hình ảnh",
     "regenerate_prompt": "Tạo lại từ Lời nhắc",
-    "refiner_title": "Trình tinh chỉnh Hình ảnh Nano Banana",
-    "refiner_desc": "Yêu cầu Nano Banana chỉnh sửa văn bản hoặc các yếu tố trực quan của hình ảnh này trực tiếp cho bạn.",
+    "refiner_title": "Trình chỉnh sửa hình ảnh",
+    "refiner_desc": "Hãy mô tả những thay đổi về văn bản hoặc hình ảnh mà bạn muốn thực hiện trên hình này.",
     "refiner_placeholder": "Mô tả thay đổi (ví dụ: 'Thêm nhiều nhãn hơn', 'Làm nền màu xanh dương')...",
     "placeholder_instructions": "ví dụ: Tập trung vào cấu trúc tế bào...",
     "download": "Tải xuống Hình ảnh",
     "warning": {
       "title": "Quan trọng: Lưu Bài làm của bạn",
       "desc": "Hình ảnh <strong>không được lưu</strong> vào lịch sử nếu bạn làm mới trang. Vui lòng tải xuống hình ảnh hoặc Gói HTML ngay lập tức nếu bạn muốn giữ nó.",
-      "tip": "<strong>Mẹo Chuyên nghiệp:</strong> Văn bản do AI tạo trong sơ đồ đôi khi có thể không chính xác. Sử dụng <strong>Trình tinh chỉnh Nano Banana</strong> ở trên để 'sửa chính tả' hoặc 'xóa nhãn văn bản' trước khi tải xuống."
+      "tip": "<strong>Mẹo Chuyên nghiệp:</strong> Văn bản do AI tạo trong sơ đồ đôi khi có thể không chính xác. Hãy dùng <strong>Trình chỉnh sửa hình ảnh</strong> ở trên để 'sửa chính tả' hoặc 'xóa nhãn văn bản' trước khi tải xuống."
     },
     "actions": {
       "refining_icon": "Đang tinh chỉnh biểu tượng...",
@@ -32541,7 +32541,7 @@
     "subtitle": "Áp dụng cho mọi tài nguyên bạn tạo",
     "applies": "Áp dụng cho {n} trong số {m} loại tài nguyên",
     "image_style": "Kiểu hình ảnh (mặc định)",
-    "image_style_hint": "Dùng cho hình ảnh của Visuals, Glossary, Timeline và Concept Sort trừ khi công cụ đặt kiểu riêng.",
+    "image_style_hint": "Kiểu mặc định cho cả bài học, áp dụng cho hình ảnh mới trong Hình ảnh trực quan, Từ vựng, Trình tạo trình tự, Tri ý phân loại và Word Sounds. Chế độ Phiêu lưu cũng có thể chọn kiểu này.",
     "diff_custom": "Tùy chỉnh — chọn đúng khối lớp",
     "diff_custom_hint": "Chọn bất kỳ tổ hợp nào. Khối lớp mục tiêu luôn được bao gồm.",
     "diff_target_locked": "Khối lớp mục tiêu — luôn bao gồm",

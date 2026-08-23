@@ -4078,7 +4078,7 @@
       "select_all_highlight": "Seleccionar/deseleccionar todo para el resaltado del texto adaptado",
       "select_highlight": "Incluir este término en el resaltado del texto adaptado",
       "delete_term": "Eliminar Término",
-      "apply_edit": "Aplicar Edición Personalizada de Nano Banana",
+      "apply_edit": "Aplicar Edición de Imagen",
       "generate_icon": "Generar un ícono visual para este término"
     },
     "auto_remove": "Quitar Palabras de las Imágenes Automáticamente",
@@ -4543,7 +4543,7 @@
     "image_stripped": "Las imágenes se eliminan para ahorrar espacio.",
     "prompt_label": "Indicación Generada por IA",
     "art_style": "Estilo Artístico",
-    "nano_active_status": "Nano Banana activo",
+    "nano_active_status": "Edición de imagen activa",
     "styles": {
       "default": "Predeterminado (Vector Limpio)",
       "isometric": "Diagrama Isométrico",
@@ -4559,15 +4559,15 @@
     },
     "generate": "Generar Elemento Visual",
     "regenerate_prompt": "Regenerar desde la Indicación",
-    "refiner_title": "Refinador de Imágenes Nano Banana",
-    "refiner_desc": "Pídele a Nano Banana que edite el texto o los elementos visuales de esta imagen directamente.",
+    "refiner_title": "Editor de Imágenes",
+    "refiner_desc": "Describe los cambios de texto o visuales que quieras hacer en esta imagen.",
     "refiner_placeholder": "Describe los cambios (p. ej., 'Añadir más etiquetas', 'Hacer el fondo azul')...",
     "placeholder_instructions": "p. ej., Enfócate en la estructura móvil...",
     "download": "Descargar Imagen",
     "warning": {
       "title": "Importante: Guarda tu Trabajo",
       "desc": "Las imágenes <strong>no se guardan</strong> en tu historial si actualizas la página. Descarga la imagen o el paquete HTML de inmediato si quieres conservarla.",
-      "tip": "<strong>Consejo Pro:</strong> El texto generado por IA en los diagramas a veces puede ser inexacto. Usa el <strong>Refinador Nano Banana</strong> de arriba para 'corregir la ortografía' o 'quitar las etiquetas de texto' antes de descargar."
+      "tip": "<strong>Consejo Pro:</strong> El texto generado por IA en los diagramas a veces puede ser inexacto. Usa el <strong>Editor de Imágenes</strong> de arriba para 'corregir la ortografía' o 'quitar las etiquetas de texto' antes de descargar."
     },
     "actions": {
       "refining_icon": "Refinando el ícono...",
@@ -33241,7 +33241,7 @@
     "subtitle": "Aplicar a todos los recursos que generes",
     "applies": "Se aplica a {n} de {m} tipos de recursos",
     "image_style": "Estilo de imagen (predeterminado)",
-    "image_style_hint": "Se usa para las imágenes de Visuals, Glossary, Timeline y Concept Sort, salvo que una herramienta establezca su propio estilo.",
+    "image_style_hint": "Estilo predeterminado de toda la lección para las nuevas imágenes de Visuales, Glosario, Línea de Tiempo, Clasificador de Conceptos y Sonidos de Palabras. El Modo Aventura también puede elegir este estilo.",
     "diff_custom": "Personalizado — elige los cursos exactos",
     "diff_custom_hint": "Elige cualquier combinación. Tu curso objetivo siempre está incluido.",
     "diff_target_locked": "Curso objetivo — siempre incluido",

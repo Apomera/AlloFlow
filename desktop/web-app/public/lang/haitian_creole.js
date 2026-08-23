@@ -4130,7 +4130,7 @@
       "select_all_highlight": "Chwazi/dechwazi tout pou mete aksan nan tèks adapte a",
       "select_highlight": "Mete tèm sa a nan aksan tèks adapte a",
       "delete_term": "Efase Tèm",
-      "apply_edit": "Aplike Modifikasyon Pèsonalize Nano Banana",
+      "apply_edit": "Aplike Modifikasyon Imaj",
       "generate_icon": "Jenere yon ikòn vizyèl pou tèm sa a"
     },
     "auto_remove": "Retire Mo Otomatik soti Imaj",
@@ -4217,7 +4217,7 @@
     "image_stripped": "Imaj retire pou sove espas.",
     "prompt_label": "Envit Jenere pa IA",
     "art_style": "Stil Atistik",
-    "nano_active_status": "Nano Banana aktif",
+    "nano_active_status": "Modifikasyon imaj aktive",
     "styles": {
       "default": "Default (Vektè Net)",
       "isometric": "Dyagram Izometrik",
@@ -4233,15 +4233,15 @@
     },
     "generate": "Jenere Vizyèl",
     "regenerate_prompt": "Rejenere soti Envit",
-    "refiner_title": "Rafinè Imaj Nano Banana",
-    "refiner_desc": "Mande Nano Banana modifye tèks oswa eleman vizyèl imaj sa a dirèkteman pou ou.",
+    "refiner_title": "Editè Imaj",
+    "refiner_desc": "Dekri chanjman tèks oswa vizyèl ou vle fè nan imaj sa a.",
     "refiner_placeholder": "Dekri chanjman (egz: 'Ajoute plis etikèt', 'Fè fon ble')...",
     "placeholder_instructions": "egz: Konsantre sou estrikti selilè...",
     "download": "Telechaje Imaj",
     "warning": {
       "title": "Enpòtan: Sove Travay Ou",
       "desc": "Imaj <strong>pa sove</strong> nan istwa ou si ou aktyalize paj la. Tanpri telechaje imaj la oswa Pakèt HTML imedyatman si ou vle kenbe l.",
-      "tip": "<strong>Konsèy Pro:</strong> Tèks jenere pa IA nan dyagram ka pafwa enkòrèk. Itilize <strong>Rafinè Nano Banana</strong> anlè a pou 'repare òtograf' oswa 'retire etikèt tèks' anvan telechaje."
+      "tip": "<strong>Konsèy Pro:</strong> Tèks IA jenere nan dyagram ka pafwa enkòrèk. Itilize <strong>Editè Imaj</strong> anwo a pou 'korije òtograf' oswa 'retire etikèt tèks' anvan ou telechaje."
     },
     "actions": {
       "refining_icon": "K ap rafine ikòn...",
@@ -32983,7 +32983,7 @@
     "subtitle": "Aplike sou chak resous ou jenere",
     "applies": "Aplike sou {n} nan {m} kalite resous",
     "image_style": "Stil imaj (pa defo)",
-    "image_style_hint": "Yo itilize l pou imaj Visuals, Glossary, Timeline ak Concept Sort, sof si yon zouti chwazi pwòp stil pa li.",
+    "image_style_hint": "Estil pa defo pou tout leson an pou nouvo imaj nan Vizyèl, Glosè, Liy Tan, Klase Konsèp ak Son Mo. Mòd Avanti ka chwazi estil sa a tou.",
     "diff_custom": "Pèsonalize — chwazi nivo egzak yo",
     "diff_custom_hint": "Chwazi nenpòt melanj. Nivo ou vize a toujou ladan l.",
     "diff_target_locked": "Nivo vize a — toujou ladan l",

@@ -131,6 +131,8 @@
     "verify:cmd-i18n": "node dev-tools/check_cmd_i18n.cjs",
     "verify:spanglish": "node dev-tools/i18n/check_safety_string_spanglish.cjs",
     "verify:stale": "node dev-tools/i18n/check_lang_staleness.cjs",
+    "verify:stale-delta": "node dev-tools/i18n/check_staleness_delta.cjs",
+    "i18n:delta": "node dev-tools/i18n/check_staleness_delta.cjs --worktree",
     "i18n:feedback": "node dev-tools/i18n/ingest_translation_feedback.cjs",
     "i18n:bless": "node dev-tools/i18n/bless_lang_sources.cjs",
     "i18n:merge-stale": "node dev-tools/i18n/merge_stale_translations.cjs",

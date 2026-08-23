@@ -3814,7 +3814,7 @@
       "select_all_highlight": "Alles selecteren/deselecteren voor markering in aangepaste tekst",
       "select_highlight": "Dit begrip opnemen in de markering van aangepaste tekst",
       "delete_term": "Term verwijderen",
-      "apply_edit": "Aangepaste Nano Banana-bewerking toepassen",
+      "apply_edit": "Afbeeldingsbewerking toepassen",
       "generate_icon": "Genereer een visueel pictogram voor deze term"
     },
     "auto_remove": "Woorden automatisch uit afbeeldingen verwijderen",
@@ -5040,7 +5040,7 @@
     "image_stripped": "Afbeeldingen worden verwijderd om ruimte te besparen.",
     "prompt_label": "Door AI gegenereerde prompt",
     "art_style": "Kunststijl",
-    "nano_active_status": "Nano Banana actief",
+    "nano_active_status": "Afbeelding bewerken actief",
     "styles": {
       "default": "Standaard (strakke vector)",
       "isometric": "Isometrisch diagram",
@@ -5056,15 +5056,15 @@
     },
     "generate": "Visual genereren",
     "regenerate_prompt": "Opnieuw genereren vanaf prompt",
-    "refiner_title": "Nano Banana beeldverfijner",
-    "refiner_desc": "Vraag Nano Banana om tekst of visuele elementen van deze afbeelding rechtstreeks voor je te bewerken.",
+    "refiner_title": "Afbeeldingseditor",
+    "refiner_desc": "Beschrijf de tekst- of beeldwijzigingen die je in deze afbeelding wilt aanbrengen.",
     "refiner_placeholder": "Beschrijf wijzigingen (bijv. 'Meer labels toevoegen', 'Achtergrond blauw maken')...",
     "placeholder_instructions": "bijv. Focus op de celstructuur...",
     "download": "Afbeelding downloaden",
     "warning": {
       "title": "Belangrijk: sla je werk op",
       "desc": "Afbeeldingen worden <strong>niet opgeslagen</strong> in je geschiedenis als je de pagina vernieuwt. Download de afbeelding of het HTML-pakket meteen als je het wilt bewaren.",
-      "tip": "<strong>Pro-tip:</strong> Door AI gegenereerde tekst in diagrammen kan soms onnauwkeurig zijn. Gebruik de <strong>Nano Banana-verfijner</strong> hierboven om 'spelling te corrigeren' of 'tekstlabels te verwijderen' voordat je downloadt."
+      "tip": "<strong>Pro-tip:</strong> Door AI gegenereerde tekst in diagrammen kan soms onnauwkeurig zijn. Gebruik de <strong>Afbeeldingseditor</strong> hierboven om 'spelling te corrigeren' of 'tekstlabels te verwijderen' voordat je downloadt."
     },
     "actions": {
       "refining_icon": "Pictogram verfijnen...",
@@ -32614,7 +32614,7 @@
     "subtitle": "Pas toe op elke bron die je maakt",
     "applies": "Van toepassing op {n} van {m} brontypen",
     "image_style": "Afbeeldingsstijl (standaard)",
-    "image_style_hint": "Wordt gebruikt voor afbeeldingen in Visuals, Glossary, Timeline en Concept Sort, tenzij een tool een eigen stijl instelt.",
+    "image_style_hint": "Standaard voor de hele les voor nieuwe afbeeldingen in Visuele elementen, Woordenlijst, Tijdlijn, Begrippen sorteren en Woordklanken. Ook de Avontuurmodus kan deze stijl kiezen.",
     "diff_custom": "Aangepast — kies exacte leerjaren",
     "diff_custom_hint": "Kies elke combinatie. Je doeljaar wordt altijd opgenomen.",
     "diff_target_locked": "Doelleerjaar — altijd opgenomen",

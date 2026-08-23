@@ -3647,7 +3647,7 @@
       "select_all_highlight": "Pilih/batal pilih semua untuk sorotan teks adaptasi",
       "select_highlight": "Sertakan istilah ini dalam sorotan teks adaptasi",
       "delete_term": "Hapus istilah",
-      "apply_edit": "Terapkan Custom Nano Banana Ubah",
+      "apply_edit": "Terapkan Pengeditan Gambar",
       "generate_icon": "Hasilkan sebuah visual ikon untuk ini istilah"
     },
     "auto_remove": "Otomatis-Hapus kata dari gambar",
@@ -4873,7 +4873,7 @@
     "image_stripped": "gambar adalah stripped ke simpan space.",
     "prompt_label": "AI Dihasilkan Prompt",
     "art_style": "Seni gaya",
-    "nano_active_status": "Nano Banana aktif",
+    "nano_active_status": "Pengeditan gambar aktif",
     "styles": {
       "default": "bawaan (Clean Vector)",
       "isometric": "Isometric diagram",
@@ -4889,15 +4889,15 @@
     },
     "generate": "Hasilkan visual",
     "regenerate_prompt": "Remenghasilkan dari Prompt",
-    "refiner_title": "Nano Banana gambar Refiner",
-    "refiner_desc": "Ask Nano Banana ke ubah teks atau visual elements ini gambar directly untuk Anda.",
+    "refiner_title": "Editor Gambar",
+    "refiner_desc": "Jelaskan perubahan teks atau visual yang ingin Anda buat pada gambar ini.",
     "refiner_placeholder": "Describe perubahan (misal, 'Tambah lebih labels', 'Buat background blue')...",
     "placeholder_instructions": "misal, Fokus di cellular struktur...",
     "download": "Unduh gambar",
     "warning": {
       "title": "Important: Simpan Anda Kerja",
       "desc": "gambar adalah <strong>tidak tersimpan</strong> ke Anda sejarah jika Anda muat ulang halaman. mohon unduh gambar atau HTML Pack immediately jika Anda wish ke keep itu.",
-      "tip": "<strong>Pro kiat:</strong> AI-dihasilkan teks di diagram dapat sometimes menjadi inaccurate. Gunakan <strong>Nano Banana Refiner</strong> above ke 'fix spelling' atau 'hapus teks labels' sebelum downloading."
+      "tip": "<strong>Kiat Pro:</strong> Teks yang dihasilkan AI dalam diagram terkadang bisa tidak akurat. Gunakan <strong>Editor Gambar</strong> di atas untuk 'memperbaiki ejaan' atau 'menghapus label teks' sebelum mengunduh."
     },
     "actions": {
       "refining_icon": "Refining ikon...",
@@ -32641,7 +32641,7 @@
     "subtitle": "Terapkan ke setiap sumber yang Anda buat",
     "applies": "Berlaku untuk {n} dari {m} jenis sumber",
     "image_style": "Gaya gambar (default)",
-    "image_style_hint": "Digunakan untuk gambar Visuals, Glossary, Timeline, dan Concept Sort kecuali alat menetapkan gayanya sendiri.",
+    "image_style_hint": "Gaya bawaan untuk seluruh pelajaran bagi gambar baru di Visual, Daftar istilah, Penyusun Urutan, Konsep Urutkan, dan Suara Kata. Mode Petualangan juga dapat memilih gaya ini.",
     "diff_custom": "Kustom — pilih tingkat kelas yang tepat",
     "diff_custom_hint": "Pilih campuran apa pun. Tingkat target Anda selalu disertakan.",
     "diff_target_locked": "Tingkat target — selalu disertakan",

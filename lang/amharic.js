@@ -3649,7 +3649,7 @@
       "select_all_highlight": "ለተስተካከለ ጽሑፍ ማድመቂያ ሁሉንም ምረጥ/አትምረጥ",
       "select_highlight": "ይህን ቃል በተስተካከለ ጽሑፍ ማድመቂያ ውስጥ አካትት",
       "delete_term": "አጥፋ ቃል",
-      "apply_edit": "ተግብር Custom Nano Banana አስተካክል",
+      "apply_edit": "የምስል ማረምን ተግብር",
       "generate_icon": "አመንጭ አንድ እይታ አዶ ለ ይህ ቃል"
     },
     "auto_remove": "ቃላትን ከምስሎች በራስ አስወግድ",
@@ -4875,7 +4875,7 @@
     "image_stripped": "ምስል ናቸው stripped ወደ አስቀምጥ space.",
     "prompt_label": "AI የመነጨ Prompt",
     "art_style": "Art ዘይቤ",
-    "nano_active_status": "Nano Banana ንቁ",
+    "nano_active_status": "የምስል ማረም ንቁ ነው",
     "styles": {
       "default": "ነባሪ (Clean Vector)",
       "isometric": "Isometric ሥዕላዊ መግለጫ",
@@ -4891,15 +4891,15 @@
     },
     "generate": "አመንጭ እይታ",
     "regenerate_prompt": "Regenerate ከ Prompt",
-    "refiner_title": "Nano Banana ምስል Refiner",
-    "refiner_desc": "Ask Nano Banana ወደ አስተካክል ጽሑፍ ወይም እይታ elements የ ይህ ምስል directly ለ እርስዎ.",
+    "refiner_title": "የምስል አርታዒ",
+    "refiner_desc": "በዚህ ምስል ላይ ማድረግ የሚፈልጉትን የጽሑፍ ወይም የእይታ ለውጦች ይግለጹ።",
     "refiner_placeholder": "Describe ለውጦች (e.g., 'ጨምር ተጨማሪ labels', 'ስራ background blue')...",
     "placeholder_instructions": "e.g., ትኩረት ላይ cellular መዋቅር...",
     "download": "አውርድ ምስል",
     "warning": {
       "title": "Important: አስቀምጥ የእርስዎ ስራ",
       "desc": "ገጹን ካደሱ ምስሎች ወደ ታሪክዎ <strong>አይቀመጡም</strong>። እባክዎ ለማቆየት ከፈለጉ ምስሉን ወይም HTML Pack ወዲያውኑ ያውርዱ።",
-      "tip": "<strong>የባለሙያ ምክር:</strong> በሥዕላዊ መግለጫዎች ውስጥ በAI የተፈጠረ ጽሑፍ አንዳንድ ጊዜ ትክክል ላይሆን ይችላል። ከማውረድ በፊት 'ፊደል አጻጻፍ ለመስተካከል' ወይም 'የጽሑፍ መለያዎችን ለማስወገድ' ከላይ ያለውን <strong>Nano Banana Refiner</strong> ይጠቀሙ።"
+      "tip": "<strong>የባለሙያ ምክር:</strong> በሥዕላዊ መግለጫዎች ውስጥ በAI የተፈጠረ ጽሑፍ አንዳንድ ጊዜ ትክክል ላይሆን ይችላል። ከማውረድ በፊት 'ፊደል አጻጻፍ ለመስተካከል' ወይም 'የጽሑፍ መለያዎችን ለማስወገድ' ከላይ ያለውን <strong>የምስል አርታዒ</strong> ይጠቀሙ።"
     },
     "actions": {
       "refining_icon": "Refining አዶ...",
@@ -30542,7 +30542,7 @@
     "subtitle": "ለሚያመነጩት ሁሉም ሀብቶች ተግብር",
     "applies": "ከ{m} የሀብት ዓይነቶች {n} ላይ ይተገበራል",
     "image_style": "የምስል ዘይቤ (ነባሪ)",
-    "image_style_hint": "አንድ መሣሪያ የራሱን ዘይቤ ካልመረጠ ለVisuals፣ Glossary፣ Timeline እና Concept Sort ምስሎች ይጠቀማል።",
+    "image_style_hint": "ለአዳዲስ ምስሎች በእይታ ድጋፍ፣ መዝገበ ቃላት፣ የቅደም ተከተል ገንቢ፣ ጽንሰ-ሐሳብ ደርድር እና የቃላት ድምፆች ውስጥ የሚሠራ የመላው ትምህርት ነባሪ ዘይቤ። የጀብዱ ሁነታም ይህን ዘይቤ መምረጥ ይችላል።",
     "diff_custom": "ብጁ — ትክክለኛ ክፍሎችን ይምረጡ",
     "diff_custom_hint": "ማንኛውንም ድብልቅ ይምረጡ። የታለመው ክፍልዎ ሁልጊዜ ይካተታል።",
     "diff_target_locked": "የታለመው ክፍል — ሁልጊዜ ይካተታል",

@@ -3647,7 +3647,7 @@
       "select_all_highlight": "Họrọ/wepụ nhọrọ niile maka nrụgosi ederede emeziri",
       "select_highlight": "Tinye okwu a na nrụgosi ederede emeziri",
       "delete_term": "Hichapụ okwu",
-      "apply_edit": "Tinye n'ọrụ Custom Nano Banana Dezie",
+      "apply_edit": "Tinye Ndezi Foto",
       "generate_icon": "Mepụta otu ihu akara ngosi maka nke otu okwu"
     },
     "auto_remove": "Auto-Wepụ okwu site na foto",
@@ -4873,7 +4873,7 @@
     "image_stripped": "foto bụ stripped na chekwaa space.",
     "prompt_label": "Nrụgide AI mepụtara",
     "art_style": "Art ụdị",
-    "nano_active_status": "Nano Banana na-arụ ọrụ",
+    "nano_active_status": "Ndezi foto na-arụ ọrụ",
     "styles": {
       "default": "ndabara (Clean Vector)",
       "isometric": "Isometric eserese",
@@ -4889,15 +4889,15 @@
     },
     "generate": "Mepụta ihu",
     "regenerate_prompt": "Regenerate site na Prompt",
-    "refiner_title": "Nano Banana foto Refiner",
-    "refiner_desc": "Ask Nano Banana na dezie ederede maọbụ ihu elements nke nke otu foto directly maka gị.",
+    "refiner_title": "Ihe Ndezi Foto",
+    "refiner_desc": "Kọwaa mgbanwe ederede ma ọ bụ nke a na-ahụ anya ị chọrọ ime na foto a.",
     "refiner_placeholder": "Describe changes (e.g., 'Tinye karịa labels', 'Mee background blue')...",
     "placeholder_instructions": "e.g., Focus na cellular structure...",
     "download": "Budata foto",
     "warning": {
       "title": "Important: Chekwaa gị Work",
       "desc": "foto bụ <strong>anaghị echekwala</strong> na gị history ọ bụrụ na gị megharịa page. biko budata foto maọbụ HTML Pack immediately ọ bụrụ na gị wish na keep it.",
-      "tip": "<strong>Pro ndụmọdụ:</strong> AI-mepụtara ederede na eserese nwere ike sometimes be inaccurate. Jiri <strong>Nano Banana Refiner</strong> above na 'fix spelling' maọbụ 'wepụ ederede labels' before downloading."
+      "tip": "<strong>Ndụmọdụ Ọkachamara:</strong> Ederede AI mepụtara na eserese nwere ike ọ bụghị eziokwu mgbe ụfọdụ. Jiri <strong>Ihe Ndezi Foto</strong> dị n'elu 'dozie nsụpe' ma ọ bụ 'wepụ akara ederede' tupu ị budata ya."
     },
     "actions": {
       "refining_icon": "Refining akara ngosi...",
@@ -32174,7 +32174,7 @@
     "subtitle": "Tinye ya n’ihe enyemaka ọ bụla ị mepụtara",
     "applies": "Ọ metụtara {n} n’ime ụdị ihe enyemaka {m}",
     "image_style": "Ụdị onyonyo (ndabara)",
-    "image_style_hint": "A na-eji ya maka onyonyo Visuals, Glossary, Timeline na Concept Sort ma ọ bụrụ na ngwa emeghị ụdị nke ya.",
+    "image_style_hint": "Ụdị ndabara maka ihe ọmụmụ dum maka foto ọhụrụ na Nkwado Ọhụụ, Akwụkwọ ọkọwa okwu, Onye Nwekọta Usoro, Concept Hazie na Ụda Okwu. Njem nlere ọnọdụ nwekwara ike ịhọrọ ụdị a.",
     "diff_custom": "Nke ahaziri — họrọ ọkwa klaasị kpọmkwem",
     "diff_custom_hint": "Họrọ ngwakọta ọ bụla. A na-etinye ọkwa klaasị ị chọrọ mgbe niile.",
     "diff_target_locked": "Ọkwa klaasị e zubere — a na-etinye mgbe niile",

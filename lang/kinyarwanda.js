@@ -3647,7 +3647,7 @@
       "select_all_highlight": "Hitamo/kuraho byose ku itara ry’inyandiko yahinduwe",
       "select_highlight": "Shyira iri jambo mu itara ry’inyandiko yahinduwe",
       "delete_term": "Siba Ijambo",
-      "apply_edit": "Shyiraho Ihinduka rya Nano Banana",
+      "apply_edit": "Shyira mu bikorwa Guhindura Ishusho",
       "generate_icon": "Tunganya ikimenyetso cy'ishusho ku iri jambo"
     },
     "auto_remove": "Kuraho Amagambo mu Mashusho Ubwiriza",
@@ -4873,7 +4873,7 @@
     "image_stripped": "Amashusho yakuweho kugira ngo bikize ububiko.",
     "prompt_label": "Prompt Yatunganijwe na AI",
     "art_style": "Imiterere y'Ubuhanzi",
-    "nano_active_status": "Nano Banana iri gukora",
+    "nano_active_status": "Guhindura ishusho birakora",
     "styles": {
       "default": "Isanzwe (Vector Yera)",
       "isometric": "Igishushanyo Cy'Isometric",
@@ -4889,15 +4889,15 @@
     },
     "generate": "Tunganya Ishusho",
     "regenerate_prompt": "Subira Utunganye Kuva ku Prompt",
-    "refiner_title": "Inkozi ya Nano Banana yo Gusobanura Ishusho",
-    "refiner_desc": "Saba Nano Banana guhindura umwandiko cyangwa ibice by'ishusho bigaragara muri iyi shusho ku rwawe.",
+    "refiner_title": "Igikoresho cyo Guhindura Ishusho",
+    "refiner_desc": "Sobanura impinduka z'inyandiko cyangwa z'ishusho ushaka gukora kuri iyi shusho.",
     "refiner_placeholder": "Sobanura ibihinduka (urugero: 'Ongeraho amazina', 'Igire ibara ry'inyuma ryera')...",
     "placeholder_instructions": "urugero: Witondere ku miterere ya selile...",
     "download": "Manura Ishusho",
     "warning": {
       "title": "Ikomeye: Bika Imirimo Yawe",
       "desc": "Amashusho <strong>ntabikwa</strong> mu mateka yawe niba ukozesheje refresh. Manura ishusho cyangwa HTML Pack ako kanya niba ushaka kuyikomeza.",
-      "tip": "<strong>Inama y'Inzobere:</strong> Umwandiko watunganijwe na AI mu mashushanyo ushobora rimwe na rimwe kuba utari wo. Koresha <strong>Nano Banana Refiner</strong> hejuru kugira ngo 'kosora imyandikire' cyangwa 'kuraho utwapa tw'umwandiko' mbere yo kumanura."
+      "tip": "<strong>Inama y'Inzobere:</strong> Umwandiko watunganijwe na AI mu mashushanyo ushobora rimwe na rimwe kuba utari wo. Koresha <strong>Igikoresho cyo Guhindura Ishusho</strong> kiri hejuru kugira ngo 'ukosore imyandikire' cyangwa 'ukureho utumenyetso tw'inyandiko' mbere yo gukuramo."
     },
     "actions": {
       "refining_icon": "Gusobanura ikimenyetso...",
@@ -32239,7 +32239,7 @@
     "subtitle": "Bikoreshe kuri buri gikoresho ukora",
     "applies": "Bikoreshwa kuri {n} muri {m} byiciro by’ibikoresho",
     "image_style": "Imiterere y’ishusho (isanzwe)",
-    "image_style_hint": "Bikoreshwa ku mashusho ya Visuals, Glossary, Timeline na Concept Sort keretse igikoresho gishyizeho imiterere yacyo.",
+    "image_style_hint": "Imiterere isanzwe y'isomo ryose ku mashusho mashya muri Inkunga y'Amashusho, Inkoranyamagambo, Inkozi y'Urutonde, Itondeka ry'Ibitekerezo na Amajwi y'Amagambo. Uburyo bw'Urugendo na bwo bushobora guhitamo iyi miterere.",
     "diff_custom": "Byihariye — hitamo ibyiciro nyabyo",
     "diff_custom_hint": "Hitamo uruvange urwo ari rwo rwose. Icyiciro ugamije gihora kirimo.",
     "diff_target_locked": "Icyiciro ugamije — gihora kirimo",

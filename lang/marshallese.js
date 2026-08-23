@@ -3625,7 +3625,7 @@
       "select_all_highlight": "Kāālōt/joḷọk aolep ñan kaalikkar jeje eo eṃōj kohmane",
       "select_highlight": "Kobaik naan in ilo kaalikkar in jeje eo eṃōj kohmane",
       "delete_term": "Jolok Term",
-      "apply_edit": "Kojerbal Custom Nano Banana Ukot",
+      "apply_edit": "Kojerbal Ukot Pija",
       "generate_icon": "Generate a visual icon ñan in term"
     },
     "auto_remove": "Auto-Joḷọk naan from pija",
@@ -4851,7 +4851,7 @@
     "image_stripped": "pija rej stripped ñan kōjparok space.",
     "prompt_label": "AI Kōṃṃan Prompt",
     "art_style": "Art Style",
-    "nano_active_status": "Nano Banana active",
+    "nano_active_status": "Ukot Pija active",
     "styles": {
       "default": "Default (Clean Vector)",
       "isometric": "Isometric Diagram",
@@ -4867,15 +4867,15 @@
     },
     "generate": "Generate Visual",
     "regenerate_prompt": "Regenerate from Prompt",
-    "refiner_title": "Nano Banana pija Refiner",
-    "refiner_desc": "Ask Nano Banana ñan ukot text ak visual elements in in pija directly ñan kwe.",
+    "refiner_title": "Ukot Pija",
+    "refiner_desc": "Describe the text or visual changes you want to make to this image.",
     "refiner_placeholder": "Describe oktak (e.g., 'Kobaik eḷap ḷọk labels', 'Make background blue')...",
     "placeholder_instructions": "e.g., Focus ioon eo cellular structure...",
     "download": "Download pija",
     "warning": {
       "title": "Important: Kōjparok eo am Work",
       "desc": "pija rej <strong>jab saved</strong> ñan eo am history if kwe refresh eo peba. Please download eo pija ak eo HTML Pack immediately if kwe wish ñan keep it.",
-      "tip": "<strong>Pro Tip:</strong> AI-kōṃṃan text ilo diagrams maroñ sometimes be inaccurate. Kōjerbal eo <strong>Nano Banana Refiner</strong> above ñan 'fix spelling' ak 'joḷọk text labels' ṃokta downloading."
+      "tip": "<strong>Pro Tip:</strong> AI-kōṃṃan text ilo diagrams maroñ sometimes be inaccurate. Kōjerbal eo <strong>Ukot Pija</strong> above ñan 'fix spelling' ak 'joḷọk text labels' ṃokta downloading."
     },
     "actions": {
       "refining_icon": "Refining icon...",
@@ -24734,7 +24734,7 @@
     "subtitle": "Apply to every resource you generate",
     "applies": "Applies to {n} of {m} resource types",
     "image_style": "Image Style (default)",
-    "image_style_hint": "Used for Visuals, Glossary, Timeline and Concept Sort images unless a tool sets its own style.",
+    "image_style_hint": "Lesson-wide default for new Visuals, Glossary, Timeline, Concept Sort, and Word Sounds images. Adventure can also choose this style.",
     "diff_custom": "Custom — pick exact grades",
     "diff_custom_hint": "Pick any mix. Your target grade is always included.",
     "diff_target_locked": "Target grade — always included",

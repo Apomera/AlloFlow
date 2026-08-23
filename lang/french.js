@@ -6405,7 +6405,7 @@
       "select_all_highlight": "Tout sélectionner/désélectionner pour le surlignage du texte adapté",
       "select_highlight": "Inclure ce terme dans le surlignage du texte adapté",
       "delete_term": "Supprimer le terme",
-      "apply_edit": "Appliquer la modification Nano Banana personnalisée",
+      "apply_edit": "Appliquer la modification d'image",
       "generate_icon": "Générer une icône visuelle pour ce terme"
     },
     "auto_remove": "Retirer automatiquement les mots des images",
@@ -9830,7 +9830,7 @@
     "image_stripped": "Les images sont retirées pour économiser de l'espace.",
     "prompt_label": "Invite générée par IA",
     "art_style": "Style artistique",
-    "nano_active_status": "Nano Banana actif",
+    "nano_active_status": "Édition d'image active",
     "styles": {
       "default": "Par défaut (vectoriel épuré)",
       "isometric": "Diagramme isométrique",
@@ -9846,15 +9846,15 @@
     },
     "generate": "Générer le visuel",
     "regenerate_prompt": "Régénérer depuis l'invite",
-    "refiner_title": "Affineur d'image Nano Banana",
-    "refiner_desc": "Demande à Nano Banana de modifier le texte ou les éléments visuels de cette image directement pour vous.",
+    "refiner_title": "Éditeur d'images",
+    "refiner_desc": "Décrivez les modifications de texte ou d'éléments visuels que vous souhaitez apporter à cette image.",
     "refiner_placeholder": "Décris les changements (ex. « ajouter plus d'étiquettes », « rendre le fond bleu »)...",
     "placeholder_instructions": "ex. se concentrer sur la structure cellulaire...",
     "download": "Télécharger l'image",
     "warning": {
       "title": "Important : enregistrez votre travail",
       "desc": "Les images <strong>ne sont pas enregistrées</strong> dans votre historique si vous actualisez la page. Veuillez télécharger l'image ou le pack HTML immédiatement si vous souhaitez la garder.",
-      "tip": "<strong>Astuce de pro :</strong> Le texte généré par IA dans les diagrammes peut parfois être inexact. Utilisez l'<strong>affineur Nano Banana</strong> ci-dessus pour « corriger l'orthographe » ou « retirer les étiquettes de texte » avant de télécharger."
+      "tip": "<strong>Astuce de pro :</strong> Le texte généré par IA dans les diagrammes peut parfois être inexact. Utilisez l'<strong>Éditeur d'images</strong> ci-dessus pour 'corriger l'orthographe' ou 'supprimer les étiquettes de texte' avant de télécharger."
     },
     "actions": {
       "refining_icon": "Affinement de l'icône...",
@@ -32750,7 +32750,7 @@
     "subtitle": "Appliquer à chaque ressource que vous générez",
     "applies": "S’applique à {n} types de ressources sur {m}",
     "image_style": "Style d’image (par défaut)",
-    "image_style_hint": "Utilisé pour les images de Visuals, Glossary, Timeline et Concept Sort, sauf si un outil définit son propre style.",
+    "image_style_hint": "Style par défaut pour toute la leçon, appliqué aux nouvelles images des Visuels, du Glossaire, de la Chronologie, de la Classification de concepts et des Sons des Mots. Le Mode aventure peut aussi choisir ce style.",
     "diff_custom": "Personnalisé — choisir les niveaux exacts",
     "diff_custom_hint": "Choisissez n’importe quelle combinaison. Votre niveau cible est toujours inclus.",
     "diff_target_locked": "Niveau cible — toujours inclus",

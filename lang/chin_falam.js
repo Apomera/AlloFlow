@@ -4618,7 +4618,7 @@
     "image_stripped": "Bo save ti'ah lim a hlonhmi a si.",
     "prompt_label": "AI Generated Prompt",
     "art_style": "Art Style",
-    "nano_active_status": "Nano Banana a tuah lio",
+    "nano_active_status": "Lim Thlennak a tuah lio",
     "styles": {
       "default": "Default (Clean Vector)",
       "isometric": "Isometric Diagram",
@@ -4634,15 +4634,15 @@
     },
     "generate": "Visual Chuah",
     "regenerate_prompt": "Prompt in Regenerate",
-    "refiner_title": "Nano Banana Image Refiner",
-    "refiner_desc": "Nano Banana nih hi image text asilo visual element edit ti'ah hal.",
+    "refiner_title": "Lim Thlennak",
+    "refiner_desc": "Describe the text or visual changes you want to make to this image.",
     "refiner_placeholder": "Change describe (e.g., 'Label tam deuh tel', 'Background hring tuah')...",
     "placeholder_instructions": "e.g., Cellular structure focus...",
     "download": "Image Download",
     "warning": {
       "title": "Important: Na Rian Khong",
       "desc": "Page refresh ahcun image cu na history ah <strong>save lo</strong> a si. Khong na duh ahcun image asilo HTML Pack faaite download.",
-      "tip": "<strong>Pro Tip:</strong> Diagram chungah AI-generated text cu tahkhat tlawmte sual khawh. Download hmasa ah <strong>Nano Banana Refiner</strong> hman."
+      "tip": "<strong>Pro Tip:</strong> Diagram chungah AI-generated text cu tahkhat tlawmte sual khawh. Download hmasa ah <strong>Lim Thlennak</strong> hman."
     },
     "actions": {
       "refining_icon": "Icon refine lio...",
@@ -4822,7 +4822,7 @@
       "select_all_highlight": "Remh mi ca langhternak caah vialte thim/thim lo",
       "select_highlight": "Hi biafang hi remh mi ca langhternak ah telh",
       "delete_term": "Term Hlonh",
-      "apply_edit": "Custom Nano Banana Thlen Hman",
+      "apply_edit": "Lim Thlennak Hman",
       "generate_icon": "Hi term ti'ah visual icon chuah"
     },
     "auto_remove": "Lim in Biafang Auto-Remove",
@@ -24483,7 +24483,7 @@
     "subtitle": "Na hmuah hmanrua na siam mi ah hman",
     "applies": "Hmanrua phun {m} lakah {n} ah a hman",
     "image_style": "Pian hmanrua (default)",
-    "image_style_hint": "Tool pakhatin a style te a hman loh ah Visuals, Glossary, Timeline le Concept Sort hmanrua ah hman a si.",
+    "image_style_hint": "Lesson-wide default for new Visuals, Glossary, Timeline, Concept Sort, and Word Sounds images. Adventure can also choose this style.",
     "diff_custom": "Sakphaw — grade te dik te thlang",
     "diff_custom_hint": "A duhduh te thlang rawh. Na target grade cu a tel ringring.",
     "diff_target_locked": "Target grade — a tel ringring",

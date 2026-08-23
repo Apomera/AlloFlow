@@ -3648,7 +3648,7 @@
       "select_all_highlight": "अनुकूलित पाठ हाइलाइट के लिए सभी चुनें/हटाएँ",
       "select_highlight": "इस शब्द को अनुकूलित पाठ हाइलाइट में शामिल करें",
       "delete_term": "हटाएं शब्द",
-      "apply_edit": "लागू करें कस्टम Nano Banana संपादित करें",
+      "apply_edit": "छवि संपादन लागू करें",
       "generate_icon": "उत्पन्न करें एक दृश्य आइकन के लिए यह शब्द"
     },
     "auto_remove": "स्वतः-हटाएं शब्द से छवि",
@@ -4874,7 +4874,7 @@
     "image_stripped": "छवि हैं stripped को सहेजें space.",
     "prompt_label": "AI उत्पन्न Prompt",
     "art_style": "कला शैली",
-    "nano_active_status": "Nano Banana सक्रिय",
+    "nano_active_status": "छवि संपादन सक्रिय",
     "styles": {
       "default": "डिफ़ॉल्ट (Clean Vector)",
       "isometric": "Isometric आरेख",
@@ -4890,15 +4890,15 @@
     },
     "generate": "उत्पन्न करें दृश्य",
     "regenerate_prompt": "Regenerate से Prompt",
-    "refiner_title": "Nano Banana छवि Refiner",
-    "refiner_desc": "Ask Nano Banana को संपादित करें पाठ या दृश्य elements का यह छवि directly के लिए आप.",
+    "refiner_title": "छवि संपादक",
+    "refiner_desc": "इस छवि में आप जो पाठ या दृश्य बदलाव करना चाहते हैं, उनका वर्णन करें।",
     "refiner_placeholder": "Describe परिवर्तन (e.g., 'जोड़ें अधिक labels', 'बनाएं background blue')...",
     "placeholder_instructions": "e.g., फोकस पर cellular संरचना...",
     "download": "डाउनलोड करें छवि",
     "warning": {
       "title": "Important: सहेजें आपका काम",
       "desc": "यदि आप पृष्ठ को रिफ्रेश करते हैं तो छवियाँ आपके इतिहास में <strong>सहेजी नहीं जाती हैं</strong>। यदि आप इसे रखना चाहते हैं तो कृपया छवि या HTML Pack तुरंत डाउनलोड करें।",
-      "tip": "<strong>प्रो टिप:</strong> आरेखों में AI-उत्पन्न टेक्स्ट कभी-कभी गलत हो सकता है। डाउनलोड करने से पहले 'वर्तनी ठीक करें' या 'टेक्स्ट लेबल हटाएँ' के लिए ऊपर <strong>Nano Banana Refiner</strong> का उपयोग करें।"
+      "tip": "<strong>प्रो टिप:</strong> आरेखों में AI-उत्पन्न टेक्स्ट कभी-कभी गलत हो सकता है। डाउनलोड करने से पहले 'वर्तनी ठीक करें' या 'टेक्स्ट लेबल हटाएँ' के लिए ऊपर दिए गए <strong>छवि संपादक</strong> का उपयोग करें।"
     },
     "actions": {
       "refining_icon": "Refining आइकन...",
@@ -32665,7 +32665,7 @@
     "subtitle": "आपके द्वारा बनाए गए हर संसाधन पर लागू करें",
     "applies": "{m} संसाधन प्रकारों में से {n} पर लागू",
     "image_style": "छवि शैली (डिफ़ॉल्ट)",
-    "image_style_hint": "किसी टूल द्वारा अपनी शैली सेट न करने पर Visuals, Glossary, Timeline और Concept Sort की छवियों के लिए उपयोग होता है।",
+    "image_style_hint": "दृश्य सामग्री, शब्दकोश, अनुक्रम निर्माता, अवधारणा क्रमबद्ध करें और शब्द ध्वनियाँ की नई छवियों के लिए पूरे पाठ की डिफ़ॉल्ट शैली। साहसिक मोड भी यह शैली चुन सकता है।",
     "diff_custom": "कस्टम — सटीक कक्षाएँ चुनें",
     "diff_custom_hint": "कोई भी मिश्रण चुनें। आपकी लक्ष्य कक्षा हमेशा शामिल होती है।",
     "diff_target_locked": "लक्ष्य कक्षा — हमेशा शामिल",

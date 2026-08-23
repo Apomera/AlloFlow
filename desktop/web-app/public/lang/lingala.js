@@ -3646,7 +3646,7 @@
       "select_all_highlight": "Pona/longola nyonso mpo na kongengisa makomi ebongisami",
       "select_highlight": "Kotisa liloba oyo na kongengisa ya makomi ebongisami",
       "delete_term": "Bomá liloba",
-      "apply_edit": "Salela Custom Nano Banana Bongisá",
+      "apply_edit": "Salela Bobongisi ya Elilingi",
       "generate_icon": "Sala elilingi elembo mpo na oyo liloba"
     },
     "auto_remove": "Auto-Longolá maloba uta elilingi",
@@ -4872,7 +4872,7 @@
     "image_stripped": "elilingi ezali stripped na bombá space.",
     "prompt_label": "AI Esalemi Prompt",
     "art_style": "Art lolenge",
-    "nano_active_status": "Nano Banana esalaka",
+    "nano_active_status": "Kobongisa elilingi ezali kosalema",
     "styles": {
       "default": "ya ebandeli (Clean Vector)",
       "isometric": "Isometric elilingi",
@@ -4888,15 +4888,15 @@
     },
     "generate": "Sala elilingi",
     "regenerate_prompt": "Regenerate uta Prompt",
-    "refiner_title": "Nano Banana elilingi Refiner",
-    "refiner_desc": "Ask Nano Banana na bongisá makomi to elilingi elements ya oyo elilingi directly mpo na yo.",
+    "refiner_title": "Esaleli ya Kobongisa Elilingi",
+    "refiner_desc": "Lobelá mbongwana ya makomi to ya elilingi oyo olingi kosala na elilingi oyo.",
     "refiner_placeholder": "Describe mbongwana (e.g., 'Bakisá mingi labels', 'Salá background blue')...",
     "placeholder_instructions": "e.g., Focus likoló cellular structure...",
     "download": "Kitisá elilingi",
     "warning": {
       "title": "Important: Bombá yo Work",
       "desc": "elilingi ezali <strong>te ebombami</strong> na yo history soki yo bongisá lisusu lokasa. nabondeli yo kitisá elilingi to HTML Pack immediately soki yo wish na keep it.",
-      "tip": "<strong>Pro toli:</strong> AI-esalemi makomi na elilingi can sometimes be inaccurate. Salelá <strong>Nano Banana Refiner</strong> above na 'fix spelling' to 'longolá makomi labels' before downloading."
+      "tip": "<strong>Toli ya Mayele:</strong> Makomi oyo AI esali na bililingi ekoki mbala mosusu kozala ya solo te. Salelá <strong>Esaleli ya Kobongisa Elilingi</strong> oyo ezali na likolo mpo na 'kobongisa makomi' to 'kolongola bilembo ya makomi' liboso ya kokitisa."
     },
     "actions": {
       "refining_icon": "Refining elembo...",
@@ -31914,7 +31914,7 @@
     "subtitle": "Salela yango na eloko nyonso oyo osali",
     "applies": "Esalelami na {n} kati ya lolenge ya biloko {m}",
     "image_style": "Lolenge ya elilingi (ya liboso)",
-    "image_style_hint": "Esalelamaka mpo na bililingi ya Visuals, Glossary, Timeline mpe Concept Sort soki esaleli moko etie lolenge na yango te.",
+    "image_style_hint": "Lolenge ya liboso mpo na liteya mobimba mpo na bililingi ya sika na elilingi lisalisi, Mokanda ya maloba, Mosali Molongo, Likanisi Tia na molongo mpe Mingongo ya Maloba. Mobembo lolenge ekoki mpe kopona lolenge oyo.",
     "diff_custom": "Ya yo moko — pona ba-kelasi ya sikisiki",
     "diff_custom_hint": "Pona bosangisi nyonso. Kelasi oyo ozali koluka ezalaka ntango nyonso kati.",
     "diff_target_locked": "Kelasi ya mokano — ezalaka ntango nyonso kati",

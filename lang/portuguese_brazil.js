@@ -3982,7 +3982,7 @@
       "select_all_highlight": "Selecionar/desmarcar tudo para o destaque do texto adaptado",
       "select_highlight": "Incluir este termo no destaque do texto adaptado",
       "delete_term": "Excluir Termo",
-      "apply_edit": "Aplicar Edição Personalizada do Nano Banana",
+      "apply_edit": "Aplicar Edição de Imagem",
       "generate_icon": "Gerar um ícone visual para este termo"
     },
     "auto_remove": "Remover Palavras das Imagens Automaticamente",
@@ -4188,7 +4188,7 @@
     "image_stripped": "As imagens foram removidas para economizar espaço.",
     "prompt_label": "Prompt Gerado por IA",
     "art_style": "Estilo Artístico",
-    "nano_active_status": "Nano Banana ativo",
+    "nano_active_status": "Edição de imagem ativa",
     "styles": {
       "default": "Padrão (Vetor Limpo)",
       "isometric": "Diagrama Isométrico",
@@ -4204,15 +4204,15 @@
     },
     "generate": "Gerar Visual",
     "regenerate_prompt": "Regenerar a partir do Prompt",
-    "refiner_title": "Refinador de Imagem Nano Banana",
-    "refiner_desc": "Peça ao Nano Banana para editar o texto ou os elementos visuais desta imagem diretamente para você.",
+    "refiner_title": "Editor de Imagem",
+    "refiner_desc": "Descreva as alterações de texto ou de elementos visuais que você quer fazer nesta imagem.",
     "refiner_placeholder": "Descreva as mudanças (ex.: 'Adicionar mais rótulos', 'Deixar o fundo azul')...",
     "placeholder_instructions": "ex.: focar na estrutura celular...",
     "download": "Baixar Imagem",
     "warning": {
       "title": "Importante: Salve Seu Trabalho",
       "desc": "As imagens <strong>não são salvas</strong> no seu histórico se você atualizar a página. Baixe a imagem ou o Pacote HTML imediatamente se quiser mantê-las.",
-      "tip": "<strong>Dica Pro:</strong> textos gerados por IA em diagramas às vezes podem estar imprecisos. Use o <strong>Refinador Nano Banana</strong> acima para 'corrigir a ortografia' ou 'remover os rótulos de texto' antes de baixar."
+      "tip": "<strong>Dica Pro:</strong> textos gerados por IA em diagramas às vezes podem estar imprecisos. Use o <strong>Editor de Imagem</strong> acima para 'corrigir a ortografia' ou 'remover rótulos de texto' antes de baixar."
     },
     "actions": {
       "refining_icon": "Refinando ícone...",
@@ -32781,7 +32781,7 @@
     "subtitle": "Aplique a todos os recursos que você gerar",
     "applies": "Aplica-se a {n} de {m} tipos de recursos",
     "image_style": "Estilo da imagem (padrão)",
-    "image_style_hint": "Usado nas imagens de Visuals, Glossary, Timeline e Concept Sort, a menos que uma ferramenta defina seu próprio estilo.",
+    "image_style_hint": "Padrão de toda a lição para as novas imagens de Visuais, Glossário, Linha do Tempo, Classificação de Conceitos e Sons das Palavras. O Modo Aventura também pode escolher este estilo.",
     "diff_custom": "Personalizado — escolha as séries exatas",
     "diff_custom_hint": "Escolha qualquer combinação. Sua série-alvo sempre será incluída.",
     "diff_target_locked": "Série-alvo — sempre incluída",

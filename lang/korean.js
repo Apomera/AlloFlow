@@ -3651,7 +3651,7 @@
       "select_all_highlight": "적응 텍스트 강조 표시 전체 선택/해제",
       "select_highlight": "이 용어를 적응 텍스트 강조 표시에 포함",
       "delete_term": "삭제 용어",
-      "apply_edit": "적용 사용자 정의 Nano Banana 편집",
+      "apply_edit": "이미지 편집 적용",
       "generate_icon": "생성 시각 아이콘 위한 이것 용어"
     },
     "auto_remove": "자동-제거 단어 에서 이미지",
@@ -4877,7 +4877,7 @@
     "image_stripped": "이미지 입니다 stripped 에 저장 space.",
     "prompt_label": "AI 생성됨 Prompt",
     "art_style": "Art 스타일",
-    "nano_active_status": "Nano Banana 활성",
+    "nano_active_status": "이미지 편집 활성화됨",
     "styles": {
       "default": "기본값 (Clean Vector)",
       "isometric": "Isometric 다이어그램",
@@ -4893,15 +4893,15 @@
     },
     "generate": "생성 시각",
     "regenerate_prompt": "Regenerate 에서 Prompt",
-    "refiner_title": "Nano Banana 이미지 Refiner",
-    "refiner_desc": "Ask Nano Banana 에 편집 텍스트 또는 시각 elements 의 이것 이미지 directly 위한 당신.",
+    "refiner_title": "이미지 편집기",
+    "refiner_desc": "이 이미지에 적용할 텍스트 또는 시각적 변경 사항을 설명하세요.",
     "refiner_placeholder": "Describe 변경 (e.g., '추가 더 많이 labels', '만들기 background blue')...",
     "placeholder_instructions": "e.g., 초점 위에 cellular 구조...",
     "download": "다운로드 이미지",
     "warning": {
       "title": "Important: 저장 당신의 작업",
       "desc": "페이지를 새로 고침하면 이미지가 기록에 <strong>저장되지 않습니다</strong>. 유지하려면 이미지 또는 HTML 팩을 즉시 다운로드하십시오.",
-      "tip": "<strong>프로 팁:</strong> 다이어그램의 AI 생성 텍스트는 때때로 부정확할 수 있습니다. 다운로드하기 전에 위의 <strong>Nano Banana Refiner</strong>를 사용하여 '철자 수정' 또는 '텍스트 레이블 제거'를 수행하십시오."
+      "tip": "<strong>프로 팁:</strong> 다이어그램의 AI 생성 텍스트는 때때로 부정확할 수 있습니다. 다운로드하기 전에 위의 <strong>이미지 편집기</strong>를 사용하여 '철자 수정' 또는 '텍스트 레이블 제거'를 수행하십시오."
     },
     "actions": {
       "refining_icon": "Refining 아이콘...",
@@ -32777,7 +32777,7 @@
     "subtitle": "생성하는 모든 리소스에 적용",
     "applies": "{m}개 리소스 유형 중 {n}개에 적용",
     "image_style": "이미지 스타일(기본값)",
-    "image_style_hint": "도구가 자체 스타일을 지정하지 않으면 Visuals, Glossary, Timeline 및 Concept Sort 이미지에 사용됩니다.",
+    "image_style_hint": "시각 자료, 용어집, 시퀀스 빌더, 개념 정렬, 단어 발음의 새 이미지에 적용되는 수업 전체 기본 스타일입니다. 모험 모드에서도 이 스타일을 선택할 수 있습니다.",
     "diff_custom": "맞춤 설정 — 정확한 학년 선택",
     "diff_custom_hint": "원하는 조합을 선택하세요. 목표 학년은 항상 포함됩니다.",
     "diff_target_locked": "목표 학년 — 항상 포함",

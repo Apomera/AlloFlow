@@ -3655,7 +3655,7 @@
       "select_all_highlight": "Alles aus-/abwählen für die Hervorhebung im angepassten Text",
       "select_highlight": "Diesen Begriff in die Hervorhebung des angepassten Texts aufnehmen",
       "delete_term": "Löschen Begriff",
-      "apply_edit": "Anwenden Benutzerdefiniert Nanein Banana Bearbeiten",
+      "apply_edit": "Bildbearbeitung anwenden",
       "generate_icon": "Generieren ein visuell icon für dies Begriff"
     },
     "auto_remove": "Auto-Entfernen Worts von Bilds",
@@ -4881,7 +4881,7 @@
     "image_stripped": "Bilds sind stripped zu speichern space.",
     "prompt_label": "AI Generiert Prompt",
     "art_style": "Art Stil",
-    "nano_active_status": "Nanein Banana aktiv",
+    "nano_active_status": "Bildbearbeitung aktiv",
     "styles": {
       "default": "Standard-(Clean Vector)",
       "isometric": "Ichsometric Diagram",
@@ -4897,15 +4897,15 @@
     },
     "generate": "Generieren Visuell",
     "regenerate_prompt": "Regenerieren von Prompt",
-    "refiner_title": "Nanein Banana Bild Refiner",
-    "refiner_desc": "Ask Nanein Banana zu bearbeiten Text oder visuell elements von dies Bild directly für du.",
+    "refiner_title": "Bildeditor",
+    "refiner_desc": "Beschreibe die Text- oder Bildänderungen, die du an diesem Bild vornehmen möchtest.",
     "refiner_placeholder": "Describe Änderungen (z. B., 'Hinzufügen mehr labels', 'Machen zurückground blue')...",
     "placeholder_instructions": "z. B., Fokus auf die cellular Struktur...",
     "download": "Downladen Bild",
     "warning": {
       "title": "Importierenant: Speichern Dein Arbeit",
       "desc": "Bilds sind <strong>nicht speichernd</strong> zu dein Verlauf wenn du aktualisieren die Seite. Bitte downladen die Bild oder die HTML Pack immediately wenn du wish zu keep it.",
-      "tip": "<strong>Pro Tipp:</strong> AI-generiert Text in diagrams kann someZeits be inaccurate. Verwenden die <strong>Nanein Banana Refiner</strong> above zu 'fix spelling' oder 'entfernen Text labels' vor downladening."
+      "tip": "<strong>Profi-Tipp:</strong> KI-generierter Text in Diagrammen kann manchmal ungenau sein. Nutze den <strong>Bildeditor</strong> oben, um vor dem Herunterladen die 'Rechtschreibung zu korrigieren' oder 'Textbeschriftungen zu entfernen'."
     },
     "actions": {
       "refining_icon": "Symbol wird verfeinert...",
@@ -32813,7 +32813,7 @@
     "subtitle": "Auf jede Ressource anwenden, die du erstellst",
     "applies": "Gilt für {n} von {m} Ressourcentypen",
     "image_style": "Bildstil (Standard)",
-    "image_style_hint": "Wird für Bilder in Visuals, Glossary, Timeline und Concept Sort verwendet, sofern ein Tool keinen eigenen Stil festlegt.",
+    "image_style_hint": "Lektionsweite Vorgabe für neue Bilder in Visuelle Elemente, Glossar, Zeitleiste, Konzept-Sortierung und Wort-Klänge. Auch der Abenteuermodus kann diesen Stil wählen.",
     "diff_custom": "Benutzerdefiniert — genaue Klassenstufen auswählen",
     "diff_custom_hint": "Wähle eine beliebige Mischung. Deine Zielstufe ist immer enthalten.",
     "diff_target_locked": "Zielstufe — immer enthalten",
