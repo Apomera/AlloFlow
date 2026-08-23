@@ -153,7 +153,13 @@ describe('SEL Hub · the catalog says what it is showing', () => {
     expect(panel).toContain("setSelToolSearch('')");
     expect(panel).toContain('setSelCategoryFilter(null)');
     expect(panel).toContain('setActivePathway(null)');
-    expect(panel).toContain('setActiveStation(null)');
+    // The setter is setActiveStationId, not setActiveStation. This assertion
+    // originally pinned the wrong name, so it passed against a call that would
+    // have thrown ReferenceError the moment a student cleared filters while a
+    // Station was active. check_free_vars caught it; this test did not. A
+    // source-text assertion is only as good as the name it is given.
+    expect(panel).toContain('setActiveStationId(null)');
+    expect(panel).not.toContain('setActiveStation(null)');
   });
 
   it('category chips resolve by label, not by a fuzzy id match', () => {

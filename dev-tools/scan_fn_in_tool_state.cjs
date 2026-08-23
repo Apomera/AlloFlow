@@ -29,6 +29,11 @@ const acorn = require(path.join(ROOT, 'desktop/web-app/node_modules/acorn'));
 const args = process.argv.slice(2);
 const quiet = args.includes('--quiet');
 const DIR = args.find((a) => !a.startsWith('--')) || path.join(ROOT, 'stem_lab');
+// Same name-blindness fix as scan_mouse_only_controls: the filename filter was
+// hardcoded to stem_tool_*.js, so pointing this at any other lab scanned ZERO
+// files and printed a clean report.
+const patternArg = args.find((a) => a.startsWith('--pattern='));
+const FILE_RE = patternArg ? new RegExp(patternArg.slice('--pattern='.length)) : /^stem_tool_.*\.js$/;
 
 const FN_TYPES = new Set(['FunctionExpression', 'ArrowFunctionExpression']);
 // Property names that are legitimately functions on a non-persisted object.
@@ -145,7 +150,11 @@ function scanFile(file) {
   return { file, hits };
 }
 
-const files = fs.readdirSync(DIR).filter((f) => /^stem_tool_.*\.js$/.test(f)).map((f) => path.join(DIR, f));
+const files = fs.readdirSync(DIR).filter((f) => FILE_RE.test(f)).map((f) => path.join(DIR, f));
+if (files.length === 0) {
+  console.error('scan_fn_in_tool_state: pattern ' + FILE_RE + ' matched NO files in ' + DIR + ' - nothing was scanned.');
+  process.exit(2);
+}
 let bad = 0, total = 0, parseErrors = 0;
 for (const f of files) {
   const r = scanFile(f);

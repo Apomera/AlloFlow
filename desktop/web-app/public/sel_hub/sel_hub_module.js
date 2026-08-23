@@ -4362,7 +4362,7 @@
                 setSelToolSearch('');
                 setSelCategoryFilter(null);
                 if (activePathway) { setActivePathway(null); setPathwayProgress({}); }
-                if (activeStation) setActiveStation(null);
+                if (activeStation) setActiveStationId(null);
                 announceToSR('Filters cleared. Showing all ' + _selTotalCount + ' tools.');
               },
               style: {
