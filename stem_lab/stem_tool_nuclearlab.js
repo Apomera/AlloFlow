@@ -2776,7 +2776,14 @@
         ) : null
       );
 
-      return h('div', { 'data-nuclear-lab': 'true', className: 'nk-readable max-w-5xl mx-auto animate-in fade-in duration-200' },
+      // The tool paints its OWN ground in dark mode (2026-08-23). It used to
+      // inherit whatever surface the host put behind it — and the host renders
+      // tools on a white content card even under the dark theme, so every
+      // translucent rgba(15,23,42,…) panel composited to a muddy mid-gray and
+      // 225 text elements measured below AA in dark. With an opaque root, all
+      // inner layers composite over the dark they were designed for. Light mode
+      // is unchanged (undefined = the host's white card, as before).
+      return h('div', { 'data-nuclear-lab': 'true', className: 'nk-readable max-w-5xl mx-auto animate-in fade-in duration-200', style: { background: isDark ? '#0f172a' : undefined, borderRadius: isDark ? 12 : undefined } },
         h('style', null,
           '@media (max-width:640px){' +
           '.nk-readable .text-\\[11px\\]{font-size:.875rem!important;line-height:1.35rem!important}' +
