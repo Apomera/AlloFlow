@@ -405,3 +405,98 @@ and that no card name exceeds 120 characters.
 
 Full SEL suite green (68 files, 709 tests); all three SEL gates pass; mirror
 byte-identical.
+
+---
+
+## 8. 2026-08-23 QA PASS — scanners that had never been aimed at SEL
+
+The repo has 589 dev-tools scanners. **Only 33 mention `sel_hub`.** This pass
+pointed the crash and keyboard ones at it for the first time.
+
+### 8a. A green report that scanned nothing
+
+`scan_mouse_only_controls sel_hub` printed a clean result while reporting
+**"0 file(s)"** — its filename filter was hardcoded to `stem_tool_*.js`. Same for
+`scan_fn_in_tool_state`. Both now take `--pattern` (and `--baseline`), and both
+**exit non-zero on an empty match**: a scan that matched nothing is a
+configuration error, not a clean bill of health.
+
+### 8b. The keyboard scanner's own blind spot
+
+Aimed properly it reported 73 files and no findings. That zero did not survive
+calibration against a synthetic known-bad file: `scan_mouse_only_controls` only
+reports an onClick element that **already** carries a widget role or
+`tabIndex >= 0`. A bare `<div onClick>` has neither, so it is skipped — and that
+is the worse case, because it is not focusable, not announced, and not
+activatable.
+
+sel_hub had 35 such elements, **12 of them styled `cursor: pointer`**, i.e.
+presented to the student as controls. All 12 read and confirmed interactive:
+
+- **`safety.js` ×4** — topic cards in Safety & Boundaries. Clicking expands the
+  topic *and* records that it was viewed, so keyboard users could neither read a
+  safety topic nor register progress on one.
+- **`emotions.js` ×4** — cards whose own visible text reads "Tap to reveal".
+- **`mindfulness.js` ×3** — guided-step cards.
+- **`orientations.js` ×1** — the eight plotted tradition nodes, the only route
+  into their detail view, with no accessible name either.
+
+Fixed with `role=button` + `tabIndex 0` + a key handler that **delegates to the
+existing onClick**, so pointer and keyboard cannot drift into two
+implementations of one action. The SVG `<g>` calls its handler directly instead,
+because `SVGElement.click()` is not dependable.
+
+### 8c. The inverse problem, which no scanner looks for
+
+Rendering all 71 tools then surfaced it: **`teamwork.js` role cards were a
+`role="button"` wrapping the real "That's Me" button.** Nested interactive
+elements are invalid and assistive tech may never expose the inner control.
+Rebuilt as a proper disclosure (plain container, two sibling controls,
+`aria-expanded`/`aria-controls`). That inner button was also labelled **"Your
+Team Role Profile"** — the heading of a different section further down the same
+panel — which overrode its visible text for screen readers.
+
+### 8d. A ReferenceError of my own
+
+`check_free_vars`, also never aimed at sel_hub, flagged `setActiveStation` as
+undeclared: mine, from §7d's "Show all N tools" button. The setter is
+`setActiveStationId`. Clicking it while a Station was active would have thrown
+and left the student stuck on the very empty grid the button exists to escape.
+
+Worth recording *why the test did not catch it*: my guard asserted the
+misspelled name, so it passed against the broken call. A source-text assertion
+is only as good as the name it is given.
+
+### 8e. AARON — a dead feature to decide on
+
+`sel_tool_mindfulness.js` ~25512-25610 contains a **Mantras browser that no user
+can reach**. Its content variable `mantrasContent` is assigned twice and never
+read — it is absent from the 30-entry render list at ~26037 — and no tab id
+`mantras` exists. Even if it were wired up, it reads `MANTRAS_PHRASES`, which is
+**never declared anywhere in the repo**, so it would show "Mantras library
+loading..." forever behind a `typeof` guard.
+
+Its own copy advertises "200+ mantras/phrases … Thich Nhat Hanh, Om Mani Padme
+Hum, Shema, Jesus Prayer", so somebody intended to ship a real multi-tradition
+library. **Finish it or delete it — that is a content call, so I left it
+untouched.** It is invisible to students either way.
+
+### 8f. Clean on the rest
+
+`check_keyless_map` 74 files / 1377 list sites / no keyless children;
+`scan_fn_in_tool_state` 74 files / 0 sites; `scan_silent_announcer` 0 silent
+tools; `scan_emoji_mojibake` clean over 667 files; `scan_window_key_listeners`
+216 files / 0 unguarded. File counts quoted deliberately — they are the evidence
+the scan actually looked.
+
+Guard: `tests/sel_keyboard_reachability.test.js` renders all 71 tools and asserts
+nothing styled clickable lacks a keyboard path, no interactive element nests
+inside another, and every non-native `role=button` carries a tab stop. It also
+guards itself against sweeping an empty set. Verified failing 2 tests against
+the pre-fix files.
+
+**Unrelated finding, outside SEL:** `scan_write_only_state` reports
+`AlloFlowANTI.txt:18469 generationBatchType` as write-only with the setter called
+5×. That is the canonical monolith, not mine to edit, and the scanner's own note
+cites `mathFluencyActive` — a write-only hook whose caller was recording
+fabricated CBM probe results. Worth a look.
