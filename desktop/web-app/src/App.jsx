@@ -11336,7 +11336,8 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   // per learner in probe history now. Kept because report_writer_module.js
   // and FluencyModePanel still read it. Both should move to the student-
   // scoped RTI export instead.
-  const [mathFluencyHistory, setMathFluencyHistory] = useState([]);
+  // (mathFluencyHistory removed 2026-08-23 — see the note near
+  // handleLaunchMathProbe. Its readers take mathProbesFor() now.)
   const [cubeDims, setCubeDims] = useState({ l: 3, w: 2, h: 2 });
   // L-block toggle for the Volume Builder. When 'lblock', a configurable
   // notch is carved from the (0,0,0) corner so the prism reads as an
@@ -13437,8 +13438,11 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   // "Start Math Probe" button set state and a 120s timer while nothing appeared.
   // Administration now lives entirely in math_fluency_module.js, reached via
   // handleLaunchMathProbe; results land in probe history through saveProbeResult.
-  // mathFluencyHistory survives below because report_writer_module.js and
-  // FluencyModePanel still read it.
+  // mathFluencyHistory itself was retired 2026-08-23 (Aaron's call): both of
+  // its readers now take per-student math probes from probe history via
+  // mathProbesFor(), so the device-global array — which nothing wrote, and
+  // which would have leaked one student's probes into another's report if
+  // repopulated — is gone.
   const [timelineRevisionInput, setTimelineRevisionInput] = useState('');
   const [timelineImageSize, setTimelineImageSize] = useState(() => {
     try { const v = localStorage.getItem('alloflow_timeline_image_size'); const n = v ? parseInt(v, 10) : 128; return Number.isFinite(n) && n >= 64 && n <= 300 ? n : 128; } catch (e) { return 128; }
@@ -15302,6 +15306,12 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     setInterventionLogs(() => { try { localStorage.setItem('alloflow_intervention_logs', '{}'); } catch {} return {}; });
     setRtiGoals(() => { try { localStorage.setItem('alloflow_rti_goals', '{}'); } catch {} return {}; });
   };
+  // ONE derivation of "this student's math probes" — the Report Writer payload
+  // and the fluency panel's AlloSheet envelope both call this. Replaces the
+  // retired device-global mathFluencyHistory.
+  const mathProbesFor = (name) => (name && probeHistory && probeHistory[name])
+    ? probeHistory[name].filter(r => r && (r.activity === 'math_dcpm' || r.activity === 'math'))
+    : [];
   const [surveyResponses, setSurveyResponses] = useState(() => {
     try { return JSON.parse(localStorage.getItem('alloflow_survey_responses') || '[]'); } catch { return []; }
   });
@@ -25048,6 +25058,32 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   // ref (set at the single increment site) purely so epoch changes become render-visible; every
   // guard keeps reading the ref.
   const [pdfDocumentEpochLive, setPdfDocumentEpochLive] = useState(0);
+  // ── Epoch-mirror self-heal (2026-08-23, field log) ──────────────────────────────────────
+  // Third recurrence of the epoch-desync class (2026-08-16 "no modal until re-upload",
+  // 2026-08-18 "modal vanishes mid-audit", and today's field run: modal owned epoch 0 while the
+  // run reported 1, so every event was epoch-dropped and the modal sat on "audit running" after
+  // the audit had completed). The named causes are fixed, but the class keeps finding new
+  // entrances, so heal it structurally: when a live pipeline event carries the AUTHORITATIVE
+  // epoch (it equals the ref) while the render mirror disagrees, the mirror is stale — resync it
+  // from the event. Guarded to exactly that desync: an event whose epoch does NOT match the ref
+  // is a genuinely stale run and stays dropped, same as always. The resync changes the modal key
+  // (one remount, progress re-hydrates from window.__alloRemediationProgress) — strictly better
+  // than a modal that is deaf for the rest of the run.
+  useEffect(() => {
+    const _onEpochHeal = (ev) => {
+      try {
+        const _e = ev && ev.detail && ev.detail.documentEpoch;
+        if (Number.isInteger(_e)
+            && _e === pdfDocumentSelectionEpochRef.current
+            && _e !== pdfDocumentEpochLive) {
+          warnLog('[EpochGate] self-heal: render mirror ' + pdfDocumentEpochLive + ' lagged the authoritative document epoch ' + _e + ' — resynced from a live pipeline event (the modal was dropping events for the active run).');
+          setPdfDocumentEpochLive(_e);
+        }
+      } catch (_) {}
+    };
+    window.addEventListener('alloflow:remediation-progress', _onEpochHeal);
+    return () => window.removeEventListener('alloflow:remediation-progress', _onEpochHeal);
+  }, [pdfDocumentEpochLive]);
   const pdfReattachPendingRef = useRef(null);
   const pdfProjectLoadEpochRef = useRef(0);
   const isPdfDocumentIntakeCurrent = React.useCallback(
@@ -51877,7 +51913,7 @@ ${_alloActivityContext(activity)}
           setFluencyBenchmarkSeason, setFluencyCustomNorms, setFluencyFeedback, setFluencyResult, setFluencyStatus,
           setFluencyTimeLimit, setFluencyTimeRemaining, setFluencyTimerVisibility, setFluencyTranscript, setIsFluencyMode,
           applyFluencyReview: window.applyFluencyReview, fluencyAssessments, isTeacherMode, saveFluencyReview,
-          buildFluencyAlloSheetEnvelope: window.buildFluencyAlloSheetEnvelope, mathFluencyHistory,
+          buildFluencyAlloSheetEnvelope: window.buildFluencyAlloSheetEnvelope, mathFluencyHistory: mathProbesFor(studentNickname),
           onOpenAlloSheet: (artifact) => {
             const bridge = window.AlloSheetHostBridge;
             if (!bridge || typeof bridge.open !== 'function') {
@@ -54537,7 +54573,7 @@ ${_alloActivityContext(activity)}
                 dashboardData: dashboardData || [],
                 longitudinalData: {
                     history: history || [],
-                    mathFluencyHistory: mathFluencyHistory || [],
+                    mathProbeHistory: mathProbesFor(studentNickname),
                     dashboardData: dashboardData || [],
                     exploreScore: exploreScore || 0
                 }

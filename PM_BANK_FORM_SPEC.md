@@ -107,7 +107,7 @@ Open questions for reviewers:
 1. Confirm/adjust the readability bands in §2.
 2. Supply or approve the grade 1–2 taught-pattern inventory for the
    decodability constraint.
-3. Is 20 forms per grade the right target, or is 15 acceptable for the first
-   school year with a mid-year top-up?
-4. Should grade 6 ship in wave 1, or after 1–5 (norms exist for 6; passages do
-   not)?
+3. ~~Is 20 forms per grade the right target?~~ **DECIDED (Aaron, 2026-08-23):
+   20 forms per grade, one wave.**
+4. ~~Should grade 6 ship in wave 1?~~ **DECIDED (Aaron, 2026-08-23): grade 6
+   ships in wave 1 — all six grades together.**

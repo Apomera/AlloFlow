@@ -944,6 +944,7 @@ try {
     try { localStorage.setItem(key, val); } catch(e) {}
   };
   var AC_ROSTER_STORE_KEY = 'alloflow_ac_imported_students';
+  var AC_LINK_UNDO_KEY = 'alloflow_ac_last_link_undo';
   // What survives a reload (finding 4, 2026-08-23): everything the table, the
   // research views and the detail drill-down read, minus the fat fields
   // (word-level fluency data, audio) and minus live-session rows, capped so a
@@ -1739,10 +1740,8 @@ try {
       }));
       setLatestProbeResult(null);
     }, [latestProbeResult]);
-    const [liveProgressData, setLiveProgressData] = React.useState({});
-    const [isLiveListening, setIsLiveListening] = React.useState(false);
-    const [liveSyncCode, setLiveSyncCode] = React.useState('');
-    const [showLiveSyncInput, setShowLiveSyncInput] = React.useState(false);
+    // (Live Sync state removed 2026-08-23 — see the note at its old toolbar
+    // slot in the Research view.)
     const [rtiThresholds, setRtiThresholds] = React.useState(() => {
       try {
         const saved = safeGetItem('alloflow_rti_thresholds');
@@ -3080,6 +3079,13 @@ try {
     // name, so no read path changes), keeps the file-derived original as
     // importedName, records the alias so re-imports auto-resolve, and merges
     // any records already split across the two identities.
+    // One-step link undo (Aaron's decision 2026-08-23): a merge cannot be
+    // mechanically unpicked, so every link snapshots the exact pre-link slices
+    // of every store it touches. One deep — each link overwrites the last
+    // snapshot — and meant for immediate mistake recovery, not general unlink.
+    const [lastLinkUndo, setLastLinkUndo] = React.useState(() => {
+      try { return JSON.parse(safeGetItem(AC_LINK_UNDO_KEY) || 'null'); } catch (e) { return null; }
+    });
     const handleLinkImportedStudent = async (student, codename) => {
       if (!student || !codename) return;
       const fromName = student.nickname || student.name;
@@ -3089,6 +3095,22 @@ try {
         { title: 'Link to roster student', confirmText: 'Link records' }
       );
       if (!confirmed) return;
+      const undoSnapshot = {
+        at: Date.now(), fromName: fromName, toName: codename,
+        rowId: student.id || null,
+        row: _acPersistableStudent(student),
+        priorAlias: (rosterKey && rosterKey.importAliases && rosterKey.importAliases[fromName] !== undefined) ? rosterKey.importAliases[fromName] : null,
+        stores: {
+          alloflow_probe_history: { from: (probeHistory || {})[fromName], to: (probeHistory || {})[codename] },
+          alloflow_intervention_logs: { from: (interventionLogs || {})[fromName], to: (interventionLogs || {})[codename] },
+          alloflow_rti_goals: { from: (rtiGoals || {})[fromName], to: (rtiGoals || {})[codename] },
+          alloflow_external_cbm: { from: (externalCBMScores || {})[fromName], to: (externalCBMScores || {})[codename] }
+        },
+        progressHistory: {
+          from: ((rosterKey && rosterKey.progressHistory) || {})[fromName],
+          to: ((rosterKey && rosterKey.progressHistory) || {})[codename]
+        }
+      };
       if (typeof mergeStudentRecords === 'function') mergeStudentRecords(fromName, codename);
       setExternalCBMScores(prev => {
         if (!(fromName in prev)) return prev;
@@ -3119,7 +3141,44 @@ try {
       }
       if (researchStudent === fromName) setResearchStudent(codename);
       if (activeStudent === fromName) { setActiveStudent(codename); setProbeTargetStudent(codename); }
+      try { safeSetItem(AC_LINK_UNDO_KEY, JSON.stringify(undoSnapshot)); } catch (e) {}
+      setLastLinkUndo(undoSnapshot);
       addToast((t('toasts.student_records_linked') || 'Records linked: ') + fromName + ' \u2192 ' + codename, 'success');
+    };
+    const handleUndoLastLink = async () => {
+      const snap = lastLinkUndo;
+      if (!snap || !snap.stores) return;
+      const confirmed = await askStudentAnalyticsConfirmation(
+        'Undo the link ' + snap.fromName + ' \u2192 ' + snap.toName + '?\n\nEvery store returns EXACTLY to how it was before the link. Anything recorded under either name SINCE the link is removed with it, so use this immediately after a mistaken link, not as a general unlink.',
+        { title: 'Undo last link', confirmText: 'Undo link' }
+      );
+      if (!confirmed) return;
+      Object.keys(snap.stores).forEach(function (storageKey) {
+        try {
+          const slice = snap.stores[storageKey] || {};
+          const store = JSON.parse(localStorage.getItem(storageKey) || '{}');
+          if (slice.from === undefined) delete store[snap.fromName]; else store[snap.fromName] = slice.from;
+          if (slice.to === undefined) delete store[snap.toName]; else store[snap.toName] = slice.to;
+          localStorage.setItem(storageKey, JSON.stringify(store));
+        } catch (e) {}
+      });
+      // Host and module state both re-read from what was just written.
+      try { window.dispatchEvent(new CustomEvent('alloflow:study-bundle-imported', { detail: { source: 'link-undo' } })); } catch (e) {}
+      try { window.dispatchEvent(new CustomEvent('alloflow:external-cbm-updated')); } catch (e) {}
+      if (typeof setRosterKey === 'function') setRosterKey(prev => {
+        if (!prev) return prev;
+        const aliases = { ...(prev.importAliases || {}) };
+        if (snap.priorAlias === null || snap.priorAlias === undefined) delete aliases[snap.fromName]; else aliases[snap.fromName] = snap.priorAlias;
+        const history = { ...(prev.progressHistory || {}) };
+        const ph = snap.progressHistory || {};
+        if (ph.from === undefined) delete history[snap.fromName]; else history[snap.fromName] = ph.from;
+        if (ph.to === undefined) delete history[snap.toName]; else history[snap.toName] = ph.to;
+        return { ...prev, importAliases: aliases, progressHistory: history };
+      });
+      if (snap.row && snap.rowId) setImportedStudents(prev => prev.map(s => s.id === snap.rowId ? snap.row : s));
+      try { localStorage.removeItem(AC_LINK_UNDO_KEY); } catch (e) {}
+      setLastLinkUndo(null);
+      addToast((t('toasts.link_undone') || 'Link undone: ') + snap.fromName + ' and ' + snap.toName + ' are separate again.', 'success');
     };
     // ── Year-boundary archive: one JSON with every record store, then an
     // explicit, separate clear. The download is gated by the same FERPA
@@ -6372,104 +6431,15 @@ try {
       className: "bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors"
     }, /*#__PURE__*/React.createElement(Download, {
       size: 16
-    }), t('class_analytics.export_csv')), showLiveSyncInput && !isLiveListening ? /*#__PURE__*/React.createElement("div", {
-      className: "flex items-center gap-1 bg-blue-50 border border-blue-200 rounded-lg px-2 py-1 animate-in fade-in"
-    }, /*#__PURE__*/React.createElement(Cloud, {
-      size: 14,
-      className: "text-blue-500 shrink-0"
-    }), /*#__PURE__*/React.createElement("input", {
-      type: "text",
-      placeholder: t('common.placeholder_session_code'),
-      value: liveSyncCode,
-      onChange: e => setLiveSyncCode(e.target.value),
-      onKeyDown: e => {
-        if (e.key === 'Enter' && liveSyncCode.trim()) {
-          // 2026-08-17: this handler used bare `collection`, `appId` and
-          // `onSnapshot`, none of which exist in this module's scope (only
-          // `db` resolved, via window.db). Pressing Enter threw ReferenceError
-          // before anything happened, so Live Sync had never worked.
-          //
-          // Read Firestore through window.__alloFirebase, the accessor every
-          // other live feature uses (live_polling_module.js getFb). It matters
-          // beyond tidiness: AlloFlowANTI.txt re-assigns those bindings on that
-          // object when the Canvas mailbox transport is active, so going
-          // through window.db directly would bypass the reroute.
-          //
-          // NOTE FOR REVIEW: nothing in this codebase writes to the
-          // .../sessions/{code}/studentProgress subcollection this subscribes
-          // to. Live sessions write fields on the session DOC instead. So this
-          // connects and stays empty. Kept (rather than removed) pending a
-          // decision on whether to build the producer or drop the feature.
-          const fb = (typeof window !== 'undefined') && window.__alloFirebase;
-          if (!fb || !fb.db || !fb.collection || !fb.onSnapshot) {
-            addToast(t('class_analytics.live_sync_unavailable')
-              || 'Live sync is unavailable in this session.', 'error');
-            return;
-          }
-          const liveAppId = (typeof window !== 'undefined'
-            && (window.appId || window.__app_id)) || 'default-app-id';
-          setIsLiveListening(true);
-          setShowLiveSyncInput(false);
-          const progressCollRef = fb.collection(fb.db, 'artifacts', liveAppId, 'public', 'data', 'sessions', liveSyncCode.trim(), 'studentProgress');
-          const unsubscribe = fb.onSnapshot(progressCollRef, snapshot => {
-            const data = {};
-            snapshot.forEach(docSnap => {
-              data[docSnap.id] = docSnap.data();
-            });
-            setLiveProgressData(data);
-            const liveStudents = Object.entries(data).map(([id, d]) => ({
-              id: `live-${id}`,
-              name: d.studentNickname || id,
-              filename: `live:${id}`,
-              data: d,
-              stats: d.stats || {},
-              safetyFlags: [],
-              lastSession: d.lastSynced || new Date().toISOString(),
-              isLive: true
-            }));
-            setImportedStudents(prev => [...prev.filter(s => !s.isLive), ...liveStudents]);
-          }, err => {
-            warnLog('[LiveSync] Error:', err);
-            setIsLiveListening(false);
-          });
-          window._progressUnsub = unsubscribe;
-        }
-        if (e.key === 'Escape') {
-          setShowLiveSyncInput(false);
-          setLiveSyncCode('');
-        }
-      },
-      className: "w-28 px-2 py-1 text-xs border-none bg-transparent focus:outline-none focus:ring-2 focus:ring-blue-300 rounded placeholder-blue-300",
-      autoFocus: true,
-      "aria-label": t('common.session_code_for_live_sync')
-    }), /*#__PURE__*/React.createElement("button", {
-      onClick: () => {
-        setShowLiveSyncInput(false);
-        setLiveSyncCode('');
-      },
-      className: "text-blue-700 hover:text-blue-600 p-0.5",
-      "aria-label": t('common.cancel')
-    }, /*#__PURE__*/React.createElement(X, {
-      size: 12
-    }))) : /*#__PURE__*/React.createElement("button", {
-      "aria-label": t('common.live_sync'),
-      "data-help-key": "dashboard_live_sync",
-      onClick: () => {
-        if (isLiveListening) {
-          if (window._progressUnsub) window._progressUnsub();
-          setIsLiveListening(false);
-          setLiveProgressData({});
-          return;
-        }
-        setShowLiveSyncInput(true);
-      },
-      className: `${isLiveListening ? 'bg-green-600 hover:bg-green-700 ring-2 ring-green-300' : 'bg-blue-600 hover:bg-blue-700'} text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors`
-    }, isLiveListening ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(Wifi, {
-      size: 16,
-      className: "animate-pulse"
-    }), " Live (", Object.keys(liveProgressData).length, ")") : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(Cloud, {
-      size: 16
-    }), " ", t('class_analytics.live_sync'))), /*#__PURE__*/React.createElement("button", {
+    }), t('class_analytics.export_csv'))
+    // ── Live Sync removed 2026-08-23 (Aaron's call: drop, not build). It
+    // subscribed to a .../sessions/{code}/studentProgress subcollection that
+    // nothing in the codebase has ever written, so it connected and stayed
+    // empty forever. The durable path already exists without it: the host
+    // banks arriving probe results from the live-session roster straight into
+    // probe history. The isLive row guards elsewhere stay — cheap, and
+    // defensive if a live row shape ever returns. ──
+    , /*#__PURE__*/React.createElement("button", {
       "aria-label": t('common.toggle_safety_flags'),
       "data-help-key": "dashboard_safety_toggle",
       onClick: () => setSafetyFlaggingVisible(prev => !prev),
@@ -6482,10 +6452,6 @@ try {
       "data-help-key": "dashboard_clear_btn",
       onClick: () => {
         setImportedStudents([]);
-        if (window._progressUnsub) {
-          window._progressUnsub();
-          setIsLiveListening(false);
-        }
       },
       className: "bg-slate-200 hover:bg-slate-300 text-slate-700 px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors"
     }, /*#__PURE__*/React.createElement(Trash2, {
@@ -10043,6 +10009,14 @@ try {
             onClick: handleClearAllStudentRecords,
             className: "px-3 py-2 text-xs font-bold bg-rose-50 text-rose-700 border border-rose-600 rounded-lg hover:bg-rose-100 transition-colors"
           }, '\u26A0 Clear ALL student records\u2026')
+        ),
+        lastLinkUndo && React.createElement("div", { className: "flex items-center gap-2 mt-3 pt-3 border-t border-slate-200 flex-wrap" },
+          React.createElement("p", { className: "text-xs text-slate-600 flex-1 min-w-[200px]" }, (t('class_analytics.undo_link_hint') || 'Last roster link: ') + lastLinkUndo.fromName + ' \u2192 ' + lastLinkUndo.toName),
+          React.createElement("button", {
+            type: "button",
+            onClick: handleUndoLastLink,
+            className: "px-3 py-2 text-xs font-bold bg-amber-50 text-amber-800 border border-amber-600 rounded-lg hover:bg-amber-100 transition-colors"
+          }, '\u21A9 Undo last link')
         )
       )
     ),

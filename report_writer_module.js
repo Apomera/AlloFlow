@@ -2377,14 +2377,20 @@ Return ONLY the adapted text, no commentary.`;
                 educational += `Recent activities: ${recent.map(h => h.type + (h.topic ? ' (' + h.topic.substring(0, 40) + ')' : '')).join('; ')}`;
             }
             // Math fluency history
-            const mathHist = longitudinalData.mathFluencyHistory || [];
+            // 2026-08-23: reads the student-scoped math probes from probe
+            // history ({activity:'math_dcpm', dcpm, itemsPerMin, ...}). The
+            // old device-global mathFluencyHistory was never written after the
+            // probe rework, so this section always rendered empty.
+            const mathHist = longitudinalData.mathProbeHistory || [];
             if (mathHist.length > 0) {
-                educational += '\n\n--- Math Fluency Probe Results ---\n';
-                mathHist.slice(-5).forEach((r, i) => {
-                    educational += `Session ${i + 1}: ${r.operation || 'mixed'} | Correct: ${r.correct || 0}/${r.total || 0} | Time: ${r.timeUsed || 'N/A'}s\n`;
+                const dcpmOf = (r) => (typeof r.dcpm === 'number' ? r.dcpm : (typeof r.itemsPerMin === 'number' ? r.itemsPerMin : 0));
+                educational += '\n\n--- Math Fluency Probe Results (DCPM) ---\n';
+                const recent = mathHist.slice(-5);
+                recent.forEach((r, i) => {
+                    educational += `Probe ${i + 1}: ${r.grade ? 'Grade ' + r.grade + ', ' : ''}Form ${r.form || '?'} | ${dcpmOf(r)} digits correct per minute${r.timestamp ? ' | ' + new Date(r.timestamp).toLocaleDateString() : ''}\n`;
                 });
-                const avgCorrect = mathHist.length > 0 ? Math.round(mathHist.reduce((s, r) => s + (r.correct || 0), 0) / mathHist.length) : 0;
-                educational += `Average correct per session: ${avgCorrect}`;
+                const avgDcpm = Math.round(recent.reduce((s, r) => s + dcpmOf(r), 0) / recent.length);
+                educational += `Average DCPM (last ${recent.length}): ${avgDcpm}`;
             }
             // Explore score (STEAM Lab XP)
             if (longitudinalData.exploreScore) {
@@ -3905,7 +3911,7 @@ Return ONLY valid JSON:
                     }, `📥 Import from BehaviorLens (${(abcEntries?.length || 0)} ABC + ${(observationSessions?.length || 0)} observations)`),
                     longitudinalData && h('button', { 'aria-label': 'Import student progress', className: 'px-3 py-1.5 bg-teal-50 text-teal-700 text-[11px] font-medium rounded-lg border border-teal-600 hover:bg-teal-100 transition-colors',
                         onClick: importStudentProgress
-                    }, `📈 Import Student Progress (${(longitudinalData.history?.length || 0)} activities${longitudinalData.mathFluencyHistory?.length ? ' + ' + longitudinalData.mathFluencyHistory.length + ' probes' : ''})`)
+                    }, `📈 Import Student Progress (${(longitudinalData.history?.length || 0)} activities${longitudinalData.mathProbeHistory?.length ? ' + ' + longitudinalData.mathProbeHistory.length + ' probes' : ''})`)
                 ),
                 [
                     { key: 'referralReason', label: 'Reason for Referral', placeholder: 'Why was this student referred for evaluation?', rows: 2 },

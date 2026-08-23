@@ -71,10 +71,16 @@ describe('the state of play, pinned so it is not re-argued from memory', () => {
       'mathFluencyInputRef', 'mathFluencyTimerRef']) {
       expect(antiCode.match(new RegExp(dead, 'g')), dead + ' should be gone').toBeNull();
     }
-    // mathFluencyHistory survives: report_writer_module.js and FluencyModePanel
-    // still read it. It is no longer written by anything.
-    expect(anti).toContain('const [mathFluencyHistory, setMathFluencyHistory] = useState([]);');
+    // 2026-08-23 (Aaron's call): mathFluencyHistory itself is retired. Its two
+    // readers — Report Writer's math section and the fluency panel's AlloSheet
+    // envelope — take per-student math probes from probe history via ONE host
+    // derivation, mathProbesFor(). The device-global array, which nothing
+    // wrote and which would have leaked one student's probes into another's
+    // report if repopulated, is gone. Pinned in
+    // tests/assessment_center_decisions_2026-08-23.test.js as well.
+    expect(anti).not.toContain('const [mathFluencyHistory, setMathFluencyHistory]');
     expect(anti).not.toContain('setMathFluencyHistory(');
+    expect(anti).toContain('const mathProbesFor = (name) =>');
     // And no view source reads the host's probe state at all.
     ['view_sidebar_panels_source.jsx', 'view_math_source.jsx'].forEach((file) => {
       const src = readFileSync(file, 'utf8');
