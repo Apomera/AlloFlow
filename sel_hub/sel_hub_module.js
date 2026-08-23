@@ -258,6 +258,10 @@
           return this._order.map(function(id) { return self._registry[id]; }).filter(Boolean);
         },
         isRegistered: function(id) { return !!this._registry[id]; },
+        // Exposed so the crisis-routing behaviour can be tested directly, and so
+        // any future surface that takes free-text search can reuse the same list.
+        matchesCrisisVocabulary: function(query) { return _selQueryIsCrisis(query); },
+        crisisVocabulary: function() { return _selCrisisTerms.slice(); },
         _wrapStandardToolShell: function(id, tool, content, ctx) {
           if (!ctx || !ctx.React) return content;
           var h = ctx.React.createElement;
@@ -608,6 +612,27 @@
     // categories have been added (Inner Work, Care of Self, Stewardship)
     // to make room for contemplative, relational, and community-oriented
     // tools without forcing them into the individualist-managerial frame.
+    // ── Crisis vocabulary ──
+    // Module scope, not render scope: this is a fixed list, and keeping it out
+    // here is what lets it be exercised directly rather than only through a
+    // rendered catalog. These words do not merely rank a card higher, they
+    // surface the support panel above the results, so a student typing them is
+    // never left reading a grid. Kept deliberately short and unambiguous: a
+    // false positive costs one extra line of text, not a false alarm.
+    var _selCrisisTerms = [
+      'suicide', 'suicidal', 'kill myself', 'want to die', 'wanna die', 'end it',
+      'end my life', 'self harm', 'selfharm', 'hurt myself', 'cut myself',
+      'cutting', 'overdose', 'no reason to live', 'better off dead', 'hopeless'
+    ];
+    function _selQueryIsCrisis(query) {
+      var q = String(query || '').toLowerCase().trim();
+      if (q.length < 3) return false;
+      for (var i = 0; i < _selCrisisTerms.length; i++) {
+        if (q.indexOf(_selCrisisTerms[i]) !== -1) return true;
+      }
+      return false;
+    }
+
     var SEL_CATEGORIES = [
       { id: 'self-awareness',             label: 'Self-Awareness',             icon: '\uD83E\uDDE0', desc: 'Recognizing emotions, strengths, and areas for growth' },
       { id: 'self-regulation',            label: 'Self-Regulation',            icon: '\uD83C\uDFAF', desc: 'Regulating emotions, arousal, attention; coping practice' },
@@ -2037,28 +2062,78 @@
         mindfulness: 'calm breathe breathing body scan mindful still focus quiet attention',
         somaticReset: 'body breath breathing tension restlessness shoulders jaw back hips legs hands feet chair movement still reset calm',
         journal: 'write writing private reflect reflection feelings diary think process',
-        thoughtRecord: 'thought thoughts thinking worry anxious anxiety stuck evidence balanced reframe',
+        thoughtRecord: 'thought thoughts thinking worry anxious anxiety stuck evidence balanced reframe depressed depression negative thoughts',
         anxietyToolkit: 'anxiety anxious worry worried panic nervous fear calm',
-        sleep: 'sleep tired rest exhausted bedtime phone night stress',
+        sleep: 'sleep tired rest exhausted bedtime phone night stress nightmares nightmare insomnia awake',
         stressBucket: 'stress stressed pressure overwhelmed busy load capacity',
         tipp: 'panic crisis intense emotion emergency calm body temperature breathing',
         bigFeelings: 'anger angry mad rage upset conflict cool down',
         sensoryRegulation: 'sensory noise light texture overload neurodivergent regulation',
-        friendship: 'friend friends lonely friendship peer belong',
+        friendship: 'friend friends lonely friendship peer belong left out excluded alone',
         conflict: 'conflict fight argument repair friend apologize',
         conflicttheater: 'conflict fight argument repair friend mediation',
         restorativeCircle: 'repair conflict harm apology restore relationship',
         peersupport: 'listen listening friend help support peer adult',
         sociallab: 'social roleplay conversation practice friend peer',
-        goals: 'goal goals plan motivation future',
-        decisions: 'decision decide choice choices problem solve',
+        goals: 'goal goals plan motivation future procrastination habit',
+        decisions: 'decision decide choice choices problem solve peer pressure pressure',
         ethicalReasoning: 'decision ethics right wrong dilemma values',
         valuesCommittedAction: 'values purpose decision action committed',
         advocacy: 'ask help need accommodation self advocate',
-        safety: 'safe safety plan help trusted adult',
-        crisiscompanion: 'crisis urgent unsafe self harm suicide help',
-        griefLoss: 'grief loss death missing sad',
-        digitalWellbeing: 'phone social media cyberbullying screen online chatbot'
+        safety: 'safe safety plan help trusted adult unsafe bullied bullying peer pressure',
+        crisiscompanion: 'crisis urgent unsafe self harm suicide help die dying kill myself hurt myself hopeless end it worthless',
+        griefLoss: 'grief loss death died dying funeral memorial bereavement grieving missing miss someone sad',
+        digitalWellbeing: 'phone social media cyberbullying screen time online chatbot',
+
+        // ── Second wave ──
+        // 43 tools shipped with no synonyms at all, so the catalog only matched
+        // its own marketing copy. A student types what they FEEL ("vaping",
+        // "adhd", "lgbtq", "nightmares", "bullied"), not the tool's name, and
+        // those queries returned zero results even though the tool existed.
+        // Keep this in student vocabulary, not clinical vocabulary.
+        strengths: 'strength strengths talent talents good at proud confidence confident',
+        viaStrengths: 'strengths character virtues survey quiz who i am',
+        wheelOfLife: 'balance life areas domains rating chart check in overview',
+        perma: 'wellbeing wellness happiness gratitude grateful flourishing positive meaning purpose',
+        windowOfTolerance: 'overwhelmed shutdown numb frozen triggered activated arousal regulation trauma',
+        substancePsychoed: 'substance substances drugs alcohol drinking weed cannabis marijuana vape vaping nicotine smoking pills opioids harm reduction',
+        behavioralActivation: 'depressed depression low mood sad unmotivated stuck do something activity schedule',
+        quietQuestions: 'reflection contemplation question week journal inner quiet slow',
+        orientations: 'philosophy meaning stoicism zen daoism existential ubuntu beliefs ways of living',
+        costBenefit: 'decision decide pros cons choice weigh compare grid',
+        sfbt: 'solution miracle question scaling forward change brief therapy',
+        careConstellations: 'care caring relationships map who cares support network',
+        ecomap: 'map systems relationships environment support network family school',
+        circlesOfSupport: 'support circles close relationships network belonging who is close',
+        genogram: 'family family tree generations relatives map',
+        traumaPsychoed: 'trauma ptsd triggered flashback understanding what happened',
+        bodyStory: 'body image appearance acceptance embodiment looks mirror',
+        sourcesOfStrength: 'protective factors strengths support prevention hope resilience',
+        identitySupport: 'lgbtq lgbt lgbtqia gay lesbian bisexual trans transgender queer nonbinary pronouns gender sexuality identity coming out',
+        disabilityVoices: 'disability disabled autistic autism neurodiversity advocates ableism',
+        howlTracker: 'habits work learning crew advisory weekly check in goals',
+        onePageProfile: 'profile about me one page introduce strengths support',
+        maps: 'planning action plan dream gifts future goals',
+        path: 'planning future hope north star goals plan',
+        careerCompass: 'career careers job jobs work future college interests',
+        selfAdvocacy: 'iep 504 accommodation accommodations advocate ask for help support plan disclose disability meeting',
+        perspective: 'perspective empathy point of view other side understand',
+        community: 'community culture belonging diversity identity inclusion',
+        social: 'social skills conversation listening body language cooperation talking',
+        teamwork: 'teamwork team group cooperation collaborate roles',
+        dearMan: 'ask assertive script boundary say no request hard conversation',
+        motivationalInterviewing: 'motivation motivated change stuck ambivalent ready',
+        crewProtocols: 'crew advisory homeroom circle group activity morning meeting protocol',
+        healthyRelationships: 'relationship relationships dating consent abuse unhealthy boundaries partner love',
+        landPlace: 'land place environment stewardship nature ecology indigenous',
+        compassion: 'self compassion kind to myself inner critic self talk harsh mean to myself',
+        transitions: 'change moving new school transition graduation growing up',
+        upstander: 'bully bullying bullied bystander upstander stand up mean teasing exclusion harassment',
+        growthmindset: 'confidence mistakes effort practice yet improve resilience brain',
+        execfunction: 'adhd focus procrastination procrastinate organize planning distracted homework start time management',
+        civicAction: 'injustice unfair activism change hope civic protest',
+        cultureExplorer: 'culture cultures world countries traditions explore',
+        voicedetective: 'voice tone listening emotion audio'
       };
 
       function _selToolSearchText(tool) {
@@ -3260,11 +3335,7 @@
 
         // Apply category filter on top of search
         if (selCategoryFilter) {
-          var catHeaderId = '_cat_' + selCategoryFilter.replace(/[-\s]/g, '');
-          // Find the matching category header
-          var matchHeader = _allSelTools.find(function(t2) {
-            return t2.category && t2.id.toLowerCase().indexOf(selCategoryFilter.replace(/[-\s]/g, '').toLowerCase()) >= 0;
-          });
+          var matchHeader = _selCategoryHeaderFor(selCategoryFilter);
           if (matchHeader) {
             _filteredTools = _filteredTools.filter(function(t2) {
               if (t2.category) return t2.id === matchHeader.id;
@@ -3306,6 +3377,69 @@
             }
             return false;
           });
+        }
+
+        // ── "Where am I, and how much am I looking at?" ──
+        // The catalog filters on search, category, pathway and station at once,
+        // and until now said nothing about the result of all that. This is the
+        // one sentence that tells you what you are currently looking at, and it
+        // is the aria-describedby target for the search box so a screen-reader
+        // user hears it change.
+        var _selVisibleCount = _filteredTools.filter(function (t2) { return !t2.category; }).length;
+        var _selTotalCount = _allSelTools.filter(function (t2) { return !t2.category; }).length;
+        var _selActiveFilters = [];
+        if (_searchLower) _selActiveFilters.push('"' + selToolSearch.trim() + '"');
+        if (selCategoryFilter) {
+          var _catMeta = SEL_CATEGORIES.find(function (c) { return c.id === selCategoryFilter; });
+          _selActiveFilters.push((_catMeta && _catMeta.label) || selCategoryFilter);
+        }
+        if (activePathway && activePathway.name) _selActiveFilters.push('pathway: ' + activePathway.name);
+        if (activeStation && activeStation.name) _selActiveFilters.push('station: ' + activeStation.name);
+        var _selResultSummary = _selActiveFilters.length
+          ? (_selVisibleCount === 0
+              ? 'No tools match ' + _selActiveFilters.join(' + ')
+              : _selVisibleCount + (_selVisibleCount === 1 ? ' tool' : ' tools') + ' of ' + _selTotalCount
+                  + ' match ' + _selActiveFilters.join(' + '))
+          : 'Showing all ' + _selTotalCount + ' tools';
+
+        // Tool count per category, so the filter chips show the shape of the
+        // catalog rather than nine equal-looking words. Counts are of the whole
+        // category, not the current search, so the number stays a stable fact
+        // about the hub while you type.
+        // ── One derivation of "which section does this chip mean?" ──
+        // The chip id and the section id are spelled differently
+        // ('responsible-decision-making' vs '_cat_DecisionMaking'), and the old
+        // fuzzy id match silently returned nothing for that pair: clicking
+        // Responsible Decision-Making filtered the grid down to an empty page,
+        // and it is the one chip nobody would think to re-test. Match on the
+        // LABEL, which both sides already share verbatim, and let the filter and
+        // the counts read from the same helper so they cannot disagree again.
+        function _selCategoryHeaderFor(catId) {
+          var cat = SEL_CATEGORIES.find(function (c) { return c.id === catId; });
+          if (!cat) return null;
+          return _allSelTools.find(function (t2) {
+            return t2.category && String(t2.label).toLowerCase() === String(cat.label).toLowerCase();
+          }) || null;
+        }
+        var _selCategoryCounts = {};
+        SEL_CATEGORIES.forEach(function (cat) {
+          var header = _selCategoryHeaderFor(cat.id);
+          _selCategoryCounts[cat.id] = header ? _allSelTools.filter(function (t2) {
+            return !t2.category && _toolCategoryMap[t2.id] === header.id;
+          }).length : 0;
+        });
+
+        // Grade-band split follows the crisis tool's existing convention:
+        // elementary is pointed at a person, not at a phone number.
+        function _selCrisisBandLines() {
+          if (gradeBand(gradeLevel) === 'elementary') {
+            return h('p', { style: { margin: '0 0 10px', fontSize: 13, lineHeight: 1.6, fontWeight: 700, color: _t.text } },
+              'If you cannot find an adult right away, keep asking until someone listens. You deserve help.');
+          }
+          return h('div', { style: { margin: '0 0 10px', fontSize: 13, lineHeight: 1.7, color: _t.text } },
+            h('div', null, 'Call or text ', h('strong', { style: { fontFamily: 'monospace' } }, '988'), ' — the 988 Suicide & Crisis Lifeline (free, confidential, 24/7).'),
+            h('div', null, 'Text ', h('strong', { style: { fontFamily: 'monospace' } }, 'HOME to 741741'), ' — Crisis Text Line (free, confidential, 24/7).')
+          );
         }
 
         toolGrid = h('div', { role: 'main', 'aria-label': 'SEL Hub tool selection', style: { padding: isCompact ? 12 : 20 } },
@@ -3652,9 +3786,55 @@
               value: selToolSearch,
               onChange: function(e) { setSelToolSearch(e.target.value); },
               'aria-label': 'Search SEL tools',
+              'aria-describedby': 'sel-tool-search-count',
               style: { width: '100%', padding: '10px 14px', borderRadius: 8, border: '1px solid ' + _t.border, background: _t.bgInput, color: _t.text, fontSize: 14, outline: 'none', boxSizing: 'border-box' },
               onFocus: function(e) { e.target.style.boxShadow = '0 0 0 2px #8b5cf6'; }, onBlur: function(e) { e.target.style.boxShadow = 'none'; }
-            })
+            }),
+            // Result count, tied to the input by aria-describedby above.
+            // Without this, typing gave a screen-reader user no feedback at all
+            // about whether anything matched.
+            h('div', {
+              id: 'sel-tool-search-count',
+              role: 'status',
+              'aria-live': 'polite',
+              style: { fontSize: 11, color: _t.textMuted, marginTop: 6, minHeight: 14 }
+            }, _selResultSummary)
+          ),
+          // ── Crisis vocabulary lands on help, not on a grid ──
+          // Typing "want to die" used to return two unrelated regulation tools
+          // and no route to support. This panel appears above the results for
+          // that vocabulary. It states plainly what it does and does not do:
+          // per the honest-copy rule, it must NOT imply an adult is
+          // automatically told. Hotline numbers follow the same grade-band
+          // convention the crisis tool uses (elementary gets a person, not a
+          // phone number). FLAGGED FOR AARON: wording + band split.
+          _selQueryIsCrisis(selToolSearch) && h('div', {
+            role: 'region',
+            'aria-label': 'Support options',
+            style: {
+              marginBottom: 12, padding: 14, borderRadius: 10,
+              background: isContrast ? '#000000' : (isDark ? '#2e1414' : '#fef2f2'),
+              border: '2px solid ' + (isContrast ? '#ffff00' : '#dc2626')
+            }
+          },
+            h('p', { style: { margin: '0 0 8px', fontSize: 14, fontWeight: 800, color: isContrast ? '#ffff00' : (isDark ? '#fca5a5' : '#991b1b'), lineHeight: 1.5 } },
+              'It sounds like this might be a hard moment.'),
+            h('p', { style: { margin: '0 0 10px', fontSize: 13, lineHeight: 1.6, color: _t.text } },
+              'You do not have to sort this out by yourself, and you do not have to find the right tool first. '
+                + 'Please tell a trusted adult now — a school counselor, a teacher, a parent, or another adult you trust. '
+                + 'Searching here does not tell anyone; a person only knows if you tell them.'),
+            _selCrisisBandLines(),
+            window.SelHub && window.SelHub.isRegistered('crisiscompanion') && h('button', {
+              type: 'button',
+              onClick: function() { openSelToolById('crisiscompanion', 'Crisis Companion'); },
+              style: {
+                marginTop: 4, padding: '9px 14px', borderRadius: 8, cursor: 'pointer',
+                border: '1px solid ' + (isContrast ? '#ffff00' : '#dc2626'),
+                background: isContrast ? '#000000' : '#dc2626',
+                color: isContrast ? '#ffff00' : '#ffffff',
+                fontSize: 13, fontWeight: 800
+              }
+            }, 'Open Crisis Companion')
           ),
           !activePathway && !activeStation && h('div', {
             role: 'group',
@@ -3710,19 +3890,25 @@
           h('div', { role: 'group', 'aria-label': 'Filter SEL tools by category', style: { display: 'flex', flexWrap: isCompact ? 'nowrap' : 'wrap', gap: 6, marginBottom: 16, overflowX: isCompact ? 'auto' : 'visible', paddingBottom: isCompact ? 4 : 0, WebkitOverflowScrolling: 'touch' } },
             h('button', {
               onClick: function() { setSelCategoryFilter(null); announceToSR('Showing all categories'); },
-              'aria-label': 'Show all categories',
+              'aria-label': 'Show all categories (' + _selTotalCount + ' tools)',
               'aria-pressed': selCategoryFilter === null ? 'true' : 'false',
               style: { padding: '5px 12px', borderRadius: 20, border: '1px solid ' + (selCategoryFilter === null ? _t.accent : _t.border), background: selCategoryFilter === null ? _t.accent : _t.bgCard, color: selCategoryFilter === null ? _t.accentText : _t.textMuted, fontSize: 11, fontWeight: 700, cursor: 'pointer', transition: 'all 0.15s', whiteSpace: 'nowrap', flexShrink: 0 }
-            }, 'All'),
+            }, 'All ', h('span', { 'aria-hidden': 'true', style: { opacity: 0.75, fontWeight: 600 } }, ' · ' + String(_selTotalCount))),
             SEL_CATEGORIES.map(function(cat) {
               var isActive = selCategoryFilter === cat.id;
               return h('button', {
                 key: cat.id,
                 onClick: function() { setSelCategoryFilter(isActive ? null : cat.id); announceToSR(isActive ? 'Showing all categories' : 'Filtered to ' + cat.label); },
-                'aria-label': 'Filter: ' + cat.label,
+                'aria-label': 'Filter: ' + cat.label + ' (' + (_selCategoryCounts[cat.id] || 0) + ' tools)',
                 'aria-pressed': isActive ? 'true' : 'false',
                 style: { padding: '5px 12px', borderRadius: 20, border: '1px solid ' + (isActive ? _t.accent : _t.border), background: isActive ? _t.accent : _t.bgCard, color: isActive ? _t.accentText : _t.textMuted, fontSize: 11, fontWeight: 700, cursor: 'pointer', transition: 'all 0.15s', display: 'flex', alignItems: 'center', gap: 4, whiteSpace: 'nowrap', flexShrink: 0 }
-              }, cat.icon + ' ' + cat.label);
+              },
+                cat.icon + ' ' + cat.label,
+                h('span', {
+                  'aria-hidden': 'true',
+                  style: { opacity: 0.75, fontWeight: 600, fontVariantNumeric: 'tabular-nums' }
+                }, ' · ' + String(_selCategoryCounts[cat.id] || 0))
+              );
             })
           ),
           // SEL Pathways — curated learning sequences (collapsed by default)
