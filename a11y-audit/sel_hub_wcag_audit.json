@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-23T17:13:40.719Z",
+  "generatedAt": "2026-08-23T17:49:01.738Z",
   "scope": [
     "SEL Hub shell/catalog",
     "Recent SEL work entry point",
@@ -25,9 +25,9 @@
       "dark",
       "high-contrast"
     ],
-    "toolIssueCount": 182,
+    "toolIssueCount": 98,
     "toolErrorCount": 0,
-    "toolWarningCount": 182,
+    "toolWarningCount": 98,
     "toolsWithoutStandardShell": []
   },
   "manualAuditNotes": [

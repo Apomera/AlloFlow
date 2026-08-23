@@ -1,12 +1,12 @@
 # SEL Hub WCAG AA and Theme Audit
 
-Generated: 2026-08-23T17:13:40.719Z
+Generated: 2026-08-23T17:49:01.738Z
 
 ## Summary
 
 - Hub shell views audited: 4 across light, dark, high-contrast, mobile-high-contrast
 - Hub shell issues: 0 error(s), 0 warning(s)
-- Tool audit: 71 tools, 0 error(s), 182 warning(s)
+- Tool audit: 71 tools, 0 error(s), 98 warning(s)
 - Standard tool shell gaps: 0
 
 ## Coverage (read this before the counts)
