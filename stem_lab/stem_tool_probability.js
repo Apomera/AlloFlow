@@ -1435,7 +1435,11 @@ var d = (labToolData.probability) || {};
             monty: 'rgba(99,102,241,0.10)', galton: 'rgba(15,118,110,0.10)'
           };
           var modeAccent = MODE_ACCENT[d.mode] || MODE_ACCENT.coin;
-          var outerBg = (isDark || isContrast) ? undefined :
+          // Own the ground in dark/contrast (2026-08-23): undefined meant
+          // 'trust the host', and the host renders tools on a white card even in
+          // dark theme - 61 dark-ink-on-light-mud violations. Same class as
+          // nuclearlab/renewables/dna.
+          var outerBg = isContrast ? '#000000' : isDark ? '#0f172a' :
             'radial-gradient(ellipse 80% 45% at 50% -10%, ' + modeAccent + ' 0%, ' + modeAccent.replace('0.10', '0.04') + ' 35%, rgba(255,255,255,0) 70%), linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)';
 
           var resetTrials = function() {
@@ -3100,7 +3104,7 @@ var d = (labToolData.probability) || {};
 
                 React.createElement("p", { className: "text-3xl font-black text-violet-700 mb-1" }, d.lastResult != null ? String(d.lastResult) : '?'),
 
-                React.createElement("p", { className: "text-xs text-slate-600" }, d.lastResult != null ? 'Last result' : 'Click to start!')
+                React.createElement("p", { className: (isDark || isContrast) ? "text-xs text-slate-300" : "text-xs text-slate-600" }, d.lastResult != null ? 'Last result' : 'Click to start!')
 
               )
 
@@ -3997,7 +4001,7 @@ var d = (labToolData.probability) || {};
                 else if (normLow > normHigh + 0.10 || normHigh > normLow + 0.10) shape = 'skewed';
                 else shape = 'mixed';
                 var shapeMeta = {
-                  uniform: { label: t('stem.probability.uniform_flat', '\u2B1B Uniform (flat)'),  color: '#0e7490', bg: 'rgba(8,145,178,0.08)', border: '#67e8f9', desc: t('stem.probability.all_outcomes_nearly_equal_in_probabili', 'All outcomes nearly equal in probability.') },
+                  uniform: { label: t('stem.probability.uniform_flat', '\u2B1B Uniform (flat)'),  color: (isDark || isContrast) ? '#67e8f9' : '#0e7490', bg: 'rgba(8,145,178,0.08)', border: '#67e8f9', desc: t('stem.probability.all_outcomes_nearly_equal_in_probabili', 'All outcomes nearly equal in probability.') },
                   peaked:  { label: t('stem.probability.peaked_center', '\uD83D\uDD3A Peaked (center)'), color: '#7c3aed', bg: 'rgba(124,58,237,0.08)', border: '#c4b5fd', desc: t('stem.probability.middle_outcome_dominates_approaches_no', 'Middle outcome dominates. Approaches normal-like shape with more buckets.') },
                   skewed:  { label: t('stem.probability.skewed', '\u2197\uFE0F Skewed'),          color: '#f59e0b', bg: 'rgba(245,158,11,0.08)', border: '#fcd34d', desc: t('stem.probability.one_tail_much_heavier_than_the_other_a', 'One tail much heavier than the other. Asymmetric distribution.') },
                   mixed:   { label: t('stem.probability.mixed', '\uD83D\uDD00 Mixed'),           color: '#475569', bg: 'rgba(100,116,139,0.08)', border: '#cbd5e1', desc: t('stem.probability.two_outcomes_share_roughly_equal_proba', 'Two outcomes share roughly equal probability with the third much lower or higher.') }

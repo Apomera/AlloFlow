@@ -3928,7 +3928,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
         return h('div', {
           className: 'space-y-4 max-w-4xl mx-auto pb-8',
           role: 'main',
-          'aria-label': t('stem.oratory.oratory_and_prosody_communication_lab', 'Oratory and Prosody Communication Lab')
+          'aria-label': t('stem.oratory.oratory_and_prosody_communication_lab', 'Oratory and Prosody Communication Lab'),
+          // Own the ground in dark (2026-08-23): the card system and header
+          // inks are designed for a dark page, but the host renders tools on a
+          // white card even under the dark theme - the subtitle measured
+          // 1.23:1 there. Light mode is untouched.
+          style: isDark ? { background: '#0f172a', borderRadius: 12, padding: 12 } : undefined
         },
           // Header
           h('div', { className: 'flex items-center justify-between' },

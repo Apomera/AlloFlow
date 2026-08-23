@@ -6860,7 +6860,12 @@
         : d.tab === 'earth' ? earthTab()
         : quizTab();
 
-      return h('div', { className: 'mag-root', style: { maxWidth: 780, margin: '0 auto', color: TEXT } },
+      return h('div', { className: 'mag-root', style: { maxWidth: 780, margin: '0 auto', color: TEXT,
+        // Own the ground (2026-08-23): every ink here is themed through the
+        // --allo-stem tokens, but the root painted nothing, so dark-resolved
+        // inks floated on the host's white content card. The same token that
+        // themes the panels themes the ground, in every theme.
+        background: 'var(--allo-stem-deeper, var(--allo-stem-panel, transparent))', borderRadius: 12, padding: 12 } },
         wcagStyles(),
         h('div', { className: 'mag-sronly', role: 'status', 'aria-live': 'polite' }, ''),
         h('header', { className: 'mag-hero' },
