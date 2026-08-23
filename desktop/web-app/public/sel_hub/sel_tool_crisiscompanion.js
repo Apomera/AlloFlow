@@ -513,7 +513,7 @@ window.SelHub = window.SelHub || {
       return window.SelHub.renderCrisisResources(h, band || 'middle');
     }
     // Fallback if safety layer didn't load
-    return h('div', { role: 'alert', 'aria-live': 'assertive', style: { background: '#fef2f2', border: '2px solid #fca5a5', borderRadius: '12px', padding: '12px', marginBottom: '12px' } },
+    return h('div', { role: 'alert', 'aria-live': 'assertive', style: { background: _ccC('#fef2f2'), border: '2px solid #fca5a5', borderRadius: '12px', padding: '12px', marginBottom: '12px' } },
       h('div', { style: { fontSize: '12px', fontWeight: 700, color: '#991b1b', marginBottom: '6px' } }, 'Help is available right now'),
       h('div', { style: { fontSize: '12px', color: '#7f1d1d', lineHeight: 1.6 } },
         h('div', null, '☎ 988 Suicide & Crisis Lifeline · call or text 988'),
@@ -598,7 +598,7 @@ window.SelHub = window.SelHub || {
       window._ccBreathTimer = null;
     }
     var cyclesDone = running && totalCycle ? Math.floor(elapsed / totalCycle) : 0;
-    return h('div', { style: { background: '#fff', border: '2px solid ' + TEAL_BORDER, borderRadius: '14px', padding: '20px', marginBottom: '14px', textAlign: 'center' } },
+    return h('div', { style: { background: _ccC('#fff'), border: '2px solid ' + TEAL_BORDER, borderRadius: '14px', padding: '20px', marginBottom: '14px', textAlign: 'center' } },
       h('h2', { style: { fontSize: '16px', fontWeight: 800, color: TEAL_DARK, margin: '0 0 6px' } }, '🌬️ Box-breathing pacer'),
       h('p', { style: { fontSize: '13px', color: SLATE_MID, lineHeight: 1.6, margin: '0 0 16px' } },
         'A 4-4-4-4 rhythm: breathe in for 4, hold for 4, breathe out for 4, hold for 4. Used by clinicians and first responders to calm the nervous system. The circle expands when you breathe in, contracts when you breathe out.'
@@ -627,7 +627,7 @@ window.SelHub = window.SelHub || {
         running && h('button', {
           onClick: stop,
           'aria-label': 'Pause box-breathing pacer',
-          style: { padding: '10px 22px', background: '#fff', color: TEAL_DARK, border: '2px solid ' + TEAL, borderRadius: '10px', fontWeight: 800, fontSize: '14px', cursor: 'pointer' }
+          style: { padding: '10px 22px', background: _ccC('#fff'), color: _ccC(TEAL_DARK), border: '2px solid ' + TEAL, borderRadius: '10px', fontWeight: 800, fontSize: '14px', cursor: 'pointer' }
         }, '⏸ Pause')
       ),
       h('p', { style: { fontSize: '11px', color: SLATE_MID, fontStyle: 'italic', margin: '14px 0 0', lineHeight: 1.55 } },
@@ -666,7 +666,7 @@ window.SelHub = window.SelHub || {
     }
     var atEnd = stepIdx >= GROUND_STEPS.length;
     var current = atEnd ? null : GROUND_STEPS[stepIdx];
-    return h('div', { style: { background: '#fff', border: '2px solid ' + TEAL_BORDER, borderRadius: '14px', padding: '20px', marginBottom: '14px' } },
+    return h('div', { style: { background: _ccC('#fff'), border: '2px solid ' + TEAL_BORDER, borderRadius: '14px', padding: '20px', marginBottom: '14px' } },
       h('h2', { style: { fontSize: '16px', fontWeight: 800, color: TEAL_DARK, margin: '0 0 6px' } }, '👁️ 5-4-3-2-1 Grounding'),
       h('p', { style: { fontSize: '13px', color: SLATE_MID, lineHeight: 1.6, margin: '0 0 14px' } },
         'A sensory anchor when your thoughts are racing or you feel disconnected. Move through the senses one at a time. You don\'t have to write anything — just notice.'
@@ -713,7 +713,7 @@ window.SelHub = window.SelHub || {
           h('button', {
             onClick: reset,
             'aria-label': 'Reset grounding to first step',
-            style: { padding: '8px 16px', background: '#fff', color: SLATE_TEXT, border: '2px solid #cbd5e1', borderRadius: '8px', fontWeight: 600, fontSize: '12px', cursor: 'pointer' }
+            style: { padding: '8px 16px', background: _ccC('#fff'), color: SLATE_TEXT, border: '2px solid #cbd5e1', borderRadius: '8px', fontWeight: 600, fontSize: '12px', cursor: 'pointer' }
           }, '↻ Reset'),
           h('button', {
             onClick: next,
@@ -743,7 +743,7 @@ window.SelHub = window.SelHub || {
     });
     var savedSet = {};
     saved.forEach(function(id) { savedSet[id] = true; });
-    return h('div', { style: { background: '#fff', border: '2px solid ' + TEAL_BORDER, borderRadius: '14px', padding: '20px', marginBottom: '14px' } },
+    return h('div', { style: { background: _ccC('#fff'), border: '2px solid ' + TEAL_BORDER, borderRadius: '14px', padding: '20px', marginBottom: '14px' } },
       h('h2', { style: { fontSize: '16px', fontWeight: 800, color: TEAL_DARK, margin: '0 0 6px' } }, '🧰 My coping toolkit'),
       h('p', { style: { fontSize: '13px', color: SLATE_MID, lineHeight: 1.6, margin: '0 0 14px' } },
         'Tap any strategy to add it to your personal toolkit. Saved on your device only — nothing is uploaded. Build a list of 5-7 things that have actually worked for you in the past, so when a hard moment comes you don\'t have to think from scratch.'
@@ -855,7 +855,7 @@ window.SelHub = window.SelHub || {
       }
     }
     var filledCount = STEPS.filter(function(s) { return (entries[s.id] || '').trim().length > 0; }).length;
-    return h('div', { style: { background: '#fff', border: '2px solid ' + TEAL_BORDER, borderRadius: '14px', padding: '20px', marginBottom: '14px' } },
+    return h('div', { style: { background: _ccC('#fff'), border: '2px solid ' + TEAL_BORDER, borderRadius: '14px', padding: '20px', marginBottom: '14px' } },
       h('h2', { id: 'cc-safety-plan-heading', tabIndex: -1, style: { fontSize: '16px', fontWeight: 800, color: TEAL_DARK, margin: '0 0 6px' } }, '📋 My safety plan (Stanley-Brown)'),
       h('div', { style: { background: _ccC(AMBER_LIGHT), border: '1px solid #fcd34d', borderRadius: '8px', padding: '10px 12px', marginBottom: '14px' } },
         h('p', { style: { fontSize: '12px', color: '#78350f', lineHeight: 1.6, margin: 0 } },
@@ -899,7 +899,7 @@ window.SelHub = window.SelHub || {
           id: 'cc-clear-safety-plan',
           onClick: clearAll,
           'aria-label': 'Clear my saved safety plan',
-          style: { padding: '10px 16px', background: '#fff', color: '#9f1239', border: '2px solid ' + ROSE, borderRadius: '8px', fontWeight: 700, fontSize: '12px', cursor: 'pointer' }
+          style: { padding: '10px 16px', background: _ccC('#fff'), color: _ccC('#9f1239'), border: '2px solid ' + ROSE, borderRadius: '8px', fontWeight: 700, fontSize: '12px', cursor: 'pointer' }
         }, '✕ Clear plan')
       ),
       h('p', { style: { fontSize: '11px', color: SLATE_MID, fontStyle: 'italic', margin: '14px 0 0', lineHeight: 1.55 } },
@@ -912,7 +912,7 @@ window.SelHub = window.SelHub || {
   function _renderSelfCareReadingExtras(h) {
     function _card(title, body, accentColor) {
       var c = accentColor || TEAL;
-      return h('div', { style: { background: '#fff', border: '2px solid ' + (c === TEAL ? TEAL_BORDER : '#e5e7eb'), borderLeft: '6px solid ' + c, borderRadius: '12px', padding: '14px 16px', marginBottom: '12px' } },
+      return h('div', { style: { background: _ccC('#fff'), border: '2px solid ' + (c === TEAL ? TEAL_BORDER : '#e5e7eb'), borderLeft: '6px solid ' + c, borderRadius: '12px', padding: '14px 16px', marginBottom: '12px' } },
         h('h3', { style: { fontSize: '14px', fontWeight: 800, color: TEAL_DARK, margin: '0 0 8px', textTransform: 'uppercase', letterSpacing: '0.04em' } }, title),
         body
       );
@@ -938,7 +938,7 @@ window.SelHub = window.SelHub || {
           h('li', null, h('strong', null, 'Keep your other friendships. '), 'Don\'t let supporting one friend isolate you from everyone else. Your full social fabric is what holds you up.')
         )
       ),
-      h('div', { style: { background: '#fef2f2', border: '1px solid #fca5a5', borderRadius: '10px', padding: '14px', marginBottom: '12px' } },
+      h('div', { style: { background: _ccC('#fef2f2'), border: '1px solid #fca5a5', borderRadius: '10px', padding: '14px', marginBottom: '12px' } },
         h('div', { style: { fontSize: '13px', fontWeight: 700, color: '#991b1b', marginBottom: '6px' } }, 'When supporting a friend has hit YOU hard'),
         h('p', { style: { fontSize: '13px', color: '#7f1d1d', lineHeight: 1.7, margin: 0 } },
           'If you\'re losing sleep, having intrusive thoughts, feeling numb, or starting to have your own thoughts of self-harm — those are signs that you need support too. Call 988, text HOME to 741741, or talk to a school counselor. Helpers need help too. There is no shame in needing it.')
@@ -1404,11 +1404,23 @@ window.SelHub = window.SelHub || {
       // ── Host theme remap (consumes ctx.theme) — canonical SEL light-base pattern ──
       var _ccCTheme = (ctx && ctx.theme) || {};
       var _ccCHC = !!_ccCTheme.isContrast, _ccCDark = !_ccCHC && !!_ccCTheme.isDark;
-      var _CCC_DARK = {'#fff':'#1e293b','#f8fafc':'#0f172a','#f1f5f9':'#1e293b','#fffbeb':'#2e2410','#fff7ed':'#2e2410','#fef2f2':'#2e1414','#f0fdf4':'#0b2e22','#f0fdfa':'#0c2e2a','#ccfbf1':'#0c3e38','#eff6ff':'#0e1f3a','#64748b':'#94a3b8','#94a3b8':'#94a3b8','#e5e7eb':'#334155','#e2e8f0':'#334155','#d1d5db':'#475569','#cbd5e1':'#475569','#92400e':'#fde68a','#78350f':'#fcd34d','#991b1b':'#fca5a5','#7f1d1d':'#fca5a5','#dc2626':'#f87171','#b91c1c':'#f87171','#9f1239':'#fda4af','#1e40af':'#93c5fd','#0369a1':'#7dd3fc','#9a3412':'#fdba74','#fff1f2':'#2e1418','#065f46':'#6ee7b7'};
-      var _CCC_HC = {'#fff':'#000000','#f8fafc':'#000000','#f1f5f9':'#000000','#fffbeb':'#000000','#fff7ed':'#000000','#fef2f2':'#000000','#f0fdf4':'#000000','#f0fdfa':'#000000','#ccfbf1':'#000000','#eff6ff':'#000000','#64748b':'#ffff00','#94a3b8':'#ffff00','#e5e7eb':'#ffff00','#e2e8f0':'#ffff00','#d1d5db':'#ffff00','#cbd5e1':'#ffff00','#92400e':'#ffff00','#78350f':'#ffff00','#991b1b':'#ffff00','#7f1d1d':'#ffff00','#dc2626':'#ffff00','#b91c1c':'#ffff00','#9f1239':'#ffff00','#1e40af':'#ffff00','#0369a1':'#ffff00','#9a3412':'#ffff00','#fff1f2':'#000000','#065f46':'#ffff00'};
+      var _CCC_DARK = {'#fff':'#1e293b','#f8fafc':'#0f172a','#f1f5f9':'#1e293b','#fffbeb':'#2e2410','#fff7ed':'#2e2410','#fef2f2':'#2e1414','#f0fdf4':'#0b2e22','#f0fdfa':'#0c2e2a','#ccfbf1':'#0c3e38','#eff6ff':'#0e1f3a','#64748b':'#94a3b8','#94a3b8':'#94a3b8','#e5e7eb':'#334155','#e2e8f0':'#334155','#d1d5db':'#475569','#cbd5e1':'#475569','#92400e':'#fde68a','#78350f':'#fcd34d','#991b1b':'#fca5a5','#7f1d1d':'#fca5a5','#dc2626':'#f87171','#b91c1c':'#f87171','#9f1239':'#fda4af','#1e40af':'#93c5fd','#0369a1':'#7dd3fc','#9a3412':'#fdba74','#fff1f2':'#2e1418','#065f46':'#6ee7b7','#115e59':'#5eead4'};
+      var _CCC_HC = {'#fff':'#000000','#f8fafc':'#000000','#f1f5f9':'#000000','#fffbeb':'#000000','#fff7ed':'#000000','#fef2f2':'#000000','#f0fdf4':'#000000','#f0fdfa':'#000000','#ccfbf1':'#000000','#eff6ff':'#000000','#64748b':'#ffff00','#94a3b8':'#ffff00','#e5e7eb':'#ffff00','#e2e8f0':'#ffff00','#d1d5db':'#ffff00','#cbd5e1':'#ffff00','#92400e':'#ffff00','#78350f':'#ffff00','#991b1b':'#ffff00','#7f1d1d':'#ffff00','#dc2626':'#ffff00','#b91c1c':'#ffff00','#9f1239':'#ffff00','#1e40af':'#ffff00','#0369a1':'#ffff00','#9a3412':'#ffff00','#fff1f2':'#000000','#065f46':'#ffff00','#115e59':'#ffff00'};
       // Assignment, not `var`: this refreshes the MODULE-scope binding declared
       // near the palette, which the out-of-render helpers below depend on.
       _ccC = function(hex){ return _ccCHC ? (_CCC_HC[hex]||hex) : (_ccCDark ? (_CCC_DARK[hex]||hex) : hex); };
+      // Same refresh for the slate text/surface constants. These are read RAW at
+      // ~69 call sites (never through _ccC), so before this they stayed slate-800
+      // while every card background around them was swapped to slate-800 by
+      // _ccC('#fff') — 1.00:1, literally invisible, including the content-warning
+      // gate. Assigned directly rather than via _ccC so that existing
+      // _ccC(CONST) call sites cannot double-map.
+      // SLATE_TEXT/MID are foregrounds and have no entry in the maps (adding one
+      // would double-map the existing _ccC(CONST) call sites), so they flip here.
+      SLATE_TEXT = _ccCHC ? '#ffff00' : (_ccCDark ? '#e2e8f0' : '#1e293b');
+      SLATE_MID  = _ccCHC ? '#ffff00' : (_ccCDark ? '#cbd5e1' : '#334155');
+      // SLATE_BG is a surface and the maps already carry exactly this mapping.
+      SLATE_BG   = _ccC('#f8fafc');
       var React = ctx.React;
       var h = React.createElement;
       var addToast = ctx.addToast || function(){};

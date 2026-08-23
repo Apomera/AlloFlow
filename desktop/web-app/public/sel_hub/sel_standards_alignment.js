@@ -1374,8 +1374,20 @@
   function rowStyle(color) {
     return { display: 'flex', alignItems: 'baseline', gap: 4, fontSize: 11.5, color: '#cbd5e1', lineHeight: 1.55, flexWrap: 'wrap' };
   }
+  // Tag text sits on a `color + '22'` tint composited over the #1e293b panel,
+  // so the full-strength hue is same-hue-on-same-hue: #6366f1 measured 2.84:1
+  // (in 32 tools) and #a78bfa 4.32:1 (in 18) at 9px, both below AA. This panel
+  // is always dark (the panel background is hardcoded, and SEL tool interiors
+  // render on the host dark shell), so each hue maps to a lighter ink of the
+  // SAME hue that clears 4.5:1 on that composited surface. The tint background
+  // is deliberately unchanged, so the colour coding still reads.
+  var TAG_INK = {
+    '#6366f1': '#a5b4fc',  // CASEL       indigo-500  -> indigo-300
+    '#10b981': '#6ee7b7',  // EL HOWL     emerald-500 -> emerald-300
+    '#a78bfa': '#c4b5fd'   // frameworks  violet-400  -> violet-300
+  };
   function tagStyle(color) {
-    return { display: 'inline-block', fontSize: 9, fontWeight: 800, padding: '2px 6px', borderRadius: 4, background: color + '22', color: color, letterSpacing: 0.5, textTransform: 'uppercase', minWidth: 50, textAlign: 'center' };
+    return { display: 'inline-block', fontSize: 9, fontWeight: 800, padding: '2px 6px', borderRadius: 4, background: color + '22', color: TAG_INK[color] || color, letterSpacing: 0.5, textTransform: 'uppercase', minWidth: 50, textAlign: 'center' };
   }
   function areaStyle() {
     return { fontWeight: 700, color: '#e2e8f0' };

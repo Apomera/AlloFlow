@@ -1,6 +1,8 @@
 # SEL Hub — Review & Deploy Queue
 
 > **Historical review/deploy queue snapshot, not current SEL status (2026-07-09):** This June 20 queue captured local/unpushed SEL work at that moment. Later SEL changes, QA passes, and documentation sweeps may have superseded individual items. Verify against current source, mirrors, `a11y-audit/`, tests, and `AGENT_HANDOFF.md` before using it as an active deploy checklist.
+>
+> **Start at [§5](#5-2026-08-23-pass--themecontrast-fidelity--local-unpushed) (2026-08-23).** It re-verified §1-§4 against current source: **§3a is closed** (the `selfAdvocacy` duplicate was resolved by role-split, not deletion), §2b's denominator has grown from 18 to 30 tools, and §2e is now 10 tools rather than 14. §5 also records two contrast defects fixed on that date, including invisible text in the Crisis Companion.
 
 **For:** Aaron · **Prepared:** 2026-06-20 · **Status:** everything below is **LOCAL / UNPUSHED / UNDEPLOYED** on `main`.
 
@@ -113,3 +115,112 @@ Everything in this queue is committed locally on `main`, unpushed, undeployed. T
 
 ### Not pursued (documented, low value)
 - A11Y‑5 mass-deletion of the 69 dead per-tool `allo-live-*` regions: they're **redundant** (the host already provides a shared `#sel-sr-announce` + `ctx.announceToSR`) and inert — deleting all 69 is high-collision churn with no user benefit. Left as-is.
+
+---
+
+## 5. 2026-08-23 PASS — theme/contrast fidelity  (local, unpushed)
+
+A fresh look, prompted by the fact that `a11y-audit/sel_hub_wcag_audit.md` reports
+**"71 tools, 0 error(s), 0 warning(s)"**. That report is not wrong so much as
+near-sighted, and two real defects were hiding behind it.
+
+### 5a. Why the reports read clean
+
+Three independent blind spots, all measured rather than assumed:
+
+1. **The contrast rule only grades 30% of the text.** `dev-tools/check_sel_a11y.cjs`
+   evaluates an element only when `color` **and** `background` are inline on the
+   *same* node. Real markup puts text on a child and the surface on the card.
+   It grades **3,188 of 10,700** rendered text nodes. An inheritance-aware walk
+   (nearest ancestor surface, alpha composited) grades 9,464 and found **287
+   AA failures across 44 of 71 tools**.
+2. **All three "themes" are the same render.** `sel_hub_module.js` `renderTool()`
+   pins every tool to the dark shell (`needsDarkShell`, a deliberate and well
+   documented trade-off). The side effect is that light and dark renders are
+   **byte-identical for 70 of 71 tools** (only `somaticReset`, the sole
+   `lightBackground: true` opt-out, differs). So "audited across light, dark and
+   high-contrast" is one theme audited three times, and every light-path branch
+   in the `_xxC` migrations is unreachable in production.
+3. **The audit's "What Looks Strong" bullets are hardcoded strings**, printed
+   unconditionally. They would read identically with 500 errors.
+
+Nothing here needs a decision from you; items 1 and 3 are straightforward gate
+fixes. Item 2 is worth a conversation, because it means the light-mode half of
+the theme migration is currently dead code.
+
+### 5b. FIXED — Crisis Companion was rendering invisible text (1.00:1)
+
+`sel_tool_crisiscompanion.js` read `SLATE_TEXT` (`#1e293b`) raw at ~69 call sites
+while the card backgrounds around it went through `_ccC('#fff')`, which maps to
+`#1e293b`. Because the shell pins `isDark`, `_ccC` is *always* in its dark branch,
+so this was slate-800 text on a slate-800 card: **contrast exactly 1.00, i.e.
+invisible**, on the content-warning gate of the suicide-prevention module (the
+"This module is about what to do if a friend is depressed…" paragraph and its
+bullet list). Ten card backgrounds were also unwrapped.
+
+- `SLATE_TEXT` / `SLATE_MID` now flip on the theme flags at render time (they are
+  foregrounds with no map entry; adding one would double-map existing `_ccC(CONST)`
+  call sites). `SLATE_BG` uses `_ccC('#f8fafc')`, which the maps already covered.
+- The 10 raw backgrounds now route through `_ccC`, plus two foregrounds that sat
+  on them (`TEAL_DARK`, `#9f1239`). `#115e59` added to both swap maps.
+
+**Why the existing theme gate missed it.** `tests/sel_theme_reactivity.test.js`
+does `src.slice(src.indexOf(': hex); };'))` — it only scans *after* the `_xxC`
+helper definition. Crisis Companion draws its UI in module-scope helpers **above**
+that point (51% of the file), and **all ten leaks sat in that unscanned prefix**.
+Its `SURFACE_HEXES` list also omits plain `'#fff'`, which was eight of the ten.
+Checked the other ten remapped tools with a whole-file scan: they are clean, so
+Crisis Companion was the only tool actually leaking through this hole.
+
+### 5c. FIXED — one function caused 138 of the 287 failures
+
+`sel_standards_alignment.js` `tagStyle()` rendered tag text at full hue on a
+`hue + '22'` tint of the *same* hue. On the panel that works out to `#6366f1`
+("CASEL") at **2.84:1 in 32 tools** and `#a78bfa` at **4.32:1 in 18**. `render()`
+is called from 69 of 71 tool files, so this one function was the single largest
+contributor in the hub. Added a `TAG_INK` map (indigo-500→300, emerald-500→300,
+violet-400→300) that keeps the tint background, so the colour coding still reads.
+
+**Result: 287 → 133 failing nodes, 44 → 25 tools affected.**
+
+### 5d. Guard test
+
+`tests/sel_contrast_shell_regression.test.js` (20 tests). Deliberately not a
+source-text tautology: it scans the **whole** file (not a slice) including plain
+white, **computes** the AA ratio for each `TAG_INK` entry against its own
+composited tint rather than asserting a hex, and carries two **calibration** tests
+that fail if the scan itself ever goes blind. Verified it fails 5 tests against
+the pre-fix file before being made to pass.
+
+Full SEL suite green (67 files, 657 tests); `check_sel_render` 71/71;
+`check_sel_a11y` 0/0; mirrors byte-identical.
+
+### 5e. What is left, in priority order
+
+1. **The gate fixes above (5a.1 and 5a.3).** Until the probe can see inherited
+   backgrounds, none of this is protected outside the one new guard test.
+2. **The remaining 133 failures across 25 tools.** These are per-tool hardcoded
+   accents on the dark shell, not a shared helper, so there is no second
+   one-line win here. By foreground hue (nodes / distinct tools):
+   `#3b82f6` 22/6, `#ef4444` 22/6, `#6366f1` 20/6, `#a855f7` 18/8, `#dc2626` 10/3,
+   `#ec4899` 8/4, `#7c3aed` 8/3, `#64748b` 7/3, `#8b5cf6` 6/3, then a tail of six
+   hues at 2 nodes each. Worst single tool is `zones` (24 nodes). Most of these
+   are mid-tone accents that would pass on white and fail on slate-900, so the
+   fix is the same shape as `TAG_INK`: pick the lighter shade of the same hue.
+3. **The high-contrast surface.** The dark-shell wrapper paints `#0f172a`
+   unconditionally with no `isContrast` branch, so HC chrome wraps a non-HC
+   surface. One conditional, fixes all 71.
+4. **Consent coverage (§2b) has moved against us**: the shared mechanism is used
+   by 6 tools, but **30** now send student free text to the AI (the queue records
+   6 of 18). Still blocked on your global-vs-per-tool call.
+5. **i18n.** 5 of 71 SEL tools alias `var t = ctx.t` (13-18 call sites each);
+   STEM is 114 of 145. The lang pack holds 23,696 keys, of which `sel_hub` has 2.
+   Largest remaining body of work in the hub, and a real gap for a UDL product.
+
+Unchanged and still yours: §2a Brain Gym cluster, §2e badge auto-dismiss (now 10
+tools, was 14). **§3a is CLOSED** — the `selfAdvocacy` duplicate was resolved by
+role-split ("Self-Advocacy Studio" for IEP/504 planning vs "Advocacy Practice"
+for general scripts) rather than deletion, and the registry is now clean:
+71 registered = 71 carded, 0 unreachable. Two small gaps remain: `selfAdvocacy`
+has no `_evidenceBase` entry (badge fails open and hides) and `disabilityVoices`
+has no `sel_standards_alignment` entry.
