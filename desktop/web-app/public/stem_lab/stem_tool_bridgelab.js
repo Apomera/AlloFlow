@@ -1325,6 +1325,22 @@
         }
 
         return h('div', { style: { padding: 16 } },
+          // First-run orientation (2026-08-23): what am I looking at, what do I do
+          // first, and what counts as winning. Dismiss persists in tool data.
+          !d.introDismissed ? h('div', { role: 'note', style: { padding: 14, borderRadius: 12, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.45)', marginBottom: 12 } },
+            h('div', { style: { fontSize: 14, fontWeight: 800, color: '#fbbf24', marginBottom: 6 } }, '\uD83E\uDDED ' + __alloT('stem.bridgelab.intro_title', "Start here")),
+            h('ol', { style: { margin: '0 0 8px 18px', padding: 0, fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } },
+              h('li', null, __alloT('stem.bridgelab.intro_step1', "Read the verdict card below the picture: is this bridge SAFE, MARGINAL, or FAILED, and why?")),
+              h('li', null, __alloT('stem.bridgelab.intro_step2', "Drag any slider and watch the verdict, the colors, and the numbers respond instantly. Breaking it on purpose is a great way to learn.")),
+              h('li', null, __alloT('stem.bridgelab.intro_step3', "Your goal: a \\u2713 SAFE bridge for the LOWEST material cost. That trade-off is the whole job of a structural engineer."))
+            ),
+            h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', margin: '0 0 10px 0', lineHeight: 1.6 } },
+              __alloT('stem.bridgelab.intro_colors', "In every picture: red pieces are being STRETCHED (tension), blue pieces are being SQUEEZED (compression), and thicker means working harder.")),
+            h('button', { type: 'button',
+              onClick: function() { upd({ introDismissed: true }); },
+              style: { padding: '6px 12px', borderRadius: 8, border: '1px solid rgba(245,158,11,0.6)', background: 'transparent', color: '#fbbf24', fontSize: 12, fontWeight: 700, cursor: 'pointer' }
+            }, __alloT('stem.bridgelab.intro_dismiss', "Got it — hide this"))
+          ) : null,
           h('p', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 13, marginBottom: 12, lineHeight: 1.6 } },
             ({ warren: 'Warren', pratt: 'Pratt', howe: 'Howe', ktruss: 'K-truss' }[d.trussStyle] || 'Warren') + ' truss bridge stress test. Adjust the parameters below and see how force distribution changes. ',
             h('strong', { style: { color: '#f87171' } }, __alloT('stem.bridgelab.red_tension', 'Red = tension')), ', ',
@@ -1388,6 +1404,20 @@
                   'data-a11y-static': 'true',
                   'aria-describedby': 'bridge-gl-description',
                   'aria-label': bridgeGlAlt,
+                  // Keyboard parity with drag/scroll (2026-08-23): arrows orbit,
+                  // plus/minus zoom. Mouse-only 3D controls are a dead end for
+                  // keyboard and switch users.
+                  tabIndex: 0,
+                  onKeyDown: function (ev) {
+                    var rotY = d.rot3d ? d.rot3d.rotY : 26;
+                    var rotX = d.rot3d ? d.rot3d.rotX : 14;
+                    if (ev.key === 'ArrowLeft') { ev.preventDefault(); upd({ rot3d: { rotY: rotY - 8, rotX: rotX } }); }
+                    else if (ev.key === 'ArrowRight') { ev.preventDefault(); upd({ rot3d: { rotY: rotY + 8, rotX: rotX } }); }
+                    else if (ev.key === 'ArrowUp') { ev.preventDefault(); upd({ rot3d: { rotY: rotY, rotX: Math.min(78, rotX + 6) } }); }
+                    else if (ev.key === 'ArrowDown') { ev.preventDefault(); upd({ rot3d: { rotY: rotY, rotX: Math.max(-72, rotX - 6) } }); }
+                    else if (ev.key === '+' || ev.key === '=') { ev.preventDefault(); upd({ zoom3d: Math.min(3.2, (d.zoom3d || 1) * 1.12) }); }
+                    else if (ev.key === '-' || ev.key === '_') { ev.preventDefault(); upd({ zoom3d: Math.max(0.45, (d.zoom3d || 1) * 0.89) }); }
+                  },
                   style: { position: 'absolute', inset: 0 },
                   onPointerDown: function (ev) {
                     bridgeDrag.current = { x: ev.clientX, y: ev.clientY,
@@ -1424,7 +1454,7 @@
                     color: 'var(--allo-stem-text-soft, #94a3b8)', pointerEvents: 'none',
                     background: 'rgba(10,14,26,.66)', padding: '3px 8px', borderRadius: 999
                   }
-                }, __alloT('stem.bridgelab.gl_hint', 'Drag — orbit  ·  Scroll — zoom')) : null,
+                }, __alloT('stem.bridgelab.gl_hint2', 'Drag or arrow keys — orbit · Scroll or +/− — zoom')) : null,
                 h('p', {
                   id: 'bridge-gl-description',
                   style: {
@@ -1498,12 +1528,17 @@
 
           // Controls
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12, marginBottom: 14 } },
-            sliderControl('Span (m)', d.span, 10, 80, 5, function(v) { upd({ span: v }); }, AMBER),
-            sliderControl('Height (m)', d.height, 2, 15, 0.5, function(v) { upd({ height: v }); }, AMBER),
-            sliderControl('Bays', d.nBays, 3, 8, 1, function(v) { upd({ nBays: v }); }, AMBER),
+            sliderControl('Span (m)', d.span, 10, 80, 5, function(v) { upd({ span: v }); }, AMBER,
+              __alloT('stem.bridgelab.hint_span', "The distance between the two supports. Longer spans are MUCH harder: forces grow fast with span.")),
+            sliderControl('Height (m)', d.height, 2, 15, 0.5, function(v) { upd({ height: v }); }, AMBER,
+              __alloT('stem.bridgelab.hint_height', "A taller truss spreads the load better, like a wider stance. Watch the safety factor rise as you raise it.")),
+            sliderControl(__alloT('stem.bridgelab.label_bays', "Bays (triangle sections)"), d.nBays, 3, 8, 1, function(v) { upd({ nBays: v }); }, AMBER,
+              __alloT('stem.bridgelab.hint_bays', "How many triangles the truss is divided into. More bays = shorter, sturdier pieces, but more joints to build.")),
             loadMode === 'vehicle'
-              ? sliderControl('Vehicle position (0=left, 1=right)', d.vehiclePos != null ? d.vehiclePos : 0.5, 0, 1, 0.02, function(v) { upd({ vehiclePos: v }); }, AMBER)
-              : sliderControl('Load per joint (kN)', d.loadPerJoint, 10, 200, 10, function(v) { upd({ loadPerJoint: v }); }, AMBER),
+              ? sliderControl('Vehicle position (0=left, 1=right)', d.vehiclePos != null ? d.vehiclePos : 0.5, 0, 1, 0.02, function(v) { upd({ vehiclePos: v }); }, AMBER,
+              __alloT('stem.bridgelab.hint_vehiclepos', "Slide the truck across the bridge and watch the forces chase it."))
+              : sliderControl('Load per joint (kN)', d.loadPerJoint, 10, 200, 10, function(v) { upd({ loadPerJoint: v }); }, AMBER,
+              __alloT('stem.bridgelab.hint_load', "The weight pressing down at each top joint. Imagine trucks parked all along the deck.")),
             loadMode === 'vehicle'
               ? sliderControl('Vehicle weight (kN)', d.vehicleLoad || 150, 50, 500, 10, function(v) { upd({ vehicleLoad: v }); }, AMBER)
               : sliderControl('Member cross-section (mm²)', d.crossSectionMm2, 1000, 20000, 500, function(v) { upd({ crossSectionMm2: v }); }, AMBER),
@@ -1513,7 +1548,8 @@
             // The failure text tells students to "add lateral bracing" and
             // "shorten the unbraced length". Until this control existed that was
             // advice they had no way to take.
-            sliderControl('Lateral bracing: every N panels (1 = every joint)', braceEvery, 1, Math.max(1, d.nBays), 1, function(v) { upd({ lateralBraceEvery: v }); }, AMBER)
+            sliderControl('Lateral bracing: every N panels (1 = every joint)', braceEvery, 1, Math.max(1, d.nBays), 1, function(v) { upd({ lateralBraceEvery: v }); }, AMBER,
+              __alloT('stem.bridgelab.hint_bracing', "Cross-ties that stop the top chord flexing sideways. Fewer braces = longer free lengths = easier to buckle. This slider decides most verdicts here."))
           ),
 
           // Truss style + Material selector
@@ -1563,22 +1599,32 @@
 
           // Analysis results — combined yield + buckling
           h('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { padding: 14, borderRadius: 12, background: status === 'safe' ? 'rgba(34,197,94,0.10)' : status === 'marginal' ? 'rgba(245,158,11,0.15)' : 'rgba(220,38,38,0.15)', border: '1px solid ' + (status === 'safe' ? 'rgba(34,197,94,0.4)' : status === 'marginal' ? 'rgba(245,158,11,0.4)' : 'rgba(220,38,38,0.4)'), borderLeft: '4px solid ' + (status === 'safe' ? '#22c55e' : status === 'marginal' ? '#f59e0b' : '#dc2626'), marginBottom: 12 } },
-            h('div', { style: { fontSize: 16, fontWeight: 900, color: status === 'safe' ? '#86efac' : status === 'marginal' ? '#fbbf24' : '#fca5a5', marginBottom: 10 } },
+            h('div', { style: { fontSize: 16, fontWeight: 900, color: status === 'safe' ? '#86efac' : status === 'marginal' ? '#fbbf24' : '#fca5a5', marginBottom: 4 } },
               status === 'safe' ? '✓ SAFE — passes both yield and buckling checks' :
               status === 'marginal' ? '⚠ MARGINAL — passes but below code-recommended safety factor (2.0)' :
               '✗ FAILED — at least one failure mode reached'
             ),
+            // One sentence a first-time learner can act on, before any numbers.
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 10, lineHeight: 1.55 } },
+              status === 'safe'
+                ? __alloT('stem.bridgelab.verdict_safe_plain', "Two different checks, both passed: the material is strong enough (yield), and no piece is so long and thin that it would snap sideways (buckling).")
+                : status === 'marginal'
+                  ? __alloT('stem.bridgelab.verdict_marginal_plain', "It holds, but with less spare strength than real bridge codes demand (a safety factor of at least 2). An engineer would strengthen it before letting traffic on.")
+                  : buckles
+                    ? __alloT('stem.bridgelab.verdict_failed_buckle_plain', "A long, thin piece would snap SIDEWAYS before the material itself ever failed. That is buckling, and it happens suddenly, with no warning creak.")
+                    : __alloT('stem.bridgelab.verdict_failed_yield_plain', "The material itself would be crushed or torn apart. That is a yield failure: too much force through too little material.")
+            ),
             // Yield row
             h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 6, fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)' } },
-              h('strong', { style: { color: yieldStatus === 'safe' ? '#86efac' : yieldStatus === 'marginal' ? '#fbbf24' : '#fca5a5', minWidth: 110 } },
-                yieldStatus === 'safe' ? '✓ Yield' : yieldStatus === 'marginal' ? '⚠ Yield' : '✗ Yield'
+              h('strong', { style: { color: yieldStatus === 'safe' ? '#86efac' : yieldStatus === 'marginal' ? '#fbbf24' : '#fca5a5', minWidth: 150 } },
+                (yieldStatus === 'safe' ? '✓ ' : yieldStatus === 'marginal' ? '⚠ ' : '✗ ') + __alloT('stem.bridgelab.check_strength', "Strength (yield)")
               ),
               h('span', null, 'Safety factor ' + safetyFactor.toFixed(2) + ' (max stress ' + maxStress.toFixed(0) + ' MPa vs yield ' + mat.yieldMPa + ' MPa)')
             ),
             // Buckling row
             h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 8, fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)' } },
-              h('strong', { style: { color: bucklingStatus === 'safe' ? '#86efac' : bucklingStatus === 'marginal' ? '#fbbf24' : '#fca5a5', minWidth: 110 } },
-                bucklingStatus === 'safe' ? '✓ Buckling' : bucklingStatus === 'marginal' ? '⚠ Buckling' : '✗ Buckling'
+              h('strong', { style: { color: bucklingStatus === 'safe' ? '#86efac' : bucklingStatus === 'marginal' ? '#fbbf24' : '#fca5a5', minWidth: 150 } },
+                (bucklingStatus === 'safe' ? '✓ ' : bucklingStatus === 'marginal' ? '⚠ ' : '✗ ') + __alloT('stem.bridgelab.check_stability', "Stability (buckling)")
               ),
               h('span', null, 'Governing member ' + governingCompression.id + ': P_cr ' + P_cr_top_kN.toFixed(0) + ' kN vs compression ' + governingCompression.forceKN.toFixed(0) + ' kN; length ' + (governingLengthMm / 1000).toFixed(1) + ' m; slenderness ' + slenderness.toFixed(0) + ' (pinned ends K=1; solid square section)')
             ),
@@ -1596,18 +1642,59 @@
           ),
 
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 8, marginBottom: 12 } },
-            statBox('Max chord force', analysis.maxChord.toFixed(0) + ' kN', '#f87171'),
-            statBox('Max diagonal force', analysis.maxDiag.toFixed(0) + ' kN', '#60a5fa'),
-            statBox('Max stress', maxStress.toFixed(0) + ' MPa', '#f59e0b'),
-            statBox('Material yield', mat.yieldMPa + ' MPa', '#94a3b8'),
-            statBox('Governing Euler P_cr', P_cr_top_kN.toFixed(0) + ' kN', '#a78bfa'),
-            statBox('Governing compression member', governingCompression.id, '#a78bfa'),
-            statBox('Slenderness ratio (L/r)', slenderness.toFixed(0), '#a78bfa'),
-            statBox('Reaction at each support', analysis.reactions.toFixed(0) + ' kN', '#94a3b8'),
-            statBox('Diagonal angle', analysis.diagAngleDeg.toFixed(0) + '°', '#94a3b8'),
-            statBox('Total member length', analysis.totalLen.toFixed(1) + ' m', '#94a3b8'),
-            statBox('Estimated mass', massKg.toFixed(0) + ' kg', '#94a3b8'),
-            statBox('Estimated material cost', '$' + costUsd.toFixed(0), '#86efac')
+            statBox('Max chord force', analysis.maxChord.toFixed(0) + ' kN', '#f87171',
+              __alloT('stem.bridgelab.hint_chord', "The biggest pull or squeeze in the long top/bottom pieces. (1 kN is about the weight of a washing machine.)")),
+            statBox('Max diagonal force', analysis.maxDiag.toFixed(0) + ' kN', '#60a5fa',
+              __alloT('stem.bridgelab.hint_diag', "The biggest force in the zig-zag pieces. Diagonals work hardest near the supports.")),
+            statBox('Max stress', maxStress.toFixed(0) + ' MPa', '#f59e0b',
+              __alloT('stem.bridgelab.hint_stress', "Force squeezed into each bit of material. Must stay well BELOW the yield number beside it.")),
+            statBox('Material yield', mat.yieldMPa + ' MPa', '#94a3b8',
+              __alloT('stem.bridgelab.hint_yield', "The stress where this material starts to permanently bend or tear. Your ceiling.")),
+            statBox(__alloT('stem.bridgelab.label_pcr', "Buckling load (P_cr)"), P_cr_top_kN.toFixed(0) + ' kN', '#a78bfa',
+              __alloT('stem.bridgelab.hint_pcr', "The push at which the weakest strut snaps sideways, like a spaghetti noodle pressed from both ends.")),
+            statBox(__alloT('stem.bridgelab.label_weakest', "Weakest strut"), governingCompression.id, '#a78bfa',
+              __alloT('stem.bridgelab.hint_weakest', "The piece closest to buckling. Find it in the picture above; the whole bridge is only as safe as this one piece.")),
+            statBox('Slenderness ratio (L/r)', slenderness.toFixed(0), '#a78bfa',
+              __alloT('stem.bridgelab.hint_slender', "Length divided by thickness. Long and thin = wobbly. Real design codes stop at about 200.")),
+            statBox(__alloT('stem.bridgelab.label_reaction', "Push-back at each support"), analysis.reactions.toFixed(0) + ' kN', '#94a3b8',
+              __alloT('stem.bridgelab.hint_reaction', "How hard each end pushes back up. The two ends together carry the whole load.")),
+            statBox('Diagonal angle', analysis.diagAngleDeg.toFixed(0) + '\u00B0', '#94a3b8',
+              __alloT('stem.bridgelab.hint_angle', "About 45\\u201360\\u00B0 is the sweet spot: steep enough to be short, shallow enough to share the load.")),
+            statBox('Total member length', analysis.totalLen.toFixed(1) + ' m', '#94a3b8',
+              __alloT('stem.bridgelab.hint_length', "All the pieces laid end to end. More length = more material = more cost.")),
+            statBox('Estimated mass', massKg.toFixed(0) + ' kg', '#94a3b8',
+              __alloT('stem.bridgelab.hint_mass', "What the bare structure weighs. A bridge must carry itself before it carries anything else.")),
+            statBox('Estimated material cost', '$' + costUsd.toFixed(0), '#86efac',
+              __alloT('stem.bridgelab.hint_cost', "The engineering game: the CHEAPEST design that is still SAFE wins."))
+          ),
+
+          // Plain-language glossary (2026-08-23). Native details/summary: free
+          // keyboard support, no state. Definitions teach the CONCEPT, not just
+          // the abbreviation.
+          h('details', { style: { marginBottom: 12, borderRadius: 12, border: '1px solid var(--allo-stem-border, #334155)', background: 'var(--allo-stem-panel, #1e293b)', padding: '10px 14px' } },
+            h('summary', { style: { fontSize: 13, fontWeight: 800, color: 'var(--allo-stem-text, #e2e8f0)', cursor: 'pointer' } },
+              '\uD83D\uDCD6 ' + __alloT('stem.bridgelab.glossary_title', "The words on this page, in plain language")),
+            h('dl', { style: { margin: '10px 0 0 0', fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '8px 18px' } },
+              [
+                [__alloT('stem.bridgelab.gl_tension', "Tension"), __alloT('stem.bridgelab.gl_tension_d', "A pulling force, like a tug-of-war rope. Shown in red.")],
+                [__alloT('stem.bridgelab.gl_compression', "Compression"), __alloT('stem.bridgelab.gl_compression_d', "A squeezing force, like pressing on a soda can. Shown in blue.")],
+                [__alloT('stem.bridgelab.gl_truss', "Truss"), __alloT('stem.bridgelab.gl_truss_d', "A frame of triangles. Triangles cannot change shape without changing a side length, which makes them stiff.")],
+                [__alloT('stem.bridgelab.gl_member', "Member / chord / diagonal"), __alloT('stem.bridgelab.gl_member_d', "Any single piece is a member. The long top and bottom pieces are chords; the zig-zags are diagonals.")],
+                [__alloT('stem.bridgelab.gl_yield', "Yield"), __alloT('stem.bridgelab.gl_yield_d', "The point where a material stops springing back and permanently bends or tears. Passing it is a strength failure.")],
+                [__alloT('stem.bridgelab.gl_buckling', "Buckling"), __alloT('stem.bridgelab.gl_buckling_d', "When a long thin piece under squeeze suddenly snaps sideways, far below its crushing strength. Press a spaghetti noodle from both ends to feel it.")],
+                [__alloT('stem.bridgelab.gl_sf', "Safety factor"), __alloT('stem.bridgelab.gl_sf_d', "How many times stronger than needed. 1.0 = barely holds; 2.0 = holds twice the load. Real bridge codes demand 2\\u20136.")],
+                [__alloT('stem.bridgelab.gl_governing', "Governing"), __alloT('stem.bridgelab.gl_governing_d', "Engineer-speak for \"the one that decides\". The governing member is the weakest link; the governing check is whichever fails first.")],
+                [__alloT('stem.bridgelab.gl_kn', "kN (kilonewton)"), __alloT('stem.bridgelab.gl_kn_d', "A unit of force. 1 kN is roughly the weight of a washing machine; a car weighs about 15 kN.")],
+                [__alloT('stem.bridgelab.gl_mpa', "MPa (megapascal)"), __alloT('stem.bridgelab.gl_mpa_d', "Pressure: force concentrated on an area. The same push hurts more through a thumbtack than a book cover; that is higher MPa.")],
+                [__alloT('stem.bridgelab.gl_span', "Span"), __alloT('stem.bridgelab.gl_span_d', "The open distance the bridge must cross without support underneath.")],
+                [__alloT('stem.bridgelab.gl_slender', "Slenderness"), __alloT('stem.bridgelab.gl_slender_d', "Length compared to thickness. A pencil is stubby; an uncooked spaghetti noodle is slender. Slender pieces buckle easily.")]
+              ].map(function(pair, gi) {
+                return h('div', { key: 'gl' + gi },
+                  h('dt', { style: { fontWeight: 800, color: '#fbbf24', display: 'inline' } }, pair[0] + ' \u2014 '),
+                  h('dd', { style: { display: 'inline', margin: 0 } }, pair[1])
+                );
+              })
+            )
           ),
 
           // Design notes
@@ -1759,7 +1846,7 @@
           })()
         );
 
-        function sliderControl(label, value, min, max, step, onChange, accent) {
+        function sliderControl(label, value, min, max, step, onChange, accent, hint) {
           return h('div', { style: { padding: 10, borderRadius: 8, background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)' } },
             h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 6 } },
               h('span', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 700 } }, label),
@@ -1769,13 +1856,19 @@
               onChange: function(e) { onChange(parseFloat(e.target.value)); },
               'aria-label': label,
               style: { width: '100%', accentColor: accent }
-            })
+            }),
+            hint ? h('div', { style: { fontSize: 10.5, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 5, lineHeight: 1.5 } }, hint) : null
           );
         }
-        function statBox(label, value, color) {
+        // hint (2026-08-23): every number a learner sees carries one plain-language
+        // line saying what it MEANS and which direction is good. A grid of bare
+        // engineering readouts taught nothing to anyone who did not already know
+        // the vocabulary.
+        function statBox(label, value, color, hint) {
           return h('div', { style: { padding: 8, borderRadius: 6, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)' } },
             h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 0.5 } }, label),
-            h('div', { style: { fontSize: 13, fontWeight: 800, color: color, marginTop: 2 } }, value)
+            h('div', { style: { fontSize: 13, fontWeight: 800, color: color, marginTop: 2 } }, value),
+            hint ? h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 3, lineHeight: 1.45 } }, hint) : null
           );
         }
       }
