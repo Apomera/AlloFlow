@@ -1,0 +1,221 @@
+{
+  "_comment": "Ratchet baseline for the tool-bank longest-answer tell. Counts may only go DOWN; fixing the tell means hand-rewriting distractors (never the key) - the automated-filler pass was reverted in f6e08fe43, do not reinvent it. Regenerate with --update-baseline only after re-reading each changed bank.",
+  "_rule": "uniq = key uniquely longest; severe = key >= longestDistractor + 20 AND >= longestDistractor * 1.75",
+  "tools": {
+    "stem_lab/swimlab": {
+      "uniq": 18,
+      "severe": 13,
+      "items": 18
+    },
+    "stem_lab/brainatlas": {
+      "uniq": 10,
+      "severe": 5,
+      "items": 10
+    },
+    "stem_lab/learning_lab": {
+      "uniq": 62,
+      "severe": 52,
+      "items": 64
+    },
+    "stem_lab/autorepair": {
+      "uniq": 107,
+      "severe": 96,
+      "items": 113
+    },
+    "stem_lab/rocks": {
+      "uniq": 15,
+      "severe": 0,
+      "items": 16
+    },
+    "stem_lab/pets": {
+      "uniq": 14,
+      "severe": 11,
+      "items": 15
+    },
+    "stem_lab/microbiology": {
+      "uniq": 14,
+      "severe": 7,
+      "items": 15
+    },
+    "stem_lab/fireecology": {
+      "uniq": 29,
+      "severe": 18,
+      "items": 32
+    },
+    "stem_lab/companionplanting": {
+      "uniq": 9,
+      "severe": 1,
+      "items": 10
+    },
+    "stem_lab/aquaculture": {
+      "uniq": 60,
+      "severe": 48,
+      "items": 69
+    },
+    "sel_hub/advocacy": {
+      "uniq": 21,
+      "severe": 16,
+      "items": 25
+    },
+    "stem_lab/geologyexplorer": {
+      "uniq": 21,
+      "severe": 3,
+      "items": 25
+    },
+    "stem_lab/lifeskills": {
+      "uniq": 10,
+      "severe": 1,
+      "items": 12
+    },
+    "stem_lab/roadready": {
+      "uniq": 229,
+      "severe": 53,
+      "items": 284
+    },
+    "stem_lab/aquarium": {
+      "uniq": 79,
+      "severe": 36,
+      "items": 100
+    },
+    "stem_lab/fisherlab": {
+      "uniq": 54,
+      "severe": 30,
+      "items": 70
+    },
+    "sel_hub/selfadvocacy": {
+      "uniq": 9,
+      "severe": 5,
+      "items": 12
+    },
+    "stem_lab/behaviorlab": {
+      "uniq": 12,
+      "severe": 1,
+      "items": 16
+    },
+    "stem_lab/nutritionlab": {
+      "uniq": 16,
+      "severe": 13,
+      "items": 22
+    },
+    "stem_lab/raptorhunt": {
+      "uniq": 49,
+      "severe": 31,
+      "items": 70
+    },
+    "sel_hub/community": {
+      "uniq": 30,
+      "severe": 8,
+      "items": 44
+    },
+    "stem_lab/weldlab": {
+      "uniq": 42,
+      "severe": 15,
+      "items": 62
+    },
+    "stem_lab/bridgelab": {
+      "uniq": 10,
+      "severe": 4,
+      "items": 15
+    },
+    "stem_lab/astronomy": {
+      "uniq": 10,
+      "severe": 3,
+      "items": 15
+    },
+    "stem_lab/dinolab": {
+      "uniq": 21,
+      "severe": 12,
+      "items": 34
+    },
+    "stem_lab/renewables": {
+      "uniq": 11,
+      "severe": 1,
+      "items": 18
+    },
+    "stem_lab/printingpress": {
+      "uniq": 18,
+      "severe": 12,
+      "items": 31
+    },
+    "stem_lab/cell": {
+      "uniq": 10,
+      "severe": 1,
+      "items": 18
+    },
+    "stem_lab/optics": {
+      "uniq": 30,
+      "severe": 7,
+      "items": 62
+    },
+    "stem_lab/statslab": {
+      "uniq": 11,
+      "severe": 0,
+      "items": 25
+    },
+    "stem_lab/anatomy": {
+      "uniq": 7,
+      "severe": 0,
+      "items": 16
+    },
+    "stem_lab/music": {
+      "uniq": 9,
+      "severe": 0,
+      "items": 26
+    },
+    "stem_lab/punnett": {
+      "uniq": 19,
+      "severe": 0,
+      "items": 55
+    },
+    "stem_lab/economicslab": {
+      "uniq": 3,
+      "severe": 1,
+      "items": 10
+    },
+    "stem_lab/solarsystem": {
+      "uniq": 4,
+      "severe": 0,
+      "items": 14
+    },
+    "stem_lab/chembalance": {
+      "uniq": 19,
+      "severe": 5,
+      "items": 73
+    },
+    "stem_lab/universe": {
+      "uniq": 5,
+      "severe": 0,
+      "items": 20
+    },
+    "stem_lab/geometryworld": {
+      "uniq": 18,
+      "severe": 4,
+      "items": 83
+    },
+    "stem_lab/inequality": {
+      "uniq": 3,
+      "severe": 0,
+      "items": 16
+    },
+    "stem_lab/semiconductor": {
+      "uniq": 5,
+      "severe": 0,
+      "items": 28
+    },
+    "stem_lab/galaxy": {
+      "uniq": 0,
+      "severe": 0,
+      "items": 15
+    },
+    "stem_lab/treelab": {
+      "uniq": 0,
+      "severe": 0,
+      "items": 11
+    },
+    "sel_hub/civicaction": {
+      "uniq": 0,
+      "severe": 0,
+      "items": 24
+    }
+  }
+}
