@@ -7731,6 +7731,35 @@ window.SelHub = window.SelHub || {
     }
   ];
 
+  // Move each question's correct answer onto a cycling target slot, then
+  // reassign the display letters to the new order. As authored, 17 of 25
+  // correct answers sat at B (and this bank's only clean bill of health came
+  // from a scanner keyword-matching "Carrie Fisher" as a Fisher-Yates shuffle).
+  // SLOT-TARGETED rather than the sibling tools' fixed-shift recipe because a
+  // fixed shift only decorrelates: on this bank it left B at 10/25, still a
+  // 40% payoff for always-pick-B. Placing answers on a cycling target makes
+  // the distribution exactly uniform (7/6/6/6). Grading reads the chosen
+  // option's `correct` flag, never an index, so only the letters need
+  // re-deriving. Deterministic rather than random on purpose: the bank must
+  // be stable across renders, sessions, exports and tests.
+  (function () {
+    var LETTERS = ['A', 'B', 'C', 'D', 'E', 'F'];
+    var SLOTS = [0, 2, 1, 3];
+    var counter = 0;
+    ADVOCACY_QUIZ_BANK.forEach(function (item) {
+      if (!item || !Array.isArray(item.options)) return;
+      var len = item.options.length;
+      if (len < 2) return;
+      var correctIdx = -1;
+      for (var oi = 0; oi < len; oi++) { if (item.options[oi].correct) { correctIdx = oi; break; } }
+      if (correctIdx < 0) return;
+      var target = SLOTS[counter++ % SLOTS.length] % len;
+      var shift = (correctIdx - target + len) % len;
+      if (shift) item.options = item.options.slice(shift).concat(item.options.slice(0, shift));
+      item.options.forEach(function (opt, li) { opt.letter = LETTERS[li] || opt.letter; });
+    });
+  })();
+
   var FAMILY_AND_PARENT_EDUCATION = [
     {
       id: 'fpe1',
@@ -17327,6 +17356,7 @@ window.SelHub = window.SelHub || {
         { id: 'scripts',   label: '\uD83D\uDCDD Scripts' },
         { id: 'advocacy_scripts', label: '\uD83C\uDFA4 Practice' },
         { id: 'rights',    label: '\u2696\uFE0F Rights' },
+        { id: 'knowquiz',  label: '\uD83C\uDF93 Knowledge Quiz' },
         { id: 'voice',     label: '\uD83C\uDFA4 Voice' },
         { id: 'phrases',   label: '\uD83D\uDCAC Phrases' },
         { id: 'letterLib', label: '\u2709\uFE0F Letter Library' },
@@ -17365,6 +17395,7 @@ window.SelHub = window.SelHub || {
           scripts:          { accent: '#10b981', soft: 'rgba(16,185,129,0.14)', icon: '\uD83D\uDCDD', title: 'Scripts \u2014 borrowed words for hard moments',           hint: 'Pre-written sentences to start a tough ask: \u201CI noticed\u2026\u201D, \u201CCan we talk about\u2026\u201D, \u201CI need\u2026 because\u2026\u201D. Reading off paper IS allowed and counts. Implementation intentions (Gollwitzer 1999) double follow-through.' },
           advocacy_scripts: { accent: '#9333ea', soft: 'rgba(147,51,234,0.14)', icon: '\uD83C\uDFA4', title: 'Practice \u2014 say it out loud first',                  hint: 'Bandura: behavioral rehearsal predicts self-efficacy more than any other variable. Hearing yourself say it makes the real version 10\u00d7 easier. Use the AI partner; the bathroom mirror; record + play back.' },
           rights:           { accent: '#dc2626', soft: 'rgba(220,38,38,0.14)',  icon: '\u2696',         title: 'Rights \u2014 the law has your back',                   hint: 'IDEA (FAPE + LRE), Section 504, ADA, FERPA. You have the RIGHT to ask, the right to bring a parent / advocate, the right to a formal complaint. Knowing the rule changes the room. ada.gov + ed.gov are free.' },
+          knowquiz:         { accent: '#7c3aed', soft: 'rgba(124,58,237,0.14)', icon: '\uD83C\uDF93', title: 'Knowledge Quiz \u2014 do you know your stuff?', hint: '25 questions across rights, self-advocacy, identity, mental health and transition. Each answer comes with the WHY and a follow-up worth sitting with. Knowing the vocabulary and the law is the quiet half of advocacy.' },
           voice:            { accent: _advFg('#f59e0b'), soft: 'rgba(245,158,11,0.14)', icon: '\uD83C\uDFA4', title: 'Voice \u2014 your tone IS information',                  hint: 'Calm + specific + asking-not-demanding lands better than loud + vague + ultimatum. Volume up = listener defenses up. Practice saying the same words 3 ways: pleading, demanding, calmly assertive. Last one wins.' },
           phrases:          { accent: _advFg('#ec4899'), soft: 'rgba(236,72,153,0.14)', icon: '\uD83D\uDCAC', title: 'Phrases \u2014 your back-pocket arsenal',                hint: '\u201CCan you say more about that?\u201D \u201CI need a minute to think.\u201D \u201CThat doesn\u2019t work for me \u2014 here\u2019s what would.\u201D Memorize 5; pull them out under stress. Reduces \u201Cspoke when I shouldn\u2019t / froze when I should.\u201D' },
           assessment:       { accent: '#0891b2', soft: 'rgba(8,145,178,0.14)',  icon: '\uD83D\uDCCB', title: 'Quiz \u2014 self-knowledge check',                       hint: 'When do you advocate for yourself well? When do you fold? Pattern recognition is half the work; the other half is one specific situation you commit to handling differently next time. Start small.' },
@@ -19845,6 +19876,89 @@ window.SelHub = window.SelHub || {
       // ══════════════════════════════════════════════════════════
       // ── TAB: Advocacy Strength Assessment ──
       // ══════════════════════════════════════════════════════════
+      var knowquizContent = null;
+      if (activeTab === 'knowquiz') {
+        var kqIdx = Math.min(d.kqIdx || 0, ADVOCACY_QUIZ_BANK.length - 1);
+        var kqPicked = d.kqPicked || null;
+        var kqScore = d.kqScore || 0;
+        var kqDone = !!d.kqDone;
+        var kqTotal = ADVOCACY_QUIZ_BANK.length;
+        var kqQ = ADVOCACY_QUIZ_BANK[kqIdx];
+        var kqPickedOpt = kqPicked ? kqQ.options.filter(function(o) { return o.letter === kqPicked; })[0] : null;
+        var kqCatLabel = { rights: 'Rights', 'self-advocacy': 'Self-advocacy', identity: 'Identity', 'mental-health': 'Mental health', transition: 'Transition' };
+
+        knowquizContent = h('div', { style: { padding: 20, maxWidth: 550, margin: '0 auto' } },
+          h('h3', { id: 'adv-knowquiz-heading', tabIndex: -1, style: { textAlign: 'center', marginBottom: 4, color: _advFg('#f1f5f9'), fontSize: 18 } }, 'Knowledge Quiz'),
+          kqDone
+            ? h('div', { style: { textAlign: 'center' } },
+                h('div', { role: 'status', style: { padding: 24, borderRadius: 16, background: _advBg('#0f172a'), border: '1px solid ' + ACCENT_MED, marginTop: 16 } },
+                  h('div', { style: { fontSize: 36, fontWeight: 700, color: _advFg(ACCENT) } }, kqScore + ' / ' + kqTotal),
+                  h('div', { style: { fontSize: 13, color: _advFg('#94a3b8'), marginTop: 6 } },
+                    kqScore === kqTotal ? 'Every single one. You know your stuff.' :
+                    kqScore >= Math.ceil(kqTotal * 0.8) ? 'Strong. Revisit the ones you missed - the explanations are the point.' :
+                    kqScore >= Math.ceil(kqTotal * 0.5) ? 'Good start. The explanations under each answer are where the learning is.' :
+                    'Every advocate starts somewhere. Run it again - the questions do not change, but you will.'),
+                  h('button', {
+                    onClick: function() { upd({ kqIdx: 0, kqPicked: null, kqScore: 0, kqDone: false }); if (soundEnabled) sfxClick(); },
+                    style: { marginTop: 16, padding: '10px 22px', borderRadius: 10, border: 'none', cursor: 'pointer', fontWeight: 700, fontSize: 13, background: ACCENT, color: '#fff' }
+                  }, 'Start over')
+                )
+              )
+            : h('div', null,
+                h('p', { style: { textAlign: 'center', color: _advFg('#94a3b8'), fontSize: 12, marginBottom: 12 } },
+                  'Question ' + (kqIdx + 1) + ' of ' + kqTotal + ' \u00b7 Score ' + kqScore),
+                h('div', { style: { display: 'flex', gap: 6, justifyContent: 'center', marginBottom: 12 } },
+                  h('span', { style: { fontSize: 11, padding: '2px 10px', borderRadius: 999, background: ACCENT_DIM, color: _advFg(ACCENT), fontWeight: 600 } }, kqCatLabel[kqQ.category] || kqQ.category),
+                  h('span', { style: { fontSize: 11, padding: '2px 10px', borderRadius: 999, background: _advBg('#1e293b'), color: _advFg('#94a3b8') } }, kqQ.level)
+                ),
+                h('div', { style: { padding: 16, borderRadius: 14, background: _advBg('#0f172a'), border: '1px solid ' + ACCENT_MED, marginBottom: 12 } },
+                  h('div', { style: { fontSize: 15, fontWeight: 600, color: _advFg('#f1f5f9'), lineHeight: 1.5 } }, kqQ.question)
+                ),
+                h('div', { role: 'group', 'aria-label': 'Answer choices', style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+                  kqQ.options.map(function(opt) {
+                    var isPicked = kqPicked === opt.letter;
+                    var showState = kqPicked != null;
+                    var border = showState && opt.correct ? '#22c55e' : showState && isPicked ? '#ef4444' : '#33415566';
+                    var bg = showState && opt.correct ? 'rgba(34,197,94,0.12)' : showState && isPicked ? 'rgba(239,68,68,0.10)' : _advBg('#1e293b');
+                    return h('button', {
+                      key: opt.letter,
+                      'aria-pressed': isPicked,
+                      'aria-disabled': showState && !isPicked ? true : undefined,
+                      onClick: function() {
+                        if (kqPicked != null) return;
+                        var right = !!opt.correct;
+                        upd({ kqPicked: opt.letter, kqScore: kqScore + (right ? 1 : 0) });
+                        if (right) { awardXP(10); logPractice('knowquiz', kqQ.id); }
+                        if (soundEnabled) { if (right) sfxCorrect(); else sfxWrong(); }
+                      },
+                      style: { display: 'flex', gap: 10, alignItems: 'flex-start', textAlign: 'left', padding: '10px 12px', borderRadius: 10, border: '2px solid ' + border, background: bg, cursor: kqPicked == null ? 'pointer' : 'default', minHeight: 44 }
+                    },
+                      h('span', { 'aria-hidden': true, style: { fontWeight: 700, fontSize: 13, color: _advFg(ACCENT), flexShrink: 0 } }, opt.letter),
+                      h('span', { style: { fontSize: 13, color: _advFg('#e2e8f0'), lineHeight: 1.45 } }, opt.text)
+                    );
+                  })
+                ),
+                h('div', { role: 'status', 'aria-live': 'polite', style: { marginTop: 12 } },
+                  kqPicked != null && h('div', { style: { padding: 14, borderRadius: 12, background: _advBg('#0f172a'), border: '1px solid ' + (kqPickedOpt && kqPickedOpt.correct ? '#22c55e66' : '#ef444466') } },
+                    h('div', { style: { fontWeight: 700, fontSize: 13, marginBottom: 6, color: kqPickedOpt && kqPickedOpt.correct ? _advFg('#22c55e') : _advFg('#f87171') } },
+                      kqPickedOpt && kqPickedOpt.correct ? 'Correct.' : 'Not quite.'),
+                    h('p', { style: { fontSize: 12.5, color: _advFg('#e2e8f0'), lineHeight: 1.55, marginBottom: 8 } }, kqQ.explanation),
+                    kqQ.followUp && h('p', { style: { fontSize: 12, color: _advFg('#94a3b8'), fontStyle: 'italic', lineHeight: 1.5 } }, 'Worth sitting with: ' + kqQ.followUp),
+                    h('button', {
+                      id: 'adv-knowquiz-next',
+                      onClick: function() {
+                        if (kqIdx + 1 >= kqTotal) { upd({ kqDone: true, kqPicked: null }); if (soundEnabled) sfxBadge(); }
+                        else { upd({ kqIdx: kqIdx + 1, kqPicked: null }); if (soundEnabled) sfxClick(); }
+                        focusAdvocacyControl('adv-knowquiz-heading');
+                      },
+                      style: { marginTop: 4, padding: '8px 18px', borderRadius: 10, border: 'none', cursor: 'pointer', fontWeight: 700, fontSize: 13, background: ACCENT, color: '#fff' }
+                    }, kqIdx + 1 >= kqTotal ? 'See results' : 'Next question')
+                  )
+                )
+              )
+        );
+      }
+
       var assessmentContent = null;
       if (activeTab === 'assessment') {
         var assessAllDone = ASSESSMENT_STATEMENTS.every(function(s) { return assessAnswers[s.id] != null; });
@@ -20214,7 +20328,7 @@ window.SelHub = window.SelHub || {
         );
       }
 
-      var content = myKitContent || strengthsContent || phraseLibContent || accomLibContent || caseStudiesContent || vocabContent || journalContent || convoSimContent || bingoContent || identityCardsContent || letterLibContent || scenariosContent || roleplayContent || accomContent || disclosureContent || scriptsContent || advocacyScriptsContent || rightsContent || voiceContent || phrasesContent || assessmentContent || lettersContent || progressContent || printContent;
+      var content = myKitContent || strengthsContent || phraseLibContent || accomLibContent || caseStudiesContent || vocabContent || journalContent || convoSimContent || bingoContent || identityCardsContent || letterLibContent || scenariosContent || roleplayContent || accomContent || disclosureContent || scriptsContent || advocacyScriptsContent || rightsContent || knowquizContent || voiceContent || phrasesContent || assessmentContent || lettersContent || progressContent || printContent;
 
       return h('div', { className: 'selh-advocacy', style: { display: 'flex', flexDirection: 'column', height: '100%' } },
         (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('advocacy', h, ctx) : null),
