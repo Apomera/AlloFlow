@@ -628,3 +628,76 @@ real `strengths` bug at line 70.
 
 Coverage is 14,196 text nodes graded per run, with 921 gradient-backed and 933
 class-sourced colours reported as **ungraded rather than passing**.
+
+---
+
+## 11. 2026-08-23 — icon ties and a quiz answered "B" 24 times  (local, unpushed)
+
+Two more input-free defects, both found by aiming an existing scanner somewhere
+it had never been pointed.
+
+### 11a. `civicaction` was answerable without reading
+
+`dev-tools/scan_answer_position_bias.cjs` had its directory **and** filename
+filter hardcoded to `stem_lab/stem_tool_*.js`, so passing another lab as an
+argument was silently ignored — it described STEM while appearing to answer the
+question asked. Third scanner with this defect. Now takes a directory and
+`--pattern`, and exits non-zero on an empty match.
+
+Aimed at `sel_hub`:
+
+| tool | questions | worst slot |
+|---|---|---|
+| `civicaction` | 24, **all** authored `answer: 1` | **100%** |
+| `community` | 37 | 62% |
+| `selfadvocacy` | 12 | 58% |
+
+**A student could score 100% on the civic quiz by choosing the second option 24
+times without reading a word.** That silently inflates whatever a teacher reads
+off the result.
+
+Each bank now rotates its options by a deterministic per-question shift — the
+pattern already used across `stem_lab`. Deterministic, not random: the bank must
+be stable across renders, sessions, exports and tests, and two students
+comparing notes should see the same paper. `selfadvocacy` marks its answer by
+index so the index moves with the rotation; `community` marks it by string, so
+only the order moves. True/False items are left alone.
+
+Measured **after** rotation — the distribution a student actually meets:
+`CIVIC_QUIZ` 100% → **25%** (a flat 6/6/6/6), `CULTURE_QUIZ` 62% → 30%,
+`QUIZ_QUESTIONS` 58% → 42%.
+
+`tests/sel_answer_position_bias.test.js` does not trust the static scanner: it
+**executes** each bank with its de-biasing block, measures the real spread,
+checks every answer still lies inside its own options (a rotation that drifts
+from its index marks the *wrong* option correct — worse than the bias), and
+carries a calibration case that fails if the block is not running.
+
+### 11b. Five tools wore the same icon
+
+In a 71-card grid the icon carries most of the scanning load, and nearly all of
+it on mobile. **Five** tools wore the compass — also the Self-Direction section
+icon — **three** wore the scales (also a section icon), and **three** the
+speaking head.
+
+Broken: compass → scroll / chart / sunrise / gem / briefcase; scales → abacus /
+bridge / puzzle; speaking head kept by `selfAdvocacy`, with `social` → hugging
+and `dearMan` → ladder. Both section icons are now worn only by their section,
+and tools sharing a section icon fell 17 → 9.
+
+Written as `\uXXXX` escape pairs like the rest of the file, so nothing depends on
+typing an emoji correctly — variation selectors are exactly where that goes
+wrong. Every replacement is emoji-presentation by default.
+
+**AARON — ten two-way pairs remain, and which of a pair should move is taste,
+not a defect, so I left them:** VIA Strengths / Sources of Strength ·
+Sensory Regulation / Identity Support · Thought Record / Journal ·
+Understanding Trauma / Body & Breath Reset · Body Story / Crisis Companion ·
+Community & Culture / Culture Explorer · Land & Place / Life Transitions ·
+Friendship / Peer Support · Growth Mindset / Executive Function ·
+Social Skills Roleplay / Conflict Theater.
+
+`tests/sel_hub_icon_uniqueness.test.js` decodes the escapes before comparing —
+comparing escaped text would call every card unique and the suite vacuous —
+forbids any three-way tie outright, and ratchets the two-way pairs and section
+clashes so they can fall but never rise.
