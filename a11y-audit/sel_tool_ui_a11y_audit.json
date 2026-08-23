@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-23T19:07:06.371Z",
+  "generatedAt": "2026-08-23T19:14:10.971Z",
   "toolCount": 71,
   "themesAudited": [
     "light",
@@ -9,10 +9,10 @@
   "loadErrors": [],
   "renderErrors": [],
   "summary": {
-    "issueCount": 45,
+    "issueCount": 25,
     "errorCount": 0,
-    "warningCount": 45,
-    "toolsWithIssues": 11,
+    "warningCount": 25,
+    "toolsWithIssues": 9,
     "toolsWithoutStandardShell": [],
     "contrastCoverage": {
       "textNodesGraded": 14196,
@@ -975,149 +975,27 @@
       "label": "Emotions Explorer",
       "renderedBytes": 74007,
       "standardShell": true,
-      "issueCount": 10,
+      "issueCount": 0,
       "errorCount": 0,
-      "warningCount": 10,
+      "warningCount": 0,
       "themes": [
         {
           "theme": "light",
           "renderedBytes": 24669,
           "standardShell": true,
-          "issueCount": 5,
+          "issueCount": 0,
           "errorCount": 0,
-          "warningCount": 5,
-          "issues": [
-            {
-              "toolId": "emotions",
-              "severity": "warning",
-              "code": "inline-contrast",
-              "message": "Text contrast is below 4.5:1 against its resolved background.",
-              "theme": "light",
-              "index": 109,
-              "ratio": 4.22,
-              "color": "#8b5cf6",
-              "background": "rgb(15,23,42)",
-              "text": "0"
-            },
-            {
-              "toolId": "emotions",
-              "severity": "warning",
-              "code": "inline-contrast",
-              "message": "Text contrast is below 4.5:1 against its resolved background.",
-              "theme": "light",
-              "index": 125,
-              "ratio": 3.97,
-              "color": "#0891b2",
-              "background": "rgb(30,41,59)",
-              "text": "Write it out"
-            },
-            {
-              "toolId": "emotions",
-              "severity": "warning",
-              "code": "inline-contrast",
-              "message": "Text contrast is below 4.5:1 against its resolved background.",
-              "theme": "light",
-              "index": 142,
-              "ratio": 4.41,
-              "color": "#3b82f6",
-              "background": "rgb(19,32,59)",
-              "text": "Sad"
-            },
-            {
-              "toolId": "emotions",
-              "severity": "warning",
-              "code": "inline-contrast",
-              "message": "Text contrast is below 4.5:1 against its resolved background.",
-              "theme": "light",
-              "index": 146,
-              "ratio": 4.44,
-              "color": "#ef4444",
-              "background": "rgb(33,27,44)",
-              "text": "Angry"
-            },
-            {
-              "toolId": "emotions",
-              "severity": "warning",
-              "code": "inline-contrast",
-              "message": "Text contrast is below 4.5:1 against its resolved background.",
-              "theme": "light",
-              "index": 150,
-              "ratio": 4.15,
-              "color": "#a855f7",
-              "background": "rgb(28,28,59)",
-              "text": "Scared"
-            }
-          ]
+          "warningCount": 0,
+          "issues": []
         },
         {
           "theme": "dark",
           "renderedBytes": 24669,
           "standardShell": true,
-          "issueCount": 5,
+          "issueCount": 0,
           "errorCount": 0,
-          "warningCount": 5,
-          "issues": [
-            {
-              "toolId": "emotions",
-              "severity": "warning",
-              "code": "inline-contrast",
-              "message": "Text contrast is below 4.5:1 against its resolved background.",
-              "theme": "dark",
-              "index": 109,
-              "ratio": 4.22,
-              "color": "#8b5cf6",
-              "background": "rgb(15,23,42)",
-              "text": "0"
-            },
-            {
-              "toolId": "emotions",
-              "severity": "warning",
-              "code": "inline-contrast",
-              "message": "Text contrast is below 4.5:1 against its resolved background.",
-              "theme": "dark",
-              "index": 125,
-              "ratio": 3.97,
-              "color": "#0891b2",
-              "background": "rgb(30,41,59)",
-              "text": "Write it out"
-            },
-            {
-              "toolId": "emotions",
-              "severity": "warning",
-              "code": "inline-contrast",
-              "message": "Text contrast is below 4.5:1 against its resolved background.",
-              "theme": "dark",
-              "index": 142,
-              "ratio": 4.41,
-              "color": "#3b82f6",
-              "background": "rgb(19,32,59)",
-              "text": "Sad"
-            },
-            {
-              "toolId": "emotions",
-              "severity": "warning",
-              "code": "inline-contrast",
-              "message": "Text contrast is below 4.5:1 against its resolved background.",
-              "theme": "dark",
-              "index": 146,
-              "ratio": 4.44,
-              "color": "#ef4444",
-              "background": "rgb(33,27,44)",
-              "text": "Angry"
-            },
-            {
-              "toolId": "emotions",
-              "severity": "warning",
-              "code": "inline-contrast",
-              "message": "Text contrast is below 4.5:1 against its resolved background.",
-              "theme": "dark",
-              "index": 150,
-              "ratio": 4.15,
-              "color": "#a855f7",
-              "background": "rgb(28,28,59)",
-              "text": "Scared"
-            }
-          ]
+          "warningCount": 0,
+          "issues": []
         },
         {
           "theme": "high-contrast",
@@ -1129,128 +1007,7 @@
           "issues": []
         }
       ],
-      "issues": [
-        {
-          "toolId": "emotions",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Text contrast is below 4.5:1 against its resolved background.",
-          "theme": "light",
-          "index": 109,
-          "ratio": 4.22,
-          "color": "#8b5cf6",
-          "background": "rgb(15,23,42)",
-          "text": "0"
-        },
-        {
-          "toolId": "emotions",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Text contrast is below 4.5:1 against its resolved background.",
-          "theme": "light",
-          "index": 125,
-          "ratio": 3.97,
-          "color": "#0891b2",
-          "background": "rgb(30,41,59)",
-          "text": "Write it out"
-        },
-        {
-          "toolId": "emotions",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Text contrast is below 4.5:1 against its resolved background.",
-          "theme": "light",
-          "index": 142,
-          "ratio": 4.41,
-          "color": "#3b82f6",
-          "background": "rgb(19,32,59)",
-          "text": "Sad"
-        },
-        {
-          "toolId": "emotions",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Text contrast is below 4.5:1 against its resolved background.",
-          "theme": "light",
-          "index": 146,
-          "ratio": 4.44,
-          "color": "#ef4444",
-          "background": "rgb(33,27,44)",
-          "text": "Angry"
-        },
-        {
-          "toolId": "emotions",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Text contrast is below 4.5:1 against its resolved background.",
-          "theme": "light",
-          "index": 150,
-          "ratio": 4.15,
-          "color": "#a855f7",
-          "background": "rgb(28,28,59)",
-          "text": "Scared"
-        },
-        {
-          "toolId": "emotions",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Text contrast is below 4.5:1 against its resolved background.",
-          "theme": "dark",
-          "index": 109,
-          "ratio": 4.22,
-          "color": "#8b5cf6",
-          "background": "rgb(15,23,42)",
-          "text": "0"
-        },
-        {
-          "toolId": "emotions",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Text contrast is below 4.5:1 against its resolved background.",
-          "theme": "dark",
-          "index": 125,
-          "ratio": 3.97,
-          "color": "#0891b2",
-          "background": "rgb(30,41,59)",
-          "text": "Write it out"
-        },
-        {
-          "toolId": "emotions",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Text contrast is below 4.5:1 against its resolved background.",
-          "theme": "dark",
-          "index": 142,
-          "ratio": 4.41,
-          "color": "#3b82f6",
-          "background": "rgb(19,32,59)",
-          "text": "Sad"
-        },
-        {
-          "toolId": "emotions",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Text contrast is below 4.5:1 against its resolved background.",
-          "theme": "dark",
-          "index": 146,
-          "ratio": 4.44,
-          "color": "#ef4444",
-          "background": "rgb(33,27,44)",
-          "text": "Angry"
-        },
-        {
-          "toolId": "emotions",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Text contrast is below 4.5:1 against its resolved background.",
-          "theme": "dark",
-          "index": 150,
-          "ratio": 4.15,
-          "color": "#a855f7",
-          "background": "rgb(28,28,59)",
-          "text": "Scared"
-        }
-      ]
+      "issues": []
     },
     {
       "id": "ethicalReasoning",
@@ -3511,283 +3268,39 @@
       "label": "Voice Detective",
       "renderedBytes": 40185,
       "standardShell": true,
-      "issueCount": 10,
+      "issueCount": 0,
       "errorCount": 0,
-      "warningCount": 10,
+      "warningCount": 0,
       "themes": [
         {
           "theme": "light",
           "renderedBytes": 13395,
           "standardShell": true,
-          "issueCount": 4,
+          "issueCount": 0,
           "errorCount": 0,
-          "warningCount": 4,
-          "issues": [
-            {
-              "toolId": "voicedetective",
-              "severity": "warning",
-              "code": "inline-contrast",
-              "message": "Text contrast is below 4.5:1 against its resolved background.",
-              "theme": "light",
-              "index": 73,
-              "ratio": 2.67,
-              "color": "#7c3aed",
-              "background": "rgb(46,27,77)",
-              "text": "🎓 What to Listen For"
-            },
-            {
-              "toolId": "voicedetective",
-              "severity": "warning",
-              "code": "inline-contrast",
-              "message": "Text contrast is below 4.5:1 against its resolved background.",
-              "theme": "light",
-              "index": 81,
-              "ratio": 3.98,
-              "color": "#3b82f6",
-              "background": "rgb(30,41,59)",
-              "text": "Sad"
-            },
-            {
-              "toolId": "voicedetective",
-              "severity": "warning",
-              "code": "inline-contrast",
-              "message": "Text contrast is below 4.5:1 against its resolved background.",
-              "theme": "light",
-              "index": 85,
-              "ratio": 3.89,
-              "color": "#ef4444",
-              "background": "rgb(30,41,59)",
-              "text": "Angry"
-            },
-            {
-              "toolId": "voicedetective",
-              "severity": "warning",
-              "code": "inline-contrast",
-              "message": "Text contrast is below 4.5:1 against its resolved background.",
-              "theme": "light",
-              "index": 89,
-              "ratio": 3.7,
-              "color": "#a855f7",
-              "background": "rgb(30,41,59)",
-              "text": "Scared"
-            }
-          ]
+          "warningCount": 0,
+          "issues": []
         },
         {
           "theme": "dark",
           "renderedBytes": 13395,
           "standardShell": true,
-          "issueCount": 4,
+          "issueCount": 0,
           "errorCount": 0,
-          "warningCount": 4,
-          "issues": [
-            {
-              "toolId": "voicedetective",
-              "severity": "warning",
-              "code": "inline-contrast",
-              "message": "Text contrast is below 4.5:1 against its resolved background.",
-              "theme": "dark",
-              "index": 73,
-              "ratio": 2.67,
-              "color": "#7c3aed",
-              "background": "rgb(46,27,77)",
-              "text": "🎓 What to Listen For"
-            },
-            {
-              "toolId": "voicedetective",
-              "severity": "warning",
-              "code": "inline-contrast",
-              "message": "Text contrast is below 4.5:1 against its resolved background.",
-              "theme": "dark",
-              "index": 81,
-              "ratio": 3.98,
-              "color": "#3b82f6",
-              "background": "rgb(30,41,59)",
-              "text": "Sad"
-            },
-            {
-              "toolId": "voicedetective",
-              "severity": "warning",
-              "code": "inline-contrast",
-              "message": "Text contrast is below 4.5:1 against its resolved background.",
-              "theme": "dark",
-              "index": 85,
-              "ratio": 3.89,
-              "color": "#ef4444",
-              "background": "rgb(30,41,59)",
-              "text": "Angry"
-            },
-            {
-              "toolId": "voicedetective",
-              "severity": "warning",
-              "code": "inline-contrast",
-              "message": "Text contrast is below 4.5:1 against its resolved background.",
-              "theme": "dark",
-              "index": 89,
-              "ratio": 3.7,
-              "color": "#a855f7",
-              "background": "rgb(30,41,59)",
-              "text": "Scared"
-            }
-          ]
+          "warningCount": 0,
+          "issues": []
         },
         {
           "theme": "high-contrast",
           "renderedBytes": 13395,
           "standardShell": true,
-          "issueCount": 2,
+          "issueCount": 0,
           "errorCount": 0,
-          "warningCount": 2,
-          "issues": [
-            {
-              "toolId": "voicedetective",
-              "severity": "warning",
-              "code": "inline-contrast",
-              "message": "Text contrast is below 4.5:1 against its resolved background.",
-              "theme": "high-contrast",
-              "index": 67,
-              "ratio": 2.41,
-              "color": "rgb(107,33,168) (inherited)",
-              "background": "rgb(0,0,0)",
-              "text": "6 Emotions"
-            },
-            {
-              "toolId": "voicedetective",
-              "severity": "warning",
-              "code": "inline-contrast",
-              "message": "Text contrast is below 4.5:1 against its resolved background.",
-              "theme": "high-contrast",
-              "index": 73,
-              "ratio": 3.69,
-              "color": "#7c3aed",
-              "background": "rgb(0,0,0)",
-              "text": "🎓 What to Listen For"
-            }
-          ]
+          "warningCount": 0,
+          "issues": []
         }
       ],
-      "issues": [
-        {
-          "toolId": "voicedetective",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Text contrast is below 4.5:1 against its resolved background.",
-          "theme": "light",
-          "index": 73,
-          "ratio": 2.67,
-          "color": "#7c3aed",
-          "background": "rgb(46,27,77)",
-          "text": "🎓 What to Listen For"
-        },
-        {
-          "toolId": "voicedetective",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Text contrast is below 4.5:1 against its resolved background.",
-          "theme": "light",
-          "index": 81,
-          "ratio": 3.98,
-          "color": "#3b82f6",
-          "background": "rgb(30,41,59)",
-          "text": "Sad"
-        },
-        {
-          "toolId": "voicedetective",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Text contrast is below 4.5:1 against its resolved background.",
-          "theme": "light",
-          "index": 85,
-          "ratio": 3.89,
-          "color": "#ef4444",
-          "background": "rgb(30,41,59)",
-          "text": "Angry"
-        },
-        {
-          "toolId": "voicedetective",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Text contrast is below 4.5:1 against its resolved background.",
-          "theme": "light",
-          "index": 89,
-          "ratio": 3.7,
-          "color": "#a855f7",
-          "background": "rgb(30,41,59)",
-          "text": "Scared"
-        },
-        {
-          "toolId": "voicedetective",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Text contrast is below 4.5:1 against its resolved background.",
-          "theme": "dark",
-          "index": 73,
-          "ratio": 2.67,
-          "color": "#7c3aed",
-          "background": "rgb(46,27,77)",
-          "text": "🎓 What to Listen For"
-        },
-        {
-          "toolId": "voicedetective",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Text contrast is below 4.5:1 against its resolved background.",
-          "theme": "dark",
-          "index": 81,
-          "ratio": 3.98,
-          "color": "#3b82f6",
-          "background": "rgb(30,41,59)",
-          "text": "Sad"
-        },
-        {
-          "toolId": "voicedetective",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Text contrast is below 4.5:1 against its resolved background.",
-          "theme": "dark",
-          "index": 85,
-          "ratio": 3.89,
-          "color": "#ef4444",
-          "background": "rgb(30,41,59)",
-          "text": "Angry"
-        },
-        {
-          "toolId": "voicedetective",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Text contrast is below 4.5:1 against its resolved background.",
-          "theme": "dark",
-          "index": 89,
-          "ratio": 3.7,
-          "color": "#a855f7",
-          "background": "rgb(30,41,59)",
-          "text": "Scared"
-        },
-        {
-          "toolId": "voicedetective",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Text contrast is below 4.5:1 against its resolved background.",
-          "theme": "high-contrast",
-          "index": 67,
-          "ratio": 2.41,
-          "color": "rgb(107,33,168) (inherited)",
-          "background": "rgb(0,0,0)",
-          "text": "6 Emotions"
-        },
-        {
-          "toolId": "voicedetective",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Text contrast is below 4.5:1 against its resolved background.",
-          "theme": "high-contrast",
-          "index": 73,
-          "ratio": 3.69,
-          "color": "#7c3aed",
-          "background": "rgb(0,0,0)",
-          "text": "🎓 What to Listen For"
-        }
-      ]
+      "issues": []
     },
     {
       "id": "wheelOfLife",

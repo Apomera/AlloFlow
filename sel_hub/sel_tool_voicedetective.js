@@ -216,6 +216,20 @@ window.SelHub = window.SelHub || {
       };
       var _vdC = function(hex) { return _vdHC ? (_VD_HC[hex] || hex) : (_vdDark ? (_VD_DARK[hex] || hex) : hex); };
 
+      // ── Ink: the same hue, readable as TEXT on this tool's dark surface ──
+      // _vdC serves surfaces AND text from one map, so it cannot lighten an
+      // accent for text without also lightening the chip that accent fills.
+      // These are the emotion hues used as labels; on the dark shell they sit
+      // between 3.7 and 4.4 against AA's 4.5. Foreground only, so no surface
+      // moves. Falls back to _vdC for anything not listed.
+      var _VD_INK = { '#6b21a8': '#c4b5fd',  '#3b82f6': '#60a5fa', '#ef4444': '#f87171', '#a855f7': '#c084fc', '#7c3aed': '#c4b5fd' };
+      var _VD_INK_HC = { '#6b21a8': '#ffff00',  '#3b82f6': '#ffff00', '#ef4444': '#ffff00', '#a855f7': '#ffff00', '#7c3aed': '#ffff00' };
+      var _vdInk = function(hex) {
+        if (_vdHC) return _VD_INK_HC[hex] || _vdC(hex);
+        if (_vdDark) return _VD_INK[hex] || _vdC(hex);
+        return _vdC(hex);
+      };
+
       var gradeBand = ctx.gradeBand || 'elementary';
       var callTTS = ctx.callTTS;
       var addToast = ctx.addToast;
@@ -454,7 +468,7 @@ window.SelHub = window.SelHub || {
       var card = { background: _vdC('#fff'), borderRadius: '14px', padding: '20px', border: '1px solid ' + _vdC('#e5e7eb'), marginBottom: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' };
       var btn = function(bg, fg, dis) { return { padding: '10px 18px', background: dis ? _vdC('#e5e7eb') : bg, color: dis ? _vdC('#9ca3af') : fg, border: 'none', borderRadius: '12px', fontWeight: 700, fontSize: '14px', cursor: dis ? 'not-allowed' : 'pointer', transition: 'all 0.15s' }; };
       var PURPLE = '#7c3aed';
-      var PURPLE_TEXT = _vdC('#6b21a8');
+      var PURPLE_TEXT = _vdInk('#6b21a8');
 
       // ═══ RENDER ═══
 
@@ -485,7 +499,7 @@ window.SelHub = window.SelHub || {
               h('div', { style: { fontSize: '10px', color: _vdC('#94a3b8') } }, 'all-time correct')
             ),
             h('div', { style: { background: _vdC('#f5f3ff'), borderRadius: '10px', padding: '10px 16px', textAlign: 'center' } },
-              h('div', { style: { fontSize: '20px', fontWeight: 900, color: PURPLE } }, allTimeAcc + '%'),
+              h('div', { style: { fontSize: '20px', fontWeight: 900, color: _vdInk(PURPLE) } }, allTimeAcc + '%'),
               h('div', { style: { fontSize: '10px', color: _vdC('#94a3b8') } }, 'accuracy')
             )
           ),
@@ -500,12 +514,12 @@ window.SelHub = window.SelHub || {
           ),
           // Prosody Cue Cards — teach what to listen for
           h('div', { style: { marginBottom: '20px', background: _vdC('#faf5ff'), border: '1px solid #e9d5ff', borderRadius: '14px', padding: '14px' } },
-            h('div', { style: { fontSize: '12px', fontWeight: 700, color: PURPLE, marginBottom: '8px' } }, '🎓 What to Listen For'),
+            h('div', { style: { fontSize: '12px', fontWeight: 700, color: _vdInk(PURPLE), marginBottom: '8px' } }, '🎓 What to Listen For'),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: '6px' } },
               emotions.map(function(em) {
                 return h('div', { key: em.id, style: { background: _vdC('#fff'), borderRadius: '10px', padding: '8px', border: '2px solid ' + em.color + '33', textAlign: 'center' } },
                   h('div', { style: { fontSize: '24px', marginBottom: '2px' } }, em.emoji),
-                  h('div', { style: { fontSize: '11px', fontWeight: 700, color: em.color } }, em.label),
+                  h('div', { style: { fontSize: '11px', fontWeight: 700, color: _vdInk(em.color) } }, em.label),
                   h('div', { style: { fontSize: '9px', color: _vdC('#94a3b8'), lineHeight: 1.3 } },
                     em.id === 'happy' ? 'Voice goes UP. Fast & bright. Smiling sound.' :
                     em.id === 'sad' ? 'Voice goes DOWN. Slow & quiet. Like sighing.' :
@@ -624,7 +638,7 @@ window.SelHub = window.SelHub || {
             h('button', { onClick: function() { speakEmotion(target.sentence, target.emotion.id, target.voice); }, disabled: speaking,
               style: { padding: '16px 32px', fontSize: '28px', background: speaking ? _vdC('#e5e7eb') : PURPLE, color: '#fff', border: 'none', borderRadius: '50%', cursor: speaking ? 'wait' : 'pointer', boxShadow: speaking ? 'none' : '0 4px 16px rgba(124,58,237,0.3)', width: '80px', height: '80px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }
             }, speaking ? '🔊' : '▶'),
-            h('p', { style: { marginTop: '10px', fontSize: '12px', color: '#7c3aed', fontWeight: 600 } }, speaking ? 'Playing...' : 'Tap to hear again'),
+            h('p', { style: { marginTop: '10px', fontSize: '12px', color: _vdInk('#7c3aed'), fontWeight: 600 } }, speaking ? 'Playing...' : 'Tap to hear again'),
             // Animated face during playback
             speaking && h('div', { style: { marginTop: '10px', fontSize: '48px', animation: 'pulse 1s infinite' }, 'aria-hidden': 'true' }, '🗣️'),
             h('p', { style: { marginTop: '6px', fontSize: '13px', color: _vdC('#475569'), fontStyle: 'italic' } }, '"' + target.sentence + '"'),
@@ -648,7 +662,7 @@ window.SelHub = window.SelHub || {
                   opacity: isWrong ? 0.4 : 1, transform: isCorrect ? 'scale(1.05)' : 'scale(1)', transition: 'all 0.15s' }
               },
                 h('span', { style: { fontSize: '32px' }, 'aria-hidden': 'true' }, em.emoji),
-                h('span', { style: { fontSize: '13px', fontWeight: 700, color: em.color } }, em.label),
+                h('span', { style: { fontSize: '13px', fontWeight: 700, color: _vdInk(em.color) } }, em.label),
                 // Text label for correct/wrong (non-color indicator)
                 isCorrect && h('span', { style: { fontSize: '10px', fontWeight: 700, color: '#16a34a' } }, '✓ Correct'),
                 isAnswer && h('span', { style: { fontSize: '10px', fontWeight: 700, color: '#16a34a' } }, '← Answer'),

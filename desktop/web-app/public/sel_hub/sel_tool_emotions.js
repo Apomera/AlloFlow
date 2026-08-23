@@ -17983,6 +17983,21 @@ window.SelHub = window.SelHub || {
       };
       var ST = function(hex) { return _hcT ? '#ffff00' : (_lightT ? (_SOFT_LIGHT[hex] || hex) : hex); };
 
+      // ── INK: an accent hue, readable as TEXT on this tool's dark surface ──
+      // These hues double as chip fills and left rules, so they cannot simply be
+      // lightened at the source. As TEXT on the dark shell they land between
+      // 3.97 and 4.44 against AA's 4.5. Foreground only; nothing else moves.
+      var _EMO_INK = {
+        '#3b82f6': '#60a5fa', '#ef4444': '#f87171', '#a855f7': '#c084fc',
+        '#8b5cf6': '#a78bfa', '#0891b2': '#22d3ee', '#6366f1': '#818cf8',
+        '#16a34a': '#22c55e', '#ea580c': '#f97316', '#dc2626': '#f87171'
+      };
+      var INK = function(hex) {
+        if (_hcT) return '#ffff00';
+        if (_lightT) return hex;
+        return _EMO_INK[hex] || hex;
+      };
+
       // ── Tool-scoped state ──
       var d = (ctx.toolData && ctx.toolData.emotions) || {};
       var upd = function(key, val) {
@@ -18262,7 +18277,7 @@ window.SelHub = window.SelHub || {
         },
           h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
           h('div', { style: { flex: 1, minWidth: 220 } },
-            h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+            h('h3', { style: { color: INK(meta.accent), fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
             h('p', { style: { margin: '3px 0 0', color: '#cbd5e1', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
           )
         );
@@ -18293,7 +18308,7 @@ window.SelHub = window.SelHub || {
             gap: 8
           }
         },
-          h('span', { style: { fontSize: 12, fontWeight: 900, color: color } }, label),
+          h('span', { style: { fontSize: 12, fontWeight: 900, color: INK(color) } }, label),
           h('span', { style: { fontSize: 11, color: P.textMuted, lineHeight: 1.45 } }, detail)
         );
       }
@@ -18309,7 +18324,7 @@ window.SelHub = window.SelHub || {
             minHeight: 62
           }
         },
-          h('div', { style: { fontSize: 18, fontWeight: 900, color: color, lineHeight: 1 } }, value),
+          h('div', { style: { fontSize: 18, fontWeight: 900, color: INK(color), lineHeight: 1 } }, value),
           h('div', { style: { marginTop: 5, fontSize: 10.5, color: P.textMuted, lineHeight: 1.35 } }, label)
         );
       }
@@ -18534,7 +18549,7 @@ window.SelHub = window.SelHub || {
                 onMouseLeave: function(e) { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = 'none'; }
               },
                 h('div', { style: { fontSize: 36, marginBottom: 6 } }, fam.emoji),
-                h('div', { style: { fontWeight: 700, color: fam.color, fontSize: 14, marginBottom: 2 } }, fam.label),
+                h('div', { style: { fontWeight: 700, color: INK(fam.color), fontSize: 14, marginBottom: 2 } }, fam.label),
                 h('div', { style: { fontSize: 10, color: P.textMuted, lineHeight: 1.3 } }, fam.desc[band]),
                 explored && h('div', { style: { fontSize: 11, color: P.textMuted, marginTop: 4 } }, '\u2713 explored')
               );
@@ -18555,7 +18570,7 @@ window.SelHub = window.SelHub || {
 
               h('div', { style: { textAlign: 'center', marginBottom: 16 } },
                 h('span', { style: { fontSize: 36 } }, fam.emoji),
-                h('h4', { style: { margin: '4px 0', color: fam.color, fontSize: 20 } }, fam.label + ' Family'),
+                h('h4', { style: { margin: '4px 0', color: INK(fam.color), fontSize: 20 } }, fam.label + ' Family'),
                 h('p', { style: { color: P.textMuted, fontSize: 12 } }, fam.desc[band])
               ),
 
@@ -20093,7 +20108,7 @@ if (activeTab === 'plutchik') {
     var adjacents = PLUTCHIK_DYADS.filter(function(dy) { return dy.a === pwSel.primary || dy.b === pwSel.primary; });
     detailPanel = h('div', { style: { padding: 14, borderRadius: 10, background: _shadeColor(primary.color, 0.12), border: '1px solid ' + primary.color + '66', marginTop: 12 } },
       h('div', { style: { fontSize: 11, color: P.textMuted, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4 } }, primary.moderate.name + ' family — ' + pwSel.intensity + ' intensity'),
-      h('h3', { style: { margin: '0 0 6px', color: primary.color, fontSize: 22, fontWeight: 800 } }, info.name),
+      h('h3', { style: { margin: '0 0 6px', color: INK(primary.color), fontSize: 22, fontWeight: 800 } }, info.name),
       h('p', { style: { margin: 0, color: P.text3, fontSize: 14, lineHeight: 1.55 } }, info.desc),
       h('div', { style: { marginTop: 10, padding: '8px 10px', borderRadius: 6, background: P.bg } },
         h('div', { style: { color: ST('#fbbf24'), fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, 'Intensity ladder for this family'),
@@ -20548,7 +20563,7 @@ if (activeTab === 'volcano') {
     h('div', { style: { marginTop: 12, padding: 14, borderRadius: 10, background: P.bg, border: ('1px solid ' + P.border) } },
       h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 6 } },
         h('label', { htmlFor: 'vc-slider', style: { color: P.text2, fontSize: 13, fontWeight: 700 } }, 'How activated are you right now?'),
-        h('span', { style: { color: stage.color, fontSize: 20, fontWeight: 800 } }, vcLevel + ' / 10')
+        h('span', { style: { color: INK(stage.color), fontSize: 20, fontWeight: 800 } }, vcLevel + ' / 10')
       ),
       h('input', { id: 'vc-slider', type: 'range', min: 0, max: 10, value: vcLevel,
         onChange: function(e) { upd({ vcLevel: parseInt(e.target.value, 10) }); },
@@ -20560,7 +20575,7 @@ if (activeTab === 'volcano') {
       )
     ),
     h('div', { style: { marginTop: 14, padding: 16, borderRadius: 10, background: stage.color + '15', border: '2px solid ' + stage.color, borderLeft: '6px solid ' + stage.color } },
-      h('h3', { style: { margin: 0, color: stage.color, fontSize: 18, fontWeight: 800 } }, stage.label),
+      h('h3', { style: { margin: 0, color: INK(stage.color), fontSize: 18, fontWeight: 800 } }, stage.label),
       h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 10, marginTop: 12 } },
         h('div', null,
           h('div', { style: { color: ST('#fbbf24'), fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, 'In the body'),
