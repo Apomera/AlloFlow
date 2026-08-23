@@ -701,3 +701,50 @@ Social Skills Roleplay / Conflict Theater.
 comparing escaped text would call every card unique and the suite vacuous —
 forbids any three-way tie outright, and ratchets the two-way pairs and section
 clashes so they can fall but never rise.
+
+---
+
+## 12. 2026-08-23 — six crashes waiting on stale saved state  (local, unpushed)
+
+`check_find_deref` had never been aimed at `sel_hub`: its walk root was
+`stem_lab` and nothing else, so a positional directory argument was accepted and
+then ignored — the report described STEM whatever you asked for. **Fourth
+scanner this session with that shape.** It now takes a directory, exits non-zero
+when the walk finds no files, and its summary names the directory it actually
+scanned instead of always claiming `stem_lab`.
+
+Aimed at `sel_hub`, six `X.find(fn).prop` chains:
+
+| file | expression |
+|---|---|
+| `advocacy:18004` | `sim.turns.find(...).partner` |
+| `genogram:264` | `GENS.find(...).label` |
+| `zones:35872`, `:35878` | `ZONES.find(...).color` |
+| `zones:36540`, `:36544` | `ZONES.find(...).label` |
+
+Every one sits behind a truthiness guard on the **id**, which is not the same
+thing as a guard on the **lookup succeeding**. These tools persist their state,
+so an id that no longer exists in its array — a renamed zone, a removed
+generation, an old simulation turn — throws `TypeError` and takes the tool down
+**for exactly the students who have used it most and carry the oldest saved
+data**. Each now falls back: to the first zone for a colour, to a neutral word
+for a label, to an empty object for the rest.
+
+### Two things the guard test taught me
+
+`tests/sel_find_deref_guard.test.js` works on the **AST**, not on text. My first
+attempt used a regex and flagged eight files — it cannot tell
+`(X.find(fn) || {}).prop` from `X.find(fn).prop`, because the guarded form still
+contains the unguarded substring.
+
+The AST version then reported a **seventh** site in `sociallab` that the scanner
+had not. That one turned out to be `find(...)?.icon` — optional chaining, already
+safe. The walk now skips optional member expressions, and the calibration case
+covers all four shapes: unguarded, both `||` fallbacks, and `?.`.
+
+### Also swept, clean
+
+`check_aria_handler` (74 files, 2,167 string-attr sites),
+`check_css_template_literals` (462 files, no stray backticks). Both quoted with
+their file counts, because a count is the only evidence a scan looked at
+anything.
