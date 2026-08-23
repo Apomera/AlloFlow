@@ -120,7 +120,11 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('healthyRelations
       var _hre_FGL = {'#cbd5e1':'#334155','#f9a8d4':'#be185d','#94a3b8':'#64748b','#fecaca':'#b91c1c','#fca5a5':'#991b1b','#fbcfe8':'#9d174d','#fde68a':'#92400e','#fee2e2':'#991b1b','#e9d5ff':'#581c87','#e2e8f0':'#1e293b','#fdba74':'#9a3412','#d8b4fe':'#6b21a8','#67e8f9':'#155e75','#c7d2fe':'#312e81','#e0e7ff':'#3730a3','#5eead4':'#0f766e','#a7f3d0':'#047857','#fcd34d':'#78350f'}, _hre_FGH = {'#cbd5e1':'#ffff00','#f9a8d4':'#ffff00','#94a3b8':'#ffff00','#fecaca':'#ffff00','#fca5a5':'#ffff00','#fbcfe8':'#ffff00','#bbf7d0':'#ffff00','#dcfce7':'#ffff00','#fde68a':'#ffff00','#fef3c7':'#ffff00','#fee2e2':'#ffff00','#e9d5ff':'#ffff00','#e2e8f0':'#ffff00','#bae6fd':'#ffff00','#fdba74':'#ffff00','#fed7aa':'#ffff00','#d8b4fe':'#ffff00','#67e8f9':'#ffff00','#cffafe':'#ffff00','#c7d2fe':'#ffff00','#e0e7ff':'#ffff00','#5eead4':'#ffff00','#a7f3d0':'#ffff00','#fcd34d':'#ffff00','#fff':'#ffff00','#0f172a':'#ffff00','#475569':'#ffff00','#7f1d1d':'#ffff00'};
       var _hre_BDL = {'#334155':'#e2e8f0','#1e293b':'#e5e7eb','#0f172a':'#cbd5e1'}, _hre_BDH = {'#334155':'#ffff00','#ef4444':'#ffff00','#22c55e':'#ffff00','#f59e0b':'#ffff00','#1e293b':'#ffff00','#ec4899':'#ffff00','#a855f7':'#ffff00','#0ea5e9':'#ffff00','#f97316':'#ffff00','#0891b2':'#ffff00','#6366f1':'#ffff00','#14b8a6':'#ffff00','#e2e8f0':'#ffff00','#0f172a':'#ffff00','#fecaca':'#ffff00','#cbd5e1':'#ffff00'};
       var _hreBg = function(h){ return _hreHC ? (_hre_BGH[h]||h) : (_hreL ? (_hre_BGL[h]||h) : h); };
-      var _hreFg = function(h){ return _hreHC ? (_hre_FGH[h]||h) : (_hreL ? (_hre_FGL[h]||h) : h); };
+      // Dark-mode foreground remap. The tool shell is always dark, so these
+      // mid-tone accents were rendering below 4.5:1 as TEXT. Each maps to a
+      // lighter shade of the SAME hue; backgrounds and borders are untouched.
+      var _hre_FGD = {'#ec4899':'#f472b6','#a855f7':'#c084fc','#ef4444':'#f87171','#16a34a':'#22c55e','#6366f1':'#818cf8'};
+      var _hreFg = function(h){ return _hreHC ? (_hre_FGH[h]||h) : (_hreL ? (_hre_FGL[h]||h) : (_hre_FGD[h]||h)); };
       var _hreBd = function(h){ return _hreHC ? (_hre_BDH[h]||h) : (_hreL ? (_hre_BDL[h]||h) : h); };
       var React = ctx.React;
       var h = React.createElement;
@@ -170,7 +174,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('healthyRelations
               role: 'tab', 'aria-selected': active,
               style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + (active ? '#ec4899' : '#334155'),
                 background: active ? 'rgba(236,72,153,0.18)' : _hreBg('#1e293b'),
-                color: active ? _hreFg('#fbcfe8') : _hreFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
+                color: _hreFg(active) ? _hreFg('#fbcfe8') : _hreFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
               t.icon + ' ' + t.label);
           })
         );
@@ -227,7 +231,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('healthyRelations
             gap: 8
           }
         },
-          h('span', { style: { fontSize: 12, fontWeight: 900, color: color } }, label),
+          h('span', { style: { fontSize: 12, fontWeight: 900, color: _hreFg(color) } }, label),
           h('span', { style: { fontSize: 11, color: _hreFg('#94a3b8'), lineHeight: 1.45 } }, detail)
         );
       }
@@ -243,7 +247,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('healthyRelations
             minHeight: 62
           }
         },
-          h('div', { style: { fontSize: 18, fontWeight: 900, color: color, lineHeight: 1 } }, value),
+          h('div', { style: { fontSize: 18, fontWeight: 900, color: _hreFg(color), lineHeight: 1 } }, value),
           h('div', { style: { marginTop: 5, fontSize: 10.5, color: _hreFg('#94a3b8'), lineHeight: 1.35 } }, label)
         );
       }
@@ -329,7 +333,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('healthyRelations
               DIMENSIONS.map(function(dim) {
                 return h('div', { key: dim.id, style: { padding: 8, borderRadius: 6, background: _hreBg('#1e293b'), borderLeft: '2px solid ' + dim.color, display: 'flex', alignItems: 'center', gap: 6 } },
                   h('span', { style: { fontSize: 16 } }, dim.icon),
-                  h('span', { style: { fontSize: 12, fontWeight: 700, color: dim.color } }, dim.label)
+                  h('span', { style: { fontSize: 12, fontWeight: 700, color: _hreFg(dim.color) } }, dim.label)
                 );
               })
             )
@@ -353,7 +357,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('healthyRelations
       function stepCard(title, blurb, onClick, color) {
         return h('button', { onClick: onClick, 'aria-label': title,
           style: { width: '100%', textAlign: 'left', padding: 14, borderRadius: 10, borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '4px solid ' + color, background: _hreBg('#0f172a'), cursor: 'pointer', marginBottom: 8, color: _hreFg('#e2e8f0') } },
-          h('div', { style: { fontSize: 14, fontWeight: 800, color: color, marginBottom: 4 } }, title),
+          h('div', { style: { fontSize: 14, fontWeight: 800, color: _hreFg(color), marginBottom: 4 } }, title),
           h('div', { style: { fontSize: 12, color: _hreFg('#94a3b8'), lineHeight: 1.55 } }, blurb)
         );
       }
@@ -395,7 +399,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('healthyRelations
             return h('div', { key: dim.id, style: { padding: 14, borderRadius: 10, background: _hreBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid ' + dim.color, marginBottom: 10 } },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 } },
                 h('span', { style: { fontSize: 20 } }, dim.icon),
-                h('span', { style: { fontSize: 14, fontWeight: 800, color: dim.color } }, dim.label)
+                h('span', { style: { fontSize: 14, fontWeight: 800, color: _hreFg(dim.color) } }, dim.label)
               ),
 
               // Three descriptions
@@ -759,7 +763,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('healthyRelations
                 return h('div', { key: dim.id, style: { padding: 10, border: '1px solid #cbd5e1', borderRadius: 8, marginBottom: 6, pageBreakInside: 'avoid' } },
                   h('div', { style: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 4 } },
                     h('div', { style: { fontSize: 13, fontWeight: 700, color: _hreFg('#0f172a') } }, dim.label),
-                    r ? h('div', { style: { fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 4, border: '1px solid ' + (ratingColor[r] || _hreFg('#475569')), color: ratingColor[r] || _hreFg('#475569') } }, ratingLabel[r] || r) : h('div', { style: { fontSize: 10.5, color: _hreFg('#94a3b8') } }, 'not rated')
+                    r ? h('div', { style: { fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 4, border: '1px solid ' + (ratingColor[r] || _hreFg('#475569')), color: _hreFg(ratingColor)[r] || _hreFg('#475569') } }, ratingLabel[r] || r) : h('div', { style: { fontSize: 10.5, color: _hreFg('#94a3b8') } }, 'not rated')
                   ),
                   r ? h('div', { style: { fontSize: 11.5, color: _hreFg('#475569'), lineHeight: 1.55 } }, dim[r] || '') : null
                 );

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-21T21:54:59.259Z",
+  "generatedAt": "2026-08-23T17:13:40.719Z",
   "scope": [
     "SEL Hub shell/catalog",
     "Recent SEL work entry point",
@@ -25,9 +25,9 @@
       "dark",
       "high-contrast"
     ],
-    "toolIssueCount": 0,
+    "toolIssueCount": 182,
     "toolErrorCount": 0,
-    "toolWarningCount": 0,
+    "toolWarningCount": 182,
     "toolsWithoutStandardShell": []
   },
   "manualAuditNotes": [
@@ -39,7 +39,7 @@
     {
       "view": "sel-hub-catalog",
       "theme": "light",
-      "renderedBytes": 197712,
+      "renderedBytes": 198715,
       "issueCount": 0,
       "errorCount": 0,
       "warningCount": 0,
@@ -54,7 +54,7 @@
     {
       "view": "sel-hub-catalog",
       "theme": "dark",
-      "renderedBytes": 197723,
+      "renderedBytes": 198726,
       "issueCount": 0,
       "errorCount": 0,
       "warningCount": 0,
@@ -69,7 +69,7 @@
     {
       "view": "sel-hub-catalog",
       "theme": "high-contrast",
-      "renderedBytes": 197657,
+      "renderedBytes": 198660,
       "issueCount": 0,
       "errorCount": 0,
       "warningCount": 0,
@@ -84,7 +84,7 @@
     {
       "view": "sel-hub-catalog",
       "theme": "mobile-high-contrast",
-      "renderedBytes": 197509,
+      "renderedBytes": 198512,
       "issueCount": 0,
       "errorCount": 0,
       "warningCount": 0,

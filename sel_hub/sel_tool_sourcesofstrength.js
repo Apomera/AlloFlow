@@ -106,7 +106,11 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sourcesOfStrengt
       var _sou_FGL = {'#cbd5e1':'#334155','#fcd34d':'#78350f','#94a3b8':'#64748b','#fde68a':'#92400e','#e2e8f0':'#1e293b'}, _sou_FGH = {'#cbd5e1':'#ffff00','#fcd34d':'#ffff00','#94a3b8':'#ffff00','#fde68a':'#ffff00','#fff':'#ffff00','#e2e8f0':'#ffff00','#bbf7d0':'#ffff00','#0f172a':'#ffff00','#64748b':'#ffff00','#475569':'#ffff00'};
       var _sou_BDL = {'#334155':'#e2e8f0','#1e293b':'#e5e7eb','#475569':'#cbd5e1'}, _sou_BDH = {'#334155':'#ffff00','#1e293b':'#ffff00','#475569':'#ffff00','#f59e0b':'#ffff00','#fcd34d':'#ffff00','#22c55e':'#ffff00','#cbd5e1':'#ffff00','#d97706':'#ffff00'};
       var _souBg = function(h){ return _souHC ? (_sou_BGH[h]||h) : (_souL ? (_sou_BGL[h]||h) : h); };
-      var _souFg = function(h){ return _souHC ? (_sou_FGH[h]||h) : (_souL ? (_sou_FGL[h]||h) : h); };
+      // Dark-mode foreground remap. The tool shell is always dark, so these
+      // mid-tone accents were rendering below 4.5:1 as TEXT. Each maps to a
+      // lighter shade of the SAME hue; backgrounds and borders are untouched.
+      var _sou_FGD = {'#6366f1':'#818cf8'};
+      var _souFg = function(h){ return _souHC ? (_sou_FGH[h]||h) : (_souL ? (_sou_FGL[h]||h) : (_sou_FGD[h]||h)); };
       var _souBd = function(h){ return _souHC ? (_sou_BDH[h]||h) : (_souL ? (_sou_BDL[h]||h) : h); };
       var React = ctx.React;
       var h = React.createElement;
@@ -154,7 +158,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sourcesOfStrengt
               role: 'tab', 'aria-selected': active,
               style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + (active ? '#f59e0b' : '#334155'),
                 background: active ? 'rgba(245,158,11,0.18)' : _souBg('#1e293b'),
-                color: active ? _souFg('#fde68a') : _souFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
+                color: _souFg(active) ? _souFg('#fde68a') : _souFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
               t.icon + ' ' + t.label);
           })
         );
@@ -190,7 +194,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sourcesOfStrengt
               return h('div', { key: s.id, style: { padding: 14, borderRadius: 10, background: _souBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '4px solid ' + s.color } },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
                   h('span', { style: { fontSize: 22 } }, s.icon),
-                  h('span', { style: { fontSize: 14, fontWeight: 800, color: s.color } }, s.label)
+                  h('span', { style: { fontSize: 14, fontWeight: 800, color: _souFg(s.color) } }, s.label)
                 ),
                 h('p', { style: { margin: 0, color: _souFg('#cbd5e1'), fontSize: 12.5, lineHeight: 1.65 } }, s.what)
               );
@@ -241,13 +245,13 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sourcesOfStrengt
             return h('div', { key: s.id, style: { padding: 14, borderRadius: 10, background: _souBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '4px solid ' + s.color, marginBottom: 10 } },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8, flexWrap: 'wrap' } },
                 h('span', { style: { fontSize: 20 } }, s.icon),
-                h('span', { style: { fontSize: 14, fontWeight: 800, color: s.color, flex: 1, minWidth: 140 } }, s.label),
+                h('span', { style: { fontSize: 14, fontWeight: 800, color: _souFg(s.color), flex: 1, minWidth: 140 } }, s.label),
                 // 1-5 rating
                 h('div', { style: { display: 'flex', gap: 4 }, role: 'radiogroup', 'aria-label': 'Rate ' + s.label },
                   [1, 2, 3, 4, 5].map(function(n) {
                     var active = v === n;
                     return h('button', { key: n, onClick: function() { setRating(s.id, n); }, role: 'radio', 'aria-checked': active, 'aria-label': 'Rate ' + n,
-                      style: { padding: '4px 10px', borderRadius: 4, border: '1px solid ' + (active ? s.color : _souFg('#475569')), background: active ? s.color : 'transparent', color: active ? '#fff' : s.color, cursor: 'pointer', fontSize: 12, fontWeight: 700 } }, n);
+                      style: { padding: '4px 10px', borderRadius: 4, border: '1px solid ' + (active ? s.color : _souFg('#475569')), background: active ? s.color : 'transparent', color: _souFg(active) ? '#fff' : s.color, cursor: 'pointer', fontSize: 12, fontWeight: 700 } }, n);
                   })
                 )
               ),
@@ -316,10 +320,10 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sourcesOfStrengt
             return h('div', { key: s.id, style: { padding: 14, borderRadius: 10, background: _souBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '4px solid ' + s.color, marginBottom: 10 } },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 } },
                 h('span', { style: { fontSize: 22 } }, s.icon),
-                h('span', { style: { fontSize: 14, fontWeight: 800, color: s.color } }, s.label)
+                h('span', { style: { fontSize: 14, fontWeight: 800, color: _souFg(s.color) } }, s.label)
               ),
               h('div', { style: { padding: 10, borderRadius: 6, background: _souBg('#1e293b'), marginBottom: 8, fontSize: 12, color: _souFg('#cbd5e1'), lineHeight: 1.65, fontStyle: 'italic' } },
-                h('strong', { style: { color: s.color } }, 'How to build this: '), s.ifLow
+                h('strong', { style: { color: _souFg(s.color) } }, 'How to build this: '), s.ifLow
               ),
               h('label', { htmlFor: 'sos-plan-' + s.id, style: { display: 'block', fontSize: 11, color: _souFg('#94a3b8'), fontWeight: 700, marginBottom: 4 } }, 'My specific move (one small action I will take)'),
               h('textarea', { id: 'sos-plan-' + s.id, value: plan,
@@ -378,7 +382,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sourcesOfStrengt
               return h('div', { key: s.id, style: { marginBottom: 14, pageBreakInside: 'avoid', padding: 10, borderLeft: '3px solid ' + s.color, background: _souBg('#f8fafc') } },
                 h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 4 } },
                   h('strong', { style: { fontSize: 13, color: _souFg('#0f172a') } }, s.icon + ' ' + s.label),
-                  v ? h('span', { style: { fontSize: 13, fontWeight: 800, color: s.color } }, v + ' / 5') : h('span', { style: { fontSize: 11, color: _souFg('#94a3b8'), fontStyle: 'italic' } }, '(not rated)')
+                  v ? h('span', { style: { fontSize: 13, fontWeight: 800, color: _souFg(s.color) } }, v + ' / 5') : h('span', { style: { fontSize: 11, color: _souFg('#94a3b8'), fontStyle: 'italic' } }, '(not rated)')
                 ),
                 details.who ? h('div', { style: { fontSize: 12, color: _souFg('#0f172a'), marginBottom: 4 } }, h('strong', null, 'Who/what: '), details.who) : null,
                 plan ? h('div', { style: { fontSize: 12, color: _souFg('#0f172a'), fontStyle: 'italic' } }, h('strong', null, 'My move: '), plan) : null

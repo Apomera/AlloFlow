@@ -1,20 +1,20 @@
 # SEL Hub WCAG AA and Theme Audit
 
-Generated: 2026-08-21T21:54:59.259Z
+Generated: 2026-08-23T17:13:40.719Z
 
 ## Summary
 
 - Hub shell views audited: 4 across light, dark, high-contrast, mobile-high-contrast
 - Hub shell issues: 0 error(s), 0 warning(s)
-- Tool audit: 71 tools, 0 error(s), 0 warning(s)
+- Tool audit: 71 tools, 0 error(s), 182 warning(s)
 - Standard tool shell gaps: 0
 
-## What Looks Strong
+## Coverage (read this before the counts)
 
-- Every SEL tool is covered by the standard shell audit in light, dark, and high-contrast themes.
-- Hub shell exposes labeled controls for close, theme, export, teacher launch, recent work, and share-packet entry points.
-- Recent SEL work and Share Packet entry points include student-control/privacy language.
-- Theme tokens now cover high-contrast foregrounds for accent, success, warning, danger, teacher-station, and disabled surfaces.
+- Tool contrast: 14196 text node(s) graded; 921 skipped (gradient background), 933 skipped (colour set by a CSS class)
+- **Skipped is not passed.** Gradient-backed text has no single background to measure, and a colour set by a utility class cannot be resolved from server-rendered markup.
+- Hub shell entry points found this run: light=recent+sharePacket+teacherLaunch+privacyCopy, dark=recent+sharePacket+teacherLaunch+privacyCopy, high-contrast=recent+sharePacket+teacherLaunch+privacyCopy, mobile-high-contrast=recent+sharePacket+teacherLaunch+privacyCopy
+- Tool interiors render on the host dark shell (`needsDarkShell` in sel_hub_module.js), so a tool that ignores `ctx.theme` produces identical markup in light and dark. Byte-identical renders across themes below mean the tool is theme-blind, not that it passed three audits.
 
 ## Remaining Manual QA
 

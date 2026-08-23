@@ -434,6 +434,7 @@
           var hasReact = ctx && ctx.React;
           var useStandardShell = hasReact && tool.standardShell !== false;
           var needsDarkShell = tool.lightBackground !== true && hasReact;
+          var shellIsContrast = !!(ctx && (ctx.isContrast || (ctx.theme && ctx.theme.isContrast)));
           var renderCtx = ctx;
           if (needsDarkShell && ctx) {
             var shellTheme = Object.assign({}, ctx.theme || {}, { isDark: true });
@@ -460,8 +461,12 @@
           if (needsDarkShell) {
             body = ctx.React.createElement('div', {
               style: {
-                background: '#0f172a',
-                color: '#e2e8f0',
+                // High contrast is NOT overridden above (only isDark is), so a tool
+                // whose remap checks isContrast first does render its HC palette.
+                // The surface underneath it has to follow, or HC chrome ends up
+                // wrapping a slate-900 body — black/yellow content on #0f172a.
+                background: shellIsContrast ? '#000000' : '#0f172a',
+                color: shellIsContrast ? '#ffff00' : '#e2e8f0',
                 borderRadius: useStandardShell ? 8 : 12,
                 minHeight: useStandardShell ? 520 : 'calc(100vh - 32px)',
                 overflow: 'hidden'
@@ -2004,6 +2009,10 @@
         teamwork: { tier: 'practice' },
         friendship: { tier: 'practice' },
         advocacy: { tier: 'practice' },
+        // Role-split sibling of `advocacy` (Studio = concrete IEP/504 planning,
+        // Practice = general scripts). The map fails open, so without an entry
+        // the badge silently vanished from one of the two cards.
+        selfAdvocacy: { tier: 'practice', note: 'Structured self-advocacy and IEP/504 planning scaffold; self-determination instruction has promising support (Test et al.), but this tool is a rehearsal aid, not an intervention trial.' },
         crisiscompanion: { tier: 'practice', note: 'Structured peer-support and crisis-coping scaffold aligned with 988 / AFSP / NEDA guidance; not a clinical assessment or treatment.' },
         civicAction: { tier: 'practice' },
         voicedetective: { tier: 'practice' },

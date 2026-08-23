@@ -128,7 +128,11 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('landPlace'))) {
       var _lan_FGL = {'#cbd5e1':'#334155','#86efac':'#166534','#94a3b8':'#64748b','#e9d5ff':'#581c87','#e2e8f0':'#1e293b','#fbbf24':'#854d0e','#7dd3fc':'#075985','#fde68a':'#92400e','#fca5a5':'#991b1b','#fecaca':'#b91c1c','#c4b5fd':'#5b21b6','#38bdf8':'#0369a1'}, _lan_FGH = {'#cbd5e1':'#ffff00','#86efac':'#ffff00','#94a3b8':'#ffff00','#e9d5ff':'#ffff00','#a855f7':'#ffff00','#e2e8f0':'#ffff00','#bbf7d0':'#ffff00','#fbbf24':'#ffff00','#7dd3fc':'#ffff00','#fde68a':'#ffff00','#16a34a':'#ffff00','#0ea5e9':'#ffff00','#fca5a5':'#ffff00','#fecaca':'#ffff00','#c4b5fd':'#ffff00','#bae6fd':'#ffff00','#fff':'#ffff00','#38bdf8':'#ffff00'};
       var _lan_BDL = {'#334155':'#e2e8f0','#1e293b':'#e5e7eb','#475569':'#cbd5e1'}, _lan_BDH = {'#334155':'#ffff00','#a855f7':'#ffff00','#86efac':'#ffff00','#1e293b':'#ffff00','#f59e0b':'#ffff00','#ef4444':'#ffff00','#0ea5e9':'#ffff00','#16a34a':'#ffff00','#a78bfa':'#ffff00','#38bdf8':'#ffff00','#475569':'#ffff00'};
       var _lanBg = function(h){ return _lanHC ? (_lan_BGH[h]||h) : (_lanL ? (_lan_BGL[h]||h) : h); };
-      var _lanFg = function(h){ return _lanHC ? (_lan_FGH[h]||h) : (_lanL ? (_lan_FGL[h]||h) : h); };
+      // Dark-mode foreground remap. The tool shell is always dark, so these
+      // mid-tone accents were rendering below 4.5:1 as TEXT. Each maps to a
+      // lighter shade of the SAME hue; backgrounds and borders are untouched.
+      var _lan_FGD = {'#a855f7':'#c084fc'};
+      var _lanFg = function(h){ return _lanHC ? (_lan_FGH[h]||h) : (_lanL ? (_lan_FGL[h]||h) : (_lan_FGD[h]||h)); };
       var _lanBd = function(h){ return _lanHC ? (_lan_BDH[h]||h) : (_lanL ? (_lan_BDL[h]||h) : h); };
       var React = ctx.React;
       var h = React.createElement;
@@ -177,7 +181,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('landPlace'))) {
               role: 'tab', 'aria-selected': active,
               style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + (active ? _lanFg('#86efac') : '#334155'),
                 background: active ? 'rgba(134,239,172,0.18)' : _lanBg('#1e293b'),
-                color: active ? _lanFg('#bbf7d0') : _lanFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
+                color: _lanFg(active) ? _lanFg('#bbf7d0') : _lanFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
               t.icon + ' ' + t.label);
           })
         );
@@ -297,7 +301,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('landPlace'))) {
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 } },
                 h('span', { style: { fontSize: 24 } }, t.icon),
                 h('div', null,
-                  h('strong', { style: { color: t.color, fontSize: 15 } }, t.label),
+                  h('strong', { style: { color: _lanFg(t.color), fontSize: 15 } }, t.label),
                   h('div', { style: { fontSize: 12, color: _lanFg('#94a3b8'), lineHeight: 1.5, marginTop: 2 } }, t.framing)
                 )
               ),

@@ -1226,6 +1226,35 @@
     // ═════════════════════════════════════════════════════════
     // CRISIS COMPANION
     // ═════════════════════════════════════════════════════════
+    'disabilityVoices': {
+      construct: 'Hearing disabled and autistic advocates describe their own experience, in their own words.',
+      casel: [
+        { area: 'Social Awareness', sub: 'perspective-taking, appreciating diversity, understanding ableism' },
+        { area: 'Self-Awareness', sub: 'identity, self-perception, recognizing strengths' },
+        { area: 'Responsible Decision-Making', sub: 'evaluating whose voices a practice centers' }
+      ],
+      howl: [
+        { area: 'Habits of Mind', note: 'reading primary sources rather than summaries about a group' },
+        { area: 'Crew Membership', note: 'belonging that includes disabled peers as authors, not subjects' }
+      ],
+      other: [
+        { framework: 'Neurodiversity Paradigm', area: 'Disability as human variation (Singer; Walker); the frame these advocates write from' },
+        { framework: 'Disability Justice', area: 'Sins Invalid / Berne — intersectional, movement-based disability politics' },
+        { framework: 'Nothing About Us Without Us', area: 'Self-advocacy principle (Charlton); the organizing idea of the tool' },
+        { framework: 'UDL', area: 'Multiple means of representation — first-person accounts alongside clinical framing' }
+      ],
+      crewPrompt: 'Read one advocate together and sit with the disagreement: several of these voices critique practices this field still uses. The point is not to resolve it in one Crew, it is to notice who was in the room when those practices were designed.',
+      pairsWith: [
+        { id: 'identitySupport', why: 'identity-affirming support, same "centre the person" stance' },
+        { id: 'selfAdvocacy', why: 'moves from hearing advocates to writing your own support plan' },
+        { id: 'perspective', why: 'general perspective-taking practice before or after the primary sources' },
+        { id: 'cultureExplorer', why: 'both treat lived experience as primary evidence' }
+      ]
+    },
+
+    // ═════════════════════════════════════════════════════════
+    // CRISIS COMPANION
+    // ═════════════════════════════════════════════════════════
     'crisiscompanion': {
       construct: 'Naming a hard moment and finding the next safe step.',
       casel: [

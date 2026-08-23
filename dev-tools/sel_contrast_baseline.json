@@ -1,0 +1,4 @@
+{
+  "note": "Max allowed contrast warnings from check_sel_a11y. Must only ever go DOWN. Refresh with: node dev-tools/check_sel_a11y.cjs --update-baseline",
+  "maxWarnings": 98
+}

@@ -273,7 +273,43 @@ function issue(toolId, severity, code, message, extra) {
   return Object.assign({ toolId: toolId, severity: severity, code: code, message: message }, extra || {});
 }
 
-function auditMarkup(toolId, html, themeId) {
+// Alpha-aware colour parse. The old parseColor() dropped anything under 0.85
+// alpha, which silently discarded exactly the tinted badge surfaces that turned
+// out to be the biggest source of real failures.
+function parseColorA(v) {
+  const s = String(v || '').trim().toLowerCase();
+  let m = /^#([0-9a-f]{3}|[0-9a-f]{6}|[0-9a-f]{8})$/i.exec(s);
+  if (m) {
+    let hex = m[1];
+    if (hex.length === 3) hex = hex.split('').map(function (c) { return c + c; }).join('');
+    const a = hex.length === 8 ? parseInt(hex.slice(6, 8), 16) / 255 : 1;
+    return [parseInt(hex.slice(0, 2), 16), parseInt(hex.slice(2, 4), 16), parseInt(hex.slice(4, 6), 16), a];
+  }
+  m = /^rgba?\(\s*(\d+)[\s,]+(\d+)[\s,]+(\d+)(?:[\s,/]+([0-9.]+))?\s*\)$/.exec(s);
+  if (m) return [Number(m[1]), Number(m[2]), Number(m[3]), m[4] === undefined ? 1 : Number(m[4])];
+  const named = { white: [255, 255, 255, 1], black: [0, 0, 0, 1] };
+  return Object.prototype.hasOwnProperty.call(named, s) ? named[s] : null;
+}
+function compositeOver(fg, bg) {
+  const a = fg[3];
+  return [fg[0] * a + bg[0] * (1 - a), fg[1] * a + bg[1] * (1 - a), fg[2] * a + bg[2] * (1 - a), 1];
+}
+function rgbaText(c) {
+  return 'rgb(' + c.slice(0, 3).map(Math.round).join(',') + ')';
+}
+// A colour set by a utility class cannot be resolved from SSR markup alone.
+const TW_TEXT_CLASS = /\btext-(white|black)\b|\btext-[a-z]+-[0-9]{2,3}\b/;
+
+// Coverage counters, so a run can state how much it actually graded rather than
+// implying that "0 warnings" means "all of it is fine".
+const coverage = { graded: 0, gradient: 0, classColor: 0 };
+
+function auditMarkup(toolId, html, themeId, variant) {
+  const pal = (variant && variant.palette) || {};
+  const pageText = pal.text || '#0f172a';
+  const pageSurface = pal.bg || '#ffffff';
+  const ungraded = coverage;
+  let graded = 0;
   const page = new JSDOM('<!doctype html><body>' + html + '</body>');
   const doc = page.window.document;
   const issues = [];
@@ -321,20 +357,64 @@ function auditMarkup(toolId, html, themeId) {
     issues.push(issue(toolId, 'warning', 'heading', 'No heading rendered for this tool.', { theme: themeId }));
   }
 
-  Array.from(doc.querySelectorAll('[style]')).forEach(function (el, idx) {
-    const st = parseStyle(attr(el, 'style'));
-    const fg = parseColor(st.color);
-    const bg = parseColor(st.background || st['background-color']);
+  // ── Contrast, resolved the way a browser resolves it ──
+  // This used to require `color` AND `background` inline on the SAME element,
+  // which is not how the markup is written: text sits on a child, the surface is
+  // on the card. That rule graded ~3,188 of 10,700 text nodes (30%) and reported
+  // zero problems while 287 nodes across 44 tools were below AA.
+  //
+  // Now: walk ancestors for the nearest declared foreground and the nearest
+  // OPAQUE surface, compositing any translucent layers in between (the tinted
+  // `hue + '22'` badges only make sense composited). Two cases are reported as
+  // UNGRADED rather than silently dropped, because a silent drop is what made
+  // the old report look healthy:
+  //   * gradient backgrounds — no single colour to measure
+  //   * colours that come from a CSS class (Tailwind), which SSR cannot resolve
+  Array.from(doc.querySelectorAll('*')).forEach(function (el, idx) {
     const visibleText = ownText(el) || (el.children.length ? '' : text(el));
-    if (!fg || !bg || !visibleText) return;
+    if (!visibleText || !/[A-Za-z0-9]/.test(visibleText)) return;
+
+    // nearest declared foreground
+    let fg = null, classFg = false, node = el;
+    while (node && node.getAttribute) {
+      const s = parseStyle(attr(node, 'style'));
+      if (s.color) { fg = parseColorA(s.color); break; }
+      if (TW_TEXT_CLASS.test(attr(node, 'class'))) { classFg = true; break; }
+      node = node.parentElement;
+    }
+    if (classFg) { ungraded.classColor++; return; }
+    if (!fg) fg = parseColorA(pageText);
+    if (!fg) return;
+
+    // nearest opaque surface, compositing translucent layers above it
+    const layers = []; let gradient = false;
+    node = el;
+    while (node && node.getAttribute) {
+      const s = parseStyle(attr(node, 'style'));
+      const b = s.background || s['background-color'];
+      if (b) {
+        if (/gradient\(/i.test(b)) { gradient = true; break; }
+        const c = parseColorA(b);
+        if (c && c[3] > 0) { layers.push(c); if (c[3] >= 1) break; }
+      }
+      node = node.parentElement;
+    }
+    if (gradient) { ungraded.gradient++; return; }
+
+    let bg = parseColorA(pageSurface) || [255, 255, 255, 1];
+    for (let i = layers.length - 1; i >= 0; i--) bg = compositeOver(layers[i], bg);
+    if (fg[3] < 1) fg = compositeOver(fg, bg);
+
+    graded++; coverage.graded++;
     const ratio = contrast(fg, bg);
     if (ratio < 4.5) {
-      issues.push(issue(toolId, 'warning', 'inline-contrast', 'Inline foreground/background contrast is below 4.5:1.', {
+      const own = parseStyle(attr(el, 'style'));
+      issues.push(issue(toolId, 'warning', 'inline-contrast', 'Text contrast is below 4.5:1 against its resolved background.', {
         theme: themeId,
         index: idx,
         ratio: Number(ratio.toFixed(2)),
-        color: st.color,
-        background: st.background || st['background-color'],
+        color: own.color || rgbaText(fg) + ' (inherited)',
+        background: rgbaText(bg),
         text: visibleText.slice(0, 80)
       }));
     }
@@ -363,7 +443,7 @@ ids.forEach(function (id) {
       renderErrors.push(issue(id, 'error', 'render-throw', (e && e.message) || String(e), { theme: variant.id }));
     }
     renderedBytes += html.length;
-    const issues = html ? auditMarkup(id, html, variant.id) : [];
+    const issues = html ? auditMarkup(id, html, variant.id, variant) : [];
     const themeShell = html.indexOf('data-sel-standard-shell="' + id + '"') >= 0;
     if (!themeShell) standardShell = false;
     themeResults.push({
@@ -403,7 +483,16 @@ const report = {
     errorCount: allIssues.filter(function (i) { return i.severity === 'error'; }).length,
     warningCount: allIssues.filter(function (i) { return i.severity === 'warning'; }).length,
     toolsWithIssues: tools.filter(function (t) { return t.issueCount > 0; }).length,
-    toolsWithoutStandardShell: tools.filter(function (t) { return !t.standardShell; }).map(function (t) { return t.id; })
+    toolsWithoutStandardShell: tools.filter(function (t) { return !t.standardShell; }).map(function (t) { return t.id; }),
+    // Coverage is reported alongside the counts on purpose. A warning count is
+    // only meaningful next to how much of the text it was computed over; the
+    // previous version of this file reported 0 warnings while grading 30%.
+    contrastCoverage: {
+      textNodesGraded: coverage.graded,
+      skippedGradientBackground: coverage.gradient,
+      skippedColourFromCssClass: coverage.classColor,
+      note: 'Skipped nodes are NOT passes. Gradient-backed text has no single background to measure; class-sourced colours cannot be resolved from SSR markup.'
+    }
   },
   tools: tools
 };
@@ -433,6 +522,37 @@ if (errorTools.length) {
 }
 if (!QUIET || report.summary.warningCount) {
   console.log('Summary: ' + report.summary.errorCount + ' error(s), ' + report.summary.warningCount + ' warning(s), ' + report.summary.toolsWithoutStandardShell.length + ' tool(s) without standard shell.');
+  console.log('Contrast coverage: ' + coverage.graded + ' text node(s) graded; ' + coverage.gradient + ' skipped (gradient background), ' + coverage.classColor + ' skipped (colour from a CSS class). Skipped is not passed.');
 }
 
-if (loadErrors.length || renderErrors.length || report.summary.errorCount > 0) process.exit(1);
+// ── Contrast ratchet ──
+// Warnings do not fail the build on their own (there is a known backlog), but
+// the count must never go UP. Same shape as the other dev-tools baselines.
+// Re-baseline deliberately with --update-baseline after a real reduction.
+const BASELINE_PATH = path.join(ROOT, 'dev-tools', 'sel_contrast_baseline.json');
+let ratchetFailed = false;
+try {
+  if (process.argv.includes('--update-baseline')) {
+    fs.writeFileSync(BASELINE_PATH, JSON.stringify({
+      note: 'Max allowed contrast warnings from check_sel_a11y. Must only ever go DOWN. Refresh with: node dev-tools/check_sel_a11y.cjs --update-baseline',
+      maxWarnings: report.summary.warningCount
+    }, null, 2) + '\n');
+    console.log('[check_sel_a11y] baseline updated to ' + report.summary.warningCount + ' warning(s).');
+  } else if (fs.existsSync(BASELINE_PATH)) {
+    const baseline = JSON.parse(fs.readFileSync(BASELINE_PATH, 'utf8'));
+    if (report.summary.warningCount > baseline.maxWarnings) {
+      console.error('[check_sel_a11y] CONTRAST REGRESSION: ' + report.summary.warningCount
+        + ' warning(s), baseline allows ' + baseline.maxWarnings + '.');
+      console.error('  Fix the new failure(s), or re-baseline deliberately with --update-baseline.');
+      ratchetFailed = true;
+    } else if (report.summary.warningCount < baseline.maxWarnings && !QUIET) {
+      console.log('[check_sel_a11y] ' + (baseline.maxWarnings - report.summary.warningCount)
+        + ' fewer warning(s) than baseline - run with --update-baseline to lock the gain in.');
+    }
+  }
+} catch (e) {
+  console.error('[check_sel_a11y] baseline check failed: ' + ((e && e.message) || e));
+  ratchetFailed = true;
+}
+
+if (loadErrors.length || renderErrors.length || report.summary.errorCount > 0 || ratchetFailed) process.exit(1);

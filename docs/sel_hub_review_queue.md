@@ -234,3 +234,100 @@ for general scripts) rather than deletion, and the registry is now clean:
 71 registered = 71 carded, 0 unreachable. Two small gaps remain: `selfAdvocacy`
 has no `_evidenceBase` entry (badge fails open and hides) and `disabilityVoices`
 has no `sel_standards_alignment` entry.
+
+---
+
+## 6. 2026-08-23 PASS 2 — gates wired, contrast backlog halved  (local, unpushed)
+
+Working through §5e in order.
+
+### 6a. DONE — the gates can now see, and now run
+
+- **`check_sel_a11y.cjs` contrast is inheritance-aware.** It walks ancestors for
+  the nearest declared foreground and the nearest opaque surface, compositing
+  translucent layers in between. Coverage went from ~30% of text nodes to
+  **14,196 graded**, and the report now prints that coverage next to the counts,
+  plus what it had to skip (921 gradient-backed, 933 colour-from-a-CSS-class)
+  with the line **"Skipped is not passed."**
+- **The hardcoded "What Looks Strong" block is gone.** `check_sel_hub_wcag.cjs`
+  now derives that section: real coverage numbers, which entry points were
+  actually found this run, and a note that byte-identical renders across themes
+  mean a tool is theme-blind rather than that it passed three audits.
+- **Both are wired into `verify:gate`** (plus `verify:sel-a11y` /
+  `verify:sel-wcag` for running them alone). They were referenced by no npm
+  script at all before.
+- **A ratchet backs it**: `dev-tools/sel_contrast_baseline.json` holds
+  `maxWarnings: 98`. The gate exits 1 if the count goes up, and tells you to
+  re-baseline deliberately with `--update-baseline` if it goes down. Verified by
+  lowering the baseline by one and confirming a non-zero exit.
+
+### 6b. DONE — 182 → 98 contrast warnings, zero regressions
+
+Once the probe could see, the real cause showed up. `_xxBg` has light, dark and
+high-contrast maps, but **`_xxFg`'s dark branch was the identity in 52 of the 54
+tools that have one** — so accent TEXT kept its light-mode value on the
+always-dark tool shell. `zones` and `decisions` already had a real `_xx_FGD`
+map; this generalises their pattern.
+
+Two changes, both foreground-only so no surface moves:
+1. Added `_xxx_FGD` dark foreground maps (each hue → a lighter shade of the SAME
+   hue, chosen by solver against every background that hue actually lands on).
+2. Routed 343 in-render `color:` sites through the tool's own Fg helper, so the
+   maps are actually consulted. Sites above the helper definition are left alone
+   on purpose (see 6c).
+
+**Result: 182 → 98 warnings, 0 regressions.** `zones` alone went 24 → 0;
+`healthyRelationships`, `conflict`, `dearMan`, `identitySupport`,
+`sourcesOfStrength`, `tipp` all → 0.
+
+### 6c. Two traps worth writing down
+
+- **Do not re-shade the base literal.** The first attempt rewrote
+  `color: '#3b82f6'` → `'#60a5fa'` in source. `_min_BGD` is *keyed* on
+  `'#3b82f6'`, so the rename silently disabled the button's dark background
+  remap and "🌬️ Begin Breathing" went to 2.54:1. Reverted. Fix the foreground
+  map, never the literal the background map is keyed on.
+- **A tint is not a fill.** `hue + '22'` composited over the dark shell stays
+  dark and is harmless to move; a solid `background: hue` with a white label is
+  not. Any tool-wide colour rule has to tell those apart.
+
+### 6d. Also done
+
+- **High contrast now reaches tool interiors.** The dark-shell wrapper painted
+  `#0f172a` unconditionally; it now paints `#000000`/`#ffff00` when
+  `isContrast`, so HC chrome no longer wraps a non-HC surface.
+- **Registry gaps closed.** `selfAdvocacy` has an `_evidenceBase` entry (tier
+  `practice`; **please confirm the tier and wording**), and `disabilityVoices`
+  has a `sel_standards_alignment` entry (CASEL/HOWL/other + pairsWith +
+  crewPrompt; **please check the framework choices** — it names the
+  Neurodiversity Paradigm, Disability Justice and "Nothing About Us Without Us",
+  which is a positioning call as much as a standards one).
+  Registry is now 71 registered = 71 carded = 71 evidence = 71 aligned.
+
+### 6e. The remaining 98, honestly
+
+They are not one more sweep. They sit in three different architectures:
+
+1. **~30 in 5 tools with a single combined `_xxC` map** (friendship,
+   voicedetective, peersupport, sociallab, upstander) where one map serves text
+   AND surfaces. I added entries, measured no change, and **reverted them** —
+   their failing sites bypass the helper too. These need the text sites routed
+   first, and routing through a combined map risks recolouring text that is
+   deliberately white.
+2. **26 in `strengths`** plus `conflicttheater` and `quietQuestions`: the same
+   hex is used on a white card AND on the dark shell, so no single shade
+   satisfies both. These need a genuine per-surface split.
+3. **`emotions` (10) and `somaticReset`** have no remap helper at all.
+
+`safety` and `journal` have an `_FGD` map that is currently inert for the same
+reason as (1) — the map and wiring are correct and match the zones/decisions
+shape, they just have no reachable call site yet. Left in place deliberately.
+
+### 6f. Not started (unchanged from §5e)
+
+Consent coverage (§2b, still 6 of 30, still blocked on your global-vs-per-tool
+call), the 3000 ms badge auto-dismiss (§2e, 10 tools), the Brain Gym cluster
+(§2a), and i18n (5 of 71 tools vs STEM's 114 of 145).
+
+Full SEL suite green (67 files, 657 tests); `check_sel_render` 71/71; all 74
+sel_hub files byte-identical with their public mirrors.

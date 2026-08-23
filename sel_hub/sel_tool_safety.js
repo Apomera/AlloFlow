@@ -622,7 +622,11 @@ window.SelHub = window.SelHub || {
       var _saf_FGL = {'#94a3b8':'#64748b','#cbd5e1':'#334155','#f1f5f9':'#0f172a','#fca5a5':'#991b1b','#818cf8':'#4338ca','#4ade80':'#15803d','#93c5fd':'#1e3a8a','#e2e8f0':'#1e293b','#f87171':'#b91c1c','#fbbf24':'#854d0e'}, _saf_FGH = {'#94a3b8':'#ffff00','#cbd5e1':'#ffff00','#f1f5f9':'#ffff00','#fca5a5':'#ffff00','#fde2e2':'#ffff00','#818cf8':'#ffff00','#4ade80':'#ffff00','#93c5fd':'#ffff00','#60a5fa':'#ffff00','#fff':'#ffff00','#e2e8f0':'#ffff00','#f87171':'#ffff00','#fbbf24':'#ffff00','#0f172a':'#ffff00','#475569':'#ffff00','#7f1d1d':'#ffff00'};
       var _saf_BDL = {'#334155':'#e2e8f0','#0f172a':'#cbd5e1','#475569':'#cbd5e1'}, _saf_BDH = {'#334155':'#ffff00','#dc2626':'#ffff00','#3b82f6':'#ffff00','#0f172a':'#ffff00','#fecaca':'#ffff00','#475569':'#ffff00'};
       var _safBg = function(h){ return _safHC ? (_saf_BGH[h]||h) : (_safL ? (_saf_BGL[h]||h) : h); };
-      var _safFg = function(h){ return _safHC ? (_saf_FGH[h]||h) : (_safL ? (_saf_FGL[h]||h) : h); };
+      // Dark-mode foreground remap. The tool shell is always dark, so these
+      // mid-tone accents were rendering below 4.5:1 as TEXT. Each maps to a
+      // lighter shade of the SAME hue; backgrounds and borders are untouched.
+      var _saf_FGD = {'#ef4444':'#f87171'};
+      var _safFg = function(h){ return _safHC ? (_saf_FGH[h]||h) : (_safL ? (_saf_FGL[h]||h) : (_saf_FGD[h]||h)); };
       var _safBd = function(h){ return _safHC ? (_saf_BDH[h]||h) : (_safL ? (_saf_BDL[h]||h) : h); };
       return (function() {
         var React = ctx.React;
@@ -822,7 +826,7 @@ window.SelHub = window.SelHub || {
                 },
                 style: {
                   padding: '6px 14px', borderRadius: 8, border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: isActive ? 700 : 500, whiteSpace: 'nowrap',
-                  background: isActive ? ACCENT_DIM : 'transparent', color: isActive ? ACCENT : _safFg('#94a3b8'),
+                  background: isActive ? ACCENT_DIM : 'transparent', color: _safFg(isActive) ? ACCENT : _safFg('#94a3b8'),
                   transition: 'all 0.15s'
                 }
               }, t.label);
@@ -868,7 +872,7 @@ window.SelHub = window.SelHub || {
           },
             h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
             h('div', { style: { flex: 1, minWidth: 220 } },
-              h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+              h('h3', { style: { color: _safFg(meta.accent), fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
               h('p', { style: { margin: '3px 0 0', color: _safFg('#cbd5e1'), fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
             )
           );
@@ -887,7 +891,7 @@ window.SelHub = window.SelHub || {
             }
           },
             h('div', { style: { color: _safFg('#94a3b8'), fontSize: 11, fontWeight: 800, textTransform: 'uppercase', marginBottom: 4 } }, label),
-            h('div', { style: { color: color, fontSize: 19, fontWeight: 900, lineHeight: 1.1 } }, value),
+            h('div', { style: { color: _safFg(color), fontSize: 19, fontWeight: 900, lineHeight: 1.1 } }, value),
             h('div', { style: { color: _safFg('#cbd5e1'), fontSize: 11, lineHeight: 1.35, marginTop: 5 } }, hint)
           );
         }
@@ -914,9 +918,9 @@ window.SelHub = window.SelHub || {
               gap: 6
             }
           },
-            h('div', { style: { color: color, fontSize: 14, fontWeight: 900, lineHeight: 1.2 } }, title),
+            h('div', { style: { color: _safFg(color), fontSize: 14, fontWeight: 900, lineHeight: 1.2 } }, title),
             h('div', { style: { flex: 1, color: _safFg('#cbd5e1'), fontSize: 12, lineHeight: 1.5 } }, blurb),
-            h('div', { style: { color: color, fontSize: 11, fontWeight: 900, textTransform: 'uppercase' } }, actionLabel)
+            h('div', { style: { color: _safFg(color), fontSize: 11, fontWeight: 900, textTransform: 'uppercase' } }, actionLabel)
           );
         }
 
@@ -939,7 +943,7 @@ window.SelHub = window.SelHub || {
           },
             h('div', { style: { display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', marginBottom: 12 } },
               h('div', { style: { flex: 1, minWidth: 220 } },
-                h('h3', { style: { margin: 0, color: ACCENT, fontSize: 16, fontWeight: 900 } }, 'Safety map'),
+                h('h3', { style: { margin: 0, color: _safFg(ACCENT), fontSize: 16, fontWeight: 900 } }, 'Safety map'),
                 h('p', { style: { margin: '4px 0 0', color: _safFg('#cbd5e1'), fontSize: 12.5, lineHeight: 1.55 } },
                   'Keep the core pieces visible: what you know, who can help, what your plan is, and where emergency support lives.')
               ),
@@ -1038,7 +1042,7 @@ window.SelHub = window.SelHub || {
               isExpanded && h('div', { style: { marginTop: 12 } },
                 h('p', { style: { fontSize: 13, color: _safFg('#cbd5e1'), lineHeight: '1.6', margin: '0 0 10px' } }, topic.desc),
                 h('div', { style: { padding: '10px 12px', borderRadius: 8, background: ACCENT_DIM, border: '1px solid ' + ACCENT_MED } },
-                  h('div', { style: { fontSize: 12, fontWeight: 600, color: ACCENT, marginBottom: 4 } }, '\uD83D\uDCA1 ' + topic.tip)
+                  h('div', { style: { fontSize: 12, fontWeight: 600, color: _safFg(ACCENT), marginBottom: 4 } }, '\uD83D\uDCA1 ' + topic.tip)
                 ),
                 callTTS && h('button', { 'aria-label': 'Read aloud',
                   onClick: function(e) { e.stopPropagation(); speak(topic.title + '. ' + topic.desc + '. ' + topic.tip); },
@@ -1304,7 +1308,7 @@ window.SelHub = window.SelHub || {
                   onClick: function() { upd('newAdultCat', cat); },
                   style: {
                     padding: '4px 10px', borderRadius: 6, border: '1px solid ' + (isActive ? ACCENT : '#334155'), fontSize: 11, cursor: 'pointer',
-                    background: isActive ? ACCENT_DIM : 'transparent', color: isActive ? ACCENT : _safFg('#94a3b8')
+                    background: isActive ? ACCENT_DIM : 'transparent', color: _safFg(isActive) ? ACCENT : _safFg('#94a3b8')
                   }
                 }, catLabels[cat]);
               })
@@ -1391,7 +1395,7 @@ window.SelHub = window.SelHub || {
 
           // Affirming message
           var affirmation = h('div', {
-            style: { margin: '0 16px 16px', padding: '12px 14px', borderRadius: 10, background: ACCENT_DIM, textAlign: 'center', fontSize: 12, color: ACCENT, fontWeight: 500 }
+            style: { margin: '0 16px 16px', padding: '12px 14px', borderRadius: 10, background: ACCENT_DIM, textAlign: 'center', fontSize: 12, color: _safFg(ACCENT), fontWeight: 500 }
           }, '\uD83D\uDEE1\uFE0F You deserve to feel safe. Building your circle is a powerful step.');
 
           circleContent = h('div', { style: { padding: '8px 0 16px' } },
@@ -1422,13 +1426,13 @@ window.SelHub = window.SelHub || {
             h('button', { 'aria-label': 'Prev',
               onClick: function() { upd({ scenIdx: Math.max(0, scenIdx - 1), scenChoice: null }); if (soundEnabled) sfxClick(); },
               disabled: scenIdx === 0,
-              style: { padding: '4px 10px', borderRadius: 6, border: '1px solid #334155', background: 'transparent', color: scenIdx === 0 ? '#334155' : _safFg('#94a3b8'), cursor: scenIdx === 0 ? 'default' : 'pointer', fontSize: 12 }
+              style: { padding: '4px 10px', borderRadius: 6, border: '1px solid #334155', background: 'transparent', color: _safFg(scenIdx) === 0 ? '#334155' : _safFg('#94a3b8'), cursor: scenIdx === 0 ? 'default' : 'pointer', fontSize: 12 }
             }, '\u25C0 Prev'),
             h('span', { style: { fontSize: 12, color: _safFg('#94a3b8') } }, (scenIdx + 1) + ' / ' + scenarios.length),
             h('button', { 'aria-label': 'Next',
               onClick: function() { upd({ scenIdx: Math.min(scenarios.length - 1, scenIdx + 1), scenChoice: null }); if (soundEnabled) sfxClick(); },
               disabled: scenIdx === scenarios.length - 1,
-              style: { padding: '4px 10px', borderRadius: 6, border: '1px solid #334155', background: 'transparent', color: scenIdx === scenarios.length - 1 ? '#334155' : _safFg('#94a3b8'), cursor: scenIdx === scenarios.length - 1 ? 'default' : 'pointer', fontSize: 12 }
+              style: { padding: '4px 10px', borderRadius: 6, border: '1px solid #334155', background: 'transparent', color: _safFg(scenIdx) === scenarios.length - 1 ? '#334155' : _safFg('#94a3b8'), cursor: scenIdx === scenarios.length - 1 ? 'default' : 'pointer', fontSize: 12 }
             }, 'Next \u25B6'),
             h('span', { role: 'status', style: { marginLeft: 'auto', fontSize: 11, color: _safFg('#94a3b8') } }, '\u2705 ' + completedCount + '/' + scenarios.length + ' completed')
           );
@@ -1487,7 +1491,7 @@ window.SelHub = window.SelHub || {
                 isSelected && h('div', {                   style: { padding: '10px 14px', marginBottom: 8, borderRadius: 8, background: ratingColors[choice.rating] + '15', border: '1px solid ' + ratingColors[choice.rating] + '44' }
                 },
                   h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 } },
-                    h('span', { style: { fontSize: 11, fontWeight: 700, color: ratingColors[choice.rating] } },
+                    h('span', { style: { fontSize: 11, fontWeight: 700, color: _safFg(ratingColors)[choice.rating] } },
                       choice.rating === 3 ? '\u2B50 Great choice!' : choice.rating === 2 ? '\uD83D\uDCA1 Good thinking, but...' : '\u26A0\uFE0F Let\u2019s think about this...'
                     )
                   ),
@@ -1503,7 +1507,7 @@ window.SelHub = window.SelHub || {
 
           // Affirming footer
           var scenFooter = h('div', {
-            style: { margin: '14px 16px', padding: '12px 14px', borderRadius: 10, background: ACCENT_DIM, textAlign: 'center', fontSize: 12, color: ACCENT, fontWeight: 500, lineHeight: '1.5' }
+            style: { margin: '14px 16px', padding: '12px 14px', borderRadius: 10, background: ACCENT_DIM, textAlign: 'center', fontSize: 12, color: _safFg(ACCENT), fontWeight: 500, lineHeight: '1.5' }
           },
             band === 'elementary'
               ? 'Remember: You can ALWAYS tell a trusted adult. It is NEVER your fault. You will NOT get in trouble for telling the truth.'
@@ -1581,13 +1585,13 @@ window.SelHub = window.SelHub || {
             h('button', { 'aria-label': 'Prev',
               onClick: function() { upd({ assertIdx: Math.max(0, assertIdx - 1), assertChoice: null }); if (soundEnabled) sfxClick(); },
               disabled: assertIdx === 0,
-              style: { padding: '4px 10px', borderRadius: 6, border: '1px solid #334155', background: 'transparent', color: assertIdx === 0 ? '#334155' : _safFg('#94a3b8'), cursor: assertIdx === 0 ? 'default' : 'pointer', fontSize: 12 }
+              style: { padding: '4px 10px', borderRadius: 6, border: '1px solid #334155', background: 'transparent', color: _safFg(assertIdx) === 0 ? '#334155' : _safFg('#94a3b8'), cursor: assertIdx === 0 ? 'default' : 'pointer', fontSize: 12 }
             }, '\u25C0 Prev'),
             h('span', { style: { fontSize: 12, color: _safFg('#94a3b8') } }, (assertIdx + 1) + ' / ' + assertScenarios.length),
             h('button', { 'aria-label': 'Next',
               onClick: function() { upd({ assertIdx: Math.min(assertScenarios.length - 1, assertIdx + 1), assertChoice: null }); if (soundEnabled) sfxClick(); },
               disabled: assertIdx === assertScenarios.length - 1,
-              style: { padding: '4px 10px', borderRadius: 6, border: '1px solid #334155', background: 'transparent', color: assertIdx === assertScenarios.length - 1 ? '#334155' : _safFg('#94a3b8'), cursor: assertIdx === assertScenarios.length - 1 ? 'default' : 'pointer', fontSize: 12 }
+              style: { padding: '4px 10px', borderRadius: 6, border: '1px solid #334155', background: 'transparent', color: _safFg(assertIdx) === assertScenarios.length - 1 ? '#334155' : _safFg('#94a3b8'), cursor: assertIdx === assertScenarios.length - 1 ? 'default' : 'pointer', fontSize: 12 }
             }, 'Next \u25B6'),
             h('span', { role: 'status', style: { marginLeft: 'auto', fontSize: 11, color: _safFg('#94a3b8') } }, '\u2705 ' + assertCompletedCount + '/' + assertScenarios.length + ' completed')
           );
@@ -1634,7 +1638,7 @@ window.SelHub = window.SelHub || {
                     transition: 'all 0.2s'
                   }
                 },
-                  h('span', { style: { fontSize: 10, color: rColor, marginRight: 6 } },
+                  h('span', { style: { fontSize: 10, color: _safFg(rColor), marginRight: 6 } },
                     resp.style.charAt(0).toUpperCase() + resp.style.slice(1)
                   ),
                   resp.label
@@ -1642,7 +1646,7 @@ window.SelHub = window.SelHub || {
                 isSelected && h('div', {                   style: { padding: '10px 14px', marginBottom: 8, borderRadius: 8, background: rColor + '15', border: '1px solid ' + rColor + '44' }
                 },
                   h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 } },
-                    h('span', { style: { fontSize: 11, fontWeight: 700, color: rColor } },
+                    h('span', { style: { fontSize: 11, fontWeight: 700, color: _safFg(rColor) } },
                       starStr + ' ' + (resp.stars === 3 ? 'Assertive \u2014 Great choice!' : resp.style === 'passive' ? 'Passive \u2014 Let\u2019s think about this...' : 'Aggressive \u2014 There is a better way...')
                     )
                   ),
@@ -1750,7 +1754,7 @@ window.SelHub = window.SelHub || {
                     flex: 1, padding: '12px 16px', borderRadius: 10, cursor: isAnsweredQ ? 'default' : 'pointer',
                     border: '2px solid ' + btnColor,
                     background: isSelected ? btnColor + '22' : '#0f172a',
-                    color: showResult && isCorrectAnswer ? '#22c55e' : (showResult && isSelected && !isCorrectAnswer ? '#ef4444' : _safFg('#e2e8f0')),
+                    color: _safFg(showResult) && isCorrectAnswer ? '#22c55e' : (showResult && isSelected && !isCorrectAnswer ? '#ef4444' : _safFg('#e2e8f0')),
                     fontSize: 14, fontWeight: 600, transition: 'all 0.2s'
                   }
                 }, val ? '\u2705 TRUE' : '\u274C FALSE');
@@ -1785,7 +1789,7 @@ window.SelHub = window.SelHub || {
                     width: '100%', textAlign: 'left', padding: '10px 14px', marginBottom: 6, borderRadius: 8, cursor: isAnsweredQ ? 'default' : 'pointer',
                     border: '1px solid ' + btnColor,
                     background: isSelected ? btnColor + '22' : '#0f172a',
-                    color: showResult && isCorrectAnswer ? '#22c55e' : (showResult && isSelected && !isCorrectAnswer ? '#ef4444' : _safFg('#e2e8f0')),
+                    color: _safFg(showResult) && isCorrectAnswer ? '#22c55e' : (showResult && isSelected && !isCorrectAnswer ? '#ef4444' : _safFg('#e2e8f0')),
                     fontSize: 13, fontWeight: isSelected ? 600 : 400, transition: 'all 0.2s'
                   }
                 }, ch);
@@ -1806,7 +1810,7 @@ window.SelHub = window.SelHub || {
               // Explanation after answering
               isAnsweredQ && h('div', {                 style: { marginTop: 12, padding: '12px 14px', borderRadius: 8, background: quizAnswered[quizIdx].correct ? '#22c55e15' : '#ef444415', border: '1px solid ' + (quizAnswered[quizIdx].correct ? '#22c55e44' : '#ef444444') }
               },
-                h('div', { style: { fontSize: 12, fontWeight: 700, color: quizAnswered[quizIdx].correct ? _safFg('#4ade80') : _safFg('#f87171'), marginBottom: 4 } },
+                h('div', { style: { fontSize: 12, fontWeight: 700, color: _safFg(quizAnswered)[quizIdx].correct ? _safFg('#4ade80') : _safFg('#f87171'), marginBottom: 4 } },
                   quizAnswered[quizIdx].correct ? '\u2B50 Correct!' : '\uD83D\uDCA1 Not quite \u2014 here is why:'
                 ),
                 h('p', { style: { fontSize: 12, color: _safFg('#cbd5e1'), lineHeight: '1.5', margin: 0 } }, currentQ.explain)
@@ -1838,7 +1842,7 @@ window.SelHub = window.SelHub || {
                 style: { padding: '10px 22px', borderRadius: 10, border: 'none', background: ACCENT, color: _safFg('#fff'), fontSize: 14, fontWeight: 600, cursor: 'pointer' }
               }, '\uD83D\uDD04 Try Again'),
               h('div', {
-                style: { marginTop: 14, padding: '10px 12px', borderRadius: 8, background: ACCENT_DIM, fontSize: 12, color: ACCENT, fontWeight: 500, lineHeight: '1.4' }
+                style: { marginTop: 14, padding: '10px 12px', borderRadius: 8, background: ACCENT_DIM, fontSize: 12, color: _safFg(ACCENT), fontWeight: 500, lineHeight: '1.4' }
               }, 'Remember: Getting questions wrong is part of learning. What matters is that you now know the right answers \u2014 and you can use that knowledge to stay safe.')
             );
           }
@@ -1921,7 +1925,7 @@ window.SelHub = window.SelHub || {
                       flex: 1, padding: '14px 16px', borderRadius: 10, cursor: isFlagAnswered ? 'default' : 'pointer',
                       border: '2px solid ' + borderColor,
                       background: isSelected ? bgColor + '22' : '#0f172a',
-                      color: showResult && isCorrectAnswer ? bgColor : _safFg('#e2e8f0'),
+                      color: _safFg(showResult) && isCorrectAnswer ? bgColor : _safFg('#e2e8f0'),
                       fontSize: 14, fontWeight: 600, transition: 'all 0.2s'
                     }
                   }, flag === 'green' ? '\uD83D\uDFE2 Safe' : '\uD83D\uDD34 Unsafe');
@@ -1935,7 +1939,7 @@ window.SelHub = window.SelHub || {
                   border: '1px solid ' + (flagAnswered[flagIdx].correct ? '#22c55e44' : '#f59e0b44')
                 }
               },
-                h('div', { style: { fontSize: 12, fontWeight: 700, color: flagAnswered[flagIdx].correct ? _safFg('#4ade80') : _safFg('#fbbf24'), marginBottom: 4 } },
+                h('div', { style: { fontSize: 12, fontWeight: 700, color: _safFg(flagAnswered)[flagIdx].correct ? _safFg('#4ade80') : _safFg('#fbbf24'), marginBottom: 4 } },
                   flagAnswered[flagIdx].correct ? '\u2705 You got it!' : '\uD83D\uDCA1 Actually, this is a ' + (currentFlag.flag === 'red' ? 'RED flag (unsafe)' : 'GREEN flag (safe)') + ':'
                 ),
                 h('p', { style: { fontSize: 12, color: _safFg('#cbd5e1'), lineHeight: '1.5', margin: 0 } }, currentFlag.explain)
@@ -1968,7 +1972,7 @@ window.SelHub = window.SelHub || {
                 style: { padding: '10px 22px', borderRadius: 10, border: 'none', background: ACCENT, color: _safFg('#fff'), fontSize: 14, fontWeight: 600, cursor: 'pointer' }
               }, '\uD83D\uDD04 Play Again'),
               h('div', {
-                style: { marginTop: 14, padding: '10px 12px', borderRadius: 8, background: ACCENT_DIM, fontSize: 12, color: ACCENT, fontWeight: 500, lineHeight: '1.4' }
+                style: { marginTop: 14, padding: '10px 12px', borderRadius: 8, background: ACCENT_DIM, fontSize: 12, color: _safFg(ACCENT), fontWeight: 500, lineHeight: '1.4' }
               }, 'Trust your gut feelings. When something feels wrong, it probably is. You always have the right to speak up.')
             );
           }
@@ -2241,7 +2245,7 @@ window.SelHub = window.SelHub || {
           );
 
           var planAffirm = h('div', {
-            style: { margin: '14px 16px', padding: '12px 14px', borderRadius: 10, background: ACCENT_DIM, textAlign: 'center', fontSize: 12, color: ACCENT, fontWeight: 500, lineHeight: '1.5' }
+            style: { margin: '14px 16px', padding: '12px 14px', borderRadius: 10, background: ACCENT_DIM, textAlign: 'center', fontSize: 12, color: _safFg(ACCENT), fontWeight: 500, lineHeight: '1.5' }
           },
             band === 'elementary'
               ? 'Having a safety plan means you are ready \u2014 even if you never need to use it. That is really smart and brave!'
@@ -2360,7 +2364,7 @@ window.SelHub = window.SelHub || {
                   style: { padding: 14, borderRadius: 12, background: earned ? '#0f172a' : '#0f172a88', border: '1px solid ' + (earned ? ACCENT_MED : _safBg('#1e293b')), textAlign: 'center', opacity: earned ? 1 : 0.5, transition: 'all 0.2s' }
                 },
                   h('div', { style: { fontSize: 30 } }, earned ? b.icon : '\uD83D\uDD12'),
-                  h('div', { style: { fontSize: 12, fontWeight: 600, color: earned ? _safFg('#f1f5f9') : _safFg('#94a3b8'), marginTop: 6 } }, b.name),
+                  h('div', { style: { fontSize: 12, fontWeight: 600, color: _safFg(earned) ? _safFg('#f1f5f9') : _safFg('#94a3b8'), marginTop: 6 } }, b.name),
                   h('div', { style: { fontSize: 10, color: _safFg('#94a3b8'), marginTop: 3 } }, b.desc),
                   earned && h('div', { style: { fontSize: 11, color: _safFg('#4ade80'), marginTop: 4 } }, '\u2705 Earned ' + new Date(earnedBadges[b.id]).toLocaleDateString())
                 );
@@ -2368,7 +2372,7 @@ window.SelHub = window.SelHub || {
             ),
             // Affirming footer
             h('div', {
-              style: { marginTop: 20, padding: '12px 14px', borderRadius: 10, background: ACCENT_DIM, textAlign: 'center', fontSize: 12, color: ACCENT, fontWeight: 500, lineHeight: '1.5' }
+              style: { marginTop: 20, padding: '12px 14px', borderRadius: 10, background: ACCENT_DIM, textAlign: 'center', fontSize: 12, color: _safFg(ACCENT), fontWeight: 500, lineHeight: '1.5' }
             }, '\uD83D\uDEE1\uFE0F Learning about safety is one of the most important things you can do. Every badge represents knowledge that helps protect you and others.')
           );
         }

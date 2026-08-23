@@ -17034,7 +17034,11 @@ window.SelHub = window.SelHub || {
       var _adv_FGL = {'#94a3b8':'#64748b','#cbd5e1':'#334155','#f1f5f9':'#0f172a','#e2e8f0':'#1e293b','#a5b4fc':'#3730a3','#86efac':'#166534','#fbbf24':'#854d0e','#fcd34d':'#78350f','#fde68a':'#92400e','#fca5a5':'#991b1b','#c7d2fe':'#312e81'}, _adv_FGH = {'#94a3b8':'#ffff00','#fff':'#ffff00','#cbd5e1':'#ffff00','#f1f5f9':'#ffff00','#e2e8f0':'#ffff00','#a5b4fc':'#ffff00','#0f172a':'#ffff00','#64748b':'#ffff00','#86efac':'#ffff00','#22c55e':'#ffff00','#0ea5e9':'#ffff00','#f59e0b':'#ffff00','#fbbf24':'#ffff00','#fcd34d':'#ffff00','#bbf7d0':'#ffff00','#fde68a':'#ffff00','#ec4899':'#ffff00','#fca5a5':'#ffff00','#6366f1':'#ffff00','#8b5cf6':'#ffff00','#a855f7':'#ffff00','#3b82f6':'#ffff00','#14b8a6':'#ffff00','#c7d2fe':'#ffff00','#475569':'#ffff00','#3730a3':'#ffff00'};
       var _adv_BDL = {'#334155':'#e2e8f0','#1e293b':'#e5e7eb','#0f172a':'#cbd5e1'}, _adv_BDH = {'#334155':'#ffff00','#a5b4fc':'#ffff00','#1e293b':'#ffff00','#22c55e':'#ffff00','#fbbf24':'#ffff00','#ef4444':'#ffff00','#e2e8f0':'#ffff00','#0f172a':'#ffff00','#cbd5e1':'#ffff00','#c7d2fe':'#ffff00'};
       var _advBg = function(h){ return _advHC ? (_adv_BGH[h]||h) : (_advL ? (_adv_BGL[h]||h) : h); };
-      var _advFg = function(h){ return _advHC ? (_adv_FGH[h]||h) : (_advL ? (_adv_FGL[h]||h) : h); };
+      // Dark-mode foreground remap. The tool shell is always dark, so these
+      // mid-tone accents were rendering below 4.5:1 as TEXT. Each maps to a
+      // lighter shade of the SAME hue; backgrounds and borders are untouched.
+      var _adv_FGD = {'#6366f1':'#818cf8'};
+      var _advFg = function(h){ return _advHC ? (_adv_FGH[h]||h) : (_advL ? (_adv_FGL[h]||h) : (_adv_FGD[h]||h)); };
       var _advBd = function(h){ return _advHC ? (_adv_BDH[h]||h) : (_advL ? (_adv_BDL[h]||h) : h); };
       var React = ctx.React;
       var h = React.createElement;
@@ -17343,7 +17347,7 @@ window.SelHub = window.SelHub || {
             'aria-selected': isActive, role: 'tab',
             style: {
               padding: '6px 12px', borderRadius: 8, border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: isActive ? 700 : 500, whiteSpace: 'nowrap',
-              background: isActive ? ACCENT_DIM : 'transparent', color: isActive ? ACCENT : _advFg('#94a3b8'), transition: 'all 0.15s'
+              background: isActive ? ACCENT_DIM : 'transparent', color: _advFg(isActive) ? ACCENT : _advFg('#94a3b8'), transition: 'all 0.15s'
             }
           }, t.label);
         }),
@@ -17381,7 +17385,7 @@ window.SelHub = window.SelHub || {
         },
           h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
           h('div', { style: { flex: 1, minWidth: 220 } },
-            h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+            h('h3', { style: { color: _advFg(meta.accent), fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
             h('p', { style: { margin: '3px 0 0', color: _advFg('#cbd5e1'), fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
           )
         );
@@ -17412,7 +17416,7 @@ window.SelHub = window.SelHub || {
                 var earned = !!earnedBadges[b.id];
                 return h('div', { key: b.id, style: { padding: 12, borderRadius: 10, background: earned ? '#0f172a' : '#0f172a88', border: '1px solid ' + (earned ? ACCENT_MED : _advBg('#334155')), textAlign: 'center', opacity: earned ? 1 : 0.5 } },
                   h('div', { style: { fontSize: 28 }, 'aria-hidden': 'true' }, earned ? b.icon : '\uD83D\uDD12'),
-                  h('div', { style: { fontSize: 11, fontWeight: 600, color: earned ? _advFg('#f1f5f9') : _advFg('#94a3b8'), marginTop: 4 } }, b.name),
+                  h('div', { style: { fontSize: 11, fontWeight: 600, color: _advFg(earned) ? _advFg('#f1f5f9') : _advFg('#94a3b8'), marginTop: 4 } }, b.name),
                   h('div', { style: { fontSize: 10, color: _advFg('#94a3b8'), marginTop: 2 } }, b.desc)
                 );
               })
@@ -17446,7 +17450,7 @@ window.SelHub = window.SelHub || {
             'Scenario ' + ((scIdx % scScenarios.length) + 1) + ' of ' + scScenarios.length + (scCompleted > 0 ? ' \u00B7 ' + scCompleted + ' completed' : '')
           ),
           h('div', { style: { padding: 20, borderRadius: 14, background: _advBg('#0f172a'), border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
-            h('h4', { style: { color: ACCENT, fontSize: 15, marginBottom: 8, fontWeight: 700 } }, curSc.title),
+            h('h4', { style: { color: _advFg(ACCENT), fontSize: 15, marginBottom: 8, fontWeight: 700 } }, curSc.title),
             h('div', { style: { marginBottom: 10 } },
               h('span', { style: { fontSize: 10, background: _advBg('#1e293b'), padding: '3px 8px', borderRadius: 6, color: _advFg('#94a3b8') } }, '\uD83D\uDC64 Advocate to: ' + curSc.who)
             ),
@@ -17468,7 +17472,7 @@ window.SelHub = window.SelHub || {
                 }, br.label),
                 isChosen && h('div', { style: { margin: '8px 0 0 16px', padding: 12, borderRadius: 10, borderLeft: '3px solid ' + styleColors[br.style], background: _advBg('#0f172a') } },
                   h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 } },
-                    h('span', { style: { fontSize: 10, fontWeight: 700, color: styleColors[br.style], textTransform: 'uppercase', letterSpacing: '0.05em' } }, styleLabels[br.style]),
+                    h('span', { style: { fontSize: 10, fontWeight: 700, color: _advFg(styleColors)[br.style], textTransform: 'uppercase', letterSpacing: '0.05em' } }, styleLabels[br.style]),
                     h('span', { style: { color: _advFg('#94a3b8') } }, '\u2B50'.repeat(br.rating))
                   ),
                   h('p', { style: { fontSize: 12, color: _advFg('#e2e8f0'), lineHeight: 1.6 } }, br.outcome)
@@ -17586,9 +17590,9 @@ window.SelHub = window.SelHub || {
                 return h('div', { key: s.id, style: { padding: 12, background: _advBg('#0f172a'), borderRadius: 10, borderLeft: '4px solid ' + s.color } },
                   h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 } },
                     h('span', { style: { fontSize: 18 } }, s.icon),
-                    h('strong', { style: { color: s.color, fontSize: 13 } }, s.name)
+                    h('strong', { style: { color: _advFg(s.color), fontSize: 13 } }, s.name)
                   ),
-                  h('div', { style: { fontSize: 22, fontWeight: 900, color: s.color, fontFamily: 'ui-monospace, Menlo, monospace' } }, avg.toFixed(1) + ' / 3'),
+                  h('div', { style: { fontSize: 22, fontWeight: 900, color: _advFg(s.color), fontFamily: 'ui-monospace, Menlo, monospace' } }, avg.toFixed(1) + ' / 3'),
                   h('div', { style: { fontSize: 11, color: _advFg('#cbd5e1'), marginBottom: 4 } }, label + ' (' + pct + '%)'),
                   h('p', { style: { fontSize: 11, color: _advFg('#94a3b8'), lineHeight: 1.55, margin: 0 } }, s.desc)
                 );
@@ -17611,7 +17615,7 @@ window.SelHub = window.SelHub || {
               return h('div', { key: globalI, style: { marginBottom: 12, paddingBottom: 12, borderBottom: '1px solid #1e293b' } },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
                   h('span', { style: { fontSize: 14 } }, strand ? strand.icon : '·'),
-                  h('span', { style: { fontSize: 11, color: strand ? strand.color : _advFg('#94a3b8'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 } }, strand ? strand.name : '')
+                  h('span', { style: { fontSize: 11, color: _advFg(strand) ? strand.color : _advFg('#94a3b8'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 } }, strand ? strand.name : '')
                 ),
                 h('p', { style: { fontSize: 13, color: _advFg('#cbd5e1'), lineHeight: 1.55, margin: '0 0 8px' } }, item.q),
                 h('div', { style: { display: 'flex', gap: 4 } },
@@ -17621,7 +17625,7 @@ window.SelHub = window.SelHub || {
                     return h('button', { key: v, onClick: function() { setRating(globalI, v); },
                       'aria-pressed': picked, 'aria-label': labels[v],
                       style: { flex: 1, padding: '8px 6px', borderRadius: 6, border: '1.5px solid ' + (picked ? '#a5b4fc' : _advBg('#334155')),
-                        background: picked ? 'rgba(165,180,252,0.20)' : _advBg('#1e293b'), color: picked ? '#e9d5ff' : _advFg('#cbd5e1'),
+                        background: picked ? 'rgba(165,180,252,0.20)' : _advBg('#1e293b'), color: _advFg(picked) ? '#e9d5ff' : _advFg('#cbd5e1'),
                         cursor: 'pointer', fontSize: 11, fontWeight: 700 } },
                       v + ' · ' + labels[v]);
                   })
@@ -17688,7 +17692,7 @@ window.SelHub = window.SelHub || {
               var active = phraseCat === c.id;
               return h('button', { key: c.id, onClick: function() { upd('phraseCat', c.id); },
                 style: { padding: '6px 10px', borderRadius: 6, border: '1px solid ' + (active ? '#a5b4fc' : _advBg('#334155')),
-                  background: active ? 'rgba(165,180,252,0.18)' : '#0f172a', color: active ? '#a5b4fc' : _advFg('#94a3b8'),
+                  background: active ? 'rgba(165,180,252,0.18)' : '#0f172a', color: _advFg(active) ? '#a5b4fc' : _advFg('#94a3b8'),
                   cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, c.label);
             })
           ),
@@ -17700,7 +17704,7 @@ window.SelHub = window.SelHub || {
               return h('div', { key: idx, style: { padding: 12, background: _advBg('#0f172a'), borderRadius: 10, borderLeft: '3px solid #a5b4fc' } },
                 h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 6 } },
                   h('span', { style: { fontSize: 9, color: _advFg('#94a3b8'), textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, flex: 1 } }, p.context + ' · ' + p.tone),
-                  h('button', { onClick: function() { toggleFav(origIdx); }, 'aria-label': 'Favorite', style: { background: 'transparent', border: 'none', color: isFav ? _advFg('#fbbf24') : _advFg('#475569'), cursor: 'pointer', fontSize: 14 } }, isFav ? '⭐' : '☆')
+                  h('button', { onClick: function() { toggleFav(origIdx); }, 'aria-label': 'Favorite', style: { background: 'transparent', border: 'none', color: _advFg(isFav) ? _advFg('#fbbf24') : _advFg('#475569'), cursor: 'pointer', fontSize: 14 } }, isFav ? '⭐' : '☆')
                 ),
                 h('p', { style: { fontSize: 14, color: _advFg('#f1f5f9'), lineHeight: 1.55, margin: '0 0 8px', fontStyle: 'italic' } }, '"' + p.phrase + '"'),
                 h('p', { style: { fontSize: 11, color: _advFg('#94a3b8'), lineHeight: 1.5, margin: '0 0 8px' } }, p.useWhen),
@@ -17753,7 +17757,7 @@ window.SelHub = window.SelHub || {
               var active = accomCat === c.id;
               return h('button', { key: c.id, onClick: function() { upd('accomLibCat', c.id); },
                 style: { padding: '6px 10px', borderRadius: 6, border: '1px solid ' + (active ? _advFg('#22c55e') : _advBg('#334155')),
-                  background: active ? 'rgba(34,197,94,0.18)' : '#0f172a', color: active ? _advFg('#86efac') : _advFg('#94a3b8'),
+                  background: active ? 'rgba(34,197,94,0.18)' : '#0f172a', color: _advFg(active) ? _advFg('#86efac') : _advFg('#94a3b8'),
                   cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, c.label);
             })
           ),
@@ -17843,7 +17847,7 @@ window.SelHub = window.SelHub || {
               var active = vocabCat === c.id;
               return h('button', { key: c.id, 'aria-pressed': active ? 'true' : 'false', onClick: function() { upd('vocabCat', c.id); upd('vocabIdx', 0); upd('vocabFlipped', false); },
                 style: { padding: '6px 10px', borderRadius: 6, border: '1px solid ' + (active ? _advFg('#fbbf24') : _advBg('#334155')),
-                  background: active ? 'rgba(251,191,36,0.18)' : '#0f172a', color: active ? _advFg('#fcd34d') : _advFg('#94a3b8'),
+                  background: active ? 'rgba(251,191,36,0.18)' : '#0f172a', color: _advFg(active) ? _advFg('#fcd34d') : _advFg('#94a3b8'),
                   cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, c.label);
             })
           ),
@@ -17917,7 +17921,7 @@ window.SelHub = window.SelHub || {
           h('p', { style: { textAlign: 'center', fontSize: 12, color: _advFg('#94a3b8'), marginBottom: 16 } }, 'Date-stamped reflections on your advocacy journey. ' + entries.length + ' entries.'),
           // Entry composer
           h('div', { style: { padding: 16, background: _advBg('#0f172a'), borderRadius: 12, borderLeft: '4px solid ' + currentType.color, marginBottom: 14 } },
-            h('div', { style: { fontSize: 11, color: currentType.color, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 } }, '📝 New entry'),
+            h('div', { style: { fontSize: 11, color: _advFg(currentType.color), fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 } }, '📝 New entry'),
             // Type picker
             h('div', { style: { display: 'flex', gap: 4, marginBottom: 10, flexWrap: 'wrap' } },
               entryTypes.map(function(t) {
@@ -17925,7 +17929,7 @@ window.SelHub = window.SelHub || {
                 return h('button', { key: t.id, onClick: function() { updateDraft('type', t.id); },
                   'aria-pressed': picked,
                   style: { padding: '6px 10px', borderRadius: 6, border: '1px solid ' + (picked ? t.color : _advBg('#334155')),
-                    background: picked ? t.color + '22' : _advBg('#1e293b'), color: picked ? t.color : _advFg('#94a3b8'),
+                    background: picked ? t.color + '22' : _advBg('#1e293b'), color: _advFg(picked) ? t.color : _advFg('#94a3b8'),
                     cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, t.label);
               })
             ),
@@ -17966,7 +17970,7 @@ window.SelHub = window.SelHub || {
               var when = new Date(e.date);
               return h('div', { key: e.id, style: { padding: 12, background: _advBg('#0f172a'), borderRadius: 10, borderLeft: '4px solid ' + t.color, marginBottom: 8 } },
                 h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 6, flexWrap: 'wrap' } },
-                  h('span', { style: { fontSize: 11, color: t.color, fontWeight: 800 } }, t.label),
+                  h('span', { style: { fontSize: 11, color: _advFg(t.color), fontWeight: 800 } }, t.label),
                   h('span', { style: { fontSize: 11, color: _advFg('#94a3b8'), fontFamily: 'ui-monospace, Menlo, monospace' } }, when.toLocaleString()),
                   e.situation && h('span', { style: { fontSize: 11, color: _advFg('#cbd5e1'), fontStyle: 'italic' } }, '· ' + e.situation),
                   h('button', { id: 'adv-delete-journal-' + e.id, onClick: function() { removeEntry(e.id); }, 'aria-label': 'Delete entry', style: { marginLeft: 'auto', background: 'transparent', border: 'none', color: _advFg('#94a3b8'), cursor: 'pointer', fontSize: 14 } }, '×')
@@ -18049,7 +18053,7 @@ window.SelHub = window.SelHub || {
                 ),
                 // You say
                 h('div', { style: { padding: 12, background: _advBg('#0f172a'), borderRadius: 10, marginLeft: 20, marginBottom: 6, borderLeft: '3px solid ' + outcomeColor } },
-                  h('div', { style: { fontSize: 10, color: outcomeColor, fontWeight: 700, marginBottom: 4 } }, 'YOU SAID'),
+                  h('div', { style: { fontSize: 10, color: _advFg(outcomeColor), fontWeight: 700, marginBottom: 4 } }, 'YOU SAID'),
                   h('p', { style: { margin: 0, fontSize: 13, color: _advFg('#cbd5e1'), lineHeight: 1.55, fontStyle: 'italic' } }, turn.choice)
                 ),
                 // Partner replies
@@ -18125,7 +18129,7 @@ window.SelHub = window.SelHub || {
                 'aria-pressed': done,
                 style: { padding: 8, borderRadius: 6, border: '1.5px solid ' + (done ? _advFg('#22c55e') : diffColor),
                   background: done ? 'rgba(34,197,94,0.20)' : '#0f172a',
-                  color: done ? _advFg('#86efac') : _advFg('#e2e8f0'),
+                  color: _advFg(done) ? _advFg('#86efac') : _advFg('#e2e8f0'),
                   cursor: 'pointer', fontSize: 10, fontWeight: 600, lineHeight: 1.3, minHeight: 80, textAlign: 'center',
                   display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 4 } },
                 done && h('span', { style: { fontSize: 18 } }, '✓'),
@@ -18889,7 +18893,7 @@ window.SelHub = window.SelHub || {
               var active = sceneIdx === i;
               return h('button', { key: s.id, onClick: function() { upd('roleplaySceneIdx', i); upd('roleplayResponseIdx', null); },
                 style: { padding: '6px 10px', borderRadius: 6, border: '1.5px solid ' + (active ? '#a5b4fc' : _advBg('#334155')),
-                  background: active ? 'rgba(165,180,252,0.15)' : '#0f172a', color: active ? '#a5b4fc' : _advFg('#94a3b8'),
+                  background: active ? 'rgba(165,180,252,0.15)' : '#0f172a', color: _advFg(active) ? '#a5b4fc' : _advFg('#94a3b8'),
                   cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, s.title);
             })
           ),
@@ -18916,7 +18920,7 @@ window.SelHub = window.SelHub || {
           // Outcome
           picked && h('div', null,
             h('div', { style: { padding: 14, background: picked.outcome.ok ? 'rgba(34,197,94,0.10)' : 'rgba(239,68,68,0.10)', borderLeft: '4px solid ' + (picked.outcome.ok ? _advFg('#22c55e') : '#ef4444'), borderRadius: 10, marginBottom: 12 } },
-              h('div', { style: { fontSize: 11, color: picked.outcome.ok ? _advFg('#86efac') : _advFg('#fca5a5'), fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 } }, picked.outcome.ok ? '✓ Good outcome' : '⚠ Costly outcome'),
+              h('div', { style: { fontSize: 11, color: _advFg(picked.outcome.ok) ? _advFg('#86efac') : _advFg('#fca5a5'), fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 } }, picked.outcome.ok ? '✓ Good outcome' : '⚠ Costly outcome'),
               h('p', { style: { fontSize: 13, color: _advFg('#cbd5e1'), lineHeight: 1.6, margin: 0 } }, picked.outcome.response)
             ),
             h('div', { style: { padding: 14, background: 'rgba(165,180,252,0.08)', borderLeft: '4px solid #a5b4fc', borderRadius: 10, marginBottom: 12 } },
@@ -19177,7 +19181,7 @@ window.SelHub = window.SelHub || {
               return h('button', { key: opt, onClick: function() { updateDis(currentQ.field, opt); },
                 'aria-pressed': sel,
                 style: { display: 'block', width: '100%', padding: 10, marginBottom: 6, borderRadius: 8, border: '1.5px solid ' + (sel ? '#a5b4fc' : _advBg('#334155')),
-                  background: sel ? 'rgba(165,180,252,0.15)' : _advBg('#1e293b'), color: sel ? '#a5b4fc' : _advFg('#e2e8f0'),
+                  background: sel ? 'rgba(165,180,252,0.15)' : _advBg('#1e293b'), color: _advFg(sel) ? '#a5b4fc' : _advFg('#e2e8f0'),
                   cursor: 'pointer', textAlign: 'left', fontSize: 12.5 } },
                 (sel ? '✓ ' : '○ ') + opt);
             }),
@@ -19191,7 +19195,7 @@ window.SelHub = window.SelHub || {
                 },
                 'aria-pressed': sel,
                 style: { display: 'block', width: '100%', padding: 10, marginBottom: 6, borderRadius: 8, border: '1.5px solid ' + (sel ? '#a5b4fc' : _advBg('#334155')),
-                  background: sel ? 'rgba(165,180,252,0.15)' : _advBg('#1e293b'), color: sel ? '#a5b4fc' : _advFg('#e2e8f0'),
+                  background: sel ? 'rgba(165,180,252,0.15)' : _advBg('#1e293b'), color: _advFg(sel) ? '#a5b4fc' : _advFg('#e2e8f0'),
                   cursor: 'pointer', textAlign: 'left', fontSize: 12.5 } },
                 (sel ? '☑ ' : '☐ ') + opt);
             }),
@@ -19238,12 +19242,12 @@ window.SelHub = window.SelHub || {
           ),
           // Context card
           h('div', { style: { padding: 14, borderRadius: 12, background: _advBg('#0f172a'), border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
-            h('h4', { style: { color: ACCENT, fontSize: 14, marginBottom: 6, fontWeight: 700 } }, curSt.title),
+            h('h4', { style: { color: _advFg(ACCENT), fontSize: 14, marginBottom: 6, fontWeight: 700 } }, curSt.title),
             h('p', { style: { fontSize: 12, color: _advFg('#94a3b8'), fontStyle: 'italic' } }, curSt.context)
           ),
           // Fill-in-the-blank area
           h('div', { style: { padding: 16, borderRadius: 14, background: _advBg('#1e293b'), border: '1px solid #334155', marginBottom: 16 } },
-            h('p', { style: { fontSize: 10, color: ACCENT, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 12, fontWeight: 700 } }, 'Build Your Script'),
+            h('p', { style: { fontSize: 10, color: _advFg(ACCENT), textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 12, fontWeight: 700 } }, 'Build Your Script'),
             curSt.parts.map(function(part, pi) {
               if (part.type === 'text') {
                 return h('span', { key: pi, style: { fontSize: 14, color: _advFg('#e2e8f0'), lineHeight: 2 } }, part.content);
@@ -19302,7 +19306,7 @@ window.SelHub = window.SelHub || {
           ),
           // Example reveal
           stRevealed && h('div', { style: { padding: 16, borderRadius: 12, background: _advBg('#0f172a'), border: '1px solid ' + ACCENT_MED, marginTop: 12 } },
-            h('p', { style: { fontSize: 10, color: ACCENT, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8, fontWeight: 700 } }, 'Example Script'),
+            h('p', { style: { fontSize: 10, color: _advFg(ACCENT), textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8, fontWeight: 700 } }, 'Example Script'),
             h('p', { style: { fontSize: 13, color: _advFg('#e2e8f0'), lineHeight: 1.8, fontStyle: 'italic' } },
               '\u201C' + curSt.parts.map(function(p) { return p.type === 'text' ? p.content : (curSt.example[p.key] || ''); }).join('') + '\u201D'
             )
@@ -19332,7 +19336,7 @@ window.SelHub = window.SelHub || {
                 style: { padding: 12, borderRadius: 10, border: '2px solid ' + (isCurrent ? ACCENT : isViewed ? _advBg('#334155') : '#33415566'), background: isCurrent ? ACCENT_DIM : _advBg('#1e293b'), cursor: 'pointer', textAlign: 'center' }
               },
                 h('div', { style: { fontSize: 24, marginBottom: 4 } }, card.icon),
-                h('div', { style: { fontSize: 11, fontWeight: 600, color: isCurrent ? ACCENT : _advFg('#e2e8f0') } }, card.title),
+                h('div', { style: { fontSize: 11, fontWeight: 600, color: _advFg(isCurrent) ? ACCENT : _advFg('#e2e8f0') } }, card.title),
                 isViewed && h('div', { style: { fontSize: 11, color: _advFg('#22c55e'), marginTop: 2 } }, '\u2713 Viewed')
               );
             })
@@ -19358,7 +19362,7 @@ window.SelHub = window.SelHub || {
             h('div', { style: { fontSize: 40, marginBottom: 8 } }, curRt.icon),
             h('div', { style: { fontSize: 16, fontWeight: 700, color: _advFg('#f1f5f9'), marginBottom: 8 } }, curRt.title),
             h('p', { style: { fontSize: 14, color: _advFg('#e2e8f0'), lineHeight: 1.6, marginBottom: 12 } }, curRt.right),
-            h('div', { style: { fontSize: 12, color: ACCENT } }, 'Tap to learn more \u2192')
+            h('div', { style: { fontSize: 12, color: _advFg(ACCENT) } }, 'Tap to learn more \u2192')
           ),
           // Revealed detail
           rtRevealed && h('div', { style: { padding: 20, borderRadius: 16, background: _advBg('#0f172a'), border: '1px solid ' + ACCENT_MED } },
@@ -19366,7 +19370,7 @@ window.SelHub = window.SelHub || {
               h('span', { style: { fontSize: 32 } }, curRt.icon),
               h('div', null,
                 h('div', { style: { fontSize: 16, fontWeight: 700, color: _advFg('#f1f5f9') } }, curRt.title),
-                h('div', { style: { fontSize: 12, color: ACCENT, fontWeight: 600 } }, curRt.right)
+                h('div', { style: { fontSize: 12, color: _advFg(ACCENT), fontWeight: 600 } }, curRt.right)
               )
             ),
             h('p', { style: { fontSize: 13, color: _advFg('#e2e8f0'), lineHeight: 1.7, marginBottom: 14 } }, curRt.explanation),
@@ -19399,7 +19403,7 @@ window.SelHub = window.SelHub || {
           return h('div', { style: { marginBottom: 12 } },
             h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 4 } },
               h('span', { style: { fontSize: 11, color: _advFg('#94a3b8'), fontWeight: 600 } }, 'Confidence'),
-              h('span', { style: { fontSize: 11, color: color, fontWeight: 700 } }, pct + '/100')
+              h('span', { style: { fontSize: 11, color: _advFg(color), fontWeight: 700 } }, pct + '/100')
             ),
             h('div', { style: { height: 8, borderRadius: 4, background: _advBg('#1e293b') } },
               h('div', { role: 'progressbar', 'aria-valuemin': '0', 'aria-valuemax': '100', style: { height: '100%', borderRadius: 4, background: color, width: pct + '%', transition: 'width 0.4s' } })
@@ -19606,7 +19610,7 @@ window.SelHub = window.SelHub || {
             h('p', { style: { color: _advFg('#94a3b8'), fontSize: 13, marginBottom: 4 } }, curVo.authority.name + ' heard you and committed to action.'),
             confidenceBar(voConfidence),
             h('div', { style: { padding: 16, borderRadius: 14, background: _advBg('#0f172a'), border: '1px solid ' + ACCENT_MED, marginBottom: 16, textAlign: 'left' } },
-              h('p', { style: { fontSize: 10, color: ACCENT, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8, fontWeight: 700 } }, 'Conversation Replay'),
+              h('p', { style: { fontSize: 10, color: _advFg(ACCENT), textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8, fontWeight: 700 } }, 'Conversation Replay'),
               h('div', { style: { maxHeight: 200, overflow: 'auto' } },
                 voChatHistory.map(function(msg, mi) {
                   return h('div', { key: mi }, chatBubble(msg.text, msg.role === 'user', curVo.authority.emoji));
@@ -19652,7 +19656,7 @@ window.SelHub = window.SelHub || {
           // Categories
           catKeys.map(function(cat) {
             return h('div', { key: cat, style: { marginBottom: 20 } },
-              h('div', { style: { fontSize: 12, fontWeight: 700, color: ACCENT, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8, paddingBottom: 4, borderBottom: '1px solid #334155' } }, cat),
+              h('div', { style: { fontSize: 12, fontWeight: 700, color: _advFg(ACCENT), textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8, paddingBottom: 4, borderBottom: '1px solid #334155' } }, cat),
               categories[cat].map(function(p) {
                 var practiced = !!ppPracticed[p.id];
                 return h('div', { key: p.id, style: { padding: 12, borderRadius: 12, background: practiced ? '#22c55e08' : _advBg('#1e293b'), border: '1px solid ' + (practiced ? '#22c55e33' : _advBg('#334155')), marginBottom: 8 } },
@@ -19674,7 +19678,7 @@ window.SelHub = window.SelHub || {
                           addToast('Phrase practiced!', 'success');
                         }
                       },
-                      style: { padding: '6px 12px', borderRadius: 8, border: 'none', background: practiced ? '#22c55e22' : ACCENT_DIM, color: practiced ? _advFg('#22c55e') : ACCENT, fontSize: 11, fontWeight: 600, cursor: practiced ? 'default' : 'pointer', flexShrink: 0 }
+                      style: { padding: '6px 12px', borderRadius: 8, border: 'none', background: practiced ? '#22c55e22' : ACCENT_DIM, color: _advFg(practiced) ? _advFg('#22c55e') : ACCENT, fontSize: 11, fontWeight: 600, cursor: practiced ? 'default' : 'pointer', flexShrink: 0 }
                     }, practiced ? '\u2713 Practiced' : 'Practice')
                   )
                 );
@@ -19730,18 +19734,18 @@ window.SelHub = window.SelHub || {
               return h('button', { 'aria-label': 'Next',
                 key: sc.id,
                 onClick: function() { upd({ sasIdx: si, sasParts: {}, sasPracticeMode: false }); if (soundEnabled) sfxClick(); },
-                style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + (isCurrent ? ACCENT : isDone ? '#22c55e33' : _advBg('#334155')), background: isCurrent ? ACCENT_DIM : 'transparent', color: isCurrent ? ACCENT : isDone ? _advFg('#22c55e') : _advFg('#94a3b8'), fontSize: 11, fontWeight: isCurrent ? 700 : 500, whiteSpace: 'nowrap', cursor: 'pointer', flexShrink: 0 }
+                style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + (isCurrent ? ACCENT : isDone ? '#22c55e33' : _advBg('#334155')), background: isCurrent ? ACCENT_DIM : 'transparent', color: _advFg(isCurrent) ? ACCENT : isDone ? _advFg('#22c55e') : _advFg('#94a3b8'), fontSize: 11, fontWeight: isCurrent ? 700 : 500, whiteSpace: 'nowrap', cursor: 'pointer', flexShrink: 0 }
               }, (isDone ? '\u2713 ' : '') + sc.title);
             })
           ),
           // Situation card
           h('div', { style: { padding: 14, borderRadius: 12, background: _advBg('#0f172a'), border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
-            h('h4', { style: { color: ACCENT, fontSize: 14, marginBottom: 6, fontWeight: 700 } }, curSas.title),
+            h('h4', { style: { color: _advFg(ACCENT), fontSize: 14, marginBottom: 6, fontWeight: 700 } }, curSas.title),
             h('p', { style: { fontSize: 12, color: _advFg('#94a3b8'), lineHeight: 1.6 } }, curSas.situation)
           ),
           // Fill-in-the-blank area
           h('div', { style: { padding: 16, borderRadius: 14, background: _advBg('#1e293b'), border: '1px solid #334155', marginBottom: 16 } },
-            h('p', { style: { fontSize: 10, color: ACCENT, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 12, fontWeight: 700 } }, 'Fill In Your Script'),
+            h('p', { style: { fontSize: 10, color: _advFg(ACCENT), textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 12, fontWeight: 700 } }, 'Fill In Your Script'),
             curSas.blanks.map(function(blank, bi) {
               var inputId = 'adv-sas-blank-' + blank.key;
               return h('div', { key: bi, style: { marginBottom: 10 } },
@@ -19877,7 +19881,7 @@ window.SelHub = window.SelHub || {
           // If results are showing
           assessDone && assessResults && h('div', null,
             h('div', { style: { padding: 20, borderRadius: 14, background: _advBg('#0f172a'), border: '1px solid ' + ACCENT_MED, marginBottom: 16, textAlign: 'center' } },
-              h('div', { style: { fontSize: 36, fontWeight: 700, color: ACCENT } }, assessResults.totalScore + ' / ' + assessResults.totalMax),
+              h('div', { style: { fontSize: 36, fontWeight: 700, color: _advFg(ACCENT) } }, assessResults.totalScore + ' / ' + assessResults.totalMax),
               h('div', { style: { fontSize: 13, color: _advFg('#94a3b8'), marginTop: 4 } }, 'Overall Advocacy Strength Score'),
               h('div', { style: { height: 8, borderRadius: 4, background: _advBg('#1e293b'), marginTop: 12 } },
                 h('div', { style: { height: '100%', borderRadius: 4, background: assessResults.totalScore / assessResults.totalMax >= 0.7 ? _advFg('#22c55e') : assessResults.totalScore / assessResults.totalMax >= 0.4 ? _advFg('#f59e0b') : '#ef4444', width: Math.round((assessResults.totalScore / assessResults.totalMax) * 100) + '%', transition: 'width 0.4s' } })
@@ -19892,7 +19896,7 @@ window.SelHub = window.SelHub || {
                 return h('div', { key: cat, style: { padding: 12, borderRadius: 10, background: _advBg('#1e293b'), border: '1px solid ' + color + '33', textAlign: 'center' } },
                   h('div', { style: { fontSize: 20 } }, catInfo.icon),
                   h('div', { style: { fontSize: 11, fontWeight: 600, color: _advFg('#e2e8f0'), marginTop: 4 } }, catInfo.label),
-                  h('div', { style: { fontSize: 18, fontWeight: 700, color: color, marginTop: 2 } }, avg.toFixed(1) + '/5')
+                  h('div', { style: { fontSize: 18, fontWeight: 700, color: _advFg(color), marginTop: 2 } }, avg.toFixed(1) + '/5')
                 );
               })
             ),
@@ -19915,7 +19919,7 @@ window.SelHub = window.SelHub || {
             ),
             // Personalized tips
             h('div', { style: { padding: 14, borderRadius: 12, background: _advBg('#0f172a'), border: '1px solid #334155', marginBottom: 16 } },
-              h('p', { style: { fontSize: 10, color: ACCENT, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8, fontWeight: 700 } }, '\uD83D\uDCA1 Personalized Tips'),
+              h('p', { style: { fontSize: 10, color: _advFg(ACCENT), textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8, fontWeight: 700 } }, '\uD83D\uDCA1 Personalized Tips'),
               assessResults.totalScore / assessResults.totalMax >= 0.7 && h('p', { style: { fontSize: 12, color: _advFg('#e2e8f0'), lineHeight: 1.6 } }, 'You have strong advocacy skills! Focus on using them to help others and tackling systemic issues. Try the Voice Practice tab for advanced challenges.'),
               assessResults.totalScore / assessResults.totalMax >= 0.4 && assessResults.totalScore / assessResults.totalMax < 0.7 && h('p', { style: { fontSize: 12, color: _advFg('#e2e8f0'), lineHeight: 1.6 } }, 'You are building solid advocacy skills! Practice the Self-Advocacy Scripts to build confidence in specific situations. Focus on your growth areas with targeted scenarios.'),
               assessResults.totalScore / assessResults.totalMax < 0.4 && h('p', { style: { fontSize: 12, color: _advFg('#e2e8f0'), lineHeight: 1.6 } }, 'Advocacy is a skill that grows with practice. Start with the Power Phrases tab \u2014 memorize a few phrases and try them in low-stakes situations. Every time you speak up, you get stronger.')
@@ -19950,7 +19954,7 @@ window.SelHub = window.SelHub || {
                         if (soundEnabled) sfxClick();
                       },
                       title: labels[val - 1],
-                      style: { width: 40, height: 40, borderRadius: '50%', border: '2px solid ' + (isSelected ? ACCENT : _advBg('#334155')), background: isSelected ? ACCENT : 'transparent', color: isSelected ? _advFg('#fff') : _advFg('#94a3b8'), fontSize: 14, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }
+                      style: { width: 40, height: 40, borderRadius: '50%', border: '2px solid ' + (isSelected ? ACCENT : _advBg('#334155')), background: isSelected ? ACCENT : 'transparent', color: _advFg(isSelected) ? _advFg('#fff') : _advFg('#94a3b8'), fontSize: 14, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }
                     }, String(val));
                   })
                 ),
@@ -19998,7 +20002,7 @@ window.SelHub = window.SelHub || {
                 style: { padding: 12, borderRadius: 10, border: '2px solid ' + (isCurrent ? ACCENT : _advBg('#334155')), background: isCurrent ? ACCENT_DIM : _advBg('#1e293b'), cursor: 'pointer', textAlign: 'center' }
               },
                 h('div', { style: { fontSize: 24, marginBottom: 4 } }, lt.icon),
-                h('div', { style: { fontSize: 12, fontWeight: 600, color: isCurrent ? ACCENT : _advFg('#e2e8f0') } }, 'To ' + lt.recipient)
+                h('div', { style: { fontSize: 12, fontWeight: 600, color: _advFg(isCurrent) ? ACCENT : _advFg('#e2e8f0') } }, 'To ' + lt.recipient)
               );
             })
           ),
@@ -20064,7 +20068,7 @@ window.SelHub = window.SelHub || {
           ),
           // Preview
           ltPreview && ltAllFilled && h('div', { style: { padding: 20, borderRadius: 14, background: _advBg('#0f172a'), border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
-            h('p', { style: { fontSize: 10, color: ACCENT, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 12, fontWeight: 700 } }, 'Letter Preview'),
+            h('p', { style: { fontSize: 10, color: _advFg(ACCENT), textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 12, fontWeight: 700 } }, 'Letter Preview'),
             h('pre', { style: { fontSize: 13, color: _advFg('#e2e8f0'), lineHeight: 1.8, whiteSpace: 'pre-wrap', wordWrap: 'break-word', fontFamily: 'inherit', margin: 0 } },
               curLt.format(ltFields)
             )
@@ -20105,14 +20109,14 @@ window.SelHub = window.SelHub || {
         progressContent = h('div', { style: { padding: 20, maxWidth: 550, margin: '0 auto' } },
           h('h3', { style: { textAlign: 'center', marginBottom: 16, color: _advFg('#f1f5f9'), fontSize: 18 } }, '\uD83D\uDCCA Your Progress'),
           h('div', { style: { textAlign: 'center', padding: 20, borderRadius: 14, background: _advBg('#0f172a'), border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
-            h('div', { style: { fontSize: 40, fontWeight: 700, color: ACCENT } }, totalActs),
+            h('div', { style: { fontSize: 40, fontWeight: 700, color: _advFg(ACCENT) } }, totalActs),
             h('div', { style: { fontSize: 13, color: _advFg('#94a3b8') } }, 'Total Activities Completed')
           ),
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: 10, marginBottom: 20 } },
             stats.map(function(s) {
               return h('div', { key: s.label, style: { padding: 14, borderRadius: 12, background: _advBg('#1e293b'), border: '1px solid ' + s.color + '44', textAlign: 'center' } },
                 h('div', { style: { fontSize: 22 } }, s.icon),
-                h('div', { style: { fontSize: 20, fontWeight: 700, color: s.color, margin: '4px 0' } }, s.value),
+                h('div', { style: { fontSize: 20, fontWeight: 700, color: _advFg(s.color), margin: '4px 0' } }, s.value),
                 h('div', { style: { fontSize: 10, color: _advFg('#94a3b8') } }, s.label)
               );
             })

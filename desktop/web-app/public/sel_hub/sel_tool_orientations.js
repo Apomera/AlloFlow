@@ -308,7 +308,11 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('orientations')))
       var _ori_FGL = {'#cbd5e1':'#334155','#c4b5fd':'#5b21b6','#94a3b8':'#64748b','#e9d5ff':'#581c87','#e2e8f0':'#1e293b','#fbbf24':'#854d0e','#86efac':'#166534','#7dd3fc':'#075985','#fca5a5':'#991b1b','#fecaca':'#b91c1c'}, _ori_FGH = {'#cbd5e1':'#ffff00','#c4b5fd':'#ffff00','#94a3b8':'#ffff00','#e9d5ff':'#ffff00','#e2e8f0':'#ffff00','#fbbf24':'#ffff00','#86efac':'#ffff00','#7dd3fc':'#ffff00','#fca5a5':'#ffff00','#fecaca':'#ffff00','#bbf7d0':'#ffff00'};
       var _ori_BDL = {'#334155':'#e2e8f0','#1e293b':'#e5e7eb'}, _ori_BDH = {'#334155':'#ffff00','#a78bfa':'#ffff00','#1e293b':'#ffff00','#ef4444':'#ffff00','#86efac':'#ffff00','#a855f7':'#ffff00'};
       var _oriBg = function(h){ return _oriHC ? (_ori_BGH[h]||h) : (_oriL ? (_ori_BGL[h]||h) : h); };
-      var _oriFg = function(h){ return _oriHC ? (_ori_FGH[h]||h) : (_oriL ? (_ori_FGL[h]||h) : h); };
+      // Dark-mode foreground remap. The tool shell is always dark, so these
+      // mid-tone accents were rendering below 4.5:1 as TEXT. Each maps to a
+      // lighter shade of the SAME hue; backgrounds and borders are untouched.
+      var _ori_FGD = {'#dc2626':'#ef4444','#7c3aed':'#a78bfa'};
+      var _oriFg = function(h){ return _oriHC ? (_ori_FGH[h]||h) : (_oriL ? (_ori_FGL[h]||h) : (_ori_FGD[h]||h)); };
       var _oriBd = function(h){ return _oriHC ? (_ori_BDH[h]||h) : (_oriL ? (_ori_BDL[h]||h) : h); };
       var React = ctx.React;
       var h = React.createElement;
@@ -355,7 +359,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('orientations')))
               role: 'tab', 'aria-selected': active,
               style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + (active ? '#a78bfa' : '#334155'),
                 background: active ? 'rgba(167,139,250,0.18)' : '#1e293b',
-                color: active ? _oriFg('#e9d5ff') : _oriFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
+                color: _oriFg(active) ? _oriFg('#e9d5ff') : _oriFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
               t.icon + ' ' + t.label);
           })
         );
@@ -386,10 +390,10 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('orientations')))
                 style: { padding: 14, borderRadius: 10, border: '1.5px solid ' + t.color + '66', background: _oriBg('#0f172a'), cursor: 'pointer', textAlign: 'left' } },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
                   h('span', { style: { fontSize: 24 } }, t.icon),
-                  h('strong', { style: { color: t.color, fontSize: 14 } }, t.name)
+                  h('strong', { style: { color: _oriFg(t.color), fontSize: 14 } }, t.name)
                 ),
                 h('div', { style: { fontSize: 11.5, color: _oriFg('#94a3b8'), lineHeight: 1.5, marginBottom: 6 } }, t.origin.split('.')[0] + '.'),
-                h('div', { style: { fontSize: 11, color: t.color, fontStyle: 'italic' } }, 'Read full → ')
+                h('div', { style: { fontSize: 11, color: _oriFg(t.color), fontStyle: 'italic' } }, 'Read full → ')
               );
             })
           ),
@@ -411,20 +415,20 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('orientations')))
           h('div', { style: { padding: 18, borderRadius: 14, background: 'linear-gradient(135deg, ' + t.color + '24 0%, rgba(15,23,42,0.4) 100%)', border: '1px solid ' + t.color + '66', borderLeft: '4px solid ' + t.color, marginBottom: 14 } },
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 } },
               h('span', { style: { fontSize: 38 } }, t.icon),
-              h('h3', { style: { margin: 0, color: t.color, fontSize: 22, fontWeight: 800 } }, t.name)
+              h('h3', { style: { margin: 0, color: _oriFg(t.color), fontSize: 22, fontWeight: 800 } }, t.name)
             ),
             h('p', { style: { margin: 0, color: _oriFg('#cbd5e1'), fontSize: 12.5, lineHeight: 1.7, fontStyle: 'italic' } }, t.origin)
           ),
 
           // Core
           h('div', { style: { padding: 14, borderRadius: 12, background: _oriBg('#0f172a'), border: '1px solid #1e293b', marginBottom: 12 } },
-            h('div', { style: { fontSize: 11, color: t.color, textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 8 } }, 'Core orientation'),
+            h('div', { style: { fontSize: 11, color: _oriFg(t.color), textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 8 } }, 'Core orientation'),
             h('p', { style: { margin: 0, color: _oriFg('#e2e8f0'), fontSize: 13.5, lineHeight: 1.75 } }, t.core)
           ),
 
           // Practices
           h('div', { style: { padding: 14, borderRadius: 12, background: _oriBg('#0f172a'), border: '1px solid #1e293b', marginBottom: 12 } },
-            h('div', { style: { fontSize: 11, color: t.color, textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 8 } }, 'Practices that follow'),
+            h('div', { style: { fontSize: 11, color: _oriFg(t.color), textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 8 } }, 'Practices that follow'),
             h('ul', { style: { margin: 0, padding: '0 0 0 20px', color: _oriFg('#cbd5e1'), fontSize: 12.5, lineHeight: 1.8 } },
               t.practices.map(function(p, i) { return h('li', { key: i }, p); })
             )
@@ -490,7 +494,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('orientations')))
               return h('button', { key: qq.id, onClick: function() { pickQ(qq.id); }, 'aria-pressed': picked,
                 style: { padding: '10px 12px', borderRadius: 8, border: '1.5px solid ' + (picked ? '#a78bfa' : '#334155'),
                   background: picked ? 'rgba(167,139,250,0.18)' : '#1e293b',
-                  color: picked ? _oriFg('#e9d5ff') : _oriFg('#cbd5e1'), cursor: 'pointer', fontSize: 12.5, fontWeight: 700, textAlign: 'left' } },
+                  color: _oriFg(picked) ? _oriFg('#e9d5ff') : _oriFg('#cbd5e1'), cursor: 'pointer', fontSize: 12.5, fontWeight: 700, textAlign: 'left' } },
                 qq.icon + ' ' + qq.label);
             })
           ),
@@ -501,8 +505,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('orientations')))
               return h('div', { key: t.id, style: { padding: 12, borderRadius: 10, background: _oriBg('#0f172a'), borderLeft: '3px solid ' + t.color } },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
                   h('span', { style: { fontSize: 18 } }, t.icon),
-                  h('strong', { style: { color: t.color, fontSize: 13 } }, t.name),
-                  h('button', { onClick: function() { setOR({ view: 'detail', detailId: t.id }); }, style: { marginLeft: 'auto', background: 'transparent', border: '1px solid ' + t.color + '66', color: t.color, borderRadius: 6, padding: '2px 8px', cursor: 'pointer', fontSize: 10.5, fontWeight: 700 } }, 'Full →')
+                  h('strong', { style: { color: _oriFg(t.color), fontSize: 13 } }, t.name),
+                  h('button', { onClick: function() { setOR({ view: 'detail', detailId: t.id }); }, style: { marginLeft: 'auto', background: 'transparent', border: '1px solid ' + t.color + '66', color: _oriFg(t.color), borderRadius: 6, padding: '2px 8px', cursor: 'pointer', fontSize: 10.5, fontWeight: 700 } }, 'Full →')
                 ),
                 h('p', { style: { margin: 0, color: _oriFg('#cbd5e1'), fontSize: 12.5, lineHeight: 1.65 } }, answerFor(t))
               );
@@ -574,7 +578,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('orientations')))
               var active = ax.id === current;
               return h('button', { key: ax.id, onClick: function () { var patch = {}; patch[side === 'X' ? 'compassX' : 'compassY'] = ax.id; setOR(patch); },
                 'aria-pressed': active,
-                style: { padding: '4px 9px', borderRadius: 7, border: '1px solid ' + (active ? '#a78bfa' : '#334155'), background: active ? 'rgba(167,139,250,0.18)' : '#1e293b', color: active ? _oriFg('#e9d5ff') : _oriFg('#cbd5e1'), cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, ax.label);
+                style: { padding: '4px 9px', borderRadius: 7, border: '1px solid ' + (active ? '#a78bfa' : '#334155'), background: active ? 'rgba(167,139,250,0.18)' : '#1e293b', color: _oriFg(active) ? _oriFg('#e9d5ff') : _oriFg('#cbd5e1'), cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, ax.label);
             })
           );
         }

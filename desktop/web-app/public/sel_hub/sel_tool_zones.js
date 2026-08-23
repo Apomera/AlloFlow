@@ -35241,7 +35241,7 @@ window.SelHub = window.SelHub || {
       var _zoHC = !!_zoT.isContrast, _zoL = !_zoHC && !_zoT.isDark;
       var _zo_BGL = {'#334155':'#e2e8f0','#1e293b':'#ffffff','#0f172a':'#f8fafc','#7f1d1d':'#fee2e2','#451a03':'#fff7ed'}, _zo_BGH = {'#334155':'#000000','#1e293b':'#000000','#7c3aed':'#000000','#0f172a':'#000000','#fff':'#000000','#5eead4':'#000000','#042f2e':'#000000','#7f1d1d':'#000000','#451a03':'#000000','#1e1b4b':'#000000','#7c2d12':'#000000'};
       var _zo_FGL = {'#94a3b8':'#64748b','#cbd5e1':'#334155','#a78bfa':'#6d28d9','#f1f5f9':'#0f172a','#e2e8f0':'#1e293b','#fde047':'#a16207','#fbbf24':'#854d0e','#5eead4':'#0f766e','#fde68a':'#92400e','#a7f3d0':'#047857','#fecaca':'#b91c1c','#c7d2fe':'#312e81','#c4b5fd':'#5b21b6','#fbcfe8':'#9d174d','#a5b4fc':'#3730a3','#e0e7ff':'#3730a3','#86efac':'#166534','#7dd3fc':'#075985'}, _zo_FGH = {'#3b82f6':'#ffff00','#ef4444':'#ffff00','#eab308':'#ffff00','#22c55e':'#ffff00','#94a3b8':'#ffff00','#cbd5e1':'#ffff00','#a78bfa':'#ffff00','#f1f5f9':'#ffff00','#7c3aed':'#ffff00','#fff':'#ffff00','#e2e8f0':'#ffff00','#8b5cf6':'#ffff00','#334155':'#ffff00','#fde047':'#ffff00','#fbbf24':'#ffff00','#5eead4':'#ffff00','#0f172a':'#ffff00','#fde68a':'#ffff00','#64748b':'#ffff00','#a7f3d0':'#ffff00','#fecaca':'#ffff00','#fed7aa':'#ffff00','#c7d2fe':'#ffff00','#c4b5fd':'#ffff00','#fbcfe8':'#ffff00','#a5b4fc':'#ffff00','#e0e7ff':'#ffff00','#86efac':'#ffff00','#7dd3fc':'#ffff00'};
-      var _zo_FGD = {'#94a3b8':'#cbd5e1'}, _zo_BDL = {'#334155':'#e2e8f0','#475569':'#cbd5e1','#1e293b':'#e5e7eb'}, _zo_BDH = {'#7c3aed':'#ffff00','#334155':'#ffff00','#475569':'#ffff00','#1e293b':'#ffff00','#5eead4':'#ffff00','#a78bfa':'#ffff00','#fbbf24':'#ffff00','#ef4444':'#ffff00','#f59e0b':'#ffff00','#38bdf8':'#ffff00'};
+      var _zo_FGD = {'#94a3b8':'#cbd5e1','#3b82f6':'#60a5fa','#ef4444':'#f87171'}, _zo_BDL = {'#334155':'#e2e8f0','#475569':'#cbd5e1','#1e293b':'#e5e7eb'}, _zo_BDH = {'#7c3aed':'#ffff00','#334155':'#ffff00','#475569':'#ffff00','#1e293b':'#ffff00','#5eead4':'#ffff00','#a78bfa':'#ffff00','#fbbf24':'#ffff00','#ef4444':'#ffff00','#f59e0b':'#ffff00','#38bdf8':'#ffff00'};
       var _zoBg = function(h){ return _zoHC ? (_zo_BGH[h]||h) : (_zoL ? (_zo_BGL[h]||h) : h); };
       var _zoFg = function(h){ return _zoHC ? (_zo_FGH[h]||h) : (_zoL ? (_zo_FGL[h]||h) : (_zo_FGD[h]||h)); };
       var _zoBd = function(h){ return _zoHC ? (_zo_BDH[h]||h) : (_zoL ? (_zo_BDL[h]||h) : h); };
@@ -35556,7 +35556,7 @@ window.SelHub = window.SelHub || {
               style: {
                 padding: '7px 12px', borderRadius: 8, border: hc ? (isActive ? '2px solid #ffff00' : '1px solid #ffff00') : 'none', cursor: 'pointer',
                 background: isActive ? (hc ? '#000000' : '#7c3aed') : 'transparent',
-                color: hc ? '#ffff00' : (isActive ? '#fff' : _zoFg('#94a3b8')),
+                color: _zoFg(hc) ? '#ffff00' : (isActive ? '#fff' : _zoFg('#94a3b8')),
                 fontWeight: isActive ? 700 : 500, fontSize: 12,
                 whiteSpace: 'nowrap', transition: 'background 0.15s', flexShrink: 0
               }
@@ -35623,7 +35623,7 @@ window.SelHub = window.SelHub || {
         },
           h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
           h('div', { style: { flex: 1, minWidth: 220 } },
-            h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+            h('h3', { style: { color: _zoFg(meta.accent), fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
             h('p', { style: { margin: '3px 0 0', color: _zoFg('#cbd5e1'), fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
           )
         );
@@ -35644,7 +35644,7 @@ window.SelHub = window.SelHub || {
           }
         },
           h('div', { style: { color: _zoFg('#94a3b8'), fontSize: 11, fontWeight: 800, textTransform: 'uppercase', marginBottom: 4 } }, label),
-          h('div', { style: { color: color, fontSize: 19, fontWeight: 900, lineHeight: 1.1 } }, value),
+          h('div', { style: { color: _zoFg(color), fontSize: 19, fontWeight: 900, lineHeight: 1.1 } }, value),
           h('div', { style: { color: _zoFg('#cbd5e1'), fontSize: 11, lineHeight: 1.35, marginTop: 5 } }, hint)
         );
       }
@@ -35668,9 +35668,9 @@ window.SelHub = window.SelHub || {
             gap: 6
           }
         },
-          h('div', { style: { color: color, fontSize: 14, fontWeight: 900, lineHeight: 1.2 } }, title),
+          h('div', { style: { color: _zoFg(color), fontSize: 14, fontWeight: 900, lineHeight: 1.2 } }, title),
           h('div', { style: { flex: 1, color: _zoFg('#cbd5e1'), fontSize: 12, lineHeight: 1.5 } }, blurb),
-          h('div', { style: { color: color, fontSize: 11, fontWeight: 900, textTransform: 'uppercase' } }, actionLabel)
+          h('div', { style: { color: _zoFg(color), fontSize: 11, fontWeight: 900, textTransform: 'uppercase' } }, actionLabel)
         );
       }
 
@@ -35773,7 +35773,7 @@ window.SelHub = window.SelHub || {
                 }
               },
                 h('div', { style: { fontSize: 28, marginBottom: 4 } }, badge.icon),
-                h('div', { style: { fontSize: 10, fontWeight: 600, color: earned ? _zoFg('#e2e8f0') : _zoFg('#94a3b8') } }, badge.name),
+                h('div', { style: { fontSize: 10, fontWeight: 600, color: _zoFg(earned) ? _zoFg('#e2e8f0') : _zoFg('#94a3b8') } }, badge.name),
                 h('div', { style: { fontSize: 11, color: _zoFg('#94a3b8'), marginTop: 2 } }, badge.desc)
               );
             })
@@ -35832,7 +35832,7 @@ window.SelHub = window.SelHub || {
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 } },
                   h('span', { style: { fontSize: 28 } }, zone.emoji),
                   h('div', null,
-                    h('div', { style: { fontWeight: 700, color: zone.color, fontSize: 14 } }, zone.label),
+                    h('div', { style: { fontWeight: 700, color: _zoFg(zone.color), fontSize: 14 } }, zone.label),
                     h('div', { style: { fontSize: 11, color: _zoFg('#94a3b8') } }, zone.feeling)
                   )
                 ),
@@ -35840,7 +35840,7 @@ window.SelHub = window.SelHub || {
                   descriptors.map(function(desc) {
                     return h('span', {
                       key: desc,
-                      style: { fontSize: 10, padding: '2px 8px', borderRadius: 10, background: zone.color + '22', color: zone.color, fontWeight: 500 }
+                      style: { fontSize: 10, padding: '2px 8px', borderRadius: 10, background: zone.color + '22', color: _zoFg(zone.color), fontWeight: 500 }
                     }, desc);
                   })
                 ),
@@ -36001,14 +36001,14 @@ window.SelHub = window.SelHub || {
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 } },
                 h('span', { style: { fontSize: 32 } }, zone.emoji),
                 h('div', { style: { flex: 1 } },
-                  h('h4', { style: { margin: 0, color: zone.color, fontSize: 16 } }, zone.label),
+                  h('h4', { style: { margin: 0, color: _zoFg(zone.color), fontSize: 16 } }, zone.label),
                   h('p', { style: { margin: 0, fontSize: 12, color: _zoFg('#94a3b8') } }, zone.feeling)
                 ),
                 // Read aloud button (elementary)
                 band === 'elementary' && callTTS && h('button', { 'aria-label': 'Read aloud',
                   onClick: function() { readAloud(zone.label + '. This is when you feel ' + zone.feeling + '. You might feel ' + descriptors.join(', ')); },
                   title: 'Read aloud',
-                  style: { padding: '6px 10px', borderRadius: 8, border: 'none', background: zone.color + '22', color: zone.color, cursor: 'pointer', fontSize: 16 }
+                  style: { padding: '6px 10px', borderRadius: 8, border: 'none', background: zone.color + '22', color: _zoFg(zone.color), cursor: 'pointer', fontSize: 16 }
                 }, '\uD83D\uDD0A')
               ),
               // Body cues
@@ -36018,7 +36018,7 @@ window.SelHub = window.SelHub || {
                 ),
                 h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
                   zone.bodyAreas.map(function(area) {
-                    return h('span', { key: area, style: { fontSize: 11, padding: '3px 10px', borderRadius: 8, background: zone.color + '15', color: zone.color, border: '1px solid ' + zone.color + '33' } }, area);
+                    return h('span', { key: area, style: { fontSize: 11, padding: '3px 10px', borderRadius: 8, background: zone.color + '15', color: _zoFg(zone.color), border: '1px solid ' + zone.color + '33' } }, area);
                   })
                 )
               ),
@@ -36029,7 +36029,7 @@ window.SelHub = window.SelHub || {
                 ),
                 h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
                   descriptors.map(function(desc) {
-                    return h('span', { key: desc, style: { fontSize: 12, padding: '4px 10px', borderRadius: 10, background: zone.color + '22', color: zone.color } }, desc);
+                    return h('span', { key: desc, style: { fontSize: 12, padding: '4px 10px', borderRadius: 10, background: zone.color + '22', color: _zoFg(zone.color) } }, desc);
                   })
                 )
               ),
@@ -36047,7 +36047,7 @@ window.SelHub = window.SelHub || {
                     },
                       h('span', { style: { fontSize: 16 } }, s.icon),
                       h('span', { style: { flex: 1, fontSize: 12, color: _zoFg('#e2e8f0') } }, s.text),
-                      h('span', { style: { fontSize: 11, padding: '2px 6px', borderRadius: 6, background: (typeColors[s.type] || _zoFg('#94a3b8')) + '22', color: typeColors[s.type] || _zoFg('#94a3b8'), fontWeight: 600 } }, s.type),
+                      h('span', { style: { fontSize: 11, padding: '2px 6px', borderRadius: 6, background: (typeColors[s.type] || _zoFg('#94a3b8')) + '22', color: _zoFg(typeColors)[s.type] || _zoFg('#94a3b8'), fontWeight: 600 } }, s.type),
                       h('button', { 'aria-label': isInToolbox ? '\u2705' : '+',
                         onClick: function() {
                           if (isInToolbox) {
@@ -36065,7 +36065,7 @@ window.SelHub = window.SelHub || {
                           }
                         },
                         title: isInToolbox ? 'Remove from toolbox' : 'Add to my toolbox',
-                        style: { padding: '3px 8px', borderRadius: 6, border: 'none', background: isInToolbox ? '#7c3aed' : '#334155', color: isInToolbox ? '#fff' : _zoFg('#94a3b8'), cursor: 'pointer', fontSize: 11, flexShrink: 0 }
+                        style: { padding: '3px 8px', borderRadius: 6, border: 'none', background: isInToolbox ? '#7c3aed' : '#334155', color: _zoFg(isInToolbox) ? '#fff' : _zoFg('#94a3b8'), cursor: 'pointer', fontSize: 11, flexShrink: 0 }
                       }, isInToolbox ? '\u2705' : '+')
                     );
                   })
@@ -36090,7 +36090,7 @@ window.SelHub = window.SelHub || {
                   });
                 },
                 disabled: aiLoading,
-                style: { marginTop: 12, padding: '8px 16px', borderRadius: 8, border: '1px solid ' + zone.color + '66', background: 'transparent', color: zone.color, fontSize: 12, fontWeight: 600, cursor: aiLoading ? 'wait' : 'pointer', display: 'flex', alignItems: 'center', gap: 6, opacity: aiLoading ? 0.6 : 1 }
+                style: { marginTop: 12, padding: '8px 16px', borderRadius: 8, border: '1px solid ' + zone.color + '66', background: 'transparent', color: _zoFg(zone.color), fontSize: 12, fontWeight: 600, cursor: aiLoading ? 'wait' : 'pointer', display: 'flex', alignItems: 'center', gap: 6, opacity: aiLoading ? 0.6 : 1 }
               },
                 Sparkles ? h(Sparkles, { size: 14 }) : '\u2728',
                 aiLoading ? 'Thinking...' : 'Get personalized advice'
@@ -36101,7 +36101,7 @@ window.SelHub = window.SelHub || {
                 },
                   h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 } },
                     h('span', { 'aria-hidden': 'true' }, '\u2728'),
-                    h('span', { style: { fontWeight: 700, fontSize: 11, color: zone.color } }, 'AI Counselor')
+                    h('span', { style: { fontWeight: 700, fontSize: 11, color: _zoFg(zone.color) } }, 'AI Counselor')
                   ),
                   aiAdvice
                 )
@@ -36151,7 +36151,7 @@ window.SelHub = window.SelHub || {
                       h('span', { style: { fontSize: 10, padding: '2px 8px', borderRadius: 6, background: _zoBg('#334155'), color: _zoFg('#94a3b8') } }, '~' + totalTime + 's'),
                       pat.bestFor.map(function(zoneId) {
                         var z = ZONES.find(function(zz) { return zz.id === zoneId; });
-                        return z && h('span', { key: zoneId, style: { fontSize: 10, padding: '2px 8px', borderRadius: 6, background: z.color + '22', color: z.color } }, 'Good for ' + z.label);
+                        return z && h('span', { key: zoneId, style: { fontSize: 10, padding: '2px 8px', borderRadius: 6, background: z.color + '22', color: _zoFg(z.color) } }, 'Good for ' + z.label);
                       })
                     )
                   )
@@ -36201,7 +36201,7 @@ window.SelHub = window.SelHub || {
                   }
                 },
                   h('div', null,
-                    h('div', { style: { fontSize: 14, fontWeight: 700, color: currentStep.color } }, currentStep.label),
+                    h('div', { style: { fontSize: 14, fontWeight: 700, color: _zoFg(currentStep.color) } }, currentStep.label),
                     h('div', { style: { fontSize: 32, fontWeight: 700, color: _zoFg('#f1f5f9'), marginTop: 4 } }, breathingTimer || stepDuration)
                   )
                 )
@@ -36331,7 +36331,7 @@ window.SelHub = window.SelHub || {
                   },
                   style: {
                     padding: '8px 16px', borderRadius: 20, border: isChosen ? '2px solid #7c3aed' : '1px solid #334155',
-                    background: isChosen ? '#7c3aed22' : _zoBg('#1e293b'), color: isChosen ? _zoFg('#c4b5fd') : _zoFg('#94a3b8'),
+                    background: isChosen ? '#7c3aed22' : _zoBg('#1e293b'), color: _zoFg(isChosen) ? _zoFg('#c4b5fd') : _zoFg('#94a3b8'),
                     cursor: 'pointer', fontWeight: isChosen ? 700 : 500, fontSize: 13
                   }
                 }, sens);
@@ -36436,7 +36436,7 @@ window.SelHub = window.SelHub || {
                   h('div', { style: { fontSize: 24, marginBottom: 4 } }, area.emoji),
                   h('div', { style: { fontSize: 12, fontWeight: 600, color: _zoFg('#f1f5f9') } }, area.label),
                   selection && selection.sensation && h('div', {
-                    style: { fontSize: 10, marginTop: 4, padding: '2px 8px', borderRadius: 6, background: (zoneObj ? zoneObj.color : _zoFg('#94a3b8')) + '22', color: zoneObj ? zoneObj.color : _zoFg('#94a3b8'), display: 'inline-block' }
+                    style: { fontSize: 10, marginTop: 4, padding: '2px 8px', borderRadius: 6, background: (zoneObj ? zoneObj.color : _zoFg('#94a3b8')) + '22', color: _zoFg(zoneObj) ? zoneObj.color : _zoFg('#94a3b8'), display: 'inline-block' }
                   }, selection.sensation)
                 );
               })
@@ -36458,7 +36458,7 @@ window.SelHub = window.SelHub || {
           // Score + streak
           h('div', { style: { display: 'flex', justifyContent: 'center', gap: 16, marginBottom: 16 } },
             h('span', { style: { fontSize: 12, color: _zoFg('#94a3b8') } }, 'Score: ' + scenarioScore.correct + '/' + scenarioScore.total),
-            h('span', { style: { fontSize: 12, color: scenarioStreak >= 3 ? '#f59e0b' : _zoFg('#94a3b8') } },
+            h('span', { style: { fontSize: 12, color: _zoFg(scenarioStreak) >= 3 ? '#f59e0b' : _zoFg('#94a3b8') } },
               '\uD83D\uDD25 Streak: ' + scenarioStreak + (scenarioBestStreak > 0 ? ' (best: ' + scenarioBestStreak + ')' : '')
             )
           ),
@@ -36512,7 +36512,7 @@ window.SelHub = window.SelHub || {
                 },
                 style: {
                   padding: '14px 12px', borderRadius: 10, border: '2px solid ' + zone.color + '44',
-                  background: _zoBg('#0f172a'), color: zone.color, fontWeight: 700, fontSize: 14,
+                  background: _zoBg('#0f172a'), color: _zoFg(zone.color), fontWeight: 700, fontSize: 14,
                   cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
                   transition: 'transform 0.1s'
                 },
@@ -36534,7 +36534,7 @@ window.SelHub = window.SelHub || {
             }
           },
             h('p', { style: { fontSize: 24, marginBottom: 8 } }, scenarioFeedback === 'correct' ? '\u2705' : '\uD83D\uDCA1'),
-            h('p', { style: { fontWeight: 700, color: scenarioFeedback === 'correct' ? _zoFg('#22c55e') : '#f59e0b', marginBottom: 4 } },
+            h('p', { style: { fontWeight: 700, color: _zoFg(scenarioFeedback) === 'correct' ? _zoFg('#22c55e') : '#f59e0b', marginBottom: 4 } },
               scenarioFeedback === 'correct'
                 ? (scenarioStreak >= 3 ? '\uD83D\uDD25 ' + scenarioStreak + ' in a row!' : 'Great job!')
                 : 'Not quite \u2014 this is a ' + ZONES.find(function(z) { return z.id === currentScenario.correctZone; }).label + ' situation.'
@@ -36748,7 +36748,7 @@ window.SelHub = window.SelHub || {
                   return h('div', { key: type },
                     h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6, marginTop: 8 } },
                       h('span', null, typeIcons[type] || ''),
-                      h('span', { style: { fontSize: 11, fontWeight: 700, color: typeColors[type], textTransform: 'uppercase', letterSpacing: '0.05em' } }, type)
+                      h('span', { style: { fontSize: 11, fontWeight: 700, color: _zoFg(typeColors)[type], textTransform: 'uppercase', letterSpacing: '0.05em' } }, type)
                     ),
                     inType.map(function(s, i) {
                       return h('div', {                         key: i,
@@ -36797,7 +36797,7 @@ window.SelHub = window.SelHub || {
             h('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 10 } },
               h('div', { style: { fontSize: 26, flexShrink: 0 }, 'aria-hidden': 'true' }, pattern.emoji),
               h('div', { style: { flex: 1 } },
-                h('p', { style: { margin: 0, color: pattern.color, fontSize: 14, fontWeight: 800, lineHeight: 1.25 } }, pattern.headline),
+                h('p', { style: { margin: 0, color: _zoFg(pattern.color), fontSize: 14, fontWeight: 800, lineHeight: 1.25 } }, pattern.headline),
                 h('p', { style: { margin: '6px 0 0', color: _zoFg('#cbd5e1'), fontSize: 12, lineHeight: 1.5 } }, pattern.body),
                 h('p', { style: { margin: '8px 0 0', color: _zoFg('#94a3b8'), fontSize: 10, fontStyle: 'italic' } },
                   pattern.count + ' of your last ' + pattern.total + ' check-ins were in the ' + pattern.zone.charAt(0).toUpperCase() + pattern.zone.slice(1) + ' Zone.'
@@ -36837,7 +36837,7 @@ window.SelHub = window.SelHub || {
                           })
                         ),
                         h('div', { style: { fontSize: 11, fontWeight: 600, color: _zoFg('#e2e8f0') } }, zone.label.replace(' Zone', '')),
-                        h('div', { style: { fontSize: 14, fontWeight: 700, color: zone.color } }, count),
+                        h('div', { style: { fontSize: 14, fontWeight: 700, color: _zoFg(zone.color) } }, count),
                         h('div', { style: { fontSize: 10, color: _zoFg('#cbd5e1') } }, pct + '%')
                       );
                     })
@@ -36903,8 +36903,8 @@ window.SelHub = window.SelHub || {
                     h('span', { style: { fontSize: 24, flexShrink: 0 } }, zone.emoji),
                     h('div', { style: { flex: 1 } },
                       h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4, flexWrap: 'wrap' } },
-                        h('span', { style: { fontWeight: 700, color: zone.color, fontSize: 13 } }, zone.label),
-                        entry.intensity && h('span', { style: { fontSize: 10, padding: '1px 6px', borderRadius: 6, background: zone.color + '22', color: zone.color } }, 'Intensity: ' + entry.intensity + '/10'),
+                        h('span', { style: { fontWeight: 700, color: _zoFg(zone.color), fontSize: 13 } }, zone.label),
+                        entry.intensity && h('span', { style: { fontSize: 10, padding: '1px 6px', borderRadius: 6, background: zone.color + '22', color: _zoFg(zone.color) } }, 'Intensity: ' + entry.intensity + '/10'),
                         h('span', { style: { fontSize: 10, color: _zoFg('#94a3b8') } }, time.toLocaleDateString() + ' ' + time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }))
                       ),
                       entry.note && h('p', { style: { margin: 0, fontSize: 12, color: _zoFg('#cbd5e1'), lineHeight: 1.4 } }, entry.note)
@@ -37062,7 +37062,7 @@ if (activeTab === 'wheel') {
     zwSelected ? (function() {
       var z = ZONE_INFO.find(function(x) { return x.id === zwSelected; });
       return h('div', { style: { marginTop: 14, padding: 16, borderRadius: 12, background: z.color + '22', border: '2px solid ' + z.color } },
-        h('h3', { style: { margin: 0, color: z.color, fontSize: 22, fontWeight: 800 } }, z.label + ' ZONE'),
+        h('h3', { style: { margin: 0, color: _zoFg(z.color), fontSize: 22, fontWeight: 800 } }, z.label + ' ZONE'),
         h('p', { style: { margin: '6px 0', color: _zoFg('#e2e8f0'), fontSize: 14, lineHeight: 1.55 } }, z.desc),
         h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 10 } },
           z.sample.map(function(w, i) {
@@ -37162,14 +37162,14 @@ if (activeTab === 'checkin_flow') {
               var n = on ? cfBody.filter(function(x) { return x !== b.id; }) : cfBody.concat([b.id]);
               upd({ cfBody: n }); if (soundEnabled) sfxClick();
             },
-            style: { padding: '8px 14px', borderRadius: 16, border: '1px solid ' + (on ? ZONE_COLORS[b.zone] : '#475569'), background: on ? ZONE_COLORS[b.zone] + '33' : '#0f172a', color: on ? '#fff' : _zoFg('#cbd5e1'), fontSize: 12, cursor: 'pointer' }
+            style: { padding: '8px 14px', borderRadius: 16, border: '1px solid ' + (on ? ZONE_COLORS[b.zone] : '#475569'), background: on ? ZONE_COLORS[b.zone] + '33' : '#0f172a', color: _zoFg(on) ? '#fff' : _zoFg('#cbd5e1'), fontSize: 12, cursor: 'pointer' }
           }, b.label);
         })
       ),
       h('div', { style: { marginTop: 14, textAlign: 'right' } },
         h('button', { onClick: function() { upd({ cfStep: 1 }); if (soundEnabled) sfxClick(); },
           disabled: cfBody.length === 0,
-          style: { padding: '10px 20px', borderRadius: 8, border: 'none', background: cfBody.length === 0 ? '#334155' : '#5eead4', color: cfBody.length === 0 ? _zoFg('#94a3b8') : '#0f172a', fontSize: 13, fontWeight: 700, cursor: cfBody.length === 0 ? 'not-allowed' : 'pointer' }
+          style: { padding: '10px 20px', borderRadius: 8, border: 'none', background: cfBody.length === 0 ? '#334155' : '#5eead4', color: _zoFg(cfBody.length) === 0 ? _zoFg('#94a3b8') : '#0f172a', fontSize: 13, fontWeight: 700, cursor: cfBody.length === 0 ? 'not-allowed' : 'pointer' }
         }, 'Next →')
       )
     ) : cfStep === 1 ? h('div', { style: { padding: 18, borderRadius: 12, background: _zoBg('#1e293b'), border: '2px solid #a78bfa' } },
@@ -37182,7 +37182,7 @@ if (activeTab === 'checkin_flow') {
               var n = on ? cfThought.filter(function(x) { return x !== t.id; }) : cfThought.concat([t.id]);
               upd({ cfThought: n }); if (soundEnabled) sfxClick();
             },
-            style: { padding: '8px 14px', borderRadius: 16, border: '1px solid ' + (on ? ZONE_COLORS[t.zone] : '#475569'), background: on ? ZONE_COLORS[t.zone] + '33' : '#0f172a', color: on ? '#fff' : _zoFg('#cbd5e1'), fontSize: 12, cursor: 'pointer' }
+            style: { padding: '8px 14px', borderRadius: 16, border: '1px solid ' + (on ? ZONE_COLORS[t.zone] : '#475569'), background: on ? ZONE_COLORS[t.zone] + '33' : '#0f172a', color: _zoFg(on) ? '#fff' : _zoFg('#cbd5e1'), fontSize: 12, cursor: 'pointer' }
           }, t.label);
         })
       ),
@@ -37196,8 +37196,8 @@ if (activeTab === 'checkin_flow') {
       )
     ) : cfStep === 2 ? h('div', { style: { padding: 18, borderRadius: 12, background: ZONE_COLORS[cfPredicted] + '22', border: '3px solid ' + ZONE_COLORS[cfPredicted] } },
       h('div', { style: { textAlign: 'center' } },
-        h('div', { style: { color: ZONE_COLORS[cfPredicted], fontSize: 11, textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.05em' } }, 'You appear to be in'),
-        h('h2', { style: { margin: '6px 0 0', color: ZONE_COLORS[cfPredicted], fontSize: 36, fontWeight: 800 } }, (cfPredicted || 'green').toUpperCase() + ' ZONE'),
+        h('div', { style: { color: _zoFg(ZONE_COLORS)[cfPredicted], fontSize: 11, textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.05em' } }, 'You appear to be in'),
+        h('h2', { style: { margin: '6px 0 0', color: _zoFg(ZONE_COLORS)[cfPredicted], fontSize: 36, fontWeight: 800 } }, (cfPredicted || 'green').toUpperCase() + ' ZONE'),
         h('p', { style: { margin: '6px 0 14px', color: _zoFg('#e2e8f0'), fontSize: 14 } }, ZONE_DESCS[cfPredicted])
       ),
       h('label', { style: { color: _zoFg('#cbd5e1'), fontSize: 13, fontWeight: 600 } }, 'Intensity (1-10): ' + cfIntensity),
@@ -37328,7 +37328,7 @@ if (activeTab === 'body_mapper') {
       ['blue','green','yellow','red'].map(function(z) {
         var sel = bmZone === z;
         return h('button', { key: z, onClick: function() { upd({ bmZone: z, bmRegion: null }); if (soundEnabled) sfxClick(); },
-          style: { padding: '8px 16px', borderRadius: 8, border: '2px solid ' + (sel ? ZONE_PALETTE[z] : '#475569'), background: sel ? ZONE_PALETTE[z] + '33' : _zoBg('#1e293b'), color: sel ? '#fff' : _zoFg('#cbd5e1'), fontSize: 13, fontWeight: 700, cursor: 'pointer', textTransform: 'uppercase' }
+          style: { padding: '8px 16px', borderRadius: 8, border: '2px solid ' + (sel ? ZONE_PALETTE[z] : '#475569'), background: sel ? ZONE_PALETTE[z] + '33' : _zoBg('#1e293b'), color: _zoFg(sel) ? '#fff' : _zoFg('#cbd5e1'), fontSize: 13, fontWeight: 700, cursor: 'pointer', textTransform: 'uppercase' }
         }, z);
       })
     ),
@@ -37425,13 +37425,13 @@ if (activeTab === 'sorter') {
       ['blue','green','yellow','red'].map(function(z) {
         var placedHere = ALL_SCENARIOS.filter(function(s) { return sortPlaced[s.id] === z; });
         return h('div', { key: z, style: { padding: 12, borderRadius: 10, background: _zoBg('#1e293b'), border: '2px dashed ' + ZONE_PALETTE[z], minHeight: 80 } },
-          h('div', { style: { color: ZONE_PALETTE[z], fontSize: 14, fontWeight: 800, textTransform: 'uppercase', marginBottom: 6 } }, z + ' Zone'),
+          h('div', { style: { color: _zoFg(ZONE_PALETTE)[z], fontSize: 14, fontWeight: 800, textTransform: 'uppercase', marginBottom: 6 } }, z + ' Zone'),
           placedHere.length === 0 ? h('div', { style: { color: _zoFg('#64748b'), fontSize: 11, fontStyle: 'italic' } }, 'empty') :
           placedHere.map(function(s) {
             var fb = sortFeedback[s.id];
             return h('div', { key: s.id, style: { padding: '6px 8px', borderRadius: 6, background: _zoBg('#0f172a'), marginBottom: 4, color: _zoFg('#cbd5e1'), fontSize: 11, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 4 } },
               h('span', { style: { flex: 1 } }, s.text.length > 40 ? s.text.substring(0, 40) + '…' : s.text),
-              h('span', { style: { color: fb === 'correct' ? _zoFg('#22c55e') : _zoFg('#ef4444'), fontSize: 14, fontWeight: 700 } }, fb === 'correct' ? '✓' : '✗')
+              h('span', { style: { color: _zoFg(fb) === 'correct' ? _zoFg('#22c55e') : _zoFg('#ef4444'), fontSize: 14, fontWeight: 700 } }, fb === 'correct' ? '✓' : '✗')
             );
           })
         );
@@ -37494,7 +37494,7 @@ if (activeTab === 'zone_history') {
         Object.keys(ZONE_COLORS).map(function(z) {
           var pct = total ? Math.round((zoneCounts[z] / total) * 100) : 0;
           return h('div', { key: z, style: { padding: 12, borderRadius: 10, background: _zoBg('#0f172a'), border: '1px solid ' + ZONE_COLORS[z] + '55' } },
-            h('div', { style: { color: ZONE_COLORS[z], fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em' } }, z + ' zone'),
+            h('div', { style: { color: _zoFg(ZONE_COLORS)[z], fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em' } }, z + ' zone'),
             h('div', { style: { color: _zoFg('#f1f5f9'), fontSize: 24, fontWeight: 800, marginTop: 4 } }, pct + '%'),
             h('div', { style: { color: _zoFg('#94a3b8'), fontSize: 11 } }, zoneCounts[z] + ' check-ins')
           );
@@ -37558,7 +37558,7 @@ if (activeTab === 'matcher') {
             ['blue','green','yellow','red'].map(function(z) {
               var sel = smZone === z;
               return h('button', { key: z, onClick: function() { upd({ smZone: z }); if (soundEnabled) sfxClick(); },
-                style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (sel ? ZONE_COLORS[z] : '#475569'), background: sel ? ZONE_COLORS[z] + '33' : '#0f172a', color: sel ? '#fff' : _zoFg('#cbd5e1'), fontSize: 11, fontWeight: 700, cursor: 'pointer', textTransform: 'uppercase' }
+                style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (sel ? ZONE_COLORS[z] : '#475569'), background: sel ? ZONE_COLORS[z] + '33' : '#0f172a', color: _zoFg(sel) ? '#fff' : _zoFg('#cbd5e1'), fontSize: 11, fontWeight: 700, cursor: 'pointer', textTransform: 'uppercase' }
               }, z);
             })
           )
@@ -37569,7 +37569,7 @@ if (activeTab === 'matcher') {
             ['mild','moderate','crisis','any'].map(function(i) {
               var sel = smIntensity === i;
               return h('button', { key: i, onClick: function() { upd({ smIntensity: i }); if (soundEnabled) sfxClick(); },
-                style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (sel ? _zoFg('#fbbf24') : '#475569'), background: sel ? '#fbbf2433' : '#0f172a', color: sel ? _zoFg('#fde68a') : _zoFg('#cbd5e1'), fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer', textTransform: 'capitalize' }
+                style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (sel ? _zoFg('#fbbf24') : '#475569'), background: sel ? '#fbbf2433' : '#0f172a', color: _zoFg(sel) ? _zoFg('#fde68a') : _zoFg('#cbd5e1'), fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer', textTransform: 'capitalize' }
               }, i);
             })
           )
@@ -37580,7 +37580,7 @@ if (activeTab === 'matcher') {
             [{ id: null, label: 'any' }, { id: 'invisible', label: 'invisible' }, { id: 'subtle', label: 'subtle' }, { id: 'moderate', label: 'moderate' }, { id: 'visible', label: 'visible' }].map(function(v) {
               var sel = smVisibility === v.id;
               return h('button', { key: v.label, onClick: function() { upd({ smVisibility: v.id }); if (soundEnabled) sfxClick(); },
-                style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (sel ? _zoFg('#a78bfa') : '#475569'), background: sel ? _zoBg('#1e1b4b') : '#0f172a', color: sel ? _zoFg('#c4b5fd') : _zoFg('#cbd5e1'), fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer' }
+                style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (sel ? _zoFg('#a78bfa') : '#475569'), background: sel ? _zoBg('#1e1b4b') : '#0f172a', color: _zoFg(sel) ? _zoFg('#c4b5fd') : _zoFg('#cbd5e1'), fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer' }
               }, v.label);
             })
           )
@@ -37591,7 +37591,7 @@ if (activeTab === 'matcher') {
             [{ id: null, label: 'any' }, { id: 'still', label: 'still' }, { id: 'small', label: 'small' }, { id: 'moderate', label: 'moderate' }, { id: 'full-body', label: 'full' }].map(function(m) {
               var sel = smMovement === m.id;
               return h('button', { key: m.label, onClick: function() { upd({ smMovement: m.id }); if (soundEnabled) sfxClick(); },
-                style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (sel ? '#5eead4' : '#475569'), background: sel ? '#14b8a633' : '#0f172a', color: sel ? '#5eead4' : _zoFg('#cbd5e1'), fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer' }
+                style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (sel ? '#5eead4' : '#475569'), background: sel ? '#14b8a633' : '#0f172a', color: _zoFg(sel) ? '#5eead4' : _zoFg('#cbd5e1'), fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer' }
               }, m.label);
             })
           )
@@ -37682,7 +37682,7 @@ if (activeTab === 'zone_quiz') {
         )
       ) : h('div', { style: { marginTop: 14 } },
         h('div', { style: { padding: '8px 12px', borderRadius: 6, background: ZONE_COLORS[qzCurrent.correct] + '22', border: '1px solid ' + ZONE_COLORS[qzCurrent.correct] } },
-          h('div', { style: { color: ZONE_COLORS[qzCurrent.correct], fontSize: 11, fontWeight: 800, textTransform: 'uppercase' } }, 'Answer: ' + qzCurrent.correct + ' Zone'),
+          h('div', { style: { color: _zoFg(ZONE_COLORS)[qzCurrent.correct], fontSize: 11, fontWeight: 800, textTransform: 'uppercase' } }, 'Answer: ' + qzCurrent.correct + ' Zone'),
           h('p', { style: { margin: '6px 0 0', color: _zoFg('#e2e8f0'), fontSize: 12, lineHeight: 1.55 } }, qzCurrent.explanation)
         ),
         qzCurrent.whatToDo ? h('div', { style: { marginTop: 8, padding: '6px 10px', borderRadius: 6, background: _zoBg('#042f2e'), color: _zoFg('#a7f3d0'), fontSize: 12, lineHeight: 1.5 } }, '💡 ' + qzCurrent.whatToDo) : null,
@@ -37770,22 +37770,22 @@ if (activeTab === 'coreg_helper') {
               var n = on ? crObserved.filter(function(x) { return x !== c.id; }) : crObserved.concat([c.id]);
               upd({ crObserved: n }); if (soundEnabled) sfxClick();
             },
-            style: { padding: '8px 14px', borderRadius: 16, border: '1px solid ' + (on ? ZONE_COLORS[c.zone] : '#475569'), background: on ? ZONE_COLORS[c.zone] + '33' : '#0f172a', color: on ? '#fff' : _zoFg('#cbd5e1'), fontSize: 12, cursor: 'pointer' }
+            style: { padding: '8px 14px', borderRadius: 16, border: '1px solid ' + (on ? ZONE_COLORS[c.zone] : '#475569'), background: on ? ZONE_COLORS[c.zone] + '33' : '#0f172a', color: _zoFg(on) ? '#fff' : _zoFg('#cbd5e1'), fontSize: 12, cursor: 'pointer' }
           }, c.label);
         })
       ),
       h('div', { style: { marginTop: 14, textAlign: 'right' } },
         h('button', { onClick: function() { upd({ crStep: 1, crPredicted: _predictFromCues() }); if (soundEnabled) sfxClick(); },
           disabled: crObserved.length === 0,
-          style: { padding: '10px 20px', borderRadius: 8, border: 'none', background: crObserved.length === 0 ? '#334155' : '#5eead4', color: crObserved.length === 0 ? _zoFg('#94a3b8') : '#0f172a', fontSize: 13, fontWeight: 700, cursor: crObserved.length === 0 ? 'not-allowed' : 'pointer' }
+          style: { padding: '10px 20px', borderRadius: 8, border: 'none', background: crObserved.length === 0 ? '#334155' : '#5eead4', color: _zoFg(crObserved.length) === 0 ? _zoFg('#94a3b8') : '#0f172a', fontSize: 13, fontWeight: 700, cursor: crObserved.length === 0 ? 'not-allowed' : 'pointer' }
         }, 'Get support guide →')
       )
     ) : (function() {
       var guide = SUPPORT_GUIDES[crPredicted] || SUPPORT_GUIDES.yellow;
       return h('div', { style: { padding: 18, borderRadius: 12, background: ZONE_COLORS[crPredicted] + '22', border: '3px solid ' + ZONE_COLORS[crPredicted] } },
         h('div', { style: { textAlign: 'center', marginBottom: 14 } },
-          h('div', { style: { color: ZONE_COLORS[crPredicted], fontSize: 11, textTransform: 'uppercase', fontWeight: 700 } }, 'They appear to be in'),
-          h('h2', { style: { margin: '4px 0', color: ZONE_COLORS[crPredicted], fontSize: 28, fontWeight: 800, textTransform: 'uppercase' } }, crPredicted + ' Zone')
+          h('div', { style: { color: _zoFg(ZONE_COLORS)[crPredicted], fontSize: 11, textTransform: 'uppercase', fontWeight: 700 } }, 'They appear to be in'),
+          h('h2', { style: { margin: '4px 0', color: _zoFg(ZONE_COLORS)[crPredicted], fontSize: 28, fontWeight: 800, textTransform: 'uppercase' } }, crPredicted + ' Zone')
         ),
         h('div', { style: { padding: '10px 14px', borderRadius: 8, background: _zoBg('#0f172a'), marginBottom: 12 } },
           h('div', { style: { color: _zoFg('#fbbf24'), fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, 'First step (your body)'),
@@ -37957,7 +37957,7 @@ if (activeTab === 'pulse') {
         pulseRecent.map(function(e, i) {
           var dt = new Date(e.date);
           return h('div', { key: i, style: { padding: '6px 10px', borderRadius: 6, background: ZONE_COLORS[e.zone] + '22', borderLeft: '3px solid ' + ZONE_COLORS[e.zone] } },
-            h('div', { style: { color: ZONE_COLORS[e.zone], fontSize: 11, fontWeight: 800, textTransform: 'uppercase' } }, e.zone),
+            h('div', { style: { color: _zoFg(ZONE_COLORS)[e.zone], fontSize: 11, fontWeight: 800, textTransform: 'uppercase' } }, e.zone),
             h('div', { style: { color: _zoFg('#94a3b8'), fontSize: 10 } }, dt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ' · ' + dt.toLocaleDateString()),
             e.note ? h('div', { style: { color: _zoFg('#cbd5e1'), fontSize: 11, marginTop: 2, fontStyle: 'italic' } }, '"' + e.note + '"') : null
           );
@@ -38000,7 +38000,7 @@ if (activeTab === 'descriptors') {
         ['all','blue','green','yellow','red'].map(function(z) {
           var sel = dlZone === z;
           return h('button', { key: z, onClick: function() { upd({ dlZone: z }); if (soundEnabled) sfxClick(); },
-            style: { padding: '6px 12px', borderRadius: 12, border: '1px solid ' + (sel ? (z === 'all' ? _zoFg('#fbbf24') : ZONE_COLORS[z]) : '#475569'), background: sel ? ((z === 'all' ? _zoFg('#fbbf24') : ZONE_COLORS[z]) + '33') : '#0f172a', color: sel ? '#fff' : _zoFg('#cbd5e1'), fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer', textTransform: 'uppercase' }
+            style: { padding: '6px 12px', borderRadius: 12, border: '1px solid ' + (sel ? (z === 'all' ? _zoFg('#fbbf24') : ZONE_COLORS[z]) : '#475569'), background: sel ? ((z === 'all' ? _zoFg('#fbbf24') : ZONE_COLORS[z]) + '33') : '#0f172a', color: _zoFg(sel) ? '#fff' : _zoFg('#cbd5e1'), fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer', textTransform: 'uppercase' }
           }, z);
         })
       ),
@@ -38008,7 +38008,7 @@ if (activeTab === 'descriptors') {
         [0, 1, 2, 3, 4, 5].map(function(i) {
           var sel = dlIntensity === i;
           return h('button', { key: i, onClick: function() { upd({ dlIntensity: i }); if (soundEnabled) sfxClick(); },
-            style: { padding: '4px 10px', borderRadius: 10, border: '1px solid ' + (sel ? _zoFg('#a78bfa') : '#475569'), background: sel ? _zoBg('#1e1b4b') : '#0f172a', color: sel ? _zoFg('#c4b5fd') : _zoFg('#94a3b8'), fontSize: 11, cursor: 'pointer' }
+            style: { padding: '4px 10px', borderRadius: 10, border: '1px solid ' + (sel ? _zoFg('#a78bfa') : '#475569'), background: sel ? _zoBg('#1e1b4b') : '#0f172a', color: _zoFg(sel) ? _zoFg('#c4b5fd') : _zoFg('#94a3b8'), fontSize: 11, cursor: 'pointer' }
           }, i === 0 ? 'all intensities' : 'intensity ' + i);
         })
       ),
@@ -38074,7 +38074,7 @@ if (activeTab === 'triggers') {
         cats.map(function(c) {
           var sel = trCategory === c;
           return h('button', { key: c, onClick: function() { upd({ trCategory: c }); if (soundEnabled) sfxClick(); },
-            style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (sel ? _zoFg('#fbbf24') : '#475569'), background: sel ? '#fbbf2433' : '#0f172a', color: sel ? _zoFg('#fde68a') : _zoFg('#cbd5e1'), fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer', textTransform: 'capitalize' }
+            style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (sel ? _zoFg('#fbbf24') : '#475569'), background: sel ? '#fbbf2433' : '#0f172a', color: _zoFg(sel) ? _zoFg('#fde68a') : _zoFg('#cbd5e1'), fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer', textTransform: 'capitalize' }
           }, c);
         })
       ),
@@ -38084,7 +38084,7 @@ if (activeTab === 'triggers') {
           return h('div', { key: t.id, style: { padding: 12, borderRadius: 10, background: _zoBg('#1e293b'), border: '1px solid #334155', borderLeft: '4px solid ' + ZONE_COLORS[t.typicallyShiftsTo] } },
             h('div', { style: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' } },
               h('h4', { style: { margin: 0, color: _zoFg('#f1f5f9'), fontSize: 13, fontWeight: 700 } }, t.trigger),
-              h('span', { style: { padding: '2px 8px', borderRadius: 4, background: ZONE_COLORS[t.typicallyShiftsTo] + '33', color: ZONE_COLORS[t.typicallyShiftsTo], fontSize: 10, fontWeight: 800, textTransform: 'uppercase' } }, t.typicallyShiftsTo)
+              h('span', { style: { padding: '2px 8px', borderRadius: 4, background: ZONE_COLORS[t.typicallyShiftsTo] + '33', color: _zoFg(ZONE_COLORS)[t.typicallyShiftsTo], fontSize: 10, fontWeight: 800, textTransform: 'uppercase' } }, t.typicallyShiftsTo)
             ),
             h('div', { style: { color: _zoFg('#94a3b8'), fontSize: 10, marginTop: 2 } }, t.category),
             t.whyItTriggers ? h('p', { style: { margin: '6px 0', color: _zoFg('#cbd5e1'), fontSize: 12, lineHeight: 1.5 } }, t.whyItTriggers) : null,
@@ -38154,7 +38154,7 @@ if (activeTab === 'plans') {
         ['all','blue','yellow','red'].map(function(z) {
           var sel = plFromZone === z;
           return h('button', { key: z, onClick: function() { upd({ plFromZone: z }); if (soundEnabled) sfxClick(); },
-            style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (sel ? (z === 'all' ? _zoFg('#fbbf24') : ZONE_COLORS[z]) : '#475569'), background: sel ? ((z === 'all' ? _zoFg('#fbbf24') : ZONE_COLORS[z]) + '33') : '#0f172a', color: sel ? '#fff' : _zoFg('#cbd5e1'), fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer', textTransform: 'uppercase' }
+            style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (sel ? (z === 'all' ? _zoFg('#fbbf24') : ZONE_COLORS[z]) : '#475569'), background: sel ? ((z === 'all' ? _zoFg('#fbbf24') : ZONE_COLORS[z]) + '33') : '#0f172a', color: _zoFg(sel) ? '#fff' : _zoFg('#cbd5e1'), fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer', textTransform: 'uppercase' }
           }, 'From ' + z);
         })
       ),
@@ -38168,7 +38168,7 @@ if (activeTab === 'plans') {
           return h('div', { key: p.id, style: { padding: 12, borderRadius: 10, background: _zoBg('#1e293b'), border: '1px solid #334155', borderLeft: '4px solid ' + ZONE_COLORS[p.fromZone] } },
             h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' } },
               h('h4', { style: { margin: 0, color: _zoFg('#f1f5f9'), fontSize: 13, fontWeight: 700 } }, p.scenario),
-              p.fromZone ? h('span', { style: { padding: '2px 8px', borderRadius: 4, background: ZONE_COLORS[p.fromZone] + '33', color: ZONE_COLORS[p.fromZone], fontSize: 9, fontWeight: 800, textTransform: 'uppercase' } }, p.fromZone + (p.toZone ? ' → ' + p.toZone : '')) : null
+              p.fromZone ? h('span', { style: { padding: '2px 8px', borderRadius: 4, background: ZONE_COLORS[p.fromZone] + '33', color: _zoFg(ZONE_COLORS)[p.fromZone], fontSize: 9, fontWeight: 800, textTransform: 'uppercase' } }, p.fromZone + (p.toZone ? ' → ' + p.toZone : '')) : null
             ),
             h('button', { onClick: function() { upd({ plOpen: isOpen ? null : p.id }); if (soundEnabled) sfxClick(); },
               style: { marginTop: 6, padding: '5px 12px', borderRadius: 6, border: 'none', background: isOpen ? '#334155' : _zoFg('#3b82f6'), color: _zoFg('#fff'), fontSize: 11, fontWeight: 700, cursor: 'pointer' }
@@ -38229,7 +38229,7 @@ if (activeTab === 'classroom') {
         cats.map(function(c) {
           var sel = clCategory === c;
           return h('button', { key: c, onClick: function() { upd({ clCategory: c }); if (soundEnabled) sfxClick(); },
-            style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (sel ? '#5eead4' : '#475569'), background: sel ? '#14b8a655' : '#0f172a', color: sel ? '#5eead4' : _zoFg('#cbd5e1'), fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer', textTransform: 'capitalize' }
+            style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (sel ? '#5eead4' : '#475569'), background: sel ? '#14b8a655' : '#0f172a', color: _zoFg(sel) ? '#5eead4' : _zoFg('#cbd5e1'), fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer', textTransform: 'capitalize' }
           }, c);
         })
       ),
@@ -38240,7 +38240,7 @@ if (activeTab === 'classroom') {
             h('h4', { style: { margin: 0, color: _zoFg('#f1f5f9'), fontSize: 13, fontWeight: 700 } }, c.name),
             h('div', { style: { color: _zoFg('#94a3b8'), fontSize: 10, marginTop: 2 } }, (c.category || '') + ' · ' + (c.forGrade || 'all') + ' · ' + (c.durationMin || '?') + ' min'),
             h('button', { onClick: function() { upd({ clOpen: isOpen ? null : c.id }); if (soundEnabled) sfxClick(); },
-              style: { marginTop: 6, padding: '5px 12px', borderRadius: 6, border: 'none', background: isOpen ? '#334155' : '#5eead4', color: isOpen ? _zoFg('#94a3b8') : '#0f172a', fontSize: 11, fontWeight: 700, cursor: 'pointer' }
+              style: { marginTop: 6, padding: '5px 12px', borderRadius: 6, border: 'none', background: isOpen ? '#334155' : '#5eead4', color: _zoFg(isOpen) ? _zoFg('#94a3b8') : '#0f172a', fontSize: 11, fontWeight: 700, cursor: 'pointer' }
             }, isOpen ? 'Close' : 'View'),
             isOpen ? h('div', { style: { marginTop: 8 } },
               c.materials && c.materials.length ? h('div', { style: { color: _zoFg('#a78bfa'), fontSize: 11, marginBottom: 6 } }, 'Materials: ' + c.materials.join(', ')) : null,
@@ -38284,7 +38284,7 @@ if (activeTab === 'parent') {
         cats.map(function(c) {
           var sel = pgCategory === c;
           return h('button', { key: c, onClick: function() { upd({ pgCategory: c }); if (soundEnabled) sfxClick(); },
-            style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (sel ? '#ec4899' : '#475569'), background: sel ? '#ec489933' : '#0f172a', color: sel ? _zoFg('#fbcfe8') : _zoFg('#cbd5e1'), fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer', textTransform: 'capitalize' }
+            style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (sel ? '#ec4899' : '#475569'), background: sel ? '#ec489933' : '#0f172a', color: _zoFg(sel) ? _zoFg('#fbcfe8') : _zoFg('#cbd5e1'), fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer', textTransform: 'capitalize' }
           }, c);
         })
       ),

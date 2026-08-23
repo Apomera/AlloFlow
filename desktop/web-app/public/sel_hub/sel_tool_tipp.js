@@ -137,7 +137,11 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('tipp'))) {
       var _tp_FGL = {'#cbd5e1':'#334155','#fca5a5':'#991b1b','#94a3b8':'#64748b','#fecaca':'#b91c1c','#fde68a':'#92400e','#e2e8f0':'#1e293b','#fcd34d':'#78350f'}, _tp_FGH = {'#cbd5e1':'#ffff00','#fca5a5':'#ffff00','#94a3b8':'#ffff00','#fecaca':'#ffff00','#fde68a':'#ffff00','#e2e8f0':'#ffff00','#fff':'#ffff00','#22c55e':'#ffff00','#fcd34d':'#ffff00','#0f172a':'#ffff00','#475569':'#ffff00','#7f1d1d':'#ffff00'};
       var _tp_BDL = {'#334155':'#e2e8f0','#1e293b':'#e5e7eb','#475569':'#cbd5e1','#0f172a':'#cbd5e1'}, _tp_BDH = {'#334155':'#ffff00','#ef4444':'#ffff00','#1e293b':'#ffff00','#f59e0b':'#ffff00','#475569':'#ffff00','#e2e8f0':'#ffff00','#0f172a':'#ffff00','#fecaca':'#ffff00','#cbd5e1':'#ffff00'};
       var _tpBg = function(h){ return _tpHC ? (_tp_BGH[h]||h) : (_tpL ? (_tp_BGL[h]||h) : h); };
-      var _tpFg = function(h){ return _tpHC ? (_tp_FGH[h]||h) : (_tpL ? (_tp_FGL[h]||h) : h); };
+      // Dark-mode foreground remap. The tool shell is always dark, so these
+      // mid-tone accents were rendering below 4.5:1 as TEXT. Each maps to a
+      // lighter shade of the SAME hue; backgrounds and borders are untouched.
+      var _tp_FGD = {'#ef4444':'#f87171','#a855f7':'#c084fc'};
+      var _tpFg = function(h){ return _tpHC ? (_tp_FGH[h]||h) : (_tpL ? (_tp_FGL[h]||h) : (_tp_FGD[h]||h)); };
       var _tpBd = function(h){ return _tpHC ? (_tp_BDH[h]||h) : (_tpL ? (_tp_BDL[h]||h) : h); };
       var React = ctx.React;
       var h = React.createElement;
@@ -187,7 +191,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('tipp'))) {
               role: 'tab', 'aria-selected': active,
               style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + (active ? '#ef4444' : '#334155'),
                 background: active ? 'rgba(239,68,68,0.18)' : _tpBg('#1e293b'),
-                color: active ? _tpFg('#fecaca') : _tpFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
+                color: _tpFg(active) ? _tpFg('#fecaca') : _tpFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
               t.icon + ' ' + t.label);
           })
         );
@@ -236,7 +240,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('tipp'))) {
                 style: { textAlign: 'left', padding: 12, borderRadius: 8, border: '1px solid ' + (skill ? skill.color : '#334155'), background: skill ? skill.color + '16' : _tpBg('#1e293b'), color: _tpFg('#e2e8f0'), cursor: 'pointer', minHeight: 104 } },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
                   h('span', { style: { fontSize: 20 } }, skill ? skill.icon : '+'),
-                  h('div', { style: { fontSize: 12, color: skill ? skill.color : _tpFg('#fca5a5'), fontWeight: 900 } }, route.signal)
+                  h('div', { style: { fontSize: 12, color: _tpFg(skill) ? skill.color : _tpFg('#fca5a5'), fontWeight: 900 } }, route.signal)
                 ),
                 h('div', { style: { fontSize: 13, color: _tpFg('#e2e8f0'), fontWeight: 800, marginBottom: 3 } }, skill ? skill.label : 'Choose'),
                 h('div', { style: { fontSize: 11, color: _tpFg('#94a3b8'), lineHeight: 1.45 } }, route.fit)
@@ -273,7 +277,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('tipp'))) {
                   h('span', { style: { fontSize: 28 } }, s.icon),
                   h('div', null,
                     h('div', { style: { fontSize: 11, color: _tpFg('#94a3b8'), fontWeight: 700 } }, 'T-I-P-P · ' + s.letter),
-                    h('div', { style: { fontSize: 15, fontWeight: 800, color: s.color } }, s.label)
+                    h('div', { style: { fontSize: 15, fontWeight: 800, color: _tpFg(s.color) } }, s.label)
                   )
                 ),
                 h('div', { style: { fontSize: 13, color: _tpFg('#e2e8f0'), fontWeight: 600, marginBottom: 6 } }, s.headline),
@@ -309,14 +313,14 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('tipp'))) {
               h('span', { style: { fontSize: 48 } }, s.icon),
               h('div', { style: { flex: 1, minWidth: 180 } },
                 h('div', { style: { fontSize: 11, color: _tpFg('#94a3b8'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 } }, 'Active · ' + s.letter),
-                h('h3', { style: { margin: '2px 0 0', color: s.color, fontSize: 22, fontWeight: 900 } }, s.label),
+                h('h3', { style: { margin: '2px 0 0', color: _tpFg(s.color), fontSize: 22, fontWeight: 900 } }, s.label),
                 h('div', { style: { fontSize: 13, color: _tpFg('#e2e8f0'), marginTop: 4 } }, s.headline)
               )
             ),
 
             // Steps
             h('div', { style: { padding: 14, borderRadius: 10, background: _tpBg('#0f172a'), border: '1px solid #1e293b', marginBottom: 10 } },
-              h('div', { style: { fontSize: 12, color: s.color, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 } }, 'Steps'),
+              h('div', { style: { fontSize: 12, color: _tpFg(s.color), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 } }, 'Steps'),
               h('ol', { style: { margin: 0, padding: '0 0 0 22px', color: _tpFg('#e2e8f0'), fontSize: 14, lineHeight: 1.7 } },
                 s.steps.map(function(step, i) { return h('li', { key: i, style: { marginBottom: 6 } }, step); })
               )
@@ -386,7 +390,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('tipp'))) {
               return h('div', { key: s.id, style: { display: 'flex', alignItems: 'center', gap: 8, padding: '4px 0' } },
                 h('span', { style: { fontSize: 16 } }, s.icon),
                 h('span', { style: { flex: 1, fontSize: 13, color: _tpFg('#e2e8f0') } }, s.label),
-                h('span', { style: { fontSize: 13, color: s.color, fontWeight: 800 } }, c)
+                h('span', { style: { fontSize: 13, color: _tpFg(s.color), fontWeight: 800 } }, c)
               );
             })
           ),
@@ -398,7 +402,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('tipp'))) {
               h('span', { style: { fontSize: 10, color: _tpFg('#94a3b8'), fontFamily: 'ui-monospace, monospace', minWidth: 75 } }, e.date),
               h('span', { style: { fontSize: 18 } }, s ? s.icon : '?'),
               h('span', { style: { flex: 1, fontSize: 13, color: _tpFg('#e2e8f0') } }, s ? s.label : '(unknown)'),
-              h('span', { style: { fontSize: 11, color: e.helped ? _tpFg('#22c55e') : '#f59e0b' } }, e.helped ? '✓ helped' : '⤴ tried another')
+              h('span', { style: { fontSize: 11, color: _tpFg(e.helped) ? _tpFg('#22c55e') : '#f59e0b' } }, e.helped ? '✓ helped' : '⤴ tried another')
             );
           })
         );

@@ -119,7 +119,11 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('dearMan'))) {
       var _de_FGL = {'#cbd5e1':'#334155','#93c5fd':'#1e3a8a','#94a3b8':'#64748b','#e2e8f0':'#1e293b','#bfdbfe':'#1e40af','#fcd34d':'#78350f','#fde68a':'#92400e'}, _de_FGH = {'#cbd5e1':'#ffff00','#93c5fd':'#ffff00','#94a3b8':'#ffff00','#e2e8f0':'#ffff00','#fff':'#ffff00','#bfdbfe':'#ffff00','#dbeafe':'#ffff00','#0f172a':'#ffff00','#64748b':'#ffff00','#475569':'#ffff00','#22c55e':'#ffff00','#a855f7':'#ffff00','#fcd34d':'#ffff00','#fde68a':'#ffff00'};
       var _de_BDL = {'#334155':'#e2e8f0','#1e293b':'#e5e7eb','#475569':'#cbd5e1'}, _de_BDH = {'#334155':'#ffff00','#1e293b':'#ffff00','#3b82f6':'#ffff00','#475569':'#ffff00','#cbd5e1':'#ffff00','#2563eb':'#ffff00','#f59e0b':'#ffff00'};
       var _deBg = function(h){ return _deHC ? (_de_BGH[h]||h) : (_deL ? (_de_BGL[h]||h) : h); };
-      var _deFg = function(h){ return _deHC ? (_de_FGH[h]||h) : (_deL ? (_de_FGL[h]||h) : h); };
+      // Dark-mode foreground remap. The tool shell is always dark, so these
+      // mid-tone accents were rendering below 4.5:1 as TEXT. Each maps to a
+      // lighter shade of the SAME hue; backgrounds and borders are untouched.
+      var _de_FGD = {'#6366f1':'#818cf8'};
+      var _deFg = function(h){ return _deHC ? (_de_FGH[h]||h) : (_deL ? (_de_FGL[h]||h) : (_de_FGD[h]||h)); };
       var _deBd = function(h){ return _deHC ? (_de_BDH[h]||h) : (_deL ? (_de_BDL[h]||h) : h); };
       var React = ctx.React;
       var h = React.createElement;
@@ -198,7 +202,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('dearMan'))) {
 
               style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + (active ? '#3b82f6' : '#334155'),
                 background: active ? 'rgba(59,130,246,0.18)' : _deBg('#1e293b'),
-                color: active ? _deFg('#bfdbfe') : _deFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
+                color: _deFg(active) ? _deFg('#bfdbfe') : _deFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
               t.icon + ' ' + t.label);
           })
         );
@@ -257,8 +261,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('dearMan'))) {
             var v = (d.responses || {})[L.id] || '';
             return h('div', { key: L.id, style: { padding: 14, borderRadius: 10, background: _deBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '4px solid ' + L.color, marginBottom: 10 } },
               h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 6 } },
-                h('span', { style: { fontSize: 22, fontWeight: 900, color: L.color, fontFamily: 'ui-monospace, monospace', minWidth: 28 } }, L.letter),
-                h('span', { style: { fontSize: 14, fontWeight: 800, color: L.color } }, L.label),
+                h('span', { style: { fontSize: 22, fontWeight: 900, color: _deFg(L.color), fontFamily: 'ui-monospace, monospace', minWidth: 28 } }, L.letter),
+                h('span', { style: { fontSize: 14, fontWeight: 800, color: _deFg(L.color) } }, L.label),
                 h('span', { style: { marginLeft: 'auto', fontSize: 10, color: _deFg('#94a3b8'), fontWeight: 700 } }, 'Step ' + (idx + 1) + ' / 7')
               ),
               h('div', { style: { fontSize: 12, color: _deFg('#cbd5e1'), marginBottom: 8, lineHeight: 1.6 } }, L.blurb),
@@ -328,8 +332,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('dearMan'))) {
             if (!v || !v.trim()) return null;
             return h('div', { key: L.id, style: { padding: 10, borderRadius: 8, background: _deBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid ' + L.color, marginBottom: 6 } },
               h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 4 } },
-                h('span', { style: { fontSize: 16, fontWeight: 900, color: L.color, fontFamily: 'ui-monospace, monospace', minWidth: 22 } }, L.letter),
-                h('span', { style: { fontSize: 11, color: L.color, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 } }, L.label)
+                h('span', { style: { fontSize: 16, fontWeight: 900, color: _deFg(L.color), fontFamily: 'ui-monospace, monospace', minWidth: 22 } }, L.letter),
+                h('span', { style: { fontSize: 11, color: _deFg(L.color), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 } }, L.label)
               ),
               h('p', { style: { margin: 0, color: _deFg('#e2e8f0'), fontSize: 13, lineHeight: 1.65 } }, v)
             );

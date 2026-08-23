@@ -419,7 +419,11 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('crewProtocols'))
       var _cp_FGL = {'#cbd5e1':'#334155','#7dd3fc':'#075985','#94a3b8':'#64748b','#e2e8f0':'#1e293b','#e9d5ff':'#581c87','#fcd34d':'#78350f','#fde68a':'#92400e'}, _cp_FGH = {'#cbd5e1':'#ffff00','#7dd3fc':'#ffff00','#94a3b8':'#ffff00','#bae6fd':'#ffff00','#e2e8f0':'#ffff00','#e9d5ff':'#ffff00','#10b981':'#ffff00','#fff':'#ffff00','#0f172a':'#ffff00','#64748b':'#ffff00','#475569':'#ffff00','#fcd34d':'#ffff00','#fde68a':'#ffff00'};
       var _cp_BDL = {'#334155':'#e2e8f0','#1e293b':'#e5e7eb','#475569':'#cbd5e1'}, _cp_BDH = {'#334155':'#ffff00','#0ea5e9':'#ffff00','#1e293b':'#ffff00','#10b981':'#ffff00','#475569':'#ffff00','#cbd5e1':'#ffff00','#0284c7':'#ffff00','#f59e0b':'#ffff00'};
       var _cpBg = function(h){ return _cpHC ? (_cp_BGH[h]||h) : (_cpL ? (_cp_BGL[h]||h) : h); };
-      var _cpFg = function(h){ return _cpHC ? (_cp_FGH[h]||h) : (_cpL ? (_cp_FGL[h]||h) : h); };
+      // Dark-mode foreground remap. The tool shell is always dark, so these
+      // mid-tone accents were rendering below 4.5:1 as TEXT. Each maps to a
+      // lighter shade of the SAME hue; backgrounds and borders are untouched.
+      var _cp_FGD = {'#dc2626':'#ef4444'};
+      var _cpFg = function(h){ return _cpHC ? (_cp_FGH[h]||h) : (_cpL ? (_cp_FGL[h]||h) : (_cp_FGD[h]||h)); };
       var _cpBd = function(h){ return _cpHC ? (_cp_BDH[h]||h) : (_cpL ? (_cp_BDL[h]||h) : h); };
       var React = ctx.React;
       var h = React.createElement;
@@ -470,7 +474,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('crewProtocols'))
               role: 'tab', 'aria-selected': active,
               style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + (active ? '#0ea5e9' : '#334155'),
                 background: active ? 'rgba(14,165,233,0.18)' : _cpBg('#1e293b'),
-                color: active ? _cpFg('#bae6fd') : _cpFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
+                color: _cpFg(active) ? _cpFg('#bae6fd') : _cpFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
               t.icon + ' ' + t.label);
           })
         );
@@ -507,8 +511,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('crewProtocols'))
                 style: { textAlign: 'left', padding: 14, borderRadius: 10, border: '1px solid ' + cat.color + '66', borderLeft: '4px solid ' + cat.color, background: _cpBg('#0f172a'), cursor: 'pointer', color: _cpFg('#e2e8f0') } },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 } },
                   h('span', { style: { fontSize: 22 } }, cat.icon),
-                  h('span', { style: { fontSize: 14, fontWeight: 800, color: cat.color, flex: 1 } }, cat.label),
-                  h('span', { style: { fontSize: 10, color: cat.color, fontWeight: 700 } }, count + ' format' + (count === 1 ? '' : 's'))
+                  h('span', { style: { fontSize: 14, fontWeight: 800, color: _cpFg(cat.color), flex: 1 } }, cat.label),
+                  h('span', { style: { fontSize: 10, color: _cpFg(cat.color), fontWeight: 700 } }, count + ' format' + (count === 1 ? '' : 's'))
                 ),
                 h('div', { style: { fontSize: 12, color: _cpFg('#94a3b8'), lineHeight: 1.55 } }, cat.blurb)
               );
@@ -535,13 +539,13 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('crewProtocols'))
           // Filter chips
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
             h('button', { onClick: function() { setCP({ filter: null }); }, 'aria-label': 'Show all',
-              style: { padding: '4px 12px', borderRadius: 14, border: '1px solid ' + (d.filter === null ? '#0ea5e9' : '#334155'), background: d.filter === null ? 'rgba(14,165,233,0.18)' : _cpBg('#1e293b'), color: d.filter === null ? _cpFg('#bae6fd') : _cpFg('#cbd5e1'), cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, 'All (' + PROTOCOLS.length + ')'),
+              style: { padding: '4px 12px', borderRadius: 14, border: '1px solid ' + (d.filter === null ? '#0ea5e9' : '#334155'), background: d.filter === null ? 'rgba(14,165,233,0.18)' : _cpBg('#1e293b'), color: _cpFg(d.filter) === null ? _cpFg('#bae6fd') : _cpFg('#cbd5e1'), cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, 'All (' + PROTOCOLS.length + ')'),
             Object.keys(CATEGORIES).map(function(catId) {
               var cat = CATEGORIES[catId];
               var count = PROTOCOLS.filter(function(p) { return p.category === catId; }).length;
               var active = d.filter === catId;
               return h('button', { key: catId, onClick: function() { setCP({ filter: catId }); }, 'aria-label': 'Filter by ' + cat.label, 'aria-pressed': active,
-                style: { padding: '4px 12px', borderRadius: 14, border: '1px solid ' + (active ? cat.color : '#334155'), background: active ? cat.color + '22' : _cpBg('#1e293b'), color: active ? cat.color : _cpFg('#cbd5e1'), cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, cat.icon + ' ' + cat.label + ' (' + count + ')');
+                style: { padding: '4px 12px', borderRadius: 14, border: '1px solid ' + (active ? cat.color : '#334155'), background: active ? cat.color + '22' : _cpBg('#1e293b'), color: _cpFg(active) ? cat.color : _cpFg('#cbd5e1'), cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, cat.icon + ' ' + cat.label + ' (' + count + ')');
             })
           ),
 
@@ -553,7 +557,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('crewProtocols'))
               h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 8, flexWrap: 'wrap' } },
                 h('span', { style: { fontSize: 22 } }, cat.icon),
                 h('span', { style: { fontSize: 16, fontWeight: 800, color: _cpFg('#e2e8f0'), flex: 1 } }, p.title),
-                h('span', { style: { fontSize: 10, color: cat.color, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 } }, cat.label)
+                h('span', { style: { fontSize: 10, color: _cpFg(cat.color), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 } }, cat.label)
               ),
               h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 12, marginBottom: 10, fontSize: 11, color: _cpFg('#94a3b8') } },
                 h('span', null, '⏱ ' + p.time),
@@ -561,11 +565,11 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('crewProtocols'))
                 h('span', null, '📦 ' + p.materials)
               ),
               h('div', { style: { padding: 10, borderRadius: 6, background: _cpBg('#1e293b'), marginBottom: 10 } },
-                h('div', { style: { fontSize: 11, color: cat.color, fontWeight: 700, marginBottom: 4 } }, 'Purpose'),
+                h('div', { style: { fontSize: 11, color: _cpFg(cat.color), fontWeight: 700, marginBottom: 4 } }, 'Purpose'),
                 h('p', { style: { margin: 0, color: _cpFg('#cbd5e1'), fontSize: 13, lineHeight: 1.65 } }, p.purpose)
               ),
               h('div', { style: { marginBottom: 10 } },
-                h('div', { style: { fontSize: 11, color: cat.color, fontWeight: 700, marginBottom: 4 } }, 'Steps'),
+                h('div', { style: { fontSize: 11, color: _cpFg(cat.color), fontWeight: 700, marginBottom: 4 } }, 'Steps'),
                 h('ol', { style: { margin: 0, padding: '0 0 0 22px', color: _cpFg('#e2e8f0'), fontSize: 13, lineHeight: 1.7 } },
                   p.steps.map(function(s, i) { return h('li', { key: i, style: { marginBottom: 4 } }, s); })
                 )
@@ -586,7 +590,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('crewProtocols'))
                 setCP({ planned: planned });
                 if (addToast) addToast(isPlanned ? 'Removed from plan.' : 'Added to plan.', 'info');
               }, 'aria-label': isPlanned ? 'Remove from plan' : 'Add to plan', 'aria-pressed': isPlanned,
-                style: { padding: '6px 14px', borderRadius: 6, border: '1px solid ' + cat.color, background: isPlanned ? cat.color : 'transparent', color: isPlanned ? '#fff' : cat.color, cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
+                style: { padding: '6px 14px', borderRadius: 6, border: '1px solid ' + cat.color, background: isPlanned ? cat.color : 'transparent', color: _cpFg(isPlanned) ? '#fff' : cat.color, cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
                 isPlanned ? '✓ Saved to plan' : '+ Save to my Crew plan')
             );
           }),

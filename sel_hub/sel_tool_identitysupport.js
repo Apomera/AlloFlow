@@ -104,7 +104,11 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('identitySupport'
       var _ide_FGL = {'#cbd5e1':'#334155','#f9a8d4':'#be185d','#94a3b8':'#64748b','#fbcfe8':'#9d174d','#e2e8f0':'#1e293b','#e9d5ff':'#581c87','#c4b5fd':'#5b21b6','#7dd3fc':'#075985','#fecaca':'#b91c1c','#fca5a5':'#991b1b','#fde68a':'#92400e','#fcd34d':'#78350f'}, _ide_FGH = {'#cbd5e1':'#ffff00','#f9a8d4':'#ffff00','#94a3b8':'#ffff00','#fbcfe8':'#ffff00','#e2e8f0':'#ffff00','#e9d5ff':'#ffff00','#c4b5fd':'#ffff00','#bae6fd':'#ffff00','#7dd3fc':'#ffff00','#bbf7d0':'#ffff00','#dcfce7':'#ffff00','#fecaca':'#ffff00','#fca5a5':'#ffff00','#fde68a':'#ffff00','#fcd34d':'#ffff00','#fff':'#ffff00','#0f172a':'#ffff00','#475569':'#ffff00','#831843':'#ffff00'};
       var _ide_BDL = {'#334155':'#e2e8f0','#1e293b':'#e5e7eb','#0f172a':'#cbd5e1'}, _ide_BDH = {'#334155':'#ffff00','#ec4899':'#ffff00','#1e293b':'#ffff00','#a855f7':'#ffff00','#0ea5e9':'#ffff00','#22c55e':'#ffff00','#ef4444':'#ffff00','#f59e0b':'#ffff00','#8b5cf6':'#ffff00','#e2e8f0':'#ffff00','#0f172a':'#ffff00','#f9a8d4':'#ffff00','#cbd5e1':'#ffff00'};
       var _ideBg = function(h){ return _ideHC ? (_ide_BGH[h]||h) : (_ideL ? (_ide_BGL[h]||h) : h); };
-      var _ideFg = function(h){ return _ideHC ? (_ide_FGH[h]||h) : (_ideL ? (_ide_FGL[h]||h) : h); };
+      // Dark-mode foreground remap. The tool shell is always dark, so these
+      // mid-tone accents were rendering below 4.5:1 as TEXT. Each maps to a
+      // lighter shade of the SAME hue; backgrounds and borders are untouched.
+      var _ide_FGD = {'#8b5cf6':'#a78bfa'};
+      var _ideFg = function(h){ return _ideHC ? (_ide_FGH[h]||h) : (_ideL ? (_ide_FGL[h]||h) : (_ide_FGD[h]||h)); };
       var _ideBd = function(h){ return _ideHC ? (_ide_BDH[h]||h) : (_ideL ? (_ide_BDL[h]||h) : h); };
       var React = ctx.React;
       var h = React.createElement;
@@ -156,7 +160,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('identitySupport'
               role: 'tab', 'aria-selected': active,
               style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + (active ? '#ec4899' : '#334155'),
                 background: active ? 'rgba(236,72,153,0.18)' : _ideBg('#1e293b'),
-                color: active ? _ideFg('#fbcfe8') : _ideFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
+                color: _ideFg(active) ? _ideFg('#fbcfe8') : _ideFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
               t.icon + ' ' + t.label);
           })
         );
@@ -224,7 +228,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('identitySupport'
       function stepCard(title, blurb, onClick, color) {
         return h('button', { onClick: onClick, 'aria-label': title,
           style: { width: '100%', textAlign: 'left', padding: 14, borderRadius: 10, borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '4px solid ' + color, background: _ideBg('#0f172a'), cursor: 'pointer', marginBottom: 8, color: _ideFg('#e2e8f0') } },
-          h('div', { style: { fontSize: 14, fontWeight: 800, color: color, marginBottom: 4 } }, title),
+          h('div', { style: { fontSize: 14, fontWeight: 800, color: _ideFg(color), marginBottom: 4 } }, title),
           h('div', { style: { fontSize: 12, color: _ideFg('#94a3b8'), lineHeight: 1.55 } }, blurb)
         );
       }

@@ -887,7 +887,11 @@ window.SelHub = window.SelHub || {
       var _cfl_FGL = {'#94a3b8':'#64748b','#cbd5e1':'#334155','#f1f5f9':'#0f172a','#e2e8f0':'#1e293b','#fca5a5':'#991b1b'}, _cfl_FGH = {'#94a3b8':'#ffff00','#fff':'#ffff00','#cbd5e1':'#ffff00','#f1f5f9':'#ffff00','#e2e8f0':'#ffff00','#ef4444':'#ffff00','#fca5a5':'#ffff00','#22c55e':'#ffff00','#f59e0b':'#ffff00','#ec4899':'#ffff00','#3b82f6':'#ffff00','#10b981':'#ffff00','#8b5cf6':'#ffff00','#6366f1':'#ffff00'};
       var _cfl_BDL = {'#334155':'#e2e8f0'}, _cfl_BDH = {'#334155':'#ffff00'};
       var _cflBg = function(h){ return _cflHC ? (_cfl_BGH[h]||h) : (_cflL ? (_cfl_BGL[h]||h) : h); };
-      var _cflFg = function(h){ return _cflHC ? (_cfl_FGH[h]||h) : (_cflL ? (_cfl_FGL[h]||h) : h); };
+      // Dark-mode foreground remap. The tool shell is always dark, so these
+      // mid-tone accents were rendering below 4.5:1 as TEXT. Each maps to a
+      // lighter shade of the SAME hue; backgrounds and borders are untouched.
+      var _cfl_FGD = {'#3b82f6':'#60a5fa','#a855f7':'#c084fc'};
+      var _cflFg = function(h){ return _cflHC ? (_cfl_FGH[h]||h) : (_cflL ? (_cfl_FGL[h]||h) : (_cfl_FGD[h]||h)); };
       var _cflBd = function(h){ return _cflHC ? (_cfl_BDH[h]||h) : (_cflL ? (_cfl_BDL[h]||h) : h); };
       var React = ctx.React;
       var h = React.createElement;
@@ -1125,7 +1129,7 @@ window.SelHub = window.SelHub || {
             'aria-selected': isActive, role: 'tab',
             style: {
               padding: '6px 12px', borderRadius: 8, border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: isActive ? 700 : 500, whiteSpace: 'nowrap',
-              background: isActive ? ACCENT_DIM : 'transparent', color: isActive ? ACCENT : _cflFg('#94a3b8'), transition: 'all 0.15s'
+              background: isActive ? ACCENT_DIM : 'transparent', color: _cflFg(isActive) ? ACCENT : _cflFg('#94a3b8'), transition: 'all 0.15s'
             }
           }, t.label);
         }),
@@ -1164,7 +1168,7 @@ window.SelHub = window.SelHub || {
         },
           h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
           h('div', { style: { flex: 1, minWidth: 220 } },
-            h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+            h('h3', { style: { color: _cflFg(meta.accent), fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
             h('p', { style: { margin: '3px 0 0', color: _cflFg('#cbd5e1'), fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
           )
         );
@@ -1193,7 +1197,7 @@ window.SelHub = window.SelHub || {
             gap: 8
           }
         },
-          h('span', { style: { fontSize: 12, fontWeight: 900, color: color } }, label),
+          h('span', { style: { fontSize: 12, fontWeight: 900, color: _cflFg(color) } }, label),
           h('span', { style: { fontSize: 11, color: _cflFg('#94a3b8'), lineHeight: 1.45 } }, detail)
         );
       }
@@ -1209,7 +1213,7 @@ window.SelHub = window.SelHub || {
             minHeight: 64
           }
         },
-          h('div', { style: { fontSize: 18, fontWeight: 900, color: color, lineHeight: 1 } }, value),
+          h('div', { style: { fontSize: 18, fontWeight: 900, color: _cflFg(color), lineHeight: 1 } }, value),
           h('div', { style: { marginTop: 5, fontSize: 10.5, color: _cflFg('#94a3b8'), lineHeight: 1.35 } }, label)
         );
       }
@@ -1227,7 +1231,7 @@ window.SelHub = window.SelHub || {
       },
         h('div', { style: { display: 'flex', gap: 12, alignItems: 'flex-start', flexWrap: 'wrap', marginBottom: 12 } },
           h('div', { style: { flex: '1 1 260px' } },
-            h('div', { style: { fontSize: 11, color: ACCENT, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 4 } }, 'Conflict map'),
+            h('div', { style: { fontSize: 11, color: _cflFg(ACCENT), fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 4 } }, 'Conflict map'),
             h('h3', { style: { margin: 0, color: _cflFg('#f1f5f9'), fontSize: 20, fontWeight: 900, lineHeight: 1.2 } }, 'Pick the part of the hard conversation to rehearse.'),
             h('p', { style: { margin: '6px 0 0', color: _cflFg('#cbd5e1'), fontSize: 12, lineHeight: 1.55 } },
               'Use a low-stakes scenario first, then build words, cool down, repair, or role-play the conversation.'
@@ -1273,7 +1277,7 @@ window.SelHub = window.SelHub || {
                 var earned = !!earnedBadges[b.id];
                 return h('div', { key: b.id, style: { padding: 12, borderRadius: 10, background: earned ? _cflBg('#0f172a') : '#0f172a88', border: '1px solid ' + (earned ? ACCENT_MED : _cflBg('#334155')), textAlign: 'center', opacity: earned ? 1 : 0.5 } },
                   h('div', { style: { fontSize: 28 } }, earned ? b.icon : '\uD83D\uDD12'),
-                  h('div', { style: { fontSize: 11, fontWeight: 600, color: earned ? _cflFg('#f1f5f9') : _cflFg('#94a3b8'), marginTop: 4 } }, b.name),
+                  h('div', { style: { fontSize: 11, fontWeight: 600, color: _cflFg(earned) ? _cflFg('#f1f5f9') : _cflFg('#94a3b8'), marginTop: 4 } }, b.name),
                   h('div', { style: { fontSize: 10, color: _cflFg('#94a3b8'), marginTop: 2 } }, b.desc)
                 );
               })
@@ -1302,7 +1306,7 @@ window.SelHub = window.SelHub || {
           ),
           // Scenario card
           h('div', { style: { padding: 20, borderRadius: 14, background: _cflBg('#0f172a'), border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
-            h('h4', { style: { color: ACCENT, fontSize: 15, marginBottom: 8, fontWeight: 700 } }, curCf.title),
+            h('h4', { style: { color: _cflFg(ACCENT), fontSize: 15, marginBottom: 8, fontWeight: 700 } }, curCf.title),
             h('div', { style: { display: 'flex', gap: 8, marginBottom: 10 } },
               h('span', { style: { fontSize: 10, background: _cflBg('#1e293b'), padding: '3px 8px', borderRadius: 6, color: _cflFg('#94a3b8') } }, '\uD83D\uDC64 ' + curCf.personA),
               h('span', { style: { fontSize: 10, color: _cflFg('#94a3b8') } }, 'vs'),
@@ -1328,7 +1332,7 @@ window.SelHub = window.SelHub || {
                 }, br.label),
                 showResult && h('div', { style: { margin: '8px 0 0 16px', padding: 12, borderRadius: 10, borderLeft: '3px solid ' + styleColors[br.style], background: _cflBg('#0f172a') } },
                   h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 } },
-                    h('span', { style: { fontSize: 10, fontWeight: 700, color: styleColors[br.style], textTransform: 'uppercase', letterSpacing: '0.05em' } }, styleLabels[br.style]),
+                    h('span', { style: { fontSize: 10, fontWeight: 700, color: _cflFg(styleColors)[br.style], textTransform: 'uppercase', letterSpacing: '0.05em' } }, styleLabels[br.style]),
                     h('span', { style: { color: _cflFg('#94a3b8') } }, '\u2B50'.repeat(br.rating))
                   ),
                   h('p', { style: { fontSize: 12, color: _cflFg('#e2e8f0'), lineHeight: 1.6 } }, br.outcome)
@@ -1399,7 +1403,7 @@ window.SelHub = window.SelHub || {
           ),
           // Preview
           (isFeeling || isBecause || isNeed) && h('div', { style: { padding: 14, borderRadius: 12, background: _cflBg('#1e293b'), border: '1px solid ' + ACCENT_MED, marginBottom: 12 } },
-            h('p', { style: { fontSize: 10, color: ACCENT, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4, fontWeight: 700 } }, 'Your I-Statement'),
+            h('p', { style: { fontSize: 10, color: _cflFg(ACCENT), textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4, fontWeight: 700 } }, 'Your I-Statement'),
             h('p', { style: { fontSize: 14, color: _cflFg('#f1f5f9'), lineHeight: 1.6 } },
               '"I feel ' + (isFeeling || '___') + ' because ' + (isBecause || '___') + '. ' + (isNeed || 'I need ___') + '"'
             )
@@ -1482,14 +1486,14 @@ window.SelHub = window.SelHub || {
             h('div', { style: { marginBottom: 14 } },
               curDe.steps.map(function(step, i) {
                 return h('div', { key: i, style: { display: 'flex', gap: 10, marginBottom: 10, alignItems: 'flex-start' } },
-                  h('div', { style: { width: 24, height: 24, borderRadius: '50%', background: ACCENT_DIM, color: ACCENT, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, flexShrink: 0 } }, i + 1),
+                  h('div', { style: { width: 24, height: 24, borderRadius: '50%', background: ACCENT_DIM, color: _cflFg(ACCENT), display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, flexShrink: 0 } }, i + 1),
                   h('p', { style: { fontSize: 13, color: _cflFg('#e2e8f0'), lineHeight: 1.6, margin: 0 } }, step)
                 );
               })
             ),
             // When to use
             h('div', { style: { padding: 12, borderRadius: 10, background: _cflBg('#1e293b'), border: '1px solid #334155' } },
-              h('p', { style: { fontSize: 10, color: ACCENT, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4, fontWeight: 700 } }, 'When to use this'),
+              h('p', { style: { fontSize: 10, color: _cflFg(ACCENT), textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4, fontWeight: 700 } }, 'When to use this'),
               h('p', { style: { fontSize: 12, color: _cflFg('#e2e8f0'), lineHeight: 1.6, fontStyle: 'italic' } }, curDe.when)
             )
           ),
@@ -1522,7 +1526,7 @@ window.SelHub = window.SelHub || {
           ),
           // Situation
           h('div', { style: { padding: 20, borderRadius: 14, background: _cflBg('#0f172a'), border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
-            h('h4', { style: { color: ACCENT, fontSize: 15, marginBottom: 8, fontWeight: 700 } }, curRp.title),
+            h('h4', { style: { color: _cflFg(ACCENT), fontSize: 15, marginBottom: 8, fontWeight: 700 } }, curRp.title),
             h('p', { style: { fontSize: 14, color: _cflFg('#e2e8f0'), lineHeight: 1.7, marginBottom: 14 } }, curRp.situation),
             // Steps
             h('div', { style: { marginBottom: 14 } },
@@ -1661,7 +1665,7 @@ window.SelHub = window.SelHub || {
           (quizComplete || sqDone) && h('div', null,
             h('div', { style: { textAlign: 'center', marginBottom: 16 } },
               h('div', { style: { fontSize: 40, marginBottom: 4 } }, STYLE_DESCRIPTIONS[maxStyle].icon),
-              h('div', { style: { fontSize: 18, fontWeight: 700, color: STYLE_DESCRIPTIONS[maxStyle].color, marginBottom: 4 } }, 'Your Primary Style: ' + STYLE_DESCRIPTIONS[maxStyle].name),
+              h('div', { style: { fontSize: 18, fontWeight: 700, color: _cflFg(STYLE_DESCRIPTIONS)[maxStyle].color, marginBottom: 4 } }, 'Your Primary Style: ' + STYLE_DESCRIPTIONS[maxStyle].name),
               h('p', { style: { fontSize: 13, color: _cflFg('#94a3b8'), maxWidth: 400, margin: '0 auto' } }, STYLE_DESCRIPTIONS[maxStyle].desc)
             ),
             // Style bars
@@ -1672,7 +1676,7 @@ window.SelHub = window.SelHub || {
                 return h('div', { key: s, style: { marginBottom: 10 } },
                   h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 4 } },
                     h('span', { style: { fontSize: 12, color: _cflFg('#e2e8f0'), fontWeight: 600 } }, info.icon + ' ' + info.name),
-                    h('span', { style: { fontSize: 12, color: info.color, fontWeight: 700 } }, pct + '%')
+                    h('span', { style: { fontSize: 12, color: _cflFg(info.color), fontWeight: 700 } }, pct + '%')
                   ),
                   h('div', { style: { height: 8, borderRadius: 4, background: _cflBg('#1e293b') } },
                     h('div', { role: 'progressbar', 'aria-valuemin': '0', 'aria-valuemax': '100', style: { height: '100%', borderRadius: 4, background: info.color, width: pct + '%', transition: 'width 0.5s' } })
@@ -1686,7 +1690,7 @@ window.SelHub = window.SelHub || {
                 var info = STYLE_DESCRIPTIONS[s];
                 var isTop = s === maxStyle;
                 return h('div', { key: s, style: { padding: 14, borderRadius: 12, background: isTop ? info.color + '15' : _cflBg('#0f172a'), border: '1px solid ' + (isTop ? info.color + '66' : _cflBg('#334155')) } },
-                  h('div', { style: { fontSize: 13, fontWeight: 700, color: info.color, marginBottom: 4 } }, info.icon + ' ' + info.name + (isTop ? ' \u2B50' : '')),
+                  h('div', { style: { fontSize: 13, fontWeight: 700, color: _cflFg(info.color), marginBottom: 4 } }, info.icon + ' ' + info.name + (isTop ? ' \u2B50' : '')),
                   h('div', { style: { fontSize: 11, color: _cflFg('#22c55e'), marginBottom: 2 } }, '\u2714 Strength: ' + info.strength),
                   h('div', { style: { fontSize: 11, color: _cflFg('#f59e0b') } }, '\u26A0 Watch for: ' + info.watchFor)
                 );
@@ -1726,7 +1730,7 @@ window.SelHub = window.SelHub || {
           ),
           // Scenario card
           h('div', { style: { padding: 16, borderRadius: 14, background: _cflBg('#0f172a'), border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
-            h('h4', { style: { color: ACCENT, fontSize: 15, marginBottom: 8, fontWeight: 700 } }, curAp.title),
+            h('h4', { style: { color: _cflFg(ACCENT), fontSize: 15, marginBottom: 8, fontWeight: 700 } }, curAp.title),
             h('p', { style: { fontSize: 13, color: _cflFg('#e2e8f0'), lineHeight: 1.7 } }, curAp.situation)
           ),
           // 5-part apology builder
@@ -1735,7 +1739,7 @@ window.SelHub = window.SelHub || {
               return h('div', { key: pi, style: { padding: 14, borderRadius: 12, background: _cflBg('#1e293b'), border: '1px solid ' + part.color + '33' } },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
                   h('div', { style: { width: 24, height: 24, borderRadius: '50%', background: part.color + '22', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, flexShrink: 0 } }, part.icon),
-                  h('span', { style: { fontSize: 12, fontWeight: 700, color: part.color } }, (pi + 1) + '. ' + part.label)
+                  h('span', { style: { fontSize: 12, fontWeight: 700, color: _cflFg(part.color) } }, (pi + 1) + '. ' + part.label)
                 ),
                 h('p', { style: { fontSize: 11, color: _cflFg('#94a3b8'), marginBottom: 6, fontStyle: 'italic' } }, part.prompt),
                 h('textarea', {
@@ -1786,7 +1790,7 @@ window.SelHub = window.SelHub || {
           ),
           // Example reveal
           apRevealed && h('div', { style: { padding: 16, borderRadius: 12, background: _cflBg('#0f172a'), border: '1px solid ' + ACCENT_MED } },
-            h('p', { style: { fontSize: 10, color: ACCENT, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 10, fontWeight: 700 } }, 'Example Apology'),
+            h('p', { style: { fontSize: 10, color: _cflFg(ACCENT), textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 10, fontWeight: 700 } }, 'Example Apology'),
             [
               { label: '1. Acknowledge', text: curAp.acknowledge, color: _cflFg('#ef4444') },
               { label: '2. Responsibility', text: curAp.responsibility, color: _cflFg('#f59e0b') },
@@ -1795,7 +1799,7 @@ window.SelHub = window.SelHub || {
               { label: '5. Promise', text: curAp.promise, color: _cflFg('#10b981') }
             ].map(function(ex, ei) {
               return h('div', { key: ei, style: { marginBottom: 8 } },
-                h('span', { style: { fontSize: 10, fontWeight: 700, color: ex.color, marginRight: 6 } }, ex.label + ':'),
+                h('span', { style: { fontSize: 10, fontWeight: 700, color: _cflFg(ex.color), marginRight: 6 } }, ex.label + ':'),
                 h('span', { style: { fontSize: 12, color: _cflFg('#e2e8f0') } }, '"' + ex.text + '"')
               );
             })
@@ -1873,13 +1877,13 @@ window.SelHub = window.SelHub || {
                 transition: 'all 0.5s',
                 transform: cdBreathPhase % 3 === 0 ? 'scale(1.15)' : cdBreathPhase % 3 === 1 ? 'scale(1.15)' : 'scale(0.9)'
               } },
-                h('div', { style: { fontSize: 14, fontWeight: 700, color: breathSteps[cdBreathPhase % 3].color, marginBottom: 4 } }, breathSteps[cdBreathPhase % 3].label),
+                h('div', { style: { fontSize: 14, fontWeight: 700, color: _cflFg(breathSteps)[cdBreathPhase % 3].color, marginBottom: 4 } }, breathSteps[cdBreathPhase % 3].label),
                 h('div', { style: { fontSize: 28, fontWeight: 700, color: _cflFg('#f1f5f9') } }, breathSteps[cdBreathPhase % 3].seconds + 's')
               )
             ),
             h('div', { style: { display: 'flex', gap: 6, justifyContent: 'center', marginBottom: 16 } },
               breathSteps.map(function(bs, i) {
-                return h('div', { key: i, style: { padding: '6px 14px', borderRadius: 8, fontSize: 11, fontWeight: 600, background: cdBreathPhase % 3 === i ? bs.color + '33' : _cflBg('#0f172a'), color: cdBreathPhase % 3 === i ? bs.color : _cflFg('#94a3b8'), border: '1px solid ' + (cdBreathPhase % 3 === i ? bs.color : _cflBg('#334155')) } }, bs.label + ' (' + bs.seconds + 's)');
+                return h('div', { key: i, style: { padding: '6px 14px', borderRadius: 8, fontSize: 11, fontWeight: 600, background: cdBreathPhase % 3 === i ? bs.color + '33' : _cflBg('#0f172a'), color: _cflFg(cdBreathPhase) % 3 === i ? bs.color : _cflFg('#94a3b8'), border: '1px solid ' + (cdBreathPhase % 3 === i ? bs.color : _cflBg('#334155')) } }, bs.label + ' (' + bs.seconds + 's)');
               })
             ),
             h('p', { style: { fontSize: 12, color: _cflFg('#94a3b8'), marginBottom: 16, lineHeight: 1.6 } },
@@ -1909,7 +1913,7 @@ window.SelHub = window.SelHub || {
             ),
             h('div', { style: { padding: 24, borderRadius: 16, background: _cflBg('#0f172a'), border: '2px solid ' + groundSenses[cdGroundStep].color + '66', textAlign: 'center', marginBottom: 16 } },
               h('div', { style: { fontSize: 40, marginBottom: 8 } }, groundSenses[cdGroundStep].icon),
-              h('div', { style: { fontSize: 32, fontWeight: 700, color: groundSenses[cdGroundStep].color, marginBottom: 4 } }, groundSenses[cdGroundStep].count),
+              h('div', { style: { fontSize: 32, fontWeight: 700, color: _cflFg(groundSenses)[cdGroundStep].color, marginBottom: 4 } }, groundSenses[cdGroundStep].count),
               h('div', { style: { fontSize: 14, fontWeight: 700, color: _cflFg('#f1f5f9'), marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.1em' } }, 'Things you can ' + groundSenses[cdGroundStep].sense),
               h('p', { style: { fontSize: 13, color: _cflFg('#e2e8f0'), lineHeight: 1.6 } }, groundSenses[cdGroundStep].prompt)
             ),
@@ -2076,7 +2080,7 @@ window.SelHub = window.SelHub || {
             }, medLoading ? 'Mediating...' : h(Sparkles, { size: 14 }), medLoading ? null : ' Help Me Resolve This')
           ),
           medResponse && h('div', { style: { padding: 20, borderRadius: 12, background: _cflBg('#1e293b'), border: '1px solid ' + ACCENT_MED } },
-            h('p', { style: { fontSize: 10, color: ACCENT, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 10, fontWeight: 700 } }, 'Mediation Plan'),
+            h('p', { style: { fontSize: 10, color: _cflFg(ACCENT), textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 10, fontWeight: 700 } }, 'Mediation Plan'),
             h('div', { style: { fontSize: 13, color: _cflFg('#e2e8f0'), lineHeight: 1.8, whiteSpace: 'pre-wrap' } }, medResponse)
           )
         );
@@ -2097,7 +2101,7 @@ window.SelHub = window.SelHub || {
           return h('div', { style: { marginBottom: 12 } },
             h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 4 } },
               h('span', { style: { fontSize: 11, color: _cflFg('#94a3b8'), fontWeight: 600 } }, label),
-              h('span', { style: { fontSize: 11, color: color, fontWeight: 700 } }, pct + '/100')
+              h('span', { style: { fontSize: 11, color: _cflFg(color), fontWeight: 700 } }, pct + '/100')
             ),
             h('div', { style: { height: 8, borderRadius: 4, background: _cflBg('#1e293b') } },
               h('div', { role: 'progressbar', 'aria-valuemin': '0', 'aria-valuemax': '100', style: { height: '100%', borderRadius: 4, background: color, width: pct + '%', transition: 'width 0.4s' } })
@@ -2129,7 +2133,7 @@ window.SelHub = window.SelHub || {
                 h('div', null,
                   h('div', { style: { fontSize: 16, fontWeight: 700, color: _cflFg('#f1f5f9'), marginBottom: 4 } }, 'Practice Mode'),
                   h('div', { style: { fontSize: 12, color: _cflFg('#94a3b8'), lineHeight: 1.5 } }, 'Talk 1-on-1 with an AI character to practice resolving a conflict. Build rapport through good communication.'),
-                  rpPracticeCompleted > 0 && h('div', { style: { fontSize: 11, color: ACCENT, marginTop: 4 } }, rpPracticeCompleted + ' completed')
+                  rpPracticeCompleted > 0 && h('div', { style: { fontSize: 11, color: _cflFg(ACCENT), marginTop: 4 } }, rpPracticeCompleted + ' completed')
                 )
               ),
               h('button', { 'aria-label': 'Mediation Mode',
@@ -2380,7 +2384,7 @@ window.SelHub = window.SelHub || {
               h('p', { style: { color: _cflFg('#94a3b8'), fontSize: 13, marginBottom: 4 } }, 'You reached resolution with ' + curRPScenario.character.name + '!'),
               rapportBar(rpRapport, 'Final Rapport', _cflFg('#ef4444'), _cflFg('#22c55e')),
               h('div', { style: { padding: 16, borderRadius: 14, background: _cflBg('#0f172a'), border: '1px solid ' + ACCENT_MED, marginBottom: 16, textAlign: 'left' } },
-                h('p', { style: { fontSize: 10, color: ACCENT, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8, fontWeight: 700 } }, 'Conversation Replay'),
+                h('p', { style: { fontSize: 10, color: _cflFg(ACCENT), textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8, fontWeight: 700 } }, 'Conversation Replay'),
                 h('div', { style: { maxHeight: 200, overflow: 'auto' } },
                   rpChatHistory.map(function(msg, mi) {
                     return h('div', { key: mi }, chatBubble(msg.text, msg.role === 'user', curRPScenario.character.emoji));
@@ -2643,7 +2647,7 @@ window.SelHub = window.SelHub || {
                     var nameLabel = msg.role === 'charA' ? curMedScenario.charA.name : msg.role === 'charB' ? curMedScenario.charB.name : 'You';
                     var emoji = msg.role === 'charA' ? curMedScenario.charA.emoji : msg.role === 'charB' ? curMedScenario.charB.emoji : '🧑';
                     return h('div', { key: mi, style: { fontSize: 12, color: _cflFg('#e2e8f0'), marginBottom: 6, lineHeight: 1.5 } },
-                      h('span', { style: { fontWeight: 700, color: msg.role === 'mediator' ? ACCENT : _cflFg('#94a3b8') } }, emoji + ' ' + nameLabel + ': '),
+                      h('span', { style: { fontWeight: 700, color: _cflFg(msg.role) === 'mediator' ? ACCENT : _cflFg('#94a3b8') } }, emoji + ' ' + nameLabel + ': '),
                       msg.text
                     );
                   })
@@ -2685,14 +2689,14 @@ window.SelHub = window.SelHub || {
         progressContent = h('div', { style: { padding: 20, maxWidth: 550, margin: '0 auto' } },
           h('h3', { style: { textAlign: 'center', marginBottom: 16, color: _cflFg('#f1f5f9'), fontSize: 18 } }, '\uD83D\uDCCA Your Progress'),
           h('div', { style: { textAlign: 'center', padding: 20, borderRadius: 14, background: _cflBg('#0f172a'), border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
-            h('div', { style: { fontSize: 40, fontWeight: 700, color: ACCENT } }, totalActs),
+            h('div', { style: { fontSize: 40, fontWeight: 700, color: _cflFg(ACCENT) } }, totalActs),
             h('div', { style: { fontSize: 13, color: _cflFg('#94a3b8') } }, 'Total Activities Completed')
           ),
           h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 20 } },
             stats.map(function(s) {
               return h('div', { key: s.label, style: { padding: 16, borderRadius: 12, background: _cflBg('#1e293b'), border: '1px solid ' + s.color + '44', textAlign: 'center' } },
                 h('div', { style: { fontSize: 24 } }, s.icon),
-                h('div', { style: { fontSize: 22, fontWeight: 700, color: s.color, margin: '4px 0' } }, s.value),
+                h('div', { style: { fontSize: 22, fontWeight: 700, color: _cflFg(s.color), margin: '4px 0' } }, s.value),
                 h('div', { style: { fontSize: 11, color: _cflFg('#94a3b8') } }, s.label)
               );
             })

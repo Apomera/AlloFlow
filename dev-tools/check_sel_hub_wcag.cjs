@@ -363,6 +363,7 @@ const report = {
 fs.mkdirSync(path.dirname(JSON_PATH), { recursive: true });
 fs.writeFileSync(JSON_PATH, JSON.stringify(report, null, 2) + '\n');
 
+const toolCov = (toolAudit && toolAudit.summary && toolAudit.summary.contrastCoverage) || null;
 const lines = [
   '# SEL Hub WCAG AA and Theme Audit',
   '',
@@ -375,12 +376,24 @@ const lines = [
   '- Tool audit: ' + (report.summary.toolCount == null ? 'not available' : (report.summary.toolCount + ' tools, ' + report.summary.toolErrorCount + ' error(s), ' + report.summary.toolWarningCount + ' warning(s)')),
   '- Standard tool shell gaps: ' + ((report.summary.toolsWithoutStandardShell || []).length),
   '',
-  '## What Looks Strong',
+  '## Coverage (read this before the counts)',
   '',
-  '- Every SEL tool is covered by the standard shell audit in light, dark, and high-contrast themes.',
-  '- Hub shell exposes labeled controls for close, theme, export, teacher launch, recent work, and share-packet entry points.',
-  '- Recent SEL work and Share Packet entry points include student-control/privacy language.',
-  '- Theme tokens now cover high-contrast foregrounds for accent, success, warning, danger, teacher-station, and disabled surfaces.',
+  // Everything in this section is DERIVED. It replaces a hardcoded
+  // "What Looks Strong" block that printed the same four reassuring bullets
+  // regardless of the result -- it would have read identically with 500 errors.
+  '- Tool contrast: ' + (toolCov ? toolCov.textNodesGraded + ' text node(s) graded' : 'not available')
+    + (toolCov ? '; ' + toolCov.skippedGradientBackground + ' skipped (gradient background), ' + toolCov.skippedColourFromCssClass + ' skipped (colour set by a CSS class)' : ''),
+  '- **Skipped is not passed.** Gradient-backed text has no single background to measure, and a colour set by a utility class cannot be resolved from server-rendered markup.',
+  '- Hub shell entry points found this run: '
+    + views.map(function (v) {
+        return v.theme + '=' + [
+          v.checks.hasRecentWork ? 'recent' : null,
+          v.checks.hasSharePacketLauncher ? 'sharePacket' : null,
+          v.checks.hasTeacherLaunch ? 'teacherLaunch' : null,
+          v.checks.hasPrivacyCopy ? 'privacyCopy' : null
+        ].filter(Boolean).join('+') || 'none';
+      }).join(', '),
+  '- Tool interiors render on the host dark shell (`needsDarkShell` in sel_hub_module.js), so a tool that ignores `ctx.theme` produces identical markup in light and dark. Byte-identical renders across themes below mean the tool is theme-blind, not that it passed three audits.',
   '',
   '## Remaining Manual QA',
   '',
