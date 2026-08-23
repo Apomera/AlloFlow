@@ -1782,7 +1782,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
       // ─────────────────────────────────────────
       function renderConsent() {
         return h('div', { 'data-fr-focusable': true,
-          style: { padding: 24, maxWidth: 720, margin: '0 auto', color: T.text } },
+          style: { padding: 24, maxWidth: 720, margin: '0 auto', color: T.text, background: T.bg, borderRadius: 12 } },
           h('div', { role: 'region', 'aria-label': __alloT('stem.firstresponse.first_response_lab_consent_and_educati', 'First Response Lab consent and educational scope'),
             style: { background: '#7f1d1d', border: '1px solid #dc2626', borderRadius: 14, padding: 24 } },
             h('h2', { style: { margin: '0 0 12px', fontSize: 22, color: '#fde2e2' } },

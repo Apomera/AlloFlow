@@ -6148,6 +6148,10 @@ window.StemLab = window.StemLab || {
       var React = ctx.React;
       var el = React.createElement;
       var d = (ctx.toolData && ctx.toolData.dinoLab) || {};
+      // Section-cue ink: teal-300 was designed for the dark substrate and is
+      // invisible (1.19:1) on the light one. Same DOM sniff probability uses;
+      // re-evaluated every render, so theme toggles keep it honest.
+      var dinoCueInk = (typeof document !== 'undefined' && document.querySelector('.theme-dark,.theme-contrast,[data-stem-theme=dark],[data-stem-theme=contrast]')) ? '#5eead4' : '#115e59';
       var FIELD_PROGRESS_VERSION = 1;
       function fieldProgressMap(value) {
         var out = {};
@@ -6473,7 +6477,7 @@ window.StemLab = window.StemLab || {
       }));
       var tabNavigation = el('nav', { 'aria-label': 'Dino Lab section navigation', style: { background: T.deeper } },
         el('div', { className: 'dinolab-section-cue', style: { display: 'flex', alignItems: 'center', gap: 7, padding: '7px 12px 0', color: T.soft, fontSize: 11.5 } },
-          el('span', { style: { textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 900, color: '#5eead4' } }, activeTabGroup),
+          el('span', { style: { textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 900, color: dinoCueInk } }, activeTabGroup),
           el('span', { 'aria-hidden': 'true' }, '›'),
           el('span', { style: { fontWeight: 800, color: T.text } }, activeTabMeta.label),
           el('span', { style: { marginLeft: 'auto' } }, (TABS.indexOf(activeTabMeta) + 1) + ' of ' + TABS.length)
