@@ -17,6 +17,7 @@
 //   node dev-tools/i18n/bless_lang_sources.cjs              # create baseline (refuses to clobber an existing one)
 //   node dev-tools/i18n/bless_lang_sources.cjs --force      # re-snapshot ALL keys to current English (full re-bless)
 //   node dev-tools/i18n/bless_lang_sources.cjs --key common.foo --key alerts.bar   # re-bless only these keys
+//   node dev-tools/i18n/bless_lang_sources.cjs --keys-file keys.json                # re-bless a list of keys
 //   node dev-tools/i18n/bless_lang_sources.cjs --prune      # also drop baseline entries whose source key no longer exists
 //
 // Exit: 0 on success; 1 on a refused clobber or bad args.
@@ -30,6 +31,23 @@ const PRUNE = argv.includes('--prune');
 const KEYS = [];
 for (let i = 0; i < argv.length; i++) {
   if (argv[i] === '--key') { const k = argv[i + 1]; if (k) KEYS.push(k); i++; }
+  // --keys-file takes a JSON array of key names, or a newline-separated list. A bulk
+  // re-bless (e.g. every key a drift classification found cosmetic) is otherwise a
+  // command line hundreds of arguments long, which is easy to truncate and impossible
+  // to review.
+  else if (argv[i] === '--keys-file') {
+    const p = argv[i + 1]; i++;
+    if (!p || !fs.existsSync(p)) { console.error('✗ --keys-file not found: ' + p); process.exit(1); }
+    const raw = fs.readFileSync(p, 'utf8').trim();
+    let list;
+    if (raw.startsWith('[')) list = JSON.parse(raw);
+    else list = raw.split(String.fromCharCode(10)).map(x => x.trim().replace(String.fromCharCode(13), '')).filter(Boolean);
+    if (!Array.isArray(list) || list.some(x => typeof x !== 'string')) {
+      console.error('✗ --keys-file must be a JSON array of strings or a newline-separated list');
+      process.exit(1);
+    }
+    for (const k of list) KEYS.push(k);
+  }
 }
 
 const source = L.loadSourceStrings();

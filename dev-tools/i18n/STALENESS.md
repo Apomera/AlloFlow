@@ -129,3 +129,38 @@ not match rather than guessing.
    `0 to write, N already correct`. Anything else means the write did not land -
    and blessing a key whose packs never changed is worse than not fixing it, because
    the baseline then certifies stale text as current.
+
+## Triaging a backlog (`classify_stale_drift.cjs`)
+
+Not every English edit invalidates a translation. The 2026-08-16 style pass stripped em
+dashes from the English (`outcomes—a spell` → `outcomes. A spell`), which changed the hash
+of hundreds of keys without changing what a single one of them MEANS. Re-translating
+those in 62 languages would spend enormous effort reproducing the same sentences, and
+every unnecessary hand-edit is a chance to damage a good translation.
+
+`classify_stale_drift.cjs` splits the backlog into **PUNCTUATION** / **TRIVIAL** (the
+existing translation is still accurate → bless) and **SEMANTIC** (words moved → must be
+re-translated). It is deliberately conservative: a removed or added word is SEMANTIC even
+when it looks like tidying.
+
+```bash
+node dev-tools/i18n/classify_stale_drift.cjs --search 90 --json cls.json   # resolve per key
+node dev-tools/i18n/classify_stale_drift.cjs --base <rev> --prefix help_mode.
+node dev-tools/i18n/bless_lang_sources.cjs --keys-file cosmetic.json
+```
+
+**The guard that makes it trustworthy:** the baseline stores hashes only, so the old
+English has to be recovered from git. `--search` resolves, *per key*, the newest revision
+whose hash matches the baseline; anything it cannot resolve is reported as **WRONG-BASE**
+and left unclassified. Without that check, pointing the tool at a revision where
+before == after classifies every key as cosmetic and looks like a clean result — the
+first run of this tool did exactly that, reporting 60/60 keys cosmetic, all of them wrong.
+
+**Never bless on the classifier alone.** Cross-check with an independent method before
+blessing: extract the sequence of word tokens (`/[\p{L}\p{N}]+/gu`, case-folded) from the
+blessed English and from the current English and require the sequences to be identical.
+Two routes, one answer. On 2026-08-23 that confirmed 296/296 keys, and the calibration
+probe (a real reword must NOT read as cosmetic) proved the check could fail.
+
+Coverage: `tests/i18n_cli_tools.test.js` pins both properties — that a wrong base is
+refused rather than classified, and that the tokeniser can tell a real reword apart.

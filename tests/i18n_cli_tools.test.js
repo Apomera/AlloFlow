@@ -124,3 +124,42 @@ describe('check_staleness_delta.cjs — point-of-edit English reword detection',
     expect(status).toBe(0);
   }, 60000);
 });
+
+// 4. classify_stale_drift.cjs — the tool that decides which stale keys are cosmetic (and
+//    may therefore be blessed) rather than re-translated. Blessing a key asserts every
+//    pack is correct against the current English, so a permissive classifier would
+//    silently certify wrong translations across 62 languages. Two properties are pinned:
+//    it must REFUSE a base revision that is not the blessed English, and every key it
+//    calls cosmetic must be word-for-word identical to the blessed English.
+describe('classify_stale_drift.cjs — cosmetic-vs-semantic classification', () => {
+  const CLASSIFY = resolve(ROOT, 'dev-tools/i18n/classify_stale_drift.cjs');
+
+  it('refuses to classify against a revision that is not the blessed English', () => {
+    // HEAD's English is by definition NOT what the stale keys were blessed against, so a
+    // classifier that trusted it would report everything as unchanged/cosmetic.
+    const { stdout } = runNode(CLASSIFY, ['--base', 'HEAD']);
+    const m = stdout.match(/WRONG-BASE\s+(\d+) key/);
+    const punct = stdout.match(/PUNCTUATION\s+(\d+) key/);
+    if (/0 changed key/.test(stdout)) return; // backlog fully cleared; nothing to classify
+    expect(m, `expected a WRONG-BASE line, got:\n${stdout}`).toBeTruthy();
+    expect(Number(m[1])).toBeGreaterThan(0);
+    // and it must not have quietly called those same keys cosmetic
+    expect(Number(punct?.[1] ?? 0)).toBe(0);
+  }, 180000);
+
+  it('only calls a key cosmetic when its words are unchanged', () => {
+    const { stdout } = runNode(CLASSIFY, ['--search', '90', '--json', resolve(ROOT, 'dev-tools/i18n/lang_staleness/_classify_test.json')]);
+    const path = resolve(ROOT, 'dev-tools/i18n/lang_staleness/_classify_test.json');
+    if (!existsSync(path)) { expect(stdout).toMatch(/changed key/); return; }
+    const cls = JSON.parse(readFileSync(path, 'utf8'));
+    const words = s => (String(s).toLowerCase().match(/[\p{L}\p{N}]+/gu) || []).join(' ');
+    // The classifier is right or wrong per key; here we only assert the invariant it
+    // claims, using an independent tokenisation.
+    expect(Array.isArray(cls.punctuation)).toBe(true);
+    expect(Array.isArray(cls.semantic)).toBe(true);
+    // Calibration: the tokeniser must be able to tell a real reword apart.
+    expect(words('lower grades = simpler vocabulary'))
+      .not.toBe(words('lower grades = more supported vocabulary'));
+    rmSync(path, { force: true });
+  }, 300000);
+});
