@@ -943,6 +943,74 @@ try {
   var safeSetItem = window.safeSetItem || function(key, val) {
     try { localStorage.setItem(key, val); } catch(e) {}
   };
+  var AC_ROSTER_STORE_KEY = 'alloflow_ac_imported_students';
+  // What survives a reload (finding 4, 2026-08-23): everything the table, the
+  // research views and the detail drill-down read, minus the fat fields
+  // (word-level fluency data, audio) and minus live-session rows, capped so a
+  // 30-student class stays well inside the localStorage quota. Stats were
+  // computed by calculateStudentStats at import time and persist as-is; they
+  // are never recomputed from the trimmed data.
+  function _acTrimStudentData(data) {
+    if (!data || typeof data !== 'object') return null;
+    var out = {};
+    try {
+      if (data.timeOnTask && typeof data.timeOnTask === 'object') out.timeOnTask = { totalSessionMinutes: data.timeOnTask.totalSessionMinutes || 0 };
+      if (Array.isArray(data.fluencyAssessments)) out.fluencyAssessments = data.fluencyAssessments.slice(-24).map(function(a) {
+        var entry = Object.assign({}, a);
+        delete entry.wordData; delete entry.audioBase64; delete entry.audioRecording;
+        delete entry.insertions; delete entry.reviewAudit; delete entry.automatedSnapshot;
+        return entry;
+      });
+      if (data.flagSummary && typeof data.flagSummary === 'object') out.flagSummary = data.flagSummary;
+      if (data.wordSoundsState && typeof data.wordSoundsState === 'object') {
+        var ws = data.wordSoundsState;
+        out.wordSoundsState = {
+          sessionScore: ws.sessionScore || null,
+          history: Array.isArray(ws.history) ? ws.history.slice(-40) : [],
+          phonemeMastery: ws.phonemeMastery || null,
+          badges: Array.isArray(ws.badges) ? ws.badges.slice(0, 24) : []
+        };
+      }
+      if (data.gameCompletions && typeof data.gameCompletions === 'object') {
+        out.gameCompletions = {};
+        Object.keys(data.gameCompletions).slice(0, 40).forEach(function(k) {
+          var arr = data.gameCompletions[k];
+          out.gameCompletions[k] = Array.isArray(arr) ? arr.slice(-10) : arr;
+        });
+      }
+    } catch (e) { return null; }
+    return out;
+  }
+  function _acPersistableStudent(s) {
+    return {
+      id: s.id || null,
+      name: s.name,
+      nickname: s.nickname || null,
+      filename: s.filename || null,
+      stats: s.stats || {},
+      safetyFlags: Array.isArray(s.safetyFlags) ? s.safetyFlags.slice(0, 50) : [],
+      lastSession: s.lastSession || null,
+      screeningHistory: Array.isArray(s.screeningHistory) ? s.screeningHistory.slice(-50) : [],
+      data: _acTrimStudentData(s.data),
+      restored: true
+    };
+  }
+  function _acRestoreImportedStudents(raw) {
+    try {
+      var parsed = JSON.parse(raw || '[]');
+      if (!Array.isArray(parsed)) return [];
+      return parsed.filter(function(s) {
+        return !!(s && typeof s === 'object' && typeof s.name === 'string' && s.name);
+      }).map(function(s) {
+        return Object.assign({}, s, {
+          stats: (s.stats && typeof s.stats === 'object') ? s.stats : {},
+          safetyFlags: Array.isArray(s.safetyFlags) ? s.safetyFlags : [],
+          screeningHistory: Array.isArray(s.screeningHistory) ? s.screeningHistory : [],
+          restored: true
+        });
+      });
+    } catch (e) { return []; }
+  }
   var warnLog = window.warnLog || function() {
     console.warn.apply(console, arguments);
   };
@@ -1271,6 +1339,7 @@ try {
     probeTargetStudent,
     setProbeTargetStudent,
     saveProbeResult,
+    deleteStudentRecords,
     // The loaded Word Sounds pack — the vocabulary the decodable ORF
     // passage is built from. Value, not just the setter.
     wsPreloadedWords,
@@ -1317,7 +1386,22 @@ try {
     // Opens the reviewed, one-way Student Analytics copy in AlloSheet.
     onOpenAlloSheet
   }) => {
-    const [importedStudents, setImportedStudents] = React.useState([]);
+    const [importedStudents, setImportedStudents] = React.useState(() => _acRestoreImportedStudents(safeGetItem(AC_ROSTER_STORE_KEY)));
+    // Persist the imported roster (finding 4): until 2026-08-23 this list reset
+    // to [] every session, so Student Data and Research opened empty each
+    // morning until the teacher re-imported every JSON file. Live-session rows
+    // are transient and excluded; the ref skips redundant writes during live
+    // snapshot merges.
+    const _acRosterPersistRef = React.useRef(null);
+    React.useEffect(() => {
+      try {
+        const durable = importedStudents.filter(s => s && !s.isLive).map(_acPersistableStudent);
+        const json = JSON.stringify(durable);
+        if (json === _acRosterPersistRef.current) return;
+        _acRosterPersistRef.current = json;
+        safeSetItem(AC_ROSTER_STORE_KEY, json);
+      } catch (e) {}
+    }, [importedStudents]);
     const [selectedStudent, setSelectedStudent] = React.useState(null);
     // Controlled draft for the intervention-log add form (was read/cleared via
     // document.getElementById, which is fragile under re-render/odd student names).
@@ -2897,6 +2981,52 @@ try {
       window.addEventListener('alloflow:study-bundle-imported', rereadResearchStores);
       return () => window.removeEventListener('alloflow:study-bundle-imported', rereadResearchStores);
     }, []);
+    // ── Records manager: per-student delete (finding 6, FERPA retention) ──
+    // The union of every identity that HAS records, not just imported rows:
+    // roster-only students and orphaned split identities (the same child keyed
+    // under a codename AND an imported real name) are both reachable, so
+    // deleting the stale half of a split is the cleanup path.
+    const [recordsRemovalTarget, setRecordsRemovalTarget] = React.useState('');
+    const listRecordIdentities = () => {
+      const names = new Set();
+      try { Object.keys(probeHistory || {}).forEach(n => names.add(n)); } catch (e) {}
+      try { Object.keys(interventionLogs || {}).forEach(n => names.add(n)); } catch (e) {}
+      try { Object.keys(rtiGoals || {}).forEach(n => names.add(n)); } catch (e) {}
+      try { Object.keys(externalCBMScores || {}).forEach(n => names.add(n)); } catch (e) {}
+      try { Object.keys((rosterKey && rosterKey.progressHistory) || {}).forEach(n => names.add(n)); } catch (e) {}
+      importedStudents.forEach(s => { if (s && !s.isLive) names.add(s.nickname || s.name); });
+      return Array.from(names).filter(Boolean).sort();
+    };
+    const handleRemoveStudentRecords = async () => {
+      const name = recordsRemovalTarget;
+      if (!name) return;
+      const confirmed = await askStudentAnalyticsConfirmation(
+        'This permanently deletes ' + name + "'s probe history, intervention logs, RTI goals, imported CBM scores, progress snapshots, and imported row from this device.\n\nRoster membership is kept. Files already exported are not affected. This cannot be undone.",
+        { title: 'Remove student records', confirmText: 'Delete records' }
+      );
+      if (!confirmed) return;
+      if (typeof deleteStudentRecords === 'function') deleteStudentRecords(name);
+      setExternalCBMScores(prev => {
+        if (!(name in prev)) return prev;
+        const updated = { ...prev };
+        delete updated[name];
+        try { localStorage.setItem('alloflow_external_cbm', JSON.stringify(updated)); } catch {}
+        return updated;
+      });
+      try { window.dispatchEvent(new CustomEvent('alloflow:external-cbm-updated')); } catch (e) {}
+      if (typeof setRosterKey === 'function') setRosterKey(prev => {
+        if (!prev || !prev.progressHistory || !(name in prev.progressHistory)) return prev;
+        const history = { ...prev.progressHistory };
+        delete history[name];
+        return { ...prev, progressHistory: history };
+      });
+      setImportedStudents(prev => prev.filter(s => (s.nickname || s.name) !== name));
+      if (selectedStudent && (selectedStudent.nickname || selectedStudent.name) === name) setSelectedStudent(null);
+      if (researchStudent === name) setResearchStudent(null);
+      if (activeStudent === name) { setActiveStudent(null); setProbeTargetStudent(null); }
+      setRecordsRemovalTarget('');
+      addToast((t('toasts.student_records_removed') || 'All records removed for ') + name, 'success');
+    };
     const [showCBMModal, setShowCBMModal] = React.useState(false);
     const [cbmForm, setCBMForm] = React.useState({
       student: '',
@@ -9711,6 +9841,29 @@ try {
           React.createElement("div", { className: "bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg font-bold flex items-center gap-2 transition-colors" },
             React.createElement(Upload, { size: 18 }), 'Import Student Files'
           )
+        )
+      ),
+      React.createElement("div", {
+        className: "mt-4 bg-white rounded-xl border border-rose-300 p-4"
+      },
+        React.createElement("h4", { className: "text-sm font-bold text-rose-800" }, '\uD83D\uDDD1 Remove a student\'s records'),
+        React.createElement("p", { className: "text-xs text-slate-600 mt-1" }, "Permanently deletes the student's probe history, intervention logs, RTI goals, imported CBM scores, progress snapshots, and imported row from this device. Roster membership is kept; exported files are not affected."),
+        React.createElement("div", { className: "flex items-center gap-2 mt-3 flex-wrap" },
+          React.createElement("select", {
+            "aria-label": "Student whose records to remove",
+            value: recordsRemovalTarget,
+            onChange: e => setRecordsRemovalTarget(e.target.value),
+            className: "text-sm border border-slate-400 rounded-lg px-3 py-2 bg-white text-slate-700 min-w-[200px]"
+          },
+            React.createElement("option", { value: "" }, '-- Select student --'),
+            listRecordIdentities().map(n => React.createElement("option", { key: n, value: n }, n))
+          ),
+          React.createElement("button", {
+            type: "button",
+            onClick: handleRemoveStudentRecords,
+            disabled: !recordsRemovalTarget,
+            className: "px-3 py-2 text-xs font-bold bg-rose-50 text-rose-700 border border-rose-600 rounded-lg hover:bg-rose-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          }, 'Remove records\u2026')
         )
       )
     ),

@@ -15222,6 +15222,36 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       window.removeEventListener('alloflow:external-cbm-updated', rereadExternalCbm);
     };
   }, []);
+  // Records manager (Assessment Center, finding 6): remove every host-owned
+  // record for one student. The delete side of FERPA — the export side has
+  // always had confirmations. Each store flushes inside its updater, same
+  // idiom as saveProbeResult above. Roster membership, progress snapshots and
+  // external CBM scores are module-side concerns: the module owns that UI and
+  // clears them itself before calling here.
+  const deleteStudentRecords = (studentName) => {
+    if (!studentName) return;
+    setProbeHistory(prev => {
+      if (!(studentName in prev)) return prev;
+      const updated = { ...prev };
+      delete updated[studentName];
+      try { localStorage.setItem('alloflow_probe_history', JSON.stringify(updated)); } catch {}
+      return updated;
+    });
+    setInterventionLogs(prev => {
+      if (!(studentName in prev)) return prev;
+      const updated = { ...prev };
+      delete updated[studentName];
+      try { localStorage.setItem('alloflow_intervention_logs', JSON.stringify(updated)); } catch {}
+      return updated;
+    });
+    setRtiGoals(prev => {
+      if (!(studentName in prev)) return prev;
+      const updated = { ...prev };
+      delete updated[studentName];
+      try { localStorage.setItem('alloflow_rti_goals', JSON.stringify(updated)); } catch {}
+      return updated;
+    });
+  };
   const [surveyResponses, setSurveyResponses] = useState(() => {
     try { return JSON.parse(localStorage.getItem('alloflow_survey_responses') || '[]'); } catch { return []; }
   });
@@ -54094,6 +54124,7 @@ ${_alloActivityContext(activity)}
               probeTargetStudent={probeTargetStudent}
               probeStudentNames={Object.keys(probeHistory || {})}
               saveProbeResult={saveProbeResult}
+              deleteStudentRecords={deleteStudentRecords}
               setProbeTargetStudent={setProbeTargetStudent}
               setWsPreloadedWords={setWsPreloadedWords}
               setWordSoundsActivity={setWordSoundsActivity}
