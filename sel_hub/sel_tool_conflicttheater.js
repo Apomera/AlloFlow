@@ -596,6 +596,11 @@ window.SelHub = window.SelHub || {
   // ══════════════════════════════════════════════════════════════
 
   window.SelHub.registerTool('conflicttheater', {
+    // This one already had a `name`, so it never fell through to the raw id;
+    // the label exists to satisfy the config contract. Kept identical to `name`
+    // so the two can never drift into two names for one tool.
+    // NOTE: the hub card says "Conflict Theater" without the Beta suffix.
+    label: 'Conflict Theater (Beta)',
     name: 'Conflict Theater (Beta)',
     icon: '🎭',
     desc: '(Beta — limited content) Mediate a real conflict with two AI characters. Practice restorative principles in an immersive scene. Currently one scenario; more coming.',

@@ -166,6 +166,9 @@ window.SelHub = window.SelHub || {
   // ═══════════════════════════════════════════════════════════════
 
   window.SelHub.registerTool('peersupport', {
+    // Named for the Station Builder picker, which reads name || label || id
+    // and was falling through to the raw id. Matches the hub card exactly.
+    label: 'Peer Support Coach',
     title: 'Peer Support Coach',
     icon: '🤝',
     category: 'relationship-skills',

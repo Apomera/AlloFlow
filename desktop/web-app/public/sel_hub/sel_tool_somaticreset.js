@@ -443,7 +443,11 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('somaticReset')))
     return best.name + ' appears in ' + best.count + ' saved check-ins. No numeric comparisons were saved, and More settled was not selected yet; your word-based responses can still help you compare options over time.';
   }
 
-  window.SelHub.registerTool(TOOL_ID, {
+  // The id is passed as a LITERAL, not as TOOL_ID. Every static tool in the repo
+  // reads registrations by parsing this call - the contract check, the registry
+  // audit, the icon sweep - and a variable here makes the tool invisible to all
+  // of them. TOOL_ID stays in use for the state keys below.
+  window.SelHub.registerTool('somaticReset', {
     icon: '\uD83C\uDF3F',
     label: 'Body & Breath Reset',
     desc: 'Choose a body zone and follow a short, choice-based breathing, stillness, or gentle movement reset. Includes private before-and-after check-ins; it is not diagnosis or treatment.',

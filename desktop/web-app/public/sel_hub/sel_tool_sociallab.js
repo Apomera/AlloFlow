@@ -261,6 +261,9 @@ window.SelHub = window.SelHub || {
   // ═══════════════════════════════════════════════════════════════
 
   window.SelHub.registerTool('sociallab', {
+    // Named for the Station Builder picker, which reads name || label || id
+    // and was falling through to the raw id. Matches the hub card exactly.
+    label: 'Social Skills Roleplay',
     title: 'Social Skills Roleplay',
     icon: '🎭',
     category: 'relationship-skills',
