@@ -305,7 +305,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('orientations')))
       var _oriT = (ctx && ctx.theme) || {};
       var _oriHC = !!_oriT.isContrast, _oriL = !_oriHC && !_oriT.isDark;
       var _ori_BGL = {'#0f172a':'#f8fafc','#0b1220':'#f1f5f9'}, _ori_BGH = {'#0f172a':'#000000','#0b1220':'#000000'};
-      var _ori_FGL = {'#cbd5e1':'#334155','#c4b5fd':'#5b21b6','#94a3b8':'#64748b','#e9d5ff':'#581c87','#e2e8f0':'#1e293b','#fbbf24':'#854d0e','#86efac':'#166534','#7dd3fc':'#075985','#fca5a5':'#991b1b','#fecaca':'#b91c1c'}, _ori_FGH = {'#cbd5e1':'#ffff00','#c4b5fd':'#ffff00','#94a3b8':'#ffff00','#e9d5ff':'#ffff00','#e2e8f0':'#ffff00','#fbbf24':'#ffff00','#86efac':'#ffff00','#7dd3fc':'#ffff00','#fca5a5':'#ffff00','#fecaca':'#ffff00','#bbf7d0':'#ffff00'};
+      var _ori_FGL = {'#cbd5e1':'#334155','#c4b5fd':'#5b21b6','#94a3b8':'#64748b','#e9d5ff':'#581c87','#e2e8f0':'#1e293b','#fbbf24':'#854d0e','#86efac':'#166534','#7dd3fc':'#075985','#fca5a5':'#991b1b','#fecaca':'#b91c1c'}, _ori_FGH = {'#dc2626':'#ffff00','#7c3aed':'#ffff00','#cbd5e1':'#ffff00','#c4b5fd':'#ffff00','#94a3b8':'#ffff00','#e9d5ff':'#ffff00','#e2e8f0':'#ffff00','#fbbf24':'#ffff00','#86efac':'#ffff00','#7dd3fc':'#ffff00','#fca5a5':'#ffff00','#fecaca':'#ffff00','#bbf7d0':'#ffff00'};
       var _ori_BDL = {'#334155':'#e2e8f0','#1e293b':'#e5e7eb'}, _ori_BDH = {'#334155':'#ffff00','#a78bfa':'#ffff00','#1e293b':'#ffff00','#ef4444':'#ffff00','#86efac':'#ffff00','#a855f7':'#ffff00'};
       var _oriBg = function(h){ return _oriHC ? (_ori_BGH[h]||h) : (_oriL ? (_ori_BGL[h]||h) : h); };
       // Dark-mode foreground remap. The tool shell is always dark, so these

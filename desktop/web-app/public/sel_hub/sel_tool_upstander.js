@@ -16790,8 +16790,8 @@ window.SelHub = window.SelHub || {
       // ── Host theme remap (consumes ctx.theme) — canonical SEL light-base pattern ──
       var _upCTheme = (ctx && ctx.theme) || {};
       var _upCHC = !!_upCTheme.isContrast, _upCDark = !_upCHC && !!_upCTheme.isDark;
-      var _UPC_DARK = {'#fff':'#1e293b','#f8fafc':'#0f172a','#fafafa':'#1e293b','#f1f5f9':'#1e293b','#fef3c7':'#3a2e12','#fffbeb':'#2e2410','#fef9c3':'#3a3410','#fefce8':'#2e2a10','#fff7ed':'#2e2410','#fef2f2':'#2e1414','#fee2e2':'#3a1a1a','#fff1f2':'#2e1418','#f0fdf4':'#0b2e22','#ecfdf5':'#0e3326','#eff6ff':'#0e1f3a','#dbeafe':'#16315e','#f0f9ff':'#0c2840','#faf5ff':'#2e1b4d','#ede9fe':'#2a1a45','#f3e8ff':'#2e1b4d','#fdf4ff':'#2e1b4d','#0f172a':'#f1f5f9','#1f2937':'#e2e8f0','#334155':'#cbd5e1','#374151':'#cbd5e1','#475569':'#cbd5e1','#64748b':'#94a3b8','#94a3b8':'#94a3b8','#e5e7eb':'#334155','#e2e8f0':'#334155','#d1d5db':'#475569','#cbd5e1':'#475569','#92400e':'#fde68a','#78350f':'#fcd34d','#854d0e':'#fde68a','#a16207':'#fde047','#991b1b':'#fca5a5','#dc2626':'#f87171','#166534':'#86efac','#1e3a8a':'#93c5fd','#1e40af':'#93c5fd','#1d4ed8':'#93c5fd','#6b21a8':'#d8b4fe','#ecfeff':'#0c2e30','#0e7490':'#67e8f9','#9d174d':'#fbcfe8','#9a3412':'#fdba74'};
-      var _UPC_HC = {'#fff':'#000000','#f8fafc':'#000000','#fafafa':'#000000','#f1f5f9':'#000000','#fef3c7':'#000000','#fffbeb':'#000000','#fef9c3':'#000000','#fefce8':'#000000','#fff7ed':'#000000','#fef2f2':'#000000','#fee2e2':'#000000','#fff1f2':'#000000','#f0fdf4':'#000000','#ecfdf5':'#000000','#eff6ff':'#000000','#dbeafe':'#000000','#f0f9ff':'#000000','#faf5ff':'#000000','#ede9fe':'#000000','#f3e8ff':'#000000','#fdf4ff':'#000000','#0f172a':'#ffff00','#1f2937':'#ffff00','#334155':'#ffff00','#374151':'#ffff00','#475569':'#ffff00','#64748b':'#ffff00','#94a3b8':'#ffff00','#e5e7eb':'#ffff00','#e2e8f0':'#ffff00','#d1d5db':'#ffff00','#cbd5e1':'#ffff00','#92400e':'#ffff00','#78350f':'#ffff00','#854d0e':'#ffff00','#a16207':'#ffff00','#991b1b':'#ffff00','#dc2626':'#ffff00','#166534':'#ffff00','#1e3a8a':'#ffff00','#1e40af':'#ffff00','#1d4ed8':'#ffff00','#6b21a8':'#ffff00','#ecfeff':'#000000','#0e7490':'#ffff00','#9d174d':'#ffff00','#9a3412':'#ffff00'};
+      var _UPC_DARK = {'#fffaf0':'#2e2410','#2563eb':'#60a5fa','#fff':'#1e293b','#f8fafc':'#0f172a','#fafafa':'#1e293b','#f1f5f9':'#1e293b','#fef3c7':'#3a2e12','#fffbeb':'#2e2410','#fef9c3':'#3a3410','#fefce8':'#2e2a10','#fff7ed':'#2e2410','#fef2f2':'#2e1414','#fee2e2':'#3a1a1a','#fff1f2':'#2e1418','#f0fdf4':'#0b2e22','#ecfdf5':'#0e3326','#eff6ff':'#0e1f3a','#dbeafe':'#16315e','#f0f9ff':'#0c2840','#faf5ff':'#2e1b4d','#ede9fe':'#2a1a45','#f3e8ff':'#2e1b4d','#fdf4ff':'#2e1b4d','#0f172a':'#f1f5f9','#1f2937':'#e2e8f0','#334155':'#cbd5e1','#374151':'#cbd5e1','#475569':'#cbd5e1','#64748b':'#94a3b8','#94a3b8':'#94a3b8','#e5e7eb':'#334155','#e2e8f0':'#334155','#d1d5db':'#475569','#cbd5e1':'#475569','#92400e':'#fde68a','#78350f':'#fcd34d','#854d0e':'#fde68a','#a16207':'#fde047','#991b1b':'#fca5a5','#dc2626':'#f87171','#166534':'#86efac','#1e3a8a':'#93c5fd','#1e40af':'#93c5fd','#1d4ed8':'#93c5fd','#6b21a8':'#d8b4fe','#ecfeff':'#0c2e30','#0e7490':'#67e8f9','#9d174d':'#fbcfe8','#9a3412':'#fdba74'};
+      var _UPC_HC = {'#fffaf0':'#000000','#2563eb':'#ffff00','#fff':'#000000','#f8fafc':'#000000','#fafafa':'#000000','#f1f5f9':'#000000','#fef3c7':'#000000','#fffbeb':'#000000','#fef9c3':'#000000','#fefce8':'#000000','#fff7ed':'#000000','#fef2f2':'#000000','#fee2e2':'#000000','#fff1f2':'#000000','#f0fdf4':'#000000','#ecfdf5':'#000000','#eff6ff':'#000000','#dbeafe':'#000000','#f0f9ff':'#000000','#faf5ff':'#000000','#ede9fe':'#000000','#f3e8ff':'#000000','#fdf4ff':'#000000','#0f172a':'#ffff00','#1f2937':'#ffff00','#334155':'#ffff00','#374151':'#ffff00','#475569':'#ffff00','#64748b':'#ffff00','#94a3b8':'#ffff00','#e5e7eb':'#ffff00','#e2e8f0':'#ffff00','#d1d5db':'#ffff00','#cbd5e1':'#ffff00','#92400e':'#ffff00','#78350f':'#ffff00','#854d0e':'#ffff00','#a16207':'#ffff00','#991b1b':'#ffff00','#dc2626':'#ffff00','#166534':'#ffff00','#1e3a8a':'#ffff00','#1e40af':'#ffff00','#1d4ed8':'#ffff00','#6b21a8':'#ffff00','#ecfeff':'#000000','#0e7490':'#ffff00','#9d174d':'#ffff00','#9a3412':'#ffff00'};
       var _upC = function(hex){ return _upCHC ? (_UPC_HC[hex]||hex) : (_upCDark ? (_UPC_DARK[hex]||hex) : hex); };
       var React = ctx.React;
       var h = React.createElement;
@@ -16923,6 +16923,8 @@ window.SelHub = window.SelHub || {
       var refSection  = d.refSection || 'sources';
       var refExpanded = d.refExpanded || null;
 
+      // BLUE stays the raw hue because it is also used for borders and left
+      // rules; the four TEXT uses route through _upC so they follow the card.
       var BLUE = '#2563eb'; var BL = _upC('#eff6ff'); var BD = _upC('#1e3a8a');
 
       var TABS = [
@@ -17210,7 +17212,7 @@ window.SelHub = window.SelHub || {
             ),
             // The truth
             h('div', { style: { background: _upC('#fff'), borderRadius: '10px', padding: '12px', borderLeft: '4px solid ' + BLUE, marginBottom: '10px' } },
-              h('div', { style: { fontSize: '10px', fontWeight: 700, color: BLUE, marginBottom: '2px' } }, 'The truth:'),
+              h('div', { style: { fontSize: '10px', fontWeight: 700, color: _upC(BLUE), marginBottom: '2px' } }, 'The truth:'),
               h('p', { style: { fontSize: '13px', color: _upC('#374151'), margin: 0, lineHeight: 1.6 } }, cur.truth)
             ),
             // Myth vs truth
@@ -17385,7 +17387,12 @@ window.SelHub = window.SelHub || {
                 style: {
                   width: '100%', padding: '14px 16px', textAlign: 'left',
                   border: '2px solid ' + (bvOpen ? '#fb923c' : '#fed7aa'),
-                  background: bvOpen ? _upC('#fff7ed') : '#fffaf0',
+                  // Half-migrated: the OPEN state routed through _upC, the closed
+                  // state kept a raw #fffaf0. The card's text is color:'inherit',
+                  // so on the dark tool shell it inherited light text onto a light
+                  // card (1.43:1), and in high contrast yellow onto near-white
+                  // (1.03:1). Both states now route through the same remap.
+                  background: _upC(bvOpen ? '#fff7ed' : '#fffaf0'),
                   borderRadius: 14, cursor: 'pointer',
                   display: 'flex', alignItems: 'center', gap: 12,
                   font: 'inherit', color: 'inherit'
@@ -18276,7 +18283,7 @@ window.SelHub = window.SelHub || {
                   h('div', { style: { fontSize: 12, color: _upC('#475569'), lineHeight: 1.4 } },
                     'A ' + steps.length + '-step grounding sequence for the moments right after. Built for your body, not just your brain.')
                 ),
-                h('span', { 'aria-hidden': 'true', style: { color: BLUE, fontSize: 18 } }, afterOpen ? '▾' : '▸')
+                h('span', { 'aria-hidden': 'true', style: { color: _upC(BLUE), fontSize: 18 } }, afterOpen ? '▾' : '▸')
               ),
               afterOpen && h('div', { style: { marginTop: 12, padding: 18, background: _upC('#fff'), border: '1px solid #bfdbfe', borderRadius: 14 } },
                 h('p', { style: { margin: '0 0 14px', fontSize: 13, lineHeight: 1.6, color: _upC('#475569') } },
@@ -18528,7 +18535,7 @@ window.SelHub = window.SelHub || {
               padding: 14, marginBottom: 14, background: _upC('#eff6ff'), border: '1px solid #bfdbfe', borderRadius: 10
             } },
               h('p', { style: { margin: 0, fontSize: 13, lineHeight: 1.55, color: _upC('#0f172a') } },
-                h('strong', { style: { color: BLUE } }, 'For teachers, school psychologists, counselors, administrators. '),
+                h('strong', { style: { color: _upC(BLUE) } }, 'For teachers, school psychologists, counselors, administrators. '),
                 'Students may show you this tool. The seven items below are the ones most often misunderstood about bullying — backed by the research in the Sources tab.')
             ),
             h('div', { style: { display: 'grid', gap: 10 } },
@@ -19246,7 +19253,7 @@ window.SelHub = window.SelHub || {
           ),
           h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', fontSize: '12px', color: _upC('#64748b') } },
             h('span', null, 'Scenario ' + (pracIdx + 1) + ' of ' + scenList.length),
-            totalDone > 0 && h('span', { style: { fontWeight: 700, color: BLUE } }, totalDone + ' answered · ' + topRated + ' strong response' + (topRated === 1 ? '' : 's'))
+            totalDone > 0 && h('span', { style: { fontWeight: 700, color: _upC(BLUE) } }, totalDone + ' answered · ' + topRated + ' strong response' + (topRated === 1 ? '' : 's'))
           ),
           h('div', { className: 'us-card', style: { background: _upC('#fff'), borderRadius: 14, padding: 18, border: '1px solid #e5e7eb', marginBottom: 14 } },
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 } },

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-23T18:36:34.570Z",
+  "generatedAt": "2026-08-23T19:07:06.371Z",
   "toolCount": 71,
   "themesAudited": [
     "light",
@@ -9,10 +9,10 @@
   "loadErrors": [],
   "renderErrors": [],
   "summary": {
-    "issueCount": 98,
+    "issueCount": 45,
     "errorCount": 0,
-    "warningCount": 98,
-    "toolsWithIssues": 21,
+    "warningCount": 45,
+    "toolsWithIssues": 11,
     "toolsWithoutStandardShell": [],
     "contrastCoverage": {
       "textNodesGraded": 14196,
@@ -105,9 +105,9 @@
       "label": "Behavioral Activation",
       "renderedBytes": 25419,
       "standardShell": true,
-      "issueCount": 1,
+      "issueCount": 0,
       "errorCount": 0,
-      "warningCount": 1,
+      "warningCount": 0,
       "themes": [
         {
           "theme": "light",
@@ -131,48 +131,22 @@
           "theme": "high-contrast",
           "renderedBytes": 8475,
           "standardShell": true,
-          "issueCount": 1,
+          "issueCount": 0,
           "errorCount": 0,
-          "warningCount": 1,
-          "issues": [
-            {
-              "toolId": "behavioralActivation",
-              "severity": "warning",
-              "code": "inline-contrast",
-              "message": "Text contrast is below 4.5:1 against its resolved background.",
-              "theme": "high-contrast",
-              "index": 51,
-              "ratio": 1,
-              "color": "#000000",
-              "background": "rgb(0,0,0)",
-              "text": "0"
-            }
-          ]
+          "warningCount": 0,
+          "issues": []
         }
       ],
-      "issues": [
-        {
-          "toolId": "behavioralActivation",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Text contrast is below 4.5:1 against its resolved background.",
-          "theme": "high-contrast",
-          "index": 51,
-          "ratio": 1,
-          "color": "#000000",
-          "background": "rgb(0,0,0)",
-          "text": "0"
-        }
-      ]
+      "issues": []
     },
     {
       "id": "bigFeelings",
       "label": "Big Feelings (Anger)",
       "renderedBytes": 35094,
       "standardShell": true,
-      "issueCount": 2,
+      "issueCount": 0,
       "errorCount": 0,
-      "warningCount": 2,
+      "warningCount": 0,
       "themes": [
         {
           "theme": "light",
@@ -196,72 +170,22 @@
           "theme": "high-contrast",
           "renderedBytes": 11698,
           "standardShell": true,
-          "issueCount": 2,
+          "issueCount": 0,
           "errorCount": 0,
-          "warningCount": 2,
-          "issues": [
-            {
-              "toolId": "bigFeelings",
-              "severity": "warning",
-              "code": "inline-contrast",
-              "message": "Text contrast is below 4.5:1 against its resolved background.",
-              "theme": "high-contrast",
-              "index": 62,
-              "ratio": 1,
-              "color": "#000000",
-              "background": "rgb(0,0,0)",
-              "text": "📓 Hassle log"
-            },
-            {
-              "toolId": "bigFeelings",
-              "severity": "warning",
-              "code": "inline-contrast",
-              "message": "Text contrast is below 4.5:1 against its resolved background.",
-              "theme": "high-contrast",
-              "index": 68,
-              "ratio": 1,
-              "color": "#000000",
-              "background": "rgb(0,0,0)",
-              "text": "❄️ My cool-downs"
-            }
-          ]
+          "warningCount": 0,
+          "issues": []
         }
       ],
-      "issues": [
-        {
-          "toolId": "bigFeelings",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Text contrast is below 4.5:1 against its resolved background.",
-          "theme": "high-contrast",
-          "index": 62,
-          "ratio": 1,
-          "color": "#000000",
-          "background": "rgb(0,0,0)",
-          "text": "📓 Hassle log"
-        },
-        {
-          "toolId": "bigFeelings",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Text contrast is below 4.5:1 against its resolved background.",
-          "theme": "high-contrast",
-          "index": 68,
-          "ratio": 1,
-          "color": "#000000",
-          "background": "rgb(0,0,0)",
-          "text": "❄️ My cool-downs"
-        }
-      ]
+      "issues": []
     },
     {
       "id": "bodyStory",
       "label": "Body Story",
       "renderedBytes": 40920,
       "standardShell": true,
-      "issueCount": 2,
+      "issueCount": 0,
       "errorCount": 0,
-      "warningCount": 2,
+      "warningCount": 0,
       "themes": [
         {
           "theme": "light",
@@ -285,63 +209,13 @@
           "theme": "high-contrast",
           "renderedBytes": 13640,
           "standardShell": true,
-          "issueCount": 2,
+          "issueCount": 0,
           "errorCount": 0,
-          "warningCount": 2,
-          "issues": [
-            {
-              "toolId": "bodyStory",
-              "severity": "warning",
-              "code": "inline-contrast",
-              "message": "Text contrast is below 4.5:1 against its resolved background.",
-              "theme": "high-contrast",
-              "index": 78,
-              "ratio": 1,
-              "color": "#000000",
-              "background": "rgb(0,0,0)",
-              "text": "💭 The critical voice"
-            },
-            {
-              "toolId": "bodyStory",
-              "severity": "warning",
-              "code": "inline-contrast",
-              "message": "Text contrast is below 4.5:1 against its resolved background.",
-              "theme": "high-contrast",
-              "index": 81,
-              "ratio": 1,
-              "color": "#000000",
-              "background": "rgb(0,0,0)",
-              "text": "📺 Media diet audit"
-            }
-          ]
+          "warningCount": 0,
+          "issues": []
         }
       ],
-      "issues": [
-        {
-          "toolId": "bodyStory",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Text contrast is below 4.5:1 against its resolved background.",
-          "theme": "high-contrast",
-          "index": 78,
-          "ratio": 1,
-          "color": "#000000",
-          "background": "rgb(0,0,0)",
-          "text": "💭 The critical voice"
-        },
-        {
-          "toolId": "bodyStory",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Text contrast is below 4.5:1 against its resolved background.",
-          "theme": "high-contrast",
-          "index": 81,
-          "ratio": 1,
-          "color": "#000000",
-          "background": "rgb(0,0,0)",
-          "text": "📺 Media diet audit"
-        }
-      ]
+      "issues": []
     },
     {
       "id": "careConstellations",
@@ -789,9 +663,9 @@
       "label": "Crew Protocols",
       "renderedBytes": 34215,
       "standardShell": true,
-      "issueCount": 2,
+      "issueCount": 0,
       "errorCount": 0,
-      "warningCount": 2,
+      "warningCount": 0,
       "themes": [
         {
           "theme": "light",
@@ -815,63 +689,13 @@
           "theme": "high-contrast",
           "renderedBytes": 11405,
           "standardShell": true,
-          "issueCount": 2,
+          "issueCount": 0,
           "errorCount": 0,
-          "warningCount": 2,
-          "issues": [
-            {
-              "toolId": "crewProtocols",
-              "severity": "warning",
-              "code": "inline-contrast",
-              "message": "Text contrast is below 4.5:1 against its resolved background.",
-              "theme": "high-contrast",
-              "index": 82,
-              "ratio": 4.35,
-              "color": "#dc2626",
-              "background": "rgb(0,0,0)",
-              "text": "Hard conversations"
-            },
-            {
-              "toolId": "crewProtocols",
-              "severity": "warning",
-              "code": "inline-contrast",
-              "message": "Text contrast is below 4.5:1 against its resolved background.",
-              "theme": "high-contrast",
-              "index": 83,
-              "ratio": 4.35,
-              "color": "#dc2626",
-              "background": "rgb(0,0,0)",
-              "text": "2 formats"
-            }
-          ]
+          "warningCount": 0,
+          "issues": []
         }
       ],
-      "issues": [
-        {
-          "toolId": "crewProtocols",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Text contrast is below 4.5:1 against its resolved background.",
-          "theme": "high-contrast",
-          "index": 82,
-          "ratio": 4.35,
-          "color": "#dc2626",
-          "background": "rgb(0,0,0)",
-          "text": "Hard conversations"
-        },
-        {
-          "toolId": "crewProtocols",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Text contrast is below 4.5:1 against its resolved background.",
-          "theme": "high-contrast",
-          "index": 83,
-          "ratio": 4.35,
-          "color": "#dc2626",
-          "background": "rgb(0,0,0)",
-          "text": "2 formats"
-        }
-      ]
+      "issues": []
     },
     {
       "id": "crisiscompanion",
@@ -2258,9 +2082,9 @@
       "label": "Orientations",
       "renderedBytes": 30825,
       "standardShell": true,
-      "issueCount": 4,
+      "issueCount": 0,
       "errorCount": 0,
-      "warningCount": 4,
+      "warningCount": 0,
       "themes": [
         {
           "theme": "light",
@@ -2284,111 +2108,13 @@
           "theme": "high-contrast",
           "renderedBytes": 10275,
           "standardShell": true,
-          "issueCount": 4,
+          "issueCount": 0,
           "errorCount": 0,
-          "warningCount": 4,
-          "issues": [
-            {
-              "toolId": "orientations",
-              "severity": "warning",
-              "code": "inline-contrast",
-              "message": "Text contrast is below 4.5:1 against its resolved background.",
-              "theme": "high-contrast",
-              "index": 60,
-              "ratio": 4.35,
-              "color": "#dc2626",
-              "background": "rgb(0,0,0)",
-              "text": "Existentialism"
-            },
-            {
-              "toolId": "orientations",
-              "severity": "warning",
-              "code": "inline-contrast",
-              "message": "Text contrast is below 4.5:1 against its resolved background.",
-              "theme": "high-contrast",
-              "index": 62,
-              "ratio": 4.35,
-              "color": "#dc2626",
-              "background": "rgb(0,0,0)",
-              "text": "Read full →"
-            },
-            {
-              "toolId": "orientations",
-              "severity": "warning",
-              "code": "inline-contrast",
-              "message": "Text contrast is below 4.5:1 against its resolved background.",
-              "theme": "high-contrast",
-              "index": 78,
-              "ratio": 3.69,
-              "color": "#7c3aed",
-              "background": "rgb(0,0,0)",
-              "text": "Indigenous Relationality (a recurring orientation)"
-            },
-            {
-              "toolId": "orientations",
-              "severity": "warning",
-              "code": "inline-contrast",
-              "message": "Text contrast is below 4.5:1 against its resolved background.",
-              "theme": "high-contrast",
-              "index": 80,
-              "ratio": 3.69,
-              "color": "#7c3aed",
-              "background": "rgb(0,0,0)",
-              "text": "Read full →"
-            }
-          ]
+          "warningCount": 0,
+          "issues": []
         }
       ],
-      "issues": [
-        {
-          "toolId": "orientations",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Text contrast is below 4.5:1 against its resolved background.",
-          "theme": "high-contrast",
-          "index": 60,
-          "ratio": 4.35,
-          "color": "#dc2626",
-          "background": "rgb(0,0,0)",
-          "text": "Existentialism"
-        },
-        {
-          "toolId": "orientations",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Text contrast is below 4.5:1 against its resolved background.",
-          "theme": "high-contrast",
-          "index": 62,
-          "ratio": 4.35,
-          "color": "#dc2626",
-          "background": "rgb(0,0,0)",
-          "text": "Read full →"
-        },
-        {
-          "toolId": "orientations",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Text contrast is below 4.5:1 against its resolved background.",
-          "theme": "high-contrast",
-          "index": 78,
-          "ratio": 3.69,
-          "color": "#7c3aed",
-          "background": "rgb(0,0,0)",
-          "text": "Indigenous Relationality (a recurring orientation)"
-        },
-        {
-          "toolId": "orientations",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Text contrast is below 4.5:1 against its resolved background.",
-          "theme": "high-contrast",
-          "index": 80,
-          "ratio": 3.69,
-          "color": "#7c3aed",
-          "background": "rgb(0,0,0)",
-          "text": "Read full →"
-        }
-      ]
+      "issues": []
     },
     {
       "id": "path",
@@ -2956,9 +2682,9 @@
       "label": "Sensory Regulation",
       "renderedBytes": 55179,
       "standardShell": true,
-      "issueCount": 2,
+      "issueCount": 0,
       "errorCount": 0,
-      "warningCount": 2,
+      "warningCount": 0,
       "themes": [
         {
           "theme": "light",
@@ -2982,72 +2708,22 @@
           "theme": "high-contrast",
           "renderedBytes": 18393,
           "standardShell": true,
-          "issueCount": 2,
+          "issueCount": 0,
           "errorCount": 0,
-          "warningCount": 2,
-          "issues": [
-            {
-              "toolId": "sensoryRegulation",
-              "severity": "warning",
-              "code": "inline-contrast",
-              "message": "Text contrast is below 4.5:1 against its resolved background.",
-              "theme": "high-contrast",
-              "index": 113,
-              "ratio": 4.35,
-              "color": "#dc2626",
-              "background": "rgb(0,0,0)",
-              "text": "🎢 Vestibular (movement/balance)"
-            },
-            {
-              "toolId": "sensoryRegulation",
-              "severity": "warning",
-              "code": "inline-contrast",
-              "message": "Text contrast is below 4.5:1 against its resolved background.",
-              "theme": "high-contrast",
-              "index": 125,
-              "ratio": 1,
-              "color": "#000000",
-              "background": "rgb(0,0,0)",
-              "text": "📝 Identify school accommodations"
-            }
-          ]
+          "warningCount": 0,
+          "issues": []
         }
       ],
-      "issues": [
-        {
-          "toolId": "sensoryRegulation",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Text contrast is below 4.5:1 against its resolved background.",
-          "theme": "high-contrast",
-          "index": 113,
-          "ratio": 4.35,
-          "color": "#dc2626",
-          "background": "rgb(0,0,0)",
-          "text": "🎢 Vestibular (movement/balance)"
-        },
-        {
-          "toolId": "sensoryRegulation",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Text contrast is below 4.5:1 against its resolved background.",
-          "theme": "high-contrast",
-          "index": 125,
-          "ratio": 1,
-          "color": "#000000",
-          "background": "rgb(0,0,0)",
-          "text": "📝 Identify school accommodations"
-        }
-      ]
+      "issues": []
     },
     {
       "id": "sfbt",
       "label": "Solution-Focused",
       "renderedBytes": 28248,
       "standardShell": true,
-      "issueCount": 4,
+      "issueCount": 0,
       "errorCount": 0,
-      "warningCount": 4,
+      "warningCount": 0,
       "themes": [
         {
           "theme": "light",
@@ -3071,120 +2747,22 @@
           "theme": "high-contrast",
           "renderedBytes": 9416,
           "standardShell": true,
-          "issueCount": 4,
+          "issueCount": 0,
           "errorCount": 0,
-          "warningCount": 4,
-          "issues": [
-            {
-              "toolId": "sfbt",
-              "severity": "warning",
-              "code": "inline-contrast",
-              "message": "Text contrast is below 4.5:1 against its resolved background.",
-              "theme": "high-contrast",
-              "index": 48,
-              "ratio": 1,
-              "color": "#000000",
-              "background": "rgb(0,0,0)",
-              "text": "✨ Miracle Question"
-            },
-            {
-              "toolId": "sfbt",
-              "severity": "warning",
-              "code": "inline-contrast",
-              "message": "Text contrast is below 4.5:1 against its resolved background.",
-              "theme": "high-contrast",
-              "index": 49,
-              "ratio": 1,
-              "color": "#000000",
-              "background": "rgb(0,0,0)",
-              "text": "Start"
-            },
-            {
-              "toolId": "sfbt",
-              "severity": "warning",
-              "code": "inline-contrast",
-              "message": "Text contrast is below 4.5:1 against its resolved background.",
-              "theme": "high-contrast",
-              "index": 53,
-              "ratio": 1,
-              "color": "#000000",
-              "background": "rgb(0,0,0)",
-              "text": "📊 Scaling"
-            },
-            {
-              "toolId": "sfbt",
-              "severity": "warning",
-              "code": "inline-contrast",
-              "message": "Text contrast is below 4.5:1 against its resolved background.",
-              "theme": "high-contrast",
-              "index": 54,
-              "ratio": 1,
-              "color": "#000000",
-              "background": "rgb(0,0,0)",
-              "text": "Start"
-            }
-          ]
+          "warningCount": 0,
+          "issues": []
         }
       ],
-      "issues": [
-        {
-          "toolId": "sfbt",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Text contrast is below 4.5:1 against its resolved background.",
-          "theme": "high-contrast",
-          "index": 48,
-          "ratio": 1,
-          "color": "#000000",
-          "background": "rgb(0,0,0)",
-          "text": "✨ Miracle Question"
-        },
-        {
-          "toolId": "sfbt",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Text contrast is below 4.5:1 against its resolved background.",
-          "theme": "high-contrast",
-          "index": 49,
-          "ratio": 1,
-          "color": "#000000",
-          "background": "rgb(0,0,0)",
-          "text": "Start"
-        },
-        {
-          "toolId": "sfbt",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Text contrast is below 4.5:1 against its resolved background.",
-          "theme": "high-contrast",
-          "index": 53,
-          "ratio": 1,
-          "color": "#000000",
-          "background": "rgb(0,0,0)",
-          "text": "📊 Scaling"
-        },
-        {
-          "toolId": "sfbt",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Text contrast is below 4.5:1 against its resolved background.",
-          "theme": "high-contrast",
-          "index": 54,
-          "ratio": 1,
-          "color": "#000000",
-          "background": "rgb(0,0,0)",
-          "text": "Start"
-        }
-      ]
+      "issues": []
     },
     {
       "id": "sleep",
       "label": "Sleep & Rest",
       "renderedBytes": 30237,
       "standardShell": true,
-      "issueCount": 1,
+      "issueCount": 0,
       "errorCount": 0,
-      "warningCount": 1,
+      "warningCount": 0,
       "themes": [
         {
           "theme": "light",
@@ -3208,39 +2786,13 @@
           "theme": "high-contrast",
           "renderedBytes": 10079,
           "standardShell": true,
-          "issueCount": 1,
+          "issueCount": 0,
           "errorCount": 0,
-          "warningCount": 1,
-          "issues": [
-            {
-              "toolId": "sleep",
-              "severity": "warning",
-              "code": "inline-contrast",
-              "message": "Text contrast is below 4.5:1 against its resolved background.",
-              "theme": "high-contrast",
-              "index": 65,
-              "ratio": 1,
-              "color": "#000000",
-              "background": "rgb(0,0,0)",
-              "text": "Sleep diary"
-            }
-          ]
+          "warningCount": 0,
+          "issues": []
         }
       ],
-      "issues": [
-        {
-          "toolId": "sleep",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Text contrast is below 4.5:1 against its resolved background.",
-          "theme": "high-contrast",
-          "index": 65,
-          "ratio": 1,
-          "color": "#000000",
-          "background": "rgb(0,0,0)",
-          "text": "Sleep diary"
-        }
-      ]
+      "issues": []
     },
     {
       "id": "social",
@@ -3479,9 +3031,9 @@
       "label": "Strengths Finder",
       "renderedBytes": 79155,
       "standardShell": true,
-      "issueCount": 26,
+      "issueCount": 2,
       "errorCount": 0,
-      "warningCount": 26,
+      "warningCount": 2,
       "themes": [
         {
           "theme": "light",
@@ -3531,299 +3083,10 @@
           "theme": "high-contrast",
           "renderedBytes": 26385,
           "standardShell": true,
-          "issueCount": 24,
+          "issueCount": 0,
           "errorCount": 0,
-          "warningCount": 24,
-          "issues": [
-            {
-              "toolId": "strengths",
-              "severity": "warning",
-              "code": "inline-contrast",
-              "message": "Text contrast is below 4.5:1 against its resolved background.",
-              "theme": "high-contrast",
-              "index": 91,
-              "ratio": 1,
-              "color": "#ffff00",
-              "background": "rgb(255,255,0)",
-              "text": "Tap the strengths that describe YOU! Everyone has different strengths — there ar"
-            },
-            {
-              "toolId": "strengths",
-              "severity": "warning",
-              "code": "inline-contrast",
-              "message": "Text contrast is below 4.5:1 against its resolved background.",
-              "theme": "high-contrast",
-              "index": 93,
-              "ratio": 4.16,
-              "color": "#6366f1",
-              "background": "rgb(255,255,0)",
-              "text": "Character Strengths"
-            },
-            {
-              "toolId": "strengths",
-              "severity": "warning",
-              "code": "inline-contrast",
-              "message": "Text contrast is below 4.5:1 against its resolved background.",
-              "theme": "high-contrast",
-              "index": 98,
-              "ratio": 1,
-              "color": "rgb(255,255,0) (inherited)",
-              "background": "rgb(255,255,10)",
-              "text": "Kindness"
-            },
-            {
-              "toolId": "strengths",
-              "severity": "warning",
-              "code": "inline-contrast",
-              "message": "Text contrast is below 4.5:1 against its resolved background.",
-              "theme": "high-contrast",
-              "index": 101,
-              "ratio": 1,
-              "color": "rgb(255,255,0) (inherited)",
-              "background": "rgb(255,255,10)",
-              "text": "Bravery"
-            },
-            {
-              "toolId": "strengths",
-              "severity": "warning",
-              "code": "inline-contrast",
-              "message": "Text contrast is below 4.5:1 against its resolved background.",
-              "theme": "high-contrast",
-              "index": 104,
-              "ratio": 1,
-              "color": "rgb(255,255,0) (inherited)",
-              "background": "rgb(255,255,10)",
-              "text": "Honesty"
-            },
-            {
-              "toolId": "strengths",
-              "severity": "warning",
-              "code": "inline-contrast",
-              "message": "Text contrast is below 4.5:1 against its resolved background.",
-              "theme": "high-contrast",
-              "index": 107,
-              "ratio": 1,
-              "color": "rgb(255,255,0) (inherited)",
-              "background": "rgb(255,255,10)",
-              "text": "Curiosity"
-            },
-            {
-              "toolId": "strengths",
-              "severity": "warning",
-              "code": "inline-contrast",
-              "message": "Text contrast is below 4.5:1 against its resolved background.",
-              "theme": "high-contrast",
-              "index": 110,
-              "ratio": 1,
-              "color": "rgb(255,255,0) (inherited)",
-              "background": "rgb(255,255,10)",
-              "text": "Fairness"
-            },
-            {
-              "toolId": "strengths",
-              "severity": "warning",
-              "code": "inline-contrast",
-              "message": "Text contrast is below 4.5:1 against its resolved background.",
-              "theme": "high-contrast",
-              "index": 113,
-              "ratio": 1,
-              "color": "rgb(255,255,0) (inherited)",
-              "background": "rgb(255,255,10)",
-              "text": "Gratitude"
-            },
-            {
-              "toolId": "strengths",
-              "severity": "warning",
-              "code": "inline-contrast",
-              "message": "Text contrast is below 4.5:1 against its resolved background.",
-              "theme": "high-contrast",
-              "index": 116,
-              "ratio": 1,
-              "color": "rgb(255,255,0) (inherited)",
-              "background": "rgb(255,255,10)",
-              "text": "Humor"
-            },
-            {
-              "toolId": "strengths",
-              "severity": "warning",
-              "code": "inline-contrast",
-              "message": "Text contrast is below 4.5:1 against its resolved background.",
-              "theme": "high-contrast",
-              "index": 119,
-              "ratio": 1,
-              "color": "rgb(255,255,0) (inherited)",
-              "background": "rgb(255,255,10)",
-              "text": "Perseverance"
-            },
-            {
-              "toolId": "strengths",
-              "severity": "warning",
-              "code": "inline-contrast",
-              "message": "Text contrast is below 4.5:1 against its resolved background.",
-              "theme": "high-contrast",
-              "index": 121,
-              "ratio": 2,
-              "color": "#f59e0b",
-              "background": "rgb(255,255,0)",
-              "text": "Talent & Skills"
-            },
-            {
-              "toolId": "strengths",
-              "severity": "warning",
-              "code": "inline-contrast",
-              "message": "Text contrast is below 4.5:1 against its resolved background.",
-              "theme": "high-contrast",
-              "index": 126,
-              "ratio": 1,
-              "color": "rgb(255,255,0) (inherited)",
-              "background": "rgb(255,255,10)",
-              "text": "Reading"
-            },
-            {
-              "toolId": "strengths",
-              "severity": "warning",
-              "code": "inline-contrast",
-              "message": "Text contrast is below 4.5:1 against its resolved background.",
-              "theme": "high-contrast",
-              "index": 129,
-              "ratio": 1,
-              "color": "rgb(255,255,0) (inherited)",
-              "background": "rgb(255,255,10)",
-              "text": "Math"
-            },
-            {
-              "toolId": "strengths",
-              "severity": "warning",
-              "code": "inline-contrast",
-              "message": "Text contrast is below 4.5:1 against its resolved background.",
-              "theme": "high-contrast",
-              "index": 132,
-              "ratio": 1,
-              "color": "rgb(255,255,0) (inherited)",
-              "background": "rgb(255,255,10)",
-              "text": "Art & Drawing"
-            },
-            {
-              "toolId": "strengths",
-              "severity": "warning",
-              "code": "inline-contrast",
-              "message": "Text contrast is below 4.5:1 against its resolved background.",
-              "theme": "high-contrast",
-              "index": 135,
-              "ratio": 1,
-              "color": "rgb(255,255,0) (inherited)",
-              "background": "rgb(255,255,10)",
-              "text": "Music"
-            },
-            {
-              "toolId": "strengths",
-              "severity": "warning",
-              "code": "inline-contrast",
-              "message": "Text contrast is below 4.5:1 against its resolved background.",
-              "theme": "high-contrast",
-              "index": 138,
-              "ratio": 1,
-              "color": "rgb(255,255,0) (inherited)",
-              "background": "rgb(255,255,10)",
-              "text": "Sports & Movement"
-            },
-            {
-              "toolId": "strengths",
-              "severity": "warning",
-              "code": "inline-contrast",
-              "message": "Text contrast is below 4.5:1 against its resolved background.",
-              "theme": "high-contrast",
-              "index": 141,
-              "ratio": 1,
-              "color": "rgb(255,255,0) (inherited)",
-              "background": "rgb(255,255,10)",
-              "text": "Helping Others"
-            },
-            {
-              "toolId": "strengths",
-              "severity": "warning",
-              "code": "inline-contrast",
-              "message": "Text contrast is below 4.5:1 against its resolved background.",
-              "theme": "high-contrast",
-              "index": 144,
-              "ratio": 1,
-              "color": "rgb(255,255,0) (inherited)",
-              "background": "rgb(255,255,10)",
-              "text": "Building Things"
-            },
-            {
-              "toolId": "strengths",
-              "severity": "warning",
-              "code": "inline-contrast",
-              "message": "Text contrast is below 4.5:1 against its resolved background.",
-              "theme": "high-contrast",
-              "index": 147,
-              "ratio": 1,
-              "color": "rgb(255,255,0) (inherited)",
-              "background": "rgb(255,255,10)",
-              "text": "Nature & Animals"
-            },
-            {
-              "toolId": "strengths",
-              "severity": "warning",
-              "code": "inline-contrast",
-              "message": "Text contrast is below 4.5:1 against its resolved background.",
-              "theme": "high-contrast",
-              "index": 149,
-              "ratio": 2.12,
-              "color": "#22c55e",
-              "background": "rgb(255,255,0)",
-              "text": "Growth Areas"
-            },
-            {
-              "toolId": "strengths",
-              "severity": "warning",
-              "code": "inline-contrast",
-              "message": "Text contrast is below 4.5:1 against its resolved background.",
-              "theme": "high-contrast",
-              "index": 154,
-              "ratio": 1,
-              "color": "rgb(255,255,0) (inherited)",
-              "background": "rgb(255,255,10)",
-              "text": "Trying New Things"
-            },
-            {
-              "toolId": "strengths",
-              "severity": "warning",
-              "code": "inline-contrast",
-              "message": "Text contrast is below 4.5:1 against its resolved background.",
-              "theme": "high-contrast",
-              "index": 157,
-              "ratio": 1,
-              "color": "rgb(255,255,0) (inherited)",
-              "background": "rgb(255,255,10)",
-              "text": "Patience"
-            },
-            {
-              "toolId": "strengths",
-              "severity": "warning",
-              "code": "inline-contrast",
-              "message": "Text contrast is below 4.5:1 against its resolved background.",
-              "theme": "high-contrast",
-              "index": 160,
-              "ratio": 1,
-              "color": "rgb(255,255,0) (inherited)",
-              "background": "rgb(255,255,10)",
-              "text": "Listening"
-            },
-            {
-              "toolId": "strengths",
-              "severity": "warning",
-              "code": "inline-contrast",
-              "message": "Text contrast is below 4.5:1 against its resolved background.",
-              "theme": "high-contrast",
-              "index": 163,
-              "ratio": 1,
-              "color": "rgb(255,255,0) (inherited)",
-              "background": "rgb(255,255,10)",
-              "text": "Sharing"
-            }
-          ]
+          "warningCount": 0,
+          "issues": []
         }
       ],
       "issues": [
@@ -3850,294 +3113,6 @@
           "color": "#6366f1",
           "background": "rgb(15,23,42)",
           "text": "Character Strengths"
-        },
-        {
-          "toolId": "strengths",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Text contrast is below 4.5:1 against its resolved background.",
-          "theme": "high-contrast",
-          "index": 91,
-          "ratio": 1,
-          "color": "#ffff00",
-          "background": "rgb(255,255,0)",
-          "text": "Tap the strengths that describe YOU! Everyone has different strengths — there ar"
-        },
-        {
-          "toolId": "strengths",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Text contrast is below 4.5:1 against its resolved background.",
-          "theme": "high-contrast",
-          "index": 93,
-          "ratio": 4.16,
-          "color": "#6366f1",
-          "background": "rgb(255,255,0)",
-          "text": "Character Strengths"
-        },
-        {
-          "toolId": "strengths",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Text contrast is below 4.5:1 against its resolved background.",
-          "theme": "high-contrast",
-          "index": 98,
-          "ratio": 1,
-          "color": "rgb(255,255,0) (inherited)",
-          "background": "rgb(255,255,10)",
-          "text": "Kindness"
-        },
-        {
-          "toolId": "strengths",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Text contrast is below 4.5:1 against its resolved background.",
-          "theme": "high-contrast",
-          "index": 101,
-          "ratio": 1,
-          "color": "rgb(255,255,0) (inherited)",
-          "background": "rgb(255,255,10)",
-          "text": "Bravery"
-        },
-        {
-          "toolId": "strengths",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Text contrast is below 4.5:1 against its resolved background.",
-          "theme": "high-contrast",
-          "index": 104,
-          "ratio": 1,
-          "color": "rgb(255,255,0) (inherited)",
-          "background": "rgb(255,255,10)",
-          "text": "Honesty"
-        },
-        {
-          "toolId": "strengths",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Text contrast is below 4.5:1 against its resolved background.",
-          "theme": "high-contrast",
-          "index": 107,
-          "ratio": 1,
-          "color": "rgb(255,255,0) (inherited)",
-          "background": "rgb(255,255,10)",
-          "text": "Curiosity"
-        },
-        {
-          "toolId": "strengths",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Text contrast is below 4.5:1 against its resolved background.",
-          "theme": "high-contrast",
-          "index": 110,
-          "ratio": 1,
-          "color": "rgb(255,255,0) (inherited)",
-          "background": "rgb(255,255,10)",
-          "text": "Fairness"
-        },
-        {
-          "toolId": "strengths",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Text contrast is below 4.5:1 against its resolved background.",
-          "theme": "high-contrast",
-          "index": 113,
-          "ratio": 1,
-          "color": "rgb(255,255,0) (inherited)",
-          "background": "rgb(255,255,10)",
-          "text": "Gratitude"
-        },
-        {
-          "toolId": "strengths",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Text contrast is below 4.5:1 against its resolved background.",
-          "theme": "high-contrast",
-          "index": 116,
-          "ratio": 1,
-          "color": "rgb(255,255,0) (inherited)",
-          "background": "rgb(255,255,10)",
-          "text": "Humor"
-        },
-        {
-          "toolId": "strengths",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Text contrast is below 4.5:1 against its resolved background.",
-          "theme": "high-contrast",
-          "index": 119,
-          "ratio": 1,
-          "color": "rgb(255,255,0) (inherited)",
-          "background": "rgb(255,255,10)",
-          "text": "Perseverance"
-        },
-        {
-          "toolId": "strengths",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Text contrast is below 4.5:1 against its resolved background.",
-          "theme": "high-contrast",
-          "index": 121,
-          "ratio": 2,
-          "color": "#f59e0b",
-          "background": "rgb(255,255,0)",
-          "text": "Talent & Skills"
-        },
-        {
-          "toolId": "strengths",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Text contrast is below 4.5:1 against its resolved background.",
-          "theme": "high-contrast",
-          "index": 126,
-          "ratio": 1,
-          "color": "rgb(255,255,0) (inherited)",
-          "background": "rgb(255,255,10)",
-          "text": "Reading"
-        },
-        {
-          "toolId": "strengths",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Text contrast is below 4.5:1 against its resolved background.",
-          "theme": "high-contrast",
-          "index": 129,
-          "ratio": 1,
-          "color": "rgb(255,255,0) (inherited)",
-          "background": "rgb(255,255,10)",
-          "text": "Math"
-        },
-        {
-          "toolId": "strengths",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Text contrast is below 4.5:1 against its resolved background.",
-          "theme": "high-contrast",
-          "index": 132,
-          "ratio": 1,
-          "color": "rgb(255,255,0) (inherited)",
-          "background": "rgb(255,255,10)",
-          "text": "Art & Drawing"
-        },
-        {
-          "toolId": "strengths",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Text contrast is below 4.5:1 against its resolved background.",
-          "theme": "high-contrast",
-          "index": 135,
-          "ratio": 1,
-          "color": "rgb(255,255,0) (inherited)",
-          "background": "rgb(255,255,10)",
-          "text": "Music"
-        },
-        {
-          "toolId": "strengths",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Text contrast is below 4.5:1 against its resolved background.",
-          "theme": "high-contrast",
-          "index": 138,
-          "ratio": 1,
-          "color": "rgb(255,255,0) (inherited)",
-          "background": "rgb(255,255,10)",
-          "text": "Sports & Movement"
-        },
-        {
-          "toolId": "strengths",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Text contrast is below 4.5:1 against its resolved background.",
-          "theme": "high-contrast",
-          "index": 141,
-          "ratio": 1,
-          "color": "rgb(255,255,0) (inherited)",
-          "background": "rgb(255,255,10)",
-          "text": "Helping Others"
-        },
-        {
-          "toolId": "strengths",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Text contrast is below 4.5:1 against its resolved background.",
-          "theme": "high-contrast",
-          "index": 144,
-          "ratio": 1,
-          "color": "rgb(255,255,0) (inherited)",
-          "background": "rgb(255,255,10)",
-          "text": "Building Things"
-        },
-        {
-          "toolId": "strengths",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Text contrast is below 4.5:1 against its resolved background.",
-          "theme": "high-contrast",
-          "index": 147,
-          "ratio": 1,
-          "color": "rgb(255,255,0) (inherited)",
-          "background": "rgb(255,255,10)",
-          "text": "Nature & Animals"
-        },
-        {
-          "toolId": "strengths",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Text contrast is below 4.5:1 against its resolved background.",
-          "theme": "high-contrast",
-          "index": 149,
-          "ratio": 2.12,
-          "color": "#22c55e",
-          "background": "rgb(255,255,0)",
-          "text": "Growth Areas"
-        },
-        {
-          "toolId": "strengths",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Text contrast is below 4.5:1 against its resolved background.",
-          "theme": "high-contrast",
-          "index": 154,
-          "ratio": 1,
-          "color": "rgb(255,255,0) (inherited)",
-          "background": "rgb(255,255,10)",
-          "text": "Trying New Things"
-        },
-        {
-          "toolId": "strengths",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Text contrast is below 4.5:1 against its resolved background.",
-          "theme": "high-contrast",
-          "index": 157,
-          "ratio": 1,
-          "color": "rgb(255,255,0) (inherited)",
-          "background": "rgb(255,255,10)",
-          "text": "Patience"
-        },
-        {
-          "toolId": "strengths",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Text contrast is below 4.5:1 against its resolved background.",
-          "theme": "high-contrast",
-          "index": 160,
-          "ratio": 1,
-          "color": "rgb(255,255,0) (inherited)",
-          "background": "rgb(255,255,10)",
-          "text": "Listening"
-        },
-        {
-          "toolId": "strengths",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Text contrast is below 4.5:1 against its resolved background.",
-          "theme": "high-contrast",
-          "index": 163,
-          "ratio": 1,
-          "color": "rgb(255,255,0) (inherited)",
-          "background": "rgb(255,255,10)",
-          "text": "Sharing"
         }
       ]
     },
@@ -4419,268 +3394,48 @@
       "label": "Upstander Workshop",
       "renderedBytes": 97227,
       "standardShell": true,
-      "issueCount": 9,
+      "issueCount": 0,
       "errorCount": 0,
-      "warningCount": 9,
+      "warningCount": 0,
       "themes": [
         {
           "theme": "light",
           "renderedBytes": 32408,
           "standardShell": true,
-          "issueCount": 3,
+          "issueCount": 0,
           "errorCount": 0,
-          "warningCount": 3,
-          "issues": [
-            {
-              "toolId": "upstander",
-              "severity": "warning",
-              "code": "inline-contrast",
-              "message": "Text contrast is below 4.5:1 against its resolved background.",
-              "theme": "light",
-              "index": 179,
-              "ratio": 2.83,
-              "color": "#2563eb",
-              "background": "rgb(30,41,59)",
-              "text": "The truth:"
-            },
-            {
-              "toolId": "upstander",
-              "severity": "warning",
-              "code": "inline-contrast",
-              "message": "Text contrast is below 4.5:1 against its resolved background.",
-              "theme": "light",
-              "index": 206,
-              "ratio": 1.62,
-              "color": "#fdba74",
-              "background": "rgb(255,250,240)",
-              "text": "If you have been BOTH — the bully-victim section"
-            },
-            {
-              "toolId": "upstander",
-              "severity": "warning",
-              "code": "inline-contrast",
-              "message": "Text contrast is below 4.5:1 against its resolved background.",
-              "theme": "light",
-              "index": 207,
-              "ratio": 1.43,
-              "color": "#cbd5e1",
-              "background": "rgb(255,250,240)",
-              "text": "When you have been targeted AND have caused harm. The clinically most-vulnerable"
-            }
-          ]
+          "warningCount": 0,
+          "issues": []
         },
         {
           "theme": "dark",
           "renderedBytes": 32408,
           "standardShell": true,
-          "issueCount": 3,
+          "issueCount": 0,
           "errorCount": 0,
-          "warningCount": 3,
-          "issues": [
-            {
-              "toolId": "upstander",
-              "severity": "warning",
-              "code": "inline-contrast",
-              "message": "Text contrast is below 4.5:1 against its resolved background.",
-              "theme": "dark",
-              "index": 179,
-              "ratio": 2.83,
-              "color": "#2563eb",
-              "background": "rgb(30,41,59)",
-              "text": "The truth:"
-            },
-            {
-              "toolId": "upstander",
-              "severity": "warning",
-              "code": "inline-contrast",
-              "message": "Text contrast is below 4.5:1 against its resolved background.",
-              "theme": "dark",
-              "index": 206,
-              "ratio": 1.62,
-              "color": "#fdba74",
-              "background": "rgb(255,250,240)",
-              "text": "If you have been BOTH — the bully-victim section"
-            },
-            {
-              "toolId": "upstander",
-              "severity": "warning",
-              "code": "inline-contrast",
-              "message": "Text contrast is below 4.5:1 against its resolved background.",
-              "theme": "dark",
-              "index": 207,
-              "ratio": 1.43,
-              "color": "#cbd5e1",
-              "background": "rgb(255,250,240)",
-              "text": "When you have been targeted AND have caused harm. The clinically most-vulnerable"
-            }
-          ]
+          "warningCount": 0,
+          "issues": []
         },
         {
           "theme": "high-contrast",
           "renderedBytes": 32411,
           "standardShell": true,
-          "issueCount": 3,
+          "issueCount": 0,
           "errorCount": 0,
-          "warningCount": 3,
-          "issues": [
-            {
-              "toolId": "upstander",
-              "severity": "warning",
-              "code": "inline-contrast",
-              "message": "Text contrast is below 4.5:1 against its resolved background.",
-              "theme": "high-contrast",
-              "index": 179,
-              "ratio": 4.06,
-              "color": "#2563eb",
-              "background": "rgb(0,0,0)",
-              "text": "The truth:"
-            },
-            {
-              "toolId": "upstander",
-              "severity": "warning",
-              "code": "inline-contrast",
-              "message": "Text contrast is below 4.5:1 against its resolved background.",
-              "theme": "high-contrast",
-              "index": 206,
-              "ratio": 1.03,
-              "color": "#ffff00",
-              "background": "rgb(255,250,240)",
-              "text": "If you have been BOTH — the bully-victim section"
-            },
-            {
-              "toolId": "upstander",
-              "severity": "warning",
-              "code": "inline-contrast",
-              "message": "Text contrast is below 4.5:1 against its resolved background.",
-              "theme": "high-contrast",
-              "index": 207,
-              "ratio": 1.03,
-              "color": "#ffff00",
-              "background": "rgb(255,250,240)",
-              "text": "When you have been targeted AND have caused harm. The clinically most-vulnerable"
-            }
-          ]
+          "warningCount": 0,
+          "issues": []
         }
       ],
-      "issues": [
-        {
-          "toolId": "upstander",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Text contrast is below 4.5:1 against its resolved background.",
-          "theme": "light",
-          "index": 179,
-          "ratio": 2.83,
-          "color": "#2563eb",
-          "background": "rgb(30,41,59)",
-          "text": "The truth:"
-        },
-        {
-          "toolId": "upstander",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Text contrast is below 4.5:1 against its resolved background.",
-          "theme": "light",
-          "index": 206,
-          "ratio": 1.62,
-          "color": "#fdba74",
-          "background": "rgb(255,250,240)",
-          "text": "If you have been BOTH — the bully-victim section"
-        },
-        {
-          "toolId": "upstander",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Text contrast is below 4.5:1 against its resolved background.",
-          "theme": "light",
-          "index": 207,
-          "ratio": 1.43,
-          "color": "#cbd5e1",
-          "background": "rgb(255,250,240)",
-          "text": "When you have been targeted AND have caused harm. The clinically most-vulnerable"
-        },
-        {
-          "toolId": "upstander",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Text contrast is below 4.5:1 against its resolved background.",
-          "theme": "dark",
-          "index": 179,
-          "ratio": 2.83,
-          "color": "#2563eb",
-          "background": "rgb(30,41,59)",
-          "text": "The truth:"
-        },
-        {
-          "toolId": "upstander",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Text contrast is below 4.5:1 against its resolved background.",
-          "theme": "dark",
-          "index": 206,
-          "ratio": 1.62,
-          "color": "#fdba74",
-          "background": "rgb(255,250,240)",
-          "text": "If you have been BOTH — the bully-victim section"
-        },
-        {
-          "toolId": "upstander",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Text contrast is below 4.5:1 against its resolved background.",
-          "theme": "dark",
-          "index": 207,
-          "ratio": 1.43,
-          "color": "#cbd5e1",
-          "background": "rgb(255,250,240)",
-          "text": "When you have been targeted AND have caused harm. The clinically most-vulnerable"
-        },
-        {
-          "toolId": "upstander",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Text contrast is below 4.5:1 against its resolved background.",
-          "theme": "high-contrast",
-          "index": 179,
-          "ratio": 4.06,
-          "color": "#2563eb",
-          "background": "rgb(0,0,0)",
-          "text": "The truth:"
-        },
-        {
-          "toolId": "upstander",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Text contrast is below 4.5:1 against its resolved background.",
-          "theme": "high-contrast",
-          "index": 206,
-          "ratio": 1.03,
-          "color": "#ffff00",
-          "background": "rgb(255,250,240)",
-          "text": "If you have been BOTH — the bully-victim section"
-        },
-        {
-          "toolId": "upstander",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Text contrast is below 4.5:1 against its resolved background.",
-          "theme": "high-contrast",
-          "index": 207,
-          "ratio": 1.03,
-          "color": "#ffff00",
-          "background": "rgb(255,250,240)",
-          "text": "When you have been targeted AND have caused harm. The clinically most-vulnerable"
-        }
-      ]
+      "issues": []
     },
     {
       "id": "valuesCommittedAction",
       "label": "Values & Action",
       "renderedBytes": 37176,
       "standardShell": true,
-      "issueCount": 2,
+      "issueCount": 0,
       "errorCount": 0,
-      "warningCount": 2,
+      "warningCount": 0,
       "themes": [
         {
           "theme": "light",
@@ -4704,63 +3459,13 @@
           "theme": "high-contrast",
           "renderedBytes": 12392,
           "standardShell": true,
-          "issueCount": 2,
+          "issueCount": 0,
           "errorCount": 0,
-          "warningCount": 2,
-          "issues": [
-            {
-              "toolId": "valuesCommittedAction",
-              "severity": "warning",
-              "code": "inline-contrast",
-              "message": "Text contrast is below 4.5:1 against its resolved background.",
-              "theme": "high-contrast",
-              "index": 75,
-              "ratio": 1,
-              "color": "#000000",
-              "background": "rgb(0,0,0)",
-              "text": "Step 2"
-            },
-            {
-              "toolId": "valuesCommittedAction",
-              "severity": "warning",
-              "code": "inline-contrast",
-              "message": "Text contrast is below 4.5:1 against its resolved background.",
-              "theme": "high-contrast",
-              "index": 77,
-              "ratio": 1,
-              "color": "#000000",
-              "background": "rgb(0,0,0)",
-              "text": "0 chosen"
-            }
-          ]
+          "warningCount": 0,
+          "issues": []
         }
       ],
-      "issues": [
-        {
-          "toolId": "valuesCommittedAction",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Text contrast is below 4.5:1 against its resolved background.",
-          "theme": "high-contrast",
-          "index": 75,
-          "ratio": 1,
-          "color": "#000000",
-          "background": "rgb(0,0,0)",
-          "text": "Step 2"
-        },
-        {
-          "toolId": "valuesCommittedAction",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Text contrast is below 4.5:1 against its resolved background.",
-          "theme": "high-contrast",
-          "index": 77,
-          "ratio": 1,
-          "color": "#000000",
-          "background": "rgb(0,0,0)",
-          "text": "0 chosen"
-        }
-      ]
+      "issues": []
     },
     {
       "id": "viaStrengths",

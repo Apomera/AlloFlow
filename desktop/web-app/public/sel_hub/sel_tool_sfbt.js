@@ -72,7 +72,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sfbt'))) {
       var _sfT = (ctx && ctx.theme) || {};
       var _sfHC = !!_sfT.isContrast, _sfL = !_sfHC && !_sfT.isDark;
       var _sf_BGL = {'#0f172a':'#f8fafc','#1e293b':'#ffffff'}, _sf_BGH = {'#0f172a':'#000000','#1e293b':'#000000','#fff':'#000000','#a855f7':'#000000','#3b82f6':'#000000','#16a34a':'#000000'};
-      var _sf_FGL = {'#cbd5e1':'#334155','#c4b5fd':'#5b21b6','#94a3b8':'#64748b','#e9d5ff':'#581c87','#e2e8f0':'#1e293b','#93c5fd':'#1e3a8a','#fcd34d':'#78350f','#fde68a':'#92400e'}, _sf_FGH = {'#cbd5e1':'#ffff00','#c4b5fd':'#ffff00','#94a3b8':'#ffff00','#e9d5ff':'#ffff00','#e2e8f0':'#ffff00','#fff':'#ffff00','#bbf7d0':'#ffff00','#93c5fd':'#ffff00','#64748b':'#ffff00','#0f172a':'#ffff00','#475569':'#ffff00','#fcd34d':'#ffff00','#fde68a':'#ffff00'};
+      var _sf_FGL = {'#cbd5e1':'#334155','#c4b5fd':'#5b21b6','#94a3b8':'#64748b','#e9d5ff':'#581c87','#e2e8f0':'#1e293b','#93c5fd':'#1e3a8a','#fcd34d':'#78350f','#fde68a':'#92400e'}, _sf_FGH = {'#a855f7':'#ffff00','#3b82f6':'#ffff00','#22c55e':'#ffff00','#cbd5e1':'#ffff00','#c4b5fd':'#ffff00','#94a3b8':'#ffff00','#e9d5ff':'#ffff00','#e2e8f0':'#ffff00','#fff':'#ffff00','#bbf7d0':'#ffff00','#93c5fd':'#ffff00','#64748b':'#ffff00','#0f172a':'#ffff00','#475569':'#ffff00','#fcd34d':'#ffff00','#fde68a':'#ffff00'};
       var _sf_BDL = {'#334155':'#e2e8f0','#1e293b':'#e5e7eb','#475569':'#cbd5e1'}, _sf_BDH = {'#334155':'#ffff00','#1e293b':'#ffff00','#a855f7':'#ffff00','#22c55e':'#ffff00','#3b82f6':'#ffff00','#475569':'#ffff00','#cbd5e1':'#ffff00','#7c3aed':'#ffff00','#f59e0b':'#ffff00'};
       var _sfBg = function(h){ return _sfHC ? (_sf_BGH[h]||h) : (_sfL ? (_sf_BGL[h]||h) : h); };
       var _sfFg = function(h){ return _sfHC ? (_sf_FGH[h]||h) : (_sfL ? (_sf_FGL[h]||h) : h); };
@@ -163,20 +163,28 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sfbt'))) {
           ),
 
           // Roadmap
-          stepCard('✨ Miracle Question', 'Imagine you went to sleep tonight and a miracle solved the problem. When you woke up, what would be different? This question opens up a vision of what better looks like, in specifics.', function() { goto('miracle'); }, _sfBg('#a855f7'), d.miracle ? '✓ Started' : 'Start'),
-          stepCard('📊 Scaling', 'On a 0-10 scale, where are you with this problem right now? Where would you LIKE to be (realistic, not 10)? What is the smallest step that would move you up half a point?', function() { goto('scaling'); }, _sfBg('#3b82f6'), d.scaleNow !== 5 || d.scaleNextStep ? '✓ Started' : 'Start'),
+          stepCard('✨ Miracle Question', 'Imagine you went to sleep tonight and a miracle solved the problem. When you woke up, what would be different? This question opens up a vision of what better looks like, in specifics.', function() { goto('miracle'); }, '#a855f7', d.miracle ? '✓ Started' : 'Start'),
+          stepCard('📊 Scaling', 'On a 0-10 scale, where are you with this problem right now? Where would you LIKE to be (realistic, not 10)? What is the smallest step that would move you up half a point?', function() { goto('scaling'); }, '#3b82f6', d.scaleNow !== 5 || d.scaleNextStep ? '✓ Started' : 'Start'),
           stepCard('🔍 Exceptions', 'When has this problem NOT been happening? Even small windows. Those are clues about what already works.', function() { goto('exceptions'); }, '#22c55e', d.exceptions ? '✓ Started' : 'Start'),
 
           softPointer()
         );
       }
 
+      // `color` is an accent HUE, and this card uses it in two different roles:
+      // as the left border and as the title/status TEXT. Callers used to pass it
+      // pre-mapped through _sfBg, the BACKGROUND remap - which sends these hues
+      // to #000000 in high contrast. The result was black title text on the
+      // black card, 1.00:1, for exactly the users who turned high contrast on.
+      // The card now routes the raw hue itself: _sfBd for the border, _sfFg for
+      // the text, so each role gets the map that belongs to it.
       function stepCard(title, blurb, onClick, color, status) {
+        var ink = _sfFg(color);
         return h('button', { onClick: onClick, 'aria-label': 'Go to ' + title,
-          style: { width: '100%', textAlign: 'left', padding: 14, borderRadius: 10, borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '4px solid ' + color, background: _sfBg('#0f172a'), cursor: 'pointer', marginBottom: 10, color: _sfFg('#e2e8f0') } },
+          style: { width: '100%', textAlign: 'left', padding: 14, borderRadius: 10, borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '4px solid ' + _sfBd(color), background: _sfBg('#0f172a'), cursor: 'pointer', marginBottom: 10, color: _sfFg('#e2e8f0') } },
           h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 4 } },
-            h('span', { style: { fontSize: 14, fontWeight: 800, color: color, flex: 1 } }, title),
-            h('span', { style: { fontSize: 11, color: color, fontWeight: 700 } }, status)
+            h('span', { style: { fontSize: 14, fontWeight: 800, color: ink, flex: 1 } }, title),
+            h('span', { style: { fontSize: 11, color: ink, fontWeight: 700 } }, status)
           ),
           h('div', { style: { fontSize: 12, color: _sfFg('#94a3b8'), lineHeight: 1.6 } }, blurb)
         );

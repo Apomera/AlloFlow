@@ -109,7 +109,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bodyStory'))) {
       var _bodT = (ctx && ctx.theme) || {};
       var _bodHC = !!_bodT.isContrast, _bodL = !_bodHC && !_bodT.isDark;
       var _bod_BGL = {'#0f172a':'#f8fafc','#1e293b':'#ffffff'}, _bod_BGH = {'#0f172a':'#000000','#1e293b':'#000000','#b45309':'#000000','#ef4444':'#000000','#15803d':'#000000','#fff':'#000000','#0ea5e9':'#000000','#a855f7':'#000000','#ec4899':'#000000'};
-      var _bod_FGL = {'#cbd5e1':'#334155','#fda4af':'#9f1239','#94a3b8':'#64748b','#fecaca':'#b91c1c','#fca5a5':'#991b1b','#e2e8f0':'#1e293b','#c4b5fd':'#5b21b6','#7dd3fc':'#075985','#fde68a':'#92400e','#e9d5ff':'#581c87','#fbcfe8':'#9d174d','#fcd34d':'#78350f'}, _bod_FGH = {'#cbd5e1':'#ffff00','#fda4af':'#ffff00','#94a3b8':'#ffff00','#fecaca':'#ffff00','#fca5a5':'#ffff00','#fecdd3':'#ffff00','#e2e8f0':'#ffff00','#c4b5fd':'#ffff00','#bae6fd':'#ffff00','#0ea5e9':'#ffff00','#7dd3fc':'#ffff00','#fde68a':'#ffff00','#fff':'#ffff00','#e9d5ff':'#ffff00','#bbf7d0':'#ffff00','#fbcfe8':'#ffff00','#fcd34d':'#ffff00','#0f172a':'#ffff00','#64748b':'#ffff00','#475569':'#ffff00'};
+      var _bod_FGL = {'#cbd5e1':'#334155','#fda4af':'#9f1239','#94a3b8':'#64748b','#fecaca':'#b91c1c','#fca5a5':'#991b1b','#e2e8f0':'#1e293b','#c4b5fd':'#5b21b6','#7dd3fc':'#075985','#fde68a':'#92400e','#e9d5ff':'#581c87','#fbcfe8':'#9d174d','#fcd34d':'#78350f'}, _bod_FGH = {'#a855f7':'#ffff00','#ec4899':'#ffff00','#cbd5e1':'#ffff00','#fda4af':'#ffff00','#94a3b8':'#ffff00','#fecaca':'#ffff00','#fca5a5':'#ffff00','#fecdd3':'#ffff00','#e2e8f0':'#ffff00','#c4b5fd':'#ffff00','#bae6fd':'#ffff00','#0ea5e9':'#ffff00','#7dd3fc':'#ffff00','#fde68a':'#ffff00','#fff':'#ffff00','#e9d5ff':'#ffff00','#bbf7d0':'#ffff00','#fbcfe8':'#ffff00','#fcd34d':'#ffff00','#0f172a':'#ffff00','#64748b':'#ffff00','#475569':'#ffff00'};
       var _bod_BDL = {'#334155':'#e2e8f0','#1e293b':'#e5e7eb','#475569':'#cbd5e1'}, _bod_BDH = {'#334155':'#ffff00','#ef4444':'#ffff00','#1e293b':'#ffff00','#fb7185':'#ffff00','#a855f7':'#ffff00','#0ea5e9':'#ffff00','#f59e0b':'#ffff00','#22c55e':'#ffff00','#ec4899':'#ffff00','#475569':'#ffff00','#cbd5e1':'#ffff00','#be123c':'#ffff00'};
       var _bodBg = function(h){ return _bodHC ? (_bod_BGH[h]||h) : (_bodL ? (_bod_BGL[h]||h) : h); };
       var _bodFg = function(h){ return _bodHC ? (_bod_FGH[h]||h) : (_bodL ? (_bod_FGL[h]||h) : h); };
@@ -236,8 +236,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bodyStory'))) {
           h('div', { style: { fontSize: 11, color: _bodFg('#94a3b8'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8, marginTop: 14 } }, 'Sections in this tool'),
           stepCard('🌊 What my body does (not how it looks)', 'List the functions your body performs that you actually appreciate. Tylka\'s framework: functional appreciation builds body acceptance.', function() { goto('function'); }, '#0ea5e9'),
           stepCard('🌪️ Where the pressure comes from', 'Inventory the specific sources of body pressure in your life. Naming them takes their power down.', function() { goto('pressures'); }, '#f59e0b'),
-          stepCard('💭 The critical voice', 'Whose voice is the harshest in your head about your body? Where did you learn that voice?', function() { goto('voices'); }, _bodBg('#a855f7')),
-          stepCard('📺 Media diet audit', 'What feeds, accounts, content do you let into your eyes daily? What is doing harm? What could you cut?', function() { goto('media'); }, _bodBg('#ec4899')),
+          stepCard('💭 The critical voice', 'Whose voice is the harshest in your head about your body? Where did you learn that voice?', function() { goto('voices'); }, '#a855f7'),
+          stepCard('📺 Media diet audit', 'What feeds, accounts, content do you let into your eyes daily? What is doing harm? What could you cut?', function() { goto('media'); }, '#ec4899'),
 
           softPointer()
         );
@@ -246,7 +246,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bodyStory'))) {
       function stepCard(title, blurb, onClick, color) {
         return h('button', { onClick: onClick, 'aria-label': title,
           style: { width: '100%', textAlign: 'left', padding: 14, borderRadius: 10, borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '4px solid ' + color, background: _bodBg('#0f172a'), cursor: 'pointer', marginBottom: 8, color: _bodFg('#e2e8f0') } },
-          h('div', { style: { fontSize: 14, fontWeight: 800, color: color, marginBottom: 4 } }, title),
+          h('div', { style: { fontSize: 14, fontWeight: 800, color: _bodFg(color), marginBottom: 4 } }, title),
           h('div', { style: { fontSize: 12, color: _bodFg('#94a3b8'), lineHeight: 1.55 } }, blurb)
         );
       }

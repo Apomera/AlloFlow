@@ -163,7 +163,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sleep'))) {
       var _sleT = (ctx && ctx.theme) || {};
       var _sleHC = !!_sleT.isContrast, _sleL = !_sleHC && !_sleT.isDark;
       var _sle_BGL = {'#0f172a':'#f8fafc','#1e293b':'#ffffff'}, _sle_BGH = {'#0f172a':'#000000','#1e293b':'#000000','#0ea5e9':'#000000','#fff':'#000000','#4f46e5':'#000000'};
-      var _sle_FGL = {'#cbd5e1':'#334155','#a5b4fc':'#3730a3','#94a3b8':'#64748b','#c7d2fe':'#312e81','#e2e8f0':'#1e293b','#fca5a5':'#991b1b','#fde68a':'#92400e','#86efac':'#166534','#fcd34d':'#78350f'}, _sle_FGH = {'#cbd5e1':'#ffff00','#a5b4fc':'#ffff00','#94a3b8':'#ffff00','#c7d2fe':'#ffff00','#e2e8f0':'#ffff00','#fca5a5':'#ffff00','#bbf7d0':'#ffff00','#fde68a':'#ffff00','#bae6fd':'#ffff00','#86efac':'#ffff00','#fff':'#ffff00','#fcd34d':'#ffff00','#0f172a':'#ffff00','#64748b':'#ffff00','#475569':'#ffff00'};
+      var _sle_FGL = {'#cbd5e1':'#334155','#a5b4fc':'#3730a3','#94a3b8':'#64748b','#c7d2fe':'#312e81','#e2e8f0':'#1e293b','#fca5a5':'#991b1b','#fde68a':'#92400e','#86efac':'#166534','#fcd34d':'#78350f'}, _sle_FGH = {'#0ea5e9':'#ffff00','#cbd5e1':'#ffff00','#a5b4fc':'#ffff00','#94a3b8':'#ffff00','#c7d2fe':'#ffff00','#e2e8f0':'#ffff00','#fca5a5':'#ffff00','#bbf7d0':'#ffff00','#fde68a':'#ffff00','#bae6fd':'#ffff00','#86efac':'#ffff00','#fff':'#ffff00','#fcd34d':'#ffff00','#0f172a':'#ffff00','#64748b':'#ffff00','#475569':'#ffff00'};
       var _sle_BDL = {'#334155':'#e2e8f0','#1e293b':'#e5e7eb','#475569':'#cbd5e1'}, _sle_BDH = {'#334155':'#ffff00','#1e293b':'#ffff00','#6366f1':'#ffff00','#ef4444':'#ffff00','#22c55e':'#ffff00','#f59e0b':'#ffff00','#0ea5e9':'#ffff00','#475569':'#ffff00','#cbd5e1':'#ffff00','#4f46e5':'#ffff00','#e2e8f0':'#ffff00'};
       var _sleBg = function(h){ return _sleHC ? (_sle_BGH[h]||h) : (_sleL ? (_sle_BGL[h]||h) : h); };
       var _sleFg = function(h){ return _sleHC ? (_sle_FGH[h]||h) : (_sleL ? (_sle_FGL[h]||h) : h); };
@@ -301,7 +301,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sleep'))) {
           h('div', { style: { fontSize: 11, color: _sleFg('#94a3b8'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8, marginTop: 14 } }, 'Tools in this lab'),
           stepCard('Quick sleep check', 'Seven questions to see where your sleep is right now. Takes about 2 minutes.', function() { goto('check'); }, '#22c55e'),
           stepCard('Common barriers', 'Eight common barriers, with practical ideas. Pick one change to test for a week.', function() { goto('barriers'); }, '#f59e0b'),
-          stepCard('Sleep diary', 'Track sleep for 1-2 weeks to find patterns. Add the one change you are testing so you can review what helped.', function() { goto('diary'); }, _sleBg('#0ea5e9')),
+          stepCard('Sleep diary', 'Track sleep for 1-2 weeks to find patterns. Add the one change you are testing so you can review what helped.', function() { goto('diary'); }, '#0ea5e9'),
 
           softPointer()
         );
@@ -309,7 +309,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sleep'))) {
       function stepCard(title, blurb, onClick, color) {
         return h('button', { onClick: onClick, 'aria-label': title,
           style: { width: '100%', textAlign: 'left', padding: 14, borderRadius: 10, borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '4px solid ' + color, background: _sleBg('#0f172a'), cursor: 'pointer', marginBottom: 8, color: _sleFg('#e2e8f0') } },
-          h('div', { style: { fontSize: 14, fontWeight: 800, color: color, marginBottom: 4 } }, title),
+          h('div', { style: { fontSize: 14, fontWeight: 800, color: _sleFg(color), marginBottom: 4 } }, title),
           h('div', { style: { fontSize: 12, color: _sleFg('#94a3b8'), lineHeight: 1.55 } }, blurb)
         );
       }

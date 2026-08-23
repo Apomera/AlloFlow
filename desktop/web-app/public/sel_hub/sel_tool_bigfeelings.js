@@ -19452,7 +19452,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bigFeelings'))) 
       var _bigT = (ctx && ctx.theme) || {};
       var _bigHC = !!_bigT.isContrast, _bigL = !_bigHC && !_bigT.isDark;
       var _big_BGL = {'#0f172a':'#f8fafc','#1e293b':'#ffffff'}, _big_BGH = {'#0f172a':'#000000','#1e293b':'#000000','#0ea5e9':'#000000','#fff':'#000000','#b45309':'#000000','#ef4444':'#000000'};
-      var _big_FGL = {'#cbd5e1':'#334155','#fdba74':'#9a3412','#94a3b8':'#64748b','#e2e8f0':'#1e293b','#fca5a5':'#991b1b','#c4b5fd':'#5b21b6','#fecaca':'#b91c1c','#fde68a':'#92400e','#86efac':'#166534','#fcd34d':'#78350f'}, _big_FGH = {'#cbd5e1':'#ffff00','#fdba74':'#ffff00','#94a3b8':'#ffff00','#fed7aa':'#ffff00','#e2e8f0':'#ffff00','#fca5a5':'#ffff00','#bbf7d0':'#ffff00','#c4b5fd':'#ffff00','#fecaca':'#ffff00','#475569':'#ffff00','#fde68a':'#ffff00','#86efac':'#ffff00','#bae6fd':'#ffff00','#fff':'#ffff00','#fcd34d':'#ffff00','#0f172a':'#ffff00','#64748b':'#ffff00'};
+      var _big_FGL = {'#cbd5e1':'#334155','#fdba74':'#9a3412','#94a3b8':'#64748b','#e2e8f0':'#1e293b','#fca5a5':'#991b1b','#c4b5fd':'#5b21b6','#fecaca':'#b91c1c','#fde68a':'#92400e','#86efac':'#166534','#fcd34d':'#78350f'}, _big_FGH = {'#ef4444':'#ffff00','#f59e0b':'#ffff00','#22c55e':'#ffff00','#0ea5e9':'#ffff00','#cbd5e1':'#ffff00','#fdba74':'#ffff00','#94a3b8':'#ffff00','#fed7aa':'#ffff00','#e2e8f0':'#ffff00','#fca5a5':'#ffff00','#bbf7d0':'#ffff00','#c4b5fd':'#ffff00','#fecaca':'#ffff00','#475569':'#ffff00','#fde68a':'#ffff00','#86efac':'#ffff00','#bae6fd':'#ffff00','#fff':'#ffff00','#fcd34d':'#ffff00','#0f172a':'#ffff00','#64748b':'#ffff00'};
       var _big_BDL = {'#334155':'#e2e8f0','#1e293b':'#e5e7eb','#475569':'#cbd5e1'}, _big_BDH = {'#334155':'#ffff00','#1e293b':'#ffff00','#f97316':'#ffff00','#a855f7':'#ffff00','#22c55e':'#ffff00','#ef4444':'#ffff00','#f59e0b':'#ffff00','#0ea5e9':'#ffff00','#475569':'#ffff00','#cbd5e1':'#ffff00','#ea580c':'#ffff00','#e2e8f0':'#ffff00'};
       var _bigBg = function(h){ return _bigHC ? (_big_BGH[h]||h) : (_bigL ? (_big_BGL[h]||h) : h); };
       var _bigFg = function(h){ return _bigHC ? (_big_FGH[h]||h) : (_bigL ? (_big_FGL[h]||h) : h); };
@@ -19559,9 +19559,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bigFeelings'))) 
           // Roadmap
           h('div', { style: { fontSize: 11, color: _bigFg('#94a3b8'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8, marginTop: 14 } }, 'Skills in this kit'),
           stepCard('🚦 The choice point', 'The single most important concept: the moment between feeling anger and acting on it. You can learn to widen this window from milliseconds to minutes.', function() { goto('choice'); }, '#22c55e'),
-          stepCard('📓 Hassle log', 'Track angry incidents over time: trigger, body signs, what you did, what would have been better. Patterns get visible quickly.', function() { goto('hassle'); }, _bigBg('#0ea5e9')),
+          stepCard('📓 Hassle log', 'Track angry incidents over time: trigger, body signs, what you did, what would have been better. Patterns get visible quickly.', function() { goto('hassle'); }, '#0ea5e9'),
           stepCard('⚡ My triggers', 'Build your personal trigger inventory: specific people, situations, body states, thoughts. Knowing yours is half the battle.', function() { goto('triggers'); }, '#f59e0b'),
-          stepCard('❄️ My cool-downs', 'Build your personal toolkit of cool-down moves. The body-first techniques that actually work for YOU.', function() { goto('cooldown'); }, _bigBg('#0ea5e9')),
+          stepCard('❄️ My cool-downs', 'Build your personal toolkit of cool-down moves. The body-first techniques that actually work for YOU.', function() { goto('cooldown'); }, '#0ea5e9'),
 
           softPointer()
         );
@@ -19570,7 +19570,10 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bigFeelings'))) 
       function stepCard(title, blurb, onClick, color) {
         return h('button', { onClick: onClick, 'aria-label': title,
           style: { width: '100%', textAlign: 'left', padding: 14, borderRadius: 10, borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '4px solid ' + color, background: _bigBg('#0f172a'), cursor: 'pointer', marginBottom: 8, color: _bigFg('#e2e8f0') } },
-          h('div', { style: { fontSize: 14, fontWeight: 800, color: color, marginBottom: 4 } }, title),
+          // Same role mix-up as listEditor: `color` is an accent hue used as
+          // TEXT, and two callers pre-mapped it through _bigBg, which sends
+          // accents to #000000 in high contrast. Route it here instead.
+          h('div', { style: { fontSize: 14, fontWeight: 800, color: _bigFg(color), marginBottom: 4 } }, title),
           h('div', { style: { fontSize: 12, color: _bigFg('#94a3b8'), lineHeight: 1.55 } }, blurb)
         );
       }
@@ -19746,7 +19749,11 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bigFeelings'))) 
           }
 
           return h('div', { style: { padding: 14, borderRadius: 10, background: _bigBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid ' + color, marginBottom: 10 } },
-            h('div', { style: { fontSize: 13, color: color, fontWeight: 800, marginBottom: 6 } }, title),
+            // `color` is an accent HUE used here as TEXT. One caller passed it
+            // pre-mapped through _bigBg, the SURFACE remap, which sends accents to
+            // #000000 in high contrast - black title on the black card. Route it
+            // through the foreground map here so every caller gets it right.
+            h('div', { style: { fontSize: 13, color: _bigFg(color), fontWeight: 800, marginBottom: 6 } }, title),
             h('div', { style: { fontSize: 11.5, color: _bigFg('#94a3b8'), marginBottom: 10, lineHeight: 1.55, fontStyle: 'italic' } }, blurb),
             items.length > 0 ? h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 } },
               items.map(function(s, i) {
@@ -19785,7 +19792,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bigFeelings'))) 
 
           listEditor('myTriggers', '⚡ My triggers', '#f59e0b', TRIGGER_STARTERS,
             'What sets you off? Specific people, situations, words, contexts.'),
-          listEditor('myBodySigns', '🔥 My body signs (early warning)', _bigBg('#ef4444'), BODY_STARTERS,
+          listEditor('myBodySigns', '🔥 My body signs (early warning)', '#ef4444', BODY_STARTERS,
             'How does anger show up in YOUR body? The earlier you catch these, the more time you have.'),
 
           softPointer()

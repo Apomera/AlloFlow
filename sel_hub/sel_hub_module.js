@@ -439,6 +439,10 @@
           var useStandardShell = hasReact && tool.standardShell !== false;
           var needsDarkShell = tool.lightBackground !== true && hasReact;
           var shellIsContrast = !!(ctx && (ctx.isContrast || (ctx.theme && ctx.theme.isContrast)));
+          // Published so shared renderers that only receive (h, band) — the 988
+          // resource footer in sel_safety_layer, mounted from ~14 call sites —
+          // can still pick a skin that matches the surface they land on.
+          this._themeFlags = { isDark: needsDarkShell || !!(ctx && ctx.isDark), isContrast: shellIsContrast };
           var renderCtx = ctx;
           if (needsDarkShell && ctx) {
             var shellTheme = Object.assign({}, ctx.theme || {}, { isDark: true });

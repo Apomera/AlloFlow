@@ -131,7 +131,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('valuesCommittedA
       var _vcaT = (ctx && ctx.theme) || {};
       var _vcaHC = !!_vcaT.isContrast, _vcaL = !_vcaHC && !_vcaT.isDark;
       var _vca_BGL = {'#0f172a':'#f8fafc','#1e293b':'#ffffff'}, _vca_BGH = {'#0f172a':'#000000','#a855f7':'#000000','#1e293b':'#000000','#15803d':'#000000','#fff':'#000000','#4f46e5':'#000000'};
-      var _vca_FGL = {'#cbd5e1':'#334155','#a5b4fc':'#3730a3','#94a3b8':'#64748b','#e0e7ff':'#3730a3','#e2e8f0':'#1e293b','#e9d5ff':'#581c87','#fcd34d':'#78350f','#fde68a':'#92400e'}, _vca_FGH = {'#cbd5e1':'#ffff00','#a5b4fc':'#ffff00','#94a3b8':'#ffff00','#e0e7ff':'#ffff00','#e2e8f0':'#ffff00','#22c55e':'#ffff00','#f59e0b':'#ffff00','#fff':'#ffff00','#e9d5ff':'#ffff00','#bbf7d0':'#ffff00','#0f172a':'#ffff00','#64748b':'#ffff00','#475569':'#ffff00','#fcd34d':'#ffff00','#fde68a':'#ffff00'};
+      var _vca_FGL = {'#cbd5e1':'#334155','#a5b4fc':'#3730a3','#94a3b8':'#64748b','#e0e7ff':'#3730a3','#e2e8f0':'#1e293b','#e9d5ff':'#581c87','#fcd34d':'#78350f','#fde68a':'#92400e'}, _vca_FGH = {'#a855f7':'#ffff00','#cbd5e1':'#ffff00','#a5b4fc':'#ffff00','#94a3b8':'#ffff00','#e0e7ff':'#ffff00','#e2e8f0':'#ffff00','#22c55e':'#ffff00','#f59e0b':'#ffff00','#fff':'#ffff00','#e9d5ff':'#ffff00','#bbf7d0':'#ffff00','#0f172a':'#ffff00','#64748b':'#ffff00','#475569':'#ffff00','#fcd34d':'#ffff00','#fde68a':'#ffff00'};
       var _vca_BDL = {'#334155':'#e2e8f0','#1e293b':'#e5e7eb','#475569':'#cbd5e1'}, _vca_BDH = {'#334155':'#ffff00','#818cf8':'#ffff00','#1e293b':'#ffff00','#6366f1':'#ffff00','#a855f7':'#ffff00','#22c55e':'#ffff00','#475569':'#ffff00','#cbd5e1':'#ffff00','#4f46e5':'#ffff00','#f59e0b':'#ffff00'};
       var _vcaBg = function(h){ return _vcaHC ? (_vca_BGH[h]||h) : (_vcaL ? (_vca_BGL[h]||h) : h); };
       var _vcaFg = function(h){ return _vcaHC ? (_vca_FGH[h]||h) : (_vcaL ? (_vca_FGL[h]||h) : h); };
@@ -216,13 +216,13 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('valuesCommittedA
         function stat(label, value, color) {
           return h('div', { style: { padding: 10, borderRadius: 8, background: _vcaBg('#0f172a'), border: '1px solid #1e293b' } },
             h('div', { style: { fontSize: 11, color: _vcaFg('#94a3b8'), fontWeight: 800, textTransform: 'uppercase', marginBottom: 3 } }, label),
-            h('div', { style: { fontSize: 20, color: color, fontWeight: 900 } }, value)
+            h('div', { style: { fontSize: 20, color: _vcaFg(color), fontWeight: 900 } }, value)
           );
         }
         function route(label, blurb, target, color) {
           return h('button', { onClick: function() { goto(target); }, 'aria-label': label,
             style: { textAlign: 'left', padding: 12, borderRadius: 8, borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid ' + color, background: _vcaBg('#0f172a'), color: _vcaFg('#e2e8f0'), cursor: 'pointer', minHeight: 92 } },
-            h('div', { style: { fontSize: 13, color: color, fontWeight: 900, marginBottom: 4 } }, label),
+            h('div', { style: { fontSize: 13, color: _vcaFg(color), fontWeight: 900, marginBottom: 4 } }, label),
             h('div', { style: { fontSize: 11.5, color: _vcaFg('#94a3b8'), lineHeight: 1.5 } }, blurb)
           );
         }
@@ -266,7 +266,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('valuesCommittedA
 
           // Three-step roadmap
           stepCard(1, 'Sort the values', 'Look at ~45 values. Mark each one core to you, meaningful, or not really me.', rc + ' / ' + VALUE_CARDS.length + ' sorted', function() { goto('sort'); }, '#0ea5e9'),
-          stepCard(2, 'Pick your top values', 'From your core values, choose 3-5 that feel most central right now.', topCount + ' chosen', function() { goto('top'); }, _vcaBg('#a855f7')),
+          stepCard(2, 'Pick your top values', 'From your core values, choose 3-5 that feel most central right now.', topCount + ' chosen', function() { goto('top'); }, '#a855f7'),
           stepCard(3, 'Commit to small actions', 'For each top value, list 1-3 concrete things you will do this week.', acts + ' action' + (acts === 1 ? '' : 's'), function() { goto('actions'); }, _vcaFg('#22c55e')),
 
           h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(129,140,248,0.10)', borderTop: '1px solid rgba(129,140,248,0.3)', borderRight: '1px solid rgba(129,140,248,0.3)', borderBottom: '1px solid rgba(129,140,248,0.3)', borderLeft: '3px solid #818cf8', fontSize: 12.5, color: _vcaFg('#e0e7ff'), lineHeight: 1.6, marginTop: 12 } },
@@ -282,9 +282,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('valuesCommittedA
         return h('button', { onClick: onClick, 'aria-label': 'Go to step ' + stepNum + ': ' + title,
           style: { width: '100%', textAlign: 'left', padding: 14, borderRadius: 10, borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '4px solid ' + color, background: _vcaBg('#0f172a'), cursor: 'pointer', marginBottom: 10, color: _vcaFg('#e2e8f0') } },
           h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 4 } },
-            h('span', { style: { fontSize: 18, fontWeight: 900, color: color } }, 'Step ' + stepNum),
+            h('span', { style: { fontSize: 18, fontWeight: 900, color: _vcaFg(color) } }, 'Step ' + stepNum),
             h('span', { style: { fontSize: 14, fontWeight: 700, color: _vcaFg('#e2e8f0'), flex: 1 } }, title),
-            h('span', { style: { fontSize: 11, color: color, fontWeight: 700 } }, status)
+            h('span', { style: { fontSize: 11, color: _vcaFg(color), fontWeight: 700 } }, status)
           ),
           h('div', { style: { fontSize: 12, color: _vcaFg('#94a3b8'), lineHeight: 1.55 } }, blurb)
         );

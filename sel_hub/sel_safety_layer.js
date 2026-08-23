@@ -496,12 +496,29 @@
   // Always-on resource strip for tools that touch sensitive content.
   // Quieter than renderCrisisResources (no role="alert" / aria-live) so screen
   // readers don't announce on every render. Use as a persistent footer.
-  window.SelHub.renderResourceFooter = function(h, band) {
+  window.SelHub.renderResourceFooter = function(h, band, opts) {
     var isYoung = band === 'elementary';
+    // ── The 988 footer has to be readable in every theme ──
+    // This was hardcoded to a light amber card with dark brown text, with no
+    // theme awareness at all. Tool interiors render on the host's dark shell, so
+    // it was a light island in every tool that mounts it; in high contrast it
+    // stayed light while inherited text went yellow, which measured 1.03:1 on
+    // the one surface a student in crisis most needs to read.
+    // Reads the flags the hub publishes at render time so the ~14 existing call
+    // sites keep working unchanged; `opts` lets a caller be explicit.
+    var flags = (opts && typeof opts === 'object') ? opts
+      : ((window.SelHub && window.SelHub._themeFlags) || {});
+    var isContrast = !!flags.isContrast;
+    var isDark = isContrast ? false : (flags.isDark !== false);   // tool shell is dark by default
+    var skin = isContrast
+      ? { bg: '#000000', border: '#ffff00', text: '#ffff00' }
+      : isDark
+        ? { bg: '#2e1c0f', border: '#b45309', text: '#fed7aa' }
+        : { bg: '#fff7ed', border: '#fdba74', text: '#7c2d12' };
     return h('div', {
       role: 'complementary',
       'aria-label': 'Crisis support resources',
-      style: { background: '#fff7ed', border: '1px solid #fdba74', borderRadius: 12, padding: '10px 14px', marginTop: 16, fontSize: 12, color: '#7c2d12' }
+      style: { background: skin.bg, border: '1px solid ' + skin.border, borderRadius: 12, padding: '10px 14px', marginTop: 16, fontSize: 12, color: skin.text }
     },
       h('div', { style: { fontWeight: 700, marginBottom: 4 } }, isYoung ? 'You\u2019re not alone. Help is here:' : 'You\u2019re not alone. If you need help, reach out:'),
       h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '4px 14px' } },

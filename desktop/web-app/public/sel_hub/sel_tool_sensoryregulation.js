@@ -130,7 +130,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sensoryRegulatio
       var _senT = (ctx && ctx.theme) || {};
       var _senHC = !!_senT.isContrast, _senL = !_senHC && !_senT.isDark;
       var _sen_BGL = {'#0f172a':'#f8fafc','#1e293b':'#ffffff'}, _sen_BGH = {'#0f172a':'#000000','#1e293b':'#000000','#15803d':'#000000','#6366f1':'#000000','#fff':'#000000','#f8fafc':'#000000','#4f46e5':'#000000'};
-      var _sen_FGL = {'#cbd5e1':'#334155','#fdba74':'#9a3412','#94a3b8':'#64748b','#e2e8f0':'#1e293b','#fecaca':'#b91c1c','#fee2e2':'#991b1b','#a5b4fc':'#3730a3','#fca5a5':'#991b1b','#86efac':'#166534','#6ee7b7':'#065f46','#c7d2fe':'#312e81','#fcd34d':'#78350f','#fde68a':'#92400e'}, _sen_FGH = {'#cbd5e1':'#ffff00','#fdba74':'#ffff00','#94a3b8':'#ffff00','#fed7aa':'#ffff00','#e2e8f0':'#ffff00','#bbf7d0':'#ffff00','#dcfce7':'#ffff00','#fecaca':'#ffff00','#fee2e2':'#ffff00','#a5b4fc':'#ffff00','#fca5a5':'#ffff00','#86efac':'#ffff00','#6ee7b7':'#ffff00','#fff':'#ffff00','#c7d2fe':'#ffff00','#0f172a':'#ffff00','#64748b':'#ffff00','#475569':'#ffff00','#fcd34d':'#ffff00','#fde68a':'#ffff00'};
+      var _sen_FGL = {'#cbd5e1':'#334155','#fdba74':'#9a3412','#94a3b8':'#64748b','#e2e8f0':'#1e293b','#fecaca':'#b91c1c','#fee2e2':'#991b1b','#a5b4fc':'#3730a3','#fca5a5':'#991b1b','#86efac':'#166534','#6ee7b7':'#065f46','#c7d2fe':'#312e81','#fcd34d':'#78350f','#fde68a':'#92400e'}, _sen_FGH = {'#6366f1':'#ffff00','#dc2626':'#ffff00','#cbd5e1':'#ffff00','#fdba74':'#ffff00','#94a3b8':'#ffff00','#fed7aa':'#ffff00','#e2e8f0':'#ffff00','#bbf7d0':'#ffff00','#dcfce7':'#ffff00','#fecaca':'#ffff00','#fee2e2':'#ffff00','#a5b4fc':'#ffff00','#fca5a5':'#ffff00','#86efac':'#ffff00','#6ee7b7':'#ffff00','#fff':'#ffff00','#c7d2fe':'#ffff00','#0f172a':'#ffff00','#64748b':'#ffff00','#475569':'#ffff00','#fcd34d':'#ffff00','#fde68a':'#ffff00'};
       var _sen_BDL = {'#334155':'#e2e8f0','#1e293b':'#e5e7eb','#475569':'#cbd5e1'}, _sen_BDH = {'#334155':'#ffff00','#1e293b':'#ffff00','#f97316':'#ffff00','#22c55e':'#ffff00','#6366f1':'#ffff00','#dc2626':'#ffff00','#10b981':'#ffff00','#475569':'#ffff00','#cbd5e1':'#ffff00','#ea580c':'#ffff00','#f59e0b':'#ffff00'};
       var _senBg = function(h){ return _senHC ? (_sen_BGH[h]||h) : (_senL ? (_sen_BGL[h]||h) : h); };
       // Dark-mode foreground remap. The tool shell is always dark, so these
@@ -292,7 +292,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sensoryRegulatio
           // Roadmap
           stepCard('🗺️ Build my sensory profile', 'Go through each of the 8 systems and mark whether you tend to seek, avoid, both, or fall in the typical range.', function() { goto('profile'); }, '#f97316'),
           stepCard('🥗 Plan a sensory diet', 'Sensory diet = planned regulating activities throughout the day. Especially helpful for autistic and ADHD people.', function() { goto('diet'); }, '#22c55e'),
-          stepCard('📝 Identify school accommodations', 'Concrete accommodations that follow from your sensory profile. Useful for IEP/504 meetings or for self-advocacy conversations.', function() { goto('accommodations'); }, _senBg('#6366f1')),
+          stepCard('📝 Identify school accommodations', 'Concrete accommodations that follow from your sensory profile. Useful for IEP/504 meetings or for self-advocacy conversations.', function() { goto('accommodations'); }, '#6366f1'),
 
           softPointer()
         );

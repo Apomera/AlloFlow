@@ -894,7 +894,7 @@ window.SelHub = window.SelHub || {
       // ── Host theme remap (INVERSE: dark-base) — dark = identity, +light/high-contrast ──
       var _strT = (ctx && ctx.theme) || {};
       var _strHC = !!_strT.isContrast, _strL = !_strHC && !_strT.isDark;
-      var _str_BGL = {}, _str_BGH = {'#b45309':'#000000','#15803d':'#000000','#ffffff':'#000000','#fffbeb':'#000000','#fef3c7':'#000000'};
+      var _str_BGL = {}, _str_BGH = {'#0f172a':'#000000','#b45309':'#000000','#15803d':'#000000','#ffffff':'#000000','#fffbeb':'#000000','#fef3c7':'#000000'};
       var _str_FGL = {'#e2e8f0':'#1e293b','#fde68a':'#92400e','#fbbf24':'#854d0e','#c4b5fd':'#5b21b6','#6ee7b7':'#065f46','#cbd5e1':'#334155','#94a3b8':'#64748b','#a5b4fc':'#3730a3','#34d399':'#047857','#a78bfa':'#6d28d9','#818cf8':'#4338ca'}, _str_FGH = {'#e2e8f0':'#ffff00','#fde68a':'#ffff00','#fbbf24':'#ffff00','#c4b5fd':'#ffff00','#6ee7b7':'#ffff00','#cbd5e1':'#ffff00','#94a3b8':'#ffff00','#0f172a':'#ffff00','#a5b4fc':'#ffff00','#e0d4ff':'#ffff00','#f59e0b':'#ffff00','#22c55e':'#ffff00','#34d399':'#ffff00','#a78bfa':'#ffff00','#fff':'#ffff00','#475569':'#ffff00','#78350f':'#ffff00','#f97316':'#ffff00','#6366f1':'#ffff00','#f472b6':'#ffff00','#818cf8':'#ffff00'};
       var _str_BDL = {'#0f172a':'#cbd5e1'}, _str_BDH = {'#f59e0b':'#ffff00','#e2e8f0':'#ffff00','#0f172a':'#ffff00','#fcd34d':'#ffff00','#92400e':'#ffff00'};
       var _strBg = function(h){ return _strHC ? (_str_BGH[h]||h) : (_strL ? (_str_BGL[h]||h) : h); };
@@ -1092,7 +1092,12 @@ window.SelHub = window.SelHub || {
         // ── UI ──
         // ═══════════════════════════════════════════════════════════
         var accentColor = _strFg('#f59e0b');
-        var bgDark = _strFg('#0f172a');
+        // This is the tool's root SURFACE, so it belongs to the background map.
+        // It was routed through _strFg, the FOREGROUND map, which sends #0f172a to
+        // #ffff00 in high contrast - the whole tool rendered yellow-on-yellow and
+        // every one of its 26 contrast failures traced to this single line. The
+        // indirection through a variable is why a `background: _strFg(` scan missed it.
+        var bgDark = _strBg('#0f172a');
 
         return h('div', { className: 'selh-strengths', style: { display: 'flex', flexDirection: 'column', height: '100%', background: bgDark, color: _strFg('#e2e8f0'), fontFamily: '"Inter", system-ui, sans-serif', overflow: 'hidden' } },
           h('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, d._srMsg || ''),

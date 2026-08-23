@@ -416,7 +416,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('crewProtocols'))
       var _cpT = (ctx && ctx.theme) || {};
       var _cpHC = !!_cpT.isContrast, _cpL = !_cpHC && !_cpT.isDark;
       var _cp_BGL = {'#0f172a':'#f8fafc','#1e293b':'#ffffff'}, _cp_BGH = {'#0f172a':'#000000','#1e293b':'#000000','#fff':'#000000'};
-      var _cp_FGL = {'#cbd5e1':'#334155','#7dd3fc':'#075985','#94a3b8':'#64748b','#e2e8f0':'#1e293b','#e9d5ff':'#581c87','#fcd34d':'#78350f','#fde68a':'#92400e'}, _cp_FGH = {'#cbd5e1':'#ffff00','#7dd3fc':'#ffff00','#94a3b8':'#ffff00','#bae6fd':'#ffff00','#e2e8f0':'#ffff00','#e9d5ff':'#ffff00','#10b981':'#ffff00','#fff':'#ffff00','#0f172a':'#ffff00','#64748b':'#ffff00','#475569':'#ffff00','#fcd34d':'#ffff00','#fde68a':'#ffff00'};
+      var _cp_FGL = {'#cbd5e1':'#334155','#7dd3fc':'#075985','#94a3b8':'#64748b','#e2e8f0':'#1e293b','#e9d5ff':'#581c87','#fcd34d':'#78350f','#fde68a':'#92400e'}, _cp_FGH = {'#dc2626':'#ffff00','#cbd5e1':'#ffff00','#7dd3fc':'#ffff00','#94a3b8':'#ffff00','#bae6fd':'#ffff00','#e2e8f0':'#ffff00','#e9d5ff':'#ffff00','#10b981':'#ffff00','#fff':'#ffff00','#0f172a':'#ffff00','#64748b':'#ffff00','#475569':'#ffff00','#fcd34d':'#ffff00','#fde68a':'#ffff00'};
       var _cp_BDL = {'#334155':'#e2e8f0','#1e293b':'#e5e7eb','#475569':'#cbd5e1'}, _cp_BDH = {'#334155':'#ffff00','#0ea5e9':'#ffff00','#1e293b':'#ffff00','#10b981':'#ffff00','#475569':'#ffff00','#cbd5e1':'#ffff00','#0284c7':'#ffff00','#f59e0b':'#ffff00'};
       var _cpBg = function(h){ return _cpHC ? (_cp_BGH[h]||h) : (_cpL ? (_cp_BGL[h]||h) : h); };
       // Dark-mode foreground remap. The tool shell is always dark, so these
