@@ -987,6 +987,7 @@ try {
       name: s.name,
       nickname: s.nickname || null,
       filename: s.filename || null,
+      importedName: s.importedName || null,
       stats: s.stats || {},
       safetyFlags: Array.isArray(s.safetyFlags) ? s.safetyFlags.slice(0, 50) : [],
       lastSession: s.lastSession || null,
@@ -1010,6 +1011,29 @@ try {
         });
       });
     } catch (e) { return []; }
+  }
+  // Two-field codenames: roster identities are "<Adjective> <Animal>" from the
+  // StudentEntryModal's two dropdowns, so an imported name can differ from the
+  // roster key only in case, spacing or punctuation. Resolution order: exact
+  // roster key, then teacher-recorded alias (the roster-link dropdown), then a
+  // normalized match using the same convention as the host's
+  // normalizeRosterSessionCodename — but ONLY when the match is unique. An
+  // ambiguous or empty normalized form returns the raw name unchanged rather
+  // than guessing (localized codename lists can normalize to '' — never match
+  // on that).
+  function _acCanonicalStudentName(rawName, rosterKeyValue) {
+    var name = String(rawName || '').trim();
+    if (!name) return name;
+    var students = (rosterKeyValue && rosterKeyValue.students) || {};
+    if (students[name] !== undefined) return name;
+    var aliases = (rosterKeyValue && rosterKeyValue.importAliases) || {};
+    var viaAlias = aliases[name];
+    if (typeof viaAlias === 'string' && students[viaAlias] !== undefined) return viaAlias;
+    var norm = function(v) { return String(v || '').toLowerCase().replace(/[^a-z0-9]/g, ''); };
+    var target = norm(name);
+    if (!target) return name;
+    var hits = Object.keys(students).filter(function(c) { return norm(c) === target; });
+    return hits.length === 1 ? hits[0] : name;
   }
   var warnLog = window.warnLog || function() {
     console.warn.apply(console, arguments);
@@ -1340,6 +1364,8 @@ try {
     setProbeTargetStudent,
     saveProbeResult,
     deleteStudentRecords,
+    mergeStudentRecords,
+    clearAllStudentRecords,
     // The loaded Word Sounds pack — the vocabulary the decodable ORF
     // passage is built from. Value, not just the setter.
     wsPreloadedWords,
@@ -1790,10 +1816,15 @@ try {
             const text = await file.text();
             const data = JSON.parse(text);
             const studentName = data.studentNickname || data.profile?.name || file.name.replace('.json', '').replace(/_/g, ' ');
+            // Canonicalize against the roster (two-field codenames + recorded
+            // aliases) so a re-imported file lands under the SAME identity its
+            // records already live under, instead of minting a split.
+            const canonicalName = _acCanonicalStudentName(studentName, rosterKey);
             const stats = calculateStudentStats(data);
             chunkStudents.push({
               id: `student-${Date.now()}-${Math.random().toString(36).slice(2)}`,
-              name: studentName,
+              name: canonicalName,
+              importedName: studentName,
               filename: file.name,
               data: data,
               stats: stats,
@@ -3026,6 +3057,93 @@ try {
       if (activeStudent === name) { setActiveStudent(null); setProbeTargetStudent(null); }
       setRecordsRemovalTarget('');
       addToast((t('toasts.student_records_removed') || 'All records removed for ') + name, 'success');
+    };
+    // ── Roster linkage (finding 5): one child, one identity ──
+    // Rewrites the row's name to the codename (every record lookup keys off
+    // name, so no read path changes), keeps the file-derived original as
+    // importedName, records the alias so re-imports auto-resolve, and merges
+    // any records already split across the two identities.
+    const handleLinkImportedStudent = async (student, codename) => {
+      if (!student || !codename) return;
+      const fromName = student.nickname || student.name;
+      if (!fromName || fromName === codename) return;
+      const confirmed = await askStudentAnalyticsConfirmation(
+        'Link "' + fromName + '" to roster student "' + codename + '"?\n\nProbe history, intervention logs, RTI goals, CBM scores and progress snapshots recorded under "' + fromName + '" move under the codename, merging with anything already there. Future imports of this file will link automatically.',
+        { title: 'Link to roster student', confirmText: 'Link records' }
+      );
+      if (!confirmed) return;
+      if (typeof mergeStudentRecords === 'function') mergeStudentRecords(fromName, codename);
+      setExternalCBMScores(prev => {
+        if (!(fromName in prev)) return prev;
+        const updated = { ...prev };
+        updated[codename] = [...(updated[codename] || []), ...updated[fromName]];
+        delete updated[fromName];
+        try { localStorage.setItem('alloflow_external_cbm', JSON.stringify(updated)); } catch {}
+        return updated;
+      });
+      try { window.dispatchEvent(new CustomEvent('alloflow:external-cbm-updated')); } catch (e) {}
+      if (typeof setRosterKey === 'function') setRosterKey(prev => {
+        if (!prev) return prev;
+        const aliases = { ...(prev.importAliases || {}) };
+        aliases[fromName] = codename;
+        let history = prev.progressHistory;
+        if (history && history[fromName]) {
+          history = { ...history };
+          const merged = [...(history[codename] || []), ...history[fromName]];
+          merged.sort((a, b) => String((a && a.date) || '').localeCompare(String((b && b.date) || '')));
+          history[codename] = merged;
+          delete history[fromName];
+        }
+        return { ...prev, importAliases: aliases, progressHistory: history };
+      });
+      setImportedStudents(prev => prev.map(s => (s.nickname || s.name) === fromName ? { ...s, name: codename, nickname: null, importedName: s.importedName || s.name } : s));
+      if (selectedStudent && (selectedStudent.nickname || selectedStudent.name) === fromName) {
+        setSelectedStudent(prev => prev ? { ...prev, name: codename, nickname: null, importedName: prev.importedName || prev.name } : prev);
+      }
+      if (researchStudent === fromName) setResearchStudent(codename);
+      if (activeStudent === fromName) { setActiveStudent(codename); setProbeTargetStudent(codename); }
+      addToast((t('toasts.student_records_linked') || 'Records linked: ') + fromName + ' \u2192 ' + codename, 'success');
+    };
+    // ── Year-boundary archive: one JSON with every record store, then an
+    // explicit, separate clear. The download is gated by the same FERPA
+    // confirmation pattern as the CSV exports. ──
+    const buildYearArchive = () => ({
+      schemaVersion: 1,
+      exportedAt: new Date().toISOString(),
+      probeHistory: probeHistory || {},
+      interventionLogs: interventionLogs || {},
+      rtiGoals: rtiGoals || {},
+      externalCBMScores: externalCBMScores || {},
+      progressHistory: (rosterKey && rosterKey.progressHistory) || {},
+      importedStudents: importedStudents.filter(s => s && !s.isLive).map(_acPersistableStudent)
+    });
+    const handleDownloadYearArchive = async () => {
+      if (!await askStudentAnalyticsConfirmation("This archive contains identifiable student records: probes, interventions, goals, CBM scores and progress snapshots.\n\nSave it only to a school-approved location and handle it under your district's FERPA policy.", { title: 'Download confidential year archive', confirmText: 'Download archive' })) return;
+      const blob = new Blob([JSON.stringify(buildYearArchive(), null, 2)], { type: 'application/json' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = 'AlloFlow_Student_Records_Archive_CONFIDENTIAL_' + new Date().toISOString().split('T')[0] + '.json';
+      document.body.appendChild(link); link.click(); document.body.removeChild(link);
+      URL.revokeObjectURL(link.href);
+      addToast(t('toasts.year_archive_downloaded') || 'Year archive downloaded. Store it under your district records policy.', 'success');
+    };
+    const handleClearAllStudentRecords = async () => {
+      const count = listRecordIdentities().length;
+      if (!await askStudentAnalyticsConfirmation('This permanently deletes EVERY student record on this device' + (count ? ' (' + count + ' student' + (count === 1 ? '' : 's') + ')' : '') + ': probe history, intervention logs, RTI goals, imported CBM scores, progress snapshots, and the imported student list.\n\nRoster membership is kept. Download the year archive FIRST if you have not already. This cannot be undone.', { title: 'Clear all student records', confirmText: 'Delete everything' })) return;
+      if (typeof clearAllStudentRecords === 'function') clearAllStudentRecords();
+      setExternalCBMScores(() => {
+        try { localStorage.setItem('alloflow_external_cbm', '{}'); } catch {}
+        return {};
+      });
+      try { window.dispatchEvent(new CustomEvent('alloflow:external-cbm-updated')); } catch (e) {}
+      if (typeof setRosterKey === 'function') setRosterKey(prev => prev ? { ...prev, progressHistory: {}, importAliases: {} } : prev);
+      setImportedStudents([]);
+      setSelectedStudent(null);
+      setResearchStudent(null);
+      setActiveStudent(null);
+      setProbeTargetStudent(null);
+      setRecordsRemovalTarget('');
+      addToast(t('toasts.all_student_records_cleared') || 'All student records cleared from this device.', 'success');
     };
     const [showCBMModal, setShowCBMModal] = React.useState(false);
     const [cbmForm, setCBMForm] = React.useState({
@@ -9803,7 +9921,14 @@ try {
                   onClick: () => handleSort(col.key),
                   className: "w-full min-h-11 p-2 inline-flex items-center gap-1 " + (col.align === 'left' ? 'justify-start text-left' : 'justify-center text-center') + " hover:bg-slate-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 select-none transition-colors",
                   "aria-label": col.label + (sortColumn === col.key ? (sortDirection === 'asc' ? ', sorted ascending; activate to sort descending' : ', sorted descending; activate to sort ascending') : ', activate to sort ascending')
-                }, col.label, " ", sortColumn === col.key ? (sortDirection === 'asc' ? '\u25B2' : '\u25BC') : '')))
+                }, col.label, " ", sortColumn === col.key ? (sortDirection === 'asc' ? '\u25B2' : '\u25BC') : ''))),
+                // Props via Object.assign, NOT an inline literal, on purpose:
+                // student_analytics_sort_controls_a11y pins th-with-button pairs by
+                // regex, and an inline-literal th here lazy-bridges into the row
+                // buttons and reads as a third click-to-sort header. This column
+                // header is static text; keeping the pin strict matters more.
+                React.createElement("th", Object.assign({ scope: "col", className: "text-center" }),
+                  React.createElement("span", { className: "inline-flex min-h-11 items-center justify-center p-2" }, t('class_analytics.roster_link') || 'Roster link'))
               )
             ),
             React.createElement("tbody", null,
@@ -9822,7 +9947,24 @@ try {
                   React.createElement("td", { className: "p-2 text-center", title: rti.label, "aria-label": rti.label }, rti.emoji + ' ' + (typeof rti.tier === 'number' ? rti.tier : '')),
                   React.createElement("td", { className: "p-2 text-center" }, student.stats.quizAvg > 0 ? Math.round(student.stats.quizAvg) + '%' : '—'),
                   React.createElement("td", { className: "p-2 text-center" }, student.stats.fluencyWCPM > 0 ? student.stats.fluencyWCPM : '—'),
-                  React.createElement("td", { className: "p-2 text-center" }, student.stats.totalActivities || 0)
+                  React.createElement("td", { className: "p-2 text-center" }, student.stats.totalActivities || 0),
+                  React.createElement("td", { className: "p-2 text-center" },
+                    student.isLive ? React.createElement("span", { className: "text-xs text-slate-400" }, '\u2014')
+                    : (rosterKey && rosterKey.students && Object.keys(rosterKey.students).length > 0)
+                      ? React.createElement("div", null,
+                          React.createElement("select", {
+                            "aria-label": 'Roster link for ' + student.name,
+                            value: (rosterKey.students[student.name] !== undefined) ? student.name : '',
+                            onChange: e => handleLinkImportedStudent(student, e.target.value),
+                            className: "text-xs border border-slate-400 rounded-lg px-2 py-1.5 bg-white text-slate-700 max-w-[160px]"
+                          },
+                            React.createElement("option", { value: "" }, t('class_analytics.not_linked') || 'Not linked'),
+                            Object.keys(rosterKey.students).map(c => React.createElement("option", { key: c, value: c }, c))
+                          ),
+                          student.importedName && student.importedName !== student.name && React.createElement("div", { className: "text-[10px] text-slate-500 mt-0.5" }, (t('class_analytics.imported_as') || 'was: ') + student.importedName)
+                        )
+                      : React.createElement("span", { className: "text-xs text-slate-400" }, '\u2014')
+                  )
                 );
               })
             )
@@ -9864,6 +10006,19 @@ try {
             disabled: !recordsRemovalTarget,
             className: "px-3 py-2 text-xs font-bold bg-rose-50 text-rose-700 border border-rose-600 rounded-lg hover:bg-rose-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           }, 'Remove records\u2026')
+        ),
+        React.createElement("div", { className: "flex items-center gap-2 mt-3 pt-3 border-t border-slate-200 flex-wrap" },
+          React.createElement("p", { className: "text-xs text-slate-600 w-full" }, 'School-year boundary: download the full archive first, then clear every student record on this device in one step. Roster membership is kept.'),
+          React.createElement("button", {
+            type: "button",
+            onClick: handleDownloadYearArchive,
+            className: "px-3 py-2 text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-600 rounded-lg hover:bg-indigo-100 transition-colors"
+          }, '\uD83D\uDCE6 Download year archive (JSON)'),
+          React.createElement("button", {
+            type: "button",
+            onClick: handleClearAllStudentRecords,
+            className: "px-3 py-2 text-xs font-bold bg-rose-50 text-rose-700 border border-rose-600 rounded-lg hover:bg-rose-100 transition-colors"
+          }, '\u26A0 Clear ALL student records\u2026')
         )
       )
     ),

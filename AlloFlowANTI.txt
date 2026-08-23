@@ -15252,6 +15252,51 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       return updated;
     });
   };
+  // Roster linkage (Assessment Center): fold one identity's records into
+  // another when the teacher links an imported file to a roster codename —
+  // the same child was previously split across a file-derived name and the
+  // two-field "<Adjective> <Animal>" codename. Probe entries interleave by
+  // timestamp (numeric or ISO — both occur in the store); the codename's RTI
+  // goal wins when both exist, because it was set deliberately against roster
+  // data. Each store flushes inside its updater.
+  const mergeStudentRecords = (fromName, toName) => {
+    if (!fromName || !toName || fromName === toName) return;
+    const recordTime = (v) => { const raw = v && v.timestamp; const n = typeof raw === 'number' ? raw : Date.parse(raw); return isFinite(n) ? n : 0; };
+    setProbeHistory(prev => {
+      if (!(fromName in prev)) return prev;
+      const updated = { ...prev };
+      const merged = [...(updated[toName] || []), ...updated[fromName]];
+      merged.sort((a, b) => recordTime(a) - recordTime(b));
+      updated[toName] = merged;
+      delete updated[fromName];
+      try { localStorage.setItem('alloflow_probe_history', JSON.stringify(updated)); } catch {}
+      return updated;
+    });
+    setInterventionLogs(prev => {
+      if (!(fromName in prev)) return prev;
+      const updated = { ...prev };
+      updated[toName] = [...(updated[toName] || []), ...updated[fromName]];
+      delete updated[fromName];
+      try { localStorage.setItem('alloflow_intervention_logs', JSON.stringify(updated)); } catch {}
+      return updated;
+    });
+    setRtiGoals(prev => {
+      if (!(fromName in prev)) return prev;
+      const updated = { ...prev };
+      if (!(toName in updated)) updated[toName] = updated[fromName];
+      delete updated[fromName];
+      try { localStorage.setItem('alloflow_rti_goals', JSON.stringify(updated)); } catch {}
+      return updated;
+    });
+  };
+  // Year-boundary clear (Assessment Center records manager). The module gates
+  // this behind its archive-first confirmation and clears its own stores;
+  // these three are the host-owned ones.
+  const clearAllStudentRecords = () => {
+    setProbeHistory(() => { try { localStorage.setItem('alloflow_probe_history', '{}'); } catch {} return {}; });
+    setInterventionLogs(() => { try { localStorage.setItem('alloflow_intervention_logs', '{}'); } catch {} return {}; });
+    setRtiGoals(() => { try { localStorage.setItem('alloflow_rti_goals', '{}'); } catch {} return {}; });
+  };
   const [surveyResponses, setSurveyResponses] = useState(() => {
     try { return JSON.parse(localStorage.getItem('alloflow_survey_responses') || '[]'); } catch { return []; }
   });
@@ -54125,6 +54170,8 @@ ${_alloActivityContext(activity)}
               probeStudentNames={Object.keys(probeHistory || {})}
               saveProbeResult={saveProbeResult}
               deleteStudentRecords={deleteStudentRecords}
+              mergeStudentRecords={mergeStudentRecords}
+              clearAllStudentRecords={clearAllStudentRecords}
               setProbeTargetStudent={setProbeTargetStudent}
               setWsPreloadedWords={setWsPreloadedWords}
               setWordSoundsActivity={setWordSoundsActivity}
