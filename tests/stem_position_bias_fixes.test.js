@@ -271,8 +271,72 @@ describe('economicslab scenario answer position', () => {
   });
 });
 
+describe('semiconductor render-time answer placement', () => {
+  // Unlike the tools above, semiconductor leaves its banks in authored order
+  // (76% of practice answers at slot B) and neutralises at RENDER time: every
+  // quiz render maps over orderOptions(q, opts, answer), which hash-places the
+  // answer at a per-question stable slot. These tests run the SHIPPED function
+  // over the SHIPPED banks, because the function existing proves nothing —
+  // an orphaned neutraliser reads exactly like a working one in a grep.
+  const src = read('stem_lab/stem_tool_semiconductor.js');
+  const fnStart = src.indexOf('function orderOptions(');
+  const orderOptions = new Function(
+    'return ' + src.slice(fnStart, src.indexOf('\n  }', fnStart) + 4)
+  )();
+  const unT = (s) => {
+    const m = /^t\('[^']*',\s*'((?:[^'\\]|\\.)*)'\)$/.exec(s.trim());
+    return (m ? m[1] : s).replace(/\\'/g, "'").replace(/^'|'$/g, '');
+  };
+  const splitOpts = (raw) => {
+    const out = [];
+    for (const m of raw.matchAll(/'((?:[^'\\]|\\.)*)'/g)) out.push(m[1].replace(/\\'/g, "'"));
+    return out;
+  };
+  const banks = [];
+  for (const m of src.matchAll(/q:\s*'((?:[^'\\]|\\.)*)'[\s\S]{0,600}?a:\s*'((?:[^'\\]|\\.)*)'\s*,\s*opts:\s*\[([^\]]{4,700})\]/g)) {
+    banks.push({ q: m[1].replace(/\\'/g, "'"), a: m[2].replace(/\\'/g, "'"), opts: splitOpts(m[3]) });
+  }
+  for (const m of src.matchAll(/desc:\s*((?:t\('[^']*',\s*'(?:[^'\\]|\\.)*'\))|'(?:[^'\\]|\\.)*'),\s*answer:\s*((?:t\('[^']*',\s*'(?:[^'\\]|\\.)*'\))|'(?:[^'\\]|\\.)*'),\s*opts:\s*\[([^\]]{4,700})\]/g)) {
+    banks.push({ q: unT(m[1]), a: unT(m[2]), opts: splitOpts(m[3]) });
+  }
+
+  it('extraction finds the full 42-question catalogue (practice + boss)', () => {
+    expect(banks.length).toBe(42);
+    for (const b of banks) expect(b.opts, b.q).toContain(b.a);
+  });
+
+  it('orderOptions is a permutation that keeps the answer present, for every question', () => {
+    for (const b of banks) {
+      const placed = orderOptions(b.q, b.opts, b.a);
+      expect([...placed].sort(), b.q).toEqual([...b.opts].sort());
+      expect(placed, b.q).toContain(b.a);
+    }
+  });
+
+  it('rendered answer positions have no dead slot and no exploitable pile-up', () => {
+    const byArity = {};
+    for (const b of banks) {
+      const idx = orderOptions(b.q, b.opts, b.a).indexOf(b.a);
+      const k = b.opts.length;
+      byArity[k] = byArity[k] || new Array(k).fill(0);
+      byArity[k][idx]++;
+    }
+    for (const [k, counts] of Object.entries(byArity)) {
+      const n = counts.reduce((a, b) => a + b, 0);
+      expect(counts.filter((c) => c === 0).length, 'arity ' + k + ': ' + counts.join('/')).toBe(0);
+      // authored bias was 76% in one slot; anything approaching that is a regression
+      expect(Math.max(...counts) / n, 'arity ' + k + ': ' + counts.join('/')).toBeLessThan(0.5);
+    }
+  });
+
+  it('orderOptions is applied at both render sites, not merely defined', () => {
+    expect(src).toContain('orderOptions(current.q, current.opts, current.a).map(');
+    expect(src).toContain('orderOptions(currentRound.desc, currentRound.opts, currentRound.answer).map(');
+  });
+});
+
 describe('deployment copies', () => {
-  for (const name of ['solarsystem', 'behaviorlab', 'companionplanting', 'galaxy', 'economicslab']) {
+  for (const name of ['solarsystem', 'behaviorlab', 'companionplanting', 'galaxy', 'economicslab', 'semiconductor']) {
     it(name + ' public mirror is byte-identical to the root copy', () => {
       expect(read('desktop/web-app/public/stem_lab/stem_tool_' + name + '.js'))
         .toBe(read('stem_lab/stem_tool_' + name + '.js'));

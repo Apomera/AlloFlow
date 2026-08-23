@@ -162,9 +162,19 @@ for (const f of files) {
   // signature of a rotation applied to a bank, not merely defined near one.
   const SLOT_ROTATION = /\.map\(\s*function\s*\([^)]*\)\s*\{[\s\S]{0,600}?%[\s\S]{0,600}?\b(?:correct|correctIndex|options|opts|choices)\b[\s\S]{0,600}?\}\s*\)/;
 
+  // A fourth neutralisation shape: RENDER-TIME placement. The bank keeps its
+  // authored order and every render maps over `orderOptions(q, opts, answer)`,
+  // which hash-places the answer at a stable slot (semiconductor, 2026-08-23 —
+  // verified empirically: authored 76%-at-B renders as 3/4/2, 3/4/8/6 and 3/3/2/4
+  // across its three banks). Clearance requires the APPLIED call — an identifier
+  // containing "order" invoked with an opts-ish argument and its result mapped
+  // for render — because the function's mere existence neutralises nothing.
+  const RENDER_PLACEMENT = /\b[A-Za-z_$]*[Oo]rder[A-Za-z_$]*\s*\(\s*[^()]*\b(?:opts|options|choices)\b[^()]*\)\s*\.map\s*\(/;
+
   const hasShuffle = /Fisher|shuffle|Shuffle|sort\(\s*function\s*\(\s*\)\s*\{\s*return\s+Math\.random/.test(code)
     || ROTATION.test(code)
-    || SLOT_ROTATION.test(code);
+    || SLOT_ROTATION.test(code)
+    || RENDER_PLACEMENT.test(code);
 
   // judge the dominant arity only
   const arity = Object.keys(counts).sort((a, b) => counts[b].reduce((x, y) => x + y, 0) - counts[a].reduce((x, y) => x + y, 0))[0];
