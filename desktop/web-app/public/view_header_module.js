@@ -246,6 +246,7 @@ function HeaderBar(props) {
     setShowLearningHub,
     setShowNotebook,
     setShowReadThisPage,
+    screenerSession,
     setShowSessionModal,
     setShowTextSettings,
     setShowVoiceSettings,
@@ -517,6 +518,8 @@ function HeaderBar(props) {
   const compactRoleLabel = isIndependentMode ? t("roles.independent") || "Independent Learner" : isParentMode ? t("parent_mode.label") || t("roles.parent") || "Family Mode" : isTeacherMode ? t("roles.teacher") || "Teacher" : t("roles.student") || "Student";
   const dashboardNavLabel = isParentMode ? t("parent_mode.dashboard_title") || t("dashboard.title_parent") || "Family Dashboard" : t("dashboard.title") || "Dashboard";
   const parentProgressLabel = isParentMode ? t("parent_mode.progress_label") || t("common.assessment_center") || "Child Progress" : t("common.assessment_center") || "Assessment Center";
+  const screeningLiveActive = Boolean(screenerSession && screenerSession.status !== "complete" && !isParentMode && !isIndependentMode);
+  const headerAnalyticsLabel = screeningLiveActive ? (t("header.screening_live") || "Screening") + " \xB7 " + Math.max(0, (screenerSession.subtests || []).length - (screenerSession.currentIndex || 0)) + " " + (t("header.screening_left") || "left") : parentProgressLabel;
   const compactViewFallback = String(activeView || "").replace(/[-_]+/g, " ").replace(/\b\w/g, (char) => char.toUpperCase());
   const compactContextLabel = guidedMode ? t("launch_pad.guided_title") || "Guided Mode" : activeView === "dashboard" ? dashboardNavLabel : activeView === "input" ? t("tools.source") || "Source Material" : compactViewFallback || (t("common.ready") || "Ready");
   const openJoinFromCompactHeader = () => {
@@ -1338,18 +1341,18 @@ function HeaderBar(props) {
       " ",
       t("export_menu.ims")
     )), showExportMenu && /* @__PURE__ */ React.createElement("div", { "aria-hidden": "true", className: "fixed inset-0 z-[90]", onClick: handleSetShowExportMenuToFalse })),
-    /* @__PURE__ */ React.createElement(
+    (isParentMode || isIndependentMode || screeningLiveActive) && /* @__PURE__ */ React.createElement(
       "button",
       {
         type: "button",
         onClick: () => setShowClassAnalytics(true),
         className: "bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-lg font-bold shadow-sm flex items-center gap-2 transition-colors text-xs border border-white/10 hover:border-white/30 ring-1 ring-violet-400/40",
-        title: parentProgressLabel,
+        title: headerAnalyticsLabel,
         "data-help-key": "header_analytics"
       },
       /* @__PURE__ */ React.createElement(ClipboardList, { size: 14 }),
       " ",
-      /* @__PURE__ */ React.createElement("span", { className: "hidden lg:inline" }, parentProgressLabel)
+      /* @__PURE__ */ React.createElement("span", { className: "hidden lg:inline" }, headerAnalyticsLabel)
     )
   ), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center justify-end gap-2" }, isTeacherMode && /* @__PURE__ */ React.createElement(
     "button",

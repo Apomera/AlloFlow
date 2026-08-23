@@ -235,6 +235,7 @@ function HeaderBar(props) {
     guidedStep, guidedMode, guidedSelectedIds, guidedCompletedIds, resetGuidedProgress,
     setSelectedVoice, setSessionData, setShowAIBackendModal,
     setBridgeSendOpen, setShowClassAnalytics, setShowEducatorHub, setShowExportMenu, setShowLearningHub, setShowNotebook, setShowReadThisPage,
+    screenerSession,
     setShowSessionModal, setShowTextSettings, setShowVoiceSettings, setShowWizard,
     setSliderFontSize, setSpotlightMessage, setTourStep, setVoiceSpeed, setVoiceVolume,
     showExportMenu, showHelpOnboarding, showReadThisPage, showTextSettings,
@@ -542,6 +543,12 @@ function HeaderBar(props) {
   const parentProgressLabel = isParentMode
     ? (t('parent_mode.progress_label') || t('common.assessment_center') || 'Child Progress')
     : (t('common.assessment_center') || 'Assessment Center');
+  // Header Assessment Center slot (2026-08-23): teachers get it only while a
+  // screening battery is actually live, when one-click return matters.
+  const screeningLiveActive = Boolean(screenerSession && screenerSession.status !== 'complete' && !isParentMode && !isIndependentMode);
+  const headerAnalyticsLabel = screeningLiveActive
+    ? (t('header.screening_live') || 'Screening') + ' \u00b7 ' + Math.max(0, ((screenerSession.subtests || []).length - (screenerSession.currentIndex || 0))) + ' ' + (t('header.screening_left') || 'left')
+    : parentProgressLabel;
   const compactViewFallback = String(activeView || '')
     .replace(/[-_]+/g, ' ')
     .replace(/\b\w/g, char => char.toUpperCase());
@@ -1593,14 +1600,23 @@ function HeaderBar(props) {
 
                                 Independent mode is excluded from neither: the panel has its own
                                 "My Learning Journey" presentation for it. */}
+                            {/* 2026-08-23: the persistent plain-teacher entry moved to the
+                                Educator Hub's "Teach and assess" section (the command palette
+                                still opens the Center directly). This slot now renders for
+                                family and independent mode always — MODE_AUDIT_2026-08-03.md F1 kept the Center for
+                                home-schooling parents, and My Learning Journey lives inside
+                                the panel — and for teachers only while a screening battery
+                                is live ("Screening · N left"). */}
+                            {(isParentMode || isIndependentMode || screeningLiveActive) && (
                             <button type="button"
                                 onClick={() => setShowClassAnalytics(true)}
                                 className="bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-lg font-bold shadow-sm flex items-center gap-2 transition-colors text-xs border border-white/10 hover:border-white/30 ring-1 ring-violet-400/40"
-                                title={parentProgressLabel}
+                                title={headerAnalyticsLabel}
                                 data-help-key="header_analytics"
                             >
-                                <ClipboardList size={14} /> <span className="hidden lg:inline">{parentProgressLabel}</span>
+                                <ClipboardList size={14} /> <span className="hidden lg:inline">{headerAnalyticsLabel}</span>
                             </button>
+                            )}
                         </div>
                             )}
                         <div className="flex flex-wrap items-center justify-end gap-2">

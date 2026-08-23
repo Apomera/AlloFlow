@@ -1035,6 +1035,14 @@ try {
     var hits = Object.keys(students).filter(function(c) { return norm(c) === target; });
     return hits.length === 1 ? hits[0] : name;
   }
+  // ONE derivation of "how far into the study are we" — the research view's
+  // banner and the Administer tab's read-only strip both call this. Two
+  // hand-rolled copies of the same date arithmetic is the OneVerdict bug class.
+  function _acStudyDayInfo(mode) {
+    var start = mode && mode.startDate ? new Date(mode.startDate) : new Date();
+    var days = Math.max(1, Math.round((Date.now() - start) / (24 * 60 * 60 * 1000)));
+    return { startDate: start, days: days, weeks: Math.max(1, Math.round(days / 7)) };
+  }
   var warnLog = window.warnLog || function() {
     console.warn.apply(console, arguments);
   };
@@ -1387,6 +1395,11 @@ try {
     // roster and running an embedded research study are not.
     // Defaults false, so an older host that passes nothing behaves exactly as before.
     isParentMode = false,
+    // Research Suite standalone presentation (2026-08-23): the host opens this
+    // SAME panel as a first-class "Research Suite" tool from the Educator Hub.
+    // The tab bar disappears and the research view is forced; Administer and
+    // Student Data stay reachable only through the Assessment Center entry.
+    researchSuiteOnly = false,
     globalPoints = 0,
     globalLevel = 1,
     history = [],
@@ -1450,6 +1463,10 @@ try {
     const [rtiDecisionRuleThreshold, setRtiDecisionRuleThreshold] = React.useState(4);
     const [isMinimized, setIsMinimized] = React.useState(false);
     const [assessmentCenterTab, setAssessmentCenterTab] = React.useState("assessments");
+    // researchSuiteOnly pins the panel to the research view without touching
+    // the stored tab, so the Assessment Center entry restores whatever tab the
+    // teacher was on. Every tab COMPARISON below reads effectiveTab.
+    const effectiveTab = researchSuiteOnly ? 'research' : assessmentCenterTab;
     const [researchStudent, setResearchStudent] = React.useState(null);
     const [showCBMImport, setShowCBMImport] = React.useState(false);
     const [showSurveyModal, setShowSurveyModal] = React.useState(false);
@@ -4302,9 +4319,10 @@ try {
       const surveyCount = Object.values(surveyResponses).reduce((s, arr) => s + (Array.isArray(arr) ? arr.length : 0), 0);
       const cbmCount = Object.values(externalCBMScores).reduce((s, arr) => s + (Array.isArray(arr) ? arr.length : 0), 0);
       const totalProbes = Object.values(probeHistory).reduce((s, arr) => s + (Array.isArray(arr) ? arr.length : 0), 0);
-      const studyStartDate = researchMode.startDate ? new Date(researchMode.startDate) : new Date();
-      const daysSinceStart = Math.max(1, Math.round((Date.now() - studyStartDate) / (24 * 60 * 60 * 1000)));
-      const weeksSinceStart = Math.max(1, Math.round(daysSinceStart / 7));
+      const _sdi = _acStudyDayInfo(researchMode);
+      const studyStartDate = _sdi.startDate;
+      const daysSinceStart = _sdi.days;
+      const weeksSinceStart = _sdi.weeks;
       const totalSessions = fidelityLog.length;
       const totalMinutes = fidelityLog.reduce((s, e) => s + (e.duration || 0), 0);
       const uniqueStudents = new Set(fidelityLog.map(e => e.student)).size;
@@ -6115,7 +6133,7 @@ try {
     })), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h2", {
       id: "sa-ac-title",
       className: "text-xl font-bold text-slate-800"
-    }, isIndependentMode ? '\u{1F4CA} My Learning Journey' : '🎯 Assessment Center'), importedStudents.length > 0 && /*#__PURE__*/React.createElement("p", {
+    }, isIndependentMode ? '\u{1F4CA} My Learning Journey' : researchSuiteOnly ? '\u{1F9EA} Research Suite' : '🎯 Assessment Center'), importedStudents.length > 0 && /*#__PURE__*/React.createElement("p", {
       className: "text-sm text-slate-600"
     }, t('class_analytics.students_loaded', {
       count: importedStudents.length
@@ -6126,7 +6144,7 @@ try {
     }, /*#__PURE__*/React.createElement(X, {
       size: 20,
       className: "text-slate-600"
-    }))), !isIndependentMode && /*#__PURE__*/React.createElement("div", {
+    }))), !isIndependentMode && !researchSuiteOnly && /*#__PURE__*/React.createElement("div", {
       className: "flex border-b border-slate-200 bg-slate-50/50 px-4 shrink-0"
     }, [{
       id: 'assessments',
@@ -6149,17 +6167,17 @@ try {
           if (typeof renderResearchSetupModal === 'function') setShowResearchSetup(true);
         }
       },
-      className: `flex items-center gap-2 px-4 py-2.5 text-sm font-bold border-b-2 transition-all ${assessmentCenterTab === tab.id ? 'border-indigo-600 text-indigo-700 bg-white' : 'border-transparent text-slate-600 hover:text-slate-700 hover:bg-slate-100'}`
+      className: `flex items-center gap-2 px-4 py-2.5 text-sm font-bold border-b-2 transition-all ${effectiveTab === tab.id ? 'border-indigo-600 text-indigo-700 bg-white' : 'border-transparent text-slate-600 hover:text-slate-700 hover:bg-slate-100'}`
     }, /*#__PURE__*/React.createElement("span", null, tab.label), /*#__PURE__*/React.createElement("span", {
-      className: `text-[11px] font-normal ${assessmentCenterTab === tab.id ? 'text-indigo-400' : 'text-slate-600'}`
+      className: `text-[11px] font-normal ${effectiveTab === tab.id ? 'text-indigo-400' : 'text-slate-600'}`
     }, tab.desc)))), /*#__PURE__*/React.createElement("div", {
       className: "flex-1 overflow-y-auto p-4",
       style: {
-        display: !isIndependentMode && (assessmentCenterTab === 'research' || assessmentCenterTab === 'students') ? 'none' : undefined
+        display: !isIndependentMode && (effectiveTab === 'research' || effectiveTab === 'students') ? 'none' : undefined
       }
     },
     // ── Unified Student Selector + Screening Queue (Administer tab top bar) ──
-    !isIndependentMode && assessmentCenterTab === 'assessments' && React.createElement("div", {
+    !isIndependentMode && effectiveTab === 'assessments' && React.createElement("div", {
       className: "mb-4 bg-gradient-to-r from-indigo-50 to-violet-50 rounded-xl border border-indigo-200 p-3"
     },
       React.createElement("div", { className: "flex items-center gap-3 flex-wrap" },
@@ -6237,7 +6255,13 @@ try {
       ),
       activeStudent && React.createElement("div", { className: "mt-2 text-xs text-indigo-500 font-medium" },
         'All probes below will record results for: ' + activeStudent
-      )
+      ),
+      // Read-only study context (2026-08-23): the study itself is managed in
+      // the standalone Research Suite; a teacher administering probes still
+      // sees that this session is part of it.
+      !researchSuiteOnly && researchMode && researchMode.studyName && React.createElement("div", {
+        className: "mt-2 text-xs font-medium text-violet-800 bg-violet-50 border border-violet-300 rounded-lg px-3 py-1.5 inline-flex items-center gap-1"
+      }, '\u{1F4CB} ' + (t('class_analytics.study_strip_prefix') || 'Study: ') + researchMode.studyName + ' \u00B7 ' + (t('class_analytics.study_strip_day') || 'Day ') + _acStudyDayInfo(researchMode).days)
     ), isIndependentMode && /*#__PURE__*/React.createElement("div", {
       className: "mb-6 space-y-4"
     }, /*#__PURE__*/React.createElement("div", {
@@ -9790,7 +9814,7 @@ try {
     // ── Student Data Tab ──
     // W3: the tab itself is filtered out in family mode; this second test means a
     // stale or restored assessmentCenterTab cannot render roster import anyway.
-    !isIndependentMode && !isParentMode && assessmentCenterTab === 'students' && React.createElement("div", {
+    !isIndependentMode && !isParentMode && effectiveTab === 'students' && React.createElement("div", {
       className: "flex-1 overflow-y-auto p-4 animate-in fade-in duration-200"
     },
       // Import toolbar
@@ -10024,7 +10048,7 @@ try {
     ),
     // W3: same reasoning as the students tab. An embedded research study suite
     // (IRB consent, Likert instruments) must not open in family mode.
-    !isIndependentMode && !isParentMode && assessmentCenterTab === 'research' && /*#__PURE__*/React.createElement("div", {
+    !isIndependentMode && !isParentMode && effectiveTab === 'research' && /*#__PURE__*/React.createElement("div", {
       className: "flex-1 overflow-y-auto p-4 animate-in fade-in duration-200"
     }, /*#__PURE__*/React.createElement("div", {
       className: "space-y-6"

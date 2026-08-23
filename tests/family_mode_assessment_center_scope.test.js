@@ -50,7 +50,11 @@ describe('the header door is deliberately left open to parents', () => {
     expect(at).toBeGreaterThan(-1);
     const block = header.slice(at - 1800, at);
     expect(block, 'the reason must travel with the gate').toContain('MODE_AUDIT_2026-08-03.md F1');
-    // The button element itself must not be wrapped in a parent exclusion.
+    // 2026-08-23: the slot is conditionally rendered now, and isParentMode
+    // appears in that gate as an INCLUSION — parents always keep the button,
+    // plain teachers get it only during a live screening battery. What must
+    // never return is a parent EXCLUSION on the button itself.
+    expect(block).toContain('{(isParentMode || isIndependentMode || screeningLiveActive) && (');
     const openTag = header.lastIndexOf('<button type="button"', at);
     expect(header.slice(openTag, at)).not.toContain('isParentMode');
   });
@@ -86,8 +90,10 @@ describe('what is behind the door is scoped for a family', () => {
   });
 
   it('will not render roster import or the research suite even from a stale tab value', () => {
-    expect(panel).toContain("!isIndependentMode && !isParentMode && assessmentCenterTab === 'students'");
-    expect(panel).toContain("!isIndependentMode && !isParentMode && assessmentCenterTab === 'research'");
+    // 2026-08-23: tab comparisons read effectiveTab (the Research Suite pins
+    // it to 'research'); the family/independent guards ride along unchanged.
+    expect(panel).toContain("!isIndependentMode && !isParentMode && effectiveTab === 'students'");
+    expect(panel).toContain("!isIndependentMode && !isParentMode && effectiveTab === 'research'");
   });
 
   it('lands a parent on a tab that still exists', () => {
@@ -96,9 +102,11 @@ describe('what is behind the door is scoped for a family', () => {
 
   it('leaves the independent learner view untouched', () => {
     // Independent mode has its own presentation and must not be swept up in this.
-    expect(panel).toContain("isIndependentMode ? '\\u{1F4CA} My Learning Journey' : '🎯 Assessment Center'");
+    // 2026-08-23 added the Research Suite branch; independent mode is still
+    // checked FIRST, so My Learning Journey wins.
+    expect(panel).toContain("isIndependentMode ? '\\u{1F4CA} My Learning Journey' : researchSuiteOnly ? '\\u{1F9EA} Research Suite' : '🎯 Assessment Center'");
     const at = panel.indexOf("isIndependentMode ? '\\u{1F4CA} My Learning Journey'");
-    expect(panel.slice(at, at + 120)).not.toContain('isParentMode');
+    expect(panel.slice(at, at + 160)).not.toContain('isParentMode');
   });
 
   it('keeps the deploy mirror byte-identical', () => {

@@ -40,7 +40,11 @@ const headerSource = readFileSync(resolve(root, 'view_header_source.jsx'), 'utf8
 const headerModule = readFileSync(resolve(root, 'view_header_module.js'), 'utf8');
 const uiStrings = JSON.parse(readFileSync(resolve(root, 'ui_strings.js'), 'utf8'));
 
-const HIDDEN_FOR_HOME = ['leadership-hub', 'professional-development', 'report-writer'];
+// 2026-08-23: research-suite added — the IRB study surface extracted from the
+// Assessment Center's third tab is exactly the 'embedded research study suite'
+// X7 excluded from family mode; assessment-center itself stays visible to all
+// roles (F1 kept the Center for home-schooling parents).
+const HIDDEN_FOR_HOME = ['leadership-hub', 'professional-development', 'report-writer', 'research-suite'];
 const KEPT_ARGUABLES = ['dynamic-assessment', 'polls-signups'];
 
 let Hub;
@@ -98,7 +102,7 @@ describe('the card filter, behaviorally (real React mount of the built module)',
     expect(ids.length).toBeGreaterThanOrEqual(15);
   });
 
-  it('family mode hides the three school-professional cards and nothing else', () => {
+  it('family mode hides the recorded school-professional cards and nothing else', () => {
     const defaultIds = cardIds(mountHub());
     roots.forEach(({ root: r, container }) => { act(() => r.unmount()); container.remove(); });
     roots.length = 0;

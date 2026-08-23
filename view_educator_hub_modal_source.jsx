@@ -78,7 +78,7 @@ function EducatorHubModal(props) {
     addToast = (() => {}),
     setIsAccessibilityLabOpen, setIsCommunityCatalogOpen, setIsSymbolStudioOpen,
     setPdfAuditResult, setPdfBatchMode, setPendingPdfBase64, setPendingPdfFile,
-    setShowBehaviorLens, setShowEducatorHub, setShowMindMap = (() => {}), setShowReportWriter, setShowCinematicStudio = (() => {}), showEducatorHub, t,
+    setShowBehaviorLens, setShowClassAnalytics = (() => {}), setIsResearchSuiteOpen = (() => {}), setShowEducatorHub, setShowMindMap = (() => {}), setShowReportWriter, setShowCinematicStudio = (() => {}), showEducatorHub, t,
     userRole = '',
     // Role scoping (X7, 2026-08-17): family mode sets isTeacherMode true, so
     // without these the hub showed a parent every school-professional surface.
@@ -490,7 +490,7 @@ function EducatorHubModal(props) {
               </div>
               <div className="relative group" data-hub-id="throughline" data-hub-label="Learning Web: Unit Path" data-hub-section="plan">
                 <button type="button" data-hub-launch="true" onClick={() => { setShowEducatorHub(false); setShowMindMap(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left">
-                <span className="text-3xl mt-1" aria-hidden="true">{'🗺️'}</span>
+                <span className="text-3xl mt-1" aria-hidden="true">{'\uD83E\uDDF5'}</span>
                 <div>
                   <h3 className="font-bold text-amber-800">{t('educator_hub.throughline_title') || 'Learning Web: Unit Path'}</h3>
                   <p className="text-xs text-amber-700 mt-1">{t('educator_hub.throughline_desc') || 'Arrange lessons into a teachable sequence, then inspect linked standards and evidence in the shared Learning Web.'}</p>
@@ -522,7 +522,7 @@ function EducatorHubModal(props) {
               </div>
               <div className="relative group" data-hub-id="symbol-studio" data-hub-label="Symbol Studio" data-hub-section="plan">
                 <button type="button" data-hub-launch="true" data-help-key="educator_hub_symbol_studio_card" onClick={() => { setShowEducatorHub(false); setIsSymbolStudioOpen(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left">
-                <span className="text-3xl mt-1" aria-hidden="true">🎨</span>
+                <span className="text-3xl mt-1" aria-hidden="true">{'\uD83E\uDEA7'}</span>
                 <div>
                   <h3 className="font-bold text-purple-800">{t('educator_hub.symbol_studio_title') || 'Symbol Studio'}</h3>
                   <p className="text-xs text-purple-600 mt-1">{t('educator_hub.symbol_studio_desc') || 'Create PCS-style icons for visual supports, AAC boards, and schedules — then edit them with image-to-image tools.'}</p>
@@ -562,9 +562,20 @@ function EducatorHubModal(props) {
 
                 <button type="button" data-hub-favorite="true" aria-pressed={hubFavoriteIds.includes('polls-signups')} aria-label={hubFavoriteIds.includes('polls-signups') ? tr('hub.remove_favorite', 'Remove from favorites') + ': Polls &amp; Sign-ups' : tr('hub.add_favorite', 'Add to favorites') + ': Polls &amp; Sign-ups'} title={hubFavoriteIds.includes('polls-signups') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('polls-signups'); }} className="absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-amber-600 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('polls-signups') ? '★' : '☆'}</button>
               </div>
+              <div className="relative group" data-hub-id="assessment-center" data-hub-label="Assessment Center" data-hub-section="teach">
+                <button type="button" data-hub-launch="true" data-help-key="educator_hub_assessment_center_card" onClick={() => { setShowEducatorHub(false); setShowClassAnalytics(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-violet-50 to-indigo-50 border border-violet-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left">
+                <span className="text-3xl mt-1" aria-hidden="true">{'\uD83C\uDFAF'}</span>
+                <div>
+                  <h3 className="font-bold text-violet-800">{t('educator_hub.assessment_center_title') || 'Assessment Center'}</h3>
+                  <p className="text-xs text-violet-600 mt-1">{t('educator_hub.assessment_center_desc') || 'Screening batteries, CBM probes, RTI decision aids, intervention logs, and student progress.'}</p>
+                </div>
+              </button>
+
+                <button type="button" data-hub-favorite="true" aria-pressed={hubFavoriteIds.includes('assessment-center')} aria-label={hubFavoriteIds.includes('assessment-center') ? tr('hub.remove_favorite', 'Remove from favorites') + ': Assessment Center' : tr('hub.add_favorite', 'Add to favorites') + ': Assessment Center'} title={hubFavoriteIds.includes('assessment-center') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('assessment-center'); }} className="absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-amber-600 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('assessment-center') ? '★' : '☆'}</button>
+              </div>
               <div className="relative group" data-hub-id="dynamic-assessment" data-hub-label="Dynamic Assessment" data-hub-section="teach">
                 <button type="button" data-hub-launch="true" data-help-key="educator_hub_dynamic_assessment_card" onClick={() => { setShowEducatorHub(false); setIsDynamicAssessmentOpen(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-blue-50 to-cyan-50 border border-blue-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left">
-                <span className="text-3xl mt-1" aria-hidden="true">🔬</span>
+                <span className="text-3xl mt-1" aria-hidden="true">{'\uD83E\uDE7A'}</span>
                 <div>
                   <h3 className="font-bold text-blue-800">{t('educator_hub.dynamic_assessment_title') || 'Dynamic Assessment'}</h3>
                   <p className="text-xs text-blue-600 mt-1">{t('educator_hub.dynamic_assessment_desc') || 'Run test-teach-retest probes with graduated prompts, modifiability scoring, IEP goals, and family/teacher handoffs.'}</p>
@@ -575,7 +586,7 @@ function EducatorHubModal(props) {
               </div>
               <div className="relative group" data-hub-id="behavior-lens" data-hub-label="BehaviorLens" data-hub-section="teach">
                 <button type="button" data-hub-launch="true" data-help-key="educator_hub_behavior_lens_card" onClick={() => { setShowEducatorHub(false); setShowBehaviorLens(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-indigo-50 to-blue-50 border border-indigo-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left">
-                <span className="text-3xl mt-1" aria-hidden="true">🧠</span>
+                <span className="text-3xl mt-1" aria-hidden="true">{'\uD83D\uDC41\uFE0F'}</span>
                 <div>
                   <h3 className="font-bold text-indigo-800">{t('educator_hub.behavior_lens_title') || 'BehaviorLens'}</h3>
                   <p className="text-xs text-indigo-600 mt-1">{t('educator_hub.behavior_lens_desc') || 'Collect ABC observations, build FBA/BIP data, and use 60+ tools for behavior support.'}</p>
@@ -868,7 +879,7 @@ function EducatorHubModal(props) {
               </div>
               <div className="relative group" data-hub-id="community-catalog" data-hub-label="Community Catalog" data-hub-section="extend">
                 <button type="button" data-hub-launch="true" data-help-key="educator_hub_community_catalog_card" onClick={() => { setShowEducatorHub(false); setIsCommunityCatalogOpen(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left">
-                <span className="text-3xl mt-1" aria-hidden="true">📚</span>
+                <span className="text-3xl mt-1" aria-hidden="true">{'\uD83D\uDDC2\uFE0F'}</span>
                 <div>
                   <h3 className="font-bold text-amber-800">{t('educator_hub.community_catalog_title') || 'Community Catalog'}</h3>
                   <p className="text-xs text-amber-700 mt-1">{t('educator_hub.community_catalog_desc') || 'Browse open-licensed lessons, or submit your own for community review.'}</p>
@@ -877,6 +888,19 @@ function EducatorHubModal(props) {
 
                 <button type="button" data-hub-favorite="true" aria-pressed={hubFavoriteIds.includes('community-catalog')} aria-label={hubFavoriteIds.includes('community-catalog') ? tr('hub.remove_favorite', 'Remove from favorites') + ': Community Catalog' : tr('hub.add_favorite', 'Add to favorites') + ': Community Catalog'} title={hubFavoriteIds.includes('community-catalog') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('community-catalog'); }} className="absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-amber-600 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('community-catalog') ? '★' : '☆'}</button>
               </div>
+              {!hideSchoolProfessional && (
+              <div className="relative group" data-hub-id="research-suite" data-hub-label="Research Suite" data-hub-section="extend">
+                <button type="button" data-hub-launch="true" data-help-key="educator_hub_research_suite_card" onClick={() => { setShowEducatorHub(false); setIsResearchSuiteOpen(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-purple-50 to-fuchsia-50 border border-purple-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left">
+                <span className="text-3xl mt-1" aria-hidden="true">{'\uD83E\uDDEA'}</span>
+                <div>
+                  <h3 className="font-bold text-purple-800">{t('educator_hub.research_suite_title') || 'Research Suite'}</h3>
+                  <p className="text-xs text-purple-700 mt-1">{t('educator_hub.research_suite_desc') || 'Run a named study: IRB tracking, consent provenance, Likert instruments, fidelity logs, and the study bundle export.'}</p>
+                </div>
+              </button>
+
+                <button type="button" data-hub-favorite="true" aria-pressed={hubFavoriteIds.includes('research-suite')} aria-label={hubFavoriteIds.includes('research-suite') ? tr('hub.remove_favorite', 'Remove from favorites') + ': Research Suite' : tr('hub.add_favorite', 'Add to favorites') + ': Research Suite'} title={hubFavoriteIds.includes('research-suite') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('research-suite'); }} className="absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-amber-600 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('research-suite') ? '★' : '☆'}</button>
+              </div>
+              )}
               {!hideSchoolProfessional && (
               <div className="relative group" data-hub-id="professional-development" data-hub-label="Professional Development" data-hub-section="extend">
                 <button type="button" data-hub-launch="true" data-help-key="educator_hub_professional_dev_card" onClick={() => { setShowEducatorHub(false); try { window.__alloPdIntent = true; localStorage.setItem('alloflow_pd_intent', '1'); } catch (_) {} setIsCommunityCatalogOpen(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-sky-50 to-indigo-50 border border-sky-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left">
