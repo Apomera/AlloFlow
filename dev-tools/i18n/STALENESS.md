@@ -105,3 +105,27 @@ Output `lang_staleness/_delta.json` uses the same `{ key: { english, packs } }` 
 
 Coverage: `tests/i18n_cli_tools.test.js`, calibrated against a known-bad range of real
 history (the Nano Banana → Image Editor rename) so a silently-blind "0 findings" fails.
+
+## Hand-translation workflow (`apply_stale_hand_fix.cjs`)
+
+AlloFlow's standing policy is hand-translated packs, so the translation itself is
+authored by hand and `apply_stale_hand_fix.cjs` is only the guarded write path for it:
+key parity against the English, placeholder/tag parity, a passthrough refusal, and an
+array mode whose shape is checked against the *pack's* own array (packs legitimately
+hold fewer entries than the English). It writes `lang/` and the
+`desktop/web-app/public/lang/` mirror together, with `*.bak.<stamp>` backups.
+
+`splice_tour_section.cjs` handles the long `tour.*` markdown bodies, where a reword
+usually touches one span. It replaces the Pro Tip paragraph (and optionally the bullet
+above the Pro Tip heading) in place, and refuses any pack whose markdown skeleton does
+not match rather than guessing.
+
+**Two rules, both learned the hard way:**
+
+1. **Never pipe an `--apply` run through `head`/`tail`.** The truncated pipe sends
+   SIGPIPE and the writes silently do not land, while the summary line still reads
+   "WRITTEN". Redirect to a file instead.
+2. **Re-run the payload in dry run after applying**, and require
+   `0 to write, N already correct`. Anything else means the write did not land -
+   and blessing a key whose packs never changed is worse than not fixing it, because
+   the baseline then certifies stale text as current.
