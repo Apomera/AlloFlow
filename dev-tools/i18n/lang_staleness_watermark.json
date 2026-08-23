@@ -1,4 +1,4 @@
 {
-  "totalStaleEntries": 22930,
+  "totalStaleEntries": 22892,
   "note": "High-water mark for check_lang_staleness --ratchet. Auto-lowers when the count drops; a count ABOVE it fails the gate. Do not raise by hand — re-translate or bless instead."
 }
