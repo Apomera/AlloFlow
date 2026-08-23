@@ -261,7 +261,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('genogram'))) {
               h('desc', { id: 'genogram-svg-desc' }, svgDesc),
               // Row labels
               ['grandparents', 'parents', 'self'].map(function(gen) {
-                var lbl = GENS.find(function(g) { return g.id === gen; }).label;
+                var lbl = (GENS.find(function(g) { return g.id === gen; }) || {}).label || '';
                 return h('text', { key: 'lbl_' + gen, x: 20, y: rowY[gen], fontSize: 10, fill: _genFg('#64748b'), style: { fontWeight: 700 } }, 'Gen ' + (gen === 'grandparents' ? '1' : gen === 'parents' ? '2' : '3'));
               }),
               rels.map(drawRel),

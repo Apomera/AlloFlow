@@ -18001,7 +18001,7 @@ window.SelHub = window.SelHub || {
           upd('simEnding', null);
         }
         function chooseResponse(choice) {
-          var newHistory = simHistory.concat([{ partner: sim.turns.find(function(t) { return t.id === simTurnId; }).partner, choice: choice.text, reply: choice.partnerReply, outcome: choice.outcome }]);
+          var newHistory = simHistory.concat([{ partner: (sim.turns.find(function(t) { return t.id === simTurnId; }) || {}).partner, choice: choice.text, reply: choice.partnerReply, outcome: choice.outcome }]);
           upd('simHistory', newHistory);
           if (choice.leadsTo && sim.endings && sim.endings[choice.leadsTo]) {
             upd('simEnding', choice.leadsTo);

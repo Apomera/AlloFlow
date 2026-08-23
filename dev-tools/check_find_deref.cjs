@@ -52,6 +52,7 @@ const path = require('path');
 const ROOT = path.resolve(__dirname, '..');
 const STEM_DIR = path.join(ROOT, 'stem_lab');
 const args = process.argv.slice(2);
+let SCANNED_ROOT = 'stem_lab';
 const VERBOSE = args.includes('--verbose');
 const QUIET = args.includes('--quiet');
 // Informational by default. Set BLOCKING=true here (or pass --blocking) to
@@ -151,6 +152,12 @@ function scanFile(filePath) {
 }
 
 function listStemFiles() {
+    // The walk root used to be stem_lab and nothing else, so a positional
+    // directory argument was accepted and then ignored - the report described
+    // STEM whatever you asked for. Same name-blindness as the bias, keyboard and
+    // fn-in-state scanners.
+    const dirArg = args.find((a) => !a.startsWith('--') && fs.existsSync(path.resolve(ROOT, a)) && fs.statSync(path.resolve(ROOT, a)).isDirectory());
+    const root = dirArg ? path.resolve(ROOT, dirArg) : STEM_DIR;
     const out = [];
     function walkDir(dir) {
         for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
@@ -159,7 +166,12 @@ function listStemFiles() {
             else if (entry.isFile() && entry.name.endsWith('.js')) out.push(p);
         }
     }
-    walkDir(STEM_DIR);
+    walkDir(root);
+    SCANNED_ROOT = path.relative(ROOT, root) || '.';
+    if (out.length === 0) {
+        console.error('check_find_deref: no .js files under ' + root + ' - nothing was scanned.');
+        process.exit(2);
+    }
     return out;
 }
 
@@ -181,13 +193,13 @@ function main() {
     }
 
     if (totalFindings === 0) {
-        console.log('✓ check_find_deref: no `.find(<arrow>)` immediate-deref chains in stem_lab/. Promotion to blocking gate would be safe.');
+        console.log('✓ check_find_deref: no `.find(<arrow>)` immediate-deref chains in ' + SCANNED_ROOT + '/. Promotion to blocking gate would be safe.');
         return 0;
     }
 
     const label = BLOCKING ? 'BLOCKED' : 'INFORMATIONAL';
     console.log(`⊙ check_find_deref [${label}]: ${totalFindings} `
-        + `\`.find(<arrow>).field\` chain(s) across ${perFile.length} file(s) in stem_lab/.`);
+        + `\`.find(<arrow>).field\` chain(s) across ${perFile.length} file(s) in ${SCANNED_ROOT}/.`);
     console.log('  Pattern: ARR.find(x => x.id === id).field — crashes if the id is renamed / i18n-filtered.');
     console.log('  Replacement: window.StemLab.findById(ARR, id)?.field ?? fallback');
 

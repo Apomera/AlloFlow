@@ -35869,13 +35869,13 @@ window.SelHub = window.SelHub || {
                   type: 'range', min: 1, max: 10, value: intensityLevel,
                   onChange: function(e) { upd('intensityLevel', parseInt(e.target.value)); },
                   'aria-label': 'Intensity level',
-                  style: { flex: 1, accentColor: ZONES.find(function(z) { return z.id === selectedZone; }).color }
+                  style: { flex: 1, accentColor: (ZONES.find(function(z) { return z.id === selectedZone; }) || ZONES[0]).color }
                 }),
                 h('span', { style: { fontSize: 11, color: _zoFg('#94a3b8'), minWidth: 24, textAlign: 'right' } }, '10'),
                 h('span', {
                   style: {
                     fontSize: 20, fontWeight: 700, minWidth: 40, textAlign: 'center',
-                    color: ZONES.find(function(z) { return z.id === selectedZone; }).color
+                    color: (ZONES.find(function(z) { return z.id === selectedZone; }) || ZONES[0]).color
                   }
                 }, intensityLevel)
               )
@@ -36537,11 +36537,11 @@ window.SelHub = window.SelHub || {
             h('p', { style: { fontWeight: 700, color: _zoFg(scenarioFeedback) === 'correct' ? _zoFg('#22c55e') : '#f59e0b', marginBottom: 4 } },
               scenarioFeedback === 'correct'
                 ? (scenarioStreak >= 3 ? '\uD83D\uDD25 ' + scenarioStreak + ' in a row!' : 'Great job!')
-                : 'Not quite \u2014 this is a ' + ZONES.find(function(z) { return z.id === currentScenario.correctZone; }).label + ' situation.'
+                : 'Not quite \u2014 this is a ' + ((ZONES.find(function(z) { return z.id === currentScenario.correctZone; }) || {}).label || 'different') + ' situation.'
             ),
             // Explanation for wrong answer
             scenarioFeedback !== 'correct' && scenarioAnswer && h('p', { style: { fontSize: 12, color: _zoFg('#94a3b8'), marginBottom: 8 } },
-              'You chose ' + ZONES.find(function(z) { return z.id === scenarioAnswer; }).label + '. ' +
+              'You chose ' + ((ZONES.find(function(z) { return z.id === scenarioAnswer; }) || {}).label || 'that zone') + '. ' +
               (band === 'elementary' ? 'Think about how this person would feel in their body.' :
                band === 'middle' ? 'Consider the intensity and type of emotion in this situation.' :
                'Reflect on the arousal level and valence of the emotional response.')
