@@ -2779,7 +2779,7 @@ try {
     // localStorage is ephemeral in Gemini Canvas sandboxes (the origin can
     // change between conversations), so a long-running study must save its
     // full state to a JSON file the teacher downloads and re-imports next
-    // session. Bundle contains all 6 Research Suite localStorage keys plus
+    // session. Bundle contains all 8 Research Suite localStorage keys plus
     // a version stamp for future migration compatibility.
     const STUDY_BUNDLE_KEYS = [
       'alloflow_research_mode',
@@ -2787,10 +2787,15 @@ try {
       'alloflow_survey_responses',
       'alloflow_session_counter',
       'alloflow_external_cbm',
-      'alloflow_rti_goals'
+      'alloflow_rti_goals',
+      // schemaVersion 2 (2026-08-23): the two stores a teacher would most want
+      // to survive a device swap were the two the bundle left behind. The host
+      // re-reads both via the study-bundle-imported listener.
+      'alloflow_probe_history',
+      'alloflow_intervention_logs'
     ];
     const exportStudyBundle = () => {
-      const bundle = { schemaVersion: 1, exportedAt: new Date().toISOString() };
+      const bundle = { schemaVersion: 2, exportedAt: new Date().toISOString() };
       STUDY_BUNDLE_KEYS.forEach(function (k) {
         try {
           const raw = localStorage.getItem(k);
@@ -2870,7 +2875,28 @@ try {
       try {
         localStorage.setItem('alloflow_external_cbm', JSON.stringify(updated));
       } catch {}
+      // The host's project-file save reads its own externalCBMScores state,
+      // which only hydrates from localStorage at boot; tell it a new entry
+      // landed so saves made later in this session carry it.
+      try { window.dispatchEvent(new CustomEvent('alloflow:external-cbm-updated')); } catch {}
     };
+    // A study-bundle import dispatches this after rewriting the research keys
+    // in localStorage, and the host's research-JSON import does the same.
+    // Without a listener this module's copies stayed stale until reload. Every
+    // store re-read here flushes to localStorage synchronously on write, so
+    // localStorage is never older than memory and the re-read cannot revert
+    // live edits.
+    React.useEffect(() => {
+      const rereadResearchStores = () => {
+        try { setResearchMode(JSON.parse(localStorage.getItem('alloflow_research_mode') || 'null')); } catch {}
+        try { setFidelityLog(JSON.parse(localStorage.getItem('alloflow_fidelity_log') || '[]')); } catch {}
+        try { setSurveyResponses(JSON.parse(localStorage.getItem('alloflow_survey_responses') || '{}')); } catch {}
+        try { setSessionCounter(parseInt(localStorage.getItem('alloflow_session_counter') || '0', 10) || 0); } catch {}
+        try { setExternalCBMScores(JSON.parse(localStorage.getItem('alloflow_external_cbm') || '{}')); } catch {}
+      };
+      window.addEventListener('alloflow:study-bundle-imported', rereadResearchStores);
+      return () => window.removeEventListener('alloflow:study-bundle-imported', rereadResearchStores);
+    }, []);
     const [showCBMModal, setShowCBMModal] = React.useState(false);
     const [cbmForm, setCBMForm] = React.useState({
       student: '',
@@ -5941,9 +5967,15 @@ try {
               className: "text-xs px-2 py-1 bg-indigo-600 text-white rounded-lg font-bold hover:bg-indigo-700 transition-colors ml-1"
             }, 'Next \u2192')
           ),
-          !screeningQueueActive && importedStudents.length > 1 && React.createElement("button", {
+          !screeningQueueActive && (importedStudents.length + ((rosterKey && rosterKey.students) ? Object.keys(rosterKey.students).filter(function(n) { return !importedStudents.some(function(s) { return (s.nickname || s.name) === n; }); }).length : 0)) > 1 && React.createElement("button", {
             onClick: function() {
               var names = importedStudents.map(function(s) { return s.nickname || s.name; });
+              // Roster Key students count too: a teacher who works from the
+              // roster alone (no imported JSON files) could see every name in
+              // the Active Student dropdown but never start a queue.
+              if (rosterKey && rosterKey.students) {
+                Object.keys(rosterKey.students).forEach(function(n) { if (names.indexOf(n) === -1) names.push(n); });
+              }
               setScreeningQueue(names.slice(1));
               setActiveStudent(names[0]);
               setProbeTargetStudent(names[0]);

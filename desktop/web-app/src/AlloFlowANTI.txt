@@ -14863,25 +14863,59 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   // module (which owns the real launchBenchmarkProbe). The old host effect here
   // called a dead phantom-ref stub (launchBenchmarkProbe above) and stalled batteries
   // after the first subtest; removed to avoid a double-advance race with the module.
+  const orfScreeningSavedRef = React.useRef(null);
+  React.useEffect(() => { if (fluencyStatus !== 'complete') orfScreeningSavedRef.current = null; }, [fluencyStatus]);
+  // Persist screening ORF results (2026-08-23). Until now this effect only
+  // advanced the battery: the record went to setLatestProbeResult (in-memory
+  // screeningHistory on an imported-student row) and NEVER to saveProbeResult,
+  // so no ORF score reached alloflow_probe_history. The RTI tier, the aimline
+  // (applied to the ORF series only, by contract), the trend series and the IEP
+  // export all read an empty series, and standalone (non-battery) screening
+  // runs were discarded entirely by the status !== 'running' gate. This mirrors
+  // the math writeback in view_sidebar_panels_source.jsx: RAW-validate the
+  // score first (Number(null) is 0, so a missing read must not record as a
+  // real 0 WCPM), and carry wcpm AND itemsPerMin with the same number
+  // (_probeTypeAndScore reads itemsPerMin, the AlloSheet walker reads wcpm).
+  // The ref guards the standalone path against a re-fire when saveFluencyReview
+  // replaces fluencyResult while fluencyStatus is still 'complete' (the battery
+  // path resets status to 'idle', so it never re-fires). Deps stay
+  // [fluencyStatus, fluencyResult] on purpose: everything else is read at fire
+  // time, and addToast/saveProbeResult must stay OUT of the dep array (both are
+  // declared below this hook; naming them in deps is the TDZ render-crash class).
   React.useEffect(() => {
     if (fluencyStatus !== 'complete' || !fluencyResult) return;
-    if (!screenerSession || screenerSession.status !== 'running') return;
-    const currentSubtest = screenerSession.subtests[screenerSession.currentIndex];
-    if (currentSubtest !== 'orf') return;
+    const inBattery = !!(screenerSession && screenerSession.status === 'running' && screenerSession.subtests[screenerSession.currentIndex] === 'orf');
+    const isScreeningRun = inBattery || !!(generatedContent && generatedContent.isScreeningORF);
+    if (!isScreeningRun) return;
+    const saveKey = fluencyResult.recordId || 'this-completion';
+    if (orfScreeningSavedRef.current === saveKey) return;
+    orfScreeningSavedRef.current = saveKey;
+    const student = inBattery ? screenerSession.student : (probeTargetStudent || null);
+    const rawWcpm = fluencyResult.wcpm;
+    const hasScore = typeof rawWcpm === 'number' && isFinite(rawWcpm) && rawWcpm >= 0;
     const orfResult = {
       activity: 'orf',
-      grade: screenerSession.grade,
-      form: screenerSession.form,
-      student: screenerSession.student,
-      correct: fluencyResult.wcpm || 0,
+      grade: inBattery ? screenerSession.grade : probeGradeLevel,
+      form: inBattery ? screenerSession.form : mathProbeForm,
+      student: student,
+      correct: hasScore ? rawWcpm : 0,
       total: fluencyResult.wordData ? fluencyResult.wordData.length : 0,
       accuracy: fluencyResult.accuracy || fluencyResult.accuracyScore || 0,
-      wcpm: fluencyResult.wcpm || 0,
-      itemsPerMin: fluencyResult.wcpm || 0,
+      wcpm: hasScore ? rawWcpm : 0,
+      itemsPerMin: hasScore ? rawWcpm : 0,
       feedback: fluencyResult.feedback || '',
       timestamp: Date.now()
     };
+    if (student && hasScore) {
+      saveProbeResult(student, orfResult);
+      addToast((t('toasts.orf_probe_recorded_for') || 'Screening ORF recorded for ') + student + ': ' + rawWcpm + ' WCPM', 'success');
+    } else if (!hasScore) {
+      addToast(t('toasts.orf_probe_no_score') || 'Screening ORF finished without a usable score, so nothing was recorded.', 'warning');
+    } else {
+      addToast(t('toasts.orf_probe_practice_only') || 'Practice mode: this screening passage was not recorded to a student.', 'info');
+    }
     setLatestProbeResult(orfResult);
+    if (!inBattery) return;
     const updatedResults = [...screenerSession.results, orfResult];
     setIsFluencyMode(false);
     setFluencyStatus('idle');
@@ -14894,7 +14928,16 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   }, [fluencyStatus, fluencyResult]);
   const handleLaunchORF = (grade, form) => {
     const passages = typeof ORF_SCREENING_PASSAGES !== 'undefined' && ORF_SCREENING_PASSAGES[grade];
-    const passage = passages ? passages[form] || passages['A'] : null;
+    const passageRaw = passages ? passages[form] || passages['A'] : null;
+    // psychometric_probes.json stores each form as an ARRAY holding one passage
+    // OBJECT ({title, wordCount, text, ...}); the older inline format was a
+    // bare string. Normalize both: assigning the raw value straight into
+    // text/sourceText rendered "[object Object]" instead of the passage. The
+    // module's own single-probe launcher (student_analytics_module.js
+    // handleLaunchORF) already normalizes passages[0].text; this host copy is
+    // the battery path and had missed it.
+    const passageEntry = Array.isArray(passageRaw) ? passageRaw[0] : passageRaw;
+    const passage = typeof passageEntry === 'string' ? passageEntry : (passageEntry && typeof passageEntry.text === 'string' ? passageEntry.text : null);
     if (!passage) {
       addToast(t('toasts.orf_passage_available_grade') + grade, 'warning');
       return;
@@ -15105,26 +15148,66 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     try { return JSON.parse(localStorage.getItem('alloflow_intervention_logs') || '{}'); } catch { return {}; }
   });
   const saveInterventionLog = (studentName, log) => {
-    const existing = interventionLogs[studentName] || [];
-    const updated = { ...interventionLogs, [studentName]: [...existing, { ...log, id: Date.now().toString() + Math.random().toString(36).substr(2, 9), createdAt: new Date().toISOString() }] };
-    setInterventionLogs(updated);
-    try { localStorage.setItem('alloflow_intervention_logs', JSON.stringify(updated)); } catch {}
+    // Functional update, same closure-loss class as saveProbeResult below. The
+    // entry (and its id) is built OUTSIDE the updater so a double-invoked
+    // updater appends the same object instead of minting two ids.
+    const entry = { ...log, id: Date.now().toString() + Math.random().toString(36).substr(2, 9), createdAt: new Date().toISOString() };
+    setInterventionLogs(prev => {
+      const existing = prev[studentName] || [];
+      const updated = { ...prev, [studentName]: [...existing, entry] };
+      try { localStorage.setItem('alloflow_intervention_logs', JSON.stringify(updated)); } catch {}
+      return updated;
+    });
   };
   const deleteInterventionLog = (studentName, logId) => {
-    const existing = interventionLogs[studentName] || [];
-    const updated = { ...interventionLogs, [studentName]: existing.filter(l => l.id !== logId) };
-    setInterventionLogs(updated);
-    try { localStorage.setItem('alloflow_intervention_logs', JSON.stringify(updated)); } catch {}
+    setInterventionLogs(prev => {
+      const existing = prev[studentName] || [];
+      const updated = { ...prev, [studentName]: existing.filter(l => l.id !== logId) };
+      try { localStorage.setItem('alloflow_intervention_logs', JSON.stringify(updated)); } catch {}
+      return updated;
+    });
   };
   const [probeHistory, setProbeHistory] = useState(() => {
     try { return JSON.parse(localStorage.getItem('alloflow_probe_history') || '{}'); } catch { return {}; }
   });
   const saveProbeResult = (studentName, result) => {
-    const existing = probeHistory[studentName] || [];
-    const updated = { ...probeHistory, [studentName]: [...existing, result] };
-    setProbeHistory(updated);
-    try { localStorage.setItem('alloflow_probe_history', JSON.stringify(updated)); } catch {}
+    // Functional update: several results can land in the same tick (battery
+    // subtests, roster snapshot banking), and the old closure over probeHistory
+    // dropped all but the last write. Same hazard the roster banking effect
+    // below documents; localStorage mirrors the merged value inside the updater,
+    // matching that effect's idiom.
+    setProbeHistory(prev => {
+      const existing = prev[studentName] || [];
+      const updated = { ...prev, [studentName]: [...existing, result] };
+      try { localStorage.setItem('alloflow_probe_history', JSON.stringify(updated)); } catch {}
+      return updated;
+    });
   };
+  // A study-bundle import (Assessment Center module) and the research-JSON
+  // import below both rewrite these keys straight in localStorage and dispatch
+  // this event; until 2026-08-23 NOTHING listened, so the module comment's
+  // promise that "the parent re-reads rtiGoals" was never kept. Every store
+  // re-read here flushes to localStorage synchronously on write, so
+  // localStorage is never older than memory and the re-read cannot revert live
+  // edits. The narrow external-cbm event keeps the host's copy fresh for the
+  // project-file save path, which otherwise only hydrates at boot.
+  useEffect(() => {
+    const rereadResearchStores = () => {
+      try { setRtiGoals(JSON.parse(localStorage.getItem('alloflow_rti_goals') || '{}')); } catch {}
+      try { setProbeHistory(JSON.parse(localStorage.getItem('alloflow_probe_history') || '{}')); } catch {}
+      try { setInterventionLogs(JSON.parse(localStorage.getItem('alloflow_intervention_logs') || '{}')); } catch {}
+      try { setExternalCBMScores(JSON.parse(localStorage.getItem('alloflow_external_cbm') || '{}')); } catch {}
+    };
+    const rereadExternalCbm = () => {
+      try { setExternalCBMScores(JSON.parse(localStorage.getItem('alloflow_external_cbm') || '{}')); } catch {}
+    };
+    window.addEventListener('alloflow:study-bundle-imported', rereadResearchStores);
+    window.addEventListener('alloflow:external-cbm-updated', rereadExternalCbm);
+    return () => {
+      window.removeEventListener('alloflow:study-bundle-imported', rereadResearchStores);
+      window.removeEventListener('alloflow:external-cbm-updated', rereadExternalCbm);
+    };
+  }, []);
   const [surveyResponses, setSurveyResponses] = useState(() => {
     try { return JSON.parse(localStorage.getItem('alloflow_survey_responses') || '[]'); } catch { return []; }
   });
@@ -15135,7 +15218,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     try { return parseInt(localStorage.getItem('alloflow_session_counter') || '0', 10); } catch { return 0; }
   });
   const [externalCBMScores, setExternalCBMScores] = useState(() => {
-    try { return JSON.parse(localStorage.getItem('alloflow_external_cbm_scores') || '{}'); } catch { return {}; }
+    try { return JSON.parse(localStorage.getItem('alloflow_external_cbm') || '{}'); } catch { return {}; }
   });
 
   const { isRecording: isFluencyRecording, startRecording: startFluencyRecording, stopRecording: stopFluencyRecording } = useAudioRecorder();
@@ -18183,12 +18266,16 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         }
         if (data.externalCBMScores) {
           setExternalCBMScores(data.externalCBMScores);
-          try { localStorage.setItem('alloflow_external_cbm_scores', JSON.stringify(data.externalCBMScores)); } catch {}
+          try { localStorage.setItem('alloflow_external_cbm', JSON.stringify(data.externalCBMScores)); } catch {}
         }
         if (data.interventionLogs) {
           setInterventionLogs(data.interventionLogs);
           try { localStorage.setItem('alloflow_intervention_logs', JSON.stringify(data.interventionLogs)); } catch {}
         }
+        // The Assessment Center module keeps its own copies of the research
+        // stores; tell it the keys changed underneath it (same contract as a
+        // study-bundle import) so it re-reads instead of staying stale.
+        try { window.dispatchEvent(new CustomEvent('alloflow:study-bundle-imported', { detail: { source: 'research-json-import' } })); } catch {}
         if (addToast) addToast(t('toasts.research_data_imported_successfully'), 'success');
       } catch (err) {
         warnLog('Failed to import research JSON:', err);

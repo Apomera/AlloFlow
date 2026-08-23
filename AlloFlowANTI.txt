@@ -4611,7 +4611,7 @@ const LazySimplifiedView = React.memo((props) => {
         );
     }
     return (
-        <CDNModuleGate moduleKey="SimplifiedView" isOpen size="inline" icon="📖" displayName="Leveled-text reader" t={props.t}>
+        <CDNModuleGate moduleKey="SimplifiedView" isOpen size="inline" icon="📗" displayName="Leveled-text reader" t={props.t}>
             {(Mod) => <Mod {...props} />}
         </CDNModuleGate>
     );
@@ -11424,6 +11424,20 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     window.__alloOpenDynamicAssessment = () => setIsDynamicAssessmentOpen(true);
     return () => { try { delete window.__alloOpenDynamicAssessment; } catch(_) {} };
   }, [setIsDynamicAssessmentOpen]);
+  // Bridge: CDN panels (UDL Walkthrough "PD signals") deep-link into the
+  // Community Catalog's Professional Development tab, optionally carrying a
+  // UDL guideline id ({ guideline: 'eng_7' }) that PdHome spotlights.
+  React.useEffect(() => {
+    window.__alloOpenPdCatalog = (intent) => {
+      const payload = (intent && typeof intent === 'object') ? intent : true;
+      try {
+        window.__alloPdIntent = payload;
+        localStorage.setItem('alloflow_pd_intent', payload === true ? '1' : JSON.stringify(payload));
+      } catch (_) {}
+      setIsCommunityCatalogOpen(true);
+    };
+    return () => { try { delete window.__alloOpenPdCatalog; } catch(_) {} };
+  }, [setIsCommunityCatalogOpen]);
   const [showStoryForge, _setShowStoryForgeRaw] = useState(false);
   const setShowStoryForge = React.useCallback((v) => { if (v && window.__alloLazyStoryForge) { try { window.__alloLazyStoryForge(); } catch(_) {} } _setShowStoryForgeRaw(v); }, []);
   const [showLitLab, _setShowLitLabRaw] = useState(false);
@@ -12198,7 +12212,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     window.__alloLazySeatingChart = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SeatingChart', 'https://alloflow-cdn.pages.dev/seating_chart_module.js?v=8a384461d'); }; })();
     // UDL Walkthrough (Aug 3 2026) — admin/coach classroom-visit tool,
     // lazy-loaded from the Educator Hub card.
-    window.__alloLazyUdlWalkthrough = (function() { var L=false; return function() { if(L)return; L=true; loadModule('UdlWalkthrough', 'https://alloflow-cdn.pages.dev/udl_walkthrough_module.js?v=uw080306'); }; })();
+    window.__alloLazyUdlWalkthrough = (function() { var L=false; return function() { if(L)return; L=true; loadModule('UdlWalkthrough', 'https://alloflow-cdn.pages.dev/udl_walkthrough_module.js?v=uw080307'); }; })();
     window.__alloLazyWalkthroughCopilot = (function() { var L=false; return function() { if(L)return; L=true; loadModule('WalkthroughCopilot', 'https://alloflow-cdn.pages.dev/walkthrough_copilot_cdn_module.js?v=wc081301'); }; })();
     // Disproportionality Analyzer (Aug 3 2026) — admin equity metrics,
     // lazy-loaded from the Educator Hub card.
@@ -14863,25 +14877,59 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   // module (which owns the real launchBenchmarkProbe). The old host effect here
   // called a dead phantom-ref stub (launchBenchmarkProbe above) and stalled batteries
   // after the first subtest; removed to avoid a double-advance race with the module.
+  const orfScreeningSavedRef = React.useRef(null);
+  React.useEffect(() => { if (fluencyStatus !== 'complete') orfScreeningSavedRef.current = null; }, [fluencyStatus]);
+  // Persist screening ORF results (2026-08-23). Until now this effect only
+  // advanced the battery: the record went to setLatestProbeResult (in-memory
+  // screeningHistory on an imported-student row) and NEVER to saveProbeResult,
+  // so no ORF score reached alloflow_probe_history. The RTI tier, the aimline
+  // (applied to the ORF series only, by contract), the trend series and the IEP
+  // export all read an empty series, and standalone (non-battery) screening
+  // runs were discarded entirely by the status !== 'running' gate. This mirrors
+  // the math writeback in view_sidebar_panels_source.jsx: RAW-validate the
+  // score first (Number(null) is 0, so a missing read must not record as a
+  // real 0 WCPM), and carry wcpm AND itemsPerMin with the same number
+  // (_probeTypeAndScore reads itemsPerMin, the AlloSheet walker reads wcpm).
+  // The ref guards the standalone path against a re-fire when saveFluencyReview
+  // replaces fluencyResult while fluencyStatus is still 'complete' (the battery
+  // path resets status to 'idle', so it never re-fires). Deps stay
+  // [fluencyStatus, fluencyResult] on purpose: everything else is read at fire
+  // time, and addToast/saveProbeResult must stay OUT of the dep array (both are
+  // declared below this hook; naming them in deps is the TDZ render-crash class).
   React.useEffect(() => {
     if (fluencyStatus !== 'complete' || !fluencyResult) return;
-    if (!screenerSession || screenerSession.status !== 'running') return;
-    const currentSubtest = screenerSession.subtests[screenerSession.currentIndex];
-    if (currentSubtest !== 'orf') return;
+    const inBattery = !!(screenerSession && screenerSession.status === 'running' && screenerSession.subtests[screenerSession.currentIndex] === 'orf');
+    const isScreeningRun = inBattery || !!(generatedContent && generatedContent.isScreeningORF);
+    if (!isScreeningRun) return;
+    const saveKey = fluencyResult.recordId || 'this-completion';
+    if (orfScreeningSavedRef.current === saveKey) return;
+    orfScreeningSavedRef.current = saveKey;
+    const student = inBattery ? screenerSession.student : (probeTargetStudent || null);
+    const rawWcpm = fluencyResult.wcpm;
+    const hasScore = typeof rawWcpm === 'number' && isFinite(rawWcpm) && rawWcpm >= 0;
     const orfResult = {
       activity: 'orf',
-      grade: screenerSession.grade,
-      form: screenerSession.form,
-      student: screenerSession.student,
-      correct: fluencyResult.wcpm || 0,
+      grade: inBattery ? screenerSession.grade : probeGradeLevel,
+      form: inBattery ? screenerSession.form : mathProbeForm,
+      student: student,
+      correct: hasScore ? rawWcpm : 0,
       total: fluencyResult.wordData ? fluencyResult.wordData.length : 0,
       accuracy: fluencyResult.accuracy || fluencyResult.accuracyScore || 0,
-      wcpm: fluencyResult.wcpm || 0,
-      itemsPerMin: fluencyResult.wcpm || 0,
+      wcpm: hasScore ? rawWcpm : 0,
+      itemsPerMin: hasScore ? rawWcpm : 0,
       feedback: fluencyResult.feedback || '',
       timestamp: Date.now()
     };
+    if (student && hasScore) {
+      saveProbeResult(student, orfResult);
+      addToast((t('toasts.orf_probe_recorded_for') || 'Screening ORF recorded for ') + student + ': ' + rawWcpm + ' WCPM', 'success');
+    } else if (!hasScore) {
+      addToast(t('toasts.orf_probe_no_score') || 'Screening ORF finished without a usable score, so nothing was recorded.', 'warning');
+    } else {
+      addToast(t('toasts.orf_probe_practice_only') || 'Practice mode: this screening passage was not recorded to a student.', 'info');
+    }
     setLatestProbeResult(orfResult);
+    if (!inBattery) return;
     const updatedResults = [...screenerSession.results, orfResult];
     setIsFluencyMode(false);
     setFluencyStatus('idle');
@@ -14894,7 +14942,16 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   }, [fluencyStatus, fluencyResult]);
   const handleLaunchORF = (grade, form) => {
     const passages = typeof ORF_SCREENING_PASSAGES !== 'undefined' && ORF_SCREENING_PASSAGES[grade];
-    const passage = passages ? passages[form] || passages['A'] : null;
+    const passageRaw = passages ? passages[form] || passages['A'] : null;
+    // psychometric_probes.json stores each form as an ARRAY holding one passage
+    // OBJECT ({title, wordCount, text, ...}); the older inline format was a
+    // bare string. Normalize both: assigning the raw value straight into
+    // text/sourceText rendered "[object Object]" instead of the passage. The
+    // module's own single-probe launcher (student_analytics_module.js
+    // handleLaunchORF) already normalizes passages[0].text; this host copy is
+    // the battery path and had missed it.
+    const passageEntry = Array.isArray(passageRaw) ? passageRaw[0] : passageRaw;
+    const passage = typeof passageEntry === 'string' ? passageEntry : (passageEntry && typeof passageEntry.text === 'string' ? passageEntry.text : null);
     if (!passage) {
       addToast(t('toasts.orf_passage_available_grade') + grade, 'warning');
       return;
@@ -15105,26 +15162,66 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     try { return JSON.parse(localStorage.getItem('alloflow_intervention_logs') || '{}'); } catch { return {}; }
   });
   const saveInterventionLog = (studentName, log) => {
-    const existing = interventionLogs[studentName] || [];
-    const updated = { ...interventionLogs, [studentName]: [...existing, { ...log, id: Date.now().toString() + Math.random().toString(36).substr(2, 9), createdAt: new Date().toISOString() }] };
-    setInterventionLogs(updated);
-    try { localStorage.setItem('alloflow_intervention_logs', JSON.stringify(updated)); } catch {}
+    // Functional update, same closure-loss class as saveProbeResult below. The
+    // entry (and its id) is built OUTSIDE the updater so a double-invoked
+    // updater appends the same object instead of minting two ids.
+    const entry = { ...log, id: Date.now().toString() + Math.random().toString(36).substr(2, 9), createdAt: new Date().toISOString() };
+    setInterventionLogs(prev => {
+      const existing = prev[studentName] || [];
+      const updated = { ...prev, [studentName]: [...existing, entry] };
+      try { localStorage.setItem('alloflow_intervention_logs', JSON.stringify(updated)); } catch {}
+      return updated;
+    });
   };
   const deleteInterventionLog = (studentName, logId) => {
-    const existing = interventionLogs[studentName] || [];
-    const updated = { ...interventionLogs, [studentName]: existing.filter(l => l.id !== logId) };
-    setInterventionLogs(updated);
-    try { localStorage.setItem('alloflow_intervention_logs', JSON.stringify(updated)); } catch {}
+    setInterventionLogs(prev => {
+      const existing = prev[studentName] || [];
+      const updated = { ...prev, [studentName]: existing.filter(l => l.id !== logId) };
+      try { localStorage.setItem('alloflow_intervention_logs', JSON.stringify(updated)); } catch {}
+      return updated;
+    });
   };
   const [probeHistory, setProbeHistory] = useState(() => {
     try { return JSON.parse(localStorage.getItem('alloflow_probe_history') || '{}'); } catch { return {}; }
   });
   const saveProbeResult = (studentName, result) => {
-    const existing = probeHistory[studentName] || [];
-    const updated = { ...probeHistory, [studentName]: [...existing, result] };
-    setProbeHistory(updated);
-    try { localStorage.setItem('alloflow_probe_history', JSON.stringify(updated)); } catch {}
+    // Functional update: several results can land in the same tick (battery
+    // subtests, roster snapshot banking), and the old closure over probeHistory
+    // dropped all but the last write. Same hazard the roster banking effect
+    // below documents; localStorage mirrors the merged value inside the updater,
+    // matching that effect's idiom.
+    setProbeHistory(prev => {
+      const existing = prev[studentName] || [];
+      const updated = { ...prev, [studentName]: [...existing, result] };
+      try { localStorage.setItem('alloflow_probe_history', JSON.stringify(updated)); } catch {}
+      return updated;
+    });
   };
+  // A study-bundle import (Assessment Center module) and the research-JSON
+  // import below both rewrite these keys straight in localStorage and dispatch
+  // this event; until 2026-08-23 NOTHING listened, so the module comment's
+  // promise that "the parent re-reads rtiGoals" was never kept. Every store
+  // re-read here flushes to localStorage synchronously on write, so
+  // localStorage is never older than memory and the re-read cannot revert live
+  // edits. The narrow external-cbm event keeps the host's copy fresh for the
+  // project-file save path, which otherwise only hydrates at boot.
+  useEffect(() => {
+    const rereadResearchStores = () => {
+      try { setRtiGoals(JSON.parse(localStorage.getItem('alloflow_rti_goals') || '{}')); } catch {}
+      try { setProbeHistory(JSON.parse(localStorage.getItem('alloflow_probe_history') || '{}')); } catch {}
+      try { setInterventionLogs(JSON.parse(localStorage.getItem('alloflow_intervention_logs') || '{}')); } catch {}
+      try { setExternalCBMScores(JSON.parse(localStorage.getItem('alloflow_external_cbm') || '{}')); } catch {}
+    };
+    const rereadExternalCbm = () => {
+      try { setExternalCBMScores(JSON.parse(localStorage.getItem('alloflow_external_cbm') || '{}')); } catch {}
+    };
+    window.addEventListener('alloflow:study-bundle-imported', rereadResearchStores);
+    window.addEventListener('alloflow:external-cbm-updated', rereadExternalCbm);
+    return () => {
+      window.removeEventListener('alloflow:study-bundle-imported', rereadResearchStores);
+      window.removeEventListener('alloflow:external-cbm-updated', rereadExternalCbm);
+    };
+  }, []);
   const [surveyResponses, setSurveyResponses] = useState(() => {
     try { return JSON.parse(localStorage.getItem('alloflow_survey_responses') || '[]'); } catch { return []; }
   });
@@ -15135,7 +15232,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     try { return parseInt(localStorage.getItem('alloflow_session_counter') || '0', 10); } catch { return 0; }
   });
   const [externalCBMScores, setExternalCBMScores] = useState(() => {
-    try { return JSON.parse(localStorage.getItem('alloflow_external_cbm_scores') || '{}'); } catch { return {}; }
+    try { return JSON.parse(localStorage.getItem('alloflow_external_cbm') || '{}'); } catch { return {}; }
   });
 
   const { isRecording: isFluencyRecording, startRecording: startFluencyRecording, stopRecording: stopFluencyRecording } = useAudioRecorder();
@@ -18183,12 +18280,16 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         }
         if (data.externalCBMScores) {
           setExternalCBMScores(data.externalCBMScores);
-          try { localStorage.setItem('alloflow_external_cbm_scores', JSON.stringify(data.externalCBMScores)); } catch {}
+          try { localStorage.setItem('alloflow_external_cbm', JSON.stringify(data.externalCBMScores)); } catch {}
         }
         if (data.interventionLogs) {
           setInterventionLogs(data.interventionLogs);
           try { localStorage.setItem('alloflow_intervention_logs', JSON.stringify(data.interventionLogs)); } catch {}
         }
+        // The Assessment Center module keeps its own copies of the research
+        // stores; tell it the keys changed underneath it (same contract as a
+        // study-bundle import) so it re-reads instead of staying stale.
+        try { window.dispatchEvent(new CustomEvent('alloflow:study-bundle-imported', { detail: { source: 'research-json-import' } })); } catch {}
         if (addToast) addToast(t('toasts.research_data_imported_successfully'), 'success');
       } catch (err) {
         warnLog('Failed to import research JSON:', err);
@@ -33337,6 +33438,18 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
       isRtlLang: _livePipelineCall('isRtlLang', false),
       updateExportPreview: _livePipelineCall('updateExportPreview'),
       getDefaultTitle: _livePipelineCall('getDefaultTitle', ''),
+      // Human-in-the-loop rebase: let the fix loop see edits a person commits WHILE it runs, so it
+      // rebases onto them instead of shipping keep-best over the top of them. Reads refs only (no
+      // React state), so it is safe to call from inside the pipeline at any time. The revision is
+      // the monotonic counter bumped by setPdfFixResult on every committed HTML change; the loop
+      // rebases on a revision INCREASE, never on a bare byte difference.
+      readCommittedHtml: () => {
+        const cur = pdfFixResultRef.current;
+        return {
+          html: cur && typeof cur.accessibleHtml === 'string' ? cur.accessibleHtml : null,
+          revision: pdfHtmlRevisionRef.current,
+        };
+      },
     });
     _docPipelineFactoryRef.current = _createDocPipeline;
   }
@@ -33788,6 +33901,9 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
       _estimatedMinimumScore: Number.isFinite(cur._estimatedMinimumScore) ? cur._estimatedMinimumScore : null,
       _estimatedScoreBasis: cur._estimatedScoreBasis || null,
       _finalAuditRetryAvailable: !!cur._finalAuditRetryAvailable,
+      _remediationThrottlePaused: !!cur._remediationThrottlePaused,
+      _finalAuditThrottleDeferred: !!cur._finalAuditThrottleDeferred,
+      _finalAuditIncompleteReason: cur._finalAuditIncompleteReason || null,
       axeAudit: cur.axeAudit,
       secondEngineAudit: cur.secondEngineAudit || null,
       verificationAudit: cur.verificationAudit,
@@ -53289,7 +53405,7 @@ ${_alloActivityContext(activity)}
           theme,
           focusSection: diagnosisEligibilityFocusSection,
         })}
-      </CDNModuleGate>      <CDNModuleGate moduleKey="MtssTriage.MtssTriagePanel" isOpen={isMtssTriageOpen} onClose={() => { setIsMtssTriageOpen(false); _alloHubToolClosed(); }} icon="🧮" displayName="MTSS Triage" t={t}>
+      </CDNModuleGate>      <CDNModuleGate moduleKey="MtssTriage.MtssTriagePanel" isOpen={isMtssTriageOpen} onClose={() => { setIsMtssTriageOpen(false); _alloHubToolClosed(); }} icon="🚦" displayName="MTSS Triage" t={t}>
         {(MtssTriagePanel) => React.createElement(MtssTriagePanel, {
           isOpen: true,
           onClose: () => { setIsMtssTriageOpen(false); _alloHubToolClosed(); },
@@ -53333,7 +53449,7 @@ ${_alloActivityContext(activity)}
           addToast,
         })}
       </CDNModuleGate>
-      <CDNModuleGate moduleKey="WalkthroughCopilot.WalkthroughCopilotPanel" isOpen={isWalkthroughCopilotOpen} onClose={() => { setIsWalkthroughCopilotOpen(false); _alloHubToolClosed(); }} icon="📝" displayName="Walkthrough Copilot" t={t}>
+      <CDNModuleGate moduleKey="WalkthroughCopilot.WalkthroughCopilotPanel" isOpen={isWalkthroughCopilotOpen} onClose={() => { setIsWalkthroughCopilotOpen(false); _alloHubToolClosed(); }} icon="👣" displayName="Walkthrough Copilot" t={t}>
         {(WalkthroughCopilotPanel) => React.createElement(WalkthroughCopilotPanel, {
           isOpen: true,
           onClose: () => { setIsWalkthroughCopilotOpen(false); _alloHubToolClosed(); },
@@ -53570,7 +53686,7 @@ ${_alloActivityContext(activity)}
           applyFormBlanks, detectFormBlanks, detectPdfBlankFields, overlayPdfFormFields, languageToTTSCode, callTTS, chunkResumePrompt, chunkSaveFlash, commitOrRevertPdfFix, convertXlsxToMarkdownTables, createTaggedPdf, createTypesetTaggedPdf, transcribeMediaToPayload, simplifyAccessibleHtml, translateAccessibleHtml, t, theme, updatePdfPreview,
           diffLibReady, downloadAccessiblePdf, downloadBatchResults, ensurePdfBase64, expertCommandInput,
           exportPreviewRef, extractedImagesList, extractionData, fidelityResult, fixAndVerifyPdf,
-          fixContrastViolations, fixIssuesList, generateAuditReportHtml, selectChunkVersion, getPdfPreviewHtml,
+          fixContrastViolations, fixIssuesList, generateAuditReportHtml, selectChunkVersion, retireChunkState, getPdfPreviewHtml,
           imageReinsertionReport, insertBlockFilter, insertBlockOpenCats, insertBlockPickerRef, insertBlockRecent,
           isAgentRunning, isGeneratingStyle, liveChunkExpanded, liveChunkRejected, liveChunkSessionActive,
           liveChunkStream, pdfAuditLoading, pdfAuditResult, pdfAuditTab, pdfAuditorCount,
@@ -54823,14 +54939,14 @@ ${_alloActivityContext(activity)}
             })}
         </CDNModuleGate>
 
-        <CDNModuleGate moduleKey="BrandProfileEditor" isOpen={showBrandProfileEditor} onClose={() => setShowBrandProfileEditor(false)} icon="🎨" displayName="Brand Settings" t={t}>
+        <CDNModuleGate moduleKey="BrandProfileEditor" isOpen={showBrandProfileEditor} onClose={() => setShowBrandProfileEditor(false)} icon="🏷️" displayName="Brand Settings" t={t}>
             {(BrandProfileEditor) => React.createElement(BrandProfileEditor, {
                 onClose: () => setShowBrandProfileEditor(false),
                 t,
                 addToast
             })}
         </CDNModuleGate>
-        <CDNModuleGate moduleKey="SymbolStudio" isOpen={isSymbolStudioOpen} onClose={() => setIsSymbolStudioOpen(false)} icon="🎨" displayName="Symbol Studio" t={t}>
+        <CDNModuleGate moduleKey="SymbolStudio" isOpen={isSymbolStudioOpen} onClose={() => setIsSymbolStudioOpen(false)} icon="🪧" displayName="Symbol Studio" t={t}>
             {(SymbolStudio) => React.createElement(SymbolStudio, {
                 isOpen: true,
                     onClose: () => setIsSymbolStudioOpen(false),
@@ -55002,7 +55118,7 @@ ${_alloActivityContext(activity)}
             </button>
             </div>
         )}
-        <CDNModuleGate moduleKey="DynamicAssessment" isOpen={isDynamicAssessmentOpen} onClose={() => setIsDynamicAssessmentOpen(false)} icon="🔬" displayName="Dynamic Assessment Studio" t={t}>
+        <CDNModuleGate moduleKey="DynamicAssessment" isOpen={isDynamicAssessmentOpen} onClose={() => setIsDynamicAssessmentOpen(false)} icon="🩺" displayName="Dynamic Assessment Studio" t={t}>
             {(DA) => {
                 const DynamicAssessmentHostAdapter = DA && DA.HostAdapter;
                 if (typeof DynamicAssessmentHostAdapter !== 'function') {
@@ -55043,7 +55159,7 @@ ${_alloActivityContext(activity)}
             }}
         </CDNModuleGate>
 
-        <CDNModuleGate moduleKey="CommunityCatalog" isOpen={isCommunityCatalogOpen} onClose={() => setIsCommunityCatalogOpen(false)} icon="📚" displayName="Community Catalog" t={t}>
+        <CDNModuleGate moduleKey="CommunityCatalog" isOpen={isCommunityCatalogOpen} onClose={() => setIsCommunityCatalogOpen(false)} icon="🗂️" displayName="Community Catalog" t={t}>
             {(CC) => React.createElement(CC, {
                 isOpen: true,
                 onClose: () => setIsCommunityCatalogOpen(false),
@@ -55290,7 +55406,7 @@ ${_alloActivityContext(activity)}
                     onAnalyzeFluency: analyzeFluencyWithGemini,
             })}
         </CDNModuleGate>
-        <CDNModuleGate moduleKey="ResearchHub" isOpen={showResearchHub} onClose={() => setShowResearchHub(false)} icon="🔍" displayName="Research Hub" t={t}>
+        <CDNModuleGate moduleKey="ResearchHub" isOpen={showResearchHub} onClose={() => setShowResearchHub(false)} icon="📑" displayName="Research Hub" t={t}>
             {(RH) => React.createElement(RH, {
                 isOpen: true,
                 onClose: () => setShowResearchHub(false),
@@ -55450,7 +55566,7 @@ ${_alloActivityContext(activity)}
                 t,
             })}
         </CDNModuleGate>
-        <CDNModuleGate moduleKey="LitLab" isOpen={showLitLab} onClose={() => setShowLitLab(false)} icon="📚" displayName="Lit Lab" t={t}>
+        <CDNModuleGate moduleKey="LitLab" isOpen={showLitLab} onClose={() => setShowLitLab(false)} icon="🎭" displayName="Lit Lab" t={t}>
             {(LitLab) => React.createElement(LitLab, {
                 isOpen: true,
                     onClose: () => setShowLitLab(false),
@@ -55979,7 +56095,7 @@ function XPModal(props) {
 // ── StorybookExportModal extracted to view_storybook_export_modal_module.js (CDN) ──
 function StorybookExportModal(props) {
     return (
-        <CDNModuleGate moduleKey="StorybookExportModal.StorybookExportModal" icon="📖" displayName="Storybook Export" t={props.t}>
+        <CDNModuleGate moduleKey="StorybookExportModal.StorybookExportModal" icon="📕" displayName="Storybook Export" t={props.t}>
             {(Real) => React.createElement(Real, props)}
         </CDNModuleGate>
     );
@@ -56215,7 +56331,7 @@ function AssignmentCenterModal(props) {
 // ── VideoLibraryOverlay extracted to view_video_library_module.js (CDN) ──
 function VideoLibraryOverlay(props) {
     return (
-        <CDNModuleGate moduleKey="VideoLibrary.VideoLibraryOverlay" icon="🎬" displayName="Video library" onClose={props.onClose} t={props.t}>
+        <CDNModuleGate moduleKey="VideoLibrary.VideoLibraryOverlay" icon="📼" displayName="Video library" onClose={props.onClose} t={props.t}>
             {(Real) => React.createElement(Real, props)}
         </CDNModuleGate>
     );
@@ -56315,7 +56431,7 @@ function StudyTimerModal(props) {
 // ── EducatorHubModal extracted to view_educator_hub_modal_module.js (CDN) ──
 function EducatorHubModal(props) {
     return (
-        <CDNModuleGate moduleKey="EducatorHubModal.EducatorHubModal" icon="🛠️" displayName="Educator Tools" t={props.t}>
+        <CDNModuleGate moduleKey="EducatorHubModal.EducatorHubModal" icon="🧰" displayName="Educator Tools" t={props.t}>
             {(Real) => React.createElement(Real, props)}
         </CDNModuleGate>
     );
@@ -56331,7 +56447,7 @@ function VisualSupportsModal(props) {
 // ── LearningHubModal extracted to view_learning_hub_modal_module.js (CDN) ──
 function LearningHubModal(props) {
     return (
-        <CDNModuleGate moduleKey="LearningHubModal.LearningHubModal" icon="📚" displayName="Learning Tools" t={props.t}>
+        <CDNModuleGate moduleKey="LearningHubModal.LearningHubModal" icon="🎒" displayName="Learning Tools" t={props.t}>
             {(Real) => React.createElement(Real, props)}
         </CDNModuleGate>
     );
