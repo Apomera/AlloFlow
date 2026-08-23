@@ -82,7 +82,15 @@ describe('SEL Hub control accessibility', () => {
     expect(text).toContain("crisiscompanion: { mode: 'Urgent support'");
     expect(text).toContain("label: 'Self-Advocacy Studio'");
     expect(text).toContain("label: 'Advocacy Practice'");
-    expect(text).toContain("'aria-label': tool.label + (tool.recommendedRange");
+    // The card is still named by its tool and grade band, but the description,
+    // guidance and teacher cue moved out of the NAME and into aria-describedby:
+    // packing them all in made the grid 17,132 characters to hear, so it could
+    // not be skimmed. The boundary flag stays in the name because it changes
+    // whether you should open the tool at all. See tests/sel_hub_navigation.
+    expect(text).toContain("'aria-label': tool.label");
+    expect(text).toContain("', grades ' + tool.recommendedRange");
+    expect(text).toContain("guidance.boundary ? '. Use with care' : ''");
+    expect(text).toContain("'aria-describedby': _selCardDescId(tool.id)");
     expect(text).toContain("traumaPsychoed: { time: '8-15 min'");
     expect(text).toContain("{ key: 'crisis', icon:");
     expect(text).toContain("{ key: 'schoolSupport', icon:");

@@ -141,6 +141,21 @@ describe('SEL Hub · crisis vocabulary routes to support, not to a grid', () => 
 });
 
 describe('SEL Hub · the catalog says what it is showing', () => {
+  it('the empty state triggers on the count, not only on search', () => {
+    // Gating it on the search string meant a grid emptied by a category chip, a
+    // pathway or a station rendered nothing at all - no message, no way back.
+    expect(src).toContain('_selVisibleCount === 0 && h(');
+    expect(src).not.toMatch(/_searchLower && _filteredTools\.length === 0/);
+  });
+
+  it('the empty state offers a way back to the full catalog', () => {
+    const panel = block('_selVisibleCount === 0 && h(', 'Filters cleared');
+    expect(panel).toContain("setSelToolSearch('')");
+    expect(panel).toContain('setSelCategoryFilter(null)');
+    expect(panel).toContain('setActivePathway(null)');
+    expect(panel).toContain('setActiveStation(null)');
+  });
+
   it('category chips resolve by label, not by a fuzzy id match', () => {
     // '_cat_DecisionMaking' does not contain 'responsibledecisionmaking', so the
     // old id-substring match returned nothing and that chip filtered the grid to
@@ -216,6 +231,42 @@ describe.skipIf(!R)('SEL Hub · rendered navigation affordances', () => {
     expect(chips.length).toBeGreaterThan(0);
     const empty = chips.map((c) => c.getAttribute('aria-label')).filter((l) => /\(0 tools\)/.test(l));
     expect(empty, `category chips that would filter to an empty grid: ${empty.join(', ')}`).toEqual([]);
+  });
+
+  it('a card is named by its tool, not by a paragraph', () => {
+    // The accessible name used to carry the description, the guidance mode and
+    // note, the boundary and the teacher cue. Across the grid that was 17,132
+    // characters, worst case 3,491 on one card, so the catalog could not be
+    // skimmed by ear at all. Detail moved to aria-describedby.
+    const cards = [...doc.querySelectorAll('[data-sel-tool-card-id]')];
+    const lens = cards.map((c) => (c.getAttribute('aria-label') || '').length);
+    const total = lens.reduce((a, b) => a + b, 0);
+    const worst = Math.max(...lens);
+    expect(worst, `longest card name is ${worst} characters`).toBeLessThan(120);
+    expect(total, `hearing the whole grid costs ${total} characters`).toBeLessThan(6000);
+  });
+
+  it('every card points at a description that exists and is unique', () => {
+    const cards = [...doc.querySelectorAll('[data-sel-tool-card-id]')];
+    const ids = cards.map((c) => c.getAttribute('aria-describedby'));
+    expect(ids.every(Boolean), 'every card must have aria-describedby').toBe(true);
+    expect(new Set(ids).size, 'describedby ids must be unique').toBe(ids.length);
+    const missing = ids.filter((id) => !doc.getElementById(id));
+    expect(missing, `describedby targets absent from the DOM: ${missing.join(', ')}`).toEqual([]);
+  });
+
+  it('the detail survives the move into the description', () => {
+    const desc = doc.getElementById('sel-card-desc-crisiscompanion');
+    expect(desc).toBeTruthy();
+    expect(desc.textContent).toMatch(/Best for:/);
+    expect(desc.textContent.length).toBeGreaterThan(80);
+  });
+
+  it('a card that needs care still says so in its name', () => {
+    // The boundary flag changes whether you should open the tool at all, so it
+    // stays in the name rather than moving to the description.
+    const card = doc.querySelector('[data-sel-tool-card-id="crisiscompanion"]');
+    expect(card.getAttribute('aria-label')).toMatch(/Use with care/);
   });
 
   it('the chip counts account for every card in the catalog', () => {

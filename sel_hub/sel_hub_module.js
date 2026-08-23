@@ -3414,6 +3414,9 @@
         // and it is the one chip nobody would think to re-test. Match on the
         // LABEL, which both sides already share verbatim, and let the filter and
         // the counts read from the same helper so they cannot disagree again.
+        function _selCardDescId(toolId) {
+          return 'sel-card-desc-' + String(toolId).replace(/[^A-Za-z0-9_-]/g, '');
+        }
         function _selCategoryHeaderFor(catId) {
           var cat = SEL_CATEGORIES.find(function (c) { return c.id === catId; });
           if (!cat) return null;
@@ -4234,7 +4237,21 @@
                 onClick: function() {
                   openSelToolById(tool.id, tool.label);
                 },
-                'aria-label': tool.label + (tool.recommendedRange ? ' (Grades ' + tool.recommendedRange + ')' : '') + (shortDesc ? '. ' + shortDesc : '') + (guidance.mode ? '. Best for: ' + guidance.mode + '. ' + guidance.note : '') + (guidance.boundary ? '. Use with care: ' + guidance.boundary : '') + (teacherCue ? '. Teacher cue: ' + teacherCue.time + ', ' + teacherCue.format + '. ' + teacherCue.cue : ''),
+                // ── Name short, detail on request ──
+                // This used to pack the description, the guidance mode and note,
+                // the boundary and the teacher cue into the accessible NAME.
+                // Measured across the grid that came to 17,132 characters, a
+                // median of 145 and a worst case of 3,491 for a single card, so a
+                // screen-reader user could not skim the catalog at all: every
+                // arrow-key press read a paragraph. The name is now the tool and
+                // its grade band; the rest moves to a description, which assistive
+                // tech announces after the name and lets the user skip. The
+                // "use with care" flag stays in the NAME because it changes
+                // whether you should open the tool at all.
+                'aria-label': tool.label
+                  + (tool.recommendedRange ? ', grades ' + tool.recommendedRange : '')
+                  + (guidance.boundary ? '. Use with care' : ''),
+                'aria-describedby': _selCardDescId(tool.id),
                 title: tool.desc || tool.label,
                 style: {
                   display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 6,
@@ -4250,6 +4267,15 @@
                 onTouchStart: function(e) { if (isRegistered) { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 4px 20px ' + cardColor + '33'; } },
                 onTouchEnd: function(e) { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'none'; }
               },
+                h('span', {
+                  id: _selCardDescId(tool.id),
+                  style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', border: 0, padding: 0, margin: '-1px' }
+                }, [
+                  shortDesc,
+                  guidance.mode ? 'Best for: ' + guidance.mode + '. ' + (guidance.note || '') : '',
+                  guidance.boundary ? 'Use with care: ' + guidance.boundary : '',
+                  teacherCue ? 'Teacher cue: ' + teacherCue.time + ', ' + teacherCue.format + '. ' + teacherCue.cue : ''
+                ].filter(Boolean).join(' ')),
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, width: '100%' } },
                   h('span', { 'aria-hidden': 'true', style: { fontSize: 24 } }, tool.icon),
                   h('span', { style: { fontSize: 14, fontWeight: 700, color: _t.text, flex: 1 } }, tool.label),
@@ -4318,11 +4344,33 @@
               );
             })
           ),
-          // No results
-          _searchLower && _filteredTools.length === 0 && h('div', { style: { textAlign: 'center', padding: '48px 0', color: _t.textMuted } },
-            h('div', { style: { fontSize: 32, marginBottom: 8 } }, '\uD83D\uDD0D'),
-            h('p', { style: { fontSize: 14, fontWeight: 700, color: _t.text } }, 'No tools match "' + selToolSearch + '"'),
-            h('p', { style: { fontSize: 12 } }, 'Try calm, feelings, stress, friend, write, decision, or sleep.')
+          // \u2500\u2500 Empty state \u2500\u2500
+          // Was gated on `_searchLower`, so an empty grid reached any other way
+          // (a category chip, a pathway, a station, or any combination) rendered
+          // nothing at all: no message, no explanation, no way back. It now
+          // triggers on the count, names every filter that is actually applied,
+          // and offers the one action that always works.
+          _selVisibleCount === 0 && h('div', { style: { textAlign: 'center', padding: '48px 16px', color: _t.textMuted } },
+            h('div', { 'aria-hidden': 'true', style: { fontSize: 32, marginBottom: 8 } }, '\uD83D\uDD0D'),
+            h('p', { style: { fontSize: 14, fontWeight: 700, color: _t.text, margin: '0 0 6px' } },
+              'No tools match ' + (_selActiveFilters.length ? _selActiveFilters.join(' + ') : 'the current view')),
+            h('p', { style: { fontSize: 12, margin: '0 0 14px' } },
+              'Try calm, feelings, stress, friend, write, decision, or sleep.'),
+            h('button', {
+              type: 'button',
+              onClick: function() {
+                setSelToolSearch('');
+                setSelCategoryFilter(null);
+                if (activePathway) { setActivePathway(null); setPathwayProgress({}); }
+                if (activeStation) setActiveStation(null);
+                announceToSR('Filters cleared. Showing all ' + _selTotalCount + ' tools.');
+              },
+              style: {
+                padding: '8px 16px', borderRadius: 8, cursor: 'pointer',
+                border: '1px solid ' + _t.accent, background: _t.accent, color: _t.accentText,
+                fontSize: 13, fontWeight: 800
+              }
+            }, 'Show all ' + _selTotalCount + ' tools')
           )
         );
       }
