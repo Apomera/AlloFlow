@@ -748,3 +748,51 @@ covers all four shapes: unguarded, both `||` fallbacks, and `?.`.
 `check_css_template_literals` (462 files, no stray backticks). Both quoted with
 their file counts, because a count is the only evidence a scan looked at
 anything.
+
+---
+
+## 13. 2026-08-23 — what a tool declares when it registers  (local, unpushed)
+
+`check_tool_contract` scans all 216 tools repo-wide and reported **one
+structural failure**. It was a SEL tool.
+
+### 13a. A tool invisible to every static reader
+
+`sel_tool_somaticreset.js` registered as `registerTool(TOOL_ID, {...})` — a
+**variable**, not a literal. Every static tool in the repo reads registrations by
+parsing that call: the contract check, the registry audit, the icon sweep, the
+answer-bias scanner. A variable there makes the tool invisible to all of them.
+
+Fixed to the literal `'somaticReset'`, keeping `TOOL_ID` for the state keys it
+also serves. Repo-wide structural failures: **1 → 0.**
+
+### 13b. Three tools shown to students by their raw id
+
+The Station Builder picker resolves a tool's display name as
+`name || label || id`. Three configs declared neither — they used `title`, which
+nothing reads — so the picker showed **`peersupport`, `sociallab` and
+`voicedetective`** rather than "Peer Support Coach", "Social Skills Roleplay"
+and "Voice Detective". This is the tail of the old SELUX‑5 finding; the fallback
+chain itself was fixed long ago, but these three still fell off the end of it.
+
+Each now carries its hub-card name, so a tool is called the same thing wherever
+it appears.
+
+### 13c. A correction worth recording
+
+I first believed **four** tools were affected and "fixed" all four. On checking,
+`conflicttheater` already had a `name` and had never fallen through — my label
+addition was redundant, and worse, it disagreed with the existing name
+("Conflict Theater" vs "Conflict Theater (Beta)"), which would have left the tool
+declaring two names for itself with only one of them ever displayed.
+
+Its label is now identical to its `name`, and the guard asserts the general
+invariant — **a config may not declare two different names** — rather than
+hardcoding the four strings I happened to look at.
+
+**AARON — small inconsistency to rule on:** the registration says "Conflict
+Theater (Beta)" while the hub card says "Conflict Theater". Whether the card
+should carry the Beta marker is a product call, so I left both as they are.
+
+`tests/sel_registration_contract.test.js` covers the literal-id rule across all
+71 tools, the no-raw-id rule at runtime, and the two-names invariant.
