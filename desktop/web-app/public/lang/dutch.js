@@ -1146,7 +1146,7 @@
     "remove_standard": "Standaard verwijderen",
     "remove_concept": "Concept verwijderen",
     "choose_overwrite_version": "Kies of je de huidige tekst wilt overschrijven of een nieuwe versie wilt maken",
-    "apply_nano_edit": "Aangepaste Nano Banana-bewerking toepassen",
+    "apply_nano_edit": "Afbeeldingsbewerking toepassen",
     "link_opened_copy_paste": "Koppeling geopend. Kopieer de URL en plak deze hier.",
     "find_relevant_standards": "Relevante standaarden zoeken",
     "export_for_grading": "Werk exporteren voor beoordeling door de leerkracht (afbeeldingen verwijderd)",
@@ -1292,7 +1292,7 @@
     "writing": "Inhoud schrijven...",
     "translating": "Vertalen...",
     "generating_image": "Beeld weergeven...",
-    "refining_image": "Afbeelding verfijnen met Nano Banana...",
+    "refining_image": "Afbeelding bewerken...",
     "saving_draft": "Concept opslaan...",
     "saved_device": "Opgeslagen op apparaat",
     "language": "Taal",
@@ -2371,8 +2371,8 @@
     "share_resource_pack": "Bronpakket delen"
   },
   "input": {
-    "placeholder": "Plak hier curriculumtekst, upload een PDF-/afbeeldings-/tekst-/audiobestand (max. 20MB) of gebruik 'Brontekst genereren'...",
-    "upload_tooltip": "PDF-, afbeeldings-, tekst-, audio- of videobestand uploaden",
+    "placeholder": "Plak hier de lestekst, upload een document of lespresentatie, afbeelding, audio of video, of gebruik 'Brontekst genereren'...",
+    "upload_tooltip": "Upload een document, een bewerkbare PowerPoint-lespresentatie, afbeelding, audio of video",
     "topic": "Onderwerp / Vak",
     "tone": "Toon / Stijl",
     "target_level": "Doelniveau",
@@ -2594,7 +2594,7 @@
     "reading_theme": "🎨 Leesthema",
     "reading_theme_desc": "Achtergrond- en tekstkleur voor alle inhoudsweergaven",
     "voice": {
-      "label": "Verteller-stem",
+      "label": "Stem & audio",
       "helper": "Van toepassing op tekst-naar-spraak lezen, vertelling in avontuurmodus, flashcard-audio en de AI-assistent."
     }
   },
@@ -6848,18 +6848,18 @@
     "resume_btn": "Hervatten"
   },
   "session": {
-    "start": "Live les starten",
+    "start": "Live lesgeven",
     "join": "Deelnemen aan les",
-    "code": "Sessiecode",
+    "code": "Deelnamecode",
     "host_id": "Host-app-ID",
     "connected": "Verbonden met sessie!",
     "toast_connected": "Verbonden met sessie!",
     "disconnected": "Verbinding verbroken.",
     "teacher_paced": "Docentgestuurd",
-    "student_paced": "Leerlinggestuurd",
+    "student_paced": "In eigen tempo",
     "teacher_paced_desc": "Leerlingen volgen jouw scherm",
-    "student_paced_desc": "Leerlingen navigeren vrij",
-    "start_tooltip": "Live sessie starten of bekijken",
+    "student_paced_desc": "Leerlingen ontdekken zelfstandig",
+    "start_tooltip": "Geef live les of open het Live-dashboard",
     "join_tooltip": "Deelnemen aan een klassikale sessie",
     "error_no_resources": "Genereer materialen voordat je een sessie start.",
     "creating": "Sessie {code} wordt aangemaakt...",
@@ -9426,7 +9426,7 @@
     "custom_art_style_placeholder": "bijv. anime, aquarel, realistisch...",
     "edit_appearance": "Verschijning bewerken",
     "edit_name": "Naam bewerken",
-    "edit_nanobanana": "Bewerken met Nano Banana",
+    "edit_nanobanana": "Afbeelding bewerken",
     "edit_role": "Rol bewerken",
     "focus_reader": "Focuslezer",
     "generate_all": "Alles genereren",
@@ -9653,7 +9653,7 @@
     "mood_sad": "O nee...",
     "sleep_title": "Slapen (minimaliseren)",
     "sleep_aria": "Assistent minimaliseren",
-    "chat_title": "Steminstellingen",
+    "chat_title": "Instellingen voor stem & audio",
     "chat_aria": "Stem- en TTS-instellingen openen",
     "mute_on_title": "Stem dempen",
     "mute_on_aria": "Stem dempen",
@@ -9859,7 +9859,7 @@
         {
           "title": "Visuele ondersteuning",
           "icon": "ImageIcon",
-          "desc": "AI-diagrammen en illustraties. Gebruik 'Nano Banana' om tekst te verfijnen of te verwijderen.",
+          "desc": "AI-diagrammen en illustraties. Gebruik beeldbewerking om tekst te verfijnen of te verwijderen.",
           "category": "assessment",
           "color": "purple"
         },

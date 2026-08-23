@@ -456,7 +456,7 @@
     "remove_standard": "Retirer le standard",
     "remove_concept": "Retirer le concept",
     "choose_overwrite_version": "Choisir d'écraser le texte actuel ou de créer une nouvelle version",
-    "apply_nano_edit": "Appliquer la modification Nano Banana personnalisée",
+    "apply_nano_edit": "Appliquer la modification d'image",
     "link_opened_copy_paste": "Lien ouvert. Copiez l'URL et collez-la ici.",
     "find_relevant_standards": "Trouver les standards pertinents",
     "export_for_grading": "Exporter le travail pour notation par l'enseignant (images retirées)",
@@ -604,7 +604,7 @@
     "writing": "Rédaction du contenu...",
     "translating": "Traduction...",
     "generating_image": "Rendu visuel en cours...",
-    "refining_image": "Affinement de l'image avec Nano Banana...",
+    "refining_image": "Modification de l'image...",
     "saving_draft": "Enregistrement du brouillon...",
     "saved_device": "Enregistré sur l'appareil",
     "language": "Langue",
@@ -1506,7 +1506,7 @@
     "reading_theme": "🎨 Thème de lecture",
     "reading_theme_desc": "Couleur de fond et du texte pour toutes les vues de contenu",
     "voice": {
-      "label": "Voix du narrateur",
+      "label": "Voix et audio",
       "helper": "S'applique à la lecture à voix haute, à la narration en mode aventure, à l'audio des cartes mémoire et à l'Assistant IA."
     }
   },
@@ -1716,8 +1716,8 @@
     "share_resource_pack": "Partager le pack de ressources"
   },
   "input": {
-    "placeholder": "Collez le texte du programme ici, téléversez un fichier PDF/Image/Texte/Audio (max 20 Mo), ou utilisez « Générer le texte source »...",
-    "upload_tooltip": "Téléverser un fichier PDF, Image, Texte, Audio ou Vidéo",
+    "placeholder": "Collez ici le texte du programme, importez un document ou un diaporama de leçon, une image, un fichier audio ou une vidéo, ou utilisez 'Générer un texte source'...",
+    "upload_tooltip": "Importez un document, un diaporama PowerPoint modifiable, une image, un fichier audio ou une vidéo",
     "topic": "Sujet / Matière",
     "tone": "Ton / Style",
     "target_level": "Niveau cible",
@@ -3975,7 +3975,7 @@
     "custom_art_style_placeholder": "ex. anime, aquarelle, réaliste...",
     "edit_appearance": "Modifier l'apparence",
     "edit_name": "Modifier le nom",
-    "edit_nanobanana": "Modifier avec Nano Banana",
+    "edit_nanobanana": "Modifier l'image",
     "edit_role": "Modifier le rôle",
     "focus_reader": "Lecteur de concentration",
     "generate_all": "Tout générer",
@@ -7238,18 +7238,18 @@
     }
   },
   "session": {
-    "start": "Démarrer la classe en direct",
+    "start": "Enseigner en direct",
     "join": "Rejoindre la classe",
-    "code": "Code de session",
+    "code": "Code d'accès",
     "host_id": "ID de l'application hôte",
     "connected": "Connecté à la session !",
     "toast_connected": "Connecté à la session !",
     "disconnected": "Déconnecté.",
-    "teacher_paced": "Au rythme de l'enseignant",
+    "teacher_paced": "Dirigé par l'enseignant",
     "student_paced": "Au rythme de l'élève",
     "teacher_paced_desc": "Les élèves suivent votre écran",
-    "student_paced_desc": "Les élèves naviguent librement",
-    "start_tooltip": "Démarrer ou voir la session en direct",
+    "student_paced_desc": "Les élèves explorent en autonomie",
+    "start_tooltip": "Enseignez en direct ou ouvrez le Tableau de bord en direct",
     "join_tooltip": "Rejoindre une session de classe",
     "error_no_resources": "Générez des ressources avant de démarrer une session.",
     "creating": "Création de la session {code}...",
@@ -9046,7 +9046,7 @@
         {
           "title": "Soutien visuel",
           "icon": "ImageIcon",
-          "desc": "Diagrammes et illustrations IA. Utilise « Nano Banana » pour affiner ou retirer le texte.",
+          "desc": "Diagrammes et illustrations IA. Utilise l'édition d'image pour affiner ou retirer le texte.",
           "category": "assessment",
           "color": "purple"
         },
@@ -11541,7 +11541,7 @@
     "mood_sad": "Oh non...",
     "sleep_title": "Mettre en veille (réduire)",
     "sleep_aria": "Réduire l'assistant",
-    "chat_title": "Paramètres de voix",
+    "chat_title": "Paramètres de voix et audio",
     "chat_aria": "Ouvrir les paramètres de voix et TTS",
     "mute_on_title": "Couper la voix",
     "mute_on_aria": "Couper la voix",

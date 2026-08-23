@@ -57,6 +57,7 @@ function placeholders(s) {
 }
 
 const errors = [];
+const packCache = {};
 let entryCount = 0;
 for (const [slug, entries] of Object.entries(payload)) {
   if (!knownSlugs.has(slug)) { errors.push(`${slug}: not a translatable pack slug`); continue; }
@@ -64,6 +65,24 @@ for (const [slug, entries] of Object.entries(payload)) {
     entryCount++;
     const where = `${slug} / ${key}`;
     if (!(key in source)) { errors.push(`${where}: key absent from the English source`); continue; }
+    // A handful of canonical keys are array-valued (about.features_list.items,
+    // codenames.*). Those are structured data: only the leaf strings may change.
+    if (Array.isArray(source[key])) {
+      if (!Array.isArray(value)) { errors.push(`${where}: English is an array; value must be an array too`); continue; }
+      // Shape is checked against the PACK's own current array, not the English: packs
+      // legitimately hold fewer entries than the English (a gap-report concern), and a
+      // surgical edit must not add, drop, or reorder items. Falls back to the English
+      // shape only when the pack has no array yet.
+      const packNow = (packCache[slug] || (packCache[slug] = L.loadPack(slug) || {}))[key];
+      const ref = Array.isArray(packNow) ? packNow : source[key];
+      const refLabel = Array.isArray(packNow) ? 'the pack' : 'the English';
+      if (value.length !== ref.length) {
+        errors.push(`${where}: array length ${value.length} != ${refLabel} ${ref.length}`); continue;
+      }
+      const shape = a => a.map(o => (o && typeof o === 'object' ? Object.keys(o).sort().join(',') : typeof o)).join('|');
+      if (shape(value) !== shape(ref)) { errors.push(`${where}: array item shape differs from ${refLabel}`); continue; }
+      continue;
+    }
     if (typeof value !== 'string' || !value.trim()) { errors.push(`${where}: value must be a non-empty string`); continue; }
     const en = L.norm(source[key]);
     if (!ALLOW_PASSTHROUGH && L.norm(value) === en) { errors.push(`${where}: value is identical to the English (passthrough)`); continue; }
