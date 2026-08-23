@@ -146,6 +146,22 @@ describe('galaxy readability contracts', () => {
     expect(s).toMatch(/example:\s*'61 Cygni A'/);
   });
 
+  it.each(PATHS)('%s gives spirals anti-clip tuning instead of the identity config', (p) => {
+    const s = src(p);
+    // Spirals shipped with morphologyVisual as all-1s/0s while ellipticals and
+    // irregulars carried anti-clip tuning, and ~10% of the canvas (25% of the
+    // core box) clipped to pure white: the arms the "young blue stars" callout
+    // points at rendered as textureless white regions. Attribution showed the
+    // 25,000-point additive star field owned 6.26 of 6.74 clip points, and the
+    // fix lever is point SIZE (overlap scales with its square), not opacity.
+    // Tuned to 3.07% against dev-tools/galaxy_core_clipping.cjs - re-run that
+    // probe before loosening anything here.
+    expect(s, 'spiral exposureBias reset to identity 0').not.toMatch(/exposureBias:\s*0\s*,/);
+    expect(s, 'spiral bloomThreshold reset to identity 0').not.toMatch(/bloomThreshold:\s*0\s*,/);
+    expect(s, 'spiral pointScale reset to identity 1').not.toMatch(/pointScale:\s*1\s*,/);
+    expect(s, 'spiral stellarOpacity reset to identity 1').not.toMatch(/stellarOpacity:\s*1\s*,/);
+  });
+
   it.each(PATHS)('%s keeps range controls at a 24px pointer target', (p) => {
     const s = src(p);
     // h-1.5 / h-2 on a range input makes the whole control 6-8px tall.

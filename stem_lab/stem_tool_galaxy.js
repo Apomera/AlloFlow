@@ -666,20 +666,34 @@ if (!window._galaxyHasLoadedOnce) {
             bulgeOpacity: 0.12,
             hiddenLayers: { bulge: true }
           } : {
-            pointScale: 1,
-            glowPointSize: 0.046,
-            diskGlow: 1,
-            armGlow: 1,
-            coreGlow: 1,
-            bloomStrength: 1,
-            bloomThreshold: 0,
-            exposureBias: 0,
+            // Spirals shipped as the untuned identity config while ellipticals and
+            // irregulars got anti-clip passes above, and it showed: ~10% of the
+            // canvas (25% of the core box) rendered as clipped white, and the arms
+            // the "young blue stars" callout points at were solid white sausages
+            // with no colour in them. Per-object attribution found the owner: the
+            // 25,000-point additive star field alone accounted for 6.26 of 6.74
+            // clip points. On an additive stack the sum at a pixel is overlap
+            // count x per-star output, and overlap scales with the SQUARE of point
+            // size, so pointScale is the lever that unclips dense arm spines while
+            // a lone outskirt star keeps its full brightness; opacity alone barely
+            // moved the number (the spine oversums by ~10x, halving still clips).
+            // Tuned against dev-tools/galaxy_core_clipping.cjs: 9.95% -> 3.07%
+            // clip, and the arms resolve into individual coloured stars instead of
+            // white foam. Re-run that probe before raising any of these.
+            pointScale: 0.46,
+            glowPointSize: 0.03,
+            diskGlow: 0.9,
+            armGlow: 0.66,
+            coreGlow: 0.78,
+            bloomStrength: 0.6,
+            bloomThreshold: 0.06,
+            exposureBias: -0.12,
             sparkleDensity: 1,
             sparkleScale: 1,
             diffractionScale: 1,
-            stellarOpacity: 1,
-            microStarOpacity: 1,
-            bulgeOpacity: 1,
+            stellarOpacity: 0.44,
+            microStarOpacity: 0.85,
+            bulgeOpacity: 0.9,
             hiddenLayers: {}
           };
 
@@ -3114,7 +3128,7 @@ if (!window._galaxyHasLoadedOnce) {
               gCtx.fillStyle = gGrad; gCtx.fillRect(0,0,32,32);
               var gasTex = tuneGalaxyTexture(new THREE.CanvasTexture(gasCv));
               
-              var gasBaseSize = galaxyType === 'irregular' ? 0.038 : 0.06, gasBaseOpacity = galaxyType === 'irregular' ? 0.045 : 0.06;
+              var gasBaseSize = galaxyType === 'irregular' ? 0.038 : 0.044, gasBaseOpacity = galaxyType === 'irregular' ? 0.045 : 0.06;
               gasMat = new THREE.PointsMaterial({ size: gasBaseSize, transparent: true, opacity: gasBaseOpacity, blending: THREE.AdditiveBlending, depthWrite: false, vertexColors: true, map: gasTex });
               gasMat.userData = { baseSize: gasBaseSize, baseOpacity: gasBaseOpacity, modeOpacity: gasBaseOpacity };
               adaptiveDensePointMaterials.push(gasMat);
