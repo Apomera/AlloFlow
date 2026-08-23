@@ -143,6 +143,14 @@ Three independent blind spots, all measured rather than assumed:
    in the `_xxC` migrations is unreachable in production.
 3. **The audit's "What Looks Strong" bullets are hardcoded strings**, printed
    unconditionally. They would read identically with 500 errors.
+4. **Neither a11y gate has a runner.** `package.json` wires only
+   `check_sel_render.cjs` into `verify:gate` (and `verify:sel-render`).
+   `check_sel_a11y.cjs` and `check_sel_hub_wcag.cjs` are referenced by **no npm
+   script at all**, so `a11y-audit/sel_*.json|md` only refresh when someone
+   invokes them by hand — the committed report can be arbitrarily stale as well
+   as near-sighted. Wire them in **after** fixing 1 and 3, not before: gating on
+   a probe that grades 30% of the text would add false assurance rather than
+   remove it.
 
 Nothing here needs a decision from you; items 1 and 3 are straightforward gate
 fixes. Item 2 is worth a conversation, because it means the light-mode half of
@@ -197,8 +205,10 @@ Full SEL suite green (67 files, 657 tests); `check_sel_render` 71/71;
 
 ### 5e. What is left, in priority order
 
-1. **The gate fixes above (5a.1 and 5a.3).** Until the probe can see inherited
-   backgrounds, none of this is protected outside the one new guard test.
+1. **The gate fixes above (5a.1, 5a.3), then wiring them up (5a.4).** Until the
+   probe can see inherited backgrounds *and* something runs it, none of this is
+   protected outside the one new guard test — which does run, since it lives in
+   `tests/` and vitest picks it up automatically.
 2. **The remaining 133 failures across 25 tools.** These are per-tool hardcoded
    accents on the dark shell, not a shared helper, so there is no second
    one-line win here. By foreground hue (nodes / distinct tools):
