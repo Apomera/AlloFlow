@@ -500,3 +500,68 @@ the pre-fix files.
 5×. That is the canonical monolith, not mine to edit, and the scanner's own note
 cites `mathFluencyActive` — a write-only hook whose caller was recording
 fabricated CBM probe results. Worth a look.
+
+---
+
+## 9. 2026-08-23 CONTRAST PASS 2 — 98 → 25  (local, unpushed)
+
+Picked the §6e backlog back up, starting by splitting it **by theme**. That was
+the whole finding: **high contrast held 50 of the 98 warnings, and 36 of those
+were below 1.5:1.** The mode that exists for people who cannot read low contrast
+was the mode most likely to render invisible text.
+
+### 9a. Colour helpers have roles, and the roles were being crossed
+
+`_xxBg` is for surfaces, `_xxFg` for text, `_xxBd` for borders. In high contrast
+the surface map sends accents to `#000000` and the text map sends them to
+`#ffff00`, so picking the wrong one is not a shade-off — it is black text on a
+black card.
+
+- **Seven tools** (`sfbt`, `bigFeelings`, `behavioralActivation`, `bodyStory`,
+  `sensoryRegulation`, `sleep`, `valuesCommittedAction`) had a shared card helper
+  that takes an accent **hue** and uses it as **text**, while callers pre-mapped
+  it through the **background** helper. Helpers now route the hue themselves,
+  callers pass the raw hue, and the hues gained `_xx_FGH` entries.
+- **`strengths`: one line, 26 failures.** `var bgDark = _strFg('#0f172a')` — the
+  tool's root **surface** routed through the **foreground** map, so in high
+  contrast the whole tool rendered `#ffff00` on `#ffff00`. The indirection
+  through a variable is why a `background: _strFg(` scan never saw it.
+- **`upstander`**: a card was half-migrated — the open state routed through
+  `_upC`, the closed state kept a raw `#fffaf0` — under text that is
+  `color:'inherit'`. So the shell's light text landed on a light card at 1.43:1,
+  and high-contrast yellow at **1.03:1**.
+- **`crewProtocols`, `orientations`, `sensoryRegulation`**: accents simply
+  missing from the high-contrast foreground map, sitting just under AA on black
+  (violet 3.69, red 4.35).
+
+### 9b. The 988 footer was a light island in every tool that mounts it
+
+`SelHub.renderResourceFooter` — the crisis-resources footer with the 988 and
+Crisis Text Line numbers, mounted from **~14 call sites** — was hardcoded to a
+light amber card with **no theme awareness at all**. Inside the dark tool shell
+it was a light island, and in high contrast it stayed light while inherited text
+went yellow: **1.03:1 on the one surface a student in crisis most needs to
+read**.
+
+It now picks its skin from theme flags the hub publishes at render time, so
+every existing call site keeps working unchanged. Light surfaces surviving high
+contrast across the hub: **11 → 1**.
+
+### 9c. Accents that double as fills need an ink of their own
+
+`voicedetective` and `emotions` use their accents as chip fills and left rules as
+well as label text, so the hue cannot be lightened at source — lighten it for the
+label and you lighten the chip the label sits on. Both now carry a
+**foreground-only ink map** alongside their existing remap, consulted only from a
+`color:` position. Each went 10 → 0.
+
+### 9d. Where it stands
+
+**98 → 25, no regressions.** `dev-tools/sel_contrast_baseline.json` re-baselined
+from 98 to 25 so the ratchet holds the new floor.
+
+The remaining 25 sit in eight tools at 2 to 4 nodes each — `friendship`,
+`peersupport`, `quietQuestions`, `sociallab`, `conflicttheater`, `journal`,
+`mindfulness`, `safety`, `strengths` — all accents in the **3.7 to 4.4 band**
+against AA's 4.5. None is invisible; each needs the same ink treatment applied
+tool by tool.
