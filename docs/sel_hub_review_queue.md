@@ -796,3 +796,75 @@ should carry the Beta marker is a product call, so I left both as they are.
 
 `tests/sel_registration_contract.test.js` covers the literal-id rule across all
 71 tools, the no-raw-id rule at runtime, and the two-names invariant.
+
+---
+
+## 14. 2026-08-23 — two sweeps, mostly negative results  (local, unpushed)
+
+Negative results are worth recording: they say where the hub is *not* broken, so
+nobody re-audits it.
+
+### 14a. Half-finished features: exactly one
+
+Swept all 71 tools for the Mantras shape — a variable assigned a rendered element
+and then never read, so the content is built and dropped. Ran it first by naming
+convention, then with the name filter removed entirely.
+
+**One occurrence: `mantrasContent` in `mindfulness`.** The hub does not have a
+systemic half-finished-feature problem; it has this one, still awaiting your call
+(§8e).
+
+The check now lives in the find-deref suite rather than its own file, because
+that suite already parses every SEL file with acorn — splitting them would parse
+all 71 twice for nothing. Its walk carries the parent node, which is what lets it
+tell a *read* from an assignment target, an object key or a member property; a
+text scan cannot. Calibrated both ways, and it pins the known exception to
+exactly one name, so if Mantras is ever finished the test says so rather than
+going quietly green.
+
+### 14b. "Clear my SEL data" — checked, and correct
+
+`alloflow_student_artifacts` does not match the clear function's key scan
+(`/^(alloflow_sel_|alloSel|crisisCompanion\.)/`), which looked like a leak: SEL
+Share Packets living on after the button claims to have removed them.
+
+It is not. That key is a **shared cross-app registry** — AlloHaven, export,
+Poet Tree and Story Forge all read it — so wiping it wholesale would delete a
+student's work from other tools. The clear instead filters the registry state for
+`source === 'sel_hub'`, and the effect that owns the key writes the filtered list
+back. Both SEL artifact-creation sites do carry that marker, so the filter
+catches them.
+
+Correct as written. **Third time this round that checking before changing
+prevented a wrong fix** — the other two were a "dead" icon tie that was really
+taste, and a fourth tool I "fixed" that had never been broken (§13c).
+
+### 14c. AARON — shared-device leakage between students
+
+Seven localStorage keys are **not scoped to a student**:
+
+```
+alloflow_sel_snapshots          alloflow_sel_streak
+alloflow_sel_station_progress   alloflow_sel_tool_usage
+alloflow_sel_stations           alloflow_student_artifacts
+alloSelVoiceDetective
+```
+
+On a shared device — a classroom Chromebook, a kiosk — the next student sees the
+previous one's saved SEL work, streak and tool history. `crisiscompanion` is the
+exception: SEL‑PRIV‑2 gave it a session+codename namespace via `ccKey()`, and
+that is the pattern the rest would follow.
+
+**I have not changed these**, because it is not a mechanical fix:
+
+1. **What identity scopes the key** — session code, codename, profile? `ccKey()`
+   chose session+codename; whether that is right for streaks and stations is a
+   product question.
+2. **Migration.** Re-keying orphans every student's existing saved work unless a
+   one-time migration moves it, and a botched migration loses journals.
+3. **Which keys *should* stay shared.** `alloflow_sel_stations` is
+   teacher-authored configuration, and `alloflow_student_artifacts` is the
+   cross-app registry above. Both are arguably device-level on purpose.
+
+This is the remaining half of SEL‑PRIV‑2, and it needs your call on all three
+before it is safe to touch.
