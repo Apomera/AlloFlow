@@ -565,3 +565,66 @@ The remaining 25 sit in eight tools at 2 to 4 nodes each — `friendship`,
 `mindfulness`, `safety`, `strengths` — all accents in the **3.7 to 4.4 band**
 against AA's 4.5. None is invisible; each needs the same ink treatment applied
 tool by tool.
+
+---
+
+## 10. 2026-08-23 — SEL Hub contrast reaches zero  (local, unpushed)
+
+**25 → 0.** `dev-tools/sel_contrast_baseline.json` re-cut to 0, so the ratchet
+now holds the floor rather than a backlog.
+
+### 10a. One more systematic defect in the tail
+
+**115 sites across 16 tools** were written as:
+
+```js
+color: _xxFg(isActive) ? ACCENT : _xxFg('#94a3b8')
+```
+
+The remap helper is wrapped around the **condition** instead of the colour. It
+looks fine and behaves fine — `_xxFg(true)` returns `true`, so the ternary still
+picks the right branch — but **the selected-state colour never goes through the
+remap at all**. Active tabs, chosen chips and completed steps kept their
+light-mode hue on the dark shell and in high contrast.
+
+Unwrapping the condition is behaviour-preserving; wrapping the true branch is
+what was intended. **51 colours are now routed that never were.** Worst
+offenders: `mindfulness` (31 sites), `zones` (20), `advocacy` (19), `journal` (14).
+
+### 10b. The rest of the tail
+
+- `friendship`, `peersupport`, `sociallab` use one `_xxC` map for surfaces **and**
+  text, so an accent cannot be lightened for its label without lightening the
+  chip it sits on. Each gained a **foreground-only ink map**, consulted only from
+  a `color:` position.
+- `conflicttheater`, `quietQuestions`, `strengths` had **no dark foreground map at
+  all** — their `_xxFg` dark branch was still the identity. Added and wired.
+- `journal` and `safety` needed their accent in the high-contrast map;
+  `mindfulness` had six raw literals bypassing its helper.
+
+### 10c. New gate — a crash class I caused twice
+
+A theme helper is declared inside `render(ctx)` because it needs the theme, but
+the colour data it remaps usually sits in a **module-scope array above that
+point**. Routing one of those literals through the helper parses fine and throws
+`ReferenceError` the moment the file loads, dropping the tool silently out of the
+registry. `check_sel_render` only notices as **"71 tools" quietly becoming 70**.
+
+`tests/sel_contrast_shell_regression.test.js` now checks every tool for a helper
+called above its own definition. It **blanks comments first** — four files
+explain the helper in prose that spells out `_coC('#hex')`, which a naive scan
+reads as a call site — and carries a calibration case. Verified it catches the
+real `strengths` bug at line 70.
+
+### 10d. Where the whole contrast effort landed
+
+| | warnings |
+|---|---|
+| Start (once the probe could see) | 287 nodes / 182 gate warnings |
+| After the shared `tagStyle` + crisiscompanion fixes | 133 |
+| After the dark foreground maps | 98 |
+| After the high-contrast pass | 25 |
+| **Now** | **0** |
+
+Coverage is 14,196 text nodes graded per run, with 921 gradient-backed and 933
+class-sourced colours reported as **ungraded rather than passing**.
