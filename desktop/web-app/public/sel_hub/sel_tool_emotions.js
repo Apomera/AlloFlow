@@ -20473,7 +20473,7 @@ if (activeTab === 'iceberg') {
         pair.hidden.map(function(hidden) {
           var revealed = !!ibRevealed[hidden.id];
           return h('div', { key: hidden.id, style: { padding: 12, borderRadius: 10, background: revealed ? '#042f2e' : P.card, border: '1px solid ' + (revealed ? '#14b8a6' : P.borderDim), cursor: 'pointer' },
-            onClick: function() { var n = Object.assign({}, ibRevealed); n[hidden.id] = !n[hidden.id]; upd({ ibRevealed: n }); if (soundEnabled) sfxReveal(); }
+            role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.currentTarget.click(); } }, onClick: function() { var n = Object.assign({}, ibRevealed); n[hidden.id] = !n[hidden.id]; upd({ ibRevealed: n }); if (soundEnabled) sfxReveal(); }
           },
             h('div', { style: { color: revealed ? '#5eead4' : P.text2, fontSize: 13, fontWeight: 700 } }, hidden.label),
             revealed ? h('p', { style: { margin: '6px 0 0', color: ST('#a7f3d0'), fontSize: 12, lineHeight: 1.55 } }, hidden.desc) :
@@ -20919,7 +20919,7 @@ if (activeTab === 'atlas') {
         filtered.map(function(em) {
           var isOpen = atOpen === em.id;
           return h('div', { key: em.id, style: { padding: 14, borderRadius: 10, background: P.card, border: ('1px solid ' + P.border), cursor: 'pointer' },
-            onClick: function() { upd({ atOpen: isOpen ? null : em.id }); if (soundEnabled) sfxClick(); }
+            role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.currentTarget.click(); } }, onClick: function() { upd({ atOpen: isOpen ? null : em.id }); if (soundEnabled) sfxClick(); }
           },
             h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap' } },
               em.flagEmoji ? h('span', { style: { fontSize: 18 } }, em.flagEmoji) : null,
@@ -21134,7 +21134,7 @@ if (activeTab === 'compounds') {
         filtered.map(function(em) {
           var isOpen = cmpOpen === em.id;
           return h('div', { key: em.id, style: { padding: 14, borderRadius: 10, background: P.card, border: ('1px solid ' + P.border), cursor: 'pointer' },
-            onClick: function() { upd({ cmpOpen: isOpen ? null : em.id }); if (soundEnabled) sfxClick(); }
+            role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.currentTarget.click(); } }, onClick: function() { upd({ cmpOpen: isOpen ? null : em.id }); if (soundEnabled) sfxClick(); }
           },
             h('div', { style: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' } },
               h('h4', { style: { margin: 0, color: P.text, fontSize: 16, fontWeight: 800 } }, em.name),
@@ -21303,7 +21303,7 @@ if (activeTab === 'vocab') {
           var isOpen = vbOpen === em.id;
           var color = em.colorHint || P.textMuted;
           return h('div', { key: em.id, style: { padding: 10, borderRadius: 8, background: P.card, border: ('1px solid ' + P.border), borderLeft: '3px solid ' + color, cursor: 'pointer' },
-            onClick: function() { upd({ vbOpen: isOpen ? null : em.id }); if (soundEnabled) sfxClick(); }
+            role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.currentTarget.click(); } }, onClick: function() { upd({ vbOpen: isOpen ? null : em.id }); if (soundEnabled) sfxClick(); }
           },
             h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 6 } },
               em.emoji ? h('span', { style: { fontSize: 18 } }, em.emoji) : null,

@@ -828,38 +828,51 @@ window.SelHub = window.SelHub || {
               roles.map(function(role) {
                 var isExpanded = expandedRole === role.id;
                 var isSelected = selectedRoles.indexOf(role.id) !== -1;
-                return h('div', Object.assign({
-                  key: role.id,
-                  'aria-label': role.name + (isExpanded ? ' (collapse)' : ' (expand)'),
-                  'aria-expanded': isExpanded ? 'true' : 'false',
-                  style: { padding: 14, borderRadius: 12, background: isSelected ? _teaBg('#1e293b') : '#0f172a', border: '1px solid ' + (isSelected ? ACCENT + '88' : _teaBg('#334155')), cursor: 'pointer', transition: 'all 0.2s' }
-                }, a11yClick(function() {
-                    upd('expandedRole', isExpanded ? null : role.id);
-                    if (soundEnabled) sfxClick();
-                    logPractice('role_explore', role.id);
-                    // Check if all roles explored
-                    var allExplored = true;
-                    roles.forEach(function(r) {
-                      var found = false;
-                      practiceLog.concat([{ type: 'role_explore', id: role.id }]).forEach(function(e) {
-                        if (e.type === 'role_explore' && e.id === r.id) found = true;
-                      });
-                      if (!found) allExplored = false;
+                // \u2500\u2500 Disclosure, not a button inside a button \u2500\u2500
+                // The card was a role="button" (via a11yClick) that WRAPPED the
+                // real "That's Me" button. Nested interactive elements are
+                // invalid: assistive tech may never expose the inner control,
+                // and for pointer users the two activation targets overlap.
+                // The card is now a plain container holding two SIBLING
+                // controls: a disclosure button for the role, and the toggle.
+                var toggleExpand = function() {
+                  upd('expandedRole', isExpanded ? null : role.id);
+                  if (soundEnabled) sfxClick();
+                  logPractice('role_explore', role.id);
+                  // Check if all roles explored
+                  var allExplored = true;
+                  roles.forEach(function(r) {
+                    var found = false;
+                    practiceLog.concat([{ type: 'role_explore', id: role.id }]).forEach(function(e) {
+                      if (e.type === 'role_explore' && e.id === r.id) found = true;
                     });
-                    if (allExplored) tryAwardBadge('all_roles');
-                })),
+                    if (!found) allExplored = false;
+                  });
+                  if (allExplored) tryAwardBadge('all_roles');
+                };
+                return h('div', {
+                  key: role.id,
+                  style: { padding: 14, borderRadius: 12, background: isSelected ? _teaBg('#1e293b') : '#0f172a', border: '1px solid ' + (isSelected ? ACCENT + '88' : _teaBg('#334155')), transition: 'all 0.2s' }
+                },
                   h('div', { style: { display: 'flex', alignItems: 'center', gap: 10 } },
-                    h('span', { style: { fontSize: 24 } }, role.emoji),
-                    h('div', { style: { flex: 1 } },
-                      h('div', { style: { fontSize: 14, fontWeight: 600, color: _teaFg('#f1f5f9') } }, role.name),
-                      isExpanded && h('div', { style: { marginTop: 8 } },
-                        h('p', { style: { fontSize: 12, color: _teaFg('#cbd5e1'), lineHeight: 1.6, marginBottom: 8 } }, role.desc),
-                        h('div', { style: { fontSize: 12, color: ACCENT, fontStyle: 'italic', padding: '8px 12px', background: ACCENT_DIM, borderRadius: 8 } },
-                          '\uD83D\uDCAC Sounds like: ' + role.soundsLike
-                        )
-                      )
+                    h('button', {
+                      type: 'button',
+                      'aria-expanded': isExpanded ? 'true' : 'false',
+                      'aria-controls': 'teamwork-role-panel-' + role.id,
+                      onClick: toggleExpand,
+                      style: { display: 'flex', alignItems: 'center', gap: 10, flex: 1, minWidth: 0, padding: 0, border: 'none', background: 'transparent', cursor: 'pointer', textAlign: 'left', font: 'inherit' }
+                    },
+                      h('span', { 'aria-hidden': 'true', style: { fontSize: 24 } }, role.emoji),
+                      h('span', { style: { fontSize: 14, fontWeight: 600, color: _teaFg('#f1f5f9') } }, role.name)
                     ),
-                    h('button', { 'aria-label': 'Your Team Role Profile',
+                    h('button', {
+                      type: 'button',
+                      // Was labelled 'Your Team Role Profile' - the heading of a
+                      // different section further down the panel, which overrode
+                      // the visible text for screen readers. The name now keeps
+                      // the visible words and adds which role they apply to.
+                      'aria-label': (isSelected ? '\u2713 Selected' : 'That\'s Me') + ': ' + role.name,
+                      'aria-pressed': isSelected ? 'true' : 'false',
                       onClick: function(e) {
                         e.stopPropagation();
                         var newSel = selectedRoles.slice();
@@ -871,6 +884,12 @@ window.SelHub = window.SelHub || {
                       },
                       style: { padding: '6px 14px', borderRadius: 8, border: '1px solid ' + (isSelected ? ACCENT : _teaFg('#475569')), background: isSelected ? ACCENT_DIM : 'transparent', color: isSelected ? ACCENT : _teaFg('#94a3b8'), fontSize: 11, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }
                     }, isSelected ? '\u2713 Selected' : 'That\'s Me')
+                  ),
+                  isExpanded && h('div', { id: 'teamwork-role-panel-' + role.id, style: { marginTop: 8 } },
+                    h('p', { style: { fontSize: 12, color: _teaFg('#cbd5e1'), lineHeight: 1.6, marginBottom: 8 } }, role.desc),
+                    h('div', { style: { fontSize: 12, color: ACCENT, fontStyle: 'italic', padding: '8px 12px', background: ACCENT_DIM, borderRadius: 8 } },
+                      '\uD83D\uDCAC Sounds like: ' + role.soundsLike
+                    )
                   )
                 );
               })

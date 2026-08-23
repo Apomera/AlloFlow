@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-23T18:07:54.574Z",
+  "generatedAt": "2026-08-23T18:36:34.570Z",
   "toolCount": 71,
   "themesAudited": [
     "light",
@@ -2825,7 +2825,7 @@
     {
       "id": "safety",
       "label": "Safety & Boundaries",
-      "renderedBytes": 84963,
+      "renderedBytes": 86097,
       "standardShell": true,
       "issueCount": 2,
       "errorCount": 0,
@@ -2833,7 +2833,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 28321,
+          "renderedBytes": 28699,
           "standardShell": true,
           "issueCount": 1,
           "errorCount": 0,
@@ -2855,7 +2855,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 28321,
+          "renderedBytes": 28699,
           "standardShell": true,
           "issueCount": 1,
           "errorCount": 0,
@@ -2877,7 +2877,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 28321,
+          "renderedBytes": 28699,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -4222,7 +4222,7 @@
     {
       "id": "teamwork",
       "label": "Teamwork Builder",
-      "renderedBytes": 54117,
+      "renderedBytes": 58194,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -4230,7 +4230,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 18039,
+          "renderedBytes": 19398,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -4239,7 +4239,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 18039,
+          "renderedBytes": 19398,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -4248,7 +4248,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 18039,
+          "renderedBytes": 19398,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,

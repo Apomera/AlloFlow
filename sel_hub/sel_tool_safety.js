@@ -1011,7 +1011,7 @@ window.SelHub = window.SelHub || {
             var isExpanded = expandedTopic === topic.id;
             var isViewed = !!viewedTopics[topic.id];
             return h('div', {               key: topic.id,
-              onClick: function() {
+              role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.currentTarget.click(); } }, onClick: function() {
                 upd('expandedTopic', isExpanded ? null : topic.id);
                 if (!isViewed) {
                   var newViewed = Object.assign({}, viewedTopics);
@@ -1066,7 +1066,7 @@ window.SelHub = window.SelHub || {
               var isExpanded = expandedBoundary === bt.id;
               var isViewed = !!viewedBoundaryTypes[bt.id];
               return h('div', {                 key: bt.id,
-                onClick: function() {
+                role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.currentTarget.click(); } }, onClick: function() {
                   upd('expandedBoundary', isExpanded ? null : bt.id);
                   if (!isViewed) {
                     var newViewed = Object.assign({}, viewedBoundaryTypes);
@@ -1162,7 +1162,7 @@ window.SelHub = window.SelHub || {
             var isViewed = !!dsViewed[card.id];
             var isTracked = !!dsTracked[card.id];
             return h('div', {               key: card.id,
-              onClick: function() {
+              role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.currentTarget.click(); } }, onClick: function() {
                 upd('dsExpanded', isExpanded ? null : card.id);
                 if (!isViewed) {
                   var newViewed = Object.assign({}, dsViewed);
@@ -2019,7 +2019,7 @@ window.SelHub = window.SelHub || {
             var isExpanded = emExpanded === topic.id;
             var isViewed = !!emViewed[topic.id];
             return h('div', {               key: topic.id,
-              onClick: function() {
+              role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.currentTarget.click(); } }, onClick: function() {
                 upd('emExpanded', isExpanded ? null : topic.id);
                 if (!isViewed) {
                   var newViewed = Object.assign({}, emViewed);

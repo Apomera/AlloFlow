@@ -25552,7 +25552,7 @@ if (activeTab === 'mantras') {
         filtered.slice(0, 80).map(function(m) {
           var isOpen = mtOpen === m.id;
           return h('div', { key: m.id, style: { padding: 12, borderRadius: 10, background: _minBg('#1e293b'), border: '1px solid #334155', cursor: 'pointer' },
-            onClick: function() { upd({ mtOpen: isOpen ? null : m.id }); if (soundEnabled) sfxClick(); }
+            role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.currentTarget.click(); } }, onClick: function() { upd({ mtOpen: isOpen ? null : m.id }); if (soundEnabled) sfxClick(); }
           },
             h('p', { style: { margin: 0, color: _minFg('#fde68a'), fontSize: 14, fontWeight: 600, fontStyle: 'italic', lineHeight: 1.5 } }, '"' + m.phrase + '"'),
             m.pronunciation ? h('div', { style: { color: _minFg('#94a3b8'), fontSize: 10, marginTop: 2 } }, '[' + m.pronunciation + ']') : null,
@@ -25612,7 +25612,7 @@ if (activeTab === 'living') {
         filtered.map(function(s) {
           var isOpen = lvOpen === s.id;
           return h('div', { key: s.id, style: { padding: 12, borderRadius: 10, background: _minBg('#1e293b'), border: '1px solid #334155', cursor: 'pointer' },
-            onClick: function() { upd({ lvOpen: isOpen ? null : s.id }); if (soundEnabled) sfxClick(); }
+            role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.currentTarget.click(); } }, onClick: function() { upd({ lvOpen: isOpen ? null : s.id }); if (soundEnabled) sfxClick(); }
           },
             h('h5', { style: { margin: 0, color: _minFg('#f1f5f9'), fontSize: 14, fontWeight: 700 } }, s.scenario),
             h('div', { style: { color: _minFg('#94a3b8'), fontSize: 11, marginTop: 2 } }, (s.setting || '') + ' · ' + (s.durationOptions ? s.durationOptions.join(', ') : '?')),
@@ -25942,7 +25942,7 @@ if (activeTab === 'movements_lib') {
         filtered.map(function(m) {
           var isOpen = mvOpen === m.id;
           return h('div', { key: m.id, style: { padding: 12, borderRadius: 10, background: _minBg('#1e293b'), border: '1px solid #334155', cursor: 'pointer' },
-            onClick: function() { upd({ mvOpen: isOpen ? null : m.id }); if (soundEnabled) sfxClick(); }
+            role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.currentTarget.click(); } }, onClick: function() { upd({ mvOpen: isOpen ? null : m.id }); if (soundEnabled) sfxClick(); }
           },
             h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 6 } },
               h('span', { style: { fontSize: 18 } }, m.icon || '🧘'),

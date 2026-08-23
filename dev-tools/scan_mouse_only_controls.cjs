@@ -38,6 +38,13 @@ const args = process.argv.slice(2);
 const quiet = args.includes('--quiet');
 const writeBaseline = args.includes('--update-baseline');
 const DIR = args.find((a) => !a.startsWith('--')) || path.join(ROOT, 'stem_lab');
+// The filename filter used to be hardcoded to stem_tool_*.js, so pointing this
+// at any other directory scanned ZERO files and printed a clean report. That is
+// worse than no coverage, because the report looks like a pass. --pattern lets
+// a caller name the files; --baseline keeps each corpus's accepted list separate.
+const patternArg = args.find((a) => a.startsWith('--pattern='));
+const FILE_RE = patternArg ? new RegExp(patternArg.slice('--pattern='.length)) : /^stem_tool_.*\.js$/;
+const baselineArg = args.find((a) => a.startsWith('--baseline='));
 
 const NATIVE_OK = new Set(['button', 'a', 'input', 'select', 'textarea', 'summary', 'option', 'label']);
 const ELEMENT_FNS = new Set(['createElement', 'h', 'H', 'el', 'e']);
@@ -103,11 +110,19 @@ function scanFile(src) {
   return { hits };
 }
 
-const BASELINE_FILE = path.join(__dirname, 'mouse_only_controls_baseline.json');
+const BASELINE_FILE = baselineArg
+  ? path.resolve(ROOT, baselineArg.slice('--baseline='.length))
+  : path.join(__dirname, 'mouse_only_controls_baseline.json');
 let baseline = {};
 try { baseline = JSON.parse(fs.readFileSync(BASELINE_FILE, 'utf8')).accepted || {}; } catch (e) {}
 
-const files = fs.readdirSync(DIR).filter((f) => /^stem_tool_.*\.js$/.test(f));
+const files = fs.readdirSync(DIR).filter((f) => FILE_RE.test(f));
+if (files.length === 0) {
+  // Refuse to report a pass on an empty set. A scan that matched nothing is a
+  // configuration error, not a clean bill of health.
+  console.error('scan_mouse_only_controls: pattern ' + FILE_RE + ' matched NO files in ' + DIR + ' - nothing was scanned.');
+  process.exit(2);
+}
 let bad = 0, total = 0, parseErrors = 0;
 const found = {};
 for (const f of files) {

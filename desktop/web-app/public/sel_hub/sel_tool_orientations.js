@@ -585,7 +585,22 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('orientations')))
         var nodes = TRADITIONS.map(function (t) {
           var p = PLACEMENTS[t.id]; if (!p) return null;
           var vx = p[cx][0], vy = p[cy][0], hx = p[cx][1], hy = p[cy][1];
-          return h('g', { key: t.id, style: { cursor: 'pointer' }, onClick: function () { setOR({ view: 'detail', detailId: t.id }); } },
+          // Each plotted tradition is the only way into its detail view, and it
+          // was pointer-only: no role, no tabIndex, no key handler and no name,
+          // so a keyboard or screen-reader user could not open any of the eight.
+          // The key handler calls the logic DIRECTLY rather than going through
+          // currentTarget.click(): SVGElement.click() is not dependable, and one
+          // shared function keeps pointer and keyboard from drifting apart.
+          var openTradition = function () { setOR({ view: 'detail', detailId: t.id }); };
+          return h('g', {
+            key: t.id,
+            style: { cursor: 'pointer' },
+            role: 'button',
+            tabIndex: 0,
+            'aria-label': t.name,
+            onClick: openTradition,
+            onKeyDown: function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openTradition(); } }
+          },
             h('ellipse', { cx: px(vx), cy: py(vy), rx: Math.max(10, hx * pw), ry: Math.max(10, hy * ph), fill: t.color + '26', stroke: t.color, strokeWidth: 1.5 }),
             h('text', { x: px(vx), y: py(vy) + 5, textAnchor: 'middle', fontSize: 16 }, t.icon),
             h('text', { x: px(vx), y: py(vy) + 22, textAnchor: 'middle', fontSize: 9, fill: _oriFg('#cbd5e1'), fontWeight: 700 }, t.name.split(' (')[0].split(' ')[0])
