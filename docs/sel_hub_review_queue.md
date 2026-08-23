@@ -868,3 +868,50 @@ that is the pattern the rest would follow.
 
 This is the remaining half of SEL‑PRIV‑2, and it needs your call on all three
 before it is safe to touch.
+
+---
+
+## 15. 2026-08-23 — 47 tab presses to reach the first tool  (local, unpushed)
+
+Measured the keyboard journey through the rendered catalog rather than guessing
+at it:
+
+| | |
+|---|---|
+| total tab stops on the page | **117** |
+| stops before the first tool card | **46** |
+| tool cards (each its own stop) | 71 |
+| skip links | **0** |
+
+So a keyboard or switch user pressed Tab **47 times** before reaching a single
+tool, then up to 70 more to cross the grid.
+
+The 46 are not padding. They are the quick actions, four teacher launch plans,
+the search box, eleven "I need…" chips, ten category filters, eight pathways and
+the station builder — every one a real control someone put there deliberately.
+The fix is therefore not fewer stops; it is a documented way past them. That is
+WCAG 2.4.1, Bypass Blocks, and it needs no design decision.
+
+### What changed
+
+A **"Skip to the tool list"** control is now the first thing in the catalog body
+— tab stop **4**, straight after the three header buttons. Reaching the tools
+costs 4 presses instead of 47.
+
+It is a `button`, not an anchor, on purpose: this panel is a modal surface inside
+an SPA and a `#hash` target would change the URL under the host app. It moves
+focus to `#sel-tool-grid` (`tabIndex: -1`, so the grid can receive focus without
+becoming a tab stop of its own), scrolls it into view, and announces where you
+landed together with the current result summary — "Jumped to the tool list.
+13 tools of 71 match…".
+
+Visually hidden until focused, the conventional treatment, so nothing changes for
+pointer users.
+
+### Guard
+
+`tests/sel_hub_bypass_block.test.js` renders the catalog and asserts the skip
+control exists, sits among the first few stops, points at a target that can
+actually take focus, and — the one that matters — that **the distance it skips is
+still large**. A skip link that drifts down next to the grid saves nothing while
+still passing a naive "does it exist" check.
