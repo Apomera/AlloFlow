@@ -26,13 +26,13 @@ try {
 const files = readdirSync(resolve(ROOT, 'sel_hub')).filter((f) => /\.js$/.test(f));
 
 function isNode(v) { return v && typeof v === 'object' && typeof v.type === 'string'; }
-function walk(node, visit) {
-  visit(node);
+function walk(node, visit, parent) {
+  visit(node, parent);
   for (const k of Object.keys(node)) {
     if (k === 'loc') continue;
     const v = node[k];
-    if (Array.isArray(v)) { for (const c of v) if (isNode(c)) walk(c, visit); }
-    else if (isNode(v)) walk(v, visit);
+    if (Array.isArray(v)) { for (const c of v) if (isNode(c)) walk(c, visit, node); }
+    else if (isNode(v)) walk(v, visit, node);
   }
 }
 
@@ -95,5 +95,82 @@ describe.skipIf(!acorn)('SEL Hub · no unguarded find() dereference', () => {
     expectations.forEach(([file, needle]) => {
       expect(readFileSync(resolve(ROOT, file), 'utf8'), `${file} should contain ${needle}`).toContain(needle);
     });
+  });
+});
+
+// ── Same parse, second question: is anything built and then never shown? ──
+//
+// mindfulness carries a whole Mantras browser this way: `mantrasContent` is
+// assigned an h(...) twice and never read, so it is absent from that tool's
+// 30-entry render list and no user can reach it. About a hundred lines of
+// maintenance surface pretending to be a feature.
+//
+// Whether to finish or delete it is a content call, so it is listed here as a
+// known exception rather than asserted away. The check exists so a SECOND
+// half-finished feature cannot appear unnoticed.
+const KNOWN_UNREACHABLE = ['sel_tool_mindfulness.js:mantrasContent'];
+
+function builtButNeverShown(src) {
+  const ast = acorn.parse(src, { ecmaVersion: 'latest', sourceType: 'script', locations: true });
+  const declared = new Map();
+  const built = new Map();
+  const read = new Map();
+  walk(ast, (n, parent) => {
+    if (n.type === 'VariableDeclarator' && n.id && n.id.type === 'Identifier') {
+      declared.set(n.id.name, n.id.loc.start.line);
+      return;
+    }
+    if (n.type === 'AssignmentExpression' && n.left && n.left.type === 'Identifier') {
+      const r = n.right;
+      const isRender = r && r.type === 'CallExpression' && r.callee
+        && ((r.callee.type === 'Identifier' && r.callee.name === 'h')
+          || (r.callee.type === 'MemberExpression' && r.callee.property && r.callee.property.name === 'createElement'));
+      if (isRender) built.set(n.left.name, (built.get(n.left.name) || 0) + 1);
+      return;
+    }
+    if (n.type === 'Identifier' && parent) {
+      // a read is any occurrence that is not a declaration target, an
+      // assignment target, an object key, or a member property
+      if (parent.type === 'VariableDeclarator' && parent.id === n) return;
+      if (parent.type === 'AssignmentExpression' && parent.left === n) return;
+      if (parent.type === 'Property' && parent.key === n && !parent.computed) return;
+      if (parent.type === 'MemberExpression' && parent.property === n && !parent.computed) return;
+      read.set(n.name, (read.get(n.name) || 0) + 1);
+    }
+  }, null);
+  const dead = [];
+  declared.forEach((line, name) => {
+    if (!built.get(name) || read.get(name)) return;
+    dead.push({ name, line, builds: built.get(name) });
+  });
+  return dead;
+}
+
+describe.skipIf(!acorn)('SEL Hub · no new feature is built and then never shown', () => {
+  it.each(files)('%s', (f) => {
+    const src = readFileSync(resolve(ROOT, 'sel_hub', f), 'utf8');
+    const dead = builtButNeverShown(src)
+      .filter((d) => !KNOWN_UNREACHABLE.includes(`${f}:${d.name}`))
+      .map((d) => `${d.name} (declared line ${d.line}, built ${d.builds}x, never read)`);
+    expect(
+      dead,
+      `${f}: render content assembled and then never displayed — an unfinished feature no user can reach: ${dead.join(' | ')}`,
+    ).toEqual([]);
+  });
+
+  it('the known exception is still exactly one, and still unreachable', () => {
+    // If this starts failing because mantrasContent IS read, the feature was
+    // finished and the exception should be removed.
+    const src = readFileSync(resolve(ROOT, 'sel_hub/sel_tool_mindfulness.js'), 'utf8');
+    const dead = builtButNeverShown(src).map((d) => d.name);
+    expect(dead, 'mindfulness should still show exactly the one known dead feature').toEqual(['mantrasContent']);
+  });
+
+  it('the detection can tell built-and-shown from built-and-dropped (calibration)', () => {
+    // wrapped in a function: a bare `return` is not valid at the top level
+    const shown = 'function r() { var a = null; a = h("div", null, "x"); return h("div", null, a); }';
+    const dropped = 'function r() { var a = null; a = h("div", null, "x"); return h("div", null, "b"); }';
+    expect(builtButNeverShown(shown)).toHaveLength(0);
+    expect(builtButNeverShown(dropped).map((d) => d.name)).toEqual(['a']);
   });
 });
