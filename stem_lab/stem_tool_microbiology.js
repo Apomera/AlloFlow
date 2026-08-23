@@ -1110,8 +1110,16 @@
         '#7c3aed': '#6d28d9', '#22c55e': '#15803d', '#f59e0b': '#92400e',
         '#a78bfa': '#6d28d9'
       };
+      var microbiologyAccentInkDark = {
+        '#ef4444': '#fca5a5', '#0ea5e9': '#7dd3fc', '#a855f7': '#c4b5fd',
+        '#fbbf24': '#fde68a', '#10b981': '#6ee7b7', '#06b6d4': '#67e8f9',
+        '#7c3aed': '#a78bfa', '#22c55e': '#86efac', '#f59e0b': '#fcd34d',
+        '#a78bfa': '#c4b5fd'
+      };
       function microAccentText(color) {
-        return microbiologyDark ? color : (microbiologyAccentInk[color] || color);
+        return microbiologyDark
+          ? (microbiologyAccentInkDark[color] || color)
+          : (microbiologyAccentInk[color] || color);
       }
 
       var savedMicrobiology = (labToolData && labToolData.microbiology) || {};

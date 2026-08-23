@@ -181,7 +181,7 @@
       soft: dark ? '#111827' : '#f1f5f9',
       text: dark ? '#e2e8f0' : '#1e293b',
       sub: dark ? '#94a3b8' : '#64748b',
-      accent: contrast ? (dark ? '#7dd3fc' : '#075985') : (dark ? '#38bdf8' : '#0284c7'),
+      accent: contrast ? (dark ? '#7dd3fc' : '#075985') : (dark ? '#38bdf8' : '#0369a1'),
       // Filled (primary/pressed) buttons use a fixed sky-700 so white text
       // clears 4.5:1 in BOTH themes (the lighter dark-mode accent is 2.1:1).
       btnBg: contrast ? (dark ? '#075985' : '#0c4a6e') : '#0369a1',
@@ -710,7 +710,7 @@
       }
     };
 
-    return h('div', { 'data-accesslens-tool': 'true', style: { display: 'flex', flexDirection: 'column', gap: '14px', color: C.text, fontFamily: 'inherit' } },
+    return h('div', { 'data-accesslens-tool': 'true', style: { display: 'flex', flexDirection: 'column', gap: '14px', color: C.text, fontFamily: 'inherit', background: C.bg, borderRadius: 12, padding: 12 } },
       h('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' } },
         (ctx.setStemLabTool ? h('button', {
           type: 'button', onClick: function () { ctx.setStemLabTool(''); },

@@ -5220,7 +5220,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
       var textColor = isDark ? 'text-slate-200' : 'text-slate-800';
       var subtextColor = isDark ? 'text-slate-200' : 'text-slate-600';
 
-      return h('div', { className: 'space-y-4' },
+      // Own the ground in dark (2026-08-23): the header and tab inks already
+      // branch on isDark, but the shell painted nothing, so light inks floated
+      // on the host's white content card (40 dark violations).
+      return h('div', { className: 'space-y-4', style: isDark ? { background: '#0f172a', borderRadius: 12, padding: 12 } : undefined },
         // Header with back button
         h('div', { className: 'flex items-center justify-between' },
           h('div', { className: 'flex items-center gap-3' },

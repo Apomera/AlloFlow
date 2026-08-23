@@ -608,7 +608,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('diagnosisEligi
         );
       }
 
-      return h('div', { className: 'max-w-4xl mx-auto p-4 animate-in fade-in duration-200 motion-reduce:animate-none', style: { color: pal.text } },
+      return h('div', { className: 'max-w-4xl mx-auto p-4 animate-in fade-in duration-200 motion-reduce:animate-none', style: { color: pal.text, background: isDark ? '#0f172a' : undefined, borderRadius: isDark ? 12 : undefined } },
         h('div', { className: 'flex items-center gap-3 flex-wrap mb-2' }, backBtn,
           h('h2', { id: 'diagnosis-eligibility-title', className: 'text-xl font-black' }, '🧩 ' + __alloT('stem.elig.title', 'Diagnosis, Evaluation & School Eligibility'))),
         h('p', { id: 'diagnosis-eligibility-panel-description', className: 'text-sm mb-3', style: { color: pal.muted } },
@@ -689,7 +689,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('diagnosisEligi
                 var next = Object.assign({}, read); next[c.id] = true; setDE({ read: next });
               }
             },
-              h('summary', { className: 'cursor-pointer px-4 py-3 font-bold text-sm', style: { color: pal.text } }, (open ? '✓ ' : '') + c.title),
+              h('summary', { className: 'cursor-pointer px-4 py-3 font-bold text-sm', style: { color: pal.text, background: isDark ? '#0f172a' : undefined, borderRadius: isDark ? 12 : undefined } }, (open ? '✓ ' : '') + c.title),
               h('div', { className: 'px-4 pb-4' }, h('p', { className: 'text-sm leading-relaxed' }, c.body))
             );
           })
@@ -808,7 +808,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('diagnosisEligi
                     className: 'w-full text-left rounded-lg px-3 py-1.5 text-xs font-bold border',
                     style: open ? { background: pal.btn, color: '#fff', borderColor: pal.btn } : { background: pal.panel, color: pal.text, borderColor: pal.border }
                   }, c.name),
-                  open ? h('p', { className: 'text-[12px] leading-relaxed px-3 py-2', style: { color: pal.text } }, c.text) : null
+                  open ? h('p', { className: 'text-[12px] leading-relaxed px-3 py-2', style: { color: pal.text, background: isDark ? '#0f172a' : undefined, borderRadius: isDark ? 12 : undefined } }, c.text) : null
                 );
               })
             ),

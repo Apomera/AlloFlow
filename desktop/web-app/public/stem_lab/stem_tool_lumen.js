@@ -2308,8 +2308,8 @@
               'aria-label': title + '. ' + description
             },
               h('span', { className: 'text-2xl', 'aria-hidden': 'true' }, icon),
-              h('span', { className: 'block mt-2 font-extrabold text-base text-slate-900' }, title),
-              h('span', { className: 'block mt-1 text-sm leading-5 text-slate-600' }, description));
+              h('span', { className: 'block mt-2 font-extrabold text-base' + ((isDark || isContrast) ? '' : ' text-slate-900') }, title),
+              h('span', { className: 'block mt-1 text-sm leading-5' + ((isDark || isContrast) ? ' text-slate-300' : ' text-slate-600') }, description));
           };
           if (mode === 'home') {
             var hasCurrentSource = !!String(ctx.sourceText || ctx.inputText || '').trim();

@@ -43,13 +43,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('parentingLab')
   // Evidence badges — the four tiers, used on every card.
   // ─────────────────────────────────────────────────────────
   var BADGES = {
-    rct:      { key: 'rct',      label: 'RCT-supported',            short: 'RCT',      color: '#059669', bg: 'rgba(5,150,105,0.12)',  border: 'rgba(5,150,105,0.45)',
+    rct:      { key: 'rct',      label: 'RCT-supported',            short: 'RCT',      color: '#047857', colorDark: '#34d399', bg: 'rgba(5,150,105,0.12)',  border: 'rgba(5,150,105,0.45)',
                 meaning: 'Randomized controlled trials, replicated. The strongest tier this literature has.' },
-    meta:     { key: 'meta',     label: 'Meta-analytic association', short: 'Assoc.',  color: '#2563eb', bg: 'rgba(37,99,235,0.12)',  border: 'rgba(37,99,235,0.45)',
+    meta:     { key: 'meta',     label: 'Meta-analytic association', short: 'Assoc.',  color: '#1d4ed8', colorDark: '#60a5fa', bg: 'rgba(37,99,235,0.12)',  border: 'rgba(37,99,235,0.45)',
                 meaning: 'Robust correlations across many studies. Causation is genuinely contested — children shape parenting too, and genes travel with both.' },
-    cultural: { key: 'cultural', label: 'Culturally moderated',      short: 'Cultural', color: '#b45309', bg: 'rgba(180,83,9,0.12)',  border: 'rgba(180,83,9,0.45)',
+    cultural: { key: 'cultural', label: 'Culturally moderated',      short: 'Cultural', color: '#92400e', colorDark: '#fbbf24', bg: 'rgba(180,83,9,0.12)',  border: 'rgba(180,83,9,0.45)',
                 meaning: 'The direction or size of the effect changes across cultural contexts. A finding from one population is not a law of nature.' },
-    popular:  { key: 'popular',  label: 'Popular, not supported',    short: 'Myth-ish', color: '#be123c', bg: 'rgba(190,18,60,0.12)', border: 'rgba(190,18,60,0.45)',
+    popular:  { key: 'popular',  label: 'Popular, not supported',    short: 'Myth-ish', color: '#9f1239', colorDark: '#fb7185', bg: 'rgba(190,18,60,0.12)', border: 'rgba(190,18,60,0.45)',
                 meaning: 'Widely believed; the literature says otherwise, or says much less than the claim.' }
   };
 
@@ -783,7 +783,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('parentingLab')
         var b = BADGES[key]; if (!b) return null;
         return h('span', {
           className: 'inline-flex items-center gap-1 rounded-full font-bold',
-          style: { color: b.color, background: b.bg, border: '1px solid ' + b.border, padding: size === 'sm' ? '2px 8px' : '3px 10px', fontSize: size === 'sm' ? '10px' : '11px' },
+          style: { color: isDark ? (b.colorDark || b.color) : b.color, background: b.bg, border: '1px solid ' + b.border, padding: size === 'sm' ? '2px 8px' : '3px 10px', fontSize: size === 'sm' ? '10px' : '11px' },
           title: b.meaning
         }, b.label);
       }
@@ -808,7 +808,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('parentingLab')
       // ── The badge legend — teachable on its own ──
       function badgeLegend() {
         return h('div', { className: 'rounded-2xl p-4 mb-4', style: { background: pal.card, border: '1px solid ' + pal.border } },
-          h('h3', { className: 'text-sm font-black mb-1', style: { color: pal.text } }, __alloT('stem.parentingLab.legend_title', 'How to read the badges')),
+          h('h3', { className: 'text-sm font-black mb-1', style: { color: pal.text, background: isDark ? '#0f172a' : undefined, borderRadius: isDark ? 12 : undefined } }, __alloT('stem.parentingLab.legend_title', 'How to read the badges')),
           h('p', { className: 'text-xs mb-3', style: { color: pal.muted } }, __alloT('stem.parentingLab.legend_sub', 'Every claim in this lab carries one. Parenting advice rarely tells you which tier it comes from — that is the skill this tool teaches.')),
           h('div', { className: 'grid gap-2 sm:grid-cols-2' },
             Object.keys(BADGES).map(function(k) {
@@ -842,7 +842,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('parentingLab')
               style: { background: pal.panel, border: '1px solid ' + pal.border },
               onToggle: function(e) { if (e.target.open) markCardReadIn(cards, c.id, xpLabel); }
             },
-              h('summary', { className: 'cursor-pointer px-4 py-3 flex items-center justify-between gap-2 flex-wrap font-bold text-sm', style: { color: pal.text } },
+              h('summary', { className: 'cursor-pointer px-4 py-3 flex items-center justify-between gap-2 flex-wrap font-bold text-sm', style: { color: pal.text, background: isDark ? '#0f172a' : undefined, borderRadius: isDark ? 12 : undefined } },
                 h('span', null, (open ? '✓ ' : '') + c.title),
                 ev.badge ? badgeChip(ev.badge, 'sm') : null
               ),
@@ -850,7 +850,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('parentingLab')
                 // body may be a string or an array of paragraphs (rights lists
                 // and other enumerations read badly as one wall of text).
                 (Array.isArray(c.body) ? c.body : [c.body]).map(function(par, pi) {
-                  return h('p', { key: pi, className: 'text-sm leading-relaxed' + (pi > 0 ? ' mt-2' : ''), style: { color: pal.text } }, par);
+                  return h('p', { key: pi, className: 'text-sm leading-relaxed' + (pi > 0 ? ' mt-2' : ''), style: { color: pal.text, background: isDark ? '#0f172a' : undefined, borderRadius: isDark ? 12 : undefined } }, par);
                 }),
                 // Guidance cards (practical how-to, e.g., meeting prep) carry no
                 // evidence entry on purpose — a source line would imply one study
@@ -869,7 +869,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('parentingLab')
       // ─────────────── MENU ───────────────
       if (view === 'menu') {
         var m1Done = cardsRead(M1_CARDS) >= M1_CARDS.length && Object.keys(dialsDone).length >= 4;
-        return h('div', { className: 'max-w-3xl mx-auto p-4 animate-in fade-in duration-200', style: { color: pal.text } },
+        return h('div', { className: 'max-w-3xl mx-auto p-4 animate-in fade-in duration-200', style: { color: pal.text, background: isDark ? '#0f172a' : undefined, borderRadius: isDark ? 12 : undefined } },
           h('div', { className: 'flex items-center gap-3 flex-wrap mb-3' },
             backBtn,
             h('h2', { className: 'text-xl font-black' }, '🫂 ' + __alloT('stem.parentingLab.title', 'Science of Parenting Lab')),
@@ -1016,13 +1016,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('parentingLab')
             ? __alloT('stem.parentingLab.serve_return_sr', 'That is a return. Explanation shown below.')
             : __alloT('stem.parentingLab.serve_miss_sr', 'That one ends the rally. Explanation shown below.'));
         }
-        return h('div', { className: 'max-w-3xl mx-auto p-4 animate-in fade-in duration-200', style: { color: pal.text } },
+        return h('div', { className: 'max-w-3xl mx-auto p-4 animate-in fade-in duration-200', style: { color: pal.text, background: isDark ? '#0f172a' : undefined, borderRadius: isDark ? 12 : undefined } },
           moduleHeader('🤝 ' + __alloT('stem.parentingLab.m2_title', 'M2 — Attachment: the theory vs. the brand')),
           reviewBanner,
           contentCardList(M2_CARDS, 'All attachment cards read'),
           h('div', { className: 'rounded-2xl p-4', style: { background: pal.card, border: '2px solid ' + pal.border } },
             h('div', { className: 'flex items-center justify-between gap-2 flex-wrap mb-2' },
-              h('h3', { className: 'text-sm font-black', style: { color: pal.text } }, '🤝 ' + __alloT('stem.parentingLab.serves_title', 'Serve & Return studio')),
+              h('h3', { className: 'text-sm font-black', style: { color: pal.text, background: isDark ? '#0f172a' : undefined, borderRadius: isDark ? 12 : undefined } }, '🤝 ' + __alloT('stem.parentingLab.serves_title', 'Serve & Return studio')),
               h('span', { className: 'text-[11px] font-bold', style: { color: pal.muted } }, (servesCurrent + 1) + ' / ' + M2_SERVES.length)
             ),
             h('p', { className: 'text-xs mb-3', style: { color: pal.muted } },
@@ -1080,7 +1080,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('parentingLab')
         function nextItem() { var patch = {}; patch[cfg.curKey] = cur + 1; setPL(patch); }
         return h('div', { className: 'rounded-2xl p-4', style: { background: pal.card, border: '2px solid ' + pal.border } },
           h('div', { className: 'flex items-center justify-between gap-2 flex-wrap mb-2' },
-            h('h3', { className: 'text-sm font-black', style: { color: pal.text } }, cfg.icon + ' ' + cfg.title),
+            h('h3', { className: 'text-sm font-black', style: { color: pal.text, background: isDark ? '#0f172a' : undefined, borderRadius: isDark ? 12 : undefined } }, cfg.icon + ' ' + cfg.title),
             h('span', { className: 'text-[11px] font-bold', style: { color: pal.muted } }, (cur + 1) + ' / ' + cfg.items.length)
           ),
           h('p', { className: 'text-xs mb-3', style: { color: pal.muted } }, cfg.sub),
@@ -1114,7 +1114,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('parentingLab')
 
       // ─────────────── M3 — The RCT core ───────────────
       if (view === 'm3') {
-        return h('div', { className: 'max-w-3xl mx-auto p-4 animate-in fade-in duration-200', style: { color: pal.text } },
+        return h('div', { className: 'max-w-3xl mx-auto p-4 animate-in fade-in duration-200', style: { color: pal.text, background: isDark ? '#0f172a' : undefined, borderRadius: isDark ? 12 : undefined } },
           moduleHeader('🧪 ' + __alloT('stem.parentingLab.m3_title', 'M3 — The RCT core')),
           reviewBanner,
           contentCardList(M3_CARDS, 'All RCT core cards read'),
@@ -1132,7 +1132,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('parentingLab')
 
       // ─────────────── M4 — PRIDE Skills Studio ───────────────
       if (view === 'm4') {
-        return h('div', { className: 'max-w-3xl mx-auto p-4 animate-in fade-in duration-200', style: { color: pal.text } },
+        return h('div', { className: 'max-w-3xl mx-auto p-4 animate-in fade-in duration-200', style: { color: pal.text, background: isDark ? '#0f172a' : undefined, borderRadius: isDark ? 12 : undefined } },
           moduleHeader('🗣️ ' + __alloT('stem.parentingLab.m4_title', 'M4 — PRIDE Skills Studio')),
           reviewBanner,
           contentCardList(M4_CARDS, 'All PRIDE cards read'),
@@ -1153,7 +1153,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('parentingLab')
 
       // ─────────────── M5 — ABC at Home ───────────────
       if (view === 'm5') {
-        return h('div', { className: 'max-w-3xl mx-auto p-4 animate-in fade-in duration-200', style: { color: pal.text } },
+        return h('div', { className: 'max-w-3xl mx-auto p-4 animate-in fade-in duration-200', style: { color: pal.text, background: isDark ? '#0f172a' : undefined, borderRadius: isDark ? 12 : undefined } },
           moduleHeader('🔁 ' + __alloT('stem.parentingLab.m5_title', 'M5 — ABC at Home')),
           reviewBanner,
           contentCardList(M5_CARDS, 'All ABC cards read'),
@@ -1171,7 +1171,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('parentingLab')
 
       // ─────────────── M6 — Discipline ───────────────
       if (view === 'm6') {
-        return h('div', { className: 'max-w-3xl mx-auto p-4 animate-in fade-in duration-200', style: { color: pal.text } },
+        return h('div', { className: 'max-w-3xl mx-auto p-4 animate-in fade-in duration-200', style: { color: pal.text, background: isDark ? '#0f172a' : undefined, borderRadius: isDark ? 12 : undefined } },
           moduleHeader('⚖️ ' + __alloT('stem.parentingLab.m6_title', 'M6 — Discipline: what the evidence says')),
           reviewBanner,
           contentCardList(M6_CARDS, 'All discipline cards read'),
@@ -1189,7 +1189,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('parentingLab')
 
       // ─────────────── M7 — Myths vs. literature ───────────────
       if (view === 'm7') {
-        return h('div', { className: 'max-w-3xl mx-auto p-4 animate-in fade-in duration-200', style: { color: pal.text } },
+        return h('div', { className: 'max-w-3xl mx-auto p-4 animate-in fade-in duration-200', style: { color: pal.text, background: isDark ? '#0f172a' : undefined, borderRadius: isDark ? 12 : undefined } },
           moduleHeader('🔍 ' + __alloT('stem.parentingLab.m7_title', 'M7 — Myths vs. literature')),
           reviewBanner,
           contentCardList(M7_CARDS, 'All myth cards read'),
@@ -1207,7 +1207,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('parentingLab')
 
       // ─────────────── M8 — Adolescents ───────────────
       if (view === 'm8') {
-        return h('div', { className: 'max-w-3xl mx-auto p-4 animate-in fade-in duration-200', style: { color: pal.text } },
+        return h('div', { className: 'max-w-3xl mx-auto p-4 animate-in fade-in duration-200', style: { color: pal.text, background: isDark ? '#0f172a' : undefined, borderRadius: isDark ? 12 : undefined } },
           moduleHeader('🧭 ' + __alloT('stem.parentingLab.m8_title', 'M8 — Adolescents: autonomy and staying in the room')),
           reviewBanner,
           contentCardList(M8_CARDS, 'All adolescent cards read'),
@@ -1233,13 +1233,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('parentingLab')
           var count = Object.keys(next).length;
           if (count === M9_CHECKLIST.length) { awardXP(10, 'Meeting prep complete'); announceToSR(__alloT('stem.parentingLab.prep_done_sr', 'Every prep item checked. You are ready for the meeting.')); }
         }
-        return h('div', { className: 'max-w-3xl mx-auto p-4 animate-in fade-in duration-200', style: { color: pal.text } },
+        return h('div', { className: 'max-w-3xl mx-auto p-4 animate-in fade-in duration-200', style: { color: pal.text, background: isDark ? '#0f172a' : undefined, borderRadius: isDark ? 12 : undefined } },
           moduleHeader('🤲 ' + __alloT('stem.parentingLab.m9_title', 'M9 — When to seek help + partnering with school')),
           reviewBanner,
           contentCardList(M9_CARDS, 'All help-and-school cards read'),
           h('div', { className: 'rounded-2xl p-4', style: { background: pal.card, border: '2px solid ' + pal.border } },
             h('div', { className: 'flex items-center justify-between gap-2 flex-wrap mb-2' },
-              h('h3', { className: 'text-sm font-black', style: { color: pal.text } }, '📋 ' + __alloT('stem.parentingLab.prep_title', 'Meeting-prep checklist')),
+              h('h3', { className: 'text-sm font-black', style: { color: pal.text, background: isDark ? '#0f172a' : undefined, borderRadius: isDark ? 12 : undefined } }, '📋 ' + __alloT('stem.parentingLab.prep_title', 'Meeting-prep checklist')),
               h('span', { className: 'text-[11px] font-bold', style: { color: pal.muted } }, Object.keys(prepDone).length + ' / ' + M9_CHECKLIST.length)
             ),
             h('p', { className: 'text-xs mb-3', style: { color: pal.muted } },
@@ -1251,12 +1251,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('parentingLab')
               var cites = (labToolData && labToolData._alloCitations) || [];
               if (!cites.length) return null;
               return h('div', { className: 'rounded-xl p-3 mb-3', style: { background: pal.panel, border: '1px solid ' + pal.border } },
-                h('div', { className: 'text-xs font-black mb-1', style: { color: pal.text } },
+                h('div', { className: 'text-xs font-black mb-1', style: { color: pal.text, background: isDark ? '#0f172a' : undefined, borderRadius: isDark ? 12 : undefined } },
                   '📌 ' + __alloT('stem.parentingLab.saved_rules', 'Rules I want to ask about')),
                 h('p', { className: 'text-[11px] mb-2', style: { color: pal.muted } },
                   __alloT('stem.parentingLab.saved_rules_sub', 'Saved from the Education Law Navigator. Bring the citation, not a paraphrase.')),
                 cites.map(function(c, i) {
-                  return h('div', { key: i, className: 'text-[12px] mb-1', style: { color: pal.text } },
+                  return h('div', { key: i, className: 'text-[12px] mb-1', style: { color: pal.text, background: isDark ? '#0f172a' : undefined, borderRadius: isDark ? 12 : undefined } },
                     h('strong', null, c.citation || (c.short + ' § ' + c.section)),
                     c.heading ? h('span', { style: { color: pal.muted } }, ' — ' + String(c.heading).replace(/^§\s*[\d.]+\s*/, '').slice(0, 70)) : null);
                 })
@@ -1339,7 +1339,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('parentingLab')
       var vDone = v && dialsDone[v.id];
       var revealed = !!d.dialsRevealed && vDone;
 
-      return h('div', { className: 'max-w-3xl mx-auto p-4 animate-in fade-in duration-200', style: { color: pal.text } },
+      return h('div', { className: 'max-w-3xl mx-auto p-4 animate-in fade-in duration-200', style: { color: pal.text, background: isDark ? '#0f172a' : undefined, borderRadius: isDark ? 12 : undefined } },
         h('div', { className: 'flex items-center gap-3 flex-wrap mb-3' },
           backBtn,
           h('h2', { className: 'text-lg font-black' }, '🎛️ ' + __alloT('stem.parentingLab.m1_title', 'M1 — Warmth & Structure: the two dials'))
@@ -1352,7 +1352,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('parentingLab')
         // Two Dials interactive
         h('div', { className: 'rounded-2xl p-4', style: { background: pal.card, border: '2px solid ' + pal.border } },
           h('div', { className: 'flex items-center justify-between gap-2 flex-wrap mb-2' },
-            h('h3', { className: 'text-sm font-black', style: { color: pal.text } }, '🎛️ ' + __alloT('stem.parentingLab.dials_title', 'The Two Dials — rate each scene')),
+            h('h3', { className: 'text-sm font-black', style: { color: pal.text, background: isDark ? '#0f172a' : undefined, borderRadius: isDark ? 12 : undefined } }, '🎛️ ' + __alloT('stem.parentingLab.dials_title', 'The Two Dials — rate each scene')),
             h('span', { className: 'text-[11px] font-bold', style: { color: pal.muted } }, (dialsCurrent + 1) + ' / ' + M1_VIGNETTES.length)
           ),
           h('p', { className: 'text-xs mb-3', style: { color: pal.muted } },

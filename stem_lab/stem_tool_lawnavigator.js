@@ -534,7 +534,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('lawNavigator')
 
       // ── Load failure: say so, render nothing else ─────────────────────────
       if (loadErr && !manifest) {
-        return h('div', { className: 'max-w-3xl mx-auto p-4', style: { color: pal.text } },
+        return h('div', { className: 'max-w-3xl mx-auto p-4', style: { color: pal.text, background: isDark ? '#0f172a' : undefined, borderRadius: isDark ? 12 : undefined } },
           h('div', { className: 'flex items-center gap-3 flex-wrap mb-3' }, backBtn,
             h('h2', { className: 'text-lg font-black' }, '⚖️ ' + __alloT('stem.lawNav.title', 'Education Law Navigator'))),
           h('div', { role: 'alert', className: 'rounded-xl p-4 text-sm', style: { background: 'rgba(190,18,60,0.1)', border: '1px solid rgba(190,18,60,0.4)', color: pal.text } },
@@ -546,7 +546,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('lawNavigator')
         );
       }
       if (!manifest) {
-        return h('div', { className: 'max-w-3xl mx-auto p-4', style: { color: pal.text } },
+        return h('div', { className: 'max-w-3xl mx-auto p-4', style: { color: pal.text, background: isDark ? '#0f172a' : undefined, borderRadius: isDark ? 12 : undefined } },
           h('div', { className: 'flex items-center gap-3 flex-wrap mb-3' }, backBtn,
             h('h2', { className: 'text-lg font-black' }, '⚖️ ' + __alloT('stem.lawNav.title', 'Education Law Navigator'))),
           h('p', { className: 'text-sm', style: { color: pal.muted } }, __alloT('stem.lawNav.loading', 'Loading the official text…'))
@@ -559,7 +559,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('lawNavigator')
 
       // ─────────────── HOME ───────────────
       if (view === 'home') {
-        return h('div', { className: 'max-w-3xl mx-auto p-4 animate-in fade-in duration-200', style: { color: pal.text } },
+        return h('div', { className: 'max-w-3xl mx-auto p-4 animate-in fade-in duration-200', style: { color: pal.text, background: isDark ? '#0f172a' : undefined, borderRadius: isDark ? 12 : undefined } },
           h('div', { className: 'flex items-center gap-3 flex-wrap mb-2' }, backBtn,
             h('h2', { className: 'text-xl font-black' }, '⚖️ ' + __alloT('stem.lawNav.title', 'Education Law Navigator'))),
           h('p', { className: 'text-sm mb-4', style: { color: pal.muted } },
@@ -625,7 +625,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('lawNavigator')
           var picked = (doc.sections || []).filter(function(s) { return topic.federal.indexOf(s.number) !== -1; });
           if (picked.length) panels.push({ meta: fm, doc: doc, sections: picked });
         });
-        return h('div', { className: 'max-w-4xl mx-auto p-4 animate-in fade-in duration-200', style: { color: pal.text } },
+        return h('div', { className: 'max-w-4xl mx-auto p-4 animate-in fade-in duration-200', style: { color: pal.text, background: isDark ? '#0f172a' : undefined, borderRadius: isDark ? 12 : undefined } },
           h('div', { className: 'flex items-center gap-3 flex-wrap mb-3' }, backBtn,
             h('h2', { className: 'text-lg font-black' }, '⚖️ ' + topic.label)),
           h('div', { className: 'grid gap-3 md:grid-cols-2' },
@@ -640,7 +640,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('lawNavigator')
                         onClick: function() { setLN({ view: 'section', slug: p.meta.slug, section: s.number, viewed: Object.assign({}, d.viewed || {}, (function(o) { o[p.meta.slug + '#' + s.number] = true; return o; })({})) }); },
                         className: 'text-left font-black text-sm mb-1 w-full', style: { color: pal.accent }
                       }, s.heading || s.number),
-                      h('p', { className: 'text-[12px] leading-relaxed', style: { color: pal.text } }, s.paragraphs.slice(0, 2).join(' ').slice(0, 420) + (s.paragraphs.join(' ').length > 420 ? '…' : '')),
+                      h('p', { className: 'text-[12px] leading-relaxed', style: { color: pal.text, background: isDark ? '#0f172a' : undefined, borderRadius: isDark ? 12 : undefined } }, s.paragraphs.slice(0, 2).join(' ').slice(0, 420) + (s.paragraphs.join(' ').length > 420 ? '…' : '')),
                       h('span', { className: 'text-[10px]', style: { color: pal.muted } }, __alloT('stem.lawNav.tap_full', 'Open for the full text'))
                     );
                   })
@@ -675,7 +675,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('lawNavigator')
                           style: { background: 'rgba(180,83,9,0.15)', color: isDark ? '#fbbf24' : '#92400e', border: '1px solid rgba(180,83,9,0.4)' },
                           title: __alloT('stem.lawNav.state_added_tip', 'Italicized in MUSER, which marks Maine\'s own requirement rather than adopted federal text')
                         }, __alloT('stem.lawNav.state_added', 'State requirement')) : null),
-                      h('p', { className: 'text-[12px] leading-relaxed', style: { color: pal.text } }, hit.text.slice(0, 420) + (hit.text.length > 420 ? '…' : '')));
+                      h('p', { className: 'text-[12px] leading-relaxed', style: { color: pal.text, background: isDark ? '#0f172a' : undefined, borderRadius: isDark ? 12 : undefined } }, hit.text.slice(0, 420) + (hit.text.length > 420 ? '…' : '')));
                   }) : h('p', { className: 'text-xs mt-2', style: { color: pal.muted } },
                     __alloT('stem.lawNav.no_state_hit', 'No paragraph in this state document contains that phrase. That is a search result, not a finding that the state is silent — open the document and read it.'))
                 );
@@ -695,7 +695,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('lawNavigator')
         if (!doc) { ensureDoc(activeSlug); }
         var results = doc && query ? searchSections(doc, query) : [];
         var list = doc ? (query ? results.map(function(r) { return r.section; }) : doc.sections.slice(0, 80)) : [];
-        return h('div', { className: 'max-w-3xl mx-auto p-4 animate-in fade-in duration-200', style: { color: pal.text } },
+        return h('div', { className: 'max-w-3xl mx-auto p-4 animate-in fade-in duration-200', style: { color: pal.text, background: isDark ? '#0f172a' : undefined, borderRadius: isDark ? 12 : undefined } },
           h('div', { className: 'flex items-center gap-3 flex-wrap mb-3' }, backBtn,
             h('h2', { className: 'text-lg font-black' }, (meta ? meta.short : '') )),
           meta ? provenance(meta) : null,
@@ -799,7 +799,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('lawNavigator')
           .catch(function() { setAi({ busy: false, text: __alloT('stem.lawNav.explain_fail', 'The explanation could not be generated. The official text above is unchanged.'), forSection: activeSection }); });
       }
 
-      return h('div', { className: 'max-w-3xl mx-auto p-4 animate-in fade-in duration-200', style: { color: pal.text } },
+      return h('div', { className: 'max-w-3xl mx-auto p-4 animate-in fade-in duration-200', style: { color: pal.text, background: isDark ? '#0f172a' : undefined, borderRadius: isDark ? 12 : undefined } },
         h('div', { className: 'flex items-center gap-3 flex-wrap mb-3' }, backBtn,
           h('h2', { className: 'text-base font-black' }, sec ? (sec.heading || ('§ ' + activeSection)) : ('§ ' + activeSection))),
         smeta ? provenance(smeta) : null,
@@ -864,7 +864,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('lawNavigator')
             sec.paragraphs.map(function(p, i) {
               // linkifyCitations returns the SAME characters, some wrapped in
               // jump buttons. Nothing is added, removed, or reordered.
-              return h('p', { key: i, className: i ? 'mt-3' : '', style: { color: pal.text } },
+              return h('p', { key: i, className: i ? 'mt-3' : '', style: { color: pal.text, background: isDark ? '#0f172a' : undefined, borderRadius: isDark ? 12 : undefined } },
                 linkifyCitations(p, sdoc2, activeSection));
             })
           )
