@@ -16352,7 +16352,7 @@ var d = labToolData.dissection || {};
 
                     React.createElement("div", { className: "text-[11px] font-bold " + (masteryComplete ? 'text-green-700' : 'text-amber-800') }, masteryComplete ? '\u2713 Verified investigation complete' : (progressPct >= 100 ? 'Viewing milestone reached' : 'Practice in progress')),
 
-                    React.createElement("div", { className: "text-[11px] text-emerald-500 mt-0.5" },
+                    React.createElement("div", { className: "text-[11px] text-emerald-700 mt-0.5" },
 
                       masteryComplete ? 'Technique, observation, evidence, and understanding all meet the practice criteria.' : (progressPct >= 100 ? 'Viewing every structure is a milestone, not proof of identification. Complete the remaining evidence and understanding checks.' : 'Continue the investigation; the log distinguishes viewing from verified understanding.')
 

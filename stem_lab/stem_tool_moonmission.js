@@ -891,7 +891,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                 { label: t('stem.moonmission.crew_morale', 'Crew morale'), value: crewMorale + '%', tone: crewMorale >= 70 ? 'text-emerald-200' : crewMorale >= 45 ? 'text-amber-200' : 'text-rose-200' },
                 { label: t('stem.moonmission.badges', 'Badges'), value: earnedBadgeCount + '/' + BADGES.length, tone: 'text-sky-200' }
               ].map(function(stat) {
-                return h('div', { key: stat.label, className: 'rounded-xl bg-white/8 border border-white/10 px-3 py-2' },
+                return h('div', { key: stat.label, className: 'rounded-xl bg-white/10 border border-white/10 px-3 py-2' },
                   h('div', { className: 'text-[10px] font-black uppercase text-slate-300' }, stat.label),
                   h('div', { className: 'text-sm font-black ' + stat.tone }, stat.value)
                 );
@@ -953,7 +953,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
             })
           ),
           h('details', { className: 'mt-3' },
-            h('summary', { className: 'text-[11px] text-slate-600 cursor-pointer hover:text-slate-200 transition-colors' }, t('stem.moonmission.what_really_happened', '\uD83D\uDCDA What really happened?')),
+            h('summary', { className: 'text-[11px] text-slate-400 cursor-pointer hover:text-slate-200 transition-colors' }, t('stem.moonmission.what_really_happened', '\uD83D\uDCDA What really happened?')),
             h('p', { className: 'text-[11px] text-indigo-300 mt-1 pl-3 leading-relaxed' }, d.activeEvent.historical)
           )
         ),
@@ -987,7 +987,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
             h('span', { className: 'text-xl' }, '\uD83E\uDDE0'),
             h('div', null,
               h('h5', { className: 'text-sm font-bold text-indigo-300' }, t('stem.moonmission.space_knowledge_check', 'Space Knowledge Check')),
-              h('p', { className: 'text-[11px] text-slate-600' }, 'Question ' + (quizIdx + 1) + '/' + QUIZ_BANK.length + ' \u2022 ' + quizCorrect + ' correct so far')
+              h('p', { className: 'text-[11px] text-slate-400' }, 'Question ' + (quizIdx + 1) + '/' + QUIZ_BANK.length + ' \u2022 ' + quizCorrect + ' correct so far')
             )
           ),
           h('p', { className: 'text-xs text-white font-bold mb-3', id: 'mm-quiz-prompt' }, QUIZ_BANK[quizIdx].q),
@@ -1075,7 +1075,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
             h('div', { className: 'text-center mb-3' },
               h('div', { className: 'text-3xl mb-1' }, '\uD83C\uDF15'),
               h('h4', { className: 'text-lg font-black tracking-wide' }, t('stem.moonmission.mission_briefing_2', 'MISSION BRIEFING')),
-              h('p', { className: 'text-xs text-slate-600' }, t('stem.moonmission.apollo_style_lunar_landing_mission', 'Apollo-style lunar landing mission'))
+              h('p', { className: 'text-xs text-slate-400' }, t('stem.moonmission.apollo_style_lunar_landing_mission', 'Apollo-style lunar landing mission'))
             ),
             h('div', { className: 'bg-white/5 rounded-lg p-3 mb-3 border border-white/10' },
               h('p', { className: 'text-[11px] text-slate-200 font-bold mb-1' },
@@ -1250,7 +1250,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                   return h('div', { key: i, className: 'bg-white/5 rounded-lg p-2 border border-white/10 text-center' },
                     h('div', { className: 'text-lg mb-0.5' }, i === 0 ? '\uD83E\uDDD1\u200D\uD83D\uDE80' : i === 1 ? '\uD83D\uDC68\u200D\uD83D\uDE80' : '\uD83D\uDC69\u200D\uD83D\uDE80'),
                     h('p', { className: 'text-[11px] font-bold text-indigo-300' }, crew.role),
-                    h('p', { className: 'text-[11px] text-slate-600' }, crew.name),
+                    h('p', { className: 'text-[11px] text-slate-400' }, crew.name),
                     h('p', { className: 'text-[11px] text-slate-200 mt-1' }, crew.tasks)
                   );
                 })
@@ -1274,7 +1274,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                   },
                     h('div', { className: 'text-lg' }, diff.icon),
                     h('p', { className: 'text-[11px] font-bold ' + (isSelected ? 'text-indigo-300' : 'text-slate-300') }, diff.label),
-                    h('p', { className: 'text-[11px] text-slate-600' }, diff.desc)
+                    h('p', { className: 'text-[11px] text-slate-400' }, diff.desc)
                   );
                 })
               )
@@ -1747,8 +1747,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
               })(),
               h('div', { className: 'flex items-center justify-between' },
                 h('div', null,
-                  h('p', { className: 'text-xs text-slate-600' }, t('stem.moonmission.saturn_v_3_stages_7_5_million_lbs_thru', '\uD83D\uDE80 Saturn V \u2022 3 stages \u2022 7.5 million lbs thrust')),
-                  h('p', { id: 'mm-launch-description', className: 'text-[11px] text-slate-600' }, t('stem.moonmission.watch_the_countdown_and_ascent_through', 'Watch the countdown and ascent through Earth\'s atmosphere'))
+                  h('p', { className: 'text-xs text-slate-400' }, t('stem.moonmission.saturn_v_3_stages_7_5_million_lbs_thru', '\uD83D\uDE80 Saturn V \u2022 3 stages \u2022 7.5 million lbs thrust')),
+                  h('p', { id: 'mm-launch-description', className: 'text-[11px] text-slate-400' }, t('stem.moonmission.watch_the_countdown_and_ascent_through', 'Watch the countdown and ascent through Earth\'s atmosphere'))
                 ),
                 h('button', {
                   'aria-label': t('stem.moonmission.proceed_to_earth_orbit_phase_after_suc', 'Proceed to Earth orbit phase after successful launch'),
@@ -1951,7 +1951,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
             h('div', { className: 'text-center mb-3' },
               h('div', { className: 'text-3xl' }, '\uD83C\uDF0D'),
               h('h4', { className: 'text-base font-bold' }, t('stem.moonmission.low_earth_orbit', 'Low Earth Orbit')),
-              h('p', { id: 'mm-earth-orbit-description', className: 'text-[11px] text-slate-600' }, t('stem.moonmission.altitude_185_km_speed_28_000_km_h_1_5_', 'Altitude: 185 km \u2022 Speed: 28,000 km/h \u2022 1.5 orbits before TLI burn'))
+              h('p', { id: 'mm-earth-orbit-description', className: 'text-[11px] text-slate-400' }, t('stem.moonmission.altitude_185_km_speed_28_000_km_h_1_5_', 'Altitude: 185 km \u2022 Speed: 28,000 km/h \u2022 1.5 orbits before TLI burn'))
             ),
             h('div', { className: 'bg-white/5 rounded-lg p-3 border border-white/10 mb-3' },
               h('p', { className: 'text-[11px] text-sky-300 font-bold mb-1' }, t('stem.moonmission.trans_lunar_injection_tli', '\uD83D\uDE80 TRANS-LUNAR INJECTION (TLI)')),
@@ -1964,7 +1964,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                   ['Coast Time', '~3 days']
                 ].map(function(item) {
                   return h('div', { key: item[0], className: 'bg-white/5 rounded p-1.5 text-center' },
-                    h('p', { className: 'text-[11px] text-slate-600' }, item[0]),
+                    h('p', { className: 'text-[11px] text-slate-400' }, item[0]),
                     h('p', { className: 'text-[11px] font-bold text-sky-300' }, item[1])
                   );
                 })
@@ -2158,7 +2158,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                   'The spacecraft rotates slowly ("BBQ roll") to evenly distribute solar heating.',
                   'Even a 1\u00B0 trajectory error would miss the Moon by thousands of kilometers.'
                 ].map(function(fact, i) {
-                  return h('p', { key: i, className: 'text-[11px] text-slate-600' }, '\u2022 ' + fact);
+                  return h('p', { key: i, className: 'text-[11px] text-slate-400' }, '\u2022 ' + fact);
                 })
               ),
               h('div', { className: 'bg-indigo-500/10 rounded p-1.5 border border-indigo-500/20 mb-2' },
@@ -2394,7 +2394,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                   ['\uD83D\uDEF0 CM "Columbia"', 'CMP orbiting solo']
                 ].map(function(item) {
                   return h('div', { key: item[0], className: 'bg-slate-800 rounded p-1.5' },
-                    h('p', { className: 'text-[11px] text-slate-600' }, item[0]),
+                    h('p', { className: 'text-[11px] text-slate-400' }, item[0]),
                     h('p', { className: 'text-[11px] font-bold text-slate-200' }, item[1])
                   );
                 })
@@ -2424,17 +2424,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
               h('div', { className: 'bg-white/5 rounded-lg p-3 border border-white/10' },
                 h('div', { className: 'text-2xl mb-1' }, '\u2B06\uFE0F'),
                 h('p', { className: 'text-[11px] font-bold text-sky-300' }, t('stem.moonmission.w', 'W / \u2191')),
-                h('p', { className: 'text-[11px] text-slate-600' }, t('stem.moonmission.fire_engines_thrust_up', 'Fire engines (thrust UP)'))
+                h('p', { className: 'text-[11px] text-slate-400' }, t('stem.moonmission.fire_engines_thrust_up', 'Fire engines (thrust UP)'))
               ),
               h('div', { className: 'bg-white/5 rounded-lg p-3 border border-white/10' },
                 h('div', { className: 'text-2xl mb-1' }, '\u2194\uFE0F'),
                 h('p', { className: 'text-[11px] font-bold text-sky-300' }, t('stem.moonmission.a_d_or', 'A/D or \u2190/\u2192')),
-                h('p', { className: 'text-[11px] text-slate-600' }, t('stem.moonmission.lateral_movement', 'Lateral movement'))
+                h('p', { className: 'text-[11px] text-slate-400' }, t('stem.moonmission.lateral_movement', 'Lateral movement'))
               ),
               h('div', { className: 'bg-white/5 rounded-lg p-3 border border-white/10' },
                 h('div', { className: 'text-2xl mb-1' }, '\uD83C\uDFAF'),
                 h('p', { className: 'text-[11px] font-bold text-amber-300' }, t('stem.moonmission.goal', 'Goal')),
-                h('p', { className: 'text-[11px] text-slate-600' }, t('stem.moonmission.v_3_m_s_h_5_m_s', 'V < 3 m/s, H < 5 m/s'))
+                h('p', { className: 'text-[11px] text-slate-400' }, t('stem.moonmission.v_3_m_s_h_5_m_s', 'V < 3 m/s, H < 5 m/s'))
               )
             ),
             // Carry the coast decision forward in words, not just in the numbers. A
@@ -2793,7 +2793,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
               })
             ),
             h('div', { className: 'p-3 border-t border-slate-700 flex justify-between items-center gap-2 flex-wrap' },
-              h('p', { className: 'text-[11px] text-slate-600' }, t('stem.moonmission.w_thrust_ad_lateral_land_gently', '\u2191/W = thrust \u2022 \u2190\u2192/AD = lateral \u2022 Land gently!')),
+              h('p', { className: 'text-[11px] text-slate-400' }, t('stem.moonmission.w_thrust_ad_lateral_land_gently', '\u2191/W = thrust \u2022 \u2190\u2192/AD = lateral \u2022 Land gently!')),
               // The crash screen has always told students to "try again" \u2014 but nothing
               // offered a retry, and the frozen canvas never resets itself. Dropping
               // descentStarted unmounts the canvas, so pressing Begin Descent builds a
@@ -5646,7 +5646,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
             h('div', { className: 'p-3 border-t border-slate-700 flex justify-between items-center' },
               h('div', null,
                 h('p', { className: 'text-xs text-white font-bold' }, t('stem.moonmission.moonwalk_eva_3', '\uD83D\uDC68\u200D\uD83D\uDE80 Moonwalk EVA')),
-                h('p', { className: 'text-[11px] text-slate-600' }, t('stem.moonmission.explore_collect_samples_jump_in_1_6_gr', 'Explore \u2022 Collect samples \u2022 Jump in 1/6 gravity!'))
+                h('p', { className: 'text-[11px] text-slate-400' }, t('stem.moonmission.explore_collect_samples_jump_in_1_6_gr', 'Explore \u2022 Collect samples \u2022 Jump in 1/6 gravity!'))
               ),
               h('button', {
                 'aria-label': 'End moonwalk EVA and return to Lunar Module. ' + (d.lunarSamples || []).length + ' samples collected.',
@@ -5960,7 +5960,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
               h('div', { className: 'text-center mb-3' },
                 h('div', { className: 'text-3xl' }, '\u2B06\uFE0F'),
                 h('h4', { className: 'text-base font-bold' }, t('stem.moonmission.lunar_ascent_rendezvous', 'Lunar Ascent & Rendezvous')),
-                h('p', { className: 'text-[11px] text-slate-600' }, t('stem.moonmission.ascent_stage_launches_from_moon_docks_', 'Ascent stage launches from Moon, docks with Columbia'))
+                h('p', { className: 'text-[11px] text-slate-400' }, t('stem.moonmission.ascent_stage_launches_from_moon_docks_', 'Ascent stage launches from Moon, docks with Columbia'))
               ),
               h('div', { className: 'bg-white/5 rounded-lg p-3 border border-white/10 mb-3' },
                 h('p', { className: 'text-[11px] text-slate-300 leading-relaxed' },
@@ -5968,7 +5968,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                 h('div', { className: 'mt-2 bg-amber-500/10 rounded p-2 border border-amber-500/20' },
                   h('p', { className: 'text-[11px] text-amber-300' }, '\uD83E\uDEA8 Samples collected: ' + (d.lunarSamples || []).length + ' / ' + LUNAR_SAMPLES_DATA.length),
                   (d.lunarSamples || []).map(function(s, i) {
-                    return h('p', { key: i, className: 'text-[11px] text-slate-600 ml-2' }, s.icon + ' ' + s.name + ' (' + s.type + ')');
+                    return h('p', { key: i, className: 'text-[11px] text-slate-400 ml-2' }, s.icon + ' ' + s.name + ' (' + s.type + ')');
                   })
                 )
               ),
@@ -6157,7 +6157,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
             h('div', { className: 'text-center mb-3' },
               h('div', { className: 'text-3xl' }, '\uD83C\uDF0D'),
               h('h4', { className: 'text-base font-bold' }, t('stem.moonmission.trans_earth_coast_2', 'Trans-Earth Coast')),
-              h('p', { className: 'text-[11px] text-slate-600' }, t('stem.moonmission.returning_home_384_400_km_3_days', 'Returning home \u2022 384,400 km \u2022 ~3 days'))
+              h('p', { className: 'text-[11px] text-slate-400' }, t('stem.moonmission.returning_home_384_400_km_3_days', 'Returning home \u2022 384,400 km \u2022 ~3 days'))
             ),
             h('div', { className: 'bg-white/5 rounded-lg p-3 border border-white/10 mb-3' },
               h('p', { className: 'text-[11px] text-slate-300 leading-relaxed' },
@@ -6537,7 +6537,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
               ].map(function(item) {
                 return h('div', { key: item[0], className: 'bg-white/10 rounded-lg p-3' },
                   h('div', { className: 'text-2xl mb-1' }, item[0]),
-                  h('p', { className: 'text-[11px] text-slate-600' }, item[1]),
+                  h('p', { className: 'text-[11px] text-slate-400' }, item[1]),
                   h('p', { className: 'text-xs font-bold' }, item[2])
                 );
               })
@@ -6554,7 +6554,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                   return h('div', { key: s[2], className: 'bg-white/5 rounded-lg p-1.5 text-center' },
                     h('div', { className: 'text-sm' }, s[0]),
                     h('p', { className: 'text-[11px] font-bold text-white' }, s[1]),
-                    h('p', { className: 'text-[11px] text-slate-600' }, s[2])
+                    h('p', { className: 'text-[11px] text-slate-400' }, s[2])
                   );
                 })
               ),
@@ -6606,11 +6606,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     : 'For scale: Apollo 11 landed at roughly 0.5 m/s with about 25 seconds of hover fuel left.')
               ),
               // Badges earned
-              h('p', { className: 'text-[11px] text-slate-600 font-bold mb-1' }, t('stem.moonmission.badges_earned', '\uD83C\uDFC5 BADGES EARNED:')),
+              h('p', { className: 'text-[11px] text-slate-400 font-bold mb-1' }, t('stem.moonmission.badges_earned', '\uD83C\uDFC5 BADGES EARNED:')),
               h('div', { className: 'flex flex-wrap gap-1.5 mb-2' },
                 BADGES.map(function(b) {
                   var earned = !!(d.earnedBadges || {})[b.id];
-                  return h('div', { key: b.id, className: 'flex items-center gap-1 px-2 py-1 rounded-full text-[11px] ' + (earned ? 'bg-yellow-500/20 text-yellow-300 border border-yellow-500/30' : 'bg-white/5 text-slate-600 border border-white/5'), title: b.desc },
+                  return h('div', { key: b.id, className: 'flex items-center gap-1 px-2 py-1 rounded-full text-[11px] ' + (earned ? 'bg-yellow-500/20 text-yellow-300 border border-yellow-500/30' : 'bg-white/5 text-slate-400 border border-white/5'), title: b.desc },
                     h('span', null, earned ? b.icon : '\uD83D\uDD12'),
                     h('span', null, b.name)
                   );
@@ -6618,7 +6618,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
               ),
               // Sample gallery
               (d.lunarSamples || []).length > 0 && h('div', { className: 'mt-2' },
-                h('p', { className: 'text-[11px] text-slate-600 font-bold mb-1.5' }, '\uD83E\uDEA8 LUNAR SAMPLE COLLECTION (' + (d.lunarSamples || []).length + '/' + LUNAR_SAMPLES_DATA.length + ')'),
+                h('p', { className: 'text-[11px] text-slate-400 font-bold mb-1.5' }, '\uD83E\uDEA8 LUNAR SAMPLE COLLECTION (' + (d.lunarSamples || []).length + '/' + LUNAR_SAMPLES_DATA.length + ')'),
                 h('div', { className: 'grid grid-cols-2 gap-1.5' },
                   (d.lunarSamples || []).map(function(s, i) {
                     return h('div', { key: i, className: 'bg-white/10 rounded-lg p-2 border border-white/10' },
@@ -6629,7 +6629,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                           h('p', { className: 'text-[11px] text-indigo-300' }, s.type)
                         )
                       ),
-                      h('p', { className: 'text-[11px] text-slate-600 leading-relaxed' }, s.fact)
+                      h('p', { className: 'text-[11px] text-slate-400 leading-relaxed' }, s.fact)
                     );
                   })
                 ),
@@ -6642,7 +6642,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
             ),
             // ── Decision Analysis (from Mission Events) ──
             (d.decisionLog || []).length > 0 && h('div', { className: 'mt-3 bg-white/5 rounded-xl p-3 border border-white/10' },
-              h('p', { className: 'text-[11px] text-slate-600 font-bold mb-2' }, t('stem.moonmission.decision_analysis', '\uD83D\uDCCA DECISION ANALYSIS')),
+              h('p', { className: 'text-[11px] text-slate-400 font-bold mb-2' }, t('stem.moonmission.decision_analysis', '\uD83D\uDCCA DECISION ANALYSIS')),
               (d.decisionLog || []).map(function(dec, i) {
                 return h('div', { key: i, className: 'bg-white/5 rounded-lg p-2.5 border border-white/10 mb-1.5' },
                   h('div', { className: 'flex justify-between items-center mb-1' },
@@ -6653,12 +6653,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                        'bg-red-500/20 text-red-300')
                     }, dec.quality.toUpperCase())
                   ),
-                  h('p', { className: 'text-[11px] text-slate-600' }, 'Your choice: "' + dec.chosen + '"'),
+                  h('p', { className: 'text-[11px] text-slate-400' }, 'Your choice: "' + dec.chosen + '"'),
                   dec.quality !== 'optimal' && h('p', { className: 'text-[11px] text-indigo-300 mt-1' },
                     '\uD83D\uDCA1 Better option: "' + dec.optimal + '"'
                   ),
                   h('details', { className: 'mt-1' },
-                    h('summary', { className: 'text-[11px] text-slate-600 cursor-pointer' }, t('stem.moonmission.historical_context', 'Historical context')),
+                    h('summary', { className: 'text-[11px] text-slate-400 cursor-pointer' }, t('stem.moonmission.historical_context', 'Historical context')),
                     h('p', { className: 'text-[11px] text-slate-200 mt-1 pl-2' }, dec.historical)
                   )
                 );
@@ -6813,7 +6813,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
             missionLog.slice(-8).reverse().map(function(entry, i) {
               return h('div', { key: i, className: 'flex justify-between text-[11px]' },
                 h('span', { className: 'text-slate-600' }, entry.text),
-                h('span', { className: 'text-slate-200 font-mono' }, entry.time)
+                h('span', { className: 'text-slate-700 font-mono' }, entry.time)
               );
             })
           )

@@ -481,7 +481,7 @@ if (!window._galaxyHasLoadedOnce) {
           // where 500-level inks are right. The instrument HUD reuses the same accent
           // as TEXT on a near-black scrim, and there indigo-500 measured 4.22:1
           // against the real painted pixels. Lighten toward white until it clears AA
-          // on the brightest backdrop that scrim can produce — bg-slate-950/82 over a
+          // on the brightest backdrop that scrim can produce — bg-slate-950/80 over a
           // fully blown-out scene is still only about rgb(48,50,55), so lightening is
           // always the safe direction here. Hue is preserved, so each filter keeps its
           // identity colour.
@@ -6866,17 +6866,17 @@ if (!window._galaxyHasLoadedOnce) {
                     STAR_TYPES.map(function (st) {
                       return React.createElement("div", { key: st.id, className: "flex flex-col items-center gap-0.5", title: st.label + " · " + st.temp + " K" },
                         React.createElement("span", { className: "block h-2.5 w-3.5 rounded-[3px] sm:w-4", style: { background: st.color, boxShadow: '0 0 6px ' + st.color + '99' } }),
-                        React.createElement("span", { className: "text-[11px] font-black leading-none text-white/90" }, st.id)
+                        React.createElement("span", { className: "text-[11px] font-black leading-none text-white/90", style: { background: 'rgba(2,6,23,0.85)', borderRadius: 3, padding: '1px 3px' } }, st.id)
                       );
                     })
                   ),
                   React.createElement("div", { className: "mt-1.5 flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-slate-300", "aria-hidden": true },
                     React.createElement("span", null, __alloT('stem.galaxy.legend_hot', 'hot')),
-                    React.createElement("span", { className: "text-slate-500" }, "→"),
+                    React.createElement("span", { className: "text-slate-400" }, "→"),
                     React.createElement("span", null, __alloT('stem.galaxy.legend_cool', 'cool'))
                   )
                 ),
-                !galaxyHudHidden && React.createElement("div", { "data-galaxy-instrument-readout": "true", className: "absolute right-3 top-3 z-10 hidden w-52 rounded-xl border bg-slate-950/82 p-2.5 text-white shadow-xl backdrop-blur-md md:block", style: { borderColor: activeObserve.accent + '55' }, role: "img", "aria-label": activeObserve.label + ' instrument readout. ' + activeInstrument.detector + '. Band ' + activeInstrument.band + '. Traces ' + activeInstrument.tracer + '.' },
+                !galaxyHudHidden && React.createElement("div", { "data-galaxy-instrument-readout": "true", className: "absolute right-3 top-3 z-10 hidden w-52 rounded-xl border bg-slate-950/80 p-2.5 text-white shadow-xl backdrop-blur-md md:block", style: { borderColor: activeObserve.accent + '55' }, role: "img", "aria-label": activeObserve.label + ' instrument readout. ' + activeInstrument.detector + '. Band ' + activeInstrument.band + '. Traces ' + activeInstrument.tracer + '.' },
                   React.createElement("div", { className: "flex items-start justify-between gap-2" },
                     React.createElement("div", null,
                       React.createElement("p", { className: "text-[11px] font-black uppercase tracking-[0.12em]", style: { color: hudAccentText(activeObserve.accent) } }, activeObserve.icon + " " + activeObserve.label),
@@ -6896,7 +6896,7 @@ if (!window._galaxyHasLoadedOnce) {
                   React.createElement("div", { className: "mt-1.5 flex items-center justify-between gap-2 text-[11px] font-bold" }, React.createElement("span", { className: "text-slate-300" }, __alloT('stem.galaxy.infrared_extinction_down', 'Dust shadow ↓')), React.createElement("span", { className: "text-orange-200" }, __alloT('stem.galaxy.infrared_emission_up', 'Thermal glow ↑'))),
                   React.createElement("p", { className: "mt-1 text-[11px] leading-relaxed text-slate-300" }, __alloT('stem.galaxy.infrared_legend_note', 'Dust absorbs short-wavelength starlight and re-radiates that energy in the infrared.'))
                 ),
-                !galaxyHudHidden && observeMode === 'xray' && React.createElement("div", { "data-galaxy-xray-legend": "true", className: "pointer-events-none absolute bottom-14 left-3 z-10 w-[min(16rem,calc(100%_-_5.5rem))] rounded-xl border border-sky-200/20 bg-slate-950/82 p-2.5 text-white shadow-xl backdrop-blur-md", role: "img", "aria-label": __alloT('stem.galaxy.xray_legend_aria', 'X-ray plasma key. Brighter points mark compact high-energy sources. Nested violet, cyan, and white arcs map cooler through hotter supernova shock layers. The central bicone traces a nuclear hot-gas outflow.') },
+                !galaxyHudHidden && observeMode === 'xray' && React.createElement("div", { "data-galaxy-xray-legend": "true", className: "pointer-events-none absolute bottom-14 left-3 z-10 w-[min(16rem,calc(100%_-_5.5rem))] rounded-xl border border-sky-200/20 bg-slate-950/80 p-2.5 text-white shadow-xl backdrop-blur-md", role: "img", "aria-label": __alloT('stem.galaxy.xray_legend_aria', 'X-ray plasma key. Brighter points mark compact high-energy sources. Nested violet, cyan, and white arcs map cooler through hotter supernova shock layers. The central bicone traces a nuclear hot-gas outflow.') },
                   React.createElement("p", { className: "text-[11px] font-black uppercase tracking-[0.12em] text-sky-100" }, __alloT('stem.galaxy.xray_legend_title', 'High-energy plasma map')),
                   React.createElement("div", { className: "mt-1.5 h-2 rounded-full bg-gradient-to-r from-indigo-950 via-sky-400 to-white shadow-[0_0_10px_rgba(125,211,252,0.5)]", "aria-hidden": true }),
                   React.createElement("div", { "data-galaxy-xray-structure-key": "true", className: "mt-2 space-y-1.5 border-t border-white/10 pt-2 text-[11px] font-bold text-slate-200" },
@@ -6906,7 +6906,7 @@ if (!window._galaxyHasLoadedOnce) {
                   ),
                   React.createElement("p", { className: "mt-1.5 text-[11px] leading-relaxed text-slate-300" }, __alloT('stem.galaxy.xray_legend_note', 'Color and intensity encode plasma energy, not ordinary visible-light brightness.'))
                 ),
-                !galaxyHudHidden && observeMode === 'radio' && React.createElement("div", { "data-galaxy-radio-velocity-legend": "true", className: "pointer-events-none absolute bottom-14 left-3 z-10 w-[min(16rem,calc(100%_-_5.5rem))] rounded-xl border border-cyan-200/20 bg-slate-950/82 p-2.5 text-white shadow-xl backdrop-blur-md", role: "img", "aria-label": __alloT('stem.galaxy.radio_velocity_aria', 'Radio observation key. The blue-to-red field shows approaching through receding hydrogen. Short line segments trace projected magnetic-field direction. Cyan and magenta ribbons separate Faraday-rotation depth.') },
+                !galaxyHudHidden && observeMode === 'radio' && React.createElement("div", { "data-galaxy-radio-velocity-legend": "true", className: "pointer-events-none absolute bottom-14 left-3 z-10 w-[min(16rem,calc(100%_-_5.5rem))] rounded-xl border border-cyan-200/20 bg-slate-950/80 p-2.5 text-white shadow-xl backdrop-blur-md", role: "img", "aria-label": __alloT('stem.galaxy.radio_velocity_aria', 'Radio observation key. The blue-to-red field shows approaching through receding hydrogen. Short line segments trace projected magnetic-field direction. Cyan and magenta ribbons separate Faraday-rotation depth.') },
                   React.createElement("p", { className: "text-[11px] font-black uppercase tracking-[0.12em] text-cyan-100" }, __alloT('stem.galaxy.radio_velocity_title', '21 cm velocity + magnetic field')),
                   React.createElement("div", { className: "mt-1.5 h-2 rounded-full bg-gradient-to-r from-blue-600 via-slate-200 to-red-600 shadow-[0_0_10px_rgba(56,189,248,0.28)]", "aria-hidden": true }),
                   React.createElement("div", { className: "mt-1 flex justify-between gap-2 text-[11px] font-bold" }, React.createElement("span", { className: "text-blue-200" }, __alloT('stem.galaxy.radio_velocity_toward', '← Approaching')), React.createElement("span", { className: "text-red-200" }, __alloT('stem.galaxy.radio_velocity_away', 'Receding →'))),
@@ -6922,7 +6922,7 @@ if (!window._galaxyHasLoadedOnce) {
                   ),
                   React.createElement("p", { className: "mt-1.5 text-[11px] leading-relaxed text-slate-300" }, __alloT('stem.galaxy.radio_velocity_note', 'Velocity color maps motion; aligned ticks and layered ribbons reveal magnetized gas along the same sightline.'))
                 ),
-                !galaxyHudHidden && observeMode === 'gravity' && React.createElement("div", { "data-galaxy-gravity-legend": "true", className: "pointer-events-none absolute bottom-14 left-3 z-10 w-[min(16rem,calc(100%_-_5.5rem))] rounded-xl border border-fuchsia-200/20 bg-slate-950/82 p-2.5 text-white shadow-xl backdrop-blur-md", role: "img", "aria-label": __alloT('stem.galaxy.gravity_legend_aria', 'Gravity inference key. Orbital speed constrains enclosed mass, while aligned weak-lensing arclets trace projected halo mass. This is an evidence map, not a photograph.') },
+                !galaxyHudHidden && observeMode === 'gravity' && React.createElement("div", { "data-galaxy-gravity-legend": "true", className: "pointer-events-none absolute bottom-14 left-3 z-10 w-[min(16rem,calc(100%_-_5.5rem))] rounded-xl border border-fuchsia-200/20 bg-slate-950/80 p-2.5 text-white shadow-xl backdrop-blur-md", role: "img", "aria-label": __alloT('stem.galaxy.gravity_legend_aria', 'Gravity inference key. Orbital speed constrains enclosed mass, while aligned weak-lensing arclets trace projected halo mass. This is an evidence map, not a photograph.') },
                   React.createElement("div", { className: "flex items-center gap-2" },
                     React.createElement("span", { className: "relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-fuchsia-300/50", "aria-hidden": true },
                       React.createElement("span", { className: "h-5 w-5 rounded-full border border-violet-200/50" }),
@@ -6941,7 +6941,7 @@ if (!window._galaxyHasLoadedOnce) {
                 ),
                 galaxyType !== 'elliptical' && !galaxyHudHidden && selectedStarMeasurement && selStar && activeRotationMeasurement && React.createElement("div", {
                   "data-galaxy-measurement": "true",
-                  className: "pointer-events-none absolute left-3 top-20 z-10 w-[min(15rem,calc(100%_-_5.5rem))] rounded-xl border border-cyan-200/25 bg-slate-950/82 p-3 text-white shadow-2xl backdrop-blur-md",
+                  className: "pointer-events-none absolute left-3 top-20 z-10 w-[min(15rem,calc(100%_-_5.5rem))] rounded-xl border border-cyan-200/25 bg-slate-950/80 p-3 text-white shadow-2xl backdrop-blur-md",
                   role: "status",
                   "aria-live": "polite"
                 },
@@ -6996,10 +6996,10 @@ if (!window._galaxyHasLoadedOnce) {
                   ); })
                 ),
                 !galaxyHudHidden && React.createElement("div", { "data-galaxy-orientation": "true", className: "absolute left-1/2 top-3 hidden -translate-x-1/2 rounded-full border border-cyan-200/15 bg-slate-950/75 px-3 py-2 text-xs font-bold text-cyan-100 shadow-lg backdrop-blur-md lg:block" }, "Angled view"),
-                !galaxyHudHidden && galaxySceneReady && React.createElement("div", { "data-galaxy-live-scale": "true", className: "pointer-events-none absolute left-1/2 top-14 z-[6] hidden -translate-x-1/2 items-center gap-2 rounded-full border border-violet-200/15 bg-slate-950/72 px-3 py-1.5 text-[11px] font-bold text-violet-100 shadow-lg backdrop-blur-md md:flex", role: "img", "aria-label": __alloT('stem.galaxy.live_scale_aria', 'Approximate field of view and current galactic scale regime') },
+                !galaxyHudHidden && galaxySceneReady && React.createElement("div", { "data-galaxy-live-scale": "true", className: "pointer-events-none absolute left-1/2 top-14 z-[6] hidden -translate-x-1/2 items-center gap-2 rounded-full border border-violet-200/15 bg-slate-950/70 px-3 py-1.5 text-[11px] font-bold text-violet-100 shadow-lg backdrop-blur-md md:flex", role: "img", "aria-label": __alloT('stem.galaxy.live_scale_aria', 'Approximate field of view and current galactic scale regime') },
                   React.createElement("span", { className: "h-px w-5 bg-gradient-to-r from-transparent to-violet-300", "aria-hidden": true }),
                   React.createElement("span", { "data-galaxy-live-scale-value": "true" }, "~21 kpc field"),
-                  React.createElement("span", { className: "text-violet-300/60", "aria-hidden": true }, "·"),
+                  React.createElement("span", { className: "text-violet-300", "aria-hidden": true }, "·"),
                   React.createElement("span", { "data-galaxy-scale-regime": "true", className: "text-cyan-100" }, "Galactic structure"),
                   React.createElement("span", { className: "h-px w-5 bg-gradient-to-l from-transparent to-violet-300", "aria-hidden": true })
                 ),
