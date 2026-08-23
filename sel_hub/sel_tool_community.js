@@ -327,6 +327,28 @@ window.SelHub = window.SelHub || {
     ]
   };
 
+  // ── Answer-position de-biasing ──
+  // answer is the `a` string, so only the option order moves. A bank that always answers in the same slot is a
+  // pattern-matching exercise, not a quiz.
+  //
+  // Rotate each question's options by a deterministic per-question shift.
+  // Deterministic rather than random on purpose: the bank must be stable across
+  // renders, sessions, exports and tests. True/False items are left alone -
+  // rotating two options does not change a 50/50 guess.
+  (function () {
+    var counter = 0;
+    function rotate(item) {
+      if (!item || !Array.isArray(item.options)) return;
+      var len = item.options.length;
+      if (len < 3) return;
+      var shift = (counter++ * 7 + 3) % len;
+      if (!shift) return;
+      item.options = item.options.slice(shift).concat(item.options.slice(0, shift));
+    }
+    Object.keys(CULTURE_QUIZ).forEach(function (band) { (CULTURE_QUIZ[band] || []).forEach(rotate); });
+  })();
+
+
   // ══════════════════════════════════════════════════════════════
   // ── Allyship Action Cards (grade-adaptive) ──
   // ══════════════════════════════════════════════════════════════

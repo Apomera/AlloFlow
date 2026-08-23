@@ -18,8 +18,18 @@
 const fs = require('fs');
 const path = require('path');
 
-const DIR = 'stem_lab';
-const files = fs.readdirSync(DIR).filter(f => /^stem_tool_.*\.js$/.test(f));
+// The directory and filename filter used to be hardcoded to stem_lab/
+// stem_tool_*.js, so passing another lab as an argument was silently ignored and
+// the report described STEM while claiming to describe whatever was asked for.
+const args = process.argv.slice(2);
+const DIR = args.find(a => !a.startsWith('--')) || 'stem_lab';
+const patternArg = args.find(a => a.startsWith('--pattern='));
+const FILE_RE = patternArg ? new RegExp(patternArg.slice('--pattern='.length)) : /^stem_tool_.*\.js$/;
+const files = fs.readdirSync(DIR).filter(f => FILE_RE.test(f));
+if (files.length === 0) {
+  console.error('scan_answer_position_bias: pattern ' + FILE_RE + ' matched NO files in ' + DIR + ' - nothing was scanned.');
+  process.exit(2);
+}
 
 function splitOptions(raw) {
   // raw is the inside of [...] — split on quote boundaries, tolerate escapes

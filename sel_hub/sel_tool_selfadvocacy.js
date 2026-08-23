@@ -1012,6 +1012,30 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
     }
   ];
 
+  // ── Answer-position de-biasing ──
+  // 12 questions, 7 of them with the answer at position 2. A bank that always answers in the same slot is a
+  // pattern-matching exercise, not a quiz.
+  //
+  // Rotate each question's options by a deterministic per-question shift.
+  // Deterministic rather than random on purpose: the bank must be stable across
+  // renders, sessions, exports and tests. True/False items are left alone -
+  // rotating two options does not change a 50/50 guess.
+  (function () {
+    var counter = 0;
+    function rotate(item) {
+      if (!item || !Array.isArray(item.options)) return;
+      var len = item.options.length;
+      if (len < 3) return;
+      if (typeof item.correct !== 'number' || item.correct < 0 || item.correct >= len) return;
+      var shift = (counter++ * 7 + 3) % len;
+      if (!shift) return;
+      item.options = item.options.slice(shift).concat(item.options.slice(0, shift));
+      item.correct = (item.correct - shift + len) % len;
+    }
+    (Array.isArray(QUIZ_QUESTIONS) ? QUIZ_QUESTIONS : []).forEach(rotate);
+  })();
+
+
   // ═══════════════════════════════════════════════════════════════
   // MODULE 13: HELPING A FRIEND (peer advocacy)
   // ═══════════════════════════════════════════════════════════════

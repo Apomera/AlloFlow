@@ -310,6 +310,34 @@ window.SelHub = window.SelHub || {
     ]
   };
 
+  // ── Answer-position de-biasing ──
+  // Every one of the 24 questions was authored with `answer: 1`, so a student
+  // could score 100% by always choosing the second option without reading a
+  // word of it. That is not a quiz, it is a pattern-matching exercise.
+  //
+  // Rotate each question's options by a deterministic per-question shift and
+  // move `answer` with them. Deterministic rather than random on purpose: the
+  // bank must be stable across renders, sessions, exports and tests, and a
+  // student comparing notes with a classmate should see the same paper. With
+  // four options the shift cycles 3,2,1,0, which spreads the 24 answers evenly
+  // across all four positions.
+  //
+  // Runs once at module load, guarded by the isRegistered check above.
+  (function () {
+    var counter = 0;
+    Object.keys(CIVIC_QUIZ).forEach(function (band) {
+      (CIVIC_QUIZ[band] || []).forEach(function (item) {
+        if (!item || !Array.isArray(item.options) || typeof item.answer !== 'number') return;
+        var len = item.options.length;
+        if (len < 2 || item.answer < 0 || item.answer >= len) return;
+        var shift = (counter++ * 7 + 3) % len;
+        if (!shift) return;
+        item.options = item.options.slice(shift).concat(item.options.slice(0, shift));
+        item.answer = (item.answer - shift + len) % len;
+      });
+    });
+  })();
+
   // ── NEW: Community Change Scenarios ──
 
   var CHANGE_SCENARIOS = {
