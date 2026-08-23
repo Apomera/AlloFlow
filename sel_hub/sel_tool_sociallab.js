@@ -276,6 +276,18 @@ window.SelHub = window.SelHub || {
       var _SLC_DARK = {'#fff':'#1e293b','#f8fafc':'#0f172a','#f1f5f9':'#1e293b','#fef3c7':'#3a2e12','#fef2f2':'#2e1414','#fee2e2':'#3a1a1a','#f0fdf4':'#0b2e22','#dcfce7':'#14532d','#eff6ff':'#0e1f3a','#dbeafe':'#16315e','#e0e7ff':'#1e2150','#faf5ff':'#2e1b4d','#0f172a':'#f1f5f9','#1e293b':'#e2e8f0','#374151':'#cbd5e1','#475569':'#cbd5e1','#94a3b8':'#94a3b8','#9ca3af':'#cbd5e1','#e5e7eb':'#334155','#92400e':'#fde68a','#991b1b':'#fca5a5','#dc2626':'#f87171','#166534':'#86efac','#1e3a8a':'#93c5fd','#1e40af':'#93c5fd','#4338ca':'#a5b4fc'};
       var _SLC_HC = {'#fff':'#000000','#f8fafc':'#000000','#f1f5f9':'#000000','#fef3c7':'#000000','#fef2f2':'#000000','#fee2e2':'#000000','#f0fdf4':'#000000','#dcfce7':'#000000','#eff6ff':'#000000','#dbeafe':'#000000','#e0e7ff':'#000000','#faf5ff':'#000000','#0f172a':'#ffff00','#1e293b':'#ffff00','#374151':'#ffff00','#475569':'#ffff00','#94a3b8':'#ffff00','#9ca3af':'#ffff00','#e5e7eb':'#ffff00','#92400e':'#ffff00','#991b1b':'#ffff00','#dc2626':'#ffff00','#166534':'#ffff00','#1e3a8a':'#ffff00','#1e40af':'#ffff00','#4338ca':'#ffff00'};
       var _slC = function(hex){ return _slCHC ? (_SLC_HC[hex]||hex) : (_slCDark ? (_SLC_DARK[hex]||hex) : hex); };
+
+      // ── Ink: the same hue, readable as TEXT on this tool's dark surface ──
+      // _slC serves surfaces AND text from one map, so it cannot lighten
+      // an accent for a label without also lightening the chip that accent fills.
+      // Consulted only from a `color:` position, so no surface moves; falls back
+      // to _slC for any hue not listed.
+      var _SL_INK = { '#7c3aed': '#a78bfa', '#a855f7': '#c084fc', '#3b82f6': '#60a5fa' };
+      var _SL_INK_HC = { '#7c3aed': '#ffff00', '#a855f7': '#ffff00', '#3b82f6': '#ffff00' };
+      var _slInk = function(hex) {
+        if (_slCHC) return _SL_INK_HC[hex] || _slC(hex);
+        return _SL_INK[hex] || _slC(hex);
+      };
       var h = ctx.React.createElement;
       var useState = ctx.React.useState;
       var useCallback = ctx.React.useCallback;
@@ -447,7 +459,7 @@ window.SelHub = window.SelHub || {
           ),
           // Mode 1: Static Scenarios
           h('div', { style: Object.assign({}, card, { border: '2px solid #c4b5fd', background: _slC('#faf5ff') }) },
-            h('h3', { style: { fontSize: '16px', fontWeight: 800, color: PURPLE, marginBottom: '6px' } }, '📋 Scenario Practice'),
+            h('h3', { style: { fontSize: '16px', fontWeight: 800, color: _slInk(PURPLE), marginBottom: '6px' } }, '📋 Scenario Practice'),
             h('p', { style: { fontSize: '12px', color: _slC('#94a3b8'), marginBottom: '12px' } }, 'Read a situation, choose the best response. Works without AI.'),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '6px' } },
               SKILL_CATEGORIES.map(function(cat) {
@@ -613,7 +625,7 @@ window.SelHub = window.SelHub || {
             'aria-label': 'Make the response your own',
             style: { padding: '14px', borderRadius: '12px', marginBottom: '16px', background: _slC('#faf5ff'), border: '2px solid #c4b5fd' }
           },
-            h('h3', { style: { margin: '0 0 5px', fontSize: '14px', fontWeight: 800, color: PURPLE } }, 'Make it yours'),
+            h('h3', { style: { margin: '0 0 5px', fontSize: '14px', fontWeight: 800, color: _slInk(PURPLE) } }, 'Make it yours'),
             h('p', { style: { margin: '0 0 9px', fontSize: '12px', color: _slC('#4338ca'), lineHeight: 1.5 } },
               'Try saying the skillful response in your own words. It does not need to sound perfect; this is a rehearsal, not another test.'
             ),
@@ -812,7 +824,7 @@ window.SelHub = window.SelHub || {
           ),
           // Get feedback + export buttons
           !chatFeedback && chatTurns >= 3 && h('div', { style: { display: 'flex', gap: '8px', justifyContent: 'center', marginTop: '8px', flexShrink: 0 } },
-            h('button', { onClick: getConversationFeedback, style: { fontSize: '12px', color: PURPLE, background: 'none', border: '1px dashed #c4b5fd', borderRadius: '8px', padding: '6px 14px', cursor: 'pointer' } }, '✨ Get Feedback on This Conversation'),
+            h('button', { onClick: getConversationFeedback, style: { fontSize: '12px', color: _slInk(PURPLE), background: 'none', border: '1px dashed #c4b5fd', borderRadius: '8px', padding: '6px 14px', cursor: 'pointer' } }, '✨ Get Feedback on This Conversation'),
             h('button', { onClick: function() {
               var text = '🎭 Social Skills Lab — Conversation Transcript\n'
                 + 'Scenario: ' + aiScenario.title + '\n'

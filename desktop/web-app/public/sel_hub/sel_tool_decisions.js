@@ -718,7 +718,7 @@ window.SelHub = window.SelHub || {
             role: 'tab',
             style: {
               padding: '6px 12px', borderRadius: 8, border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: isActive ? 700 : 500, whiteSpace: 'nowrap',
-              background: isActive ? ACCENT_DIM : 'transparent', color: _decFg(isActive) ? ACCENT : _decFg('#94a3b8'),
+              background: isActive ? ACCENT_DIM : 'transparent', color: isActive ? _decFg(ACCENT) : _decFg('#94a3b8'),
               transition: 'all 0.15s'
             }
           }, t.label);
@@ -800,7 +800,7 @@ window.SelHub = window.SelHub || {
                 var earned = !!earnedBadges[b.id];
                 return h('div', { key: b.id, style: { padding: 12, borderRadius: 10, background: earned ? '#0f172a' : '#0f172a88', border: '1px solid ' + (earned ? ACCENT_MED : _decBg('#334155')), textAlign: 'center', opacity: earned ? 1 : 0.5 } },
                   h('div', { style: { fontSize: 28 }, 'aria-hidden': 'true' }, earned ? b.icon : '\uD83D\uDD12'),
-                  h('div', { style: { fontSize: 11, fontWeight: 600, color: _decFg(earned) ? '#f1f5f9' : _decFg('#94a3b8'), marginTop: 4 } }, b.name),
+                  h('div', { style: { fontSize: 11, fontWeight: 600, color: earned ? _decFg('#f1f5f9') : _decFg('#94a3b8'), marginTop: 4 } }, b.name),
                   h('div', { style: { fontSize: 10, color: _decFg('#94a3b8'), marginTop: 2 } }, b.desc)
                 );
               })
@@ -885,7 +885,7 @@ window.SelHub = window.SelHub || {
                   },
                   style: {
                     padding: '6px 12px', borderRadius: 20, border: '1px solid ' + (selected ? ACCENT : _decBg('#334155')),
-                    background: selected ? ACCENT_DIM : 'transparent', color: _decFg(selected) ? ACCENT : _decFg('#94a3b8'),
+                    background: selected ? ACCENT_DIM : 'transparent', color: selected ? _decFg(ACCENT) : _decFg('#94a3b8'),
                     fontSize: 12, cursor: 'pointer', fontWeight: selected ? 600 : 400
                   }
                 }, v);
@@ -943,7 +943,7 @@ window.SelHub = window.SelHub || {
                     textAlign: 'left', display: 'flex', alignItems: 'center', gap: 8
                   }
                 },
-                  h('span', { style: { color: _decFg(isChosen) ? ACCENT : _decFg('#94a3b8'), fontWeight: 700, fontSize: 14 } }, String.fromCharCode(65 + i) + '.'),
+                  h('span', { style: { color: isChosen ? _decFg(ACCENT) : _decFg('#94a3b8'), fontWeight: 700, fontSize: 14 } }, String.fromCharCode(65 + i) + '.'),
                   opt
                 );
               })
@@ -1306,7 +1306,7 @@ window.SelHub = window.SelHub || {
                 ctx.announceToSR && ctx.announceToSR('Consequence map saved');
               },
               disabled: csSaved,
-              style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: csSaved ? _decFg('#22c55e') : ACCENT, color: _decFg(csSaved) ? _decFg('#fff') : '#0f172a', fontWeight: 600, fontSize: 13, cursor: csSaved ? 'default' : 'pointer' }
+              style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: csSaved ? _decFg('#22c55e') : ACCENT, color: csSaved ? _decFg('#fff') : '#0f172a', fontWeight: 600, fontSize: 13, cursor: csSaved ? 'default' : 'pointer' }
             }, csSaved ? '\u2705 Saved!' : '\uD83D\uDCBE Save Map'),
             csSaved && h('button', { 'aria-label': 'Next Scenario',
               onClick: function() {
@@ -1501,7 +1501,7 @@ window.SelHub = window.SelHub || {
                 ctx.announceToSR && ctx.announceToSR('Values sort saved');
               },
               disabled: vsSaved,
-              style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: vsSaved ? _decFg('#22c55e') : ACCENT, color: _decFg(vsSaved) ? _decFg('#fff') : '#0f172a', fontWeight: 600, fontSize: 13, cursor: vsSaved ? 'default' : 'pointer' }
+              style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: vsSaved ? _decFg('#22c55e') : ACCENT, color: vsSaved ? _decFg('#fff') : '#0f172a', fontWeight: 600, fontSize: 13, cursor: vsSaved ? 'default' : 'pointer' }
             }, vsSaved ? '\u2705 Saved!' : '\uD83D\uDCBE Save Ranking'),
             vsSaved && h('button', { 'aria-label': 'Next Context',
               onClick: function() {
@@ -1767,7 +1767,7 @@ window.SelHub = window.SelHub || {
                   h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 } },
                     h('div', { style: { display: 'flex', alignItems: 'center', gap: 6 } },
                       h('span', { style: { fontSize: 16 } }, fw.icon),
-                      h('span', { style: { fontSize: 12, fontWeight: isDominant ? 700 : 500, color: _decFg(isDominant) ? fw.color : _decFg('#94a3b8') } }, fw.name)
+                      h('span', { style: { fontSize: 12, fontWeight: isDominant ? 700 : 500, color: isDominant ? _decFg(fw.color) : _decFg('#94a3b8') } }, fw.name)
                     ),
                     h('span', { style: { fontSize: 12, fontWeight: 700, color: _decFg(fw.color) } }, pct + '%')
                   ),
@@ -1923,7 +1923,7 @@ window.SelHub = window.SelHub || {
                 });
               },
               disabled: advLoading,
-              style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: advLoading ? _decBg('#334155') : ACCENT, color: _decFg(advLoading) ? _decFg('#94a3b8') : '#0f172a', fontWeight: 700, fontSize: 13, cursor: advLoading ? 'default' : 'pointer', display: 'flex', alignItems: 'center', gap: 6 }
+              style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: advLoading ? _decBg('#334155') : ACCENT, color: advLoading ? _decFg('#94a3b8') : '#0f172a', fontWeight: 700, fontSize: 13, cursor: advLoading ? 'default' : 'pointer', display: 'flex', alignItems: 'center', gap: 6 }
             },
               advLoading ? 'Thinking...' : h(Sparkles, { size: 14 }), advLoading ? null : ' Analyze My Decision'
             )

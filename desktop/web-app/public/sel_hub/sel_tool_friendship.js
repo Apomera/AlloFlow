@@ -236,6 +236,18 @@ window.SelHub = window.SelHub || {
       };
       var _frC = function(hex) { return _frHC ? (_FR_HC[hex] || hex) : (_frDark ? (_FR_DARK[hex] || hex) : hex); };
 
+      // ── Ink: the same hue, readable as TEXT on this tool's dark surface ──
+      // _frC serves surfaces AND text from one map, so it cannot lighten
+      // an accent for a label without also lightening the chip that accent fills.
+      // Consulted only from a `color:` position, so no surface moves; falls back
+      // to _frC for any hue not listed.
+      var _FR_INK = { '#a855f7': '#c084fc', '#3b82f6': '#60a5fa', '#8b5cf6': '#a78bfa', '#ec4899': '#f472b6', '#ef4444': '#f87171', '#22c55e': '#4ade80' };
+      var _FR_INK_HC = { '#a855f7': '#ffff00', '#3b82f6': '#ffff00', '#8b5cf6': '#ffff00', '#ec4899': '#ffff00', '#ef4444': '#ffff00', '#22c55e': '#ffff00' };
+      var _frInk = function(hex) {
+        if (_frHC) return _FR_INK_HC[hex] || _frC(hex);
+        return _FR_INK[hex] || _frC(hex);
+      };
+
       var AMBER = '#d97706'; var AMBER_LIGHT = _frC('#fffbeb'); var AMBER_DARK = _frC('#78350f');
 
       var TABS = [
@@ -304,7 +316,7 @@ window.SelHub = window.SelHub || {
         },
           h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
           h('div', { style: { flex: 1, minWidth: 220 } },
-            h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+            h('h3', { style: { color: _frInk(meta.accent), fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
             h('p', { style: { margin: '3px 0 0', color: _frC('#475569'), fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
           )
         );
@@ -333,7 +345,7 @@ window.SelHub = window.SelHub || {
             gap: 8
           }
         },
-          h('span', { style: { fontSize: 12, fontWeight: 900, color: color } }, label),
+          h('span', { style: { fontSize: 12, fontWeight: 900, color: _frInk(color) } }, label),
           h('span', { style: { fontSize: 11, color: _frC('#64748b'), lineHeight: 1.45 } }, detail)
         );
       }
@@ -349,7 +361,7 @@ window.SelHub = window.SelHub || {
             minHeight: 62
           }
         },
-          h('div', { style: { fontSize: 17, fontWeight: 900, color: color, lineHeight: 1 } }, value),
+          h('div', { style: { fontSize: 17, fontWeight: 900, color: _frInk(color), lineHeight: 1 } }, value),
           h('div', { style: { marginTop: 5, fontSize: 10.5, color: _frC('#64748b'), lineHeight: 1.35 } }, label)
         );
       }

@@ -26,10 +26,11 @@
 //     ink fails this test rather than passing it silently.
 
 import { describe, it, expect } from 'vitest';
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-const read = (p) => readFileSync(resolve(process.cwd(), p), 'utf8');
+const ROOT = process.cwd();
+const read = (p) => readFileSync(resolve(ROOT, p), 'utf8');
 const esc = (s) => s.replace(/[-.*+?^${}()|[\]\\]/g, '\\$&');
 const Q = String.fromCharCode(39);
 
@@ -161,5 +162,48 @@ describe('SEL Hub · standards alignment tag text meets AA on its own tint', () 
       uncovered,
       `tagStyle() called with hue(s) absent from TAG_INK, so they fall back to the failing raw hue: ${uncovered.join(', ')}`,
     ).toEqual([]);
+  });
+});
+
+describe('SEL Hub · a theme helper is never called above its own definition', () => {
+  // These helpers are declared inside render(ctx) because they need the theme,
+  // but the colour data they remap usually lives in a module-scope array ABOVE
+  // that point. Routing one of those data literals through the helper looks
+  // right and parses fine, yet throws ReferenceError the moment the file loads
+  // and the tool drops silently out of the registry. Hit twice while routing
+  // accents; check_sel_render notices only as "71 tools" quietly becoming 70.
+  const NAME = /\bvar (_\w*?(?:Fg|Bg|Bd|Ink|C))\s*=\s*function\s*\(/g;
+  const files = readdirSync(resolve(ROOT, 'sel_hub')).filter((f) => /^sel_tool_.*\.js$/.test(f));
+
+  const lineOf = (src, index) => src.slice(0, index).split('\n').length;
+  // Blank out comments rather than deleting them, so every offset still maps to
+  // its real line. Several of these files explain the helper in a comment that
+  // spells out `_coC('#hex')`, which a naive scan reads as a call site.
+  const blankComments = (src) => src
+    .replace(/\/\*[\s\S]*?\*\//g, (m) => m.replace(/[^\n]/g, ' '))
+    .replace(/(^|[^:])\/\/[^\n]*/g, (m, lead) => lead + ' '.repeat(m.length - lead.length));
+
+  it.each(files)('%s', (f) => {
+    const src = blankComments(readFileSync(resolve(ROOT, 'sel_hub', f), 'utf8'));
+    const bad = [];
+    for (const m of src.matchAll(NAME)) {
+      const name = m[1];
+      const definedAt = m.index;
+      const use = new RegExp('\\b' + name + '\\s*\\(', 'g');
+      let u;
+      while ((u = use.exec(src)) !== null) {
+        if (u.index >= definedAt) break;
+        bad.push(`${name} called at line ${lineOf(src, u.index)}, defined at line ${lineOf(src, definedAt)}`);
+        break;
+      }
+    }
+    expect(bad, `${f}: theme helper used before it exists, so the module throws at load:\n  ${bad.join('\n  ')}`).toEqual([]);
+  });
+
+  it('the scan detects a known-bad shape (calibration)', () => {
+    const sample = "var DATA = [{ color: _xxFg('#fff') }];\nvar _xxFg = function (h) { return h; };";
+    const m = new RegExp(NAME.source).exec(sample);
+    expect(m, 'the definition pattern must match').toBeTruthy();
+    expect(sample.indexOf('_xxFg('), 'the use must be found before the definition').toBeLessThan(m.index);
   });
 });

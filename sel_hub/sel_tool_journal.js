@@ -631,7 +631,7 @@ window.SelHub = window.SelHub || {
       var _jouT = (ctx && ctx.theme) || {};
       var _jouHC = !!_jouT.isContrast, _jouL = !_jouHC && !_jouT.isDark;
       var _jou_BGL = {'#1e293b':'#ffffff','#0f172a':'#f8fafc'}, _jou_BGH = {'#1e293b':'#000000','#0f172a':'#000000'};
-      var _jou_FGL = {'#94a3b8':'#64748b','#cbd5e1':'#334155','#f1f5f9':'#0f172a','#e2e8f0':'#1e293b'}, _jou_FGH = {'#94a3b8':'#ffff00','#cbd5e1':'#ffff00','#f1f5f9':'#ffff00','#f59e0b':'#ffff00','#22c55e':'#ffff00','#e2e8f0':'#ffff00','#fff':'#ffff00','#ef4444':'#ffff00','#8b5cf6':'#ffff00'};
+      var _jou_FGL = {'#94a3b8':'#64748b','#cbd5e1':'#334155','#f1f5f9':'#0f172a','#e2e8f0':'#1e293b'}, _jou_FGH = {'#ec4899':'#ffff00','#94a3b8':'#ffff00','#cbd5e1':'#ffff00','#f1f5f9':'#ffff00','#f59e0b':'#ffff00','#22c55e':'#ffff00','#e2e8f0':'#ffff00','#fff':'#ffff00','#ef4444':'#ffff00','#8b5cf6':'#ffff00'};
       var _jou_BDL = {'#1e293b':'#e5e7eb','#334155':'#e2e8f0','#475569':'#cbd5e1'}, _jou_BDH = {'#1e293b':'#ffff00','#334155':'#ffff00','#475569':'#ffff00'};
       var _jouBg = function(h){ return _jouHC ? (_jou_BGH[h]||h) : (_jouL ? (_jou_BGL[h]||h) : h); };
       // Dark-mode foreground remap. The tool shell is always dark, so these
@@ -766,7 +766,7 @@ window.SelHub = window.SelHub || {
               onClick: function() { upd('activeTab', t.id); if (soundEnabled) sfxClick(); },
               style: {
                 padding: '10px 14px', border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: isActive ? 700 : 500,
-                background: isActive ? ACCENT_DIM : 'transparent', color: _jouFg(isActive) ? ACCENT : _jouFg('#94a3b8'), transition: 'all 0.15s',
+                background: isActive ? ACCENT_DIM : 'transparent', color: isActive ? _jouFg(ACCENT) : _jouFg('#94a3b8'), transition: 'all 0.15s',
                 borderBottom: isActive ? '2px solid ' + ACCENT : '2px solid transparent', borderRadius: 0
               }
             }, t.icon + ' ' + t.label);
@@ -874,7 +874,7 @@ window.SelHub = window.SelHub || {
                 h('p', { style: { margin: '4px 0 0', color: _jouFg('#cbd5e1'), fontSize: 12.5, lineHeight: 1.55 } },
                   'Do a quick pulse, write more deeply, or look for patterns when you have enough entries.')
               ),
-              h('div', { style: { padding: '7px 10px', borderRadius: 8, border: '1px solid ' + _jouBd('#334155'), background: _jouBg('#1e293b'), color: _jouFg(checkedToday) ? _jouFg('#22c55e') : _jouFg('#94a3b8'), fontSize: 12, fontWeight: 800 } },
+              h('div', { style: { padding: '7px 10px', borderRadius: 8, border: '1px solid ' + _jouBd('#334155'), background: _jouBg('#1e293b'), color: checkedToday ? _jouFg('#22c55e') : _jouFg('#94a3b8'), fontSize: 12, fontWeight: 800 } },
                 checkedToday ? 'Checked in today' : 'Open for today')
             ),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(132px, 1fr))', gap: 10, marginBottom: 12 } },
@@ -950,7 +950,7 @@ window.SelHub = window.SelHub || {
                     }
                   },
                     h('span', { style: { fontSize: 28 } }, m.emoji),
-                    h('span', { style: { fontSize: 10, color: _jouFg(isSelected) ? m.color : _jouFg('#94a3b8'), fontWeight: 600 } }, m.label)
+                    h('span', { style: { fontSize: 10, color: isSelected ? _jouFg(m.color) : _jouFg('#94a3b8'), fontWeight: 600 } }, m.label)
                   );
                 })
               ),
@@ -980,7 +980,7 @@ window.SelHub = window.SelHub || {
                       }
                     },
                       h('span', { style: { fontSize: 20 } }, sub.emoji),
-                      h('span', { style: { fontSize: 10, color: _jouFg(isSel) ? col : _jouFg('#94a3b8'), fontWeight: 600 } }, sub.label)
+                      h('span', { style: { fontSize: 10, color: isSel ? _jouFg(col) : _jouFg('#94a3b8'), fontWeight: 600 } }, sub.label)
                     );
                   })
                 ),
@@ -1010,7 +1010,7 @@ window.SelHub = window.SelHub || {
                         }
                       },
                         h('span', { style: { fontSize: 18 } }, exp.emoji),
-                        h('span', { style: { fontSize: 11, color: _jouFg(isSel) ? col : _jouFg('#94a3b8'), fontWeight: 600 } }, exp.label)
+                        h('span', { style: { fontSize: 11, color: isSel ? _jouFg(col) : _jouFg('#94a3b8'), fontWeight: 600 } }, exp.label)
                       );
                     })
                   ),
@@ -1084,7 +1084,7 @@ window.SelHub = window.SelHub || {
                     },
                     style: {
                       padding: '6px 14px', borderRadius: 20, border: isOn ? '1px solid ' + ACCENT : '1px solid #334155',
-                      background: isOn ? ACCENT_DIM : _jouBg('#1e293b'), color: _jouFg(isOn) ? ACCENT : _jouFg('#94a3b8'),
+                      background: isOn ? ACCENT_DIM : _jouBg('#1e293b'), color: isOn ? _jouFg(ACCENT) : _jouFg('#94a3b8'),
                       fontSize: 12, fontWeight: 500, cursor: 'pointer', transition: 'all 0.15s'
                     }
                   }, tag);
@@ -1253,7 +1253,7 @@ window.SelHub = window.SelHub || {
                     }, isDone ? '\u2713' : ''),
                     h('span', { style: { fontSize: 20, flexShrink: 0 } }, act.icon),
                     h('div', { style: { flex: 1 } },
-                      h('div', { style: { fontSize: 12, fontWeight: 600, color: _jouFg(isDone) ? _jouFg('#22c55e') : _jouFg('#f1f5f9'), marginBottom: 2, textDecoration: isDone ? 'line-through' : 'none' } }, act.label),
+                      h('div', { style: { fontSize: 12, fontWeight: 600, color: isDone ? _jouFg('#22c55e') : _jouFg('#f1f5f9'), marginBottom: 2, textDecoration: isDone ? 'line-through' : 'none' } }, act.label),
                       h('div', { style: { fontSize: 10, color: _jouFg('#94a3b8'), lineHeight: 1.4 } }, act.desc)
                     )
                   );
@@ -1312,7 +1312,7 @@ window.SelHub = window.SelHub || {
                 padding: '6px 14px', borderRadius: 20, fontSize: 11, fontWeight: 600, cursor: 'pointer',
                 border: letterViewingPast ? '1px solid #8b5cf6' : '1px solid #334155',
                 background: letterViewingPast ? '#8b5cf622' : _jouBg('#1e293b'),
-                color: _jouFg(letterViewingPast) ? _jouFg('#8b5cf6') : _jouFg('#94a3b8')
+                color: letterViewingPast ? _jouFg('#8b5cf6') : _jouFg('#94a3b8')
               }
             }, '\u2709\uFE0F My Letters (' + letterEntries.length + ')')
           );
@@ -1352,7 +1352,7 @@ window.SelHub = window.SelHub || {
                         padding: '8px 16px', borderRadius: 10, fontSize: 12, fontWeight: 600, cursor: 'pointer',
                         border: isActive ? '2px solid ' + letterColor : '1px solid #334155',
                         background: isActive ? letterColor + '22' : _jouBg('#1e293b'),
-                        color: _jouFg(isActive) ? letterColor : _jouFg('#94a3b8')
+                        color: isActive ? _jouFg(letterColor) : _jouFg('#94a3b8')
                       }
                     }, opt.label);
                   })
@@ -1426,7 +1426,7 @@ window.SelHub = window.SelHub || {
                     ),
                     h('span', { style: { fontSize: 10, color: _jouFg('#94a3b8') } }, new Date(letter.timestamp).toLocaleDateString())
                   ),
-                  isFutureLetter && readDateStr && h('div', { style: { fontSize: 10, color: _jouFg(canRead) ? _jouFg('#22c55e') : _jouFg('#f59e0b'), marginBottom: 8, fontStyle: 'italic' } },
+                  isFutureLetter && readDateStr && h('div', { style: { fontSize: 10, color: canRead ? _jouFg('#22c55e') : _jouFg('#f59e0b'), marginBottom: 8, fontStyle: 'italic' } },
                     canRead ? '\uD83D\uDD13 Unlocked! (scheduled for ' + readDateStr + ')' : '\uD83D\uDD12 Sealed until ' + readDateStr
                   ),
                   canRead
@@ -1594,7 +1594,7 @@ window.SelHub = window.SelHub || {
                   borderRadius: '50%', fontSize: 11, fontWeight: isToday ? 700 : 400, position: 'relative',
                   background: moodObj ? moodObj.color + '33' : 'transparent',
                   border: isToday ? '2px solid ' + ACCENT : '1px solid transparent',
-                  color: _jouFg(moodObj) ? moodObj.color : _jouFg('#94a3b8')
+                  color: moodObj ? _jouFg(moodObj.color) : _jouFg('#94a3b8')
                 },
                 title: moodObj ? moodObj.label + ' (' + moods.length + ' check-in' + (moods.length > 1 ? 's' : '') + ')' : 'No check-in'
               },
@@ -1675,7 +1675,7 @@ window.SelHub = window.SelHub || {
                     var avgM = countM > 0 ? Math.round(totalM / countM * 10) / 10 : 0;
                     var avgObj = avgM > 0 ? MOODS.find(function(m) { return m.id === Math.round(avgM); }) : null;
                     return [
-                      h('div', { key: 'avg', style: { fontSize: 20, fontWeight: 700, color: _jouFg(avgObj) ? avgObj.color : _jouFg('#94a3b8') } }, avgM > 0 ? avgM.toFixed(1) : '\u2014'),
+                      h('div', { key: 'avg', style: { fontSize: 20, fontWeight: 700, color: avgObj ? _jouFg(avgObj.color) : _jouFg('#94a3b8') } }, avgM > 0 ? avgM.toFixed(1) : '\u2014'),
                       h('div', { key: 'lbl', style: { fontSize: 10, color: _jouFg('#94a3b8') } }, 'Avg Mood')
                     ];
                   })()
@@ -2043,8 +2043,8 @@ window.SelHub = window.SelHub || {
                   transition: 'all 0.2s'
                 } },
                   h('div', { style: { fontSize: 28, marginBottom: 4 } }, b.icon),
-                  h('div', { style: { fontSize: 12, fontWeight: 700, color: _jouFg(earned) ? _jouFg('#f1f5f9') : _jouFg('#94a3b8'), marginBottom: 2 } }, b.name),
-                  h('div', { style: { fontSize: 10, color: _jouFg(earned) ? _jouFg('#94a3b8') : '#475569', lineHeight: 1.4 } }, b.desc),
+                  h('div', { style: { fontSize: 12, fontWeight: 700, color: earned ? _jouFg('#f1f5f9') : _jouFg('#94a3b8'), marginBottom: 2 } }, b.name),
+                  h('div', { style: { fontSize: 10, color: earned ? _jouFg('#94a3b8') : '#475569', lineHeight: 1.4 } }, b.desc),
                   earned && h('div', { style: { fontSize: 11, color: _jouFg(ACCENT), marginTop: 4 } }, '\u2713 ' + new Date(earnedBadges[b.id]).toLocaleDateString())
                 );
               })

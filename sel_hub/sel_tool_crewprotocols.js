@@ -474,7 +474,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('crewProtocols'))
               role: 'tab', 'aria-selected': active,
               style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + (active ? '#0ea5e9' : '#334155'),
                 background: active ? 'rgba(14,165,233,0.18)' : _cpBg('#1e293b'),
-                color: _cpFg(active) ? _cpFg('#bae6fd') : _cpFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
+                color: active ? _cpFg('#bae6fd') : _cpFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
               t.icon + ' ' + t.label);
           })
         );
@@ -545,7 +545,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('crewProtocols'))
               var count = PROTOCOLS.filter(function(p) { return p.category === catId; }).length;
               var active = d.filter === catId;
               return h('button', { key: catId, onClick: function() { setCP({ filter: catId }); }, 'aria-label': 'Filter by ' + cat.label, 'aria-pressed': active,
-                style: { padding: '4px 12px', borderRadius: 14, border: '1px solid ' + (active ? cat.color : '#334155'), background: active ? cat.color + '22' : _cpBg('#1e293b'), color: _cpFg(active) ? cat.color : _cpFg('#cbd5e1'), cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, cat.icon + ' ' + cat.label + ' (' + count + ')');
+                style: { padding: '4px 12px', borderRadius: 14, border: '1px solid ' + (active ? cat.color : '#334155'), background: active ? cat.color + '22' : _cpBg('#1e293b'), color: active ? _cpFg(cat.color) : _cpFg('#cbd5e1'), cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, cat.icon + ' ' + cat.label + ' (' + count + ')');
             })
           ),
 
@@ -590,7 +590,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('crewProtocols'))
                 setCP({ planned: planned });
                 if (addToast) addToast(isPlanned ? 'Removed from plan.' : 'Added to plan.', 'info');
               }, 'aria-label': isPlanned ? 'Remove from plan' : 'Add to plan', 'aria-pressed': isPlanned,
-                style: { padding: '6px 14px', borderRadius: 6, border: '1px solid ' + cat.color, background: isPlanned ? cat.color : 'transparent', color: _cpFg(isPlanned) ? '#fff' : cat.color, cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
+                style: { padding: '6px 14px', borderRadius: 6, border: '1px solid ' + cat.color, background: isPlanned ? cat.color : 'transparent', color: isPlanned ? _cpFg('#fff') : cat.color, cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
                 isPlanned ? '✓ Saved to plan' : '+ Save to my Crew plan')
             );
           }),

@@ -191,7 +191,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('tipp'))) {
               role: 'tab', 'aria-selected': active,
               style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + (active ? '#ef4444' : '#334155'),
                 background: active ? 'rgba(239,68,68,0.18)' : _tpBg('#1e293b'),
-                color: _tpFg(active) ? _tpFg('#fecaca') : _tpFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
+                color: active ? _tpFg('#fecaca') : _tpFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
               t.icon + ' ' + t.label);
           })
         );
@@ -240,7 +240,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('tipp'))) {
                 style: { textAlign: 'left', padding: 12, borderRadius: 8, border: '1px solid ' + (skill ? skill.color : '#334155'), background: skill ? skill.color + '16' : _tpBg('#1e293b'), color: _tpFg('#e2e8f0'), cursor: 'pointer', minHeight: 104 } },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
                   h('span', { style: { fontSize: 20 } }, skill ? skill.icon : '+'),
-                  h('div', { style: { fontSize: 12, color: _tpFg(skill) ? skill.color : _tpFg('#fca5a5'), fontWeight: 900 } }, route.signal)
+                  h('div', { style: { fontSize: 12, color: skill ? _tpFg(skill.color) : _tpFg('#fca5a5'), fontWeight: 900 } }, route.signal)
                 ),
                 h('div', { style: { fontSize: 13, color: _tpFg('#e2e8f0'), fontWeight: 800, marginBottom: 3 } }, skill ? skill.label : 'Choose'),
                 h('div', { style: { fontSize: 11, color: _tpFg('#94a3b8'), lineHeight: 1.45 } }, route.fit)
@@ -402,7 +402,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('tipp'))) {
               h('span', { style: { fontSize: 10, color: _tpFg('#94a3b8'), fontFamily: 'ui-monospace, monospace', minWidth: 75 } }, e.date),
               h('span', { style: { fontSize: 18 } }, s ? s.icon : '?'),
               h('span', { style: { flex: 1, fontSize: 13, color: _tpFg('#e2e8f0') } }, s ? s.label : '(unknown)'),
-              h('span', { style: { fontSize: 11, color: _tpFg(e.helped) ? _tpFg('#22c55e') : '#f59e0b' } }, e.helped ? '✓ helped' : '⤴ tried another')
+              h('span', { style: { fontSize: 11, color: e.helped ? _tpFg('#22c55e') : '#f59e0b' } }, e.helped ? '✓ helped' : '⤴ tried another')
             );
           })
         );

@@ -160,7 +160,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('identitySupport'
               role: 'tab', 'aria-selected': active,
               style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + (active ? '#ec4899' : '#334155'),
                 background: active ? 'rgba(236,72,153,0.18)' : _ideBg('#1e293b'),
-                color: _ideFg(active) ? _ideFg('#fbcfe8') : _ideFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
+                color: active ? _ideFg('#fbcfe8') : _ideFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
               t.icon + ' ' + t.label);
           })
         );

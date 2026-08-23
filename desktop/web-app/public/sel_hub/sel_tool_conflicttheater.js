@@ -612,7 +612,10 @@ window.SelHub = window.SelHub || {
       var _cft_FGL = {'#f1f5f9':'#0f172a','#94a3b8':'#64748b','#e2e8f0':'#1e293b','#cbd5e1':'#334155','#fbbf24':'#854d0e','#fde68a':'#92400e','#7dd3fc':'#075985'}, _cft_FGH = {'#fef3c7':'#ffff00','#f1f5f9':'#ffff00','#94a3b8':'#ffff00','#e2e8f0':'#ffff00','#cbd5e1':'#ffff00','#fbbf24':'#ffff00','#64748b':'#ffff00','#fde68a':'#ffff00','#fff':'#ffff00','#22c55e':'#ffff00','#eab308':'#ffff00','#ef4444':'#ffff00','#7dd3fc':'#ffff00','#e0f2fe':'#ffff00','#a5f3fc':'#ffff00'};
       var _cft_BDL = {'#1e293b':'#e5e7eb','#334155':'#e2e8f0','#475569':'#cbd5e1'}, _cft_BDH = {'#f59e0b':'#ffff00','#1e293b':'#ffff00','#334155':'#ffff00','#92400e':'#ffff00','#14b8a6':'#ffff00','#0369a1':'#ffff00','#0891b2':'#ffff00','#475569':'#ffff00'};
       var _cftBg = function(h){ return _cftHC ? (_cft_BGH[h]||h) : (_cftL ? (_cft_BGL[h]||h) : h); };
-      var _cftFg = function(h){ return _cftHC ? (_cft_FGH[h]||h) : (_cftL ? (_cft_FGL[h]||h) : h); };
+      // Dark-mode foreground map. These accents are readable as TEXT only when
+      // lightened; the surface and border maps are untouched.
+      var _cft_FGD = {'#64748b':'#94a3b8'};
+      var _cftFg = function(h){ return _cftHC ? (_cft_FGH[h]||h) : (_cftL ? (_cft_FGL[h]||h) : (_cft_FGD[h]||h)); };
       var _cftBd = function(h){ return _cftHC ? (_cft_BDH[h]||h) : (_cftL ? (_cft_BDL[h]||h) : h); };
       var React = ctx.React;
       var h = React.createElement;

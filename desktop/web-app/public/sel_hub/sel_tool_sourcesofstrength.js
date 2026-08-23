@@ -158,7 +158,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sourcesOfStrengt
               role: 'tab', 'aria-selected': active,
               style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + (active ? '#f59e0b' : '#334155'),
                 background: active ? 'rgba(245,158,11,0.18)' : _souBg('#1e293b'),
-                color: _souFg(active) ? _souFg('#fde68a') : _souFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
+                color: active ? _souFg('#fde68a') : _souFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
               t.icon + ' ' + t.label);
           })
         );
@@ -251,7 +251,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sourcesOfStrengt
                   [1, 2, 3, 4, 5].map(function(n) {
                     var active = v === n;
                     return h('button', { key: n, onClick: function() { setRating(s.id, n); }, role: 'radio', 'aria-checked': active, 'aria-label': 'Rate ' + n,
-                      style: { padding: '4px 10px', borderRadius: 4, border: '1px solid ' + (active ? s.color : _souFg('#475569')), background: active ? s.color : 'transparent', color: _souFg(active) ? '#fff' : s.color, cursor: 'pointer', fontSize: 12, fontWeight: 700 } }, n);
+                      style: { padding: '4px 10px', borderRadius: 4, border: '1px solid ' + (active ? s.color : _souFg('#475569')), background: active ? s.color : 'transparent', color: active ? _souFg('#fff') : s.color, cursor: 'pointer', fontSize: 12, fontWeight: 700 } }, n);
                   })
                 )
               ),

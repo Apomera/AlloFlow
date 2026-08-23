@@ -181,7 +181,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('landPlace'))) {
               role: 'tab', 'aria-selected': active,
               style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + (active ? _lanFg('#86efac') : '#334155'),
                 background: active ? 'rgba(134,239,172,0.18)' : _lanBg('#1e293b'),
-                color: _lanFg(active) ? _lanFg('#bbf7d0') : _lanFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
+                color: active ? _lanFg('#bbf7d0') : _lanFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
               t.icon + ' ' + t.label);
           })
         );

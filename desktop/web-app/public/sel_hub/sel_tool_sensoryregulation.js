@@ -187,7 +187,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sensoryRegulatio
               role: 'tab', 'aria-selected': active,
               style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + (active ? '#f97316' : '#334155'),
                 background: active ? 'rgba(249,115,22,0.18)' : _senBg('#1e293b'),
-                color: _senFg(active) ? _senFg('#fed7aa') : _senFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
+                color: active ? _senFg('#fed7aa') : _senFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
               t.icon + ' ' + t.label);
           })
         );
@@ -239,7 +239,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sensoryRegulatio
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(112px, 1fr))', gap: 6 } },
             SYSTEMS.map(function(s) {
               var marked = !!((d.profile || {})[s.id]);
-              return h('div', { key: s.id, style: { padding: '6px 8px', borderRadius: 8, background: marked ? s.color + '16' : _senBg('#1e293b'), border: '1px solid ' + (marked ? s.color : '#334155'), color: _senFg(marked) ? s.color : _senFg('#94a3b8'), fontSize: 11, fontWeight: 800, textAlign: 'center' } },
+              return h('div', { key: s.id, style: { padding: '6px 8px', borderRadius: 8, background: marked ? s.color + '16' : _senBg('#1e293b'), border: '1px solid ' + (marked ? s.color : '#334155'), color: marked ? _senFg(s.color) : _senFg('#94a3b8'), fontSize: 11, fontWeight: 800, textAlign: 'center' } },
                 s.label
               );
             })
@@ -529,7 +529,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sensoryRegulatio
               ACCOMMODATION_STARTERS.map(function(a, i) {
                 var already = (d.myAccommodations || []).indexOf(a) !== -1;
                 return h('button', { key: i, onClick: function() { addAccommodation(a); }, disabled: already, 'aria-label': 'Add: ' + a,
-                  style: { padding: '4px 10px', borderRadius: 14, border: '1px solid #6366f166', background: already ? _senBg('#1e293b') : 'rgba(15,23,42,0.6)', color: _senFg(already) ? _senFg('#64748b') : _senFg('#cbd5e1'), cursor: already ? 'not-allowed' : 'pointer', fontSize: 11, opacity: already ? 0.5 : 1 } },
+                  style: { padding: '4px 10px', borderRadius: 14, border: '1px solid #6366f166', background: already ? _senBg('#1e293b') : 'rgba(15,23,42,0.6)', color: already ? _senFg('#64748b') : _senFg('#cbd5e1'), cursor: already ? 'not-allowed' : 'pointer', fontSize: 11, opacity: already ? 0.5 : 1 } },
                   (already ? '✓ ' : '+ ') + a);
               })
             )

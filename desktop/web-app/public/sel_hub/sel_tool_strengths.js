@@ -898,7 +898,10 @@ window.SelHub = window.SelHub || {
       var _str_FGL = {'#e2e8f0':'#1e293b','#fde68a':'#92400e','#fbbf24':'#854d0e','#c4b5fd':'#5b21b6','#6ee7b7':'#065f46','#cbd5e1':'#334155','#94a3b8':'#64748b','#a5b4fc':'#3730a3','#34d399':'#047857','#a78bfa':'#6d28d9','#818cf8':'#4338ca'}, _str_FGH = {'#e2e8f0':'#ffff00','#fde68a':'#ffff00','#fbbf24':'#ffff00','#c4b5fd':'#ffff00','#6ee7b7':'#ffff00','#cbd5e1':'#ffff00','#94a3b8':'#ffff00','#0f172a':'#ffff00','#a5b4fc':'#ffff00','#e0d4ff':'#ffff00','#f59e0b':'#ffff00','#22c55e':'#ffff00','#34d399':'#ffff00','#a78bfa':'#ffff00','#fff':'#ffff00','#475569':'#ffff00','#78350f':'#ffff00','#f97316':'#ffff00','#6366f1':'#ffff00','#f472b6':'#ffff00','#818cf8':'#ffff00'};
       var _str_BDL = {'#0f172a':'#cbd5e1'}, _str_BDH = {'#f59e0b':'#ffff00','#e2e8f0':'#ffff00','#0f172a':'#ffff00','#fcd34d':'#ffff00','#92400e':'#ffff00'};
       var _strBg = function(h){ return _strHC ? (_str_BGH[h]||h) : (_strL ? (_str_BGL[h]||h) : h); };
-      var _strFg = function(h){ return _strHC ? (_str_FGH[h]||h) : (_strL ? (_str_FGL[h]||h) : h); };
+      // Dark-mode foreground map. These accents are readable as TEXT only when
+      // lightened; the surface and border maps are untouched.
+      var _str_FGD = {'#6366f1':'#818cf8'};
+      var _strFg = function(h){ return _strHC ? (_str_FGH[h]||h) : (_strL ? (_str_FGL[h]||h) : (_str_FGD[h]||h)); };
       var _strBd = function(h){ return _strHC ? (_str_BDH[h]||h) : (_strL ? (_str_BDL[h]||h) : h); };
       var React = ctx.React;
       var h = React.createElement;
@@ -1217,7 +1220,7 @@ window.SelHub = window.SelHub || {
               STRENGTH_CATEGORIES.map(function(cat) {
                 var strengths = cat.strengths[band] || cat.strengths.elementary;
                 return h('div', { key: cat.id, style: { marginBottom: 20 } },
-                  h('div', { style: { fontSize: 13, fontWeight: 'bold', color: cat.color, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 } },
+                  h('div', { style: { fontSize: 13, fontWeight: 'bold', color: _strFg(cat.color), marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 } },
                     h('span', null, cat.emoji), ' ', cat.label
                   ),
                   h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
@@ -1233,7 +1236,7 @@ window.SelHub = window.SelHub || {
                       } },
                         h('span', { style: { fontSize: 16 } }, s.emoji),
                         h('span', null, s.label),
-                        sel ? h('span', { style: { marginLeft: 4, fontSize: 10, color: cat.color } }, '\u2713') : null
+                        sel ? h('span', { style: { marginLeft: 4, fontSize: 10, color: _strFg(cat.color) } }, '\u2713') : null
                       );
                     })
                   ),
@@ -1244,7 +1247,7 @@ window.SelHub = window.SelHub || {
                         var fullData = (cat.strengths[band] || []).find(function(st) { return st.id === s.id; });
                         return fullData ? h('div', { key: s.id, style: { fontSize: 11, color: _strFg('#cbd5e1'), marginBottom: 4, display: 'flex', alignItems: 'center', gap: 6 } },
                           h('span', null, s.emoji),
-                          h('strong', { style: { color: cat.color } }, s.label + ': '),
+                          h('strong', { style: { color: _strFg(cat.color) } }, s.label + ': '),
                           h('span', null, fullData.desc),
                           callTTS ? h('button', { 'aria-label': 'Read aloud', onClick: function() { speak(s.label + '. ' + fullData.desc); }, style: { marginLeft: 4, background: 'none', border: 'none', color: _strFg('#94a3b8'), fontSize: 10, cursor: 'pointer' } }, '\uD83D\uDD0A') : null
                         ) : null;
@@ -2333,7 +2336,7 @@ window.SelHub = window.SelHub || {
                   // ── Strength Wheel (SVG Radar) ──
                   (function() {
                     var catCounts = STRENGTH_CATEGORIES.map(function(cat) {
-                      return { label: cat.label.split(' ')[0], color: cat.color, emoji: cat.emoji, count: selectedStrengths.filter(function(s) { return s.category === cat.id; }).length };
+                      return { label: cat.label.split(' ')[0], color: _strFg(cat.color), emoji: cat.emoji, count: selectedStrengths.filter(function(s) { return s.category === cat.id; }).length };
                     });
                     var maxCount = Math.max(1, Math.max.apply(null, catCounts.map(function(c) { return c.count; })));
                     var cx = 120, cy = 110, radius = 80;
@@ -2437,14 +2440,14 @@ window.SelHub = window.SelHub || {
                     if (catStrengths.length === 0) return null;
                     return h('div', { key: cat.id, style: { marginBottom: 16 } },
                       h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 } },
-                        h('div', { style: { fontSize: 12, fontWeight: 'bold', color: cat.color } }, cat.emoji + ' ' + cat.label + ' (' + catStrengths.length + '/' + total + ')'),
+                        h('div', { style: { fontSize: 12, fontWeight: 'bold', color: _strFg(cat.color) } }, cat.emoji + ' ' + cat.label + ' (' + catStrengths.length + '/' + total + ')'),
                         h('div', { style: { width: 100, height: 6, borderRadius: 3, background: 'rgba(255,255,255,0.06)', overflow: 'hidden' } },
                           h('div', { style: { width: Math.round(catStrengths.length / total * 100) + '%', height: '100%', background: cat.color, borderRadius: 3, transition: 'width 0.3s' } })
                         )
                       ),
                       h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
                         catStrengths.map(function(s) {
-                          return h('span', { key: s.id, style: { padding: '5px 12px', borderRadius: 20, background: cat.color + '22', border: '1px solid ' + cat.color + '44', color: cat.color, fontSize: 11, fontWeight: 'bold' } }, s.emoji + ' ' + s.label);
+                          return h('span', { key: s.id, style: { padding: '5px 12px', borderRadius: 20, background: cat.color + '22', border: '1px solid ' + cat.color + '44', color: _strFg(cat.color), fontSize: 11, fontWeight: 'bold' } }, s.emoji + ' ' + s.label);
                         })
                       )
                     );

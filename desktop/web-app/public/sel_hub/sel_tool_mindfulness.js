@@ -22274,7 +22274,7 @@ window.SelHub = window.SelHub || {
             style: {
               padding: '7px 12px', borderRadius: 8, border: 'none', cursor: 'pointer',
               background: isActive ? _minBg('#8b5cf6') : 'transparent',
-              color: _minFg(isActive) ? _minFg('#fff') : _minFg('#94a3b8'),
+              color: isActive ? _minFg('#fff') : _minFg('#94a3b8'),
               fontWeight: isActive ? 700 : 500, fontSize: 12, whiteSpace: 'nowrap', flexShrink: 0
             }
           }, tab.label);
@@ -22468,7 +22468,7 @@ window.SelHub = window.SelHub || {
                   style: { textAlign: 'center', padding: 12, borderRadius: 12, background: earned ? '#0c1631' : _minBg('#1e293b'), border: '1px solid ' + (earned ? '#8b5cf6' : _minBg('#334155')), opacity: earned ? 1 : 0.4 }
                 },
                   h('div', { style: { fontSize: 28, marginBottom: 4 } }, badge.icon),
-                  h('div', { style: { fontSize: 10, fontWeight: 600, color: _minFg(earned) ? _minFg('#e2e8f0') : _minFg('#94a3b8') } }, badge.name),
+                  h('div', { style: { fontSize: 10, fontWeight: 600, color: earned ? _minFg('#e2e8f0') : _minFg('#94a3b8') } }, badge.name),
                   h('div', { style: { fontSize: 11, color: _minFg('#94a3b8'), marginTop: 2 } }, badge.desc)
                 );
               })
@@ -22513,7 +22513,7 @@ window.SelHub = window.SelHub || {
                 }
               },
                 h('div', { style: { fontSize: 22, marginBottom: 2 } }, pat.emoji),
-                h('div', { style: { fontSize: 11, fontWeight: 700, color: _minFg(isSel) ? pat.color : _minFg('#e2e8f0') } }, pat.name),
+                h('div', { style: { fontSize: 11, fontWeight: 700, color: isSel ? _minFg(pat.color) : _minFg('#e2e8f0') } }, pat.name),
                 used && h('div', { style: { fontSize: 8, color: _minFg('#22c55e'), marginTop: 2 } }, '\u2713 tried')
               );
             })
@@ -23061,7 +23061,7 @@ window.SelHub = window.SelHub || {
                         color: _minFg('#fff'), fontSize: 12, fontWeight: 700
                       }
                     }, isDone ? '\u2713' : (i + 1)),
-                    h('p', { style: { fontSize: 13, color: _minFg(isDone) ? _minFg('#94a3b8') : _minFg('#e2e8f0'), margin: 0, lineHeight: 1.5, textDecoration: isDone ? 'line-through' : 'none' } }, step)
+                    h('p', { style: { fontSize: 13, color: isDone ? _minFg('#94a3b8') : _minFg('#e2e8f0'), margin: 0, lineHeight: 1.5, textDecoration: isDone ? 'line-through' : 'none' } }, step)
                   );
                 })
               ),
@@ -23230,7 +23230,7 @@ window.SelHub = window.SelHub || {
                           textAlign: 'center', padding: '5px 0', borderRadius: 6,
                           background: day.practiced ? '#8b5cf633' : '#0f172a',
                           border: day.isToday ? '2px solid #8b5cf6' : '1px solid ' + (day.practiced ? '#8b5cf644' : _minBg('#1e293b')),
-                          fontSize: 10, color: _minFg(day.practiced) ? _minFg('#e2e8f0') : _minFg('#475569'), fontWeight: day.isToday ? 800 : 500
+                          fontSize: 10, color: day.practiced ? _minFg('#e2e8f0') : _minFg('#475569'), fontWeight: day.isToday ? 800 : 500
                         }
                       }, day.dayNum);
                     })
@@ -23540,7 +23540,7 @@ window.SelHub = window.SelHub || {
                         }
                       }, isStepDone ? '\u2713' : (i + 1)),
                       h('div', { style: { flex: 1 } },
-                        h('p', { style: { fontSize: 13, color: _minFg(isStepDone) ? _minFg('#94a3b8') : _minFg('#e2e8f0'), margin: '0 0 4px', lineHeight: 1.5 } }, step.instruction),
+                        h('p', { style: { fontSize: 13, color: isStepDone ? _minFg('#94a3b8') : _minFg('#e2e8f0'), margin: '0 0 4px', lineHeight: 1.5 } }, step.instruction),
                         h('p', { style: { fontSize: 11, color: _minFg(ex.color), margin: 0, fontStyle: 'italic' } }, '\uD83C\uDF2C\uFE0F ' + step.breath)
                       )
                     )
@@ -23848,7 +23848,7 @@ window.SelHub = window.SelHub || {
                           }
                         }, isStepDone ? '\u2713' : step.step),
                         h('div', { style: { flex: 1 } },
-                          h('p', { style: { fontSize: 13, color: _minFg(isStepDone) ? _minFg('#94a3b8') : _minFg('#e2e8f0'), margin: '0 0 4px', lineHeight: 1.5 } }, step.text),
+                          h('p', { style: { fontSize: 13, color: isStepDone ? _minFg('#94a3b8') : _minFg('#e2e8f0'), margin: '0 0 4px', lineHeight: 1.5 } }, step.text),
                           h('p', { style: { fontSize: 11, color: _minFg('#94a3b8'), margin: 0, fontStyle: 'italic' } }, step.detail)
                         )
                       )
@@ -24075,7 +24075,7 @@ if (activeTab === 'breath_studio') {
         var sel = bsPattern === p.id;
         return h('button', { key: p.id,
           onClick: function() { upd({ bsPattern: p.id, bsPhase: 0, bsCount: 0, bsRunning: false, bsCycles: 0 }); if (soundEnabled) sfxClick(); },
-          style: { padding: '6px 10px', borderRadius: 16, border: '1px solid ' + (sel ? p.color : _minFg('#475569')), background: sel ? p.color + '33' : _minBg('#1e293b'), color: _minFg(sel) ? p.color : _minFg('#cbd5e1'), fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer' }
+          style: { padding: '6px 10px', borderRadius: 16, border: '1px solid ' + (sel ? p.color : _minFg('#475569')), background: sel ? p.color + '33' : _minBg('#1e293b'), color: sel ? _minFg(p.color) : _minFg('#cbd5e1'), fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer' }
         }, p.name);
       })
     ),
@@ -24212,7 +24212,7 @@ if (activeTab === 'body_scan_studio') {
               else upd({ bssRunning: !bssRunning });
               if (soundEnabled) sfxClick();
             },
-            style: { padding: '10px 20px', borderRadius: 8, border: 'none', background: bssRunning ? _minFg('#ef4444') : '#5eead4', color: _minFg(bssRunning) ? _minFg('#fff') : '#0f172a', fontSize: 13, fontWeight: 700, cursor: 'pointer' }
+            style: { padding: '10px 20px', borderRadius: 8, border: 'none', background: bssRunning ? _minFg('#ef4444') : '#5eead4', color: bssRunning ? _minFg('#fff') : '#0f172a', fontSize: 13, fontWeight: 700, cursor: 'pointer' }
           }, bssStep < 0 ? '▶ Start full scan' : (bssRunning ? '⏸ Pause' : '▶ Resume')),
           bssStep >= 0 ? h('button', { onClick: function() { if (bssStep > 0) upd({ bssStep: bssStep - 1 }); },
             style: { padding: '10px 16px', borderRadius: 8, border: '1px solid #475569', background: _minBg('#1e293b'), color: _minFg('#cbd5e1'), fontSize: 13, cursor: 'pointer' }
@@ -24346,7 +24346,7 @@ if (activeTab === 'mandala') {
       MANDALA_STYLES.map(function(s) {
         var sel = mdStyle === s.id;
         return h('button', { key: s.id, onClick: function() { upd({ mdStyle: s.id }); if (soundEnabled) sfxClick(); },
-          style: { padding: '6px 10px', borderRadius: 16, border: '1px solid ' + (sel ? '#fbbf24' : _minFg('#475569')), background: sel ? '#fbbf2433' : _minBg('#1e293b'), color: _minFg(sel) ? _minFg('#fde68a') : _minFg('#cbd5e1'), fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer' }
+          style: { padding: '6px 10px', borderRadius: 16, border: '1px solid ' + (sel ? '#fbbf24' : _minFg('#475569')), background: sel ? '#fbbf2433' : _minBg('#1e293b'), color: sel ? _minFg('#fde68a') : _minFg('#cbd5e1'), fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer' }
         }, s.name);
       })
     ),
@@ -24370,7 +24370,7 @@ if (activeTab === 'mandala') {
     ),
     h('div', { style: { marginTop: 14, display: 'flex', gap: 10, justifyContent: 'center' } },
       h('button', { onClick: function() { upd({ mdRunning: !mdRunning }); if (soundEnabled) sfxClick(); },
-        style: { padding: '10px 20px', borderRadius: 8, border: 'none', background: mdRunning ? _minFg('#ef4444') : '#5eead4', color: _minFg(mdRunning) ? _minFg('#fff') : '#0f172a', fontSize: 13, fontWeight: 700, cursor: 'pointer' }
+        style: { padding: '10px 20px', borderRadius: 8, border: 'none', background: mdRunning ? _minFg('#ef4444') : '#5eead4', color: mdRunning ? _minFg('#fff') : '#0f172a', fontSize: 13, fontWeight: 700, cursor: 'pointer' }
       }, mdRunning ? '⏸ Pause' : '▶ Begin')
     ),
     h('style', null,
@@ -24538,7 +24538,7 @@ if (activeTab === 'soundbath') {
     ),
     h('div', { style: { marginTop: 14, padding: 14, borderRadius: 10, background: _minBg('#0f172a'), textAlign: 'center' } },
       h('button', { onClick: function() { upd({ sbPlaying: !sbPlaying }); if (soundEnabled) sfxClick(); },
-        style: { padding: '12px 28px', borderRadius: 8, border: 'none', background: sbPlaying ? _minFg('#ef4444') : '#5eead4', color: _minFg(sbPlaying) ? _minFg('#fff') : '#0f172a', fontSize: 14, fontWeight: 700, cursor: 'pointer' }
+        style: { padding: '12px 28px', borderRadius: 8, border: 'none', background: sbPlaying ? _minFg('#ef4444') : '#5eead4', color: sbPlaying ? _minFg('#fff') : '#0f172a', fontSize: 14, fontWeight: 700, cursor: 'pointer' }
       }, sbPlaying ? '⏸  Stop soundbath' : '▶  Play soundbath')
     ),
     h('div', { style: { marginTop: 12, padding: 12, borderRadius: 10, background: _minBg('#1e293b'), border: '1px solid #334155' } },
@@ -24662,7 +24662,7 @@ if (activeTab === 'bell_timer') {
           TONES.map(function(t) {
             var sel = btTone === t.id;
             return h('button', { key: t.id, onClick: function() { upd({ btTone: t.id }); _playToneByName(t.id); },
-              style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (sel ? '#fbbf24' : _minFg('#475569')), background: sel ? '#fbbf2433' : '#0f172a', color: _minFg(sel) ? _minFg('#fde68a') : _minFg('#cbd5e1'), fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer' }
+              style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (sel ? '#fbbf24' : _minFg('#475569')), background: sel ? '#fbbf2433' : '#0f172a', color: sel ? _minFg('#fde68a') : _minFg('#cbd5e1'), fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer' }
             }, t.name);
           })
         )
@@ -24680,7 +24680,7 @@ if (activeTab === 'bell_timer') {
           else { upd({ btRunning: false }); }
           if (soundEnabled) sfxClick();
         },
-        style: { marginTop: 16, padding: '12px 28px', borderRadius: 8, border: 'none', background: btRunning ? _minFg('#ef4444') : '#5eead4', color: _minFg(btRunning) ? _minFg('#fff') : '#0f172a', fontSize: 14, fontWeight: 700, cursor: 'pointer' }
+        style: { marginTop: 16, padding: '12px 28px', borderRadius: 8, border: 'none', background: btRunning ? _minFg('#ef4444') : '#5eead4', color: btRunning ? _minFg('#fff') : '#0f172a', fontSize: 14, fontWeight: 700, cursor: 'pointer' }
       }, btRunning ? '⏸ Stop' : '▶ Begin')
     )
   );
@@ -24707,7 +24707,7 @@ if (activeTab === 'trataka') {
       ['dark','dawn','dusk'].map(function(bg) {
         var sel = trBg === bg;
         return h('button', { key: bg, onClick: function() { upd({ trBg: bg }); if (soundEnabled) sfxClick(); },
-          style: { padding: '6px 14px', borderRadius: 6, border: '1px solid ' + (sel ? '#fbbf24' : _minFg('#475569')), background: sel ? '#fbbf2433' : _minBg('#1e293b'), color: _minFg(sel) ? _minFg('#fde68a') : _minFg('#cbd5e1'), fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer', textTransform: 'capitalize' }
+          style: { padding: '6px 14px', borderRadius: 6, border: '1px solid ' + (sel ? '#fbbf24' : _minFg('#475569')), background: sel ? '#fbbf2433' : _minBg('#1e293b'), color: sel ? _minFg('#fde68a') : _minFg('#cbd5e1'), fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer', textTransform: 'capitalize' }
         }, bg);
       })
     ),
@@ -24740,7 +24740,7 @@ if (activeTab === 'trataka') {
     ),
     h('div', { style: { marginTop: 14, display: 'flex', gap: 10, justifyContent: 'center' } },
       h('button', { onClick: function() { upd({ trRunning: !trRunning }); if (soundEnabled) sfxClick(); },
-        style: { padding: '10px 20px', borderRadius: 8, border: 'none', background: trRunning ? _minFg('#ef4444') : '#fbbf24', color: _minFg(trRunning) ? _minFg('#fff') : '#0f172a', fontSize: 13, fontWeight: 700, cursor: 'pointer' }
+        style: { padding: '10px 20px', borderRadius: 8, border: 'none', background: trRunning ? _minFg('#ef4444') : '#fbbf24', color: trRunning ? _minFg('#fff') : '#0f172a', fontSize: 13, fontWeight: 700, cursor: 'pointer' }
       }, trRunning ? '⏸ Steady flame' : '▶ Flicker (recommended)')
     ),
     h('style', null,
@@ -24795,7 +24795,7 @@ if (activeTab === 'walking') {
       PACES.map(function(p) {
         var sel = wkPace === p.id;
         return h('button', { key: p.id, onClick: function() { upd({ wkPace: p.id }); if (soundEnabled) sfxClick(); },
-          style: { padding: '8px 16px', borderRadius: 8, border: '1px solid ' + (sel ? '#5eead4' : _minFg('#475569')), background: sel ? '#14b8a655' : _minBg('#1e293b'), color: _minFg(sel) ? '#5eead4' : _minFg('#cbd5e1'), fontSize: 13, fontWeight: sel ? 700 : 500, cursor: 'pointer' }
+          style: { padding: '8px 16px', borderRadius: 8, border: '1px solid ' + (sel ? '#5eead4' : _minFg('#475569')), background: sel ? '#14b8a655' : _minBg('#1e293b'), color: sel ? _minFg('#5eead4') : _minFg('#cbd5e1'), fontSize: 13, fontWeight: sel ? 700 : 500, cursor: 'pointer' }
         }, p.name);
       })
     ),
@@ -24814,7 +24814,7 @@ if (activeTab === 'walking') {
       h('div', { style: { color: _minFg('#94a3b8'), fontSize: 13, marginTop: 4 } }, 'steps'),
       h('p', { style: { margin: '12px auto 0', maxWidth: 400, color: _minFg('#fde68a'), fontSize: 12, fontStyle: 'italic', lineHeight: 1.5 } }, pace.desc),
       h('button', { onClick: function() { upd({ wkRunning: !wkRunning }); if (soundEnabled) sfxClick(); },
-        style: { marginTop: 16, padding: '12px 28px', borderRadius: 8, border: 'none', background: wkRunning ? _minFg('#ef4444') : '#5eead4', color: _minFg(wkRunning) ? _minFg('#fff') : '#0f172a', fontSize: 14, fontWeight: 700, cursor: 'pointer' }
+        style: { marginTop: 16, padding: '12px 28px', borderRadius: 8, border: 'none', background: wkRunning ? _minFg('#ef4444') : '#5eead4', color: wkRunning ? _minFg('#fff') : '#0f172a', fontSize: 14, fontWeight: 700, cursor: 'pointer' }
       }, wkRunning ? '⏸ Pause' : '▶ Begin walking'),
       h('button', { onClick: function() { upd({ wkSteps: 0, wkRunning: false }); if (soundEnabled) sfxClick(); },
         style: { marginLeft: 8, padding: '12px 18px', borderRadius: 8, border: '1px solid #475569', background: _minBg('#1e293b'), color: _minFg('#94a3b8'), fontSize: 13, cursor: 'pointer' }
@@ -25046,7 +25046,7 @@ if (activeTab === 'lovingkindness') {
         LK_RECIPIENTS.map(function(r, i) {
           var sel = lkRecipient === i;
           return h('button', { key: r.id, onClick: function() { upd({ lkRecipient: i, lkPhrase: 0 }); if (soundEnabled) sfxClick(); },
-            style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (sel ? r.color : _minFg('#475569')), background: sel ? r.color + '22' : '#0f172a', color: _minFg(sel) ? r.color : _minFg('#cbd5e1'), fontSize: 11, cursor: 'pointer' }
+            style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (sel ? r.color : _minFg('#475569')), background: sel ? r.color + '22' : '#0f172a', color: sel ? _minFg(r.color) : _minFg('#cbd5e1'), fontSize: 11, cursor: 'pointer' }
           }, r.label.length > 20 ? r.label.substring(0, 20) + '…' : r.label);
         })
       )
@@ -25116,7 +25116,7 @@ if (activeTab === 'clouds') {
     ),
     h('div', { style: { marginTop: 14, display: 'flex', gap: 10, justifyContent: 'center' } },
       h('button', { onClick: function() { upd({ clRunning: !clRunning }); if (soundEnabled) sfxClick(); },
-        style: { padding: '10px 20px', borderRadius: 8, border: 'none', background: clRunning ? _minFg('#ef4444') : '#5eead4', color: _minFg(clRunning) ? _minFg('#fff') : '#0f172a', fontSize: 13, fontWeight: 700, cursor: 'pointer' }
+        style: { padding: '10px 20px', borderRadius: 8, border: 'none', background: clRunning ? _minFg('#ef4444') : '#5eead4', color: clRunning ? _minFg('#fff') : '#0f172a', fontSize: 13, fontWeight: 700, cursor: 'pointer' }
       }, clRunning ? '⏸ Pause' : '▶ Begin cloud watching')
     ),
     h('style', null,
@@ -25416,7 +25416,7 @@ if (activeTab === 'mudra') {
       MUDRAS.map(function(m) {
         var sel = mrSelected === m.id;
         return h('button', { key: m.id, onClick: function() { upd({ mrSelected: m.id }); if (soundEnabled) sfxClick(); },
-          style: { padding: '6px 10px', borderRadius: 16, border: '1px solid ' + (sel ? '#fbbf24' : _minFg('#475569')), background: sel ? '#fbbf2433' : _minBg('#1e293b'), color: _minFg(sel) ? _minFg('#fde68a') : _minFg('#cbd5e1'), fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer' }
+          style: { padding: '6px 10px', borderRadius: 16, border: '1px solid ' + (sel ? '#fbbf24' : _minFg('#475569')), background: sel ? '#fbbf2433' : _minBg('#1e293b'), color: sel ? _minFg('#fde68a') : _minFg('#cbd5e1'), fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer' }
         }, m.name.split('(')[0].trim());
       })
     ),
@@ -25469,7 +25469,7 @@ if (activeTab === 'scripts_lib') {
         slCats.map(function(c) {
           var sel = slCategory === c;
           return h('button', { key: c, onClick: function() { upd({ slCategory: c }); if (soundEnabled) sfxClick(); },
-            style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (sel ? '#fbbf24' : _minFg('#475569')), background: sel ? '#fbbf2433' : _minBg('#1e293b'), color: _minFg(sel) ? _minFg('#fde68a') : _minFg('#cbd5e1'), fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer', textTransform: 'capitalize' }
+            style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (sel ? '#fbbf24' : _minFg('#475569')), background: sel ? '#fbbf2433' : _minBg('#1e293b'), color: sel ? _minFg('#fde68a') : _minFg('#cbd5e1'), fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer', textTransform: 'capitalize' }
           }, c);
         })
       ),
@@ -25489,7 +25489,7 @@ if (activeTab === 'scripts_lib') {
                 h('div', { style: { color: _minFg('#94a3b8'), fontSize: 10 } }, (s.category || '') + ' · ~' + (s.durationMin || '?') + ' min · ' + (s.forBand || 'all'))
               ),
               h('button', { onClick: function() { upd({ slOpen: isOpen ? null : s.id }); if (soundEnabled) sfxClick(); },
-                style: { padding: '5px 10px', borderRadius: 6, border: 'none', background: isOpen ? _minBg('#334155') : '#5eead4', color: _minFg(isOpen) ? _minFg('#94a3b8') : '#0f172a', fontSize: 11, fontWeight: 700, cursor: 'pointer' }
+                style: { padding: '5px 10px', borderRadius: 6, border: 'none', background: isOpen ? _minBg('#334155') : '#5eead4', color: isOpen ? _minFg('#94a3b8') : '#0f172a', fontSize: 11, fontWeight: 700, cursor: 'pointer' }
               }, isOpen ? 'Close' : 'Open')
             ),
             s.contraindications && s.contraindications.length ? h('div', { style: { marginTop: 6, color: _minFg('#fbbf24'), fontSize: 10, lineHeight: 1.4 } }, '⚠️ ' + s.contraindications.join(' · ')) : null,
@@ -25539,7 +25539,7 @@ if (activeTab === 'mantras') {
         mtCats.map(function(c) {
           var sel = mtCategory === c;
           return h('button', { key: c, onClick: function() { upd({ mtCategory: c }); if (soundEnabled) sfxClick(); },
-            style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (sel ? _minFg('#a78bfa') : _minFg('#475569')), background: sel ? '#1e1b4b' : _minBg('#1e293b'), color: _minFg(sel) ? '#c4b5fd' : _minFg('#cbd5e1'), fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer' }
+            style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (sel ? _minFg('#a78bfa') : _minFg('#475569')), background: sel ? '#1e1b4b' : _minBg('#1e293b'), color: sel ? _minFg('#c4b5fd') : _minFg('#cbd5e1'), fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer' }
           }, c);
         })
       ),
@@ -25600,7 +25600,7 @@ if (activeTab === 'living') {
         settings.map(function(s) {
           var sel = lvSetting === s;
           return h('button', { key: s, onClick: function() { upd({ lvSetting: s }); if (soundEnabled) sfxClick(); },
-            style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (sel ? '#5eead4' : _minFg('#475569')), background: sel ? '#14b8a655' : _minBg('#1e293b'), color: _minFg(sel) ? '#5eead4' : _minFg('#cbd5e1'), fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer', textTransform: 'capitalize' }
+            style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (sel ? '#5eead4' : _minFg('#475569')), background: sel ? '#14b8a655' : _minBg('#1e293b'), color: sel ? _minFg('#5eead4') : _minFg('#cbd5e1'), fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer', textTransform: 'capitalize' }
           }, s);
         })
       ),
@@ -25670,7 +25670,7 @@ if (activeTab === 'research') {
         fields.map(function(f) {
           var sel = rsField === f;
           return h('button', { key: f, onClick: function() { upd({ rsField: f }); if (soundEnabled) sfxClick(); },
-            style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (sel ? '#fbbf24' : _minFg('#475569')), background: sel ? '#fbbf2433' : _minBg('#1e293b'), color: _minFg(sel) ? _minFg('#fde68a') : _minFg('#cbd5e1'), fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer', textTransform: 'capitalize' }
+            style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (sel ? '#fbbf24' : _minFg('#475569')), background: sel ? '#fbbf2433' : _minBg('#1e293b'), color: sel ? _minFg('#fde68a') : _minFg('#cbd5e1'), fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer', textTransform: 'capitalize' }
           }, f);
         })
       ),
@@ -25806,7 +25806,7 @@ if (activeTab === 'color_breath') {
       PAIRS.map(function(p) {
         var sel = cbPair === p.id;
         return h('button', { key: p.id, onClick: function() { upd({ cbPair: p.id }); if (soundEnabled) sfxClick(); },
-          style: { padding: '8px 14px', borderRadius: 8, border: '1px solid ' + (sel ? '#fbbf24' : _minFg('#475569')), background: sel ? '#fbbf2433' : _minBg('#1e293b'), color: _minFg(sel) ? _minFg('#fde68a') : _minFg('#cbd5e1'), fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer' },
+          style: { padding: '8px 14px', borderRadius: 8, border: '1px solid ' + (sel ? '#fbbf24' : _minFg('#475569')), background: sel ? '#fbbf2433' : _minBg('#1e293b'), color: sel ? _minFg('#fde68a') : _minFg('#cbd5e1'), fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer' },
           title: p.meaning
         }, p.name + ' ' + h('span', { style: { background: 'linear-gradient(90deg, ' + p.inC + ', ' + p.outC + ')', display: 'inline-block', width: 30, height: 8, borderRadius: 4, verticalAlign: 'middle', marginLeft: 4 } }));
       })
@@ -25820,7 +25820,7 @@ if (activeTab === 'color_breath') {
     ),
     h('div', { style: { marginTop: 14, textAlign: 'center' } },
       h('button', { onClick: function() { upd({ cbRunning: !cbRunning, cbPhase: 'in', cbCount: 0 }); if (soundEnabled) sfxClick(); },
-        style: { padding: '12px 24px', borderRadius: 8, border: 'none', background: cbRunning ? _minFg('#ef4444') : '#5eead4', color: _minFg(cbRunning) ? _minFg('#fff') : '#0f172a', fontSize: 14, fontWeight: 700, cursor: 'pointer' }
+        style: { padding: '12px 24px', borderRadius: 8, border: 'none', background: cbRunning ? _minFg('#ef4444') : '#5eead4', color: cbRunning ? _minFg('#fff') : '#0f172a', fontSize: 14, fontWeight: 700, cursor: 'pointer' }
       }, cbRunning ? '⏸ Pause' : '▶ Begin')
     )
   );
@@ -25879,7 +25879,7 @@ if (activeTab === 'microbreak') {
       contexts.map(function(c) {
         var sel = mbContext === c;
         return h('button', { key: c, onClick: function() { upd({ mbContext: c }); if (soundEnabled) sfxClick(); },
-          style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (sel ? '#5eead4' : _minFg('#475569')), background: sel ? '#14b8a655' : _minBg('#1e293b'), color: _minFg(sel) ? '#5eead4' : _minFg('#cbd5e1'), fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer' }
+          style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (sel ? '#5eead4' : _minFg('#475569')), background: sel ? '#14b8a655' : _minBg('#1e293b'), color: sel ? _minFg('#5eead4') : _minFg('#cbd5e1'), fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer' }
         }, c);
       })
     ),
@@ -25927,7 +25927,7 @@ if (activeTab === 'movements_lib') {
         cats.map(function(c) {
           var sel = mvCategory === c;
           return h('button', { key: c, onClick: function() { upd({ mvCategory: c }); if (soundEnabled) sfxClick(); },
-            style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (sel ? '#fbbf24' : _minFg('#475569')), background: sel ? '#fbbf2433' : _minBg('#1e293b'), color: _minFg(sel) ? _minFg('#fde68a') : _minFg('#cbd5e1'), fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer' }
+            style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (sel ? '#fbbf24' : _minFg('#475569')), background: sel ? '#fbbf2433' : _minBg('#1e293b'), color: sel ? _minFg('#fde68a') : _minFg('#cbd5e1'), fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer' }
           }, c);
         })
       ),
@@ -25999,7 +25999,7 @@ if (activeTab === 'gratitude_lib') {
         cats.map(function(c) {
           var sel = grCategory === c;
           return h('button', { key: c, onClick: function() { upd({ grCategory: c }); if (soundEnabled) sfxClick(); },
-            style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (sel ? _minFg('#ec4899') : _minFg('#475569')), background: sel ? '#ec489933' : _minBg('#1e293b'), color: _minFg(sel) ? _minFg('#fbcfe8') : _minFg('#cbd5e1'), fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer' }
+            style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (sel ? _minFg('#ec4899') : _minFg('#475569')), background: sel ? '#ec489933' : _minBg('#1e293b'), color: sel ? _minFg('#fbcfe8') : _minFg('#cbd5e1'), fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer' }
           }, c);
         })
       ),

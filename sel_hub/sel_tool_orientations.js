@@ -359,7 +359,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('orientations')))
               role: 'tab', 'aria-selected': active,
               style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + (active ? '#a78bfa' : '#334155'),
                 background: active ? 'rgba(167,139,250,0.18)' : '#1e293b',
-                color: _oriFg(active) ? _oriFg('#e9d5ff') : _oriFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
+                color: active ? _oriFg('#e9d5ff') : _oriFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
               t.icon + ' ' + t.label);
           })
         );
@@ -494,7 +494,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('orientations')))
               return h('button', { key: qq.id, onClick: function() { pickQ(qq.id); }, 'aria-pressed': picked,
                 style: { padding: '10px 12px', borderRadius: 8, border: '1.5px solid ' + (picked ? '#a78bfa' : '#334155'),
                   background: picked ? 'rgba(167,139,250,0.18)' : '#1e293b',
-                  color: _oriFg(picked) ? _oriFg('#e9d5ff') : _oriFg('#cbd5e1'), cursor: 'pointer', fontSize: 12.5, fontWeight: 700, textAlign: 'left' } },
+                  color: picked ? _oriFg('#e9d5ff') : _oriFg('#cbd5e1'), cursor: 'pointer', fontSize: 12.5, fontWeight: 700, textAlign: 'left' } },
                 qq.icon + ' ' + qq.label);
             })
           ),
@@ -578,7 +578,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('orientations')))
               var active = ax.id === current;
               return h('button', { key: ax.id, onClick: function () { var patch = {}; patch[side === 'X' ? 'compassX' : 'compassY'] = ax.id; setOR(patch); },
                 'aria-pressed': active,
-                style: { padding: '4px 9px', borderRadius: 7, border: '1px solid ' + (active ? '#a78bfa' : '#334155'), background: active ? 'rgba(167,139,250,0.18)' : '#1e293b', color: _oriFg(active) ? _oriFg('#e9d5ff') : _oriFg('#cbd5e1'), cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, ax.label);
+                style: { padding: '4px 9px', borderRadius: 7, border: '1px solid ' + (active ? '#a78bfa' : '#334155'), background: active ? 'rgba(167,139,250,0.18)' : '#1e293b', color: active ? _oriFg('#e9d5ff') : _oriFg('#cbd5e1'), cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, ax.label);
             })
           );
         }

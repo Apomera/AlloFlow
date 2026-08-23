@@ -619,7 +619,7 @@ window.SelHub = window.SelHub || {
       var _safT = (ctx && ctx.theme) || {};
       var _safHC = !!_safT.isContrast, _safL = !_safHC && !_safT.isDark;
       var _saf_BGL = {'#1e293b':'#ffffff','#7f1d1d':'#fee2e2','#0f172a':'#f8fafc'}, _saf_BGH = {'#1e293b':'#000000','#7f1d1d':'#000000','#1e3a5f':'#000000','#3b82f6':'#000000','#0f172a':'#000000','#dc2626':'#000000','#fff':'#000000','#fef2f2':'#000000'};
-      var _saf_FGL = {'#94a3b8':'#64748b','#cbd5e1':'#334155','#f1f5f9':'#0f172a','#fca5a5':'#991b1b','#818cf8':'#4338ca','#4ade80':'#15803d','#93c5fd':'#1e3a8a','#e2e8f0':'#1e293b','#f87171':'#b91c1c','#fbbf24':'#854d0e'}, _saf_FGH = {'#94a3b8':'#ffff00','#cbd5e1':'#ffff00','#f1f5f9':'#ffff00','#fca5a5':'#ffff00','#fde2e2':'#ffff00','#818cf8':'#ffff00','#4ade80':'#ffff00','#93c5fd':'#ffff00','#60a5fa':'#ffff00','#fff':'#ffff00','#e2e8f0':'#ffff00','#f87171':'#ffff00','#fbbf24':'#ffff00','#0f172a':'#ffff00','#475569':'#ffff00','#7f1d1d':'#ffff00'};
+      var _saf_FGL = {'#94a3b8':'#64748b','#cbd5e1':'#334155','#f1f5f9':'#0f172a','#fca5a5':'#991b1b','#818cf8':'#4338ca','#4ade80':'#15803d','#93c5fd':'#1e3a8a','#e2e8f0':'#1e293b','#f87171':'#b91c1c','#fbbf24':'#854d0e'}, _saf_FGH = {'#ef4444':'#ffff00','#94a3b8':'#ffff00','#cbd5e1':'#ffff00','#f1f5f9':'#ffff00','#fca5a5':'#ffff00','#fde2e2':'#ffff00','#818cf8':'#ffff00','#4ade80':'#ffff00','#93c5fd':'#ffff00','#60a5fa':'#ffff00','#fff':'#ffff00','#e2e8f0':'#ffff00','#f87171':'#ffff00','#fbbf24':'#ffff00','#0f172a':'#ffff00','#475569':'#ffff00','#7f1d1d':'#ffff00'};
       var _saf_BDL = {'#334155':'#e2e8f0','#0f172a':'#cbd5e1','#475569':'#cbd5e1'}, _saf_BDH = {'#334155':'#ffff00','#dc2626':'#ffff00','#3b82f6':'#ffff00','#0f172a':'#ffff00','#fecaca':'#ffff00','#475569':'#ffff00'};
       var _safBg = function(h){ return _safHC ? (_saf_BGH[h]||h) : (_safL ? (_saf_BGL[h]||h) : h); };
       // Dark-mode foreground remap. The tool shell is always dark, so these
@@ -826,7 +826,7 @@ window.SelHub = window.SelHub || {
                 },
                 style: {
                   padding: '6px 14px', borderRadius: 8, border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: isActive ? 700 : 500, whiteSpace: 'nowrap',
-                  background: isActive ? ACCENT_DIM : 'transparent', color: _safFg(isActive) ? ACCENT : _safFg('#94a3b8'),
+                  background: isActive ? ACCENT_DIM : 'transparent', color: isActive ? _safFg(ACCENT) : _safFg('#94a3b8'),
                   transition: 'all 0.15s'
                 }
               }, t.label);
@@ -1308,7 +1308,7 @@ window.SelHub = window.SelHub || {
                   onClick: function() { upd('newAdultCat', cat); },
                   style: {
                     padding: '4px 10px', borderRadius: 6, border: '1px solid ' + (isActive ? ACCENT : '#334155'), fontSize: 11, cursor: 'pointer',
-                    background: isActive ? ACCENT_DIM : 'transparent', color: _safFg(isActive) ? ACCENT : _safFg('#94a3b8')
+                    background: isActive ? ACCENT_DIM : 'transparent', color: isActive ? _safFg(ACCENT) : _safFg('#94a3b8')
                   }
                 }, catLabels[cat]);
               })
@@ -2364,7 +2364,7 @@ window.SelHub = window.SelHub || {
                   style: { padding: 14, borderRadius: 12, background: earned ? '#0f172a' : '#0f172a88', border: '1px solid ' + (earned ? ACCENT_MED : _safBg('#1e293b')), textAlign: 'center', opacity: earned ? 1 : 0.5, transition: 'all 0.2s' }
                 },
                   h('div', { style: { fontSize: 30 } }, earned ? b.icon : '\uD83D\uDD12'),
-                  h('div', { style: { fontSize: 12, fontWeight: 600, color: _safFg(earned) ? _safFg('#f1f5f9') : _safFg('#94a3b8'), marginTop: 6 } }, b.name),
+                  h('div', { style: { fontSize: 12, fontWeight: 600, color: earned ? _safFg('#f1f5f9') : _safFg('#94a3b8'), marginTop: 6 } }, b.name),
                   h('div', { style: { fontSize: 10, color: _safFg('#94a3b8'), marginTop: 3 } }, b.desc),
                   earned && h('div', { style: { fontSize: 11, color: _safFg('#4ade80'), marginTop: 4 } }, '\u2705 Earned ' + new Date(earnedBadges[b.id]).toLocaleDateString())
                 );

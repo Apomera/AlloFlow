@@ -1129,7 +1129,7 @@ window.SelHub = window.SelHub || {
             'aria-selected': isActive, role: 'tab',
             style: {
               padding: '6px 12px', borderRadius: 8, border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: isActive ? 700 : 500, whiteSpace: 'nowrap',
-              background: isActive ? ACCENT_DIM : 'transparent', color: _cflFg(isActive) ? ACCENT : _cflFg('#94a3b8'), transition: 'all 0.15s'
+              background: isActive ? ACCENT_DIM : 'transparent', color: isActive ? _cflFg(ACCENT) : _cflFg('#94a3b8'), transition: 'all 0.15s'
             }
           }, t.label);
         }),
@@ -1277,7 +1277,7 @@ window.SelHub = window.SelHub || {
                 var earned = !!earnedBadges[b.id];
                 return h('div', { key: b.id, style: { padding: 12, borderRadius: 10, background: earned ? _cflBg('#0f172a') : '#0f172a88', border: '1px solid ' + (earned ? ACCENT_MED : _cflBg('#334155')), textAlign: 'center', opacity: earned ? 1 : 0.5 } },
                   h('div', { style: { fontSize: 28 } }, earned ? b.icon : '\uD83D\uDD12'),
-                  h('div', { style: { fontSize: 11, fontWeight: 600, color: _cflFg(earned) ? _cflFg('#f1f5f9') : _cflFg('#94a3b8'), marginTop: 4 } }, b.name),
+                  h('div', { style: { fontSize: 11, fontWeight: 600, color: earned ? _cflFg('#f1f5f9') : _cflFg('#94a3b8'), marginTop: 4 } }, b.name),
                   h('div', { style: { fontSize: 10, color: _cflFg('#94a3b8'), marginTop: 2 } }, b.desc)
                 );
               })

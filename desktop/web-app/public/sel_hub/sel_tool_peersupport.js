@@ -181,6 +181,18 @@ window.SelHub = window.SelHub || {
       var _PEC_DARK = {'#fff':'#1e293b','#ffffff':'#1e293b','#f8fafc':'#0f172a','#f1f5f9':'#1e293b','#fef3c7':'#3a2e12','#fef2f2':'#2e1414','#fee2e2':'#3a1a1a','#f0fdf4':'#0b2e22','#ecfdf5':'#0e3326','#dcfce7':'#14532d','#eff6ff':'#0e1f3a','#dbeafe':'#16315e','#e0e7ff':'#1e2150','#0f172a':'#f1f5f9','#1e293b':'#e2e8f0','#374151':'#cbd5e1','#475569':'#cbd5e1','#94a3b8':'#94a3b8','#9ca3af':'#cbd5e1','#e5e7eb':'#334155','#92400e':'#fde68a','#991b1b':'#fca5a5','#7f1d1d':'#fca5a5','#166534':'#86efac','#065f46':'#6ee7b7','#1e40af':'#93c5fd'};
       var _PEC_HC = {'#fff':'#000000','#ffffff':'#000000','#f8fafc':'#000000','#f1f5f9':'#000000','#fef3c7':'#000000','#fef2f2':'#000000','#fee2e2':'#000000','#f0fdf4':'#000000','#ecfdf5':'#000000','#dcfce7':'#000000','#eff6ff':'#000000','#dbeafe':'#000000','#e0e7ff':'#000000','#0f172a':'#ffff00','#1e293b':'#ffff00','#374151':'#ffff00','#475569':'#ffff00','#94a3b8':'#ffff00','#9ca3af':'#ffff00','#e5e7eb':'#ffff00','#92400e':'#ffff00','#991b1b':'#ffff00','#7f1d1d':'#ffff00','#166534':'#ffff00','#065f46':'#ffff00','#1e40af':'#ffff00'};
       var _peC = function(hex){ return _peCHC ? (_PEC_HC[hex]||hex) : (_peCDark ? (_PEC_DARK[hex]||hex) : hex); };
+
+      // ── Ink: the same hue, readable as TEXT on this tool's dark surface ──
+      // _peC serves surfaces AND text from one map, so it cannot lighten
+      // an accent for a label without also lightening the chip that accent fills.
+      // Consulted only from a `color:` position, so no surface moves; falls back
+      // to _peC for any hue not listed.
+      var _PE_INK = { '#3b82f6': '#60a5fa', '#8b5cf6': '#a78bfa', '#a855f7': '#c084fc', '#22c55e': '#4ade80', '#ec4899': '#f472b6' };
+      var _PE_INK_HC = { '#3b82f6': '#ffff00', '#8b5cf6': '#ffff00', '#a855f7': '#ffff00', '#22c55e': '#ffff00', '#ec4899': '#ffff00' };
+      var _peInk = function(hex) {
+        if (_peCHC) return _PE_INK_HC[hex] || _peC(hex);
+        return _PE_INK[hex] || _peC(hex);
+      };
       var h = ctx.React.createElement;
       var useState = ctx.React.useState;
       var useCallback = ctx.React.useCallback;
@@ -347,7 +359,7 @@ window.SelHub = window.SelHub || {
               return h('div', { key: skill.id, style: { background: _peC('#fff'), borderRadius: '12px', padding: '12px', border: '2px solid ' + skill.color + '33' } },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' } },
                   h('span', { style: { fontSize: '18px' }, 'aria-hidden': 'true' }, skill.icon),
-                  h('span', { style: { fontSize: '13px', fontWeight: 800, color: skill.color } }, skill.label)
+                  h('span', { style: { fontSize: '13px', fontWeight: 800, color: _peInk(skill.color) } }, skill.label)
                 ),
                 h('p', { style: { fontSize: '10px', color: _peC('#94a3b8'), lineHeight: 1.4, margin: 0 } }, skill.what)
               );
@@ -669,7 +681,7 @@ window.SelHub = window.SelHub || {
                 var fb = chatFeedback.oarsFeedback[s.id];
                 if (!fb || fb === 'null') return null;
                 return h('div', { key: s.id, style: { background: _peC('#fff'), borderRadius: '8px', padding: '8px', border: '1px solid ' + s.color + '33' } },
-                  h('div', { style: { fontSize: '10px', fontWeight: 700, color: s.color, marginBottom: '2px' } }, s.icon + ' ' + s.label + ' (' + (oarsUsed[s.id] || 0) + 'x)'),
+                  h('div', { style: { fontSize: '10px', fontWeight: 700, color: _peInk(s.color), marginBottom: '2px' } }, s.icon + ' ' + s.label + ' (' + (oarsUsed[s.id] || 0) + 'x)'),
                   h('p', { style: { fontSize: '10px', color: _peC('#94a3b8'), margin: 0, lineHeight: 1.3 } }, fb)
                 );
               })

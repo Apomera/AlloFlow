@@ -122,7 +122,10 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('quietQuestions')
       var _qq_FGL = {'#cbd5e1':'#334155','#c4b5fd':'#5b21b6','#94a3b8':'#64748b','#a78bfa':'#6d28d9','#e9d5ff':'#581c87','#e2e8f0':'#1e293b'}, _qq_FGH = {'#cbd5e1':'#ffff00','#c4b5fd':'#ffff00','#94a3b8':'#ffff00','#fff':'#ffff00','#a78bfa':'#ffff00','#e9d5ff':'#ffff00','#64748b':'#ffff00','#e2e8f0':'#ffff00','#bbf7d0':'#ffff00','#22c55e':'#ffff00'};
       var _qq_BDL = {'#334155':'#e2e8f0','#1e293b':'#e5e7eb','#475569':'#cbd5e1'}, _qq_BDH = {'#334155':'#ffff00','#a78bfa':'#ffff00','#1e293b':'#ffff00','#22c55e':'#ffff00','#475569':'#ffff00','#a855f7':'#ffff00'};
       var _qqBg = function(h){ return _qqHC ? (_qq_BGH[h]||h) : (_qqL ? (_qq_BGL[h]||h) : h); };
-      var _qqFg = function(h){ return _qqHC ? (_qq_FGH[h]||h) : (_qqL ? (_qq_FGL[h]||h) : h); };
+      // Dark-mode foreground map. These accents are readable as TEXT only when
+      // lightened; the surface and border maps are untouched.
+      var _qq_FGD = {'#64748b':'#94a3b8'};
+      var _qqFg = function(h){ return _qqHC ? (_qq_FGH[h]||h) : (_qqL ? (_qq_FGL[h]||h) : (_qq_FGD[h]||h)); };
       var _qqBd = function(h){ return _qqHC ? (_qq_BDH[h]||h) : (_qqL ? (_qq_BDL[h]||h) : h); };
       var React = ctx.React;
       var h = React.createElement;

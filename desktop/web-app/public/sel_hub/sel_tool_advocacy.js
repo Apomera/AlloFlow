@@ -17347,7 +17347,7 @@ window.SelHub = window.SelHub || {
             'aria-selected': isActive, role: 'tab',
             style: {
               padding: '6px 12px', borderRadius: 8, border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: isActive ? 700 : 500, whiteSpace: 'nowrap',
-              background: isActive ? ACCENT_DIM : 'transparent', color: _advFg(isActive) ? ACCENT : _advFg('#94a3b8'), transition: 'all 0.15s'
+              background: isActive ? ACCENT_DIM : 'transparent', color: isActive ? _advFg(ACCENT) : _advFg('#94a3b8'), transition: 'all 0.15s'
             }
           }, t.label);
         }),
@@ -17416,7 +17416,7 @@ window.SelHub = window.SelHub || {
                 var earned = !!earnedBadges[b.id];
                 return h('div', { key: b.id, style: { padding: 12, borderRadius: 10, background: earned ? '#0f172a' : '#0f172a88', border: '1px solid ' + (earned ? ACCENT_MED : _advBg('#334155')), textAlign: 'center', opacity: earned ? 1 : 0.5 } },
                   h('div', { style: { fontSize: 28 }, 'aria-hidden': 'true' }, earned ? b.icon : '\uD83D\uDD12'),
-                  h('div', { style: { fontSize: 11, fontWeight: 600, color: _advFg(earned) ? _advFg('#f1f5f9') : _advFg('#94a3b8'), marginTop: 4 } }, b.name),
+                  h('div', { style: { fontSize: 11, fontWeight: 600, color: earned ? _advFg('#f1f5f9') : _advFg('#94a3b8'), marginTop: 4 } }, b.name),
                   h('div', { style: { fontSize: 10, color: _advFg('#94a3b8'), marginTop: 2 } }, b.desc)
                 );
               })
@@ -17615,7 +17615,7 @@ window.SelHub = window.SelHub || {
               return h('div', { key: globalI, style: { marginBottom: 12, paddingBottom: 12, borderBottom: '1px solid #1e293b' } },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
                   h('span', { style: { fontSize: 14 } }, strand ? strand.icon : '·'),
-                  h('span', { style: { fontSize: 11, color: _advFg(strand) ? strand.color : _advFg('#94a3b8'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 } }, strand ? strand.name : '')
+                  h('span', { style: { fontSize: 11, color: strand ? _advFg(strand.color) : _advFg('#94a3b8'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 } }, strand ? strand.name : '')
                 ),
                 h('p', { style: { fontSize: 13, color: _advFg('#cbd5e1'), lineHeight: 1.55, margin: '0 0 8px' } }, item.q),
                 h('div', { style: { display: 'flex', gap: 4 } },
@@ -17625,7 +17625,7 @@ window.SelHub = window.SelHub || {
                     return h('button', { key: v, onClick: function() { setRating(globalI, v); },
                       'aria-pressed': picked, 'aria-label': labels[v],
                       style: { flex: 1, padding: '8px 6px', borderRadius: 6, border: '1.5px solid ' + (picked ? '#a5b4fc' : _advBg('#334155')),
-                        background: picked ? 'rgba(165,180,252,0.20)' : _advBg('#1e293b'), color: _advFg(picked) ? '#e9d5ff' : _advFg('#cbd5e1'),
+                        background: picked ? 'rgba(165,180,252,0.20)' : _advBg('#1e293b'), color: picked ? _advFg('#e9d5ff') : _advFg('#cbd5e1'),
                         cursor: 'pointer', fontSize: 11, fontWeight: 700 } },
                       v + ' · ' + labels[v]);
                   })
@@ -17692,7 +17692,7 @@ window.SelHub = window.SelHub || {
               var active = phraseCat === c.id;
               return h('button', { key: c.id, onClick: function() { upd('phraseCat', c.id); },
                 style: { padding: '6px 10px', borderRadius: 6, border: '1px solid ' + (active ? '#a5b4fc' : _advBg('#334155')),
-                  background: active ? 'rgba(165,180,252,0.18)' : '#0f172a', color: _advFg(active) ? '#a5b4fc' : _advFg('#94a3b8'),
+                  background: active ? 'rgba(165,180,252,0.18)' : '#0f172a', color: active ? _advFg('#a5b4fc') : _advFg('#94a3b8'),
                   cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, c.label);
             })
           ),
@@ -17704,7 +17704,7 @@ window.SelHub = window.SelHub || {
               return h('div', { key: idx, style: { padding: 12, background: _advBg('#0f172a'), borderRadius: 10, borderLeft: '3px solid #a5b4fc' } },
                 h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 6 } },
                   h('span', { style: { fontSize: 9, color: _advFg('#94a3b8'), textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, flex: 1 } }, p.context + ' · ' + p.tone),
-                  h('button', { onClick: function() { toggleFav(origIdx); }, 'aria-label': 'Favorite', style: { background: 'transparent', border: 'none', color: _advFg(isFav) ? _advFg('#fbbf24') : _advFg('#475569'), cursor: 'pointer', fontSize: 14 } }, isFav ? '⭐' : '☆')
+                  h('button', { onClick: function() { toggleFav(origIdx); }, 'aria-label': 'Favorite', style: { background: 'transparent', border: 'none', color: isFav ? _advFg('#fbbf24') : _advFg('#475569'), cursor: 'pointer', fontSize: 14 } }, isFav ? '⭐' : '☆')
                 ),
                 h('p', { style: { fontSize: 14, color: _advFg('#f1f5f9'), lineHeight: 1.55, margin: '0 0 8px', fontStyle: 'italic' } }, '"' + p.phrase + '"'),
                 h('p', { style: { fontSize: 11, color: _advFg('#94a3b8'), lineHeight: 1.5, margin: '0 0 8px' } }, p.useWhen),
@@ -17757,7 +17757,7 @@ window.SelHub = window.SelHub || {
               var active = accomCat === c.id;
               return h('button', { key: c.id, onClick: function() { upd('accomLibCat', c.id); },
                 style: { padding: '6px 10px', borderRadius: 6, border: '1px solid ' + (active ? _advFg('#22c55e') : _advBg('#334155')),
-                  background: active ? 'rgba(34,197,94,0.18)' : '#0f172a', color: _advFg(active) ? _advFg('#86efac') : _advFg('#94a3b8'),
+                  background: active ? 'rgba(34,197,94,0.18)' : '#0f172a', color: active ? _advFg('#86efac') : _advFg('#94a3b8'),
                   cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, c.label);
             })
           ),
@@ -17847,7 +17847,7 @@ window.SelHub = window.SelHub || {
               var active = vocabCat === c.id;
               return h('button', { key: c.id, 'aria-pressed': active ? 'true' : 'false', onClick: function() { upd('vocabCat', c.id); upd('vocabIdx', 0); upd('vocabFlipped', false); },
                 style: { padding: '6px 10px', borderRadius: 6, border: '1px solid ' + (active ? _advFg('#fbbf24') : _advBg('#334155')),
-                  background: active ? 'rgba(251,191,36,0.18)' : '#0f172a', color: _advFg(active) ? _advFg('#fcd34d') : _advFg('#94a3b8'),
+                  background: active ? 'rgba(251,191,36,0.18)' : '#0f172a', color: active ? _advFg('#fcd34d') : _advFg('#94a3b8'),
                   cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, c.label);
             })
           ),
@@ -17929,7 +17929,7 @@ window.SelHub = window.SelHub || {
                 return h('button', { key: t.id, onClick: function() { updateDraft('type', t.id); },
                   'aria-pressed': picked,
                   style: { padding: '6px 10px', borderRadius: 6, border: '1px solid ' + (picked ? t.color : _advBg('#334155')),
-                    background: picked ? t.color + '22' : _advBg('#1e293b'), color: _advFg(picked) ? t.color : _advFg('#94a3b8'),
+                    background: picked ? t.color + '22' : _advBg('#1e293b'), color: picked ? _advFg(t.color) : _advFg('#94a3b8'),
                     cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, t.label);
               })
             ),
@@ -18129,7 +18129,7 @@ window.SelHub = window.SelHub || {
                 'aria-pressed': done,
                 style: { padding: 8, borderRadius: 6, border: '1.5px solid ' + (done ? _advFg('#22c55e') : diffColor),
                   background: done ? 'rgba(34,197,94,0.20)' : '#0f172a',
-                  color: _advFg(done) ? _advFg('#86efac') : _advFg('#e2e8f0'),
+                  color: done ? _advFg('#86efac') : _advFg('#e2e8f0'),
                   cursor: 'pointer', fontSize: 10, fontWeight: 600, lineHeight: 1.3, minHeight: 80, textAlign: 'center',
                   display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 4 } },
                 done && h('span', { style: { fontSize: 18 } }, '✓'),
@@ -18893,7 +18893,7 @@ window.SelHub = window.SelHub || {
               var active = sceneIdx === i;
               return h('button', { key: s.id, onClick: function() { upd('roleplaySceneIdx', i); upd('roleplayResponseIdx', null); },
                 style: { padding: '6px 10px', borderRadius: 6, border: '1.5px solid ' + (active ? '#a5b4fc' : _advBg('#334155')),
-                  background: active ? 'rgba(165,180,252,0.15)' : '#0f172a', color: _advFg(active) ? '#a5b4fc' : _advFg('#94a3b8'),
+                  background: active ? 'rgba(165,180,252,0.15)' : '#0f172a', color: active ? _advFg('#a5b4fc') : _advFg('#94a3b8'),
                   cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, s.title);
             })
           ),
@@ -18920,7 +18920,7 @@ window.SelHub = window.SelHub || {
           // Outcome
           picked && h('div', null,
             h('div', { style: { padding: 14, background: picked.outcome.ok ? 'rgba(34,197,94,0.10)' : 'rgba(239,68,68,0.10)', borderLeft: '4px solid ' + (picked.outcome.ok ? _advFg('#22c55e') : '#ef4444'), borderRadius: 10, marginBottom: 12 } },
-              h('div', { style: { fontSize: 11, color: _advFg(picked.outcome.ok) ? _advFg('#86efac') : _advFg('#fca5a5'), fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 } }, picked.outcome.ok ? '✓ Good outcome' : '⚠ Costly outcome'),
+              h('div', { style: { fontSize: 11, color: picked.outcome.ok ? _advFg('#86efac') : _advFg('#fca5a5'), fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 } }, picked.outcome.ok ? '✓ Good outcome' : '⚠ Costly outcome'),
               h('p', { style: { fontSize: 13, color: _advFg('#cbd5e1'), lineHeight: 1.6, margin: 0 } }, picked.outcome.response)
             ),
             h('div', { style: { padding: 14, background: 'rgba(165,180,252,0.08)', borderLeft: '4px solid #a5b4fc', borderRadius: 10, marginBottom: 12 } },
@@ -19181,7 +19181,7 @@ window.SelHub = window.SelHub || {
               return h('button', { key: opt, onClick: function() { updateDis(currentQ.field, opt); },
                 'aria-pressed': sel,
                 style: { display: 'block', width: '100%', padding: 10, marginBottom: 6, borderRadius: 8, border: '1.5px solid ' + (sel ? '#a5b4fc' : _advBg('#334155')),
-                  background: sel ? 'rgba(165,180,252,0.15)' : _advBg('#1e293b'), color: _advFg(sel) ? '#a5b4fc' : _advFg('#e2e8f0'),
+                  background: sel ? 'rgba(165,180,252,0.15)' : _advBg('#1e293b'), color: sel ? _advFg('#a5b4fc') : _advFg('#e2e8f0'),
                   cursor: 'pointer', textAlign: 'left', fontSize: 12.5 } },
                 (sel ? '✓ ' : '○ ') + opt);
             }),
@@ -19195,7 +19195,7 @@ window.SelHub = window.SelHub || {
                 },
                 'aria-pressed': sel,
                 style: { display: 'block', width: '100%', padding: 10, marginBottom: 6, borderRadius: 8, border: '1.5px solid ' + (sel ? '#a5b4fc' : _advBg('#334155')),
-                  background: sel ? 'rgba(165,180,252,0.15)' : _advBg('#1e293b'), color: _advFg(sel) ? '#a5b4fc' : _advFg('#e2e8f0'),
+                  background: sel ? 'rgba(165,180,252,0.15)' : _advBg('#1e293b'), color: sel ? _advFg('#a5b4fc') : _advFg('#e2e8f0'),
                   cursor: 'pointer', textAlign: 'left', fontSize: 12.5 } },
                 (sel ? '☑ ' : '☐ ') + opt);
             }),
@@ -19336,7 +19336,7 @@ window.SelHub = window.SelHub || {
                 style: { padding: 12, borderRadius: 10, border: '2px solid ' + (isCurrent ? ACCENT : isViewed ? _advBg('#334155') : '#33415566'), background: isCurrent ? ACCENT_DIM : _advBg('#1e293b'), cursor: 'pointer', textAlign: 'center' }
               },
                 h('div', { style: { fontSize: 24, marginBottom: 4 } }, card.icon),
-                h('div', { style: { fontSize: 11, fontWeight: 600, color: _advFg(isCurrent) ? ACCENT : _advFg('#e2e8f0') } }, card.title),
+                h('div', { style: { fontSize: 11, fontWeight: 600, color: isCurrent ? _advFg(ACCENT) : _advFg('#e2e8f0') } }, card.title),
                 isViewed && h('div', { style: { fontSize: 11, color: _advFg('#22c55e'), marginTop: 2 } }, '\u2713 Viewed')
               );
             })
@@ -19678,7 +19678,7 @@ window.SelHub = window.SelHub || {
                           addToast('Phrase practiced!', 'success');
                         }
                       },
-                      style: { padding: '6px 12px', borderRadius: 8, border: 'none', background: practiced ? '#22c55e22' : ACCENT_DIM, color: _advFg(practiced) ? _advFg('#22c55e') : ACCENT, fontSize: 11, fontWeight: 600, cursor: practiced ? 'default' : 'pointer', flexShrink: 0 }
+                      style: { padding: '6px 12px', borderRadius: 8, border: 'none', background: practiced ? '#22c55e22' : ACCENT_DIM, color: practiced ? _advFg('#22c55e') : ACCENT, fontSize: 11, fontWeight: 600, cursor: practiced ? 'default' : 'pointer', flexShrink: 0 }
                     }, practiced ? '\u2713 Practiced' : 'Practice')
                   )
                 );
@@ -19734,7 +19734,7 @@ window.SelHub = window.SelHub || {
               return h('button', { 'aria-label': 'Next',
                 key: sc.id,
                 onClick: function() { upd({ sasIdx: si, sasParts: {}, sasPracticeMode: false }); if (soundEnabled) sfxClick(); },
-                style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + (isCurrent ? ACCENT : isDone ? '#22c55e33' : _advBg('#334155')), background: isCurrent ? ACCENT_DIM : 'transparent', color: _advFg(isCurrent) ? ACCENT : isDone ? _advFg('#22c55e') : _advFg('#94a3b8'), fontSize: 11, fontWeight: isCurrent ? 700 : 500, whiteSpace: 'nowrap', cursor: 'pointer', flexShrink: 0 }
+                style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + (isCurrent ? ACCENT : isDone ? '#22c55e33' : _advBg('#334155')), background: isCurrent ? ACCENT_DIM : 'transparent', color: isCurrent ? _advFg(ACCENT) : isDone ? _advFg('#22c55e') : _advFg('#94a3b8'), fontSize: 11, fontWeight: isCurrent ? 700 : 500, whiteSpace: 'nowrap', cursor: 'pointer', flexShrink: 0 }
               }, (isDone ? '\u2713 ' : '') + sc.title);
             })
           ),
@@ -19954,7 +19954,7 @@ window.SelHub = window.SelHub || {
                         if (soundEnabled) sfxClick();
                       },
                       title: labels[val - 1],
-                      style: { width: 40, height: 40, borderRadius: '50%', border: '2px solid ' + (isSelected ? ACCENT : _advBg('#334155')), background: isSelected ? ACCENT : 'transparent', color: _advFg(isSelected) ? _advFg('#fff') : _advFg('#94a3b8'), fontSize: 14, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }
+                      style: { width: 40, height: 40, borderRadius: '50%', border: '2px solid ' + (isSelected ? ACCENT : _advBg('#334155')), background: isSelected ? ACCENT : 'transparent', color: isSelected ? _advFg('#fff') : _advFg('#94a3b8'), fontSize: 14, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }
                     }, String(val));
                   })
                 ),
@@ -20002,7 +20002,7 @@ window.SelHub = window.SelHub || {
                 style: { padding: 12, borderRadius: 10, border: '2px solid ' + (isCurrent ? ACCENT : _advBg('#334155')), background: isCurrent ? ACCENT_DIM : _advBg('#1e293b'), cursor: 'pointer', textAlign: 'center' }
               },
                 h('div', { style: { fontSize: 24, marginBottom: 4 } }, lt.icon),
-                h('div', { style: { fontSize: 12, fontWeight: 600, color: _advFg(isCurrent) ? ACCENT : _advFg('#e2e8f0') } }, 'To ' + lt.recipient)
+                h('div', { style: { fontSize: 12, fontWeight: 600, color: isCurrent ? _advFg(ACCENT) : _advFg('#e2e8f0') } }, 'To ' + lt.recipient)
               );
             })
           ),

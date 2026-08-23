@@ -202,7 +202,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('dearMan'))) {
 
               style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + (active ? '#3b82f6' : '#334155'),
                 background: active ? 'rgba(59,130,246,0.18)' : _deBg('#1e293b'),
-                color: _deFg(active) ? _deFg('#bfdbfe') : _deFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
+                color: active ? _deFg('#bfdbfe') : _deFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
               t.icon + ' ' + t.label);
           })
         );
