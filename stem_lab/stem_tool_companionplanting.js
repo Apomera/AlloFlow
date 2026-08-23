@@ -10851,7 +10851,7 @@ var d = (labToolData.companionPlanting) || {};
           if (gardenMode === 'community') {
             return React.createElement('div', { className: 'space-y-4 animate-in fade-in duration-200' },
               renderTutorial('companionPlanting', _tutCompanionPlanting),
-              React.createElement('div', { className: 'flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between' },
+              React.createElement('div', { className: 'flex flex-col gap-3 rounded-xl bg-emerald-800 p-3 sm:flex-row sm:items-center sm:justify-between' },
                 React.createElement('div', { className: 'flex items-center gap-3 min-w-0' },
                   React.createElement('button', { onClick: function () { setStemLabTool(null); }, className: 'p-1.5 rounded-lg text-emerald-100 hover:bg-white/10 transition-colors focus:ring-2 focus:ring-emerald-300 focus:outline-none', 'aria-label': __alloT('stem.companionplanting.back_to_tools', 'Back to tools') }, React.createElement(ArrowLeft, { size: 18, className: 'text-emerald-100' })),
                   React.createElement('div', null,
@@ -10873,7 +10873,7 @@ var d = (labToolData.companionPlanting) || {};
 
             // ── Header ──
 
-            React.createElement("div", { className: "flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between" },
+            React.createElement("div", { className: "flex flex-col gap-3 rounded-xl bg-emerald-800 p-3 sm:flex-row sm:items-center sm:justify-between" },
 
               React.createElement("div", { className: "flex items-center gap-3 min-w-0" },
 
@@ -10990,9 +10990,9 @@ var d = (labToolData.companionPlanting) || {};
                     ),
                     React.createElement("div", { className: "grid gap-2 sm:grid-cols-3" },
                       [
-                        { key: 'cornPlanted', name: 'Corn', role: 'Living trellis', active: cornPlanted, color: '#ca8a04' },
-                        { key: 'beansPlanted', name: 'Beans', role: 'Nitrogen fixer', active: beansPlanted, color: '#16a34a' },
-                        { key: 'squashPlanted', name: 'Squash', role: 'Living mulch', active: squashPlanted, color: '#ea580c' }
+                        { key: 'cornPlanted', name: 'Corn', role: 'Living trellis', active: cornPlanted, color: '#854d0e' },
+                        { key: 'beansPlanted', name: 'Beans', role: 'Nitrogen fixer', active: beansPlanted, color: '#166534' },
+                        { key: 'squashPlanted', name: 'Squash', role: 'Living mulch', active: squashPlanted, color: '#9a3412' }
                       ].map(function(sister) {
                         return React.createElement("button", {
                           key: sister.name,

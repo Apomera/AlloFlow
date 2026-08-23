@@ -5564,7 +5564,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
         case 'menu':
         default:             viewBody = renderMenu(); break;
       }
-      return React.createElement(React.Fragment, null, renCelebOverlay(), viewBody);
+      return React.createElement('div', { 'data-renewables-root': 'true', style: { background: T.bg, borderRadius: 12 } }, renCelebOverlay(), viewBody);
       } catch(e) {
         console.error('[Renewables] render error', e);
         return ctx.React.createElement('div', { style: { padding: 16, color: '#fde2e2', background: '#7f1d1d', borderRadius: 8 } },

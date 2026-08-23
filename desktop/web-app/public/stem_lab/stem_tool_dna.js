@@ -47,6 +47,15 @@ window.StemLab = window.StemLab || {
     st.id = 'allo-dna-interface-css';
     st.textContent = [
       '[data-dna-tool]{--dna-ink:#172a2d;--dna-muted:#61716f;--dna-line:#d9e2df;--dna-paper:#f6f8f4;--dna-violet:#6d28d9;max-width:80rem!important;color:var(--allo-stem-text,#0f172a)}',
+      // Own the ground in dark (2026-08-23): without this the tool inherits the
+      // host's white content card, and every translucent tint composites light
+      // while the var(--allo-stem-*) inks resolve dark-theme - the topic hero
+      // measured 1.09:1. Light mode is untouched.
+      '[data-stem-theme=dark] [data-dna-tool],.theme-dark [data-dna-tool]{background:#0f172a;border-radius:12px}',
+      '[data-stem-theme=dark] [data-dna-tool] .dna-command-kicker,.theme-dark [data-dna-tool] .dna-command-kicker{color:#c4b5fd}',
+      '[data-stem-theme=dark] [data-dna-tool] .dna-grade-bar,.theme-dark [data-dna-tool] .dna-grade-bar{background:#f6f8f4}',
+      '[data-stem-theme=dark] [data-dna-tool] :is([data-dna-recommendation],[data-dna-guided],[data-dna-scenario-steps]) .text-slate-500,.theme-dark [data-dna-tool] :is([data-dna-recommendation],[data-dna-guided],[data-dna-scenario-steps]) .text-slate-500{color:#475569!important}',
+      '[data-stem-theme=dark] [data-dna-tool] :is([data-dna-recommendation],[data-dna-guided],.bg-white\\/60,.bg-white\\/70,.bg-white\\/80,.bg-white\\/90,.bg-indigo-50\\/60,.bg-violet-50\\/60),.theme-dark [data-dna-tool] :is([data-dna-recommendation],[data-dna-guided],.bg-white\\/60,.bg-white\\/70,.bg-white\\/80,.bg-white\\/90,.bg-indigo-50\\/60,.bg-violet-50\\/60){background-color:#f6f8f4!important}',
       '[data-dna-tool] button{min-height:36px}',
       '.dna-command-header{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:14px;padding:15px 17px;border:1px solid var(--dna-line);border-top:4px solid var(--dna-violet);border-radius:14px;background:var(--allo-stem-canvas,#fff);box-shadow:0 12px 30px rgba(15,23,42,.08)}',
       '.dna-back-button{width:40px;height:40px;display:grid;place-items:center;border:1px solid var(--dna-line);border-radius:10px;background:#fff;color:#475569;transition:transform .18s ease,border-color .18s ease}',
@@ -66,7 +75,7 @@ window.StemLab = window.StemLab || {
       '.dna-snapshot-button{min-height:38px!important;padding:0 14px;border:1px solid #5b21b6;border-radius:10px;background:#6d28d9;color:#fff;font-size:11px;font-weight:900;box-shadow:3px 3px 0 #c4b5fd;transition:transform .18s ease,box-shadow .18s ease}',
       '.dna-snapshot-button:hover{transform:translate(-1px,-1px);box-shadow:5px 5px 0 #c4b5fd}',
       '.dna-grade-bar{display:flex;align-items:center;gap:6px;overflow-x:auto;padding:8px 10px;border:1px solid var(--dna-line);border-radius:12px;background:rgba(255,255,255,.8);scrollbar-width:thin}',
-      '.dna-grade-label{flex:none;margin-right:4px;color:#64748b;font-size:9px;font-weight:900;letter-spacing:.11em;text-transform:uppercase}',
+      '.dna-grade-label{flex:none;margin-right:4px;color:#475569;font-size:9px;font-weight:900;letter-spacing:.11em;text-transform:uppercase}',
       '.dna-grade-option{flex:none;min-height:32px!important;padding:0 11px;border:1px solid #cbd5e1;border-radius:8px;background:#fff;color:#526174;font-size:10px;font-weight:850}',
       '.dna-grade-option:hover{border-color:#a78bfa;background:#faf5ff}',
       '.dna-grade-option[data-active="true"]{border-color:#6d28d9;background:#6d28d9;color:#fff;box-shadow:0 4px 10px rgba(109,40,217,.18)}',
@@ -78,7 +87,7 @@ window.StemLab = window.StemLab || {
       '.dna-mission-summary-copy{min-width:0;flex:1}',
       '.dna-mission-kicker{color:#6d28d9;font-size:8px;font-weight:950;letter-spacing:.13em;text-transform:uppercase}',
       '.dna-mission-title{margin:2px 0 0;color:#14252c;font-size:16px;font-weight:950;letter-spacing:-.02em}',
-      '.dna-mission-desc{margin:3px 0 0;overflow:hidden;color:#64748b;font-size:10px;text-overflow:ellipsis;white-space:nowrap}',
+      '.dna-mission-desc{margin:3px 0 0;overflow:hidden;color:#475569;font-size:10px;text-overflow:ellipsis;white-space:nowrap}',
       '.dna-active-tool{display:flex;align-items:center;gap:6px;flex:none;padding:7px 9px;border:1px solid var(--dna-line);border-radius:9px;background:#fff;color:#243a3d;font-size:10px;font-weight:900}',
       '.dna-mission-chevron{color:#7c3aed;font-size:16px;transition:transform .18s ease}',
       '.dna-mission-shell[open] .dna-mission-chevron{transform:rotate(180deg)}',
@@ -4079,7 +4088,8 @@ window.StemLab = window.StemLab || {
             learn:      { accent: '#64748b', soft: 'rgba(100,116,139,0.10)', icon: '\uD83D\uDCDA', title: t('stem.dna.reference_glossary', 'Reference + glossary'),         hint: t('stem.dna.codon_table_base_pairing_rules_key_ter', 'Codon table, base-pairing rules, key terms (ORF, intron, exon, promoter, repressor) - the cheat sheet you keep coming back to.') }
           };
           var meta = TAB_META[tab] || TAB_META.build;
-          var metaInk = (!!ctx.isDark || ctx.theme === 'dark') ? meta.accent : ({
+          var metaInkDark = ({ '#a855f7': '#c4b5fd', '#8b5cf6': '#c4b5fd', '#64748b': '#94a3b8', '#dc2626': '#fca5a5', '#ef4444': '#fca5a5', '#3b82f6': '#93c5fd', '#0ea5e9': '#7dd3fc', '#06b6d4': '#67e8f9', '#22c55e': '#86efac', '#f59e0b': '#fcd34d', '#fbbf24': '#fde68a' })[meta.accent] || meta.accent;
+          var metaInk = (!!ctx.isDark || ctx.theme === 'dark') ? metaInkDark : ({
             '#a855f7': '#7e22ce', '#3b82f6': '#1d4ed8', '#0ea5e9': '#0369a1',
             '#22c55e': '#15803d', '#f59e0b': '#92400e', '#ef4444': '#b91c1c',
             '#06b6d4': '#0e7490', '#8b5cf6': '#6d28d9', '#fbbf24': '#854d0e',
