@@ -948,9 +948,9 @@ if (!window._galaxyHasLoadedOnce) {
 
             { q: __alloT('stem.galaxy.quiz_mtype_pct', 'What percentage of stars are M-type red dwarfs?'), a: '~76%', options: ['~10%', '~30%', '~50%', '~76%'] },
 
-            { q: __alloT('stem.galaxy.quiz_what_nebula', 'What is a nebula?'), a: 'A cloud of gas and dust', options: ['A dead star', 'A cloud of gas and dust', 'A type of galaxy', 'A black hole'] },
+            { q: __alloT('stem.galaxy.quiz_what_nebula', 'What is a nebula?'), a: 'A cloud of gas and dust', options: ['The burnt-out core of a dead star', 'A cloud of gas and dust', 'A small, distant spiral galaxy', 'A black hole'] },
 
-            { q: __alloT('stem.galaxy.quiz_star_count', 'How many stars are in the Milky Way?'), a: '100-400 billion', options: ['1 million', '100 million', '100-400 billion', '1 trillion'] },
+            { q: __alloT('stem.galaxy.quiz_star_count', 'How many stars are in the Milky Way?'), a: '100-400 billion', options: ['100-400 thousand', '10-40 million', '100-400 billion', '1-4 trillion'] },
 
             { q: __alloT('stem.galaxy.quiz_mw_type', 'What type of galaxy is the Milky Way?'), a: 'Barred spiral', options: [t('stem.galaxy.elliptical'), t('stem.galaxy.irregular'), 'Spiral', 'Barred spiral'] },
 
@@ -958,13 +958,13 @@ if (!window._galaxyHasLoadedOnce) {
 
             { q: __alloT('stem.galaxy.quiz_hottest_color', 'What color are the hottest stars?'), a: 'Blue', options: ['Red', 'Yellow', 'White', 'Blue'] },
 
-            { q: __alloT('stem.galaxy.quiz_planetary_nebula', 'What is a planetary nebula?'), a: 'Outer layers shed by a dying star', options: ['A nebula with planets', 'Outer layers shed by a dying star', 'Gas around a planet', 'A type of dark matter'] },
+            { q: __alloT('stem.galaxy.quiz_planetary_nebula', 'What is a planetary nebula?'), a: 'Outer layers shed by a dying star', options: ['A nebula where new planets are forming', 'Outer layers shed by a dying star', 'Gas around a planet', 'A type of dark matter'] },
 
             { q: __alloT('stem.galaxy.quiz_mw_width', 'How wide is the Milky Way?'), a: '~100,000 light-years', options: ['~1,000 light-years', '~10,000 light-years', '~100,000 light-years', '~1 million light-years'] },
 
             { q: __alloT('stem.galaxy.quiz_supernova_cause', 'What causes a supernova?'), a: 'A massive star exploding', options: ['Two galaxies colliding', 'A massive star exploding', 'A nebula igniting', 'A black hole evaporating'] },
 
-            { q: __alloT('stem.galaxy.quiz_dark_matter', 'What is dark matter?'), a: 'Invisible matter detected by gravity', options: ['Black holes', 'Invisible matter detected by gravity', 'Empty space', 'Antimatter'] },
+            { q: __alloT('stem.galaxy.quiz_dark_matter', 'What is dark matter?'), a: 'Invisible matter detected by gravity', options: ['Black holes', 'Invisible matter detected by gravity', 'The empty space between galaxies', 'Antimatter left over from the Big Bang'] },
 
             { q: __alloT('stem.galaxy.quiz_light_cross', 'How long does it take light to cross the Milky Way?'), a: '~100,000 years', options: ['~1,000 years', '~10,000 years', '~100,000 years', '~1 million years'] },
 
@@ -974,7 +974,7 @@ if (!window._galaxyHasLoadedOnce) {
 
             { q: __alloT('stem.galaxy.quiz_solar_mass_life', 'How long does a star with 1 solar mass live?'), a: '~10 billion years', options: ['~1 million years', '~100 million years', '~10 billion years', '~1 trillion years'] },
 
-            { q: __alloT('stem.galaxy.quiz_what_protostar', 'What is a protostar?'), a: 'A star forming from a collapsing gas cloud', options: ['A dying star', 'A star forming from a collapsing gas cloud', 'A type of neutron star', 'A binary star system'] },
+            { q: __alloT('stem.galaxy.quiz_what_protostar', 'What is a protostar?'), a: 'A star forming from a collapsing gas cloud', options: ['A star running out of nuclear fuel', 'A star forming from a collapsing gas cloud', 'The dense core left after a supernova explosion', 'A binary star system'] },
 
             { q: __alloT('stem.galaxy.quiz_final_fate', 'What determines a star\'s final fate?'), a: 'Its mass', options: ['Its color', 'Its mass', 'Its age', 'Its distance from Earth'] }
 
