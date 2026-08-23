@@ -536,6 +536,35 @@ var d = labToolData || {};
               concept: 'Employer Match & Free Money' }
           ];
 
+          // The authored order rewards position-guessing badly: across the 10
+          // scenarios `correct` was 1,1,1,1,1,2,1,2,2,2 — six at B, four at C, and
+          // slots A and D NEVER correct. A student who simply never picks the first
+          // or last option cannot lose a mark to position, and is choosing between
+          // two options rather than four.
+          //
+          // Rotate each scenario onto a target slot, so the spread is as even as 10
+          // questions over 4 slots allows (3/2/3/2) rather than merely decorrelated.
+          // Deterministic, not Math.random: ECON_SCENARIOS is rebuilt on every
+          // render, so a random shuffle would deal new options under the student
+          // mid-question. Grading is by INDEX (`oi === sc.correct`), so `correct`
+          // moves with the options; `explain` and `concept` carry no positional
+          // wording, so nothing else needs to follow.
+          var ECON_ANSWER_SLOTS = [0, 2, 1, 3];
+          ECON_SCENARIOS = ECON_SCENARIOS.map(function (sc, i) {
+            if (!sc || !Array.isArray(sc.options) || typeof sc.correct !== 'number') return sc;
+            var n = sc.options.length;
+            if (n < 2 || sc.correct < 0 || sc.correct >= n) return sc;
+            var target = ECON_ANSWER_SLOTS[i % ECON_ANSWER_SLOTS.length] % n;
+            var shift = (target - sc.correct + n) % n;
+            if (shift === 0) return sc;
+            var rotated = new Array(n);
+            for (var k = 0; k < n; k++) rotated[(k + shift) % n] = sc.options[k];
+            var next = Object.assign({}, sc);
+            next.options = rotated;
+            next.correct = target;
+            return next;
+          });
+
           // === Wave 3: ECON_EVENTS ===
           var ECON_EVENTS = [
             { year: 1929, event: 'The Great Depression begins with Black Tuesday stock market crash', icon: '\uD83D\uDCC9', impact: 'GDP fell 30%, unemployment reached 25%. Led to New Deal, FDIC, SEC.', lesson: 'Markets can fail catastrophically. Bank runs destroy economies.' },

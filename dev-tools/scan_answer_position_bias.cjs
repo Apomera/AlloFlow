@@ -147,8 +147,24 @@ for (const f of files) {
   // `counter.i++`, `idx`, anything. Pinning the operand shape rejected
   // geometryworld's `((counter.i++ * 7) + 3) % n`, which is a real rotation.
   const ROTATION = /\*\s*\d+\s*\)?\s*\+\s*\d+\s*\)?\s*%/;
+
+  // A third neutralisation shape: SLOT-TARGETED rotation, where each question is
+  // moved onto a target slot (`shift = (target - correct + n) % n`) rather than by a
+  // fixed offset. That is what galaxy and economicslab use, because it makes the
+  // distribution exactly uniform instead of merely decorrelated — and neither the
+  // shuffle keywords nor the `* n + m %` recipe match it, so both were reported as
+  // "biased AND unshuffled" after they had been fixed.
+  //
+  // Deliberately NARROW, because this flag's failure mode is FALSE CLEARANCE: the
+  // `* n + m %` recipe above already matches any arithmetic of that shape anywhere
+  // in a file, which is how a tool with no shuffle at all got excused. So require a
+  // `.map(` whose body BOTH takes a modulus AND names an answer field — the actual
+  // signature of a rotation applied to a bank, not merely defined near one.
+  const SLOT_ROTATION = /\.map\(\s*function\s*\([^)]*\)\s*\{[\s\S]{0,600}?%[\s\S]{0,600}?\b(?:correct|correctIndex|options|opts|choices)\b[\s\S]{0,600}?\}\s*\)/;
+
   const hasShuffle = /Fisher|shuffle|Shuffle|sort\(\s*function\s*\(\s*\)\s*\{\s*return\s+Math\.random/.test(code)
-    || ROTATION.test(code);
+    || ROTATION.test(code)
+    || SLOT_ROTATION.test(code);
 
   // judge the dominant arity only
   const arity = Object.keys(counts).sort((a, b) => counts[b].reduce((x, y) => x + y, 0) - counts[a].reduce((x, y) => x + y, 0))[0];

@@ -211,8 +211,68 @@ describe('galaxy quiz answer position', () => {
   });
 });
 
+describe('economicslab scenario answer position', () => {
+  const src = read('stem_lab/stem_tool_economicslab.js');
+
+  function bank() {
+    const start = src.indexOf('var ECON_SCENARIOS = [');
+    expect(start, 'ECON_SCENARIOS').toBeGreaterThan(-1);
+    let i = src.indexOf('[', start), depth = 0, end = -1;
+    for (let p = i; p < src.length; p++) {
+      if (src[p] === '[') depth++;
+      else if (src[p] === ']') { depth--; if (depth === 0) { end = p + 1; break; } }
+    }
+    const idStub = (k, fb) => (typeof fb === 'string' ? fb : k);
+    // eslint-disable-next-line no-new-func
+    return new Function('t', '__alloT', 'return ' + src.slice(i, end))(idStub, idStub);
+  }
+
+  // Run the SHIPPED rotation so this cannot drift from the code it protects.
+  function rotated(input) {
+    const start = src.indexOf('var ECON_ANSWER_SLOTS');
+    expect(start, 'ECON_ANSWER_SLOTS').toBeGreaterThan(-1);
+    const end = src.indexOf('});', start) + 3;
+    // eslint-disable-next-line no-new-func
+    return new Function('ECON_SCENARIOS', src.slice(start, end) + '\nreturn ECON_SCENARIOS;')(input);
+  }
+
+  it('the authored bank really is biased (calibration)', () => {
+    const counts = [0, 0, 0, 0];
+    for (const q of bank()) counts[q.correct]++;
+    // Was 0/6/4/0: six at B, four at C, and A and D never correct.
+    expect(counts.filter((n) => n === 0).length, 'expected dead slots in the authored order').toBeGreaterThan(0);
+  });
+
+  it('rotation leaves no dead slot and spreads answers evenly', () => {
+    const qs = bank();
+    const counts = [0, 0, 0, 0];
+    for (const q of rotated(qs.map((o) => ({ ...o })))) counts[q.correct]++;
+    expect(counts.filter((n) => n === 0), 'every slot must be reachable').toEqual([]);
+    // 10 questions over 4 slots cannot be exactly uniform; allow one either way.
+    const expected = qs.length / 4;
+    for (const [slot, n] of counts.entries()) {
+      expect(Math.abs(n - expected), 'slot ' + slot + ' has ' + n).toBeLessThanOrEqual(1);
+    }
+  });
+
+  it('rotation moves the index with the options, so the ANSWER never changes', () => {
+    const qs = bank();
+    const out = rotated(qs.map((o) => ({ ...o })));
+    qs.forEach((q, i) => {
+      expect(out[i].options[out[i].correct], 'scenario ' + i).toBe(q.options[q.correct]);
+      expect(out[i].options.slice().sort(), 'option set ' + i).toEqual(q.options.slice().sort());
+    });
+  });
+
+  it('rotation is applied to the bank the tool renders', () => {
+    expect(src).toMatch(/ECON_SCENARIOS = ECON_SCENARIOS\.map\(/);
+    // Grading is by index, which is why `correct` has to move too.
+    expect(src).toContain('oi === sc.correct');
+  });
+});
+
 describe('deployment copies', () => {
-  for (const name of ['solarsystem', 'behaviorlab', 'companionplanting', 'galaxy']) {
+  for (const name of ['solarsystem', 'behaviorlab', 'companionplanting', 'galaxy', 'economicslab']) {
     it(name + ' public mirror is byte-identical to the root copy', () => {
       expect(read('desktop/web-app/public/stem_lab/stem_tool_' + name + '.js'))
         .toBe(read('stem_lab/stem_tool_' + name + '.js'));
