@@ -734,7 +734,6 @@ window.SelHub = window.SelHub || {
             if (soundEnabled) sfxBadge();
             if (celebrate) celebrate();
             awardXP(25);
-            setTimeout(function() { upd('showBadgePopup', null); }, 3000);
           }
         }
 
@@ -896,12 +895,38 @@ window.SelHub = window.SelHub || {
         if (showBadgePopup) {
           var popBadge = BADGES.find(function(b) { return b.id === showBadgePopup; });
           if (popBadge) {
-            badgePopup = h('div', { style: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, background: 'rgba(0,0,0,0.6)' }, onClick: function() { upd('showBadgePopup', null); } },
+            badgePopup = h('div', {
+            role: 'alertdialog',
+            'aria-modal': 'true',
+            'aria-label': 'Badge earned: ' + popBadge.name,
+            tabIndex: -1,
+            // Escape closes it. The 3s auto-dismiss this replaced was a WCAG 2.2.1
+            // failure: three seconds is the whole interaction for anyone reading
+            // slowly, listening to a screen reader, or working a switch.
+            onKeyDown: function(e) {
+              if (e.key === 'Escape') { e.preventDefault(); upd('showBadgePopup', null); return; }
+              // Honour aria-modal: keep Tab inside the dialog. One control here,
+              // so first === last and Tab holds focus on it.
+              if (e.key !== 'Tab') return;
+              var f = e.currentTarget.querySelectorAll('button:not([disabled]), a[href], input:not([disabled]), select, textarea, [tabindex]:not([tabindex="-1"])');
+              if (!f.length) return;
+              var first = f[0], last = f[f.length - 1];
+              var act = e.currentTarget.ownerDocument.activeElement;
+              if (e.shiftKey && (act === first || act === e.currentTarget)) { e.preventDefault(); last.focus(); }
+              else if (!e.shiftKey && act === last) { e.preventDefault(); first.focus(); }
+            },
+            style: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, background: 'rgba(0,0,0,0.6)' }, onClick: function() { upd('showBadgePopup', null); } },
               h('div', { style: { background: _jouBg('#1e293b'), border: '2px solid ' + ACCENT, borderRadius: 20, padding: '32px 40px', textAlign: 'center', maxWidth: 300 } },
                 h('div', { style: { fontSize: 48, marginBottom: 8 } }, popBadge.icon),
                 h('div', { style: { fontSize: 10, color: _jouFg(ACCENT), textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 4, fontWeight: 700 } }, 'Badge Earned!'),
                 h('div', { style: { fontSize: 16, fontWeight: 700, color: _jouFg('#f1f5f9'), marginBottom: 4 } }, popBadge.name),
-                h('div', { style: { fontSize: 12, color: _jouFg('#94a3b8') } }, popBadge.desc)
+                h('div', { style: { fontSize: 12, color: _jouFg('#94a3b8') } }, popBadge.desc),
+              h('button', {
+                type: 'button',
+                autoFocus: true,
+                onClick: function() { upd('showBadgePopup', null); },
+                style: { marginTop: 18, padding: '9px 22px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.85)', background: 'rgba(255,255,255,0.14)', color: '#ffffff', fontSize: 14, fontWeight: 800, cursor: 'pointer' }
+              }, 'Nice')
               )
             );
           }

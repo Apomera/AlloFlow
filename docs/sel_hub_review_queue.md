@@ -915,3 +915,77 @@ control exists, sits among the first few stops, points at a target that can
 actually take focus, and — the one that matters — that **the distance it skips is
 still large**. A skip link that drifts down next to the grid saves nothing while
 still passing a naive "does it exist" check.
+
+---
+
+## 16. 2026-08-23 — the badge you had three seconds to read  (local, unpushed)
+
+Nine tools celebrated a badge with the same popup, and the same
+`setTimeout(..., 3000)` took it away again whether or not you had finished.
+
+Three seconds is the whole interaction for a student who reads slowly, listens
+to it through a screen reader, or drives the page with a switch. It is WCAG
+2.2.1, Timing Adjustable, and it needed no design decision to fix — the popup
+already had somewhere to go, it just left on its own schedule.
+
+The nine: `coping`, `emotions`, `journal`, `mindfulness`, `perspective`,
+`safety`, `social`, `teamwork`, `zones`.
+
+`voicedetective` also has a 3000ms timer and is **not** in that list — it turns
+over a game round, which is a different thing and was left alone.
+
+### What the popup was missing besides the clock
+
+Backdrop click was the only way to close it. There was no `role`, so nothing
+announced it as a dialog; no accessible name; no Escape; and nothing focusable
+inside, so a keyboard user could not act on it at all — they could only wait for
+it to disappear.
+
+Each of the nine now has `role="alertdialog"`, `aria-modal="true"`, a name
+("Badge earned: …"), an autofocused **Nice** button, and Escape.
+
+### Declaring modality means honouring it
+
+`aria-modal="true"` tells assistive tech the rest of the page is inert. If Tab
+still walks out of the dialog, that promise is false in the worst way: a sighted
+keyboard user lands on controls their screen reader has just been told do not
+exist. So the overlay's key handler also cycles Tab within itself. These dialogs
+hold exactly one focusable control, so this needs no ref and no effect — with one
+control, first and last are the same element and Tab simply holds focus there.
+
+### Four tools were already doing it better
+
+Searching for the timer found nine tools. Asserting the *contract* found four
+more with badge popups and no timer — `advocacy`, `community`, `conflict`,
+`decisions` — which turned out to have the best dialog implementation in the
+repo: `role="dialog"`, `aria-labelledby` pointing at the visible title, a close
+button, a real focus trap with Tab cycling, and focus restoration on close.
+
+They failed the first draft of the guard, which had demanded `role="alertdialog"`
+and a literal `aria-label`. That was the guard being wrong, not the tools. It now
+asserts the properties that matter — announced as a dialog, modal, named,
+closable from the keyboard — and accepts either spelling.
+
+**Remaining delta:** those four restore focus to whatever opened the dialog when
+it closes; the nine do not, so focus falls to the body. Worth closing, and it
+needs the ref/effect pattern those four already use.
+
+### Guard
+
+`tests/sel_badge_popup_dialog.test.js`, 30 tests. It **mounts** each tool with a
+real badge in state and dispatches real keyboard events, rather than grepping
+source — a source scan passes happily on a dialog that never appears.
+
+Calibrated both ways before being trusted: disabling the Tab branch in `coping`
+turns it red, restoring it turns it green; reintroducing the 3000ms timer in
+`zones` turns it red.
+
+Two things that would have made it lie:
+
+- **jsdom does not move focus on Tab.** "Focus was still inside the dialog
+  afterwards" is true even with no handler at all, so that assertion alone was
+  worthless. The honest signal is whether the handler *claimed* the event
+  (`preventDefault`), paired with a control key it must **not** claim.
+- **A second JSDOM is not the focused document,** so `element.focus()` silently
+  does nothing inside it. The first draft stood one up next to the one vitest
+  already provides and read as nine failures that were not real.
