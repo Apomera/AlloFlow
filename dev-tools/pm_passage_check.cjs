@@ -77,6 +77,7 @@ function baseCandidates(w) {
     if (w.endsWith(e) && w.length - e.length >= 3) out.push(w.slice(0, -e.length));
   }
   if (w.endsWith('ing') && w.length >= 6) out.push(w.slice(0, -3) + 'e'); // riding -> ride
+  if (w.endsWith('ed') && w.length >= 5) out.push(w.slice(0, -1));        // smiled -> smile
   return out;
 }
 function g1Core(w) {

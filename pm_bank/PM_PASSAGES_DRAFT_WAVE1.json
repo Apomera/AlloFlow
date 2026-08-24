@@ -1,5 +1,5 @@
 {
-  "status": "DRAFT — wave 1, batch 1 of 4. NOT wired into the app. Clinical review pending (PM_BANK_FORM_SPEC.md); drafting started at Aaron's direction 2026-08-23 ahead of full sign-off.",
+  "status": "DRAFT — wave 1, batches 1-2 of 4. NOT wired into the app. Clinical review pending (PM_BANK_FORM_SPEC.md); drafting started at Aaron's direction 2026-08-23 ahead of full sign-off.",
   "spec": "PM_BANK_FORM_SPEC.md",
   "decodabilityInventory": "pm_bank/DECODABILITY_INVENTORY_PROVISIONAL.md (provisional — reviewers may swap)",
   "readabilityNote": "Spache/Dale-Chall are computed only when verified word lists are supplied to dev-tools/pm_passage_check.cjs; until then structural bands (grades 1-2) and FK (grades 3-6) are the provisional proxies and passages are stamped pending-verified-wordlist.",
@@ -122,6 +122,124 @@
           "daleChall": null,
           "properNouns": [
             "Kim"
+          ],
+          "dialogueShare": 0,
+          "decodability": {
+            "outside": [],
+            "pct": 0
+          },
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g1-06",
+        "title": "Frogs on the Log",
+        "topic": "counting frogs at the pond",
+        "text": "Nat and Gus go to the pond. A big log sits in the wet mud. One frog hops on the log. Then two more frogs hop up. Now three frogs sit on the log! A duck swims past them. Plop! One frog hops off. Gus grins. Two frogs are left, he says. A bug zips past the log. Snap! A frog gets it. Nat claps. The sun gets low. The frogs hop off the log. Plip, plop, plip! The pond is still. Nat and Gus go up the path. What a fun trip to the pond!",
+        "metrics": {
+          "wordCount": 96,
+          "sentenceCount": 20,
+          "meanSentenceLen": 4.8,
+          "fkGrade": -1.8,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [
+            "Gus"
+          ],
+          "dialogueShare": 0,
+          "decodability": {
+            "outside": [],
+            "pct": 0
+          },
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g1-07",
+        "title": "The Lost Sock",
+        "topic": "hunting for a lost sock on wash day",
+        "text": "It is wash day at my house. I help Mom sort the socks. Red socks, tan socks, big socks, small socks. But one black sock has no match! I check the rug. No sock. I check my bed. No sock. I check the wash bin. Not there. Then I spot the dog in his bed. A black tip sticks out! It is the lost sock. Bad pup! He just grins at me. I get the sock and set it with its match. Mom gives me a wink. Wash day ends well. Each sock has its pal.",
+        "metrics": {
+          "wordCount": 96,
+          "sentenceCount": 19,
+          "meanSentenceLen": 5.1,
+          "fkGrade": -1.57,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [
+            "Mom"
+          ],
+          "dialogueShare": 0,
+          "decodability": {
+            "outside": [],
+            "pct": 0
+          },
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g1-08",
+        "title": "The Bug in the Grass",
+        "topic": "watching a bug and drawing it",
+        "text": "Deb sits in the grass with her pad and pen. A small red bug lands on her hand. It has six legs and black dots. The bug does not nip. It just sits. Deb holds still. The bug walks up her hand. It stops at her cuff. Then it lifts its shell. Zip! It is off! Deb gets her pen. She adds the bug to her pad. Red back, black dots, six legs. She adds the sun and the grass as well. Mom pins the pad up. Best bug pic yet! Deb will hunt for more bugs at dusk.",
+        "metrics": {
+          "wordCount": 99,
+          "sentenceCount": 18,
+          "meanSentenceLen": 5.5,
+          "fkGrade": -1.53,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [],
+          "dialogueShare": 0,
+          "decodability": {
+            "outside": [],
+            "pct": 0
+          },
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g1-09",
+        "title": "The Lunch Box",
+        "topic": "packing a lunch box with dad",
+        "text": "Dad and I pack my lunch box. We put in a ham bun. Next, a red plum. Then six crisp chips in a small bag. Dad adds a can of milk. I tuck in a snack for my pal Sid. It is a big fig bar. Sid asks for figs a lot! I zip the box shut. Snap! The lid clicks. My lunch box is fat and full. When the bell rings, I will sit with Sid. We will munch and chat. The best bit? The fig bar. Yum!",
+        "metrics": {
+          "wordCount": 89,
+          "sentenceCount": 17,
+          "meanSentenceLen": 5.2,
+          "fkGrade": -1.75,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [
+            "Sid"
+          ],
+          "dialogueShare": 0,
+          "decodability": {
+            "outside": [],
+            "pct": 0
+          },
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g1-10",
+        "title": "The Wind and the Hat",
+        "topic": "chasing a hat on a windy day",
+        "text": "The wind is big and fast. It flaps the flags on the shops. Dad and I walk to the park. Zip! The wind grabs Dad's hat. The hat flips and spins. We run and run. The hat lands on a bench. Dad grabs at it. Zip! Off it flips. A big kid stops it. He picks it up. He hands the hat to Dad. Dad grins and nods. The kid grins back. Dad jams the hat back on. He holds it as we walk. The wind still huffs and puffs. But now the hat is snug. The wind will not get it!",
+        "metrics": {
+          "wordCount": 102,
+          "sentenceCount": 21,
+          "meanSentenceLen": 4.9,
+          "fkGrade": -1.9,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [
+            "Dad"
           ],
           "dialogueShare": 0,
           "decodability": {
@@ -256,6 +374,132 @@
           },
           "issues": []
         }
+      },
+      {
+        "id": "pm-g2-06",
+        "title": "Two Shadows",
+        "topic": "tracing shadows at two times of day",
+        "text": "On a sunny morning we went out with chalk. I stood on the playground and Meg traced my shadow. It was long and thin. It stretched way past the swings. We wrote the time next to it. At noon we went back to the same spot. I stood on the same marks. But my shadow had moved! Now it was short and fat. It hid right under me. Meg traced it again with red chalk. Two shadows, one kid! Our teacher asked, what moved? Not you, she said. The sun did. When the sun is low, shadows are long. When the sun is high, shadows are small. We will trace one more shadow before we go home. I think it will be long again. Shadow chalk is the best kind of math.",
+        "metrics": {
+          "wordCount": 132,
+          "sentenceCount": 20,
+          "meanSentenceLen": 6.6,
+          "fkGrade": 0.84,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [
+            "Meg"
+          ],
+          "dialogueShare": 0,
+          "decodability": {
+            "outside": [
+              "playground"
+            ],
+            "pct": 0.8
+          },
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g2-07",
+        "title": "Butter in a Jar",
+        "topic": "shaking cream into butter",
+        "text": "Our class made butter today, and all we used was cream and a jar. Our teacher poured the cream in and shut the lid tight. Then we took turns shaking the jar. Shake, shake, shake! At first it just sloshed. My arms got tired fast, so I passed the jar to Ben. After a while the sloshing stopped. We heard a soft thump inside. We opened the lid and peeked in. A yellow lump sat in thin milk! The lump was butter. The thin milk around it even has a name. It is called buttermilk. We rinsed the lump and added a tiny bit of salt. Then we spread it on crackers. Fresh crackers and fresh butter! Making food is fun, but making it with your own hands is even better.",
+        "metrics": {
+          "wordCount": 131,
+          "sentenceCount": 17,
+          "meanSentenceLen": 7.7,
+          "fkGrade": 1.83,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [
+            "Ben"
+          ],
+          "dialogueShare": 0,
+          "decodability": {
+            "outside": [
+              "inside",
+              "buttermilk"
+            ],
+            "pct": 1.5
+          },
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g2-08",
+        "title": "Where Did the Puddle Go?",
+        "topic": "a puddle shrinks after the rain",
+        "text": "After the rain stopped, a big puddle sat on our steps. It was as wide as a bike wheel. Jen drew a chalk line all around it. Then we went in for lunch. When we came back, the puddle was smaller! It had shrunk away from the chalk line. Jen drew a new line. We checked again before dinner. Smaller still! By the next morning the puddle was gone. But where did it go? It did not run off. The steps are flat. Our teacher says the sun turns water into a mist too fine to see. The water rises into the air bit by bit. That is called drying up, and the chalk rings proved it happened. Four rings, one gone puddle. Now when I see a puddle, I know the sun is drinking it.",
+        "metrics": {
+          "wordCount": 136,
+          "sentenceCount": 18,
+          "meanSentenceLen": 7.6,
+          "fkGrade": 1.93,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [],
+          "dialogueShare": 0,
+          "decodability": {
+            "outside": [],
+            "pct": 0
+          },
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g2-09",
+        "title": "Sorting Day",
+        "topic": "running the class sorting station",
+        "text": "On Friday our class runs the sorting station. Three big bins wait by the door. One bin is for cans. One is for glass jars. One is for clean paper. Kids from each room bring us their stuff. We check each thing before it drops in a bin. A can with food still inside gets rinsed first. A torn box gets pressed flat. Caps come off the jars. My job this week is the paper bin. I stack the sheets in a neat pile. Full bins get rolled out to the big truck on wheels. The driver waves at us each time. Our teacher keeps a chart of what we save. Last month it was nine full bins! Sorting is a small job. But small jobs add up week after week.",
+        "metrics": {
+          "wordCount": 131,
+          "sentenceCount": 18,
+          "meanSentenceLen": 7.3,
+          "fkGrade": 0.67,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [
+            "Friday"
+          ],
+          "dialogueShare": 0,
+          "decodability": {
+            "outside": [
+              "station",
+              "inside"
+            ],
+            "pct": 1.5
+          },
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g2-10",
+        "title": "First Swim Class",
+        "topic": "learning to float and kick at swim class",
+        "text": "Last week I started swim class at the town pool. At first I held the wall and kicked my legs. Splash, splash! The teacher showed us how to blow bubbles in the water. You blow out when your face is in the water. You breathe in when your face is out. Then we each got a float board. I held mine tight and kicked across the shallow end. The water helped hold me up. Soon I could glide three whole feet with no kicks at all! My pal Finn can float on his back like a starfish. I am still learning that one. My legs sink each time. At the end of class we all jump in from the side. That is the best part. Next week we learn big arm circles. I can not wait to swim for real.",
+        "metrics": {
+          "wordCount": 140,
+          "sentenceCount": 17,
+          "meanSentenceLen": 8.2,
+          "fkGrade": 1.02,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [
+            "Finn"
+          ],
+          "dialogueShare": 0,
+          "decodability": {
+            "outside": [],
+            "pct": 0
+          },
+          "issues": []
+        }
       }
     ],
     "3": [
@@ -348,6 +592,101 @@
           "sentenceCount": 14,
           "meanSentenceLen": 11.2,
           "fkGrade": 3.44,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [],
+          "dialogueShare": 0,
+          "decodability": null,
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g3-06",
+        "title": "The Web Builder",
+        "topic": "how a spider builds an orb web",
+        "text": "A garden spider builds a new web almost every night, and she does it in the dark. First she lets out a long thread and waits. The breeze carries it across the gap until it sticks to a branch. That first thread is her bridge. She walks across it and drops a second line below, making a big Y shape. Next come the spokes. She adds thread after thread from the center out, like the spokes of a wheel. None of these threads are sticky. They are her walking paths. Then comes the trap. Starting at the outside, she lays a long spiral of sticky silk, row after row, all the way to the middle. Bugs that fly into it are stuck at once. The spider feels the web shake and runs out along a dry spoke. Her own feet stay safe on the paths she planned. By morning the web sparkles. By night it may be torn. That is fine with her. She eats the old silk and builds it all again.",
+        "metrics": {
+          "wordCount": 173,
+          "sentenceCount": 18,
+          "meanSentenceLen": 9.6,
+          "fkGrade": 2.82,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [],
+          "dialogueShare": 0,
+          "decodability": null,
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g3-07",
+        "title": "Why Leaves Turn",
+        "topic": "why leaves change color in fall",
+        "text": "All summer long, a maple leaf is a little green machine. The green comes from a helper inside the leaf that catches sunlight and turns it into food for the tree. There is so much green helper in each leaf that no other color can show. But the green was never the only color there. Yellow and orange hide in the leaf all summer, under all that green. When fall comes, the days get short and cold is on the way. The tree gets ready to rest. It stops making the green helper, and the old green fades away. Now the yellow and orange can finally show! They were there the whole time. Some trees do even more. They make a brand new red color in the fall, and no one is fully sure why. Soon the tree lets its leaves drop. A bare tree loses less water in winter, and it will grow new leaves in spring. So fall colors are not really new paint. They are old colors coming out of hiding.",
+        "metrics": {
+          "wordCount": 174,
+          "sentenceCount": 16,
+          "meanSentenceLen": 10.9,
+          "fkGrade": 3.98,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [],
+          "dialogueShare": 0,
+          "decodability": null,
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g3-08",
+        "title": "The Light That Talks",
+        "topic": "how a lighthouse identifies itself",
+        "text": "A lighthouse does more than shine. It talks. Every lighthouse flashes in its own pattern, and sailors know each pattern by heart. One light may flash twice, then rest. Another may flash every ten seconds. The pattern works like a name tag. A sailor who sees two quick flashes in the dark can check a chart and say, that is the light on the north point! Now the ship knows where it is. The light itself does not blink on and off. Inside the tower, a giant glass lens spins slowly around a bright lamp. The lens gathers the lamp's glow and squeezes it into strong beams. Each time a beam sweeps past a ship, the sailors see a flash. Long ago, a keeper lived at each lighthouse. The keeper wound the gears that spun the lens and kept the lamp burning all night. Today, machines do that work. But the lights still flash their names to the sea, all night, every night, just as they always have.",
+        "metrics": {
+          "wordCount": 168,
+          "sentenceCount": 16,
+          "meanSentenceLen": 10.5,
+          "fkGrade": 3.4,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [],
+          "dialogueShare": 0,
+          "decodability": null,
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g3-09",
+        "title": "From Tree to Syrup",
+        "topic": "how maple syrup is made",
+        "text": "Real maple syrup starts as a clear liquid called sap, and it comes straight out of a tree. In late winter, sap moves up and down inside maple trees. Sugar makers drill a small hole in the trunk and tap in a little spout. Drip, drip, drip! The sap runs into a bucket or a tube. The drilling does not harm a healthy tree. A big maple has sap to spare. The best sap weather is odd. It takes cold nights and mild days. If it stays warm, the sap stops running. Fresh sap looks like water and barely tastes sweet. The magic happens in the sugar house. The sap boils in wide pans for hours, and steam rolls out the roof. As the water steams away, the sugar left behind gets thicker and darker. It takes about forty buckets of sap to make just one bucket of syrup! That is why real maple syrup costs more than the fake kind. Every golden drop began as a winter tree, one drip at a time.",
+        "metrics": {
+          "wordCount": 174,
+          "sentenceCount": 17,
+          "meanSentenceLen": 10.2,
+          "fkGrade": 3.73,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [],
+          "dialogueShare": 0,
+          "decodability": null,
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g3-10",
+        "title": "The Bird That Finds Home",
+        "topic": "how homing pigeons navigate home",
+        "text": "A homing pigeon can be driven far away and set free in a strange place. It will still fly straight home. Some birds have found their way back from hundreds of miles away. How do they do it? When a pigeon is set loose, it circles up into the sky a few times. It seems to be checking the land below and the sun above. Scientists think pigeons use several tricks at once. They watch the sun's spot in the sky like a clock. They follow rivers, roads, and hills they have seen before. Many scientists think pigeons can also feel which way is north. A compass needle feels that same pull. No single trick explains it all. That puzzle is part of why people love these birds. Long before phones, people put tiny rolled notes in little tubes on pigeons' legs. The birds carried news home faster than any rider on a horse. Today people race them for sport. The pigeons do not know they are racing. They just know one thing very well. Home is that way.",
+        "metrics": {
+          "wordCount": 179,
+          "sentenceCount": 19,
+          "meanSentenceLen": 9.4,
+          "fkGrade": 3.97,
           "readabilityStatus": "pending-verified-wordlist",
           "spache": null,
           "daleChall": null,
@@ -457,6 +796,104 @@
           "decodability": null,
           "issues": []
         }
+      },
+      {
+        "id": "pm-g4-06",
+        "title": "The Truth About Chameleons",
+        "topic": "why chameleons really change color",
+        "text": "Most people think a chameleon changes color to match whatever it sits on. Put it on red, it turns red. Put it on plaid, it panics. That is the story, but it is mostly wrong. A chameleon's color changes are not really about hiding. They are about talking. A calm chameleon usually wears dull green or brown, which already blends in with leaves and branches. The bright changes happen when the animal has something to say. A male who wants to warn off a rival flashes bold stripes and hot colors. A chameleon that feels cold turns darker, because dark skin soaks up more warmth from the sun. A relaxed one turns pale again. The skin itself works in an amazing way. Under the surface lie tiny crystals, stacked in neat rows. When the chameleon tightens or relaxes its skin, the spacing of the crystals changes, and the skin reflects different colors of light. It is less like painting and more like tuning. So a chameleon is not a master of disguise trying to copy your shirt. It is more like a walking mood ring, telling the world exactly how it feels.",
+        "metrics": {
+          "wordCount": 192,
+          "sentenceCount": 17,
+          "meanSentenceLen": 11.3,
+          "fkGrade": 5.22,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [],
+          "dialogueShare": 0,
+          "decodability": null,
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g4-07",
+        "title": "A World in a Jar",
+        "topic": "a sealed terrarium recycles its own water",
+        "text": "You can grow a garden inside a closed glass jar, seal the lid, and never water it again. That sounds impossible, but it works, and some sealed jar gardens have stayed green for many years. The trick is that the jar recycles everything. Here is a day inside the jar. The plant's roots drink water from the damp soil. The water travels up the stem to the leaves. The leaves release some of it into the air as an invisible vapor. Soon the air in the jar is loaded with moisture. When the vapor touches the cool glass, it turns back into drops. The glass fogs up, and little beads of water slide down the walls, back into the soil. That is rain, indoors, on a garden the size of your hand. The same water goes around and around, day after day. Earth works much the same way. Water rises from oceans and lakes, forms clouds, falls again, and returns to the sea. Our planet is a sealed jar too, just a very large one. Nothing new is ever added. The water you drank today has been riding that loop for a very, very long time.",
+        "metrics": {
+          "wordCount": 196,
+          "sentenceCount": 17,
+          "meanSentenceLen": 11.5,
+          "fkGrade": 4.56,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [],
+          "dialogueShare": 0,
+          "decodability": null,
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g4-08",
+        "title": "Why Popcorn Pops",
+        "topic": "the science inside a popcorn kernel",
+        "text": "A popcorn kernel is a tiny sealed container, and that is the whole secret. Inside the hard yellow shell sits a bit of soft starch and a drop of water. Most kinds of corn have shells that leak, but popcorn's shell is special. It is hard, smooth, and nearly airtight. When you heat the kernel, the drop of water inside gets hotter and hotter. It wants to boil away into steam, but the steam has nowhere to go. The sealed shell traps it. So the pressure inside the kernel builds, and builds, and builds. The soft starch melts into something like thick dough. Finally the shell cannot hold on any longer. It splits, and everything happens at once. The steam bursts free, the melted starch puffs out into a white foam, and the foam cools and sets in the blink of an eye. That white fluffy part you eat is puffed starch, frozen in mid-explosion. The pop you hear is the shell letting go. And those sad kernels left at the bottom of the bowl? Most of them had tiny cracks in their shells. The steam leaked out slowly, the pressure never built up, and they never got their moment.",
+        "metrics": {
+          "wordCount": 200,
+          "sentenceCount": 17,
+          "meanSentenceLen": 11.8,
+          "fkGrade": 4.52,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [],
+          "dialogueShare": 0,
+          "decodability": null,
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g4-09",
+        "title": "Talking in Taps",
+        "topic": "Morse code and the telegraph",
+        "text": "Long before phones, people learned to send words down a wire using nothing but clicks. The system is called Morse code, and its whole alphabet is built from just two sounds. A short click is called a dot. A longer one is called a dash. Every letter has its own mix of dots and dashes. The letter E is the most common letter in English. So it gets the shortest code of all, a single dot. Rare letters get longer codes. To send a message, an operator tapped a small metal key. The clicks raced down a telegraph wire to a distant town. Another operator listened and wrote the letters out. The fastest operators could chat at amazing speed. They could even tell who was tapping just by the rhythm. It was like knowing a friend's voice. One code became famous around the world. Three dots, three dashes, three dots spells SOS, the call for help at sea. It was chosen because it is easy to send and hard to mistake. Radios and phones have long since taken over. But some pilots, sailors, and hobby operators still learn the old clicks. An alphabet with just two sounds turned out to be one of the best ideas ever sent down a wire.",
+        "metrics": {
+          "wordCount": 211,
+          "sentenceCount": 20,
+          "meanSentenceLen": 10.6,
+          "fkGrade": 4.97,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [
+            "Morse",
+            "English"
+          ],
+          "dialogueShare": 0,
+          "decodability": null,
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g4-10",
+        "title": "The Flower That Follows the Sun",
+        "topic": "how young sunflowers track the sun",
+        "text": "A field of young sunflowers performs a slow dance every day, and almost nobody sees it happen. At sunrise, all the flower buds face east, toward the light. As the sun crosses the sky, the young plants turn with it, hour by hour. By evening they face west. Then, during the night, they swing all the way back so they are ready to greet the sunrise again. How does a plant with no muscles turn its head? It grows its way around. On a sunny morning, the west side of the young stem grows a little faster, which tips the flower toward the east. Later in the day the east side takes its turn growing, and the flower leans west. The plant is steering itself with growth, a little like a rower pulling harder on one oar. Scientists tested this by tying some young plants in place so they could not turn. Those plants grew smaller leaves and ended up weaker than their dancing neighbors. Following the sun really does help. Grown-up sunflowers stop the dance. They settle down facing east for good. An east-facing flower warms up faster each morning, and warm flowers get the first visits from bees.",
+        "metrics": {
+          "wordCount": 200,
+          "sentenceCount": 16,
+          "meanSentenceLen": 12.5,
+          "fkGrade": 5.04,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [],
+          "dialogueShare": 0,
+          "decodability": null,
+          "issues": []
+        }
       }
     ],
     "5": [
@@ -550,6 +987,110 @@
           "spache": null,
           "daleChall": null,
           "properNouns": [],
+          "dialogueShare": 0,
+          "decodability": null,
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g5-06",
+        "title": "A Camera Made of Nothing",
+        "topic": "how a pinhole camera works",
+        "text": "You can build a working camera out of a dark box and a pin. Poke one tiny hole in the front, hang a thin white screen inside, and point the box at something bright. A picture of the scene appears on the screen, in full color and full motion. There is no lens, no glass, and no battery. There is one strange detail. The picture is upside down. The reason comes from a simple rule. Light travels in straight lines. Every point on a tree outside is bouncing light in all directions, but the tiny hole allows only one narrow beam from each point to enter the box. A beam from the top of the tree angles down through the hole and lands near the bottom of the screen. A beam from the bottom angles up and lands near the top. Straight lines crossing through a small opening flip the whole picture. Artists discovered this trick hundreds of years ago with entire dark rooms. On a bright day, a small hole in a window shade would paint the street scene, upside down, on the far wall. People stood inside the camera. Every camera since, including the one in a phone, is a fancier version of that dark room, a box that catches straight lines of light.",
+        "metrics": {
+          "wordCount": 216,
+          "sentenceCount": 16,
+          "meanSentenceLen": 13.5,
+          "fkGrade": 5.95,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [],
+          "dialogueShare": 0,
+          "decodability": null,
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g5-07",
+        "title": "The First Farmers",
+        "topic": "leafcutter ants farm fungus",
+        "text": "Humans invented farming about ten thousand years ago. Leafcutter ants beat us to it by tens of millions of years. A leafcutter colony looks like a parade of tiny gardeners. Each ant marches home holding a piece of green leaf many times its own weight, like a person carrying a mattress with their teeth. Here is the odd part. The ants never eat those leaves. They cannot digest them. The leaves are not food. They are fertilizer. Deep underground, the colony keeps gardens of a special fungus, pale and spongy, growing in room after room. The ants chew the leaves into a soft mulch and spread it over the fungus, which feeds on the mulch and swells. The fungus is what the ants actually eat, and it grows nowhere else on Earth. The ants are real farmers about it, too. They weed out strange molds that invade the garden. They carry in helpful bacteria, growing right on their bodies, that fight harmful germs. When a young queen flies off to start a new colony, she carries a tiny pinch of the family fungus in her mouth, the way settlers once carried seeds. Whole cities under the soil, fed by gardens, run by insects. Farming was never only a human idea.",
+        "metrics": {
+          "wordCount": 210,
+          "sentenceCount": 18,
+          "meanSentenceLen": 11.7,
+          "fkGrade": 5.7,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [
+            "Earth"
+          ],
+          "dialogueShare": 0,
+          "decodability": null,
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g5-08",
+        "title": "The Tower That Grows",
+        "topic": "thermal expansion in metal structures",
+        "text": "The Eiffel Tower is taller in summer than in winter. That is not a legend. On a hot afternoon the iron tower can stand about six inches taller than it does on a freezing day. The tower is not growing the way a tree grows. It is expanding. Nearly everything gets a little bigger when it heats up. Heat makes the tiny particles inside a material jiggle faster, and as they jiggle, they push each other slightly farther apart. A cold iron beam is a calm crowd standing close together. A hot one is a dancing crowd that needs more room. For small objects the change is too tiny to notice. Stack up thousands of tons of iron, though, and all those tiny stretches add up to inches. Builders cannot stop metal from doing this, so they plan for it instead. Look down the next time you cross a big bridge and you may see a steel strip full of teeth, like two combs pushed together. That is an expansion joint. On hot days the bridge stretches and the teeth slide together. On cold days it shrinks and they pull apart. The gap gives the bridge room to breathe. Metal will always move with the seasons. Good builders just decide where it is allowed to move.",
+        "metrics": {
+          "wordCount": 216,
+          "sentenceCount": 19,
+          "meanSentenceLen": 11.4,
+          "fkGrade": 5.07,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [
+            "Eiffel",
+            "Tower"
+          ],
+          "dialogueShare": 0,
+          "decodability": null,
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g5-09",
+        "title": "The Food That Never Spoils",
+        "topic": "why honey keeps for centuries",
+        "text": "Explorers have opened sealed pots from ruins thousands of years old. The honey inside was still golden, still sticky, and still good. Almost every other food on Earth spoils in days or weeks. Honey can last for centuries. What makes it so special? Food spoils when tiny living things, like molds and bacteria, move in and multiply. To grow, those invaders need two main things: water and a comfortable home. Honey refuses them both. First, honey is amazingly dry for a liquid. It is mostly sugar, packed so tight that almost no free water is left in it. When a mold lands on honey, the sugar actually pulls water out of the invader, drying it up before it can settle in. Second, honey is slightly acidic, about as tangy inside as orange juice, and most germs cannot stand that. The bees deserve the credit. They fan nectar with their wings for hours to dry it out. They also add special helpers from their own bodies that make the mix even less friendly to germs. One warning: honey in your pantry may turn cloudy and grainy over time. That is not spoiling. The sugar is just forming crystals. Set the jar in warm water, and it turns clear and golden again, good as the day it was sealed.",
+        "metrics": {
+          "wordCount": 217,
+          "sentenceCount": 19,
+          "meanSentenceLen": 11.4,
+          "fkGrade": 5.72,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [
+            "Earth"
+          ],
+          "dialogueShare": 0,
+          "decodability": null,
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g5-10",
+        "title": "The Sound Makers",
+        "topic": "how movie sound effects are made",
+        "text": "The crunch of boots on snow in a winter movie was probably never snow at all. More likely it was a person in a quiet studio. They were squeezing a sack of cornstarch in time with the actor's steps. That person has one of the strangest jobs in film. They are called Foley artists, and their work fills in all the small sounds a movie needs. Microphones on a film set are aimed at voices. Footsteps, rustling coats, jingling keys, and creaking doors often come out too faint or too messy to use. So after filming ends, Foley artists rebuild those sounds from scratch, one at a time. The studio looks like a junk shop. There are bins of gravel, racks of shoes, squeaky chairs, old door handles, and shelves of things that snap, swish, and rattle. Galloping horses have been played by coconut shells since the early days of radio. Artists clap the shells together in a steady beat. Flapping bird wings are often a pair of leather gloves. A folded umbrella opening quickly can stand in for all sorts of whooshes. The artists watch the movie on a screen while they work. They match every step and rustle, take after take, until the timing is perfect. Done well, the trick is invisible. You never notice the sounds were made twice.",
+        "metrics": {
+          "wordCount": 222,
+          "sentenceCount": 18,
+          "meanSentenceLen": 12.3,
+          "fkGrade": 5.7,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [
+            "Foley"
+          ],
           "dialogueShare": 0,
           "decodability": null,
           "issues": []
@@ -649,6 +1190,113 @@
           "spache": null,
           "daleChall": null,
           "properNouns": [],
+          "dialogueShare": 0,
+          "decodability": null,
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g6-06",
+        "title": "How Your Phone Knows Where You Are",
+        "topic": "how GPS positioning works",
+        "text": "When a map app draws that little blue dot on your screen, it is using signals from space. High above Earth, about thirty GPS satellites circle the planet. Each one repeats the same message over and over. Here is where I am. Here is the exact time I sent this. Your phone does not talk back. It only listens. The trick is in the timing. Radio signals travel very fast, but not instantly. A message from a faraway satellite lands a tiny bit later than one from a nearby satellite. Your phone measures those tiny delays and turns each one into a distance. Each distance draws an invisible bubble around its satellite. The phone must sit somewhere on that bubble's skin. One satellite is not enough, and neither are two. But where the bubbles from four satellites cross, only one point is left. That point is you. The phone repeats the whole calculation every second as you move. None of this would work with sloppy clocks. An error of even a millionth of a second would throw the answer off by hundreds of meters. So each satellite carries an atomic clock, one of the finest timekeepers ever built. The system was built for ships and planes, but its signals are free for everyone. A tool built on split seconds now guides lost drivers, hikers, and pizza runs alike.",
+        "metrics": {
+          "wordCount": 228,
+          "sentenceCount": 22,
+          "meanSentenceLen": 10.4,
+          "fkGrade": 6.46,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [
+            "Earth"
+          ],
+          "dialogueShare": 0,
+          "decodability": null,
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g6-07",
+        "title": "Why Is the Sky Blue?",
+        "topic": "light scattering and the color of the sky",
+        "text": "Sunlight looks white, but it is really every color mixed together, from red through violet. When that mixed light hits Earth's atmosphere, it starts colliding with the tiny particles of gas that make up the sky. Those collisions do not treat every color the same. Light travels in waves, and each color has its own wavelength. Red waves are long and lazy, while blue waves are short and choppy. The particles of air are far better at knocking short waves off course, so blue light gets scattered, bouncing from particle to particle until it comes at you from every part of the sky. Red and yellow light barrels through mostly in a straight line. Look at any patch of daytime sky away from the sun, and the light reaching your eyes is that scattered blue, arriving by a billion crooked paths. Violet waves are even shorter than blue, so why is the sky not violet? There are two reasons: sunlight holds less violet to begin with, and human eyes are much better at seeing blue. Sunset turns the sky red because the low sun's light must plow through far more air to reach you. By the end of that long trip, nearly all the blue has been scattered off to other places. The long red waves are left to finish the trip. The same rule paints both skies. Blue is the color that gets lost along the way, and at sunset, you are seeing everything that made it through.",
+        "metrics": {
+          "wordCount": 249,
+          "sentenceCount": 15,
+          "meanSentenceLen": 16.6,
+          "fkGrade": 6.95,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [
+            "Earth"
+          ],
+          "dialogueShare": 0,
+          "decodability": null,
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g6-08",
+        "title": "The Journey to Your Faucet",
+        "topic": "how city drinking water is cleaned",
+        "text": "The water in your glass may have started this morning in a river, cloudy with mud and crowded with germs. Between the river and your faucet stands a treatment plant, where the water is cleaned in careful stages. The first stage is simple. Screens strain out sticks, leaves, and trash as the water enters the plant. Next comes an elegant trick. Workers stir in a substance that makes tiny specks of dirt turn sticky. The specks bump together and clump into soft, fluffy blobs, which grow heavier and heavier until they sink. The water then rests in wide, calm pools while the blobs settle to the bottom, carrying most of the dirt down with them. The clearer water on top moves on to the filters, sinking slowly through thick beds of sand and crushed charcoal. These beds trap the fine particles that settling missed, and the charcoal also grabs many of the chemicals that give water odd tastes and smells. The water is now clear, but clear is not the same as safe. Germs too small for any filter may remain, so the plant adds a tiny, carefully measured dose of disinfectant to finish them, with a little left over to guard the water on its trip through miles of pipes. All day long, workers pull samples and test them. Clean water is not luck. It is a process, running quietly all the time, a few blocks from your kitchen.",
+        "metrics": {
+          "wordCount": 240,
+          "sentenceCount": 15,
+          "meanSentenceLen": 16,
+          "fkGrade": 6.53,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [],
+          "dialogueShare": 0,
+          "decodability": null,
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g6-09",
+        "title": "The Deepest Place",
+        "topic": "the deep ocean trench and life under pressure",
+        "text": "The deepest known place in the ocean is a long, narrow canyon in the Pacific floor. It plunges almost eleven kilometers down. To grasp that depth, imagine dropping the tallest mountain on Earth into it. The peak would vanish with more than two kilometers of water still overhead. The bottom is a hard place to picture. Sunlight gives up long before reaching it. Below a few hundred meters, the sea fades to total, endless dark. The water is barely above freezing. And above every spot on that floor stands a column of water eleven kilometers tall. It squeezes down with about a thousand times the pressure you feel on land. It would seem impossible for anything to live there. Yet life does. Pale creatures like small shrimp swarm over the mud. Ghostly white fish, soft-bodied and slow, cruise the bottom with no trouble at all. The secret is balance. These animals have no air pockets inside them to be squeezed shut. Their bodies are mostly water, pushing out exactly as hard as the sea pushes in. More people have walked on the Moon than have been to the ocean's deepest floor. The few visitors went down for hours in thick metal balls. Their reports agree on one thing. Even in the coldest, darkest, heaviest corner of the planet, something is alive, and it was there first.",
+        "metrics": {
+          "wordCount": 226,
+          "sentenceCount": 21,
+          "meanSentenceLen": 10.8,
+          "fkGrade": 6.67,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [
+            "Pacific",
+            "Earth",
+            "Moon"
+          ],
+          "dialogueShare": 0,
+          "decodability": null,
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g6-10",
+        "title": "The Missing Quarter Day",
+        "topic": "why leap years exist",
+        "text": "A year, as everyone learns, is 365 days long. Except that it is not. The Earth actually takes about 365 and one quarter days to finish a lap around the sun. That leftover quarter day seems too small to matter, but calendars are unforgiving. If we ignored it, the calendar would fall behind the real seasons by one full day every four years. The drift would be slow and silent. In forty years, the calendar would be ten days off. In a few centuries, the northern half of the world would find itself shivering through a July that felt like early spring, with every holiday sliding out of its season. The fix is the leap year. Every four years, the calendar quietly adds one extra day at the end of February, sweeping up four leftover quarter days at once and pulling the calendar back in line with the sun. The idea is ancient, but there is a wrinkle. The true leftover is slightly less than a quarter day, so adding a day every four years slightly overcorrects. Over centuries, even that tiny error piles up. So the modern calendar adds one more rule. Century years, like 1900, skip their leap day, unless they divide evenly by four hundred. That is why the year 2000 kept its extra day while 1900 went without. A calendar, it turns out, is not a simple list of days. It is a machine for staying lined up with the sky, patched and tuned by centuries of careful counting.",
+        "metrics": {
+          "wordCount": 253,
+          "sentenceCount": 18,
+          "meanSentenceLen": 14.1,
+          "fkGrade": 6.68,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [
+            "Earth",
+            "July",
+            "February"
+          ],
           "dialogueShare": 0,
           "decodability": null,
           "issues": []
