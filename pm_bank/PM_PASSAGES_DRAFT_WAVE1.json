@@ -1,5 +1,5 @@
 {
-  "status": "DRAFT — wave 1, batches 1-2 of 4. NOT wired into the app. Clinical review pending (PM_BANK_FORM_SPEC.md); drafting started at Aaron's direction 2026-08-23 ahead of full sign-off.",
+  "status": "DRAFT — wave 1 COMPLETE (4 of 4 batches, 20 passages per grade). NOT wired into the app. Clinical review pending (PM_BANK_FORM_SPEC.md); drafting done at Aaron's direction 2026-08-23 ahead of full sign-off.",
   "spec": "PM_BANK_FORM_SPEC.md",
   "decodabilityInventory": "pm_bank/DECODABILITY_INVENTORY_PROVISIONAL.md (provisional — reviewers may swap)",
   "readabilityNote": "Spache/Dale-Chall are computed only when verified word lists are supplied to dev-tools/pm_passage_check.cjs; until then structural bands (grades 1-2) and FK (grades 3-6) are the provisional proxies and passages are stamped pending-verified-wordlist.",
@@ -245,6 +245,249 @@
           "decodability": {
             "outside": [],
             "pct": 0
+          },
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g1-11",
+        "title": "My Pet Fish",
+        "topic": "feeding and watching a pet fish",
+        "text": "Fin is my pet fish. His tank sits on my desk. Fin zips up and down all day. At six I drop in a pinch of bits. Fin darts up to get them. Glub, glub! He is fed. Then Fin rests in his plants. I tap the glass. Tap, tap! Fin flips his fins at me. Mom says that is his way to chat. At night I flip off the lamp. Rest well, Fin! In the morning he will zip up to the top. He is the best pet a kid can have.",
+        "metrics": {
+          "wordCount": 93,
+          "sentenceCount": 16,
+          "meanSentenceLen": 5.8,
+          "fkGrade": -1.27,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [
+            "Fin"
+          ],
+          "dialogueShare": 0,
+          "decodability": {
+            "outside": [
+              "night"
+            ],
+            "pct": 1.1
+          },
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g1-12",
+        "title": "Max at the Vet",
+        "topic": "taking the cat for a checkup",
+        "text": "Max the cat is off to the vet. He sits in a big box with slits. He is not glad! At the vet, we sit with him. A dog naps by us. A hen clucks in a box! Then it is Max's turn. The vet pets Max. She checks his legs and his back. She checks his chin and his gums. All fit! she says. Max gets a snack. Back in the box, Max. We go home. Max hops out and rubs my leg. He did well at the vet. What a champ!",
+        "metrics": {
+          "wordCount": 93,
+          "sentenceCount": 18,
+          "meanSentenceLen": 5.2,
+          "fkGrade": -1.65,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [
+            "Max"
+          ],
+          "dialogueShare": 0,
+          "decodability": {
+            "outside": [],
+            "pct": 0
+          },
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g1-13",
+        "title": "The Sand Pit",
+        "topic": "digging up shells in the sand pit",
+        "text": "The park has a big sand pit. Deb and I dig in it. We dig with cups and pans. My pit gets big. Deb pats a sand hill. I add a stick on top. It is a flag! Then my cup hits a hard thing. It is a shell! Pink and flat. Deb digs and finds one too. Two shells in the sand pit! Who put them here? We can not tell. We put the shells in my cap. Mom will want them for the shelf. Next time we will dig for more.",
+        "metrics": {
+          "wordCount": 93,
+          "sentenceCount": 17,
+          "meanSentenceLen": 5.5,
+          "fkGrade": -1.28,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [],
+          "dialogueShare": 0,
+          "decodability": {
+            "outside": [],
+            "pct": 0
+          },
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g1-14",
+        "title": "The Sun Spot",
+        "topic": "a dog naps in a moving sun spot",
+        "text": "The sun hits the rug by my bed. My dog Gus naps in that sun spot. I sit next to him with my book. The spot is hot and snug. Gus huffs in his nap. His legs twitch as he rests. By and by, the sun spot shifts. Now it is off the rug! Gus gets up. He plods to the new spot. Plop! Back to his nap. I grin and shift with him. We will do this all day. A sun spot is the best bed.",
+        "metrics": {
+          "wordCount": 87,
+          "sentenceCount": 15,
+          "meanSentenceLen": 5.8,
+          "fkGrade": -1.53,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [
+            "Gus"
+          ],
+          "dialogueShare": 0,
+          "decodability": {
+            "outside": [],
+            "pct": 0
+          },
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g1-15",
+        "title": "Ants at Work",
+        "topic": "watching ants carry crumbs to the nest",
+        "text": "Ten ants march on the path. Each ant lugs a big crumb. One ant has a chip! It is as big as the ant. The ants do not stop. March, march, march! They go up a hill of sand. In the top is a small pit. That is the nest! One by one, the ants pop in. The last ant drags its chip. It tugs and tugs. Plop! In it drops. All the ants are in. Not one crumb is left on the path. Ants are small, but they can lift big things!",
+        "metrics": {
+          "wordCount": 93,
+          "sentenceCount": 17,
+          "meanSentenceLen": 5.5,
+          "fkGrade": -1.66,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [],
+          "dialogueShare": 0,
+          "decodability": {
+            "outside": [],
+            "pct": 0
+          },
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g1-16",
+        "title": "The Pot and Pan Band",
+        "topic": "making a kitchen band with pots and pans",
+        "text": "Tim gets a pot and I get a pan. We grab two thick sticks. Tap, tap, bang! We are a band. Tim taps fast and I bang slow. Mom pops in and asks, can I be in the band? She flips a tin tub and sits. Bum, bum, bum! Now we are three. The cat runs off. Too much bang for him! We march and tap and hum as well. Dad claps at the end. Best band on the block! Then Mom says, that was grand. Now let us rest. My hands hum a bit. Bands are fun!",
+        "metrics": {
+          "wordCount": 98,
+          "sentenceCount": 18,
+          "meanSentenceLen": 5.4,
+          "fkGrade": -1.67,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [
+            "Mom"
+          ],
+          "dialogueShare": 0,
+          "decodability": {
+            "outside": [],
+            "pct": 0
+          },
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g1-17",
+        "title": "Hop, Hop, Hop!",
+        "topic": "the sack hop at fun day",
+        "text": "It is fun day at school. The big test is the sack hop. I step in my sack and grip it. Meg and Sid grip theirs. On your marks. Get set. Hop! We hop and hop. Sid tips and sits in the grass. He grins and gets back up. I hop past Meg. Then my sack rips! I hop on and on. Meg zips past me at the end. Meg wins! We all clap for her. Sid claps the most. Next up: the ring toss! Fun day is the best day.",
+        "metrics": {
+          "wordCount": 91,
+          "sentenceCount": 19,
+          "meanSentenceLen": 4.8,
+          "fkGrade": -1.92,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [
+            "Sid",
+            "Meg"
+          ],
+          "dialogueShare": 0,
+          "decodability": {
+            "outside": [],
+            "pct": 0
+          },
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g1-18",
+        "title": "The Red Cart",
+        "topic": "pulling the pup in a cart",
+        "text": "Gramps has a red cart in his shed. My pup Jet sits in it. I pull him up the path. The cart clanks. Jet yips. He wags. This is fun for him! We pass the shops. A man waves at Jet. Jet yips back. At the top of the path, I stop. My arms are limp! Jet hops out. He sniffs the cart. We rest on the grass. Then back down we go. The cart runs fast on the dip! Jet trots next to me. Best cart trip yet.",
+        "metrics": {
+          "wordCount": 89,
+          "sentenceCount": 19,
+          "meanSentenceLen": 4.7,
+          "fkGrade": -1.96,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [
+            "Jet"
+          ],
+          "dialogueShare": 0,
+          "decodability": {
+            "outside": [],
+            "pct": 0
+          },
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g1-19",
+        "title": "Gram's Cats",
+        "topic": "three cats with three habits",
+        "text": "Gram has three cats. Tab is fat and naps a lot. Dot runs and jumps. Wisp naps in odd spots. A box, a bag, a hat. Each cat has a dish. Tab licks his dish and then checks the rest! Gram says Tab is a ham. Dot bats a felt ball up and down the hall. Wisp sits on Gram's lap and hums. When I go to Gram's, all three cats run to me. Well, Tab plods. I pet them all. Three cats is a lot of pets. And a lot of fun!",
+        "metrics": {
+          "wordCount": 93,
+          "sentenceCount": 15,
+          "meanSentenceLen": 6.2,
+          "fkGrade": -1.37,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [
+            "Tab",
+            "Gram"
+          ],
+          "dialogueShare": 0,
+          "decodability": {
+            "outside": [],
+            "pct": 0
+          },
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g1-20",
+        "title": "The Sky at Dusk",
+        "topic": "watching the sky change at dusk",
+        "text": "At dusk, Dad and I sit on the steps. The sun dips low. The sky is red and gold! A jet cuts a thin line up top. Soft wind flaps the flags. The lamps on the block flick on. One by one! A bat flits past. Then the stars pop out. One, two, six, ten! Dad and I sit and chat. The sky gets dim and still. Mom calls us in. One last look up. What a grand sky! We will sit here at dusk again.",
+        "metrics": {
+          "wordCount": 86,
+          "sentenceCount": 16,
+          "meanSentenceLen": 5.4,
+          "fkGrade": -1.28,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [
+            "Dad"
+          ],
+          "dialogueShare": 0,
+          "decodability": {
+            "outside": [
+              "sky",
+              "line"
+            ],
+            "pct": 4.7
           },
           "issues": []
         }
@@ -500,6 +743,278 @@
           },
           "issues": []
         }
+      },
+      {
+        "id": "pm-g2-11",
+        "title": "The Nest at My Window",
+        "topic": "watching a robin build a nest",
+        "text": "A robin is making a nest in the tree by my window. She started it with just five twigs. Now it is a neat little cup! She brings in grass, bits of string, and even some mud. The mud is like glue. It holds the whole nest tight. She presses her chest into the middle and turns and turns. That is how she makes the middle smooth and neat. My job is to watch and keep still. If I bang the window, she may leave. So I peek from the side like a spy. Today she sat in the nest for a long time. Mom thinks eggs are coming soon! I made a chart to mark the days. A whole bird home, made with no hands. I can not wait to hear the peeps.",
+        "metrics": {
+          "wordCount": 134,
+          "sentenceCount": 16,
+          "meanSentenceLen": 8.4,
+          "fkGrade": 1.5,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [],
+          "dialogueShare": 0,
+          "decodability": {
+            "outside": [],
+            "pct": 0
+          },
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g2-12",
+        "title": "The Farm Stand",
+        "topic": "buying corn and plums at the farm stand",
+        "text": "On Sunday we ride bikes to the farm stand at the end of the road. A big table sits under a white tent. It is loaded with good things. Corn with green husks. Red plums in wood boxes. Fat green beans in bins. The farmer lets me pick out six ears of corn. I pull back a husk to check each one, just like Dad showed me. Then I count out plums. One, two, three, four. Dad hands me the coins, and I pay all by myself. The farmer drops one extra plum in my bag and winks. That is called a baker's dozen trick, he says. On the ride home my bag swings on my arm. Corn for dinner, plums for a snack. Food tastes better when you pick it out yourself.",
+        "metrics": {
+          "wordCount": 133,
+          "sentenceCount": 16,
+          "meanSentenceLen": 8.3,
+          "fkGrade": 0.96,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [
+            "Sunday",
+            "Dad"
+          ],
+          "dialogueShare": 0,
+          "decodability": {
+            "outside": [
+              "count",
+              "coins",
+              "extra",
+              "yourself"
+            ],
+            "pct": 3
+          },
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g2-13",
+        "title": "The Wiggly Tooth",
+        "topic": "waiting for a loose tooth to come out",
+        "text": "My tooth started to wiggle on Monday. It is one of the top front ones. I can push it with my tongue and feel it tip! At first it only moved a tiny bit. Each day it got looser. I wiggled it at breakfast. I wiggled it at school. My teacher said, do not rush it. It will come out when it is ready. On Friday I bit into an apple at lunch. Click! Something felt different. There was my tooth, stuck right in the apple! I did not feel a thing. My friend Finn cheered. The nurse gave me a tiny box shaped like a tooth to keep it safe. Now there is a gap in my grin. I can whistle through it! A new tooth is already on the way up.",
+        "metrics": {
+          "wordCount": 133,
+          "sentenceCount": 19,
+          "meanSentenceLen": 7,
+          "fkGrade": 1.42,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [
+            "Monday",
+            "Friday",
+            "Finn"
+          ],
+          "dialogueShare": 0,
+          "decodability": {
+            "outside": [
+              "breakfast",
+              "through"
+            ],
+            "pct": 1.5
+          },
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g2-14",
+        "title": "The Pine Cone Feeder",
+        "topic": "making a bird feeder from a pine cone",
+        "text": "You can make a bird feeder from a pine cone, and it only takes three things. We found a big fat cone under the pines at the park. At home, I tied a long string to its top. Then came the fun part. I used a spoon to smear peanut butter all over the cone. It got into every gap and every bump. Sticky work! Last, I rolled the whole thing in a dish of bird seed. The seeds stuck to the peanut butter like sprinkles on a cake. We hung the feeder on a branch by the fence. Then we went inside to watch. It did not take long! A little brown bird landed first. It pecked and pecked. Then two more came. By the end of the week the cone was picked clean. Time to make the next one!",
+        "metrics": {
+          "wordCount": 141,
+          "sentenceCount": 17,
+          "meanSentenceLen": 8.3,
+          "fkGrade": 2.46,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [],
+          "dialogueShare": 0,
+          "decodability": {
+            "outside": [
+              "tied",
+              "inside"
+            ],
+            "pct": 1.4
+          },
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g2-15",
+        "title": "The Snow Fort",
+        "topic": "building a snow fort with packed snow",
+        "text": "The snow was deep and sticky, just right for building. My sister and I picked a spot by the back fence. We rolled big snowballs to make our walls. You start with a small ball and roll it along the ground. It picks up more snow with each turn, growing fatter and fatter! We lined up six fat balls in a row. Then we packed loose snow into all the cracks. The wall came up to my chest. We patted it smooth with our mittens. Next we made a low door and a shelf inside for snacks. My sister added a flag made from a stick and a red rag. We sat inside as the sun went down. Our breath made little clouds. The fort felt like a secret white house. We stayed until Mom called us in for hot cocoa.",
+        "metrics": {
+          "wordCount": 141,
+          "sentenceCount": 15,
+          "meanSentenceLen": 9.4,
+          "fkGrade": 2.39,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [
+            "Mom"
+          ],
+          "dialogueShare": 0,
+          "decodability": {
+            "outside": [
+              "building",
+              "ground",
+              "inside",
+              "clouds"
+            ],
+            "pct": 3.5
+          },
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g2-16",
+        "title": "The Night Walk",
+        "topic": "a walk under the moon and stars",
+        "text": "After dinner, Dad said, get your coat. We are going on a night walk. Outside, the street was quiet and dark blue. The moon was big and round, like a white plate in the sky. It lit up the sidewalk so well that we did not need a light. Our shadows walked in front of us. Moon shadows! They were softer than sun shadows. We stopped at the top of the hill and looked up. At first I saw five stars. Then my eyes got used to the dark, and more popped out. Ten, twenty, too many to count! Dad showed me three stars in a row. That is the belt, he said. Far off, a dog barked. The air smelled like wet grass. We stood still for a long time. The night is not so dark when you really look at it.",
+        "metrics": {
+          "wordCount": 143,
+          "sentenceCount": 18,
+          "meanSentenceLen": 7.9,
+          "fkGrade": 1.21,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [
+            "Dad"
+          ],
+          "dialogueShare": 0,
+          "decodability": {
+            "outside": [
+              "going",
+              "quiet",
+              "round",
+              "sidewalk",
+              "count"
+            ],
+            "pct": 3.5
+          },
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g2-17",
+        "title": "Car Wash Day",
+        "topic": "washing the car with dad",
+        "text": "On hot days, Dad and I wash the car in the driveway. We fill a big bucket with warm water and a squirt of soap. I get the hose first. I spray the whole car from top to bottom. Then we dunk our rags and scrub. Dad takes the roof because he is tall. I take the doors and the wheels. The wheels are the dirtiest part! The soap makes white foam that slides down the glass. My arms get tired, but I do not stop. Next comes my best job. Dad hands me the hose and says, rinse it all off! The foam rushes down and the car starts to shine. Last, we rub it dry with old towels. Dad checks my doors and gives me a high five. The car looks brand new. And I am soaked!",
+        "metrics": {
+          "wordCount": 139,
+          "sentenceCount": 17,
+          "meanSentenceLen": 8.2,
+          "fkGrade": 0.84,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [
+            "Dad"
+          ],
+          "dialogueShare": 0,
+          "decodability": {
+            "outside": [
+              "driveway",
+              "dirtiest"
+            ],
+            "pct": 1.4
+          },
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g2-18",
+        "title": "Cricket Songs",
+        "topic": "listening to crickets on a summer night",
+        "text": "On summer nights, our yard sings. The song comes from crickets hiding in the grass. Chirp, chirp, chirp! You can hear them, but it is very hard to spot one. Last night I gave it a try. I crept across the yard with my small light. Each time I got close, the chirping stopped! Crickets feel each step you take. I stood still like a statue. After a bit, the song started up again. It was coming from under the porch step. I peeked, and there it was. A small black cricket! Its wings were rubbing fast. That is how they sing. The song does not come from the mouth. It comes from the wings! One wing has little bumps, like a tiny comb. The other wing rubs across it fast. I let it be and went in. From my window, I could still hear it. Chirp, chirp. The yard's own night song.",
+        "metrics": {
+          "wordCount": 153,
+          "sentenceCount": 23,
+          "meanSentenceLen": 6.7,
+          "fkGrade": 0.96,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [],
+          "dialogueShare": 0,
+          "decodability": {
+            "outside": [
+              "mouth"
+            ],
+            "pct": 0.7
+          },
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g2-19",
+        "title": "Two Wheels",
+        "topic": "riding a bike without training wheels",
+        "text": "For a whole year my bike had four wheels. Two big ones, and two small ones on the back to hold me up. Last week, Dad took the small wheels off. Just two wheels now, he said. You are ready. I was not so sure! We went to the flat path in the park. Dad held the back of my seat and I started to pedal. Keep looking up, he said. Not down at the wheel! I wobbled left. I wobbled right. Dad jogged along, still holding on. Then, halfway down the path, I heard his voice from far behind me. He was not holding on at all! I was riding on my own. I did a big loop and rolled right back to him. My grin would not stop. Two wheels are better than four. You just have to keep going.",
+        "metrics": {
+          "wordCount": 142,
+          "sentenceCount": 20,
+          "meanSentenceLen": 7.1,
+          "fkGrade": 0.23,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [
+            "Dad"
+          ],
+          "dialogueShare": 0,
+          "decodability": {
+            "outside": [
+              "voice",
+              "going"
+            ],
+            "pct": 1.4
+          },
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g2-20",
+        "title": "Pancake Morning",
+        "topic": "making pancakes with mom",
+        "text": "On Saturday I woke up first and picked breakfast. Pancakes! Mom got out the big bowl and I got the whisk. We mixed flour, milk, an egg, and a little oil. I stirred until my arm got tired. The batter was smooth and thick, like paint. Mom heated the pan and poured in the first splash. Little bubbles popped up all over the top. That is the signal, Mom said. When you see bubbles, it is time to flip. She slid the flipper under and turned it fast. The cooked side was golden brown! I got to flip the next one myself. It landed a little crooked, but it still counted. We made a tall stack, ten pancakes high. I set the table while they steamed. Then came the best part. Warm syrup, running down the sides. Saturday is now pancake day at our house.",
+        "metrics": {
+          "wordCount": 145,
+          "sentenceCount": 19,
+          "meanSentenceLen": 7.6,
+          "fkGrade": 1.87,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [
+            "Saturday",
+            "Mom"
+          ],
+          "dialogueShare": 0,
+          "decodability": {
+            "outside": [
+              "breakfast",
+              "counted",
+              "pancake"
+            ],
+            "pct": 2.1
+          },
+          "issues": []
+        }
       }
     ],
     "3": [
@@ -687,6 +1202,202 @@
           "sentenceCount": 19,
           "meanSentenceLen": 9.4,
           "fkGrade": 3.97,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [],
+          "dialogueShare": 0,
+          "decodability": null,
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g3-11",
+        "title": "A House on Your Back",
+        "topic": "how a turtle's shell works",
+        "text": "A turtle never has to look for shelter. It carries its shelter with it. The shell is not a coat that can slip off. It is part of the turtle's body. The top dome and the flat bottom plate are joined at the sides. The turtle's back bones and ribs are built right into the dome. That is why a turtle can never crawl out of its shell. A hermit crab can swap one shell for a new one. A turtle cannot. The shell grows as the turtle grows. It stays the right size for the turtle's whole life. When danger comes near, many turtles pull their head and legs inside and wait. The shell works like a shield while the turtle naps in the mud. But here is the surprise. A shell can feel! It is covered with thin plates, and a turtle knows when something brushes against it. So if you ever meet a turtle, remember two things. Its house fits it exactly. And knocking on the roof is rude.",
+        "metrics": {
+          "wordCount": 172,
+          "sentenceCount": 19,
+          "meanSentenceLen": 9.1,
+          "fkGrade": 3.03,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [],
+          "dialogueShare": 0,
+          "decodability": null,
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g3-12",
+        "title": "Eyes That Shine",
+        "topic": "why cats' eyes glow at night",
+        "text": "Shine a light toward a cat at night, and its eyes flash back at you. They glow like two small lamps! The glow can look green, gold, or even blue. But the eyes are not making light at all. They are bouncing it back. Inside a cat's eye, behind the parts that see, there is a thin layer that works like a mirror. When light enters the eye, some of it slips past the seeing parts. It is not caught. The mirror layer bounces that lost light back for a second chance. The seeing parts catch more of it on the way back. That double pass is the whole trick. It lets cats see well in very dim light. In that same light, we would be bumping into chairs! The glow you notice is just the extra light going back out of the mirror. People have no mirror layer, so our eyes do not shine that way. Deer, dogs, and raccoons have it too. The night is full of little mirrors, blinking back at every light that passes.",
+        "metrics": {
+          "wordCount": 178,
+          "sentenceCount": 17,
+          "meanSentenceLen": 10.5,
+          "fkGrade": 3.41,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [],
+          "dialogueShare": 0,
+          "decodability": null,
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g3-13",
+        "title": "Why the Wind Blows",
+        "topic": "warm air, cool air, and the sea breeze",
+        "text": "Wind is just air on the move. But what gets it moving? The answer starts with heat. When the sun warms the ground, the ground warms the air sitting on it. Warm air is light for its size, so it floats upward, the way a bubble rises in water. As the warm air lifts off, it leaves room behind. Cooler, heavier air slides in along the ground to fill that room. That sliding air is the wind you feel on your face. The beach shows this trick every sunny day. Land heats up faster than water. By afternoon, the air over the sand is rising fast, and cool air from over the sea rushes in to take its place. That steady push off the water is called a sea breeze, and it is why the beach so often feels breezy while town feels still. At night the game flips. The land cools quickly, the sea stays warm, and the breeze drifts the other way. Wherever the sun heats one place more than another, the air begins to trade places. The trade never stops, and neither does the wind.",
+        "metrics": {
+          "wordCount": 188,
+          "sentenceCount": 16,
+          "meanSentenceLen": 11.8,
+          "fkGrade": 3.74,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [],
+          "dialogueShare": 0,
+          "decodability": null,
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g3-14",
+        "title": "Little Lanterns",
+        "topic": "how and why fireflies flash",
+        "text": "On summer nights, small lights blink on and off over the grass. They are fireflies. Each one carries its own little lantern in the tip of its body. The light is not fire, and it is not hot. Inside the lantern, the firefly mixes special juices. When the juices meet air, they glow. The firefly can start and stop the glow when it wants, like flicking a switch. Why blink at all? The flashes are messages. Each kind of firefly has its own pattern. The code is made of short and long blinks, with rests in between. A male flies along, flashing his pattern. A female of his kind sits on a leaf below, reading the blinks. If she likes what she sees, she flashes the right answer back. Then he follows her light down. You can talk to them too. Sit still with a small light and watch for a pattern. Then copy it exactly. Sometimes a curious firefly will drift over to check on you. For one summer minute, you are part of the oldest light show on Earth.",
+        "metrics": {
+          "wordCount": 181,
+          "sentenceCount": 20,
+          "meanSentenceLen": 9.1,
+          "fkGrade": 3.06,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [
+            "Earth"
+          ],
+          "dialogueShare": 0,
+          "decodability": null,
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g3-15",
+        "title": "The Rock That Floats",
+        "topic": "pumice, the stone full of air",
+        "text": "Drop a rock in water and it sinks. Everyone knows that. But one strange gray stone breaks the rule. It is called pumice, and it floats like a bath toy. The secret is written all over it. Pumice is full of tiny holes. It is more hole than stone, like a sponge made of rock. Those holes are little air pockets. All that trapped air makes the stone lighter than the water it sits in. So it bobs! The holes tell the story of how pumice was born. Deep under the ground, melted rock holds gas squeezed inside it. It is like the fizz in a closed soda bottle. When that melted rock rushes up and bursts out of the earth, the gas fizzes up all at once. The goo fills with bubbles. Then the foamy rock cools so fast that the bubbles freeze in place for good. Stone foam! Rafts of pumice sometimes drift across the sea for months. People use pumice too. Some people rub that rough gray stone on their heels in the bath. Born in fire, full of air, light enough to float.",
+        "metrics": {
+          "wordCount": 187,
+          "sentenceCount": 21,
+          "meanSentenceLen": 8.9,
+          "fkGrade": 3.53,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [],
+          "dialogueShare": 0,
+          "decodability": null,
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g3-16",
+        "title": "The Onion's Trick",
+        "topic": "why cutting onions makes you cry",
+        "text": "Cut into an onion, and soon your eyes sting and water. You are not sad. You have been sprayed! An onion cannot run from animals that want to eat it. So it guards itself with a trick. Inside its layers wait two mild juices, kept in their own little rooms. As long as the onion is whole, nothing happens. But when a blade slices through, the rooms break open. The two juices mix. Together they make a new spray that drifts up into the air. You cannot see it, and it moves fast. When it reaches your eyes, it stings them. Your eyes fight back the only way they can. They make tears and try to wash the spray away. That is why cooks cry over cutting boards! There are ways to calm the onion down. Chill it first, and the spray forms slowly. Cut it under running water, and the water catches the spray. Or wear swim goggles and let the onion do its worst. The onion is not being mean. It is just very good at guarding itself, even after it is picked.",
+        "metrics": {
+          "wordCount": 185,
+          "sentenceCount": 21,
+          "meanSentenceLen": 8.8,
+          "fkGrade": 2.64,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [],
+          "dialogueShare": 0,
+          "decodability": null,
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g3-17",
+        "title": "The Tree That Counts",
+        "topic": "how tree rings record the years",
+        "text": "Look at the flat top of a tree stump and you will see rings, one inside another, like a target. Those rings are a diary, and you can read it. A tree grows a new layer of wood around its trunk every year. In spring and summer, when water is easy to find, the tree grows fast and the new wood is wide and light in color. In fall and winter, growth almost stops, leaving a thin dark line. One light band plus one dark line equals one year of the tree's life. Count the rings and you know the tree's age. Forty rings, forty years. But the diary holds more than a number. A fat ring means a good year with lots of rain. A skinny ring means a hard, dry year. A dark scar between rings might mark the summer a falling branch hit the trunk. Scientists read rings from very old trees to learn what the weather was like hundreds of years ago, long before anyone kept records. The oldest trees on Earth have thousands of rings. A tree never forgets a year. It writes each one down, in wood.",
+        "metrics": {
+          "wordCount": 193,
+          "sentenceCount": 16,
+          "meanSentenceLen": 12.1,
+          "fkGrade": 3.85,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [
+            "Earth"
+          ],
+          "dialogueShare": 0,
+          "decodability": null,
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g3-18",
+        "title": "Hello, Hello, Hello",
+        "topic": "how an echo works",
+        "text": "Stand facing a big rock wall and clap once. A moment later, the wall claps back! That answer is an echo. It is your own sound coming back to you. Sound is a wave that spreads through the air. It is a bit like the ripple that spreads when you drop a pebble in a pond. When the wave hits something hard and flat, it bounces. A cliff works, and so does the wall of a gym. If the wall is far away, the sound takes a moment to travel back, and you hear your clap twice. Near things bounce sound too. But that sound comes back so fast that it blends into the first sound. Your ears cannot split them apart. That is why you notice echoes in canyons and big empty rooms, not in your bedroom. Soft things spoil the game. Curtains, rugs, and pillows soak up sound instead of bouncing it. That is why a full room sounds quiet and flat. An empty room sounds ringy! Try it when your family moves boxes out of a room. Same room, same voice, brand new echo.",
+        "metrics": {
+          "wordCount": 187,
+          "sentenceCount": 19,
+          "meanSentenceLen": 9.8,
+          "fkGrade": 2.7,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [],
+          "dialogueShare": 0,
+          "decodability": null,
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g3-19",
+        "title": "The Rain Jar",
+        "topic": "measuring rain with a homemade gauge",
+        "text": "How much rain fell last night? You can answer that with a jar. Pick a jar with straight sides. It should be the same width at the bottom as at the top. That part matters. A jar that widens or narrows will trick your ruler later. Set the jar outside in an open spot, away from trees and roof edges. A porch does not work. The roof steals some rain and dumps extra in other spots. Your jar must see open sky. After the rain ends, hold a ruler straight down inside the jar. Read the water line. One inch of water in the jar means one inch of rain fell. And not just in your yard! The same rain fell on the whole street, more or less. Keep a chart, and the numbers start to talk. Maybe April really is the wettest month. Maybe that loud, crashing rain only dropped half an inch. Real weather stations use fancier tools, but they measure the very same thing. Empty your jar after each rain. Then it is ready for the next one. Science can be as simple as a jar, a ruler, and a little patience.",
+        "metrics": {
+          "wordCount": 195,
+          "sentenceCount": 22,
+          "meanSentenceLen": 8.9,
+          "fkGrade": 2.69,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [
+            "April"
+          ],
+          "dialogueShare": 0,
+          "decodability": null,
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g3-20",
+        "title": "Built-In Wipers",
+        "topic": "why we blink",
+        "text": "You have been blinking all day without noticing it. Everyone does it, about fifteen times a minute. Each blink is quick, but they add up. Why does your body bother? Your eyes need washing, all day long. The front of each eye must stay wet to work well and feel good. Air slowly dries it out. Tiny bits of dust land on it every minute. So the eye comes with its own cleaning kit. Little tear makers above each eye let out a tiny bit of fluid all the time, not just when you cry. Each blink sweeps that fluid across the eye. It works just like a wiper blade crossing a wet window. The sweep spreads fresh wetness. It pushes dust toward the corner of the eye. It keeps the surface smooth and clear. Blinking also gives your eyes tiny rests, dozens every minute, each too short to notice. You blink more when your eyes get tired. You blink less when you stare hard at a screen. That is one reason screens dry your eyes out! Your body runs its wipers without being asked. All you have to do is nothing.",
+        "metrics": {
+          "wordCount": 192,
+          "sentenceCount": 21,
+          "meanSentenceLen": 9.1,
+          "fkGrade": 3.52,
           "readabilityStatus": "pending-verified-wordlist",
           "spache": null,
           "daleChall": null,
@@ -886,6 +1597,198 @@
           "sentenceCount": 16,
           "meanSentenceLen": 12.5,
           "fkGrade": 5.04,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [],
+          "dialogueShare": 0,
+          "decodability": null,
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g4-11",
+        "title": "The Surprise Inside",
+        "topic": "how geodes form",
+        "text": "From the outside, a geode is the most boring rock on the trail. It is round, gray, and lumpy, like an old potato made of stone. But crack one open, and the inside flashes in the light! The hollow middle is lined with crystals. Some are clear. Some are purple or honey colored. They all point inward, like the teeth of a tiny cave. How does a dull rock grow a secret like that? A geode starts as a hollow space in the ground. Often it is a gas bubble trapped in cooling rock. Over thousands of years, water seeps through the ground and into the hollow. The water carries tiny bits of dissolved stone, the way ocean water carries invisible salt. Water trickles in, then slowly dries away. Each time, it leaves a thin whisper of stone behind on the walls. Layer grows on layer. Given enough time, those layers build into crystals, growing point by point toward the middle. The outside stays plain because all the action happens within. Rock shops sell geodes whole, still closed. You never know what you have until it opens. It is the only rock that works like a present.",
+        "metrics": {
+          "wordCount": 197,
+          "sentenceCount": 20,
+          "meanSentenceLen": 9.8,
+          "fkGrade": 5.08,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [],
+          "dialogueShare": 0,
+          "decodability": null,
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g4-12",
+        "title": "The Catching Yawn",
+        "topic": "the mystery of contagious yawning",
+        "text": "Try to read this page without yawning. Just seeing the word can be enough to set one off! Yawns spread from person to person like nothing else. When one student yawns in class, others follow within a minute or two. You can catch a yawn from a photo, from a sound, even from thinking about yawning. Scientists have studied this for years, and here is the honest truth. Nobody is fully sure why we yawn at all. One idea says a big yawn pulls in a rush of air that cools the brain, the way a fan cools a warm room. Brains do seem to work best at the right warmth, and people yawn more when their heads are warm. A second idea says yawning helps wake up a tired body. It stretches the jaw and sends a little burst of energy. The catching part may be about friendship. People catch yawns most easily from those they know well. Some scientists think a shared yawn once helped whole groups stay alert at the same time. Dogs sometimes catch yawns from their owners, which is either sweet or very silly. So, did you make it through this page without yawning? Be honest.",
+        "metrics": {
+          "wordCount": 201,
+          "sentenceCount": 17,
+          "meanSentenceLen": 11.8,
+          "fkGrade": 4.7,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [],
+          "dialogueShare": 0,
+          "decodability": null,
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g4-13",
+        "title": "The Bottle That Knows",
+        "topic": "how a thermos keeps hot things hot and cold things cold",
+        "text": "A thermos seems to make a choice every morning. Pour in hot cocoa, and it keeps the cocoa hot. Pour in cold juice, and it keeps the juice cold. How does a simple bottle know what you want? The answer is that it does not know anything. A thermos has only one job: it stops heat from moving. Heat always flows from warmer places to cooler places, and it needs a path, something to travel through. The walls of a thermos are built to take that path away. Inside the outer bottle hides a second, thinner bottle, and between the two lies a thin gap with almost nothing in it. Not air, nothing. Heat crossing that empty gap is like a person trying to cross a river with no bridge. Very little makes it over. So when the drink inside is hot, its heat cannot escape to the cool outside, and the drink stays hot for hours. When the drink is cold, outside heat cannot sneak in, and the drink stays cold. Same walls, same gap, same trick in both directions. The thermos never chooses. It just refuses to let heat travel, and heat, with no path, stays where it is.",
+        "metrics": {
+          "wordCount": 201,
+          "sentenceCount": 17,
+          "meanSentenceLen": 11.8,
+          "fkGrade": 4.75,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [],
+          "dialogueShare": 0,
+          "decodability": null,
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g4-14",
+        "title": "Dinner in Midair",
+        "topic": "how astronauts eat in space",
+        "text": "Eating dinner is easy on Earth. Gravity holds your food on the plate, your juice in the cup, and your crumbs on the table. Astronauts on the space station get no such help. There, everything floats, including supper. A plate would be useless. Set a sandwich down and it would drift away like a slow balloon. So space food comes in pouches and cans that seal shut between every bite. Drinks are the trickiest part. Tip a cup in space and the juice does not pour. It crawls out and forms a wobbling ball that floats across the cabin. Astronauts sip everything, even coffee, through straws with clamps that pinch shut. Crumbs are treated like enemies. A floating crumb will not fall to the floor. It drifts until it lands in an air filter, a control panel, or somebody's eye. That is why astronauts use tortillas instead of bread. Tortillas hold together and make almost no crumbs. Salt and pepper would float away as grains, so they come as liquids, squeezed from little bottles. Meals are stuck to the table with straps and magnets. The strangest part may be this: after months in space, astronauts say they miss one simple thing. Setting a fork down, and finding it still there.",
+        "metrics": {
+          "wordCount": 210,
+          "sentenceCount": 20,
+          "meanSentenceLen": 10.5,
+          "fkGrade": 5.02,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [
+            "Earth"
+          ],
+          "dialogueShare": 0,
+          "decodability": null,
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g4-15",
+        "title": "Hot Days, Cold Nights",
+        "topic": "why deserts cool off so fast at night",
+        "text": "The desert plays a trick on visitors. At noon it is one of the hottest places anywhere, with sand too hot to touch. But stay past sunset and the trick unfolds. The temperature drops, and drops, and keeps dropping. Campers who packed only shorts end up shivering by midnight. How can the same place roast and freeze in one day? The answer floats in the air, or rather, it does not. Most places have moisture in the air, and often clouds too. Water in the air works like a blanket over the land. During the day it softens the sun's blows, and at night it traps the day's warmth near the ground, letting it leak away only slowly. The desert has almost no water in its air, and usually no clouds. No blanket at all. So daytime sun strikes with full force, and the ground bakes. But the moment the sun sets, all that heat rushes back out toward the open sky with nothing to hold it in. The ground cools fast, and the air follows. By morning, frost can sparkle on the same dunes that burned at noon. Desert travelers learn the rule quickly. Pack for two seasons, because you will visit both before breakfast.",
+        "metrics": {
+          "wordCount": 206,
+          "sentenceCount": 18,
+          "meanSentenceLen": 11.4,
+          "fkGrade": 4.51,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [],
+          "dialogueShare": 0,
+          "decodability": null,
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g4-16",
+        "title": "The Coin Test",
+        "topic": "how vending machines check coins",
+        "text": "Drop a coin into a vending machine, and in less than a second the machine decides whether to count it or spit it back. Inside that little slot, your coin takes a series of tests. The first test is size. The coin rolls down a narrow channel that measures how wide and how thick it is. A quarter and a dime are different sizes, so the machine can begin to tell them apart at once. Buttons and washers get rejected here. The second test is weight, checked as the coin tips a small balanced gate. Too light or too heavy, and out it goes. The clever test comes last. The coin rolls past a magnet, and here is the surprise: coins are not attracted to it. Instead, real coins are slowed by a magnet in an exact, predictable way, because of the special metals inside them. As the coin passes, the machine times its roll. A real quarter passes at quarter speed. A fake made of the wrong metal rolls too fast or too slow and drops straight into the return cup. All three tests take less time than a blink. The machine cannot see your coin. It just measures it three ways, and for a vending machine, measuring is seeing.",
+        "metrics": {
+          "wordCount": 211,
+          "sentenceCount": 17,
+          "meanSentenceLen": 12.4,
+          "fkGrade": 5.19,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [],
+          "dialogueShare": 0,
+          "decodability": null,
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g4-17",
+        "title": "Pop Go the Ears",
+        "topic": "why ears pop on hills and planes",
+        "text": "Ride a car up a mountain road or take off in a plane, and soon your ears feel strange and full. Sounds go muffled, as if you were underwater. Then you swallow, something clicks, and pop! Everything sounds normal again. What just happened in there? Deep inside each ear stretches a thin skin called the eardrum, with air on both sides of it. The eardrum works best when the air pushes equally on both sides. Out in the world, air pushes on the outer side. A tiny tube connects the inner side to the back of your throat, keeping the inner air matched to the outer air. The trouble starts when you change height quickly. Air gets thinner as you go up, so the push on the outside of your eardrum drops fast. But the little tube is narrow and lazy, so old, stronger air stays trapped on the inside, bulging the eardrum outward. That bulge is the full, muffled feeling. Swallowing and yawning stretch the tube open for a moment. Trapped air escapes with a click, both sides match again, and the drum snaps back flat. That is the pop. Babies on planes cannot make themselves swallow on purpose, which is why they get their bottles at takeoff. Chewing gum works too. Your ears just want balance.",
+        "metrics": {
+          "wordCount": 218,
+          "sentenceCount": 19,
+          "meanSentenceLen": 11.5,
+          "fkGrade": 4.69,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [],
+          "dialogueShare": 0,
+          "decodability": null,
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g4-18",
+        "title": "Invisible Ink",
+        "topic": "secret writing with lemon juice",
+        "text": "You can write a message that nobody can see, using nothing but a lemon. Squeeze some juice into a cup. Dip in a cotton swab and write on plain white paper. As the juice dries, your words fade until the page looks blank. Hand the paper to a friend and watch them stare! To read the message, the paper needs heat. Hold it near a warm bulb, or have an adult run a warm iron over it. The writing slowly appears in ghostly brown letters. What makes the magic work? Lemon juice soaks in and changes the paper wherever it touches, without changing its color right away. But the juice-marked lines feel heat more than the clean paper around them. Warm the page, and those lines turn brown first. It is the same way a marshmallow browns before the stick holding it does. Spies really did use tricks like this long ago. They wrote secret notes between the lines of ordinary letters. Milk works too, and so does apple juice. The message hides in plain sight until heat calls it out. Just remember the one rule of invisible ink. It is only secret if you do not tell everyone how you did it.",
+        "metrics": {
+          "wordCount": 203,
+          "sentenceCount": 19,
+          "meanSentenceLen": 10.7,
+          "fkGrade": 5.2,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [],
+          "dialogueShare": 0,
+          "decodability": null,
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g4-19",
+        "title": "Why Rivers Wander",
+        "topic": "how meanders form in rivers",
+        "text": "Look at a river from a plane, and you will almost never see a straight line. Rivers wander across the land in wide, lazy loops. They curve back and forth like a dropped ribbon. No one dug those curves. The river carved them itself, and it is still carving. It starts with the tiniest bend. Maybe a boulder or a fallen tree once nudged the current sideways. Water on the outside of any bend has farther to travel, so it speeds up. Fast water is greedy water. It gnaws at the outer bank and carries bits of it away. Water on the inside of the bend moves slowly, and slow water lets go. It drops the sand and mud it carries, building the inner bank outward. So every bend grows. The outside is eaten. The inside is fed. The curve gets deeper and wider, year after year. Sometimes a loop curls so far around that the river breaks through the narrow neck and takes a shortcut. The old loop is left behind as a curved lake, shaped like a horseshoe. Straight rivers exist mostly where people forced them into channels. Left alone, a river always wanders. The curves are not a flaw in its path. They are its path, written and rewritten in mud.",
+        "metrics": {
+          "wordCount": 214,
+          "sentenceCount": 22,
+          "meanSentenceLen": 9.7,
+          "fkGrade": 4.53,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [],
+          "dialogueShare": 0,
+          "decodability": null,
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g4-20",
+        "title": "Stone Icicles",
+        "topic": "how cave formations grow drop by drop",
+        "text": "In deep caves, stone icicles hang from the ceiling. Some are longer than a person! They are called stalactites, and they grow the slowest way you can imagine. One drip at a time. The recipe begins with rain. Rainwater soaks into the ground above the cave. It trickles down through cracks in the rock. Along the way, the water picks up a tiny cargo. It carries invisible bits of the very stone it passed through. When a drop finally reaches the cave ceiling, it hangs there a while before falling. In that quiet moment, a whisper of its stony cargo is left behind. It forms a ring thinner than paper, stuck to the ceiling. Then the drop falls, and another takes its place. Drip after drip, ring after ring, the stone builds downward into a hanging spike. The drops that land on the floor leave stone behind too. A stubby tower grows upward, right below the spike. Given enough centuries, the spike and the tower can meet in the middle. They join into one column. How slow is slow? Many stalactites grow about the thickness of a fingernail in a whole year. So the next time someone calls you slow, take it as praise. Slow is how caves build their chandeliers.",
+        "metrics": {
+          "wordCount": 211,
+          "sentenceCount": 22,
+          "meanSentenceLen": 9.6,
+          "fkGrade": 5.21,
           "readabilityStatus": "pending-verified-wordlist",
           "spache": null,
           "daleChall": null,
@@ -1095,6 +1998,200 @@
           "decodability": null,
           "issues": []
         }
+      },
+      {
+        "id": "pm-g5-11",
+        "title": "Why the Sea Is Salty",
+        "topic": "where ocean salt comes from",
+        "text": "Swallow a mouthful of ocean water by accident, and you will not forget the taste. The sea is salty, all of it, everywhere on Earth. Yet the rivers that pour into the ocean taste fresh. Where does all that salt come from? The answer is that the rivers bring it, a pinch at a time. Rain falling on land soaks into soil and trickles over rock, and as it travels, it dissolves tiny amounts of minerals, including salts. Each river carries its invisible cargo to the sea. The amount in any glass of river water is far too small to taste, which is why rivers seem fresh. But here is the trick: the ocean has no drain. Water leaves the sea only by evaporating into the air, and when water evaporates, it rises alone. The salt cannot ride along. It stays behind. So for billions of years, rivers have been delivering salt to an ocean that never gives any back. The salt supply grew and grew until the sea became as briny as it is today. You can watch the same process in miniature. Let a bowl of salty water sit in the sun for a week. The water disappears. The white crust at the bottom stays. That crust is the ocean's whole story, written small.",
+        "metrics": {
+          "wordCount": 216,
+          "sentenceCount": 19,
+          "meanSentenceLen": 11.4,
+          "fkGrade": 5.78,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [
+            "Earth"
+          ],
+          "dialogueShare": 0,
+          "decodability": null,
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g5-12",
+        "title": "Fighting Noise with Noise",
+        "topic": "how noise-canceling headphones work",
+        "text": "Slip on a pair of noise-canceling headphones and press a button. The roar of a bus or a plane fades away, as if someone turned down the world. The surprise is how the trick works. The headphones do not block the noise. They fight it, using more sound! Sound travels as waves of pressure in the air. The waves rise and fall, over and over, like ripples crossing a pond. Every steady roar has a pattern of high points and low points that repeats. The headphones carry tiny microphones on the outside. They listen to the incoming noise and read its pattern instantly. Then a chip inside builds a brand new sound. It is an exact upside-down copy of the noise. Where the noise wave pushes up, the copy pushes down by the same amount. The little speakers play this anti-noise into your ears along with the real noise. When a rise meets an equal fall, the two cancel out. It is like adding three and negative three to get zero. What remains at your ear is close to silence. The trick works best on steady sounds, like engines and fans, whose patterns repeat. Sudden sounds change too fast to copy in time. So the hum of the plane is gone, but a friend calling your name still gets through. That is not a flaw. It is the best part.",
+        "metrics": {
+          "wordCount": 230,
+          "sentenceCount": 22,
+          "meanSentenceLen": 10.5,
+          "fkGrade": 5.06,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [],
+          "dialogueShare": 0,
+          "decodability": null,
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g5-13",
+        "title": "Lines Across the Sky",
+        "topic": "what contrails are made of",
+        "text": "On clear days, high-flying planes draw long white lines across the blue. The lines look like smoke, and many people assume that is what they are. They are not smoke at all. They are clouds, made mostly of water. The plane makes them as it flies. Here is the recipe. Jet engines burn fuel, and burning fuel gives off water vapor. That vapor is an invisible gas, the same one you breathe out with every breath. The engine blasts this hot, wet exhaust into the air seven miles up, where the cold is far below freezing. What happens next is just what happens to your breath on a frosty morning. Your warm, moist breath hits cold air and becomes a little visible puff. The plane's exhaust does the same, but in far deeper cold. The vapor does not just form droplets. It freezes into countless tiny ice crystals. Those sparkling crystals are the white line you see. The lines are called contrails, short for condensation trails. How long a contrail lasts depends on the air around it. In dry air, the crystals soon turn back to invisible vapor, and the line erases itself behind the plane. In moist air, the crystals linger and spread. Sometimes they widen into thin sheets of cloud that drift for hours. One plane, one breath, one long frozen signature across the sky.",
+        "metrics": {
+          "wordCount": 227,
+          "sentenceCount": 21,
+          "meanSentenceLen": 10.8,
+          "fkGrade": 5.05,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [],
+          "dialogueShare": 0,
+          "decodability": null,
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g5-14",
+        "title": "The Puzzle in the Lock",
+        "topic": "how a pin tumbler lock works",
+        "text": "A door lock is a metal puzzle, and the key is the only answer that fits. Inside the lock sits a small cylinder that must turn to pull back the bolt. The cylinder wants to turn, but it cannot, because it is pinned in place. Five tiny metal pins hang down into it from above, each pushed by its own small spring. As long as any pin crosses the line between the cylinder and its housing, the cylinder is jammed, and the door stays locked. Now look closely at a key. Its jagged edge is not decoration. Each bump and valley is a precise height, one for each pin. Slide the key in, and the pins ride up and down over the bumps like a car crossing hills. Here is the heart of the trick: every pin is actually cut into two pieces, an upper piece and a lower piece. The right key lifts each pin to exactly the height where the cut between its two pieces lines up with the edge of the cylinder. With all five cuts lined up at once, no pin blocks the line anymore. The cylinder turns freely, the bolt slides back, and the door opens. A wrong key lifts the pins to wrong heights. Even one pin off by a hair keeps the whole cylinder jammed. That is the entire secret. Not magic, just five tiny alignments, all at once, measured in millimeters.",
+        "metrics": {
+          "wordCount": 239,
+          "sentenceCount": 17,
+          "meanSentenceLen": 14.1,
+          "fkGrade": 5.89,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [],
+          "dialogueShare": 0,
+          "decodability": null,
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g5-15",
+        "title": "The Moon Moves the Sea",
+        "topic": "why tides rise and fall",
+        "text": "Twice a day, almost every beach on Earth slowly goes under water and then reappears. At high tide, waves lap far up the sand. Six hours later the water has pulled back, leaving wet flats and stranded shells. The engine behind this rhythm is not on Earth at all. It is the moon. The moon's gravity tugs on our planet, and it tugs hardest on whatever is closest. The ocean facing the moon feels the strongest pull, so the water there lifts into a broad, gentle bulge. Strange as it sounds, a matching bulge forms on the far side of the planet at the same time. There, the moon's pull is weakest, and the water gets left behind, swinging outward. So the ocean wears two bulges at once, one toward the moon and one away from it. Now add the spin. Earth turns once a day, carrying every coastline through both bulges, and through both low zones between them. Ride into a bulge and your beach gets high tide; ride out of it and the tide falls. Two bulges a day means two high tides a day. The sun tugs too, though more weakly. When the sun and moon line up, their pulls join, and the tides swing extra high and extra low. The sea never rests, because its leash is in the sky.",
+        "metrics": {
+          "wordCount": 224,
+          "sentenceCount": 17,
+          "meanSentenceLen": 13.2,
+          "fkGrade": 4.93,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [
+            "Earth"
+          ],
+          "dialogueShare": 0,
+          "decodability": null,
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g5-16",
+        "title": "Why Glue Grips",
+        "topic": "the science of sticking",
+        "text": "Glue looks like magic in a bottle. It pours out as a liquid, and an hour later it holds two pieces of wood together better than nails would. What is it actually doing? Sticking turns out to be two different jobs, and good glue must do both. The first job is grabbing the surfaces. Even surfaces that look smooth are secretly rough. Up close, they are covered in tiny pits, scratches, and valleys. Glue starts as a liquid, so it flows into all those little openings, the way syrup soaks into a waffle. Then the glue hardens. Now it is not just resting on the surface. It is hooked into thousands of tiny anchor points, gripping the roughness from inside. The second job is holding itself together. Suppose a glue grabbed both surfaces but tore apart in its own middle. It would be useless! As glue dries, its tiny parts link up into long, tangled chains. The puddle becomes one tough solid, a single bridge from one surface to the other. This is also why glue fails on dusty or greasy things. The glue anchors nicely to the dust. But the dust is only lying loosely on the surface, so everything peels away together. Clean, dry, slightly rough surfaces give glue its best grip. The bottle is not magic. It is a liquid that knows how to become a bridge.",
+        "metrics": {
+          "wordCount": 230,
+          "sentenceCount": 22,
+          "meanSentenceLen": 10.5,
+          "fkGrade": 5.06,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [],
+          "dialogueShare": 0,
+          "decodability": null,
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g5-17",
+        "title": "Songs Across the Sea",
+        "topic": "how whale songs travel so far",
+        "text": "Some whales sing songs that other whales can hear across huge stretches of ocean. No shout on land could carry so far. The singers are loud, but their real edge is the water itself. Sound is a shake passed along from particle to particle. Water particles sit packed far closer together than air particles do. Crowded particles pass the shake along quickly and cleanly. So sound in the sea travels more than four times faster than in air, and it fades far more slowly as it goes. The whales add tricks of their own. The great whales sing in very low notes, deeper than the lowest keys of a piano. Some notes are too low for human ears to hear at all. Low notes have long, rolling waves that fade much more slowly than high, choppy ones. That is the same reason you hear the booming bass of far-off music long before the tune. The ocean holds one more secret. At a certain depth, layers of water can act like a hallway for sound. They bend the sound back into a channel, so it glides along for hundreds of miles instead of spreading out. Scientists lower microphones into the sea and record singers from far beyond the horizon. From above, the ocean looks like a wall of silence. Underneath, it is a concert hall the size of the world.",
+        "metrics": {
+          "wordCount": 229,
+          "sentenceCount": 18,
+          "meanSentenceLen": 12.7,
+          "fkGrade": 6.02,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [],
+          "dialogueShare": 0,
+          "decodability": null,
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g5-18",
+        "title": "The Ice That Would Not Sink",
+        "topic": "why ice floats and why it matters",
+        "text": "Drop an ice cube into a glass of water, and it bobs at the top. That seems too ordinary to question. It is actually one of the strangest habits in nature! Nearly every substance shrinks as it cools. Its particles huddle closer and closer, so the solid form is packed tighter than the liquid. Tighter things sink. By that rule, ice should drop like a stone. Water breaks the rule at the last moment. As it cools toward freezing, water does shrink. But just before it turns solid, its tiny parts do something odd. They lock into a stiff pattern full of open space, like a honeycomb. They end up slightly farther apart than they were in the liquid! So ice is lighter than cold water, and it floats. That one backwards habit quietly protects a huge amount of life. When winter comes, ponds and lakes freeze from the top down, not the bottom up. The floating ice sheet becomes a lid. It slows the cold and keeps the deeper water liquid. Fish, turtles, and countless small creatures spend the whole winter in that sheltered water below the ice. Now imagine ice that sank. Every freeze would stack ice on the bottom, and shallow lakes could slowly freeze solid. Nothing would be left by spring. Whole watery worlds survive winter because ice takes up more room, not less. The exception is not a flaw. It is a lifeboat.",
+        "metrics": {
+          "wordCount": 238,
+          "sentenceCount": 24,
+          "meanSentenceLen": 9.9,
+          "fkGrade": 5.28,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [],
+          "dialogueShare": 0,
+          "decodability": null,
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g5-19",
+        "title": "Seeds on the Move",
+        "topic": "how seeds travel far from their parents",
+        "text": "A plant spends its whole life rooted to one spot. Yet its children may sprout a mile away, or on the far side of a lake. The trick is that plants do not travel. Their seeds do, and seeds have a remarkable set of vehicles. Some ride the wind. A dandelion seed hangs under a fluffy parachute that can drift far across a field. Maple seeds grow a single stiff wing that sets them spinning like tiny helicopters. The spin stretches a short fall into a long glide, away from the shade of the parent tree. Others ride the water. A coconut is a seed in a floating, waterproof husk. It is built to bob across the sea for weeks and sprout on a distant beach. Many seeds hire animals, and pay in fruit. A bird that swallows berries flies away. The tough seeds inside pass through unharmed and are dropped later, complete with fertilizer. Squirrels bury acorns by the hundred to eat in winter. Then they forget a scattering of them. Every forgotten acorn is an oak, planted by a rodent! The stowaways skip payment entirely. Burrs are seeds covered in tiny hooks that snag fur and socks. They ride along until they are picked off somewhere new. Look at your shoelaces after a walk through a weedy field. You may have been a seed's taxi all the way home.",
+        "metrics": {
+          "wordCount": 231,
+          "sentenceCount": 22,
+          "meanSentenceLen": 10.5,
+          "fkGrade": 5.21,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [],
+          "dialogueShare": 0,
+          "decodability": null,
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g5-20",
+        "title": "The Hill That Does the Work",
+        "topic": "how roller coasters run without engines",
+        "text": "A roller coaster train has no engine on board. Nothing pushes it around the loops, and nothing pulls it through the curves. Yet it races along at highway speed! The secret is spent in the first thirty seconds of the ride. A chain drags the train slowly, click by click, up the tallest hill on the track. That famous climb is the only outside help the ride ever gets. All the speed that follows is stored in that height. A lifted weight holds stored energy, like a stretched rubber band or a drawn bow, and the higher the lift, the bigger the store. When the train tips over the crest, the store begins to spend. Falling turns stored energy into speed. That is why the first drop is always the biggest thrill: it cashes in the whole first hill at once! Racing along the bottom, the train carries enough speed to climb the next hill. Height becomes speed, then speed becomes height, over and over. But every hill after the first must be lower, because the ride is always paying a tax. Rubbing against the rails and pushing through the air steal a little energy every second, and the ride never gets it back. That is why coasters end in gentle curves near the ground. The last of the bank account eases the train into the brakes. One climb, and gravity does the rest.",
+        "metrics": {
+          "wordCount": 234,
+          "sentenceCount": 18,
+          "meanSentenceLen": 13,
+          "fkGrade": 5.06,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [],
+          "dialogueShare": 0,
+          "decodability": null,
+          "issues": []
+        }
       }
     ],
     "6": [
@@ -1296,6 +2393,212 @@
             "Earth",
             "July",
             "February"
+          ],
+          "dialogueShare": 0,
+          "decodability": null,
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g6-11",
+        "title": "The Height Limit",
+        "topic": "why trees cannot grow forever",
+        "text": "The tallest trees on Earth stand taller than a football field is long. Their tops sway more than a hundred meters above their roots. Yet even these giants seem to stop near a certain height, and scientists believe they know why. The limit is not wood or wind; it is plumbing. A tree drinks with its roots, but it spends water in its leaves, all the way at the top. Every drop must be hauled the full height of the trunk, and the tree owns no pump. Instead, the tree relies on an elegant trick: as water evaporates from the leaves, each departing drop tugs on the one behind it, and that one tugs on the next. Water clings to itself strongly, so the whole column of water in the trunk is pulled upward, like a chain drawn from the top. The trick is powerful, but it has a price: the taller the tree, the heavier the hanging chain, and the harder every upward tug becomes. Near a hundred meters, the pull grows so extreme that the topmost leaves are always short of water, staying thirsty even when the roots stand in soaked soil. Leaves at the crown of the tallest trees actually grow small and tough, like desert plants. Somewhere around that height, the cost of lifting outruns the gain of growing, and the tree stops reaching. The sky is not the limit. The chain is.",
+        "metrics": {
+          "wordCount": 237,
+          "sentenceCount": 14,
+          "meanSentenceLen": 16.9,
+          "fkGrade": 6.35,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [
+            "Earth"
+          ],
+          "dialogueShare": 0,
+          "decodability": null,
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g6-12",
+        "title": "The Fold That Defeats Everyone",
+        "topic": "why paper cannot be folded many times",
+        "text": "Take any sheet of paper and start folding it in half. The first few folds feel effortless, but by the sixth, the paper fights back. By the seventh, most people are defeated, pressing with all their strength against a stubborn little block. It seems absurd, because paper is nearly the weakest material in the house. How does it beat everyone? The answer lies in doubling, one of the sneakiest forces in mathematics. Each fold doubles the number of layers: one fold makes two, a second makes four, a third makes eight. The numbers look tame at first, but doubling compounds. Seven folds make one hundred twenty-eight layers, and ten folds would make more than a thousand. Folding a sheet ten times would mean bending a slab as thick as a heavy book, using only your fingers. Meanwhile, a second problem grows just as fast. Each fold also cuts the sheet's area in half, so the paper becomes small exactly as it becomes thick. The seventh fold asks you to bend a tiny, dense brick around itself, and there is simply not enough paper left to wrap around so many layers. People have beaten seven folds, but only by changing the setup, starting with sheets the length of a hallway. The lesson hides everywhere. Anything that doubles again and again, whether layers, rumors, or debts, stays small only briefly. Then it becomes unstoppable.",
+        "metrics": {
+          "wordCount": 232,
+          "sentenceCount": 17,
+          "meanSentenceLen": 13.6,
+          "fkGrade": 6.82,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [],
+          "dialogueShare": 0,
+          "decodability": null,
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g6-13",
+        "title": "The Internet Under the Sea",
+        "topic": "undersea cables carry the world's messages",
+        "text": "When you send a message to a friend on another continent, it probably does not travel by satellite. It goes under the ocean. Hundreds of cables lie on the seafloor, crossing every major sea on Earth. Together they carry almost all of the traffic between continents: messages, videos, calls, and money. A single modern cable is surprisingly slim. For most of its deep-sea run, it is about the width of a garden hose. At its heart lie strands of glass, each thinner than a human hair. Information travels through them as rapid flashes of light, millions upon millions each second. Near the shore, the cable needs protection, because anchors drag and fishing nets sweep the bottom. There it wears thick steel armor and gets buried in the seabed. Laying a cable is a slow voyage. A special ship crosses the ocean for weeks, paying out the line behind it with steady care. The route is mapped ahead of time to avoid underwater cliffs and rough ground. Repairs are stranger still. When a cable breaks in deep water, a repair ship hooks the broken end and hauls it up from the dark. The glass strands are joined under a microscope on deck, and the mended line is lowered back down. The first ocean cables carried telegraph clicks more than a century ago. Today, a flash of light can cross an entire ocean floor in a heartbeat. The cloud, it turns out, lives at the bottom of the sea.",
+        "metrics": {
+          "wordCount": 247,
+          "sentenceCount": 19,
+          "meanSentenceLen": 13,
+          "fkGrade": 6.49,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [
+            "Earth"
+          ],
+          "dialogueShare": 0,
+          "decodability": null,
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g6-14",
+        "title": "Pictures That Move",
+        "topic": "how animation tricks the eye",
+        "text": "No picture has ever actually moved. Every cartoon, every film, every video on every screen is a stack of completely still images, shown one after another at high speed. The movement happens in only one place: inside your head. Human eyes hold on to what they see for a small fraction of a second after it disappears. Show a second picture before the first has faded, and the brain refuses to treat them as separate. It welds them into one scene. Flip through images quickly, each barely different from the last, and the brain does something even bolder. It invents the motion between them. Every gap is filled so smoothly that you cannot see the seams. Films usually show twenty-four still pictures every second. That rate was chosen a century ago because it was the slowest speed that looked reliably smooth. Early animators paid dearly for every one of those frames. A single cartoon minute demanded over a thousand drawings. Each was traced and painted by hand. Each was nudged just slightly past the one before. Artists learned tricks to spend the labor wisely. They might draw a character's face once, but its flapping coat many times. Computers now calculate the in-between images, and games draw sixty or more each second. But the underlying bargain has never changed. The screen supplies the stillness, rapidly. Your brain supplies the motion, free of charge. Every movie is a flip-book, and the projector is you.",
+        "metrics": {
+          "wordCount": 242,
+          "sentenceCount": 22,
+          "meanSentenceLen": 11,
+          "fkGrade": 7.23,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [],
+          "dialogueShare": 0,
+          "decodability": null,
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g6-15",
+        "title": "Living at the Bottom of the World",
+        "topic": "how scientists live and work in Antarctica",
+        "text": "At the bottom of the globe lies a continent with no cities, no farms, and no permanent residents. It is a land of ice nearly twice the size of Australia. Yet people live there all year, in scattered research stations, because Antarctica is one of the best natural laboratories on Earth. Its ice holds air from ancient centuries. Its skies are the clearest anywhere, and its animals live nowhere else. Life at a station runs on careful planning. Everything, from food to fuel to spare bolts, arrives by ship or plane during the brief summer window. The pantry must last until the next delivery. Cooks bake bread daily, but fresh fruit disappears within weeks of a supply run. The crew learns to celebrate an orange like a holiday. Winter is the true test. The sun sets in autumn and simply does not rise again for months. Outside, the dark and the cold make travel dangerous, so the winter crew seals in together until spring. Often they number fewer than fifty people. In deep winter, some stations get no flights in or out at all. In one way, they are more cut off than astronauts, who can at least fly home in an emergency. So why go? Ask the people who return year after year. They describe glowing auroras in the silent sky, ice fields without a single footprint, and the strange peace of a place with no traffic, no stores, and no noise. The harshest address on Earth, they say, is also the calmest.",
+        "metrics": {
+          "wordCount": 254,
+          "sentenceCount": 20,
+          "meanSentenceLen": 12.7,
+          "fkGrade": 7.11,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [
+            "Australia",
+            "Antarctica",
+            "Earth"
+          ],
+          "dialogueShare": 0,
+          "decodability": null,
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g6-16",
+        "title": "The Metal That Never Fades",
+        "topic": "why gold has always been treasured",
+        "text": "Dig through the treasures of any ancient people, on any continent, and one material shows up again and again: gold. Cultures that never met, separated by oceans and centuries, all reached the same verdict. Why this metal, of all things? Gold earned its place through a rare mix of gifts. Most metals are restless. Iron rusts into brown flakes, copper slowly turns green, and silver darkens and dulls. Gold does almost nothing. It refuses to rust or fade, shrugging off air, water, and time itself. A gold coin can spend five hundred years in a sunken ship and come up gleaming, as if it were made yesterday. In the ancient world, a substance that could not decay seemed close to magic. Gold is also amazingly easy to work. It is soft enough to shape without fire, and it can be hammered thinner than paper, into sheets so light they seem to float. Artists could stretch a small nugget over a huge carving, wrapping wood or stone in a skin of sunlight. And gold is truly scarce. All the gold ever mined in human history would form a cube only about the size of a large house. Being rare kept it precious. Being permanent kept it trusted. Today gold rides inside phones and satellites, prized by engineers for the same stubborn reliability that once dazzled kings. Ancient people chose their treasure well. They picked the one metal that keeps every promise.",
+        "metrics": {
+          "wordCount": 240,
+          "sentenceCount": 20,
+          "meanSentenceLen": 12,
+          "fkGrade": 6.45,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [],
+          "dialogueShare": 0,
+          "decodability": null,
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g6-17",
+        "title": "The Day the Clocks Agreed",
+        "topic": "why time zones exist",
+        "text": "Noon used to be a local opinion. For most of history, every town set its clocks by its own sky. When the sun stood highest overhead, that was twelve o'clock, and nobody cared that the next city's noon arrived minutes later. Neighboring towns could disagree by a quarter hour, and it mattered to almost no one, because travel was slow and news was slower. Then came the railroads, and local time turned dangerous. Trains ran on printed schedules, but a schedule means nothing when every station along the line keeps a different clock. A conductor's watch said one thing. The next town's tower said another. And two trains sharing a single track needed to know exactly when each would arrive. The railroads began publishing their own company times, which only multiplied the confusion. A single station might display several clocks, one for each railroad, none matching the town's own. The fix was bold and simple. Instead of thousands of local times, the world would share a small set of broad zones, each one hour apart. Each zone stretches roughly across the distance the sun crosses in one hour. Within a zone, every clock agrees exactly. Cross the line, and you adjust by one clean, whole hour. Railroads in North America adopted zone time on a single agreed day, and towns slowly gave up their private noons. The sun still crosses each town at a slightly different moment. We simply agreed to stop arguing about it.",
+        "metrics": {
+          "wordCount": 245,
+          "sentenceCount": 19,
+          "meanSentenceLen": 12.9,
+          "fkGrade": 6.97,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [
+            "North",
+            "America"
+          ],
+          "dialogueShare": 0,
+          "decodability": null,
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g6-18",
+        "title": "Why Stars Twinkle",
+        "topic": "starlight and the restless air",
+        "text": "Stars twinkle. Planets, for the most part, do not. That small difference, easy to check on any clear night, holds the answer to what twinkling actually is, and the answer has nothing to do with the stars themselves. A star shines steadily in space. The trouble begins in the last hundred kilometers of the journey, when its light must pass through Earth's atmosphere. Air is never still. Warm and cool layers drift and tumble over each other, and light bends slightly whenever it crosses between them. A star is so far away that it reaches us as a single narrow thread of light. As the restless air shifts, that thread is nudged from side to side, arriving at your eye, then missing it, then arriving again, many times a second. The star seems to flicker, dance, and shift through colors, though it is doing nothing at all. A planet is far closer, so it appears in the sky not as a point but as a tiny disk, a bundle of many threads of light side by side. The air jostles each thread separately, but their flickers average out, and the planet shines steadily. Astronomers, who need unjostled light, respond in two ways. They build telescopes on high mountaintops, above the thickest air, or send them into orbit entirely. Photos from space show stars as still, unblinking points. The twinkle was never a message from the star. It was the signature of our own sky.",
+        "metrics": {
+          "wordCount": 244,
+          "sentenceCount": 17,
+          "meanSentenceLen": 14.4,
+          "fkGrade": 6.64,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [
+            "Earth"
+          ],
+          "dialogueShare": 0,
+          "decodability": null,
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g6-19",
+        "title": "The Art of the Unfakeable Bill",
+        "topic": "how paper money fights copying",
+        "text": "A banknote is designed to lose a very specific contest. Anyone may look at it, but no one should be able to make one. Every detail on a modern bill exists to keep that promise. Start with the material. Most paper money is not ordinary paper, which comes from wood. Bills are made from cotton and linen fiber. That gives them a cloth-like snap and a toughness that survives pockets, spills, and washing machines. Copies made on regular paper feel wrong within seconds, and feel is the first test everyone performs without thinking. Hold a bill up to the light, and hidden features appear. A watermark portrait floats inside the material itself, visible from both sides. It is made by varying the thickness of the bill, not by any ink. A thin security strip runs through the bill as well. It is embedded, not printed, and it carries tiny lettering. Now tilt the bill. Certain numbers shift color as the angle changes, thanks to special ink filled with tiny flakes that reflect light differently. Ordinary printers can copy none of these tricks, because all they can do is lay flat ink on a flat surface. Some portraits even contain lines of tiny words, so small they look like a stray hair until magnified. The printed lines themselves stand up from the surface, and trained fingertips can feel the ridges. No single feature does the job alone. A copier must defeat every layer at once, and each layer demands machines few can obtain. The bill in your pocket is a small fortress, and its walls are details.",
+        "metrics": {
+          "wordCount": 266,
+          "sentenceCount": 21,
+          "meanSentenceLen": 12.7,
+          "fkGrade": 6.83,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [],
+          "dialogueShare": 0,
+          "decodability": null,
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g6-20",
+        "title": "The Vault at the End of the World",
+        "topic": "the global seed backup vault",
+        "text": "On a remote Arctic island, tunneled deep into the side of a frozen mountain, sits one of the most important rooms on Earth. It holds no gold and no jewels, nothing a thief would want. It holds seeds. More than a million samples rest there in sealed foil packets, row upon row. There is wheat from hundreds of regions, rice in thousands of varieties, beans, barley, and crops most people have never heard of. The vault is a backup copy of the world's food plants. Around the world, hundreds of seed banks store their regions' crop varieties, the way libraries store books. But a seed bank can lose its collection to a fire, a broken freezer, or a simple paperwork mistake. The Arctic vault exists so that every collection has a spare copy somewhere else. Any seed bank may deposit duplicates. The deposits work like a safety box at a bank. The vault guards the packets but never owns them, and only the depositor may take them out. The location was chosen with great care. The mountain's rock and frozen ground keep the chambers naturally cold. Even if every cooling system failed, the seeds would stay frozen for decades. The site also sits high enough that rising seas can never reach it, in one of the quietest corners of the planet. The vault has already proven its worth. One research center could not reach its own collection. It withdrew its duplicates and grew them again. Hidden in the dark, at the end of the world, the future of every harvest waits patiently in rows.",
+        "metrics": {
+          "wordCount": 264,
+          "sentenceCount": 20,
+          "meanSentenceLen": 13.2,
+          "fkGrade": 6.95,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [
+            "Arctic",
+            "Earth"
           ],
           "dialogueShare": 0,
           "decodability": null,

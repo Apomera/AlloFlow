@@ -117,7 +117,7 @@ a{color:var(--accent);}
 <main>
 <p class="eyebrow">Clinical review packet · draft — not in use with students</p>
 <h1>Progress-Monitoring Form Bank</h1>
-<p class="subtitle">Wave 1, batches 1–2 — 60 ORF passages (10 × grades 1–6) and 120 generated math computation forms, for review by Aaron, Dr.&nbsp;Sarah&nbsp;Howorth, and Dr.&nbsp;Garry&nbsp;Wickerd.</p>
+<p class="subtitle">Wave 1 complete — 120 ORF passages (20 × grades 1–6) and 120 generated math computation forms, for review by Aaron, Dr.&nbsp;Sarah&nbsp;Howorth, and Dr.&nbsp;Garry&nbsp;Wickerd.</p>
 <div class="banner">Every readability figure on this page is <b>provisional</b>: Spache and Dale–Chall are list-based formulas, and no score is reported until the reviewers supply or approve the word lists. Grades 1–2 are screened on sentence structure and a provisional phonics inventory; grades 3–6 on Flesch–Kincaid as a stand-in. The machine screen is a filter, not a verdict — your read is the verdict.</div>
 
 <h2>What we need from you</h2>
@@ -148,7 +148,7 @@ ${passageHtml}
 <tr><td>Dr. Garry Wickerd</td><td>Clinical review</td><td></td><td></td><td></td><td></td></tr>
 </table></div>
 
-<footer>Source of truth: <span style="font-family:'IBM Plex Mono',monospace">PM_BANK_FORM_SPEC.md · pm_bank/PM_PASSAGES_DRAFT_WAVE1.json · pm_bank/PM_MATH_FORMS_DRAFT.json</span>. This page is generated from the bank files by <span style="font-family:'IBM Plex Mono',monospace">dev-tools/build_pm_review_packet.cjs</span>; the packet text cannot drift from the bank text. Batches 3–4 (10 more passages per grade) follow the same pipeline once the two questions close.</footer>
+<footer>Source of truth: <span style="font-family:'IBM Plex Mono',monospace">PM_BANK_FORM_SPEC.md · pm_bank/PM_PASSAGES_DRAFT_WAVE1.json · pm_bank/PM_MATH_FORMS_DRAFT.json</span>. This page is generated from the bank files by <span style="font-family:'IBM Plex Mono',monospace">dev-tools/build_pm_review_packet.cjs</span>; the packet text cannot drift from the bank text. Wave 1 drafting is complete at 20 forms per grade; the next steps are the reviewers' answers, verified-word-list readability runs, and the field check.</footer>
 </main>
 `;
 
