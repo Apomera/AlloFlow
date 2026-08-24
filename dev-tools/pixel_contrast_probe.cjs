@@ -92,6 +92,14 @@ const SHELL = `
 window.__mount = function (id, dark, state) {
   var Icons = new Proxy({}, { get: function () { return function () { return React.createElement('span'); }; } });
   var cfg = window.StemLab._registry[id];
+  // The id comes from a source-text regex, and the FIRST registerTool( in a
+  // file can be a code EXAMPLE in a string (forge teaches tool-building and
+  // registers 'myTool' in a lesson snippet). One page = one tool, so when the
+  // guessed id is absent but exactly one tool registered, trust the registry.
+  if (!cfg) {
+    var ks = Object.keys(window.StemLab._registry);
+    if (ks.length === 1) { id = ks[0]; cfg = window.StemLab._registry[id]; }
+  }
   if (!cfg) return 'not-registered:' + id;
   var Host = function () {
     var init = {}; init[id] = state || {};

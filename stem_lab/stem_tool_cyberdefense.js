@@ -271,6 +271,7 @@
       '.cyberd-learning-brief__body { color: #cbd5e1; font-size: 11px; line-height: 1.5; margin-top: 3px; max-width: 760px; }',
       '.cyberd-learning-brief__start { display: flex; align-items: flex-start; gap: 7px; margin-top: 8px; color: #dbeafe; font-size: 10.5px; line-height: 1.45; }',
       '.cyberd-learning-brief__start-label { flex: 0 0 auto; padding: 3px 6px; border-radius: 5px; background: rgba(var(--cyberd-accent-rgb),0.16); color: var(--cyberd-accent); font-size: 9px; font-weight: 900; letter-spacing: 0.04em; text-transform: uppercase; }',
+      '#cyber-defense-region[data-cyber-mode="phish"] .cyberd-learning-brief__start-label { color: #fda4af; }',
       '.cyberd-learning-brief__meta { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; max-width: 330px; }',
       '.cyberd-learning-brief__chip { padding: 5px 8px; border-radius: 7px; border: 1px solid rgba(148,163,184,0.18); background: rgba(2,6,23,0.26); color: #cbd5e1; font-size: 10px; font-weight: 700; white-space: nowrap; }',
       '.cyberd-learning-brief__chip strong { color: var(--cyberd-accent); font-weight: 900; }',

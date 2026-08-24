@@ -103,7 +103,7 @@
     '}',
     // Festival mode toggle button — eye-catching rainbow
     '.tp-fest-toggle {',
-    '  background: linear-gradient(90deg, #ef4444, #f97316, #eab308, #22c55e, #3b82f6, #a855f7);',
+    '  background: linear-gradient(90deg, #b91c1c, #c2410c, #a16207, #15803d, #1d4ed8, #7e22ce);',
     '  background-size: 200% 100%;',
     '  color: white;',
     '  padding: 8px 16px;',

@@ -97,7 +97,17 @@ const STEM_PALETTE = extractStemPalette();
 const react = read('desktop/web-app/node_modules/react/umd/react.production.min.js');
 const reactDom = read('desktop/web-app/node_modules/react-dom/umd/react-dom.production.min.js');
 
-const TOOLS = (process.argv[3] || 'anatomy,volume,wave,universe').split(',');
+// ★THE DEFAULT USED TO BE FOUR HARDCODED TOOLS ('anatomy,volume,wave,universe')
+// while the usage banner above promised "no tool list = every stem_lab/stem_tool_*.js".
+// So `npm run verify:contrast-sweep`, which passes no list, swept 4 of 141 and then
+// printed a confident per-tool table and a "tools where DARK is worse" summary line.
+// Nothing in the output said the other 137 were never opened. Enumerate for real.
+const TOOLS = process.argv[3]
+  ? process.argv[3].split(',')
+  : fs.readdirSync(path.join(ROOT, 'stem_lab'))
+      .filter((n) => /^stem_tool_.+\.js$/.test(n))
+      .map((n) => n.slice('stem_tool_'.length, -'.js'.length))
+      .sort();
 
 const SHELL = `
 window.StemLab = { _registry: {},
@@ -120,8 +130,8 @@ window.__mount = function (theme) {
   var Icons = new Proxy({}, { get: function () { return function () { return React.createElement('span'); }; } });
   var store = {};
   // ★THE THEME MUST REACH THE TOOL, not just the <html> class. This ctx carried
-  // no `theme`/`isDark`/`isContrast`, so a tool that branches on them measured
-  // the WRONG theme. cityLab does `var isDark = ctx.theme !== 'light'`, and with
+  // no theme/isDark/isContrast, so a tool that branches on them measured
+  // the WRONG theme. cityLab does var isDark = ctx.theme !== 'light', and with
   // theme undefined that is TRUE -- it painted dark inks (#e2e8f0) on the light
   // surfaces this sweep renders, reporting 143 violations that do not exist in
   // the product (the real host does pass theme; stem_lab_module.js:7280).
@@ -135,7 +145,15 @@ window.__mount = function (theme) {
     callGemini: null, callTTS: null, callImagen: null, callGeminiVision: null, gradeLevel: '5th',
     stemLabTab: 'explore', stemLabTool: null, toolSnapshots: [], props: {}, srOnly: {},
     a11yClick: function (f) { return { onClick: f }; }, icons: Icons,
-    t: function (k, fb) { return fb || k; }, getXP: function () { return 0; } };
+    t: function (k, fb) { return fb || k; }, getXP: function () { return 0; },
+    // ★ctx surface must MATCH axe_tool_detail.cjs. update/updateMulti/
+    // setLabToolData/labToolData/gradeBand were missing here, so alloBotSage
+    // threw "ctx.update is not a function" at mount and roadready caught the
+    // same throw and rendered an error card — both unmeasurable until
+    // 2026-08-23. A field missing from a ctx literal is undefined for every
+    // tool that reads it (the check_stem_ctx.cjs family).
+    update: function(){}, updateMulti: function(){}, setLabToolData: function(){},
+    labToolData: store, gradeBand: 'g68' };
   var cfg = window.StemLab._registry[toolId];
   // Render INSIDE a component: tools that use hooks throw if render() is
   // called bare, and a good number of STEM tools do.
@@ -171,7 +189,15 @@ window.__unmount = function () { ReactDOM.unmountComponentAtNode(document.getEle
 <body><main id="slot"></main>
 <script>${axe}<\/script><script>${react}<\/script><script>${reactDom}<\/script>
 <script>${SHELL}<\/script><script>window.React = React;<\/script>
-<script>${read(f)}<\/script></body></html>`, 'utf8');
+<script>${read(f).replace(/<\/script/gi, '<\\/script')}<\/script></body></html>`, 'utf8');
+    // ★The .replace above is load-bearing: the tool source is embedded in an
+    // INLINE script tag, so a literal </script> anywhere in the tool (four
+    // tools carry one in a string) terminates the tag mid-file — the rest
+    // becomes body text, nothing registers, and the sweep reports
+    // "not-registered" for a perfectly healthy tool. cyberdefense,
+    // printingpress, typingpractice and forge were unmeasurable for exactly
+    // this until 2026-08-23. Escaping to <\/script is a no-op inside JS
+    // strings, which is the only place the sequence occurs.
 
     const pg = await b.newPage({ viewport: { width: 1100, height: 900 } });
     await pg.goto('file://' + page.replace(/\\/g, '/'));

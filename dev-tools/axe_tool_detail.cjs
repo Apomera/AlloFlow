@@ -27,9 +27,14 @@ const args = process.argv.slice(2);
 const toolFile = args.find((a) => !a.startsWith('--'));
 const DARK = args.includes('--dark');
 const stateArg = (args.find((a) => a.startsWith('--state=')) || '').slice(8);
+// --css=<rules>: injected AFTER mount, before axe runs. For disabling decorative
+// blockers (a dot-grid ::before, an alpha wash) so axe can grade the nodes behind
+// them -- beehive's overlay hid ~100 real dark failures until it was probed this
+// way. The CSS affects only the measurement page, never the product.
+const cssArg = (args.find((a) => a.startsWith('--css=')) || '').slice(6);
 
 if (!toolFile || !fs.existsSync(toolFile)) {
-  console.error('usage: node dev-tools/axe_tool_detail.cjs <toolFile> [--dark] [--state=<json>]');
+  console.error('usage: node dev-tools/axe_tool_detail.cjs <toolFile> [--dark] [--state=<json>] [--css=<rules>]');
   process.exit(2);
 }
 
@@ -68,6 +73,14 @@ const SHELL = `
 window.__mount = function (id, dark, state) {
   var Icons = new Proxy({}, { get: function () { return function () { return React.createElement('span'); }; } });
   var cfg = window.StemLab._registry[id];
+  // The id comes from a source-text regex, and the FIRST registerTool( in a
+  // file can be a code EXAMPLE in a string (forge teaches tool-building and
+  // registers 'myTool' in a lesson snippet). One page = one tool, so when the
+  // guessed id is absent but exactly one tool registered, trust the registry.
+  if (!cfg) {
+    var ks = Object.keys(window.StemLab._registry);
+    if (ks.length === 1) { id = ks[0]; cfg = window.StemLab._registry[id]; }
+  }
   if (!cfg) return 'not-registered:' + id;
   var Host = function () {
     var init = {}; init[id] = state || {};
@@ -92,12 +105,23 @@ window.__mount = function (id, dark, state) {
       t: function (k, fb) { return fb != null ? fb : k; }, getXP: function () { return 0; } };
     var rendered;
     try { rendered = cfg.render(ctx); } catch (e) { return React.createElement('div', null, 'threw: ' + e.message); }
-    // Wrap in a shell that paints the theme's real ground, so dark-mode text is
-    // measured against a dark surface rather than the default white page.
+    // ★THIS USED TO PAINT A DARK GROUND IN DARK MODE, AND THE PRODUCT DOES NOT.
+    // stem_lab_module.js (see the long comment at ~1633) deliberately wraps every
+    // tool in a WHITE CARD when the shell is dark -- tools are authored for a light
+    // substrate -- while --allo-stem-* stay on <html>.theme-dark and keep resolving
+    // to their DARK values. So the real dark-theme hazard is light ink on a white
+    // card, and a harness that paints #0f172a behind the tool hides exactly that.
+    // It reported 0 dark violations for arccity where the sweep found 52, and 0 for
+    // heatlab where the sweep found 141. Mirror the host's two layers instead.
     return React.createElement('div', {
       className: dark ? 'dark' : '',
-      style: { background: dark ? '#0f172a' : '#ffffff', color: dark ? '#e2e8f0' : '#0f172a', padding: 8 }
-    }, rendered);
+      style: { background: dark ? '#0f172a' : '#ffffff', color: dark ? '#e2e8f0' : '#0f172a', padding: dark ? 10 : 8 }
+    }, dark
+      ? React.createElement('div', {
+          'data-stem-tool-surface': 'probe',
+          style: { background: '#ffffff', color: '#0f172a', borderRadius: 10, padding: 10 }
+        }, rendered)
+      : rendered);
   };
   ReactDOM.render(React.createElement(Host), document.getElementById('slot'));
   return id;
@@ -131,6 +155,7 @@ window.__mount = function (id, dark, state) {
     console.error(status); await browser.close(); process.exit(2);
   }
   await page.waitForTimeout(3500);
+  if (cssArg) await page.addStyleTag({ content: cssArg });
 
   const out = await page.evaluate(async () => {
     const r = await window.axe.run('#slot', { runOnly: { type: 'rule', values: ['color-contrast'] } });

@@ -1594,7 +1594,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
             }, tier.icon + ' ' + tier.name),
             equipped && h('span', { className: 'ml-auto text-[10px] font-bold text-violet-600 uppercase tracking-wide' }, t('stem.allobotsage.equipped', 'Equipped'))
           ),
-          h('div', { className: 'text-[11px] text-slate-300 leading-snug' },
+          h('div', { className: 'text-[11px] text-slate-600 leading-snug' },
             unlocked
               ? (s.sourceLabel + ' \u00b7 ' + s.baseDamage + ' dmg \u00b7 crit \u00d7' + s.critMultiplier.toFixed(1))
               : ('Locked \u2014 ' + s.unlockHint)
@@ -1936,14 +1936,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
           h('div', { className: 'flex items-center gap-3 mb-4' },
             backBtn(function() { sfxClick(); setStemLabTool(null); }, 'Back to Lab'),
             h('div', { className: 'flex-1' }),
-            h('div', { className: 'text-[10px] text-slate-300 font-semibold uppercase tracking-wider' }, t('stem.allobotsage.spellforge', 'Spellforge'))
+            h('div', { className: 'text-[10px] text-slate-600 font-semibold uppercase tracking-wider' }, t('stem.allobotsage.spellforge', 'Spellforge'))
           ),
 
           // Hero row: AlloBot + headline
           // ── Phase B: wand-tier + robe-tier scale with mastery ──
           // wandTier:  0 (no spells) → 1 (1-3) → 2 (4-9) → 3 (10+)
           // robeTier:  0 (default) → 1 (5+ spells) → 2 (15+ spells)
-          h('div', { className: 'rounded-2xl p-4 md:p-6 mb-4', style: { background: 'linear-gradient(135deg, var(--allo-stem-canvas, #0f172a) 0%, #4c1d95 100%)', color: 'white' } },
+          h('div', { className: 'rounded-2xl p-4 md:p-6 mb-4', style: { background: 'linear-gradient(135deg, #1e1b4b 0%, #4c1d95 100%)', color: 'white' } },
             h('div', { className: 'flex items-center gap-4' },
               allobotAvatar(visitMood, {
                 wandTier: unlockedSpells.length === 0 ? 0
@@ -2108,7 +2108,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
             var galleryOpen = d.galleryOpen !== false; // default true
             return h('section', { 'aria-label': t('stem.allobotsage.achievement_gallery', 'Achievement gallery'), className: 'mb-5' },
               h('div', { className: 'flex items-center gap-2 mb-2' },
-                h('h2', { className: 'text-[11px] font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1' },
+                h('h2', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wider flex items-center gap-1' },
                   h('span', null, t('stem.allobotsage.achievements', '🏅 Achievements')),
                   h('span', { className: 'text-violet-700' }, '(' + earnedCount + '/' + hookEval.length + ')')
                 ),
@@ -2141,7 +2141,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
 
           // Trophy shelf
           unlockedSpells.length > 0 && h('section', { 'aria-label': t('stem.allobotsage.trophy_shelf', 'Trophy shelf'), className: 'mb-5' },
-            h('h2', { className: 'text-[11px] font-bold text-slate-300 uppercase tracking-wider mb-2' }, t('stem.allobotsage.trophy_shelf_2', '\uD83C\uDFC6 Trophy Shelf')),
+            h('h2', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-2' }, t('stem.allobotsage.trophy_shelf_2', '\uD83C\uDFC6 Trophy Shelf')),
             h('div', { className: 'rounded-xl p-3 border-2 border-amber-200/50 bg-gradient-to-b from-amber-50/50 to-white' },
               h('div', { className: 'grid grid-cols-3 gap-2' },
                 canonicalSources.map(function(src) {
@@ -2167,7 +2167,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
           h('section', { 'aria-label': t('stem.allobotsage.grimoire', 'Grimoire'), className: 'mb-4' },
             h('h2', { className: 'text-sm font-bold text-slate-700 mb-2 flex items-center gap-2' },
               h('span', null, t('stem.allobotsage.grimoire_2', '\uD83D\uDCDC Grimoire')),
-              unlockedSpells.length > 0 && h('span', { className: 'text-[10px] font-normal text-slate-300' },
+              unlockedSpells.length > 0 && h('span', { className: 'text-[10px] font-normal text-slate-600' },
                 '(' + unlockedSpells.length + ' unlocked)'
               )
             ),
@@ -2175,7 +2175,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
               unlockedSpells.map(function(s) { return spellCard(s, { unlocked: true, usageCount: (d.castCounts || {})[s.id] || 0, onClick: function() { sfxClick(); updKey('previewingSpellId', s.id); } }); })
             ),
             lockedSpells.length > 0 && h('div', null,
-              h('h3', { className: 'text-[11px] font-semibold text-slate-300 uppercase tracking-wider mb-2' }, 'Yet to discover (' + lockedSpells.length + ')'),
+              h('h3', { className: 'text-[11px] font-semibold text-slate-600 uppercase tracking-wider mb-2' }, 'Yet to discover (' + lockedSpells.length + ')'),
               h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-2' },
                 lockedSpells.map(function(s) {
                   return h('div', { key: 'locked-wrap-' + s.id, className: 'flex flex-col gap-1' },
@@ -2309,10 +2309,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
           h('div', { className: 'flex items-center gap-3 mb-4' },
             backBtn(function() { sfxClick(); updKey('phase', 'hub'); }, 'Back to Spellforge'),
             h('div', { className: 'flex-1' }),
-            h('div', { className: 'text-[10px] text-slate-300 font-semibold uppercase tracking-wider' }, t('stem.allobotsage.loadout', 'Loadout'))
+            h('div', { className: 'text-[10px] text-slate-600 font-semibold uppercase tracking-wider' }, t('stem.allobotsage.loadout', 'Loadout'))
           ),
           h('h2', { className: 'text-lg font-bold mb-1' }, t('stem.allobotsage.choose_your_spells', 'Choose your spells')),
-          h('p', { className: 'text-sm text-slate-300 mb-4' },
+          h('p', { className: 'text-sm text-slate-600 mb-4' },
             t('stem.allobotsage.equip_up_to_3_spells_you_can_only_cast', 'Equip up to 3 spells. You can only cast equipped spells on this Expedition.')
           ),
           h('div', { className: 'mb-4 p-3 rounded-lg bg-violet-50 border border-violet-200 text-xs text-violet-900' },
@@ -2588,7 +2588,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
 
           // Sector picker \u2014 richer cards showing the sector's enemy/boss pool
           h('section', { 'aria-label': t('stem.allobotsage.sector', 'Sector'), className: 'mb-5' },
-            h('h3', { className: 'text-[11px] font-bold text-slate-300 uppercase tracking-wider mb-2' }, t('stem.allobotsage.choose_a_sector', '\uD83C\uDF0C Choose a sector')),
+            h('h3', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-2' }, t('stem.allobotsage.choose_a_sector', '\uD83C\uDF0C Choose a sector')),
             h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-3' },
               SECTORS.map(function(sec) {
                 var unlocked = expeditionsDone >= sec.unlockAt;
@@ -2669,7 +2669,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
           ),
 
           // Spells
-          h('h3', { className: 'text-[11px] font-bold text-slate-300 uppercase tracking-wider mb-2' }, '\uD83D\uDCDC Equip spells (' + equippedLoadout.length + '/3)'),
+          h('h3', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-2' }, '\uD83D\uDCDC Equip spells (' + equippedLoadout.length + '/3)'),
           h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-2 mb-5' },
             available.map(function(s) {
               return spellCard(s, {
@@ -3160,7 +3160,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                   announceSR('Expedition abandoned. Returned to the hub.');
                 } else announceSR('Expedition continued.');
               },
-              className: 'transition-colors text-xs font-semibold text-slate-300 hover:text-slate-800 underline'
+              className: 'transition-colors text-xs font-semibold text-slate-600 hover:text-slate-800 underline'
             }, t('stem.allobotsage.abandon', 'Abandon')),
             h('div', { className: 'flex-1 text-center' },
               h('div', { className: 'text-[10px] font-bold uppercase tracking-widest text-violet-600' },
@@ -3179,10 +3179,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                     'aria-hidden': 'true'
                   });
                 }),
-                h('span', { className: 'ml-2 text-[10px] text-slate-300' }, 'Room ' + (roomIndex + 1) + '/' + totalRooms)
+                h('span', { className: 'ml-2 text-[10px] text-slate-600' }, 'Room ' + (roomIndex + 1) + '/' + totalRooms)
               )
             ),
-            h('div', { className: 'text-xs text-slate-300' }, 'Turn: ', h('span', { className: 'font-bold ' + (exp.turn === 'player' ? 'text-violet-600' : 'text-red-600') }, exp.turn === 'player' ? 'You' : enemy.name))
+            h('div', { className: 'text-xs text-slate-600' }, 'Turn: ', h('span', { className: 'font-bold ' + (exp.turn === 'player' ? 'text-violet-600' : 'text-red-600') }, exp.turn === 'player' ? 'You' : enemy.name))
           ),
 
           // Battlefield (sector-tinted gradient + ambient particles per sector).
@@ -3405,7 +3405,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                       s.name,
                       lvl > 0 && h('span', { className: 'text-[9px] px-1 py-0.5 rounded bg-amber-100 text-amber-700 font-bold' }, 'Lv' + lvl)
                     ),
-                    h('div', { className: 'text-[10px] text-slate-300' }, leveledDmg + ' dmg \u00b7 ' + s.sourceLabel)
+                    h('div', { className: 'text-[10px] text-slate-600' }, leveledDmg + ' dmg \u00b7 ' + s.sourceLabel)
                   )
                 )
               );
@@ -3445,7 +3445,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                   h('div', { className: 'text-[10px] font-bold uppercase tracking-widest', style: { color: s.color } }, t('stem.allobotsage.casting', 'Casting')),
                   h('div', { className: 'text-base font-bold', style: { color: s.color } }, s.name)
                 ),
-                h('div', { className: 'ml-auto text-[10px] text-slate-300' }, t('stem.allobotsage.faster_correct_critical', 'Faster + correct = critical!'))
+                h('div', { className: 'ml-auto text-[10px] text-slate-600' }, t('stem.allobotsage.faster_correct_critical', 'Faster + correct = critical!'))
               ),
               // Surface whether THIS question was AI-generated (tracked as
               // pendingCast.aiSourced) — a hallucinated answer key would reward
@@ -3523,7 +3523,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
 
           // Log
           h('div', { className: 'rounded-xl bg-slate-50 border border-slate-400 p-3 max-h-40 overflow-y-auto' },
-            h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-slate-300 mb-1' }, 'Log'),
+            h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-slate-600 mb-1' }, 'Log'),
             (exp.log || []).slice().reverse().slice(0, 8).map(function(entry, i) {
               var color = entry.kind === 'player' ? 'text-violet-700'
                         : entry.kind === 'enemy'  ? 'text-red-700'
@@ -3804,15 +3804,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
           ),
           h('div', { className: 'grid grid-cols-3 gap-2 mb-4 text-sm' },
             h('div', { className: 'p-3 rounded-xl bg-slate-50 border border-slate-400' },
-              h('div', { className: 'text-[10px] font-bold text-slate-300 uppercase' }, t('stem.allobotsage.total_casts', 'Total Casts')),
+              h('div', { className: 'text-[10px] font-bold text-slate-600 uppercase' }, t('stem.allobotsage.total_casts', 'Total Casts')),
               h('div', { className: 'text-xl font-bold text-violet-600' }, totalCasts)
             ),
             h('div', { className: 'p-3 rounded-xl bg-slate-50 border border-slate-400' },
-              h('div', { className: 'text-[10px] font-bold text-slate-300 uppercase' }, t('stem.allobotsage.critical_casts', 'Critical Casts')),
+              h('div', { className: 'text-[10px] font-bold text-slate-600 uppercase' }, t('stem.allobotsage.critical_casts', 'Critical Casts')),
               h('div', { className: 'text-xl font-bold text-amber-600' }, critCasts)
             ),
             h('div', { className: 'p-3 rounded-xl bg-slate-50 border border-slate-400' },
-              h('div', { className: 'text-[10px] font-bold text-slate-300 uppercase' }, t('stem.allobotsage.rooms_cleared', 'Rooms Cleared')),
+              h('div', { className: 'text-[10px] font-bold text-slate-600 uppercase' }, t('stem.allobotsage.rooms_cleared', 'Rooms Cleared')),
               h('div', { className: 'text-xl font-bold text-emerald-600' }, roomsCleared + '/' + totalRoomsD)
             )
           ),
@@ -3911,7 +3911,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
           h('div', { className: 'flex items-center gap-3 mb-4' },
             backBtn(function() { sfxClick(); updKey('phase', 'hub'); }, 'Back to Spellforge'),
             h('div', { className: 'flex-1' }),
-            h('div', { className: 'text-[10px] text-slate-300 font-semibold uppercase tracking-wider' }, t('stem.allobotsage.spell_shop_2', 'Spell Shop'))
+            h('div', { className: 'text-[10px] text-slate-600 font-semibold uppercase tracking-wider' }, t('stem.allobotsage.spell_shop_2', 'Spell Shop'))
           ),
           h('div', { className: 'rounded-2xl p-4 mb-4', style: { background: 'linear-gradient(135deg, #78350f 0%, #f59e0b 100%)', color: 'white' } },
             h('div', { className: 'flex items-center gap-3' },
@@ -3950,7 +3950,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                         lvl > 0 && h('span', { className: 'text-[9px] px-1 py-0.5 rounded bg-amber-100 text-amber-700 font-bold' }, 'Lv' + lvl),
                         maxed && h('span', { className: 'text-[9px] px-1 py-0.5 rounded bg-emerald-100 text-emerald-700 font-bold' }, 'MAX')
                       ),
-                      h('div', { className: 'text-[11px] text-slate-300' }, s.sourceLabel),
+                      h('div', { className: 'text-[11px] text-slate-600' }, s.sourceLabel),
                       // Level pips
                       h('div', { className: 'flex gap-1 mt-1' },
                         Array.from({ length: SPELL_LEVEL_CAP }).map(function(_p, i) {
@@ -3964,7 +3964,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                       )
                     ),
                     h('div', { className: 'text-right' },
-                      h('div', { className: 'text-[10px] text-slate-300' }, t('stem.allobotsage.damage', 'Damage')),
+                      h('div', { className: 'text-[10px] text-slate-600' }, t('stem.allobotsage.damage', 'Damage')),
                       h('div', { className: 'text-sm font-bold' },
                         maxed
                           ? h('span', { style: { color: s.color } }, currentDmg)
@@ -4066,7 +4066,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
             h('div', { className: 'flex items-center gap-3 mb-4' },
               backBtn(exitPractice, 'Back to Spellforge'),
               h('div', { className: 'flex-1' }),
-              h('div', { className: 'text-[10px] text-slate-300 font-semibold uppercase tracking-wider' }, t('stem.allobotsage.study_hall_2', 'Study Hall'))
+              h('div', { className: 'text-[10px] text-slate-600 font-semibold uppercase tracking-wider' }, t('stem.allobotsage.study_hall_2', 'Study Hall'))
             ),
             h('div', { className: 'rounded-2xl p-4 md:p-5 mb-4', style: { background: 'linear-gradient(135deg, #14532d 0%, #16a34a 100%)', color: 'white' } },
               h('div', { className: 'flex items-center gap-3' },
@@ -4082,7 +4082,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                   t('stem.allobotsage.no_spells_unlocked_yet_play_other_stem', 'No spells unlocked yet. Play other STEAM Lab tools to unlock spells, then come back here to practice.')
                 )
               : h('div', null,
-                  h('h2', { className: 'text-[11px] font-bold text-slate-300 uppercase tracking-wider mb-2' }, t('stem.allobotsage.choose_a_spell_to_practice', '🧪 Choose a spell to practice')),
+                  h('h2', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-2' }, t('stem.allobotsage.choose_a_spell_to_practice', '🧪 Choose a spell to practice')),
                   h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-2' },
                     unlockedForPractice.map(function(s) {
                       // Compute SRS health for this spell — % of its questions answered correctly in last attempt.
@@ -4267,7 +4267,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
             h('div', { className: 'flex items-center gap-3 mb-4' },
               backBtn(exitReview, 'Back to Spellforge'),
               h('div', { className: 'flex-1' }),
-              h('div', { className: 'text-[10px] text-slate-300 font-semibold uppercase tracking-wider' }, t('stem.allobotsage.review', 'Review'))
+              h('div', { className: 'text-[10px] text-slate-600 font-semibold uppercase tracking-wider' }, t('stem.allobotsage.review', 'Review'))
             ),
             h('div', { className: 'rounded-2xl p-8 text-center', style: { background: 'linear-gradient(135deg, #14532d 0%, #16a34a 100%)', color: 'white' } },
               h('div', { className: 'text-6xl mb-3' }, '✨'),
@@ -4416,7 +4416,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
           h('div', { className: 'flex items-center gap-3 mb-4' },
             backBtn(dashBack, 'Back to Spellforge'),
             h('div', { className: 'flex-1' }),
-            h('div', { className: 'text-[10px] text-slate-300 font-semibold uppercase tracking-wider' }, t('stem.allobotsage.your_progress_2', 'Your Progress'))
+            h('div', { className: 'text-[10px] text-slate-600 font-semibold uppercase tracking-wider' }, t('stem.allobotsage.your_progress_2', 'Your Progress'))
           ),
           // Headline + AlloBot
           h('div', { className: 'rounded-2xl p-4 md:p-5 mb-4', style: { background: 'linear-gradient(135deg, #0c4a6e 0%, #0ea5e9 100%)', color: 'white' } },

@@ -852,7 +852,7 @@
     }
 
     if (!ctx.isTeacherMode) {
-      return h('div', { style: { padding: 24, color: fg, maxWidth: 640 } },
+      return h('div', { style: { padding: 24, color: fg, maxWidth: 640, background: hc ? HC_BG : (dark ? '#0f172a' : undefined), borderRadius: (hc || dark) ? 12 : undefined } },
         h('h2', { style: { marginTop: 0 } }, '🛠️ ' + t('stem.forge.label', 'Tool Forge')),
         h('p', { style: { color: sub, lineHeight: 1.6 } },
           t('stem.forge.teacher_only', 'The Tool Forge is a teacher / developer workspace for authoring new STEAM Lab and SEL Hub tools. Switch on Teacher Mode to open it.'))
@@ -871,7 +871,7 @@
     var warns = report ? (report.tools || []).reduce(function (a, x) { return a.concat((x.warns || []).map(function (w) { return (x.id || '?') + ': ' + w; })); }, []) : [];
     var structOk = report && report.ok;
 
-    return h('div', { style: { color: fg, padding: 12, display: 'flex', flexDirection: 'column', gap: 12, minHeight: 480 } },
+    return h('div', { style: { color: fg, padding: 12, display: 'flex', flexDirection: 'column', gap: 12, minHeight: 480, background: hc ? HC_BG : (dark ? '#0f172a' : undefined), borderRadius: (hc || dark) ? 12 : undefined } },
       // header
       h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 12, flexWrap: 'wrap' } },
         h('h2', { style: { margin: 0, fontSize: 20 } }, '🛠️ ' + t('stem.forge.label', 'Tool Forge')),
