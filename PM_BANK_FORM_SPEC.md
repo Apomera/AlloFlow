@@ -10,6 +10,15 @@ than relabel the tool as benchmark-plus-manual-entry.
 Passage drafting does not start until this spec is signed. Drafting against a
 signed spec is fast; redrafting against taste is not.
 
+**Drafting-status update (2026-08-23, Aaron's direction):** Aaron authorized
+drafting ahead of full sign-off. Wave 1 / batch 1 (5 passages × grades 1–6)
+is drafted in `pm_bank/PM_PASSAGES_DRAFT_WAVE1.json`, machine-screened by
+`dev-tools/pm_passage_check.cjs` (all 30 pass), and stamped
+`pending-verified-wordlist` until reviewers confirm §2 and supply/approve the
+lists. The decodability screen runs against
+`pm_bank/DECODABILITY_INVENTORY_PROVISIONAL.md` (open question 2 — approve or
+swap). Nothing is wired into the app.
+
 ---
 
 ## 1. Scope
@@ -19,7 +28,7 @@ signed spec is fast; redrafting against taste is not.
 | ORF (passages) | 1–6, per grade (no bands) | 20 per grade | Connected-text passage |
 | NWF | K–1 | 20 per grade | Nonsense-word item bank |
 | LNF | K | 20 forms | Letter-sequence forms |
-| Math DCPM | 1–6 | 20 per grade | Computation form (existing generator may cover; confirm) |
+| Math DCPM | 1–6 | 20 per grade | Computation form. **Confirmed 2026-08-23: no generator exists** — the current bank is 3 fixed forms (A/B/C), grades K–5 only. `dev-tools/generate_pm_math_forms.cjs` now generates 20 equivalent forms per grade 1–6 (`pm_bank/PM_MATH_FORMS_DRAFT.json`), deriving each grade's operation mix and operand ranges from the existing bank's own forms; the grade-6 mix is spec-proposed and needs reviewer confirmation. |
 
 Going per-grade for ORF also retires the current "3-5" band, which scores one
 grade-3 passage against three different norm rows (readiness finding 3).

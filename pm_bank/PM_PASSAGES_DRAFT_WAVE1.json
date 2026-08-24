@@ -1,0 +1,659 @@
+{
+  "status": "DRAFT — wave 1, batch 1 of 4. NOT wired into the app. Clinical review pending (PM_BANK_FORM_SPEC.md); drafting started at Aaron's direction 2026-08-23 ahead of full sign-off.",
+  "spec": "PM_BANK_FORM_SPEC.md",
+  "decodabilityInventory": "pm_bank/DECODABILITY_INVENTORY_PROVISIONAL.md (provisional — reviewers may swap)",
+  "readabilityNote": "Spache/Dale-Chall are computed only when verified word lists are supplied to dev-tools/pm_passage_check.cjs; until then structural bands (grades 1-2) and FK (grades 3-6) are the provisional proxies and passages are stamped pending-verified-wordlist.",
+  "passages": {
+    "1": [
+      {
+        "id": "pm-g1-01",
+        "title": "The Red Hen",
+        "topic": "hen finds a rock in the yard",
+        "text": "Jen has a red hen. The hen digs in the yard. She digs in the mud all day. One day the hen digs up a rock. The rock is flat and wet. Jen picks it up. The sun hits the rock. It shines! Jen runs to show her mom. Mom looks at it and smiles. What a grand rock! Jen sets the rock on a shelf. The hen steps in the yard. Jen gives the hen a pat. Good job, red hen! Now Jen digs with the hen. They dig and dig. What will they find next?",
+        "metrics": {
+          "wordCount": 97,
+          "sentenceCount": 18,
+          "meanSentenceLen": 5.4,
+          "fkGrade": -1.57,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [
+            "Jen"
+          ],
+          "dialogueShare": 0,
+          "decodability": {
+            "outside": [],
+            "pct": 0
+          },
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g1-02",
+        "title": "Rex at the Park",
+        "topic": "dog digs up lost balls at the park",
+        "text": "Ben and his dog Rex go to the park. Ben has a ball. He tosses it far. Rex runs fast to get it. Then Rex stops at a big bush. He digs and digs. Ben runs to look. Rex has found a ball in the mud! He digs up two more. Three lost balls! The balls are old but still good. Ben picks them up. Other kids lost these balls, he thinks. Ben sets the balls on the bench. Now the kids can find them. Rex wags and wags. Ben grins at him. Good dog, Rex!",
+        "metrics": {
+          "wordCount": 96,
+          "sentenceCount": 18,
+          "meanSentenceLen": 5.3,
+          "fkGrade": -1.34,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [
+            "Rex"
+          ],
+          "dialogueShare": 0,
+          "decodability": {
+            "outside": [],
+            "pct": 0
+          },
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g1-03",
+        "title": "The Box Fort",
+        "topic": "cat and kids build a box fort",
+        "text": "A big box sat on the rug. Sam got in the box. His cat, Max, got in too. Sam cut a flap in the side. Now the box has a door! Max naps on Sam's lap. Then Sam gets a red pen. He adds dots and stars to the box. His sis, Meg, brings one more box. They set the two together. Now it is a fort! Sam is in one box. Meg is in the next box. Max sits on top of it all. The fort is the best spot to be.",
+        "metrics": {
+          "wordCount": 93,
+          "sentenceCount": 15,
+          "meanSentenceLen": 6.2,
+          "fkGrade": -0.86,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [
+            "Max",
+            "Sam",
+            "Meg"
+          ],
+          "dialogueShare": 0,
+          "decodability": {
+            "outside": [
+              "side",
+              "door",
+              "together"
+            ],
+            "pct": 3.2
+          },
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g1-04",
+        "title": "Mud Buns",
+        "topic": "making mud buns in the sun",
+        "text": "Deb and Tom mix mud in a big tin pan. They add a bit of grass on top. Then they roll the mud into buns. Six fat mud buns! They set the pan in the hot sun. The sun bakes the buns all day. At last the buns get hard. Deb taps one with a stick. Tap, tap! It is as hard as a rock. Tom adds one small twig on top of each bun. Now they look grand. They do not munch them! It is just for fun. Mud buns are the best kind of mess.",
+        "metrics": {
+          "wordCount": 97,
+          "sentenceCount": 15,
+          "meanSentenceLen": 6.5,
+          "fkGrade": -1.15,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [
+            "Tom"
+          ],
+          "dialogueShare": 0,
+          "decodability": {
+            "outside": [],
+            "pct": 0
+          },
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g1-05",
+        "title": "On the Bus",
+        "topic": "the ride to school on the bus",
+        "text": "The big bus stops at the end of my block. I get on and sit with my pal, Kim. The bus hums and off we go. I look out at the shops. I see a man with ten dogs! Kim sees a red truck. Next we pass a park with swings. The bus stops six more times. More kids get on. They chat and grin. At last I can see the school. The bus pulls in and stops. We hop off. In we go! The bus trip is fun. I like the bus.",
+        "metrics": {
+          "wordCount": 93,
+          "sentenceCount": 16,
+          "meanSentenceLen": 5.8,
+          "fkGrade": -1.14,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [
+            "Kim"
+          ],
+          "dialogueShare": 0,
+          "decodability": {
+            "outside": [],
+            "pct": 0
+          },
+          "issues": []
+        }
+      }
+    ],
+    "2": [
+      {
+        "id": "pm-g2-01",
+        "title": "A Snail for the Tank",
+        "topic": "classroom fish tank gets a snail",
+        "text": "Our class has a fish tank by the window. Five little fish swim in it all day. Last week our teacher brought in a small snail. The snail rides on the glass wall of the tank. It slides along on one flat foot. We watch it clean the glass as it goes. The fish did not seem to mind the new pet. Each morning we check on the snail first. It naps under a green leaf when the room is loud. We made a chart to track how far it slides each day. So far its best trip is the whole side of the tank! A snail is slow, but it always gets there. Our tank is a better home with the snail in it.",
+        "metrics": {
+          "wordCount": 125,
+          "sentenceCount": 13,
+          "meanSentenceLen": 9.6,
+          "fkGrade": 1.28,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [],
+          "dialogueShare": 0,
+          "decodability": {
+            "outside": [
+              "brought",
+              "goes",
+              "loud"
+            ],
+            "pct": 2.4
+          },
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g2-02",
+        "title": "Kite Day",
+        "topic": "flying a kite on a windy hill",
+        "text": "Jack and his gram made a kite from a paper bag. They gave it a long tail made of rags. Then they went up the green hill to fly it. The wind on the hill was just right. Gram held the kite up high. Jack ran with the string and the kite rose! It went up and up over the trees. The tail waved like a happy flag. When the wind got soft, the kite began to dip. Jack tugged the string and it rose again. He found out that a kite needs wind pushing on it to stay up. They flew the kite until the sun got low. Then they rolled up the string and went home. Best day yet, said Jack.",
+        "metrics": {
+          "wordCount": 123,
+          "sentenceCount": 14,
+          "meanSentenceLen": 8.8,
+          "fkGrade": 1.56,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [
+            "Jack"
+          ],
+          "dialogueShare": 0,
+          "decodability": {
+            "outside": [],
+            "pct": 0
+          },
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g2-03",
+        "title": "The Lost Mitten",
+        "topic": "a lost mitten travels along the street",
+        "text": "A small blue mitten sat on the snowy path. A baker saw it first and picked it up. He set it on a post so it could be seen. A girl with a sled saw it next. She put it up on the gate by the shop. Then a mail man spotted it there. He clipped it to the rail with a pin and a note. The note said, is this your mitten? At last a boy named Finn came down the path. One of his hands was cold and bare! He saw the blue mitten on the rail and cheered. He slid it on and waved his warm hand. Three helpers had passed his mitten along. A whole street helped one cold hand find its mitten.",
+        "metrics": {
+          "wordCount": 127,
+          "sentenceCount": 14,
+          "meanSentenceLen": 9.1,
+          "fkGrade": 1.23,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [
+            "Finn"
+          ],
+          "dialogueShare": 0,
+          "decodability": {
+            "outside": [],
+            "pct": 0
+          },
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g2-04",
+        "title": "Beans in a Cup",
+        "topic": "planting bean seeds and tracking sprouts",
+        "text": "On Monday we planted bean seeds in clear cups. We set wet paper in each cup so we could see the seeds grow. My seed sat still for three long days. I checked it each morning and wrote a note. On day four a tiny white root poked out! It grew down, not up. That is how roots always grow. On day six a green stem curled up out of the seed. It found the light at the window. By day ten my bean had two flat leaves. The root had little hairs all over it. My chart shows the plant grew one inch in one week. Next we will move the beans to real dirt outside. I cannot wait to see how tall mine gets.",
+        "metrics": {
+          "wordCount": 126,
+          "sentenceCount": 14,
+          "meanSentenceLen": 9,
+          "fkGrade": 1.22,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [
+            "Monday"
+          ],
+          "dialogueShare": 0,
+          "decodability": {
+            "outside": [
+              "outside"
+            ],
+            "pct": 0.8
+          },
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g2-05",
+        "title": "My Library Card",
+        "topic": "getting a first library card",
+        "text": "Today I got my very own library card. I printed my name on a line and the helper typed it in. She handed me a card with a bird on it. This card lets you take home ten books, she said. Ten books! I went straight to the shelves. I picked a book about big cats and one about the moon. I picked a funny one about a duck who bakes. At the desk I set my card on the scanner. It beeped one time for each book. The helper slid the books to me in a neat stack. Mine, all mine, for three whole weeks! I hugged the stack all the way home. I will read one each night. Then I will go back for more.",
+        "metrics": {
+          "wordCount": 127,
+          "sentenceCount": 15,
+          "meanSentenceLen": 8.5,
+          "fkGrade": 1.46,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [],
+          "dialogueShare": 0,
+          "decodability": {
+            "outside": [
+              "straight"
+            ],
+            "pct": 0.8
+          },
+          "issues": []
+        }
+      }
+    ],
+    "3": [
+      {
+        "id": "pm-g3-01",
+        "title": "Follow That Ant",
+        "topic": "how ants follow scent trails",
+        "text": "Have you ever seen a line of ants marching across a sidewalk? The ants are not just walking in a row for fun. They are following a smell. When an ant finds food, it walks home and leaves a trail of scent behind it. Other ants smell the trail and follow it straight to the food. Each ant that makes the trip adds more scent to the path. That makes the trail stronger, so even more ants can find it. When the food is gone, the ants stop adding scent. The old trail slowly fades away, and the ants stop coming. The path is not drawn on the ground. It is made of smell, and smells fade. You can test this with a leaf. Set it across the trail and the ants will scatter. They lost the scent! Soon they find the path again on the other side. A tiny ant cannot see very far, but its nose always knows the way.",
+        "metrics": {
+          "wordCount": 162,
+          "sentenceCount": 16,
+          "meanSentenceLen": 10.1,
+          "fkGrade": 2.71,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [],
+          "dialogueShare": 0,
+          "decodability": null,
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g3-02",
+        "title": "The Marble Run",
+        "topic": "building a marble run from tubes",
+        "text": "Nora saved paper tubes for a month to build a marble run. She taped the first tube to the wall so it tilted down. The marble rolled through it and shot out the end. Next she added a second tube going the other way. Now the marble zigzagged down the wall. But there was a problem. The marble flew out between the tubes and rolled under the couch. Nora studied the gap. The marble was moving too fast to turn. She made the first tube less steep and taped a cup at the corner. This time the marble dropped into the cup, rolled out a hole she had cut, and slid into the next tube. It worked! By bedtime the run had seven tubes, two cups, and one small bell at the bottom. Every marble that made the full trip rang the bell. Nora had built her machine one fix at a time.",
+        "metrics": {
+          "wordCount": 153,
+          "sentenceCount": 15,
+          "meanSentenceLen": 10.2,
+          "fkGrade": 3.27,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [],
+          "dialogueShare": 0,
+          "decodability": null,
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g3-03",
+        "title": "The Little Book Box",
+        "topic": "a take-one-leave-one book box",
+        "text": "A new box stands at the corner of our street. It looks like a tiny house on a post, with a glass door and one shelf. It is full of books. A sign on it says, take a book, leave a book. Anyone may open the door and borrow whatever looks good. There is no card and no due date. The deal is simple. When you can, you leave a book of your own for the next reader. On Monday the box held ten books. By Friday it held ten different ones. The books keep moving from hand to hand around the neighborhood. A girl left a joke book and took one about sharks. An old man left two mysteries and took a book of maps. Nobody runs the box. The readers run it together, one trade at a time. It might be the smallest library in town, and the busiest shelf on the street.",
+        "metrics": {
+          "wordCount": 155,
+          "sentenceCount": 16,
+          "meanSentenceLen": 9.7,
+          "fkGrade": 3.03,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [
+            "Monday",
+            "Friday"
+          ],
+          "dialogueShare": 0,
+          "decodability": null,
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g3-04",
+        "title": "Busy Builders",
+        "topic": "how beavers build dams and lodges",
+        "text": "A beaver is a builder that never went to school. Its front teeth are strong and sharp. It can cut down a small tree in one night. The beaver drags branches into a stream and piles them up. Then it packs mud into the gaps. This wall of sticks and mud is called a dam. The dam slows the stream. A deep, quiet pond spreads out behind it. That pond is exactly what the beaver wants. In the middle of the pond, the beaver builds its home, called a lodge. The only doors are underwater. The beaver swims in and out, and most other animals cannot follow it inside. Above the water line there is a dry room for sleeping. The pond helps other creatures too. Frogs, fish, and ducks all move into the calm water. One furry builder with big teeth can change a whole stream into a busy pond.",
+        "metrics": {
+          "wordCount": 151,
+          "sentenceCount": 16,
+          "meanSentenceLen": 9.4,
+          "fkGrade": 3.41,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [],
+          "dialogueShare": 0,
+          "decodability": null,
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g3-05",
+        "title": "Skipping Stones",
+        "topic": "learning to skip stones on a lake",
+        "text": "My uncle can make a stone dance across a lake. The stone hops off the water four or five times before it sinks. He says any kid can learn it, and the trick has three parts. First, pick the right stone. It should be flat, smooth, and about as wide as a cookie. Round or lumpy stones sink right away. Second, hold it flat with one finger curled around the edge. Third, throw it sideways and low, so the stone spins as it leaves your hand. The spin keeps it steady, like a rolling wheel that will not tip over. When the flat bottom smacks the water at a low angle, the water pushes it back up for another hop. My first ten throws all sank with a plop. Then one stone skipped twice, and I cheered. By the end of the day I got four hops. My uncle just smiled and said, now try for five.",
+        "metrics": {
+          "wordCount": 157,
+          "sentenceCount": 14,
+          "meanSentenceLen": 11.2,
+          "fkGrade": 3.44,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [],
+          "dialogueShare": 0,
+          "decodability": null,
+          "issues": []
+        }
+      }
+    ],
+    "4": [
+      {
+        "id": "pm-g4-01",
+        "title": "The Dance of the Bees",
+        "topic": "honeybee waggle dance communication",
+        "text": "When a honeybee finds a patch of flowers full of nectar, she does not keep the news to herself. She flies back to the hive and tells the other bees exactly where the flowers are. Her message is not spoken or written. It is danced. On the wall of the hive, the bee runs forward in a straight line while waggling her body from side to side. Then she circles back and repeats the run, over and over. The other bees crowd around her in the dark and read the dance. The direction of her waggle run tells them which way to fly compared to the sun. The length of the run tells them how far to go. A short waggle means the flowers are close. A long one means a far trip. Scientists tested this by watching dancing bees and then following the fliers that had watched. The watchers flew almost straight to the flower patch, just as the dance had promised. A bee's brain is smaller than a grain of rice, yet it can send a map made of motion.",
+        "metrics": {
+          "wordCount": 182,
+          "sentenceCount": 14,
+          "meanSentenceLen": 13,
+          "fkGrade": 4.59,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [],
+          "dialogueShare": 0,
+          "decodability": null,
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g4-02",
+        "title": "Why the Moon Changes Shape",
+        "topic": "moon phases explained",
+        "text": "The moon seems to change shape all month long. One week it is a thin sliver, and two weeks later it is a bright full circle. But the moon itself never changes shape at all. What changes is how much of its lit side we can see. The moon makes no light of its own. Sunlight always brightens the half of the moon that faces the sun. Think of a ball in sunshine. One side of the ball is bright, and the other side is in shade. The moon works the same way. As the moon travels around Earth, we see its lit half from different angles. When the moon sits between Earth and the sun, its bright side faces away from us. We see almost nothing then. When Earth sits between the sun and the moon, the whole lit side faces us, and we see a full moon. In between come the slivers, halves, and lopsided shapes on the calendar. The next time the moon looks broken or thin, remember that nothing is missing. You are simply seeing daylight on another world, one slice at a time.",
+        "metrics": {
+          "wordCount": 188,
+          "sentenceCount": 16,
+          "meanSentenceLen": 11.8,
+          "fkGrade": 3.99,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [
+            "Earth"
+          ],
+          "dialogueShare": 0,
+          "decodability": null,
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g4-03",
+        "title": "The Compost Bin",
+        "topic": "how a school compost bin turns scraps to soil",
+        "text": "Behind our school cafeteria stands a wooden bin that eats lunch every day. Into it go apple cores, banana peels, carrot ends, and stale bread. This is the compost bin, and inside it, garbage slowly becomes rich, dark soil. The real workers are too small to see. Bacteria and molds break the scraps down, and as they work, the pile heats up. On a cold morning you can see steam rising from it. Worms and beetles move in and grind the softened scraps even finer. The pile needs air, so once a week a class turns it over with a garden fork. It needs water too, about as damp as a wrung-out sponge. Meat and cheese stay out because they attract rats. After a few months, the bottom of the pile does not look like food scraps anymore. It is crumbly and brown, and it smells like a forest floor. In spring we shovel it into the garden beds, where it feeds the new tomato plants. Last year's lunch, it turns out, grows this year's lunch. The bin never stops working, and neither do its tiny crew.",
+        "metrics": {
+          "wordCount": 187,
+          "sentenceCount": 15,
+          "meanSentenceLen": 12.5,
+          "fkGrade": 5.05,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [],
+          "dialogueShare": 0,
+          "decodability": null,
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g4-04",
+        "title": "Bottles That Ride the Sea",
+        "topic": "drift bottles and ocean currents",
+        "text": "More than a hundred years ago, scientists began tossing glass bottles into the sea on purpose. Each drift bottle held a numbered postcard. The card asked the finder to write down where the bottle washed up, and when. The bottles could not steer or paddle. They simply rode the water, and that made them perfect tools. Wherever a bottle went, the ocean itself had carried it. Slowly, the postcards came back in the mail. Thousands of cards piled up over the years. Then mapmakers connected the dots. Bottles dropped near one coast kept landing on the same faraway beaches, sometimes years later. The paths they traced showed the ocean's great rivers, called currents. These wide streams flow through the sea without any banks. One famous bottle drifted in a huge circle for many years. At last a beach walker picked it up. Today, scientists track the water with floating robots. The robots report by satellite many times a day. But the humble bottle proved the big idea first. If you want to know where water goes, give it something to carry. Then wait, and let the sea mail you the answer.",
+        "metrics": {
+          "wordCount": 191,
+          "sentenceCount": 19,
+          "meanSentenceLen": 10.1,
+          "fkGrade": 4.89,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [],
+          "dialogueShare": 0,
+          "decodability": null,
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g4-05",
+        "title": "The Story of the Pencil",
+        "topic": "history of the pencil and graphite",
+        "text": "The pencil in your desk has no lead in it, even though people call it a lead pencil. The dark writing material is graphite, a soft and slippery form of carbon. Long ago in England, sheep farmers found a strange black rock. It lay under the roots of a fallen tree. The rock marked their hands. It also wrote a smoother line than any stick of charcoal. Soon everyone wanted the marking stone. But it broke easily, and it turned fingers black. Wrapping it in string helped only a little. The real fix came from woodworkers. They cut a groove into a thin strip of cedar, laid a rod of graphite inside, and glued a second strip on top. Now the graphite had a wooden jacket. Later, pencil makers learned an even better trick. They ground graphite into powder, mixed it with clay, and baked it hard. More clay made a harder, lighter line. Less clay made a softer, darker one. That recipe still sets the numbers printed on pencils today. A pencil seems simple. Yet it took farmers, woodworkers, and chemists working over many years to put one in your hand.",
+        "metrics": {
+          "wordCount": 192,
+          "sentenceCount": 19,
+          "meanSentenceLen": 10.1,
+          "fkGrade": 5.07,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [
+            "England"
+          ],
+          "dialogueShare": 0,
+          "decodability": null,
+          "issues": []
+        }
+      }
+    ],
+    "5": [
+      {
+        "id": "pm-g5-01",
+        "title": "How a Submarine Sinks on Purpose",
+        "topic": "submarine buoyancy and ballast tanks",
+        "text": "A ship made of steel should sink like a stone. Yet a submarine can float on the surface, dive deep, hover in the middle of the sea, and rise again, all on command. Its secret is a set of huge containers called ballast tanks, built between its inner and outer walls. When the tanks are full of air, the submarine weighs less than the water it pushes aside. The ocean holds it up, and it floats. The crew rides high and dry inside. To dive, the crew opens valves at the top of the tanks. Air hisses out, seawater pours in, and the boat grows heavier. Soon it slips beneath the waves. To rise, the crew does the opposite. Machines push stored air back into the tanks with great force, and the air shoves the water out. The submarine grows lighter and climbs toward the light. Fine control matters just as much as sinking and rising. By moving small amounts of water between tanks, the crew can balance the boat so well that it hangs in the sea without moving up or down at all. A submarine never fights the rule that heavy things sink. It simply changes how heavy it is, whenever it chooses.",
+        "metrics": {
+          "wordCount": 205,
+          "sentenceCount": 16,
+          "meanSentenceLen": 12.8,
+          "fkGrade": 5.41,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [],
+          "dialogueShare": 0,
+          "decodability": null,
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g5-02",
+        "title": "Seeing with Sound",
+        "topic": "how bats navigate by echolocation",
+        "text": "A bat can chase a moth through a pitch-black forest and never hit a branch. Its eyes are not doing that work. Its ears are. As it flies, the bat sends out fast clicks and squeaks, most of them pitched too high for human ears. The sounds race ahead, strike whatever is in the way, and bounce back as echoes. From each echo, the bat's brain builds a picture. A late echo means a faraway object, and an early echo means something close. If the echo is louder in the left ear, the object lies to the left. Even the feel of the echo carries news. A fluttering moth returns a trembling echo that a still leaf never could. As the bat closes in on its target, it clicks faster and faster. It updates its sound picture many times each second, the way a flashlight blinking quickly lights a path better than one slow flash. This skill is called echolocation, which means finding things by echo. Sailors copied the idea to build sonar for their ships. Doctors use a cousin of it to see inside the body. The bat had the technology first, and it still uses nothing but its own voice.",
+        "metrics": {
+          "wordCount": 202,
+          "sentenceCount": 16,
+          "meanSentenceLen": 12.6,
+          "fkGrade": 5.28,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [],
+          "dialogueShare": 0,
+          "decodability": null,
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g5-03",
+        "title": "Raising a Helper",
+        "topic": "how a service dog puppy is raised and trained",
+        "text": "Some dogs grow up to have real jobs, and their training starts while they are still puppies. Volunteer families called puppy raisers take them home for about a year. The raiser's task sounds odd at first, because it is mostly ordinary life. The puppy rides in elevators and hears grocery carts rattle. It waits calmly in long lines and naps under tables in busy places. A working dog must treat noisy rooms as boring. Every strange sound the puppy shrugs off now is one it will ignore later, when its focus matters most. The puppy also learns simple manners. It walks politely on a leash, comes when called, and settles quietly on a mat. After the first year, the young dog moves on to an expert trainer for harder lessons. There it learns special tasks to match a future partner's needs. Some dogs learn to open doors, pick up dropped keys, or lead the way to an exit. Not every dog passes the course. The ones who do not are adopted as beloved family pets. The dogs that pass are matched with a human partner, and the pair practice together for weeks. By the last day, the puppy that once chewed shoelaces has become a calm, skilled helper.",
+        "metrics": {
+          "wordCount": 208,
+          "sentenceCount": 16,
+          "meanSentenceLen": 13,
+          "fkGrade": 6.22,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [],
+          "dialogueShare": 0,
+          "decodability": null,
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g5-04",
+        "title": "Why Skyscrapers Sway",
+        "topic": "how tall buildings handle wind",
+        "text": "On a windy day, the top of a very tall building may lean a few feet to one side and then glide slowly back. That movement is not a mistake. The builders planned for it. A tower that refused to bend would have to fight the wind with pure strength, and the wind never gets tired. Instead, a skyscraper is built to sway safely, like a tree that gives a little and then returns. The real problem is the people inside. If the swaying grows too lively, stomachs turn and coffee cups slide. So the builders quiet the motion in clever ways. Some towers grow narrower or even twist as they rise. The odd shape breaks up the smooth flow of wind that would otherwise rock the building in a steady rhythm. Other towers hide a surprise near the top floor. A steel ball or concrete block, as heavy as hundreds of cars, hangs there on thick cables like a giant swing. When the tower sways one way, the great weight lags behind and swings the other way. The two motions cancel, and the building calms down. Visitors far below never guess it is there. The tower is not standing perfectly still, and that is exactly why it stands.",
+        "metrics": {
+          "wordCount": 209,
+          "sentenceCount": 16,
+          "meanSentenceLen": 13.1,
+          "fkGrade": 5.76,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [],
+          "dialogueShare": 0,
+          "decodability": null,
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g5-05",
+        "title": "The Secret Life of Bread",
+        "topic": "how yeast makes bread rise",
+        "text": "Bread dough goes into the bowl as a dense, heavy lump. Two hours later it has swelled to twice its size, soft and full of air. The baker did not pump it up. Billions of tiny living things did. Yeast is a fungus made of single cells, so small that a spoonful of dry yeast holds billions of them. The cells sleep in their dry granules until warm water wakes them. Stirred into flour, the yeast begins to feed on the flour's sugars. As it feeds, it gives off a gas called carbon dioxide, the same gas that puts the fizz in soda. The gas forms thousands of tiny bubbles all through the dough. Kneading the dough matters, because kneading builds gluten. Gluten is a stretchy web of protein that traps the bubbles instead of letting them escape. The dough puffs up like a sponge made of a thousand tiny balloons. In the hot oven, the bubbles swell one last time, and then the stretchy walls bake firm and set in place. The holes you see in a slice of bread are the empty rooms the gas left behind. Every sandwich is built on the breath of a fungus, which may be the strangest fact in the kitchen.",
+        "metrics": {
+          "wordCount": 208,
+          "sentenceCount": 15,
+          "meanSentenceLen": 13.9,
+          "fkGrade": 5.36,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [],
+          "dialogueShare": 0,
+          "decodability": null,
+          "issues": []
+        }
+      }
+    ],
+    "6": [
+      {
+        "id": "pm-g6-01",
+        "title": "The Gear Trick",
+        "topic": "how bicycle gears trade speed for force",
+        "text": "A cyclist rolling toward a steep hill flicks a lever, the chain hops onto a larger sprocket, and a climb that looked impossible becomes merely slow. Nothing about the rider's legs has changed. What changed is the bargain the bicycle is making with the road. Gears are a trading system, and the things being traded are effort and distance. In a low gear, one full turn of the pedals rolls the bicycle only a short way forward. That sounds like a bad deal until you notice the payoff, which is that each pedal stroke feels light. The rider gives up speed and gets force in return, spinning easily up a slope that would stall the legs in a stronger gear. On a flat road, the trade runs the other way. A high gear moves the bicycle a long way with every turn of the pedals. Now the rider gives up ease and gets speed, pressing harder on the pedals but flying down the road. The mathematics rides on the sprockets themselves. When a small front ring drives a large rear cog, the wheel turns slowly but with great strength. When a large ring drives a small cog, the wheel spins fast and free. No gear ever gives a rider something for nothing. A machine cannot create effort. It can only spend effort more wisely, and that is why the cyclist reaches the top of the hill still pedaling.",
+        "metrics": {
+          "wordCount": 238,
+          "sentenceCount": 16,
+          "meanSentenceLen": 14.9,
+          "fkGrade": 6.13,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [],
+          "dialogueShare": 0,
+          "decodability": null,
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g6-02",
+        "title": "Rivers of Ice",
+        "topic": "how glaciers carve valleys",
+        "text": "A glacier does not look like it is going anywhere. It sits in its mountain valley, white and silent, seemingly as fixed as the peaks around it. Yet a glacier is a river. It simply flows so slowly that a whole winter's travel might be measured with a yardstick. It forms high in the cold mountains, where snow piles up faster than summer can melt it. The deep layers press down on the older snow beneath, crushing it into dense blue ice. Under all that weight, something strange happens. The ice stops acting like a brittle solid and begins to creep downhill, bending around curves the way cold honey bends around a spoon. As it creeps, it works on the land. The glacier plucks boulders from the bedrock and drags them along underneath its body. The trapped stones scrape the valley floor like teeth on a file. Rock walls are ground smooth, polished, and scratched with long parallel lines. The results are easy to spot. A mountain stream cuts a narrow notch shaped like the letter V. A glacier bulldozes a broad trough shaped like the letter U, with steep sides and a wide, flat floor. Long after the ice has melted away, that shape remains behind as a signature. Many of the most famous valleys on Earth are exactly this, the empty beds of vanished rivers of ice.",
+        "metrics": {
+          "wordCount": 229,
+          "sentenceCount": 17,
+          "meanSentenceLen": 13.5,
+          "fkGrade": 6,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [
+            "Earth"
+          ],
+          "dialogueShare": 0,
+          "decodability": null,
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g6-03",
+        "title": "The Machine That Multiplied Words",
+        "topic": "how the printing press changed access to books",
+        "text": "Six hundred years ago, a book was a treasure, because every copy was somebody's year of work. Each page was written out by hand, letter by letter, with a sharpened quill. One slip of the pen meant scraping the ink away or living with the mistake. Books cost so much that some libraries chained them to the shelves. Then a metalworker had a simple, powerful idea. He made each letter of the alphabet out of metal, as a small stamp. The stamps could be lined up into words, locked into a frame, rolled with ink, and pressed onto paper. Here was the clever part. When the page was done, the same metal letters could be pulled apart and lined up again to print a completely different page. This invention, called movable type, turned copying into a kind of factory work. A shop with one press could turn out more books in a month than a whole room of hand copiers could finish in years. Better still, every copy matched every other copy exactly. The price of books tumbled, and printed pages poured out of workshops across the land. Ideas began to travel faster than any single messenger could carry them. Readers in distant cities could finally study the very same words and argue about what they meant. The press did not make people smarter. It made knowledge harder to lose and easier to share, and that may matter more.",
+        "metrics": {
+          "wordCount": 239,
+          "sentenceCount": 17,
+          "meanSentenceLen": 14.1,
+          "fkGrade": 7.17,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [],
+          "dialogueShare": 0,
+          "decodability": null,
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g6-04",
+        "title": "Eyes in the Dark",
+        "topic": "how human eyes adapt to darkness",
+        "text": "Step from a bright hallway into a dark room and, for a moment, you are almost blind. Stand still, though, and the darkness slowly sorts itself into furniture, doorways, and shapes. Your eyes are not simply getting used to the dark in some vague way. They are switching equipment. The retina, the thin layer at the back of each eye, contains two kinds of cells that sense light. Cone cells handle daylight and color, but they are nearly useless in dim light. Rod cells are the night shift. They are thousands of times more sensitive, though they see the world only in shades of gray. The rods depend on a special light-catching chemical, and bright light bleaches that chemical away almost completely. In darkness, the supply slowly rebuilds. As it grows, the rods can report fainter and fainter glimmers. The rebuilding takes time. That is why full night vision arrives only after half an hour or more in the dark. There is also a curious hole in it. Rods crowd the outer edges of the retina rather than its center. Because of this, a dim star can vanish when you stare straight at it, then reappear when you glance slightly to one side. Astronomers know the trick well. They learn to study the faintest things in the sky by not quite looking at them.",
+        "metrics": {
+          "wordCount": 224,
+          "sentenceCount": 18,
+          "meanSentenceLen": 12.4,
+          "fkGrade": 5.91,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [],
+          "dialogueShare": 0,
+          "decodability": null,
+          "issues": []
+        }
+      },
+      {
+        "id": "pm-g6-05",
+        "title": "Gardens Above the Street",
+        "topic": "rooftop gardens and city heat",
+        "text": "On a summer afternoon, a big city can be several degrees hotter than the countryside around it. The reason is mostly material. Dark rooftops and black pavement soak up sunlight all day, then release the heat slowly through the night, so the city never quite cools off. One answer to this problem is now spreading across skylines. People are planting gardens on roofs. A green roof begins with a waterproof liner and a layer that lets extra water drain away. Above that goes a few inches of lightweight soil. In the soil grow tough, shallow-rooted plants, chosen because they can survive strong wind and long dry spells. The effect on the building below is immediate. Soil and leaves shade the roof surface from the sun. As the plants release moisture into the air, the roof loses heat, the way sweat cools your skin. On a day when a black tar roof is hot enough to fry an egg, the surface under a garden can be dozens of degrees cooler. The rooms beneath it need far less air conditioning. The benefits pile up outdoors, too. A green roof drinks up heavy rain that would otherwise rush into the street drains all at once. Its flowers become filling stations for bees and butterflies crossing the city. A bare roof spends decades doing nothing but shedding rain. A garden gives it a second job.",
+        "metrics": {
+          "wordCount": 231,
+          "sentenceCount": 18,
+          "meanSentenceLen": 12.8,
+          "fkGrade": 6.48,
+          "readabilityStatus": "pending-verified-wordlist",
+          "spache": null,
+          "daleChall": null,
+          "properNouns": [],
+          "dialogueShare": 0,
+          "decodability": null,
+          "issues": []
+        }
+      }
+    ]
+  }
+}
