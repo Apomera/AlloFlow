@@ -414,7 +414,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
     {
       kind: 'absolute',
       label: 'Absolute claim',
-      color: '#d97706',
+      color: '#b45309',
       why: '"Always" and "never" are rarely true. Consider the exceptions \u2014 or ask the AI to name them.',
       rx: /\b(always|never|every (?:time|single)|all (?:of|types|kinds) of|no one|nobody|everyone|nothing|everything|without exception|in every case)\b/gi
     },
@@ -488,7 +488,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
       {
         model: 'Claude',
         provider: 'Anthropic',
-        color: '#d97706',
+        color: '#b45309',
         output: 'Sunlight may look white, but it\u2019s actually made of many colors \u2014 and when it enters our atmosphere, the tiny molecules of air scatter the shorter blue wavelengths much more strongly than the longer red ones, so from every direction you look up, blue light is what reaches your eyes.'
       },
       {
@@ -699,7 +699,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
       id: 'brainstorm',
       icon: '\uD83C\uDF31',
       label: 'Brainstorm without handing over the thinking',
-      color: '#d97706',
+      color: '#b45309',
       slots: [
         { key: 'goal',     label: 'Goal',              placeholder: 'project idea for a science fair on ecosystems', required: true },
         { key: 'count',    label: 'How many ideas?',    kind: 'chips', options: ['3','5','7','10'], default: '5' },
@@ -1287,7 +1287,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
   window.StemLab.registerTool('llmLiteracy', {
     name: 'AI Literacy Lab',
     title: 'AI Literacy Lab',
-    icon: '\uD83E\uDDE0',
+    icon: '\uD83E\uDD16',
     description: 'How LLMs actually work, when they fail, how to prompt well, and when to use AI as a scaffold vs. let it substitute for your thinking.',
     category: 'technology',
     gradeRange: '6-12',
@@ -1425,9 +1425,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
         border:   '#e2e8f0',
         accent:   '#7c3aed',
         accent2:  '#2563eb',
-        good:     '#059669',
+        good:     '#047857',
         bad:      '#dc2626',
-        warn:     '#d97706',
+        warn:     '#b45309',
         muted:    '#475569',
         text:     '#0f172a',
         subtext:  '#475569'
@@ -2377,10 +2377,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
       function renderHome() {
         var tiles = [
           { id: 'tokens',    icon: '\uD83D\uDD24', title: __alloT('stem.llm_literacy.1_how_llms_work', '1. How LLMs Work'),         desc: __alloT('stem.llm_literacy.see_tokens_next_token_prediction_and_t', 'See tokens, next-token prediction, and temperature in action.'), color: '#2563eb' },
-          { id: 'fails',     icon: '\u26A0\uFE0F', title: __alloT('stem.llm_literacy.2_why_llms_get_things_wrong', '2. Why LLMs Get Things Wrong'), desc: __alloT('stem.llm_literacy.a_gallery_of_real_feeling_ai_mistakes_', 'A gallery of real-feeling AI mistakes, with why each one fools people.'), color: '#d97706' },
+          { id: 'fails',     icon: '\u26A0\uFE0F', title: __alloT('stem.llm_literacy.2_why_llms_get_things_wrong', '2. Why LLMs Get Things Wrong'), desc: __alloT('stem.llm_literacy.a_gallery_of_real_feeling_ai_mistakes_', 'A gallery of real-feeling AI mistakes, with why each one fools people.'), color: '#b45309' },
           { id: 'prompt',    icon: '\u270F\uFE0F', title: __alloT('stem.llm_literacy.3_prompt_craft', '3. Prompt Craft'),          desc: __alloT('stem.llm_literacy.weak_vs_strong_prompts_five_patterns_a', 'Weak vs. strong prompts, five patterns, and live iteration.'), color: '#7c3aed' },
           { id: 'anatomy',   icon: '\uD83E\uDDE9', title: __alloT('stem.llm_literacy.4_prompt_anatomy', '4. Prompt Anatomy'),        desc: __alloT('stem.llm_literacy.12_phrases_identify_the_role_of_each_p', '12 phrases. Identify the role of each (persona / task / context / format / example / constraint).'), color: '#9333ea' },
-          { id: 'spotter',   icon: '\uD83D\uDD0D', title: __alloT('stem.llm_literacy.5_hallucination_spotter', '5. Hallucination Spotter'), desc: __alloT('stem.llm_literacy.click_the_wrong_parts_of_an_ai_generat', 'Click the wrong parts of an AI-generated passage.'), color: '#059669' },
+          { id: 'spotter',   icon: '\uD83D\uDD0D', title: __alloT('stem.llm_literacy.5_hallucination_spotter', '5. Hallucination Spotter'), desc: __alloT('stem.llm_literacy.click_the_wrong_parts_of_an_ai_generat', 'Click the wrong parts of an AI-generated passage.'), color: '#047857' },
           { id: 'udl',       icon: '\uD83E\uDDED', title: __alloT('stem.llm_literacy.6_when_to_use_ai', '6. When to Use AI'),        desc: __alloT('stem.llm_literacy.scaffold_vs_substitute_a_udl_framed_de', 'Scaffold vs. substitute \u2014 a UDL-framed decision tool. Bring your own situation.'), color: '#db2777' },
           { id: 'ref',       icon: '\uD83D\uDCC4', title: __alloT('stem.llm_literacy.7_quick_reference', '7. Quick Reference'),       desc: __alloT('stem.llm_literacy.one_page_printable_summary_of_the_whol', 'One-page printable summary of the whole lab.'), color: '#0f766e' }
         ];
@@ -2671,7 +2671,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
                       color: b.earned ? '#78350f' : COLORS.muted,
                       fontSize: '11px',
                       fontWeight: 700,
-                      opacity: b.earned ? 1 : 0.6,
+                      opacity: b.earned ? 1 : 0.85,
                       transition: 'all .2s ease'
                     }
                   },
@@ -2951,8 +2951,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
             { icon: '\u270F\uFE0F', color: '#2563eb', title: __alloT('stem.llm_literacy.you_write_text', 'You write text'), body: __alloT('stem.llm_literacy.your_prompt_or_the_model_s_own_previou', 'Your prompt or the model\'s own previous output.') },
             { icon: '\uD83D\uDD24', color: '#7c3aed', title: __alloT('stem.llm_literacy.tokenize', 'Tokenize'),       body: __alloT('stem.llm_literacy.split_text_into_small_pieces_tokens_wo', 'Split text into small pieces (tokens). Words, sub-words, punctuation.') },
             { icon: '\uD83C\uDFB2', color: '#db2777', title: __alloT('stem.llm_literacy.score_every_next_token', 'Score every next token'), body: __alloT('stem.llm_literacy.assign_a_probability_to_every_possible', 'Assign a probability to every possible next token.') },
-            { icon: '\uD83C\uDF9B\uFE0F', color: '#d97706', title: __alloT('stem.llm_literacy.sample_one', 'Sample one'), body: __alloT('stem.llm_literacy.temperature_picks_how_random_the_choic', 'Temperature picks how random the choice is (see the playground below).') },
-            { icon: '\u2795', color: '#059669', title: __alloT('stem.llm_literacy.append_repeat', 'Append, repeat'), body: __alloT('stem.llm_literacy.add_the_new_token_feed_it_back_in_do_t', 'Add the new token. Feed it back in. Do this hundreds of times.') }
+            { icon: '\uD83C\uDF9B\uFE0F', color: '#b45309', title: __alloT('stem.llm_literacy.sample_one', 'Sample one'), body: __alloT('stem.llm_literacy.temperature_picks_how_random_the_choic', 'Temperature picks how random the choice is (see the playground below).') },
+            { icon: '\u2795', color: '#047857', title: __alloT('stem.llm_literacy.append_repeat', 'Append, repeat'), body: __alloT('stem.llm_literacy.add_the_new_token_feed_it_back_in_do_t', 'Add the new token. Feed it back in. Do this hundreds of times.') }
           ];
           return h('div', { id: 'llm-lit-s1-loop', className: 'llm-lit-anchor', style: Object.assign({}, cardStyle, { borderLeft: 'none', background: 'linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)', padding: '16px 18px' }) },
             h('h3', { style: { margin: '0 0 4px', fontSize: '16px', color: COLORS.text, fontWeight: 800, letterSpacing: '-.01em' } }, __alloT('stem.llm_literacy.the_generation_loop', '\uD83D\uDD01 The generation loop')),
@@ -2986,10 +2986,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
               })
             ),
             // Loop-back indicator
-            h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 10px', background: hexToRGBA('#059669', 0.06), border: '1px dashed ' + hexToRGBA('#059669', 0.35), borderRadius: '8px', marginTop: '4px' } },
-              h('span', { 'aria-hidden': 'true', style: { fontSize: '16px', color: '#059669' } }, '\u21BB'),
+            h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 10px', background: hexToRGBA('#047857', 0.06), border: '1px dashed ' + hexToRGBA('#047857', 0.35), borderRadius: '8px', marginTop: '4px' } },
+              h('span', { 'aria-hidden': 'true', style: { fontSize: '16px', color: '#047857' } }, '\u21BB'),
               h('span', { style: { fontSize: '12px', color: COLORS.subtext, lineHeight: 1.5 } },
-                h('strong', { style: { color: '#059669' } }, __alloT('stem.llm_literacy.loops_back', 'Loops back: ')),
+                h('strong', { style: { color: '#047857' } }, __alloT('stem.llm_literacy.loops_back', 'Loops back: ')),
                 __alloT('stem.llm_literacy.the_newly_sampled_token_becomes_part_o', 'The newly sampled token becomes part of the input for the next step. One sentence of AI output is hundreds of these loops.')
               )
             )
@@ -3016,7 +3016,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
               { id: 'embed',   glyph: '🧮', title: __alloT('stem.llm_literacy.embeddings', 'Embeddings'),      subtitle: __alloT('stem.llm_literacy.ids_high_d_vectors', 'IDs → high-D vectors'),    color: '#7c3aed', anchor: '#llm-lit-s1-tokens' },
               { id: 'context', glyph: '🪟', title: __alloT('stem.llm_literacy.context_window', 'Context window'),  subtitle: __alloT('stem.llm_literacy.n_tokens_visible_at_once', 'N tokens visible at once'), color: '#0891b2', anchor: '#llm-lit-s1-loop' },
               { id: 'predict', glyph: '🎲', title: 'Next-token',      subtitle: __alloT('stem.llm_literacy.probabilities_over_vocab', 'Probabilities over vocab'),  color: '#0d9488', anchor: '#llm-lit-s1-nexttok' },
-              { id: 'temp',    glyph: '🌡️', title: __alloT('stem.llm_literacy.temperature_2', 'Temperature'),    subtitle: __alloT('stem.llm_literacy.how_far_from_the_top_pick', 'How far from the top pick'),  color: '#d97706', anchor: '#llm-lit-s1-tempcompare' },
+              { id: 'temp',    glyph: '🌡️', title: __alloT('stem.llm_literacy.temperature_2', 'Temperature'),    subtitle: __alloT('stem.llm_literacy.how_far_from_the_top_pick', 'How far from the top pick'),  color: '#b45309', anchor: '#llm-lit-s1-tempcompare' },
               { id: 'output',  glyph: '🔁', title: __alloT('stem.llm_literacy.sample_repeat', 'Sample + repeat'), subtitle: __alloT('stem.llm_literacy.append_loop_until_stop', 'Append → loop until stop'),   color: '#be123c', anchor: '#llm-lit-s1-loop' }
             ];
             return h('div', { style: Object.assign({}, cardStyle, { borderLeft: '4px solid #6366f1', background: 'linear-gradient(135deg, #eef2ff 0%, #f0f9ff 60%, #ecfeff 100%)' }) },
@@ -3371,7 +3371,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
                 // Safety entry: render as warm amber alert with embedded crisis-resources block.
                 if (run._safety) {
                   return h('div', { key: run.t, role: 'alert', 'aria-live': 'assertive', className: i === 0 ? 'llm-lit-fade-in' : '', style: {
-                    background: '#fef3c7', borderTop: '1px solid #fcd34d', borderRight: '1px solid #fcd34d', borderBottom: '1px solid #fcd34d', borderLeft: '4px solid #d97706', borderRadius: 8, padding: '12px 14px'
+                    background: '#fef3c7', borderTop: '1px solid #fcd34d', borderRight: '1px solid #fcd34d', borderBottom: '1px solid #fcd34d', borderLeft: '4px solid #b45309', borderRadius: 8, padding: '12px 14px'
                   } },
                     h('div', { style: { fontSize: 11, fontWeight: 800, color: '#92400e', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.5 } }, __alloT('stem.llm_literacy.coach_paused_before_ai', '🪶 Coach (paused before AI)')),
                     h('div', { style: { fontSize: 13, color: '#0f172a', lineHeight: 1.55, whiteSpace: 'pre-wrap' } }, run.text)
@@ -3456,7 +3456,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
             __alloT('stem.llm_literacy.llms_don_t_know_what_they_don_t_know_t', 'LLMs don\'t know what they don\'t know. They generate the most plausible-sounding next token even when the plausible answer is wrong \u2014 this is called '), Term('hallucination', 'hallucination'),
             __alloT('stem.llm_literacy.or_sometimes', ' (or sometimes '), Term('confabulation', 'confabulation'), __alloT('stem.llm_literacy.here_are_seven_failure_modes_every_stu', '). Here are seven failure modes every student should recognize.')
           ),
-          sectionTOC('#d97706', [
+          sectionTOC('#b45309', [
             { id: 'llm-lit-s2-cutoff',    icon: '\u23F0',     label: __alloT('stem.llm_literacy.cutoff', 'Cutoff') },
             { id: 'llm-lit-s2-mechanism', icon: '\u2699\uFE0F', label: __alloT('stem.llm_literacy.why_it_happens', 'Why it happens') },
             { id: 'llm-lit-s2-models',    icon: '\uD83E\uDD16', label: __alloT('stem.llm_literacy.model_comparison', 'Model comparison') },
@@ -4224,7 +4224,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
               role:       { color: '#2563eb', label: __alloT('stem.llm_literacy.role_2', 'Role'),       icon: '\uD83C\uDFAD' },
               context:    { color: '#0d9488', label: __alloT('stem.llm_literacy.context_2', 'Context'),    icon: '\uD83D\uDCCD' },
               constraint: { color: '#dc2626', label: __alloT('stem.llm_literacy.constraint', 'Constraint'), icon: '\uD83D\uDEA7' },
-              format:     { color: '#d97706', label: __alloT('stem.llm_literacy.format_2', 'Format'),     icon: '\uD83D\uDCCB' },
+              format:     { color: '#b45309', label: __alloT('stem.llm_literacy.format_2', 'Format'),     icon: '\uD83D\uDCCB' },
               examples:   { color: '#7c3aed', label: __alloT('stem.llm_literacy.examples_2', 'Examples'),   icon: '\uD83D\uDCDD' }
             };
             var PROMPT_ANATOMY = [
@@ -4327,6 +4327,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
                     h('button', {
                       onClick: function() { toggleFavoriteRecipe(r.id); },
                       title: starred ? 'Remove favorite' : 'Favorite this recipe \u2014 favorites sort to the top',
+                      'aria-label': starred ? 'Remove favorite' : 'Favorite this recipe',
                       'aria-pressed': starred ? 'true' : 'false',
                       style: {
                         background: 'transparent', border: 'none', cursor: 'pointer',
@@ -4795,6 +4796,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
                       h('button', {
                         onClick: function() { journalToggleStar(i); },
                         title: entry.s ? 'Remove star' : 'Star this prompt',
+                        'aria-label': entry.s ? 'Remove star' : 'Star this prompt',
                         'aria-pressed': entry.s ? 'true' : 'false',
                         style: { background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '14px', flexShrink: 0, padding: '0 2px' }
                       }, entry.s ? '\u2B50' : '\u2606'),
@@ -4810,7 +4812,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
                         }, __alloT('stem.llm_literacy.load', '\u2191 Load')),
                         h('button', {
                           onClick: function() { copyToClipboard(entry.p, 'Saved prompt'); },
-                          title: __alloT('stem.llm_literacy.copy_6', 'Copy'),
+                          'aria-label': __alloT('stem.llm_literacy.copy_6', 'Copy'), title: __alloT('stem.llm_literacy.copy_6', 'Copy'),
                           style: { background: '#e2e8f0', border: 'none', borderRadius: '6px', padding: '4px 6px', fontSize: '11px', cursor: 'pointer', color: COLORS.text }
                         }, '\uD83D\uDCCB'),
                         h('button', {
@@ -5979,7 +5981,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
               ),
               'tokens'
             ),
-            refCard('#d97706', '\u26A0\uFE0F', 'Why it gets things wrong',
+            refCard('#b45309', '\u26A0\uFE0F', 'Why it gets things wrong',
               h('ul', { style: { margin: 0, paddingLeft: '18px', fontSize: '12px', color: COLORS.text, lineHeight: 1.6 } },
                 h('li', null, __alloT('stem.llm_literacy.fake_citations_verify_with_google_scho', 'Fake citations (verify with Google Scholar)')),
                 h('li', null, __alloT('stem.llm_literacy.math_errors_use_a_calculator', 'Math errors \u2014 use a calculator')),
@@ -5997,7 +5999,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
               ),
               'prompt'
             ),
-            refCard('#059669', '\uD83D\uDD0D', 'Before you trust an AI answer',
+            refCard('#047857', '\uD83D\uDD0D', 'Before you trust an AI answer',
               h('ol', { style: { margin: 0, paddingLeft: '18px', fontSize: '12px', color: COLORS.text, lineHeight: 1.6 } },
                 h('li', null, __alloT('stem.llm_literacy.does_the_answer_cite_anything_verify_e', 'Does the answer cite anything? Verify each citation.')),
                 h('li', null, __alloT('stem.llm_literacy.is_it_past_the_model_s_cutoff_use_web_', 'Is it past the model\'s cutoff? Use web search if so.')),
@@ -6061,10 +6063,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
       // ═══════════════════════════════════════════════════════
       var SECTION_ORDER = [
         { id: 'tokens',  title: __alloT('stem.llm_literacy.1_how_llms_work_2', '1. How LLMs Work'),         color: '#2563eb' },
-        { id: 'fails',   title: __alloT('stem.llm_literacy.2_why_llms_get_things_wrong_2', '2. Why LLMs Get Things Wrong'), color: '#d97706' },
+        { id: 'fails',   title: __alloT('stem.llm_literacy.2_why_llms_get_things_wrong_2', '2. Why LLMs Get Things Wrong'), color: '#b45309' },
         { id: 'prompt',  title: __alloT('stem.llm_literacy.3_prompt_craft_2', '3. Prompt Craft'),          color: '#7c3aed' },
         { id: 'anatomy', title: __alloT('stem.llm_literacy.4_prompt_anatomy_2', '4. Prompt Anatomy'),        color: '#9333ea' },
-        { id: 'spotter', title: __alloT('stem.llm_literacy.5_hallucination_spotter_2', '5. Hallucination Spotter'), color: '#059669' },
+        { id: 'spotter', title: __alloT('stem.llm_literacy.5_hallucination_spotter_2', '5. Hallucination Spotter'), color: '#047857' },
         { id: 'udl',     title: __alloT('stem.llm_literacy.6_when_to_use_ai_2', '6. When to Use AI'),        color: '#db2777' },
         { id: 'ref',     title: __alloT('stem.llm_literacy.7_quick_reference_2', '7. Quick Reference'),       color: '#0f766e' },
         { id: 'inquiry', title: __alloT('stem.llm_literacy.8_inquiry_trust_calibration', '8. Inquiry: Trust Calibration'), color: '#14b8a6' }

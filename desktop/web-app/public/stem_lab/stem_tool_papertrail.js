@@ -262,7 +262,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('paperTrail')))
   ];
 
   window.StemLab.registerTool('paperTrail', {
-    icon: '📄',
+    icon: '\uD83D\uDDC4\uFE0F',
     label: 'PaperTrail: Official Documents',
     desc: 'Practice reading and completing the documents adult life runs on — job applications, W-4s, leases, medical intake, permits, and your own IEP meeting invitation. Every field is decoded in plain language, the boxes that can cost you are flagged, and all practice uses a fictional identity because you should never type real personal information into a practice tool.',
     color: 'amber',

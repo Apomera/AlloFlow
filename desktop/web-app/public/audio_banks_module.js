@@ -133,6 +133,17 @@
       inst_tap_letters: getAudio('instructions', 'inst_tap_letters'),
       inst_sound_sort: getAudio('instructions', 'inst_word_families'),
       inst_sound_scramble: getAudio('instructions', 'inst_sound_scramble'),
+      // ── Routing fix + Kokoro gap fills (2026-08-23) ──
+      // inst_word_families was recorded (Gemini) but only exposed under the
+      // misnamed inst_sound_sort key above, which nothing looks up — Word
+      // Families fell to TTS while its own clip sat unreachable.
+      inst_word_families: getAudio('instructions', 'inst_word_families'),
+      // The next three have no Gemini recording; getAudio resolves them from
+      // the Kokoro gap bank (audio_bank_kokoro.json). A future Gemini
+      // recording under the same key wins automatically — see getAudio.
+      as_in: getAudio('instructions', 'as_in'),
+      inst_syllable_counting: getAudio('instructions', 'inst_syllable_counting'),
+      inst_syllable_blending: getAudio('instructions', 'inst_syllable_blending'),
       letter_a: getAudio('instructions', 'letter_a'),
       letter_b: getAudio('instructions', 'letter_b'),
       letter_c: getAudio('instructions', 'letter_c'),
@@ -206,6 +217,14 @@
       '8th': getAudio('isolation', '8th'),
       '9th': getAudio('isolation', '9th'),
       '10th': getAudio('isolation', '10th'),
+      // 'middle' and 'last' are the positions a K-2 child is asked about most,
+      // yet only the ordinals were ever recorded — the player looked these up
+      // and fell to TTS. 11th/12th complete the player's ordinal table.
+      // All four resolve from the Kokoro gap bank until recorded properly.
+      'middle': getAudio('isolation', 'middle'),
+      'last': getAudio('isolation', 'last'),
+      '11th': getAudio('isolation', '11th'),
+      '12th': getAudio('isolation', '12th'),
       'fallback': null
     };
   }
@@ -290,6 +309,20 @@
       'ur': getAudio('phonemes', 'ur'),
       'or': getAudio('phonemes', 'or'),
       'air': getAudio('phonemes', 'air'),
+      // ── Recorded but never exposed (2026-08-23) ──
+      // These five have GEMINI clips in audio_bank.json that this map simply
+      // never listed, so they fell to TTS: aw (saw/paw), dh (voiced th —
+      // this/that), zh (measure), ue (blue), and oo_short — whose omission was
+      // worse than silence, because the normalizer stripped '_short' and
+      // played the LONG oo: 'book' got the vowel from 'moon'.
+      'aw': getAudio('phonemes', 'aw'),
+      'dh': getAudio('phonemes', 'dh'),
+      'zh': getAudio('phonemes', 'zh'),
+      'ue': getAudio('phonemes', 'ue'),
+      'oo_short': getAudio('phonemes', 'oo_short'),
+      // No recording exists in any bank; resolves from the Kokoro gap bank
+      // (a carrier "uh" — flagged needs-human-review in the manifest).
+      'schwa': getAudio('phonemes', 'schwa'),
     };
   }
   var PHONEME_AUDIO_BANK = new Proxy({}, {

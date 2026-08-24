@@ -36,7 +36,7 @@ This consolidated Markdown edition is generated for repository browsing, review,
 24. [School rollout and coaching](#school-rollout-and-coaching) · Introduce AlloFlow as an instructional routine with shared guardrails and coaching.
 25. [For your IT department: the one-page technical brief](#for-your-it-department-the-one-page-technical-brief) · The technical brief: the client-side core, deployment-specific accounts and data paths, AI backend choices, and what to verify.
 26. [For school leaders: the Leadership Hub](#for-school-leaders-the-leadership-hub) · The nine Leadership Hub tools: visits and coaching, equity and student-services analytics, meeting documentation, multilingual family communication, and backing the whole suite up.
-27. [The STEAM Lab: find and share the right tool](#the-steam-lab-find-and-share-the-right-tool) · Use the live STEAM Lab catalog to find, verify, and share a focused interactive tool without relying on a stale printed count or inferred link.
+27. [The STEAM Lab. Find and share the right tool](#the-steam-lab-find-and-share-the-right-tool) · Use the live STEAM Lab catalog to find, verify, and share a focused interactive tool without relying on a stale printed count or inferred link.
 
 ---
 
@@ -96,7 +96,7 @@ Finished before class starts:
 
 Reasonable to do live: choosing which existing pathway a student gets, adjusting pacing, revealing an answer key you already checked, and opening a single tool link. If you find yourself generating new material while class is running, use the fallback instead and rebuild afterwards.
 
-A practical habit: build the lesson at least a day ahead, then reopen it cold the morning of class. Loading your own project the way a student will meet it catches a surprising amount, and it costs two minutes.
+A practical habit. Build the lesson at least a day ahead, then reopen it cold the morning of class. Loading your own project the way a student will meet it catches a surprising amount, and it costs two minutes.
 
 ### A first lesson in about fifteen minutes
 
@@ -104,7 +104,7 @@ A practical habit: build the lesson at least a day ahead, then reopen it cold th
 
 From the Launch Pad, choose **Guided Mode**, then select the teacher role if prompted. Guided Mode organizes the work into a focused path that includes **Source Material**, **Assignment Directions & Goals**, **Preview/Package/Deliver**, and **Review/Finish**. Your deployment may offer additional optional steps.
 
-![AlloFlow teacher role selection](docs/teacher-guide/assets/screenshots/02-role-selection.png)
+![The welcome screen headed "Welcome to AlloFlow" asking how you will be using the app today, with four role cards: Student, Teacher, Parent, and Independent Learner. A language selector sits at the top right, and an Enable Voice Access button below the cards notes that voice access is optional and that touch, pointer, and keyboard remain available.](docs/teacher-guide/assets/screenshots/02-role-selection.png)
 
 If you lose your place, turn on **Help Mode** from the header or press the question-mark key. Help Mode explains supported controls and may show keyboard shortcuts. Press Escape to close an open dialog before trying another route.
 
@@ -412,7 +412,7 @@ This is the most powerful path in the app and the least discoverable, because it
 
 Two shortcuts do more work than anything else in this chapter.
 
-![The command palette opened with Ctrl+K](docs/teacher-guide/assets/screenshots/18-command-palette.png)
+![The command palette open over the workspace, with a text box prompting you to type a command and a list of matching actions grouped under "Here, source setup": Open source input, Find a resource online, Generate source from a topic, Set the grade level, Set source tone, and Set source length, each with a one-line description. The footer shows arrow keys to navigate and Enter to run, and states that every action is announced and Ctrl+K toggles the palette.](docs/teacher-guide/assets/screenshots/18-command-palette.png)
 
 **Ctrl+K** (Cmd+K on a Mac, or Ctrl+Shift+P) opens the command palette. Type what you want in ordinary words and it takes you there. It reports how many commands match, you can star the ones you use constantly, and **Esc** closes it.
 
@@ -601,7 +601,7 @@ The fix for all three is the same, and it is the next section.
 
 This is the one habit worth building. If a lesson took you more than a few minutes to build, save the project. The file is device-independent, survives a browser wipe, and is how you move work between home and school.
 
-> **In Gemini Canvas, this matters even more.** Canvas storage behavior can vary by host session and browser policy. Do not rely on the tab to preserve a lesson: download a project file before closing it.
+> **In Gemini Canvas, this matters even more.** Canvas storage behavior can vary by host session and browser policy. Do not rely on the tab to preserve a lesson. Download a project file before closing it.
 
 ### Getting finished work out
 
@@ -621,6 +621,10 @@ For the full treatment of formats, margins, and what prints well, see [Documents
 AlloFlow has a **Storage and recovery** panel, and on a device used all year you will eventually want it.
 
 #### Recovery
+
+![The Storage and recovery dialog headed "Continue where you left off?", reporting saved resource history from an earlier Gemini Canvas session with a Glossary holding two resources. Four buttons offer Continue previous work, Start a fresh workspace, Manage saved work showing one of twenty, and Import project file. A note explains AlloFlow keeps up to twenty recent device workspaces and that saving beyond that removes the oldest, and a warning notes saved work can be opened by anyone using the same browser profile on a shared computer.](docs/teacher-guide/assets/live-screenshots/14-current-v1.2-storage-recovery.png)
+
+When earlier work is found, AlloFlow asks before doing anything with it. Note the two limits stated in that dialog: twenty saved workspaces, oldest removed first, and the warning that anyone sharing your browser profile can open them.
 
 If the app cannot find your previous session it says so directly, reporting that no restorable workspace was found rather than opening silently empty. You can also choose to **work without device recovery**, which is the right choice on a shared or public machine where you do not want work persisting after you walk away.
 
@@ -900,7 +904,7 @@ Students may use different representations or response modes while working towar
 
 If a pathway changes the goal, say so explicitly and base that decision on the student's instructional plan and teacher judgment, not an automated recommendation.
 
-When standards are attached, review the Rigor Report after adaptation. Readability and rigor answer different questions: a passage can use shorter sentences while still preserving the standard's content, cognitive verbs, and evidence expectations—or it can become easier by deleting the very thinking the standard requires.
+When standards are attached, review the Rigor Report after adaptation. Readability and rigor answer different questions: a passage can use shorter sentences while still preserving the standard's content, cognitive verbs, and evidence expectations, or it can become easier by deleting the very thinking the standard requires.
 
 #### Name pathways by function
 
@@ -1050,11 +1054,11 @@ This is worth checking before you conclude a tool got something wrong. A mismatc
 
 Use **Image style** in Universal Settings to keep one lesson visually coherent. Visuals, Glossary, and Word Sounds begin on **Use Universal style**; their own preset and custom-style controls appear only after you choose **Override for this resource**. Timeline and Concept Sort use the Universal style directly. Adventure keeps story-specific presets, with **Use Universal style** available when continuity matters more than a separate story look.
 
-Choose an override for an instructional reason—for example, a simple line-drawing style for a worksheet that must photocopy clearly—not merely because the same selector is visible. Return the resource to **Use Universal style** when the exception is no longer needed. A change affects new or regenerated images; it does not restyle images that already exist.
+Choose an override for an instructional reason, for example, a simple line-drawing style for a worksheet that must photocopy clearly, not merely because the same selector is visible. Return the resource to **Use Universal style** when the exception is no longer needed. A change affects new or regenerated images; it does not restyle images that already exist.
 
 ### Separate the requested grade from internal calibration
 
-The grade you select is the educator-facing target. It is not silently relabeled as a lower instructional grade. For source writing, AlloFlow may use a lower internal prompt target to compensate for a model's tendency to overshoot. The resource still records the grade you requested, the internal calibration target, and—when an English readability check is appropriate—the measured result as separate facts.
+The grade you select is the educator-facing target. It is not silently relabeled as a lower instructional grade. For source writing, AlloFlow may use a lower internal prompt target to compensate for a model's tendency to overshoot. The resource still records the grade you requested, the internal calibration target, and, when an English readability check is appropriate, the measured result as separate facts.
 
 That distinction matters:
 
@@ -1063,7 +1067,7 @@ That distinction matters:
 - **Internal calibration** is a generation technique, not a recommendation about what students should read.
 - **Measured complexity** is evidence about the resulting text, not proof that it is instructionally appropriate.
 
-Flesch–Kincaid is an English screening measure based mainly on word and sentence patterns. It cannot judge knowledge demands, text structure, content accuracy, cultural context, or the reader and task. AlloFlow therefore does not show an English grade-level verdict for non-English or bilingual text.
+Flesch, Kincaid is an English screening measure based mainly on word and sentence patterns. It cannot judge knowledge demands, text structure, content accuracy, cultural context, or the reader and task. AlloFlow therefore does not show an English grade-level verdict for non-English or bilingual text.
 
 Do this before you share:
 
@@ -1191,6 +1195,10 @@ Use **Import lesson deck** in the Source panel to bring in material from another
 Curipod, Nearpod, Pear Deck, and similar tools do not place their proprietary polls, response data, drawing prompts, or AI-feedback behavior inside an exported PowerPoint or PDF. After importing, review every slide and recreate the intended interactions as AlloFlow activities. For Google Slides or Keynote, export a `.pptx` first when possible.
 
 #### Rehearse the join and delivery path
+
+![The Start live session dialog offering three choices: Prepare live run, marked optional, for attaching presenter cues and checkpoints to lesson steps without starting a session; Standard live session using the configured Firebase, district, or local network backend; and Class Mailbox QR session, where students scan a code and join without accounts through your Google Apps Script mailbox.](docs/teacher-guide/assets/live-screenshots/09-live-session-choices.png)
+
+Starting a live class opens this dialog. The first option prepares material without starting anything, so you can build the run in advance and start it later.
 
 Before class:
 
@@ -1440,6 +1448,10 @@ Adventure Mode turns a lesson into a short interactive story. Students make choi
 
 If you have not built a lesson yet, start with [Prepare a lesson](#prepare-a-purposeful-differentiated-lesson).
 
+![The Adventure Mode settings panel in the teacher sidebar, expanded below collapsed cards for Document Analysis and STEAM Lab. It offers Interaction Mode set to Standard Adventure Mode, noted as students choosing from AI generated options; Difficulty Level set to Normal, described as standard risk and reward balance; and Adventure Language set to English Only, with a note that further languages are added in the Glossary tool first. Below those sit optional Custom Instructions and three switches: Enable Free Response for typing your own actions, Enable Chance Mode where d20 rolls influence the outcome, and Social Scenario Mode for social-emotional role play.](docs/teacher-guide/assets/live-screenshots/17-adventure-mode-settings.png)
+
+These are the teacher-side controls. Students never see this panel; they see the story it produces.
+
 ### When students see it
 
 Two things must both be true before the Adventure panel appears for students:
@@ -1564,6 +1576,10 @@ Prefer short, concrete directions while preserving disciplinary vocabulary stude
 Plain language is not the same as lowered expectations. Students can reason about complex ideas through clear instructions.
 
 ### Use built-in access supports purposefully
+
+![The Student tools panel, opened from a button in the lower right and subtitled "Read, focus, and practice your way". A Focus group offers Toggle Reading Ruler, Task Timer, Toggle Focus Mode, and Visual Supports. An Input and practice group offers Start Voice Input.](docs/teacher-guide/assets/live-screenshots/08-student-tools.png)
+
+This is one view's set. Which supports appear depends on the view, the loaded modules, and the deployment, so check the panel in the exact place students will be working rather than assuming this list.
 
 The exact supports and labels available depend on the current view, loaded modules, browser, and deployment. Turn on **Help Mode** or press the question-mark key to inspect supported controls. Do not promise a feature to students until you test it in the delivered resource.
 
@@ -2549,7 +2565,7 @@ Ms. Rivera chooses five connected resources:
 
 ### Step 1: catch a missing translation setting
 
-The live Glossary panel shows an important preflight message: **No translation languages set — add them in Universal Settings.** The teacher notices this before generating the glossary.
+The live Glossary panel shows an important preflight message: **No translation languages set, add them in Universal Settings.** The teacher notices this before generating the glossary.
 
 ![AlloFlow Glossary panel in Gemini Canvas showing Tier 2 and Tier 3 controls and a message that no translation languages are set](docs/teacher-guide/assets/live-screenshots/current-v1.2-resources/02-glossary-panel.png "Focused controls view")
 
@@ -2718,7 +2734,7 @@ Those criteria are the anchor. A route is acceptable only if it can reveal the s
 | Oral explanation | A brief recording or teacher-documented conference response. | The same cause, sequence, and terms. | Confirm audio works and use the same criteria, not an easier prompt. |
 | Draw, label, and explain | A process sketch with arrows, labels, and a short caption or recording. | Correct relationships and an explicit Sun-to-evaporation link. | A decorative drawing without an explanation is not enough evidence. |
 
-### Step 1: start with a formative purpose
+### Step 1. Start with a formative purpose
 
 The live **Assess** panel shows **Exit Ticket** as the assessment purpose and describes a recommended preset of five scored questions plus one unscored reflection. It also exposes separate areas for question customization, reflection, scoring, feedback, saved setups, and Custom Instructions.
 
@@ -2778,7 +2794,7 @@ Her review separates three questions:
 
 An automated audit can flag a question to inspect. It cannot certify the assessment, choose a required accommodation, or decide what a learner knows.
 
-### Step 5: choose and test the actual delivery route
+### Step 5. Choose and test the actual delivery route
 
 The live **Preview, Package & Deliver** panel groups print and editable documents, web and accessibility formats, LMS packages, sharing methods, and resource-specific exports. The available buttons include Document Builder, a homework QR route, a live session, and a test of the latest student link.
 
@@ -3147,7 +3163,7 @@ A thorough run on a long document takes a while, and there are three things wort
 
 If you already use a compatible desktop MCP host, the optional local connector can run the pipeline on your computer. You install it once, then ask in plain language to audit a document, remediate it, or export a supported format. The connector reads the file from disk; deterministic processing does not require an AlloFlow upload, but the host, configured AI provider, logging, and export destination still need their own review.
 
-Two things make it worth knowing about. The deterministic tools (validation, text extraction, redaction, structure checks, exports) work with no AI key at all, and the AI-assisted repair runs on a key you supply yourself. Your IT department may prefer this path for exactly that reason: see [For your IT department](#for-your-it-department-the-one-page-technical-brief).
+Two things make it worth knowing about. The deterministic tools (validation, text extraction, redaction, structure checks, exports) work with no AI key at all, and the AI-assisted repair runs on a key you supply yourself. Your IT department may prefer this path for exactly that reason. See [For your IT department](#for-your-it-department-the-one-page-technical-brief).
 
 ### What the evidence report is for
 
@@ -3974,7 +3990,7 @@ AlloFlow's core workspace is a client-side, open-source app whose authoring stat
 
 ## For school leaders: the Leadership Hub
 
-Principals, coaches, and student-services leaders get their own tool suite: open **Educator Tools** and choose the **Leadership Hub** 🏛️ card. Nine tools live behind it. This chapter explains what each one is for, how a first session goes, and the boundaries each tool deliberately keeps — because in this suite the boundaries are the product.
+Principals, coaches, and student-services leaders get their own tool suite. Open **Educator Tools** and choose the **Leadership Hub** 🏛️ card. Nine tools live behind it. This chapter explains what each one is for, how a first session goes, and the boundaries each tool deliberately keeps, because in this suite the boundaries are the product.
 
 If you have not read [Privacy and responsible AI](#privacy-and-responsible-ai), read it first. Everything below assumes its ground rules.
 
@@ -3982,16 +3998,16 @@ If you have not read [Privacy and responsible AI](#privacy-and-responsible-ai), 
 
 The hub states this once, and every tool holds to it:
 
-- **Aggregate or de-identified where that is the point.** The analysis tools take counts or student codes, never rosters of names tied to outcomes. The tools that do hold names — evaluation, meeting documentation — are real working records, not previews; what a district portal adds is shared, authenticated access and a retained store, not permission to do the work.
+- **Aggregate or de-identified where that is the point.** The analysis tools take counts or student codes, never rosters of names tied to outcomes. The tools that do hold names: evaluation, meeting documentation, are real working records, not previews; what a district portal adds is shared, authenticated access and a retained store, not permission to do the work.
 - **Local by default, with named exceptions.** The standalone hub computes and stores working state in the current browser or desktop profile. AI drafting and translation, an optional evaluation portal, Drive backup, live or shared routes, an LMS, and other configured services can transmit or copy data outside that profile. Review the disclosure and destination for the exact tool and deployment. AlloFlow does not add application-level encryption to ordinary browser storage, so device access and disk protection still matter.
 - **Descriptive, never a verdict.** Every output is framed as material *for human review*. No tool places a student in a tier, rates a teacher, decides eligibility, or certifies a translation. You do, and the exports say so.
 
 A practical consequence worth planning around: because the data is on-device, a leadership workflow lives on the device where you started it. The hub's **Back up this hub** section covers this two ways:
 
-- **Download backup / Restore from backup** — one file with every tool's saved data, restorable on a new device or after a wipe. Treat the file as the confidential records it may describe. Restoring only ever writes the hub tools' own data; it cannot touch anything else in AlloFlow.
-- **Automatic Drive backup** — an optional script installed in a **school-managed Google Workspace for Education account**, not a personal account. Once connected, it saves dated backups when the hub reports changed data on close or reopen, shows the last-save state, and maintains the history described by that script version. Follow `apps_script/leadership_hub_backup/README.md` for the exact deployment. The reviewed package requests access to files it creates and creates them Restricted; re-check scopes, sharing, retention, and behavior against the commit you install.
+- **Download backup / Restore from backup**, one file with every tool's saved data, restorable on a new device or after a wipe. Treat the file as the confidential records it may describe. Restoring only ever writes the hub tools' own data; it cannot touch anything else in AlloFlow.
+- **Automatic Drive backup**, an optional script installed in a **school-managed Google Workspace for Education account**, not a personal account. Once connected, it saves dated backups when the hub reports changed data on close or reopen, shows the last-save state, and maintains the history described by that script version. Follow `apps_script/leadership_hub_backup/README.md` for the exact deployment. The reviewed package requests access to files it creates and creates them Restricted; re-check scopes, sharing, retention, and behavior against the commit you install.
 
-Either way, the backup is working continuity, not filing. When a record needs to reach wherever your district officially stores it, download it from Drive and share it through the normal district channel yourself — that handoff stays deliberate and human.
+Either way, the backup is working continuity, not filing. When a record needs to reach wherever your district officially stores it, download it from Drive and share it through the normal district channel yourself, that handoff stays deliberate and human.
 
 ### Classroom visits and coaching
 
@@ -3999,39 +4015,39 @@ Either way, the backup is working continuity, not filing. When a record needs to
 
 Growth-framed classroom visits scored against UDL 3.0 look-fors, with feedback cards for teachers, a building heatmap, trends over time, and inter-rater checks.
 
-**First session.** Open **Roster & setup** and add your classrooms — a teacher name is optional, and either way each classroom gets a code that the analytics use. Then open **Observe**, pick the classroom, and record what you see against the look-fors during a ten-minute visit. The visit lands in **Visits**, and **Building** starts filling in once you have a handful.
+**First session.** Open **Roster & setup** and add your classrooms: a teacher name is optional, and either way each classroom gets a code that the analytics use. Then open **Observe**, pick the classroom, and record what you see against the look-fors during a ten-minute visit. The visit lands in **Visits**, and **Building** starts filling in once you have a handful.
 
 **Keep in mind.** The heatmap describes patterns in *your observations*, not teacher quality; two observers can calibrate with the inter-rater view before you trust a trend. Share feedback cards as conversation starters, not scores.
 
 #### Walkthrough Copilot 📝
 
-Turns your shorthand walkthrough notes into evidence-based coaching feedback — that you edit and approve. Every claim it drafts is cited back to a line in your own notes; anything it cannot anchor to your notes is flagged rather than trusted. It also includes practice scenarios for building the note-taking habit.
+Turns your shorthand walkthrough notes into evidence-based coaching feedback, that you edit and approve. Every claim it drafts is cited back to a line in your own notes; anything it cannot anchor to your notes is flagged rather than trusted. It also includes practice scenarios for building the note-taking habit.
 
 **First session.** Try a practice scenario before a real visit: it hands you sample notes so you can see how drafting, citation, and your approval step work without any real classroom involved.
 
-**Keep in mind.** Formative coaching only. The Copilot never assigns a rating, never computes an evaluation score, and never makes an employment recommendation — by design, not by omission. If a draft sentence has no citation to your notes, that is the tool telling you it invented something; delete or rewrite it.
+**Keep in mind.** Formative coaching only. The Copilot never assigns a rating, never computes an evaluation score, and never makes an employment recommendation, by design, not by omission. If a draft sentence has no citation to your notes, that is the tool telling you it invented something; delete or rewrite it.
 
 #### Educator Evaluation ✅
 
-The card behaves differently depending on your district. If your district runs a connected evaluation portal, the card opens it — sign in there, and records live there. Without a portal it opens a private on-device workspace with completion and weighting views, walkthroughs, formal observations, SPM/SLO tracking, dialogue, receipts, and audit history, with framework profiles for PA Act 13, Portland (Maine) PEPG, and a general Maine PEPG profile that mirrors your district plan.
+The card behaves differently depending on your district. If your district runs a connected evaluation portal, the card opens it: sign in there, and records live there. Without a portal it opens a private on-device workspace with completion and weighting views, walkthroughs, formal observations, SPM/SLO tracking, dialogue, receipts, and audit history, with framework profiles for PA Act 13, Portland (Maine) PEPG, and a general Maine PEPG profile that mirrors your district plan.
 
-**Keep in mind.** The on-device workspace holds real working records — it is not a demo. What you enter stays in your signed-in profile on that device and is never uploaded, which on a managed 1:1 fleet means it is scoped to you and encrypted at rest by the device itself. AlloFlow adds no encryption of its own, so device sign-in and disk encryption are what protect it; that is a question for your technology director, in [For your IT department](#for-your-it-department-the-one-page-technical-brief).
+**Keep in mind.** The on-device workspace holds real working records, it is not a demo. What you enter stays in your signed-in profile on that device and is never uploaded, which on a managed 1:1 fleet means it is scoped to you and encrypted at rest by the device itself. AlloFlow adds no encryption of its own, so device sign-in and disk encryption are what protect it; that is a question for your technology director, in [For your IT department](#for-your-it-department-the-one-page-technical-brief).
 
 Two things the on-device workspace genuinely cannot do, which is what the district portal adds: educators cannot sign in to see and acknowledge their own records, and there is no shared, retained, discoverable store for the district. Those are records-management needs, not a reason to keep real work out of the tool. Apply your district's retention rules to what you keep here, and back it up.
 
-A note on the legal frame, since it is easy to reach for the wrong one: evaluation records are **personnel** records, so what governs is your state's personnel-records law, your collective bargaining agreement, and district retention policy — not FERPA, which covers student education records. FERPA enters only by the side door, if observation evidence names identifiable students, which is a good reason to keep written evidence focused on educator practice.
+A note on the legal frame, since it is easy to reach for the wrong one: evaluation records are **personnel** records, so what governs is your state's personnel-records law, your collective bargaining agreement, and district retention policy, not FERPA, which covers student education records. FERPA enters only by the side door, if observation evidence names identifiable students, which is a good reason to keep written evidence focused on educator practice.
 
-Evaluation is the one tool in this suite complex enough to have its own dedicated manual, and this chapter deliberately does not duplicate it. For the full walkthrough — choosing between workspace and portal, the evaluation cycle step by step, framework profiles, portal deployment, how released evaluations reach teachers, and its own troubleshooting — see the [Educator Growth & Evaluation user manual](https://alloflow-cdn.pages.dev/educator-evaluation-manual), which is also linked from inside the tool.
+Evaluation is the one tool in this suite complex enough to have its own dedicated manual, and this chapter deliberately does not duplicate it. For the full walkthrough: choosing between workspace and portal, the evaluation cycle step by step, framework profiles, portal deployment, how released evaluations reach teachers, and its own troubleshooting, see the [Educator Growth & Evaluation user manual](https://alloflow-cdn.pages.dev/educator-evaluation-manual), which is also linked from inside the tool.
 
 ### Equity and student-services analytics
 
 #### Disproportionality Analyzer ⚖️
 
-Risk indexes, risk ratios, and composition from aggregate discipline or identification counts — the arithmetic your state uses, on counts you type in, computed entirely on this device.
+Risk indexes, risk ratios, and composition from aggregate discipline or identification counts, the arithmetic your state uses, on counts you type in, computed entirely on this device.
 
 **First session.** In **Analyze**, name the outcome (say, out-of-school suspensions), then enter at least two rows of counts: a group's enrollment and how many students in it had the outcome, unduplicated. Results appear as you type. Save the analysis and it joins **Saved** and, across years, **Trends**.
 
-**Keep in mind.** Small groups make unstable ratios, and the tool says so rather than hiding it. When a comparison group inside the building is too small, use the alternate-comparison entry (the 34 CFR 300.647 statewide alternate risk ratio) — the tool shows the alternate ratio beneath any flagged standard one. A flagged ratio is a question to investigate, not a finding of discrimination.
+**Keep in mind.** Small groups make unstable ratios, and the tool says so rather than hiding it. When a comparison group inside the building is too small, use the alternate-comparison entry (the 34 CFR 300.647 statewide alternate risk ratio), the tool shows the alternate ratio beneath any flagged standard one. A flagged ratio is a question to investigate, not a finding of discrimination.
 
 #### MTSS Triage 🧮
 
@@ -4039,7 +4055,7 @@ Screening scores in, team-review flags out. You paste a screening window (studen
 
 **First session.** In **Screen**, describe the measure and window, set the two cut scores, and paste scores one per line as `code, score`. Save the window and the tier board builds. The **Groups** tab drafts intervention groupings you can rearrange; **Progress** compares windows once you have two.
 
-**Keep in mind.** The tool ships **no benchmark tables** — publisher cut scores are proprietary and measure- and season-specific, so you must enter your own. "At the cut" deliberately counts as the *less* intensive band in both directions. Bands are flags for team review, never automatic placement. Progress means movement between bands, which is not the same thing as a score going up — and for measures where lower is better, the tool inverts correctly, but check the "higher is better" toggle when you set up the window.
+**Keep in mind.** The tool ships **no benchmark tables**, publisher cut scores are proprietary and measure- and season-specific, so you must enter your own. "At the cut" deliberately counts as the *less* intensive band in both directions. Bands are flags for team review, never automatic placement. Progress means movement between bands, which is not the same thing as a score going up, and for measures where lower is better, the tool inverts correctly, but check the "higher is better" toggle when you set up the window.
 
 #### SpEd Timelines ⏰
 
@@ -4047,37 +4063,37 @@ Evaluation clocks, IEP annuals, and triennials on one urgency dashboard (overdue
 
 **First session.** Add timelines on the **Timelines** tab; the **Dashboard** sorts them into urgency bands automatically.
 
-**Keep in mind — this one matters legally.** Due dates are *editable prefills*, not legal determinations. The evaluation clock uses the federal 60-**calendar**-day rule after parental consent, while [34 CFR § 300.301(c)(1)](https://sites.ed.gov/idea/regs/b/d/300.301) also permits a state-established timeframe to control. Confirm every date against the current state rule, district procedure, consent facts, and school calendar. The screen and CSV repeat the warning, and a hand-edited due date is not overwritten by the prefill.
+**Keep in mind, this one matters legally.** Due dates are *editable prefills*, not legal determinations. The evaluation clock uses the federal 60-**calendar**-day rule after parental consent, while [34 CFR § 300.301(c)(1)](https://sites.ed.gov/idea/regs/b/d/300.301) also permits a state-established timeframe to control. Confirm every date against the current state rule, district procedure, consent facts, and school calendar. The screen and CSV repeat the warning, and a hand-edited due date is not overwritten by the prefill.
 
 #### Diagnosis, Evaluation & School Eligibility 🧩
 
 A reference and reasoning tool: compare clinical diagnosis, IDEA eligibility, and Section 504; walk the evaluation path; review federal definitions, safeguards, and timelines; explore open-question cases; and build a privacy-safe meeting-preparation guide.
 
-**Keep in mind.** It never decides eligibility, services, or placement — it prepares the humans who will. Definitions are federal; your state adds its own layer, so treat it as the map, not the territory.
+**Keep in mind.** It never decides eligibility, services, or placement, it prepares the humans who will. Definitions are federal; your state adds its own layer, so treat it as the map, not the territory.
 
 ### Communication and documentation
 
 #### Meeting Documentation 📋
 
-Notes or a transcript in, your district's meeting format out. Six built-in formats (SST, IEP team, 504, parent/family conference, staff/PLC, evaluation planning) plus a custom-template builder — model your district's own form once and reuse it.
+Notes or a transcript in, your district's meeting format out. Six built-in formats (SST, IEP team, 504, parent/family conference, staff/PLC, evaluation planning) plus a custom-template builder, model your district's own form once and reuse it.
 
 **First session.** Pick a format on **New record**, paste your notes, and draft. Review the result, certify it, and save; action items land in the **Action items** tracker with checkboxes.
 
-**Keep in mind — the two integrity mechanisms.** Before an AI call, each name the preparer explicitly adds to **Names to mask** is replaced locally with a code such as "Person A" and restored locally in the result. A name omitted from that list remains in the notes and can reach the configured provider, so review the list before drafting. Every drafted decision or action item also carries a source quote that is checked as an exact substring of the masked notes; an unmatched quote is visibly flagged for review. You certify before saving, and the export footer records human review. A manual no-AI route is also available.
+**Keep in mind, the two integrity mechanisms.** Before an AI call, each name the preparer explicitly adds to **Names to mask** is replaced locally with a code such as "Person A" and restored locally in the result. A name omitted from that list remains in the notes and can reach the configured provider, so review the list before drafting. Every drafted decision or action item also carries a source quote that is checked as an exact substring of the masked notes; an unmatched quote is visibly flagged for review. You certify before saving, and the export footer records human review. A manual no-AI route is also available.
 
 #### Family Announcements 📣
 
 One announcement, every family language: write the English master, pick your building's languages (sixteen presets including right-to-left scripts), translate with AI, review each translation, and export an accessible packet with every section properly language-tagged and direction-aware.
 
-**First session.** Compose a short real announcement — a picture day notice is a good first run — select two or three of your building's languages, translate, and *read the translations* before saving. The language selection is remembered for next time.
+**First session.** Compose a short real announcement: a picture day notice is a good first run, select two or three of your building's languages, translate, and *read the translations* before saving. The language selection is remembered for next time.
 
-**Keep in mind.** Translations are machine-assisted and you certify the final text — review with bilingual staff where you can. Every export carries a machine-translation disclosure with a contact-the-office line; do not remove it. The language tagging is not cosmetic: it is what makes the packet work in screen readers and in right-to-left scripts, which is the point of the tool.
+**Keep in mind.** Translations are machine-assisted and you certify the final text, review with bilingual staff where you can. Every export carries a machine-translation disclosure with a contact-the-office line; do not remove it. The language tagging is not cosmetic: it is what makes the packet work in screen readers and in right-to-left scripts, which is the point of the tool.
 
 ### A year in the hub, roughly
 
-- **August–September:** enter classrooms in UDL Walkthrough; set up SpEd Timelines from your caseload; run the fall screening window through MTSS Triage; send your first multilingual announcement.
-- **October–February:** short walkthrough cycles with Copilot-drafted coaching; Meeting Documentation for SST/IEP season; winter screening window and progress comparison.
-- **March–June:** spring window closes the progress picture; Disproportionality Analyzer on the year's discipline and identification counts while the data is fresh; save everything — the Trends views only pay off in year two.
+- **August, September:** enter classrooms in UDL Walkthrough; set up SpEd Timelines from your caseload; run the fall screening window through MTSS Triage; send your first multilingual announcement.
+- **October, February:** short walkthrough cycles with Copilot-drafted coaching; Meeting Documentation for SST/IEP season; winter screening window and progress comparison.
+- **March, June:** spring window closes the progress picture; Disproportionality Analyzer on the year's discipline and identification counts while the data is fresh; save everything, the Trends views only pay off in year two.
 
 ### Troubleshooting and support
 
@@ -4085,7 +4101,7 @@ The hub tools are ordinary AlloFlow modules: if a card opens to a loading screen
 
 ---
 
-## The STEAM Lab: find and share the right tool
+## The STEAM Lab. Find and share the right tool
 
 The STEAM Lab is the largest collection in AlloFlow, with interactive tools across thirteen subject areas, from a water-cycle simulation to a titration burette to a disproportionality analyzer. The generated registry changes as tools are added or retired, so this manual intentionally does not hard-code a total. Use the live STEAM Lab catalog for the current list.
 
@@ -4099,7 +4115,11 @@ Do not confuse this with [Find a tool](https://alloflow-cdn.pages.dev/tools.html
 
 ### Finding a tool: three routes
 
-**Search, if you know roughly what you want.** Open the STEAM Lab and type in its search box. It matches tool names, descriptions, topics, and hand-written aliases — so "photosynthesis" finds the tree lab even though that word is not in its title.
+![The STEAM Lab tool browser. A search box sits at the top, followed by a box asking "What do you want to learn about?" with an AI Suggest tools button, then subject filter chips for All, Science, Math, Engineering, Creative, Applied, and Games. Below them a Math Fundamentals group shows tool cards including Number Line, Area Model, Arithmetic Strategy Studio, Fraction Lab, Math Manipulatives, and Multiplication Table, each with a one-line description. A Keyboard accessible badge sits in the header.](docs/teacher-guide/assets/live-screenshots/17-current-v1.2-steam-lab.png)
+
+The search box and the subject chips are the first two routes. The tool count shown in your build will differ from this capture as tools are added.
+
+**Search, if you know roughly what you want.** Open the STEAM Lab and type in its search box. It matches tool names, descriptions, topics, and hand-written aliases, so "photosynthesis" finds the tree lab even though that word is not in its title.
 
 **Browse by area, if you are planning a unit.** The lab's own subject groupings are the fastest way to see everything available for a topic you are about to teach.
 
@@ -4116,6 +4136,10 @@ Preview the copied link in a student-equivalent browser profile before sharing i
 **Or share the whole lab** by sending the app link and telling students which tool to open. Use the direct link when you want them in one place; use the app link when the activity is "explore three of these."
 
 ### What to expect from any tool
+
+![The Number Line tool open inside the STEAM Lab. A breadcrumb reads All tools, then Number Line, with a note that Escape or Alt+B returns to all tools. The workspace is headed "Explore: make magnitude visible" and shows status chips for Range, Accuracy, and Badges, a dark number line canvas, and a list of modes down the right side: Explore, Challenge, Skip Count, Frac slash Dec, and Compare, each with its own short description.](docs/teacher-guide/assets/live-screenshots/18-current-v1.2-number-line.png)
+
+Most tools follow this shape: a named workspace, a set of modes rather than a single activity, and a clearly marked way back out. Note the keyboard route stated in the corner.
 
 **The interface runs in the browser, but data paths are feature-specific.** Many simulations compute locally. AI extras, online lookups, live coordination, camera or microphone features, imports, LMS launches, and configured school services can use a network or create records elsewhere. Check the tool's disclosure and the approved deployment before entering student-related content.
 

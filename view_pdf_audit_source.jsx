@@ -3709,7 +3709,7 @@ function PdfAuditView(props) {
     createTaggedPdf, createTypesetTaggedPdf, transcribeMediaToPayload, diffLibReady, downloadAccessiblePdf, downloadBatchResults,
     ensurePdfBase64, expertCommandInput, exportPreviewRef, extractedImagesList,
     extractionData, fidelityResult, fixAndVerifyPdf, fixContrastViolations,
-    fixIssuesList, generateAuditReportHtml, selectChunkVersion, getPdfPreviewHtml,
+    fixIssuesList, generateAuditReportHtml, selectChunkVersion, retireChunkState, getPdfPreviewHtml,
     imageReinsertionReport, insertBlockFilter, insertBlockOpenCats, insertBlockPickerRef,
     insertBlockRecent, isAgentRunning, isGeneratingStyle, liveChunkExpanded,
     liveChunkRejected, liveChunkSessionActive, liveChunkStream, pdfAuditLoading,
@@ -3928,6 +3928,26 @@ function PdfAuditView(props) {
       });
     };
     const onChunkRefixed = onChunkFixed;
+    // New document (this effect is keyed on pdfDocumentEpoch): clear the run-scoped collaboration
+    // state so a fresh document never inherits the previous one's counters or queue.
+    setHumanEditsAdopted(0);
+    setReviewFindingsLive(null);
+    setReviewDismissed({});
+    const onHumanEdit = (ev) => {
+      const detail = (ev && ev.detail) || {};
+      if (detail.documentEpoch !== pdfDocumentEpoch) return;   // same strict epoch gate as the others
+      setHumanEditsAdopted(Number(detail.adopted) || 0);
+    };
+    const onReviewFindings = (ev) => {
+      const detail = (ev && ev.detail) || {};
+      if (detail.documentEpoch !== pdfDocumentEpoch) return;   // same strict epoch gate as the others
+      setReviewFindingsLive({
+        passNumber: Number(detail.passNumber) || 0,
+        findings: Array.isArray(detail.findings) ? detail.findings : [],
+      });
+    };
+    window.addEventListener('alloflow:remediation-human-edit', onHumanEdit);
+    window.addEventListener('alloflow:remediation-review-findings', onReviewFindings);
     window.addEventListener('alloflow:remediation-progress', onProgress);
     window.addEventListener('alloflow:chunk-session-start', onChunkSessionStart);
     // Progress starts synchronously, so a newly mounted view can otherwise miss the first event
@@ -3940,6 +3960,8 @@ function PdfAuditView(props) {
     window.addEventListener('alloflow:chunk-fixed', onChunkFixed);
     window.addEventListener('alloflow:chunk-refixed', onChunkRefixed);
     return () => {
+      window.removeEventListener('alloflow:remediation-human-edit', onHumanEdit);
+      window.removeEventListener('alloflow:remediation-review-findings', onReviewFindings);
       window.removeEventListener('alloflow:remediation-progress', onProgress);
       window.removeEventListener('alloflow:chunk-session-start', onChunkSessionStart);
       window.removeEventListener('alloflow:chunk-progress', onChunkProgress);
@@ -4264,6 +4286,14 @@ function PdfAuditView(props) {
     if (document.visibilityState === 'hidden' && !_hiddenSinceRef.current) _hiddenSinceRef.current = Date.now();
     return () => document.removeEventListener('visibilitychange', _onVis);
   }, [_remediationBusy]);
+  // ── One in-flight fact (2026-08-23) ───────────────────────────────────────────────────────
+  // Three surfaces in the results panel used to answer "is it still running?" separately: the
+  // sticky STILL WORKING banner and the "your accessible copy is ready" headline each derived
+  // their own `pdfFixLoading || pdfAutoContinueRunning`, and the R1 verdict strip never asked at
+  // all — so it rendered "Ready to hand out" above a banner saying the opposite. One derivation,
+  // read by all three (and it folds in pipelineRunActive, the authoritative re-entry lock, so a
+  // lost pdfFixLoading write degrades to a redundant signal instead of a silent "done").
+  const _remediationInFlight = _remediationBusy || pdfAutoContinueRunning;
   const _oneClickOperationBusy = oneClickRemediationBusy || pdfAuditLoading || _remediationBusy || pdfAutoContinueRunning;
   // (2026-08-15) Audit-modal visibility transitions, logged. 'CLOSED {hasResult:false,
   // loading:false}' arriving moments after 'audit START clicked' with no DROPPED line between
@@ -5123,6 +5153,21 @@ function PdfAuditView(props) {
   // an AI edit to just that block. The marquee lives INSIDE the iframe (all geometry in iframe space); the
   // box is handed to _regionHandlerRef.current so the iframe's once-bound listener always calls the latest
   // handler (never a stale closure). The selected region opens in the editor keyed off '__region__'.
+  // Human-in-the-loop rebase, surfaced (2026-08-23). The fix loop emits this when it adopts an edit
+  // committed while it was running. Showing it matters for more than reassurance: a run that took
+  // human edits is a COLLABORATIVE result, and the banner is where that stops being invisible.
+  const [_humanEditsAdopted, setHumanEditsAdopted] = useState(0);
+  // Needs-human-judgment queue (phase 4): the CURRENT set of review-tier findings (axe incomplete,
+  // EA potential/manual) as of the latest pass. Replacement semantics — each event is the full set,
+  // so resolved findings drop off on their own. Dismissals are keyed engine|bucket|id and survive
+  // re-emits of the same finding.
+  const [_reviewFindingsLive, setReviewFindingsLive] = useState(null);
+  const [_reviewDismissed, setReviewDismissed] = useState({});
+  // Watch-live (phase 3): a READ-ONLY srcDoc iframe of the committed document, repainted by React
+  // on every round commit. Deliberately not the Preview & Edit modal — that editor syncs the FULL
+  // document back from its iframe, so opening it mid-run would let one stale sync revert a whole
+  // round. Watching is safe; editing goes through the section buttons and the Workbench.
+  const [_watchLiveOpen, setWatchLiveOpen] = useState(false);
   const [_regionArmed, setRegionArmed] = useState(false);
   const _regionHandlerRef = useRef(null);
   // S3 block-restyle slice 2 (2026-06-23): AI suggests WHERE a callout/list helps; each suggestion is
@@ -9466,6 +9511,9 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             _estimatedMinimumScore: Number.isFinite(project._estimatedMinimumScore) ? project._estimatedMinimumScore : (Number.isFinite(project.estimatedMinimumScore) ? project.estimatedMinimumScore : null),
                             _estimatedScoreBasis: project._estimatedScoreBasis || project.estimatedScoreBasis || null,
                             _finalAuditRetryAvailable: !!project._finalAuditRetryAvailable,
+                            _remediationThrottlePaused: !!project._remediationThrottlePaused,
+                            _finalAuditThrottleDeferred: !!project._finalAuditThrottleDeferred,
+                            _finalAuditIncompleteReason: project._finalAuditIncompleteReason || null,
                             axeAudit: project.axeAudit || null,
                             secondEngineAudit: project.secondEngineAudit || null,
                             verificationCoverage: project.verificationCoverage || null,
@@ -9493,6 +9541,9 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             issuesFixed: project.issuesFixed || 0,
                             remainingIssues: project.remainingIssues != null ? project.remainingIssues : 0,
                             autoFixPasses: project.autoFixPasses || 0,
+                            // Collaboration provenance (2026-08-23): who-did-what survives the file.
+                            humanEditsAdopted: Number(project.humanEditsAdopted) || 0,
+                            reviewedFindings: (project.reviewedFindings && typeof project.reviewedFindings === 'object') ? project.reviewedFindings : null,
                             _audioJobMeta: project._audioJobMeta || null,
                             _translation: project._translation || null,
                             _plainLanguage: project._plainLanguage || null,
@@ -12355,7 +12406,11 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                       🔄 Re-fix
                                     </button>
                                   )}
-                                  {!isRejected && !pdfFixLoading && !pdfAutoContinueRunning && (
+                                  {/* Un-gated during auto-continue (2026-08-23): a Reject is a deterministic splice
+                                      committed through the CAS, and the running loop now rebases onto human commits
+                                      instead of clobbering them. Mid-round the CAS may refuse (geometry mid-rewrite)
+                                      — that fails safe with the "changed before it could be reverted" toast. */}
+                                  {!isRejected && !pdfFixLoading && (
                                     <button
                                       onClick={() => {
                                         try {
@@ -12377,12 +12432,13 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                         } catch(e) { addToast(`Revert failed: ${e?.message}`, 'error'); }
                                       }}
                                       className="text-[11px] bg-red-100 text-red-700 px-2 py-1 rounded-full font-bold hover:bg-red-200 transition-colors focus:ring-2 focus:ring-red-400"
+                                      title={t('pdf_audit.live_chunk.reject_title') || 'Revert this section to the original text. Works while the loop is running: it adopts your choice at its next pass and will not revert it.'}
                                       aria-label={`Reject fix for section ${chunk.index + 1}, revert to original`}
                                     >
                                       ✕ Reject
                                     </button>
                                   )}
-                                  {isRejected && !pdfFixLoading && !pdfAutoContinueRunning && (
+                                  {isRejected && !pdfFixLoading && (
                                     <button
                                       onClick={() => {
                                         try {
@@ -12458,6 +12514,90 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                     </div>
                   )}
 
+                  {/* ── Needs-human-judgment queue (2026-08-23, human-in-the-loop phase 4) ──
+                      The engines' review-tier findings (axe `incomplete`, Equal Access
+                      POTENTIAL/MANUAL) are the judgments automation cannot make. Streamed here
+                      live so a person works this queue WHILE the loop grinds the mechanical
+                      rest — the division of labor is the point. Renders outside the results
+                      panel so it is live during the very first run, before any result exists. */}
+                  {(() => {
+                    // Source-of-truth ladder (2026-08-23 refinement): once a committed result
+                    // exists, derive the queue from ITS audits — the auto-continue rounds run in
+                    // misc_handlers and emit no pass events, so the event stream goes stale the
+                    // moment rounds take over. Events remain the only live source during the FIRST
+                    // run, when nothing is committed yet. Deriving from the committed audits also
+                    // means this queue and the engine-evidence panels below can never disagree.
+                    const _rfMapC = (engine, bucket) => (f) => ({ engine, bucket, id: (f && f.id) || 'unknown-rule', description: (f && f.description) || '', nodes: (f && f.nodes) || 0, wcagCriteria: (f && Array.isArray(f.wcagCriteria)) ? f.wcagCriteria : [], helpUrl: (f && f.helpUrl) || '' });
+                    const _rfEaAudit = pdfFixResult && (pdfFixResult.secondEngineAudit || pdfFixResult.equalAccessAudit);
+                    const _rfSource = (pdfFixResult && (pdfFixResult.axeAudit || _rfEaAudit))
+                      ? { committed: true, findings: [].concat(
+                          ((pdfFixResult.axeAudit && pdfFixResult.axeAudit.incomplete) || []).map(_rfMapC('axe', 'incomplete')),
+                          ((_rfEaAudit && _rfEaAudit.potentialFindings) || []).map(_rfMapC('equalAccess', 'potential')),
+                          ((_rfEaAudit && _rfEaAudit.manualFindings) || []).map(_rfMapC('equalAccess', 'manual'))) }
+                      : (_reviewFindingsLive ? { committed: false, findings: _reviewFindingsLive.findings, passNumber: _reviewFindingsLive.passNumber } : null);
+                    if (!_rfSource || _rfSource.findings.length === 0) return null;
+                    const _rfKey = (f) => f.engine + '|' + f.bucket + '|' + f.id;
+                    const _rfAll = _rfSource.findings;
+                    // Effective reviewed-set = persisted attestations (survive save/restore, ride the
+                    // report) overlaid with this session's not-yet-persisted clicks.
+                    const _rfDismissed = { ...((pdfFixResult && pdfFixResult.reviewedFindings) || {}), ..._reviewDismissed };
+                    const _rfOpen = _rfAll.filter((f) => !_rfDismissed[_rfKey(f)]);
+                    const _rfDone = _rfAll.length - _rfOpen.length;
+                    const _rfBucketLabel = { incomplete: (t('pdf_audit.review_queue.bucket_incomplete') || 'needs review'), potential: (t('pdf_audit.review_queue.bucket_potential') || 'potential issue'), manual: (t('pdf_audit.review_queue.bucket_manual') || 'manual check') };
+                    const _rfEngineLabel = { axe: 'axe-core', equalAccess: 'Equal Access' };
+                    const _reviewToWorkbench = (f) => {
+                      try { setExpertCommandInput('Review and fix if needed (' + (_rfEngineLabel[f.engine] || f.engine) + ' ' + (_rfBucketLabel[f.bucket] || f.bucket) + ', ' + (f.id || '') + ((f.wcagCriteria || []).length ? ', WCAG ' + f.wcagCriteria.join(', ') : '') + '): ' + (f.description || '')); } catch (_) {}
+                      try { const wb = document.getElementById('allo-sec-workbench'); if (wb) { wb.open = true; wb.scrollIntoView({ behavior: 'smooth', block: 'start' }); } } catch (_) {}
+                      addToast(t('pdf_audit.issue.sent_workbench') || '🛠 Loaded into the Expert Workbench below — review and run it.', 'info');
+                    };
+                    return (
+                      <div className="mt-4 bg-white rounded-2xl border-2 border-amber-300 p-4 space-y-2" role="region" aria-label={t('pdf_audit.review_queue.aria') || 'Findings that need human judgment'}>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <h4 className="text-sm font-black text-amber-900 flex-1">🧑‍⚖️ {t('pdf_audit.review_queue.heading') || 'Needs your judgment'} <span aria-live="polite">({_rfOpen.length})</span></h4>
+                          <span className="text-[10px] font-bold text-amber-800 bg-amber-50 border border-amber-200 rounded-full px-2 py-0.5">{_rfSource.committed ? (t('pdf_audit.review_queue.current') || 'current result') : ((t('pdf_audit.review_queue.as_of') || 'as of pass') + ' ' + _rfSource.passNumber)}</span>
+                          {_rfDone > 0 && (
+                            <button onClick={() => { setReviewDismissed({}); setPdfFixResult((prev) => prev ? { ...prev, reviewedFindings: null } : prev); }} className="text-[10px] font-bold text-slate-600 underline" title={t('pdf_audit.review_queue.reset_title') || 'Bring back the findings you marked as reviewed — also clears the attestations recorded for the report'}>{_rfDone} {t('pdf_audit.review_queue.reviewed') || 'reviewed'} — {t('pdf_audit.review_queue.reset') || 'reset'}</button>
+                          )}
+                        </div>
+                        <p className="text-[11px] text-amber-900">{_remediationInFlight
+                          ? (t('pdf_audit.review_queue.explainer') || 'The automated engines flagged these but cannot decide them — semantic meaning, context, and intent need a person. Work through them here while the automatic passes handle the mechanical fixes; findings a later pass resolves drop off on their own.')
+                          : (t('pdf_audit.review_queue.explainer_settled') || 'The automated engines flagged these but cannot decide them — semantic meaning, context, and intent need a person. Work through them with the Workbench, or mark each reviewed once you have checked it yourself.')}</p>
+                        {_rfOpen.length === 0 ? (
+                          <p className="text-[11px] font-bold text-emerald-700">✅ {t('pdf_audit.review_queue.all_done') || 'All current review findings handled — new ones will appear here if a later pass surfaces any.'}</p>
+                        ) : (
+                          <ul className="space-y-1.5 list-none">
+                            {_rfOpen.map((f) => (
+                              <li key={_rfKey(f)} className="flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-lg px-2.5 py-1.5 text-[11px] text-amber-950">
+                                <span className="shrink-0 font-bold" aria-hidden="true">{f.bucket === 'incomplete' ? '⚠' : f.bucket === 'potential' ? '🔎' : '👀'}</span>
+                                <span className="flex-1 min-w-0">
+                                  <span className="font-mono font-bold">{f.id}</span>
+                                  <span className="ml-1 px-1 py-0.5 rounded bg-white/80 border border-amber-300 text-[9px] font-bold uppercase tracking-wide">{(_rfEngineLabel[f.engine] || f.engine) + ' · ' + (_rfBucketLabel[f.bucket] || f.bucket)}</span>
+                                  {f.nodes > 0 && <span className="ml-1 opacity-70">{f.nodes} {f.nodes === 1 ? (t('pdf_audit.review_queue.element') || 'element') : (t('pdf_audit.review_queue.elements') || 'elements')}</span>}
+                                  {(f.wcagCriteria || []).length > 0 && <span className="ml-1 opacity-70">WCAG {f.wcagCriteria.join(', ')}</span>}
+                                  {f.description && <span className="block mt-0.5 opacity-90">{f.description}</span>}
+                                  {f.helpUrl && <a href={f.helpUrl} target="_blank" rel="noopener noreferrer" className="font-bold underline">{t('pdf_audit.wcag_report.guidance') || 'Guidance'}</a>}
+                                </span>
+                                <span className="shrink-0 flex gap-1">
+                                  <button onClick={() => _reviewToWorkbench(f)} className="px-1.5 py-0.5 rounded bg-slate-200 text-slate-700 hover:bg-indigo-600 hover:text-white font-bold transition-colors" title={t('pdf_audit.review_queue.wb_title') || 'Send to the Expert Workbench — prefills a targeted command you review and run'}>🛠</button>
+                                  <button onClick={() => {
+                                    const _k = _rfKey(f);
+                                    const _at = Date.now();
+                                    setReviewDismissed((prev) => ({ ...prev, [_k]: _at }));
+                                    // Persist the attestation onto the result: metadata-only spread, html
+                                    // untouched, so the revision counter does not advance and the running
+                                    // loop cannot mistake this for a document edit. Rides project save and
+                                    // the exported audit report.
+                                    setPdfFixResult((prev) => prev ? { ...prev, reviewedFindings: { ...(prev.reviewedFindings || {}), [_k]: _at } } : prev);
+                                  }} className="px-1.5 py-0.5 rounded bg-slate-200 text-slate-700 hover:bg-emerald-600 hover:text-white font-bold transition-colors" title={t('pdf_audit.review_queue.done_title') || 'Mark as reviewed — I checked this myself. Recorded in the audit report as a human attestation.'} aria-label={(t('pdf_audit.review_queue.done_aria') || 'Mark reviewed') + ': ' + f.id}>✓</button>
+                                </span>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </div>
+                    );
+                  })()}
+
                   {/* ── Fix & Verify Results Panel ── */}
                   {pdfFixResult && (
                     <div className="mt-4 bg-gradient-to-b from-white to-emerald-50 rounded-2xl border-2 border-emerald-300 p-5 space-y-4 animate-in slide-in-from-bottom duration-300">
@@ -12467,16 +12607,17 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           text, never tooltip-only; role=status so screen readers announce it. */}
                       {(() => {
                         const _v = (_docPipeline && typeof _docPipeline.distributionVerdict === 'function')
-                          ? _docPipeline.distributionVerdict(pdfFixResult, { targetScore: pdfTargetScore }) : null;
+                          ? _docPipeline.distributionVerdict(pdfFixResult, { targetScore: pdfTargetScore, inProgress: _remediationInFlight }) : null;
                         if (!_v) return null;
-                        const _sty = _v.level === 'ready' ? 'bg-emerald-100 border-emerald-500 text-emerald-900'
+                        const _sty = _v.inProgress ? 'bg-indigo-50 border-indigo-400 text-indigo-900'
+                          : _v.level === 'ready' ? 'bg-emerald-100 border-emerald-500 text-emerald-900'
                           : _v.level === 'caution' ? 'bg-amber-50 border-amber-400 text-amber-900'
                           : 'bg-rose-50 border-rose-400 text-rose-900';
-                        const _icon = _v.level === 'ready' ? '✅' : _v.level === 'caution' ? '⚠️' : '🛑';
+                        const _icon = _v.inProgress ? '⏳' : _v.level === 'ready' ? '✅' : _v.level === 'caution' ? '⚠️' : '🛑';
                         const _items = _v.level === 'review' ? _v.review.concat(_v.cautions) : _v.cautions;
                         return (
                           <div role="status" data-help-key="pdf_audit_verdict_strip" className={`rounded-xl border-2 p-3 ${_sty}`}>
-                            <p className="text-sm font-black"><span aria-hidden="true">{_icon} </span>{t('pdf_audit.verdict.' + _v.level) || _v.headline}</p>
+                            <p className="text-sm font-black"><span aria-hidden="true">{_icon} </span>{(_v.inProgress ? t('pdf_audit.verdict.in_progress_' + _v.level) : t('pdf_audit.verdict.' + _v.level)) || _v.headline}</p>
                             {_items.length > 0 && (
                               <ul className="mt-1 ml-5 list-disc text-xs space-y-0.5">
                                 {_items.slice(0, 6).map((m, i) => <li key={i}>{m}</li>)}
@@ -12486,6 +12627,25 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           </div>
                         );
                       })()}
+                      {pdfFixResult._remediationThrottlePaused && (
+                        <section role="status" aria-labelledby="pdf-remediation-paused-heading" className="rounded-xl border-2 border-amber-400 bg-amber-50 p-3 text-amber-950">
+                          <div className="flex flex-wrap items-center gap-3">
+                            <div className="min-w-0 flex-1">
+                              <h3 id="pdf-remediation-paused-heading" className="text-sm font-black">⏳ AI remediation paused safely</h3>
+                              <p className="mt-1 text-xs">Canvas temporarily rate-limited the AI service. Your last verified version was preserved; no same-storm retry wave was launched.</p>
+                            </div>
+                            <button
+                              type="button"
+                              disabled={pdfFixLoading || pdfAutoContinueRunning}
+                              onClick={async () => {
+                                try { await runAutoFixLoop(3); }
+                                catch (error) { addToast('Could not resume AI remediation: ' + ((error && error.message) || error), 'error'); }
+                              }}
+                              className="px-3 py-1.5 rounded-lg bg-amber-700 text-white text-xs font-bold hover:bg-amber-800 disabled:opacity-50"
+                            >{pdfAutoContinueRunning ? 'Checking service…' : 'Resume AI remediation'}</button>
+                          </div>
+                        </section>
+                      )}
                       {(() => {
                         const state = pdfFixResult.verificationState || 'unavailable';
                         const coverage = pdfFixResult.verificationCoverage || {};
@@ -12610,11 +12770,33 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           {/* Unmissable running banner (2026-06-11, maintainer ask):
                               results render after round 1 while auto-continue keeps
                               working — without this it looked FINISHED. */}
-                          {(pdfFixLoading || pdfAutoContinueRunning) && (
+                          {_remediationInFlight && (
                             <div className="sticky -top-5 -mx-5 px-5 py-2.5 bg-indigo-600 text-white z-30 flex items-center gap-2 flex-wrap rounded-t-2xl" role="status" aria-live="polite">
                               <span className="inline-block w-3 h-3 rounded-full bg-white animate-ping shrink-0" aria-hidden="true"></span>
                               <span className="text-xs font-bold flex-1 min-w-0">⏳ {t('pdf_audit.running.lead') || 'STILL WORKING'} — {pdfFixStep || (t('pdf_audit.running.generic') || 'improving toward the target score')}. {t('pdf_audit.running.note') || 'Results below update live; keep this open.'}</span>
+                              {_humanEditsAdopted > 0 && (
+                                <span className="px-2 py-0.5 bg-white/20 border border-white/50 rounded-full text-[11px] font-bold shrink-0" title={t('pdf_audit.running.human_edits_title') || 'Your edits were picked up mid-run. The loop rebased onto them and will not revert them when it ships.'}>
+                                  ✍ {_humanEditsAdopted} {_humanEditsAdopted === 1 ? (t('pdf_audit.running.human_edit') || 'edit of yours kept') : (t('pdf_audit.running.human_edits') || 'edits of yours kept')}
+                                </span>
+                              )}
+                              <button onClick={() => setWatchLiveOpen((v) => !v)} aria-pressed={_watchLiveOpen} className="px-2.5 py-1 bg-white/20 border border-white/50 rounded-full text-[11px] font-bold hover:bg-white/30 shrink-0" title={t('pdf_audit.watch_live.toggle_title') || 'Watch the document itself update as each round commits — read-only, so nothing you do here can collide with the run'}>👁 {_watchLiveOpen ? (t('pdf_audit.watch_live.on') || 'Watching') : (t('pdf_audit.watch_live.cta') || 'Watch live')}</button>
                               <button onClick={() => { try { pdfAutoContinueAbortRef.current = true; } catch (_) {} _remOpLog('Stop pressed — finishing the current round, then stopping.', { button: 'stop-after-round', documentEpoch: pdfDocumentEpoch }); addToast(t('toasts.stopping_after_round') || 'Stopping after the current round — what’s done is kept.', 'info'); }} className="px-2.5 py-1 bg-white/20 border border-white/50 rounded-full text-[11px] font-bold hover:bg-white/30 shrink-0">⏹ {t('pdf_audit.running.stop') || 'Stop after this round'}</button>
+                            </div>
+                          )}
+                          {/* ── Watch-live view (2026-08-23, phase 3) ── READ-ONLY on purpose: the
+                              Preview & Edit modal syncs its ENTIRE iframe DOM back into
+                              accessibleHtml, so opening that mid-run would let one stale sync
+                              revert a whole round. This iframe is srcDoc-bound to the committed
+                              document, so React repaints it on every round commit for free, and
+                              there is no path from it back into the document. */}
+                          {_remediationInFlight && _watchLiveOpen && (
+                            <div className="-mx-5 px-5 py-2 bg-indigo-50 border-b border-indigo-200">
+                              <div className="flex items-center justify-between gap-2 mb-1">
+                                <span className="text-[11px] font-bold text-indigo-800">👁 {t('pdf_audit.watch_live.title') || 'Live document — read-only; repaints each time a round commits'}</span>
+                                <button onClick={() => setWatchLiveOpen(false)} className="text-[11px] font-bold text-indigo-700 underline shrink-0">{t('pdf_audit.watch_live.hide') || 'Hide'}</button>
+                              </div>
+                              <iframe title={t('pdf_audit.watch_live.iframe') || 'Live remediated document (read-only)'} sandbox="allow-same-origin" srcDoc={pdfFixResult.accessibleHtml} className="w-full bg-white border border-indigo-200 rounded-lg" style={{ height: '45vh' }} />
+                              <p className="text-[10px] text-indigo-700 mt-1">{t('pdf_audit.watch_live.note') || 'Showing the last committed version — section-by-section changes stream in the panel above. To intervene, use a section’s Reject button or the Expert Workbench; the loop adopts your change at its next pass.'}</p>
                             </div>
                           )}
                           <div data-help-key="pdf_audit_dashboard_bar" className="sticky -top-5 -mx-5 px-5 py-2 bg-white/95 backdrop-blur border-b border-emerald-200 rounded-t-2xl z-20 flex items-center gap-1.5 flex-wrap" role="navigation" aria-label={t('pdf_audit.dashboard.aria') || 'Remediation results overview and section navigation'}>
@@ -12629,6 +12811,11 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 title={t('pdf_audit.dashboard.fidelity_limited_title') || 'This is an ACCESSIBILITY score only. Some source content may not have carried over' + (typeof pdfFixResult.integrityCoverage === 'number' ? ' (' + pdfFixResult.integrityCoverage + '% of source text preserved)' : '') + ' — verify content fidelity (review the Diff) before distributing.'}
                               >
                                 {t('pdf_audit.dashboard.fidelity_limited') || '⚠ verify content'}
+                              </span>
+                            )}
+                            {Number(pdfFixResult.humanEditsAdopted) > 0 && (
+                              <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-100 text-indigo-800 whitespace-nowrap" title={t('pdf_audit.dashboard.human_edits_title') || 'The automated loop adopted this many human edits while it ran. This is a collaborative result (automated passes + human edits) — the scores describe the combined document.'}>
+                                ✍ {pdfFixResult.humanEditsAdopted} {Number(pdfFixResult.humanEditsAdopted) === 1 ? (t('pdf_audit.dashboard.human_edit') || 'human edit') : (t('pdf_audit.dashboard.human_edits') || 'human edits')}
                               </span>
                             )}
                             {_vio !== null && (
@@ -12774,7 +12961,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             in question — that conflates "a downloadable copy exists" with "done + safe to
                             share". Mirror the fidelity-aware "What now?" strip below. */}
                         {(() => {
-                          const _stillWorking = pdfAutoContinueRunning || pdfFixLoading;
+                          const _stillWorking = _remediationInFlight;
                           const _fidelity = !!(pdfFixResult && pdfFixResult.fidelityLimited);
                           const _label = _stillWorking
                             ? (t('pdf_audit.results.ready_heading_working') || 'Draft accessible copy ready — still improving…')
@@ -13402,6 +13589,15 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             </details>
                           )}
 
+                          {/* ── WCAG Success Criteria report (2026-08-23) ──────────────────────────
+                              Rebuilt from a rule tally into an evidence view. Three changes of
+                              substance: (1) counts are labelled — "5 rules" and "194 elements" are
+                              different facts and the old card printed only the first while reading
+                              like the second; (2) Equal Access findings are folded in, so this stops
+                              being an axe-only view of a two-engine audit; (3) criteria that NOTHING
+                              evaluated are named and listed, because a report showing only what it
+                              tested reads as a report on everything. An engine that returned no
+                              finding for a criterion is never rendered as having passed it. */}
                           {(() => {
                             const WCAG_LABELS = {
                               '1.1.1': 'Non-text Content (alt text)',
@@ -13438,10 +13634,31 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               '3.3.8': 'Accessible Authentication (Minimum)',
                               '3.3.9': 'Accessible Authentication (Enhanced)'
                             };
+                            // ── Aggregation ──────────────────────────────────────────────────────
+                            // Per criterion, per engine, per bucket, we keep BOTH a rule count and an
+                            // element count. They answer different questions ("how many checks looked
+                            // at this?" vs "how much of the document did they look at?") and the old
+                            // card conflated them by printing only the rule count as a bare number.
                             const scMap = {};
-                            const addToSc = (sc, bucket) => {
-                              if (!scMap[sc]) scMap[sc] = { passes: 0, violations: 0, incomplete: 0 };
-                              scMap[sc][bucket]++;
+                            const _blank = () => ({ pass: 0, fail: 0, review: 0, passNodes: 0, failNodes: 0, reviewNodes: 0, rules: [] });
+                            const _rec = (sc) => {
+                              if (!scMap[sc]) scMap[sc] = { axe: _blank(), ea: _blank() };
+                              return scMap[sc];
+                            };
+                            const addToSc = (sc, engine, bucket, entry) => {
+                              const slot = _rec(sc)[engine];
+                              slot[bucket]++;
+                              const n = Number(entry && entry.nodes);
+                              slot[bucket + 'Nodes'] += Number.isFinite(n) && n > 0 ? n : 0;
+                              slot.rules.push({
+                                id: (entry && entry.id) || 'unknown-rule',
+                                description: (entry && entry.description) || '',
+                                nodes: Number.isFinite(n) && n > 0 ? n : 0,
+                                impact: (entry && entry.impact) || '',
+                                helpUrl: (entry && entry.helpUrl) || '',
+                                bucket,
+                                engine
+                              });
                             };
                             // Finding 14 (ChatGPT review 2026-07-10): axe ships COMPACT tags (wcag111) but this
                             // parser only matched dotted text — the whole SC report rendered EMPTY forever. The
@@ -13461,24 +13678,65 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               return out;
                             };
                             (pdfFixResult.axeAudit.passes || []).forEach(p => {
-                              extractScList(p).forEach(sc => addToSc(sc, 'passes'));
+                              extractScList(p).forEach(sc => addToSc(sc, 'axe', 'pass', p));
                             });
                             ['critical','serious','moderate','minor'].forEach(sev => {
                               (pdfFixResult.axeAudit[sev] || []).forEach(v => {
-                                extractScList(v).forEach(sc => addToSc(sc, 'violations'));
+                                extractScList(v).forEach(sc => addToSc(sc, 'axe', 'fail', v));
                               });
                             });
                             (pdfFixResult.axeAudit.incomplete || []).forEach(i => {
-                              extractScList(i).forEach(sc => addToSc(sc, 'incomplete'));
+                              extractScList(i).forEach(sc => addToSc(sc, 'axe', 'review', i));
                             });
-                            const scEntries = Object.entries(scMap).sort((a, b) => a[0].localeCompare(b[0], undefined, { numeric: true }));
-                            if (scEntries.length === 0) return null;
-                            const counts = scEntries.reduce((acc, [, v]) => {
-                              if (v.violations > 0) acc.fail++;
-                              else if (v.incomplete > 0) acc.warn++;
-                              else if (v.passes > 0) acc.pass++;
-                              return acc;
-                            }, { pass: 0, warn: 0, fail: 0 });
+                            // Equal Access — the document's SECOND engine, previously invisible here. Its
+                            // findings only carry WCAG identity when the pipeline could read the engine's
+                            // own guideline table (see doc_pipeline); when it could not, extractScList
+                            // returns [] and EA contributes nothing rather than something wrong.
+                            const _ea = pdfFixResult.secondEngineAudit || pdfFixResult.equalAccessAudit || null;
+                            if (_ea) {
+                              (_ea.passes || []).forEach(p => { extractScList(p).forEach(sc => addToSc(sc, 'ea', 'pass', p)); });
+                              (_ea.fails || []).forEach(v => { extractScList(v).forEach(sc => addToSc(sc, 'ea', 'fail', v)); });
+                              [].concat(_ea.potentialFindings || [], _ea.manualFindings || []).forEach(v => {
+                                extractScList(v).forEach(sc => addToSc(sc, 'ea', 'review', v));
+                              });
+                            }
+                            // Authoritative criterion catalog (num / official name / A|AA / how many
+                            // automated rules exist at all). Supplied by the engine, not hand-typed —
+                            // WCAG_LABELS stays only as the fallback for naming when it is unavailable.
+                            const _catalog = (_ea && Array.isArray(_ea.wcagCatalog)) ? _ea.wcagCatalog : [];
+                            const _catalogBy = {};
+                            _catalog.forEach(c => { if (c && c.num) _catalogBy[c.num] = c; });
+                            const _nameOf = (sc) => (_catalogBy[sc] && _catalogBy[sc].name) || WCAG_LABELS[sc] || '';
+                            const _levelOf = (sc) => (_catalogBy[sc] && _catalogBy[sc].level) || '';
+                            const _scNum = (a, b) => String(a).localeCompare(String(b), undefined, { numeric: true });
+                            const scEntries = Object.entries(scMap).sort((a, b) => _scNum(a[0], b[0]));
+                            if (scEntries.length === 0 && _catalog.length === 0) return null;
+                            const _totals = (v) => ({
+                              fail: v.axe.fail + v.ea.fail,
+                              review: v.axe.review + v.ea.review,
+                              pass: v.axe.pass + v.ea.pass,
+                              failNodes: v.axe.failNodes + v.ea.failNodes,
+                              reviewNodes: v.axe.reviewNodes + v.ea.reviewNodes,
+                              passNodes: v.axe.passNodes + v.ea.passNodes
+                            });
+                            const _statusOf = (v) => { const tt = _totals(v); return tt.fail > 0 ? 'fail' : tt.review > 0 ? 'warn' : tt.pass > 0 ? 'pass' : 'none'; };
+                            const counts = scEntries.reduce((acc, [, v]) => { const s = _statusOf(v); if (acc[s] != null) acc[s]++; return acc; }, { pass: 0, warn: 0, fail: 0, none: 0 });
+                            // Criteria in scope (WCAG 2.2 A/AA) that NO engine produced any finding for.
+                            // Split by cause, because "no automated test exists for this" and "tests exist
+                            // but nothing in this document triggered them" are different gaps for a reviewer.
+                            const _untested = _catalog.filter(c => c && c.num && !scMap[c.num]).sort((a, b) => _scNum(a.num, b.num));
+                            const _noRule = _untested.filter(c => !c.ruleCount);
+                            const _notTriggered = _untested.filter(c => c.ruleCount > 0);
+                            const _plural = (n, one, many) => n + ' ' + (n === 1 ? one : many);
+                            const _engineLine = (slot, engineLabel) => {
+                              if (!slot.pass && !slot.fail && !slot.review) return engineLabel + ': no findings';
+                              const parts = [];
+                              if (slot.fail) parts.push(_plural(slot.fail, 'rule', 'rules') + ' failed' + (slot.failNodes ? ' (' + _plural(slot.failNodes, 'element', 'elements') + ')' : ''));
+                              if (slot.review) parts.push(_plural(slot.review, 'rule', 'rules') + ' need review' + (slot.reviewNodes ? ' (' + _plural(slot.reviewNodes, 'element', 'elements') + ')' : ''));
+                              if (slot.pass) parts.push(_plural(slot.pass, 'rule', 'rules') + ' passed' + (slot.passNodes ? ' (' + _plural(slot.passNodes, 'element', 'elements') + ')' : ''));
+                              return engineLabel + ': ' + parts.join(' · ');
+                            };
+                            const _bucketIcon = { fail: '✗', review: '⚠', pass: '✓' };
                             return (
                               <details className="bg-slate-50 border border-slate-400 rounded-lg p-3">
                                 <summary className="cursor-pointer text-xs font-bold text-slate-700 flex flex-wrap items-center gap-2">
@@ -13486,33 +13744,102 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                   <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded-full text-[11px]">✓ {counts.pass} pass</span>
                                   {counts.warn > 0 && <span className="bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full text-[11px]">⚠ {counts.warn} needs review</span>}
                                   {counts.fail > 0 && <span className="bg-red-100 text-red-700 px-2 py-0.5 rounded-full text-[11px]">✗ {counts.fail} fail</span>}
+                                  {_untested.length > 0 && <span className="bg-slate-200 text-slate-700 px-2 py-0.5 rounded-full text-[11px]">○ {_untested.length} not evaluated</span>}
                                 </summary>
+                                {_catalog.length > 0 && (
+                                  <p className="mt-2 text-[11px] text-slate-600">
+                                    {t('pdf_audit.wcag_report.scope') || ('Scope: WCAG 2.2 Level A and AA — ' + _catalog.length + ' success criteria. ' + scEntries.length + ' were exercised by an automated engine on this document; ' + _untested.length + ' were not.')}
+                                  </p>
+                                )}
                                 <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-1">
                                   {scEntries.map(([sc, v]) => {
-                                    const status = v.violations > 0 ? 'fail' : v.incomplete > 0 ? 'warn' : v.passes > 0 ? 'pass' : 'none';
+                                    const tt = _totals(v);
+                                    const status = _statusOf(v);
                                     const color = status === 'pass' ? 'bg-green-50 border-green-200 text-green-800' :
                                                   status === 'warn' ? 'bg-amber-50 border-amber-200 text-amber-800' :
                                                   status === 'fail' ? 'bg-red-50 border-red-200 text-red-800' :
                                                   'bg-slate-50 border-slate-200 text-slate-600';
                                     const icon = status === 'pass' ? '✓' : status === 'warn' ? '⚠' : status === 'fail' ? '✗' : '○';
-                                    const label = WCAG_LABELS[sc] || '';
+                                    const label = _nameOf(sc);
+                                    const level = _levelOf(sc);
+                                    const ruleCount = tt.fail + tt.review + tt.pass;
+                                    const nodeCount = tt.failNodes + tt.reviewNodes + tt.passNodes;
+                                    const allRules = [].concat(v.axe.rules, v.ea.rules);
                                     return (
                                       <div key={sc} className={`flex items-start gap-2 px-2 py-1 rounded border text-[11px] ${color}`}>
                                         <span className="font-bold shrink-0">{icon}</span>
                                         <div className="flex-1 min-w-0">
                                           <span className="font-bold font-mono">{sc}</span>
+                                          {level && <span className="ml-1 px-1 py-0.5 rounded bg-white/70 border border-slate-300 text-slate-700 font-bold text-[9px] tracking-wide">{level}</span>}
                                           {label && <span className="ml-1 opacity-80">— {label}</span>}
                                           <div className="opacity-70 mt-0.5">
-                                            {v.passes > 0 && <span>{v.passes} pass</span>}
-                                            {v.violations > 0 && <span className="ml-2">{v.violations} fail</span>}
-                                            {v.incomplete > 0 && <span className="ml-2">{v.incomplete} review</span>}
+                                            {_plural(ruleCount, 'rule', 'rules')}
+                                            {nodeCount > 0 && <span> · {_plural(nodeCount, 'element', 'elements')}</span>}
                                           </div>
+                                          <div className="opacity-70 mt-0.5">
+                                            <div>{_engineLine(v.axe, 'axe-core')}</div>
+                                            {_ea && <div>{_engineLine(v.ea, 'Equal Access')}</div>}
+                                          </div>
+                                          {allRules.length > 0 && (
+                                            <details className="mt-1">
+                                              <summary className="cursor-pointer font-bold opacity-80">{t('pdf_audit.wcag_report.which_rules') || 'Which checks ran'}</summary>
+                                              <ul className="mt-1 space-y-0.5 list-none">
+                                                {allRules.map((rule, ri) => (
+                                                  <li key={rule.engine + ':' + rule.id + ':' + ri} className="flex items-start gap-1">
+                                                    <span className="shrink-0 font-bold" aria-hidden="true">{_bucketIcon[rule.bucket]}</span>
+                                                    <span className="min-w-0">
+                                                      <span className="font-mono font-bold">{rule.id}</span>
+                                                      <span className="opacity-70"> ({rule.engine === 'ea' ? 'Equal Access' : 'axe-core'}{rule.nodes ? ', ' + _plural(rule.nodes, 'element', 'elements') : ''}{rule.impact ? ', ' + rule.impact : ''})</span>
+                                                      {rule.description && <span className="opacity-90"> — {rule.description}</span>}
+                                                      {rule.helpUrl && <a href={rule.helpUrl} target="_blank" rel="noopener noreferrer" className="ml-1 font-bold underline">{t('pdf_audit.wcag_report.guidance') || 'Guidance'}</a>}
+                                                    </span>
+                                                  </li>
+                                                ))}
+                                              </ul>
+                                            </details>
+                                          )}
                                         </div>
                                       </div>
                                     );
                                   })}
                                 </div>
-                                <p className="mt-2 text-[10px] text-slate-500 italic">{t('pdf_audit.wcag_report.coverage_note') || 'Coverage may be incomplete — this view aggregates axe-core rules by WCAG SC. Manual review still required for some criteria (e.g. semantic meaning, reading order, complex forms).'}</p>
+                                {_untested.length > 0 && (
+                                  <details className="mt-3 bg-white border border-slate-300 rounded-lg p-2">
+                                    <summary className="cursor-pointer text-[11px] font-bold text-slate-700">
+                                      ○ {t('pdf_audit.wcag_report.untested_heading') || ('Not evaluated on this document (' + _untested.length + ' of ' + _catalog.length + ' criteria)')}
+                                    </summary>
+                                    <p className="mt-1 text-[10px] text-slate-600">
+                                      {t('pdf_audit.wcag_report.untested_note') || 'These criteria are in scope for WCAG 2.2 AA but produced no automated result on this document. They are neither passing nor failing here — they are unmeasured, and a conformance claim that covers them needs a human reviewer.'}
+                                    </p>
+                                    {_noRule.length > 0 && (
+                                      <div className="mt-2">
+                                        <div className="text-[10px] font-bold text-slate-700 uppercase tracking-wide">{t('pdf_audit.wcag_report.untested_manual') || 'No automated test exists — manual review only'}</div>
+                                        <ul className="mt-1 grid grid-cols-1 sm:grid-cols-2 gap-x-3 gap-y-0.5">
+                                          {_noRule.map(c => (
+                                            <li key={'nr-' + c.num} className="text-[10px] text-slate-600 flex items-start gap-1">
+                                              <span aria-hidden="true">○</span>
+                                              <span><span className="font-mono font-bold">{c.num}</span> <span className="font-bold">{c.level}</span>{c.name ? ' — ' + c.name : ''}</span>
+                                            </li>
+                                          ))}
+                                        </ul>
+                                      </div>
+                                    )}
+                                    {_notTriggered.length > 0 && (
+                                      <div className="mt-2">
+                                        <div className="text-[10px] font-bold text-slate-700 uppercase tracking-wide">{t('pdf_audit.wcag_report.untested_inapplicable') || 'Automated tests exist but none applied to this content'}</div>
+                                        <ul className="mt-1 grid grid-cols-1 sm:grid-cols-2 gap-x-3 gap-y-0.5">
+                                          {_notTriggered.map(c => (
+                                            <li key={'nt-' + c.num} className="text-[10px] text-slate-600 flex items-start gap-1">
+                                              <span aria-hidden="true">○</span>
+                                              <span><span className="font-mono font-bold">{c.num}</span> <span className="font-bold">{c.level}</span>{c.name ? ' — ' + c.name : ''}</span>
+                                            </li>
+                                          ))}
+                                        </ul>
+                                      </div>
+                                    )}
+                                  </details>
+                                )}
+                                <p className="mt-2 text-[10px] text-slate-500 italic">{t('pdf_audit.wcag_report.coverage_note') || 'This view aggregates automated engine results by WCAG success criterion. A criterion shown as passing means every automated check that ran against it passed, not that the criterion is met; semantic meaning, reading order, and complex forms still need human review.'}</p>
                               </details>
                             );
                           })()}
@@ -15435,6 +15762,9 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                   _estimatedMinimumScore: Number.isFinite(project._estimatedMinimumScore) ? project._estimatedMinimumScore : (Number.isFinite(project.estimatedMinimumScore) ? project.estimatedMinimumScore : null),
                                   _estimatedScoreBasis: project._estimatedScoreBasis || project.estimatedScoreBasis || null,
                                   _finalAuditRetryAvailable: !!project._finalAuditRetryAvailable,
+                                  _remediationThrottlePaused: !!project._remediationThrottlePaused,
+                                  _finalAuditThrottleDeferred: !!project._finalAuditThrottleDeferred,
+                                  _finalAuditIncompleteReason: project._finalAuditIncompleteReason || null,
                                   axeAudit: project.axeAudit || null,
                             secondEngineAudit: project.secondEngineAudit || null,
                             verificationCoverage: project.verificationCoverage || null,
@@ -15460,6 +15790,8 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                   issuesFixed: project.issuesFixed || 0,
                                   remainingIssues: project.remainingIssues != null ? project.remainingIssues : 0,
                                   autoFixPasses: project.autoFixPasses || 0,
+                                  humanEditsAdopted: Number(project.humanEditsAdopted) || 0,
+                                  reviewedFindings: (project.reviewedFindings && typeof project.reviewedFindings === 'object') ? project.reviewedFindings : null,
                             _audioJobMeta: project._audioJobMeta || null,
                             _translation: project._translation || null,
                             _plainLanguage: project._plainLanguage || null,
@@ -15896,7 +16228,21 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               // Snapshot the FULL before-HTML so a regressing fix can be reverted in one
                               // click (mini-audit, 2026-06-16) — mirrors the _preBionicHtml snapshot pattern.
                               const _preCmdHtml = _commandSourceHtml;
-                              if (!_commitAsyncHtmlIfCurrent(_commitToken, (prev) => ({ ...prev, accessibleHtml: result.html, _lastCmdDiff: _cmdDiff, _preCmdHtml: _preCmdHtml, _lastMiniAudit: result.miniAudit || null, _lastTableReadback: result.tableReadback || null }))) {
+                              // Retire the chunk geometry BEFORE committing non-chunk-aware HTML.
+                              // Without this the cached chunk offsets keep describing the pre-command
+                              // document, and selectChunkVersion's html-mismatch guard then refuses
+                              // every per-section Reject/Restore for the rest of the session. It fails
+                              // safe rather than splicing wrongly, but it fails silently, which reads
+                              // as "the buttons stopped working".
+                              if (typeof retireChunkState === 'function') {
+                                const _retired = retireChunkState({ currentHtml: _commandSourceHtml, documentEpoch: _commitToken && _commitToken.documentEpoch });
+                                if (!_retired || _retired.stale) {
+                                  setAgentActivityLog(prev => [...prev, { text: 'Stale result discarded - document changed', type: 'info', time: new Date().toLocaleTimeString() }]);
+                                  addToast(t('toasts.workbench_stale') || 'The document changed while Workbench was running, so its stale result was discarded.', 'info');
+                                  setIsAgentRunning(false); return;
+                                }
+                              }
+                              if (!_commitAsyncHtmlIfCurrent(_commitToken, (prev) => ({ ...prev, accessibleHtml: result.html, chunkState: null, chunkWeightedScore: null, chunkReport: null, _lastCmdDiff: _cmdDiff, _preCmdHtml: _preCmdHtml, _lastMiniAudit: result.miniAudit || null, _lastTableReadback: result.tableReadback || null }))) {
                                 setAgentActivityLog(prev => [...prev, { text: '? Stale result discarded ? document changed', type: 'info', time: new Date().toLocaleTimeString() }]);
                                 addToast(t('toasts.workbench_stale') || 'The document changed while Workbench was running ? its stale result was discarded.', 'info');
                                 setIsAgentRunning(false); return;

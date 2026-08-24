@@ -2218,7 +2218,6 @@ let handleSelectPersona = async () => { console.warn('[handleSelectPersona] Fall
 let handlePersonaTopicSpark = async () => { console.warn('[handlePersonaTopicSpark] Fallback'); };
 let handlePanelChatSubmit = async () => { console.warn('[handlePanelChatSubmit] Fallback'); };
 let handlePersonaChatSubmit = async () => { console.warn('[handlePersonaChatSubmit] Fallback'); };
-let handleSavePersonaChat = () => { console.warn('[handleSavePersonaChat] Fallback'); };
 function _upgradePersonas() {
     const factory = window.AlloModules && window.AlloModules.createPersonas;
     if (!factory) return;
@@ -2244,7 +2243,6 @@ function _upgradePersonas() {
     handlePersonaTopicSpark = api.handlePersonaTopicSpark;
     handlePanelChatSubmit = api.handlePanelChatSubmit;
     handlePersonaChatSubmit = api.handlePersonaChatSubmit;
-    handleSavePersonaChat = api.handleSavePersonaChat;
     console.log('[Personas] Monolith shim upgraded from CDN module.');
 }
 
@@ -15806,7 +15804,8 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     reflectionText: '',
     reflectionSubmitted: false,
     harmonyScore: 10,
-    earnedBadges: []
+    earnedBadges: [],
+    questionCraft: { good: 0, neutral: 0, poor: 0, coached: 0, freeform: 0 }
   });
   const [leveledTextLanguage, setLeveledTextLanguage] = useState('English');
   // Translations setting (Lane 4, 2026-08-16). One control, three meanings:
@@ -34433,6 +34432,58 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
           setIsProcessing(false);
       }
   };
+
+  const _getPersonaArtifactRuntime = () => {
+      const runtime = window.AlloModules && window.AlloModules.PersonaSessionArtifact;
+      if (!runtime || typeof runtime.listPrivateSessionArtifacts !== 'function') {
+          addToast('Private Persona session tools are still loading. Please try again.', 'error');
+          return null;
+      }
+      return runtime;
+  };
+  const handleListPersonaSessionArchive = async () => {
+      const runtime = _getPersonaArtifactRuntime();
+      if (!runtime) return null;
+      try {
+          const deviceStorage = await _getPrivatePersonaArtifactStorage();
+          return await runtime.listPrivateSessionArtifacts({ deviceStorage });
+      } catch (error) {
+          warnLog('[PersonaArtifact] Archive listing failed', error);
+          return null;
+      }
+  };
+  const handleDownloadPersonaSessionArchive = async (key, format) => {
+      const runtime = _getPersonaArtifactRuntime();
+      if (!runtime) return null;
+      try {
+          const deviceStorage = await _getPrivatePersonaArtifactStorage();
+          const artifact = await runtime.loadPrivateSessionArtifact(key, { deviceStorage });
+          if (format === 'html' && typeof runtime.downloadOwnerHtmlCopy === 'function') {
+              runtime.downloadOwnerHtmlCopy(artifact, { ownerInitiated: true, filename: artifact.title });
+          } else {
+              runtime.downloadOwnerCopy(artifact, { ownerInitiated: true, filename: artifact.title });
+          }
+          return true;
+      } catch (error) {
+          warnLog('[PersonaArtifact] Archive download failed', error);
+          addToast('Could not open this saved Persona session.', 'error');
+          return null;
+      }
+  };
+  const handleDeletePersonaSessionArchive = async (key) => {
+      const runtime = _getPersonaArtifactRuntime();
+      if (!runtime) return null;
+      try {
+          const deviceStorage = await _getPrivatePersonaArtifactStorage();
+          await runtime.deletePrivateSessionArtifact(key, { deviceStorage });
+          addToast('Private Persona session deleted from this device.', 'success');
+          return true;
+      } catch (error) {
+          warnLog('[PersonaArtifact] Archive delete failed', error);
+          addToast('Could not delete this saved Persona session.', 'error');
+          return null;
+      }
+  };
   const runAutonomousRemediation = (_docPipeline && _docPipeline.runAutonomousRemediation) ? _docPipeline.runAutonomousRemediation : async (h) => ({ html: h, score: 0, passes: 0, log: [] });
   const processExpertCommand = (_docPipeline && _docPipeline.processExpertCommand) ? _docPipeline.processExpertCommand : async (c, h) => ({ type: 'error', html: h });
 
@@ -38134,8 +38185,24 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
     const exportableResources = getExportableHistory();
     const offlineAssignmentId = alloStableAssignmentId(exportableResources, sourceTopic || generatedContent?.title || 'AlloFlow assignment');
     const stableClassId = rosterKey?.classId || rosterKey?.submissionKey?.classId || '';
+    // Mailbox return leg (2026-08-23): when a non-expired hosted homework share
+    // exists, bake its pack capability into the encrypted export so the page's
+    // Save button can POST the submission to the teacher's Class Mailbox Drive
+    // folder (putsubmission's existing homework auth - no script change). The
+    // capability is the same unguessable id+k pair students already receive in
+    // the share QR; the page falls back to the encrypted file download whenever
+    // the POST fails, the share expired, or no capability was available.
+    const _hostedSubmitShare = (recentQrShares || []).filter(share => share?.type === 'assignment-pack-hosted'
+        && share.packId && share.packSecret && !share.revokedAt
+        && (!share.expiresAt || Date.parse(share.expiresAt) > Date.now()))
+        .sort((a, b) => ((Date.parse(b?.createdAt || '') || 0) - (Date.parse(a?.createdAt || '') || 0)))[0] || null;
+    const _mailboxSubmitTarget = (mbConfig?.url && _hostedSubmitShare)
+        ? { url: mbConfig.url, id: _hostedSubmitShare.packId, k: _hostedSubmitShare.packSecret,
+            ...(_hostedSubmitShare.expiresAt ? { expiresAt: _hostedSubmitShare.expiresAt } : {}) }
+        : null;
     const cfgBase = (!isWorksheet && rosterKey?.submissionKey?.publicJwk)
-      ? { ...exportConfig, classPublicJwk: rosterKey.submissionKey.publicJwk, classId: stableClassId, assignmentId: offlineAssignmentId }
+      ? { ...exportConfig, classPublicJwk: rosterKey.submissionKey.publicJwk, classId: stableClassId, assignmentId: offlineAssignmentId,
+          ...(_mailboxSubmitTarget ? { mailboxSubmitTarget: _mailboxSubmitTarget } : {}) }
       : { ...exportConfig, ...(stableClassId ? { classId: stableClassId } : {}), assignmentId: offlineAssignmentId };
     // Inject teacher's current annotations (stickers + notes + highlights)
     // so they ride the exported HTML. Phase 4 of the annotation suite —
@@ -48295,6 +48362,7 @@ ${_alloActivityContext(activity)}
             handlePanelChatSubmit, handlePersonaChatSubmit, generatePersonaFollowUps, generatePanelFollowUps,
             handlePersonaTopicSpark, handleRetryPortraitGeneration,
             handleSavePersonaChat: handleSavePrivatePersonaSession, handleSaveReflection, handleGeneratePersonaSummary,
+            handleListPersonaSessionArchive, handleDownloadPersonaSessionArchive, handleDeletePersonaSessionArchive,
             handleSetIsPersonaReflectionOpenToFalse,
             handleSetPersonaDefinitionDataToNull,
             handleSpeak, handleTogglePersonaAutoSend,
@@ -51074,7 +51142,7 @@ ${_alloActivityContext(activity)}
                         onUploadPortrait={(idx, dataUrl) => {
                             setAdventureState(prev => {
                                 const chars = [...prev.characters];
-                                chars[idx] = { ...chars[idx], portrait: dataUrl, isUserUploaded: true, isGenerating: false };
+                                chars[idx] = { ...chars[idx], portrait: dataUrl, isUserUploaded: true, uploadConsent: true, isGenerating: false };
                                 return { ...prev, characters: chars };
                             });
                         }}

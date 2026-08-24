@@ -77,7 +77,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
     var st = document.createElement('style');
     st.id = 'allo-beehive-visual-css';
     st.textContent =
-      '[data-beehive-root="true"] { --bee-accent:#d97706; --bee-accent-rgb:217,119,6; --bee-secondary-rgb:16,185,129; position:relative; isolation:isolate; padding:clamp(.5rem,1.6vw,1rem); border:1px solid rgba(var(--bee-accent-rgb),.18); border-radius:1.75rem; background:radial-gradient(circle at 8% 0%,rgba(var(--bee-accent-rgb),.14),transparent 30rem),radial-gradient(circle at 98% 18%,rgba(var(--bee-secondary-rgb),.10),transparent 28rem),linear-gradient(180deg,rgba(255,251,235,.96),rgba(248,250,252,.92)); box-shadow:0 28px 80px rgba(15,23,42,.12),inset 0 1px 0 rgba(255,255,255,.9); }' +
+      '[data-beehive-root="true"] { --bee-accent:#d97706; --bee-accent-rgb:217,119,6; --bee-accent-deep:#92400e; --bee-secondary-rgb:16,185,129; position:relative; isolation:isolate; padding:clamp(.5rem,1.6vw,1rem); border:1px solid rgba(var(--bee-accent-rgb),.18); border-radius:1.75rem; background:radial-gradient(circle at 8% 0%,rgba(var(--bee-accent-rgb),.14),transparent 30rem),radial-gradient(circle at 98% 18%,rgba(var(--bee-secondary-rgb),.10),transparent 28rem),linear-gradient(180deg,rgba(255,251,235,.96),rgba(248,250,252,.92)); box-shadow:0 28px 80px rgba(15,23,42,.12),inset 0 1px 0 rgba(255,255,255,.9); }' +
       '[data-beehive-root="true"][data-beehive-theme="light"] .text-slate-300,[data-beehive-root="true"][data-beehive-theme="light"] .text-slate-400 { color:#475569 !important; }' +
       '[data-beehive-root="true"][data-beehive-theme="light"] .text-emerald-500 { color:#047857 !important; }' +
       '[data-beehive-root="true"][data-beehive-theme="light"] .text-rose-500 { color:#be123c !important; }' +
@@ -95,13 +95,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       '[data-beehive-root="true"][data-beehive-theme="light"] [data-beehive-inspector="true"] .text-slate-300 { color:#cbd5e1 !important; }' +
       '[data-beehive-root="true"][data-beehive-theme="light"] [data-beehive-inspector="true"] .text-slate-400 { color:#94a3b8 !important; }' +
       '[data-beehive-root="true"][data-beehive-theme="dark"] { background:radial-gradient(circle at 8% 0%,rgba(var(--bee-accent-rgb),.18),transparent 30rem),radial-gradient(circle at 98% 18%,rgba(var(--bee-secondary-rgb),.12),transparent 28rem),linear-gradient(180deg,rgba(15,23,42,.98),rgba(2,6,23,.98)); border-color:rgba(var(--bee-accent-rgb),.26); box-shadow:0 30px 90px rgba(2,6,23,.55),inset 0 1px 0 rgba(255,255,255,.06); }' +
-      '[data-beehive-root="true"][data-beehive-active-mode="queen"] { --bee-accent:#9333ea; --bee-accent-rgb:147,51,234; --bee-secondary-rgb:244,63,94; }' +
-      '[data-beehive-root="true"][data-beehive-active-mode="drone"] { --bee-accent:#4f46e5; --bee-accent-rgb:79,70,229; --bee-secondary-rgb:14,165,233; }' +
+      '[data-beehive-root="true"][data-beehive-active-mode="queen"] { --bee-accent:#9333ea; --bee-accent-rgb:147,51,234; --bee-accent-deep:#7e22ce; --bee-secondary-rgb:244,63,94; }' +
+      '[data-beehive-root="true"][data-beehive-active-mode="drone"] { --bee-accent:#4f46e5; --bee-accent-rgb:79,70,229; --bee-accent-deep:#4338ca; --bee-secondary-rgb:14,165,233; }' +
       '[data-beehive-root="true"]::before { content:""; position:absolute; z-index:-1; inset:0; border-radius:inherit; pointer-events:none; background-image:radial-gradient(circle,rgba(var(--bee-accent-rgb),.18) 0 1px,transparent 1.5px); background-size:22px 22px; opacity:.32; -webkit-mask-image:linear-gradient(135deg,#000,transparent 38%,transparent 68%,#000); mask-image:linear-gradient(135deg,#000,transparent 38%,transparent 68%,#000); }' +
       '[data-beehive-hero="true"] { min-height:6.75rem; border-color:rgba(var(--bee-accent-rgb),.30) !important; background:linear-gradient(120deg,rgba(255,255,255,.88),rgba(var(--bee-accent-rgb),.10),rgba(var(--bee-secondary-rgb),.08)) !important; box-shadow:0 18px 46px rgba(var(--bee-accent-rgb),.12),inset 0 1px 0 rgba(255,255,255,.85); backdrop-filter:blur(18px); }' +
       '[data-beehive-theme="dark"] [data-beehive-hero="true"] { background:linear-gradient(120deg,rgba(15,23,42,.94),rgba(var(--bee-accent-rgb),.18),rgba(2,6,23,.92)) !important; box-shadow:0 20px 50px rgba(2,6,23,.38),inset 0 1px 0 rgba(255,255,255,.07); }' +
       '[data-beehive-hero="true"]::after { content:""; position:absolute; width:15rem; aspect-ratio:1; right:8%; top:-9.5rem; border:2.5rem solid rgba(var(--bee-accent-rgb),.09); border-radius:999px; box-shadow:0 0 0 1.5rem rgba(var(--bee-secondary-rgb),.045); pointer-events:none; }' +
-      '[data-beehive-mode-signal="true"] { display:inline-flex; align-items:center; gap:.4rem; max-width:100%; border:1px solid rgba(var(--bee-accent-rgb),.24); border-radius:999px; padding:.22rem .55rem; background:rgba(255,255,255,.68); color:var(--bee-accent); box-shadow:0 5px 16px rgba(var(--bee-accent-rgb),.10); }' +
+      '[data-beehive-mode-signal="true"] { display:inline-flex; align-items:center; gap:.4rem; max-width:100%; border:1px solid rgba(var(--bee-accent-rgb),.24); border-radius:999px; padding:.22rem .55rem; background:rgba(255,255,255,.68); color:var(--bee-accent-deep,var(--bee-accent)); box-shadow:0 5px 16px rgba(var(--bee-accent-rgb),.10); }' +
       '[data-beehive-theme="dark"] [data-beehive-mode-signal="true"] { background:rgba(2,6,23,.55); color:rgb(var(--bee-accent-rgb)); border-color:rgba(var(--bee-accent-rgb),.42); }' +
       '[data-beehive-mode-switcher="true"] { border-color:rgba(var(--bee-accent-rgb),.18) !important; background:rgba(255,255,255,.62) !important; box-shadow:inset 0 1px 0 rgba(255,255,255,.85),0 12px 34px rgba(15,23,42,.07); backdrop-filter:blur(16px); }' +
       '[data-beehive-theme="dark"] [data-beehive-mode-switcher="true"] { background:rgba(2,6,23,.42) !important; box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 14px 38px rgba(2,6,23,.28); }' +
@@ -4958,11 +4958,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               h('span', { className: 'text-lg', 'aria-hidden': 'true' }, sec.icon),
               h('span', { className: 'text-base font-black ' + (dk ? 'text-amber-200' : 'text-amber-900') }, sec.title),
               sec.teacher && h('span', { className: 'text-[10px] px-1.5 py-0.5 rounded font-bold ' + (dk ? 'bg-indigo-900/50 text-indigo-300' : 'bg-indigo-100 text-indigo-700') }, 'TEACHER'),
-              h('span', { className: 'text-[11px] ' + (dk ? 'text-slate-400' : 'text-slate-500') }, items.length + ' entries')),
+              h('span', { className: 'text-[11px] ' + (dk ? 'text-slate-400' : 'text-slate-600') }, items.length + ' entries')),
               sec.blurb && h('p', { className: 'text-[11px] italic ' + (dk ? 'text-slate-400' : 'text-slate-600') }, sec.blurb),
               h('div', { className: 'space-y-2 overflow-y-auto pr-1', style: { maxHeight: '520px' } },
                 items.length === 0
-                  ? h('p', { className: 'text-xs ' + (dk ? 'text-slate-400' : 'text-slate-500') }, 'No entries.')
+                  ? h('p', { className: 'text-xs ' + (dk ? 'text-slate-400' : 'text-slate-600') }, 'No entries.')
                   : items.map(function(item, idx) { return renderGuideEntry(item, idx); }))));
         }
 
@@ -23145,7 +23145,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   h('div', { className: 'mt-1 text-[10px] font-bold tabular-nums ' + (dk ? 'text-slate-300' : 'text-slate-700') }, metric.before + metric.suffix + ' \u2192 ' + metric.after + metric.suffix));
               })),
               h('div', { 'data-rts-impact-why': 'true', className: 'mt-3 border-t pt-3 ' + (dk ? 'border-white/10' : 'border-slate-200') },
-                h('div', { className: 'text-[10px] font-black uppercase tracking-[0.14em] ' + (dk ? 'text-slate-400' : 'text-slate-500') }, 'Why it changed'),
+                h('div', { className: 'text-[10px] font-black uppercase tracking-[0.14em] ' + (dk ? 'text-slate-400' : 'text-slate-600') }, 'Why it changed'),
                 queenImpact && Array.isArray(queenImpact.events) && queenImpact.events.length > 0
                   ? h('ul', { className: 'mt-1 space-y-1', 'aria-label': 'Triggered cycle events' }, queenImpact.events.map(function(eventText, index) { return h('li', { key: index, className: 'text-[10px] leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-700') }, eventText); }))
                   : h('p', { className: 'mt-1 text-[10px] leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-700') }, whyText))),
@@ -23162,7 +23162,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 { label: 'Current posture', value: rivalIntelKnown ? (queenRival.posture || 'forage') : 'Unconfirmed', detail: rivalIntelKnown ? (queenRival.lastMove || 'No move logged') : 'Scout to reveal current worker allocation.' },
                 { label: 'Telegraph', value: rivalIntelKnown ? (queenRival.telegraph || 'No clear signal') : 'Hidden', detail: rivalIntelKnown ? 'What the rival is likely to do next.' : 'Pressure still reveals the raid threshold.' },
                 { label: 'Best counter', value: rivalIntelKnown ? (queenRival.counter || rivalDoctrineProfile.counter) : 'Scout first', detail: rivalIntelKnown ? 'A response derived from the observed posture.' : rivalDoctrineProfile.counter }
-              ].map(function(item) { return h('div', { key: item.label, role: 'listitem', className: 'rounded-lg border p-2.5 ' + (dk ? 'border-white/10 bg-slate-950/35' : 'border-white bg-white/80') }, h('div', { className: 'text-[10px] font-black uppercase tracking-wide ' + (dk ? 'text-slate-400' : 'text-slate-500') }, item.label), h('div', { className: 'mt-1 text-[10px] font-black capitalize ' + (dk ? 'text-white' : 'text-slate-900') }, item.value), h('p', { className: 'mt-1 text-[10px] leading-relaxed ' + (dk ? 'text-slate-400' : 'text-slate-600') }, item.detail)); }))
+              ].map(function(item) { return h('div', { key: item.label, role: 'listitem', className: 'rounded-lg border p-2.5 ' + (dk ? 'border-white/10 bg-slate-950/35' : 'border-white bg-white/80') }, h('div', { className: 'text-[10px] font-black uppercase tracking-wide ' + (dk ? 'text-slate-400' : 'text-slate-600') }, item.label), h('div', { className: 'mt-1 text-[10px] font-black capitalize ' + (dk ? 'text-white' : 'text-slate-900') }, item.value), h('p', { className: 'mt-1 text-[10px] leading-relaxed ' + (dk ? 'text-slate-400' : 'text-slate-600') }, item.detail)); }))
             ),
             h('div', { className: 'mt-3 text-[10px] font-black uppercase tracking-[0.14em] ' + (dk ? 'text-fuchsia-300' : 'text-fuchsia-800') }, 'Upcoming on the live clock'),
             h('ol', { className: 'mt-2 grid grid-cols-1 gap-2 sm:grid-cols-3', 'aria-label': 'Upcoming Queen RTS events' }, forecast.map(function(item, index) {
@@ -23170,7 +23170,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 h('span', { className: 'grid h-7 w-7 shrink-0 place-items-center rounded-full bg-fuchsia-600 text-[10px] font-black text-white', 'aria-hidden': 'true' }, index + 1),
                 h('span', { className: 'min-w-0' }, h('span', { className: 'block text-[10px] font-black ' + (dk ? 'text-white' : 'text-slate-900') }, item.label), h('span', { className: 'block text-[10px] font-black text-fuchsia-600' }, item.timing), h('span', { className: 'mt-0.5 block text-[10px] leading-relaxed ' + (dk ? 'text-slate-400' : 'text-slate-600') }, item.detail)));
             })),
-            h('p', { className: 'mt-2 text-[10px] italic ' + (dk ? 'text-slate-500' : 'text-slate-500') }, 'Forecasts use the current phase, pressure, difficulty, and fixed rival cadence; your next strategy choice can change them.'));
+            h('p', { className: 'mt-2 text-[10px] italic ' + (dk ? 'text-slate-500' : 'text-slate-600') }, 'Forecasts use the current phase, pressure, difficulty, and fixed rival cadence; your next strategy choice can change them.'));
         }
         function renderBeePulseStrip() {
           var items;
@@ -23204,7 +23204,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               return h('article', { key: item.label, 'data-beehive-vital': item.label.toLowerCase().replace(/[^a-z0-9]+/g, '-'), 'data-tone': item.tone },
                 h('div', { className: 'flex items-start justify-between gap-2' },
                   h('div', { className: 'min-w-0' },
-                    h('div', { className: 'text-[10px] font-black uppercase tracking-[0.12em] ' + (dk ? 'text-slate-300' : 'text-slate-500') }, item.label),
+                    h('div', { className: 'text-[10px] font-black uppercase tracking-[0.12em] ' + (dk ? 'text-slate-300' : 'text-slate-600') }, item.label),
                     h('div', { className: 'mt-0.5 text-lg font-black leading-none ' + (dk ? 'text-white' : 'text-slate-900') }, item.value)),
                   h('span', { className: 'grid h-8 w-8 shrink-0 place-items-center rounded-lg text-base ' + (dk ? 'bg-white/5' : 'bg-slate-950/5'), 'aria-hidden': 'true' }, item.icon)),
                 h('p', { className: 'mt-1.5 break-words text-[10px] font-semibold leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-600'), title: item.detail }, item.detail),
@@ -23224,7 +23224,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           return h('nav', { 'data-beehive-flow-nav': 'true', 'data-layout-state': focusLayout ? 'stage-first' : 'overview-first', className: 'rounded-xl border p-2 ' + (dk ? 'border-slate-700 bg-slate-950/35' : 'border-slate-200 bg-white/70'), 'aria-label': 'Bee simulation learning flow' },
             h('div', { className: 'mb-2 flex flex-wrap items-center justify-between gap-2 px-1' },
               h('div', null,
-                h('div', { className: 'text-[10px] font-black uppercase tracking-[0.15em] ' + (dk ? 'text-slate-300' : 'text-slate-500') }, 'Learning flow'),
+                h('div', { className: 'text-[10px] font-black uppercase tracking-[0.15em] ' + (dk ? 'text-slate-300' : 'text-slate-600') }, 'Learning flow'),
                 h('div', { className: 'text-[10px] font-semibold ' + (dk ? 'text-slate-300' : 'text-slate-600') }, focusLayout ? 'Live stage appears before supporting dashboards.' : 'Supporting dashboards appear before the live stage.')),
               h('button', { type: 'button', 'data-beehive-focus-layout': 'true', 'aria-pressed': focusLayout, onClick: function() { var nextLayout = !focusLayout; upd('focusLayout', nextLayout); announceBee(nextLayout ? 'Stage-first layout enabled.' : 'Overview-first layout enabled.', false); }, className: 'inline-flex min-h-[44px] items-center gap-2 rounded-lg border px-3 py-2 text-[10px] font-black transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 ' + (focusLayout ? (dk ? 'border-emerald-700 bg-emerald-950/40 text-emerald-200' : 'border-emerald-200 bg-emerald-50 text-emerald-800') : (dk ? 'border-slate-700 bg-slate-900 text-slate-200 hover:border-slate-500' : 'border-slate-200 bg-white text-slate-700 hover:border-amber-300')) },
                 h('span', { 'aria-hidden': 'true' }, focusLayout ? '\u25A3' : '\u25A1'),
@@ -23453,9 +23453,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           return h('details', { key: 'beehive-learning-brief', 'data-beehive-learning-brief': 'true', open: briefOpen, onToggle: function(e) { var nextOpen = e.currentTarget.open; if (nextOpen !== (d.missionBriefOpen === true)) upd('missionBriefOpen', nextOpen); }, className: 'group overflow-hidden rounded-2xl border ' + (dk ? 'border-slate-700 bg-slate-900/60' : 'border-slate-200 bg-white') },
             h('summary', { id: 'beehive-learning-brief-summary', className: 'flex min-h-[58px] cursor-pointer list-none items-center gap-3 px-3 py-2.5 outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-amber-500 sm:px-4', style: { listStyle: 'none' }, 'aria-label': (briefOpen ? 'Collapse ' : 'Expand ') + roleLabel },
               h('span', { className: 'grid h-9 w-9 shrink-0 place-items-center rounded-xl text-base shadow-sm ' + roleVisual.orb, 'aria-hidden': 'true' }, roleIcon),
-              h('span', { className: 'min-w-0 flex-1' }, h('span', { className: 'block text-[10px] font-black uppercase tracking-[0.15em] ' + (dk ? 'text-slate-400' : 'text-slate-500') }, 'Learning brief'), h('span', { className: 'block truncate text-xs font-black ' + (dk ? 'text-white' : 'text-slate-900') }, roleLabel), h('span', { className: 'block truncate text-[10px] font-semibold ' + (dk ? 'text-slate-400' : 'text-slate-600') }, simCardStatus(viewMode))),
+              h('span', { className: 'min-w-0 flex-1' }, h('span', { className: 'block text-[10px] font-black uppercase tracking-[0.15em] ' + (dk ? 'text-slate-400' : 'text-slate-600') }, 'Learning brief'), h('span', { className: 'block truncate text-xs font-black ' + (dk ? 'text-white' : 'text-slate-900') }, roleLabel), h('span', { className: 'block truncate text-[10px] font-semibold ' + (dk ? 'text-slate-400' : 'text-slate-600') }, simCardStatus(viewMode))),
               h('span', { className: 'hidden rounded-full border px-2 py-1 text-[10px] font-black uppercase tracking-wide sm:inline-flex ' + (dk ? 'border-slate-700 text-slate-300' : 'border-slate-200 text-slate-600') }, briefOpen ? 'Hide dashboard' : 'Open dashboard'),
-              h('span', { className: 'text-lg leading-none transition-transform group-open:rotate-180 motion-reduce:transition-none ' + (dk ? 'text-slate-400' : 'text-slate-500'), 'aria-hidden': 'true' }, '\u2304')),
+              h('span', { className: 'text-lg leading-none transition-transform group-open:rotate-180 motion-reduce:transition-none ' + (dk ? 'text-slate-400' : 'text-slate-600'), 'aria-hidden': 'true' }, '\u2304')),
             h('div', { className: 'border-t p-2 ' + (dk ? 'border-slate-700' : 'border-slate-200') }, renderBeeMissionDeck()));
         }
         function currentBeeNotebookEntry() {
@@ -23659,7 +23659,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 h('span', { className: 'mt-1 block h-1.5 max-w-xs overflow-hidden rounded-full ' + (dk ? 'bg-slate-800' : 'bg-slate-200'), role: 'progressbar', 'aria-label': completed + ' of 3 notebook sections complete', 'aria-valuemin': 0, 'aria-valuemax': 3, 'aria-valuenow': completed },
                   h('span', { className: 'block h-full rounded-full bg-gradient-to-r from-sky-500 to-emerald-500 transition-all', style: { width: (completed / 3 * 100) + '%' } }))),
               h('span', { className: 'rounded-full px-2.5 py-1 text-[10px] font-black ' + (completed === 3 ? 'bg-emerald-700 text-white' : (dk ? 'bg-slate-800 text-slate-200' : 'bg-sky-50 text-sky-800')) }, completed + ' / 3'),
-              h('span', { className: 'text-lg leading-none transition-transform group-open:rotate-180 motion-reduce:transition-none ' + (dk ? 'text-slate-400' : 'text-slate-500'), 'aria-hidden': 'true' }, '\u2304')),
+              h('span', { className: 'text-lg leading-none transition-transform group-open:rotate-180 motion-reduce:transition-none ' + (dk ? 'text-slate-400' : 'text-slate-600'), 'aria-hidden': 'true' }, '\u2304')),
             h('div', { className: 'border-t p-3 sm:p-4 ' + (dk ? 'border-slate-700' : 'border-sky-100') },
               h('div', { className: 'flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between' },
                 h('div', null,
@@ -23672,7 +23672,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 h('p', { className: 'mt-1 text-[10px] leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-700') }, notebookHandoffCue.summary),
                 h('div', { className: 'mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4', role: 'list', 'aria-label': 'Last Drone Flight evidence metrics' },
                   [{ label: 'Peak altitude', value: Math.round(droneLastRun.maxAlt || 0) + ' ft' }, { label: 'Distance', value: Math.round(droneLastRun.distance || 0) + ' m' }, { label: 'Energy left', value: Math.round(droneLastRun.energyLeft || 0) + '%' }, { label: 'Hazard conflicts', value: ((droneLastRun.obstacleHits || 0) + (droneLastRun.trafficHits || 0)) + '' }].map(function(item) {
-                    return h('div', { key: item.label, role: 'listitem', className: 'rounded-lg border p-2 ' + (dk ? 'border-white/10 bg-slate-950/35' : 'border-white bg-white/80') }, h('div', { className: 'text-[10px] font-black uppercase tracking-wide ' + (dk ? 'text-slate-400' : 'text-slate-500') }, item.label), h('div', { className: 'mt-1 text-sm font-black tabular-nums ' + (dk ? 'text-slate-100' : 'text-slate-800') }, item.value));
+                    return h('div', { key: item.label, role: 'listitem', className: 'rounded-lg border p-2 ' + (dk ? 'border-white/10 bg-slate-950/35' : 'border-white bg-white/80') }, h('div', { className: 'text-[10px] font-black uppercase tracking-wide ' + (dk ? 'text-slate-400' : 'text-slate-600') }, item.label), h('div', { className: 'mt-1 text-sm font-black tabular-nums ' + (dk ? 'text-slate-100' : 'text-slate-800') }, item.value));
                   })),
                 h('p', { className: 'mt-3 text-[10px] font-black ' + (dk ? 'text-sky-200' : 'text-sky-800') }, notebookHandoffCue.prompt)
               ),
@@ -23698,7 +23698,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                     h('input', { id: checkId, type: 'checkbox', 'data-notebook-review': item.id, checked: item.checked, disabled: !item.available, onChange: function(e) { updateBeeNotebookReview(item.id, e.target.checked); }, 'aria-describedby': cueId, className: 'mt-0.5 h-5 w-5 shrink-0 accent-emerald-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500' }),
                     h('span', { className: 'min-w-0 flex-1' },
                       h('span', { className: 'block text-[11px] font-black' }, item.label),
-                      h('span', { id: cueId, className: 'mt-0.5 block text-[10px] leading-relaxed ' + (item.available ? (dk ? 'text-slate-300' : 'text-slate-600') : (dk ? 'text-slate-500' : 'text-slate-500')) }, item.available ? item.cue : 'Write the ' + item.id + ' before checking this criterion.')));
+                      h('span', { id: cueId, className: 'mt-0.5 block text-[10px] leading-relaxed ' + (item.available ? (dk ? 'text-slate-300' : 'text-slate-600') : (dk ? 'text-slate-500' : 'text-slate-600')) }, item.available ? item.cue : 'Write the ' + item.id + ' before checking this criterion.')));
                 })),
                 h('div', { 'data-beehive-review-feedback': nextReviewItem ? nextReviewItem.id : 'ready', role: 'note', className: 'mt-3 flex flex-col gap-3 rounded-lg border p-3 sm:flex-row sm:items-center sm:justify-between ' + (reviewCompleted === 3 ? (dk ? 'border-emerald-700/70 bg-emerald-950/25' : 'border-emerald-200 bg-white') : (dk ? 'border-slate-700 bg-slate-900/70' : 'border-slate-200 bg-white')) },
                   h('div', null,
@@ -23718,16 +23718,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   var active = viewMode === role.id;
                   return h('button', { key: role.id, type: 'button', 'data-notebook-role': role.id, onClick: function() { upd('viewMode', role.id); }, 'aria-current': active ? 'true' : undefined, 'aria-label': 'Open ' + role.label + ' notebook, ' + role.completed + ' of 3 sections written, self-review ' + role.reviewCompleted + ' of 3 ready', className: 'flex min-h-[48px] items-center gap-2 rounded-lg border px-3 py-2 text-left outline-none transition-colors focus-visible:ring-2 focus-visible:ring-emerald-500 ' + (active ? 'border-emerald-800 bg-emerald-700 text-white' : (dk ? 'border-slate-700 bg-slate-900 text-slate-100 hover:border-emerald-600' : 'border-slate-200 bg-white text-slate-900 hover:border-emerald-400')) },
                     h('span', { className: 'text-base', 'aria-hidden': 'true' }, role.completed === 3 && role.reviewCompleted === 3 ? '\u2713' : role.icon),
-                    h('span', { className: 'min-w-0 flex-1' }, h('span', { className: 'block truncate text-[10px] font-black' }, role.label), h('span', { className: 'block text-[10px] ' + (active ? 'text-emerald-50' : (dk ? 'text-slate-400' : 'text-slate-500')) }, role.completed + ' of 3 written \u00B7 review ' + role.reviewCompleted + ' of 3')));
+                    h('span', { className: 'min-w-0 flex-1' }, h('span', { className: 'block truncate text-[10px] font-black' }, role.label), h('span', { className: 'block text-[10px] ' + (active ? 'text-emerald-50' : (dk ? 'text-slate-400' : 'text-slate-600')) }, role.completed + ' of 3 written \u00B7 review ' + role.reviewCompleted + ' of 3')));
                 })),
                 h('label', { className: 'mt-3 block' },
                   h('span', { className: 'text-xs font-black ' + (dk ? 'text-slate-100' : 'text-slate-900') }, 'Cross-perspective synthesis'),
                   h('span', { id: 'beehive-notebook-synthesis-prompt', className: 'mt-1 block text-[10px] leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-600') }, 'How do individual bee behavior, colony decision-making, and ecosystem management interact?'),
                   h('textarea', { 'data-notebook-synthesis': 'true', value: notebook.synthesis || '', onChange: function(e) { updateBeeNotebookSynthesis(e.target.value); }, rows: 4, maxLength: 1600, spellCheck: true, 'aria-describedby': 'beehive-notebook-synthesis-prompt', className: 'mt-2 w-full resize-y rounded-lg border p-2.5 text-xs leading-relaxed outline-none focus:ring-2 focus:ring-emerald-500 ' + (dk ? 'border-slate-600 bg-slate-900 text-slate-100 placeholder:text-slate-400' : 'border-slate-300 bg-white text-slate-900 placeholder:text-slate-600'), placeholder: 'Across all three perspectives, I found...' })),
                 h('div', { className: 'mt-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between' },
-                  h('p', { className: 'text-[10px] font-semibold ' + (dk ? 'text-slate-400' : 'text-slate-500') }, synthesisComplete ? 'Synthesis saved. Your portfolio is ready to revisit or share.' : 'Finish the synthesis after gathering evidence in all three roles.'),
+                  h('p', { className: 'text-[10px] font-semibold ' + (dk ? 'text-slate-400' : 'text-slate-600') }, synthesisComplete ? 'Synthesis saved. Your portfolio is ready to revisit or share.' : 'Finish the synthesis after gathering evidence in all three roles.'),
                   h('button', { type: 'button', 'data-beehive-copy-notebook': 'true', onClick: copyBeeNotebookPortfolio, className: 'inline-flex min-h-[44px] items-center justify-center gap-2 rounded-lg bg-emerald-700 px-3 py-2 text-[10px] font-black text-white shadow-sm transition-colors hover:bg-emerald-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400', 'aria-label': 'Copy complete Science Notebook portfolio' }, h('span', { 'aria-hidden': 'true' }, '\uD83D\uDCCB'), 'Copy portfolio'))),
-              h('p', { className: 'mt-3 text-[10px] font-semibold ' + (dk ? 'text-slate-400' : 'text-slate-500') }, 'Notebook entries save automatically in this simulation and remain available when you switch perspectives.')));
+              h('p', { className: 'mt-3 text-[10px] font-semibold ' + (dk ? 'text-slate-400' : 'text-slate-600') }, 'Notebook entries save automatically in this simulation and remain available when you switch perspectives.')));
         }
         function renderBeeJourney() {
           var keeperDone = day >= 30;
@@ -23789,7 +23789,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               return h('button', { key: item.id, onClick: function() { upd('viewMode', item.id); }, 'aria-current': active ? 'step' : undefined, className: 'rounded-xl border p-3 text-left transition-all ' + (active ? (dk ? 'border-white/30 bg-white/10 ring-1 ring-white/20' : 'border-slate-400 bg-slate-50 ring-1 ring-slate-200') : (dk ? 'border-slate-700 bg-slate-950/35 hover:border-slate-500' : 'border-slate-200 bg-white hover:border-slate-300')) },
                 h('div', { className: 'flex items-start gap-2' }, h('span', { className: 'text-xl', 'aria-hidden': 'true' }, item.icon), h('div', { className: 'min-w-0 flex-1' }, h('div', { className: 'flex items-center justify-between gap-2' }, h('span', { className: 'text-xs font-black ' + (dk ? 'text-white' : 'text-slate-900') }, item.title), h('span', { className: item.done ? 'text-emerald-500' : (dk ? 'text-slate-500' : 'text-slate-400'), role: 'img', 'aria-label': item.done ? 'milestone complete' : 'milestone in progress' }, item.done ? '\u2713' : '\u25CB')), h('p', { className: 'mt-0.5 text-[10px] leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-600') }, item.criterion))),
                 h('div', { className: 'mt-2 h-1.5 overflow-hidden rounded-full ' + (dk ? 'bg-slate-800' : 'bg-slate-200'), role: 'progressbar', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': item.progress, 'aria-label': item.title + ' progress ' + item.progress + ' percent' }, h('div', { className: 'h-full rounded-full transition-all ' + tone, style: { width: item.progress + '%' } })),
-                h('div', { className: 'mt-1.5 text-[10px] font-bold uppercase tracking-wide ' + (item.done ? 'text-emerald-500' : (dk ? 'text-slate-400' : 'text-slate-500')) }, item.status));
+                h('div', { className: 'mt-1.5 text-[10px] font-bold uppercase tracking-wide ' + (item.done ? 'text-emerald-500' : (dk ? 'text-slate-400' : 'text-slate-600')) }, item.status));
             })),
             h('div', { 'data-beehive-journey-next': nextMilestone ? nextMilestone.id : 'complete', role: 'status', 'aria-live': 'polite', className: 'mt-3 flex flex-col gap-2 rounded-xl border p-3 sm:flex-row sm:items-center sm:justify-between ' + (nextMilestone ? (dk ? 'border-emerald-700/45 bg-emerald-950/25' : 'border-emerald-200 bg-emerald-50/70') : (dk ? 'border-indigo-700/45 bg-indigo-950/25' : 'border-indigo-200 bg-indigo-50/70')) },
               h('div', null, h('div', { className: 'text-[10px] font-black uppercase tracking-[0.14em] ' + (nextMilestone ? 'text-emerald-600' : 'text-indigo-600') }, nextMilestone ? 'Recommended next' : 'Journey complete'), h('p', { className: 'mt-1 text-[10px] leading-relaxed ' + (dk ? 'text-slate-200' : 'text-slate-700') }, nextMilestoneMessage)),
@@ -23818,9 +23818,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           return h('details', { key: 'beehive-journey', 'data-beehive-journey-disclosure': 'true', open: journeyOpen, onToggle: function(e) { var nextOpen = e.currentTarget.open; if (nextOpen !== (d.journeyOpen === true)) upd('journeyOpen', nextOpen); }, className: 'group overflow-hidden rounded-2xl border ' + (completed === 3 ? (dk ? 'border-emerald-700/60 bg-emerald-950/20' : 'border-emerald-200 bg-emerald-50/60') : (dk ? 'border-slate-700 bg-slate-900/60' : 'border-slate-200 bg-white')) },
             h('summary', { id: 'beehive-journey-summary', className: 'flex min-h-[58px] cursor-pointer list-none items-center gap-3 px-3 py-2.5 outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-emerald-500 sm:px-4', style: { listStyle: 'none' }, 'aria-label': (journeyOpen ? 'Collapse' : 'Expand') + ' three-perspective experience path. ' + (nextJourneyTitle ? 'Recommended next: ' + nextJourneyTitle + '.' : 'All milestones complete; continue with the Science Notebook synthesis.') },
               h('span', { className: 'grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-amber-700 via-purple-600 to-indigo-600 text-base text-white shadow-sm', 'aria-hidden': 'true' }, completed === 3 ? '\u2713' : '\u2B21'),
-              h('span', { className: 'min-w-0 flex-1' }, h('span', { className: 'block text-[10px] font-black uppercase tracking-[0.15em] ' + (completed === 3 ? 'text-emerald-600' : (dk ? 'text-slate-400' : 'text-slate-500')) }, 'Experience path'), h('span', { className: 'block text-xs font-black ' + (dk ? 'text-white' : 'text-slate-900') }, completed === 3 ? 'Three perspectives connected' : 'Connect organism, colony, and ecosystem'), h('span', { className: 'mt-1 block text-[10px] font-semibold ' + (nextJourneyTitle ? (dk ? 'text-emerald-300' : 'text-emerald-700') : (dk ? 'text-indigo-300' : 'text-indigo-700')) }, nextJourneyTitle ? 'Next: ' + nextJourneyTitle : 'Next: Science Notebook synthesis'), h('span', { className: 'mt-1 block h-1.5 max-w-xs overflow-hidden rounded-full ' + (dk ? 'bg-slate-800' : 'bg-slate-200') }, h('span', { className: 'block h-full rounded-full bg-gradient-to-r from-amber-500 via-purple-500 to-indigo-500 transition-all', style: { width: (completed / 3 * 100) + '%' } }))),
+              h('span', { className: 'min-w-0 flex-1' }, h('span', { className: 'block text-[10px] font-black uppercase tracking-[0.15em] ' + (completed === 3 ? 'text-emerald-600' : (dk ? 'text-slate-400' : 'text-slate-600')) }, 'Experience path'), h('span', { className: 'block text-xs font-black ' + (dk ? 'text-white' : 'text-slate-900') }, completed === 3 ? 'Three perspectives connected' : 'Connect organism, colony, and ecosystem'), h('span', { className: 'mt-1 block text-[10px] font-semibold ' + (nextJourneyTitle ? (dk ? 'text-emerald-300' : 'text-emerald-700') : (dk ? 'text-indigo-300' : 'text-indigo-700')) }, nextJourneyTitle ? 'Next: ' + nextJourneyTitle : 'Next: Science Notebook synthesis'), h('span', { className: 'mt-1 block h-1.5 max-w-xs overflow-hidden rounded-full ' + (dk ? 'bg-slate-800' : 'bg-slate-200') }, h('span', { className: 'block h-full rounded-full bg-gradient-to-r from-amber-500 via-purple-500 to-indigo-500 transition-all', style: { width: (completed / 3 * 100) + '%' } }))),
               h('span', { className: 'rounded-full px-2.5 py-1 text-[10px] font-black ' + (completed === 3 ? 'bg-emerald-700 text-white' : (dk ? 'bg-slate-800 text-slate-200' : 'bg-slate-100 text-slate-700')) }, completed + ' / 3'),
-              h('span', { className: 'text-lg leading-none transition-transform group-open:rotate-180 motion-reduce:transition-none ' + (dk ? 'text-slate-400' : 'text-slate-500'), 'aria-hidden': 'true' }, '\u2304')),
+              h('span', { className: 'text-lg leading-none transition-transform group-open:rotate-180 motion-reduce:transition-none ' + (dk ? 'text-slate-400' : 'text-slate-600'), 'aria-hidden': 'true' }, '\u2304')),
             h('div', { className: 'border-t p-2 ' + (dk ? 'border-slate-700' : 'border-slate-200') }, renderBeeJourney()));
         }
         function renderAdvanceEvidence() {
@@ -23950,8 +23950,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   var good = !numeric || (lowerIsBetter ? change.delta <= 0 : change.delta >= 0);
                   return h('div', { key: change.label + '-' + index, role: 'listitem', 'aria-label': change.label + ' changed from ' + change.before + change.suffix + ' to ' + change.after + change.suffix + (numeric ? ', ' + (change.delta > 0 ? '+' : '') + change.delta + change.suffix : ''), className: 'rounded-lg border p-2 ' + (dk ? 'border-white/10 bg-slate-950/35' : 'border-emerald-100 bg-white/80') },
                     h('div', { className: 'text-[10px] font-black uppercase tracking-wide ' + (dk ? 'text-slate-300' : 'text-slate-600') }, change.label),
-                    h('div', { className: 'mt-1 text-[10px] font-black tabular-nums ' + (numeric ? (good ? 'text-emerald-600' : 'text-rose-600') : (dk ? 'text-slate-200' : 'text-slate-700')) }, change.before + change.suffix + ' \u2192 ' + change.after + change.suffix),
-                    numeric && h('div', { className: 'mt-0.5 text-[10px] font-bold ' + (good ? 'text-emerald-600' : 'text-rose-600') }, (change.delta > 0 ? '+' : '') + change.delta + change.suffix));
+                    h('div', { className: 'mt-1 text-[10px] font-black tabular-nums ' + (numeric ? (good ? (dk ? 'text-emerald-300' : 'text-emerald-700') : (dk ? 'text-rose-300' : 'text-rose-700')) : (dk ? 'text-slate-200' : 'text-slate-700')) }, change.before + change.suffix + ' \u2192 ' + change.after + change.suffix),
+                    numeric && h('div', { className: 'mt-0.5 text-[10px] font-bold ' + (good ? (dk ? 'text-emerald-300' : 'text-emerald-700') : (dk ? 'text-rose-300' : 'text-rose-700')) }, (change.delta > 0 ? '+' : '') + change.delta + change.suffix));
                 }))
               : h('p', { className: 'mt-3 text-[10px] ' + (dk ? 'text-slate-300' : 'text-slate-600') }, 'No numeric changes were recorded; use the event log and forecast to evaluate this intervention.'),
             h('p', { className: 'mt-3 text-[10px] font-bold ' + (dk ? 'text-emerald-200' : 'text-emerald-800') }, 'Explain it: which biological mechanism links this intervention to the observed changes?')
@@ -23974,7 +23974,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               ? (dk ? 'bg-amber-900/60 text-amber-200' : 'bg-amber-100 text-amber-800')
               : (dk ? 'bg-emerald-900/60 text-emerald-200' : 'bg-emerald-100 text-emerald-800');
           var bodyTone = dk ? 'text-slate-300' : 'text-slate-600';
-          var cardTone = dk ? 'border-white/10 bg-slate-950/35' : 'border-slate-200 bg-white/80';
+          var cardTone = dk ? 'border-white/10 bg-slate-950/35 text-slate-200' : 'border-slate-200 bg-white/80 text-slate-800';
           function signed(value, suffix) {
             return (value > 0 ? '+' : '') + value + (suffix || '');
           }
@@ -24015,7 +24015,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 return h('div', { key: metric.label, className: 'rounded-xl border p-3 ' + cardTone, role: 'listitem' },
                   h('div', { className: 'text-[10px] font-bold uppercase tracking-wide ' + bodyTone }, metric.label),
                   h('div', { className: 'mt-1 text-base font-black ' + (dk ? 'text-white' : 'text-slate-900') }, metric.value),
-                  h('div', { className: 'text-[10px] font-bold ' + (metric.good ? 'text-emerald-600' : 'text-rose-600') }, metric.delta + ' from now'));
+                  h('div', { className: 'text-[10px] font-bold ' + (metric.good ? (dk ? 'text-emerald-300' : 'text-emerald-700') : (dk ? 'text-rose-300' : 'text-rose-700')) }, metric.delta + ' from now'));
               })),
             startSeason !== endSeason && h('p', { className: 'mt-2 text-[11px] font-bold ' + (dk ? 'text-sky-300' : 'text-sky-700') },
               'Season boundary: this projection enters ' + seasonNames[endSeason] + '.'),
@@ -24417,7 +24417,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   className: 'px-1 text-[11px] font-black ' + (dk ? 'text-amber-200' : 'text-amber-800')
                 }, 'Frame ' + (hive3dFrame + 1) + '/' + HIVE_3D_FRAME_COUNT)
               ]))],
-            readout: h('p', { className: 'text-[10px] leading-relaxed ' + (dk ? 'text-slate-400' : 'text-slate-500') },
+            readout: h('p', { className: 'text-[10px] leading-relaxed ' + (dk ? 'text-slate-400' : 'text-slate-600') },
               'Showing now: super ' + Math.round(hive3dHoneyFill * 100) + '% capped (' + honey + ' lb) · brood pattern ' + Math.round(hive3dBroodFill * 100) + '% (' + brood + ' cells) · mite load ' + Math.round(hive3dVarroa * 100) + '% · entrance traffic ' + Math.round(hive3dTraffic * 100) + '%' + (season === 3 ? ' (winter cluster — bees stay in)' : '') + '. '
               + hive3dSuperCount + (hive3dSuperCount === 1 ? ' super' : ' supers') + ' on the stack. '
               + (queenHealth >= 85
@@ -24495,7 +24495,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                       h('p', { className: 'mt-1 text-[10px] font-semibold leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-600') }, 'Measure: ' + droneCarryoverBrief.measure)),
                     h('div', { className: 'mt-3 grid grid-cols-1 gap-2 sm:grid-cols-4', role: 'list', 'aria-label': 'Inherited Queen RTS route modifiers' },
                       [{ label: 'Strategy map', value: droneCarryoverBrief.commandEvidence, marker: 'command' }, { label: 'Signal distance', value: droneCarryoverBrief.distance }, { label: 'Flight time', value: droneCarryoverBrief.time }, { label: 'Predator pressure', value: droneCarryoverBrief.hazards }].map(function(item) {
-                        return h('div', { key: item.label, role: 'listitem', 'data-drone-command-evidence': item.marker || undefined, className: 'rounded-lg border p-2.5 ' + (dk ? 'border-white/10 bg-slate-950/35' : 'border-white bg-white/80') }, h('div', { className: 'text-[10px] font-black uppercase tracking-wide ' + (dk ? 'text-slate-400' : 'text-slate-500') }, item.label), h('div', { className: 'mt-1 text-[10px] font-black ' + (dk ? 'text-slate-100' : 'text-slate-800') }, item.value));
+                        return h('div', { key: item.label, role: 'listitem', 'data-drone-command-evidence': item.marker || undefined, className: 'rounded-lg border p-2.5 ' + (dk ? 'border-white/10 bg-slate-950/35' : 'border-white bg-white/80') }, h('div', { className: 'text-[10px] font-black uppercase tracking-wide ' + (dk ? 'text-slate-400' : 'text-slate-600') }, item.label), h('div', { className: 'mt-1 text-[10px] font-black ' + (dk ? 'text-slate-100' : 'text-slate-800') }, item.value));
                       })) ),
                   h('section', { 'data-beehive-flight-plan': 'true', className: 'mx-auto w-full max-w-2xl rounded-2xl border p-4 text-left ' + (dk ? 'border-indigo-700/45 bg-slate-950/35' : 'border-indigo-200 bg-white/75'), 'aria-label': 'Three-step Drone Flight preflight route' },
                     h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
@@ -24511,7 +24511,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                         return h('div', { key: stage.n, className: 'relative snap-start rounded-xl border p-3 sm:snap-none ' + (dk ? 'border-white/10 bg-slate-900/85' : 'border-slate-200 bg-white') },
                           h('div', { className: 'flex items-center gap-2 sm:flex-col sm:text-center' },
                             h('span', { className: 'relative z-10 grid h-10 w-10 shrink-0 place-items-center rounded-full bg-gradient-to-br text-sm font-black text-white shadow-lg ' + stage.tone, 'aria-hidden': 'true' }, stage.icon),
-                            h('div', { className: 'min-w-0' }, h('div', { className: 'text-[10px] font-black uppercase tracking-widest ' + (dk ? 'text-slate-400' : 'text-slate-500') }, 'Checkpoint ' + stage.n), h('div', { className: 'text-[11px] font-black ' + (dk ? 'text-white' : 'text-slate-900') }, stage.title), h('p', { className: 'mt-0.5 text-[10px] leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-600') }, stage.detail))));
+                            h('div', { className: 'min-w-0' }, h('div', { className: 'text-[10px] font-black uppercase tracking-widest ' + (dk ? 'text-slate-400' : 'text-slate-600') }, 'Checkpoint ' + stage.n), h('div', { className: 'text-[11px] font-black ' + (dk ? 'text-white' : 'text-slate-900') }, stage.title), h('p', { className: 'mt-0.5 text-[10px] leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-600') }, stage.detail))));
                       }))),
                   droneHighScore > 0 && h('div', { className: 'text-xs font-bold ' + (dk ? 'text-amber-400' : 'text-amber-600') }, '🏆 High Score: ' + droneHighScore),
                   (droneData.attempts || 0) > 0 && h('div', { role: 'group', className: 'mx-auto flex max-w-lg flex-wrap items-center justify-center gap-2', 'aria-label': 'Flight record' },
@@ -24654,8 +24654,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 h('section', { 'data-beehive-maneuver-impact': 'true', role: 'note', className: 'mt-3 rounded-xl border p-3 ' + (dk ? 'border-violet-700/40 bg-violet-950/20' : 'border-violet-200 bg-violet-50/60'), 'aria-label': 'Current maneuver impact and coaching' },
                   h('div', { className: 'flex flex-wrap items-center justify-between gap-2' }, h('div', { className: 'text-[10px] font-black uppercase tracking-[0.14em] ' + (dk ? 'text-violet-300' : 'text-violet-800') }, 'Maneuver impact'), h('span', { className: 'rounded-full px-2 py-1 text-[10px] font-black ' + (dronePaused ? 'bg-amber-500 text-slate-950' : 'bg-violet-600 text-white'), 'data-flight-maneuver': 'action' }, dronePaused ? 'Paused' : 'Glide')),
                   h('div', { className: 'mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2' },
-                    h('div', { className: 'rounded-lg border p-2.5 ' + (dk ? 'border-white/10 bg-slate-950/30' : 'border-white bg-white') }, h('div', { className: 'text-[10px] font-black uppercase tracking-wide ' + (dk ? 'text-slate-400' : 'text-slate-500') }, 'What changed'), h('p', { 'data-flight-maneuver': 'impact', className: 'mt-1 text-[10px] font-bold tabular-nums ' + (dk ? 'text-slate-200' : 'text-slate-800') }, dronePaused ? 'Telemetry frozen while you plan.' : 'Sampling the first movement interval...')),
-                    h('div', { className: 'rounded-lg border p-2.5 ' + (dk ? 'border-white/10 bg-slate-950/30' : 'border-white bg-white') }, h('div', { className: 'text-[10px] font-black uppercase tracking-wide ' + (dk ? 'text-slate-400' : 'text-slate-500') }, 'Try next'), h('p', { 'data-flight-maneuver': 'coach', className: 'mt-1 text-[10px] font-semibold leading-relaxed ' + (dk ? 'text-slate-200' : 'text-slate-800') }, dronePaused ? 'Choose a maneuver, then resume with P or the Resume button.' : 'Stay low briefly and skim glowing boosts before committing to the climb.')))),
+                    h('div', { className: 'rounded-lg border p-2.5 ' + (dk ? 'border-white/10 bg-slate-950/30' : 'border-white bg-white') }, h('div', { className: 'text-[10px] font-black uppercase tracking-wide ' + (dk ? 'text-slate-400' : 'text-slate-600') }, 'What changed'), h('p', { 'data-flight-maneuver': 'impact', className: 'mt-1 text-[10px] font-bold tabular-nums ' + (dk ? 'text-slate-200' : 'text-slate-800') }, dronePaused ? 'Telemetry frozen while you plan.' : 'Sampling the first movement interval...')),
+                    h('div', { className: 'rounded-lg border p-2.5 ' + (dk ? 'border-white/10 bg-slate-950/30' : 'border-white bg-white') }, h('div', { className: 'text-[10px] font-black uppercase tracking-wide ' + (dk ? 'text-slate-400' : 'text-slate-600') }, 'Try next'), h('p', { 'data-flight-maneuver': 'coach', className: 'mt-1 text-[10px] font-semibold leading-relaxed ' + (dk ? 'text-slate-200' : 'text-slate-800') }, dronePaused ? 'Choose a maneuver, then resume with P or the Resume button.' : 'Stay low briefly and skim glowing boosts before committing to the climb.')))),
                 h('div', { className: 'mt-3 flex items-start gap-2 rounded-lg border px-3 py-2 ' + (dk ? 'border-indigo-700/35 bg-indigo-950/30' : 'border-indigo-100 bg-indigo-50') },
                   h('span', { className: 'mt-0.5', 'aria-hidden': 'true' }, '\uD83C\uDFAF'),
                   h('div', null, h('div', { className: 'text-[10px] font-black uppercase tracking-wide ' + (dk ? 'text-indigo-300' : 'text-indigo-700') }, 'Current objective'), h('p', { 'data-flight-readout': 'objective', className: 'mt-0.5 text-[11px] font-semibold leading-relaxed ' + (dk ? 'text-slate-200' : 'text-slate-700') }, instrumentPhase.objective))));
@@ -24684,7 +24684,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               droneDebrief && h('section', { 'data-drone-debrief-coach': droneDebrief.id, role: 'region', 'aria-labelledby': 'drone-debrief-coach-title', className: 'mt-3 rounded-xl border p-3 ' + (dk ? 'border-cyan-700/45 bg-cyan-950/20' : 'border-cyan-200 bg-cyan-50/70') },
                 h('div', { className: 'flex flex-wrap items-start justify-between gap-2' }, h('div', null, h('div', { className: 'text-[10px] font-black uppercase tracking-[0.15em] ' + (dk ? 'text-cyan-300' : 'text-cyan-800') }, 'Priority coaching'), h('div', { id: 'drone-debrief-coach-title', className: 'mt-0.5 text-sm font-black ' + (dk ? 'text-white' : 'text-slate-900') }, droneDebrief.title)), h('span', { className: 'rounded-full bg-indigo-700 px-2.5 py-1 text-[10px] font-black uppercase tracking-wide text-white' }, droneDebrief.planLabel)),
                 h('p', { className: 'mt-1 text-[10px] leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-700') }, droneDebrief.summary),
-                h('div', { className: 'mt-3 grid grid-cols-1 gap-2 sm:grid-cols-3', role: 'list', 'aria-label': 'Evidence used by the flight coach' }, droneDebrief.evidence.map(function(item) { return h('div', { key: item.label, role: 'listitem', 'data-drone-coach-evidence': item.label.toLowerCase().replace(/[^a-z0-9]+/g, '-'), className: 'rounded-lg border p-2.5 ' + (item.state === 'good' ? (dk ? 'border-emerald-700/45 bg-emerald-950/25' : 'border-emerald-200 bg-emerald-50') : (dk ? 'border-amber-700/45 bg-amber-950/25' : 'border-amber-200 bg-amber-50')) }, h('div', { className: 'text-[10px] font-black uppercase tracking-wide ' + (dk ? 'text-slate-400' : 'text-slate-500') }, item.label), h('div', { className: 'mt-1 text-sm font-black tabular-nums ' + (dk ? 'text-white' : 'text-slate-900') }, item.value)); })),
+                h('div', { className: 'mt-3 grid grid-cols-1 gap-2 sm:grid-cols-3', role: 'list', 'aria-label': 'Evidence used by the flight coach' }, droneDebrief.evidence.map(function(item) { return h('div', { key: item.label, role: 'listitem', 'data-drone-coach-evidence': item.label.toLowerCase().replace(/[^a-z0-9]+/g, '-'), className: 'rounded-lg border p-2.5 ' + (item.state === 'good' ? (dk ? 'border-emerald-700/45 bg-emerald-950/25' : 'border-emerald-200 bg-emerald-50') : (dk ? 'border-amber-700/45 bg-amber-950/25' : 'border-amber-200 bg-amber-50')) }, h('div', { className: 'text-[10px] font-black uppercase tracking-wide ' + (dk ? 'text-slate-400' : 'text-slate-600') }, item.label), h('div', { className: 'mt-1 text-sm font-black tabular-nums ' + (dk ? 'text-white' : 'text-slate-900') }, item.value)); })),
                 h('div', { className: 'mt-3 grid gap-2 sm:grid-cols-2' }, h('div', { className: 'rounded-lg border p-2.5 ' + (dk ? 'border-white/10 bg-slate-950/35' : 'border-white bg-white/80') }, h('div', { className: 'text-[10px] font-black uppercase tracking-wide ' + (dk ? 'text-cyan-300' : 'text-cyan-800') }, 'Next experiment'), h('p', { className: 'mt-1 text-[10px] font-bold leading-relaxed ' + (dk ? 'text-white' : 'text-slate-900') }, droneDebrief.next)), h('div', { className: 'rounded-lg border p-2.5 ' + (dk ? 'border-white/10 bg-slate-950/35' : 'border-white bg-white/80') }, h('div', { className: 'text-[10px] font-black uppercase tracking-wide ' + (dk ? 'text-cyan-300' : 'text-cyan-800') }, 'Success criterion'), h('p', { className: 'mt-1 text-[10px] font-bold leading-relaxed ' + (dk ? 'text-white' : 'text-slate-900') }, droneDebrief.criterion))),
                 h('p', { 'data-drone-colony-consequence': 'true', className: 'mt-3 rounded-lg border px-2.5 py-2 text-[10px] font-semibold leading-relaxed ' + (dk ? 'border-purple-800/45 bg-purple-950/25 text-purple-200' : 'border-purple-200 bg-purple-50 text-purple-900') }, droneDebrief.consequence)
               ),
@@ -24718,7 +24718,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                       h('span', { className: 'rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-wide ' + (queenFieldBrief.tone === 'success' ? 'bg-emerald-700 text-white' : queenFieldBrief.tone === 'danger' ? 'bg-rose-700 text-white' : 'bg-amber-600 text-slate-950') }, 'Beekeeper → Queen')),
                     h('div', { className: 'mt-3 grid grid-cols-3 gap-2', role: 'list', 'aria-label': 'Field evidence metrics' },
                       [{ label: 'Colony health', value: colonyHealth + '%' }, { label: 'Varroa pressure', value: varroaLevel + '%' }, { label: 'Honey reserve', value: honey + ' lb' }].map(function(item) {
-                        return h('div', { key: item.label, role: 'listitem', className: 'rounded-lg border p-2.5 ' + (dk ? 'border-white/10 bg-slate-950/35' : 'border-white bg-white/80') }, h('div', { className: 'text-[10px] font-black uppercase tracking-wide ' + (dk ? 'text-slate-400' : 'text-slate-500') }, item.label), h('div', { className: 'mt-1 text-sm font-black tabular-nums ' + (dk ? 'text-slate-100' : 'text-slate-800') }, item.value));
+                        return h('div', { key: item.label, role: 'listitem', className: 'rounded-lg border p-2.5 ' + (dk ? 'border-white/10 bg-slate-950/35' : 'border-white bg-white/80') }, h('div', { className: 'text-[10px] font-black uppercase tracking-wide ' + (dk ? 'text-slate-400' : 'text-slate-600') }, item.label), h('div', { className: 'mt-1 text-sm font-black tabular-nums ' + (dk ? 'text-slate-100' : 'text-slate-800') }, item.value));
                       })),
                     h('p', { className: 'mt-3 text-[10px] font-black ' + (dk ? 'text-slate-200' : 'text-slate-800') }, 'Opening modifiers: ' + queenFieldBrief.modifier),
                     h('p', { className: 'mt-1 text-[10px] leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-700') }, queenFieldBrief.advice)
@@ -24755,7 +24755,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                         h('div', { className: 'flex items-center justify-between gap-2' }, h('span', { className: 'text-xs font-black ' + (dk ? 'text-white' : 'text-slate-900') }, option.label), selected && h('span', { className: 'rounded-full bg-amber-500 px-2 py-0.5 text-[10px] font-black text-slate-950' }, 'SELECTED')),
                         h('p', { className: 'mt-1 text-[10px] leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-600') }, option.desc),
                         h('div', { className: 'mt-2 text-[10px] font-black uppercase tracking-wide ' + (dk ? 'text-amber-300' : 'text-amber-700') }, option.effect),
-                        h('div', { className: 'mt-1 text-[10px] font-bold ' + (dk ? 'text-slate-400' : 'text-slate-500') }, 'Match record: ' + openingRecordLabel));
+                        h('div', { className: 'mt-1 text-[10px] font-bold ' + (dk ? 'text-slate-400' : 'text-slate-600') }, 'Match record: ' + openingRecordLabel));
                     })) ),
                     (function() {
                       var profile = [
@@ -24766,7 +24766,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                       ];
                       return h('div', { 'data-queen-opening-profile': 'true', className: 'mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4', role: 'list', 'aria-label': 'Selected opening profile relative to the balanced start' }, profile.map(function(item) {
                         return h('div', { key: item.label, role: 'listitem', className: 'rounded-lg border p-2 ' + (dk ? 'border-slate-700 bg-slate-950/35' : 'border-amber-100 bg-white/80') },
-                          h('div', { className: 'text-[10px] font-black uppercase tracking-wide ' + (dk ? 'text-slate-400' : 'text-slate-500') }, item.label),
+                          h('div', { className: 'text-[10px] font-black uppercase tracking-wide ' + (dk ? 'text-slate-400' : 'text-slate-600') }, item.label),
                           h('div', { className: 'mt-1 text-[10px] font-black ' + item.tone }, item.value));
                       }));
                     })(),
@@ -24872,7 +24872,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                       chip: dk ? 'border-slate-700 bg-slate-900 text-slate-200 hover:bg-slate-800' : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50',
                       chipOn: dk ? 'border-purple-400 bg-purple-500/25 text-purple-100' : 'border-purple-500 bg-purple-100 text-purple-900'
                     },
-                    readout: h('p', { className: 'text-[10px] leading-relaxed ' + (dk ? 'text-slate-400' : 'text-slate-500') },
+                    readout: h('p', { className: 'text-[10px] leading-relaxed ' + (dk ? 'text-slate-400' : 'text-slate-600') },
                       'Showing now: you hold ' + Math.round(queen3dShare * 100) + '% of the forage strip · brood core ' + Math.round(queenHiveHealth) + '% · ' + queenRival.name + ' ' + Math.round(queenRival.health) + '% · ' + Math.round(queenPopulation.foragers) + ' foragers assigned · ' + queen3dStructures.length + (queen3dStructures.length === 1 ? ' structure' : ' structures') + ' built · QMP reaches ' + Math.round(queen3dQmp * 100) + '%. '
                       + (queen3dRaid > 0.55
                         ? 'Raiders are crossing the meadow — guards and a narrow entrance are what stop robbing.'
@@ -24898,7 +24898,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   h('section', { 'data-beehive-rts-economy': 'true', className: 'rounded-xl border p-3 ' + (dk ? 'border-purple-700/40 bg-slate-900/70' : 'border-purple-200 bg-white'), 'aria-label': 'Live Queen RTS economy' },
                     h('div', { className: 'mb-2 flex items-center justify-between gap-2' },
                       h('div', { className: 'text-[10px] font-black uppercase tracking-[0.14em] ' + (dk ? 'text-purple-300' : 'text-purple-800') }, 'Live economy'),
-                      h('div', { className: 'text-[10px] font-bold ' + (dk ? 'text-slate-400' : 'text-slate-500') }, 'Income updates every cycle')),
+                      h('div', { className: 'text-[10px] font-bold ' + (dk ? 'text-slate-400' : 'text-slate-600') }, 'Income updates every cycle')),
                     h('div', { className: 'grid grid-cols-2 gap-2 sm:grid-cols-5' }, [
                       { icon: '\uD83C\uDF6F', value: Math.round(queenResources.nectar), label: 'Nectar', tone: 'text-amber-500' },
                       { icon: '\uD83C\uDF3C', value: Math.round(queenResources.pollen), label: 'Pollen', tone: 'text-yellow-500' },
@@ -24908,7 +24908,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                     ].map(function(resource) {
                       return h('div', { key: resource.label, className: 'flex items-center gap-2 rounded-lg border px-2.5 py-2 ' + (dk ? 'border-white/10 bg-slate-950/40' : 'border-slate-200 bg-slate-50') },
                         h('span', { className: 'text-base', 'aria-hidden': 'true' }, resource.icon),
-                        h('span', null, h('span', { className: 'block text-sm font-black ' + resource.tone }, resource.value), h('span', { className: 'block text-[10px] font-bold uppercase tracking-wide ' + (dk ? 'text-slate-400' : 'text-slate-500') }, resource.label)));
+                        h('span', null, h('span', { className: 'block text-sm font-black ' + resource.tone }, resource.value), h('span', { className: 'block text-[10px] font-bold uppercase tracking-wide ' + (dk ? 'text-slate-400' : 'text-slate-600') }, resource.label)));
                     }))),
                   (function() {
                     var nextEconomy = queenNextCycleEconomy();
@@ -24930,7 +24930,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                       h('div', { className: 'mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4' }, forecastResources.map(function(resource) {
                         var deltaTone = resource.delta > 0.05 ? 'text-emerald-500' : resource.delta < -0.05 ? 'text-rose-500' : (dk ? 'text-slate-300' : 'text-slate-600');
                         return h('div', { key: resource.key, 'data-rts-next-cycle-resource': resource.key, className: 'rounded-lg border p-2 ' + (dk ? 'border-white/10 bg-slate-950/40' : 'border-cyan-100 bg-white/75') },
-                          h('div', { className: 'flex items-center justify-between gap-1' }, h('span', { className: 'text-sm', 'aria-hidden': 'true' }, resource.icon), h('span', { className: 'text-[10px] font-black uppercase tracking-wide ' + (dk ? 'text-slate-400' : 'text-slate-500') }, resource.label)),
+                          h('div', { className: 'flex items-center justify-between gap-1' }, h('span', { className: 'text-sm', 'aria-hidden': 'true' }, resource.icon), h('span', { className: 'text-[10px] font-black uppercase tracking-wide ' + (dk ? 'text-slate-400' : 'text-slate-600') }, resource.label)),
                           h('div', { className: 'mt-1 text-sm font-black ' + resource.tone }, Math.round(resource.value)),
                           h('div', { 'data-rts-next-cycle-delta': resource.key, className: 'text-[10px] font-black ' + deltaTone }, signedForecast(resource.delta) + ' next'));
                       })),
@@ -25078,7 +25078,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                           var pct = Math.max(4, Math.min(100, Math.round((t.v - 0.5) * 100)));
                           return h('div', { key: ti },
                             h('div', { className: 'flex justify-between text-[10px] mb-0.5' },
-                              h('span', { className: dk ? 'text-slate-400' : 'text-slate-500' }, t.k),
+                              h('span', { className: dk ? 'text-slate-400' : 'text-slate-600' }, t.k),
                               h('span', { className: dk ? 'text-slate-300' : 'text-slate-600' }, '×' + t.v.toFixed(2))),
                             h('div', { className: 'h-1.5 rounded-full overflow-hidden ' + (dk ? 'bg-slate-700' : 'bg-slate-200') },
                               h('div', { style: { width: pct + '%' }, className: 'h-full bg-' + traitBarColor(t.c) + ' rounded-full' })));
@@ -25140,7 +25140,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 h('button', { onClick: function() {
                   if (tutorialStep + 1 >= TUTORIAL_STEPS.length) { updAll({ tutorialStep: -1, tutorialDone: true }); }
                   else { upd('tutorialStep', tutorialStep + 1); }
-                }, className: 'px-4 py-1.5 rounded-lg text-xs font-bold text-white ' + (dk ? 'transition-colors bg-amber-600 hover:bg-amber-500' : 'transition-colors bg-amber-500 hover:bg-amber-600') },
+                }, className: 'px-4 py-1.5 rounded-lg text-xs font-bold text-white ' + (dk ? 'transition-colors bg-amber-700 hover:bg-amber-600' : 'transition-colors bg-amber-700 hover:bg-amber-800') },
                   tutorialStep + 1 >= TUTORIAL_STEPS.length ? '✓ Start Beekeeping!' : 'Next →')))),
 
           // ═══ YEAR-END REPORT CARD ═══
@@ -25472,7 +25472,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               return h('div', { className: 'mb-3', role: 'region', 'aria-label': 'Workforce role distribution for ' + seasonNames[season] },
                 h('div', { className: 'flex items-center justify-between mb-1' },
                   h('div', { className: 'text-[11px] font-bold ' + (dk ? 'text-amber-300' : 'text-amber-800') }, __alloT('stem.beehive.workforce_by_role', '👷 Workforce by role')),
-                  h('div', { className: 'text-[10px] italic ' + (dk ? 'text-slate-300' : 'text-slate-500') }, season === 3 ? 'Winter — no flying, mostly clustering' : 'Age-based + season-shifted')
+                  h('div', { className: 'text-[10px] italic ' + (dk ? 'text-slate-300' : 'text-slate-600') }, season === 3 ? 'Winter — no flying, mostly clustering' : 'Age-based + season-shifted')
                 ),
                 // Stacked bar
                 h('div', {
@@ -25502,7 +25502,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                     },
                       h('span', { 'aria-hidden': 'true' }, r.emoji),
                       h('span', { className: 'font-bold' }, r.label),
-                      h('span', { className: dk ? 'text-slate-300' : 'text-slate-500' }, count.toLocaleString() + ' (' + pct + '%)')
+                      h('span', { className: dk ? 'text-slate-300' : 'text-slate-600' }, count.toLocaleString() + ' (' + pct + '%)')
                     );
                   })
                 )
@@ -26076,7 +26076,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                     h('div', { className: 'flex-1 min-w-0' },
                       h('div', { className: 'flex items-baseline justify-between gap-2' },
                         h('span', { className: 'text-xs font-bold ' + (dk ? 'text-amber-100' : 'text-amber-900') }, bd.label),
-                        h('span', { className: 'text-[10px] font-mono ' + (nearlyThere ? (dk ? 'text-amber-300 font-bold' : 'text-amber-700 font-bold') : (dk ? 'text-slate-300' : 'text-slate-500')) },
+                        h('span', { className: 'text-[10px] font-mono ' + (nearlyThere ? (dk ? 'text-amber-300 font-bold' : 'text-amber-700 font-bold') : (dk ? 'text-slate-300' : 'text-slate-600')) },
                           p.isBinary ? (p.now > 0 ? '✓' : 'not yet') : (p.now + ' / ' + p.target))),
                       h('p', { className: 'text-[10px] leading-snug ' + (dk ? 'text-slate-300' : 'text-slate-600') }, bd.desc),
                       h('div', { className: 'h-1 mt-1 rounded-full overflow-hidden ' + (dk ? 'bg-slate-700' : 'bg-slate-200') },
@@ -26110,7 +26110,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             h('div', { className: 'flex items-center justify-between gap-2 rounded-xl border px-3 py-2 ' + (dk ? 'border-amber-700/40 bg-amber-950/25' : 'border-amber-200 bg-amber-50/80'), role: 'region', 'aria-label': 'Colony interventions and action budget' },
               h('div', { className: 'min-w-0' },
                 h('div', { className: 'text-xs font-black ' + (dk ? 'text-amber-200' : 'text-amber-900') }, 'Colony interventions'),
-                h('div', { className: 'text-[10px] leading-snug ' + (dk ? 'text-amber-300/80' : 'text-amber-800/80') }, actionPoints > 0 ? 'Choose a move, then advance the day to refresh your budget.' : 'All action points spent \u2192 advance a day to refresh.')),
+                h('div', { className: 'text-[10px] leading-snug ' + (dk ? 'text-amber-300/80' : 'text-amber-800') }, actionPoints > 0 ? 'Choose a move, then advance the day to refresh your budget.' : 'All action points spent \u2192 advance a day to refresh.')),
               h('div', { 'data-action-budget': 'true', role: 'status', 'aria-live': 'polite', 'aria-label': actionPoints + ' of 3 action points available', className: 'shrink-0 rounded-lg border px-2 py-1 text-right ' + (dk ? 'border-amber-700/50 bg-slate-900/45' : 'border-amber-200 bg-white/80') },
                 h('div', { className: 'text-[10px] font-black uppercase tracking-[0.14em] ' + (dk ? 'text-amber-300' : 'text-amber-700') }, 'Action budget'),
                 h('div', { className: 'flex items-center justify-end gap-0.5 text-[12px] leading-none ' + (dk ? 'text-amber-300' : 'text-amber-600') },
@@ -26201,7 +26201,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   h('span', { className: 'text-[11px] font-black' }, btn.label),
                   h('span', { className: 'text-[10px] leading-tight ' + (enabled ? (dk ? 'text-slate-300' : 'text-slate-600') : '') }, btn.effect),
                   h('span', { 'data-management-cost-badge': btn.label, className: 'rounded-full border px-1.5 py-0.5 text-[10px] font-black uppercase tracking-wide ' + (enabled ? (dk ? 'border-amber-600/40 bg-amber-900/25 text-amber-300' : 'border-amber-200 bg-amber-50 text-amber-700') : (dk ? 'border-slate-700 bg-slate-900/60 text-slate-500' : 'border-slate-200 bg-white/70 text-slate-400')) }, costLabel),
-                  h('span', { className: 'mt-auto rounded-full px-1.5 py-0.5 text-[10px] font-black uppercase tracking-wide ' + (enabled ? 'bg-emerald-500/15 text-emerald-500' : (dk ? 'bg-slate-900/60 text-slate-500' : 'bg-white/70 text-slate-400')) }, enabled ? costLabel + ' \u00B7 Ready' : btn.locked));
+                  h('span', { className: 'mt-auto rounded-full px-1.5 py-0.5 text-[10px] font-black uppercase tracking-wide ' + (enabled ? (dk ? 'bg-emerald-500/15 text-emerald-300' : 'bg-emerald-500/15 text-emerald-800') : (dk ? 'bg-slate-900/60 text-slate-400' : 'bg-white/70 text-slate-600')) }, enabled ? costLabel + ' \u00B7 Ready' : btn.locked));
               })),
 
             // Conservation Actions
@@ -26357,7 +26357,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             var sm = {
               optimal:      { label: __alloT('stem.beehive.optimal_35_c', '🟢 Typical brood range (34–36 °C)'),  color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: __alloT('stem.beehive.brood_healthy_colony_thermoregulating', 'Brood healthy. Colony thermoregulating.') },
               overheating:  { label: __alloT('stem.beehive.overheating', '🔥 Overheating'),       color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: __alloT('stem.beehive.brood_at_risk_above_36_c', 'Brood at risk above 36°C.') },
-              chilled:      { label: __alloT('stem.beehive.chilled_brood', '🧊 Chilled brood'),     color: '#0891b2', bg: '#ecfeff', border: '#67e8f9', desc: __alloT('stem.beehive.below_32_c_development_fails', 'Below 32°C development fails.') },
+              chilled:      { label: __alloT('stem.beehive.chilled_brood', '🧊 Chilled brood'),     color: '#155e75', bg: '#ecfeff', border: '#67e8f9', desc: __alloT('stem.beehive.below_32_c_development_fails', 'Below 32°C development fails.') },
               compensating: { label: __alloT('stem.beehive.within_tolerance', '🟡 Within tolerance'),  color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: __alloT('stem.beehive.maintains_range_but_costs_energy', 'Maintains range but costs energy.') }
             }[state];
             return h('div', { className: 'mt-3 p-4 rounded-xl bg-white border border-amber-300 shadow-sm space-y-3' },
@@ -26398,7 +26398,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 h('label', { htmlFor: 'beehive-thermo-explanation', className: 'block text-[11px] font-bold text-emerald-800' }, 'Explain in your own words'),
                 h('textarea', { id: 'beehive-thermo-explanation', value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: __alloT('stem.beehive.explain_how_the_colony_as_a_superorgan', 'Explain how the colony as a superorganism thermoregulates.'),
                 className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 })),
-              h('div', { className: 'text-[10px] italic text-slate-500' }, __alloT('stem.beehive.design_note_discrete_4_state_thermal_m', 'Design note: discrete 4-state thermal marker; no temperature score; no reveal — by design.'))
+              h('div', { className: 'text-[10px] italic text-slate-600' }, __alloT('stem.beehive.design_note_discrete_4_state_thermal_m', 'Design note: discrete 4-state thermal marker; no temperature score; no reveal — by design.'))
             );
           })()
         ));

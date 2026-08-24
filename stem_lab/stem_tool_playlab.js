@@ -1788,12 +1788,33 @@ window.StemLab = window.StemLab || {
   // ═══════════════════════════════════════════
   // TOOL REGISTRATION
   // ═══════════════════════════════════════════
+  // ── Accents that follow the SUBSTRATE ──────────────────────────────────────
+  // The accent hues are bright, tuned for the dark canvas. Their panels are ALPHA
+  // tints over the tool root, so they composite dark in dark theme and pale in light
+  // -- rgba(16,185,129,0.18) becomes #d4f2e8 on white. That left #fbbf24 at 1.59:1,
+  // #10b981 at 2.13:1, #a78bfa at 2.48:1 and #16a34a at 2.88:1 on the light side,
+  // while dark measured clean. Map each to a deeper partner when the substrate is
+  // light; contrast mode collapses to the theme's yellow.
+  var PLAYLAB_LIGHT_INK = {
+    '#fbbf24': '#b45309', '#f59e0b': '#b45309', '#10b981': '#047857',
+    '#34d399': '#047857', '#a78bfa': '#6d28d9', '#16a34a': '#166534',
+    '#dc2626': '#b91c1c', '#22c55e': '#166534'
+  };
+  var PLAYLAB_DARK_INK = { '#dc2626': '#f87171' };
+  function playlabInk(hex, isDark, isContrast) {
+    if (isContrast) return '#ffff00';
+    if (typeof hex !== 'string') return hex;
+    if (isDark) return PLAYLAB_DARK_INK[hex.toLowerCase()] || hex;
+    return PLAYLAB_LIGHT_INK[hex.toLowerCase()] || hex;
+  }
+
   window.StemLab.registerTool('playlab', {
     icon: '🏈',
     label: 'PlayLab',
     desc: 'Football play-design: route geometry, coverage zones, open-receiver analysis',
     color: 'lime',
     category: 'science',
+    gradeRange: '5-12',
     questHooks: [
       { id: 'pl_load_3_plays',
         label: 'Study 3 different plays',
@@ -1807,6 +1828,7 @@ window.StemLab = window.StemLab || {
         progress: function(d) { return ((d.coveragesViewed && Object.keys(d.coveragesViewed).length) || 0) + ' / ' + COVERAGES.length + ' coverages'; } }
     ],
     render: function(ctx) {
+      var tint = function (c) { return playlabInk(c, !!ctx.isDark, !!ctx.isContrast); };
       var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
       var React = ctx.React;
       var h = React.createElement;
@@ -3689,7 +3711,7 @@ window.StemLab = window.StemLab || {
         }, label);
       }
 
-      return h('div', { className: 'playlab-root', style: { padding: 16, color: 'var(--allo-stem-text, #f1f5f9)', maxWidth: 1100, margin: '0 auto' } },
+      return h('div', { className: 'playlab-root', style: { padding: 16, background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, color: 'var(--allo-stem-text, #f1f5f9)', maxWidth: 1100, margin: '0 auto' } },
         // Scenario intro card — pops when a one-click teaching demo loads.
         // Surfaces the scenario's `teach` paragraph + discussion questions
         // before the play runs (previously hover-only on the chip).
@@ -3722,7 +3744,7 @@ window.StemLab = window.StemLab || {
               }, '×')
             ),
             h('div', { style: { marginBottom: 14 } },
-              h('div', { style: { fontSize: 11, fontWeight: 700, color: '#fbbf24',
+              h('div', { style: { fontSize: 11, fontWeight: 700, color: tint('#fbbf24'),
                                   textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 } },
                 __alloT('stem.playlab.the_story', '📜 The story')),
               h('p', { style: { margin: 0, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14, lineHeight: 1.5 } },
@@ -3731,7 +3753,7 @@ window.StemLab = window.StemLab || {
             scenarioIntro.questions && scenarioIntro.questions.length > 0 && h('div', {
               style: { marginBottom: 16 }
             },
-              h('div', { style: { fontSize: 11, fontWeight: 700, color: '#a78bfa',
+              h('div', { style: { fontSize: 11, fontWeight: 700, color: tint('#a78bfa'),
                                   textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 } },
                 __alloT('stem.playlab.try_these_before_you_run_it', '🤔 Try these before you run it')),
               h('ul', { style: { margin: 0, paddingLeft: 20, color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 13, lineHeight: 1.5 } },
@@ -3978,7 +4000,7 @@ window.StemLab = window.StemLab || {
                         border: '1px solid #a78bfa',
                         borderRight: 'none',
                         background: 'rgba(167,139,250,0.10)',
-                        color: '#a78bfa', fontSize: 11, fontWeight: 600
+                        color: tint('#a78bfa'), fontSize: 11, fontWeight: 600
                       }
                     }, '⭐ ' + (sp.name.length > 22 ? sp.name.slice(0, 22) + '…' : sp.name)),
                     h('button', {
@@ -3990,7 +4012,7 @@ window.StemLab = window.StemLab || {
                         padding: '6px 8px', cursor: 'pointer',
                         border: '1px solid #a78bfa',
                         background: 'rgba(167,139,250,0.10)',
-                        color: '#a78bfa', fontSize: 11
+                        color: tint('#a78bfa'), fontSize: 11
                       }
                     }, '✕')
                   );
@@ -4030,7 +4052,7 @@ window.StemLab = window.StemLab || {
                 style: {
                   padding: '6px 11px', borderRadius: 6, cursor: 'pointer',
                   border: '1px solid #fbbf24', background: 'rgba(251,191,36,0.10)',
-                  color: '#fbbf24', fontSize: 11, fontWeight: 700, marginLeft: 4
+                  color: tint('#fbbf24'), fontSize: 11, fontWeight: 700, marginLeft: 4
                 }
               }, __alloT('stem.playlab.print_activity_sheet', '📄 Print activity sheet')),
               h('button', {
@@ -4042,7 +4064,7 @@ window.StemLab = window.StemLab || {
                 style: {
                   padding: '6px 11px', borderRadius: 6, cursor: 'pointer',
                   border: '1px solid #f59e0b', background: 'rgba(245,158,11,0.10)',
-                  color: '#fbbf24', fontSize: 11, fontWeight: 700
+                  color: tint('#fbbf24'), fontSize: 11, fontWeight: 700
                 }
               }, __alloT('stem.playlab.trading_card', '📇 Trading card'))
             ])
@@ -4082,7 +4104,7 @@ window.StemLab = window.StemLab || {
               textAlign: 'left', cursor: done ? 'default' : 'pointer'
             }
           },
-            h('div', { style: { fontSize: 11, color: border, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 } }, label),
+            h('div', { style: { fontSize: 11, color: tint(border), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 } }, label),
             h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 2, fontWeight: 400 } },
               done ? 'Earned 15 XP. Try again tomorrow.' : daily.teach.slice(0, 110) + (daily.teach.length > 110 ? '…' : ''))
           );
@@ -4144,7 +4166,7 @@ window.StemLab = window.StemLab || {
               acc.push(h('span', {
                 key: 'plsv-' + row.label, role: 'cell',
                 style: {
-                  color: '#fbbf24', fontWeight: 700,
+                  color: tint('#fbbf24'), fontWeight: 700,
                   fontFamily: 'ui-monospace, monospace', textAlign: 'right'
                 }
               }, row.value));
@@ -4174,7 +4196,7 @@ window.StemLab = window.StemLab || {
           },
             hot ? h('span', { style: { color: hot.text, fontWeight: 700 } },
               hot.emoji + ' ' + hot.label + ' (streak: ' + d.drillStats.hotStreak + ')'
-            ) : h('span', { style: { color: '#a78bfa', fontStyle: 'italic' } },
+            ) : h('span', { style: { color: tint('#a78bfa'), fontStyle: 'italic' } },
               '🎙️ ' + pickHypePhrase()
             )
           );
@@ -4203,7 +4225,7 @@ window.StemLab = window.StemLab || {
             h('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 6 } },
               h('span', { style: { fontSize: 18 }, 'aria-hidden': 'true' }, active.icon),
               h('div', { style: { flex: 1 } },
-                h('div', { style: { fontWeight: 700, color: '#a78bfa', fontSize: 13, marginBottom: 2 } },
+                h('div', { style: { fontWeight: 700, color: tint('#a78bfa'), fontSize: 13, marginBottom: 2 } },
                   '🎬 Scenario: ' + active.label),
                 h('div', null, active.teach)
               ),
@@ -4221,7 +4243,7 @@ window.StemLab = window.StemLab || {
             (active.questions && active.questions.length) ? h('div', {
               style: { marginTop: 8, paddingTop: 8, borderTop: '1px dashed rgba(167,139,250,0.30)' }
             },
-              h('div', { style: { fontSize: 11, color: '#a78bfa', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } },
+              h('div', { style: { fontSize: 11, color: tint('#a78bfa'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } },
                 __alloT('stem.playlab.discussion', '💭 Discussion')),
               h('ol', { style: { margin: '4px 0 0 18px', padding: 0, color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.5 } },
                 active.questions.map(function(q, i) {
@@ -4302,7 +4324,7 @@ window.StemLab = window.StemLab || {
             style: playLabNativeControlStyle({ width: 72 })
           }),
           h('span', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } },
-            __alloT('stem.playlab.ep_at_this_state', 'EP at this state: '), h('span', { style: { color: '#fbbf24', fontWeight: 700 } },
+            __alloT('stem.playlab.ep_at_this_state', 'EP at this state: '), h('span', { style: { color: tint('#fbbf24'), fontWeight: 700 } },
               expectedPoints(d.yardsToGoal || 75, d.down || 1).toFixed(1)))
         ) : null,
 
@@ -4442,7 +4464,7 @@ window.StemLab = window.StemLab || {
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 10 } },
               h('span', { style: { fontSize: 18 }, 'aria-hidden': 'true' }, matchup.emoji),
               h('div', null,
-                h('span', { style: { color: matchup.color, fontWeight: 700, marginRight: 6 } }, matchup.label + ':'),
+                h('span', { style: { color: tint(matchup.color), fontWeight: 700, marginRight: 6 } }, matchup.label + ':'),
                 h('span', null, matchup.reason)
               )
             ),
@@ -4466,8 +4488,8 @@ window.StemLab = window.StemLab || {
                   'aria-label': 'Try ' + s.label + ' instead',
                   style: {
                     padding: '4px 10px', borderRadius: 999, cursor: 'pointer',
-                    border: '1px solid ' + matchup.color, background: 'rgba(15,23,42,0.55)',
-                    color: 'var(--allo-stem-text, #f1f5f9)', fontSize: 12, fontWeight: 600
+                    border: '1px solid ' + matchup.color, background: 'rgba(15,23,42,0.82)',
+                    color: '#f1f5f9', fontSize: 12, fontWeight: 600
                   }
                 }, (s.icon || '') + ' ' + s.label);
               })
@@ -4524,7 +4546,7 @@ window.StemLab = window.StemLab || {
               border: '1px solid #10b981', borderRadius: 10 }
           },
             h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 6, flexWrap: 'wrap' } },
-              h('h3', { id: 'pl-drill-heading', style: { margin: 0, fontSize: 12, color: '#10b981', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700 } },
+              h('h3', { id: 'pl-drill-heading', style: { margin: 0, fontSize: 12, color: tint('#10b981'), textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700 } },
                 allDone ? '🏆 Drill complete · ' + DRILL_SET.label : '🎯 ' + DRILL_SET.label + ' · Task ' + (taskIdx + 1) + ' of ' + DRILL_SET.tasks.length),
               h('button', {
                 onClick: function() {
@@ -4545,10 +4567,10 @@ window.StemLab = window.StemLab || {
               : h('div', null,
                   h('div', { style: { fontSize: 14, color: 'var(--allo-stem-text, #f1f5f9)', fontWeight: 600, marginBottom: 4 } }, task.goal),
                   h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 4 } },
-                    h('span', { style: { color: '#10b981', fontWeight: 700, marginRight: 6 } }, 'Progress:'),
+                    h('span', { style: { color: tint('#10b981'), fontWeight: 700, marginRight: 6 } }, 'Progress:'),
                     task.progress(stats)),
                   task.tip ? h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } },
-                    h('span', { style: { color: '#fbbf24' } }, '💡 '), task.tip) : null)
+                    h('span', { style: { color: tint('#fbbf24') } }, '💡 '), task.tip) : null)
           );
         })(),
 
@@ -4718,7 +4740,7 @@ window.StemLab = window.StemLab || {
               // student has actually moved a player, so the UI stays clean
               // when running stock plays.
               Object.keys(d.customPositions || {}).length > 0 ? h('span', {
-                style: { marginLeft: 'auto', fontSize: 11, color: '#fbbf24', fontStyle: 'italic' }
+                style: { marginLeft: 'auto', fontSize: 11, color: tint('#fbbf24'), fontStyle: 'italic' }
               }, '✎ ' + Object.keys(d.customPositions).length + ' custom position' + (Object.keys(d.customPositions).length === 1 ? '' : 's')) : null,
               Object.keys(d.customPositions || {}).length > 0 ? h('button', {
                 onClick: resetPositions,
@@ -4808,11 +4830,11 @@ window.StemLab = window.StemLab || {
                         key: r.id,
                         style: {
                           padding: 8, borderRadius: 6,
-                          background: winner ? 'rgba(16,185,129,0.18)' : '#1e293b',
+                          background: winner ? 'rgba(16,185,129,0.18)' : 'var(--allo-stem-panel, #1e293b)',
                           border: '1px solid ' + (winner ? '#10b981' : '#334155')
                         }
                       },
-                        h('div', { style: { fontWeight: 700, color: winner ? '#10b981' : '#fbbf24', marginBottom: 2 } },
+                        h('div', { style: { fontWeight: 700, color: tint(winner ? '#10b981' : '#fbbf24'), marginBottom: 2 } },
                           winner ? '🟢 Most open' : (idx === 1 ? 'Second' : 'Third')),
                         h('div', { style: { color: 'var(--allo-stem-text, #f1f5f9)', fontSize: 13 } }, r.id),
                         h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 11 } },
@@ -4892,7 +4914,7 @@ window.StemLab = window.StemLab || {
                   padding: '10px 14px', minHeight: 36, borderRadius: 6,
                   cursor: d.coachLoading ? 'wait' : 'pointer',
                   border: '1px solid #d946ef',
-                  background: d.coachLoading ? '#1e293b' : 'rgba(217, 70, 239, 0.18)',
+                  background: d.coachLoading ? 'var(--allo-stem-panel, #1e293b)' : 'rgba(217, 70, 239, 0.18)',
                   color: 'var(--allo-stem-text, #f1f5f9)', fontSize: 12, fontWeight: 600
                 }
               }, d.coachLoading ? '🤖 Coach is analyzing…' : '🤖 Ask the coach')

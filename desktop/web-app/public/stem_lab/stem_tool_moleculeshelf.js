@@ -86,7 +86,7 @@
   }
 
   window.StemLab.registerTool('moleculeShelf', {
-    icon: '🧬',
+    icon: '\uD83D\uDD17',
     label: 'Molecule Shelf',
     desc: 'Explore real 3D molecular structures in Mol* — the viewer used by the world’s Protein Data Bank — from crambin and B-DNA to hemoglobin, an antibody, and the coronavirus spike. Rotate, zoom, and switch representations, with a Notice → Wonder observation coach beside it.',
     color: 'indigo',
@@ -209,7 +209,13 @@
         if (announceToSR) announceToSR(returnTool ? t('stem.moleculeShelf.returned_sr', 'Returned to Molecule Lab.') : t('stem.moleculeShelf.returned_catalog_sr', 'Returned to the STEAM Lab tools.'));
       }
 
-      return h('div', { className: 'flex flex-col gap-4 animate-in fade-in duration-300 max-w-2xl' },
+      return h('div', { className: 'flex flex-col gap-4 animate-in fade-in duration-300 max-w-2xl',
+        // The launcher card is dark-authored (text-slate-300 body, bg-slate-800/60
+        // privacy panel, slate-900/70 back button) but painted no ground, so it sat
+        // on the host card -- white in BOTH themes (stem_lab_module.js ~1633): body
+        // text 1.48:1, privacy rows 2.72:1 on the composited grey. Six shelf/launcher
+        // tools share this exact recipe; each gets the slate ground its inks assume.
+        style: { background: '#0f172a', borderRadius: 14, padding: 16 } },
         typeof setStemLabTool === 'function' && h('button', {
           onClick: returnToLab,
           className: 'inline-flex w-fit items-center gap-2 rounded-lg border border-slate-700 bg-slate-900/70 px-3 py-2 text-xs font-bold text-slate-200 transition-colors hover:bg-slate-800 active:scale-[0.97]',
@@ -239,7 +245,7 @@
           t('stem.moleculeShelf.open_note', 'Molecule Shelf is open. Keep this AlloFlow window open too — it powers the AI coach.')),
         popupState === 'closed' && h('p', { className: 'text-xs text-slate-400' },
           t('stem.moleculeShelf.closed_note', 'Molecule Shelf was closed. You can reopen it whenever you are ready.')),
-        h('p', { className: 'text-[11px] text-slate-500 leading-relaxed' },
+        h('p', { className: 'text-[11px] text-slate-400 leading-relaxed' },
           t('stem.moleculeShelf.credit', 'Molecular viewer: Mol* (molstar.org), free and open source under the MIT license — the viewer used by the RCSB Protein Data Bank and PDBe. Structures are fetched from the PDB by ID. The viewer and structures load from the web, so the shelf needs internet.'))
       );
     }

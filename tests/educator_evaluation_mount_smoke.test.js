@@ -138,10 +138,14 @@ describe('EducatorEvaluationPanel', () => {
     expect(container.textContent).toContain('Awaiting teacher');
     expect(container.textContent).toContain('Awaiting evaluator');
     expect(container.textContent).toContain('Overdue');
-    expect(container.textContent).toContain('70%');
-    expect(container.textContent).toContain('Observation & Practice');
-    expect(container.textContent).toContain('Guided sample · 1 of 6');
-    expect(container.textContent).toContain('1 of 6');
+    // The workspace defaults to Maine, whose generic plan is practice-only, so
+    // the weighting card reads 100% Professional Practice rather than PA's
+    // 70% Observation and Practice split.
+    expect(container.textContent).toContain('100%');
+    expect(container.textContent).toContain('Professional Practice');
+    expect(container.textContent).not.toContain('Observation & Practice');
+    expect(container.textContent).toContain('Guided sample · 1 of 7');
+    expect(container.textContent).toContain('1 of 7');
 
     const stored = JSON.parse(localStorage.getItem('allo_educator_evaluation_workspace_v1'));
     expect(stored.config.sampleMode).toBe(true);

@@ -1,0 +1,115 @@
+{
+  "schema_version": "pd-1.0",
+  "kind": "pd_module",
+  "metadata": {
+    "id": "udl-action-expression-quickstart",
+    "version": "1.0.0",
+    "language": "en-US",
+    "title": "UDL Quick Start: Multiple Means of Action & Expression",
+    "topic": "UDL",
+    "summary": "A ~15-minute primer on the action and expression principle of Universal Design for Learning: physical access, multiple ways to show knowledge, and executive-function supports, with a knowledge check and an action step.",
+    "estMinutes": 15,
+    "credit": "AlloFlow Seed Library",
+    "license": "CC-BY-SA-4.0",
+    "audience": "educator"
+  },
+  "sections": [
+    {
+      "title": "Learn",
+      "activities": [
+        {
+          "id": "read-action",
+          "type": "read",
+          "title": "Separate the goal from the route to it",
+          "content": {
+            "body": "The action and expression principle of Universal Design for Learning starts from a simple observation: knowing something and producing a particular kind of performance about it are not the same skill. A learner can understand a historical argument and still struggle to handwrite five paragraphs about it; the handwriting is not the goal. UDL asks teachers to be precise about what the goal actually is, then flexible about the routes learners take to demonstrate it.\n\nPhysical action (Guideline 4) is the access layer: can every learner physically operate the materials and tools? This includes navigation, response options that do not depend on one motor skill, and compatibility with assistive technologies. When the response method is the barrier, the assessment measures the barrier, not the learning.\n\nExpression and communication (Guideline 5) is the heart of the principle: offer multiple media for composition — writing, speaking, drawing, building, recording — and provide the construction tools professionals actually use, such as spellcheckers, speech-to-text, sentence starters, and models of strong work. Support matters most while fluency is developing; the guideline calls for graduated levels of support that fade as independence grows.\n\nExecutive function (Guideline 6) recognizes that producing work requires planning, organizing, remembering, and monitoring — capacities that are still developing throughout childhood and adolescence. Goal-setting supports, planning templates, checklists that offload working memory, and structured opportunities to monitor progress make the difference between a learner who knows and a learner who can show it.\n\nOne caution keeps this honest: when a specific mode IS the goal — a writing standard, an oral defense — then that mode is not negotiable, and UDL instead asks how to scaffold every learner toward it.",
+            "keyPoints": [
+              "Be precise about the goal; be flexible about the route to demonstrating it.",
+              "Physical access first: the response method must not be the barrier (Guideline 4).",
+              "Offer multiple composition media and real construction tools, with supports that fade (Guideline 5).",
+              "Executive-function supports — plans, checklists, progress monitoring — turn knowing into showing (Guideline 6).",
+              "When the mode itself is the standard, scaffold toward it rather than around it."
+            ],
+            "links": [
+              { "label": "CAST UDL Guidelines — Action & Expression", "url": "https://udlguidelines.cast.org/action-expression/" }
+            ]
+          },
+          "gate": { "kind": "none" }
+        }
+      ]
+    },
+    {
+      "title": "Check your understanding",
+      "activities": [
+        {
+          "id": "quiz-action",
+          "type": "quiz",
+          "title": "Action & expression check",
+          "content": {
+            "questions": [
+              {
+                "prompt": "The core move of the action and expression principle is to:",
+                "options": [
+                  "Let every student choose whether to do the assignment",
+                  "Hold the learning goal constant while allowing multiple routes to demonstrate it",
+                  "Replace all writing tasks with oral presentations",
+                  "Grade effort instead of product"
+                ],
+                "correctIndex": 1,
+                "explanation": "The goal stays fixed; the route to demonstrating it flexes — unless the mode itself is the standard."
+              },
+              {
+                "prompt": "A student uses speech-to-text to draft an essay analyzing a novel's theme. The learning goal is literary analysis. This is best described as:",
+                "options": [
+                  "An unfair advantage over students who type",
+                  "A reason to grade the essay separately",
+                  "Lowering the standard of the assignment",
+                  "Removing a barrier so the assessment measures the actual goal"
+                ],
+                "correctIndex": 3,
+                "explanation": "Transcription was not the goal. When the response method is the barrier, the task measures the barrier."
+              },
+              {
+                "prompt": "Which is an EXECUTIVE FUNCTION support (Guideline 6) rather than an expression option?",
+                "options": [
+                  "A project checklist with milestones the student checks off against dates",
+                  "Allowing a podcast instead of a poster",
+                  "Providing colored markers",
+                  "Reading the rubric aloud"
+                ],
+                "correctIndex": 0,
+                "explanation": "Planning and progress-monitoring tools offload executive demands; media choice is Guideline 5."
+              },
+              {
+                "prompt": "The state writing standard requires a persuasive ESSAY. The UDL-consistent response is to:",
+                "options": [
+                  "Let students film a persuasive video instead",
+                  "Excuse students who find writing difficult",
+                  "Scaffold every learner toward the essay — models, sentence frames, dictation for drafting, graduated support",
+                  "Have students copy a model essay"
+                ],
+                "correctIndex": 2,
+                "explanation": "When the mode is the goal, UDL scaffolds toward it. Options and supports serve the standard, not a detour around it."
+              }
+            ]
+          },
+          "gate": { "kind": "score", "threshold": 0.75 }
+        }
+      ]
+    },
+    {
+      "title": "Apply it",
+      "activities": [
+        {
+          "id": "reflect-action",
+          "type": "reflect",
+          "title": "Audit one assessment",
+          "content": {
+            "prompt": "Take one assessment you already use. State its actual learning goal in one sentence. Then name one part of the required performance that is NOT the goal (handwriting, spelling under time pressure, oral fluency, recall of directions) and one route or support you could offer without touching the goal itself."
+          },
+          "gate": { "kind": "none" }
+        }
+      ]
+    }
+  ]
+}

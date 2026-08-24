@@ -1,0 +1,139 @@
+{
+  "schema_version": "pd-1.0",
+  "kind": "pd_module",
+  "metadata": {
+    "id": "deescalation-branching-practice",
+    "version": "1.0.0",
+    "language": "en-US",
+    "title": "De-escalation in the Moment: A Branching Scenario",
+    "topic": "Behavior & SEL",
+    "summary": "A ~15-minute primer on the escalation cycle and adult de-escalation moves, followed by a branching classroom scenario you walk one decision at a time, and a reflection.",
+    "estMinutes": 15,
+    "credit": "AlloFlow Seed Library",
+    "license": "CC-BY-SA-4.0",
+    "audience": "educator"
+  },
+  "sections": [
+    {
+      "title": "Learn",
+      "activities": [
+        {
+          "id": "read-deescalation",
+          "type": "read",
+          "title": "The escalation cycle, and where adults fit in it",
+          "content": {
+            "body": "A widely used model of acting-out behavior (developed by Colvin and Sugai and adopted across many school behavior frameworks) describes escalation as a cycle with phases: calm, a trigger, agitation, acceleration, a peak, then de-escalation and recovery. Its practical value is the reminder that the adult's best move is different in each phase — and that most of the leverage is early.\n\nDuring agitation — fidgeting, going quiet, head down, sharpening tone — the goal is to reduce demands and increase support: offer space, offer a familiar low-effort task, quietly acknowledge the feeling. This is the phase where a small adult move prevents a large incident.\n\nDuring acceleration, students often engage adults with questions, arguing, or provocation. The evidence-informed guidance is consistent: do not argue the content, do not match the intensity, and do not deliver new demands mid-climb. Short, calm statements; fewer words; genuine choices between two acceptable options; and time. Every additional sentence an adult speaks at this phase is fuel.\n\nAt peak, safety is the only goal. Reasoning, consequences, and teaching do not land at peak, and attempting them extends it.\n\nDe-escalation and recovery are fragile: the student is often exhausted and embarrassed. This is not the moment for debriefing the incident or assigning consequences — re-engagement with a simple, concrete task comes first, and the teaching conversation comes later, from calm.\n\nTwo cautions keep this honest. First, de-escalation skill does not replace understanding WHY the behavior works for the student — that is the function-based work that prevents the next cycle. Second, these are general practices, not a crisis protocol: follow your school's safety procedures and crisis plans wherever they apply.",
+            "keyPoints": [
+              "Escalation runs in phases; the right adult move is different in each one.",
+              "Agitation phase: reduce demands, increase support, offer space — the highest-leverage moment.",
+              "Acceleration phase: fewer words, no arguing, no new demands, two acceptable choices.",
+              "Peak: safety only — reasoning and consequences do not land and can extend it.",
+              "Recovery: simple re-engagement first; the teaching conversation comes later, from calm.",
+              "De-escalation manages the moment; function-based support prevents the next one."
+            ]
+          },
+          "gate": { "kind": "none" }
+        }
+      ]
+    },
+    {
+      "title": "Walk the scenario",
+      "activities": [
+        {
+          "id": "branching-deescalation",
+          "type": "branching",
+          "title": "Fourth period, Tuesday",
+          "content": {
+            "intro": "Walk this scenario one decision at a time. There is no score — reach an ending, then replay the paths you did not take.",
+            "start": "trigger",
+            "nodes": {
+              "trigger": {
+                "text": "Ten minutes into independent work, you hand back quizzes. Marcus glances at his grade, shoves the paper into his backpack, pulls his hood up, and puts his head down. His pencil rolls to the floor and he doesn't move for it.",
+                "choices": [
+                  { "label": "From across the room: 'Marcus, hood down please, and let's get started.'", "to": "public_demand" },
+                  { "label": "Give him a minute, then drift near his desk and quietly say: 'Rough one. You're okay. No rush.'", "to": "space_support", "feedback": "Agitation phase: reduce demands, increase support. Low volume and no audience keep his dignity intact." },
+                  { "label": "Ignore it entirely — he'll come around on his own.", "to": "ignored" }
+                ]
+              },
+              "space_support": {
+                "text": "After a minute, Marcus lifts his head slightly. He does not start working, but his shoulders drop. He mutters: 'I failed it, didn't I.'",
+                "choices": [
+                  { "label": "'One quiz isn't the whole story. Want to hear the retake plan, or just do the warm-up and we'll talk later?'", "to": "choice_offered", "feedback": "You answered the feeling without arguing the fact, and offered two acceptable ways forward." }
+                ]
+              },
+              "public_demand": {
+                "text": "Marcus mutters 'this class is pointless' loud enough for neighbors to hear. Two students turn around. His foot starts bouncing.",
+                "choices": [
+                  { "label": "'Excuse me? Say that again and it's a referral.'", "to": "power_struggle" },
+                  { "label": "Move closer, lower your voice: 'I hear you. Let's talk in two minutes — for now, just the first problem, or the notes. Your pick.'", "to": "choice_offered", "feedback": "You dropped the volume, dropped the audience, and offered two acceptable options instead of a challenge." }
+                ]
+              },
+              "ignored": {
+                "text": "Five minutes pass. Marcus hasn't started, and now he's flicking his neighbor's binder onto the floor. The neighbor looks at you.",
+                "choices": [
+                  { "label": "Quietly check in at his desk with a low-effort restart: 'Head down was fine, this isn't. First problem together?'", "to": "choice_offered", "feedback": "Space was reasonable — but agitation that finds an audience needs support, not more distance." },
+                  { "label": "'Marcus. Out in the hall. Now.'", "to": "power_struggle" }
+                ]
+              },
+              "power_struggle": {
+                "text": "Marcus stands up fast, knocking his chair back. 'Fine! This is trash anyway!' The room goes silent. He is breathing hard, fists closed — this is acceleration heading toward peak.",
+                "choices": [
+                  { "label": "Match it: 'Sit DOWN. You do not talk to me like that.'", "to": "peak" },
+                  { "label": "Slow, quiet, minimal: step back, palms open. 'Okay. I'm not arguing. Take the hall or the back table.' Then wait.", "to": "cooling", "feedback": "Fewer words, no argument, physical space, two acceptable exits. You cannot win a peak — you can only avoid feeding it." }
+                ]
+              },
+              "peak": {
+                "text": "Marcus sweeps his books off the desk and is at the door yelling. Students are recording. Nothing you say about the quiz, the rules, or consequences will land right now.",
+                "choices": [
+                  { "label": "Follow your school's safety procedure: calm presence, clear the audience, get support to the door.", "to": "cooling", "feedback": "At peak, safety is the only goal. Consequences and teaching wait — this is also where your building's crisis plan governs, not a module." }
+                ]
+              },
+              "cooling": {
+                "text": "Ten minutes later Marcus is at the back table, hood up, exhausted. The class is working again. He looks embarrassed.",
+                "choices": [
+                  { "label": "Bring him the quiz: 'Let's go over what you got wrong while it's fresh.'", "to": "too_soon" },
+                  { "label": "Set a simple, familiar task in front of him: 'Just the warm-up, no rush. Glad you're here.' Debrief tomorrow, from calm.", "to": "end_recovery", "feedback": "Recovery is fragile. Re-engagement first; the teaching conversation later — and separately, ask what the quiz grade sets off for him. That function question is how you prevent the next cycle." }
+                ]
+              },
+              "too_soon": {
+                "text": "Marcus's jaw tightens and his foot starts bouncing again. You are one sentence away from restarting the climb.",
+                "choices": [
+                  { "label": "Step back: 'Actually — that can wait. Just the warm-up for now.'", "to": "end_recovery", "feedback": "Good catch. Debriefing during recovery commonly re-escalates; tomorrow, from calm, it will actually teach." }
+                ]
+              },
+              "choice_offered": {
+                "text": "Marcus doesn't answer, but after a minute he pulls out the notes and copies the first line. The moment has passed. Later, at the door, he mumbles that his mom is going to be mad about the quiz.",
+                "choices": [
+                  { "label": "'Thanks for getting started — that wasn't nothing. Want to figure out the retake plan tomorrow?'", "to": "end_early", "feedback": "You caught it in agitation, so there was never an incident to manage — this is what the early leverage looks like. His comment about the grade is your clue to the trigger's function." }
+                ]
+              },
+              "end_early": {
+                "text": "No incident, relationship intact, and you know what the quiz grades set off for him. The next move is preventive: a retake path and a check-in before papers are handed back.",
+                "ending": true
+              },
+              "end_recovery": {
+                "text": "Marcus does the warm-up. Tomorrow, from calm, you'll debrief briefly, agree on a signal for 'I need a minute,' and look at what a returned grade sets off for him — the function question that prevents the next cycle.",
+                "ending": true
+              }
+            }
+          },
+          "gate": { "kind": "none" }
+        }
+      ]
+    },
+    {
+      "title": "Apply it",
+      "activities": [
+        {
+          "id": "reflect-deescalation",
+          "type": "reflect",
+          "title": "Your own escalation map",
+          "content": {
+            "prompt": "Think of a student whose escalations you know well. What does their agitation phase actually look like (it is often quiet), and what is one specific support move you could make in that window — before acceleration ever starts?"
+          },
+          "gate": { "kind": "none" }
+        }
+      ]
+    }
+  ]
+}

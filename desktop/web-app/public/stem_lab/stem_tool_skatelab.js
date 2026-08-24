@@ -50,6 +50,30 @@ window.StemLab = window.StemLab || {
     document.head.appendChild(st);
   })();
 
+  // ── Pin the STEM palette to its DARK values on this tool's own root ──
+  // SkateLab is a night-skatepark: amber neon on asphalt. Its GROUNDS were migrated
+  // to var(--allo-stem-canvas/panel) and so flip to #ffffff/#f8fafc in the light
+  // theme, but ~50 of its INKS are still hardcoded dark-palette literals (#fef3c7,
+  // #fbbf24, #e0f2fe) and its tints are cream-over-dark alphas like
+  // rgba(254,243,199,0.08). Half-migrated, so the light theme put cream on white:
+  // 1.1:1 on every scenario chip, vehicle radio and mode tab, 1.66:1 on the h2.
+  //
+  // Recolouring 50 inks would fight the tool's whole visual identity. Custom
+  // properties INHERIT, so one definition on the tool's own root wins for the entire
+  // subtree in either app theme -- the same fix bridgeLab used for 44 of its 48.
+  // Scoped with html:not(.theme-contrast) so high-contrast mode still overrides it.
+  (function() {
+    if (document.getElementById('allo-skatelab-palette-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-skatelab-palette-css';
+    st.textContent = 'html:not(.theme-contrast) .skatelab-shell{'
+      + '--allo-stem-canvas:#0f172a;--allo-stem-panel:#1e293b;--allo-stem-deeper:#020617;'
+      + '--allo-stem-text:#e2e8f0;--allo-stem-text-soft:#94a3b8;--allo-stem-border:#334155;'
+      + '--allo-stem-button-bg:#1e293b;--allo-stem-button-text:#e2e8f0;--allo-stem-button-border:#334155;'
+      + 'background:#0f172a;}';
+    document.head.appendChild(st);
+  })();
+
   // Responsive layout helpers for the dense play surface.
   (function() {
     if (document.getElementById('allo-skatelab-responsive-css')) return;
@@ -1677,6 +1701,7 @@ window.StemLab = window.StemLab || {
     desc: 'Skate / BMX physics: kickflips, halfpipe pumps, and gap jumps. Same physics that lands a 720.',
     color: 'amber',
     category: 'science',
+    gradeRange: '6-12',
     questHooks: [
       { id: 'sk_first_land', label: 'Land your first trick', icon: '🛹',
         check: function(d) { return (d.landings || 0) >= 1; },
@@ -4388,10 +4413,14 @@ window.StemLab = window.StemLab || {
               style: {
                 padding: '4px 10px', fontSize: 10, fontWeight: 700,
                 background: on && hasGhost ? 'rgba(168,85,247,0.20)' : 'rgba(254,243,199,0.14)',
-                color: on && hasGhost ? '#c4b5fd' : '#94a3b8',
+                // The no-ghost state is QUIET, not disabled -- the comment above says the
+                // chip stays clickable -- so AA applies. #94a3b8 at opacity .65 composited
+                // to #657286 on this tint: 2.9:1. Brighter ink + a lighter dim keeps the
+                // "not ready yet" read at 6.67:1.
+                color: on && hasGhost ? '#c4b5fd' : '#cbd5e1',
                 border: '1px solid ' + (on && hasGhost ? 'rgba(168,85,247,0.55)' : 'rgba(254,243,199,0.55)'),
                 borderRadius: 20, cursor: 'pointer', minHeight: 26,
-                opacity: hasGhost ? 1 : 0.65
+                opacity: hasGhost ? 1 : 0.8
               }
             }, '👻 Ghost: ' + (on ? 'on' : 'off'));
           })(),
@@ -5539,7 +5568,7 @@ window.StemLab = window.StemLab || {
                   style: {
                     padding: '10px 12px', fontSize: 12, fontWeight: 800,
                     background: sk.helmet ? 'linear-gradient(135deg,#22c55e,#15803d)' : 'rgba(254,243,199,0.14)',
-                    color: sk.helmet ? '#fff' : '#94a3b8',
+                    color: sk.helmet ? '#fff' : '#cbd5e1',
                     border: '1px solid ' + (sk.helmet ? '#15803d' : 'rgba(254,243,199,0.55)'),
                     borderRadius: 10, cursor: 'pointer', minHeight: 40
                   }
@@ -5555,7 +5584,7 @@ window.StemLab = window.StemLab || {
                   style: {
                     padding: '10px 12px', fontSize: 12, fontWeight: 800,
                     background: sk.pads ? 'linear-gradient(135deg,#22c55e,#15803d)' : 'rgba(254,243,199,0.14)',
-                    color: sk.pads ? '#fff' : '#94a3b8',
+                    color: sk.pads ? '#fff' : '#cbd5e1',
                     border: '1px solid ' + (sk.pads ? '#15803d' : 'rgba(254,243,199,0.55)'),
                     borderRadius: 10, cursor: 'pointer', minHeight: 40
                   }

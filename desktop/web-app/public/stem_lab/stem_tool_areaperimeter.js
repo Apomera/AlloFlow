@@ -155,7 +155,7 @@
   });
 
   window.StemLab.registerTool('areaPerimeter', {
-    icon: '\uD83D\uDCD0',
+    icon: '\uD83D\uDFE9',
     label: 'Area & Perimeter Lab',
     desc: 'Tile, compare, decompose, and investigate 2-D shapes while building area and perimeter reasoning.',
     color: 'teal',

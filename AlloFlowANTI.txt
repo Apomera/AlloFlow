@@ -2218,7 +2218,6 @@ let handleSelectPersona = async () => { console.warn('[handleSelectPersona] Fall
 let handlePersonaTopicSpark = async () => { console.warn('[handlePersonaTopicSpark] Fallback'); };
 let handlePanelChatSubmit = async () => { console.warn('[handlePanelChatSubmit] Fallback'); };
 let handlePersonaChatSubmit = async () => { console.warn('[handlePersonaChatSubmit] Fallback'); };
-let handleSavePersonaChat = () => { console.warn('[handleSavePersonaChat] Fallback'); };
 function _upgradePersonas() {
     const factory = window.AlloModules && window.AlloModules.createPersonas;
     if (!factory) return;
@@ -2244,7 +2243,6 @@ function _upgradePersonas() {
     handlePersonaTopicSpark = api.handlePersonaTopicSpark;
     handlePanelChatSubmit = api.handlePanelChatSubmit;
     handlePersonaChatSubmit = api.handlePersonaChatSubmit;
-    handleSavePersonaChat = api.handleSavePersonaChat;
     console.log('[Personas] Monolith shim upgraded from CDN module.');
 }
 
@@ -2349,10 +2347,24 @@ const _AUDIO_BANK_URLS = [
     'https://alloflow-cdn.pages.dev/audio_bank.json',
     'https://raw.githubusercontent.com/Apomera/AlloFlow/main/audio_bank.json',
 ];
+// Kokoro-generated GAP-FILL bank (developer-labeled, machine-generated —
+// provenance in dev-tools/kokoro_audio_manifest.json). Checked strictly AFTER
+// the main (Gemini-recorded) bank so a recorded clip always wins: Kokoro
+// fills keys that have no recording, it never replaces one. Replacing a
+// Kokoro clip later = regenerating anything listed in the manifest.
+let _AUDIO_BANK_KOKORO = null;
 function getAudio(category, key) {
-    if (!_AUDIO_BANK) return null;
-    if (_AUDIO_BANK[category] && _AUDIO_BANK[category][key]) return _AUDIO_BANK[category][key];
-    if (_AUDIO_BANK['misc'] && _AUDIO_BANK['misc'][key]) return _AUDIO_BANK['misc'][key];
+    if (_AUDIO_BANK) {
+        if (_AUDIO_BANK[category] && _AUDIO_BANK[category][key]) return _AUDIO_BANK[category][key];
+        if (_AUDIO_BANK['misc'] && _AUDIO_BANK['misc'][key]) return _AUDIO_BANK['misc'][key];
+    }
+    if (_AUDIO_BANK_KOKORO && _AUDIO_BANK_KOKORO[category] && _AUDIO_BANK_KOKORO[category][key]) {
+        return _AUDIO_BANK_KOKORO[category][key];
+    }
+    // A miss on an unloaded category kicks its split-bank fetch; callers
+    // already treat null as "not yet loaded" and re-resolve on the
+    // 'audio_bank_loaded' event, so the first request self-heals.
+    _requestAudioCategory(category);
     return null;
 }
 window.getAudio = getAudio;
@@ -2372,15 +2384,145 @@ async function _initAudioBank() {
     }
     console.warn("[AudioBank] Auto-fetch failed from all sources - Use the Upload button in the header to load audio_bank.json manually.");
 }
-_initAudioBank();
+// Split-bank loading (2026-08-23 perf pass): audio_bank.json is ~15 MB with a
+// single 10.8 MB 'words' category, so the bank is also published per-category
+// under audio_bank/ with an index. A category loads on the first getAudio()
+// miss that names it; consumers already treat null as "not yet loaded" and
+// re-resolve on 'audio_bank_loaded'. If the split index is unreachable (older
+// mirror, manual setups), the loader flips to legacy mode and fetches the
+// whole file exactly as before.
+const _AUDIO_BANK_SPLIT_BASES = _AUDIO_BANK_URLS.map((url) => url.replace(/audio_bank\.json$/, 'audio_bank/'));
+let _audioBankIndex = null;
+let _audioBankIndexLoad = null;
+let _audioBankLegacyMode = false;
+const _audioCategoryPending = {};
+async function _loadAudioBankIndex() {
+    if (_audioBankIndex || _audioBankLegacyMode) return;
+    if (_audioBankIndexLoad) return _audioBankIndexLoad;
+    _audioBankIndexLoad = (async () => {
+        for (const base of _AUDIO_BANK_SPLIT_BASES) {
+            try {
+                const response = await fetch(base + 'index.json');
+                if (!response.ok) throw new Error('HTTP ' + response.status);
+                const parsed = await response.json();
+                if (parsed && parsed.categories) { _audioBankIndex = parsed; return; }
+            } catch (err) {
+                console.warn('[AudioBank] Split index fetch failed from ' + base + 'index.json:', err.message);
+            }
+        }
+        _audioBankLegacyMode = true;
+        _initAudioBank();
+    })();
+    return _audioBankIndexLoad;
+}
+async function _requestAudioCategory(category) {
+    if (_audioBankLegacyMode) return;
+    if (_AUDIO_BANK && _AUDIO_BANK[category]) return;
+    if (_audioCategoryPending[category]) return;
+    _audioCategoryPending[category] = true;
+    let terminal = false;
+    try {
+        await _loadAudioBankIndex();
+        if (_audioBankLegacyMode || !_audioBankIndex) { terminal = true; return; }
+        if (!_audioBankIndex.categories[category]) { terminal = true; return; }
+        for (const base of _AUDIO_BANK_SPLIT_BASES) {
+            try {
+                const response = await fetch(base + category + '.json');
+                if (!response.ok) throw new Error('HTTP ' + response.status);
+                const clips = await response.json();
+                _AUDIO_BANK = _AUDIO_BANK || {};
+                if (!_AUDIO_BANK[category]) _AUDIO_BANK[category] = clips;
+                terminal = true;
+                window.dispatchEvent(new Event('audio_bank_loaded'));
+                return;
+            } catch (err) {
+                console.warn('[AudioBank] Category fetch failed from ' + base + category + '.json:', err.message);
+            }
+        }
+    } finally {
+        // Total failure clears the pending flag so a later getAudio call can
+        // retry once the network recovers; success and terminal states keep it.
+        if (!terminal) delete _audioCategoryPending[category];
+    }
+}
+// The Kokoro gap bank loads independently of the main bank (a main-bank
+// failure must not silence the gap clips, and vice versa). Re-dispatching
+// 'audio_bank_loaded' makes audio_banks_module drop its resolved caches so
+// the overlay keys become visible without a reload.
+async function _initKokoroAudioBank() {
+    for (const url of _AUDIO_BANK_URLS) {
+        const kokoroUrl = url.replace('audio_bank.json', 'audio_bank_kokoro.json');
+        try {
+            const response = await fetch(kokoroUrl);
+            if (!response.ok) throw new Error("HTTP " + response.status);
+            _AUDIO_BANK_KOKORO = await response.json();
+            console.log("[AudioBank] Kokoro gap bank loaded:", Object.keys(_AUDIO_BANK_KOKORO).filter(k => k !== '_meta'));
+            window.dispatchEvent(new Event('audio_bank_loaded'));
+            return;
+        } catch (err) {
+            console.warn("[AudioBank] Kokoro gap bank fetch failed from " + kokoroUrl + ":", err.message);
+        }
+    }
+}
+// Keep the ~5.6 MB audio-bank fetch + JSON.parse off the boot critical path:
+// nothing at boot depends on the clips, getAudio() already returns null until
+// a bank resolves, and every consumer listens for 'audio_bank_loaded'. The
+// banks now load in the first idle moment after the window load event.
+const _scheduleAudioBankInit = () => {
+    // The index is tiny; per-category clips load on first demand. Legacy
+    // whole-file _initAudioBank runs only if the split index is unreachable.
+    const kick = () => { _loadAudioBankIndex(); _initKokoroAudioBank(); };
+    if (typeof requestIdleCallback === 'function') requestIdleCallback(kick, { timeout: 8000 });
+    else setTimeout(kick, 3000);
+};
+if (typeof document !== 'undefined' && document.readyState === 'complete') _scheduleAudioBankInit();
+else if (typeof window !== 'undefined') window.addEventListener('load', _scheduleAudioBankInit, { once: true });
+else _scheduleAudioBankInit();
 // Audio-bank cache invalidation moved into audio_banks_module.js, which
 // listens for 'audio_bank_loaded' and clears its internal _CACHE_* vars.
+// Recorded word audio for the Word Sounds assessment bank. This was a stub
+// that assigned {} and returned, which stranded every recorded word clip —
+// the player checked the cache, found it empty, and fell back to TTS forever.
+// It now loads word_audio_kokoro_bank.json (Kokoro-generated, culled 1081→933,
+// webm/opus data URIs playable verbatim by new Audio()). Provenance and the
+// cull record live in dev-tools/kokoro_audio_manifest.json.
+//
+// Set on BOTH the lexical binding and window: in the Canvas monolith the
+// word-sounds code sees this `let` lexically, while the CDN-split module's
+// bare `_CACHE_WORD_AUDIO_BANK` reads resolve through the window property.
 let _CACHE_WORD_AUDIO_BANK = null;
+let _wordAudioBankLoad = null;
 async function loadWordAudioBank() {
     if (_CACHE_WORD_AUDIO_BANK) return;
-    _CACHE_WORD_AUDIO_BANK = {};
-    return;
+    if (_wordAudioBankLoad) return _wordAudioBankLoad;
+    _wordAudioBankLoad = (async () => {
+        for (const url of _AUDIO_BANK_URLS) {
+            const bankUrl = url.replace('audio_bank.json', 'word_audio_kokoro_bank.json');
+            try {
+                const response = await fetch(bankUrl);
+                if (!response.ok) throw new Error("HTTP " + response.status);
+                const parsed = await response.json();
+                const words = (parsed && parsed.words) || {};
+                _CACHE_WORD_AUDIO_BANK = words;
+                window._CACHE_WORD_AUDIO_BANK = words;
+                console.log("[AudioBank] Word bank loaded: " + Object.keys(words).length + " recorded words");
+                return;
+            } catch (err) {
+                console.warn("[AudioBank] Word bank fetch failed from " + bankUrl + ":", err.message);
+            }
+        }
+        // All sources failed: cache the empty object so the player's per-word
+        // checks stay cheap and TTS fallback proceeds exactly as before.
+        _CACHE_WORD_AUDIO_BANK = {};
+        window._CACHE_WORD_AUDIO_BANK = _CACHE_WORD_AUDIO_BANK;
+    })();
+    return _wordAudioBankLoad;
 }
+// The CDN-split word_sounds_module resolves this loader via
+// window.loadWordAudioBank and silently substitutes a no-op stub when the
+// property is absent — which it always was. Without this line the loader
+// above is invisible to the deployed module and every word stays on TTS.
+window.loadWordAudioBank = loadWordAudioBank;
 
 const ALLO_QR_BLOCKED_FIREBASE_CONFIG = Object.freeze({
     apiKey: 'disabled-incomplete-qr',
@@ -4779,13 +4921,45 @@ const _helpLookup = (key) => {
   }
   return '';
 };
-(async () => {
+// Strings arrive in two stages. The localStorage cache applies immediately
+// (synchronously, below) so returning users render translated UI with zero
+// network. The network refresh is deferred to idle time after the load event:
+// it used to fetch ~2 MB from raw.githubusercontent DURING boot with a
+// Date.now() cache-buster (uncacheable, third-party, and blocked by some
+// school web filters per the audio-bank note above). The refresh now prefers
+// the app's own CDN copy, pinned per deploy via window.__alloBuildStamp.hash
+// (the pin variable itself lives in a useEffect scope) so the service worker
+// serves it cache-first on warm boots; raw GitHub stays as a plain, cacheable
+// fallback with no cache-buster.
+try {
+    const cachedUiStrings = localStorage.getItem("alloflow_ui_strings_cache");
+    if (cachedUiStrings) { UI_STRINGS = JSON.parse(cachedUiStrings); }
+} catch (e) { console.warn("UI_STRINGS cache read failed:", e.message); }
+try {
+    const cachedHelpStrings = localStorage.getItem("alloflow_help_strings_cache");
+    if (cachedHelpStrings) { HELP_STRINGS = JSON.parse(cachedHelpStrings); }
+} catch (e) { console.warn("HELP_STRINGS cache read failed:", e.message); }
+async function _fetchFirstOkStringsText(urls) {
+    for (const url of urls) {
+        try {
+            const resp = await fetch(url);
+            if (resp.ok) return await resp.text();
+            console.warn("[AlloFlow] Strings fetch failed with status", resp.status, "from", url);
+        } catch (e) {
+            console.warn("[AlloFlow] Strings fetch failed from", url, e.message);
+        }
+    }
+    return null;
+}
+const _refreshRemoteStrings = async () => {
+    const stringsBase = (typeof window !== 'undefined' && window.__alloCdnBase) || 'https://alloflow-cdn.pages.dev/';
+    const stringsPin = (typeof window !== 'undefined' && window.__alloBuildStamp && window.__alloBuildStamp.hash) ? '?v=' + window.__alloBuildStamp.hash : '';
     try {
-        const cached = localStorage.getItem("alloflow_ui_strings_cache");
-        if (cached) { UI_STRINGS = JSON.parse(cached); }
-        const resp = await fetch("https://raw.githubusercontent.com/Apomera/AlloFlow/main/ui_strings.js?v=" + Date.now());
-        if (resp.ok) {
-            const text = await resp.text();
+        const text = await _fetchFirstOkStringsText([
+            stringsBase + 'ui_strings.js' + stringsPin,
+            'https://raw.githubusercontent.com/Apomera/AlloFlow/main/ui_strings.js'
+        ]);
+        if (text !== null) {
             try {
                 UI_STRINGS = JSON.parse(text);
             } catch (parseErr) {
@@ -4801,18 +4975,17 @@ const _helpLookup = (key) => {
                 try { localStorage.setItem("alloflow_ui_strings_cache", JSON.stringify(UI_STRINGS)); } catch { }
                 console.log("[AlloFlow] UI_STRINGS loaded:", Object.keys(UI_STRINGS).length, "top-level keys");
             }
-        } else {
-            console.warn("[AlloFlow] UI_STRINGS fetch failed with status:", resp.status);
         }
     } catch (e) {
         console.warn("UI_STRINGS fetch failed, using cache or defaults:", e.message);
     }
     try {
-        const hsCached = localStorage.getItem("alloflow_help_strings_cache");
-        if (hsCached) { HELP_STRINGS = JSON.parse(hsCached); }
-        const hsResp = await fetch("https://raw.githubusercontent.com/Apomera/AlloFlow/main/help_strings.js?v=" + Date.now());
-        if (hsResp.ok) {
-            const hsText = (await hsResp.text()).replace(/^\s*\/\/.*$/gm, '').trim();
+        const hsTextRaw = await _fetchFirstOkStringsText([
+            stringsBase + 'help_strings.js' + stringsPin,
+            'https://raw.githubusercontent.com/Apomera/AlloFlow/main/help_strings.js'
+        ]);
+        if (hsTextRaw !== null) {
+            const hsText = hsTextRaw.replace(/^\s*\/\/.*$/gm, '').trim();
             try {
                 HELP_STRINGS = JSON.parse(hsText);
             } catch (parseErr) {
@@ -4833,7 +5006,14 @@ const _helpLookup = (key) => {
     } catch (e) {
         console.warn("HELP_STRINGS fetch failed, using cache or defaults:", e.message);
     }
-})();
+};
+const _scheduleRemoteStringsRefresh = () => {
+    if (typeof requestIdleCallback === 'function') requestIdleCallback(_refreshRemoteStrings, { timeout: 10000 });
+    else setTimeout(_refreshRemoteStrings, 4000);
+};
+if (typeof document !== 'undefined' && document.readyState === 'complete') _scheduleRemoteStringsRefresh();
+else if (typeof window !== 'undefined') window.addEventListener('load', _scheduleRemoteStringsRefresh, { once: true });
+else _scheduleRemoteStringsRefresh();
 // range: 'None' | '1' (one above + one below, the default) | '2' | 'Both' | 'Custom'.
 // 'Custom' takes an explicit grade list so a teacher can ask for any mix — e.g.
 // 3rd + 5th + 8th for a class that does not straddle its target grade evenly.
@@ -11443,7 +11623,9 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       setIsCommunityCatalogOpen(true);
     };
     return () => { try { delete window.__alloOpenPdCatalog; } catch(_) {} };
-  }, [setIsCommunityCatalogOpen]);
+  // React state setters are stable; keeping this mount-only also avoids reading
+  // the catalog setter before its later useState declaration during render.
+  }, []);
   const [showStoryForge, _setShowStoryForgeRaw] = useState(false);
   const setShowStoryForge = React.useCallback((v) => { if (v && window.__alloLazyStoryForge) { try { window.__alloLazyStoryForge(); } catch(_) {} } _setShowStoryForgeRaw(v); }, []);
   const [showLitLab, _setShowLitLabRaw] = useState(false);
@@ -12227,7 +12409,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // Meeting Documentation is its third tool (needs callGemini).
     window.__alloLazyAdminHub = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AdminHub', 'https://alloflow-cdn.pages.dev/admin_hub_module.js?v=29e9a817'); }; })();
     // Educator Growth & Evaluation (Aug 13 2026) — Act 13 workflow prototype.
-    window.__alloLazyEducatorEvaluation = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EducatorEvaluation', 'https://alloflow-cdn.pages.dev/educator_evaluation_module.js?v=8a384461d'); }; })();
+    window.__alloLazyEducatorEvaluation = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EducatorEvaluation', 'https://alloflow-cdn.pages.dev/educator_evaluation_module.js?v=0fdfb72d'); }; })();
     // Math Studio (Aug 17 2026) — the former STEM Lab Create tab, math-owned.
     window.__alloLazyMathCreate = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MathCreate', 'https://alloflow-cdn.pages.dev/math_create_module.js?v=8a384461d'); }; })();
     window.__alloLazyMeetingDocs = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MeetingDocs', 'https://alloflow-cdn.pages.dev/meeting_docs_module.js?v=md080302'); }; })();
@@ -12390,7 +12572,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('StandardsContext', 'https://alloflow-cdn.pages.dev/standards_context_module.js?v=8a384461d');
     loadModule('InstructionalContext', 'https://alloflow-cdn.pages.dev/instructional_context_module.js?v=8a384461d');
     loadModule('GenerationMatrix', 'https://alloflow-cdn.pages.dev/generation_matrix_module.js?v=8a384461d');
-    loadModule('StandardsProvider', 'https://alloflow-cdn.pages.dev/standards_provider_module.js?v=8a384461d');
+    loadModule('StandardsProvider', 'https://alloflow-cdn.pages.dev/standards_provider_module.js?v=db5b4545');
     // Learning Web owns durable cross-view graph snapshots; domain modules keep
     // their richer standards, audit, unit, and lexical records. The engine is
     // eager here because the Alignment Map can render before Throughline opens.
@@ -15806,7 +15988,8 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     reflectionText: '',
     reflectionSubmitted: false,
     harmonyScore: 10,
-    earnedBadges: []
+    earnedBadges: [],
+    questionCraft: { good: 0, neutral: 0, poor: 0, coached: 0, freeform: 0 }
   });
   const [leveledTextLanguage, setLeveledTextLanguage] = useState('English');
   // Translations setting (Lane 4, 2026-08-16). One control, three meanings:
@@ -34433,6 +34616,58 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
           setIsProcessing(false);
       }
   };
+
+  const _getPersonaArtifactRuntime = () => {
+      const runtime = window.AlloModules && window.AlloModules.PersonaSessionArtifact;
+      if (!runtime || typeof runtime.listPrivateSessionArtifacts !== 'function') {
+          addToast('Private Persona session tools are still loading. Please try again.', 'error');
+          return null;
+      }
+      return runtime;
+  };
+  const handleListPersonaSessionArchive = async () => {
+      const runtime = _getPersonaArtifactRuntime();
+      if (!runtime) return null;
+      try {
+          const deviceStorage = await _getPrivatePersonaArtifactStorage();
+          return await runtime.listPrivateSessionArtifacts({ deviceStorage });
+      } catch (error) {
+          warnLog('[PersonaArtifact] Archive listing failed', error);
+          return null;
+      }
+  };
+  const handleDownloadPersonaSessionArchive = async (key, format) => {
+      const runtime = _getPersonaArtifactRuntime();
+      if (!runtime) return null;
+      try {
+          const deviceStorage = await _getPrivatePersonaArtifactStorage();
+          const artifact = await runtime.loadPrivateSessionArtifact(key, { deviceStorage });
+          if (format === 'html' && typeof runtime.downloadOwnerHtmlCopy === 'function') {
+              runtime.downloadOwnerHtmlCopy(artifact, { ownerInitiated: true, filename: artifact.title });
+          } else {
+              runtime.downloadOwnerCopy(artifact, { ownerInitiated: true, filename: artifact.title });
+          }
+          return true;
+      } catch (error) {
+          warnLog('[PersonaArtifact] Archive download failed', error);
+          addToast('Could not open this saved Persona session.', 'error');
+          return null;
+      }
+  };
+  const handleDeletePersonaSessionArchive = async (key) => {
+      const runtime = _getPersonaArtifactRuntime();
+      if (!runtime) return null;
+      try {
+          const deviceStorage = await _getPrivatePersonaArtifactStorage();
+          await runtime.deletePrivateSessionArtifact(key, { deviceStorage });
+          addToast('Private Persona session deleted from this device.', 'success');
+          return true;
+      } catch (error) {
+          warnLog('[PersonaArtifact] Archive delete failed', error);
+          addToast('Could not delete this saved Persona session.', 'error');
+          return null;
+      }
+  };
   const runAutonomousRemediation = (_docPipeline && _docPipeline.runAutonomousRemediation) ? _docPipeline.runAutonomousRemediation : async (h) => ({ html: h, score: 0, passes: 0, log: [] });
   const processExpertCommand = (_docPipeline && _docPipeline.processExpertCommand) ? _docPipeline.processExpertCommand : async (c, h) => ({ type: 'error', html: h });
 
@@ -38134,8 +38369,24 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
     const exportableResources = getExportableHistory();
     const offlineAssignmentId = alloStableAssignmentId(exportableResources, sourceTopic || generatedContent?.title || 'AlloFlow assignment');
     const stableClassId = rosterKey?.classId || rosterKey?.submissionKey?.classId || '';
+    // Mailbox return leg (2026-08-23): when a non-expired hosted homework share
+    // exists, bake its pack capability into the encrypted export so the page's
+    // Save button can POST the submission to the teacher's Class Mailbox Drive
+    // folder (putsubmission's existing homework auth - no script change). The
+    // capability is the same unguessable id+k pair students already receive in
+    // the share QR; the page falls back to the encrypted file download whenever
+    // the POST fails, the share expired, or no capability was available.
+    const _hostedSubmitShare = (recentQrShares || []).filter(share => share?.type === 'assignment-pack-hosted'
+        && share.packId && share.packSecret && !share.revokedAt
+        && (!share.expiresAt || Date.parse(share.expiresAt) > Date.now()))
+        .sort((a, b) => ((Date.parse(b?.createdAt || '') || 0) - (Date.parse(a?.createdAt || '') || 0)))[0] || null;
+    const _mailboxSubmitTarget = (mbConfig?.url && _hostedSubmitShare)
+        ? { url: mbConfig.url, id: _hostedSubmitShare.packId, k: _hostedSubmitShare.packSecret,
+            ...(_hostedSubmitShare.expiresAt ? { expiresAt: _hostedSubmitShare.expiresAt } : {}) }
+        : null;
     const cfgBase = (!isWorksheet && rosterKey?.submissionKey?.publicJwk)
-      ? { ...exportConfig, classPublicJwk: rosterKey.submissionKey.publicJwk, classId: stableClassId, assignmentId: offlineAssignmentId }
+      ? { ...exportConfig, classPublicJwk: rosterKey.submissionKey.publicJwk, classId: stableClassId, assignmentId: offlineAssignmentId,
+          ...(_mailboxSubmitTarget ? { mailboxSubmitTarget: _mailboxSubmitTarget } : {}) }
       : { ...exportConfig, ...(stableClassId ? { classId: stableClassId } : {}), assignmentId: offlineAssignmentId };
     // Inject teacher's current annotations (stickers + notes + highlights)
     // so they ride the exported HTML. Phase 4 of the annotation suite —
@@ -48295,6 +48546,7 @@ ${_alloActivityContext(activity)}
             handlePanelChatSubmit, handlePersonaChatSubmit, generatePersonaFollowUps, generatePanelFollowUps,
             handlePersonaTopicSpark, handleRetryPortraitGeneration,
             handleSavePersonaChat: handleSavePrivatePersonaSession, handleSaveReflection, handleGeneratePersonaSummary,
+            handleListPersonaSessionArchive, handleDownloadPersonaSessionArchive, handleDeletePersonaSessionArchive,
             handleSetIsPersonaReflectionOpenToFalse,
             handleSetPersonaDefinitionDataToNull,
             handleSpeak, handleTogglePersonaAutoSend,
@@ -51074,7 +51326,7 @@ ${_alloActivityContext(activity)}
                         onUploadPortrait={(idx, dataUrl) => {
                             setAdventureState(prev => {
                                 const chars = [...prev.characters];
-                                chars[idx] = { ...chars[idx], portrait: dataUrl, isUserUploaded: true, isGenerating: false };
+                                chars[idx] = { ...chars[idx], portrait: dataUrl, isUserUploaded: true, uploadConsent: true, isGenerating: false };
                                 return { ...prev, characters: chars };
                             });
                         }}

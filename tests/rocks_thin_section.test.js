@@ -262,6 +262,20 @@ describe('thin section — what the student is told', () => {
     expect(render('granite', { xpl: true, stage: 0 })).toContain('extinction');
     expect(render('granite', { xpl: false, stage: 0 })).toContain('relief and cleavage');
   });
+
+  it('pauses the no-op stage control in plane light and activates it under crossed polars', () => {
+    const ppl = render('granite', { xpl: false, stage: 37 });
+    const pplStage = /<input\b[^>]*id="rk-stage"[^>]*>/.exec(ppl)?.[0] || '';
+    expect(pplStage).toMatch(/\sdisabled(?:=""|(?=\s|\/>))/);
+    expect(ppl).toContain('choose Crossed polars');
+    expect(ppl).toContain('0° to 90°');
+
+    const xpl = render('granite', { xpl: true, stage: 37 });
+    const xplStage = /<input\b[^>]*id="rk-stage"[^>]*>/.exec(xpl)?.[0] || '';
+    expect(xplStage).not.toMatch(/\sdisabled(?:=""|(?=\s|\/>))/);
+    expect(xpl).toContain('Why rotate?');
+    expect(xpl).toContain('reaches extinction when it turns black');
+  });
 });
 
 // A rock whose caption promises a feature the drawing does not show teaches the

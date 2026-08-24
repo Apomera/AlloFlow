@@ -411,7 +411,7 @@
      Register Tool
      ═══════════════════════════════════════════════════════════ */
   window.StemLab.registerTool('decomposer', {
-    icon: "⚗️",
+    icon: '\uD83C\uDF42',
     label: "Material Decomposer",
     desc: "Break everyday compounds into their constituent elements and explore molecules, atoms, bonds, states of matter, and chemical reactions.",
     color: 'slate',
@@ -2383,7 +2383,7 @@
                         return h('div', { key: el.sym, className: 'flex items-center gap-1 px-2 py-1 bg-white rounded-lg border border-slate-400' },
                           h('div', { className: 'w-5 h-5 rounded flex items-center justify-center text-white text-[11px] font-bold', style: { background: el.color } }, el.sym),
                           h('span', { className: 'text-[11px] font-bold text-slate-700' }, el.name),
-                          el.count > 1 ? h('span', { className: 'text-[11px] text-amber-600 font-bold' }, '\u00D7' + el.count) : null
+                          el.count > 1 ? h('span', { className: 'text-[11px] text-amber-800 font-bold' }, '\u00D7' + el.count) : null
                         );
                       })
                     ),
@@ -2757,7 +2757,7 @@
               ),
               h('button', { 'aria-label': 'Listen',
                 onClick: function() { speakText('In a solid, particles vibrate in fixed positions. In a liquid, they slide past each other. In a gas, they fly freely and fill the container. Temperature controls how fast they move.'); },
-                className: 'transition-colors mt-2 text-[11px] text-sky-600 hover:text-sky-800 font-bold'
+                className: 'transition-colors mt-2 text-[11px] text-sky-700 hover:text-sky-900 font-bold'
               }, '\uD83D\uDD0A Listen')
             )
           ),
@@ -2816,7 +2816,7 @@
                     h('span', { className: 'text-xs font-bold text-slate-700' },
                       el.sym + ' \u2014 ' + el.name
                     ),
-                    el.count > 1 && h('span', { className: 'text-[11px] text-amber-600 font-bold' },
+                    el.count > 1 && h('span', { className: 'text-[11px] text-amber-800 font-bold' },
                       '(\u00D7' + el.count + ')'
                     )
                   );
@@ -3101,7 +3101,7 @@
             var sm = {
               stopped: { label: '🧊 Stopped', color: '#0891b2', bg: '#ecfeff', border: '#67e8f9', desc: 'Temperature out of range or no moisture/oxygen.' },
               slow:    { label: '🐢 Slow', color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: 'Marginal conditions. Months to years.' },
-              medium:  { label: '🟢 Medium', color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: 'Normal compost conditions. Weeks to months.' },
+              medium:  { label: '🟢 Medium', color: '#047857', bg: '#ecfdf5', border: '#86efac', desc: 'Normal compost conditions. Weeks to months.' },
               fast:    { label: '🔥 Fast (hot compost)', color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: 'Optimal: 30-40°C, 70%+ humidity, abundant O₂. Days to weeks.' }
             }[state];
             return h('div', null,

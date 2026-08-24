@@ -12281,7 +12281,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             subtitle: __alloT('stem.birdlab.5_layered_habitat_scenes', '5 layered habitat scenes'),
             desc: __alloT('stem.birdlab.5_distinct_habitat_scenes_forest_marsh', '5 distinct habitat scenes (forest, marsh, backyard, coast, mountain) with animated birds at their species\' real movement signatures. Click any bird to identify. Reduced-motion fallback for users who prefer static. Per-habitat "found" tracking.'),
             bullets: ['5 habitats: forest · marsh · backyard · coast · mountain', 'Movement-as-field-mark — chickadees bob, hawks soar, nuthatches walk down, eiders glide', 'Click-to-identify with feedback cards + Merlin Bird ID bridge', 'Keyboard alternative for non-spatial-search users'],
-            color: 'from-emerald-600 to-green-700',
+            color: 'from-emerald-700 to-green-700',
             ring: 'ring-emerald-500/40',
             ready: true
           },
@@ -12290,7 +12290,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             subtitle: __alloT('stem.birdlab.the_vocabulary_of_birding', 'The vocabulary of birding'),
             desc: __alloT('stem.birdlab.birders_identify_by_looking_at_specifi', 'Birders identify by looking at specific anatomy: wing bars, eye rings, supercilium, malar stripes, breast streaking, primary projection. Click parts of an annotated bird to learn what each mark is and why it matters. Phase 1 ships with the Black-capped Chickadee deep-dive.'),
             bullets: ['Click plumage zones to learn the names', '8 hotspots on the chickadee', 'Why each field mark distinguishes lookalikes', 'More species (warblers, sparrows) in later phases'],
-            color: 'from-sky-500 to-cyan-700',
+            color: 'from-sky-700 to-cyan-700',
             ring: 'ring-sky-500/40',
             ready: true
           },
@@ -12298,7 +12298,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             id: 'beakFeet', title: __alloT('stem.birdlab.beak_feet_lab', 'Beak & Feet Lab'), icon: '🦴',
             subtitle: __alloT('stem.birdlab.adaptation_match_what_does_this_beak_d', 'Adaptation match — what does this beak do?'),
             desc: __alloT('stem.birdlab.match_beak_shapes_to_diet_seedeater_fi', 'Match beak shapes to diet (seedeater, fish-spear, raptor hook, nectar tube, insect-tweezer). Match foot shapes to lifestyle (perching, swimming, climbing, raptor talons). Cross-links to EvoLab\'s Galápagos Beak Lab for the deep evolution story.'),
-            color: 'from-amber-500 to-orange-600',
+            color: 'from-amber-700 to-orange-700',
             ring: 'ring-amber-500/40',
             ready: true
           }
@@ -12308,7 +12308,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             id: 'calls', title: __alloT('stem.birdlab.bird_call_trainer', 'Bird Call Trainer'), icon: '🎶',
             subtitle: __alloT('stem.birdlab.songs_in_plain_english', 'Songs in plain English'),
             desc: __alloT('stem.birdlab.15_mnemonic_phrases_drink_your_tea_for', '15 mnemonic phrases ("drink-your-tea" for towhee, "who-cooks-for-you" for Barred Owl) + an 8-question matching quiz. Pairs with Cornell\'s free Merlin Bird ID app for the real audio.'),
-            color: 'from-violet-500 to-purple-700',
+            color: 'from-violet-700 to-purple-700',
             ring: 'ring-violet-500/40',
             ready: true
           },
@@ -12316,7 +12316,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             id: 'habitatMatch', title: __alloT('stem.birdlab.habitat_match', 'Habitat Match'), icon: '🌲',
             subtitle: __alloT('stem.birdlab.predict_birds_predict_habitats', 'Predict birds; predict habitats'),
             desc: __alloT('stem.birdlab.two_reverse_direction_reasoning_games_', 'Two reverse-direction reasoning games. Bird → Habitat (where would you find this species?) and Habitat → Birds (multi-select which species belong here). 12 species × 5 habitats.'),
-            color: 'from-lime-500 to-emerald-600',
+            color: 'from-lime-700 to-emerald-700',
             ring: 'ring-lime-500/40',
             ready: true
           },
@@ -12324,7 +12324,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             id: 'maineBirds', title: __alloT('stem.birdlab.maine_birds_spotlight', 'Maine Birds Spotlight'), icon: '🌲',
             subtitle: __alloT('stem.birdlab.25_species_12_birding_hotspots', '25 species + 12 birding hotspots'),
             desc: __alloT('stem.birdlab.25_maine_species_cards_year_round_bree', '25 Maine species cards (year-round, breeders, winter visitors, migrants) with real Maine conservation stories: Project Puffin, Bald Eagle DDT recovery, Wood Thrush decline. Plus 12 Maine Birding Trail hotspots (Scarborough Marsh, Eastern Egg Rock, Acadia, Bradbury Hawkwatch, Baxter, more).'),
-            color: 'from-stone-500 to-stone-700',
+            color: 'from-stone-700 to-stone-700',
             ring: 'ring-stone-500/40',
             ready: true
           },
@@ -12332,7 +12332,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             id: 'migration', title: __alloT('stem.birdlab.migration_patterns', 'Migration Patterns'), icon: '🗺️',
             subtitle: __alloT('stem.birdlab.when_where_why_birds_move', 'When, where, why birds move'),
             desc: __alloT('stem.birdlab.4_north_american_flyways_with_maine_s_', '4 North American flyways with Maine\'s role in the Atlantic Flyway. Spring + fall arrival/departure calendar by month. 8 featured migrators with strategies + distances. Cross-links to dedicated Migration & Wind Patterns Lab for flight physics.'),
-            color: 'from-orange-500 to-red-600',
+            color: 'from-orange-700 to-red-700',
             ring: 'ring-orange-500/40',
             ready: true
           },
@@ -12340,7 +12340,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             id: 'citizenScience', title: __alloT('stem.birdlab.citizen_science_bridge', 'Citizen Science Bridge'), icon: '📡',
             subtitle: __alloT('stem.birdlab.your_sightings_real_science', 'Your sightings = real science'),
             desc: __alloT('stem.birdlab.8_projects_ebird_merlin_feederwatch_cb', '8 projects (eBird, Merlin, FeederWatch, CBC, NestWatch, GBBC, Maine Audubon, iNaturalist) with full cards + a 5-question match quiz that recommends 1–2 projects that fit your time + interests.'),
-            color: 'from-blue-600 to-indigo-700',
+            color: 'from-blue-700 to-indigo-700',
             ring: 'ring-blue-500/40',
             ready: true
           },
@@ -12348,7 +12348,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             id: 'fieldObs', title: __alloT('stem.birdlab.field_observation_challenge', 'Field Observation Challenge'), icon: '🔭',
             subtitle: __alloT('stem.birdlab.track_a_bird_log_it_reflect', 'Track a bird → log it → reflect'),
             desc: __alloT('stem.birdlab.a_three_phase_observation_activity_1_k', 'A three-phase observation activity: (1) keep your binocular reticle on a moving bird for 5 cumulative seconds, (2) fill a structured field log (date, location, behavior, weather, count), (3) write a brief reflective note. Saves to a personal notebook on your device.'),
-            color: 'from-teal-500 to-emerald-700',
+            color: 'from-teal-700 to-emerald-700',
             ring: 'ring-teal-500/40',
             ready: true
           },
@@ -12356,7 +12356,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             id: 'photoId', title: __alloT('stem.birdlab.bird_photo_id_ai', 'Bird Photo ID (AI)'), icon: '📸',
             subtitle: __alloT('stem.birdlab.upload_a_photo_get_a_probable_species_', 'Upload a photo, get a probable species + confidence'),
             desc: __alloT('stem.birdlab.upload_any_bird_photo_gemini_vision_re', 'Upload any bird photo. Gemini Vision returns up to 3 candidate species with confidence scores, the field marks it noticed, and direct links to verify on eBird, All About Birds, Audubon, Wikipedia, and iNaturalist. Honest about uncertainty.'),
-            color: 'from-violet-500 to-fuchsia-700',
+            color: 'from-violet-700 to-fuchsia-700',
             ring: 'ring-violet-500/40',
             ready: true
           },
@@ -12364,7 +12364,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             id: 'conservation', title: __alloT('stem.birdlab.conservation_careers', 'Conservation & Careers'), icon: '🛡️',
             subtitle: __alloT('stem.birdlab.3_billion_missing_birds_9_careers', '3 billion missing birds + 9 careers'),
             desc: __alloT('stem.birdlab.rosenberg_2019_3_billion_birds_study_w', 'Rosenberg 2019 "3 billion birds" study with methodology + key findings + the hopeful takeaway. 4 Maine focal species (Piping Plover, Wood Thrush, recovered Bald Eagle + Atlantic Puffin). Climate context (Gulf of Maine warming). 9 ornithology career paths with honest pay + Maine programs.'),
-            color: 'from-rose-500 to-pink-700',
+            color: 'from-rose-700 to-pink-700',
             ring: 'ring-rose-500/40',
             ready: true
           },
@@ -12372,7 +12372,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             id: 'compare', title: __alloT('stem.birdlab.side_by_side_comparator', 'Side-by-Side Comparator'), icon: '🔁',
             subtitle: __alloT('stem.birdlab.train_the_comparison_id_skill', 'Train the comparison-ID skill'),
             desc: __alloT('stem.birdlab.pick_any_two_species_see_them_rendered', 'Pick any two species — see them rendered at matching scale with their field marks, habitats, calls, and movement signatures lined up. The way an experienced birder evaluates a confusing sighting. 6 hand-curated teaching pairs (chickadee ⇄ junco, mallard ⇄ eider, etc.) plus free-pick from 15 species.'),
-            color: 'from-teal-500 to-violet-700',
+            color: 'from-teal-700 to-violet-700',
             ring: 'ring-teal-500/40',
             ready: true
           },
@@ -12380,7 +12380,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             id: 'nestGallery', title: __alloT('stem.birdlab.nest_gallery', 'Nest Gallery'), icon: '🪺',
             subtitle: __alloT('stem.birdlab.20_maine_breeding_nests_with_svg_profi', '20 Maine breeding nests with SVG profiles'),
             desc: __alloT('stem.birdlab.20_maine_breeding_bird_species_shown_w', '20 Maine breeding bird species shown with their actual nest structures: stick platforms (eagle/osprey), woven cups (oriole/red-wing), cavities (chickadee/pileated), burrows (kingfisher/puffin), scrapes (plover/woodcock). Visual SVG renderings + dimensions + materials + eggs + species story.'),
-            color: 'from-amber-600 to-stone-700',
+            color: 'from-amber-700 to-stone-700',
             ring: 'ring-amber-500/40',
             ready: true
           },
@@ -12388,7 +12388,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             id: 'eggGallery', title: __alloT('stem.birdlab.egg_gallery', 'Egg Gallery'), icon: '🥚',
             subtitle: __alloT('stem.birdlab.35_maine_bird_eggs_to_scale', '35 Maine bird eggs to scale'),
             desc: __alloT('stem.birdlab.35_maine_bird_eggs_rendered_at_relativ', '35 Maine bird eggs rendered at relative scale — from the pea-sized hummingbird egg to the loon\'s large olive-brown ovoid. Sort by size to compare; click any egg for full details on dimensions, clutch size, pattern, and species notes.'),
-            color: 'from-amber-500 to-sky-600',
+            color: 'from-amber-700 to-sky-700',
             ring: 'ring-amber-500/40',
             ready: true
           },
@@ -12396,7 +12396,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             id: 'featherAnatomy', title: __alloT('stem.birdlab.feather_anatomy_lab', 'Feather Anatomy Lab'), icon: '🪶',
             subtitle: __alloT('stem.birdlab.interactive_labeled_feather_diagram', 'Interactive labeled feather diagram'),
             desc: __alloT('stem.birdlab.click_8_numbered_parts_of_an_annotated', 'Click 8 numbered parts of an annotated feather to learn its name + function: rachis, calamus, vane, barb, barbule, hooklets, downy region, aftershaft. Feathers are biology\'s most complex structure — 1 million microscopic hooklets per feather.'),
-            color: 'from-sky-500 to-amber-600',
+            color: 'from-sky-700 to-amber-700',
             ring: 'ring-sky-500/40',
             ready: true
           },
@@ -12404,7 +12404,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             id: 'silhouetteQuiz', title: __alloT('stem.birdlab.silhouette_quiz', 'Silhouette Quiz'), icon: '🌑',
             subtitle: __alloT('stem.birdlab.20_birds_id_from_shape_alone', '20 birds — ID from shape alone'),
             desc: __alloT('stem.birdlab.identify_20_maine_birds_from_silhouett', 'Identify 20 Maine birds from silhouettes alone. Habitat clue + 4 multiple-choice. Builds shape-based ID — the skill experienced birders use for distant flying birds. Each correct answer reveals the species\' key flight signature.'),
-            color: 'from-amber-500 to-stone-700',
+            color: 'from-amber-700 to-stone-700',
             ring: 'ring-amber-500/40',
             ready: true
           },
@@ -12412,7 +12412,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             id: 'plumage', title: __alloT('stem.birdlab.seasonal_plumage_molt', 'Seasonal Plumage + Molt'), icon: '🍂',
             subtitle: __alloT('stem.birdlab.14_species_through_the_year', '14 species through the year'),
             desc: __alloT('stem.birdlab.how_birds_change_plumage_seasonally_14', 'How birds change plumage seasonally. 14 species showing breeding vs non-breeding plumage + molt strategy + Maine timing. From goldfinches changing color to wood ducks entering eclipse plumage to snow buntings revealing white through feather wear.'),
-            color: 'from-rose-500 to-sky-600',
+            color: 'from-rose-700 to-sky-700',
             ring: 'ring-rose-500/40',
             ready: true
           },
@@ -12420,7 +12420,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             id: 'tracksSign', title: __alloT('stem.birdlab.tracks_sign', 'Tracks + Sign'), icon: '👣',
             subtitle: __alloT('stem.birdlab.read_bird_evidence_you_never_see', 'Read bird evidence you never see'),
             desc: __alloT('stem.birdlab.12_species_and_their_tracks_droppings_', '12 species and their tracks, droppings, feeding sign, and pellets. Read bird evidence: turkey scratches in leaf litter, pileated woodpecker rectangular holes, owl pellets, kingfisher fish-bone middens, hawk plucking sites.'),
-            color: 'from-emerald-600 to-stone-700',
+            color: 'from-emerald-700 to-stone-700',
             ring: 'ring-emerald-500/40',
             ready: true
           },
@@ -12428,7 +12428,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             id: 'flightPatterns', title: __alloT('stem.birdlab.flight_patterns', 'Flight Patterns'), icon: '✈️',
             subtitle: __alloT('stem.birdlab.10_flight_styles_species', '10 flight styles + species'),
             desc: __alloT('stem.birdlab.10_flight_patterns_from_soaring_to_und', '10 flight patterns from soaring to undulating to hovering to plunge-diving. Behavior in flight is a field mark — how a bird moves through air identifies it from far away. Includes energy cost, timing, and ID tips for each pattern.'),
-            color: 'from-sky-500 to-violet-600',
+            color: 'from-sky-700 to-violet-700',
             ring: 'ring-sky-500/40',
             ready: true
           },
@@ -12436,7 +12436,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             id: 'owls', title: __alloT('stem.birdlab.maine_owls_deep_dive', 'Maine Owls Deep Dive'), icon: '🦉',
             subtitle: __alloT('stem.birdlab.8_maine_owl_species', '8 Maine owl species'),
             desc: __alloT('stem.birdlab.eastern_screech_great_horned_barred_sn', 'Eastern Screech, Great Horned, Barred, Snowy, Long-eared, Short-eared, Saw-whet, Boreal — Maine\'s 8 owl species in detail. Size, voice, habitat, diet, Maine status, color morphs, conservation status.'),
-            color: 'from-indigo-600 to-violet-700',
+            color: 'from-indigo-700 to-violet-700',
             ring: 'ring-indigo-500/40',
             ready: true
           },
@@ -12444,7 +12444,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             id: 'raptors', title: __alloT('stem.birdlab.maine_raptors_deep_dive', 'Maine Raptors Deep Dive'), icon: '🦅',
             subtitle: __alloT('stem.birdlab.12_maine_raptor_species', '12 Maine raptor species'),
             desc: __alloT('stem.birdlab.eagles_hawks_falcons_harriers_vultures', 'Eagles, hawks, falcons, harriers, vultures. 12 Maine raptor species with group, size, voice, diet, hunting style, breeding, conservation status. From the Bradbury Mountain broadwings to recovered peregrines on city bridges.'),
-            color: 'from-rose-600 to-amber-700',
+            color: 'from-rose-700 to-amber-700',
             ring: 'ring-rose-500/40',
             ready: true
           },
@@ -12452,7 +12452,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             id: 'warblers', title: __alloT('stem.birdlab.maine_warblers_deep_dive', 'Maine Warblers Deep Dive'), icon: '🌈',
             subtitle: __alloT('stem.birdlab.15_hardest_to_id_maine_breeders', '15 hardest-to-ID Maine breeders'),
             desc: __alloT('stem.birdlab.15_maine_breeding_warblers_the_hardest', '15 Maine breeding warblers — the hardest ID family for new birders. Tiny, fast, seasonal. Each profile: key field mark, habitat, song mnemonic, arrival + departure dates. From yellow-rumped (most common) to magnolia + black-throated green + Blackburnian (the fire-throated jewel).'),
-            color: 'from-yellow-500 to-amber-600',
+            color: 'from-yellow-700 to-amber-700',
             ring: 'ring-yellow-500/40',
             ready: true
           },
@@ -12476,7 +12476,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             id: 'weather', title: __alloT('stem.birdlab.weather_birding', 'Weather + Birding'), icon: '⛅',
             subtitle: __alloT('stem.birdlab.10_weather_scenarios_bird_response', '10 weather scenarios + bird response'),
             desc: __alloT('stem.birdlab.how_birds_respond_to_weather_10_weathe', 'How birds respond to weather. 10 weather scenarios — cold fronts, storm passages, fog, sunny calm, tailwinds, cold snaps — with bird response + where to go for each.'),
-            color: 'from-sky-600 to-amber-600',
+            color: 'from-sky-700 to-amber-700',
             ring: 'ring-sky-500/40',
             ready: true
           },
@@ -12484,7 +12484,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             id: 'faq', title: __alloT('stem.birdlab.birding_faq', 'Birding FAQ'), icon: '❓',
             subtitle: __alloT('stem.birdlab.15_common_questions_answered', '15 common questions answered'),
             desc: __alloT('stem.birdlab.15_of_the_most_common_questions_from_n', '15 of the most common questions from new birders — where to start, equipment, LBJ identification, climate change, window strikes, cats, bald eagles in Maine, learning to recognize bird songs, and more.'),
-            color: 'from-violet-600 to-rose-700',
+            color: 'from-violet-700 to-rose-700',
             ring: 'ring-violet-500/40',
             ready: true
           },
@@ -12500,7 +12500,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             id: 'shorebirds', title: __alloT('stem.birdlab.maine_shorebirds', 'Maine Shorebirds'), icon: '🦴',
             subtitle: __alloT('stem.birdlab.15_plovers_sandpipers_snipes', '15 plovers, sandpipers, snipes'),
             desc: __alloT('stem.birdlab.maine_s_15_shorebird_species_plovers_p', 'Maine\'s 15 shorebird species. Plovers (piping, semipalmated, killdeer), yellowlegs (greater + lesser), sandpipers (spotted, solitary, sanderling, semipalmated, least, dunlin), willet, turnstone, snipe. Mostly migrants; some breeders.'),
-            color: 'from-amber-600 to-stone-700',
+            color: 'from-amber-700 to-stone-700',
             ring: 'ring-amber-500/40',
             ready: true
           },
@@ -12508,7 +12508,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             id: 'seabirds', title: __alloT('stem.birdlab.gulf_of_maine_seabirds', 'Gulf of Maine Seabirds'), icon: '🌊',
             subtitle: __alloT('stem.birdlab.12_alcids_pelagic_species', '12 alcids + pelagic species'),
             desc: __alloT('stem.birdlab.atlantic_puffin_razorbill_murre_black_', 'Atlantic Puffin, razorbill, murre, black guillemot, gannet, fulmar, shearwater, storm-petrel, kittiwake, terns. Maine\'s offshore + Gulf of Maine seabirds with Project Puffin restoration story.'),
-            color: 'from-cyan-600 to-sky-800',
+            color: 'from-cyan-700 to-sky-800',
             ring: 'ring-cyan-500/40',
             ready: true
           },
@@ -12516,7 +12516,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             id: 'wingTypes', title: __alloT('stem.birdlab.wing_types_lab', 'Wing Types Lab'), icon: '🪶',
             subtitle: __alloT('stem.birdlab.5_wing_shapes_flight_styles', '5 wing shapes + flight styles'),
             desc: __alloT('stem.birdlab.elliptical_wings_songbirds_high_aspect', 'Elliptical wings (songbirds), high-aspect-ratio (swallows + albatrosses), soaring wings with slots (eagles + vultures), high-speed tapered (falcons), aquatic (puffins). Wing shape predicts flight style + habitat.'),
-            color: 'from-sky-600 to-amber-600',
+            color: 'from-sky-700 to-amber-700',
             ring: 'ring-sky-500/40',
             ready: true
           },
@@ -12524,7 +12524,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             id: 'footTypes', title: __alloT('stem.birdlab.foot_types_lab', 'Foot Types Lab'), icon: '🦶',
             subtitle: __alloT('stem.birdlab.8_foot_types_adaptations', '8 foot types + adaptations'),
             desc: __alloT('stem.birdlab.perching_anisodactyl_raptor_talons_cli', 'Perching (anisodactyl), raptor talons, climbing zygodactyl (woodpeckers), swimming palmate (ducks), wading long-thin (herons), lobed (grebes), grasping (osprey), walking (turkeys). Foot anatomy reveals diet + habitat.'),
-            color: 'from-amber-600 to-yellow-700',
+            color: 'from-amber-700 to-yellow-700',
             ring: 'ring-amber-500/40',
             ready: true
           },
@@ -12532,7 +12532,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             id: 'behaviors', title: __alloT('stem.birdlab.bird_behavior_deep', 'Bird Behavior Deep'), icon: '🧠',
             subtitle: __alloT('stem.birdlab.8_behavior_topics', '8 behavior topics'),
             desc: __alloT('stem.birdlab.courtship_displays_territorial_defense', 'Courtship displays, territorial defense, parental care, mating systems, migration, communication, mobbing predators, foraging niche differentiation. The behaviors that shape bird life.'),
-            color: 'from-violet-600 to-purple-700',
+            color: 'from-violet-700 to-purple-700',
             ring: 'ring-violet-500/40',
             ready: true
           },
@@ -12540,7 +12540,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             id: 'physiology', title: __alloT('stem.birdlab.bird_physiology', 'Bird Physiology'), icon: '🫀',
             subtitle: __alloT('stem.birdlab.8_biology_systems', '8 biology systems'),
             desc: __alloT('stem.birdlab.heart_rate_metabolism_through_flow_res', 'Heart rate + metabolism, through-flow respiration, hollow bones, crop + gizzard, exceptional vision + UV color, hearing, magnetic + stellar navigation. Birds are physiological athletes optimized for flight.'),
-            color: 'from-rose-600 to-pink-700',
+            color: 'from-rose-700 to-pink-700',
             ring: 'ring-rose-500/40',
             ready: true
           },
@@ -12548,7 +12548,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             id: 'evolution', title: __alloT('stem.birdlab.bird_evolution', 'Bird Evolution'), icon: '🦖',
             subtitle: __alloT('stem.birdlab.dinosaurs_to_today', 'Dinosaurs to today'),
             desc: __alloT('stem.birdlab.160_million_years_of_bird_evolution_fr', '160 million years of bird evolution. From feathered theropods through Archaeopteryx through K-Pg extinction through modern bird radiation. Birds ARE dinosaurs — the only surviving theropod lineage.'),
-            color: 'from-stone-600 to-amber-700',
+            color: 'from-stone-700 to-amber-700',
             ring: 'ring-stone-500/40',
             ready: true
           },
@@ -13318,10 +13318,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             h('div', { className: 'bg-gradient-to-br ' + c.color + ' p-5 text-white' },
               h('div', { className: 'flex items-start justify-between mb-2' },
                 h('span', { className: isBig ? 'text-5xl' : 'text-4xl' }, c.icon),
-                h('span', { className: 'bg-white/20 backdrop-blur px-2 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider' }, isBig ? 'Core' : 'Lab')
+                h('span', { className: 'bg-black/25 backdrop-blur px-2 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider' }, isBig ? 'Core' : 'Lab')
               ),
               h('h2', { className: isBig ? 'text-2xl font-black tracking-tight' : 'text-xl font-black tracking-tight' }, c.title),
-              h('p', { className: 'text-sm opacity-90 font-medium' }, c.subtitle)
+              h('p', { className: 'text-sm font-medium' }, c.subtitle)
             ),
             h('div', { className: 'p-5' },
               h('p', { className: 'text-sm text-slate-700 leading-relaxed ' + (isBig ? 'mb-3' : '') }, c.desc),

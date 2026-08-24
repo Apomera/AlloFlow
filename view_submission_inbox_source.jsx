@@ -9,8 +9,19 @@
 //   4. Clicks "Decrypt all" — each row's encrypted blob is unwrapped with
 //      the loaded private key and the payload appears in the queue.
 //   5. Roster cross-check badges known nicknames green, unknown yellow.
-//   6. "Send to gradebook" is a placeholder — Phase 3 will wire it to AI
-//      rubric grading + studentResponses IndexedDB writes.
+//   6. Grade with the class rubric (teacher-invoked AI, anchorable with
+//      teacher scores), save to the local gradebook, export CSV, or open the
+//      AlloSheet aggregate review.
+//
+// HISTORY NOTE (2026-08-23): this header once called "Send to gradebook" a
+// placeholder awaiting "studentResponses IndexedDB writes". Phase 3 (v2.3,
+// May 12 2026) shipped with a DIFFERENT design on purpose: raw multi-student
+// responses stay inside the gradebook silo, and only assignment-level
+// aggregates cross to AlloSheet (see the privacy boundary block below,
+// SI_ALLOSHEET_MIN_SCORE_GROUP). Do NOT "finish" the old plan by writing
+// submissions into studentResponses - that store is the student device's OWN
+// work file and the boundary exists to keep identified responses out of
+// shared stores.
 //
 // Dependencies: window.AlloModules.SubmissionCrypto.decryptSubmission
 // (registered by submission_crypto_module.js).
@@ -1283,6 +1294,24 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast, onOpenAlloSh
                 payload: normalizedPayload,
                 status: 'decrypted',
                 error: null
+              });
+              continue;
+            }
+            // Mailbox-delivered encrypted worksheet (2026-08-23): putsubmission
+            // stores the page's envelope as submission-*.json in the teacher's
+            // Drive folder. Same blob the .alloflow.html file embeds, so it
+            // joins the queue as an ordinary pending row for Decrypt all.
+            if (p && p.kind === 'encrypted-worksheet' && p.ciphertext && p.wrappedKey && p.iv) {
+              newRows.push({
+                fileName: f.name,
+                nickname: p.nickname || p.studentName || '?',
+                docTitle: p.docTitle || '',
+                timestamp: p.timestamp || null,
+                encryptedBlob: p,
+                payload: null,
+                status: 'pending',
+                error: null,
+                mailboxReceipt: (p.mailboxReceipt && typeof p.mailboxReceipt === 'object') ? p.mailboxReceipt : null
               });
               continue;
             }

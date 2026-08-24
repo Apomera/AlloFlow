@@ -70,6 +70,8 @@ describe('auth banner debounce + recovery', () => {
     expect(banner(), 'no banner after 2').toBeNull();
     await failOnce(api);
     expect(banner(), 'banner appears once auth failures are sustained (>=3)').toBeTruthy();
+    expect(banner().textContent || '').toMatch(/temporarily throttled|Canvas HTTP 401/i);
+    expect(banner().textContent || '').not.toMatch(/key\/sign-in problem/i);
     expect(window.__alloflowQuotaState && window.__alloflowQuotaState.active).toBe(true);
   });
 

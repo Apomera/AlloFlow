@@ -5094,6 +5094,12 @@ function _alloRemediationOutcome(r, opts) {
 function _alloDistributionVerdict(r, opts) {
   if (!r) return null;
   var target = (opts && typeof opts.targetScore === 'number') ? opts.targetScore : PIPELINE_DEFAULTS.targetScore;
+  // 2026-08-23: a verdict computed while a remediation round is still running is PROVISIONAL —
+  // the score, the violation counts and the fidelity notes can all still move. Without this the
+  // R1 verdict strip said "Ready to hand out" directly above the STILL WORKING banner, because it
+  // only ever saw the result object and had no way to know a run was in flight. Callers pass the
+  // single in-flight flag, so every surface that asks this function gets the same answer.
+  var inProgress = !!(opts && opts.inProgress);
   var review = [];
   var cautions = [];
   var notes = Array.isArray(r.fidelityNotes) ? r.fidelityNotes.filter(Boolean) : [];
@@ -5156,15 +5162,22 @@ function _alloDistributionVerdict(r, opts) {
   if (kinds.pageEdge) cautions.push('repeated page-edge lines (running heads/footers) were removed — restore any real heading from the Diff');
   if (kinds.altQuality) cautions.push('some image descriptions are low-quality — review the alt text in the image panel');
   if (cov != null && cov >= 90 && r.integrityWarning && /missing/i.test(r.integrityWarning)) cautions.push('content coverage is ' + cov + '% — worth a quick Diff check');
-  var level = review.length ? 'review' : (cautions.length ? 'caution' : 'ready');
+  // Provisional-run caution goes FIRST: it reframes every bullet under it.
+  if (inProgress) cautions.unshift('a remediation round is still running, so this verdict is provisional and will update when the run finishes');
+  var level = review.length ? 'review' : ((cautions.length || inProgress) ? 'caution' : 'ready');
   return {
     level: level,
+    inProgress: inProgress,
     review: review,
     cautions: cautions,
     headline: level === 'review'
-      ? 'Review before handing this out'
+      ? (inProgress
+          ? 'Still working — review items already found'
+          : 'Review before handing this out')
       : level === 'caution'
-        ? ('Ready to hand out — with ' + cautions.length + ' caution' + (cautions.length === 1 ? '' : 's'))
+        ? (inProgress
+            ? ('Still improving — provisional verdict, ' + cautions.length + ' note' + (cautions.length === 1 ? '' : 's') + ' so far')
+            : ('Ready to hand out — with ' + cautions.length + ' caution' + (cautions.length === 1 ? '' : 's')))
         : 'Ready to hand out',
   };
 }
@@ -6882,7 +6895,7 @@ var createDocPipeline = function(deps) {
   };
   var _GEMINI_RECOVER_HITS = 3;     // F5 (2026-08-14): three clean successes restore full concurrency; four was one beyond the observed recovery streak
   var _GEMINI_PROBE_RECOVER = 2;    // (2026-07-24) consecutive REPRESENTATIVE probe successes wait-not-stop needs before it resumes a real round — one cheap probe success is not evidence a document-sized call will clear a volume throttle
-  var _GEMINI_AUTH_RETRIES = 1;     // (2026-06-21) ONE quick jittered retry, then DEFER the call to the end-of-pass catch-up drain — was 3, which serialized 4 attempts/call through escalating cooldowns and burned 6-17 min PER CALL on a sustained rate-limit. A rate-limit eases over TIME, so revisiting later (catch-up) beats grinding inline now.
+  var _GEMINI_AUTH_RETRIES = 1;     // ONE quick jittered retry for an isolated 401. Once the second logical failure trips the breaker, checkpoint for explicit resume instead of grinding inline.
   var _geminiCap = _GEMINI_MAX_CONCURRENT;
   // PROACTIVE PACING (2026-06-24, maintainer ask): for heavy/scanned docs — the ones that fire a big burst of
   // calls (5 OCR passes + parallel audit passes + parallel fix chunks) and trip the Canvas rate-limit — lower
@@ -6894,6 +6907,14 @@ var createDocPipeline = function(deps) {
   var _geminiStaggerMs = 0;                          // MIN gap between consecutive call STARTS (0 = fire as slots free; >0 = space them)
   var _geminiStaggerTimer = null;
   var _geminiLastStartAt = 0;                        // epoch ms of the most recent call start (drives the min-interval spacing)
+  // A concurrency cap protects bursts; it cannot protect a rolling request allowance. Heavy and
+  // scanned documents therefore also receive a bounded start-rate budget. Field evidence on
+  // 2026-08-22 showed every breaker trip at one request in flight after OCR + audit volume had
+  // accumulated, so this second dimension is required even while the cap is already serial.
+  var _geminiRateWindowMs = 0;
+  var _geminiRateMaxStarts = 0;
+  var _geminiRecentStarts = [];
+  var _geminiRateTimer = null;
   var _geminiInFlight = 0;
   var _geminiWaiters = [];
   var _geminiAuthStreak = 0;        // consecutive canvas-auth failures
@@ -7129,7 +7150,7 @@ var createDocPipeline = function(deps) {
   var _geminiLastResponseBytes = { text: 0, vision: 0 }; // F4: last successful route output sizes guide representative probes
   // F1 (2026-08-14): a deterministic timeout/empty-body signature must not ratchet the shared
   // breaker forever. Keep the guard per run + route + operation + chunk + volume so repeated
-  // failures hand control back to the caller's catch-up path, while different signatures can
+  // failures hand control back to the caller's checkpoint/resume path, while different signatures can
   // still trip a genuine service-wide storm. Auth/quota failures deliberately do not use it.
   var _GEMINI_REPEAT_OFFENDER_LIMIT = 2;
   var _geminiRepeatFailures = Object.create(null);
@@ -7230,6 +7251,17 @@ var createDocPipeline = function(deps) {
       }
       return;
     }
+    // Rolling start budget for heavy/scanned documents. Prune starts outside the current window;
+    // when the budget is full, leave every waiter queued and wake exactly when the oldest start
+    // expires. This controls sustained provider pressure that concurrency/stagger cannot see.
+    if (_geminiRateWindowMs > 0 && _geminiRateMaxStarts > 0) {
+      _geminiRecentStarts = _geminiRecentStarts.filter(function (at) { return at > now - _geminiRateWindowMs; });
+      if (_geminiRecentStarts.length >= _geminiRateMaxStarts) {
+        var _rateWaitMs = Math.max(1, (_geminiRecentStarts[0] + _geminiRateWindowMs) - now);
+        if (!_geminiRateTimer) _geminiRateTimer = setTimeout(function () { _geminiRateTimer = null; _geminiPump(); }, _rateWaitMs + 15);
+        return;
+      }
+    }
     // Recovery is SUCCESS-GATED, never time-gated. The former time-decay step raised a heavy
     // document from cap=1 straight back to its full ceiling of 2 merely because 12–25 seconds
     // elapsed. On a rolling quota window that re-fanned the queue before the service had actually
@@ -7250,7 +7282,13 @@ var createDocPipeline = function(deps) {
       }
       _geminiInFlight++;
       _geminiLastStartAt = now;
+      if (_geminiRateWindowMs > 0 && _geminiRateMaxStarts > 0) _geminiRecentStarts.push(now);
       (_geminiWaiters.shift()).resolve();
+      if (_geminiRateWindowMs > 0 && _geminiRecentStarts.length >= _geminiRateMaxStarts && _geminiWaiters.length) {
+        var _nextRateSlotMs = Math.max(1, (_geminiRecentStarts[0] + _geminiRateWindowMs) - now);
+        if (!_geminiRateTimer) _geminiRateTimer = setTimeout(function () { _geminiRateTimer = null; _geminiPump(); }, _nextRateSlotMs + 15);
+        break;
+      }
       // If another call could start now (spare slot + queue), still hold it for the next gap rather than
       // firing back-to-back — schedule the next pump one staggerMs out.
       if (_geminiStaggerMs > 0 && _geminiInFlight < _geminiCap && _geminiWaiters.length) {
@@ -7388,11 +7426,14 @@ var createDocPipeline = function(deps) {
   // under a status line blaming a rate limit that had long since eased, and in a batch the pinned
   // cap-1 run then blew the per-file wall.
   //
-  // 50s is comfortably past the longest escalated cooldown (25s), so a wave can never be declared
-  // stale while its own cooldown is still running — and `storming` keys on the live cooldown
-  // independently, so an ACTIVE throttle is unaffected by this bound.
-  var _GEMINI_WAVE_STALE_MS = 50000;
-  var _GEMINI_RECENT_THROTTLE_MS = 120000; // L7: how long a real breaker trip may still be blamed for a coverage shortfall
+  // This bound must stay beyond the longest cooldown and observed failed-request latency, so a
+  // wave cannot be declared stale while its own recovery window is still running. The prior 50s
+  // value was shorter than both a measured Canvas 401 (about 56-60s) and the sustained cooldown
+  // ceiling (180s). It let one smaller queued success erase a still-live document-sized storm.
+  // Four minutes covers the longest cooldown plus one observed failed-request latency;
+  // representative successes can still clear the wave immediately.
+  var _GEMINI_WAVE_STALE_MS = 240000;
+  var _GEMINI_RECENT_THROTTLE_MS = 240000; // keep throttle attribution aligned with the recovery-wave bound
   var _geminiWaveIsStale = function () {
     var f = _geminiLastFailureProfile;
     if (!f || !f.at) return false;
@@ -7402,7 +7443,7 @@ var createDocPipeline = function(deps) {
   var _geminiSuccessRepresentsFailure = function(successProfile) {
     var failure = _geminiLastFailureProfile;
     if (!failure) return true;
-    // A route profile with no failure behind it for 50 seconds is evidence about a service state
+    // A route profile with no failure behind it for four minutes is evidence about a service state
     // that no longer exists; it must not veto recovery forever.
     if (_geminiWaveIsStale()) return true;
     if (!successProfile || successProfile.kind !== failure.kind) return false;
@@ -7501,6 +7542,10 @@ var createDocPipeline = function(deps) {
     _geminiStaggerMs = 0;
     _geminiLastStartAt = 0;
     if (_geminiStaggerTimer) { try { clearTimeout(_geminiStaggerTimer); } catch (_) {} _geminiStaggerTimer = null; }
+    _geminiRateWindowMs = 0;
+    _geminiRateMaxStarts = 0;
+    _geminiRecentStarts = [];
+    if (_geminiRateTimer) { try { clearTimeout(_geminiRateTimer); } catch (_) {} _geminiRateTimer = null; }
     if (_usesLocalTextBackend()) {
       _geminiEffectiveMax = 1;
       _geminiCap = 1;
@@ -7525,6 +7570,10 @@ var createDocPipeline = function(deps) {
     if (_htpPacing && _htpPacing.pacingExempt) {
       _geminiEffectiveMax = _GEMINI_MAX_CONCURRENT;
       _geminiStaggerMs = 0;
+      _geminiRateWindowMs = 0;
+      _geminiRateMaxStarts = 0;
+      _geminiRecentStarts = [];
+      if (_geminiRateTimer) { try { clearTimeout(_geminiRateTimer); } catch (_) {} _geminiRateTimer = null; }
       if (heavy) warnLog('[GeminiGate] Pacing skipped: host transport profile (' + _htpPacing.kind + ') declares no provider quota to protect.');
       try { _geminiPump(); } catch (_) {}
       return;
@@ -7533,12 +7582,18 @@ var createDocPipeline = function(deps) {
       var _max = (typeof opts.maxConcurrent === 'number') ? opts.maxConcurrent : 2; // 3 → 2: gentle, not fully serial
       _geminiEffectiveMax = Math.max(1, Math.min(_GEMINI_MAX_CONCURRENT, _max));
       _geminiStaggerMs = (typeof opts.staggerMs === 'number') ? opts.staggerMs : 700; // ~0.7s between starts
+      _geminiRateWindowMs = (typeof opts.rateWindowMs === 'number') ? Math.max(0, opts.rateWindowMs) : 180000;
+      _geminiRateMaxStarts = (typeof opts.maxStartsPerWindow === 'number') ? Math.max(1, Math.floor(opts.maxStartsPerWindow)) : 5;
       if (_geminiCap > _geminiEffectiveMax) _geminiCap = _geminiEffectiveMax; // don't exceed the new ceiling
       var _pacingSubject = opts.label || 'a heavy/scanned doc';
-      warnLog('[GeminiGate] Pacing for ' + _pacingSubject + ' - concurrency <=' + _geminiEffectiveMax + ', minimum gap between call starts ~' + Math.round(_geminiStaggerMs) + 'ms (no calls dropped)');
+      warnLog('[GeminiGate] Pacing for ' + _pacingSubject + ' - concurrency <=' + _geminiEffectiveMax + ', minimum gap between call starts ~' + Math.round(_geminiStaggerMs) + 'ms, rolling budget ' + _geminiRateMaxStarts + ' starts/' + Math.round(_geminiRateWindowMs / 1000) + 's (no calls dropped)');
     } else {
       _geminiEffectiveMax = _GEMINI_MAX_CONCURRENT;
       _geminiStaggerMs = 0;
+      _geminiRateWindowMs = 0;
+      _geminiRateMaxStarts = 0;
+      _geminiRecentStarts = [];
+      if (_geminiRateTimer) { try { clearTimeout(_geminiRateTimer); } catch (_) {} _geminiRateTimer = null; }
     }
     // M4 (deep dive 2026-07-09): the LOCAL text backend is pinned SERIAL at run reset (two concurrent
     // long-context calls create exactly the queue pressure — timeouts/OOM — that gets misread as a
@@ -7559,7 +7614,7 @@ var createDocPipeline = function(deps) {
   var _geminiThrottleInfo = function () {
     var now = (typeof Date !== 'undefined' && Date.now) ? Date.now() : 0;
     var cooldownRemainingMs = Math.max(0, _geminiCooldownUntil - now);
-    // M16: a tripped streak with no failure behind it for 50s is not a live storm. An ACTIVE
+    // M16: a tripped streak with no failure behind it for four minutes is not a live storm. An ACTIVE
     // cooldown still reads as storming regardless — that is a real, time-bounded brake — so this
     // only stops a stale streak from claiming a rate limit that has long since eased. Without it
     // `storming` stayed true for the rest of the run: every later transient error lost its inline
@@ -8226,19 +8281,18 @@ var createDocPipeline = function(deps) {
         if (_canvasAuthRetry) {
           var _throttleKind = _burstQuota ? 'Rate-limit (429/quota burst)' : 'Canvas throttle';
           _noteGeminiOutcome(null, err); // M15: same note, already made before the slot was released
-          // (2026-08-15) During a SUSTAINED storm the inline retry has no realistic chance and it is
+          // Once the breaker trips, the inline retry has no realistic chance and it is
           // not free. The field log shows the Canvas proxy holds a request ~60s before 401ing it, so
           // one retry turns a doomed call from ~60s into ~120s+, and at cap 1 every queued caller
           // waits behind it — calls in that run took 220-427s to fail. _GEMINI_AUTH_RETRIES' own
-          // rationale already says a rate-limit eases over TIME and that revisiting via the catch-up
-          // drain beats grinding inline; this applies that rule to the case it was written for,
-          // instead of spending another minute retrying into a wall the breaker has already seen
-          // _GEMINI_STORM_SUSTAINED times. Nothing is skipped: the chunk still goes to catch-up.
-          var _stormSustained = _geminiAuthStreak >= _GEMINI_STORM_SUSTAINED;
-          if (n >= _GEMINI_AUTH_RETRIES || _stormSustained) {
+          // rationale already says a rate-limit eases over time. Checkpointing for an explicit
+          // resume beats spending another minute retrying into a wall the breaker has already seen.
+          var _stormTripped = _geminiAuthStreak >= _GEMINI_STORM_TRIP;
+          if (n >= _GEMINI_AUTH_RETRIES || _stormTripped) {
+            if (_stormTripped && n < _GEMINI_AUTH_RETRIES && err) err.geminiStormDeferred = true;
             warnLog('[Retry] ' + (label || 'API call') + ' — ' + _throttleKind
-              + ((_stormSustained && n < _GEMINI_AUTH_RETRIES)
-                  ? ' sustained (' + _geminiAuthStreak + ' in a row) — deferring to the catch-up drain instead of retrying inline'
+              + ((_stormTripped && n < _GEMINI_AUTH_RETRIES)
+                  ? ' breaker tripped (' + _geminiAuthStreak + ' logical failures in a row) — checkpointing for a later resume instead of retrying inline'
                   : ' persisted through ' + _GEMINI_AUTH_RETRIES + ' retries; giving up this call'));
             throw err;
           }
@@ -8618,6 +8672,11 @@ var createDocPipeline = function(deps) {
   // for resources without an explicit title. Threaded via deps from
   // host scope (host const at AlloFlowANTI.txt:15623).
   var getDefaultTitle = deps.getDefaultTitle || function() { return ''; };
+  // Optional host hook: report the document the UI currently holds, as { html, revision }, where
+  // revision is a monotonic counter the host bumps on every committed HTML change. Used ONLY by the
+  // fix loop's human-in-the-loop rebase. Hosts that do not supply it (batch, MCP, portable, tests)
+  // keep the original ship-what-the-loop-built behaviour, unchanged.
+  var readCommittedHtml = typeof deps.readCommittedHtml === 'function' ? deps.readCommittedHtml : null;
   // Proxy all state access through window.__docPipelineState.
   // S1 step 0b (deep dive 2026-07-02): prefer an injected state bag (deps.state) — the
   // headless test has been PASSING `state: {}` since decoupling Phase 1, but it was silently
@@ -9396,6 +9455,9 @@ var createDocPipeline = function(deps) {
       _estimatedMinimumScore: null,
       _estimatedScoreBasis: null,
       _finalAuditRetryAvailable: !!(_aiVerificationIncomplete && html),
+      _remediationThrottlePaused: false,
+      _finalAuditThrottleDeferred: false,
+      _finalAuditIncompleteReason: null,
     };
     return Object.assign({}, cur, _staleEstimateReset, {
       accessibleHtml: html,
@@ -10246,8 +10308,7 @@ var createDocPipeline = function(deps) {
     }
     if (chunks.length === 1) {
       // Short doc: single call with full document (use stripped html without base64 images)
-      let _singleRecoveryRound = 0;
-      while (true) { try {
+      try {
         _throwIfControlAborted();
         const _singleHtml = _hasImages ? strippedHtml : html;
         const _singleViolationData = _neutralizePromptFence(String(violationsText || ''));
@@ -10273,26 +10334,22 @@ var createDocPipeline = function(deps) {
         return html;
       } catch (e) {
         if ((e && (e.name === 'AbortError' || e.isAbort)) || _controlAborted()) throw e;
-        if (_isThrottleErr(e) && _singleRecoveryRound < 2) {
-          _singleRecoveryRound++;
-          warnLog(`[aiFixChunked:${label}] single-chunk throttle deferred — recovery round ${_singleRecoveryRound}/2 after a quiet-window check`);
-          _pulsePipelineWatchdog(_control && _control.owner);
-          let calm = null;
-          try { calm = await waitForGeminiCalm({ maxWaitMs: _alloCalmBudgetMs(90000, _control && _control.perFileDeadlineTs), shouldAbort: _control && _control.shouldAbort, signal: _control && _control.signal, owner: _control && _control.owner }); } catch (_) {}
-          if ((calm && calm.aborted) || _controlAborted()) _throwIfControlAborted(true);
-          continue;
+        if (_isThrottleErr(e)) {
+          _markThrottleDeferred(1);
+          warnLog(`[aiFixChunked:${label}] single-chunk throttle deferred — keeping the verified input and pausing for a later resume`);
         }
-        if (_isThrottleErr(e)) _markThrottleDeferred(1);
         warnLog(`[aiFixChunked:${label}] single-chunk failed:`, e?.message);
         _reportPassCoverage(1);
         return html;
-      } }
+      }
     }
-    // Multi-chunk: cloud stays parallel for speed; local models run explicitly serial
-    // to avoid queue pressure and make progress visible.
+    // Multi-chunk: ordinary cloud work may stay parallel, but a heavy/scanned run with a rolling
+    // budget is serial. Pre-queuing every chunk defeats a pause: those already-waiting calls wake
+    // after the cooldown even though an earlier chunk proved the provider window was closed.
     const _localTextMode = _usesLocalTextBackend();
-    warnLog(`[aiFixChunked:${label}] splitting ${html.length} chars into ${chunks.length} chunks (${_localTextMode ? 'serial local' : 'parallel'})`);
-    const _deferredIdx = []; // chunk indices a Canvas THROTTLE skipped — revisited by the catch-up drain below
+    const _serialFixWave = _localTextMode || (_geminiRateWindowMs > 0 && _geminiRateMaxStarts > 0);
+    warnLog(`[aiFixChunked:${label}] splitting ${html.length} chars into ${chunks.length} chunks (${_serialFixWave ? (_localTextMode ? 'serial local' : 'serial paced') : 'parallel'})`);
+    const _deferredIdx = []; // chunk indices kept byte-identical after a Canvas throttle; resumed later
     const _fixOneChunk = async (part, ci) => {
       _throwIfControlAborted();
       // $4: this chunk's routed violations text; null → nothing here is fixable by this
@@ -10402,88 +10459,36 @@ var createDocPipeline = function(deps) {
       } catch (e) {
         if ((e && (e.name === 'AbortError' || e.isAbort)) || _controlAborted()) throw e;
         warnLog(`[aiFixChunked:${label}] chunk ${ci + 1} failed:`, e?.message);
-        if (_isThrottleErr(e)) _deferredIdx.push(ci); // throttle-skipped → revisit in the catch-up drain
+        if (_isThrottleErr(e)) _deferredIdx.push(ci); // throttle-skipped → preserve for later resume
         return part;
       }
     };
     let fixed;
-    if (_localTextMode) {
+    if (_serialFixWave) {
       fixed = new Array(chunks.length);
       for (let ci = 0; ci < chunks.length; ci++) {
         _throwIfControlAborted();
-        _emitLocalRemediationProgress(ci, chunks.length, `Fixing chunk ${ci + 1} of ${chunks.length}`, 'fix');
+        if (_localTextMode) _emitLocalRemediationProgress(ci, chunks.length, `Fixing chunk ${ci + 1} of ${chunks.length}`, 'fix');
         fixed[ci] = await _fixOneChunk(chunks[ci], ci);
         _throwIfControlAborted();
+        if (_deferredIdx.length) {
+          for (let ri = ci + 1; ri < chunks.length; ri++) fixed[ri] = chunks[ri];
+          warnLog(`[aiFixChunked:${label}] paced fix wave stopped after chunk ${ci + 1}; ${chunks.length - ci - 1} queued chunk(s) were never launched and remain byte-identical for resume.`);
+          break;
+        }
       }
-      _emitLocalRemediationProgress(chunks.length, chunks.length, `Fixed ${chunks.length} chunk${chunks.length === 1 ? '' : 's'}`, 'fix');
+      if (_localTextMode) _emitLocalRemediationProgress(chunks.length, chunks.length, `Fixed ${chunks.length} chunk${chunks.length === 1 ? '' : 's'}`, 'fix');
     } else {
       fixed = await Promise.all(chunks.map((part, ci) => _fixOneChunk(part, ci)));
       _throwIfControlAborted();
     }
-    // ── Defer-and-revisit catch-up drain (2026-06-21) ── Chunks a Canvas THROTTLE skipped were kept as their
-    // ORIGINAL above + recorded in _deferredIdx (vs the old behavior: grind 4 inline retries/chunk through
-    // 90s cooldowns, or silently ship unfixed). A rate-limit eases over TIME, so PAUSE to let the window
-    // breathe, then REVISIT just those chunks with the SAME fixer and splice the result back at the SAME
-    // index. Fail-safe: _fixOneChunk returns the original on any failure, so a splice can only IMPROVE the
-    // result. Skipped when ALL chunks were deferred (a total stall → let the auto-fix loop / resumable save
-    // handle it, don't spin).
+    // A throttle-deferred chunk stays byte-identical to its verified input. Do not immediately launch
+    // a catch-up wave into the same provider window: that doubled the expensive calls in the diagnostic
+    // run and prolonged the storm. Checkpoint once and let the explicit resume path revisit the work.
     if (_deferredIdx.length) {
-      let _todo = _deferredIdx.slice();
-      // H15: the drain is the single most expensive thing that can happen after the pass loop has
-      // already decided it has time for another pass — a calm wait plus one 180s-timeout call per
-      // deferred chunk, serially. Reserve enough of the file's wall to finish and SHIP: overshooting
-      // it means _withTimeout rejects and every completed pass's work is discarded, which is
-      // strictly worse than shipping these chunks as their originals (they are re-attempted next
-      // pass / on resume anyway).
-      const _drainWall = (_control && _control.perFileDeadlineTs) || 0;
-      const _DRAIN_RESERVE_MS = 60000;
-      const _drainOutOfTime = () => _drainWall > 0 && Date.now() > _drainWall - _DRAIN_RESERVE_MS;
-      for (let _round = 0; _round < 2 && _todo.length; _round++) {
-        _throwIfControlAborted();
-        if (_drainOutOfTime()) {
-          warnLog(`[aiFixChunked:${label}] catch-up skipped — the per-file batch wall is too close to revisit ${_todo.length} deferred chunk(s); shipping them as originals so the completed passes survive.`);
-          break;
-        }
-        warnLog(`[aiFixChunked:${label}] catch-up round ${_round + 1}: revisiting ${_todo.length} throttle-deferred chunk(s) after a pause`);
-        _pulsePipelineWatchdog(_control && _control.owner); // a deliberate catch-up pause is activity, not a stall
-        // Do not guess that an 8-second sleep cleared a rolling quota. Wait through the live
-        // cooldown and require two representative confirmations before revisiting document-sized prompts.
-        let _calm = null;
-        // Deep dive 2026-07-27: reserve the DRAIN's own 60s, not the calm default's 30s. With the
-        // mismatch the wait could consume budget down to deadline-30s while _drainOutOfTime() trips at
-        // deadline-60s — so the drain paused for its full clamped wait and then revisited ZERO chunks,
-        // spending the wall on nothing. The two numbers must be the same number.
-        try { _calm = await waitForGeminiCalm({ maxWaitMs: _alloCalmBudgetMs(90000, _control && _control.perFileDeadlineTs, _DRAIN_RESERVE_MS), shouldAbort: _control && _control.shouldAbort, signal: _control && _control.signal, owner: _control && _control.owner }); } catch (_) {}
-        if ((_calm && _calm.aborted) || _controlAborted()) _throwIfControlAborted(true);
-        _deferredIdx.length = 0; // re-collect any chunk STILL throttled this round
-        // Recovery stays serial even for the cloud backend. Parallel catch-up was the exact
-        // re-fan-out visible in the throttled run (#17/#18, then #19/#20).
-        let _again = [];
-        for (let _ti = 0; _ti < _todo.length; _ti++) {
-          const ci = _todo[_ti];
-          _throwIfControlAborted();
-          // H15: re-check between chunks. Each revisit is a full document-sized call with a 180s
-          // timeout, so a drain that fitted when it started may not fit by chunk 5. Whatever has
-          // already been spliced back is kept; the chunks we never reached go back on the deferred
-          // list so the "still rate-limited" report below counts them honestly rather than
-          // implying they were revisited and found fine.
-          if (_drainOutOfTime()) {
-            const _unreached = _todo.slice(_ti);
-            for (const _u of _unreached) if (_deferredIdx.indexOf(_u) === -1) _deferredIdx.push(_u);
-            warnLog(`[aiFixChunked:${label}] catch-up stopped mid-round at the per-file batch wall — ${_unreached.length} chunk(s) shipped as originals.`);
-            break;
-          }
-          if (_localTextMode) _emitLocalRemediationProgress(ci, chunks.length, `Retrying chunk ${ci + 1} of ${chunks.length}`, 'fix-retry');
-          _again.push({ ci: ci, out: await _fixOneChunk(chunks[ci], ci) });
-          _throwIfControlAborted();
-        }
-        for (const { ci, out } of _again) { if (out != null) fixed[ci] = out; } // splice back at the SAME index (original-on-failure = harmless no-op)
-        _todo = _deferredIdx.slice();
-      }
-      if (_todo.length) {
-        _markThrottleDeferred(_todo.length);
-        warnLog(`[aiFixChunked:${label}] catch-up: ${_todo.length} chunk(s) still rate-limited — shipped as original (will be re-attempted next pass / on resume)`);
-      }
+      const _todo = Array.from(new Set(_deferredIdx));
+      _markThrottleDeferred(_todo.length);
+      warnLog(`[aiFixChunked:${label}] ${_todo.length} chunk(s) rate-limited — kept as original and checkpointed for a later resume`);
     }
     // 2026-06-07: aggregate text-preservation gate. Backstop against the
     // hypothetical adversarial case where EVERY chunk's AI output legitimately
@@ -13270,7 +13275,16 @@ var createDocPipeline = function(deps) {
         warnLog('[PDF Det] PDF may be corrupted:', msg);
         if (typeof addToast === 'function') addToast(t('toasts.pdf_may_corrupted_malformed_attempting'), 'info');
       } else {
-        warnLog('[PDF Det] extractPdfTextDeterministic failed:', msg);
+        // Input forensics (2026-08-23, field log): "The PDF file is empty, i.e. its size is zero
+        // bytes" arrived here for a 5.4MB document. The extractor clones before pdf.js, so a
+        // zero-byte read means the INPUT was already empty — either an empty/blank base64 string
+        // or a Uint8Array whose buffer an upstream pdf.js call detached (the documented
+        // detached-buffer -> phantom-zero class). Log which, so the next field log answers this
+        // in one line instead of an archaeology session.
+        const _inKind = _isBytes
+          ? ('bytes len=' + base64.length + (base64.buffer && base64.buffer.byteLength === 0 ? ' (buffer DETACHED upstream)' : ''))
+          : ('string len=' + String(base64 == null ? '' : base64).length);
+        warnLog('[PDF Det] extractPdfTextDeterministic failed:', msg, '— input was ' + _inKind);
       }
       return { fullText: '', pages: [], pageCount: 0, sourceCharCount: 0, isScanned: true, error: msg, isEncrypted, isCorrupt, pageErrors: [] };
     } finally { if (pdf) { try { pdf.destroy(); } catch (_) {} } }
@@ -20695,6 +20709,40 @@ HTML section ${chunkNum}/${chunks.length}:
       doc.open(); doc.write(_neutralizeForAuditFrame(htmlContent)); doc.close(); // #16: same neutralization as the axe frame
       await new Promise((r) => setTimeout(r, 150));
       const checker = new window.ace.Checker();
+      // ── WCAG identity for Equal Access findings (2026-08-23) ──────────────────────────────
+      // EA results carry a ruleId and nothing else about WCAG, so the Success Criteria report was
+      // axe-only and understated real coverage. The engine ships the mapping: checker.guidelines
+      // holds the WCAG_2_2 guideline with 56 A/AA checkpoints, each with num / name / wcagLevel
+      // and the rule ids that test it. Read it here, once, and hand the view both the rule->SC
+      // index AND the full checkpoint catalog, so untested criteria can be named rather than
+      // silently omitted. Defensive: an older ace build without .guidelines degrades to no SC
+      // attribution (findings still render), never to a wrong one.
+      let _eaRuleToSc = {};
+      let _eaWcagCatalog = [];
+      try {
+        const _guideline = (checker.guidelines || []).find((g) => g && g.id === 'WCAG_2_2')
+          || (checker.guidelines || []).find((g) => g && /^WCAG_2_/.test(String(g.id || '')));
+        ((_guideline && _guideline.checkpoints) || []).forEach((cp) => {
+          if (!cp || !cp.num) return;
+          const _level = String(cp.wcagLevel || '');
+          if (_level !== 'A' && _level !== 'AA') return; // AA scope: never imply AAA was assessed
+          _eaWcagCatalog.push({
+            num: String(cp.num),
+            name: String(cp.name || ''),
+            level: _level,
+            summary: String(cp.summary || ''),
+            // 0 means NO automated rule exists for this criterion in this engine — a permanent
+            // manual-only criterion, which is a different fact from "rules exist but none fired".
+            ruleCount: Array.isArray(cp.rules) ? cp.rules.length : 0
+          });
+          (cp.rules || []).forEach((rule) => {
+            if (!rule || !rule.id) return;
+            const _id = String(rule.id);
+            if (!_eaRuleToSc[_id]) _eaRuleToSc[_id] = [];
+            if (_eaRuleToSc[_id].indexOf(String(cp.num)) === -1) _eaRuleToSc[_id].push(String(cp.num));
+          });
+        });
+      } catch (_) { _eaRuleToSc = {}; _eaWcagCatalog = []; }
       const report = await _withTimeout(checker.check(doc, ['WCAG_2_2']), 30000, 'IBM Equal Access WCAG 2.2 audit');
       const results = (report && report.results) || [];
       // value = [toolLevel, outcome]: VIOLATION/RECOMMENDATION × FAIL/POTENTIAL/MANUAL/PASS.
@@ -20705,7 +20753,7 @@ HTML section ${chunkNum}/${chunks.length}:
         for (const r of results) {
           if (!r || !Array.isArray(r.value) || !filterFn(r.value)) continue;
           const ruleId = r.ruleId || 'unknown-rule';
-          const e = m.get(ruleId) || { id: ruleId, nodes: 0, description: r.message || ruleId, details: [] };
+          const e = m.get(ruleId) || { id: ruleId, nodes: 0, description: r.message || ruleId, details: [], wcagCriteria: _eaRuleToSc[ruleId] || [] };
           e.nodes++;
           if (e.details.length < 20) {
             const _path = r.path && typeof r.path === 'object'
@@ -20726,6 +20774,11 @@ HTML section ${chunkNum}/${chunks.length}:
         return Array.from(m.values());
       };
       const fails = byRule((v) => v[0] === 'VIOLATION' && v[1] === 'FAIL');
+      // PASS outcomes are collected for the Success Criteria report only: a criterion that EA
+      // actually evaluated and found clean is evidence, and without this EA could only ever
+      // subtract from the report. Rule-level (same aggregation as fails) and detail-free, so it
+      // stays small; it deliberately does NOT feed the score, which is unchanged.
+      const passes = byRule((v) => v[1] === 'PASS').map((e) => ({ id: e.id, nodes: e.nodes, wcagCriteria: e.wcagCriteria }));
       // POTENTIAL and MANUAL are review outcomes regardless of whether the rule policy is
       // VIOLATION or RECOMMENDATION. Dropping recommendation-level outcomes understated review work.
       const potentials = byRule((v) => v[1] === 'POTENTIAL');
@@ -20742,6 +20795,12 @@ HTML section ${chunkNum}/${chunks.length}:
         fails: fails.slice(0, 30),
         potentialFindings: potentials.slice(0, 30),
         manualFindings: manuals.slice(0, 30),
+        passes: passes.slice(0, 200),
+        totalPassRules: passes.length,
+        // The full WCAG 2.2 A/AA checkpoint list this engine knows about (num/name/level/ruleCount).
+        // The view renders criteria absent from every engine's findings as "not evaluated" instead
+        // of omitting them, so the report stops reading as "everything we show is everything there is".
+        wcagCatalog: _eaWcagCatalog,
         // Comparable-scale score, DISCLOSED in the UI: rule-level like axe's
         // (15/10/5/2 by impact). EA has no impact tiers — confirmed FAILs
         // weigh like axe 'serious' (10), while POTENTIAL/MANUAL findings
@@ -22192,6 +22251,13 @@ HTML section ${chunkNum}/${chunks.length}:
       fileName: _sessionDefaults.file ? _sessionDefaults.file.name : null,
       fileSize: _sessionDefaults.file ? _sessionDefaults.file.size : null,
     }, sessionMeta || {});
+    let _throttlePaused = false;
+    const _markSessionThrottlePaused = () => {
+      _throttlePaused = true;
+      if (typeof _sessMeta.onThrottleDeferred === 'function') {
+        try { _sessMeta.onThrottleDeferred(1); } catch (_) {}
+      }
+    };
     const _chunkDocumentEpoch = _hasExplicitChunkDocumentEpoch
       ? _normalizeDocumentEpoch(sessionMeta.documentEpoch)
       : _sessionDefaults.documentEpoch;
@@ -22207,13 +22273,26 @@ HTML section ${chunkNum}/${chunks.length}:
     });
     const _chunkSignal = _chunkStateOwner.signal;
     const _callChunkGemini = async function() {
+      if (_throttlePaused || _geminiThrottleInfo().storming) {
+        _markSessionThrottlePaused();
+        const pausedError = new Error('AI remediation paused after a temporary provider throttle.');
+        pausedError.canvasTransientAuth = true;
+        pausedError.geminiStormDeferred = true;
+        throw pausedError;
+      }
       const args = Array.prototype.slice.call(arguments);
       while (args.length < 5) args.push(null);
       args[5] = _chunkSignal;
       // Ownership fix (handoff 2026-08-03): stamp the caller's run identity on every transport
       // event so the host watchdog sees this invocation's heartbeats as its own activity.
       args[6] = _sessMeta.owner || null;
-      const result = await callGemini.apply(null, args);
+      let result;
+      try {
+        result = await callGemini.apply(null, args);
+      } catch (error) {
+        if (_isThrottleErr(error) || _geminiThrottleInfo().storming) _markSessionThrottlePaused();
+        throw error;
+      }
       _throwIfChunkInvocationStale();
       return result;
     };
@@ -23411,6 +23490,8 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
               const targetedFix = await aiFixChunked(currentHtml, targetViolationDesc, `targeted-${topViolation.id}`, null, {
                 signal: _chunkSignal,
                 shouldAbort: () => !_chunkInvocationIsCurrent(),
+                owner: _sessMeta.owner || null,
+                onThrottleDeferred: _markSessionThrottlePaused,
               });
               _throwIfChunkInvocationStale();
               if (targetedFix && targetedFix !== currentHtml) {
@@ -23443,6 +23524,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
         chunkReport: _chunkResultIsCurrent && typeof chunkReport !== 'undefined' ? chunkReport : null,
         chunkWeightedScore: _chunkResultIsCurrent && typeof chunkWeightedScore !== 'undefined' ? chunkWeightedScore : null,
         chunkState: _chunkResultIsCurrent ? _invocationChunkState : null,
+        throttlePaused: _throttlePaused,
         stale: !_chunkResultIsCurrent,
       };
     } catch (error) {
@@ -23454,6 +23536,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
         chunkReport: null,
         chunkWeightedScore: null,
         chunkState: null,
+        throttlePaused: _throttlePaused,
         stale: true,
       };
     } finally {
@@ -23954,8 +24037,10 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
   //   in : { accessibleHtml, verification, axeResults, equalAccessResults,
   //          updateProgress, applyDetectedLang }   — the run state after Step 3 + the two
   //          run-scoped callbacks that close over fixAndVerifyPdf's onProgress/lang state
+  //          plus the OPTIONAL readCommittedHtml host hook (human-in-the-loop rebase; absent =>
+  //          the loop behaves exactly as it did before that hook existed)
   //   out: { accessibleHtml, verification, axeResults, equalAccessResults,
-  //          autoFixPasses, bestAiScore, bestAxeViolations, bestEaFailures }
+  //          autoFixPasses, bestAiScore, bestAxeViolations, bestEaFailures, humanEditsAdopted }
   // All other helpers (aiFixChunked, audits, deterministic nets) and addToast resolve from
   // the factory closure. S1 step 5: the run SETTINGS (maxFixPasses, targetScore) arrive via
   // loopCtx — snapshotted by fixAndVerifyPdf at run entry — so a concurrent call's rebind
@@ -23981,6 +24066,41 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
     // never free variables (the rename-dangler crash class).
     const updateProgress = loopCtx.updateProgress || function () {};
     const _applyDetectedLang = loopCtx.applyDetectedLang || function (h) { return h; };
+    // ── Human-in-the-loop rebase (2026-08-23) ──────────────────────────────────────────────
+    // The loop holds the document in locals for the WHOLE run and ships keep-best at the end, so
+    // an edit a person committed while it was working was silently overwritten (and the Expert
+    // Workbench is reachable during a run, so that was reachable, not theoretical). This lets the
+    // loop notice a human commit at a pass boundary and adopt it.
+    //
+    // The standalone automatic path is unchanged BY CONSTRUCTION, on three independent counts:
+    //   1. no host reader supplied (batch, MCP, portable, tests)  -> _readCommitted stays null;
+    //   2. the host cannot report a revision                      -> demoted to null (legacy mode);
+    //   3. no human commit happened                               -> revision never advances.
+    // In all three, _takeExternalEdit returns null and not one branch below it ever executes.
+    let _readCommitted = typeof loopCtx.readCommittedHtml === 'function' ? loopCtx.readCommittedHtml : null;
+    let _externalRevision = null;
+    if (_readCommitted) {
+      try {
+        const _seed = _readCommitted();
+        _externalRevision = _seed && Number.isSafeInteger(_seed.revision) ? _seed.revision : null;
+      } catch (_) { _externalRevision = null; }
+      // Adopting on HTML difference alone is unsafe: at run entry the host still holds the PREVIOUS
+      // document while the loop's html came from Step 3 extraction, so they legitimately differ and
+      // a byte-compare would "adopt" stale bytes on pass 1. The monotonic revision counter is the
+      // only signal that means "a person committed something SINCE this run started". No counter,
+      // no rebase.
+      if (_externalRevision === null) _readCommitted = null;
+    }
+    let _humanEditsAdopted = 0;
+    const _takeExternalEdit = (mine) => {
+      if (!_readCommitted) return null;
+      let snap = null;
+      try { snap = _readCommitted(); } catch (_) { return null; }
+      if (!snap || !Number.isSafeInteger(snap.revision) || snap.revision <= _externalRevision) return null;
+      _externalRevision = snap.revision;
+      const html = typeof snap.html === 'string' ? snap.html : '';
+      return (html && html !== mine) ? html : null;
+    };
       let autoFixPasses = 0;
       const maxFixPasses = loopCtx.maxFixPasses; // S1: run-entry snapshot, not the live bound var
       let bestHtml = accessibleHtml;
@@ -24005,6 +24125,65 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
         ? Math.max(0, _initialThreeEngine.knownFindings.equalAccessFailures) : null;
       let bestEaReviewFindings = equalAccessResults ? _alloEqualAccessReviewCount(equalAccessResults) : null;
       let _lastFullCoverageAiScore = _initialAiUsable ? bestAiScore : null;
+      let _throttlePaused = false;
+      // Adopt a human edit as the new baseline. The critical part is resetting the KEEP-BEST
+      // lineage: bestHtml is some earlier pass's output, which by definition does not contain the
+      // person's change, so promoting it at the end of the run would silently revert a deliberate
+      // human correction (the exact failure this whole mechanism exists to prevent). Clearing
+      // _bestEvidenceComplete also means the next fully-evidenced pass promotes unconditionally,
+      // so the machine resumes from the human's version rather than competing with it.
+      //
+      // The engine audits are deliberately KEPT as the next pass's prompt inputs. They describe
+      // pre-edit bytes and are therefore approximate, but a human edit is normally localized, and
+      // the pass re-audits at its end anyway. Nulling them would send the AI a pass with no
+      // instructions, which is worse than a slightly stale list.
+      const _adoptExternalEdit = (html, where) => {
+        accessibleHtml = html;
+        bestHtml = html;
+        bestVerification = null;
+        bestAxeAudit = null;
+        bestEqualAccessAudit = null;
+        bestAiScore = null;
+        bestAxeViolations = null;
+        bestEaFailures = null;
+        bestEaReviewFindings = null;
+        _bestEvidenceComplete = false;
+        _humanEditsAdopted++;
+        warnLog('[Auto-fix] Adopted a human edit (' + where + '): rebasing onto the edited document and resetting keep-best so the edit cannot be reverted at ship time.');
+        try {
+          const _hd = { where, sizeKB: Math.round(html.length / 1000), adopted: _humanEditsAdopted, documentEpoch: _documentEpoch, runId: _controlRunId, runSequence: _controlRunSequence, timestamp: Date.now() };
+          setTimeout(function () { window.dispatchEvent(new CustomEvent('alloflow:remediation-human-edit', { detail: _hd })); }, 0);
+        } catch (e) {}
+        // Returned, not assigned: _lastPassFeedback is declared further down this block, and a
+        // forward closure reference is exactly the free-variable shape that has crashed this file
+        // before. The in-loop call sites own the assignment.
+        return 'NOTE: a human editor changed this document since the last pass. Their edits are authoritative - do not revert them. Fix only the violations listed above.';
+      };
+      // ── Live review-findings feed (2026-08-23, human-in-the-loop phase 4) ────────────────────
+      // axe `incomplete` and Equal Access POTENTIAL/MANUAL findings are precisely the judgments
+      // automation cannot make. They used to surface only in the final results panel, where they
+      // read as leftover paperwork. Streaming the CURRENT set at each pass boundary lets a person
+      // work that queue while the loop grinds the mechanical rest. Replacement semantics on
+      // purpose: each event carries the full current set, so findings a later pass resolves drop
+      // off the queue on their own instead of accumulating stale entries.
+      const _emitReviewFindings = (passNumber) => {
+        try {
+          const _mapF = (engine, bucket) => (f) => ({
+            engine, bucket,
+            id: (f && f.id) || 'unknown-rule',
+            description: (f && f.description) || '',
+            nodes: (f && f.nodes) || 0,
+            wcagCriteria: (f && Array.isArray(f.wcagCriteria)) ? f.wcagCriteria : [],
+            helpUrl: (f && f.helpUrl) || '',
+          });
+          const findings = []
+            .concat(((axeResults && axeResults.incomplete) || []).slice(0, 30).map(_mapF('axe', 'incomplete')))
+            .concat(((equalAccessResults && equalAccessResults.potentialFindings) || []).slice(0, 30).map(_mapF('equalAccess', 'potential')))
+            .concat(((equalAccessResults && equalAccessResults.manualFindings) || []).slice(0, 30).map(_mapF('equalAccess', 'manual')));
+          const _rfDetail = { passNumber, findings, documentEpoch: _documentEpoch, runId: _controlRunId, runSequence: _controlRunSequence, timestamp: Date.now() };
+          setTimeout(function () { window.dispatchEvent(new CustomEvent('alloflow:remediation-review-findings', { detail: _rfDetail })); }, 0);
+        } catch (e) {}
+      };
 
       const _aiIssueCount = verification && verification.issues ? verification.issues.length : 0;
       const _eaIssueCount = Number.isFinite(bestEaFailures) ? bestEaFailures : 0;
@@ -24049,7 +24228,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
         let stallCount = 0;
         let _consecFixErrors = 0; // B18: tolerate a transient chunk-fix error; bail only on 2 consecutive
         let _lastPassFeedback = ''; // $7b (2026-07-02): tell the next pass WHY the previous one was reverted/no-op — a bare retry re-sends the identical prompt and mostly re-rolls the same dud
-        let _throttleRecoveryRetriesRemaining = 2;
+        _emitReviewFindings(0); // seed the queue from the run-entry audits
         for (let fixPass = 0; fixPass < maxFixPasses; fixPass++) {
           // H7 (deep dive 2026-07-09): in BATCH mode the outer _withTimeout is a bare Promise.race —
           // it discards the RESULT at the wall but cannot cancel the WORK, so a slow file kept
@@ -24068,6 +24247,11 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
             warnLog('[Auto-fix] Run superseded (generation bump) — ending the fix loop after ' + fixPass + ' pass(es); this run\'s result will be discarded at the completion guard.');
             break;
           }
+          if (_geminiThrottleInfo().storming) {
+            _throttlePaused = true;
+            warnLog('[Auto-fix] AI remediation paused before pass ' + (fixPass + 1) + ' because the shared throttle breaker is active. The last verified checkpoint is preserved for a later resume.');
+            break;
+          }
           // Emit per-pass start event for live UI (setTimeout isolates listener errors from pipeline)
           try { setTimeout(function() { var _fp = fixPass; window.dispatchEvent(new CustomEvent('alloflow:remediation-pass-start', { detail: { passNumber: _fp + 1, totalPasses: maxFixPasses, sizeKB: Math.round(accessibleHtml.length / 1000), timestamp: Date.now(), documentEpoch: _documentEpoch, runId: _controlRunId, runSequence: _controlRunSequence } })); }, 0); } catch(e) {}
           const _passAxeUsable = _alloUsableAxeAudit(axeResults);
@@ -24080,6 +24264,12 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
           const _passKnownTotal = (_passAxeCount || 0) + (_passAiCount || 0) + (_passEaCount || 0);
           const _passEvidenceLabel = `${_passAiCount === null ? 'AI audit incomplete' : _passAiCount + ' AI'}, ${_passAxeCount === null ? 'axe-core unavailable' : _passAxeCount + ' axe'}, ${_passEaCount === null ? 'Equal Access unavailable' : _passEaCount + ' EA'}`;
           updateProgress(4, `Improving accessibility — pass ${fixPass + 1} of ${maxFixPasses} (${_passEvidenceLabel})${_passCanonical.engineExecutionComplete && _passKnownTotal === 0 ? ' \u2714 verifying...' : ''}...`);
+
+          // Pass boundary: if a person committed an edit since we last looked, rebase onto it
+          // BEFORE snapshotting, so snapshotHtml (the revert checkpoint, the chunk-fixed diff base,
+          // and the no-change stall test) all describe the document the human is actually looking at.
+          const _preEdit = _takeExternalEdit(accessibleHtml);
+          if (_preEdit) _lastPassFeedback = _adoptExternalEdit(_preEdit, 'before pass ' + (fixPass + 1));
 
           // Save snapshot before fix attempt
           const snapshotHtml = accessibleHtml;
@@ -24127,15 +24317,25 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
               owner: _controlOwner,
               operation: 'auto-fix',
               passNumber: fixPass + 1,
-              // H15: the batch file's absolute wall. Without it aiFixChunked's throttle waits and
-              // catch-up drain are unbounded relative to the budget the caller is enforcing.
+              // Keep the batch file's absolute wall available to nested bounded operations.
               perFileDeadlineTs: loopCtx.perFileDeadlineTs || 0,
               onThrottleDeferred: () => { _fixThrottleDeferred = true; },
               onPassEvidence: (meta) => { _fixPassEvidence = meta || null; },
             });
-            _aiFixApplied = !!(fixedHtml && fixedHtml !== accessibleHtml);
-            if (_aiFixApplied) {
-              accessibleHtml = fixedHtml;
+            // The AI call is the long window of the pass (minutes), so it is where a human edit is
+            // most likely to land. fixedHtml was computed from pre-edit bytes, so applying it would
+            // overwrite the person's change with a stale rewrite of it. The human wins: drop this
+            // pass's AI output and rebase. The pass still completes and re-audits below, so the
+            // loop keeps its bounded pass budget instead of silently gaining a free retry.
+            const _midEdit = _takeExternalEdit(snapshotHtml);
+            if (_midEdit) {
+              _lastPassFeedback = _adoptExternalEdit(_midEdit, 'during pass ' + (fixPass + 1));
+              _aiFixApplied = false;
+            } else {
+              _aiFixApplied = !!(fixedHtml && fixedHtml !== accessibleHtml);
+              if (_aiFixApplied) {
+                accessibleHtml = fixedHtml;
+              }
             }
             _consecFixErrors = 0;
           } catch(fixErr) {
@@ -24175,27 +24375,22 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
           // audit-detected language, then a word-form fallback, then 'en'. (shared helper, 2026-06-20)
           accessibleHtml = _applyDetectedLang(accessibleHtml);
 
+          // Do not grind another pass or a re-audit after any chunk was throttle-deferred. A partial
+          // pass has incomplete evidence, so restore the exact pre-pass checkpoint and let the user
+          // resume after the provider window clears.
+          if (_fixThrottleDeferred) {
+            accessibleHtml = snapshotHtml;
+            _throttlePaused = true;
+            warnLog(`[Auto-fix] Pass ${fixPass + 1} paused after a temporary AI throttle — restored the last verified checkpoint; no catch-up, re-audit, or additional pass was launched.`);
+            break;
+          }
+
           // $3 (deep dive 2026-07-02): a pass where the AI fix returned the original (all chunks
           // rejected) AND every deterministic cleanup was a no-op used to pay a full chunked
           // re-audit + an axe iframe run on byte-identical HTML — results guaranteed identical
           // to the current verification/axeResults. Skip the re-audit, count it as a stall
           // (bounded exactly like a no-improvement pass), and tell the next pass what happened.
           if (accessibleHtml === snapshotHtml) {
-            if (_fixThrottleDeferred || _geminiThrottleInfo().storming) {
-              _lastPassFeedback = 'NOTE: the previous fix wave was deferred by a temporary AI throttle; retry the same targeted edits after recovery.';
-              if (_throttleRecoveryRetriesRemaining <= 0) {
-                warnLog('[Auto-fix] Throttle recovery retry budget exhausted; stopping without another unnecessary calm wait or charging a semantic plateau.');
-                break;
-              }
-              warnLog(`[Auto-fix] Pass ${fixPass + 1}: unchanged because AI work was throttle-deferred — waiting and continuing without counting a semantic plateau.`);
-              let _throttleCalm = null;
-              try { _throttleCalm = await waitForGeminiCalm({ maxWaitMs: _alloCalmBudgetMs(120000, loopCtx.perFileDeadlineTs), shouldAbort: _shouldAbort, signal: _controlSignal, owner: _controlOwner }); } catch (_) {}
-              if ((_throttleCalm && _throttleCalm.aborted) || _shouldAbort()) break;
-              _throttleRecoveryRetriesRemaining--;
-              fixPass--;
-              continue;
-            }
-            _throttleRecoveryRetriesRemaining = 2;
             autoFixPasses++;
             stallCount++;
             _lastPassFeedback = 'NOTE: the previous fix attempt returned the document UNCHANGED. Make the specific, targeted edits the violations above require this time.';
@@ -24214,7 +24409,6 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
           // its constant floor of 2 (which minDetectable below keeps). One audit carries the same
           // information at half the loop's dominant API cost (~K_a chunks × passes calls saved).
           updateProgress(4, `Verifying improvements — checking pass ${fixPass + 1} results...`);
-          _throttleRecoveryRetriesRemaining = 2;
           // (2026-08-15, field logs 5g31be/e1 + zmvw6g/e1) When the AI fixer applied NOTHING this
           // pass — every chunk rejected or shipped-as-original — the only bytes that changed came
           // from the deterministic cleanups above (in both field runs: one contrast attribute).
@@ -24412,6 +24606,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
           var _stepIntegrityPassed = false;
           try { _stepIntegrityPassed = !!(verifyChunkIntegrity(snapshotHtml, accessibleHtml) || {}).passed; } catch (_e) { _stepIntegrityPassed = false; }
           try { var _cfDetail = { passNumber: fixPass + 1, totalPasses: maxFixPasses, originalHtml: _chunkHtmlPreview(snapshotHtml), fixedHtml: _chunkHtmlPreview(accessibleHtml), score: newAiScore, deterministicFixCount: 0, surgicalFixCount: 0, integrityPassed: _stepIntegrityPassed, aiVerified: false, wasRetried: false, usedOriginal: false, sizeKB: Math.round(accessibleHtml.length / 1000), timestamp: Date.now(), documentEpoch: _documentEpoch, runId: _controlRunId, runSequence: _controlRunSequence }; setTimeout(function() { window.dispatchEvent(new CustomEvent('alloflow:remediation-pass-complete', { detail: _cfDetail })); }, 0); } catch(e) {}
+          _emitReviewFindings(fixPass + 1);
 
           // If all THREE engines report 0 actionable or review findings, stop regardless of score.
           // reVerify is null when the AI audit failed this pass (reScores empty) —
@@ -24517,7 +24712,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
         axeResults = bestAxeAudit;
         equalAccessResults = bestEqualAccessAudit;
       }
-    return { accessibleHtml, verification, axeResults, equalAccessResults, autoFixPasses, bestAiScore, bestAxeViolations, bestEaFailures, lastFullCoverageAiScore: _lastFullCoverageAiScore };
+    return { accessibleHtml, verification, axeResults, equalAccessResults, autoFixPasses, bestAiScore, bestAxeViolations, bestEaFailures, lastFullCoverageAiScore: _lastFullCoverageAiScore, throttlePaused: _throttlePaused, humanEditsAdopted: _humanEditsAdopted };
   };
 
   // ── S2 phase extraction (deep dive 2026-07-02, wave 3): Step 1b image extraction ──
@@ -25692,7 +25887,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
       // "27m 16s elapsed" during a rate-limit storm — a promise the run was visibly breaking.
       // While the gate reports a recent throttle, say the honest thing instead of the estimate.
       const _estNote = (typeof _geminiThrottleInfo === 'function' && _geminiThrottleInfo().recentlyThrottled)
-        ? '(the AI service is rate-limiting — steps are slower than usual right now; nothing is skipped)'
+        ? '(the AI service is rate-limiting — this run will preserve a checkpoint and offer Resume if the limit persists)'
         : (label.est ? `(typically ${label.est})` : '');
       const msg = `Step ${step}/${totalSteps} ${label.emoji} ${label.name}${pageNote} — ${detail}  ${_estNote}`;
       const derived = _deriveProgress(step, detail);
@@ -28477,7 +28672,7 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       // Uses AI, axe-core, and Equal Access. Reverts if any completed evidence layer regresses.
       _pipeStepStart(4, _runTelemetry);
       // S2-extracted → _runMainFixLoop (policy: _alloLoopPolicy, golden-tested).
-      const _loopOut = await _runMainFixLoop({ accessibleHtml, verification, axeResults, equalAccessResults: loopEqualAccessResults, updateProgress, applyDetectedLang: _applyDetectedLang, maxFixPasses: _runMaxFixPasses, targetScore: _runTargetScore, perFileDeadlineTs: _perFileDeadlineTs, genStale: _runGenStale, signal: _runAbortSignal, owner: _runTelemetry, documentEpoch: _runDocumentEpoch });
+      const _loopOut = await _runMainFixLoop({ accessibleHtml, verification, axeResults, equalAccessResults: loopEqualAccessResults, updateProgress, applyDetectedLang: _applyDetectedLang, maxFixPasses: _runMaxFixPasses, targetScore: _runTargetScore, perFileDeadlineTs: _perFileDeadlineTs, genStale: _runGenStale, signal: _runAbortSignal, owner: _runTelemetry, documentEpoch: _runDocumentEpoch, readCommittedHtml });
       _throwIfRunCancelled();
       accessibleHtml = _loopOut.accessibleHtml;
       verification = _loopOut.verification;
@@ -28486,6 +28681,8 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       let autoFixPasses = _loopOut.autoFixPasses;      // consumed by triage/footer/report below
       let bestAiScore = _loopOut.bestAiScore;          // consumed by the divergence check + H5 headline note
       const _lastFullCoverageAiScore = _loopOut.lastFullCoverageAiScore; // M5: partial-inflation-free provenance for the estimated minimum
+      const _remediationThrottlePaused = !!_loopOut.throttlePaused;
+      const _humanEditsAdopted = Number(_loopOut.humanEditsAdopted) || 0;  // disclosed on the result: the run is no longer purely automated
 
       // ── Diff-based semantic cleanup: compare final HTML against extractedText ground truth ──
       // Instead of blind regex, we identify what changed from the original and classify
@@ -28695,14 +28892,18 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       // pre-final-audit point the batch loop used. STRICT no-op with ZERO API calls when every table
       // already carries a caption (the common case — the extraction prompt asks Vision for one), so it
       // adds nothing to a clean run or under a Canvas throttle; each table is fail-safe and bounded.
-      try {
-        _throwIfRunCancelled();
-        const _capRes = await addAiTableCaptions(accessibleHtml, { signal: _runAbortSignal });
-        _throwIfRunCancelled();
-        if (_capRes && _capRes.fixCount > 0) { accessibleHtml = _capRes.html; warnLog('[PDF Fix] AI: authored ' + _capRes.fixCount + ' table caption(s) for headingless tables before the final audit'); }
-      } catch (_capErr) {
-        if (_runGenStale() || (_capErr && (_capErr.name === 'AbortError' || _capErr.isAbort))) _throwIfRunCancelled();
-        warnLog('[PDF Fix] addAiTableCaptions failed (non-fatal): ' + (_capErr && _capErr.message));
+      if (_remediationThrottlePaused) {
+        warnLog('[PDF Fix] AI table-caption authoring skipped because remediation is safely paused at a verified checkpoint.');
+      } else {
+        try {
+          _throwIfRunCancelled();
+          const _capRes = await addAiTableCaptions(accessibleHtml, { signal: _runAbortSignal });
+          _throwIfRunCancelled();
+          if (_capRes && _capRes.fixCount > 0) { accessibleHtml = _capRes.html; warnLog('[PDF Fix] AI: authored ' + _capRes.fixCount + ' table caption(s) for headingless tables before the final audit'); }
+        } catch (_capErr) {
+          if (_runGenStale() || (_capErr && (_capErr.name === 'AbortError' || _capErr.isAbort))) _throwIfRunCancelled();
+          warnLog('[PDF Fix] addAiTableCaptions failed (non-fatal): ' + (_capErr && _capErr.message));
+        }
       }
 
       // ── Final authoritative audit: re-run ONE clean audit on the finished HTML ──
@@ -28734,7 +28935,12 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         return !!(_info && (_info.recentlyThrottled || _info.storming));
       };
       let _finalAuditThrottleDeferred = false;
-      try {
+      if (_remediationThrottlePaused) {
+        _finalAuditThrottled = true;
+        _finalAuditThrottleDeferred = true;
+        _finalAuditIncompleteReason = 'remediation-paused-transient-throttle';
+        warnLog('[PDF Fix] Final AI audit deferred because remediation paused on a temporary provider throttle; deterministic evidence remains available and AI verification can resume later.');
+      } else try {
         // Full chunked audit for accurate final scoring
         _throwIfRunCancelled();
         const _finalAuditHtml = accessibleHtml;
@@ -28787,8 +28993,8 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       // the degraded outcome immediately — zero seconds waited, the whole 10-minute budget unused. The
       // WORST throttle outcome got the LEAST resilience. Now the absent-under-throttle shape circles
       // back too (_finalAuditThrottled was already breaker-derived at the null/throw sites above).
-      const _reAuditNeeded = (verification && verification._partialAudit)
-        || (_finalAuditThrottled && !_finalAuditHadUsableScore);
+      const _reAuditNeeded = !_remediationThrottlePaused && ((verification && verification._partialAudit)
+        || (_finalAuditThrottled && !_finalAuditHadUsableScore));
       if (_reAuditNeeded) {
         const _throttleCaused = _finalAuditThrottled || _finalAuditThrottleActive();
         if (_throttleCaused) {
@@ -29700,7 +29906,8 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
           if (_htmlChangedAfterFinalAiAudit) {
             const _postMutationThrottleActive = _finalAuditThrottleActive();
             const _postMutationBudgetExhausted = _finalAiAuditBudgetLeft() <= 0;
-            const _deferPostMutationAi = _finalAuditThrottled
+            const _deferPostMutationAi = _remediationThrottlePaused
+              || _finalAuditThrottled
               || _postMutationThrottleActive
               || _postMutationBudgetExhausted;
             if (_deferPostMutationAi) {
@@ -29960,6 +30167,11 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         _estimatedMinimumScore: Number.isFinite(_estimatedMinimumScore) ? _estimatedMinimumScore : null,
         _estimatedScoreBasis: _estimatedScoreBasis,
         _finalAuditRetryAvailable: !!(_aiVerificationIncomplete && accessibleHtml),
+        _remediationThrottlePaused: _remediationThrottlePaused,
+        // Provenance, not decoration: a run that adopted human edits is a COLLABORATIVE result, and
+        // any conformance claim or exported report has to say so rather than presenting it as a
+        // purely automated outcome.
+        humanEditsAdopted: _humanEditsAdopted,
         _finalAuditThrottleDeferred: !!_finalAuditThrottleDeferred,
         _finalAuditIncompleteReason: _finalAuditIncompleteReason || null,
         _scoreSource: _finalAiEvidenceAvailable ? (_deterministicEvidenceAvailable ? 'min' : 'content-only') : (_deterministicEvidenceAvailable ? 'deterministic-only' : 'unavailable'), // headline = min(content, automated) — the governing layer (2026-06-21)
@@ -30682,6 +30894,37 @@ tr { page-break-inside: avoid; }
     // n/a tiles + explanation instead of by-construction numbers (mirrors the on-screen n/a).
     const _noTextRpt = !isBeforeAfter && d.hasSearchableText === false;
     html += _honestReportBlocks(_structScore, _semScore, d.integrityCoverage, undefined, (typeof _eaScore === 'number' ? _eaScore : undefined), { automatedNA: _noTextRpt, integrityWarning: d.integrityWarning, fidelityNotes: d.fidelityNotes, axeIncomplete: ((_axeAuditForReport || {}).totalIncomplete || 0), verificationCoverage: _reportCoverage, verificationState: _reportState, verificationReasons: _reportVerification.reasons, requiresManualReview: _reportRequiresReview, secondEngineAudit: _eaAuditForReport });
+
+    // Provenance (2026-08-23): a run that adopted human edits mid-flight is a COLLABORATIVE
+    // result. The downloaded report must say so — presenting it as purely automated overclaims,
+    // and this report is the artifact most likely to travel beyond the person who ran it.
+    const _humanEditsRpt = Number(d.humanEditsAdopted || (d.after && d.after.humanEditsAdopted)) || 0;
+    if (_humanEditsRpt > 0) {
+      html += '<div style="background:#eef2ff;border:1px solid #c7d2fe;border-radius:8px;padding:8px 10px;margin:8px 0;font-size:9px;color:#3730a3"><strong>Human-in-the-loop:</strong> the automated remediation adopted ' + _humanEditsRpt + ' human edit' + (_humanEditsRpt === 1 ? '' : 's') + ' while it ran. This is a collaborative result (automated passes + human edits); the scores in this report describe the combined document.</div>';
+    }
+
+    // Review-findings attestation (2026-08-23): marking a finding reviewed in the judgment queue
+    // is human work, and it must ride the report — but as an ATTESTATION ("a person marked this
+    // reviewed"), never as an automated verification. Reviewed keys are intersected against the
+    // CURRENT audits so the counts stay coherent: an attestation for a finding a later pass
+    // resolved outright is dropped rather than inflating the reviewed tally.
+    const _reviewedMapRpt = (d.reviewedFindings && typeof d.reviewedFindings === 'object')
+      ? d.reviewedFindings : ((d.after && d.after.reviewedFindings && typeof d.after.reviewedFindings === 'object') ? d.after.reviewedFindings : null);
+    const _rptFindingKeys = []
+      .concat(((_axeAuditForReport && _axeAuditForReport.incomplete) || []).map(function (f) { return { key: 'axe|incomplete|' + ((f && f.id) || 'unknown-rule'), label: 'axe-core needs review: ' + ((f && f.id) || 'unknown-rule') }; }))
+      .concat(((_eaAuditForReport && _eaAuditForReport.potentialFindings) || []).map(function (f) { return { key: 'equalAccess|potential|' + ((f && f.id) || 'unknown-rule'), label: 'Equal Access potential: ' + ((f && f.id) || 'unknown-rule') }; }))
+      .concat(((_eaAuditForReport && _eaAuditForReport.manualFindings) || []).map(function (f) { return { key: 'equalAccess|manual|' + ((f && f.id) || 'unknown-rule'), label: 'Equal Access manual: ' + ((f && f.id) || 'unknown-rule') }; }));
+    if (_rptFindingKeys.length > 0) {
+      const _reviewedRows = _rptFindingKeys.filter(function (r) { return _reviewedMapRpt && _reviewedMapRpt[r.key]; });
+      const _openRows = _rptFindingKeys.filter(function (r) { return !(_reviewedMapRpt && _reviewedMapRpt[r.key]); });
+      html += '<div style="background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:8px 10px;margin:8px 0;font-size:9px;color:#78350f">'
+        + '<strong>Review findings:</strong> ' + _rptFindingKeys.length + ' rule' + (_rptFindingKeys.length === 1 ? '' : 's') + ' flagged by the engines as needing human judgment · '
+        + _reviewedRows.length + ' marked reviewed by the operator.'
+        + ' <em>Marked-reviewed is a human attestation recorded in AlloFlow, not an automated verification.</em>'
+        + (_reviewedRows.length ? '<div style="margin-top:4px">' + _reviewedRows.slice(0, 20).map(function (r) { return '✓ ' + esc(r.label); }).join('<br>') + (_reviewedRows.length > 20 ? '<br>+ ' + (_reviewedRows.length - 20) + ' more' : '') + '</div>' : '')
+        + (_openRows.length ? '<div style="margin-top:4px;color:#92400e">' + _openRows.slice(0, 20).map(function (r) { return '○ ' + esc(r.label) + ' — not yet reviewed'; }).join('<br>') + (_openRows.length > 20 ? '<br>+ ' + (_openRows.length - 20) + ' more' : '') + '</div>' : '')
+        + '</div>';
+    }
 
     // The teacher-visible 18-item matrix is also report evidence, not UI chrome.
     // Keep the deterministic detector and all three verification sources separate
@@ -40487,6 +40730,23 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
       const _submissionIdentityJson = Object.keys(_submissionIdentity).length
           ? `<script type="application/json" id="alloflow-submission-identity">${JSON.stringify(_submissionIdentity).replace(/</g, '\\u003c')}</script>`
           : '';
+      // Mailbox return leg (2026-08-23): the pack capability rides the page so
+      // the Save button can hand the encrypted envelope straight to the
+      // teacher's Class Mailbox. Only the unguessable pack id+k travel - never
+      // the teacher admin token - and the id is validated to the PK- shape.
+      const _mailboxTarget = _hasSubmission && cfg.mailboxSubmitTarget && typeof cfg.mailboxSubmitTarget === 'object'
+          && typeof cfg.mailboxSubmitTarget.url === 'string' && cfg.mailboxSubmitTarget.url
+          && /^PK-[0-9a-f-]{36}$/i.test(String(cfg.mailboxSubmitTarget.id || ''))
+          && typeof cfg.mailboxSubmitTarget.k === 'string' && cfg.mailboxSubmitTarget.k
+          ? cfg.mailboxSubmitTarget : null;
+      const _mailboxTargetJson = _mailboxTarget
+          ? `<script type="application/json" id="alloflow-mailbox-target">${JSON.stringify({
+              url: String(_mailboxTarget.url).slice(0, 500),
+              id: String(_mailboxTarget.id),
+              k: String(_mailboxTarget.k).slice(0, 96),
+              ...(_mailboxTarget.expiresAt ? { expiresAt: String(_mailboxTarget.expiresAt).slice(0, 40) } : {})
+          }).replace(/</g, '\\u003c')}</script>`
+          : '';
       // INLINE_ENCRYPT_SCRIPT comes from window.AlloModules.SubmissionCrypto.
       // Lazy lookup per feedback_iife_lazy_lookup.md — SubmissionCrypto loads
       // separately and is not guaranteed at this module's IIFE-load time.
@@ -40499,7 +40759,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
       const _submissionSaveButton = _hasSubmission ? `
         <div id="alloflow-save-cta" style="margin:32px auto 16px;text-align:center;padding:18px 20px;background:#f8fafc;border:1px solid #cbd5e1;border-radius:10px;max-width:600px;break-inside:avoid;page-break-inside:avoid;">
           <p style="margin:0 0 12px 0;font-size:1.05rem;color:#166534;font-weight:700;">Done with your work?</p>
-          <p style="margin:0 0 16px 0;font-size:0.9rem;color:#475569;">Click below to save an encrypted file with your answers. Send the downloaded file to your teacher.</p>
+          <p style="margin:0 0 16px 0;font-size:0.9rem;color:#475569;">${_mailboxTarget ? "Click below to send your encrypted work straight to your teacher's Class Mailbox. If sending fails, an encrypted file downloads instead - send that file to your teacher." : 'Click below to save an encrypted file with your answers. Send the downloaded file to your teacher.'}</p>
           <button type="button" id="alloflow-save-submission-btn" style="padding:10px 22px;background:#15803d;color:white;border:none;border-radius:8px;font-weight:700;font-size:0.95rem;cursor:pointer;box-shadow:0 1px 4px rgba(21,128,61,0.22);">📝 Save my work</button>
           <p style="margin:12px 0 0 0;font-size:0.75rem;color:#475569;">🔐 Your responses are encrypted with your class key. Only your teacher can open the file.</p>
         </div>
@@ -40579,6 +40839,63 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                                 iv: encrypted.iv,
                                 ciphertext: encrypted.ciphertext
                             };
+                            // Mailbox return leg (2026-08-23): try the teacher's
+                            // Class Mailbox first; the encrypted file download
+                            // below is the fallback, never removed.
+                            var mailboxTarget = null;
+                            try {
+                                var mtEl = document.getElementById('alloflow-mailbox-target');
+                                mailboxTarget = mtEl ? JSON.parse(mtEl.textContent) : null;
+                            } catch (mtErr) { mailboxTarget = null; }
+                            if (mailboxTarget && (!mailboxTarget.url || (mailboxTarget.expiresAt && Date.parse(mailboxTarget.expiresAt) <= Date.now()))) {
+                                mailboxTarget = null;
+                            }
+                            var mailboxDelivered = false;
+                            if (mailboxTarget) {
+                                btn.textContent = 'Sending to your teacher...';
+                                try {
+                                    if (!window.crypto || typeof window.crypto.getRandomValues !== 'function') throw new Error('secure random unavailable');
+                                    var submissionEnvelope = JSON.stringify({
+                                        schemaVersion: 2,
+                                        kind: 'encrypted-worksheet',
+                                        studentName: payload.nickname,
+                                        nickname: payload.nickname,
+                                        docTitle: payload.docTitle,
+                                        timestamp: payload.timestamp,
+                                        wrappedKey: encrypted.wrappedKey,
+                                        iv: encrypted.iv,
+                                        ciphertext: encrypted.ciphertext,
+                                        classId: identity.classId || undefined,
+                                        assignmentId: identity.assignmentId || undefined
+                                    });
+                                    var chunkSize = 60000;
+                                    var totalParts = Math.max(1, Math.ceil(submissionEnvelope.length / chunkSize));
+                                    if (totalParts > 200) throw new Error('work file too large for the mailbox');
+                                    var sidBytes = new Uint8Array(16);
+                                    window.crypto.getRandomValues(sidBytes);
+                                    sidBytes[6] = (sidBytes[6] & 15) | 64;
+                                    sidBytes[8] = (sidBytes[8] & 63) | 128;
+                                    var sidHex = Array.prototype.map.call(sidBytes, function(b) { return (b + 256).toString(16).slice(1); }).join('');
+                                    var sid = 'SUB-' + sidHex.slice(0, 8) + '-' + sidHex.slice(8, 12) + '-' + sidHex.slice(12, 16) + '-' + sidHex.slice(16, 20) + '-' + sidHex.slice(20, 32);
+                                    var receipt = null;
+                                    for (var partIdx = 0; partIdx < totalParts; partIdx++) {
+                                        var partBody = JSON.stringify({ a: 'putsubmission', id: mailboxTarget.id, k: mailboxTarget.k, sid: sid, part: partIdx + 1, of: totalParts, data: submissionEnvelope.slice(partIdx * chunkSize, (partIdx + 1) * chunkSize) });
+                                        var resp = await fetch(mailboxTarget.url, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: partBody, redirect: 'follow' });
+                                        var parsedResp = null;
+                                        try { parsedResp = await resp.json(); } catch (respErr) { parsedResp = null; }
+                                        if (!parsedResp || parsedResp.ok !== true) throw new Error((parsedResp && parsedResp.e) || ('the mailbox rejected part ' + (partIdx + 1)));
+                                        receipt = parsedResp;
+                                    }
+                                    mailboxDelivered = true;
+                                    btn.textContent = String.fromCharCode(10003) + ' Sent to your teacher';
+                                    window.__alloflowNotify('Your encrypted work was sent to your teacher' + (receipt && receipt.filename ? ' (' + receipt.filename + ')' : '') + '.', 'success');
+                                    setTimeout(function() { btn.disabled = false; btn.textContent = 'Send my work again'; }, 1500);
+                                } catch (mailboxErr) {
+                                    mailboxDelivered = false;
+                                    window.__alloflowNotify("Could not reach your teacher's Class Mailbox (" + (mailboxErr && mailboxErr.message ? mailboxErr.message : 'offline') + '). Saving an encrypted file instead - send it to your teacher.', 'warning');
+                                }
+                            }
+                            if (!mailboxDelivered) {
                             var subHtml = '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Submission: ' + _esc(nickname) + ' — ' + _esc(payload.docTitle) + '</title><style>body{font-family:system-ui;max-width:600px;margin:3rem auto;padding:2rem;text-align:center;color:#334155}h1{color:#1e3a5f}.card{background:#f1f5f9;border-radius:12px;padding:24px;margin-top:24px}.tag{display:inline-block;background:#dbeafe;color:#1e40af;padding:4px 12px;border-radius:999px;font-size:0.85rem;font-weight:600}</style></head><body><h1>📝 Submission for ' + _esc(nickname) + '</h1><div class="card"><p><strong>Worksheet:</strong> ' + _esc(payload.docTitle) + '</p><p><strong>Saved:</strong> ' + new Date().toLocaleString() + '</p><p class="tag">🔐 Encrypted with class key</p><p style="font-size:0.85rem;color:#64748b;margin-top:16px;">This file contains the student\\'s encrypted responses. Open it in AlloFlow (Document Builder → Import submissions) with the matching class key file to decrypt.</p></div><' + 'script type="application/json" id="alloflow-submission">' + JSON.stringify(fileJson).replace(/</g, '\\\\u003c') + '<' + '/script></body></html>';
                             var blob = new Blob([subHtml], { type: 'text/html;charset=utf-8' });
                             var url2 = URL.createObjectURL(blob);
@@ -40593,6 +40910,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                             setTimeout(function() { URL.revokeObjectURL(url2); if (a.parentNode) a.parentNode.removeChild(a); }, 200);
                             btn.textContent = '✓ Saved — download started';
                             setTimeout(function() { btn.disabled = false; btn.textContent = '📝 Save my work again'; }, 1500);
+                            }
                         } catch (e) {
                             btn.disabled = false;
                             btn.textContent = '📝 Save my work';
@@ -40686,6 +41004,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
         <script type="application/json" id="alloflow-interactive-object-profile">${_jsonForScript(_objectProfileManifest)}</script>
         ${_submissionPublicKeyJson}
         ${_submissionIdentityJson}
+        ${_mailboxTargetJson}
         ${_submissionEncryptScript}
         <style>
           /* Keep downloaded HTML useful offline: only explicit teacher-selected

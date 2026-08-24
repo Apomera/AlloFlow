@@ -7,39 +7,39 @@
   "outputs": [
     {
       "path": "AlloFlow Complete User Manual.md",
-      "sha256": "6346056e0969c8829245aa51183b75e8e5ab55f816b83fa156bef3c9d3fb096a"
+      "sha256": "ef3538a7bca22571c6093636f6bbffa1a5be34145464734c6c3e5c89189f302d"
     },
     {
       "path": "guide/accessibility-and-udl.html",
-      "sha256": "98654e14f16026fcb60b01442b750fd1d957fd8f5434b60962d52ed4556eada5"
+      "sha256": "01f5d4eaa258c03aabe27b4ce9f4dbdb796a2c59d1e41729d6812fa5abca7663"
     },
     {
       "path": "guide/adventure-mode.html",
-      "sha256": "1026483fd9fc1fb47575d1d50884217c30d8f3f128daf6eb42014e425cf290ac"
+      "sha256": "dd859fd8142f5159dd536fbb58057a88a9205349b28c9a858d13498f5c0f81bb"
     },
     {
       "path": "guide/allobot-assistant.html",
-      "sha256": "403e408282a967aea0ea946bfe15c2856bf10cc2e4584d6f36c44f069df6f505"
+      "sha256": "b7f7b6b5d69c7a5adcfa1a9256fa74eaa4011b80223a84f6d706ef68692174bc"
     },
     {
       "path": "guide/classroom-workflows.html",
-      "sha256": "271d698b6eb3b8f3330c84d3230a2aae4d7100dc6327a386ac91118c7823edc8"
+      "sha256": "9e9733a5d14c6502af95c397a9ed70565e0133902f91b82d2e97138db407d60f"
     },
     {
       "path": "guide/documents-and-printing.html",
-      "sha256": "5c7ae4c905b94a8b3cf7b39c65096696aa58c80f1071220bb33571f4364a5463"
+      "sha256": "19c1e21840e6dd1ea37658c5dd7accc065954b3a2396e8c389db042de626d61b"
     },
     {
       "path": "guide/family-mode.html",
-      "sha256": "f470a89b555a6e6ed2a3ec3058bcfb16af9a39810e477cb22838c1960f543f19"
+      "sha256": "079fa8035dc50841d575974311030aa819abe2dc7784ba31948eec2b398d74cb"
     },
     {
       "path": "guide/for-school-leaders.html",
-      "sha256": "978e8edacf0a8b1f1fd073445809757d31246ac0baa05ab4dd94f851f9a3a758"
+      "sha256": "1fe8006baea7caba7497c3ae5fadb49ef740d90b861276016e83003cab12f764"
     },
     {
       "path": "guide/for-your-it-department.html",
-      "sha256": "2d6834cc98e7cc61b7137460f3a1aa20b5734909abc46eacf7e04432f89a68e7"
+      "sha256": "ce903d3ad6f63481dd5d139c90cce17a548bb0514836c926708b1fb9c3d80f92"
     },
     {
       "path": "guide/guide-search.js",
@@ -51,95 +51,95 @@
     },
     {
       "path": "guide/index.html",
-      "sha256": "87ea71b5c426a85f9527e72dc7480dd664158f506ed813807b69fedc8e9e2e6f"
+      "sha256": "9ea95ae9d74187a6cb361709e65e4a67f3cbdfbc9134cac3db3f05e4210c43b0"
     },
     {
       "path": "guide/live-sessions.html",
-      "sha256": "19a82dc4f305b9930e080c1a4d0b2653143279ec36dbfc55e35e75e0fc88ec06"
+      "sha256": "742aba7610d8f0a5191520707d42393180514186e774e41aa32372ef80c0f63c"
     },
     {
       "path": "guide/make-a-document-accessible.html",
-      "sha256": "62c49e0fddeb21e2d9282a4f9c5c8a66cd4c9175c982536e7fec9bee8c893cc3"
+      "sha256": "612271ad2790451c3570abbcf1185dc50b193dbba1e4a60257f436e109aad79c"
     },
     {
       "path": "guide/math-fluency.html",
-      "sha256": "ecc65ecdb3b5f6663bffb4a3320b8dac4ae7dcd69c58e054def30f700fec9130"
+      "sha256": "e397ad7a2ecf4c7aad5e25b33fdd3be7a0cf412922472b351a76ff3215af5b2d"
     },
     {
       "path": "guide/offline.html",
-      "sha256": "d04b954fe1972f73575267708a83195a1982fe7ab464eacf5a1dbd6336e232af"
+      "sha256": "b8a9fd7d6f4d5f28511b7f054f7aaf94a85ee26d0125ce72a43e17cf1566294b"
     },
     {
       "path": "guide/prepare-a-lesson.html",
-      "sha256": "76fb9232764358466c157969280cdf7dedc3468cb9c0af87b2d7c4383e0db265"
+      "sha256": "514b4bdbd6adcc7b7ac4febee059f510bdd39890c6b6afce13dc562861f25d43"
     },
     {
       "path": "guide/privacy-and-responsible-ai.html",
-      "sha256": "166899b89a2e7a347e12cba31d9e36bbe7836409e57cbeb364e13647a399c984"
+      "sha256": "4edf1486571283a6cba49c6056a8e05911b56394fe53fe12e1ef7ac21a047be9"
     },
     {
       "path": "guide/quick-reference.html",
-      "sha256": "14c51a13e5577c95919ae838560f3206580de14c89b9c2c6e2b297a0c6db8caa"
+      "sha256": "269ef249e648441f6dd6a42049a887cc3d33658bf65eec1d2005118451b88f58"
     },
     {
       "path": "guide/review-and-next-steps.html",
-      "sha256": "5b6d1da51f058fc46bf6d5d3af0ba004f14ceb35b238d2eb9c5a20d49b68e558"
+      "sha256": "718c59861d6324190b35d29749f1c6a4fdf9b2e1929df66b923b38121e201b1f"
     },
     {
       "path": "guide/saving-and-storage.html",
-      "sha256": "5f91b8293f989d69468f331e2c3022ef6fb941d27dbeec7715b5bafe563a9425"
+      "sha256": "009ca4151de96beb6aeb0ca6848c607db961a65d5bfbbd110a569d9e9a3b9364"
     },
     {
       "path": "guide/school-rollout-and-coaching.html",
-      "sha256": "1db763ce9c385a8da170de1bd318ed92744e9ca02f1874a7d78668bbb786e969"
+      "sha256": "93a384c119b4b5e4e79003bde0c686942986078d30d1e3ed876ea28349ff14ef"
     },
     {
       "path": "guide/search-index.json",
-      "sha256": "0c43b0564a1f579021ba1b794b543dc7bbb38bcff0a8b79b082ce28a2313d038"
+      "sha256": "38aa3ea3ee160a773ed75a45d6f0ba46e89ac6878bdd894c5f513bc8e139045d"
     },
     {
       "path": "guide/settings-and-help.html",
-      "sha256": "9ce4373e9c8a7b9a999e23250e696f3b8c2496e9bc9bcddb6d04e8bd6765a470"
+      "sha256": "19628b06895950db01ff50a6f5f279ebb559a2a96ae7bf42b7134a1102114986"
     },
     {
       "path": "guide/specialist-reference.html",
-      "sha256": "758ffa10f5fc3dd9b89f098818080097c696964a5f0ddf90735da01ac1c956e4"
+      "sha256": "5044607c401504935b162bd48627c57bc5edfcb5134b5ac50a8483cce3b72c5c"
     },
     {
       "path": "guide/start-here.html",
-      "sha256": "3d23ffd83c6f04647e22c25c8f23c75bf0e81ad4a4bf1d9c8181138e19d56260"
+      "sha256": "49c242851b08207ee91a73045b29bac9476fc6d382f25ee965c6790d1898902d"
     },
     {
       "path": "guide/steam-lab.html",
-      "sha256": "7edb1284ae16d8c301d4ac6a2cab0d73160a54b8e307c47dae3d3303d34190f4"
+      "sha256": "b44bb00f4ed529b2c90b25b6b588ce24cbaf0b48cb5d8da16cff3538e431fb53"
     },
     {
       "path": "guide/the-workspace.html",
-      "sha256": "4148af0d8deae0d70920fd60e7f8d36a6ac788c8d51575d40a6fd167b66c2dbd"
+      "sha256": "90b70d01fea14bf4c4a7df72febad566e84f347193db76e55c1bcff992076ff8"
     },
     {
       "path": "guide/tool-reference.html",
-      "sha256": "4145d157d7a8c791c52bc3291f27a54eeab561111c3deee861084e2b869bd0ff"
+      "sha256": "929620a3b9be553b68076f1a14f0dff7a99d590fce5429daf5c49bf4d2952873"
     },
     {
       "path": "guide/troubleshooting.html",
-      "sha256": "17e0dfab7bd28c53097969c405f68a086b0462099e039f3c9fa5ff5bbcaa9485"
+      "sha256": "5737b8edf70574ade949875e49ea3cba17fa0033c4651ed9bdf9cec5b594b72c"
     },
     {
       "path": "guide/universal-settings.html",
-      "sha256": "1a2414ca547152ed0302cfbddb9e7f4422421cd228656bd41006e2e156a6a5a4"
+      "sha256": "3fd6b3d2fdb31fa1c6cb34a61a3f33b16e3e24a90048cf08f66e041b7e1a6d1a"
     },
     {
       "path": "guide/worked-assessment-access-vignette.html",
-      "sha256": "23011a4bc95d60f5c08f277a8b1ea0d5b6c64317e2aebb590458ce4e32decc47"
+      "sha256": "8c1c7f339f0cafab9ba88341bd2ff41bfc97d16d8a4bb86312f70d14b27ddbe2"
     },
     {
       "path": "guide/worked-multilingual-vignette.html",
-      "sha256": "86d4edac4c8766c746c8224b8f0d6a3a97e0aea74ff66fb1807b1df89c456c55"
+      "sha256": "34dea8bfc2d50d29a1d48cc806e1abb8bdda4ed8039aaebe2f3ec307655239f9"
     },
     {
       "path": "guide/worked-student-vignette.html",
-      "sha256": "94b21c40a0f6ec72938a3d26ad1010098c7401794d104e86fa68da7e73a86347"
+      "sha256": "193f882a0b2e3027e91ef63ccbd316df4d61205d21f7fcc048cf486ce85cfa23"
     }
   ]
 }

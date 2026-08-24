@@ -72,6 +72,25 @@ describe('the breaker is fed by a Canvas throttle', () => {
     }
   }, 60000);
 
+  it('keeps one retry for an isolated 401 but suppresses it as soon as the second logical failure trips the breaker', async () => {
+    vi.spyOn(Math, 'random').mockReturnValue(0);
+    try {
+      let calls = 0;
+      const p = makePipeline(async () => { calls++; throw canvasThrottleError(); });
+      await p.auditOutputAccessibility('<main><h1>x</h1><p>y</p></main>', {
+        owner: { runId: 'r2-trip', operation: 'audit', chunkId: '1', passNumber: 1 },
+      });
+      await p.auditOutputAccessibility('<main><h1>x</h1><p>z</p></main>', {
+        owner: { runId: 'r2-trip', operation: 'audit', chunkId: '2', passNumber: 1 },
+      });
+      expect(calls, 'two logical failures should cost 2 attempts + 1 suppressed-retry attempt, not 4').toBe(3);
+      expect(p.geminiThrottleInfo().authStreak).toBe(2);
+      expect(p.geminiThrottleInfo().storming).toBe(true);
+    } finally {
+      vi.restoreAllMocks();
+    }
+  }, 60000);
+
   it('clears the throttle streak when the bounded inline retry recovers', async () => {
     vi.spyOn(Math, 'random').mockReturnValue(0);
     try {

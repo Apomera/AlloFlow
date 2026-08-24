@@ -39,7 +39,7 @@ Those criteria are the anchor. A route is acceptable only if it can reveal the s
 | Oral explanation | A brief recording or teacher-documented conference response. | The same cause, sequence, and terms. | Confirm audio works and use the same criteria, not an easier prompt. |
 | Draw, label, and explain | A process sketch with arrows, labels, and a short caption or recording. | Correct relationships and an explicit Sun-to-evaporation link. | A decorative drawing without an explanation is not enough evidence. |
 
-## Step 1: start with a formative purpose
+## Step 1. Start with a formative purpose
 
 The live **Assess** panel shows **Exit Ticket** as the assessment purpose and describes a recommended preset of five scored questions plus one unscored reflection. It also exposes separate areas for question customization, reflection, scoring, feedback, saved setups, and Custom Instructions.
 
@@ -99,7 +99,7 @@ Her review separates three questions:
 
 An automated audit can flag a question to inspect. It cannot certify the assessment, choose a required accommodation, or decide what a learner knows.
 
-## Step 5: choose and test the actual delivery route
+## Step 5. Choose and test the actual delivery route
 
 The live **Preview, Package & Deliver** panel groups print and editable documents, web and accessibility formats, LMS packages, sharing methods, and resource-specific exports. The available buttons include Document Builder, a homework QR route, a live session, and a test of the latest student link.
 

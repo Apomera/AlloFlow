@@ -51,9 +51,14 @@ describe('local standards provider', () => {
 
     it('registers and clears only validated local snapshots', () => {
         expect(api.getRegisteredProvider()).toBeNull();
+        // Registration is deliberately lazy since the 2026-08-23 perf pass:
+        // it validates and marks the union dirty, and the expensive index
+        // build happens on the first getRegisteredProvider() call (or idle).
         const registered = api.registerLocalSnapshot(fixture);
-        expect(api.getRegisteredProvider()).toBe(registered);
-        expect(registered.getManifest().snapshotId).toBe('fixture-local-standards-2026-08-01');
+        expect(registered).toBeNull();
+        const provider = api.getRegisteredProvider();
+        expect(provider).toBeTruthy();
+        expect(provider.getManifest().snapshotId).toBe('fixture-local-standards-2026-08-01');
         api.clearRegisteredProvider();
         expect(api.getRegisteredProvider()).toBeNull();
 

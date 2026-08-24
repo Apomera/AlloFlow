@@ -1014,7 +1014,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
   // TOOL REGISTRATION
   // ═══════════════════════════════════════════════════════════════
   window.StemLab.registerTool('spaceExplorer', {
-    icon: '\uD83C\uDF0C',
+    icon: '\uD83D\uDEF8',
     label: 'Space Explorer',
     desc: 'Roguelike missions across the solar system. AI-generated challenges, real science, and strategic resource management.',
     color: 'purple',

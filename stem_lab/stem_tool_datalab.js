@@ -116,7 +116,7 @@
   }
 
   window.StemLab.registerTool('dataLab', {
-    icon: '📊',
+    icon: '\uD83D\uDDC3\uFE0F',
     label: 'Data Lab',
     desc: 'Real data science in CODAP — the Concord Consortium’s open data workspace — with an AlloFlow Socratic tutor beside it that asks questions about YOUR data instead of giving answers.',
     color: 'indigo',
@@ -239,7 +239,13 @@
         if (announceToSR) announceToSR(t('stem.dataLab.returned_catalog_sr', 'Returned to the STEAM Lab tools.'));
       }
 
-      return h('div', { className: 'flex flex-col gap-4 animate-in fade-in duration-300 max-w-2xl' },
+      return h('div', { className: 'flex flex-col gap-4 animate-in fade-in duration-300 max-w-2xl',
+        // The launcher card is dark-authored (text-slate-300 body, bg-slate-800/60
+        // privacy panel, slate-900/70 back button) but painted no ground, so it sat
+        // on the host card -- white in BOTH themes (stem_lab_module.js ~1633): body
+        // text 1.48:1, privacy rows 2.72:1 on the composited grey. Six shelf/launcher
+        // tools share this exact recipe; each gets the slate ground its inks assume.
+        style: { background: '#0f172a', borderRadius: 14, padding: 16 } },
         typeof setStemLabTool === 'function' && h('button', {
           onClick: returnToCatalog,
           className: 'inline-flex w-fit items-center gap-2 rounded-lg border border-slate-700 bg-slate-900/70 px-3 py-2 text-xs font-bold text-slate-200 transition-colors hover:bg-slate-800 active:scale-[0.97]',
@@ -270,7 +276,7 @@
           t('stem.dataLab.open_note', 'Data Lab is open. Keep this AlloFlow window open too — it powers the AI tutor.')),
         popupState === 'closed' && h('p', { className: 'text-xs text-slate-400', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' },
           t('stem.dataLab.closed_note', 'Data Lab was closed. You can reopen it whenever you are ready.')),
-        h('p', { className: 'text-[11px] text-slate-500 leading-relaxed' },
+        h('p', { className: 'text-[11px] text-slate-400 leading-relaxed' },
           t('stem.dataLab.credit', 'CODAP is free and open source (MIT) from the Concord Consortium. The workspace loads from codap.concord.org, so the Data Lab needs internet; an offline School Box copy is on the roadmap.'))
       );
     }

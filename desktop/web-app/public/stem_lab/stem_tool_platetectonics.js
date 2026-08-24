@@ -8,6 +8,65 @@
   if (document.head) document.head.appendChild(st);
 })();
 
+// ── Motion policy ───────────────────────────────────────────────────────────
+// The CSS above covers CSS animations and transitions. It does nothing at all
+// for a <canvas>, and this tool is mostly canvas: eleven requestAnimationFrame
+// loops between the simulation, the seismograph, the globe, the two 3D views and
+// the explainer panels. Two of those checked the setting; the rest ran drifting
+// clouds, spinning convection cells, pulsing quake rings and a smoking volcano
+// at whoever opened the page, with no way to stop any of it.
+//
+// One place to ask, so a loop cannot forget, and it tracks a change of setting
+// rather than latching whatever was true when the module happened to load.
+var _ptReduceMotion = null;
+function ptReducedMotion() {
+  if (_ptReduceMotion !== null) return _ptReduceMotion;
+  try {
+    var mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+    _ptReduceMotion = !!mq.matches;
+    var onChange = function (e) { _ptReduceMotion = !!e.matches; };
+    if (mq.addEventListener) mq.addEventListener('change', onChange);
+    else if (mq.addListener) mq.addListener(onChange);
+  } catch (e) { _ptReduceMotion = false; }
+  return _ptReduceMotion;
+}
+try { window.__alloPtReducedMotion = ptReducedMotion; } catch (e) {}
+
+// A clock for ambient motion. Under reduced motion it stops at a fixed, chosen
+// moment rather than at whatever frame the setting happened to be read on — a
+// frozen mid-animation frame is often a worse picture than any of the ones the
+// animation was passing through, and the frozen value here is picked so the
+// diagrams show a state worth looking at.
+function ptAmbientClock(seconds, frozenAt) {
+  return ptReducedMotion() ? (frozenAt == null ? 0.35 : frozenAt) : seconds;
+}
+try { window.__alloPtAmbientClock = ptAmbientClock; } catch (e) {}
+
+// ── Off-screen throttling ───────────────────────────────────────────────────
+// This page is very long and carries eleven animation loops. All of them ran at
+// full rate whichever tab you were on and however far you had scrolled — so a
+// student reading the glossary was still paying for a simulation, a seismograph,
+// a globe and three explainer panels animating several screens above them. On the
+// Chromebooks these are used on, that is a real cost for nothing.
+//
+// A loop asks this before doing its work. It is deliberately CHEAP and
+// conservative: no observer to leak, no callback ordering to get wrong, and if
+// the element cannot be measured it returns true — a loop that wrongly keeps
+// running is a wasted frame, while one that wrongly stops is a broken feature.
+function ptOnScreen(el) {
+  if (!el || !el.isConnected) return false;
+  var r;
+  try { r = el.getBoundingClientRect(); } catch (e) { return true; }
+  if (!r || (!r.width && !r.height)) return false;
+  var vh = window.innerHeight || document.documentElement.clientHeight || 0;
+  var vw = window.innerWidth || document.documentElement.clientWidth || 0;
+  if (!vh || !vw) return true;
+  // One viewport of slack either side, so a panel is already running by the time
+  // it scrolls into view rather than starting from a blank frame.
+  return r.bottom > -vh && r.top < vh * 2 && r.right > -vw && r.left < vw * 2;
+}
+try { window.__alloPtOnScreen = ptOnScreen; } catch (e) {}
+
 // -- Plate Tectonics Plugin (extracted from stem_tool_science.js) --
   // Audio system
   var _tectAC = null;
@@ -162,8 +221,12 @@
       '.plate-tectonics-container.dark .bg-emerald-50 { background-color: rgba(16, 185, 129, 0.1) !important; border-color: rgba(16, 185, 129, 0.25) !important; } ' +
       '.plate-tectonics-container.dark .text-red-900, .plate-tectonics-container.dark .text-orange-900, .plate-tectonics-container.dark .text-amber-900 { color: #f87171 !important; } ' +
       '.plate-tectonics-container.dark .text-red-700, .plate-tectonics-container.dark .text-orange-700, .plate-tectonics-container.dark .text-amber-700 { color: #fca5a5 !important; } ' +
-      '.plate-tectonics-container.dark .text-slate-700, .plate-tectonics-container.dark ' +
-      '.plate-tectonics-container.dark .text-slate-500 { color: #64748b !important; } ' +
+      // Was: '.dark .text-slate-700, .dark ' + '.dark .text-slate-500 {...}', whose
+      // second selector concatenated into '.dark .dark .text-slate-500' and matched
+      // nothing, while .text-slate-700 was handed slate-500 (#64748b) — about 3.4:1
+      // on the dark card, under AA for body text. Split, and lifted to slate-300.
+      '.plate-tectonics-container.dark .text-slate-700 { color: #cbd5e1 !important; } ' +
+      '.plate-tectonics-container.dark .text-slate-500 { color: #94a3b8 !important; } ' +
       '.plate-tectonics-container.dark .border-red-200, .plate-tectonics-container.dark .border-orange-200, .plate-tectonics-container.dark .border-amber-200, .plate-tectonics-container.dark .border-slate-200 { border-color: rgba(51, 65, 85, 0.5) !important; } ' +
       '.plate-tectonics-container.dark .bg-slate-100 { background-color: #1e293b !important; color: #e2e8f0 !important; border-color: #334155 !important; } ' +
       '.plate-tectonics-container.dark .bg-slate-50 { background-color: #0f172a !important; color: #e2e8f0 !important; border-color: #1e293b !important; } ' +
@@ -182,16 +245,29 @@
       '.pt-mission-grid{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(240px,.65fr);gap:12px;align-items:stretch}',
       '.pt-mission-card{border-radius:18px;border:1px solid rgba(248,113,113,.36);background:linear-gradient(135deg,rgba(255,247,237,.96),rgba(254,242,242,.98));box-shadow:0 14px 34px rgba(127,29,29,.12);padding:14px}',
       '.pt-dark-card{background:linear-gradient(135deg,rgba(30,41,59,.82),rgba(15,23,42,.92));border-color:rgba(248,113,113,.24);box-shadow:0 14px 34px rgba(2,6,23,.28)}',
-      '.pt-metric-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}',
+      '.pt-metric-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr));gap:8px}',
       '.pt-canvas-shell{border-radius:20px;padding:10px;background:linear-gradient(180deg,#170f21,#070710);border:1px solid rgba(251,146,60,.45);box-shadow:0 20px 46px rgba(127,29,29,.24),inset 0 1px 0 rgba(255,255,255,.08);overflow:hidden}',
       '.pt-canvas-toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:8px}',
       '.pt-control-grid{display:grid;grid-template-columns:minmax(170px,1fr) repeat(3,max-content);gap:10px;align-items:center}',
       '.pt-chip{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:4px 9px;font-size:11px;font-weight:800}',
       '.pt-primary-canvas{width:100%;min-height:360px;border-radius:14px;border:1px solid rgba(251,146,60,.28);box-shadow:inset 0 0 46px rgba(251,146,60,.12);touch-action:none}',
+      '.pt-tb-shell{aspect-ratio:16/5.8}',
+      '@media(max-width:640px){.pt-tb-shell{aspect-ratio:16/21}}',
+      '.pt-eq-shell{aspect-ratio:16/5.6}',
+      '@media(max-width:620px){.pt-eq-shell{aspect-ratio:16/13}}',
       '@media(max-width:860px){.pt-mission-grid{grid-template-columns:1fr}.pt-metric-grid{grid-template-columns:1fr}.pt-control-grid{grid-template-columns:1fr}.pt-canvas-shell{padding:6px}.pt-primary-canvas{min-height:320px}.pt-canvas-toolbar{align-items:flex-start}}'
     ].join('');
     document.head.appendChild(st);
   })();
+
+  // ── One set of seismic velocities ────────────────────────────────
+  // Two panels depend on these: the seismograph draws P, S and surface
+  // arrivals from them, and the epicentre widget turns an S-minus-P
+  // interval back into a distance. They each declared their OWN copy,
+  // so the two agreed only by coincidence. Change one and the trace
+  // would show a gap the widget then misreads, with nothing failing.
+  // Continental crust, km/s.
+  var PT_SEISMIC = { VP: 6.0, VS: 3.5, VL: 3.0 };
 
   // ===============================================================
   // -- INTERACTIVE EPICENTER (TRIANGULATION) --
@@ -216,9 +292,9 @@
     var useRef = React.useRef;
     var useEffect = React.useEffect;
 
-    // Real seismic velocities for continental crust (km/s)
-    var VP = 6.0;
-    var VS = 3.5;
+    // Real seismic velocities for continental crust (km/s).
+    var VP = PT_SEISMIC.VP;
+    var VS = PT_SEISMIC.VS;
     // Distance per second of S-P delay: (Vp * Vs) / (Vp - Vs)
     var KM_PER_SP = (VP * VS) / (VP - VS); // ~8.4 km/s
 
@@ -546,11 +622,11 @@
     var containerStyle = isContrast
       ? { background: palette.bg, color: palette.text, borderColor: palette.border }
       : isDark
-        ? { background: 'linear-gradient(135deg, var(--allo-stem-deeper, rgba(15,23,42,0.85)) 0%, var(--allo-stem-panel, rgba(15,23,42,0.7)) 100%)' }
+        ? { background: 'linear-gradient(135deg, var(--allo-stem-deeper, #0f172a) 0%, var(--allo-stem-panel, #1e293b) 100%)' }
         : { background: 'linear-gradient(135deg, #ecfdf5 0%, #a7f3d0 100%)' };
     var headerStyle = isDark ? { background: 'rgba(16,185,129,0.15)' } : { background: 'rgba(16,185,129,0.2)' };
     var titleClass = 'text-sm font-bold ' + (isDark ? 'text-emerald-300' : 'text-emerald-900');
-    var subtitleClass = 'text-[11px] ' + (isDark ? 'text-slate-400' : 'text-emerald-800');
+    var subtitleClass = 'text-[11px] ' + (isDark ? 'text-slate-300' : 'text-emerald-800');
 
     return h('div', { className: containerClass, style: containerStyle, role: 'region', 'aria-label': 'Interactive epicenter triangulation', 'data-plate-theme': isContrast ? 'contrast' : (isDark ? 'dark' : 'light') },
       h('div', { className: 'px-3 py-2 flex items-center gap-2 border-b ' + (isDark ? 'border-slate-800' : 'border-emerald-300'), style: headerStyle },
@@ -573,7 +649,7 @@
         ),
         h('div', { className: 'flex flex-col gap-2' },
           // Readings card
-          h('div', { className: 'rounded-lg p-2 border ' + (isDark ? 'bg-slate-900/60 border-slate-800 text-slate-200' : 'bg-white border-emerald-300') },
+          h('div', { className: 'rounded-lg p-2 border ' + (isDark ? 'bg-slate-900 border-slate-800 text-slate-200' : 'bg-white border-emerald-300 text-slate-800') },
             h('div', { className: 'text-[10px] font-bold uppercase mb-1 ' + (isDark ? 'text-emerald-300' : 'text-emerald-700') }, 'Station readings'),
             readings.map(function(r) {
               return h('div', { key: r.id, className: 'flex items-center gap-2 text-[11px] py-0.5' },
@@ -585,7 +661,7 @@
             })
           ),
           // Toggles
-          h('div', { className: 'rounded-lg p-2 border ' + (isDark ? 'bg-slate-900/60 border-slate-800 text-slate-200' : 'bg-white border-emerald-300') },
+          h('div', { className: 'rounded-lg p-2 border ' + (isDark ? 'bg-slate-900 border-slate-800 text-slate-200' : 'bg-white border-emerald-300 text-slate-800') },
             h('label', { className: 'flex items-center gap-2 text-[11px] cursor-pointer' },
               h('input', { type: 'checkbox', checked: s.showCircles, onChange: function(e) { update({ showCircles: e.target.checked }); }, className: 'h-6 w-6 shrink-0' }),
               'Show distance circles'
@@ -600,21 +676,21 @@
             className: 'px-2 py-1.5 text-xs font-bold rounded focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (isDark ? 'transition-colors bg-slate-800 text-slate-200 hover:bg-slate-700' : 'transition-colors bg-emerald-200 text-emerald-900 hover:bg-emerald-300')
           }, '↻ Reset stations & epicenter'),
           h('button', { onClick: function() { try { var _cs = [].slice.call(document.querySelectorAll('canvas')); if (!_cs.length) return; var _c = _cs.sort(function(a,b){ return (b.width*b.height)-(a.width*a.height); })[0]; var _a = document.createElement('a'); _a.href = _c.toDataURL('image/png'); _a.download = 'platetectonics_' + Date.now() + '.png'; _a.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCF8 PNG saved!', 'success'); } catch (e) {} }, style: { padding: '6px 10px', fontSize: '12px', fontWeight: 'bold', borderRadius: '6px', background: '#0e7490', color: '#fff', border: 'none', cursor: 'pointer', marginLeft: '6px' } }, '\uD83D\uDCF8 PNG'),
-          h('div', { className: 'text-[10px] italic ' + (isDark ? 'text-slate-400' : 'text-emerald-800') },
+          h('div', { className: 'text-[10px] italic ' + (isDark ? 'text-slate-300' : 'text-emerald-800') },
             'Tip: stations are also draggable. Arrow keys move the epicenter when canvas is focused.'
           )
         )
       ),
       // Educational cards
       h('div', { className: 'mx-3 mb-3 grid grid-cols-1 md:grid-cols-2 gap-2' },
-        h('div', { className: 'rounded-xl border p-3 ' + (isDark ? 'bg-slate-900/60 border-slate-800 text-slate-200' : 'bg-white border-emerald-300') },
+        h('div', { className: 'rounded-xl border p-3 ' + (isDark ? 'bg-slate-900 border-slate-800 text-slate-200' : 'bg-white border-emerald-300 text-slate-800') },
           h('div', { className: 'text-[11px] font-bold uppercase mb-1 ' + (isDark ? 'text-emerald-300' : 'text-emerald-700') }, '📐 The math'),
           h('div', { className: 'text-[11px] leading-relaxed ' + (isDark ? 'text-slate-300' : 'text-slate-700') },
             h('div', { className: 'font-mono mb-1' }, 'distance = (S-P seconds) × Vp·Vs / (Vp − Vs)'),
             'P-waves race through continental crust at ~' + VP.toFixed(1) + ' km/s; slower S-waves trail at ~' + VS.toFixed(1) + ' km/s. The lag between them grows by ~' + KM_PER_SP.toFixed(1) + ' km for every second of S-P time (≈ 12 s of S-P delay per 100 km — a handy rule of thumb). One station gives you a circle of possible locations; two narrow it to two intersection points; three pin down the epicenter. This is exactly how the 1906 San Francisco, 1989 Loma Prieta, and 2011 Tōhoku epicenters were located before GPS-based methods.'
           )
         ),
-        h('div', { className: 'rounded-xl border p-3 ' + (isDark ? 'bg-slate-900/60 border-slate-800 text-slate-200' : 'bg-white border-emerald-300') },
+        h('div', { className: 'rounded-xl border p-3 ' + (isDark ? 'bg-slate-900 border-slate-800 text-slate-200' : 'bg-white border-emerald-300 text-slate-800') },
           h('div', { className: 'text-[11px] font-bold uppercase mb-1 ' + (isDark ? 'text-emerald-300' : 'text-emerald-700') }, '🎯 Try this'),
           h('ul', { className: 'text-[11px] space-y-0.5 list-disc pl-4 ' + (isDark ? 'text-slate-300' : 'text-slate-700') },
             h('li', null, 'Drag the red star directly on top of a station  -  its S-P time drops to 0 (you are AT the epicenter).'),
@@ -1135,7 +1211,7 @@
     var state = 'idle';                 // idle | loading | ready | failed
     var canvasEl = null, renderer = null, scene = null, camera = null;
     var clipPlane = null, resizeObs = null, rafId = 0;
-    var parts = {}, labelGroup = null, ashBatch = null, ashP = [];
+    var parts = {}, labelGroup = null, scaleGroup = null, ashBatch = null, ashP = [];
     var lavaBatch = null, lavaP = [];
     // Deliberately NOT in `parts`: unmount disposes every parts entry's
     // geometry, and r128 Sprites share a single plane geometry between them, so
@@ -1143,7 +1219,13 @@
     var ventLabel = null;
     var pending = { active: false, tick: 0, dark: true, labels: true, magma: 'andesite' };
     var appliedMagma = null;
-    var cam = { rotX: -16, rotY: -34, scale: 1 };
+    // Nearly side-on by DEFAULT. At -16/-34 the block presented the camera
+    // mostly its own roof, and the cut face — the entire reason this view opens
+    // sliced — was a narrow band along one edge.
+    var cam = { rotX: -7, rotY: -17, scale: 1 };
+    // Current eased camera distance (see applyCam). Module state, not derived per
+    // frame, because the easing needs the previous value.
+    var frameDist = 78;
     // Sliced open by DEFAULT. Screenshotting the closed block showed why: the
     // country rock is opaque, so the chamber, conduit, dikes and sill were all
     // buried inside it and the five labels pointed at blank hillside. An anatomy
@@ -1231,13 +1313,24 @@
       var tex = new T.CanvasTexture(cv);
       tex.needsUpdate = true;
       var sp = new T.Sprite(new T.SpriteMaterial({ map: tex, transparent: true, depthTest: false }));
-      var s = 4.2;
+      // Sprite scale is in WORLD units, so a label sized for the old fixed camera
+      // 118 units back became a billboard once the framing tightened to ~74 —
+      // "magma chamber" spanned a third of the block it was pointing at.
+      var s = 2.9;
       sp.scale.set(s * (cv.width / cv.height), s, 1);
       return sp;
     }
 
-    function rock(color, clip) {
-      return new T.MeshLambertMaterial({ color: color, clippingPlanes: clip, side: T.DoubleSide });
+    function rock(color, clip, recede) {
+      return new T.MeshLambertMaterial({
+        color: color, clippingPlanes: clip, side: T.DoubleSide,
+        // The cutaway leaves country rock and intrusions ending on the SAME
+        // plane, so they z-fight: the dikes came out chopped into segments by
+        // whichever bed happened to win each band of pixels. A polygon offset on
+        // the rock lets the plumbing hold the cut face, which is the one surface
+        // this view exists to show.
+        polygonOffset: !!recede, polygonOffsetFactor: 4, polygonOffsetUnits: 4
+      });
     }
 
     function magma(color, emissive, clip) {
@@ -1286,6 +1379,18 @@
       var dl = new T.DirectionalLight(0xffffff, 0.62);
       dl.position.set(-60, 95, 85);
       scene.add(dl);
+      // Fill from the camera's own side. With the key light alone behind and to
+      // the left, the flank of the cone the student is actually looking at was
+      // unlit, and a grey mountain against a near-black canvas read as a black
+      // triangle with no shape in it at all.
+      var fill = new T.DirectionalLight(0xffffff, 0.34);
+      fill.position.set(70, 40, 90);
+      scene.add(fill);
+      // The block opens by DEFAULT, so most of what the camera sees is the inside
+      // of the far half — surfaces whose normals point away from every light in
+      // the scene. Directional light alone left the cone a flat black triangle:
+      // the anatomy view was showing the student the unlit back of the mountain.
+      scene.add(new T.AmbientLight(0xffffff, 0.30));
 
       var CLIP = [clipPlane];
 
@@ -1293,14 +1398,32 @@
       // reveals the plumbing instead of stopping at ground level. Sized for the
       // WIDEST edifice: at 58 deep the basaltic shield's 26-unit radius reached
       // the back edge and the volcano visibly overhung its own crust.
-      parts.crust = new T.Mesh(new T.BoxGeometry(96, 5, 72), rock(0x57534e, CLIP));
+      parts.crust = new T.Mesh(new T.BoxGeometry(96, 5, 72), rock(0x57534e, CLIP, true));
       parts.crust.position.set(0, -2.5, 0);
       scene.add(parts.crust);
 
-      // Layered country rock, so the sill below reads as an intrusion BETWEEN
-      // beds rather than a floating slab.
-      parts.beds = new T.Mesh(new T.BoxGeometry(96, 22, 72), rock(0x44403c, CLIP));
-      parts.beds.position.set(0, -16, 0);
+      // Layered country rock. As one 22-unit box it was a single flat slab of
+      // uniform colour, so "a dike cuts ACROSS the beds while a sill runs ALONG
+      // them" — the whole reason both are in this model — pointed at rock with no
+      // beds in it. Screenshotting the block is what showed it: five labels, and
+      // the two that name a relationship had nothing to relate to.
+      //
+      // Five stacked layers of alternating tone instead. Real sedimentary beds are
+      // not this regular; the point is that a boundary between beds EXISTS and is
+      // horizontal, which is what makes the sill's orientation mean something.
+      parts.beds = new T.Group();
+      var BED_N = 5, BED_TOP = -5, BED_BOT = -27;
+      var bedH = (BED_TOP - BED_BOT) / BED_N;
+      parts.bedMeshes = [];
+      for (var bd = 0; bd < BED_N; bd++) {
+        var bedMesh = new T.Mesh(
+          new T.BoxGeometry(96, bedH, 72),
+          rock(bd % 2 === 0 ? 0x57534e : 0x231f1c, CLIP, true)
+        );
+        bedMesh.position.set(0, BED_TOP - bedH * (bd + 0.5), 0);
+        parts.beds.add(bedMesh);
+        parts.bedMeshes.push(bedMesh);
+      }
       scene.add(parts.beds);
 
       // The cone, the crater sunk into its summit, and the tapered conduit that
@@ -1332,8 +1455,11 @@
       parts.dikeR.rotation.z = -21 * DEG;
       scene.add(parts.dikeR);
 
-      parts.sill = new T.Mesh(new T.BoxGeometry(19, 1.2, 11), magma(0x991b1b, 0x450a0a, CLIP));
-      parts.sill.position.set(19, CHAMBER_Y + 3, 0);
+      // Seated ON a bed contact (the boundaries sit at -5, -9.4, -13.8, -18.2,
+      // -22.6, -27). A sill that floats mid-bed is just a horizontal slab; a sill
+      // that lies exactly on a contact is the thing the word means.
+      parts.sill = new T.Mesh(new T.BoxGeometry(19, 1.1, 11), magma(0x991b1b, 0x450a0a, CLIP));
+      parts.sill.position.set(19, -18.2, 0);
       scene.add(parts.sill);
 
       // Crater glow. Unlit and additive-ish: it is a light source in the scene's
@@ -1344,6 +1470,43 @@
       );
       parts.glow.position.set(0, coneH - 0.5, 0);
       scene.add(parts.glow);
+
+      // ── Depth scale ────────────────────────────────────────────────────────
+      // The block had no scale of any kind, so a student could not say whether
+      // the chamber was one kilometre down or fifty, and "a wide flat chamber" was
+      // a shape with no size. Shallow crustal chambers really do sit a few km
+      // under the vent; at 0.4 km per scene unit the model's chamber lands at
+      // about 7.6 km, which is squarely in the observed range.
+      scaleGroup = new T.Group();
+      [
+        [0,     'surface', '#e2e8f0'],
+        [-12.5, '5 km',    '#cbd5e1'],
+        [-25,   '10 km',   '#cbd5e1']
+      ].forEach(function (tk) {
+        // A short tick at the near-left corner, not a rule across the whole
+        // scene: drawn edge to edge the lines projected as long diagonals across
+        // empty space and read as some second structure rather than as a scale.
+        var g = new T.BufferGeometry();
+        // z just behind the cut plane, so the tick lies ON the exposed cut face.
+        // At z = 37 it sat in front of the half that has been sliced away, and
+        // three depth marks hung in empty space beside the model.
+        g.setAttribute('position', new T.BufferAttribute(new Float32Array([
+          -47, tk[0], -0.4, -41, tk[0], -0.4
+        ]), 3));
+        scaleGroup.add(new T.LineSegments(g, new T.LineBasicMaterial({
+          color: new T.Color(tk[2]), transparent: true, opacity: 0.6
+        })));
+        var tl = makeLabel(tk[1], tk[2]);
+        tl.scale.multiplyScalar(0.7);
+        // Inside the block's own x-range. Hung off the left edge the labels sat
+        // outside a frustum that fits the block, and only their last letter was
+        // on screen.
+        // Far enough left to clear the 'magma chamber' label, which sits at
+        // x = -25 and was overprinting the depth ticks.
+        tl.position.set(-43, tk[0], -0.4);
+        scaleGroup.add(tl);
+      });
+      scene.add(scaleGroup);
 
       labelGroup = new T.Group();
       // Positions checked against screenshots, not guessed. The vent label is
@@ -1550,7 +1713,12 @@
 
     function applyTheme(dark) {
       parts.crust.material.color.setHex(dark ? 0x44403c : 0x78716c);
-      parts.beds.material.color.setHex(dark ? 0x292524 : 0x57534e);
+      // Two alternating tones, so the bedding stays readable in both themes
+      // instead of collapsing to one flat value.
+      for (var bt = 0; bt < parts.bedMeshes.length; bt++) {
+        parts.bedMeshes[bt].material.color.setHex(
+          bt % 2 === 0 ? (dark ? 0x57534e : 0x9c938a) : (dark ? 0x231f1c : 0x5e564e));
+      }
       // The edifice has to separate from BOTH the sky above it and the crust it
       // stands on, and it now has to do that at two very different shapes. At
       // 0x494950 the basaltic shield was the same value as the crust and simply
@@ -1563,11 +1731,21 @@
     function applyCam() {
       var el = Math.max(-88, Math.min(88, -cam.rotX)) * DEG;
       var az = -cam.rotY * DEG;
-      // Framed for the WORST case, not the default one. A rhyolitic column tops
-      // out near y=44; at the original dist 96 / target -4 the visible band ended
-      // about y=34 and the top third of the plume was cropped off the canvas.
-      var dist = 118 / Math.max(0.3, cam.scale);
-      var ty = 0;
+      // Framed for what is ACTUALLY on screen, not permanently for the worst
+      // case. A rhyolitic ash column tops out near y=44, so a fixed distance that
+      // keeps it in frame also has to keep it in frame while nothing is erupting
+      // — and at repose that left the block a small object adrift in a mostly
+      // empty canvas, which is how a screenshot of the default view looked. The
+      // pull-back now follows the plume: it eases out as ash climbs and eases
+      // back in as it clears, so the model fills the frame the rest of the time.
+      var plumeTop = 0;
+      for (var pf = 0; pf < ashP.length; pf++) { if (ashP[pf].y > plumeTop) plumeTop = ashP[pf].y; }
+      var want = 84 + Math.max(0, plumeTop - coneH) * 0.85;
+      frameDist += (Math.min(126, want) - frameDist) * 0.06;   // eased, so it never snaps
+      var dist = frameDist / Math.max(0.3, cam.scale);
+      // Centre on the block itself: it runs from about -27 (base of the beds) to
+      // the summit, so aiming at y=0 wasted the lower third of the frame.
+      var ty = coneH * 0.28 - 6;
       camera.position.set(
         dist * Math.cos(el) * Math.sin(az),
         ty + dist * Math.sin(el),
@@ -1593,8 +1771,16 @@
       var m = pending;
       try {
         if (m.dark !== appliedDark) { applyTheme(m.dark); appliedDark = m.dark; dirty = true; }
-        if (m.labels !== appliedLabels) { labelGroup.visible = m.labels !== false; appliedLabels = m.labels; dirty = true; }
-        var cs = cam.rotX + ',' + cam.rotY + ',' + cam.scale + ',' + cut;
+        if (m.labels !== appliedLabels) {
+          labelGroup.visible = m.labels !== false;
+          if (scaleGroup) scaleGroup.visible = m.labels !== false;
+          appliedLabels = m.labels;
+          dirty = true;
+        }
+        // frameDist is in the signature: without it applyCam() ran only when the
+        // student moved the camera, so the eruption pull-back was computed every
+        // frame and applied never.
+        var cs = cam.rotX + ',' + cam.rotY + ',' + cam.scale + ',' + cut + ',' + Math.round(frameDist);
         if (cs !== appliedCam) {
           applyCam();
           clipPlane.constant = cut == null ? 1e6 : cut;
@@ -1616,7 +1802,7 @@
           wasActive = false;
         }
         if (m.magma !== appliedMagma) { applyMagma(m.magma); appliedMagma = m.magma; dirty = true; }
-        if (m.active || ashP.length) { stepAsh(m); dirty = true; }
+        if (m.active || ashP.length) { stepAsh(m); applyCam(); dirty = true; }
         if (m.active || lavaP.length) { stepLava(m); dirty = true; }
         if (!dirty) return;
         dirty = false;
@@ -1648,6 +1834,11 @@
       zoom: function (dz) { cam.scale = Math.max(0.4, Math.min(2.4, cam.scale + dz)); },
       setCut: function (v) { cut = v; },
       magmaTypes: function () { return MAGMA; },
+      // The model already knows which stage of the eruption it is in — it drives
+      // the chamber, the plume and the collapse from it — but nothing ever told
+      // the student. Naming the stage is what turns "the mountain is doing
+      // something" into a sequence they can predict the next step of.
+      phase: function (m) { return phaseOf(m || pending); },
       getCam: function () { return { rotX: cam.rotX, rotY: cam.rotY, scale: cam.scale, cut: cut }; },
       debug: function () {
         return {
@@ -1703,20 +1894,37 @@
         else window.removeEventListener('resize', resize);
         // Sprite labels own a CanvasTexture apiece: disposing only the material
         // leaks the GPU texture every time the view is toggled off and on.
-        if (labelGroup) {
-          for (var i = labelGroup.children.length - 1; i >= 0; i--) {
-            var sp = labelGroup.children[i];
-            labelGroup.remove(sp);
+        [labelGroup, scaleGroup].forEach(function (grp) {
+          if (!grp) return;
+          for (var i = grp.children.length - 1; i >= 0; i--) {
+            var sp = grp.children[i];
+            grp.remove(sp);
+            // Sprites SHARE one plane geometry in r128, so only the scale's own
+            // LineSegments geometries may be disposed; disposing a sprite's would
+            // blank every other label in the scene.
+            if (sp.isLineSegments && sp.geometry) sp.geometry.dispose();
             if (sp.material) {
               if (sp.material.map) sp.material.map.dispose();
               sp.material.dispose();
             }
           }
-        }
+        });
         Object.keys(parts).forEach(function (k) {
           var mesh = parts[k];
           if (!mesh) return;
+          if (Array.isArray(mesh)) return;          // bedMeshes: aliases of children
           if (scene) scene.remove(mesh);
+          // parts.beds is a Group of layers, not a single mesh. Disposing only the
+          // Group would leak one geometry and one material per bed on every
+          // toggle of this view.
+          if (mesh.children && mesh.children.length) {
+            for (var ci2 = mesh.children.length - 1; ci2 >= 0; ci2--) {
+              var kid = mesh.children[ci2];
+              mesh.remove(kid);
+              if (kid.geometry) kid.geometry.dispose();
+              if (kid.material) kid.material.dispose();
+            }
+          }
           if (mesh.geometry) mesh.geometry.dispose();
           if (mesh.material) mesh.material.dispose();
         });
@@ -1724,7 +1932,7 @@
         if (ashBatch) { ashBatch.dispose(scene); ashBatch = null; }
         if (lavaBatch) { lavaBatch.dispose(scene); lavaBatch = null; }
         if (renderer) { try { renderer.dispose(); } catch (e) {} }
-        renderer = scene = camera = labelGroup = ventLabel = null;
+        renderer = scene = camera = labelGroup = scaleGroup = ventLabel = null;
         canvasEl = null; ashP = []; lavaP = [];
         resetShape();
         wasActive = false; prevTick = -1;
@@ -1814,7 +2022,11 @@
     var st = useState({
       mode: 'convergent',  // 'divergent' | 'convergent' | 'transform'
       rate: 5,             // cm/year (simulation accelerates)
-      running: true,
+      // Starts paused for anyone who asked the system for less motion. This
+      // widget is a clock: years tick up, quakes fire, the range grows. Running it
+      // unprompted is exactly what that setting is about. Nothing is taken away,
+      // and Play is the first control under the canvas.
+      running: !ptReducedMotion(),
       years: 0,
       quakes: [],
       quakeTotal: 0,
@@ -1938,7 +2150,10 @@
           update(patch);
         }
 
-        (drawRef.current || draw)(ctx, W, H, cur);
+        // Off screen: keep the clock advancing (the widget is a simulation and a
+        // student expects the years to have moved on when they scroll back) but
+        // skip the repaint, which is the expensive half.
+        if (ptOnScreen(canvas)) (drawRef.current || draw)(ctx, W, H, cur);
         animRef.current = requestAnimationFrame(frame);
       }
       animRef.current = requestAnimationFrame(frame);
@@ -1972,15 +2187,56 @@
       ctx.fillStyle = mantle;
       ctx.fillRect(0, H * 0.5, W, H * 0.5);
 
-      // Mantle convection cells: hot rock rises at the boundary, spreads, cools, and sinks.
+      // ── Mantle convection, driven BY the boundary type ──────────────────────
+      // This block used to draw the same picture whatever the student had
+      // selected: two counter-rotating cells with a hot plume rising straight up
+      // the middle, directly under the boundary, labelled HOT RISES.
+      //
+      // That is right for divergent and wrong for the other two, in the way that
+      // matters most. Under a CONVERGENT boundary the flow goes DOWN — that is
+      // what a subducting slab is — so the model was showing hot mantle welling
+      // up beneath a trench. And a TRANSFORM boundary has no vertical limb at all:
+      // it is the one boundary that neither makes nor destroys lithosphere, which
+      // is exactly the fact the upwelling plume contradicted.
+      //
+      // One `limb` value now sets the cell rotation, the colour and shape of the
+      // column at the seam, and the labels, so the mantle picture and the
+      // boundary name can never disagree again.
       var motionReduced = false;
       try { motionReduced = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) {}
       var flowPhase = motionReduced ? 0.16 : (cur.years * 0.0018);
       var cellY = H * 0.79, cellRx = 112, cellRy = H * 0.16;
+      var limb = cur.mode === 'divergent' ? 'up' : cur.mode === 'convergent' ? 'down' : 'none';
+
+      // Small helper: a label on a solid chip. Every one of these used to be bare
+      // 9px text over a red-orange mantle gradient — HOT RISES was dark brown on
+      // orange and COOL SINKS dark grey on red, the two least legible things on
+      // the canvas, and they carry the mechanism.
+      function fieldChip(text, x, y, ink) {
+        ctx.save();
+        ctx.font = 'bold 10px sans-serif';
+        ctx.textAlign = 'center';
+        var w = ctx.measureText(text).width;
+        ctx.fillStyle = 'rgba(12,10,9,0.82)';
+        ctx.fillRect(x - w / 2 - 6, y - 10, w + 12, 15);
+        ctx.fillStyle = ink;
+        ctx.fillText(text, x, y + 1);
+        ctx.restore();
+      }
+
       ctx.save();
       for (var c = 0; c < 2; c++) {
-        var cellCx = c === 0 ? 158 : 382;
-        var direction = c === 0 ? -1 : 1;
+        // For transform the cells are SHIFTED so that neither of their vertical
+        // limbs lands under the fault: the fault sits mid-cell, where the flow is
+        // horizontal. Leaving them centred on the boundary put an up-limb right
+        // beneath a caption reading "no rising or sinking here".
+        var cellCx = limb === 'none'
+          ? (c === 0 ? 92 : 316)
+          : (c === 0 ? 158 : 382);
+        // Which way each cell turns follows the limb. Up-limb at the seam means
+        // the left cell turns anticlockwise and the right one clockwise; a
+        // down-limb is the mirror of that.
+        var direction = (c === 0 ? -1 : 1) * (limb === 'down' ? -1 : 1);
         var flowGrad = ctx.createLinearGradient(cellCx, cellY + cellRy, cellCx, cellY - cellRy);
         flowGrad.addColorStop(0, isDark ? 'rgba(127,29,29,0.28)' : 'rgba(153,27,27,0.24)');
         flowGrad.addColorStop(1, isDark ? 'rgba(251,146,60,0.72)' : 'rgba(254,215,170,0.78)');
@@ -1989,26 +2245,86 @@
         for (var fp = 0; fp < 9; fp++) {
           var fa = direction * (flowPhase + fp / 9) * Math.PI * 2;
           var fx = cellCx + Math.cos(fa) * cellRx, fy = cellY + Math.sin(fa) * cellRy;
-          var rising = Math.sin(fa) < 0;
+          // Rising means the marker's y is DECREASING. On this ellipse that is
+          // cos(fa) * direction < 0. The old test was `sin(fa) < 0`, which asks
+          // whether the marker is in the upper half of the loop — so the colour
+          // said "hot" on the way down the far side and "cool" on the way up.
+          var rising = Math.cos(fa) * direction < 0;
           ctx.fillStyle = rising ? '#fdba74' : '#f87171';
           ctx.globalAlpha = 0.35 + (rising ? 0.5 : 0.28);
           ctx.shadowColor = rising ? '#fb923c' : '#991b1b'; ctx.shadowBlur = rising ? 8 : 3;
           ctx.beginPath(); ctx.arc(fx, fy, rising ? 3.2 : 2.5, 0, Math.PI * 2); ctx.fill();
         }
       }
-      // Central upwelling plume and cooler return flow at the outer edges.
-      var plume = ctx.createLinearGradient(0, H * 0.94, 0, H * 0.56);
-      plume.addColorStop(0, 'rgba(127,29,29,0)'); plume.addColorStop(0.45, 'rgba(249,115,22,0.28)'); plume.addColorStop(1, 'rgba(254,215,170,0.68)');
-      ctx.globalAlpha = 1; ctx.shadowBlur = 10; ctx.shadowColor = '#fb923c'; ctx.fillStyle = plume;
-      ctx.beginPath(); ctx.moveTo(238, H * 0.96); ctx.bezierCurveTo(245, H * 0.76, 256, H * 0.66, 270, H * 0.55); ctx.bezierCurveTo(284, H * 0.66, 295, H * 0.76, 302, H * 0.96); ctx.closePath(); ctx.fill();
-      ctx.shadowBlur = 0; ctx.globalAlpha = 0.82; ctx.fillStyle = isDark ? '#fed7aa' : '#7c2d12'; ctx.font = 'bold 9px sans-serif'; ctx.textAlign = 'center';
-      ctx.fillText('HOT RISES', 270, H * 0.72); ctx.fillText('COOL SINKS', 70, H * 0.91); ctx.fillText('COOL SINKS', 470, H * 0.91);
+      ctx.globalAlpha = 1; ctx.shadowBlur = 0;
+
+      if (limb === 'up') {
+        // Hot, buoyant rock welling up into the gap the plates are opening.
+        var plume = ctx.createLinearGradient(0, H * 0.94, 0, H * 0.56);
+        plume.addColorStop(0, 'rgba(127,29,29,0)');
+        plume.addColorStop(0.45, 'rgba(249,115,22,0.28)');
+        plume.addColorStop(1, 'rgba(254,215,170,0.68)');
+        ctx.shadowBlur = 10; ctx.shadowColor = '#fb923c'; ctx.fillStyle = plume;
+        ctx.beginPath();
+        ctx.moveTo(238, H * 0.96);
+        ctx.bezierCurveTo(245, H * 0.76, 256, H * 0.66, 270, H * 0.55);
+        ctx.bezierCurveTo(284, H * 0.66, 295, H * 0.76, 302, H * 0.96);
+        ctx.closePath(); ctx.fill();
+        ctx.shadowBlur = 0;
+        fieldChip('hot rock rises here', 270, H * 0.70, '#fdba74');
+        fieldChip('cool rock sinks', 74, H * 0.91, '#93c5fd');
+        fieldChip('cool rock sinks', 466, H * 0.91, '#93c5fd');
+      } else if (limb === 'down') {
+        // Cold, dense lithosphere going down. Wide at the top and tapering, and
+        // BLUE rather than orange: the whole reason it sinks is that it is the
+        // cool part of the loop, and drawing the down-limb in the same hot orange
+        // as the up-limb is what made the two boundary types look identical.
+        var sink = ctx.createLinearGradient(0, H * 0.56, 0, H * 0.96);
+        sink.addColorStop(0, 'rgba(147,197,253,0.55)');
+        sink.addColorStop(0.5, 'rgba(59,130,246,0.24)');
+        sink.addColorStop(1, 'rgba(30,58,138,0)');
+        ctx.fillStyle = sink;
+        // Narrow, and it hugs the slab's own dip. Drawn as a wide symmetric wedge
+        // it read as a second structure beside the slab rather than as the mantle
+        // going down WITH it, which is what a subducting slab is.
+        ctx.beginPath();
+        ctx.moveTo(258, H * 0.55);
+        ctx.bezierCurveTo(276, H * 0.70, 296, H * 0.82, 322, H * 0.98);
+        ctx.bezierCurveTo(340, H * 0.82, 322, H * 0.70, 300, H * 0.55);
+        ctx.closePath(); ctx.fill();
+        fieldChip('cool rock sinks here', 176, H * 0.68, '#bfdbfe');
+        fieldChip('hot rock rises', 74, H * 0.91, '#fdba74');
+        fieldChip('hot rock rises', 466, H * 0.91, '#fdba74');
+      } else {
+        // No limb under the seam at all. Saying so in the picture is the point:
+        // a transform boundary is the one place where plate is neither made nor
+        // destroyed, and the old drawing put an upwelling plume under it.
+        ctx.save();
+        ctx.strokeStyle = isDark ? 'rgba(250,204,21,0.5)' : 'rgba(180,83,9,0.45)';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([6, 6]);
+        ctx.beginPath(); ctx.moveTo(270, H * 0.55); ctx.lineTo(270, H * 0.95); ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.restore();
+        fieldChip('no rising or sinking here', 270, H * 0.70, '#fde68a');
+        fieldChip('no new plate made', 270, H * 0.845, '#fde68a');
+        fieldChip('none destroyed either', 270, H * 0.925, '#fde68a');
+      }
       ctx.restore();
 
       // Boundary line at x=270
       var bx = 270;
 
-      // Plates (continental crust)
+      // ── Plates ───────────────────────────────────────────────────────────────
+      // Both plates used to be identical brown slabs of identical thickness, in
+      // every mode. Under the canvas the scenario note says this section "depicts
+      // oceanic lithosphere subducting beneath another plate" — so the one fact
+      // that decides WHICH plate goes down was stated in prose and contradicted
+      // by the drawing, where the two were indistinguishable.
+      //
+      // Only the convergent scenario types them: a ridge and a transform fault in
+      // this widget are between two plates of the same kind, and inventing a
+      // contrast there would be its own lie.
       ctx.save();
       var plateY = H * 0.4;
       var plateH = H * 0.18;
@@ -2019,91 +2335,206 @@
         rightOff = cur.rift / 2;
       }
 
+      var typed = cur.mode === 'convergent';
+      // Oceanic lithosphere is thinner and sits lower; plateY is sea level and
+      // the top of the continent both.
+      var lTop = typed ? plateY + plateH * 0.34 : plateY;
+      var lH = typed ? plateH * 0.52 : plateH;
+      var rTop = plateY, rH = plateH;
+      var lRight = bx + leftOff;
+      var rLeft = bx + rightOff;
+
+      // Ocean over the subducting plate. Without it "oceanic" is a word in a
+      // caption; with it the basin is visibly lower than the land beside it,
+      // which is half of why that plate is the one that sinks.
+      if (typed) {
+        var sea = ctx.createLinearGradient(0, plateY, 0, lTop);
+        sea.addColorStop(0, isDark ? 'rgba(30,58,138,0.75)' : 'rgba(56,132,208,0.8)');
+        sea.addColorStop(1, isDark ? 'rgba(15,23,42,0.85)' : 'rgba(20,70,130,0.9)');
+        ctx.fillStyle = sea;
+        ctx.fillRect(0, plateY, lRight, lTop - plateY);
+      }
+
       // Left plate
       if (isDark) {
-        var leftGrad = ctx.createLinearGradient(0, plateY, 0, plateY + plateH);
-        leftGrad.addColorStop(0, '#3f3f46');
-        leftGrad.addColorStop(1, '#18181b');
+        var leftGrad = ctx.createLinearGradient(0, lTop, 0, lTop + lH);
+        leftGrad.addColorStop(0, typed ? '#1e3a5f' : '#3f3f46');
+        leftGrad.addColorStop(1, '#0c0a09');
         ctx.fillStyle = leftGrad;
       } else {
-        ctx.fillStyle = '#92400e';
+        ctx.fillStyle = typed ? '#1e3a5f' : '#92400e';
       }
       ctx.beginPath();
-      ctx.rect(0, plateY, bx + leftOff, plateH);
+      ctx.rect(0, lTop, lRight, lH);
       ctx.fill();
-      ctx.strokeStyle = isDark ? '#d946ef' : '#451a03';
+      ctx.strokeStyle = typed ? 'rgba(56,189,248,0.9)' : (isDark ? '#d946ef' : '#451a03');
       ctx.lineWidth = 1.5;
-      ctx.strokeRect(0, plateY, bx + leftOff, plateH);
+      ctx.strokeRect(0, lTop, lRight, lH);
 
       // Right plate
       if (isDark) {
-        var rightGrad = ctx.createLinearGradient(0, plateY, 0, plateY + plateH);
+        var rightGrad = ctx.createLinearGradient(0, rTop, 0, rTop + rH);
         rightGrad.addColorStop(0, '#52525b');
         rightGrad.addColorStop(1, '#27272a');
         ctx.fillStyle = rightGrad;
       } else {
-        ctx.fillStyle = '#a16207';
+        ctx.fillStyle = typed ? '#8b6914' : '#a16207';
       }
-      ctx.fillRect(bx + rightOff, plateY, W - (bx + rightOff), plateH);
-      ctx.strokeStyle = isDark ? '#8b5cf6' : '#451a03';
-      ctx.strokeRect(bx + rightOff, plateY, W - (bx + rightOff), plateH);
+      ctx.fillRect(rLeft, rTop, W - rLeft, rH);
+      ctx.strokeStyle = typed ? 'rgba(250,204,21,0.9)' : (isDark ? '#8b5cf6' : '#451a03');
+      ctx.strokeRect(rLeft, rTop, W - rLeft, rH);
 
-      // Continental labels
+      // Plate labels. The type is named on the plate rather than left to the
+      // colours, because the colours only mean something once you already know.
       ctx.fillStyle = isDark ? '#e0e7ff' : '#fffbeb';
       ctx.font = 'bold 11px sans-serif';
       ctx.textAlign = 'center';
       var leftMotionLabel = cur.mode === 'divergent' ? '<- PLATE A' : (cur.mode === 'transform' ? 'PLATE A ↑' : 'PLATE A ->');
       var rightMotionLabel = cur.mode === 'divergent' ? 'PLATE B ->' : (cur.mode === 'transform' ? 'PLATE B ↓' : '<- PLATE B');
-      ctx.fillText(leftMotionLabel, (bx + leftOff) / 2, plateY + plateH / 2 + 4);
-      ctx.fillText(rightMotionLabel, bx + rightOff + (W - bx - rightOff) / 2, plateY + plateH / 2 + 4);
+      ctx.fillText(leftMotionLabel, lRight / 2, lTop + lH / 2 + 4);
+      ctx.fillText(rightMotionLabel, rLeft + (W - rLeft) / 2, rTop + rH / 2 + 4);
+      if (typed) {
+        ctx.font = 'bold 9px sans-serif';
+        // Above the thin oceanic plate rather than below it: at +17 the caption
+        // fell straight out of the bottom of a plate only ~28 px thick and sat on
+        // the mantle. The continental plate is thick enough to hold its own.
+        ctx.fillStyle = '#bae6fd';
+        ctx.fillText('oceanic — thin, dense', lRight / 2, lTop - 6);
+        ctx.fillStyle = '#fde68a';
+        ctx.fillText('continental — thick, buoyant', rLeft + (W - rLeft) / 2, rTop + rH / 2 + 17);
+      }
 
       // Mode-specific rendering on top of plates
       if (cur.mode === 'convergent') {
-        // Mountain triangle at boundary; grows over time
-        var mH = Math.min(70, cur.mountainHeight / 100);
-        ctx.fillStyle = isDark ? '#27272a' : '#78350f';
+        // Trench. The deepest places on Earth are the surface trace of exactly
+        // this, and it is the landform a student can look up afterwards. It also
+        // marks where the slab starts, which the old drawing left unmarked.
+        ctx.fillStyle = isDark ? 'rgba(2,6,23,0.92)' : 'rgba(10,28,58,0.9)';
         ctx.beginPath();
-        ctx.moveTo(bx - 40, plateY);
-        ctx.lineTo(bx, plateY - mH);
-        ctx.lineTo(bx + 40, plateY);
+        ctx.moveTo(bx - 22, lTop - 1);
+        ctx.lineTo(bx - 4, lTop + 18);
+        ctx.lineTo(bx + 1, lTop - 1);
+        ctx.closePath();
+        ctx.fill();
+
+        // Mountain range on the overriding plate, growing over time.
+        //
+        // mountainHeight is in metres and climbs toward an 8000 m ceiling it
+        // would take about three quarters of an hour to approach, so the old
+        // linear `height / 130` drew the range a fifth of a PIXEL tall for the
+        // whole of any real session. "Plates collide, mountains rise" is the
+        // headline outcome of this boundary and it was never once visible.
+        //
+        // Square-rooted against a 1200 m reference instead: readable within
+        // seconds, still visibly growing minutes later, and capped so it cannot
+        // punch through the arc label above it.
+        var mH = Math.min(50, 3 + 50 * Math.sqrt(Math.min(1, cur.mountainHeight / 1200)));
+        ctx.fillStyle = isDark ? '#3f3f46' : '#78350f';
+        ctx.beginPath();
+        ctx.moveTo(bx + 6, rTop);
+        ctx.lineTo(bx + 34, rTop - mH);
+        ctx.lineTo(bx + 62, rTop);
         ctx.closePath();
         ctx.fill();
         ctx.strokeStyle = isDark ? '#ec4899' : '#1e1b4b';
+        ctx.lineWidth = 1.2;
         ctx.stroke();
-        // Snow cap if tall
-        if (mH > 25) {
+        if (mH > 24) {
           ctx.fillStyle = 'white';
           ctx.beginPath();
-          ctx.moveTo(bx - 12, plateY - mH + 12);
-          ctx.lineTo(bx, plateY - mH);
-          ctx.lineTo(bx + 12, plateY - mH + 12);
+          ctx.moveTo(bx + 26, rTop - mH + 10);
+          ctx.lineTo(bx + 34, rTop - mH);
+          ctx.lineTo(bx + 42, rTop - mH + 10);
           ctx.closePath();
           ctx.fill();
         }
-        // Subduction slab: dense oceanic lithosphere descends beneath the overriding plate.
-        var slabGrad = ctx.createLinearGradient(bx, plateY + plateH, bx + 50, plateY + plateH + 95);
-        slabGrad.addColorStop(0, isDark ? '#c026d3' : '#78350f'); slabGrad.addColorStop(1, isDark ? '#312e81' : '#451a03');
-        ctx.save(); ctx.shadowColor = isDark ? '#d946ef' : '#f97316'; ctx.shadowBlur = 9;
-        ctx.strokeStyle = slabGrad; ctx.lineWidth = 14; ctx.lineCap = 'round';
-        ctx.beginPath(); ctx.moveTo(bx - 3, plateY + plateH - 2); ctx.bezierCurveTo(bx + 15, plateY + plateH + 22, bx + 38, plateY + plateH + 62, bx + 48, plateY + plateH + 98); ctx.stroke();
-        ctx.shadowBlur = 0; ctx.strokeStyle = isDark ? '#f0abfc' : '#fbbf24'; ctx.lineWidth = 1.4; ctx.setLineDash([5, 4]);
-        ctx.beginPath(); ctx.moveTo(bx - 3, plateY + plateH - 2); ctx.bezierCurveTo(bx + 15, plateY + plateH + 22, bx + 38, plateY + plateH + 62, bx + 48, plateY + plateH + 98); ctx.stroke(); ctx.setLineDash([]);
-        // Water released from the slab promotes melting; buoyant magma rises to a volcanic arc.
-        var arcX = bx + 78;
-        ctx.strokeStyle = '#fb923c'; ctx.lineWidth = 5; ctx.globalAlpha = 0.55; ctx.shadowColor = '#f97316'; ctx.shadowBlur = 10;
-        ctx.beginPath(); ctx.moveTo(bx + 42, plateY + plateH + 72); ctx.bezierCurveTo(bx + 72, plateY + plateH + 45, arcX - 8, plateY + 28, arcX, plateY - 2); ctx.stroke();
+
+        // ── The descending slab ────────────────────────────────────────────────
+        // Drawn as a QUADRILATERAL of the oceanic plate's own thickness, hinged
+        // at the trench. It used to be a 14-pixel round-capped bezier stroke that
+        // started below the plate and floated free of it, so the single thing a
+        // student is meant to trace here — the same plate carrying on downward —
+        // began in mid-mantle attached to nothing, and read as a worm rather than
+        // as lithosphere.
+        var slabDip = 46 * Math.PI / 180;
+        // Reach is clipped to what the canvas can actually show. At H * 0.52 the
+        // slab and its label ran off the bottom-right corner, so the deep end of
+        // the very plane the widget is teaching was outside the frame.
+        var slabReach = Math.min(H * 0.46, H - lTop - 14);
+        var slabRun = Math.min(slabReach / Math.tan(slabDip), W - bx - 30);
+        var slabT = lH;                                  // its OWN thickness, not a stroke width
+        var sx0 = bx, sy0 = lTop;
+        var slabGrad = ctx.createLinearGradient(sx0, sy0, sx0 + slabRun, sy0 + slabReach);
+        slabGrad.addColorStop(0, isDark ? '#1e3a5f' : '#1e3a5f');
+        slabGrad.addColorStop(1, isDark ? '#0b1220' : '#0f2138');
+        ctx.fillStyle = slabGrad;
+        ctx.beginPath();
+        ctx.moveTo(sx0, sy0);
+        ctx.lineTo(sx0 + slabRun, sy0 + slabReach);
+        ctx.lineTo(sx0 + slabRun + slabT * 0.9, sy0 + slabReach);
+        ctx.lineTo(sx0 + slabT * 1.3, sy0);
+        ctx.closePath();
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(56,189,248,0.75)';
+        ctx.lineWidth = 1.6;
+        ctx.stroke();
+        ctx.fillStyle = '#bae6fd';
+        ctx.font = 'bold 9px sans-serif';
+        ctx.textAlign = 'left';
+        // Set a third of the way down the dip, not half: at 0.55 the text ran off
+        // the bottom-right corner along with the deep end of the slab.
+        ctx.save();
+        ctx.translate(sx0 + slabRun * 0.30, sy0 + slabReach * 0.30);
+        ctx.rotate(slabDip);
+        ctx.fillText('same plate, going down', 8, 13);
+        ctx.restore();
+        ctx.textAlign = 'center';
+
+        // Melting where the slab passes the arc-forming depth, and the magma that
+        // rises from it. This is WHY the volcanoes stand back from the trench
+        // instead of sitting on it, which is the one fact that makes an arc make
+        // sense, so the melt point is derived from the slab geometry above rather
+        // than from a hand-placed constant.
+        var meltY = sy0 + slabReach * 0.42;
+        var meltX = sx0 + (meltY - sy0) / Math.tan(slabDip) + slabT * 0.5;
+        var arcX = Math.min(W - 60, meltX + 26);
+        ctx.save();
+        ctx.strokeStyle = '#fb923c'; ctx.lineWidth = 5; ctx.globalAlpha = 0.6;
+        ctx.shadowColor = '#f97316'; ctx.shadowBlur = 10;
+        ctx.beginPath();
+        ctx.moveTo(meltX, meltY);
+        ctx.quadraticCurveTo(meltX + 10, (meltY + rTop) / 2, arcX, rTop - 2);
+        ctx.stroke();
         for (var mp = 0; mp < 5; mp++) {
           var meltPhase = motionReduced ? (0.12 + mp * 0.17) : ((cur.years * 0.0024 + mp / 5) % 1);
-          var mx = bx + 42 + meltPhase * (arcX - bx - 42), my = plateY + plateH + 72 - meltPhase * (plateH + 74);
-          ctx.globalAlpha = 0.45 + meltPhase * 0.5; ctx.fillStyle = meltPhase > 0.65 ? '#fde68a' : '#fb923c';
+          var mx = meltX + (arcX - meltX) * meltPhase;
+          var my = meltY + (rTop - meltY) * meltPhase;
+          ctx.globalAlpha = 0.45 + meltPhase * 0.5;
+          ctx.fillStyle = meltPhase > 0.65 ? '#fde68a' : '#fb923c';
           ctx.beginPath(); ctx.arc(mx, my, 2.5 + meltPhase * 1.4, 0, Math.PI * 2); ctx.fill();
         }
-        ctx.globalAlpha = 1; ctx.shadowBlur = 0;
-        ctx.fillStyle = isDark ? '#3f3f46' : '#78350f'; ctx.strokeStyle = isDark ? '#fb7185' : '#7f1d1d'; ctx.lineWidth = 1.5;
-        ctx.beginPath(); ctx.moveTo(arcX - 22, plateY); ctx.lineTo(arcX, plateY - 38); ctx.lineTo(arcX + 22, plateY); ctx.closePath(); ctx.fill(); ctx.stroke();
-        ctx.fillStyle = '#fb923c'; ctx.beginPath(); ctx.moveTo(arcX - 5, plateY - 29); ctx.lineTo(arcX, plateY - 38); ctx.lineTo(arcX + 5, plateY - 29); ctx.closePath(); ctx.fill();
-        ctx.fillStyle = isDark ? '#fecaca' : '#7f1d1d'; ctx.font = 'bold 8px sans-serif'; ctx.textAlign = 'center'; ctx.fillText('VOLCANIC ARC', arcX, plateY - 46);
         ctx.restore();
+
+        // The arc itself.
+        ctx.fillStyle = isDark ? '#3f3f46' : '#78350f';
+        ctx.strokeStyle = isDark ? '#fb7185' : '#7f1d1d';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(arcX - 20, rTop);
+        ctx.lineTo(arcX, rTop - 34);
+        ctx.lineTo(arcX + 20, rTop);
+        ctx.closePath();
+        ctx.fill(); ctx.stroke();
+        ctx.fillStyle = '#fb923c';
+        ctx.beginPath();
+        ctx.moveTo(arcX - 5, rTop - 26); ctx.lineTo(arcX, rTop - 34); ctx.lineTo(arcX + 5, rTop - 26);
+        ctx.closePath(); ctx.fill();
+
+        // Both names on chips: 8px maroon over a pale sky gradient was the least
+        // readable text on the canvas, and these are the two landforms the whole
+        // geometry exists to explain.
+        fieldChip('trench', bx - 34, lTop + 34, '#93c5fd');
+        fieldChip('volcanic arc', arcX, rTop - 42, '#fdba74');
       } else if (cur.mode === 'divergent') {
         // Magma in the gap
         var gapW = cur.rift;
@@ -2145,10 +2576,18 @@
           ctx.beginPath(); ctx.moveTo(bx - 54, plateY - 16); ctx.lineTo(bx - 46, plateY - 21); ctx.lineTo(bx - 46, plateY - 11); ctx.closePath(); ctx.fill();
           ctx.beginPath(); ctx.moveTo(bx + 12, plateY - 16); ctx.lineTo(bx + 54, plateY - 16); ctx.stroke();
           ctx.beginPath(); ctx.moveTo(bx + 54, plateY - 16); ctx.lineTo(bx + 46, plateY - 21); ctx.lineTo(bx + 46, plateY - 11); ctx.closePath(); ctx.fill();
-          ctx.fillStyle = isDark ? '#bae6fd' : '#0c4a6e'; ctx.font = 'bold 8px sans-serif'; ctx.textAlign = 'center';
-          ctx.fillText('NEW CRUST • MIRRORED MAGNETIC STRIPES', bx, plateY + plateH + 13);        }
+          // On a chip. 8px navy over a red-orange mantle gradient was the least
+          // readable line on this canvas, and it names the single piece of
+          // evidence that proved sea-floor spreading.
+          fieldChip('new crust • magnetic stripes mirror across the ridge', bx, plateY + plateH + 16, '#bae6fd');
+        }
       } else if (cur.mode === 'transform') {
-        // Transform fault: locked asperities accumulate shear stress before slipping.
+        // ── The fault plane, in section ────────────────────────────────────────
+        // A cross-section CAN honestly show this much: a near-vertical fault
+        // cutting the whole plate, rough locked patches on it, and the shallow
+        // quakes those patches produce. What it cannot show is the motion, which
+        // runs along the fault — into and out of this page. That is what the map
+        // view below is for.
         var stress = (cur.offset % 30) / 30;
         ctx.save(); ctx.shadowColor = '#f43f5e'; ctx.shadowBlur = 8 + stress * 16;
         ctx.strokeStyle = isDark ? '#fb7185' : '#dc2626'; ctx.lineWidth = 5 + stress * 2; ctx.globalAlpha = 0.42 + stress * 0.5;
@@ -2161,20 +2600,130 @@
           ctx.fillStyle = stress > 0.68 ? '#fef2f2' : '#fda4af';
           ctx.beginPath(); ctx.moveTo(bx, ay - 4); ctx.lineTo(bx + 4, ay); ctx.lineTo(bx, ay + 4); ctx.lineTo(bx - 4, ay); ctx.closePath(); ctx.fill();
         }
-        // Opposing shear arrows pair direction with the plate labels.
-        ctx.strokeStyle = '#fbbf24'; ctx.fillStyle = '#fbbf24'; ctx.lineWidth = 2.2;
-        ctx.beginPath(); ctx.moveTo(bx - 28, plateY + plateH - 8); ctx.lineTo(bx - 28, plateY + 12); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(bx - 28, plateY + 12); ctx.lineTo(bx - 33, plateY + 20); ctx.lineTo(bx - 23, plateY + 20); ctx.closePath(); ctx.fill();
-        ctx.beginPath(); ctx.moveTo(bx + 28, plateY + 8); ctx.lineTo(bx + 28, plateY + plateH - 12); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(bx + 28, plateY + plateH - 12); ctx.lineTo(bx + 23, plateY + plateH - 20); ctx.lineTo(bx + 33, plateY + plateH - 20); ctx.closePath(); ctx.fill();
-        // Offset marker: a once-continuous road records cumulative displacement.
-        var roadY = plateY + plateH * 0.28, roadOffset = cur.offset % 30;
-        ctx.strokeStyle = '#fde047'; ctx.lineWidth = 3;
-        ctx.beginPath(); ctx.moveTo(bx - 72, roadY); ctx.lineTo(bx - 6, roadY); ctx.moveTo(bx + 6, roadY + roadOffset); ctx.lineTo(bx + 72, roadY + roadOffset); ctx.stroke();
-        ctx.fillStyle = isDark ? '#fecdd3' : '#7f1d1d'; ctx.font = 'bold 8px sans-serif'; ctx.textAlign = 'center';
-        ctx.fillText('SHEAR STRESS ' + Math.round(stress * 100) + '% • SHALLOW QUAKES', bx, plateY - 12);
         ctx.restore();
+
+        // The old drawing put an "offset road" INSIDE the section and displaced it
+        // downward — but down the page in a cross-section is DEPTH, so a road that
+        // slid sideways in the real world was drawn sinking into the ground. The
+        // two yellow shear arrows had the same problem: they pointed up and down
+        // the page for a motion that is horizontal.
+        //
+        // Both now live in a map view instead, where the direction they draw is
+        // the direction the plates actually go.
+        // Left of the inset, and short enough to clear it: at full width and
+        // centred on the fault this ran straight under the map view panel.
+        fieldChip('motion is into and out of this page', 118, plateY - 16, '#fde68a');
+
+        // ── Map view inset ─────────────────────────────────────────────────────
+        // The one boundary type the rest of this tool could not show. A section is
+        // a slice, and a transform boundary slides ALONG the slice, so no amount
+        // of drawing in section will ever make it visible. Looking straight down
+        // does, and it is also how anyone actually meets a transform fault: as an
+        // offset in something that used to be continuous.
+        var mvX = 232, mvY = 8, mvW = W - mvX - 12, mvH = 104;
+        ctx.save();
+        ctx.fillStyle = isDark ? 'rgba(2,6,23,0.88)' : 'rgba(255,251,235,0.96)';
+        ctx.strokeStyle = '#f59e0b';
+        ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.rect(mvX, mvY, mvW, mvH); ctx.fill(); ctx.stroke();
+        ctx.beginPath(); ctx.rect(mvX, mvY, mvW, mvH); ctx.clip();
+
+        // Ground, seen from above.
+        ctx.fillStyle = isDark ? '#1c1917' : '#d9f99d';
+        ctx.fillRect(mvX, mvY + 16, mvW, mvH - 16);
+
+        var faultX = mvX + mvW * 0.5;
+        var mapOffset = cur.offset % 26;
+
+        // A once-continuous feature crossing the fault: the classic way a
+        // transform fault is read in the field, and the reason anyone knew San
+        // Andreas was a strike-slip fault before GPS.
+        ctx.strokeStyle = '#a16207';
+        ctx.lineWidth = 3.5;
+        ctx.beginPath();
+        ctx.moveTo(mvX + 8, mvY + 62 + mapOffset);
+        ctx.lineTo(faultX - 2, mvY + 62 + mapOffset);
+        ctx.moveTo(faultX + 2, mvY + 62);
+        ctx.lineTo(mvX + mvW - 8, mvY + 62);
+        ctx.stroke();
+        ctx.fillStyle = isDark ? '#fde68a' : '#78350f';
+        ctx.font = 'bold 8px sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillText('one stream, cut in two', mvX + 8, mvY + 58 + mapOffset);
+
+        // The fault trace itself.
+        ctx.strokeStyle = '#dc2626';
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.moveTo(faultX, mvY + 18);
+        ctx.lineTo(faultX, mvY + mvH - 2);
+        ctx.stroke();
+
+        // Block motion, drawn in the plane it happens in. Plate A goes one way,
+        // Plate B the other; neither is created and neither is consumed.
+        ctx.strokeStyle = '#f59e0b'; ctx.fillStyle = '#f59e0b'; ctx.lineWidth = 2.4;
+        ctx.beginPath(); ctx.moveTo(faultX - 34, mvY + 92); ctx.lineTo(faultX - 34, mvY + 30); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(faultX - 34, mvY + 26); ctx.lineTo(faultX - 39, mvY + 36); ctx.lineTo(faultX - 29, mvY + 36); ctx.closePath(); ctx.fill();
+        ctx.beginPath(); ctx.moveTo(faultX + 34, mvY + 30); ctx.lineTo(faultX + 34, mvY + 92); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(faultX + 34, mvY + 96); ctx.lineTo(faultX + 29, mvY + 86); ctx.lineTo(faultX + 39, mvY + 86); ctx.closePath(); ctx.fill();
+
+        ctx.fillStyle = isDark ? '#fca5a5' : '#7f1d1d';
+        ctx.font = 'bold 8px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('A', faultX - 34, mvY + 104);
+        ctx.fillText('B', faultX + 34, mvY + 26);
+
+        // Header band, so nobody reads this as a second cross-section.
+        ctx.fillStyle = '#f59e0b';
+        ctx.fillRect(mvX, mvY, mvW, 16);
+        ctx.fillStyle = '#451a03';
+        ctx.font = 'bold 9px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('MAP VIEW — LOOKING STRAIGHT DOWN', mvX + mvW / 2, mvY + 11);
+        ctx.restore();
+
+        ctx.textAlign = 'center';
+        fieldChip('shear stress ' + Math.round(stress * 100) + '% • quakes stay shallow', 130, plateY + plateH + 20, '#fecdd3');
       }
+
+      // ── Focus-depth key ──────────────────────────────────────────────────────
+      // NOT a pixel ruler, deliberately. Foci are placed at
+      // `150 + depthKm * TECT_PX_PER_KM`, but the plate above them is drawn 54 px
+      // thick for legibility, which on that same mapping would be about 490 km of
+      // lithosphere — and depth 0 lands halfway down the drawn plate. The section
+      // simply does not carry one consistent vertical scale, so a ruler drawn
+      // against it would let a student read depths off it that are not true.
+      //
+      // What the drawing DOES carry honestly is the colour: every focus is
+      // coloured by its depth class, on the same 70 km / 300 km boundaries the
+      // panel below the canvas and the 3D block both use. So the key names the
+      // classes and says depth is read from colour, and the exact figure stays
+      // where it is exact — the numeric readout under the canvas.
+      ctx.save();
+      // Placed where the current mode leaves room. Convergent and divergent put
+      // their convection labels in the bottom corners, so the key goes under the
+      // HUD; transform puts all three of its labels down the middle and fills the
+      // top right with the map view, so the key goes bottom-left. Fixed in either
+      // spot it overprinted something in the other.
+      var keyX = 8, keyY = cur.mode === 'transform' ? H - 44 : 80;
+      ctx.fillStyle = 'rgba(2,6,23,0.8)';
+      ctx.fillRect(keyX, keyY, 152, 38);
+      ctx.textAlign = 'left';
+      ctx.font = 'bold 8px sans-serif';
+      ctx.fillStyle = '#e2e8f0';
+      ctx.fillText('FOCUS DEPTH, BY COLOUR', keyX + 6, keyY + 10);
+      [['#f43f5e', 'shallow — under 70 km'],
+       ['#fb923c', 'intermediate — 70 to 300 km'],
+       ['#a78bfa', 'deep — over 300 km']].forEach(function (row, i) {
+        var ry = keyY + 19 + i * 8.5;
+        ctx.fillStyle = row[0];
+        ctx.beginPath(); ctx.arc(keyX + 11, ry - 3, 2.6, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#cbd5e1';
+        ctx.font = '8px sans-serif';
+        ctx.fillText(row[1], keyX + 18, ry);
+      });
+      ctx.restore();
+      ctx.textAlign = 'center';
 
       // Earthquake markers
       (cur.quakes || []).forEach(function(q) {
@@ -2198,8 +2747,11 @@
         ctx.restore();
       });
 
-      // Sun / Moon
-      if (isDark) {
+      // Sun / Moon. Skipped in transform mode, where the map view occupies that
+      // corner of the sky and a sun shining through it looked like part of the map.
+      if (cur.mode === 'transform') {
+        // no celestial body while the map view is up
+      } else if (isDark) {
         ctx.fillStyle = '#e2e8f0';
         ctx.beginPath();
         ctx.arc(W - 50, 35, 18, 0, Math.PI * 2);
@@ -2223,7 +2775,7 @@
 
       // HUD
       ctx.fillStyle = 'rgba(0,0,0,0.75)';
-      ctx.fillRect(8, 8, 180, 56);
+      ctx.fillRect(8, 8, 180, 70);
       ctx.fillStyle = '#fef3c7';
       ctx.font = 'bold 10px sans-serif';
       ctx.textAlign = 'left';
@@ -2234,15 +2786,14 @@
       ctx.fillText('Rate: ' + cur.rate + ' cm/yr', 14, 48);
       ctx.fillText('Events: ' + (cur.quakeTotal || 0), 14, 60);
 
-      // Mode-specific stat
+      // Mode-specific stat, inside the HUD box. Printed at the top RIGHT it ran
+      // straight across the transform map view's header band, and it sat under
+      // the sun in the other two modes.
       ctx.fillStyle = '#a3e635';
-      if (cur.mode === 'convergent') {
-        ctx.fillText('Mountain: ' + Math.round(cur.mountainHeight) + ' m', W - 130, 22);
-      } else if (cur.mode === 'divergent') {
-        ctx.fillText('Rift width: ' + Math.round(cur.rift) + ' km', W - 130, 22);
-      } else if (cur.mode === 'transform') {
-        ctx.fillText('Offset: ' + Math.round(cur.offset) + ' m', W - 130, 22);
-      }
+      var modeStat = cur.mode === 'convergent' ? 'Mountain: ' + Math.round(cur.mountainHeight) + ' m'
+                   : cur.mode === 'divergent' ? 'Rift width: ' + Math.round(cur.rift) + ' km'
+                   : 'Offset: ' + Math.round(cur.offset) + ' m';
+      ctx.fillText(modeStat, 14, 72);
     }
 
   function reset() {
@@ -2253,19 +2804,34 @@
   var evidence = BOUNDARY_EVIDENCE[s.mode];
   var activeDepths = (s.quakes || []).map(function(q) { return q.depthKm || 0; });
   var deepestActive = activeDepths.length ? Math.round(Math.max.apply(Math, activeDepths)) : null;
+  // What the section actually draws, per mode. The label used to be the same
+  // sentence for all three — "<name> boundary cross-section" plus the motion —
+  // so a student using a screen reader got no more from the picture than the
+  // mode button had already told them, and heard nothing at all about the map
+  // view that transform mode now puts on the canvas.
+  var sectionScene = s.mode === 'convergent'
+    ? 'The left plate is thin, dense oceanic lithosphere sitting below sea level; the right plate is thicker, more buoyant continental lithosphere standing above it. A trench marks where the oceanic plate bends down, and the same plate is drawn continuing beneath the other as a descending slab. Melt rises from the slab to a volcanic arc set back from the trench, and a mountain range grows on the overriding plate. In the mantle below, the flow is sinking beneath the boundary.'
+    : s.mode === 'divergent'
+      ? 'The two plates are separating and new crust fills the gap between them, banded with the mirrored magnetic stripes that recorded sea-floor spreading. In the mantle below, hot rock rises beneath the boundary and sinks again at the edges.'
+      : 'A near-vertical fault cuts the whole plate, with locked rough patches on it that produce shallow earthquakes. The plates slide along the fault, which in a cross-section means into and out of the page, so a map view is drawn above the section: seen from above, a single stream is cut in two and offset across the fault trace, and arrows show the two blocks travelling in opposite directions. In the mantle below there is no rising or sinking limb beneath this boundary, because a transform boundary creates no new plate and destroys none.';
   var depthSummary = deepestActive == null ? 'No active events yet' :
     (deepestActive >= 300 ? 'Deepest active focus: ' + deepestActive + ' km (deep)' :
      deepestActive >= 70 ? 'Deepest active focus: ' + deepestActive + ' km (intermediate)' :
      'Deepest active focus: ' + deepestActive + ' km (shallow)');
 
-  var containerClass = 'rounded-2xl border-2 overflow-hidden mt-5 plate-tectonics-container ' + (isDark ? 'border-slate-800 text-slate-200' : 'border-orange-400');
-  var containerStyle = isContrast ? { background: palette.bg, color: palette.text, borderColor: palette.border } : isDark ? { background: 'linear-gradient(135deg, var(--allo-stem-deeper, rgba(15,23,42,0.85)) 0%, var(--allo-stem-panel, rgba(30,41,59,0.7)) 100%)', backdropFilter: 'blur(12px)' } : { background: 'linear-gradient(135deg, #fff7ed 0%, #fed7aa 100%)' };
+  // `dark` is not decorative here. Every dark-theme rule this file installs is
+  // written as `.plate-tectonics-container.dark ...` — eighteen of them, covering
+  // bg-white, bg-red-50, the slate and red text scales and the text inputs — and
+  // the class was never applied, so in dark mode all of them were dead and the
+  // cards inside this widget stayed white with near-black text on a dark page.
+  var containerClass = 'rounded-2xl border-2 overflow-hidden mt-5 plate-tectonics-container ' + (isDark ? 'dark border-slate-800 text-slate-200' : 'border-orange-400');
+  var containerStyle = isContrast ? { background: palette.bg, color: palette.text, borderColor: palette.border } : isDark ? { background: 'linear-gradient(135deg, var(--allo-stem-deeper, #0f172a) 0%, var(--allo-stem-panel, #1e293b) 100%)', backdropFilter: 'blur(12px)' } : { background: 'linear-gradient(135deg, #fff7ed 0%, #fed7aa 100%)' };
   var headerStyle = isDark ? { background: 'rgba(30,41,59,0.5)' } : { background: 'rgba(234,88,12,0.15)' };
   var headerBorderClass = isDark ? 'px-3 py-2 flex items-center gap-2 border-b border-slate-800' : 'px-3 py-2 flex items-center gap-2 border-b border-orange-300';
   var badgeClass = 'px-2 py-0.5 rounded-full text-[10px] font-bold text-white';
   var badgeStyle = { background: '#c2410c' };
   var titleClass = 'text-sm font-bold ' + (isDark ? 'text-orange-400' : 'text-orange-900');
-  var subtitleClass = 'text-[11px] ' + (isDark ? 'text-slate-400' : 'text-orange-800');
+  var subtitleClass = 'text-[11px] ' + (isDark ? 'text-slate-300' : 'text-orange-800');
 
   // ── Hand the 3D block this frame's model (plain data; no GPU work here) ──
   var deepCount = (s.quakes || []).filter(function(q) { return (q.depthKm || 0) >= 70; }).length;
@@ -2297,7 +2863,11 @@
   if (view3d.on) TectGL.submit(tectGlModel);
   var tectGlLive = view3d.on && TectGL.isReady();
 
-  return h('div', { className: containerClass, style: containerStyle, 'data-plate-theme': isContrast ? 'contrast' : (isDark ? 'dark' : 'light') },
+  // Anchored, so the hub's "start here" path can send a student straight to it.
+  // This widget is the one place in the tool that takes the three boundary types
+  // one at a time with the evidence for each, and it sits below the fold on every
+  // screen — the best explainer here was also the least discoverable thing in it.
+  return h('div', { id: 'pt-boundary-simulator', className: containerClass, style: containerStyle, 'data-plate-theme': isContrast ? 'contrast' : (isDark ? 'dark' : 'light') },
     h('div', { className: headerBorderClass, style: headerStyle },
       h('span', { className: badgeClass, style: badgeStyle }, '🎮 INTERACTIVE'),
       h('span', { className: titleClass }, 'Plate Boundary Simulator'),
@@ -2312,7 +2882,8 @@
           ref: canvasRef,
           role: 'img',
           tabIndex: 0,
-          'aria-label': info.name + ' boundary cross-section. ' + evidence.motion + '. ' + depthSummary + '.',
+          'data-tect-section': 'true',
+          'aria-label': info.name + ' boundary cross-section. ' + evidence.motion + '. ' + sectionScene + ' ' + depthSummary + '.',
           style: {
             width: '100%', height: 'auto', aspectRatio: '540 / 300', display: 'block',
             visibility: tectGlLive ? 'hidden' : 'visible'
@@ -2325,6 +2896,28 @@
           ref: tectGlRef,
           'data-tect-gl': 'true',
           'data-a11y-static': 'true',
+          // Same gap as the volcano cutaway: the label calls this a "Rotatable 3D
+          // block" and only a mouse could rotate it. The whole point of this view
+          // is turning the block until the deep quakes line up on one plane, which
+          // is not something to leave to a pointer.
+          tabIndex: 0,
+          onKeyDown: function (ev) {
+            var k = ev.key, step = ev.shiftKey ? 24 : 8;
+            var patch = null;
+            if (k === 'ArrowLeft') patch = { rotY: view3d.rotY - step };
+            else if (k === 'ArrowRight') patch = { rotY: view3d.rotY + step };
+            else if (k === 'ArrowUp') patch = { rotX: Math.max(-88, view3d.rotX - step) };
+            else if (k === 'ArrowDown') patch = { rotX: Math.min(88, view3d.rotX + step) };
+            else if (k === '+' || k === '=') patch = { scale: Math.min(2.6, view3d.scale + 0.15) };
+            else if (k === '-' || k === '_') patch = { scale: Math.max(0.4, view3d.scale - 0.15) };
+            else if (k === 'Home') patch = { rotX: -18, rotY: -28, scale: 1 };
+            if (!patch) return;
+            ev.preventDefault();
+            updView(patch);
+            if (typeof announceToSR === 'function' && k === 'Home') {
+              announceToSR('Block view reset.');
+            }
+          },
           style: {
             position: 'absolute', inset: '0', width: '100%', height: '100%',
             visibility: tectGlLive ? 'visible' : 'hidden'
@@ -2351,11 +2944,11 @@
           className: 'pointer-events-none absolute inset-0 flex items-center justify-center text-xs font-bold text-orange-200/80'
         }, 'Loading 3D block…'),
         h('p', { id: 'tect-gl-description', className: 'sr-only' },
-          'A rotatable 3D block of the boundary. Drag it, or use the rotate buttons, to see that the deep earthquakes lie on a single dipping plane rather than scattered through the mantle. Use the cutaway slider to slice the block down to the same cross-section the 2D view shows.')
+          'Focus this block and use the arrow keys to turn it, plus and minus to zoom, and Home to reset the view; hold Shift for bigger steps. A rotatable 3D block of the boundary. Drag it, or use the rotate buttons, to see that the deep earthquakes lie on a single dipping plane rather than scattered through the mantle. Use the cutaway slider to slice the block down to the same cross-section the 2D view shows.')
       ),
       h('div', { className: 'flex flex-col gap-2' },
         // ── View: 2D section vs 3D block ──
-        h('div', { className: 'rounded-lg p-2 border ' + (isDark ? 'bg-slate-900/60 border-slate-800 text-slate-200' : 'bg-white border-orange-300') },
+        h('div', { className: 'rounded-lg p-2 border ' + (isDark ? 'bg-slate-900 border-slate-800 text-slate-200' : 'bg-white border-orange-300 text-slate-800') },
           h('div', { className: 'text-[10px] font-bold uppercase mb-1 ' + (isDark ? 'text-orange-400' : 'text-orange-700') }, 'View'),
           h('div', { className: 'flex gap-1', role: 'group', 'aria-label': 'Choose the cross-section or the 3D block view' },
             [['2d', 'Cross-section'], ['3d', '3D block']].map(function(o) {
@@ -2425,12 +3018,17 @@
           )
         ),
         // Mode selector
-        h('div', { className: 'rounded-lg p-2 border ' + (isDark ? 'bg-slate-900/60 border-slate-800 text-slate-200' : 'bg-white border-orange-300') },
+        h('div', { className: 'rounded-lg p-2 border ' + (isDark ? 'bg-slate-900 border-slate-800 text-slate-200' : 'bg-white border-orange-300 text-slate-800') },
           h('div', { className: 'text-[10px] font-bold uppercase mb-1 ' + (isDark ? 'text-orange-400' : 'text-orange-700') }, 'Boundary type'),
           ['convergent', 'divergent', 'transform'].map(function(k) {
             var b = BOUNDARY[k];
             return h('button', {
               key: k,
+              type: 'button',
+              // Selectable by tests and by the screenshot harness, the same way
+              // the view and magma controls already are.
+              'data-tect-mode': k,
+              'aria-pressed': s.mode === k,
               onClick: function() {
                 update({ mode: k });
                 reset();
@@ -2442,7 +3040,7 @@
           })
         ),
         // Rate slider
-        h('div', { className: 'rounded-lg p-2 border ' + (isDark ? 'bg-slate-900/60 border-slate-800 text-slate-200' : 'bg-white border-orange-300') },
+        h('div', { className: 'rounded-lg p-2 border ' + (isDark ? 'bg-slate-900 border-slate-800 text-slate-200' : 'bg-white border-orange-300 text-slate-800') },
           h('label', { className: 'text-[10px] font-bold ' + (isDark ? 'text-orange-400' : 'text-orange-700') + ' uppercase' }, 'Plate rate: ' + s.rate + ' cm/year'),
           h('input', {
             type: 'range', min: 1, max: 15, step: 1, value: s.rate,
@@ -2481,7 +3079,7 @@
       )
     ),
     h('section', {
-      className: 'mx-3 mb-3 rounded-xl border p-3 ' + (isDark ? 'bg-slate-900/60 border-slate-700' : 'bg-white border-orange-300'),
+      className: 'mx-3 mb-3 rounded-xl border p-3 ' + (isDark ? 'bg-slate-900 border-slate-700' : 'bg-white border-orange-300'),
       'aria-labelledby': 'ptEvidenceTitle'
     },
       h('div', { className: 'flex items-center justify-between gap-2 flex-wrap mb-2' },
@@ -2517,13 +3115,13 @@
     ),
     // Educational cards
     h('div', { className: 'mx-3 mb-3 grid grid-cols-1 md:grid-cols-2 gap-2' },
-      h('div', { className: 'rounded-xl border p-3 ' + (isDark ? 'bg-slate-900/60 border-slate-800 text-slate-200' : 'bg-white border-orange-300') },
+      h('div', { className: 'rounded-xl border p-3 ' + (isDark ? 'bg-slate-900 border-slate-800 text-slate-200' : 'bg-white border-orange-300 text-slate-800') },
         h('div', { className: 'text-[11px] font-bold uppercase mb-1 ' + (isDark ? 'text-orange-400' : 'text-orange-700') }, '📐 The math'),
         h('div', { className: 'text-[11px] leading-relaxed ' + (isDark ? 'text-slate-300' : 'text-slate-700') },
           'Plate speeds are commonly measured in centimeters per year. At a constant 2-15 cm/year, a plate would travel about 200-1500 km in 10 million years. Real rates and directions change through time. Earthquake magnitude is logarithmic: one whole moment-magnitude unit represents about 10x recorded wave amplitude and roughly 32x energy release.'
         )
       ),
-      h('div', { className: 'rounded-xl border p-3 ' + (isDark ? 'bg-slate-900/60 border-slate-800 text-slate-200' : 'bg-white border-orange-300') },
+      h('div', { className: 'rounded-xl border p-3 ' + (isDark ? 'bg-slate-900 border-slate-800 text-slate-200' : 'bg-white border-orange-300 text-slate-800') },
         h('div', { className: 'text-[11px] font-bold uppercase mb-1 ' + (isDark ? 'text-orange-400' : 'text-orange-700') }, '🎯 Try this'),
         h('ul', { className: 'text-[11px] space-y-0.5 list-disc pl-4 ' + (isDark ? 'text-slate-300' : 'text-slate-700') },
           h('li', null, 'Switch to Convergent and compare shallow, intermediate, and deep event colors. Deep-focus earthquakes are strong evidence of a subducting slab.'),
@@ -2545,7 +3143,7 @@
     questHooks: [
       { id: 'explore_3_tabs', label: 'Explore 3 tectonics topics', icon: '🌋', check: function(d) { return Object.keys(d.tabsViewed || {}).length >= 3; }, progress: function(d) { return Object.keys(d.tabsViewed || {}).length + '/3'; } },
       { id: 'select_plate', label: 'Study a tectonic plate', icon: '🌍', check: function(d) { return !!d.selectedPlate; }, progress: function(d) { return d.selectedPlate ? 'Selected!' : 'Pick a plate'; } },
-      { id: 'myth_3', label: 'Bust 3 tectonics myths (True or False)', icon: '🧠', check: function(d) { return (d.ptMythsDone || 0) >= 3; }, progress: function(d) { return (d.ptMythsDone || 0) + '/3 myths'; } }
+      { id: 'myth_3', label: 'Call myth or fact right 3 times in a row', icon: '🧠', check: function(d) { return (d.ptMythBest || 0) >= 3; }, progress: function(d) { return Math.max(d.ptMythStreak || 0, 0) + '/3 in a row'; } }
     ],
     render: function(ctx) {
       // Aliases — maps ctx properties to original variable names
@@ -2590,7 +3188,7 @@ var d = labToolData.plateTectonics || {};
           // ── Canvas narration: init ──
           if (typeof canvasNarrate === 'function') {
             canvasNarrate('plateTectonics', 'init', {
-              first: 'Plate Tectonics Simulator loaded. Drag tectonic plates to explore convergent, divergent, and transform boundaries. Watch earthquakes and eruptions in real time.',
+              first: 'Plate Tectonics Simulator loaded. Drag tectonic plates together to build a trench, a descending slab and a volcanic arc, or apart to open a ridge, and watch earthquakes and eruptions in real time. Mantle convection carries the plates on its own unless you pause it.',
               repeat: 'Plate Tectonics active.',
               terse: 'Plate Tectonics.'
             }, { debounce: 800 });
@@ -2609,10 +3207,24 @@ var d = labToolData.plateTectonics || {};
           // anatomy view of the eruption it produces, not a replacement for it.
           var ptVent3D = !!d.ptVent3D;
           var ptVentMagma = d.ptVentMagma || 'andesite';
+          // Mantle-driven drift. Default ON, because "the plates move because the
+          // mantle beneath them flows" is the sentence this whole tab exists to
+          // make true, and with drift off the only thing that ever moves a plate
+          // is the student's mouse — which teaches that plates move because
+          // someone pushes them.
+          var ptDrift = d.ptDrift != null ? !!d.ptDrift : !ptReducedMotion();
+          // Published by the sim loop when the boundary in focus changes. The
+          // canvas classifies; the panel below only describes what it was told.
+          var ptFocusBoundary = d.ptFocusBoundary || null;
           // Published by the sim loop on the edges of an eruption. The tool's
           // eruption handler ignores a click while one is already running, so
           // without this the button stayed bright and simply did nothing.
           var ptErupting = !!d.ptErupting;
+          var ptEruptPhase = d.ptEruptPhase || 'repose';
+          // How far the recording station is from the quake. Drives the S-minus-P
+          // gap on the seismogram, which is the measurement the epicenter widget
+          // is built on.
+          var eqDistKm = d.eqDistKm != null ? d.eqDistKm : 600;
           // aria-disabled, NOT the disabled attribute: a disabled button drops
           // out of the tab order and is skipped by a screen reader, so the user
           // gets no explanation for why the control stopped responding.
@@ -2697,14 +3309,14 @@ var d = labToolData.plateTectonics || {};
           // --- UDL Challenges & Vocabulary ---
           var CHALLENGES = [
             { id: 'first_quake', name: __alloT('stem.platetectonics.plate_boundary_shaker', 'Plate Boundary Shaker'), desc: __alloT('stem.platetectonics.trigger_an_earthquake', 'Trigger an earthquake'), icon: '📈', rp: 10, check: function(s) { return (s.quakeCount || 0) >= 1; } },
-            { id: 'major_quake', name: __alloT('stem.platetectonics.cataclysmic_rumble', 'Cataclysmic Rumble'), desc: __alloT('stem.platetectonics.trigger_a_magnitude_8_0_earthquake', 'Trigger a magnitude 8.0+ earthquake'), icon: '⚡', rp: 25, check: function(s) { return s.eqMagnitude >= 8.0 && (s.quakeCount || 0) >= 1; } },
+            { id: 'major_quake', name: __alloT('stem.platetectonics.cataclysmic_rumble', 'Cataclysmic Rumble'), desc: __alloT('stem.platetectonics.trigger_a_magnitude_8_0_earthquake', 'Make an M8.0+ earthquake in the simulator — not every boundary can'), icon: '⚡', rp: 25, check: function(s) { return (s.maxQuakeMag || 0) >= 8.0; } },
             { id: 'erupt_volcano', name: __alloT('stem.platetectonics.magma_vent', 'Magma Vent'), desc: __alloT('stem.platetectonics.trigger_a_volcanic_eruption', 'Trigger a volcanic eruption'), icon: '🌋', rp: 15, check: function(s) { return (s.eruptionCount || 0) >= 1; } },
             { id: 'five_eruptions', name: __alloT('stem.platetectonics.volcanic_ring', 'Volcanic Ring'), desc: __alloT('stem.platetectonics.trigger_5_volcanic_eruptions', 'Trigger 5+ volcanic eruptions'), icon: '🔥', rp: 30, check: function(s) { return (s.eruptionCount || 0) >= 5; } },
             { id: 'read_cascadia', name: __alloT('stem.platetectonics.cascadia_scholar', 'Cascadia Scholar'), desc: __alloT('stem.platetectonics.read_the_cascadia_subduction_zone_tab', 'Read the Cascadia Subduction Zone tab'), icon: '🌲', rp: 20, check: function(s) { return s.simTab === 'cascadia'; } },
             { id: 'quiz_pass', name: __alloT('stem.platetectonics.tectonics_scholar', 'Tectonics Scholar'), desc: __alloT('stem.platetectonics.score_5_on_the_plate_tectonics_quiz', 'Score 5+ on the Plate Tectonics Quiz'), icon: '🎓', rp: 50, check: function(s) { return s.quizScore >= 5; } },
             { id: 'vocab_look', name: __alloT('stem.platetectonics.earth_glossary', 'Earth Glossary'), desc: __alloT('stem.platetectonics.look_up_3_vocabulary_terms_in_the_dict', 'Look up 3 vocabulary terms in the dictionary'), icon: '📖', rp: 15, check: function(s) { return (s.vocabLookedUp || []).length >= 3; } },
             { id: 'timelapse_drift', name: __alloT('stem.platetectonics.continental_drift', 'Continental Drift'), desc: __alloT('stem.platetectonics.play_the_continental_drift_time_lapse', 'Play the continental drift time-lapse'), icon: '⏳', rp: 20, check: function(s) { return s.timelapsePlayed; } },
-            { id: 'myth_buster', name: __alloT('stem.platetectonics.myth_buster', 'Myth Buster'), desc: __alloT('stem.platetectonics.answer_3_tectonics_myths', 'Answer 3 tectonics myths (True/False)'), icon: '🧠', rp: 30, check: function(s) { return (s.ptMythsDone || 0) >= 3; } }
+            { id: 'myth_buster', name: __alloT('stem.platetectonics.myth_buster', 'Myth Buster'), desc: __alloT('stem.platetectonics.answer_3_tectonics_myths', 'Call myth or fact correctly 3 times in a row'), icon: '🧠', rp: 30, check: function(s) { return (s.ptMythBest || 0) >= 3; } }
           ];
 
           var TECT_VOCAB = {
@@ -6611,6 +7223,58 @@ var d = labToolData.plateTectonics || {};
 
           ];
 
+          // ── The model, in words ──────────────────────────────────────────────
+          // The canvas carries a good aria-label, and it describes what the tool
+          // CAN show: plates, a mantle, a depth scale, the boundaries you could
+          // build. It never described what is on screen NOW. So a student reading
+          // by ear could drag a plate, produce a trench and a descending slab, and
+          // hear nothing about it — the picture changed and the description did not.
+          //
+          // Two channels, deliberately different sizes:
+          //   ptSceneText  — the whole current scene, hung off the canvas by
+          //                  aria-describedby. Read on demand, when you focus the
+          //                  canvas and ask. Never announced.
+          //   ptLiveLine   — ONE sentence, in a polite live region, when the
+          //                  boundary changes. Enough to know something happened
+          //                  and what it was, short enough not to talk over you.
+          var PT_BOUNDARY_GIST = {
+            subduction: 'the denser ocean plate is bending down and sinking beneath the other one, making a trench at the surface and a line of earthquakes that gets deeper away from it',
+            collision:  'neither plate is dense enough to sink, so the crust between them is crumpling upward into mountains and downward into a root',
+            divergent:  'the plates are moving apart and new rock is rising into the gap and freezing there as brand-new lithosphere'
+          };
+          var ptSceneText = (function () {
+            var order = PLATES.map(function (pl) { return pl.name + ' (' + pl.type + ')'; }).join(', then ');
+            var lead = 'Left to right the model holds ' + PLATES.length + ' plates: ' + order + '. '
+              + 'Depths are drawn to scale from sea level down to 400 kilometres; below that the mantle and core are squeezed to fit behind a marked scale break. ';
+            var drift = ptDrift
+              ? 'Mantle drift is running, so the convection currents are carrying the plates on their own. '
+              : 'Mantle drift is paused, so the plates move only when you move them. ';
+            if (!ptFocusBoundary) {
+              return lead + drift + 'No two plates are touching or pulling apart yet, so there is no boundary to describe. '
+                + 'Move one plate into another, or away from it, and this description will say what the boundary you made is doing.';
+            }
+            var gist = PT_BOUNDARY_GIST[ptFocusBoundary.kind] || '';
+            // The visible caption reads "Convergent — ocean sinks under continent",
+            // which is right on a chip and clumsy in a sentence a screen reader
+            // says out loud. Spoken form is built from the KIND instead.
+            var spoken = ptFocusBoundary.kind === 'divergent' ? 'a divergent boundary'
+                       : ptFocusBoundary.kind === 'collision' ? 'a convergent boundary where two continents collide'
+                       : 'a convergent boundary where one plate subducts beneath the other';
+            var qn = d.quakeCount || 0, en = d.eruptionCount || 0;
+            return lead + drift
+              + 'The boundary in focus is between ' + ptFocusBoundary.a + ', which is ' + ptFocusBoundary.aType + ', and '
+              + ptFocusBoundary.b + ', which is ' + ptFocusBoundary.bType + '. It is ' + spoken + ': '
+              + gist + '. '
+              + 'So far this session has produced ' + qn + (qn === 1 ? ' earthquake' : ' earthquakes')
+              + ' and ' + en + (en === 1 ? ' eruption.' : ' eruptions.');
+          })();
+          // The short form. Only the boundary identity is in it, because that is
+          // the thing that changed; everything else is a describedby away.
+          var ptLiveLine = ptFocusBoundary
+            ? (ptFocusBoundary.a + ' meets ' + ptFocusBoundary.b + ': '
+               + ptFocusBoundary.label.replace(/\s*—\s*/, ', ').toLowerCase() + '.')
+            : '';
+
 
 
           // -- Timeline eras (8 geological periods) --
@@ -6761,7 +7425,7 @@ var d = labToolData.plateTectonics || {};
           var isDark = !!(props && props.darkMode) || isContrast;
           var palette = (props && props.palette) || { bg: isContrast ? '#000000' : (isDark ? '#0f172a' : '#ffffff'), text: isContrast ? '#ffffff' : (isDark ? '#f1f5f9' : '#0f172a'), border: isContrast ? '#fbbf24' : (isDark ? '#475569' : '#cbd5e1') };
           var _gRed = isDark ? 'linear-gradient(135deg, #991b1b, #7f1d1d, #450a0a)' : 'linear-gradient(135deg, #dc2626, #ef4444, #f87171)';
-          var _gCard = isDark ? 'linear-gradient(135deg, var(--allo-stem-panel, rgba(30,41,59,0.7)) 0%, var(--allo-stem-deeper, rgba(15,23,42,0.85)) 100%)' : 'linear-gradient(135deg, #fef2f2, #fee2e2, #fef2f2)';
+          var _gCard = isDark ? 'linear-gradient(135deg, var(--allo-stem-panel, #1e293b) 0%, var(--allo-stem-deeper, #0f172a) 100%)' : 'linear-gradient(135deg, #fef2f2, #fee2e2, #fef2f2)';
 
           // ── Grade band (for the Myths panel) ──
           function ptGradeBand() {
@@ -6777,21 +7441,40 @@ var d = labToolData.plateTectonics || {};
           // science topic (solid-yet-flowing mantle, plates-float-on-magma, continents-
           // plow-through-seafloor, slab-pull vs convection). Every verdict ends with a
           // "🔬 Try it" pointing at a tab/toggle that lets the student SEE the truth. ──
+          // ── Myth or fact ─────────────────────────────────────────────────
+          // Every statement in this bank was FALSE. All thirteen. A student could
+          // hold down "False" and finish at 100% without reading a word, and the
+          // myth_buster badge was three taps of one button.
+          //
+          // Worse than free marks: it teaches the wrong reflex. Deciding whether a
+          // claim about the Earth holds up is the actual skill, and you cannot
+          // practise it on a bank where the answer never changes. The interesting
+          // half is a claim that sounds like a tall tale and is simply true, so
+          // each band now carries those too.
           var PT_MYTHS_35 = [
             { s: 'The ground under your feet is completely still — nothing moves down there.', t: false, why: 'The plates carrying the continents creep along about as fast as your fingernails grow — a few centimeters a year. It is slow, but it never stops.', tryIt: 'Play the Continental Drift time-lapse on the Timeline tab and watch the continents crawl.' },
             { s: 'Earthquakes and volcanoes pop up in totally random places.', t: false, why: 'They cluster along the SAME lines — the edges of the plates. The "Ring of Fire" around the Pacific is one giant plate boundary.', tryIt: 'On the Earthquake tab, trigger a quake at a plate boundary and see where the energy concentrates.' },
             { s: 'Mountains have always been exactly where they are and never change.', t: false, why: 'Colliding plates crumple the crust upward over millions of years — the Himalayas are STILL rising a few millimeters a year as India pushes into Asia.', tryIt: 'In the simulator, push two continental plates together (convergent boundary) and watch the crust buckle up.' },
-            { s: 'The continents have always looked just like they do on today’s map.', t: false, why: 'About 200 million years ago they were joined in one supercontinent, Pangaea. They have been drifting apart ever since — and are still moving.', tryIt: 'Open the Timeline tab and rewind to Pangaea.' }
+            { s: 'The continents have always looked just like they do on today’s map.', t: false, why: 'About 200 million years ago they were joined in one supercontinent, Pangaea. They have been drifting apart ever since — and are still moving.', tryIt: 'Open the Timeline tab and rewind to Pangaea.' },
+            { s: 'The Atlantic Ocean is a little wider today than it was when your grandparents were born.', t: true, why: 'New seafloor is being made along the ridge that runs down the middle of the Atlantic, and it pushes the two sides apart a few centimetres a year. Over a lifetime that adds up to a couple of metres.', tryIt: 'Open the Boundaries tab and find the Mid-Atlantic Ridge.' },
+            { s: 'You can find fossils of sea creatures near the top of some of the highest mountains.', t: true, why: 'Those rocks formed on an ancient seafloor and were lifted up when two plates collided. Marine fossils really do turn up high in the Himalayas.', tryIt: 'Open the Fossils tab and see where marine fossils turn up.' },
+            { s: 'Iceland is being slowly pulled in two by a plate boundary running right through it.', t: true, why: 'The Mid-Atlantic Ridge crosses Iceland, so the island straddles a divergent boundary. You can walk down into the rift valley it has opened.', tryIt: 'Open the Hotspots tab: Iceland sits on a ridge AND a hotspot.' },
           ];
           var PT_MYTHS_68 = PT_MYTHS_35.concat([
             { s: 'The mantle is an ocean of liquid magma, and the plates float on it like rafts.', t: false, why: 'The mantle is SOLID rock. It flows — but incredibly slowly, like cold putty over thousands of years. Plates ride on the solid-but-bendable asthenosphere, not on liquid.', tryIt: 'Turn on Convection currents in the simulator: those are loops of SOLID rock creeping in slow circles, not sloshing lava.' },
             { s: 'Continents plow through the ocean floor like ships cutting through water.', t: false, why: 'That was Wegener’s original mistake, and why his idea was rejected for decades. A plate carries its continent AND its seafloor together — new seafloor is born at ridges and swallowed at trenches.', tryIt: 'Watch a divergent boundary in the sim: new crust forms in the gap and spreads both directions.' },
-            { s: 'When a plate subducts, that crust is destroyed and gone forever.', t: false, why: 'It melts and RECYCLES — some rises again as volcanic magma at the arc above. Plate tectonics and the rock cycle are the same engine.', tryIt: 'Read the Cascadia Subduction Zone tab to follow crust down and magma back up.' }
+            { s: 'When a plate subducts, that crust is destroyed and gone forever.', t: false, why: 'It melts and RECYCLES — some rises again as volcanic magma at the arc above. Plate tectonics and the rock cycle are the same engine.', tryIt: 'Read the Cascadia Subduction Zone tab to follow crust down and magma back up.' },
+            { s: 'The rock of the ocean floor is far younger than the rock of the continents.', t: true, why: 'Ocean floor is created at ridges and destroyed at trenches, so almost none of it is older than about 200 million years. Parts of the continents are billions of years old, because there is no conveyor belt carrying them away.', tryIt: 'Open the Seafloor tab and look at the age of the crust.' },
+            { s: 'The Himalayas are still growing taller right now.', t: true, why: 'India is still pushing north into Eurasia, so the range keeps rising a few millimetres a year. Erosion strips it back at a similar rate, which is why it does not simply climb forever.', tryIt: 'Open the Mountains tab and read how the range is still rising.' },
+            { s: 'Some earthquakes begin hundreds of kilometres down, far below the crust.', t: true, why: 'They happen inside slabs that have already subducted, which is a large part of how we know those slabs are down there at all. The deepest reach about 700 kilometres.', tryIt: 'In the Simulator, push an ocean plate under a continent and watch the quake dots get deeper away from the trench.' },
           ]);
           var PT_MYTHS_912 = PT_MYTHS_68.concat([
             { s: 'Plates move mainly because mantle convection drags them along from below.', t: false, why: 'The dominant force is SLAB PULL — the weight of the cold, dense subducting slab sinking and pulling the rest of the plate behind it. Ridge push and convection help, but slab pull leads.', tryIt: 'Compare fast plates (Pacific, lots of subducting edge) with slow ones (few subduction zones) on the plate info panels.' },
             { s: 'Earth’s inner core is molten liquid because it is the hottest part of the planet.', t: false, why: 'The inner core is SOLID iron even at ~5,400°C — about as hot as the Sun’s surface. The crushing pressure raises iron’s melting point above that temperature. It is the OUTER core that is liquid — and its churning makes Earth’s magnetic field.', tryIt: 'Open the Earth’s Layers educational panel and compare solid inner core vs liquid outer core.' },
-            { s: 'Pangaea was the only supercontinent that ever existed.', t: false, why: 'It was just the most recent. Earlier ones assembled and broke apart too — Rodinia ~1 billion years ago, Columbia/Nuna ~1.8 billion. The "supercontinent cycle" repeats roughly every 300–500 million years.', tryIt: 'On the Timeline, note that Pangaea forms only near the recent end of Earth’s 4.5-billion-year history.' }
+            { s: 'Pangaea was the only supercontinent that ever existed.', t: false, why: 'It was just the most recent. Earlier ones assembled and broke apart too — Rodinia ~1 billion years ago, Columbia/Nuna ~1.8 billion. The "supercontinent cycle" repeats roughly every 300–500 million years.', tryIt: 'On the Timeline, note that Pangaea forms only near the recent end of Earth’s 4.5-billion-year history.' },
+            { s: 'The ocean floor carries a magnetic record of Earth reversing its magnetic field.', t: true, why: 'New rock at a ridge locks in the field direction as it cools, so the seafloor is striped with alternating polarity, symmetrical either side of the ridge. That pattern is the evidence that settled seafloor spreading in the 1960s.', tryIt: 'Open the History tab and read how seafloor spreading was confirmed.' },
+            { s: 'Plate motion is measured directly today, not only inferred from old rocks.', t: true, why: 'Permanent GPS stations track the ground to within millimetres a year, and the rates they return agree with the ones worked out from magnetic stripes. Two independent methods, one answer.', tryIt: 'Open the Plate Encyclopedia and compare the measured motion of two plates.' },
+            { s: 'A single plate can carry ocean floor and a continent at the same time.', t: true, why: 'Most of them do. The South American plate carries the continent AND a wide slice of the South Atlantic floor, with no plate boundary at the coastline. The edge of a plate and the edge of a continent are different things.', tryIt: 'Open the Plate Encyclopedia and look at the South American plate.' },
           ]);
           var PT_MYTH_BANK = ptBand === '9-12' ? PT_MYTHS_912 : ptBand === '6-8' ? PT_MYTHS_68 : PT_MYTHS_35;
           function ptStartMyth() {
@@ -6806,7 +7489,7 @@ var d = labToolData.plateTectonics || {};
             var right = val === m.t;
             if (right) { sfxTectCorrect(); if (typeof awardStemXP === 'function') awardStemXP('plateTectonics', 5, 'Tectonics myth busted'); }
             else { sfxTectQuake(); }
-            upd({ ptMyth: Object.assign({}, m, { answered: true, chosen: val }), ptMythsDone: (d.ptMythsDone || 0) + 1 });
+            upd({ ptMyth: Object.assign({}, m, { answered: true, chosen: val }), ptMythsDone: (d.ptMythsDone || 0) + 1, ptMythsRight: (d.ptMythsRight || 0) + (right ? 1 : 0), ptMythStreak: right ? (d.ptMythStreak || 0) + 1 : 0, ptMythBest: Math.max(d.ptMythBest || 0, right ? (d.ptMythStreak || 0) + 1 : 0) });
             if (typeof announceToSR === 'function') announceToSR((right ? 'Correct. ' : 'Not quite. ') + (m.t ? 'True. ' : 'False. ') + m.why);
             setTimeout(checkChallenges, 50);
           }
@@ -6905,7 +7588,12 @@ var d = labToolData.plateTectonics || {};
               : 'Drag one plate toward another, pull plates apart, or slide them sideways to compare boundary behavior.';
             var metrics = [
               ['Motion speed', speed + 'x', showConvection ? 'currents visible' : 'surface only'],
+              // The strongest quake so far, because "make an M8" is only a fair
+              // challenge if you can see how close you are getting and which
+              // boundary got you there.
               ['Events', quakeTotal + ' quakes', eruptionTotal + ' eruptions'],
+              ['Strongest quake', d.maxQuakeMag ? 'M ' + d.maxQuakeMag.toFixed(1) : '--',
+                d.maxQuakeMag ? (d.maxQuakeMag >= 8 ? 'megathrust territory' : 'try a subduction zone') : 'drag plates together'],
               ['Research', challengeTotal + '/' + CHALLENGES.length, (d.researchPoints || 0) + ' RP']
             ];
             return React.createElement('div', {
@@ -6935,6 +7623,12 @@ var d = labToolData.plateTectonics || {};
                     'aria-pressed': showConvection,
                     className: 'px-3 py-2 rounded-xl text-xs font-bold focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (showConvection ? 'bg-orange-700 text-white' : (isDark ? 'bg-slate-900 text-orange-300 border border-slate-700' : 'bg-white text-orange-700 border border-orange-200'))
                   }, showConvection ? 'Hide currents' : 'Show currents'),
+                  React.createElement('button', {
+                    onClick: function() { upd({ ptDrift: !ptDrift }); if (typeof announceToSR === 'function') announceToSR(ptDrift ? 'Mantle drift paused. Plates now move only when you move them.' : 'Mantle drift running. The convection currents are now carrying the plates.'); },
+                    'aria-pressed': ptDrift,
+                    title: 'Let the mantle currents carry the plates, or freeze them so only you move them',
+                    className: 'px-3 py-2 rounded-xl text-xs font-bold focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (ptDrift ? 'bg-amber-700 text-white' : (isDark ? 'bg-slate-900 text-amber-300 border border-slate-700' : 'bg-white text-amber-800 border border-amber-300'))
+                  }, ptDrift ? '⏸ Pause mantle drift' : '▶ Let the mantle drive'),
                   React.createElement('button', Object.assign({
                     onClick: eruptClick
                   }, eruptBtnProps('px-3 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-orange-700 to-red-600 text-white shadow-md focus:ring-2 focus:ring-yellow-500 focus:outline-none')),
@@ -6945,7 +7639,7 @@ var d = labToolData.plateTectonics || {};
                 React.createElement('div', { className: 'text-[11px] font-black uppercase tracking-wider mb-2 ' + (isDark ? 'text-orange-300' : 'text-slate-600') }, 'Live readout'),
                 React.createElement('div', { className: 'pt-metric-grid' },
                   metrics.map(function(item) {
-                    return React.createElement('div', { key: item[0], className: 'rounded-xl border p-3 ' + (isDark ? 'border-slate-700 bg-slate-950/50' : 'border-red-100 bg-white/75') },
+                    return React.createElement('div', { key: item[0], className: 'rounded-xl border p-3 ' + (isDark ? 'border-slate-700 bg-slate-950' : 'border-red-100 bg-white/75') },
                       React.createElement('div', { className: 'text-[10px] font-black uppercase tracking-wider ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, item[0]),
                       React.createElement('div', { className: 'text-lg font-black ' + (isDark ? 'text-slate-100' : 'text-slate-900') }, item[1]),
                       React.createElement('div', { className: 'text-[10px] font-mono ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, item[2])
@@ -7004,7 +7698,7 @@ var d = labToolData.plateTectonics || {};
 
             // Live-props channel: the ref re-fires on every render, so use it to hand the
             // running sim the CURRENT values instead of rebuilding with stale closures.
-            canvasEl._ptLive = { speed: speed, showLabels: showLabels, showConvection: showConvection, isDark: isDark, timelineEra: timelineEra, d: d, upd: upd, checkChallenges: checkChallenges, awardStemXP: awardStemXP, ptVentMagma: ptVentMagma };
+            canvasEl._ptLive = { speed: speed, showLabels: showLabels, showConvection: showConvection, isDark: isDark, timelineEra: timelineEra, d: d, upd: upd, checkChallenges: checkChallenges, awardStemXP: awardStemXP, ptVentMagma: ptVentMagma, ptDrift: ptDrift };
 
             if (canvasEl._ptInit) {
 
@@ -7031,15 +7725,99 @@ var d = labToolData.plateTectonics || {};
 
             var tick = 0;
 
+            // ── Depth frame ────────────────────────────────────────────────────
+            // ONE depth mapping, shared by the draw loop AND the pointer/keyboard
+            // hit tests, so what a student clicks is what they see.
+            //
+            // Before this the whole lithosphere was a 50-pixel strip pinned to the
+            // top of an 800-pixel canvas and the lower mantle and core filled the
+            // other 78%. Plate boundaries — the entire subject of this tab — were
+            // the least visible thing in the frame: the boundary-type captions
+            // overlapped the plate names, and there was no room to draw a trench,
+            // a slab, or a ridge at all. So the tectonic zone now gets a REAL
+            // kilometre scale over half the canvas, and the deep interior below it
+            // is compressed into a labelled strip behind an explicit scale break.
+            // Compressing it is honest as long as the break is drawn; pretending
+            // the core is to scale while the plates are not was the bigger lie.
+            var GEO = (function () {
+              var seaY = cH * 0.185;
+              var TECT_KM = 400;
+              var pxPerKm = (cH * 0.50) / TECT_KM;
+              // Lithosphere thicknesses and surface elevations in KILOMETRES, so
+              // the one contrast that drives everything on this tab is drawn to
+              // scale rather than asserted: oceanic lithosphere is thin, dense and
+              // sits ~5 km BELOW sea level; continental lithosphere is nearly
+              // twice as thick, buoyant, and stands above it. That is the picture
+              // a student needs before "the ocean plate goes under" can mean
+              // anything. Surface relief is the one exaggerated quantity (real
+              // continents average well under 1 km) and the canvas says so.
+              // Surface RELIEF is exaggerated about 3x (the canvas says so): at
+              // true scale the 5 km of water over an ocean basin was four pixels
+              // and the basins were invisible, so "oceanic plates sit lower" —
+              // half of why they subduct — could not be seen. Plate THICKNESS is
+              // not exaggerated: 80 km oceanic against 150 km continental is the
+              // real contrast, and it is the half that does the work.
+              var TOP_KM  = { oceanic: 14, continental: -10 };
+              var BASE_KM = { oceanic: 94, continental: 140 };
+              return {
+                seaY: seaY, pxPerKm: pxPerKm, TECT_KM: TECT_KM,
+                dY: function (km) { return seaY + km * pxPerKm; },
+                topKm: function (p) { return TOP_KM[p.type] != null ? TOP_KM[p.type] : 0; },
+                baseKm: function (p) { return BASE_KM[p.type] != null ? BASE_KM[p.type] : 100; },
+                top: function (p) { return seaY + this.topKm(p) * pxPerKm; },
+                base: function (p) { return seaY + this.baseKm(p) * pxPerKm; },
+                thick: function (p) { return (this.baseKm(p) - this.topKm(p)) * pxPerKm; }
+              };
+            })();
+            // Grab radius around a plate body, so a student does not have to hit a
+            // thin oceanic slab exactly. Mountains stand above GEO.top, so the
+            // upper margin is the more generous one.
+            function plateHit(p, my) {
+              return my >= GEO.top(p) - cH * 0.055 && my <= GEO.base(p) + cH * 0.02;
+            }
+            // Plates are RIGID. Dragging one used to slide it straight through its
+            // neighbours: two plates could end up almost perfectly stacked, at
+            // which point the boundary between them was so far past overlapping
+            // that the classifier stopped recognising it as a boundary at all —
+            // the student had made the most violent convergence the model allows
+            // and the tool went silent about it.
+            //
+            // A small overlap is allowed on purpose: it is the SQUEEZE that drives
+            // mountain building and the crustal root at a collision, so it has to
+            // be a readable quantity rather than zero.
+            var PT_MAX_OVERLAP = 0.022;
+            function clampPlateX(list, idx, wantX) {
+              var me = list[idx];
+              var slack = PT_MAX_OVERLAP * cW;
+              var lft = list[idx - 1], rgt = list[idx + 1];
+              if (lft) wantX = Math.max(lft.x + lft.w - slack, wantX);
+              if (rgt) wantX = Math.min(rgt.x - me.w + slack, wantX);
+              return Math.max(0, Math.min(cW - me.w, wantX));
+            }
+
 
 
             // plate positions (copy from PLATES, offset by timeline)
+
+            // ── Starting layout ──
+            // PLATES lists fractions that tile 0..1 exactly, so as authored every
+            // one of the seven plates started already touching its neighbours and
+            // SIX boundaries were live before the student did anything. Every seam
+            // glowed, every seam printed a caption, and the captions overlapped
+            // each other — so the one boundary the student went on to make was
+            // indistinguishable from the five they did not.
+            //
+            // Squeezing the row and opening a gap between each pair means the
+            // model starts quiet: nothing is a boundary until a plate is moved
+            // into or away from another, which is the point of the exercise.
+            var PT_SPREAD = 0.70, PT_GAP = 0.045, PT_MARGIN = 0.020;
+            function layoutX(baseX, i) { return (PT_MARGIN + baseX * PT_SPREAD + i * PT_GAP) * cW; }
 
             var plates = PLATES.map(function(p, i) {
 
               var era = ERAS[timelineEra] || ERAS[5];
 
-              return { id: p.id, name: p.name, type: p.type, x: (p.x + (era.offsets[i] || 0)) * cW, w: p.w * cW, color: p.color, thick: p.thick, vx: 0 };
+              return { id: p.id, name: p.name, type: p.type, x: layoutX(p.x + (era.offsets[i] || 0), i), w: p.w * PT_SPREAD * cW, color: p.color, thick: p.thick, vx: 0 };
 
             });
 
@@ -7049,7 +7827,7 @@ var d = labToolData.plateTectonics || {};
               var era2 = ERAS[eraIdx] || ERAS[5];
               plates.forEach(function(p, i) {
                 var base = PLATES[i] || {};
-                p.x = ((base.x || 0) + (era2.offsets[i] || 0)) * cW;
+                p.x = layoutX((base.x || 0) + (era2.offsets[i] || 0), i);
                 p.vx = 0;
               });
             };
@@ -7071,7 +7849,7 @@ var d = labToolData.plateTectonics || {};
             }
 
             // Eruption state (canvas-local)
-            var eruptState = { active: false, phase: 0, tick: 0, coneX: cW * 0.5, coneBaseY: cH * 0.30, coneW: 60, coneH: 45, lavaFlows: [], ashParticles: [] };
+            var eruptState = { active: false, phase: 0, tick: 0, coneX: cW * 0.5, coneBaseY: GEO.seaY, coneW: 60, coneH: 45, lavaFlows: [], ashParticles: [] };
             // Published to tool state on TRANSITION only (twice per eruption), so
             // the Erupt buttons can show that they are inert while one is running.
             // null forces a publish on the first frame, which also self-heals a
@@ -7084,7 +7862,7 @@ var d = labToolData.plateTectonics || {};
               eruptState.phase = 0;
               eruptState.tick = 0;
               eruptState.coneX = atX;
-              eruptState.coneBaseY = cH * 0.30;
+              eruptState.coneBaseY = GEO.seaY;
               // Same composition the 3D cutaway uses. Without this the two views
               // contradicted each other: basalt gave a broad shield in the block
               // model and the same steep stratovolcano cone here.
@@ -7099,7 +7877,7 @@ var d = labToolData.plateTectonics || {};
               eruptState.ashParticles = [];
               // Spawn rumble quake particles
               for (var rq = 0; rq < 4; rq++) {
-                quakeParticles.push({ x: atX + (Math.random()-0.5)*30, y: cH * 0.30, radius: 1, maxRadius: 20 + Math.random() * 20, alpha: 1 });
+                quakeParticles.push({ x: atX + (Math.random()-0.5)*30, y: GEO.seaY, radius: 1, maxRadius: 20 + Math.random() * 20, alpha: 1 });
               }
             }
 
@@ -7119,13 +7897,11 @@ var d = labToolData.plateTectonics || {};
 
               var my = (e.clientY - rect.top) * (cH / rect.height);
 
-              var crustY = cH * 0.30;
-
               for (var i = plates.length - 1; i >= 0; i--) {
 
                 var p = plates[i];
 
-                if (mx >= p.x && mx <= p.x + p.w && my >= crustY - p.thick && my <= crustY + 20) {
+                if (mx >= p.x && mx <= p.x + p.w && plateHit(p, my)) {
 
                   dragIdx = i; dragStartX = mx; dragPlateStartX = p.x;
                   publishSelectedPlate(p);
@@ -7148,7 +7924,7 @@ var d = labToolData.plateTectonics || {};
 
               var dx = mx - dragStartX;
 
-              plates[dragIdx].x = Math.max(0, Math.min(cW - plates[dragIdx].w, dragPlateStartX + dx));
+              plates[dragIdx].x = clampPlateX(plates, dragIdx, dragPlateStartX + dx);
 
               plates[dragIdx].vx = dx > 0 ? 1 : dx < 0 ? -1 : 0;
 
@@ -7182,7 +7958,7 @@ var d = labToolData.plateTectonics || {};
 
                     var bx = (dp.x + dp.w / 2 + op.x + op.w / 2) / 2;
 
-                    var by = cH * 0.30;
+                    var by = GEO.seaY;
 
                     for (var eq = 0; eq < 8; eq++) {
 
@@ -7200,16 +7976,77 @@ var d = labToolData.plateTectonics || {};
                     report.collided = true;
                     report.withName = op.name || op.id || '';
 
-                    if ((dp.type !== op.type || Math.random() > 0.4) && !eruptState.active) {
-                      triggerEruption(bx);
+                    // Which boundaries erupt is not a coin toss. Subduction
+                    // makes arc volcanoes; a rift erupts along the fissure. Two
+                    // continents colliding make MOUNTAINS and no arc at all —
+                    // there is no slab going down to melt. The old rule fired an
+                    // eruption on a 60% roll at any same-type boundary, so the
+                    // Himalaya-style collision the caption had just named came
+                    // with a stratovolcano on top of it more often than not.
+                    var bKind = (canvasEl._ptBoundaryKind || {})[Math.min(idx, j)];
+                    var shouldErupt = bKind === 'subduction' || bKind === 'divergent'
+                      || (bKind == null && dp.type !== op.type);
+
+                    if (shouldErupt && !eruptState.active) {
+                      // At a subduction zone the volcano belongs at the arc, not
+                      // at the seam. draw() publishes where the arc is.
+                      var arcMap = canvasEl._ptArcX || {};
+                      var arcAt = arcMap[Math.min(idx, j)];
+                      triggerEruption(arcAt != null ? arcAt : bx);
                       sfxTectErupt();
                       report.erupted = true;
                       var curErupt = (liveD.eruptionCount || 0) + 1;
                       liveUpd({ eruptionCount: curErupt });
                     }
 
+                    // ── How big is the earthquake you just made? ─────────────
+                    // The sim fired quakes forever without ever giving one a
+                    // size, while the "Cataclysmic Rumble" badge asked for an
+                    // M8.0+ and read `eqMagnitude` — a number written ONLY by
+                    // the seismograph slider two panels away. You earned it by
+                    // dragging a slider, not by making an earthquake.
+                    //
+                    // A magnitude is the size of the RUPTURE, and the boundary
+                    // decides how big a rupture can get. Every M9 ever recorded
+                    // was a subduction megathrust: a fault dipping gently under
+                    // a continent has thousands of square kilometres to break at
+                    // once. Continental collision thrusts run large but shorter.
+                    // A spreading ridge breaks a thin, hot, brittle layer in
+                    // small pieces and essentially never exceeds about M6.5 — so
+                    // "make an M8" is a question about WHERE, not how hard you
+                    // shove, and the badge should be discoverable that way.
+                    var MAG_BAND = {
+                      subduction: [7.4, 9.1],   // megathrust; the only M9 maker
+                      collision:  [6.4, 8.1],   // continental thrust belts
+                      divergent:  [4.4, 6.4]    // ridge and rift; small ruptures
+                    };
+                    var band = MAG_BAND[bKind] || [5.4, 7.2];
+                    // Where in the band depends on how big the break is, and the
+                    // size of a break has two parts. How hard the plates are
+                    // locked together (gap goes negative as they interlock), and
+                    // how long the fault between them can be — which is limited
+                    // by the smaller of the two plates. A small plate has a short
+                    // boundary and simply cannot rupture enough of it to make the
+                    // largest quakes, which is why the biggest ones on record
+                    // belong to the biggest subduction zones.
+                    var press = Math.max(0, Math.min(1, (15 - gap) / 45));
+                    var runLen = Math.max(0, Math.min(1, Math.min(dp.w, op.w) / (cW * 0.20)));
+                    var qMag = band[0] + (band[1] - band[0])
+                      * (0.05 + 0.42 * press + 0.38 * runLen + 0.15 * Math.random());
+                    qMag = Math.round(Math.min(band[1], qMag) * 10) / 10;
+                    report.magnitude = qMag;
+                    canvasEl._ptLastQuake = { mag: qMag, x: bx, kind: bKind || null, life: 200 };
+
                     var curQuakes = (liveD.quakeCount || 0) + 1;
-                    liveUpd({ quakeCount: curQuakes });
+                    // eqMagnitude drives the seismograph, so the trace below now
+                    // shows the quake you just made rather than an unrelated
+                    // slider position. maxQuakeMag is what the badge reads.
+                    liveUpd({
+                      quakeCount: curQuakes,
+                      lastQuakeMag: qMag,
+                      eqMagnitude: qMag,
+                      maxQuakeMag: Math.max(liveD.maxQuakeMag || 0, qMag)
+                    });
                     setTimeout(live.checkChallenges || checkChallenges, 50);
 
                     var liveAward = live.awardStemXP || awardStemXP;
@@ -7275,7 +8112,7 @@ var d = labToolData.plateTectonics || {};
                 if (kbIdx < 0) kbIdx = 0;
                 var p = plates[kbIdx];
                 var was = p.x;
-                p.x = Math.max(0, Math.min(cW - p.w, p.x + dir * (big ? 48 : 14)));
+                p.x = clampPlateX(plates, kbIdx, p.x + dir * (big ? 48 : 14));
                 p.vx = dir;
                 // Movement ONLY. settleBoundary awards a quake, XP and possibly an
                 // eruption, and calling it per key press let a held arrow key farm
@@ -7309,13 +8146,11 @@ var d = labToolData.plateTectonics || {};
 
               var my = (t.clientY - rect.top) * (cH / rect.height);
 
-              var crustY = cH * 0.30;
-
               for (var i = plates.length - 1; i >= 0; i--) {
 
                 var p = plates[i];
 
-                if (mx >= p.x && mx <= p.x + p.w && my >= crustY - p.thick && my <= crustY + 20) {
+                if (mx >= p.x && mx <= p.x + p.w && plateHit(p, my)) {
 
                   dragIdx = i; dragStartX = mx; dragPlateStartX = p.x; publishSelectedPlate(p); break;
 
@@ -7333,7 +8168,7 @@ var d = labToolData.plateTectonics || {};
 
               var mx = (t.clientX - rect.left) * (cW / rect.width);
 
-              plates[dragIdx].x = Math.max(0, Math.min(cW - plates[dragIdx].w, dragPlateStartX + (mx - dragStartX)));
+              plates[dragIdx].x = clampPlateX(plates, dragIdx, dragPlateStartX + (mx - dragStartX));
 
               plates[dragIdx].vx = mx > dragStartX ? 1 : -1;
 
@@ -7349,6 +8184,22 @@ var d = labToolData.plateTectonics || {};
               // firing, stop the loop and allow a clean re-init on the next attach.
               if (!canvasEl.isConnected) { canvasEl._ptInit = false; return; }
 
+              // Scrolled away: stay armed so it picks straight back up, but do no
+              // work. The page is several screens long and this is the heaviest
+              // loop on it.
+              //
+              // EXCEPT while an eruption is running. `eruptState.tick` only advances
+              // inside this function, so skipping the frame froze the eruption
+              // mid-blast — and because the Erupt button is inert while one is
+              // active, scrolling away once left it inert FOREVER. Found by driving
+              // the challenge list rather than by reading: "trigger 5 eruptions"
+              // could not be completed at all. An eruption is about nine seconds and
+              // one canvas; the throttle keeps the case that actually matters.
+              if (!ptOnScreen(canvasEl) && !eruptState.active) {
+                canvasEl._ptAnim = requestAnimationFrame(draw);
+                return;
+              }
+
               // Read CURRENT control values from the live-props channel (see canvasRef) —
               // these shadow the init-time closure so toggles work without a sim rebuild.
               var live = canvasEl._ptLive || {};
@@ -7358,136 +8209,119 @@ var d = labToolData.plateTectonics || {};
               var isDark = !!live.isDark;
 
               tick++;
+              // Ambient phase, separate from the frame counter. Clouds, stars,
+              // waves and the convection markers all move purely for atmosphere;
+              // under reduced motion they hold at a chosen frame while the sim
+              // itself stays live, so dragging a plate and triggering an eruption
+              // both still work.
+              var amb = ptReducedMotion() ? 210 : tick;
+              var ambSpin = ptReducedMotion() ? 0 : 1;
 
               ctx.clearRect(0, 0, cW, cH);
 
-              var crustY = cH * 0.30;
+              // ── Depth frame ──────────────────────────────────────────────────
+              // GEO owns the kilometre scale (see its definition at init). Every
+              // y below comes from it, so a depth drawn here and a depth read off
+              // the ruler can never disagree.
+              var seaY = GEO.seaY;
+              var crustY = seaY;                     // the land/sea surface datum
+              var zoneBot = GEO.dY(GEO.TECT_KM);     // 400 km — bottom of the real scale
+              var breakY = zoneBot + cH * 0.010;     // the scale break itself
+              var deepTop = zoneBot + cH * 0.048;    // compressed interior starts here
+              var driftOn = !!live.ptDrift;
 
-
-
-              // ── Sky / Atmosphere ──
-
-              var skyGrad = ctx.createLinearGradient(0, 0, 0, crustY - 60);
-
+              // ── Sky ──
+              var skyGrad = ctx.createLinearGradient(0, 0, 0, seaY);
               if (isDark) {
                 skyGrad.addColorStop(0, '#090d16');
-                skyGrad.addColorStop(0.4, '#0f172a');
+                skyGrad.addColorStop(0.55, '#0f172a');
                 skyGrad.addColorStop(1, '#1e1b4b');
               } else {
-                skyGrad.addColorStop(0, '#87CEEB');
-                skyGrad.addColorStop(0.4, '#b0d4f1');
-                skyGrad.addColorStop(1, '#d4edfc');
+                skyGrad.addColorStop(0, '#7fc0e8');
+                skyGrad.addColorStop(0.55, '#b0d4f1');
+                skyGrad.addColorStop(1, '#dcefff');
               }
               ctx.fillStyle = skyGrad;
-              ctx.fillRect(0, 0, cW, crustY - 60);
+              ctx.fillRect(0, 0, cW, seaY);
 
-
-
-              // clouds or stars
-
+              // Clouds or stars. Confined to the UPPER part of the sky band so
+              // they never sit behind the boundary captions, which are the one
+              // piece of text in this frame a student has to be able to read.
               if (isDark) {
                 ctx.fillStyle = 'rgba(255,255,255,0.7)';
                 for (var si = 0; si < 20; si++) {
-                  var starX = (si * 37 + tick * 0.05) % cW;
-                  var starY = (si * 17) % (crustY - 60);
+                  var starX = (si * 37 + amb * 0.05) % cW;
+                  var starY = (si * 17) % (seaY * 0.45);
                   ctx.beginPath();
-                  ctx.arc(starX, starY, Math.sin(tick * 0.05 + si) * 0.7 + 1.0, 0, Math.PI * 2);
+                  ctx.arc(starX, starY, Math.sin(amb * 0.05 + si) * 0.7 + 1.0, 0, Math.PI * 2);
                   ctx.fill();
                 }
               } else {
-                ctx.fillStyle = 'rgba(255,255,255,0.6)';
+                ctx.fillStyle = 'rgba(255,255,255,0.5)';
                 for (var cl = 0; cl < 5; cl++) {
-                  var cx = ((cl * cW / 4) + tick * 0.2 * speed) % (cW + 100) - 50;
-                  var cy = 15 + cl * 12;
+                  var cx = ((cl * cW / 4) + amb * 0.2 * speed) % (cW + 100) - 50;
+                  var cy = 12 + cl * 9;
                   ctx.beginPath();
-                  ctx.ellipse(cx, cy, 30 + cl * 5, 8 + cl * 2, 0, 0, Math.PI * 2);
+                  ctx.ellipse(cx, cy, 26, 7, 0, 0, Math.PI * 2);
                   ctx.fill();
                 }
               }
 
-
-
-              // ── Ocean surface ──
-
-              ctx.fillStyle = isDark ? 'rgba(30,58,138,0.3)' : 'rgba(30,90,160,0.4)';
-              ctx.fillRect(0, crustY - 60, cW, 60);
-              // Animated waves
-
-              ctx.strokeStyle = isDark ? 'rgba(147,197,253,0.35)' : 'rgba(255,255,255,0.3)';
-              ctx.lineWidth = 1.5;
-
-              for (var wv = 0; wv < 3; wv++) {
-
-                ctx.beginPath();
-
-                for (var wx = 0; wx < cW; wx += 4) {
-
-                  var wy = crustY - 40 + wv * 12 + Math.sin(wx * 0.015 + tick * 0.03 * speed + wv) * 4;
-
-                  if (wx === 0) ctx.moveTo(wx, wy); else ctx.lineTo(wx, wy);
-
-                }
-
-                ctx.stroke();
-
-              }
-
-
-
-              // -- Earth layers (bottom up) --
-
-              // Inner core
-              var icGrad = ctx.createRadialGradient(cW / 2, cH + cH * 0.1, 0, cW / 2, cH + cH * 0.1, cH * 0.35);
-              icGrad.addColorStop(0, '#ffdd33');
-              icGrad.addColorStop(0.4, '#ffaa00');
-              icGrad.addColorStop(0.8, '#ff7700');
-              icGrad.addColorStop(1, '#cc4400');
+              // ── Deep interior (COMPRESSED, behind a visible scale break) ──
+              // Not to scale, and the canvas says so. The lower mantle and core
+              // are context for the heat engine, not the subject of this tab, and
+              // drawing them at their real share of the radius left the plate
+              // boundaries a sliver too small to teach on.
+              var icGrad = ctx.createLinearGradient(0, cH * 0.93, 0, cH);
+              icGrad.addColorStop(0, '#ffcc22');
+              icGrad.addColorStop(1, '#ff8800');
               ctx.fillStyle = icGrad;
-              ctx.fillRect(0, cH * 0.82, cW, cH * 0.18);
+              ctx.fillRect(0, cH * 0.93, cW, cH * 0.07);
 
-              // Outer core
-              var ocGrad = ctx.createLinearGradient(0, cH * 0.68, 0, cH * 0.82);
+              var ocGrad = ctx.createLinearGradient(0, cH * 0.845, 0, cH * 0.93);
               ocGrad.addColorStop(0, '#a54508');
-              ocGrad.addColorStop(0.5, '#c4580b');
               ocGrad.addColorStop(1, '#d4650d');
               ctx.fillStyle = ocGrad;
-              ctx.fillRect(0, cH * 0.68, cW, cH * 0.14);
+              ctx.fillRect(0, cH * 0.845, cW, cH * 0.085);
 
-              // Lower mantle
-              var lmGrad = ctx.createLinearGradient(0, cH * 0.50, 0, cH * 0.68);
+              var lmGrad = ctx.createLinearGradient(0, deepTop, 0, cH * 0.845);
               if (isDark) {
-                lmGrad.addColorStop(0, '#0f172a');
-                lmGrad.addColorStop(0.5, '#020617');
-                lmGrad.addColorStop(1, '#020617');
+                lmGrad.addColorStop(0, '#1c1917');
+                lmGrad.addColorStop(1, '#450a0a');
               } else {
                 lmGrad.addColorStop(0, '#7a2000');
-                lmGrad.addColorStop(0.5, '#8B2500');
                 lmGrad.addColorStop(1, '#a03000');
               }
               ctx.fillStyle = lmGrad;
-              ctx.fillRect(0, cH * 0.50, cW, cH * 0.18);
+              ctx.fillRect(0, deepTop, cW, cH * 0.845 - deepTop);
 
-              // Upper mantle
-              var umGrad = ctx.createLinearGradient(0, crustY, 0, cH * 0.50);
+              // ── The tectonic zone: 0 to 400 km, drawn to a real scale ──
+              var umGrad = ctx.createLinearGradient(0, seaY, 0, zoneBot);
               if (isDark) {
-                umGrad.addColorStop(0, '#27272a');
-                umGrad.addColorStop(0.5, '#1e293b');
-                umGrad.addColorStop(1, '#0f172a');
+                umGrad.addColorStop(0, '#3f3f46');
+                umGrad.addColorStop(0.45, '#292524');
+                umGrad.addColorStop(1, '#1c1917');
               } else {
-                umGrad.addColorStop(0, '#5a3018');
-                umGrad.addColorStop(0.5, '#6b3a1f');
-                umGrad.addColorStop(1, '#7a3520');
+                umGrad.addColorStop(0, '#8a5a34');
+                umGrad.addColorStop(0.45, '#7a3f22');
+                umGrad.addColorStop(1, '#68301a');
               }
               ctx.fillStyle = umGrad;
-              ctx.fillRect(0, crustY, cW, cH * 0.20);
+              ctx.fillRect(0, seaY, cW, zoneBot - seaY);
 
-              // -- Stipple texture on mantle layers --
-              // Generate ONCE: regenerating random dots every few frames read as flickering
-              // static across the whole mantle instead of a stable rock texture.
-              if (!canvasEl._stippleCache) {
+              // Stipple: mantle rock texture. Generated ONCE (a per-frame re-roll
+              // read as flickering static) and rebuilt only if the zone height
+              // changes, so it does not clump where the layers used to be.
+              if (!canvasEl._stippleCache || canvasEl._stippleZone !== Math.round(zoneBot)) {
+                canvasEl._stippleZone = Math.round(zoneBot);
                 canvasEl._stippleCache = [];
-                for (var stI = 0; stI < 80; stI++) {
-                  canvasEl._stippleCache.push({ x: Math.random() * cW, y: crustY + Math.random() * (cH * 0.70 - crustY + cH * 0.18), a: 0.04 + Math.random() * 0.08, r: 1 + Math.random() * 2 });
+                for (var stI = 0; stI < 90; stI++) {
+                  canvasEl._stippleCache.push({
+                    x: Math.random() * cW,
+                    y: seaY + Math.random() * (cH * 0.84 - seaY),
+                    a: 0.04 + Math.random() * 0.07,
+                    r: 1 + Math.random() * 2
+                  });
                 }
               }
               for (var stJ = 0; stJ < canvasEl._stippleCache.length; stJ++) {
@@ -7496,286 +8330,794 @@ var d = labToolData.plateTectonics || {};
                 ctx.beginPath(); ctx.arc(st.x, st.y, st.r, 0, Math.PI * 2); ctx.fill();
               }
 
-              // -- Heat shimmer effect in upper mantle --
-              for (var shI = 0; shI < 12; shI++) {
-                var shX = (shI / 12) * cW + Math.sin(tick * 0.02 + shI * 0.8) * 8;
-                var shY = crustY + cH * 0.04 + Math.cos(tick * 0.015 + shI * 1.2) * 6;
-                ctx.fillStyle = isDark ? 'rgba(239,68,68,' + (0.06 + 0.04 * Math.sin(tick * 0.04 + shI)) + ')' : 'rgba(255,120,40,' + (0.06 + 0.04 * Math.sin(tick * 0.04 + shI)) + ')';
-                ctx.beginPath(); ctx.arc(shX, shY, 4 + Math.sin(tick * 0.03 + shI) * 2, 0, Math.PI * 2); ctx.fill();
+              // The scale break, drawn as the zigzag that convention uses for
+              // exactly this. Without it the compressed interior is a silent lie
+              // about depth; with it, it is a labelled abbreviation.
+              ctx.fillStyle = isDark ? '#0b0b10' : '#2a1a10';
+              ctx.fillRect(0, breakY, cW, deepTop - breakY);
+              ctx.strokeStyle = isDark ? 'rgba(251,146,60,0.65)' : 'rgba(255,214,170,0.85)';
+              ctx.lineWidth = 2;
+              for (var zz = 0; zz < 2; zz++) {
+                var zy = zz === 0 ? breakY + 3 : deepTop - 3;
+                ctx.beginPath();
+                for (var zx = 0; zx <= cW; zx += 18) {
+                  var zoff = (Math.floor(zx / 18) % 2 === 0) ? -4 : 4;
+                  if (zx === 0) ctx.moveTo(zx, zy + zoff); else ctx.lineTo(zx, zy + zoff);
+                }
+                ctx.stroke();
               }
 
-              // -- Lithosphere demarcation line --
-              ctx.strokeStyle = isDark ? 'rgba(217,70,239,0.3)' : 'rgba(255,200,130,0.3)';
-              ctx.lineWidth = 1.5;
-              ctx.setLineDash([6, 4]);
-              ctx.beginPath(); ctx.moveTo(0, crustY + 2); ctx.lineTo(cW, crustY + 2); ctx.stroke();
-              ctx.setLineDash([]);
-
-              // Layer labels
-              if (showLabels) {
-                ctx.fillStyle = 'rgba(255,255,255,0.7)';
-                ctx.font = 'bold ' + (cW > 600 ? '14' : '10') + 'px system-ui';
-                ctx.textAlign = 'center';
-                ctx.fillText('Lithosphere', cW * 0.15, crustY + 12);
-                ctx.fillText('Upper Mantle', cW / 2, crustY + cH * 0.10);
-                ctx.fillText('Lower Mantle', cW / 2, cH * 0.60);
-                ctx.fillText('Outer Core (liquid)', cW / 2, cH * 0.76);
-                ctx.fillText('Inner Core (solid)', cW / 2, cH * 0.92);
+              // ── Mantle convection: the CAUSE, not decoration ─────────────────
+              // The plates and the currents used to be two unrelated animations —
+              // four cells spinning in the middle of the mantle while the plates
+              // sat perfectly still until a student dragged one. So the tool said
+              // "convection moves the plates" and showed nothing that did.
+              //
+              // Now ONE flow field drives both. surfaceFlow(x) is the horizontal
+              // velocity of the top of the convecting mantle: positive drags the
+              // plate above it to the right. The cells are drawn from that field,
+              // the coupling arrows are that field, and (with drift on) the plates
+              // are moved by it — so what a student watches happen is what the
+              // arrows say should happen.
+              var CELLS = 3;
+              var cellW = cW / CELLS;
+              function surfaceFlow(x) { return Math.sin(Math.PI * x / cellW); }
+              // Zero crossings of the field: alternating upwelling (plates pulled
+              // apart) and downwelling (plates pushed together).
+              var flowNodes = [];
+              for (var fn = 0; fn <= CELLS; fn++) {
+                // Just inside the node, is the flow moving away from it or toward it?
+                var probe = surfaceFlow(fn * cellW + cellW * 0.02);
+                flowNodes.push({ x: fn * cellW, up: probe > 0 });
               }
-
-
-
-              // ── Convection currents ──
 
               if (showConvection) {
+                var cellCy = (GEO.dY(120) + zoneBot) / 2;
+                var cellRx = cellW * 0.36;
+                var cellRy = (zoneBot - GEO.dY(120)) * 0.38;
+
+                // The loop itself, drawn as a ring. Forty loose dots on an
+                // invisible path read as drifting sparks, not as circulation:
+                // a student could watch them for a minute without seeing that
+                // anything went round. The ring is the shape of the claim.
+                for (var ce = 0; ce < CELLS; ce++) {
+                  var ccx = (ce + 0.5) * cellW;
+                  ctx.strokeStyle = 'rgba(251,146,60,0.32)';
+                  ctx.lineWidth = 2;
+                  ctx.setLineDash([9, 9]);
+                  ctx.beginPath();
+                  ctx.ellipse(ccx, cellCy, cellRx, cellRy, 0, 0, Math.PI * 2);
+                  ctx.stroke();
+                  ctx.setLineDash([]);
+                  if (showLabels) {
+                    ctx.fillStyle = 'rgba(253,186,116,0.85)';
+                    ctx.font = 'bold 11px system-ui';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('convection cell', ccx, cellCy + 4);
+                  }
+                }
 
                 for (var di = 0; di < convectionDots.length; di++) {
-
                   var dot = convectionDots[di];
-
-                  var cellW = cW / 4;
-
-                  var cellCx = (dot.cell + 0.5) * cellW;
-
-                  var cellCy = cH * 0.55;
-
-                  var rx = cellW * 0.35;
-
-                  var ry = cH * 0.12;
-
-                  dot.angle += 0.008 * speed * (dot.cell % 2 === 0 ? 1 : -1);
-
-                  dot.x = cellCx + Math.cos(dot.angle) * rx;
-
-                  dot.y = cellCy + Math.sin(dot.angle) * ry;
-
-                  var alpha = 0.4 + 0.3 * Math.sin(dot.angle);
-
-                  ctx.fillStyle = 'rgba(255,140,0,' + alpha + ')';
-
+                  var k = dot.cell % CELLS;
+                  var cellCx = (k + 0.5) * cellW;
+                  // Spin direction is READ OFF the flow field rather than set from
+                  // the cell index, so a cell can never circulate against the
+                  // arrows the same field draws.
+                  var spin = surfaceFlow(cellCx) > 0 ? 1 : -1;
+                  dot.angle += 0.011 * speed * spin * ambSpin;
+                  dot.x = cellCx + Math.cos(dot.angle) * cellRx;
+                  dot.y = cellCy + Math.sin(dot.angle) * cellRy;
+                  // A short trail, so the DIRECTION of travel is readable from a
+                  // still frame. Without it a screenshot of this canvas cannot
+                  // tell a student which way the cell turns.
+                  var tAng = dot.angle - spin * 0.22;
+                  ctx.strokeStyle = 'rgba(251,146,60,0.45)';
+                  ctx.lineWidth = 2.5;
                   ctx.beginPath();
-
-                  ctx.arc(dot.x, dot.y, 3, 0, Math.PI * 2);
-
+                  ctx.moveTo(cellCx + Math.cos(tAng) * cellRx, cellCy + Math.sin(tAng) * cellRy);
+                  ctx.lineTo(dot.x, dot.y);
+                  ctx.stroke();
+                  ctx.fillStyle = 'rgba(255,170,60,0.95)';
+                  ctx.beginPath();
+                  ctx.arc(dot.x, dot.y, 4, 0, Math.PI * 2);
                   ctx.fill();
+                }
 
-                  // Arrow head at top of rotation
+                // Coupling arrows along the base of the lithosphere. This is the
+                // handshake the old view never drew: the mantle is in contact with
+                // the plate and dragging it, and the arrow length IS the speed the
+                // plate would move at that point.
+                var couplingY = GEO.dY(155);
+                ctx.lineWidth = 3;
+                for (var ax = cellW * 0.18; ax < cW; ax += cellW * 0.32) {
+                  var fv = surfaceFlow(ax);
+                  if (Math.abs(fv) < 0.12) continue;
+                  var alen = 26 * fv;
+                  ctx.strokeStyle = 'rgba(253,186,116,0.9)';
+                  ctx.beginPath();
+                  ctx.moveTo(ax - alen, couplingY);
+                  ctx.lineTo(ax + alen, couplingY);
+                  ctx.stroke();
+                  ctx.fillStyle = 'rgba(253,186,116,0.95)';
+                  ctx.beginPath();
+                  ctx.moveTo(ax + alen + 7 * (fv > 0 ? 1 : -1), couplingY);
+                  ctx.lineTo(ax + alen, couplingY - 5);
+                  ctx.lineTo(ax + alen, couplingY + 5);
+                  ctx.fill();
+                }
 
-                  if (Math.abs(Math.sin(dot.angle)) < 0.15 && Math.cos(dot.angle) * (dot.cell % 2 === 0 ? 1 : -1) > 0) {
-
-                    ctx.fillStyle = 'rgba(255,200,50,0.7)';
-
-                    ctx.beginPath();
-
-                    var aDir = dot.cell % 2 === 0 ? 1 : -1;
-
-                    ctx.moveTo(dot.x + 6 * aDir, dot.y);
-
-                    ctx.lineTo(dot.x - 2 * aDir, dot.y - 4);
-
-                    ctx.lineTo(dot.x - 2 * aDir, dot.y + 4);
-
-                    ctx.fill();
-
+                // Where the flow turns: the up-limbs and down-limbs that decide
+                // which boundaries open and which close.
+                for (var nd = 0; nd < flowNodes.length; nd++) {
+                  var node = flowNodes[nd];
+                  if (node.x <= 2 || node.x >= cW - 2) continue;
+                  ctx.strokeStyle = node.up ? 'rgba(248,113,113,0.8)' : 'rgba(125,211,252,0.75)';
+                  ctx.lineWidth = 3;
+                  ctx.setLineDash([7, 6]);
+                  ctx.beginPath();
+                  ctx.moveTo(node.x, node.up ? zoneBot - 14 : GEO.dY(175));
+                  ctx.lineTo(node.x, node.up ? GEO.dY(175) : zoneBot - 14);
+                  ctx.stroke();
+                  ctx.setLineDash([]);
+                  if (showLabels) {
+                    ctx.fillStyle = node.up ? '#fca5a5' : '#bae6fd';
+                    ctx.font = 'bold 12px system-ui';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(node.up ? 'hot rock rises' : 'cool rock sinks', node.x, zoneBot - 26);
                   }
+                }
+              }
 
+              // ── Drift: the mantle actually moves the plates ──
+              if (driftOn) {
+                for (var dr = 0; dr < plates.length; dr++) {
+                  if (dr === dragIdx) continue;
+                  var dpl = plates[dr];
+                  var mid0 = dpl.x + dpl.w / 2;
+                  dpl.vx = surfaceFlow(mid0);
+                  // Same rigid-body clamp the drag uses, so drift cannot reach a
+                  // configuration a student's own hand could not.
+                  // Rate set so a boundary forms in roughly ten seconds at 1x. At 0.11 the
+                  // first thing that happens took about half a minute, which is long
+                  // enough that a student decides nothing is happening and reaches for
+                  // the mouse — and the whole point of drift is that they see a
+                  // boundary appear WITHOUT having pushed it.
+                  dpl.x = clampPlateX(plates, dr, dpl.x + dpl.vx * 0.22 * speed);
+                }
+                // A boundary that closes under drift has to produce the same
+                // quakes and eruptions a dragged one does, or drift is a
+                // screensaver. Throttled hard: settleBoundary awards XP and can
+                // spawn an eruption, and an unthrottled call at 60 fps would fire
+                // thousands of quakes a minute and score a student for sitting
+                // still.
+                if (!canvasEl._ptDriftNext) canvasEl._ptDriftNext = 0;
+                if (tick > canvasEl._ptDriftNext) {
+                  for (var ds = 0; ds < plates.length - 1; ds++) {
+                    if (plates[ds + 1].x - (plates[ds].x + plates[ds].w) < 10) {
+                      settleBoundary(ds);
+                      canvasEl._ptDriftNext = tick + 240;   // ~4 s at 60 fps
+                      break;
+                    }
+                  }
+                }
+              }
+
+              // ── Boundary analysis ────────────────────────────────────────────
+              // Classified ONCE per frame, before anything is drawn, so the
+              // structures under the surface, the captions above it and the
+              // explainer panel outside the canvas are all reading one verdict.
+              //
+              // The old rule was `types differ ? 'Subduction' : gap < 0 ?
+              // 'Convergent' : 'Divergent'`, which is a category error: subduction
+              // is a KIND of convergent boundary, not an alternative to one. It
+              // also called a pair "Subduction" while they were being pulled
+              // APART, purely because one of them was oceanic.
+              function classifyPair(a, b) {
+                var gap = b.x - (a.x + a.w);
+                // Narrower than the resting gap the layout opens (PT_GAP), so
+                // a plate nobody has touched is NOT a boundary. Wider than that
+                // and the model came up with six live boundaries before the
+                // student had done anything at all.
+                // Only the OPENING side needs a cut-off. An overlap is a
+                // convergence no matter how deep it is, and treating a large
+                // negative gap as "no boundary" is what let the most extreme
+                // collision the model allows produce no caption at all.
+                if (gap > cW * 0.034) return null;
+                if (gap < -cW * (PT_MAX_OVERLAP + 0.006)) return null;
+                var mid = (a.x + a.w + b.x) / 2;
+                if (gap > cW * 0.004) {
+                  var bothOcean = a.type === 'oceanic' && b.type === 'oceanic';
+                  return {
+                    kind: 'divergent',
+                    label: bothOcean ? 'Divergent — mid-ocean ridge' : 'Divergent — continental rift',
+                    gap: gap, mid: mid, a: a, b: b
+                  };
+                }
+                if (a.type !== b.type) {
+                  // The DENSE plate sinks. That is the whole rule, and it is why
+                  // the answer never depends on which one the student dragged.
+                  var down = a.type === 'oceanic' ? a : b;
+                  return {
+                    kind: 'subduction',
+                    label: 'Convergent — ocean sinks under continent',
+                    gap: gap, mid: mid, a: a, b: b,
+                    down: down, dir: down === a ? 1 : -1
+                  };
+                }
+                if (a.type === 'oceanic') {
+                  return {
+                    kind: 'subduction',
+                    label: 'Convergent — ocean sinks under ocean',
+                    gap: gap, mid: mid, a: a, b: b,
+                    down: a, dir: 1
+                  };
+                }
+                return {
+                  kind: 'collision',
+                  label: 'Convergent — continents collide',
+                  gap: gap, mid: mid, a: a, b: b
+                };
+              }
+
+              var boundaries = [];
+              canvasEl._ptBoundaryKind = {};
+              for (var bi = 0; bi < plates.length - 1; bi++) {
+                var bres = classifyPair(plates[bi], plates[bi + 1]);
+                if (bres) {
+                  bres.index = bi;
+                  boundaries.push(bres);
+                  // settleBoundary runs outside draw() and has no classifier of
+                  // its own, so it reads the verdict from here. One classifier,
+                  // one answer — the alternative is the picture saying "continents
+                  // collide" while the event logic erupts a volcano.
+                  canvasEl._ptBoundaryKind[bi] = bres.kind;
+                }
+              }
+              // Handed to the React panel so the prose outside the canvas describes
+              // the boundary actually on screen. Written on CHANGE only: draw()
+              // runs 60 times a second and a state write per frame would re-render
+              // the whole tool continuously.
+              var focusB = null;
+              for (var fb = 0; fb < boundaries.length; fb++) {
+                // The boundary the student is working at wins; otherwise the
+                // tightest one, which is the one actually doing something.
+                if (dragIdx >= 0 && (boundaries[fb].index === dragIdx || boundaries[fb].index === dragIdx - 1)) {
+                  focusB = boundaries[fb];
+                  break;
+                }
+                if (!focusB || boundaries[fb].gap < focusB.gap) focusB = boundaries[fb];
+              }
+              (function () {
+                var focus = focusB;
+                var sig = focus ? (focus.kind + '|' + focus.a.name + '|' + focus.b.name) : '';
+                if (sig !== canvasEl._ptBoundarySig) {
+                  canvasEl._ptBoundarySig = sig;
+                  var lv2 = canvasEl._ptLive || {};
+                  (lv2.upd || upd)({
+                    ptFocusBoundary: focus
+                      ? {
+                          kind: focus.kind, label: focus.label,
+                          a: focus.a.name, b: focus.b.name,
+                          aType: focus.a.type, bType: focus.b.type
+                        }
+                      : null
+                  });
+                }
+              })();
+
+              // ── Sub-surface boundary structures ──────────────────────────────
+              // Drawn BEFORE the plates so a slab reads as descending out of the
+              // plate above it rather than lying on top of everything.
+              //
+              // This is the half the old view was missing entirely. It printed the
+              // word "Subduction" over a plain orange glow: nothing sank, there
+              // was no trench, no arc, and no earthquakes at depth. A caption
+              // naming a process the picture does not show is exactly what makes a
+              // student say they cannot tell what the tool is teaching.
+              var DIP = 50 * Math.PI / 180;
+              for (var sb = 0; sb < boundaries.length; sb++) {
+                var B = boundaries[sb];
+
+                if (B.kind === 'divergent') {
+                  // New lithosphere welling into the gap, with age stripes:
+                  // seafloor spreading is read from the record it leaves, and the
+                  // rock is youngest at the ridge and older symmetrically outward.
+                  var gx0 = B.a.x + B.a.w, gw = B.gap;
+                  var bothOc = B.a.type === 'oceanic' && B.b.type === 'oceanic';
+                  // The new crust does not fill the gap flush with the plates
+                  // either side. A continental rift DROPS: the floor of the East
+                  // African Rift sits below the plateaux beside it, which is why
+                  // it is a valley. A mid-ocean ridge RISES: the new rock is hot
+                  // and buoyant, so the crest stands above the abyssal plain it
+                  // becomes. Filling flush drew the same red wall for both and
+                  // erased the one landform each is named after.
+                  var topN = bothOc
+                    ? Math.min(GEO.top(B.a), GEO.top(B.b)) - cH * 0.014
+                    : Math.max(seaY + cH * 0.012, Math.min(GEO.top(B.a), GEO.top(B.b)) + cH * 0.020);
+                  var botN = (GEO.base(B.a) + GEO.base(B.b)) / 2;
+                  var nGrad = ctx.createLinearGradient(0, topN, 0, botN);
+                  nGrad.addColorStop(0, '#f97316');
+                  nGrad.addColorStop(1, '#7f1d1d');
+                  ctx.fillStyle = nGrad;
+                  ctx.fillRect(gx0, topN, gw, botN - topN);
+                  ctx.strokeStyle = 'rgba(15,23,42,0.4)';
+                  ctx.lineWidth = 1.5;
+                  for (var ag = 1; ag < 5; ag++) {
+                    var agx = gx0 + gw * (ag / 5);
+                    ctx.beginPath(); ctx.moveTo(agx, topN); ctx.lineTo(agx, botN); ctx.stroke();
+                  }
+                  // The rising plume that fills it.
+                  var plGrad = ctx.createLinearGradient(0, botN, 0, GEO.dY(360));
+                  plGrad.addColorStop(0, 'rgba(249,115,22,0.55)');
+                  plGrad.addColorStop(1, 'rgba(249,115,22,0)');
+                  ctx.fillStyle = plGrad;
+                  // Capped: the fan is a schematic of upwelling, and at a wide
+                  // gap an unbounded one filled a third of the mantle and buried
+                  // the convection cells it is supposed to be part of.
+                  var flare = Math.min(cW * 0.055, gw * 1.1);
+                  ctx.beginPath();
+                  ctx.moveTo(gx0, botN);
+                  ctx.lineTo(gx0 + gw, botN);
+                  ctx.lineTo(gx0 + gw + flare, GEO.dY(330));
+                  ctx.lineTo(gx0 - flare, GEO.dY(330));
+                  ctx.closePath();
+                  ctx.fill();
+                  B._ridgeX = gx0 + gw / 2;
+                  B._ridgeY = topN;
+
+                } else if (B.kind === 'collision') {
+                  // Neither plate is dense enough to sink, so the crust has
+                  // nowhere to go but up AND down: the range is matched by a root
+                  // pushed into the mantle beneath it. Students are shown the
+                  // mountains and almost never the root, which is why "why does
+                  // colliding make mountains" stays unanswered.
+                  var rootTop = Math.max(GEO.base(B.a), GEO.base(B.b));
+                  var squeeze = Math.max(0, -B.gap);
+                  var rootD = Math.min(cH * 0.11, cH * 0.03 + squeeze * 0.9);
+                  ctx.fillStyle = isDark ? 'rgba(87,83,78,0.95)' : 'rgba(139,105,20,0.95)';
+                  ctx.beginPath();
+                  ctx.moveTo(B.mid - cW * 0.055, rootTop - 2);
+                  ctx.quadraticCurveTo(B.mid, rootTop + rootD * 1.5, B.mid + cW * 0.055, rootTop - 2);
+                  ctx.closePath();
+                  ctx.fill();
+                  ctx.strokeStyle = 'rgba(250,204,21,0.55)';
+                  ctx.lineWidth = 2;
+                  ctx.stroke();
+                  if (showLabels && B === focusB) {
+                    ctx.fillStyle = '#fde68a';
+                    ctx.font = 'bold 12px system-ui';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('crustal root', B.mid, rootTop + rootD + 16);
+                  }
+                }
+              }
+
+              // ── Water ──
+              // Drawn per oceanic plate rather than as one band across the canvas,
+              // so a continent is dry land and an ocean basin holds sea — which is
+              // the reason ocean floor is called a basin at all.
+              for (var wi = 0; wi < plates.length; wi++) {
+                var wpl = plates[wi];
+                if (wpl.type !== 'oceanic') continue;
+                var wTop = GEO.top(wpl);
+                var wGrad = ctx.createLinearGradient(0, seaY, 0, wTop);
+                wGrad.addColorStop(0, isDark ? 'rgba(30,58,138,0.6)' : 'rgba(56,132,208,0.7)');
+                wGrad.addColorStop(1, isDark ? 'rgba(15,23,42,0.72)' : 'rgba(20,70,130,0.82)');
+                ctx.fillStyle = wGrad;
+                ctx.fillRect(wpl.x, seaY, wpl.w, wTop - seaY);
+              }
+              // Waves, clipped to the ocean basins. Drawn edge to edge they ran
+              // straight across the continents' summits as a pale band, which read
+              // as the mountains being detached from the plate carrying them.
+              ctx.strokeStyle = isDark ? 'rgba(147,197,253,0.5)' : 'rgba(255,255,255,0.7)';
+              ctx.lineWidth = 1.6;
+              for (var wi2 = 0; wi2 < plates.length; wi2++) {
+                var opl = plates[wi2];
+                if (opl.type !== 'oceanic') continue;
+                for (var wv = 0; wv < 2; wv++) {
+                  ctx.beginPath();
+                  for (var wx = opl.x; wx <= opl.x + opl.w; wx += 5) {
+                    var wy = seaY - 6 + wv * 5 + Math.sin(wx * 0.02 + amb * 0.03 * speed + wv) * 3;
+                    if (wx === opl.x) ctx.moveTo(wx, wy); else ctx.lineTo(wx, wy);
+                  }
+                  ctx.stroke();
+                }
+              }
+              // Sea level itself, edge to edge: it is the datum every elevation and
+              // depth on this canvas is measured from, so it has to be one line.
+              ctx.strokeStyle = isDark ? 'rgba(226,232,240,0.35)' : 'rgba(15,23,42,0.28)';
+              ctx.lineWidth = 1;
+              ctx.beginPath(); ctx.moveTo(0, seaY); ctx.lineTo(cW, seaY); ctx.stroke();
+
+              // ── Tectonic plates ──
+              for (var pi = 0; pi < plates.length; pi++) {
+                var pl = plates[pi];
+                var pTop = GEO.top(pl);
+                var pBase = GEO.base(pl);
+                var pThick = pBase - pTop;
+                var isCont = pl.type === 'continental';
+
+                var baseColor = isDark ? (isCont ? '#57534e' : '#1e3a5f') : pl.color;
+                var pGrad = ctx.createLinearGradient(pl.x, pTop, pl.x, pBase);
+                pGrad.addColorStop(0, baseColor);
+                pGrad.addColorStop(0.35, baseColor);
+                // The lower two thirds of a plate is MANTLE lithosphere, not
+                // crust. Shading it distinctly is the difference between "the
+                // plate is the crust" — the commonest misconception this tab
+                // exists to fix — and "the plate is crust plus the rigid mantle
+                // welded underneath it".
+                pGrad.addColorStop(0.36, isDark ? '#292524' : '#4a3524');
+                pGrad.addColorStop(1, isDark ? '#0c0a09' : '#2f2117');
+                ctx.fillStyle = pGrad;
+                ctx.fillRect(pl.x + 1, pTop, pl.w - 2, pThick);
+
+                // Crust / mantle-lithosphere divide, drawn as a line so the two
+                // parts of the plate are countable rather than implied by a
+                // gradient a student may read as shadow.
+                var mohoY = pTop + pThick * 0.36;
+                ctx.strokeStyle = 'rgba(250,204,21,0.5)';
+                ctx.lineWidth = 1.5;
+                ctx.setLineDash([5, 4]);
+                ctx.beginPath(); ctx.moveTo(pl.x + 2, mohoY); ctx.lineTo(pl.x + pl.w - 2, mohoY); ctx.stroke();
+                ctx.setLineDash([]);
+
+                // Plate outline, typed by colour and keyed to the legend.
+                ctx.strokeStyle = isCont ? 'rgba(250,204,21,0.85)' : 'rgba(56,189,248,0.85)';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(pl.x + 1, pTop, pl.w - 2, pThick);
+
+                if (isCont) {
+                  // Mountains, sized to how hard this plate is actually being
+                  // squeezed, so a range growing is something the student causes
+                  // rather than scenery that was always there.
+                  var squeezeM = 0;
+                  for (var qb = 0; qb < boundaries.length; qb++) {
+                    if (boundaries[qb].kind !== 'collision') continue;
+                    if (boundaries[qb].a === pl || boundaries[qb].b === pl) {
+                      squeezeM = Math.max(squeezeM, Math.max(0, -boundaries[qb].gap));
+                    }
+                  }
+                  var mtCount = Math.max(2, Math.round(pl.w / 90));
+                  for (var mt = 0; mt < mtCount; mt++) {
+                    var mspan = mtCount > 1 ? (0.64 / (mtCount - 1)) : 0;
+                    var mx2 = pl.x + pl.w * 0.18 + mt * pl.w * mspan;
+                    var mh = Math.min(cH * 0.058, cH * 0.026 + Math.sin(mt * 1.7 + pi) * cH * 0.008 + squeezeM * 0.5);
+                    var mw = pl.w * 0.13;
+                    var mtGrad = ctx.createLinearGradient(mx2, pTop - mh, mx2, pTop);
+                    mtGrad.addColorStop(0, isDark ? '#a1a1aa' : '#9c8a6a');
+                    mtGrad.addColorStop(1, isDark ? '#3f3f46' : '#5a4530');
+                    ctx.fillStyle = mtGrad;
+                    ctx.beginPath();
+                    ctx.moveTo(mx2 - mw, pTop);
+                    ctx.lineTo(mx2, pTop - mh);
+                    ctx.lineTo(mx2 + mw, pTop);
+                    ctx.closePath();
+                    ctx.fill();
+                    // Snow only on peaks that have actually been pushed up: the
+                    // cue that a range GREW is the range changing, so a white cap
+                    // on every hill at every moment would hide exactly that.
+                    if (mh > cH * 0.040) {
+                      ctx.fillStyle = 'rgba(255,255,255,0.92)';
+                      ctx.beginPath();
+                      ctx.moveTo(mx2 - mw * 0.28, pTop - mh * 0.72);
+                      ctx.lineTo(mx2, pTop - mh);
+                      ctx.lineTo(mx2 + mw * 0.28, pTop - mh * 0.72);
+                      ctx.closePath();
+                      ctx.fill();
+                    }
+                  }
                 }
 
               }
 
 
+              // ── The descending slab ─────────────────────────────────────────
+              // Drawn AFTER the plates, on purpose. Painted underneath them, the
+              // top 140 km of the slab sat behind the overriding continent, so the
+              // one thing a student is meant to trace — the SAME plate carrying on
+              // downward out of the trench — began in mid-mantle attached to
+              // nothing. Textbook sections draw the slab across the overriding
+              // plate for exactly this reason: the continuity is the lesson, and
+              // the outline makes it obvious which body is in front.
+              for (var sd = 0; sd < boundaries.length; sd++) {
+                var B = boundaries[sd];
+                if (B.kind !== 'subduction') continue;
+                var slabTop = GEO.base(B.down);
+                var dirS = B.dir;                         // +1 dips right, -1 dips left
+                var reachY = GEO.dY(400);
+                var runX = (reachY - slabTop) / Math.tan(DIP);
+                var slabW = GEO.thick(B.down);
+                // The descending slab, at a ~50 degree dip. A real quadrilateral
+                // of the plate's OWN thickness, so it is visibly the same plate
+                // continuing downward rather than a decorative wedge.
+                ctx.fillStyle = isDark ? 'rgba(30,58,95,0.95)' : 'rgba(23,49,86,0.95)';
+                ctx.beginPath();
+                ctx.moveTo(B.mid, GEO.top(B.down));
+                ctx.lineTo(B.mid + dirS * runX, reachY);
+                ctx.lineTo(B.mid + dirS * (runX + slabW * 0.9), reachY);
+                ctx.lineTo(B.mid + dirS * slabW * 0.55, GEO.top(B.down));
+                ctx.closePath();
+                ctx.fill();
+                ctx.strokeStyle = 'rgba(148,197,253,0.6)';
+                ctx.lineWidth = 2;
+                ctx.stroke();
 
-              // ── Tectonic plates ──
-
-              for (var pi = 0; pi < plates.length; pi++) {
-
-                var pl = plates[pi];
-
-                var baseColor = pl.color;
-                if (isDark) {
-                  baseColor = pl.type === 'continental' ? '#3f3f46' : '#27272a';
-                }
-
-                var pGrad = ctx.createLinearGradient(pl.x, crustY - pl.thick, pl.x, crustY);
-
-                pGrad.addColorStop(0, baseColor);
-
-                pGrad.addColorStop(1, isDark ? '#090d16' : '#333');
-
-                ctx.fillStyle = pGrad;
-
-
-
-                // Plate body
-
-                ctx.fillRect(pl.x + 2, crustY - pl.thick, pl.w - 4, pl.thick);
-
-                if (isDark) {
-                  ctx.save();
-                  ctx.shadowBlur = 4;
-                  ctx.shadowColor = pl.type === 'continental' ? '#d946ef' : '#8b5cf6';
-                  ctx.strokeStyle = pl.type === 'continental' ? 'rgba(217,70,239,0.7)' : 'rgba(139,92,246,0.7)';
-                  ctx.lineWidth = 1;
-                  ctx.strokeRect(pl.x + 2, crustY - pl.thick, pl.w - 4, pl.thick);
-                  ctx.restore();
-                }
-
-
-
-                // Surface features
-
-                if (pl.type === 'continental') {
-
-                  // Rough terrain contour along top edge
-                  ctx.strokeStyle = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.15)';
-                  ctx.lineWidth = 1;
+                // Wadati-Benioff zone: earthquake foci get DEEPER the further
+                // they are from the trench, because they happen in and around
+                // the sinking slab. That dipping plane of quakes is the direct
+                // evidence subduction is real, so it is drawn as data lying on
+                // the slab rather than as scatter.
+                for (var wq = 0; wq < 14; wq++) {
+                  var frac = (wq + 0.5) / 14;
+                  var wqY = slabTop + (reachY - slabTop) * frac;
+                  var wqX = B.mid + dirS * (runX * frac + slabW * 0.4);
+                  var wqKm = (wqY - seaY) / GEO.pxPerKm;
+                  ctx.fillStyle = wqKm >= 300 ? '#a78bfa' : wqKm >= 70 ? '#fb923c' : '#f43f5e';
                   ctx.beginPath();
-                  for (var tc = 0; tc < pl.w - 4; tc += 3) {
-                    // Deterministic roughness (per-frame Math.random() made the edge shimmer)
-                    var tcY = crustY - pl.thick - (1 + Math.sin(tc * 1.7 + pi * 3.1) * 1);
-                    if (tc === 0) ctx.moveTo(pl.x + 2 + tc, tcY);
-                    else ctx.lineTo(pl.x + 2 + tc, tcY);
-                  }
-                  ctx.stroke();
-
-                  // Mountains (larger, proper ridgeline)
-                  var mtCount = Math.max(3, Math.floor(pl.w / 35));
-                  for (var mt = 0; mt < mtCount; mt++) {
-                    var mx2 = pl.x + pl.w * 0.15 + mt * pl.w * (0.7 / mtCount);
-                    var mh = 16 + Math.sin(mt * 1.7 + pi) * 8;
-                    var mw = 12 + Math.sin(mt * 2.3 + pi * 0.5) * 4;
-
-                    // Mountain shadow
-                    ctx.fillStyle = isDark ? 'rgba(0,0,0,0.3)' : 'rgba(0,0,0,0.12)';
-                    ctx.beginPath();
-                    ctx.moveTo(mx2 - mw - 2, crustY - pl.thick);
-                    ctx.lineTo(mx2 + 2, crustY - pl.thick - mh + 1);
-                    ctx.lineTo(mx2 + mw + 4, crustY - pl.thick);
-                    ctx.fill();
-
-                    // Mountain body
-                    var mtGrad = ctx.createLinearGradient(mx2, crustY - pl.thick - mh, mx2, crustY - pl.thick);
-                    if (isDark) {
-                      mtGrad.addColorStop(0, '#71717a');
-                      mtGrad.addColorStop(0.4, '#3f3f46');
-                      mtGrad.addColorStop(1, '#090d16');
-                    } else {
-                      mtGrad.addColorStop(0, '#7a6b52');
-                      mtGrad.addColorStop(0.4, pl.color);
-                      mtGrad.addColorStop(1, '#4a3a28');
-                    }
-                    ctx.fillStyle = mtGrad;
-                    ctx.beginPath();
-                    ctx.moveTo(mx2 - mw, crustY - pl.thick);
-                    ctx.lineTo(mx2 - mw * 0.3, crustY - pl.thick - mh * 0.7);
-                    ctx.lineTo(mx2, crustY - pl.thick - mh);
-                    ctx.lineTo(mx2 + mw * 0.3, crustY - pl.thick - mh * 0.75);
-                    ctx.lineTo(mx2 + mw, crustY - pl.thick);
-                    ctx.fill();
-
-                    // Snow cap (proportional)
-                    ctx.fillStyle = isDark ? 'rgba(244,244,245,0.9)' : 'rgba(255,255,255,0.9)';
-                    ctx.beginPath();
-                    ctx.moveTo(mx2 - mw * 0.2, crustY - pl.thick - mh + mh * 0.2);
-                    ctx.lineTo(mx2, crustY - pl.thick - mh);
-                    ctx.lineTo(mx2 + mw * 0.2, crustY - pl.thick - mh + mh * 0.22);
-                    ctx.fill();
-                  }
-
-                  // Vegetation dots on continental surface
-                  ctx.fillStyle = isDark ? 'rgba(34,197,94,0.25)' : 'rgba(60,140,50,0.35)';
-                  for (var vg = 0; vg < Math.floor(pl.w / 8); vg++) {
-                    // Deterministic scatter keyed on plate + index: stable dots that ride
-                    // along with the plate instead of re-rolling (flickering) every frame.
-                    var vgH1 = Math.abs(Math.sin(vg * 12.9898 + pi * 78.233));
-                    var vgH2 = Math.abs(Math.sin(vg * 39.3468 + pi * 11.135));
-                    var vgX = pl.x + 6 + vgH1 * (pl.w - 12);
-                    var vgY = crustY - pl.thick + 2 + vgH2 * (pl.thick * 0.2);
-                    ctx.beginPath(); ctx.arc(vgX, vgY, 1 + vgH2, 0, Math.PI * 2); ctx.fill();
-                  }
-
-                } else {
-
-                  // Ocean water on top of oceanic plates
-                  ctx.fillStyle = 'rgba(30,90,180,0.35)';
-                  ctx.fillRect(pl.x + 2, crustY - pl.thick - 10, pl.w - 4, 10);
-
-                  // Subtle ridge lines on oceanic plate surface
-                  ctx.strokeStyle = 'rgba(100,160,220,0.15)';
-                  ctx.lineWidth = 0.8;
-                  for (var rl = 0; rl < 3; rl++) {
-                    ctx.beginPath();
-                    var rlY = crustY - pl.thick + pl.thick * (0.25 + rl * 0.25);
-                    ctx.moveTo(pl.x + 6, rlY);
-                    ctx.lineTo(pl.x + pl.w - 6, rlY + (Math.sin(rl + pi) * 2));
-                    ctx.stroke();
-                  }
+                  ctx.arc(wqX, wqY, 3.6, 0, Math.PI * 2);
+                  ctx.fill();
                 }
 
+                // Melting where the slab passes ~110 km, and the magma rising
+                // from it. This is WHY arcs stand back from the trench instead
+                // of sitting on it — the one fact that makes an arc make sense.
+                var meltY = GEO.dY(110);
+                // Measured from the slab's OWN top surface at the trench, which
+                // is where the quad above starts. Taking it from GEO.base()
+                // instead put the origin 80 km down and landed the melt point
+                // almost on top of the trench.
+                var meltX = B.mid + dirS * ((meltY - GEO.top(B.down)) / Math.tan(DIP));
+                var arcX = meltX;
+                var mGrad = ctx.createLinearGradient(meltX, meltY, arcX, seaY);
+                mGrad.addColorStop(0, 'rgba(251,146,60,0.8)');
+                mGrad.addColorStop(1, 'rgba(220,38,38,0.15)');
+                ctx.strokeStyle = mGrad;
+                ctx.lineWidth = 9;
+                ctx.lineCap = 'round';
+                ctx.beginPath();
+                ctx.moveTo(meltX, meltY);
+                ctx.quadraticCurveTo(meltX - dirS * 18, (meltY + seaY) / 2, arcX, seaY + 4);
+                ctx.stroke();
+                ctx.lineCap = 'butt';
+                B._arcX = arcX;
+                // Published for settleBoundary, which runs outside draw() and
+                // otherwise erupted at the TRENCH. A volcano standing in the
+                // trench contradicts the arc this very frame just drew, and the
+                // offset between the two is the whole point of the geometry.
+                if (!canvasEl._ptArcX) canvasEl._ptArcX = {};
+                canvasEl._ptArcX[B.index] = arcX;
+              }
 
-
-                // Plate label
-
-                if (showLabels) {
-
-                  ctx.fillStyle = '#fff';
-
-                  ctx.font = 'bold ' + (cW > 600 ? '11' : '8') + 'px system-ui';
-
+              // Plate names, in their own pass. Drawn inside the plate loop they
+              // were painted before the slab, so a descending slab crossing the
+              // overriding plate covered the name of the plate it was crossing.
+              if (showLabels) {
+                for (var li = 0; li < plates.length; li++) {
+                  var lpl = plates[li];
+                  if (lpl.w <= 46) continue;
+                  var lblY = GEO.top(lpl) + GEO.thick(lpl) * 0.64;
+                  ctx.font = 'bold ' + (cW > 900 ? '15' : '12') + 'px system-ui';
                   ctx.textAlign = 'center';
-
-                  ctx.fillText(pl.name, pl.x + pl.w / 2, crustY - pl.thick / 2 + 4);
-
+                  var lw = ctx.measureText(lpl.name).width;
+                  ctx.fillStyle = 'rgba(2,6,23,0.86)';
+                  ctx.fillRect(lpl.x + lpl.w / 2 - lw / 2 - 6, lblY - 13, lw + 12, 20);
+                  ctx.fillStyle = lpl.type === 'continental' ? '#fde68a' : '#bae6fd';
+                  ctx.fillText(lpl.name, lpl.x + lpl.w / 2, lblY + 2);
                 }
+              }
 
+              // ── Surface expression + boundary captions ───────────────────────
+              for (var sc = 0; sc < boundaries.length; sc++) {
+                var C = boundaries[sc];
+                var capColor;
+                // Only ONE boundary gets the full treatment. Six captions fired at
+                // once turned the frame into a wall of overlapping chips, and the
+                // boundary the student had just made looked exactly like the five
+                // they had not touched. The rest get a coloured tick that says a
+                // boundary is there without competing for the reading.
+                var isFocus = C === focusB;
 
-
-                // Boundary glow between plates
-
-                if (pi < plates.length - 1) {
-
-                  var next = plates[pi + 1];
-
-                  var gapX = pl.x + pl.w;
-
-                  var gapW = next.x - gapX;
-
-                  if (Math.abs(gapW) < 30) {
-
-                    // Magma glow at boundary
-
-                    var mgGrad = ctx.createRadialGradient(gapX + gapW / 2, crustY - 10, 0, gapX + gapW / 2, crustY - 10, 25);
-
-                    mgGrad.addColorStop(0, 'rgba(255,100,0,0.8)');
-
-                    mgGrad.addColorStop(0.5, 'rgba(255,50,0,0.4)');
-
-                    mgGrad.addColorStop(1, 'rgba(255,0,0,0)');
-
-                    ctx.fillStyle = mgGrad;
-
-                    ctx.fillRect(gapX - 15, crustY - 30, gapW + 30, 40);
-
-                    // Boundary type indicator
-
-                    if (showLabels) {
-
-                      ctx.fillStyle = '#ff6600';
-
-                      ctx.font = 'bold 9px system-ui';
-
-                      ctx.textAlign = 'center';
-
-                      var btype = (pl.type !== next.type) ? 'Subduction' : (gapW < 0 ? 'Convergent' : 'Divergent');
-
-                      ctx.fillText(btype, gapX + gapW / 2, crustY - 35);
-
-                    }
-
+                if (C.kind === 'subduction') {
+                  capColor = '#fb923c';
+                  // Trench: the deepest places on Earth are the surface trace of
+                  // exactly this, and it is the landform a student can go and look
+                  // up afterwards. Cut as a notch into the water column.
+                  var trTop = GEO.top(C.down);
+                  ctx.fillStyle = isDark ? 'rgba(2,6,23,0.9)' : 'rgba(10,28,58,0.88)';
+                  ctx.beginPath();
+                  ctx.moveTo(C.mid - cW * 0.018, trTop - 2);
+                  ctx.lineTo(C.mid, trTop + cH * 0.032);
+                  ctx.lineTo(C.mid + cW * 0.018, trTop - 2);
+                  ctx.closePath();
+                  ctx.fill();
+                  if (showLabels && isFocus) {
+                    ctx.font = 'bold 12px system-ui';
+                    ctx.textAlign = 'center';
+                    var trW = ctx.measureText('trench').width;
+                    var trLY = trTop + cH * 0.048;
+                    ctx.fillStyle = 'rgba(2,6,23,0.8)';
+                    ctx.fillRect(C.mid - trW / 2 - 5, trLY - 12, trW + 10, 17);
+                    ctx.fillStyle = '#93c5fd';
+                    ctx.fillText('trench', C.mid, trLY);
                   }
-
+                  // Volcanic arc, standing where the melt reaches the surface.
+                  if (C._arcX != null) {
+                    for (var vc = -1; vc <= 1; vc++) {
+                      var vcx = C._arcX + vc * cW * 0.016;
+                      var vch = cH * (vc === 0 ? 0.042 : 0.028);
+                      ctx.fillStyle = isDark ? '#52525b' : '#3f3f46';
+                      ctx.beginPath();
+                      ctx.moveTo(vcx - vch * 0.75, seaY);
+                      ctx.lineTo(vcx, seaY - vch);
+                      ctx.lineTo(vcx + vch * 0.75, seaY);
+                      ctx.closePath();
+                      ctx.fill();
+                      ctx.fillStyle = '#f97316';
+                      ctx.beginPath();
+                      ctx.arc(vcx, seaY - vch, 2.6, 0, Math.PI * 2);
+                      ctx.fill();
+                    }
+                    if (showLabels && isFocus) {
+                      // On a chip: pale orange over a pale sky was the least
+                      // legible label on the canvas, and it names the landform the
+                      // whole subduction geometry exists to explain.
+                      ctx.font = 'bold 12px system-ui';
+                      ctx.textAlign = 'center';
+                      var arcW = ctx.measureText('volcanic arc').width;
+                      var arcLY = seaY - cH * 0.082;
+                      ctx.fillStyle = 'rgba(2,6,23,0.8)';
+                      ctx.fillRect(C._arcX - arcW / 2 - 5, arcLY - 12, arcW + 10, 17);
+                      ctx.fillStyle = '#fdba74';
+                      ctx.fillText('volcanic arc', C._arcX, arcLY);
+                    }
+                  }
+                } else if (C.kind === 'divergent') {
+                  capColor = '#f87171';
+                  if (showLabels && isFocus && C._ridgeX != null) {
+                    var rTxt = (C.a.type === 'oceanic' && C.b.type === 'oceanic')
+                      ? 'ridge — new sea floor' : 'rift valley';
+                    ctx.font = 'bold 12px system-ui';
+                    ctx.textAlign = 'center';
+                    var rW = ctx.measureText(rTxt).width;
+                    var rLY = C._ridgeY - 12;
+                    ctx.fillStyle = 'rgba(2,6,23,0.8)';
+                    ctx.fillRect(C._ridgeX - rW / 2 - 5, rLY - 12, rW + 10, 17);
+                    ctx.fillStyle = '#fca5a5';
+                    ctx.fillText(rTxt, C._ridgeX, rLY);
+                  }
+                  // Spreading arrows: the plates are moving APART, and each arrow
+                  // points where its own plate is going.
+                  ctx.lineWidth = 3;
+                  for (var da = 0; da < 2; da++) {
+                    var sgn = da === 0 ? -1 : 1;
+                    var ax0 = C.mid + sgn * cW * 0.012, ax1 = C.mid + sgn * cW * 0.048;
+                    var ay = seaY - cH * 0.072;
+                    ctx.strokeStyle = '#f87171';
+                    ctx.beginPath(); ctx.moveTo(ax0, ay); ctx.lineTo(ax1, ay); ctx.stroke();
+                    ctx.fillStyle = '#f87171';
+                    ctx.beginPath();
+                    ctx.moveTo(ax1 + sgn * 8, ay);
+                    ctx.lineTo(ax1, ay - 5);
+                    ctx.lineTo(ax1, ay + 5);
+                    ctx.fill();
+                  }
+                } else {
+                  capColor = '#fbbf24';
+                  // Converging arrows, pointing INTO the collision.
+                  ctx.lineWidth = 3;
+                  for (var ca = 0; ca < 2; ca++) {
+                    var sgn2 = ca === 0 ? -1 : 1;
+                    var bx1 = C.mid + sgn2 * cW * 0.012, bx0 = C.mid + sgn2 * cW * 0.048;
+                    var by2 = seaY - cH * 0.072;
+                    ctx.strokeStyle = '#fbbf24';
+                    ctx.beginPath(); ctx.moveTo(bx0, by2); ctx.lineTo(bx1, by2); ctx.stroke();
+                    ctx.fillStyle = '#fbbf24';
+                    ctx.beginPath();
+                    ctx.moveTo(bx1 - sgn2 * 8, by2);
+                    ctx.lineTo(bx1, by2 - 5);
+                    ctx.lineTo(bx1, by2 + 5);
+                    ctx.fill();
+                  }
                 }
 
+                // The caption, in the sky on a solid chip with a leader line down
+                // to what it names. It used to be 9-pixel orange text jammed at
+                // crust level between two plate names, where it was both
+                // unreadable and routinely clipped by the neighbouring plate.
+                if (showLabels && !isFocus) {
+                  // Quiet marker for a boundary that is not in focus.
+                  ctx.fillStyle = capColor;
+                  ctx.beginPath();
+                  ctx.arc(C.mid, seaY - cH * 0.100, 5, 0, Math.PI * 2);
+                  ctx.fill();
+                } else if (showLabels) {
+                  ctx.font = 'bold 14px system-ui';
+                  ctx.textAlign = 'center';
+                  var cwid = ctx.measureText(C.label).width;
+                  var chx = Math.max(cwid / 2 + 12, Math.min(cW - cwid / 2 - 12, C.mid));
+                  var chy = seaY - cH * 0.105;
+                  ctx.fillStyle = 'rgba(2,6,23,0.88)';
+                  ctx.fillRect(chx - cwid / 2 - 9, chy - 15, cwid + 18, 23);
+                  ctx.strokeStyle = capColor;
+                  ctx.lineWidth = 2;
+                  ctx.strokeRect(chx - cwid / 2 - 9, chy - 15, cwid + 18, 23);
+                  ctx.fillStyle = capColor;
+                  ctx.fillText(C.label, chx, chy + 1);
+                  ctx.strokeStyle = capColor;
+                  ctx.lineWidth = 1.5;
+                  ctx.setLineDash([4, 4]);
+                  ctx.beginPath();
+                  ctx.moveTo(chx, chy + 8);
+                  ctx.lineTo(C.mid, seaY - cH * 0.012);
+                  ctx.stroke();
+                  ctx.setLineDash([]);
+                }
+              }
+
+              // ── Depth ruler ──────────────────────────────────────────────────
+              // The answer to "how deep is that?", which the old view could not
+              // give at all. Every tick is a real depth on the real half of the
+              // scale; the compressed strip below the break carries names only and
+              // never numbers, so no depth can be misread off it.
+              ctx.save();
+              ctx.fillStyle = isDark ? 'rgba(2,6,23,0.55)' : 'rgba(2,6,23,0.38)';
+              ctx.fillRect(0, seaY, 74, zoneBot - seaY);
+              ctx.textAlign = 'left';
+              [0, 100, 200, 300, 400].forEach(function (km) {
+                var ry2 = GEO.dY(km);
+                ctx.strokeStyle = 'rgba(226,232,240,0.45)';
+                ctx.lineWidth = km === 0 ? 2 : 1;
+                ctx.beginPath();
+                ctx.moveTo(0, ry2);
+                ctx.lineTo(km === 0 ? cW : 74, ry2);
+                ctx.stroke();
+                ctx.fillStyle = '#e2e8f0';
+                ctx.font = 'bold 12px system-ui';
+                ctx.fillText(km === 0 ? 'sea level' : km + ' km', 6, ry2 - 5);
+              });
+              // The 70 km line the quake colours key to. Named on the RIGHT edge:
+              // 70 and 100 km are only 30 px apart on this scale, so both labels
+              // in the left gutter overprinted each other.
+              ctx.strokeStyle = 'rgba(251,146,60,0.5)';
+              ctx.lineWidth = 1;
+              ctx.setLineDash([3, 5]);
+              ctx.beginPath(); ctx.moveTo(0, GEO.dY(70)); ctx.lineTo(cW, GEO.dY(70)); ctx.stroke();
+              ctx.setLineDash([]);
+              ctx.textAlign = 'left';
+              ctx.fillStyle = '#fdba74';
+              ctx.font = 'bold 11px system-ui';
+              ctx.fillText('70 km', 6, GEO.dY(70) + 13);
+              ctx.restore();
+
+              // Names for the compressed strip, plus the notes the frame needs in
+              // order to be an honest abbreviation rather than a distortion.
+              if (showLabels) {
+                ctx.textAlign = 'center';
+                ctx.fillStyle = 'rgba(255,255,255,0.88)';
+                ctx.font = 'bold 13px system-ui';
+                ctx.fillText('Lower mantle', cW / 2, (deepTop + cH * 0.845) / 2);
+                ctx.fillText('Outer core (liquid)', cW / 2, cH * 0.892);
+                ctx.fillText('Inner core (solid)', cW / 2, cH * 0.968);
+                ctx.fillStyle = isDark ? 'rgba(253,186,116,0.95)' : 'rgba(255,237,213,0.95)';
+                ctx.font = 'bold 11px system-ui';
+                ctx.fillText('scale break — everything below is squeezed to fit', cW / 2, (breakY + deepTop) / 2 + 4);
+                ctx.textAlign = 'left';
+                ctx.fillStyle = 'rgba(226,232,240,0.85)';
+                ctx.font = '11px system-ui';
+                ctx.fillText('Depths to scale above the break. Surface heights exaggerated.', 82, zoneBot - 12);
+                // The outline colours mean something, so say what — in the SKY,
+                // on a chip. Sitting at seaY + 16 put the legend inside the ocean
+                // and on top of the first plate, which is the one place on this
+                // canvas that must stay readable.
+                ctx.font = 'bold 12px system-ui';
+                var legY = cH * 0.030;
+                ctx.fillStyle = 'rgba(2,6,23,0.8)';
+                ctx.fillRect(8, legY - 13, 300, 38);
+                ctx.fillStyle = '#fde68a';
+                ctx.fillText('▬ continental — thick, buoyant, stands high', 16, legY);
+                ctx.fillStyle = '#bae6fd';
+                ctx.fillText('▬ oceanic — thin, dense, sinks first', 16, legY + 17);
               }
 
 
@@ -7802,6 +9144,57 @@ var d = labToolData.plateTectonics || {};
 
                 ctx.stroke();
 
+              }
+
+              // ── The magnitude of the quake you just made ──────────────────
+              // The rings alone said "something happened here". The number says
+              // how big, and the boundary name says why it could be that big —
+              // which is the whole point of being able to make an M9 at a
+              // subduction zone and never at a ridge.
+              var lq = canvasEl._ptLastQuake;
+              if (lq && lq.life > 0) {
+                lq.life -= speed;
+                var lqA = Math.max(0, Math.min(1, lq.life / 60));
+                var KIND_WHY = {
+                  subduction: 'megathrust — a huge fault area breaks at once',
+                  collision: 'thrust fault in colliding crust',
+                  divergent: 'thin brittle rock, so only a small break'
+                };
+                var lqTxt = 'M ' + lq.mag.toFixed(1);
+                var lqWhy = KIND_WHY[lq.kind] || '';
+                ctx.save();
+                ctx.globalAlpha = lqA;
+                ctx.font = 'bold 15px system-ui';
+                ctx.textAlign = 'center';
+                var lqW = Math.max(ctx.measureText(lqTxt).width, lqWhy ? ctx.measureText(lqWhy).width * 0.72 : 0) + 18;
+                // The boundary caption already owns a band above sea level, and
+                // the first version of this box was drawn straight through it.
+                // Sit in the clear strip between that caption and the water, and
+                // drop the explanatory line rather than overlap when the canvas
+                // is too short for both.
+                var lqCapBot = GEO.seaY - cH * 0.105 + 11;
+                var lqH = 32;
+                var lqTop = Math.max(lqCapBot + 3, GEO.seaY - 6 - lqH);
+                if (lqTop + lqH > GEO.seaY - 4) { lqH = 21; lqWhy = ''; lqTop = Math.max(lqCapBot + 2, GEO.seaY - 4 - lqH); }
+                var lqX = Math.max(lqW / 2 + 4, Math.min(cW - lqW / 2 - 4, lq.x));
+                ctx.fillStyle = isDark ? 'rgba(2,6,23,0.92)' : 'rgba(255,255,255,0.96)';
+                ctx.strokeStyle = isDark ? '#22d3ee' : '#b45309';
+                ctx.lineWidth = 1.5;
+                ctx.beginPath();
+                ctx.rect(lqX - lqW / 2, lqTop, lqW, lqH);
+                ctx.fill(); ctx.stroke();
+                // A short leader to the epicentre, so the number is attached to
+                // the rings rather than floating over the scene.
+                ctx.beginPath();
+                ctx.moveTo(lqX, lqTop + lqH); ctx.lineTo(lqX, GEO.seaY - 2); ctx.stroke();
+                ctx.fillStyle = isDark ? '#22d3ee' : '#b45309';
+                ctx.fillText(lqTxt, lqX, lqTop + 16);
+                if (lqWhy) {
+                  ctx.font = '10px system-ui';
+                  ctx.fillStyle = isDark ? '#cbd5e1' : '#44403c';
+                  ctx.fillText(lqWhy, lqX, lqTop + 28);
+                }
+                ctx.restore();
               }
 
 
@@ -7864,13 +9257,26 @@ var d = labToolData.plateTectonics || {};
                 (live.upd || upd)({ ptErupting: eruptState.active });
               }
 
-              VentGL.submit({
+              var ventModel = {
                 active: eruptState.active,
                 tick: eruptState.tick,
                 dark: isDark,
                 labels: showLabels,
                 magma: live.ptVentMagma || 'andesite'
-              });
+              };
+              VentGL.submit(ventModel);
+
+              // Publish the eruption STAGE, on transition only. The model already
+              // drives the chamber, the plume and the collapse from this value and
+              // has since it was written; it just never said it out loud, so the
+              // student watched four visibly different things happen with no way
+              // to name them or guess what came next. Written on change, not per
+              // frame: this runs 60 times a second.
+              var vPhase = eruptState.active ? VentGL.phase(ventModel) : 'repose';
+              if (vPhase !== canvasEl._ptPhasePub) {
+                canvasEl._ptPhasePub = vPhase;
+                (live.upd || upd)({ ptEruptPhase: vPhase });
+              }
 
               if (eruptState.active) {
                 eruptState.tick += speed;
@@ -7998,10 +9404,23 @@ var d = labToolData.plateTectonics || {};
                   ctx.beginPath(); ctx.arc(ap2.x, ap2.y, 5 + (1 - aAlpha2) * 10, 0, Math.PI * 2); ctx.fill();
                 }
 
-                // End eruption after ~520 ticks
-                if (eT > 520 && volcanoParticles.length === 0 && eruptState.lavaFlows.length === 0 && eruptState.ashParticles.length === 0) {
+                // End the eruption. The sequence itself is over at ~520 ticks;
+                // after that this waits for the last particles to clear so nothing
+                // freezes in mid-air.
+                //
+                // ★The wait was UNBOUNDED, and a straggling ash grain could hold the
+                // eruption "active" for twenty seconds or more. The Erupt button is
+                // inert while one is running, so pressing it during that window did
+                // nothing — and the "trigger 5 eruptions" challenge asks for five of
+                // them. Found by driving the challenge list, not by reading. Capped:
+                // past 900 ticks the leftovers are dropped and the vent resets.
+                var eDone = volcanoParticles.length === 0 && eruptState.lavaFlows.length === 0 && eruptState.ashParticles.length === 0;
+                if ((eT > 520 && eDone) || eT > 900) {
                   eruptState.active = false;
                   eruptState.tick = 0;
+                  volcanoParticles.length = 0;
+                  eruptState.lavaFlows.length = 0;
+                  eruptState.ashParticles.length = 0;
                 }
               }
 
@@ -8009,19 +9428,27 @@ var d = labToolData.plateTectonics || {};
 
               // ── Drag hint ──
 
-              if (tick < 120) {
+              if (tick < 300) {
 
-                var hAlpha = 0.5 + 0.3 * Math.sin(tick * 0.08);
-
-                ctx.fillStyle = 'rgba(255,255,255,' + hAlpha + ')';
-
+                // Names BOTH routes. The hint used to advertise dragging only, so
+                // the keyboard path was undiscoverable even once it existed.
+                //
+                // On a CHIP, not bare white text: it used to be drawn straight
+                // over the sky, and a white cloud drifting behind it made the one
+                // instruction a first-time student needs disappear.
+                var hintTxt = '⬅ Drag a plate, or press ↑↓ to pick one and ←→ to move it ➡';
+                var hAlpha = tick > 240 ? Math.max(0, (300 - tick) / 60) : 1;
                 ctx.font = 'bold 14px system-ui';
-
                 ctx.textAlign = 'center';
-
-                // Names BOTH routes. The hint used to advertise dragging only, so the
-                // keyboard path was undiscoverable even once it existed.
-                ctx.fillText('\u2B05 Drag plates, or press \u2191\u2193 to pick and \u2190\u2192 to move \u27A1', cW / 2, crustY - 70);
+                var hw = ctx.measureText(hintTxt).width;
+                var hy = seaY - cH * 0.155;
+                ctx.fillStyle = 'rgba(2,6,23,' + (0.85 * hAlpha) + ')';
+                ctx.fillRect(cW / 2 - hw / 2 - 12, hy - 16, hw + 24, 26);
+                ctx.strokeStyle = 'rgba(250,204,21,' + (0.9 * hAlpha) + ')';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(cW / 2 - hw / 2 - 12, hy - 16, hw + 24, 26);
+                ctx.fillStyle = 'rgba(254,240,138,' + hAlpha + ')';
+                ctx.fillText(hintTxt, cW / 2, hy + 2);
 
               }
 
@@ -8086,7 +9513,7 @@ var d = labToolData.plateTectonics || {};
             seismoRef._last = canvasEl;
 
             // Live-props channel: the running trace reads magnitude/theme from here.
-            canvasEl._seisLive = { eqMagnitude: eqMagnitude, isDark: isDark };
+            canvasEl._seisLive = { eqMagnitude: eqMagnitude, eqDistKm: eqDistKm, isDark: isDark };
 
             if (canvasEl._seisInit) return;
 
@@ -8108,66 +9535,171 @@ var d = labToolData.plateTectonics || {};
               var live = canvasEl._seisLive || {};
               var isDark = !!live.isDark;
               var eqMagnitude = live.eqMagnitude != null ? live.eqMagnitude : 5;
+              var eqDistKm = live.eqDistKm != null ? live.eqDistKm : 600;
 
-              sTick++;
+              // The trace scrolls purely to look like a live instrument; what it
+              // teaches is the arrival ORDER and the S-minus-P gap, both of which a
+              // still trace shows just as well. Held at a fixed phase under reduced
+              // motion, and the sliders still redraw it because the loop keeps
+              // running.
+              if (!ptReducedMotion()) sTick++;
+
+              if (!ptOnScreen(canvasEl)) { canvasEl._seisAnim = requestAnimationFrame(drawSeis); return; }
 
               sCtx.fillStyle = isDark ? '#090d16' : '#fefce8';
-
               sCtx.fillRect(0, 0, sW, sH);
 
-              // Grid lines
+              // ── What a seismogram actually is ─────────────────────────────────
+              // This used to be ONE smooth sine bump that swelled and faded. Three
+              // cards directly above it name P waves (fastest), S waves (medium)
+              // and surface waves (slowest, most damage); the quiz asks which
+              // arrives first; and the epicenter widget below it locates a quake
+              // from the S-minus-P interval. None of those three things were
+              // visible in the trace they all refer to.
+              //
+              // Now it is the real shape: quiet, then a small sharp P onset, then a
+              // bigger S arrival, then the long slow surface-wave train — with the
+              // S-minus-P gap marked, because that gap is the measurement.
+              //
+              // Velocities are the ones the epicenter widget already uses, so the
+              // two panels cannot disagree about how far away a quake is.
+              var VP = PT_SEISMIC.VP, VS = PT_SEISMIC.VS, VL = PT_SEISMIC.VL;
+              var tP = eqDistKm / VP;                      // seconds after the quake
+              var tS = eqDistKm / VS;
+              var tSurf = eqDistKm / VL;                   // Rayleigh, a little slower than S
+              var spGap = tS - tP;
+              // Window: from a little before P to well past the surface train, so
+              // the whole sequence is always in frame whatever the distance.
+              var t0 = -Math.max(6, tP * 0.25);
+              var t1 = tSurf + Math.max(40, spGap * 2.2);
+              var padL = 42, padR = 14;
+              function xOf(t) { return padL + ((t - t0) / (t1 - t0)) * (sW - padL - padR); }
+              var mid = sH * 0.55;
 
+              // Grid: time gridlines, so the axis is readable as time and not just
+              // as decoration.
               sCtx.strokeStyle = isDark ? 'rgba(99,102,241,0.15)' : 'rgba(0,0,0,0.08)';
-
               sCtx.lineWidth = 1;
+              var tickEvery = t1 > 260 ? 60 : t1 > 120 ? 30 : 10;
+              for (var gt = 0; gt < t1; gt += tickEvery) {
+                var gx = xOf(gt);
+                sCtx.beginPath(); sCtx.moveTo(gx, 42); sCtx.lineTo(gx, sH - 18); sCtx.stroke();
+              }
+              sCtx.strokeStyle = isDark ? 'rgba(148,163,184,0.35)' : 'rgba(0,0,0,0.18)';
+              sCtx.beginPath(); sCtx.moveTo(padL, mid); sCtx.lineTo(sW - padR, mid); sCtx.stroke();
 
-              for (var gy = 0; gy < sH; gy += sH / 8) { sCtx.beginPath(); sCtx.moveTo(0, gy); sCtx.lineTo(sW, gy); sCtx.stroke(); }
+              // Amplitude. Magnitude is logarithmic, so a whole unit is about ten
+              // times the shaking; the trace has to reflect that or the slider is
+              // just a label. Anchored at M5 and clamped so M9 stays in the box.
+              var gain = Math.min(1, Math.pow(10, (eqMagnitude - 5) / 1.6) / 22);
+              // Distance also damps it: the same quake read further away is smaller.
+              gain *= Math.max(0.25, Math.min(1, 700 / Math.max(120, eqDistKm)));
+              // Scaled to the room actually left between the label rows above and
+              // the S-minus-P bracket below, and to the LARGEST phase rather than
+              // to a nominal one: at a flat sH * 0.40 the surface train ran off the
+              // top and bottom of the canvas from about M7 upward, so the biggest
+              // quakes were the ones you could not read.
+              var halfRoom = Math.max(24, Math.min(mid - 46, sH - 36 - mid));
+              var A = gain * halfRoom / 1.2;
 
-              // Seismograph trace
-
-              var mag = eqMagnitude;
-
-              var amp = (mag / 9) * sH * 0.4;
-
-              var freq = 0.02 + (mag / 9) * 0.06;
-
-              sCtx.strokeStyle = isDark ? '#f43f5e' : '#dc2626';
-
-              sCtx.lineWidth = 2;
+              // Envelope for each phase: nothing before it arrives, a sharp rise,
+              // then a decay. Surface waves last far longer than the body waves.
+              function env(t, start, rise, fall) {
+                if (t < start) return 0;
+                var u = t - start;
+                return Math.min(1, u / rise) * Math.exp(-u / fall);
+              }
+              var wob = ptReducedMotion() ? 0 : sTick * 0.05;
 
               sCtx.save();
-              if (isDark) {
-                sCtx.shadowBlur = 8;
-                sCtx.shadowColor = '#f43f5e';
-              }
-
+              if (isDark) { sCtx.shadowBlur = 6; sCtx.shadowColor = '#f43f5e'; }
+              sCtx.strokeStyle = isDark ? '#f43f5e' : '#dc2626';
+              sCtx.lineWidth = 1.6;
               sCtx.beginPath();
+              for (var px = padL; px <= sW - padR; px += 1) {
+                var t = t0 + ((px - padL) / (sW - padL - padR)) * (t1 - t0);
+                // P: small, fast, short-lived. S: bigger, slower. Surface: biggest,
+                // slowest, and it rings on — which is why it does most of the damage.
+                var yP = Math.sin((t - tP) * 1.9 + wob) * A * 0.34 * env(t, tP, 0.5, spGap * 0.42 + 4);
+                var yS = Math.sin((t - tS) * 1.1 + wob) * A * 0.66 * env(t, tS, 1.0, spGap * 0.9 + 8);
+                var yL = Math.sin((t - tSurf) * 0.45 + wob) * A * 1.15 * env(t, tSurf, 4, spGap * 3.2 + 30);
+                // A little instrument noise, so the quiet part reads as a running
+                // recorder rather than a dead line.
+                // Instrument noise, so the quiet part reads as a running recorder
+                // rather than a dead line. Slow and small: at 7.3 rad/s it aliased
+                // into a dotted line once the trace stopped scrolling.
+                var noise = Math.sin(t * 0.9 + 1.7) * A * 0.010;
+                var sy = mid - (yP + yS + yL + noise);
+                if (px === padL) sCtx.moveTo(px, sy); else sCtx.lineTo(px, sy);
+              }
+              sCtx.stroke();
+              sCtx.restore();
 
-              for (var sx = 0; sx < sW; sx += 2) {
+              // ── Arrival markers ──
+              [
+                { t: tP, name: 'P wave', ink: '#1d4ed8', inkDark: '#93c5fd', row: 0 },
+                { t: tS, name: 'S wave', ink: '#6d28d9', inkDark: '#c4b5fd', row: 0 },
+                { t: tSurf, name: 'surface waves', ink: '#b91c1c', inkDark: '#fca5a5', row: 1 }
+              ].forEach(function (m) {
+                var mx = xOf(m.t);
+                if (mx < padL || mx > sW - padR) return;
+                sCtx.strokeStyle = isDark ? m.inkDark : m.ink;
+                sCtx.lineWidth = 1.5;
+                sCtx.setLineDash([4, 3]);
+                var ly = 6 + m.row * 18;
+                sCtx.beginPath(); sCtx.moveTo(mx, ly + 16); sCtx.lineTo(mx, sH - 34); sCtx.stroke();
+                sCtx.setLineDash([]);
+                sCtx.font = 'bold 12px system-ui';
+                sCtx.textAlign = 'center';
+                var lw = sCtx.measureText(m.name).width;
+                var lx = Math.max(lw / 2 + 6, Math.min(sW - lw / 2 - 6, mx));
+                sCtx.fillStyle = isDark ? 'rgba(2,6,23,0.9)' : 'rgba(255,255,255,0.94)';
+                sCtx.fillRect(lx - lw / 2 - 5, ly, lw + 10, 17);
+                sCtx.fillStyle = isDark ? m.inkDark : m.ink;
+                sCtx.fillText(m.name, lx, ly + 13);
+              });
 
-                var decay = Math.max(0, 1 - Math.abs(sx - sW * 0.5) / (sW * 0.35));
-
-                var sy = sH / 2 + Math.sin((sx + sTick * 2) * freq) * amp * decay * (1 + 0.3 * Math.sin(sx * 0.1));
-
-                if (sx === 0) sCtx.moveTo(sx, sy); else sCtx.lineTo(sx, sy);
-
+              // ── The S minus P interval ──
+              // The measurement the epicenter widget is built on, drawn on the
+              // trace it is measured from.
+              var xP = xOf(tP), xS = xOf(tS), by = sH - 26;
+              if (xS - xP > 26) {
+                sCtx.strokeStyle = isDark ? '#fbbf24' : '#b45309';
+                sCtx.lineWidth = 1.5;
+                sCtx.beginPath();
+                sCtx.moveTo(xP, by); sCtx.lineTo(xS, by);
+                sCtx.moveTo(xP, by - 4); sCtx.lineTo(xP, by + 4);
+                sCtx.moveTo(xS, by - 4); sCtx.lineTo(xS, by + 4);
+                sCtx.stroke();
+                var spTxt = 'S − P = ' + spGap.toFixed(0) + ' s';
+                sCtx.font = 'bold 11px system-ui';
+                sCtx.textAlign = 'center';
+                var sw2 = sCtx.measureText(spTxt).width;
+                sCtx.fillStyle = isDark ? 'rgba(2,6,23,0.88)' : 'rgba(255,251,235,0.95)';
+                sCtx.fillRect((xP + xS) / 2 - sw2 / 2 - 5, by - 15, sw2 + 10, 15);
+                sCtx.fillStyle = isDark ? '#fbbf24' : '#b45309';
+                sCtx.fillText(spTxt, (xP + xS) / 2, by - 4);
               }
 
-              sCtx.stroke();
-
-              // Labels
-
-              sCtx.fillStyle = '#991b1b';
-
-              sCtx.font = 'bold 12px system-ui';
-
+              // ── Axis and readout ──
+              sCtx.font = 'bold 11px system-ui';
               sCtx.textAlign = 'left';
-
-              sCtx.fillText('M ' + mag.toFixed(1), 10, 20);
-
+              sCtx.fillStyle = isDark ? '#fca5a5' : '#991b1b';
+              sCtx.fillText('M ' + eqMagnitude.toFixed(1) + '  ·  ' + Math.round(eqDistKm) + ' km away', 8, 16);
               sCtx.textAlign = 'right';
-
-              sCtx.fillText('Seismograph', sW - 10, 20);
+              sCtx.fillStyle = isDark ? '#94a3b8' : '#57534e';
+              sCtx.font = '10px system-ui';
+              sCtx.fillText('seconds after the quake →', sW - 10, sH - 6);
+              // Time ticks on the axis at the FOOT of the panel. Printed near the
+              // top they ran straight through the arrival labels.
+              sCtx.font = '10px system-ui';
+              sCtx.textAlign = 'center';
+              sCtx.fillStyle = isDark ? '#94a3b8' : '#57534e';
+              for (var lt = 0; lt < t1; lt += tickEvery) {
+                var lx = xOf(lt);
+                if (lx < padL + 18 || lx > sW - padR - 120) continue;
+                sCtx.fillText(String(Math.round(lt)) + ' s', lx, sH - 6);
+              }
 
               canvasEl._seisAnim = requestAnimationFrame(drawSeis);
 
@@ -8223,7 +9755,14 @@ var d = labToolData.plateTectonics || {};
 
                 React.createElement("h2", { className: "text-2xl font-black text-white tracking-tight" }, __alloT('stem.platetectonics.plate_tectonics', "Plate Tectonics")),
 
-                React.createElement("span", { className: "text-red-200 text-sm font-bold ml-2" }, __alloT('stem.platetectonics.interactive_earth', "Interactive Earth"))
+                // White, not red-200: measured 2.22:1 on the red header band.
+                // White on the red-500 band measured 3.21:1. The subtitle carries the
+                // one-line description of the whole tool, so it gets a darker chip of
+                // its own rather than being left to whatever the banner is painted.
+                React.createElement("span", {
+                  className: "text-white text-sm font-bold ml-2 px-2 py-0.5 rounded-lg",
+                  style: { background: 'rgba(127,29,29,0.55)' }
+                }, __alloT('stem.platetectonics.interactive_earth', "Interactive Earth"))
 
               ),
 
@@ -8324,16 +9863,127 @@ var d = labToolData.plateTectonics || {};
                   ));
                 }
                 if (atHub) {
+                  // ── Start here ────────────────────────────────────────────────
+                  // The hub opens on eight category cards leading to fifty-four
+                  // tools, in no particular order, with nothing marked as the way
+                  // in. That is a fine reference shelf and a poor first screen: a
+                  // student who has never met plate tectonics has no reason to
+                  // pick "Discovery and Frontiers" over "Parks and Landscapes",
+                  // and no idea that the Simulation is where the subject actually
+                  // gets taught.
+                  //
+                  // Three steps, in order, with the verb first and an honest time
+                  // on it. Everything else stays exactly where it was for anyone
+                  // who already knows what they came for.
+                  var START_STEPS = [
+                    { n: '1', tab: 'sim', icon: '🌍',
+                      title: __alloT('stem.platetectonics.start_1_title', 'Watch the plates move'),
+                      body: __alloT('stem.platetectonics.start_1_body', 'Let the mantle carry them, or push one yourself, and see what each kind of boundary builds.') },
+                    // Scrolls rather than switching tabs: what this step promises
+                    // lives in the Plate Boundary Simulator, which is always on the
+                    // page. Pointing it at the "Boundaries in Detail" tab instead
+                    // would have sent a beginner to a catalogue of twenty named
+                    // real-world boundaries — a fine reference, and not an
+                    // explanation of the three types at all.
+                    { n: '2', tab: null, scrollTo: 'pt-boundary-simulator', icon: '🧭',
+                      title: __alloT('stem.platetectonics.start_2_title', 'Take the three types apart'),
+                      body: __alloT('stem.platetectonics.start_2_body', 'Convergent, divergent and transform, one at a time, with the evidence for each.') },
+                    { n: '3', tab: 'quiz', icon: '❓',
+                      title: __alloT('stem.platetectonics.start_3_title', 'Check what stuck'),
+                      body: __alloT('stem.platetectonics.start_3_body', 'Eight questions. Every wrong answer explains itself rather than just marking you down.') }
+                  ];
+                  els.push(React.createElement('div', {
+                    key: 'start-here',
+                    'data-pt-start-here': 'true',
+                    className: 'w-full max-w-3xl mx-auto mb-3 rounded-2xl p-3 border',
+                    style: {
+                      // Opaque in both themes: this sits on whatever surface the
+                      // host provides, and a tinted panel is a bet on that surface.
+                      background: isDark ? '#1a1210' : '#fff7ed',
+                      borderColor: isDark ? 'rgba(251,146,60,0.35)' : '#fdba74'
+                    }
+                  },
+                    React.createElement('div', { className: 'flex items-baseline gap-2 flex-wrap mb-2' },
+                      React.createElement('span', {
+                        className: 'text-[11px] font-black uppercase tracking-wider',
+                        style: { color: isDark ? '#fdba74' : '#9a3412' }
+                      }, __alloT('stem.platetectonics.start_here', 'Start here')),
+                      React.createElement('span', {
+                        className: 'text-[11px]',
+                        style: { color: isDark ? '#a8a29e' : '#57534e' }
+                      }, __alloT('stem.platetectonics.start_here_sub', 'New to this? These three, in order, take about fifteen minutes. Everything below is the reference shelf — dip into it whenever you want.'))
+                    ),
+                    React.createElement('div', { className: 'grid grid-cols-1 sm:grid-cols-3 gap-2' },
+                      START_STEPS.map(function (st) {
+                        return React.createElement('button', {
+                          key: st.tab || st.scrollTo,
+                          type: 'button',
+                          'data-pt-start-step': st.tab || st.scrollTo,
+                          onClick: function () {
+                            if (st.tab) { setTab(st.tab); return; }
+                            var target = document.getElementById(st.scrollTo);
+                            if (!target) return;
+                            try { target.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+                            catch (e) { target.scrollIntoView(); }
+                            // Move focus too, or a keyboard or screen-reader user is
+                            // left at the top of the page while the view has gone
+                            // somewhere else entirely.
+                            var focusable = target.querySelector('[data-tect-section]');
+                            if (focusable && typeof focusable.focus === 'function') {
+                              try { focusable.focus({ preventScroll: true }); } catch (e2) { focusable.focus(); }
+                            }
+                            if (typeof announceToSR === 'function') {
+                              announceToSR('Moved to the Plate Boundary Simulator. Pick a boundary type on the right to compare what each one builds.');
+                            }
+                          },
+                          className: 'text-left p-2.5 rounded-xl border transition-colors focus:ring-2 focus:ring-yellow-500 focus:outline-none',
+                          style: {
+                            background: isDark ? '#0c0a09' : '#ffffff',
+                            borderColor: isDark ? '#44403c' : '#fed7aa'
+                          }
+                        },
+                          React.createElement('div', { className: 'flex items-center gap-2 mb-1' },
+                            React.createElement('span', {
+                              className: 'inline-flex items-center justify-center rounded-full text-[11px] font-black',
+                              style: {
+                                width: 20, height: 20, flex: '0 0 20px',
+                                background: '#c2410c', color: '#ffffff'
+                              }
+                            }, st.n),
+                            React.createElement('span', { style: { fontSize: 15 } }, st.icon),
+                            React.createElement('span', {
+                              className: 'text-[13px] font-bold',
+                              style: { color: isDark ? '#fde68a' : '#7c2d12' }
+                            }, st.title)
+                          ),
+                          React.createElement('div', {
+                            className: 'text-[11px] leading-snug',
+                            style: { color: isDark ? '#d6d3d1' : '#57534e' }
+                          }, st.body)
+                        );
+                      })
+                    )
+                  ));
+                }
+                if (atHub) {
                   els.push(React.createElement("div", { key: "hub", className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 w-full max-w-3xl mx-auto" },
                     PT_CATEGORIES.map(function(c) {
                       return React.createElement("button", {
                         key: c.id,
                         onClick: function() { setCat(c.id); setTab(c.tabs[0]); },
-                        className: "text-left p-3 rounded-xl transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (isDark ? "bg-slate-950/60 border-2 border-slate-800 hover:border-" + c.color + "-500 hover:bg-slate-900/60" : "bg-white border-2 border-" + c.color + "-200 hover:border-" + c.color + "-500 hover:bg-" + c.color + "-50")
+                        className: "text-left p-3 rounded-xl transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none " + // OPAQUE. At /60 the card composited against the tool's own light surface and
+                        // painted mid-grey (measured rgb(100,108,116)), which put every one of these
+                        // 300-level category inks between 2.6 and 2.8 to 1 — on the landing screen,
+                        // for all eight cards. The translucency was written for a dark surface that
+                        // is not what ends up behind it.
+                        (isDark ? "bg-slate-950 border-2 border-slate-800 hover:border-" + c.color + "-500 hover:bg-slate-900" : "bg-white border-2 border-" + c.color + "-200 hover:border-" + c.color + "-500 hover:bg-" + c.color + "-50")
                       },
                         React.createElement("div", { className: "text-2xl mb-1" }, c.icon),
                         React.createElement("div", { className: "text-sm font-bold mb-1", style: { color: PT_CATEGORY_INK[c.color] } }, c.label),
-                        React.createElement("div", { className: "text-[10px] italic mb-1 " + (isDark ? "text-slate-400" : "text-slate-500") }, c.desc),
+                        // slate-400 measured 2.08:1 against the painted card in dark
+                        // mode. These eight lines are the only description a student
+                        // gets of what is behind each card on the landing screen.
+                        React.createElement("div", { className: "text-[10px] italic mb-1 " + (isDark ? "text-slate-200" : "text-slate-600") }, c.desc),
                         React.createElement("div", { className: "text-[10px] font-mono", style: { color: PT_CATEGORY_INK[c.color] } }, c.tabs.length + " tools")
                       );
                     })
@@ -8366,7 +10016,9 @@ var d = labToolData.plateTectonics || {};
 
             // Challenges Progress Card
             React.createElement("div", {
-              className: "mt-4 rounded-xl p-4 border " + (isDark ? "bg-slate-900/60 border-slate-800" : "bg-gradient-to-r from-orange-50 to-red-50 border-orange-200") + "",
+              // Opaque in dark, for the same reason as the hub cards: at /60 this
+              // composited to mid-grey and the RP figure on it measured 2.81:1.
+              className: "mt-4 rounded-xl p-4 border " + (isDark ? "bg-slate-950 border-slate-800" : "bg-gradient-to-r from-orange-50 to-red-50 border-orange-200") + "",
               style: { boxShadow: '0 2px 8px rgba(220,38,38,0.1)' }
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
@@ -8375,7 +10027,9 @@ var d = labToolData.plateTectonics || {};
                   React.createElement("span", { className: "text-sm font-bold " + (isDark ? "text-orange-300" : "text-orange-700") }, (d.researchPoints || 0) + " RP")
                 ),
                 React.createElement("span", {
-                  className: "text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-orange-100 text-orange-700"
+                  // orange-800, not 700: measured 4.46:1 on orange-100, which is
+                  // under AA by a hair in both themes.
+                  className: "text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-orange-100 text-orange-800"
                 }, (d.completedChallenges || []).length + "/" + CHALLENGES.length + " challenges")
               ),
               React.createElement("div", { className: "w-full rounded-full h-2.5 bg-orange-100/50", style: { boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.1)' } },
@@ -8406,14 +10060,40 @@ var d = labToolData.plateTectonics || {};
                 role: "note",
                 style: {
                   padding: '10px 14px', borderRadius: 12,
-                  background: 'linear-gradient(135deg, rgba(220,38,38,0.14) 0%, rgba(220,38,38,0.04) 100%)',
+                  // Opaque in BOTH themes. The light-mode fill was a 14% red wash
+                  // that only looked like a pale card because a white page happened
+                  // to be behind it; on any darker host surface the goal note came
+                  // out near-black with dark red text on it.
+                  background: isDark
+                    ? 'linear-gradient(135deg, #2c1113 0%, #1a0b0c 100%)'
+                    : 'linear-gradient(135deg, #fff1f2 0%, #fef7f7 100%)',
                   borderTop: '1px solid rgba(220,38,38,0.5)', borderRight: '1px solid rgba(220,38,38,0.5)', borderBottom: '1px solid rgba(220,38,38,0.5)', borderLeft: '3px solid #dc2626',
-                  color: '#7f1d1d', fontSize: 13, lineHeight: 1.55
+                  // Inline colours beat the container's dark overrides, so the note
+                  // stayed near-black red on a dark card: about 1.5:1, effectively
+                  // invisible, and it is the first instruction on the screen.
+                  color: isDark ? '#fecaca' : '#7f1d1d', fontSize: 13, lineHeight: 1.55
                 }
               },
-                React.createElement("strong", { style: { color: '#b91c1c' } }, "Goal: "),
+                React.createElement("strong", { style: { color: isDark ? '#fca5a5' : '#b91c1c' } }, "Goal: "),
                 __alloT('stem.platetectonics.drag_plates_toward_each_other_converge', "drag plates together, apart, or sideways. Watch the boundary clues: quakes, volcanoes, trenches, ridges, and convection currents all tell you what kind of plate interaction is happening.")
               ),
+
+              // ── The model in words ──
+              // Not a live region: this is the long form, read when a student
+              // focuses the canvas and asks for its description.
+              React.createElement("p", {
+                key: 'pt-scene-desc', id: 'pt-scene-desc', className: 'sr-only',
+                'data-pt-scene-desc': 'true'
+              }, ptSceneText),
+
+              // The short form. Polite, one sentence, and only when the boundary
+              // identity actually changes — `ptFocusBoundary` is published on
+              // change only, so this cannot chatter under mantle drift.
+              React.createElement("p", {
+                key: 'pt-scene-live', className: 'sr-only',
+                'data-pt-scene-live': 'true',
+                'aria-live': 'polite', 'aria-atomic': 'true'
+              }, ptLiveLine),
 
               React.createElement("div", { className: "pt-canvas-shell rounded-2xl border-2 border-red-200 shadow-lg", 'data-pt-sim-surface': 'true' },
 
@@ -8434,13 +10114,23 @@ var d = labToolData.plateTectonics || {};
                 // so it is the only thing that can advance the eruption. Hidden
                 // with visibility (not display) so its offsetWidth stays real and
                 // the sim does not re-measure to zero.
-                React.createElement("div", { className: "relative", style: { height: '400px' } },
+                React.createElement("div", { className: "relative", style: { height: '470px' } },
 
                   React.createElement("canvas", {
 
                     ref: canvasRef,
 
-                    'aria-label': __alloT('stem.platetectonics.main_canvas_label', 'Interactive plate tectonics cross-section. Drag crust plates left or right, or focus this canvas and use the up and down arrows to pick a plate and the left and right arrows to move it, to create convergent, divergent, and transform boundary events. Hold Shift for larger steps.'), role: 'img', tabIndex: 0, title: __alloT('stem.platetectonics.interactive_plate_tectonics_cross_sect', 'Interactive plate tectonics cross-section visualization'), 'data-pt-main-canvas': 'true',
+                    // A cross-section is a slice THROUGH the crust, so a transform boundary — where
+                    // the plates slide past each other along the strike of the fault — moves
+                    // perpendicular to this page and cannot be shown here at all. The label used
+                    // to promise all three, so a student following it looked for something that
+                    // was never going to appear. The Interactive Sim tab has the block model that
+                    // does show it.
+                    'aria-label': __alloT('stem.platetectonics.main_canvas_label', 'Interactive plate tectonics cross-section, showing the plates, the mantle beneath them and a depth scale in kilometres. Drag crust plates left or right, or focus this canvas and use the up and down arrows to pick a plate and the left and right arrows to move it, to build convergent and divergent boundaries and watch the trench, slab, volcanic arc, ridge or mountain root each one produces. Hold Shift for larger steps. Transform boundaries slide past each other across this slice rather than along it, so they are shown on the Interactive Sim tab instead.'), role: 'img', tabIndex: 0, title: __alloT('stem.platetectonics.interactive_plate_tectonics_cross_sect', 'Interactive plate tectonics cross-section visualization'), 'data-pt-main-canvas': 'true',
+                    // Points at the live description of the CURRENT scene: the label
+                    // says what this canvas IS, the description says what it is
+                    // showing right now.
+                    'aria-describedby': 'pt-scene-desc',
                     // Keyboard route to the tool's PRIMARY interaction. The canvas
                     // already took focus but had no key handler, so tabbing into it
                     // was a dead stop: WCAG 2.1.1 against the one thing this tab is
@@ -8473,8 +10163,9 @@ var d = labToolData.plateTectonics || {};
                           ptKbSettle = null;
                           var done = el._ptKb.settle();
                           if (done && done.collided) {
-                            say('Boundary formed with the ' + done.withName + ' plate. Earthquake triggered' +
-                              (done.erupted ? ' and a volcano erupted' : '') + '.');
+                            say('Boundary formed with the ' + done.withName + ' plate. '
+                              + (done.magnitude ? 'Magnitude ' + done.magnitude.toFixed(1) + ' earthquake' : 'Earthquake triggered')
+                              + (done.erupted ? ' and a volcano erupted' : '') + '.');
                           }
                         }, 350);
                         if (!res.moved) {
@@ -8487,7 +10178,10 @@ var d = labToolData.plateTectonics || {};
 
                     className: "pt-primary-canvas w-full cursor-grab active:cursor-grabbing",
 
-                    style: { height: '400px', display: 'block', background: '#1a1a2e', visibility: ptVent3D ? 'hidden' : 'visible' }
+                    // The sim paints its own sky edge to edge, so this only shows
+                    // for the frame before the first draw; keeping it theme-aware
+                    // stops that frame flashing night-blue in the light theme.
+                    style: { height: '470px', display: 'block', background: isDark ? '#0f1220' : '#dbeafe', visibility: ptVent3D ? 'hidden' : 'visible' }
 
                   }),
 
@@ -8506,10 +10200,40 @@ var d = labToolData.plateTectonics || {};
                       role: 'img',
                       'data-pt-vent-gl': 'true',
                       'data-a11y-static': 'true',
+                      // Focusable and driveable from the keyboard. The label calls
+                      // this a "Rotatable 3D cutaway", and until now the only way to
+                      // rotate it directly was to drag it with a mouse: a keyboard
+                      // user tabbed from the view toggle straight past the model to
+                      // the buttons beside it, and never landed on the thing itself.
+                      tabIndex: 0,
+                      onKeyDown: function (ev) {
+                        var k = ev.key, step = ev.shiftKey ? 24 : 8;
+                        var handled = true;
+                        if (k === 'ArrowLeft') VentGL.nudge(-step, 0);
+                        else if (k === 'ArrowRight') VentGL.nudge(step, 0);
+                        else if (k === 'ArrowUp') VentGL.nudge(0, -step);
+                        else if (k === 'ArrowDown') VentGL.nudge(0, step);
+                        else if (k === '+' || k === '=') VentGL.zoom(0.15);
+                        else if (k === '-' || k === '_') VentGL.zoom(-0.15);
+                        else if (k === 'Home') VentGL.setCam(-7, -17);
+                        else handled = false;
+                        if (!handled) return;
+                        // Claimed, so the page does not scroll instead of turning
+                        // the model — the failure that makes a canvas feel dead.
+                        ev.preventDefault();
+                        if (typeof announceToSR === 'function' && k === 'Home') {
+                          announceToSR('Volcano cutaway view reset.');
+                        }
+                      },
                       'aria-label': __alloT('stem.platetectonics.vent_3d_label', 'Rotatable 3D cutaway of a volcano showing the magma chamber, conduit, dikes, sill and vent, shaped by the chosen magma composition.'),
                       'aria-describedby': 'pt-vent-gl-desc',
                       className: "w-full cursor-grab active:cursor-grabbing",
-                      style: { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', display: 'block', background: '#1a1a2e', touchAction: 'pan-y' },
+                      // Theme-aware. Hard-wired to #1a1a2e, the light theme put a
+                      // pale limestone block and pale depth labels on a night-blue
+                      // field — the one panel in the tool that ignored the theme
+                      // the student chose, and the labels lost most of their
+                      // contrast to it.
+                      style: { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', display: 'block', background: isDark ? '#0f1220' : '#dbeafe', touchAction: 'pan-y' },
                       onPointerDown: function (e) {
                         var c = VentGL.getCam();
                         ventDrag = { x: e.clientX, y: e.clientY, rx: c.rotX, ry: c.rotY };
@@ -8529,12 +10253,116 @@ var d = labToolData.plateTectonics || {};
                   })(),
 
                   ptVent3D && React.createElement('p', { key: 'pt-vent-gl-desc', id: 'pt-vent-gl-desc', className: 'sr-only' },
-                    __alloT('stem.platetectonics.vent_3d_desc', 'A cutaway model of a volcano. Below the cone, a wide flat magma chamber feeds a tapering conduit up to the vent; dikes cut steeply ACROSS the rock layers while a sill spreads flat ALONG them. Press Erupt to run the sequence: the chamber swells as pressure builds, the conduit glows and an ash plume rises during the blast, the chamber then drains, and finally the summit founders into a caldera over the emptied chamber. The magma buttons change the composition, and the whole model responds: runny low-silica basalt holds little gas, so it builds a broad low shield, pours lava down the flanks, throws little ash, and barely subsides; stiff high-silica rhyolite traps gas, so it stands steep and narrow, produces almost no flowing lava, blasts a tall dense ash column, and drops most of its summit into the emptied chamber. Drag the model, or use the rotate buttons, to turn it. Use the cutaway slider to slice it open.')
+                    __alloT('stem.platetectonics.vent_3d_desc', 'Focus this model and use the arrow keys to turn it, plus and minus to zoom, and Home to reset the view; hold Shift for bigger steps. A cutaway model of a volcano. Below the cone, a wide flat magma chamber feeds a tapering conduit up to the vent; dikes cut steeply ACROSS the rock layers while a sill spreads flat ALONG them. Press Erupt to run the sequence: the chamber swells as pressure builds, the conduit glows and an ash plume rises during the blast, the chamber then drains, and finally the summit founders into a caldera over the emptied chamber. The magma buttons change the composition, and the whole model responds: runny low-silica basalt holds little gas, so it builds a broad low shield, pours lava down the flanks, throws little ash, and barely subsides; stiff high-silica rhyolite traps gas, so it stands steep and narrow, produces almost no flowing lava, blasts a tall dense ash column, and drops most of its summit into the emptied chamber. Drag the model, or use the rotate buttons, to turn it. Use the cutaway slider to slice it open.')
                   )
 
                 )
 
               ),
+
+              // ── Live boundary explainer ──────────────────────────────────────
+              // The canvas can show a slab descending and quakes deepening along
+              // it, but it cannot say WHY in words, and the old tab never did:
+              // the only prose was one static "drag plates and watch" line that
+              // said the same thing whatever was on screen. So a student who did
+              // not already know what a trench meant got no second channel.
+              //
+              // This reads the classification the sim loop published and answers
+              // the same four questions every time, in the same order, so the
+              // three boundary types become comparable rather than three separate
+              // stories: what is moving, what that does to the rock, what you can
+              // see on the canvas because of it, and where on Earth it is real.
+              (function () {
+                var BOUNDARY_NOTES = {
+                  subduction: {
+                    tone: 'orange',
+                    motion: 'The two plates are moving TOWARD each other, so something has to give.',
+                    rock: 'Oceanic lithosphere is thin, cold and dense, so it bends down and sinks into the mantle. The lighter plate rides over the top and stays at the surface.',
+                    look: 'Watch for the trench where the plate bends down, the line of quake dots getting deeper the further they are from the trench, and the row of volcanoes standing BACK from the trench — they sit where the sinking plate reaches about 100 km and starts to make melt.',
+                    real: 'Japan, the Andes, Cascadia off Oregon and Washington, the Mariana Trench.'
+                  },
+                  collision: {
+                    tone: 'amber',
+                    motion: 'The two plates are moving TOWARD each other, so something has to give.',
+                    rock: 'Both plates are continental, so both are too buoyant to sink. Neither one goes down; the crust between them crumples, thickens, and is pushed up into mountains and down into a root.',
+                    look: 'Watch the range on top grow as you push, and the crustal root grow downward at the same time. Mountains are only half of what a collision builds.',
+                    real: 'The Himalaya, where India is still driving into Asia; the Alps; the Appalachians, built by an older collision.'
+                  },
+                  divergent: {
+                    tone: 'red',
+                    motion: 'The two plates are moving APART, so a gap opens between them.',
+                    rock: 'Hot mantle rock rises into the gap, melts because the pressure on it drops, and freezes as brand-new lithosphere. The plates do not stretch — new plate is MADE at the seam.',
+                    look: 'Watch the stripes of new rock filling the gap. They are youngest at the middle and older toward each plate, and the pattern is a mirror image on both sides. That symmetry is how seafloor spreading was proved.',
+                    real: 'The Mid-Atlantic Ridge, which is widening the Atlantic by a few centimetres a year; the East African Rift, splitting a continent now.'
+                  }
+                };
+                var TONES = {
+                  // OPAQUE in dark mode, not a tint. A translucent panel is a bet
+                  // on whatever surface the host puts behind it, and this tool is
+                  // embedded in more than one; where that surface came out light,
+                  // the panel kept its light-on-dark text over a pale card and
+                  // every line of the explanation went unreadable.
+                  orange: { bd: '#fb923c', lightBg: '#fff7ed', darkBg: '#2a1608', head: isDark ? '#fdba74' : '#9a3412' },
+                  amber:  { bd: '#fbbf24', lightBg: '#fffbeb', darkBg: '#2b2005', head: isDark ? '#fde68a' : '#92400e' },
+                  red:    { bd: '#f87171', lightBg: '#fef2f2', darkBg: '#2c1113', head: isDark ? '#fca5a5' : '#991b1b' },
+                  slate:  { bd: '#94a3b8', lightBg: '#f8fafc', darkBg: '#141c2b', head: isDark ? '#cbd5e1' : '#334155' }
+                };
+                var note = ptFocusBoundary ? BOUNDARY_NOTES[ptFocusBoundary.kind] : null;
+                var tone = TONES[note ? note.tone : 'slate'];
+                var body = isDark ? '#e2e8f0' : '#1e293b';
+
+                function row(label, text) {
+                  return React.createElement('div', { key: label, className: 'mt-2' },
+                    React.createElement('div', {
+                      style: { fontSize: 11, fontWeight: 900, letterSpacing: '.05em', textTransform: 'uppercase', color: tone.head }
+                    }, label),
+                    React.createElement('div', { style: { fontSize: 13, lineHeight: 1.55, color: body } }, text)
+                  );
+                }
+
+                return React.createElement('div', {
+                  'data-pt-boundary-explainer': 'true',
+                  // A REGION, not a live region. Five paragraphs fired at a screen
+                  // reader every time a boundary changed — and under mantle drift
+                  // that is every few seconds — which is not "kept informed", it is
+                  // being talked over. The one-sentence summary below carries the
+                  // change; this panel is here to be READ, so it gets a landmark
+                  // and a name and waits to be visited.
+                  role: 'region',
+                  'aria-label': __alloT('stem.platetectonics.explainer_region', 'What is happening at this boundary'),
+                  style: {
+                    marginTop: 10, padding: '12px 14px', borderRadius: 14,
+                    // Every colour here is stated for the CURRENT theme rather
+                    // than left to a utility class: the panel's own background is
+                    // a tinted card, so a token that resolves against the page
+                    // background would have been unreadable on one of the two.
+                    background: isDark ? tone.darkBg : tone.lightBg,
+                    border: '1px solid ' + tone.bd,
+                    borderLeft: '4px solid ' + tone.bd
+                  }
+                },
+                  React.createElement('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap' } },
+                    React.createElement('span', {
+                      style: { fontSize: 11, fontWeight: 900, letterSpacing: '.06em', textTransform: 'uppercase', color: tone.head }
+                    }, 'At this boundary'),
+                    React.createElement('strong', { style: { fontSize: 15, color: body } },
+                      ptFocusBoundary ? ptFocusBoundary.label : 'No boundary in contact yet')
+                  ),
+                  ptFocusBoundary && React.createElement('div', {
+                    style: { fontSize: 12, marginTop: 2, color: isDark ? '#94a3b8' : '#475569' }
+                  },
+                    ptFocusBoundary.a + ' (' + ptFocusBoundary.aType + ') meets ' +
+                    ptFocusBoundary.b + ' (' + ptFocusBoundary.bType + ')'),
+                  note
+                    ? React.createElement(React.Fragment, null,
+                        row('What is moving', note.motion),
+                        row('What happens to the rock', note.rock),
+                        row('What to look for on the model', note.look),
+                        row('Where this is real', note.real))
+                    : React.createElement('div', { style: { fontSize: 13, lineHeight: 1.55, marginTop: 6, color: body } },
+                        'Move two plates until they meet or pull apart, and this panel will name the boundary you made and explain what the model is showing. Leaving mantle drift on lets the currents do it for you.')
+                );
+              })(),
 
               // ── 3D vent controls ──
               // Rotation and the cutaway are read straight off VentGL rather than
@@ -8644,6 +10472,58 @@ var d = labToolData.plateTectonics || {};
                   );
                 })(),
 
+                ptVent3D && (function () {
+                  // ── Eruption stage timeline ──
+                  // The cutaway plays a four-stage sequence and every stage looks
+                  // different — the chamber swells, the plume goes up, the chamber
+                  // drains, the summit founders. None of it was ever named, so a
+                  // student saw four things happen and had no vocabulary for any
+                  // of them and no way to predict the next one. Naming the stages
+                  // and marking which one is running turns the animation into a
+                  // sequence that can be anticipated, which is the difference
+                  // between watching and understanding.
+                  var STAGES = [
+                    { id: 'pressure', name: 'Pressure builds', why: 'Magma collects and gas comes out of solution. The chamber swells and the ground above it bulges.' },
+                    { id: 'blast',    name: 'Eruption',        why: 'The roof gives way. Gas expanding out of the melt shatters it and drives the column upward.' },
+                    { id: 'deflate',  name: 'Chamber drains',  why: 'Magma leaves faster than it is resupplied, so the chamber shrinks and the eruption weakens.' },
+                    { id: 'caldera',  name: 'Summit collapses', why: 'The roof has nothing left to rest on and founders into the space the magma vacated. That basin is a caldera.' }
+                  ];
+                  var here = -1;
+                  for (var pz = 0; pz < STAGES.length; pz++) { if (STAGES[pz].id === ptEruptPhase) here = pz; }
+                  var cur = here >= 0 ? STAGES[here] : null;
+                  return React.createElement('div', {
+                    key: 'pt-vent-phase',
+                    'data-pt-vent-phase': ptEruptPhase,
+                    'aria-live': 'polite',
+                    className: 'w-full',
+                    style: {
+                      marginTop: 6, padding: '8px 10px', borderRadius: 12,
+                      background: isDark ? '#2a1608' : '#fff7ed',
+                      border: '1px solid ' + (isDark ? 'rgba(251,146,60,0.5)' : '#fdba74')
+                    }
+                  },
+                    React.createElement('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
+                      STAGES.map(function (stg, ix) {
+                        var on = ix === here, done = here >= 0 && ix < here;
+                        return React.createElement('span', {
+                          key: stg.id,
+                          style: {
+                            fontSize: 11, fontWeight: 800, padding: '3px 8px', borderRadius: 999,
+                            background: on ? '#c2410c' : (done ? (isDark ? 'rgba(251,146,60,0.22)' : '#fed7aa') : 'transparent'),
+                            color: on ? '#ffffff' : (isDark ? '#fdba74' : '#9a3412'),
+                            border: '1px solid ' + (on ? '#c2410c' : (isDark ? 'rgba(251,146,60,0.4)' : '#fdba74'))
+                          }
+                        }, (ix + 1) + '. ' + stg.name);
+                      })
+                    ),
+                    React.createElement('div', {
+                      style: { fontSize: 12, lineHeight: 1.5, marginTop: 6, color: isDark ? '#e2e8f0' : '#431407' }
+                    }, cur
+                      ? cur.why
+                      : 'The vent is quiet. Press Erupt to run the sequence, and watch which stage each thing you see belongs to.')
+                  );
+                })(),
+
                 d.ptVentFail && React.createElement("span", { key: 'fail', className: "text-xs font-bold " + (isDark ? "text-orange-300" : "text-orange-700") },
                   __alloT('stem.platetectonics.vent_3d_unavailable', 'The 3D engine could not load, so the 2D eruption is showing instead.'))
 
@@ -8651,7 +10531,7 @@ var d = labToolData.plateTectonics || {};
 
               // Controls
 
-              React.createElement("div", { className: "pt-control-grid p-3 rounded-xl border " + (isDark ? "border-slate-800 bg-slate-950/60" : "border-red-200 bg-red-50"), 'data-pt-sim-controls': 'true' },
+              React.createElement("div", { className: "pt-control-grid p-3 rounded-xl border " + (isDark ? "border-slate-800 bg-slate-950" : "border-red-200 bg-red-50"), 'data-pt-sim-controls': 'true' },
 
                 React.createElement("label", { htmlFor: "pt-speed-control", className: "text-xs font-bold " + (isDark ? "text-red-400" : "text-red-700") },
                   React.createElement("span", null, __alloT('stem.platetectonics.speed', "\u23F1 Speed:")),
@@ -8705,7 +10585,13 @@ var d = labToolData.plateTectonics || {};
                 var aiOpen = !!(d.aiCoachOpen || aiText || aiLoading || aiError);
                 if (!aiOpen) {
                   return React.createElement("div", {
-                    className: "p-3 rounded-xl border flex items-center justify-between gap-3 flex-wrap " + (isDark ? "border-purple-900/60 bg-purple-950/20" : "border-purple-200 bg-purple-50/60"),
+                    // OPAQUE. Both fills were translucent, so the panel took its
+                    // real colour from whatever sat behind it — and what sits behind
+                    // it is not the theme's own surface. Measured against the painted
+                    // pixel it came out mid grey-lavender in BOTH themes, putting the
+                    // heading at 2.58:1 and the description at 2.8:1.
+                    className: "p-3 rounded-xl border flex items-center justify-between gap-3 flex-wrap " + (isDark ? "border-purple-900/60" : "border-purple-200"),
+                    style: { background: isDark ? '#1a1024' : '#faf5ff' },
                     'data-pt-ai-coach': 'closed'
                   },
                     React.createElement("div", null,
@@ -8728,7 +10614,17 @@ var d = labToolData.plateTectonics || {};
                     + 'Animation speed: ' + speed + 'x. Labels ' + (showLabels ? 'on' : 'off') + '. Convection currents ' + (showConvection ? 'visible' : 'hidden') + '. '
                     + 'In 3 short sentences: (1) What process is driving the motion? (2) What happens at the boundaries the student can see? (3) One real-world example this connects to (mountain, volcano, earthquake, or ocean feature). '
                     + 'No markdown, no bullets, no headings. Plain prose.';
-                  callGemini(prompt, false, false, 0.5).then(function (resp) {
+                  // The typeof guard above proves callGemini is a FUNCTION, not
+                  // that it returns a promise. A host that supplies a disabled
+                  // no-op bridge returns undefined here, .then throws, and the
+                  // panel is left spinning on aiLoading for the rest of the
+                  // session with no way back. Same graceful message instead.
+                  var aiPromise = callGemini(prompt, false, false, 0.5);
+                  if (!aiPromise || typeof aiPromise.then !== 'function') {
+                    upd({ aiLoading: false, aiError: 'AI tutor not available.' });
+                    return;
+                  }
+                  aiPromise.then(function (resp) {
                     upd({ aiExplain: String(resp || '').trim(), aiLoading: false });
                     if (typeof announceToSR === 'function') announceToSR('Explanation ready.');
                   }).catch(function () {
@@ -8736,7 +10632,8 @@ var d = labToolData.plateTectonics || {};
                   });
                 }
                 return React.createElement("div", {
-                  className: "p-4 rounded-xl border-2 " + (isDark ? "border-purple-900/60 bg-purple-950/20" : "border-purple-200 bg-purple-50/60"),
+                  className: "p-4 rounded-xl border-2 " + (isDark ? "border-purple-900/60" : "border-purple-200"),
+                  style: { background: isDark ? '#1a1024' : '#faf5ff' },
                   role: "region", "aria-label": __alloT('stem.platetectonics.ai_tectonics_tutor', "AI tectonics tutor"), 'data-pt-ai-coach': 'open'
                 },
                   React.createElement("div", { className: "flex items-center flex-wrap gap-2 mb-2" },
@@ -8783,12 +10680,17 @@ var d = labToolData.plateTectonics || {};
                 role: "note",
                 style: {
                   padding: '10px 14px', borderRadius: 12,
-                  background: 'linear-gradient(135deg, rgba(245,158,11,0.14) 0%, rgba(245,158,11,0.04) 100%)',
+                  // Same defect as the simulation tab's goal note: a 14% translucent
+                  // wash that only reads as a pale card when something light happens
+                  // to be behind it, with theme-blind inks on top.
+                  background: isDark
+                    ? 'linear-gradient(135deg, #2b2005 0%, #1a1403 100%)'
+                    : 'linear-gradient(135deg, #fffbeb 0%, #fefce8 100%)',
                   borderTop: '1px solid rgba(245,158,11,0.5)', borderRight: '1px solid rgba(245,158,11,0.5)', borderBottom: '1px solid rgba(245,158,11,0.5)', borderLeft: '3px solid #f59e0b',
-                  color: '#78350f', fontSize: 13, lineHeight: 1.55
+                  color: isDark ? '#fde68a' : '#78350f', fontSize: 13, lineHeight: 1.55
                 }
               },
-                React.createElement("strong", { style: { color: '#b45309' } }, "Goal: "),
+                React.createElement("strong", { style: { color: isDark ? '#fcd34d' : '#92400e' } }, "Goal: "),
                 __alloT('stem.platetectonics.feel_the_magnitude_scale', "feel the magnitude scale. This slider reads in moment magnitude (Mw), the scale seismologists actually use for large earthquakes. Charles Richter's original 1935 scale is where the idea came from, but it saturates above about M7, so the great quakes on this slider could not be measured with it. Either way the scale is logarithmic: each whole number is 10x more shaking and about 32x more energy. A 7.0 is not twice a 3.5, it is over 100,000x more energy. Slide through magnitudes and watch the damage tier flip from green to amber to red. P-waves arrive first, S-waves second, surface waves do most of the damage.")
               ),
 
@@ -8806,13 +10708,43 @@ var d = labToolData.plateTectonics || {};
 
                 React.createElement("div", { className: "flex items-center gap-3 mb-4" },
 
-                  React.createElement("span", { className: "text-xs font-bold w-20 " + (isDark ? "text-red-400" : "text-red-600") }, __alloT('stem.platetectonics.magnitude_mw', "Magnitude (Mw):")),
+                  React.createElement("span", { className: "text-xs font-bold w-20 " + (isDark ? "text-red-200" : "text-red-700") }, __alloT('stem.platetectonics.magnitude_mw', "Magnitude (Mw):")),
+                  React.createElement("span", { className: "sr-only" }, __alloT('stem.platetectonics.magnitude_sets_amplitude', 'Magnitude sets how big the trace is. Distance, below, sets how far apart the P and S arrivals are.')),
 
                   React.createElement("input", { type: "range", "aria-label": __alloT('stem.platetectonics.earthquake_magnitude_moment', "Earthquake magnitude on the moment magnitude scale, M w, from 1 to 9"), min: "1", max: "9", step: "0.1", value: eqMagnitude, onChange: function(e) { upd({ eqMagnitude: parseFloat(e.target.value) }); setTimeout(checkChallenges, 50); }, className: "flex-1 accent-red-500 focus:ring-2 focus:ring-yellow-500 focus:outline-none" }),
 
-                  React.createElement("span", { className: "text-lg font-black px-3 py-1 rounded-lg", style: { background: eqMagnitude >= 7 ? '#dc2626' : eqMagnitude >= 5 ? '#f59e0b' : '#22c55e', color: 'white' } }, eqMagnitude.toFixed(1))
+                  // The tier's darker ink as the fill, not the vivid swatch: white on
+                  // amber-500 measured 2.19:1, and this badge is the number the whole
+                  // slider exists to report.
+                  React.createElement("span", { className: "text-lg font-black px-3 py-1 rounded-lg", style: { background: eqMagnitude >= 7 ? '#b91c1c' : eqMagnitude >= 5 ? '#b45309' : '#15803d', color: 'white' } }, eqMagnitude.toFixed(1))
 
                 ),
+
+                // ── Distance to the epicenter ────────────────────────────────
+                // The second variable, and the one that makes the trace a
+                // measurement rather than a picture. Magnitude sets how BIG the
+                // shaking is; distance sets how far apart the P and S arrivals
+                // are — which is exactly what the epicenter widget further down
+                // the page turns back into a distance. With only a magnitude
+                // slider, the S-minus-P gap was a constant a student could not
+                // interrogate.
+                React.createElement("div", { className: "flex items-center gap-3 mb-3", 'data-pt-eq-distance': 'true' },
+                  React.createElement("span", { className: "text-xs font-bold w-20 " + (isDark ? "text-sky-200" : "text-sky-800") },
+                    __alloT('stem.platetectonics.distance_km', "Distance:")),
+                  React.createElement("input", {
+                    type: "range",
+                    "aria-label": __alloT('stem.platetectonics.distance_to_epicenter_km',
+                      "Distance from the recording station to the epicenter, in kilometres, from 100 to 2000. Moving this apart changes how long after the P wave the S wave arrives."),
+                    min: "100", max: "2000", step: "50", value: eqDistKm,
+                    onChange: function(e) { upd({ eqDistKm: parseFloat(e.target.value) }); },
+                    className: "flex-1 accent-sky-500 focus:ring-2 focus:ring-yellow-500 focus:outline-none"
+                  }),
+                  React.createElement("span", {
+                    className: "text-sm font-black px-3 py-1 rounded-lg",
+                    style: { background: isDark ? '#0c4a6e' : '#0369a1', color: 'white' }
+                  }, Math.round(eqDistKm) + ' km')
+                ),
+
 
                 // Damage scale
 
@@ -8820,11 +10752,11 @@ var d = labToolData.plateTectonics || {};
 
                   [
 
-                    { range: '1-3', label: __alloT('stem.platetectonics.minor', 'Minor'), desc: __alloT('stem.platetectonics.barely_felt', 'Barely felt'), color: '#22c55e', icon: '\u2705' },
+                    { range: '1-3', label: __alloT('stem.platetectonics.minor', 'Minor'), desc: __alloT('stem.platetectonics.barely_felt', 'Barely felt'), color: '#22c55e', ink: '#15803d', inkDark: '#86efac', icon: '\u2705' },
 
-                    { range: '4-5', label: __alloT('stem.platetectonics.light', 'Light'), desc: __alloT('stem.platetectonics.rattling_minor_damage', 'Rattling, minor damage'), color: '#f59e0b', icon: '\u26A0\uFE0F' },
+                    { range: '4-5', label: __alloT('stem.platetectonics.light', 'Light'), desc: __alloT('stem.platetectonics.rattling_minor_damage', 'Rattling, minor damage'), color: '#f59e0b', ink: '#92400e', inkDark: '#fcd34d', icon: '\u26A0\uFE0F' },
 
-                    { range: '6-7', label: __alloT('stem.platetectonics.strong', 'Strong'), desc: __alloT('stem.platetectonics.structural_damage', 'Structural damage'), color: '#ef4444', icon: '\uD83C\uDFDA\uFE0F' },
+                    { range: '6-7', label: __alloT('stem.platetectonics.strong', 'Strong'), desc: __alloT('stem.platetectonics.structural_damage', 'Structural damage'), color: '#ef4444', ink: '#b91c1c', inkDark: '#fca5a5', icon: '\uD83C\uDFDA\uFE0F' },
 
                   ].map(function(d2) {
 
@@ -8834,9 +10766,9 @@ var d = labToolData.plateTectonics || {};
 
                       React.createElement("div", { className: "text-lg" }, d2.icon),
 
-                      React.createElement("div", { className: "text-xs font-black", style: { color: d2.color } }, d2.label + " (" + d2.range + ")"),
+                      React.createElement("div", { className: "text-xs font-black", style: { color: isDark ? (d2.inkDark || d2.color) : (d2.ink || d2.color) } }, d2.label + " (" + d2.range + ")"),
 
-                      React.createElement("div", { className: "text-[11px] " + (isDark ? "text-slate-400" : "text-slate-600") }, d2.desc)
+                      React.createElement("div", { className: "text-[11px] " + (isDark ? "text-slate-300" : "text-slate-700") }, d2.desc)
 
                     );
 
@@ -8850,21 +10782,21 @@ var d = labToolData.plateTectonics || {};
 
                   [
 
-                    { name: 'P-wave', desc: __alloT('stem.platetectonics.compression_fastest', 'Compression (fastest)'), icon: '\u2192\u2190', color: '#3b82f6' },
+                    { name: 'P-wave', desc: __alloT('stem.platetectonics.compression_fastest', 'Compression (fastest)'), icon: '\u2192\u2190', color: '#3b82f6', ink: '#1d4ed8', inkDark: '#93c5fd' },
 
-                    { name: 'S-wave', desc: __alloT('stem.platetectonics.shear_medium', 'Shear (medium)'), icon: '\u2195', color: '#8b5cf6' },
+                    { name: 'S-wave', desc: __alloT('stem.platetectonics.shear_medium', 'Shear (medium)'), icon: '\u2195', color: '#8b5cf6', ink: '#6d28d9', inkDark: '#c4b5fd' },
 
-                    { name: __alloT('stem.platetectonics.surface', 'Surface'), desc: __alloT('stem.platetectonics.rolling_slowest_most_damage', 'Rolling (slowest, most damage)'), icon: '\u223F', color: '#ef4444' }
+                    { name: __alloT('stem.platetectonics.surface', 'Surface'), desc: __alloT('stem.platetectonics.rolling_slowest_most_damage', 'Rolling (slowest, most damage)'), icon: '\u223F', color: '#ef4444', ink: '#b91c1c', inkDark: '#fca5a5' }
 
                   ].map(function(w2) {
 
                     return React.createElement("div", { key: w2.name, className: "p-3 rounded-xl border text-center " + (isDark ? "border-slate-800" : ""), style: { borderColor: isDark ? undefined : w2.color + '44', background: isDark ? 'var(--allo-stem-deeper, rgba(15,23,42,0.4))' : w2.color + '08' } },
 
-                      React.createElement("div", { className: "text-lg font-mono" }, w2.icon),
+                      React.createElement("div", { className: "text-lg font-mono", style: { color: isDark ? (w2.inkDark || w2.color) : (w2.ink || w2.color) } }, w2.icon),
 
-                      React.createElement("div", { className: "text-xs font-black", style: { color: w2.color } }, w2.name),
+                      React.createElement("div", { className: "text-xs font-black", style: { color: isDark ? (w2.inkDark || w2.color) : (w2.ink || w2.color) } }, w2.name),
 
-                      React.createElement("div", { className: "text-[11px] " + (isDark ? "text-slate-400" : "text-slate-600") }, w2.desc)
+                      React.createElement("div", { className: "text-[11px] " + (isDark ? "text-slate-300" : "text-slate-700") }, w2.desc)
 
                     );
 
@@ -8876,8 +10808,26 @@ var d = labToolData.plateTectonics || {};
 
                 React.createElement("div", { className: "rounded-xl overflow-hidden border-2 " + (isDark ? "border-slate-800" : "border-red-200") },
 
-                  React.createElement("canvas", { tabIndex: 0, ref: seismoRef, 'aria-label': __alloT('stem.platetectonics.interactive_plate_tectonics_seismograp', 'Interactive plate tectonics seismograph visualization'), role: 'img', className: "w-full", style: { height: '120px', display: 'block' } })
+                  React.createElement("canvas", { tabIndex: 0, ref: seismoRef, 'aria-label': __alloT('stem.platetectonics.interactive_plate_tectonics_seismograp', 'Interactive plate tectonics seismograph visualization'), role: 'img', className: "w-full", style: { height: '190px', display: 'block' } })
 
+                  ,
+                  // The link between this trace and the widget further down the
+                  // page. The epicenter tool turns an S-minus-P interval into a
+                  // distance; until now nothing showed a student what an S-minus-P
+                  // interval looks like, or that it is something you MEASURE off a
+                  // recording rather than a number you are given.
+                  React.createElement("p", {
+                    className: "text-[11px] leading-snug px-3 py-2",
+                    style: {
+                      background: isDark ? '#0c1a2b' : '#f0f9ff',
+                      color: isDark ? '#bae6fd' : '#0c4a6e',
+                      borderTop: '1px solid ' + (isDark ? '#1e3a5f' : '#bae6fd')
+                    },
+                    'data-pt-seis-note': 'true'
+                  },
+                    __alloT('stem.platetectonics.seis_note',
+                      'P waves arrive first, S waves next, and the slow surface waves last — which is why they do most of the damage, and why the ground shakes hardest well after the first jolt. The gap between P and S grows with distance, so one recording tells you HOW FAR away the quake was: about 8.4 kilometres for every second of the gap. Three stations, three distances, and you have the epicentre — which is exactly what the Epicenter Triangulation panel below does.')
+                  )
                 )
 
               )
@@ -8930,24 +10880,168 @@ var d = labToolData.plateTectonics || {};
                 // Timeline slider
                 React.createElement('input', { type: 'range', 'aria-label': __alloT('stem.platetectonics.timeline_era', 'timeline era'), min: '0', max: String(ERAS.length - 1), step: '1', value: timelineEra, onChange: function(e) { upd({ timelineEra: parseInt(e.target.value), timelapsePlaying: false }); }, className: 'w-full accent-red-500 mb-2 focus:ring-2 focus:ring-yellow-500 focus:outline-none' }),
 
-                // Geological timescale bar
-                React.createElement('div', { className: 'flex rounded-full overflow-hidden h-2 mb-4 shadow-inner' },
-                  ERAS.map(function(era, ei) {
-                    var colors = [
-                      '#8b0000', '#5c3317', '#2e8b57', '#228b22',
-                      '#4682b4', '#daa520', '#cd853f', '#1e90ff'
-                    ];
-                    return React.createElement('div', {
-                      key: ei,
-                      style: {
-                        flex: 1,
-                        background: colors[ei] || colors[0],
-                        opacity: ei <= timelineEra ? 1 : 0.3,
-                        transition: 'opacity 0.3s'
-                      }
-                    });
-                  })
-                ),
+                // ── Deep-time ribbon, TO SCALE ──────────────────────────────────
+                // This bar used to give all eight eras `flex: 1` — eight equal
+                // stripes for spans of 1,100 Ma, 765 Ma, 135 Ma and 50 Ma. Under a
+                // heading reading "geological timescale", equal stripes say the
+                // eras are equal lengths of time, which is precisely the
+                // misconception students arrive with: that deep time is evenly
+                // divided and the familiar parts are a fair share of it.
+                //
+                // Drawn to scale it says the opposite, and says it without a word:
+                // the Hadean and Archean take nearly two thirds of the line, and
+                // everything from Pangaea onward — every era with a name most
+                // people recognise — is a sliver at the right-hand end.
+                //
+                // The chips below stay evenly spaced on purpose. They are how you
+                // NAVIGATE; this is how long it took.
+                (function () {
+                  var START_MA = 4600;
+                  // Ages parsed from the era table itself rather than kept in a
+                  // second list — two hand-maintained copies drift the moment an
+                  // era is added or a date is corrected.
+                  function ageOf(era) {
+                    var n = parseFloat(String(era.mya).replace(/,/g, ''));
+                    return isFinite(n) ? n : 0;      // 'Present'
+                  }
+                  var spans = ERAS.map(function (era, ei) {
+                    var from = ageOf(era);
+                    var to = ei + 1 < ERAS.length ? ageOf(ERAS[ei + 1]) : 0;
+                    return { i: ei, from: from, to: to, span: Math.max(0, from - to) };
+                  });
+                  var COLORS = ['#8b0000', '#5c3317', '#2e8b57', '#228b22', '#4682b4', '#daa520', '#cd853f', '#1e90ff'];
+                  // Fade the FILL, not the element. CSS opacity on the block takes
+                  // its label down with it, and the labels in the magnified strip
+                  // are white — a still-to-come era ended up with white text on a
+                  // washed-out block, which is the least readable thing on the row.
+                  function fade(hex, a) {
+                    var h = hex.replace('#', '');
+                    return 'rgba(' + parseInt(h.slice(0, 2), 16) + ',' + parseInt(h.slice(2, 4), 16) +
+                           ',' + parseInt(h.slice(4, 6), 16) + ',' + a + ')';
+                  }
+                  var TICKS = [4000, 3000, 2000, 1000];
+
+                  return React.createElement('div', { className: 'mb-4', 'data-pt-deeptime': 'true' },
+                    React.createElement('div', { className: 'flex items-baseline justify-between mb-1' },
+                      React.createElement('span', {
+                        className: 'text-[10px] font-black uppercase tracking-wider ' + (isDark ? 'text-red-300' : 'text-red-800')
+                      }, __alloT('stem.platetectonics.deep_time_to_scale', 'All of it, to scale')),
+                      React.createElement('span', {
+                        className: 'text-[10px] ' + (isDark ? 'text-slate-300' : 'text-slate-700')
+                      }, __alloT('stem.platetectonics.deep_time_axis', '4,600 million years ago  →  today'))
+                    ),
+                    React.createElement('div', {
+                      className: 'relative flex rounded-full overflow-hidden shadow-inner',
+                      style: { height: 14 },
+                      role: 'img',
+                      'aria-label': __alloT('stem.platetectonics.deep_time_alt',
+                        'The same eight eras drawn to scale across 4,600 million years. The Hadean and Archean together fill nearly two thirds of the line. Pangaea, its breakup, the Cretaceous and the Cenozoic are all squeezed into the last twelfth, and the Cenozoic — the era that built the Himalaya and everything after — is the last one per cent.')
+                    },
+                      spans.map(function (sp) {
+                        var isPast = sp.i <= timelineEra;
+                        return React.createElement('div', {
+                          key: sp.i,
+                          title: ERAS[sp.i].name + ' — ' + ERAS[sp.i].mya,
+                          style: {
+                            // The one line that matters: width IS the duration.
+                            flex: sp.span,
+                            minWidth: sp.span > 0 ? 2 : 0,
+                            background: fade(COLORS[sp.i] || COLORS[0], isPast ? 1 : 0.32),
+                            transition: 'background 0.3s'
+                          }
+                        });
+                      }),
+                      // Where the selected era sits on the real line.
+                      React.createElement('div', {
+                        style: {
+                          position: 'absolute', top: -2, bottom: -2,
+                          left: (100 * (START_MA - ageOf(ERAS[timelineEra])) / START_MA) + '%',
+                          width: 3, marginLeft: -1.5,
+                          background: isDark ? '#fef08a' : '#111827',
+                          boxShadow: '0 0 0 1px ' + (isDark ? 'rgba(0,0,0,0.6)' : 'rgba(255,255,255,0.8)')
+                        }
+                      })
+                    ),
+                    // Tick labels, so the ribbon is a measured axis and not a mood.
+                    React.createElement('div', { className: 'relative', style: { height: 16 } },
+                      TICKS.map(function (t) {
+                        return React.createElement('span', {
+                          key: t,
+                          className: 'absolute text-[10px] font-mono ' + (isDark ? 'text-slate-300' : 'text-slate-700'),
+                          style: { left: (100 * (START_MA - t) / START_MA) + '%', transform: 'translateX(-50%)' }
+                        }, (t / 1000) + ' Ga');
+                      }),
+                      React.createElement('span', {
+                        className: 'absolute right-0 text-[10px] font-mono ' + (isDark ? 'text-slate-300' : 'text-slate-700')
+                      }, __alloT('stem.platetectonics.deep_time_now', 'now'))
+                    ),
+                    // ── The magnified tail ────────────────────────────────────
+                    // Drawn to scale, the last four eras are a two-pixel smear at
+                    // the right-hand end. That IS the lesson, and it also makes
+                    // them unreadable — so the tail gets blown up underneath, the
+                    // way a real geological timescale does it. Keeping both is the
+                    // point: the sliver above says how little of Earth's history
+                    // this is, and the strip below says what happened in it.
+                    (function () {
+                      var ZOOM_MA = 500;
+                      // Zero-duration entries are dropped. The era table stores
+                      // SNAPSHOTS, and the last one ('Present') has no span — as a
+                      // flex-0 block its label spilled onto the strip beside it and
+                      // sat at 1.6:1 against whatever happened to be there.
+                      var tail = spans.filter(function (sp) {
+                        return sp.to < ZOOM_MA && Math.min(sp.from, ZOOM_MA) - sp.to > 0;
+                      });
+                      if (!tail.length) return null;
+                      return React.createElement('div', { className: 'mt-2', 'data-pt-deeptime-zoom': 'true' },
+                        React.createElement('div', {
+                          className: 'flex items-baseline justify-between mb-1'
+                        },
+                          React.createElement('span', {
+                            className: 'text-[10px] font-black uppercase tracking-wider ' + (isDark ? 'text-amber-300' : 'text-amber-800')
+                          }, __alloT('stem.platetectonics.deep_time_zoom', 'That last sliver, magnified')),
+                          React.createElement('span', {
+                            className: 'text-[10px] ' + (isDark ? 'text-slate-300' : 'text-slate-700')
+                          }, __alloT('stem.platetectonics.deep_time_zoom_axis', 'the most recent 500 million years'))
+                        ),
+                        React.createElement('div', {
+                          className: 'flex rounded-lg overflow-hidden',
+                          style: { height: 24, border: '1px dashed ' + (isDark ? 'rgba(251,191,36,0.6)' : 'rgba(180,83,9,0.5)') },
+                          role: 'img',
+                          'aria-label': __alloT('stem.platetectonics.deep_time_zoom_alt',
+                            'The most recent 500 million years, magnified from the right-hand end of the bar above, with the same eras named in place.')
+                        },
+                          tail.map(function (sp) {
+                            var from = Math.min(sp.from, ZOOM_MA);
+                            var w = Math.max(0, from - sp.to);
+                            var isPast = sp.i <= timelineEra;
+                            return React.createElement('div', {
+                              key: sp.i,
+                              title: ERAS[sp.i].name + ' — ' + ERAS[sp.i].mya,
+                              className: 'flex items-center justify-center overflow-hidden',
+                              style: {
+                                flex: w, minWidth: 0,
+                                background: fade(COLORS[sp.i] || COLORS[0], isPast ? 1 : 0.4)
+                              }
+                            },
+                              React.createElement('span', {
+                                className: 'text-[10px] font-bold whitespace-nowrap px-1 rounded',
+                                style: {
+                                  color: '#ffffff',
+                                  background: 'rgba(12,10,9,0.55)',
+                                  textShadow: '0 1px 2px rgba(0,0,0,0.85)'
+                                }
+                              }, ERAS[sp.i].name)
+                            );
+                          })
+                        )
+                      );
+                    })(),
+                    React.createElement('p', {
+                      className: 'text-[11px] leading-snug mt-1 ' + (isDark ? 'text-slate-300' : 'text-slate-700')
+                    }, __alloT('stem.platetectonics.deep_time_note',
+                      'The row of buttons below is evenly spaced so you can reach any era in one click. These bars are not: every stripe is as wide as the time it took. Pangaea onward — dinosaurs, the Atlantic, the Himalaya, us — is everything after the last tick on the top bar.'))
+                  );
+                })(),
 
                 // Era cards with icons
                 React.createElement('div', { className: 'grid grid-cols-4 md:grid-cols-8 gap-1.5 mb-4' },
@@ -8960,8 +11054,11 @@ var d = labToolData.plateTectonics || {};
                       style: { background: isActive ? 'linear-gradient(135deg, #fecaca, #fca5a5)' : 'white', border: '2px solid ' + (isActive ? '#ef4444' : '#fecaca') }
                     },
                       React.createElement('div', { className: 'text-lg' }, era.icon || '\uD83C\uDF0D'),
-                      React.createElement('div', { className: 'text-[11px] font-black ' + (isActive ? 'text-red-700' : 'text-slate-600') }, era.name),
-                      React.createElement('div', { className: 'text-[11px] text-slate-600' }, era.mya)
+                      // The active chip paints a red gradient under these, so both inks
+                      // have to darken with it: red-700 on it measured 4.02:1 and the
+                      // date under it 4.2:1.
+                      React.createElement('div', { className: 'text-[11px] font-black ' + (isActive ? 'text-red-900' : 'text-slate-700') }, era.name),
+                      React.createElement('div', { className: 'text-[11px] ' + (isActive ? 'text-red-900' : 'text-slate-700') }, era.mya)
                     );
                   })
                 ),
@@ -8991,7 +11088,15 @@ var d = labToolData.plateTectonics || {};
             ),
 
             // ═══ EARTH TIMELAPSE CANVAS ═══
-
+            // Shown on the two tabs it belongs to, not on all fifty-four.
+            //
+            // This globe IS the Timeline's picture, and it is worth having beside
+            // the Simulation. Everywhere else it was about five hundred pixels of
+            // unrelated scenery sitting between the tab strip and the tab's own
+            // content: open "Boundary Stress" and the first thing on screen was a
+            // globe captioned "drag the timeline slider", with the activity you
+            // asked for below the fold behind it.
+            (simTab === 'timeline' || simTab === 'sim') &&
             React.createElement("div", { className: "rounded-2xl border-2 border-red-200 overflow-hidden mt-4", style: { background: 'linear-gradient(135deg, #0c0a2a, #1e1b4b)' } },
 
               React.createElement("div", { className: "p-4" },
@@ -9355,7 +11460,12 @@ var d = labToolData.plateTectonics || {};
 
                   canvas._geoAnim = requestAnimationFrame(drawEarth);
 
-                  tick += 0.5;
+                  if (!ptOnScreen(canvas)) return;
+
+                  // Ambient drift only. The time-lapse below advances the ERA and
+                  // is user-initiated, so it is left alone; what stops here is the
+                  // cloud bands and shimmer that move whether or not anyone asked.
+                  if (!ptReducedMotion()) tick += 0.5;
 
                   canvas._geoTick = tick;
 
@@ -9638,7 +11748,7 @@ var d = labToolData.plateTectonics || {};
 
                   React.createElement("h3", { className: "font-black " + (isDark ? "text-slate-100" : "text-red-900") }, __alloT('stem.platetectonics.plate_tectonics_quiz', "Plate Tectonics Quiz")),
 
-                  React.createElement("span", { className: "ml-auto text-xs font-bold text-red-500" },
+                  React.createElement("span", { className: "ml-auto text-xs font-bold " + (isDark ? "text-red-300" : "text-red-700") },
                     "Score: " + (d.quizScore || 0) + " | Question " + (quizIdx % QUIZZES.length + 1) + " / " + QUIZZES.length
                   )
 
@@ -9651,6 +11761,10 @@ var d = labToolData.plateTectonics || {};
                   qz.opts.map(function(opt, oi) {
 
                     return React.createElement("button", { key: oi,
+
+                      // Addressable, so a test and the screenshot harness can answer
+                      // a question the way a student does.
+                      'data-pt-quiz-opt': String(oi),
 
                       onClick: function() {
 
@@ -9762,12 +11876,12 @@ var d = labToolData.plateTectonics || {};
             // === 🧠 PLATE TECTONICS MYTHS (quiz tab) ===
             simTab === 'quiz' && (function() {
               var m = d.ptMyth || null;
-              return React.createElement("div", { className: "mt-4 p-5 rounded-2xl border-2 " + (isDark ? "border-violet-900/50" : "border-violet-200"), style: { background: isDark ? 'linear-gradient(135deg, rgba(76,29,149,0.25), rgba(15,23,42,0.6))' : 'linear-gradient(135deg, #f5f3ff, #ede9fe)' } },
+              return React.createElement("div", { className: "mt-4 p-5 rounded-2xl border-2 " + (isDark ? "border-violet-900/50" : "border-violet-200"), style: { background: isDark ? 'linear-gradient(135deg, #241448, #0b1020)' : 'linear-gradient(135deg, #f5f3ff, #ede9fe)' } },
                 React.createElement("div", { className: "flex items-center justify-between mb-3 flex-wrap gap-2" },
                   React.createElement("h3", { className: "font-black text-sm flex items-center gap-2 " + (isDark ? "text-violet-300" : "text-violet-900") },
                     React.createElement("span", null, "🧠"),
-                    React.createElement("span", null, __alloT('stem.platetectonics.tectonics_myths', "Tectonics Myths — true or false?")),
-                    React.createElement("span", { className: "px-1.5 py-0.5 rounded text-[10px] font-bold " + (isDark ? "bg-violet-950/60 text-violet-300" : "bg-violet-100 text-violet-700") }, ptBand)
+                    React.createElement("span", null, __alloT('stem.platetectonics.tectonics_myths', "Tectonics: myth or fact?")),
+                    React.createElement("span", { className: "px-1.5 py-0.5 rounded text-[10px] font-bold " + (isDark ? "bg-violet-950 text-violet-200" : "bg-violet-100 text-violet-800") }, ptBand)
                   ),
                   React.createElement("button", { "aria-label": __alloT('stem.platetectonics.start_a_myth', "Start a tectonics myth"),
                     onClick: ptStartMyth,
@@ -9785,11 +11899,11 @@ var d = labToolData.plateTectonics || {};
                       }, val ? '✅ True' : '❌ False');
                     })
                   ),
-                  m.answered && React.createElement("div", { className: "p-3 rounded-xl border-2 " + (m.chosen === m.t ? (isDark ? "border-emerald-700 bg-emerald-950/40" : "border-emerald-300 bg-emerald-50") : (isDark ? "border-red-800 bg-red-950/40" : "border-red-300 bg-red-50")) },
+                  m.answered && React.createElement("div", { className: "p-3 rounded-xl border-2 " + (m.chosen === m.t ? (isDark ? "border-emerald-700 bg-emerald-950" : "border-emerald-300 bg-emerald-50") : (isDark ? "border-red-800 bg-red-950" : "border-red-300 bg-red-50")) },
                     React.createElement("p", { className: "text-xs font-black mb-1 " + (m.chosen === m.t ? (isDark ? "text-emerald-400" : "text-emerald-700") : (isDark ? "text-red-400" : "text-red-700")) },
                       (m.chosen === m.t ? "✅ Correct — " : "❌ Not quite — ") + (m.t ? "TRUE." : "FALSE.")),
                     React.createElement("p", { className: "text-xs leading-relaxed mb-1 " + (isDark ? "text-slate-300" : "text-slate-700") }, m.why),
-                    React.createElement("p", { className: "text-[11px] leading-relaxed font-bold " + (isDark ? "text-violet-300" : "text-violet-700") }, "🔬 Try it: " + m.tryIt)
+                    m.tryIt ? React.createElement("p", { className: "text-[11px] leading-relaxed font-bold " + (isDark ? "text-violet-300" : "text-violet-700") }, "🔬 Try it: " + m.tryIt) : null
                   )
                 )
               );
@@ -9823,7 +11937,7 @@ var d = labToolData.plateTectonics || {};
 
                 React.createElement("div", null,
 
-                  React.createElement("h4", { className: "font-black text-red-800 mb-1" }, __alloT('stem.platetectonics.earth_s_layers', "Earth's Layers")),
+                  React.createElement("h4", { className: "font-black mb-1 " + (isDark ? "text-red-300" : "text-red-800") }, __alloT('stem.platetectonics.earth_s_layers', "Earth's Layers")),
 
                   React.createElement("p", null, __alloT('stem.platetectonics.earth_has_four_main_layers_the', "Earth has four main layers: the "), React.createElement("strong", null, __alloT('stem.platetectonics.inner_core', "inner core")), __alloT('stem.platetectonics.solid_iron_5_200_c', " (solid iron, ~5,400\u00B0C), "), React.createElement("strong", null, __alloT('stem.platetectonics.outer_core', "outer core")), __alloT('stem.platetectonics.liquid_iron', " (liquid iron), "), React.createElement("strong", null, "mantle"), __alloT('stem.platetectonics.hot_rock_that_flows_slowly_and_the_thi', " (hot rock that flows slowly), and the thin "), React.createElement("strong", null, "crust"), __alloT('stem.platetectonics.we_live_on', " we live on."))
 
@@ -9831,21 +11945,21 @@ var d = labToolData.plateTectonics || {};
 
                 React.createElement("div", null,
 
-                  React.createElement("h4", { className: "font-black text-red-800 mb-1" }, __alloT('stem.platetectonics.plate_boundaries', "Plate Boundaries")),
+                  React.createElement("h4", { className: "font-black mb-1 " + (isDark ? "text-red-300" : "text-red-800") }, __alloT('stem.platetectonics.plate_boundaries', "Plate Boundaries")),
 
                   React.createElement("table", { className: "w-full text-xs" },
 
                     React.createElement("caption", { className: "sr-only" }, __alloT('stem.platetectonics.plate_boundaries_2', "Plate Boundaries")), React.createElement("tbody", null,
 
-                      [['Convergent (\u2192\u2190)','Plates collide','Mountains, earthquakes, volcanoes'],['Divergent (\u2190\u2192)','Plates separate','Mid-ocean ridges, rift valleys'],['Transform (\u2191\u2193)','Plates slide past','Earthquakes (San Andreas Fault)'],['Subduction','Oceanic dives under continental','Deep trenches, volcanic arcs']].map(function(r) {
+                      [['Convergent (→←)','Plates push together','One sinks, or neither does and the crust piles up'],['↳ Subduction','a KIND of convergent boundary','Ocean plate dives under; trenches, volcanic arcs'],['↳ Collision','the OTHER kind of convergent','Neither sinks; mountains and a crustal root'],['Divergent (←→)','Plates pull apart','Mid-ocean ridges, rift valleys, new crust'],['Transform (↑↓)','Plates slide past','Earthquakes; offset streams (San Andreas)']].map(function(r) {
 
                         return React.createElement("tr", { key: r[0], className: "border-b border-red-100" },
 
-                          React.createElement("td", { className: "py-1.5 font-bold text-red-700 w-36" }, r[0]),
+                          React.createElement("td", { className: "py-1.5 font-bold w-36 " + (isDark ? "text-red-300" : "text-red-700") }, r[0]),
 
-                          React.createElement("td", { className: "py-1.5 text-slate-600 w-32" }, r[1]),
+                          React.createElement("td", { className: "py-1.5 w-32 " + (isDark ? "text-slate-300" : "text-slate-700") }, r[1]),
 
-                          React.createElement("td", { className: "py-1.5 text-slate-600" }, r[2])
+                          React.createElement("td", { className: "py-1.5 " + (isDark ? "text-slate-300" : "text-slate-700") }, r[2])
 
                         );
 
@@ -9859,7 +11973,7 @@ var d = labToolData.plateTectonics || {};
 
                 React.createElement("div", null,
 
-                  React.createElement("h4", { className: "font-black text-red-800 mb-1" }, __alloT('stem.platetectonics.key_facts', "Key Facts")),
+                  React.createElement("h4", { className: "font-black mb-1 " + (isDark ? "text-red-300" : "text-red-800") }, __alloT('stem.platetectonics.key_facts', "Key Facts")),
 
                   React.createElement("p", null, __alloT('stem.platetectonics.the_ring_of_fire_circles_the_pacific_o', "\uD83C\uDF0B The Ring of Fire circles the Pacific Ocean with 75% of Earth's volcanoes. The Himalayas grow ~1cm/year as India pushes into Eurasia. The Mid-Atlantic Ridge is pulling Europe and N. America apart at ~2.5cm/year."))
 
@@ -9892,12 +12006,12 @@ var d = labToolData.plateTectonics || {};
                     }
                     return true;
                   }).map(function(p) {
-                    return React.createElement('button', { key: p.id, onClick: function() { upd({ _plateFocus: p.id }); }, className: 'text-left p-3 rounded-lg border transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (isDark ? 'bg-slate-950/60 border-slate-800 hover:border-red-500 hover:bg-slate-900/60 text-slate-300' : 'bg-white border-red-200 hover:border-red-500 hover:bg-red-50 text-slate-700') },
-                      React.createElement('div', { className: 'font-bold text-red-800 text-sm' }, p.name),
-                      React.createElement('div', { className: 'text-[10px] italic ' + (isDark ? 'text-slate-400' : 'text-slate-600') }, p.tier + ' / ' + p.type),
-                      p.area ? React.createElement('div', { className: 'text-[10px] text-slate-600' }, 'Area: ' + p.area.toLocaleString() + ' km2') : null,
-                      p.motion ? React.createElement('div', { className: 'text-[10px] text-slate-600' }, p.motion) : null,
-                      p.notes ? React.createElement('div', { className: 'text-[10px] text-slate-700 mt-1' }, p.notes) : null
+                    return React.createElement('button', { key: p.id, onClick: function() { upd({ _plateFocus: p.id }); }, className: 'text-left p-3 rounded-lg border transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (isDark ? 'bg-slate-950 border-slate-800 hover:border-red-500 hover:bg-slate-900 text-slate-300' : 'bg-white border-red-200 hover:border-red-500 hover:bg-red-50 text-slate-700') },
+                      React.createElement('div', { className: 'font-bold text-sm ' + (isDark ? 'text-red-300' : 'text-red-800') }, p.name),
+                      React.createElement('div', { className: 'text-[10px] italic ' + (isDark ? 'text-slate-300' : 'text-slate-600') }, p.tier + ' / ' + p.type),
+                      p.area ? React.createElement('div', { className: 'text-[10px] ' + (isDark ? 'text-slate-300' : 'text-slate-600') }, 'Area: ' + p.area.toLocaleString() + ' km2') : null,
+                      p.motion ? React.createElement('div', { className: 'text-[10px] ' + (isDark ? 'text-slate-300' : 'text-slate-600') }, p.motion) : null,
+                      p.notes ? React.createElement('div', { className: 'text-[10px] mt-1 ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, p.notes) : null
                     );
                   })
                 )
@@ -10021,9 +12135,9 @@ var d = labToolData.plateTectonics || {};
                     return React.createElement('div', { key: i, className: 'p-3 rounded-lg bg-white border border-emerald-200' },
                       React.createElement('div', { className: 'flex justify-between mb-1' },
                         React.createElement('div', { className: 'font-bold text-emerald-800 text-sm' }, f.name),
-                        React.createElement('div', { className: 'text-[10px] text-emerald-600 font-mono' }, f.ageMa + ' Ma')
+                        React.createElement('div', { className: 'text-[10px] text-emerald-700 font-mono' }, f.ageMa + ' Ma')
                       ),
-                      React.createElement('div', { className: 'text-[10px] text-emerald-600 italic mb-1' }, f.era),
+                      React.createElement('div', { className: 'text-[10px] text-emerald-700 italic mb-1' }, f.era),
                       React.createElement('div', { className: 'text-[11px] text-slate-700' }, f.notes)
                     );
                   })
@@ -10059,7 +12173,7 @@ var d = labToolData.plateTectonics || {};
                     return React.createElement('div', { key: i, className: 'p-3 rounded-lg bg-white border border-green-200' },
                       React.createElement('div', { className: 'flex justify-between mb-1' },
                         React.createElement('div', { className: 'font-bold text-green-800 text-sm' }, m.name),
-                        React.createElement('div', { className: 'text-[10px] text-green-600 italic' }, m.place)
+                        React.createElement('div', { className: 'text-[10px] text-green-700 italic' }, m.place)
                       ),
                       React.createElement('div', { className: 'text-[11px] text-slate-700' }, m.notes)
                     );
@@ -10106,9 +12220,9 @@ var d = labToolData.plateTectonics || {};
                     return React.createElement('div', { key: i, className: 'p-3 rounded-lg bg-white border border-green-200' },
                       React.createElement('div', { className: 'flex justify-between mb-1' },
                         React.createElement('div', { className: 'font-bold text-green-800 text-sm' }, m.name),
-                        m.highest ? React.createElement('div', { className: 'text-[10px] text-green-600 font-mono' }, m.highest) : null
+                        m.highest ? React.createElement('div', { className: 'text-[10px] text-green-700 font-mono' }, m.highest) : null
                       ),
-                      React.createElement('div', { className: 'text-[10px] text-green-600 italic mb-1' }, m.region),
+                      React.createElement('div', { className: 'text-[10px] text-green-700 italic mb-1' }, m.region),
                       React.createElement('div', { className: 'text-[11px] text-slate-700' }, m.notes)
                     );
                   })
@@ -10158,7 +12272,7 @@ var d = labToolData.plateTectonics || {};
                       return React.createElement('div', { key: i, className: 'p-3 rounded-lg bg-white border border-cyan-200' },
                         React.createElement('div', { className: 'flex justify-between mb-1' },
                           React.createElement('div', { className: 'font-bold text-cyan-800 text-sm' }, b[0]),
-                          React.createElement('div', { className: 'text-[10px] text-cyan-600 font-mono' }, b[1])
+                          React.createElement('div', { className: 'text-[10px] text-cyan-700 font-mono' }, b[1])
                         ),
                         React.createElement('div', { className: 'text-[11px] text-slate-700' }, b[2])
                       );
@@ -10194,18 +12308,167 @@ var d = labToolData.plateTectonics || {};
               React.createElement('div', { className: 'p-4 rounded-2xl border-2 border-teal-200 bg-teal-50' },
                 React.createElement('h3', { className: 'text-xl font-black text-teal-800 mb-2' }, __alloT('stem.platetectonics.classroom_activities', "Classroom Activities")),
                 React.createElement('p', { className: 'text-xs text-teal-700 mb-3' }, __alloT('stem.platetectonics.30_hands_on_activities_for_teaching_pl', "30 hands-on activities for teaching plate tectonics, designed for K-12 with materials commonly available. Each lists grade level, time, prep, and learning objective.")),
+                // ── Thirty activities, and no way to find yours ──────────────
+                // The tab was a flat wall of thirty cards in fixed order, with no
+                // search (every sibling catalogue tab has one) and no way to ask
+                // for a grade. A third-grade teacher read all thirty to find the
+                // four that were theirs.
+                //
+                // It also never once mentioned the simulator it is sitting inside.
+                // Half of these activities have a digital twin two clicks away —
+                // "Convection Currents in a Pan" is the mantle drift toggle, and
+                // "Earthquake Triangulation" is the epicentre widget — so each one
+                // that does now offers the trip.
                 React.createElement('div', { className: 'space-y-2' },
                   (function() {
                     var L = [["Graham Cracker Plate Boundaries","3-6","20 min","Frosting and graham crackers model 3 plate boundaries: push together (mountains), pull apart (rifts), slide past (transform). Show plate motion and collision."],["Convection Currents in a Pan","5-8","15 min","Heat water in a pyrex dish with food coloring drops. Observe rising warm and sinking cool fluid. Model mantle convection."],["Pangaea Puzzle","4-7","30 min","Cut out continents, fit them like a puzzle to form Pangaea. Match fossil and mountain belt distribution."],["Earthquake Magnitude Scale Demo","6-9","20 min","Stack sugar cubes; drop weights of increasing mass to compare magnitudes. Visualize logarithmic scale."],["Seismograph from a Marker","5-8","40 min","Build a simple seismograph: marker, bottle of sand, paper strip. Pull strip while bumping table."],["Tsunami in a Tank","4-8","25 min","Create waves by raising one end of a long tank. Place model coastlines. Discuss why some shorelines amplify."],["Volcano with Baking Soda and Vinegar","2-5","20 min","Classic. Add red food coloring and dish soap for visual oomph. Discuss why gas and lava push up."],["Make Crystals (sugar or salt)","3-8","5 days","Grow sugar or salt crystals from a saturated solution. Discuss mineral formation and how igneous rocks crystallize."],["Density Tower of Rocks","5-8","30 min","Use water, oil, syrup and rocks of different densities. Show why oceanic crust subducts beneath continental."],["Bend the Earth (clay folds)","3-6","15 min","Stack clay layers in different colors; push from sides to make folds. Compare to actual Appalachians folds."],["Earth Layers Hardboiled Egg","2-5","10 min","Crack a hardboiled egg slightly. Shell = crust, white = mantle, yolk = core. Visual and edible."],["M&M Model of Plate Boundaries","3-6","20 min","Use 2 M&Ms as plates: push, pull, slide. Make features (mountains crinkle, gap forms)."],["Rock Cycle Stations","4-8","45 min","Five stations: weathering, deposition, lithification, metamorphism, melting. Students rotate through each."],["Build a Stratovolcano (papier-mache)","3-7","90 min","Multi-day project. Discuss layering of ash and lava. Bonus: cross-section diagram."],["GPS Plate Motion Graph","7-12","40 min","Use UNAVCO data. Plot real GPS station motion. Calculate plate velocity in cm per year."],["Seismic Wave Slinky","4-9","15 min","Use a slinky to model P-waves (compressional, push-pull) and S-waves (transverse, sideways)."],["Continental Drift Evidence Lab","6-9","40 min","Print fossil, glacier, and mountain belt maps for Gondwana continents. Students cut and arrange to fit Pangaea."],["Earthquake Triangulation","7-11","40 min","Given P and S wave arrival times at 3 stations, locate the epicenter. Practice with prepared data sheets."],["Build a Caldera (jello eruption)","3-7","30 min","Jello in a bowl with a balloon underneath. Empty the balloon; jello sinks = caldera formation."],["Trench and Subduction Demo","5-8","20 min","Use a wet sponge as oceanic plate, a chunk of wood as continent. Push sponge under wood; sponge curls down."],["Field Trip Planning","4-12","variable","Plan a local field trip to a geological feature. Research site, plan stops, make student worksheet."],["Climate and Plate Tectonics Connection","8-12","60 min","Discuss how plate motion affects climate: Antarctica isolation, Panama closure, Himalaya monsoons."],["Volcanic Hazards Plan","6-12","45 min","Pick a real city near a volcano (Naples, Tacoma, Catania). Design a hazards and evacuation plan."],["Earthquake Drop-Cover-Hold","K-12","15 min","Practice the recommended earthquake response. Discuss what to do in different locations (school, car, outdoors)."],["Rock and Mineral Identification","5-9","60 min","Set up stations with 10 rocks. Provide hardness picks, streak plates, and magnifier. Students key out."],["Geological Map Reading","8-12","45 min","Introduce contour lines and symbols. Use a real USGS quad map to read elevation and rock types."],["Fossil Casting","3-7","40 min","Use plaster and shells to make positive and negative casts. Discuss how fossils form."],["Glacial Striations Demo","4-8","15 min","Press sandpaper and ice on chocolate or modeling clay. Observe scratches that mimic glacial striations."],["Wegener Debate","7-12","50 min","Half class plays Wegener (1912), half plays critics. Debate the evidence and lack of mechanism. Discuss what changed by 1960s."],["Earth Time Walk","K-12","20 min","Use a 46m rope to represent 4.6 billion years; mark life origin, dinosaurs, humans. Visceral deep time experience."]];
-                    return L.map(function(l, i) {
-                      return React.createElement('div', { key: i, className: 'p-3 rounded-lg bg-white border border-teal-200' },
-                        React.createElement('div', { className: 'flex justify-between mb-1' },
-                          React.createElement('div', { className: 'font-bold text-teal-800 text-sm' }, l[0]),
-                          React.createElement('div', { className: 'text-[10px] text-teal-600 font-mono' }, 'Gr ' + l[1] + ' / ' + l[2])
-                        ),
-                        React.createElement('div', { className: 'text-[11px] text-slate-700' }, l[3])
-                      );
+                    // Where an activity has a counterpart in this tool. Titles
+                    // are the key so the data row above stays byte-identical.
+                    var HOME = {
+                      'Graham Cracker Plate Boundaries': ['sim', 'build all three boundaries in the simulator'],
+                      'Convection Currents in a Pan': ['sim', 'turn on mantle drift and watch the cells'],
+                      'Pangaea Puzzle': ['timeline', 'run the drift time-lapse'],
+                      'Earthquake Magnitude Scale Demo': ['earthquake', 'compare magnitude with intensity'],
+                      'Seismograph from a Marker': ['earthquake', 'read a real trace: P, S, surface'],
+                      'Tsunami in a Tank': ['tsunamis', 'tsunami case studies'],
+                      'Density Tower of Rocks': ['sim', 'why the ocean plate is the one that sinks'],
+                      'M&M Model of Plate Boundaries': ['boundaries', 'twenty named boundaries'],
+                      'Rock Cycle Stations': ['rocks', 'the rock reference'],
+                      'GPS Plate Motion Graph': ['encyclopedia', 'measured motion, plate by plate'],
+                      'Seismic Wave Slinky': ['earthquake', 'see the wave types arrive in order'],
+                      'Continental Drift Evidence Lab': ['history', 'the evidence Wegener had'],
+                      'Earthquake Triangulation': ['earthquake', 'locate a quake from three stations'],
+                      'Trench and Subduction Demo': ['sim', 'push an ocean plate under a continent'],
+                      'Climate and Plate Tectonics Connection': ['climate', 'tectonics and climate'],
+                      'Volcanic Hazards Plan': ['preparedness', 'hazard planning'],
+                      'Earthquake Drop-Cover-Hold': ['preparedness', 'preparedness guidance'],
+                      'Rock and Mineral Identification': ['minerals', 'the mineral reference'],
+                      'Geological Map Reading': ['maine', 'a real mapped region'],
+                      'Fossil Casting': ['fossils', 'the fossil record'],
+                      'Wegener Debate': ['history', 'how the argument actually went'],
+                      'Earth Time Walk': ['timeline', 'deep time, drawn to scale'],
+                      'Volcano with Baking Soda and Vinegar': ['volcanoes', 'what real volcanoes are shaped like'],
+                      'Build a Stratovolcano (papier-mache)': ['volcanoes', 'why a stratovolcano has that profile'],
+                      'Build a Caldera (jello eruption)': ['eruptions', 'eruptions that emptied a magma chamber'],
+                      'Earth Layers Hardboiled Egg': ['sim', 'the real layers, drawn to depth'],
+                      'Bend the Earth (clay folds)': ['mountains', 'ranges built by folding crust'],
+                      'Glacial Striations Demo': ['landforms', 'landforms and the marks they keep'],
+                      'Field Trip Planning': ['parks', 'parks that are the geology'],
+                      'Make Crystals (sugar or salt)': ['minerals', 'how minerals grow']
+                    };
+
+                    // Grades arrive as '3-6', 'K-12', '7-12'. Parse once into a
+                    // numeric span so a band filter can ask whether the two
+                    // overlap, rather than string-matching a label.
+                    function gradeSpan(g) {
+                      var parts = String(g).split('-');
+                      var num = function(v) { v = v.trim(); return v.toUpperCase() === 'K' ? 0 : parseInt(v, 10); };
+                      var lo = num(parts[0]);
+                      var hi = parts.length > 1 ? num(parts[1]) : lo;
+                      if (isNaN(lo)) lo = 0;
+                      if (isNaN(hi)) hi = 12;
+                      return [lo, hi];
+                    }
+                    var BANDS = [
+                      { id: 'all', label: 'All grades', span: null },
+                      { id: 'k2', label: 'K-2', span: [0, 2] },
+                      { id: '35', label: '3-5', span: [3, 5] },
+                      { id: '68', label: '6-8', span: [6, 8] },
+                      { id: '912', label: '9-12', span: [9, 12] }
+                    ];
+                    var band = d._lessonBand || 'all';
+                    var bandSpan = (BANDS.filter(function(b) { return b.id === band; })[0] || {}).span;
+                    var q = (d._lessonSearch || '').toLowerCase();
+
+                    var shown = L.filter(function(l) {
+                      if (bandSpan) {
+                        var s = gradeSpan(l[1]);
+                        // Overlap, not containment: a 4-8 activity belongs in both
+                        // the 3-5 and the 6-8 list.
+                        if (s[1] < bandSpan[0] || s[0] > bandSpan[1]) return false;
+                      }
+                      if (q && (l[0] + ' ' + l[3]).toLowerCase().indexOf(q) === -1) return false;
+                      return true;
                     });
+
+                    // Overlap is the honest filter — a 4-8 activity really does
+                    // suit a sixth grader — but it barely narrows anything, because
+                    // most of these span half of school. Picking "6-8" left 28 of
+                    // 30 on screen and the teacher was back to reading all of them.
+                    // So nothing is hidden; the best fits are simply floated to the
+                    // top, by how close the activity's middle is to the band's.
+                    if (bandSpan) {
+                      var bandMid = (bandSpan[0] + bandSpan[1]) / 2;
+                      shown = shown.slice().sort(function(a, b) {
+                        var sa = gradeSpan(a[1]), sb = gradeSpan(b[1]);
+                        return Math.abs((sa[0] + sa[1]) / 2 - bandMid) - Math.abs((sb[0] + sb[1]) / 2 - bandMid);
+                      });
+                    }
+
+                    return [
+                      React.createElement('div', { key: 'bands', className: 'flex flex-wrap gap-2 mb-2' },
+                        BANDS.map(function(b) {
+                          var on = band === b.id;
+                          return React.createElement('button', {
+                            key: b.id,
+                            type: 'button',
+                            'data-pt-lesson-band': b.id,
+                            'aria-pressed': on ? 'true' : 'false',
+                            onClick: function() { upd({ _lessonBand: b.id }); },
+                            className: 'px-3 py-1 rounded-lg text-xs font-bold focus:ring-2 focus:ring-yellow-500 focus:outline-none ' +
+                              (on ? 'bg-teal-700 text-white'
+                                  : (isDark ? 'bg-slate-900 text-slate-200 border border-slate-700'
+                                            : 'bg-white text-teal-800 border border-teal-300'))
+                          }, b.label);
+                        })
+                      ),
+                      React.createElement('input', {
+                        key: 'search',
+                        type: 'text',
+                        'aria-label': 'Search classroom activities',
+                        placeholder: 'Search activities...',
+                        value: d._lessonSearch || '',
+                        onChange: function(e) { upd({ _lessonSearch: e.target.value }); },
+                        className: 'w-full px-3 py-2 rounded-lg text-xs mb-2 focus:ring-2 focus:ring-yellow-500 focus:outline-none ' +
+                          (isDark ? 'bg-slate-900 border border-slate-700 text-slate-100'
+                                  : 'bg-white border border-teal-300 text-slate-800')
+                      }),
+                      React.createElement('div', {
+                        key: 'count',
+                        // The panel itself is bg-teal-50 in BOTH themes — this
+                        // tool renders as a light card inside a dark shell — so an
+                        // element with no background of its own must keep the light
+                        // ink. Branching on isDark here put teal-300 on teal-50 at
+                        // 1.42:1. Everything below sits on its own dark card and
+                        // does branch.
+                        className: 'text-[11px] font-bold mb-2 text-teal-800'
+                      }, shown.length === L.length
+                          ? ('Showing all ' + L.length + ' activities')
+                          : ('Showing ' + shown.length + ' of ' + L.length + ' activities')),
+                      shown.length === 0
+                        ? React.createElement('div', {
+                            key: 'empty',
+                            className: 'p-3 rounded-lg text-xs ' + (isDark ? 'bg-slate-900 text-slate-300' : 'bg-white text-slate-700 border border-teal-200')
+                          }, 'No activity matches that. Clear the search, or try a wider grade band.')
+                        : shown.map(function(l, i) {
+                            var home = HOME[l[0]];
+                            return React.createElement('div', { key: l[0] || i, className: 'p-3 rounded-lg border ' + (isDark ? 'bg-slate-950 border-slate-800' : 'bg-white border-teal-200') },
+                              React.createElement('div', { className: 'flex justify-between gap-2 mb-1' },
+                                React.createElement('div', { className: 'font-bold text-sm ' + (isDark ? 'text-teal-300' : 'text-teal-800') }, l[0]),
+                                React.createElement('div', { className: 'text-[10px] font-mono whitespace-nowrap ' + (isDark ? 'text-teal-300' : 'text-teal-700') }, 'Gr ' + l[1] + ' / ' + l[2])
+                              ),
+                              React.createElement('div', { className: 'text-[11px] ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, l[3]),
+                              home ? React.createElement('button', {
+                                type: 'button',
+                                'data-pt-lesson-link': home[0],
+                                onClick: function() { upd({ simTab: home[0], _ptPicked: true }); },
+                                className: 'mt-2 px-2.5 py-1 rounded-lg text-[11px] font-bold focus:ring-2 focus:ring-yellow-500 focus:outline-none ' +
+                                  (isDark ? 'bg-teal-900 text-teal-100 border border-teal-700'
+                                          : 'bg-teal-50 text-teal-900 border border-teal-300')
+                              }, 'In this tool: ' + home[1] + ' \u2192') : null
+                            );
+                          })
+                    ];
                   })()
                 )
               )
@@ -23855,7 +26118,7 @@ var d = labToolData.plateTectonics || {};
                 thrust:     { label: __alloT('stem.platetectonics.thrust_faulting', '🔺 Thrust faulting'), color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: __alloT('stem.platetectonics.compression_overcomes_friction', 'Compression overcomes friction.') },
                 normal:     { label: __alloT('stem.platetectonics.normal_faulting', '⬇️ Normal faulting'),  color: '#0891b2', bg: '#ecfeff', border: '#67e8f9', desc: __alloT('stem.platetectonics.tension_cracks_crust_rift_valleys', 'Tension cracks crust. Rift valleys.') },
                 strikeSlip: { label: __alloT('stem.platetectonics.strike_slip', '↔️ Strike-slip'),       color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: __alloT('stem.platetectonics.lateral_shear_san_andreas_style', 'Lateral shear. San-Andreas-style.') },
-                stable:     { label: __alloT('stem.platetectonics.stable', '🟢 Stable'),           color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: __alloT('stem.platetectonics.stress_below_failure_threshold', 'Stress below failure threshold.') }
+                stable:     { label: __alloT('stem.platetectonics.stable', '🟢 Stable'),           color: '#047857', bg: '#ecfdf5', border: '#86efac', desc: __alloT('stem.platetectonics.stress_below_failure_threshold', 'Stress below failure threshold.') }
               }[failure];
               return h('div', { className: 'p-4 rounded-xl bg-white border border-amber-300 shadow-sm space-y-3 mb-6' },
                 h('h3', { className: 'text-sm font-black text-amber-700' }, __alloT('stem.platetectonics.plate_boundary_stress_discovery', '🔐 Plate boundary stress discovery')),
@@ -23917,12 +26180,36 @@ var d = labToolData.plateTectonics || {};
             // \u2550\u2550\u2550 TECTONIC BOUNDARIES \u2550\u2550\u2550
             React.createElement('div', { className: 'mt-5 mx-4 rounded-2xl border border-red-300 bg-white p-3 shadow-sm' },
               React.createElement('h4', { className: 'text-sm font-bold text-red-700 mb-2' }, __alloT('stem.platetectonics.three_boundary_types_where_plates_meet', '\ud83c\udf0b Three Boundary Types - Where plates meet')),
-              React.createElement('div', { className: 'rounded-xl overflow-hidden border border-red-200', style: { background: '#1c1410', aspectRatio: '16/5' } },
+              // The shell's aspect ratio is a CSS class, not an inline value: the
+              // panel stacks its three cells on a narrow screen, and a stacked
+              // layout needs roughly three times the height. Inline aspectRatio
+              // cannot carry a media query.
+              React.createElement('div', { className: 'pt-tb-shell rounded-xl overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-red-200'), style: { background: isDark ? '#140f0c' : '#fffaf5' } },
                 React.createElement('canvas', {
-                  role: 'img', tabIndex: 0, 'aria-label': 'Animation of the three plate-boundary types: convergent, divergent, and transform.',
+                  role: 'img', tabIndex: 0,
+                  // Names what each panel actually shows, and says which of them is
+                  // drawn from above. The old label listed the three words and
+                  // nothing else, so a nonvisual reader got no more than the
+                  // heading already gave them.
+                  'aria-label': 'Three diagrams comparing the plate boundary types. Convergent, seen in side view: a thin oceanic plate sits lower than a thicker continental plate, bends down at a trench and carries on beneath it as a slab, and a volcano stands on the upper plate set back from the trench. Divergent, seen in side view: two plates move apart and melt rises into the gap and freezes as new crust between them. Transform, seen from above rather than in section, because the motion runs along the boundary: a single stream is cut in two and carried apart across the fault trace, with earthquakes on the fault and the two blocks moving in opposite directions.',
                   ref: function(cvEl) {
                     if (!cvEl) return;
-                    if (cvEl._tbAnim) return;
+                    // Live theme channel. React re-fires an inline ref on every
+                    // render, so this is the one place that can hand the running
+                    // loop the CURRENT theme; the loop itself starts once and would
+                    // otherwise redraw the first render's colours forever.
+                    var themeChanged = cvEl._tbDark !== isDark;
+                    cvEl._tbDark = isDark;
+                    // `_tbAnim` is the rAF HANDLE and under reduced motion it is 0,
+                    // so it cannot double as "already set up" — guarding on it would
+                    // re-run this whole block on the next render and attach a second
+                    // ResizeObserver. `_tbInit` is the setup flag; the handle is just
+                    // the handle.
+                    if (cvEl._tbInit) {
+                      if (themeChanged && cvEl._tbRedraw) cvEl._tbRedraw();
+                      return;
+                    }
+                    cvEl._tbInit = true;
                     var c2 = cvEl.getContext('2d');
                     var W = cvEl.offsetWidth || 600;
                     var H = cvEl.offsetHeight || 180;
@@ -23931,105 +26218,315 @@ var d = labToolData.plateTectonics || {};
                     var start = performance.now();
                     function drawTb() {
                       if (!cvEl.isConnected) { cancelAnimationFrame(cvEl._tbAnim); if (cvEl._tbRO) { cvEl._tbRO.disconnect(); cvEl._tbRO = null; } return; }
-                      var t = (performance.now() - start) / 1000;
-                      c2.fillStyle = '#1c1410';
-                      c2.fillRect(0, 0, W, H);
-                      var anim = Math.sin(t * 0.8) * 8;
-                      // 3 columns
-                      var cols = [W * 0.16, W * 0.5, W * 0.84];
-                      var cy = H * 0.45;
-                      // CONVERGENT (left)
-                      c2.fillStyle = '#92400e';
-                      c2.fillRect(cols[0] - 35 - anim, cy, 35, 20);
-                      c2.fillRect(cols[0] + 0 + anim, cy, 35, 20);
-                      // Subduction
-                      c2.fillStyle = '#dc2626';
-                      c2.beginPath();
-                      c2.moveTo(cols[0], cy);
-                      c2.lineTo(cols[0] + anim, cy + 25);
-                      c2.lineTo(cols[0] + 10 + anim, cy + 30);
-                      c2.lineTo(cols[0] + 10, cy + 8);
-                      c2.closePath();
-                      c2.fill();
-                      // Mountain rise
-                      c2.fillStyle = '#fef3c7';
-                      c2.beginPath();
-                      c2.moveTo(cols[0] - 18, cy);
-                      c2.lineTo(cols[0] - 3, cy - 20);
-                      c2.lineTo(cols[0] + 12, cy);
-                      c2.closePath();
-                      c2.fill();
-                      // Volcano
-                      var volSmoke = (t * 30) % 50;
-                      c2.fillStyle = 'rgba(127,127,127,' + (1 - volSmoke / 50) + ')';
-                      c2.beginPath();
-                      c2.arc(cols[0] - 3, cy - 25 - volSmoke, 5, 0, Math.PI * 2);
-                      c2.fill();
-                      // DIVERGENT (mid)
-                      c2.fillStyle = '#92400e';
-                      c2.fillRect(cols[1] - 40 - anim, cy, 35, 20);
-                      c2.fillRect(cols[1] + 5 + anim, cy, 35, 20);
-                      // Magma upwelling
-                      var mag = Math.sin(t * 3) * 4;
-                      c2.fillStyle = '#fbbf24';
-                      c2.beginPath();
-                      c2.moveTo(cols[1] - 6, cy + 30);
-                      c2.lineTo(cols[1] + 6, cy + 30);
-                      c2.lineTo(cols[1] + 4 + mag, cy + 5);
-                      c2.lineTo(cols[1] - 4 - mag, cy + 5);
-                      c2.closePath();
-                      c2.fill();
-                      // New crust
-                      c2.fillStyle = '#ef4444';
-                      c2.fillRect(cols[1] - 6, cy, 12, 4);
-                      // TRANSFORM (right)
-                      var slip = Math.sin(t * 1.5) * 8;
-                      c2.fillStyle = '#92400e';
-                      c2.fillRect(cols[2] - 35, cy - slip, 35, 20);
-                      c2.fillRect(cols[2] + 0, cy + slip, 35, 20);
-                      // Crack
-                      c2.strokeStyle = '#fbbf24';
-                      c2.lineWidth = 2;
-                      c2.beginPath();
-                      c2.moveTo(cols[2], cy - 12);
-                      c2.lineTo(cols[2], cy + 32);
-                      c2.stroke();
-                      // Earthquake epicenter
-                      var quake = Math.abs(Math.sin(t * 4));
-                      c2.strokeStyle = '#dc2626';
-                      c2.lineWidth = 1;
-                      for (var ring = 0; ring < 3; ring++) {
-                        c2.beginPath();
-                        c2.arc(cols[2], cy + 8, 5 + ring * 8 + quake * 15, 0, Math.PI * 2);
-                        c2.stroke();
+                      // Frozen at 0.9 s under reduced motion: far enough in for the
+                      // divergent gap to be open and the smoke to have left the vent,
+                      // so the still frame reads as the same three diagrams rather
+                      // than as three that have not started.
+                      var t = ptAmbientClock((performance.now() - start) / 1000, 0.9);
+                      // Read the theme off the node each frame. The rAF loop starts
+                      // once and would otherwise redraw the FIRST render's theme
+                      // forever, so this panel stayed dark-on-dark after a switch.
+                      if (!ptOnScreen(cvEl)) {
+                        if (!ptReducedMotion()) cvEl._tbAnim = requestAnimationFrame(drawTb);
+                        return;
                       }
-                      // Labels
-                      var labels = [
-                        { x: cols[0], color: '#dc2626', name: 'CONVERGENT', desc: __alloT('stem.platetectonics.plates_collide', 'Plates collide'), extra: '\u2192 mountains + volcanoes' },
-                        { x: cols[1], color: '#fbbf24', name: 'DIVERGENT', desc: __alloT('stem.platetectonics.plates_separate', 'Plates separate'), extra: '\u2192 ridges + rifts' },
-                        { x: cols[2], color: '#a855f7', name: 'TRANSFORM', desc: __alloT('stem.platetectonics.plates_slide', 'Plates slide'), extra: '\u2192 earthquakes' }
+                      var dk = !!cvEl._tbDark;
+
+                      c2.fillStyle = dk ? '#140f0c' : '#fffaf5';
+                      c2.fillRect(0, 0, W, H);
+
+                      // ── Layout ────────────────────────────────────────────────
+                      // Three equal cells, each one a small complete diagram with
+                      // its own heading and caption. Before this the three sketches
+                      // were about 110 x 60 px adrift in a canvas six times that
+                      // size, with their labels stranded at the very bottom edge:
+                      // roughly 85% of the panel was empty and the captions were
+                      // nowhere near the pictures they named.
+                      // Three columns side by side needs about 170 px each. Below
+                      // that the panel was unreadable at any aspect ratio: on a
+                      // phone the diagrams overlapped their own headings and the
+                      // captions ran into the footnote. So a narrow panel stacks
+                      // the three instead, and the shell's aspect ratio follows
+                      // (see the .pt-tb-shell media query).
+                      var stacked = W < 520;
+                      var cols = stacked ? 1 : 3;
+                      var rows = stacked ? 3 : 1;
+                      var footH = 15;
+                      var cellW = W / cols;
+                      var cellH = (H - footH) / rows;
+                      var headH = 20, capH = Math.min(56, cellH * 0.30);
+                      var anim = Math.sin(t * 0.8) * 7;
+
+                      var CELLS = [
+                        { name: 'CONVERGENT', ink: '#f87171', view: 'side view',
+                          desc: 'Plates push together', out: 'mountains, trenches, volcanoes',
+                          eg: 'the Andes, Japan, the Himalaya' },
+                        { name: 'DIVERGENT', ink: '#fbbf24', view: 'side view',
+                          desc: 'Plates pull apart', out: 'ridges, rifts, brand-new crust',
+                          eg: 'the Mid-Atlantic Ridge, East Africa' },
+                        { name: 'TRANSFORM', ink: '#c4b5fd', view: 'view from above',
+                          desc: 'Plates slide past', out: 'earthquakes, offset streams and roads',
+                          eg: 'the San Andreas Fault' }
                       ];
-                      c2.textAlign = 'center';
-                      labels.forEach(function(l) {
-                        c2.fillStyle = l.color;
+
+                      for (var ci = 0; ci < 3; ci++) {
+                        var cell = CELLS[ci];
+                        var x0 = (ci % cols) * cellW;
+                        var y0 = Math.floor(ci / cols) * cellH;
+                        var cx = x0 + cellW / 2;
+                        var diagTop = y0 + headH + 4;
+                        var diagBot = y0 + cellH - capH;
+                        // The drawing occupies a STAGE inside the cell rather than
+                        // the whole of it: filling the cell left the plates a small
+                        // band near the top with a tall void under them, and the
+                        // subducting slab ran straight out of its own cell.
+                        var stageH = (diagBot - diagTop) * 0.94;
+                        var stageTop = diagTop + (diagBot - diagTop) * 0.03;
+                        var stageBot = stageTop + stageH;
+                        var gy = stageTop + stageH * 0.36;             // plate top / ground
+                        var pt = Math.max(14, stageH * 0.20);
+                        // Everything below is drawn against `u`, so the diagrams
+                        // grow with the panel instead of staying at one hand-tuned
+                        // size in a box several times larger than they are.
+                        var u = Math.max(0.7, Math.min(1.6, stageH / 150));
+                        var hw = Math.min(cellW * 0.34, 104);
+
+                        // Cell frame, so the three read as three things to compare
+                        // rather than as one wide picture.
+                        if (ci > 0) {
+                          c2.strokeStyle = dk ? 'rgba(120,113,108,0.5)' : 'rgba(214,211,209,0.9)';
+                          c2.lineWidth = 1;
+                          c2.beginPath();
+                          if (stacked) { c2.moveTo(8, y0); c2.lineTo(W - 8, y0); }
+                          else { c2.moveTo(x0, 6); c2.lineTo(x0, H - footH - 6); }
+                          c2.stroke();
+                        }
+
+                        // Heading, and the VIEW it is drawn in. Naming the view is
+                        // not decoration: transform is the one boundary a slice
+                        // cannot show, so its panel looks at the ground from above
+                        // and has to say so or it reads as inconsistent with the
+                        // other two.
+                        c2.textAlign = 'center';
+                        c2.font = 'bold 12px sans-serif';
+                        c2.fillStyle = cell.ink;
+                        c2.fillText(cell.name, cx, y0 + headH - 6);
+                        c2.font = '9px sans-serif';
+                        c2.fillStyle = dk ? '#a8a29e' : '#78716c';
+                        c2.fillText('(' + cell.view + ')', cx, y0 + headH + 6);
+
+                        if (ci === 0) {
+                          // ── Convergent: ocean sinks under continent ────────────
+                          var oT = pt * 0.62;
+                          // Overriding continental plate, thicker and standing higher.
+                          c2.fillStyle = dk ? '#78716c' : '#c9a227';
+                          c2.fillRect(cx + anim * 0.5, gy - 5, hw, pt + 5);
+                          // Subducting oceanic plate, thinner and sitting lower.
+                          c2.fillStyle = dk ? '#1e3a5f' : '#2a4a6f';
+                          c2.fillRect(cx - hw - anim * 0.5, gy + 6, hw, oT);
+                          // Sea over the basin.
+                          c2.fillStyle = dk ? 'rgba(30,58,138,0.5)' : 'rgba(56,132,208,0.45)';
+                          c2.fillRect(cx - hw - anim * 0.5, gy - 5 * u, hw, 11 * u);
+                          // The slab: the SAME plate carrying on down.
+                          c2.fillStyle = dk ? '#1e3a5f' : '#2a4a6f';
+                          // Reach clipped to the cell. Run to the full drop it
+                          // crossed the divider and ended up inside the divergent
+                          // panel next door.
+                          var sDrop = Math.min(stageBot - gy - 6, cellW * 0.30);
+                          c2.beginPath();
+                          c2.moveTo(cx, gy + 6);
+                          c2.lineTo(cx + sDrop * 0.9, gy + 6 + sDrop);
+                          c2.lineTo(cx + sDrop * 0.9 + oT, gy + 6 + sDrop);
+                          c2.lineTo(cx + oT, gy + 6);
+                          c2.closePath();
+                          c2.fill();
+                          // Trench, where it bends down.
+                          c2.fillStyle = dk ? '#0c0a09' : '#1c1917';
+                          c2.beginPath();
+                          c2.moveTo(cx - 14 * u, gy + 5 * u); c2.lineTo(cx - 2, gy + 19 * u); c2.lineTo(cx + 1, gy + 5 * u);
+                          c2.closePath(); c2.fill();
+                          // Volcano on the overriding plate, set back from the trench.
+                          var vX = cx + hw * 0.5;
+                          var vH = 24 * u;
+                          c2.fillStyle = dk ? '#44403c' : '#57534e';
+                          c2.beginPath();
+                          c2.moveTo(vX - vH * 0.5, gy - 5); c2.lineTo(vX, gy - vH); c2.lineTo(vX + vH * 0.5, gy - 5);
+                          c2.closePath(); c2.fill();
+                          // A lit vent, so it reads as a volcano rather than a hill.
+                          c2.fillStyle = '#f97316';
+                          c2.beginPath();
+                          c2.moveTo(vX - vH * 0.12, gy - vH * 0.82);
+                          c2.lineTo(vX, gy - vH);
+                          c2.lineTo(vX + vH * 0.12, gy - vH * 0.82);
+                          c2.closePath(); c2.fill();
+                          // Rise capped to the headroom the stage actually has: at
+                          // a fixed 40 px the puff climbed out of a short stacked
+                          // cell and sat next to the heading above it.
+                          var puffMax = Math.max(8, (gy - vH) - stageTop - 6);
+                          var puff = (t * 26) % puffMax;
+                          c2.fillStyle = 'rgba(168,162,158,' + (1 - puff / puffMax) * 0.85 + ')';
+                          c2.beginPath(); c2.arc(vX, gy - vH - 4 - puff, 4 * u, 0, Math.PI * 2); c2.fill();
+                          // Clamped into the stage. A fixed 16 px above the ground
+                          // line lands in the heading band once the cell is short,
+                          // which is what a stacked layout on a phone gives you.
+                          var ay0 = Math.max(stageTop + 8, gy - 16);
+                          arrow(cx - hw * 0.55, ay0, 1, cell.ink);
+                          arrow(cx + hw * 0.92, ay0, -1, cell.ink);
+
+                        } else if (ci === 1) {
+                          // ── Divergent: new crust fills the gap ─────────────────
+                          var gap = (10 + Math.abs(anim)) * u;
+                          c2.fillStyle = dk ? '#78716c' : '#c9a227';
+                          c2.fillRect(cx - gap / 2 - hw, gy, hw, pt);
+                          c2.fillRect(cx + gap / 2, gy, hw, pt);
+                          // Rising melt, and the new lithosphere it freezes into.
+                          var plumeBot = gy + pt + stageH * 0.30;
+                          var mg = c2.createLinearGradient(0, plumeBot, 0, gy);
+                          mg.addColorStop(0, 'rgba(249,115,22,0)');
+                          mg.addColorStop(1, 'rgba(251,146,60,0.85)');
+                          c2.fillStyle = mg;
+                          c2.beginPath();
+                          c2.moveTo(cx - gap * 0.9, plumeBot);
+                          c2.lineTo(cx + gap * 0.9, plumeBot);
+                          c2.lineTo(cx + gap / 2, gy);
+                          c2.lineTo(cx - gap / 2, gy);
+                          c2.closePath(); c2.fill();
+                          c2.fillStyle = '#ef4444';
+                          c2.fillRect(cx - gap / 2, gy, gap, pt * 0.55);
+                          c2.fillStyle = dk ? '#fca5a5' : '#9a3412';
+                          c2.font = 'bold 9px sans-serif';
+                          c2.fillText('new crust', cx + gap * 2.4, gy + pt * 0.5);
+                          var ay1 = Math.max(stageTop + 8, gy - 12);
+                          arrow(cx - gap / 2 - hw * 0.5, ay1, -1, cell.ink);
+                          arrow(cx + gap / 2 + hw * 0.5, ay1, 1, cell.ink);
+
+                        } else {
+                          // ── Transform: looking straight DOWN ───────────────────
+                          // Drawn in map view because the motion runs ALONG the
+                          // boundary. In section it points into the page, which is
+                          // why the old sketch could only show a crack and some
+                          // rings and never showed anything sliding.
+                          var slip = (Math.sin(t * 1.2) * 0.5 + 0.5) * 15 * u;
+                          var mH2 = Math.min(stageH * 0.82, hw * 1.5);
+                          var mTop = stageTop + (stageH - mH2) / 2, mBot = mTop + mH2;
+                          var mHW = hw * 0.98;
+                          c2.fillStyle = dk ? '#1c1917' : '#dcfce7';
+                          c2.fillRect(cx - mHW, mTop, mHW * 2, mBot - mTop);
+                          c2.strokeStyle = dk ? 'rgba(120,113,108,0.7)' : 'rgba(134,239,172,0.9)';
+                          c2.lineWidth = 1.5;
+                          c2.strokeRect(cx - mHW, mTop, mHW * 2, mBot - mTop);
+                          // A once-continuous stream, cut and carried apart.
+                          var sy = (mTop + mBot) / 2;
+                          c2.strokeStyle = dk ? '#ca8a04' : '#854d0e';
+                          c2.lineWidth = 4 * u;
+                          c2.beginPath();
+                          c2.moveTo(cx - mHW + 4, sy + slip); c2.lineTo(cx - 1, sy + slip);
+                          c2.moveTo(cx + 1, sy - slip); c2.lineTo(cx + mHW - 4, sy - slip);
+                          c2.stroke();
+                          // The fault trace.
+                          c2.strokeStyle = '#dc2626';
+                          c2.lineWidth = 2;
+                          c2.beginPath(); c2.moveTo(cx, mTop); c2.lineTo(cx, mBot); c2.stroke();
+                          // Quakes on it.
+                          var q = Math.abs(Math.sin(t * 3));
+                          c2.strokeStyle = 'rgba(248,113,113,' + (1 - q) + ')';
+                          c2.lineWidth = 1.5;
+                          c2.beginPath(); c2.arc(cx, sy, 4 + q * 16, 0, Math.PI * 2); c2.stroke();
+                          // Blocks travelling in opposite directions, in the plane
+                          // the travel actually happens in.
+                          vArrow(cx - mHW * 0.58, sy, -1, cell.ink, u);
+                          vArrow(cx + mHW * 0.58, sy, 1, cell.ink, u);
+                          // Name the offset thing. Without it this cell is two brown
+                          // lines that do not line up, and the reason they do not is
+                          // the entire point of the panel.
+                          c2.fillStyle = dk ? '#fde68a' : '#78350f';
+                          c2.font = 'bold 10px sans-serif';
+                          c2.textAlign = 'center';
+                          c2.fillText('one stream, cut in two', cx, mBot + 11);
+                        }
+
+                        // ── Caption ───────────────────────────────────────────────
+                        // Directly under its own picture, not stranded in a row at
+                        // the foot of the canvas.
+                        var capY = diagBot + 14;
+                        c2.textAlign = 'center';
                         c2.font = 'bold 10px sans-serif';
-                        c2.fillText(l.name, l.x, H - 38);
-                        c2.fillStyle = '#fef3c7';
-                        c2.font = '8.5px sans-serif';
-                        c2.fillText(l.desc, l.x, H - 28);
-                        c2.fillStyle = '#fbbf24';
-                        c2.fillText(l.extra, l.x, H - 19);
-                      });
-                      c2.fillStyle = 'rgba(0,0,0,0.85)';
-                      c2.fillRect(8, H - 14, W - 16, 12);
-                      c2.font = 'bold 8px sans-serif'; c2.fillStyle = '#fb7185'; c2.textAlign = 'center';
-                      c2.fillText('Wegener 1912 proposed continental drift. Plate tectonics confirmed 1960s via seafloor magnetic stripes.', W / 2, H - 5);
-                      cvEl._tbAnim = requestAnimationFrame(drawTb);
+                        c2.fillStyle = dk ? '#f5f5f4' : '#1c1917';
+                        c2.fillText(cell.desc, cx, capY);
+                        c2.font = '10px sans-serif';
+                        c2.fillStyle = dk ? '#fbbf24' : '#b45309';
+                        wrapTb('→ ' + cell.out, cx, capY + 13, cellW - 20, 11);
+                        c2.fillStyle = dk ? '#a8a29e' : '#57534e';
+                        c2.font = 'italic 10px sans-serif';
+                        // The example line is the first thing to go when the cell is
+                        // short: it is the nicest of the three lines and the least
+                        // load-bearing, and printing it anyway is what ran the captions
+                        // into the footnote on a phone.
+                        if (capH >= 50) c2.fillText(cell.eg, cx, capY + 37);
+                      }
+
+                      // Footnote, on its own row rather than crammed into a 12 px
+                      // strip that clipped its own descenders.
+                      c2.textAlign = 'center';
+                      c2.font = '10px sans-serif';
+                      c2.fillStyle = dk ? '#a8a29e' : '#78716c';
+                      // Shortened rather than clipped when there is no room for it:
+                      // at 400 px the full sentence ran off both edges of the panel.
+                      c2.fillText(W < 520
+                        ? 'Wegener proposed continental drift in 1912; confirmed in the 1960s.'
+                        : 'Wegener proposed continental drift in 1912. Plate tectonics was confirmed in the 1960s, by the magnetic stripes on the sea floor.',
+                        W / 2, H - 5);
+
+                      // A still frame does not need sixty of itself a second. The
+                      // theme and a resize both re-arm the loop, so this parks the
+                      // panel rather than freezing it.
+                      if (!ptReducedMotion()) cvEl._tbAnim = requestAnimationFrame(drawTb);
+                      else cvEl._tbAnim = 0;
+                      cvEl._tbRedraw = drawTb;
+
+                      // Horizontal motion arrow. dir +1 points right.
+                      function arrow(ax, ay, dir, ink) {
+                        c2.strokeStyle = ink; c2.fillStyle = ink; c2.lineWidth = 2.4 * u;
+                        c2.beginPath(); c2.moveTo(ax - 15 * u * dir, ay); c2.lineTo(ax + 9 * u * dir, ay); c2.stroke();
+                        c2.beginPath();
+                        c2.moveTo(ax + 16 * u * dir, ay);
+                        c2.lineTo(ax + 9 * u * dir, ay - 5 * u);
+                        c2.lineTo(ax + 9 * u * dir, ay + 5 * u);
+                        c2.closePath(); c2.fill();
+                      }
+                      // Vertical motion arrow, for the map view. dir +1 points down.
+                      function vArrow(ax, ay, dir, ink, sc) {
+                        var k = sc || 1;
+                        c2.strokeStyle = ink; c2.fillStyle = ink; c2.lineWidth = 2.4 * k;
+                        c2.beginPath(); c2.moveTo(ax, ay - 18 * k * dir); c2.lineTo(ax, ay + 11 * k * dir); c2.stroke();
+                        c2.beginPath();
+                        c2.moveTo(ax, ay + 18 * k * dir);
+                        c2.lineTo(ax - 5 * k, ay + 11 * k * dir);
+                        c2.lineTo(ax + 5 * k, ay + 11 * k * dir);
+                        c2.closePath(); c2.fill();
+                      }
+                      // Two-line wrap, so a longer outcome phrase does not run off
+                      // the side of its cell into the neighbouring one.
+                      function wrapTb(text, wx, wy, maxW, lh) {
+                        var words = text.split(' '), line = '', lines = [];
+                        for (var wi = 0; wi < words.length; wi++) {
+                          var test = line ? line + ' ' + words[wi] : words[wi];
+                          if (c2.measureText(test).width > maxW && line) { lines.push(line); line = words[wi]; }
+                          else line = test;
+                        }
+                        if (line) lines.push(line);
+                        for (var li = 0; li < Math.min(2, lines.length); li++) c2.fillText(lines[li], wx, wy + li * lh);
+                      }
                     }
                     drawTb();
                     var ro = new ResizeObserver(function() {
                       W = cvEl.offsetWidth; H = cvEl.offsetHeight;
                       cvEl.width = W * 2; cvEl.height = H * 2; c2.setTransform(1, 0, 0, 1, 0, 0); c2.scale(2, 2);
+                      // A resize clears the backing store, so a PARKED panel has to
+                      // repaint itself here — the loop that would otherwise have
+                      // done it on the next frame is not running. Without this the
+                      // panel went blank on rotation under reduced motion.
+                      if (ptReducedMotion()) drawTb();
                     });
                     cvEl._tbRO = ro;
                     ro.observe(cvEl);
@@ -24042,12 +26539,26 @@ var d = labToolData.plateTectonics || {};
             // \u2550\u2550\u2550 MERCALLI vs RICHTER \u2550\u2550\u2550
             React.createElement('div', { className: 'mt-5 mx-4 rounded-2xl border border-orange-300 bg-white p-3 shadow-sm' },
               React.createElement('h4', { className: 'text-sm font-bold text-orange-700 mb-2' }, __alloT('stem.platetectonics.earthquake_scales_magnitude_vs_intensi', '\ud83d\udccf Earthquake Scales - Magnitude vs Intensity')),
-              React.createElement('div', { className: 'rounded-xl overflow-hidden border border-orange-200', style: { background: '#0a0410', aspectRatio: '16/5' } },
+              // Theme-aware and taller: two captioned columns need more than a
+              // 16:5 strip, and they stack on a narrow screen (see .pt-eq-shell).
+              React.createElement('div', { className: 'pt-eq-shell rounded-xl overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-orange-200'), style: { background: isDark ? '#0a0410' : '#fdf4ff' } },
                 React.createElement('canvas', {
-                  role: 'img', tabIndex: 0, 'aria-label': 'Animation comparing earthquake magnitude (Richter) and shaking intensity (Mercalli).',
+                  role: 'img', tabIndex: 0,
+                  'aria-label': 'Two columns comparing the two earthquake scales. On the left, magnitude: three traces for a magnitude 4, 6 and 8 earthquake, each about ten times the shaking of the one above it — one number for the whole earthquake, read off a recording. On the right, intensity for a single magnitude 7 earthquake felt at four distances: Mercalli nine at ten kilometres, buildings shifted off their foundations; seven at sixty kilometres, chimneys fall and it is hard to stand; five at two hundred kilometres, dishes rattle and sleepers wake; two at six hundred kilometres, felt only by a few people at rest. Magnitude is what the earthquake did; intensity is what it did to you, where you were standing.',
                   ref: function(cvEl) {
                     if (!cvEl) return;
-                    if (cvEl._eqAnim) return;
+                    // Live theme channel: the loop starts once and would otherwise
+                    // repaint the first render's colours forever.
+                    var eqThemeChanged = cvEl._eqDark !== isDark;
+                    cvEl._eqDark = isDark;
+                    // Setup flag, not the rAF handle: under reduced motion the
+                    // handle is 0, and guarding on it would re-run setup on the
+                    // next render and attach a second ResizeObserver.
+                    if (cvEl._eqInit) {
+                      if (eqThemeChanged && cvEl._eqRedraw) cvEl._eqRedraw();
+                      return;
+                    }
+                    cvEl._eqInit = true;
                     var c2 = cvEl.getContext('2d');
                     var W = cvEl.offsetWidth || 600;
                     var H = cvEl.offsetHeight || 180;
@@ -24056,59 +26567,166 @@ var d = labToolData.plateTectonics || {};
                     var start = performance.now();
                     function drawEq() {
                       if (!cvEl.isConnected) { cancelAnimationFrame(cvEl._eqAnim); if (cvEl._eqRO) { cvEl._eqRO.disconnect(); cvEl._eqRO = null; } return; }
-                      var t = (performance.now() - start) / 1000;
-                      c2.fillStyle = '#0a0410';
+                      if (!ptOnScreen(cvEl)) {
+                        if (!ptReducedMotion()) cvEl._eqAnim = requestAnimationFrame(drawEq);
+                        return;
+                      }
+                      // Frozen at 1.4 s under reduced motion: the traces still show
+                      // their difference in amplitude, which is the whole comparison,
+                      // without running as a permanent scrolling ticker.
+                      var t = ptAmbientClock((performance.now() - start) / 1000, 1.4);
+                      var dk = !!cvEl._eqDark;
+
+                      c2.fillStyle = dk ? '#0a0410' : '#fdf4ff';
                       c2.fillRect(0, 0, W, H);
-                      // Magnitudes
-                      var mags = [
-                        { m: 2, name: '2.0', desc: __alloT('stem.platetectonics.barely_felt_2', 'Barely felt'), color: '#84cc16' },
-                        { m: 4, name: '4.0', desc: __alloT('stem.platetectonics.mild_shaking', 'Mild shaking'), color: '#facc15' },
-                        { m: 6, name: '6.0', desc: __alloT('stem.platetectonics.damage_to_weak_buildings', 'Damage to weak buildings'), color: '#fb923c' },
-                        { m: 7, name: '7.0', desc: __alloT('stem.platetectonics.major_damage', 'Major damage'), color: '#ef4444' },
-                        { m: 8, name: '8.0', desc: __alloT('stem.platetectonics.severe_destruction', 'Severe destruction'), color: '#dc2626' },
-                        { m: 9, name: '9.0', desc: __alloT('stem.platetectonics.devastating_t_hoku_2011', 'Devastating (T\u014dhoku 2011)'), color: '#7f1d1d' }
+
+                      // ── Magnitude vs intensity ─────────────────────────────────
+                      // The panel is titled "Magnitude vs Intensity" and its footnote
+                      // defines both. What it DREW was six magnitude traces, each
+                      // captioned with what people feel — M2 "barely felt", M8
+                      // "severe destruction" — which maps magnitude straight onto
+                      // felt effects and is exactly the misconception the panel
+                      // exists to correct. The same M6 flattens a town nearby and
+                      // goes unnoticed 500 km away.
+                      //
+                      // So: two columns. Left, magnitude — ONE number per earthquake,
+                      // read off the recording. Right, intensity — MANY values for
+                      // the SAME earthquake, one per place, falling off with distance.
+                      var stacked = W < 620;
+                      var footH = 16, headH = 26;
+                      var colW = stacked ? W : W / 2;
+                      var colH = stacked ? (H - footH) / 2 : H - footH;
+                      var ink = dk ? '#f5f3ff' : '#2e1065';
+                      var dim = dk ? '#c4b5fd' : '#6d28d9';
+
+                      function colHeader(x0, y0, title, sub, tint) {
+                        c2.textAlign = 'left';
+                        c2.font = 'bold 12px sans-serif';
+                        c2.fillStyle = tint;
+                        c2.fillText(title, x0 + 12, y0 + 15);
+                        c2.font = '10px sans-serif';
+                        c2.fillStyle = dk ? '#a8a29e' : '#57534e';
+                        c2.fillText(sub, x0 + 12, y0 + 28);
+                      }
+
+                      // ── Left: magnitude ──
+                      var mx0 = 0, my0 = 0;
+                      colHeader(mx0, my0, 'MAGNITUDE', 'one number for the whole earthquake', dk ? '#fca5a5' : '#b91c1c');
+                      var MAGS = [
+                        { m: 4, ink: '#b45309', inkDark: '#fcd34d' },
+                        { m: 6, ink: '#c2410c', inkDark: '#fdba74' },
+                        { m: 8, ink: '#b91c1c', inkDark: '#fca5a5' }
                       ];
-                      var barX = 30;
-                      var rowH = (H - 50) / mags.length;
-                      mags.forEach(function(mg, i) {
-                        var y = 20 + i * rowH;
-                        // Magnitude label
-                        c2.fillStyle = mg.color;
+                      var rowTop = my0 + headH + 8;
+                      var rowH = (colH - headH - 22) / MAGS.length;
+                      MAGS.forEach(function (mg, mi) {
+                        var cy = rowTop + rowH * (mi + 0.5);
+                        var tint = dk ? mg.inkDark : mg.ink;
                         c2.font = 'bold 11px sans-serif';
                         c2.textAlign = 'left';
-                        c2.fillText('M ' + mg.name, barX, y + 12);
-                        // Animated waveform
-                        c2.strokeStyle = mg.color;
-                        c2.lineWidth = 1;
+                        c2.fillStyle = tint;
+                        c2.fillText('M ' + mg.m.toFixed(1), mx0 + 12, cy + 4);
+                        // COMPRESSED, and the caption says so. A true M8 trace is
+                        // 10,000 times an M4 — four orders of magnitude, which no
+                        // single panel can draw. Scaling honestly and clipping was
+                        // worse than compressing openly: M6 and M8 both hit the cap
+                        // and came out the same size, which reads as "M6 and M8 are
+                        // about equal" directly under a caption saying each whole
+                        // number is ten times the last.
+                        var amp = rowH * (mi === 0 ? 0.09 : mi === 1 ? 0.23 : 0.42);
+                        var x0 = mx0 + 62, x1 = mx0 + colW - 14;
+                        c2.strokeStyle = tint;
+                        c2.lineWidth = 1.2;
                         c2.beginPath();
-                        var amp = Math.pow(2, mg.m - 2);
-                        for (var x = 80; x < W * 0.6; x += 2) {
-                          var freq = 5 + mg.m * 2;
-                          var yy = y + 8 + Math.sin((x * 0.1 + t * 4 + mg.m) * freq) * Math.min(amp * 0.8, rowH / 2 - 2);
-                          if (x === 80) c2.moveTo(x, yy);
-                          else c2.lineTo(x, yy);
+                        for (var px = x0; px <= x1; px += 1) {
+                          var u = (px - x0) / Math.max(1, x1 - x0);
+                          var wob = Math.sin(u * 60 + t * 3 + mi) * Math.sin(u * 13 + mi * 2);
+                          var y = cy - wob * amp;
+                          if (px === x0) c2.moveTo(px, y); else c2.lineTo(px, y);
                         }
                         c2.stroke();
-                        // Description
-                        c2.fillStyle = '#cbd5e1';
-                        c2.font = '8.5px sans-serif';
-                        c2.textAlign = 'right';
-                        c2.fillText(mg.desc, W - 10, y + 12);
                       });
-                      c2.fillStyle = '#fef3c7';
-                      c2.font = 'italic 9px sans-serif';
+                      c2.font = 'italic 10px sans-serif';
+                      c2.fillStyle = dim;
                       c2.textAlign = 'left';
-                      c2.fillText('Each whole number = 10\u00d7 shake amplitude, ~32\u00d7 energy', 30, 12);
-                      c2.fillStyle = 'rgba(0,0,0,0.85)';
-                      c2.fillRect(8, H - 14, W - 16, 12);
-                      c2.font = 'bold 8px sans-serif'; c2.fillStyle = '#fb923c'; c2.textAlign = 'center';
-                      c2.fillText('Richter: magnitude (energy released). Mercalli: intensity (what people feel + damage caused).', W / 2, H - 5);
-                      cvEl._eqAnim = requestAnimationFrame(drawEq);
+                      c2.fillText(colW > 380
+                        ? 'Each whole number is 10x the shaking. Rows compressed: a real M8 is 10,000x an M4.'
+                        : 'Each whole number is 10x. Rows compressed to fit.', mx0 + 12, my0 + colH - 8);
+
+                      // ── Right: intensity ──
+                      var ix0 = stacked ? 0 : colW, iy0 = stacked ? colH : 0;
+                      if (stacked) {
+                        c2.strokeStyle = dk ? 'rgba(120,113,108,0.5)' : 'rgba(216,180,254,0.9)';
+                        c2.lineWidth = 1;
+                        c2.beginPath(); c2.moveTo(8, iy0); c2.lineTo(W - 8, iy0); c2.stroke();
+                      } else {
+                        c2.strokeStyle = dk ? 'rgba(120,113,108,0.5)' : 'rgba(216,180,254,0.9)';
+                        c2.lineWidth = 1;
+                        c2.beginPath(); c2.moveTo(ix0, 8); c2.lineTo(ix0, colH - 8); c2.stroke();
+                      }
+                      colHeader(ix0, iy0, 'INTENSITY', 'a different value in every place, for ONE earthquake', dk ? '#93c5fd' : '#1d4ed8');
+
+                      // One M7, felt at four distances. Roman numerals are the
+                      // Mercalli scale's own notation, which is half of why the two
+                      // scales are easy to keep apart once you have seen them.
+                      var PLACES = [
+                        { km: 10,  num: 'IX',  say: 'buildings shifted off their base', tight: 'buildings shift', col: '#b91c1c', colDark: '#fca5a5' },
+                        { km: 60,  num: 'VII', say: 'chimneys fall, hard to stand', tight: 'chimneys fall', col: '#c2410c', colDark: '#fdba74' },
+                        { km: 200, num: 'V',   say: 'dishes rattle, sleepers wake', tight: 'dishes rattle', col: '#a16207', colDark: '#fde047' },
+                        { km: 600, num: 'II',  say: 'felt only by a few, at rest', tight: 'barely felt', col: '#15803d', colDark: '#86efac' }
+                      ];
+                      var iTop = iy0 + headH + 6;
+                      var iRowH = (colH - headH - 22) / PLACES.length;
+                      PLACES.forEach(function (pl, pi) {
+                        var cy = iTop + iRowH * (pi + 0.5);
+                        var tint = dk ? pl.colDark : pl.col;
+                        // A bar whose length IS the shaking felt there, so the
+                        // fall-off is the shape of the column.
+                        // Leaves room for the longest effect line beside the bar.
+                        var barMax = Math.max(40, colW * 0.34);
+                        var frac = Math.max(0.08, 1 / (1 + Math.pow(pl.km / 45, 0.85)));
+                        c2.fillStyle = tint;
+                        c2.fillRect(ix0 + 74, cy - iRowH * 0.22, Math.max(6, barMax * frac), iRowH * 0.44);
+                        c2.font = 'bold 12px sans-serif';
+                        c2.textAlign = 'right';
+                        c2.fillStyle = tint;
+                        c2.fillText(pl.num, ix0 + 66, cy + 4);
+                        c2.font = '10px sans-serif';
+                        c2.textAlign = 'left';
+                        c2.fillStyle = dk ? '#e7e5e4' : '#1c1917';
+                        c2.fillText(pl.km + ' km: ' + (colW < 430 ? pl.tight : pl.say), ix0 + 80 + Math.max(6, barMax * frac), cy + 4);
+                      });
+                      c2.font = 'italic 10px sans-serif';
+                      c2.fillStyle = dim;
+                      c2.textAlign = 'left';
+                      c2.fillText(colW > 430
+                        ? 'The same M7 quake. Distance, depth and ground all change what is felt.'
+                        : 'One M7 quake, four places.', ix0 + 12, iy0 + colH - 8);
+
+                      // ── Footnote ──
+                      c2.fillStyle = dk ? 'rgba(0,0,0,0.6)' : 'rgba(88,28,135,0.08)';
+                      c2.fillRect(0, H - footH, W, footH);
+                      c2.font = 'bold 10px sans-serif';
+                      c2.fillStyle = dk ? '#fdba74' : '#7c2d12';
+                      c2.textAlign = 'center';
+                      c2.fillText(W < 520
+                        ? 'Magnitude: one number. Intensity: one per place.'
+                        : 'Magnitude is what the earthquake DID. Intensity is what it did TO YOU, where you were standing.',
+                        W / 2, H - 5);
+
+                      // Parked, not spinning: a still frame does not need sixty of
+                      // itself a second.
+                      if (!ptReducedMotion()) cvEl._eqAnim = requestAnimationFrame(drawEq);
+                      else cvEl._eqAnim = 0;
+                      cvEl._eqRedraw = drawEq;
                     }
                     drawEq();
                     var ro = new ResizeObserver(function() {
                       W = cvEl.offsetWidth; H = cvEl.offsetHeight;
                       cvEl.width = W * 2; cvEl.height = H * 2; c2.setTransform(1, 0, 0, 1, 0, 0); c2.scale(2, 2);
+                      // A resize clears the backing store, and a parked panel has
+                      // no loop coming to repaint it.
+                      if (ptReducedMotion()) drawEq();
                     });
                     cvEl._eqRO = ro;
                     ro.observe(cvEl);

@@ -1252,7 +1252,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
                         return h('option', { key: g, value: g }, g);
                       })
                     ),
-                    ctxGradeLevel && !playerGradeLevel && h('div', { className: 'text-[11px] text-violet-500 mt-0.5' }, '📋 Set by teacher: ' + ctxGradeLevel)
+                    ctxGradeLevel && !playerGradeLevel && h('div', { className: 'text-[11px] text-violet-700 mt-0.5' }, '📋 Set by teacher: ' + ctxGradeLevel)
                   )
                 ),
                 h('div', null,
@@ -1283,7 +1283,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
                 h('div', { className: 'text-3xl mb-2' }, w.emoji),
                 h('div', { className: 'font-bold text-slate-800' }, w.name),
                 h('p', { className: 'text-xs text-slate-600 mt-1 leading-relaxed' }, __alloT('stem.worldbuilder.' + (w.id) + '_desc', w.desc)),
-                h('div', { className: 'text-[11px] text-violet-500 font-bold mt-2' }, w.rooms.length + ' locations to explore')
+                h('div', { className: 'text-[11px] text-violet-700 font-bold mt-2' }, w.rooms.length + ' locations to explore')
               );
             })
           )
@@ -1685,7 +1685,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
                     ? 'bg-violet-100 border-violet-300 text-violet-700'
                     : 'bg-slate-50 border-slate-400 text-slate-600 hover:border-violet-500 hover:text-violet-700')
               }, __alloT('stem.worldbuilder.penmanship_tips', '✏️ Penmanship Tips '), hwPenmanshipOn || hwTeacherPenmanship ? 'ON' : 'OFF'),
-              hwTeacherPenmanship && !hwPenmanshipOn && h('span', { className: 'text-[11px] text-violet-500 font-medium' }, __alloT('stem.worldbuilder.teacher_enabled', '(teacher enabled)'))
+              hwTeacherPenmanship && !hwPenmanshipOn && h('span', { className: 'text-[11px] text-violet-700 font-medium' }, __alloT('stem.worldbuilder.teacher_enabled', '(teacher enabled)'))
             ),
 
             // ── Penmanship Feedback Card ──
@@ -1698,7 +1698,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
               ),
               // AI-estimate disclaimer — handwriting can't be reliably graded from a
               // photo, so this is qualitative feedback, not an assessment or grade.
-              h('p', { className: 'text-[10px] text-violet-500 italic mb-2' }, __alloT('stem.worldbuilder.an_ai_estimate_to_spark_practice_not_a', 'An AI estimate to spark practice — not a handwriting assessment or grade.')),
+              h('p', { className: 'text-[10px] text-violet-700 italic mb-2' }, __alloT('stem.worldbuilder.an_ai_estimate_to_spark_practice_not_a', 'An AI estimate to spark practice — not a handwriting assessment or grade.')),
               // Per-dimension feedback as coarse bands (no false-precise /25 number)
               h('div', { className: 'flex gap-2 mb-2' },
                 [['letterFormation', 'Letters'], ['spacing', 'Spacing'], ['alignment', 'Alignment'], ['neatness', 'Neatness']].map(function(pair) {
@@ -1766,7 +1766,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
 
               // Player's narrative outcome
               h('div', { className: 'p-4 border-b border-slate-100' },
-                h('div', { className: 'text-[11px] font-bold text-violet-500 uppercase tracking-widest mb-1' }, __alloT('stem.worldbuilder.your_action', '⚔️ Your Action')),
+                h('div', { className: 'text-[11px] font-bold text-violet-700 uppercase tracking-widest mb-1' }, __alloT('stem.worldbuilder.your_action', '⚔️ Your Action')),
                 h('p', { className: 'text-sm text-slate-800 leading-relaxed italic' }, '"' + (actionResult.narrative || '') + '"')
               ),
 
@@ -1798,7 +1798,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
 
             // TTS narrate both player and enemy
             callTTS && h('div', { className: 'flex gap-2' },
-              h('button', { onClick: function() { callTTS(actionResult.narrative || ''); }, className: 'text-[11px] text-violet-500 hover:text-violet-700 font-bold' }, __alloT('stem.worldbuilder.hear_your_action', '🔊 Hear your action')),
+              h('button', { onClick: function() { callTTS(actionResult.narrative || ''); }, className: 'text-[11px] text-violet-700 hover:text-violet-700 font-bold' }, __alloT('stem.worldbuilder.hear_your_action', '🔊 Hear your action')),
               actionResult.enemyWriting && h('button', { 'aria-label': __alloT('stem.worldbuilder.refresh', 'Refresh'), onClick: function() { callTTS(actionResult.enemyWriting); }, className: 'text-[11px] text-red-500 hover:text-red-700 font-bold' }, __alloT('stem.worldbuilder.hear_enemy_s_response', '🔊 Hear enemy\'s response'))
             )
           ),

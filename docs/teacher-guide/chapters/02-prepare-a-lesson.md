@@ -174,7 +174,7 @@ Students may use different representations or response modes while working towar
 
 If a pathway changes the goal, say so explicitly and base that decision on the student's instructional plan and teacher judgment, not an automated recommendation.
 
-When standards are attached, review the Rigor Report after adaptation. Readability and rigor answer different questions: a passage can use shorter sentences while still preserving the standard's content, cognitive verbs, and evidence expectations—or it can become easier by deleting the very thinking the standard requires.
+When standards are attached, review the Rigor Report after adaptation. Readability and rigor answer different questions: a passage can use shorter sentences while still preserving the standard's content, cognitive verbs, and evidence expectations, or it can become easier by deleting the very thinking the standard requires.
 
 ### Name pathways by function
 

@@ -75,25 +75,21 @@ describe('recovery requires SUSTAINED probe success before resuming', () => {
 });
 
 describe('the inline transient retry is SUPPRESSED during an active storm', () => {
-  it('defers to wait-not-stop instead of burning a second full timeout into the throttle', () => {
+  it('checkpoints on breaker trip instead of burning catch-up and duplicate pass retries', () => {
     expect(dp).toContain('err.geminiStormDeferred = true');
     expect(dp).toContain('if (e.geminiStormDeferred) return true;');
+    expect(dp).toContain('var _stormTripped = _geminiAuthStreak >= _GEMINI_STORM_TRIP;');
     expect(dp).toContain('if (_deferredIdx.length) {');
     expect(dp).toContain('single-chunk throttle deferred');
-    expect(dp).toContain('continuing without counting a semantic plateau');
-    expect(dp).toContain('let _throttleRecoveryRetriesRemaining = 2;');
-    expect(dp).toContain('fixPass--;');
+    expect(dp).toContain('checkpointed for a later resume');
+    expect(dp).toContain('let _throttlePaused = false;');
+    expect(dp).toContain('throttlePaused: _throttlePaused');
+    expect(dp).not.toContain('let _throttleRecoveryRetriesRemaining = 2;');
+    expect(dp).not.toContain('fixPass--;');
+    expect(dp).not.toContain('catch-up round ${_round + 1}');
+    expect(dp).not.toContain('let _singleRecoveryRound = 0;');
     expect(dp).toContain('shouldAbort: _shouldAbort, signal: _controlSignal, owner: _controlOwner');
     expect(dp).toContain('if ((_verifyCalm && _verifyCalm.aborted) || _shouldAbort()) break;');
-    const exhausted = dp.indexOf('if (_throttleRecoveryRetriesRemaining <= 0)');
-    // The wait budget is no longer a bare constant: audit finding H15 clamps every calm wait in
-    // the fix path to the batch per-file wall, so this matches the CALL rather than its argument.
-    // What the assertion is actually about — the wait comes after the retries are exhausted — is
-    // unchanged.
-    const calmWait = dp.indexOf('waitForGeminiCalm({ maxWaitMs:', exhausted);
-    expect(exhausted).toBeGreaterThan(-1);
-    expect(calmWait).toBeGreaterThan(exhausted);
-
   });
 });
 describe('probe failure pacing, cancellation, and route fidelity', () => {
@@ -108,7 +104,7 @@ describe('probe failure pacing, cancellation, and route fidelity', () => {
 
   it('does not let a text probe certify Vision or slow local routes', () => {
     expect(dp).toContain("_geminiLastFailureProfile.kind === 'vision'");
-    expect(dp).toContain('_usesLocalTextBackend() || _probeRouteMismatch');
+    expect(dp).toContain('_usesLocalTextBackend() || _hostProbeExempt || _probeRouteMismatch');
   });
 
   it('propagates cancellation without turning it into a failed probe', () => {

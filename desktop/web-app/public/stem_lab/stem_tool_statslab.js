@@ -1426,7 +1426,7 @@ window.StemLab = window.StemLab || {
   });
 
   window.StemLab.registerTool('statsLab', {
-    icon: '📊',
+    icon: '\uD83D\uDCF6',
     label: 'Statistics Lab',
     desc: 'Inferential statistics: t-tests, ANOVA, correlation, regression, chi-square, non-parametric, power analysis. AP Psych / AP Bio focus. Transparent computation, plain-English results, APA write-ups, AI interpretation grader.',
     color: 'indigo',

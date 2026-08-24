@@ -73,6 +73,16 @@ describe('C2 — the image splice pattern matches what the renderer actually emi
   });
 });
 
+describe('temporary throttling checkpoints remediation instead of retrying into the same storm', () => {
+  it('restores the pre-pass HTML, skips the final AI wave, and returns a resumable pause marker', () => {
+    expect(dp).toContain('accessibleHtml = snapshotHtml;');
+    expect(dp).toContain('_throttlePaused = true;');
+    expect(dp).toContain('const _remediationThrottlePaused = !!_loopOut.throttlePaused;');
+    expect(dp).toContain("_finalAuditIncompleteReason = 'remediation-paused-transient-throttle';");
+    expect(dp).toContain('_remediationThrottlePaused: _remediationThrottlePaused');
+  });
+});
+
 // ─────────────────────────────────────────────────────────────────────────────
 // C1 — "Fix Remaining" deleted the durable extraction-time disclosures.
 //
@@ -758,7 +768,7 @@ describe('H15 — a throttle wait must fit inside the batch file wall', () => {
   it('every calm wait in the fix path is clamped — no bare constants left', () => {
     expect(dp).not.toContain('waitForGeminiCalm({ maxWaitMs: 90000, shouldAbort: _control');
     expect(dp).not.toContain('waitForGeminiCalm({ maxWaitMs: 120000, shouldAbort: _shouldAbort');
-    expect(dp).toContain('_alloCalmBudgetMs(90000, _control && _control.perFileDeadlineTs)');
+    expect(dp).not.toContain('_alloCalmBudgetMs(90000, _control && _control.perFileDeadlineTs)');
     expect(dp).toContain('_alloCalmBudgetMs(120000, loopCtx.perFileDeadlineTs)');
   });
 
@@ -767,15 +777,15 @@ describe('H15 — a throttle wait must fit inside the batch file wall', () => {
     expect(dp).toContain('perFileDeadlineTs: loopCtx.perFileDeadlineTs || 0,');
   });
 
-  it('the catch-up drain checks the wall per round AND between chunks', () => {
-    // Each revisit is a document-sized call with a 180s timeout, so a drain that fitted when it
-    // started may not fit by chunk 5.
-    expect(dp).toContain('const _drainOutOfTime = () => _drainWall > 0 && Date.now() > _drainWall - _DRAIN_RESERVE_MS;');
-    expect((dp.match(/if \(_drainOutOfTime\(\)\) \{/g) || []).length).toBe(2);
+  it('the same-storm catch-up drain is retired in favor of an explicit checkpoint', () => {
+    expect(dp).not.toContain('const _drainOutOfTime = () =>');
+    expect(dp).not.toContain('catch-up round ${_round + 1}');
+    expect(dp).toContain('_markThrottleDeferred(_todo.length);');
   });
 
-  it('chunks the drain never reached are reported as still deferred, not as revisited', () => {
-    expect(dp).toContain('for (const _u of _unreached) if (_deferredIdx.indexOf(_u) === -1) _deferredIdx.push(_u);');
+  it('throttled chunks stay original and are reported for later resume', () => {
+    expect(dp).toContain('const _todo = Array.from(new Set(_deferredIdx));');
+    expect(dp).toContain('kept as original and checkpointed for a later resume');
   });
 });
 
@@ -889,7 +899,7 @@ describe('M16 — a failure wave expires instead of pinning the gate for the who
     // storm that tripped on the last whole-document Vision call could never be disproved: the
     // rest of the run is text-only and `kind !== failure.kind` short-circuits every success.
     expect(dp).toContain('if (_geminiWaveIsStale()) return true;');
-    expect(dp).toContain('var _GEMINI_WAVE_STALE_MS = 50000;');
+    expect(dp).toContain('var _GEMINI_WAVE_STALE_MS = 240000;');
   });
 
   it('the staleness bound is longer than the longest escalated cooldown', () => {
@@ -899,9 +909,12 @@ describe('M16 — a failure wave expires instead of pinning the gate for the who
     // pipeline — a tautology wearing the shape of an invariant.
     const bound = Number((dp.match(/var _GEMINI_WAVE_STALE_MS = (\d+);/) || [])[1]);
     const caps = Array.from(dp.matchAll(/Math\.min\((\d+), _GEMINI_COOLDOWN_MS/g)).map((m) => Number(m[1]));
+    const sustainedCap = Number((dp.match(/var _GEMINI_SUSTAINED_COOLDOWN_CAP_MS = (\d+);/) || [])[1]);
     expect(Number.isFinite(bound), 'could not read _GEMINI_WAVE_STALE_MS from the source').toBe(true);
     expect(caps.length, 'could not read the escalated-cooldown caps from the source').toBeGreaterThan(0);
     expect(bound).toBeGreaterThan(Math.max(...caps));
+    expect(Number.isFinite(sustainedCap), 'could not read the sustained cooldown cap').toBe(true);
+    expect(bound).toBeGreaterThan(sustainedCap);
   });
 
   it('enough off-route successes clear the wave on their own', () => {
@@ -945,7 +958,7 @@ describe('L6 — recovery probes are visible to telemetry and to the teacher', (
 describe('L7 — only a RECENT throttle may be blamed for a coverage shortfall', () => {
   it('the fact has one definition, on the gate snapshot', () => {
     expect(dp).toContain('recentlyThrottled: cooldownRemainingMs > 0');
-    expect(dp).toContain('var _GEMINI_RECENT_THROTTLE_MS = 120000;');
+    expect(dp).toContain('var _GEMINI_RECENT_THROTTLE_MS = 240000;');
   });
 
   it('a real breaker trip is timestamped at both trip sites', () => {

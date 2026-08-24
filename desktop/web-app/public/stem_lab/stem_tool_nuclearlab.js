@@ -3765,7 +3765,7 @@
                 h('span', null,
                   para(h('b', null, 'What happened: ') ? inc.what : inc.what),
                   h('span', { className: 'block text-[11px] leading-relaxed mt-1.5', style: { color: isDark ? '#fca5a5' : '#b91c1c' } }, h('b', null, 'The toll: '), inc.toll),
-                  h('span', { className: 'block text-[11px] leading-relaxed mt-1.5', style: { color: isDark ? '#86efac' : '#15803d' } }, h('b', null, 'What changed: '), inc.changed)),
+                  h('span', { className: 'block text-[11px] leading-relaxed mt-1.5', style: { color: isDark ? '#86efac' : '#166534' } }, h('b', null, 'What changed: '), inc.changed)),
                 function () {
                   upd({ incPick: on ? null : inc.id });
                   if (!on) pushOnce('incidentsRead', inc.id);
@@ -3897,7 +3897,7 @@
                   h('span', { className: 'block text-[11px] mt-0.5', style: { color: isDark ? '#cbd5e1' : '#475569' } }, r.share)),
                 on ? h('div', { id: bodyId, className: 'px-2.5 pb-2 -mt-0.5' },
                   para(r.how),
-                  h('p', { className: 'text-[11px] leading-relaxed mt-1.5', style: { color: isDark ? '#86efac' : '#15803d' } }, h('b', null, 'Safety: '), r.safety),
+                  h('p', { className: 'text-[11px] leading-relaxed mt-1.5', style: { color: isDark ? '#86efac' : '#166534' } }, h('b', null, 'Safety: '), r.safety),
                   h('p', { className: 'text-[11px] leading-relaxed mt-1.5', style: { color: isDark ? '#fbbf24' : '#b45309' } }, h('b', null, 'The catch: '), r.catch)
                 ) : null);
             })

@@ -54,7 +54,7 @@ Finished before class starts:
 
 Reasonable to do live: choosing which existing pathway a student gets, adjusting pacing, revealing an answer key you already checked, and opening a single tool link. If you find yourself generating new material while class is running, use the fallback instead and rebuild afterwards.
 
-A practical habit: build the lesson at least a day ahead, then reopen it cold the morning of class. Loading your own project the way a student will meet it catches a surprising amount, and it costs two minutes.
+A practical habit. Build the lesson at least a day ahead, then reopen it cold the morning of class. Loading your own project the way a student will meet it catches a surprising amount, and it costs two minutes.
 
 ## A first lesson in about fifteen minutes
 
@@ -62,7 +62,7 @@ A practical habit: build the lesson at least a day ahead, then reopen it cold th
 
 From the Launch Pad, choose **Guided Mode**, then select the teacher role if prompted. Guided Mode organizes the work into a focused path that includes **Source Material**, **Assignment Directions & Goals**, **Preview/Package/Deliver**, and **Review/Finish**. Your deployment may offer additional optional steps.
 
-![AlloFlow teacher role selection](../assets/screenshots/02-role-selection.png)
+![The welcome screen headed "Welcome to AlloFlow" asking how you will be using the app today, with four role cards: Student, Teacher, Parent, and Independent Learner. A language selector sits at the top right, and an Enable Voice Access button below the cards notes that voice access is optional and that touch, pointer, and keyboard remain available.](../assets/screenshots/02-role-selection.png)
 
 If you lose your place, turn on **Help Mode** from the header or press the question-mark key. Help Mode explains supported controls and may show keyboard shortcuts. Press Escape to close an open dialog before trying another route.
 

@@ -56,6 +56,7 @@ const moduleSrc = `/**
   var PenTool = _lazyIcon('PenTool');
   var Quote = _lazyIcon('Quote');
   var RefreshCw = _lazyIcon('RefreshCw');
+  var FolderOpen = _lazyIcon('FolderOpen');
   var Save = _lazyIcon('Save');
   var Search = _lazyIcon('Search');
   var Send = _lazyIcon('Send');

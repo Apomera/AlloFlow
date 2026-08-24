@@ -1262,6 +1262,20 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast, onOpenAlloSh
               });
               continue;
             }
+            if (p && p.kind === "encrypted-worksheet" && p.ciphertext && p.wrappedKey && p.iv) {
+              newRows.push({
+                fileName: f.name,
+                nickname: p.nickname || p.studentName || "?",
+                docTitle: p.docTitle || "",
+                timestamp: p.timestamp || null,
+                encryptedBlob: p,
+                payload: null,
+                status: "pending",
+                error: null,
+                mailboxReceipt: p.mailboxReceipt && typeof p.mailboxReceipt === "object" ? p.mailboxReceipt : null
+              });
+              continue;
+            }
           } catch (e2) {
           }
         }

@@ -311,7 +311,10 @@ const createGeminiAPI = (deps) => {
         if (msgEl) {
           // 401 vs 429 named explicitly (2026-06-12, maintainer ask): auth
           // errors were historically mistaken for quota — say which is which.
-          const prefix = classification.kind === 'auth' ? '🔑 Auth error (HTTP 401 — a key/sign-in problem, NOT your quota): '
+          const prefix = classification.kind === 'auth'
+            ? (_isCanvasEnv
+                ? '⏳ AI service temporarily throttled (Canvas HTTP 401 — your key/sign-in is not the problem): '
+                : '🔑 Auth error (HTTP 401 — check the configured key or sign-in): ')
                        : classification.kind === 'config' ? '⚙ Configuration error: '
                        : '🛑 Gemini quota limit (HTTP 429): ';
           // Per-kind trailing advice. Was hardcoded "until this is resolved"

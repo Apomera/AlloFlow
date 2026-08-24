@@ -3784,7 +3784,7 @@ window.StemLab = window.StemLab || {
       var earned = Object.keys(badges).length;
       if (earned === 0) return null;
       return h('div', { className: 'bg-amber-50 rounded-xl border border-amber-200 p-3' },
-        h('p', { className: 'text-[11px] font-bold text-amber-600 uppercase tracking-wider mb-2' },
+        h('p', { className: 'text-[11px] font-bold text-amber-800 uppercase tracking-wider mb-2' },
           '\uD83C\uDFC5 Badges (' + earned + '/' + BADGES.length + ')'
         ),
         h('div', { className: 'flex flex-wrap gap-1.5' },

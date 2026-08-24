@@ -311,7 +311,7 @@
   };
 
   window.StemLab.registerTool('arithmeticStudio', {
-    icon: '\ud83e\uddee',
+    icon: '\u2795',
     label: 'Arithmetic Strategy Studio',
     desc: 'Learn addition, subtraction, multiplication, and division through models, strategies, estimation, and mistake analysis.',
     color: 'blue',

@@ -346,7 +346,7 @@ function validateBug(p) {
 // the public repo. The server is a trust boundary: it performs its own complete
 // pd-1.0 validation and never relies on the browser's PdCore validator.
 const PD_SCHEMA_VERSION = 'pd-1.0';
-const PD_ACTIVITY_TYPES = new Set(['read', 'quiz', 'reflect', 'video', 'checklist', 'sim']);
+const PD_ACTIVITY_TYPES = new Set(['read', 'quiz', 'reflect', 'video', 'checklist', 'sim', 'resource', 'persona', 'branching']);
 const PD_MODULE_ID_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const PD_ACTIVITY_ID_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const PD_AUTHORING_ID_RE = /^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/;
@@ -362,7 +362,17 @@ const PD_CONTENT_KEYS = {
   read: ['body', 'keyPoints', 'links'], quiz: ['questions'], reflect: ['prompt'],
   video: ['url', 'body', 'captions', 'captionsUrl', 'transcript', 'transcriptUrl', 'accessibleAlternative'],
   checklist: ['items'], sim: ['scenario', 'rubric'],
+  resource: ['resourceType', 'data', 'instructions'],
+  persona: ['personaName', 'personaRole', 'scenario', 'rubric', 'minTurns', 'maxTurns'],
+  branching: ['start', 'nodes', 'intro'],
 };
+const PD_BRANCHING_NODE_KEYS = ['text', 'ending', 'choices'];
+const PD_BRANCHING_CHOICE_KEYS = ['label', 'to', 'feedback'];
+const PD_RESOURCE_TYPES = new Set(['concept-sort', 'timeline', 'glossary']);
+const PD_RESOURCE_CATEGORY_KEYS = ['id', 'label', 'color'];
+const PD_RESOURCE_SORT_ITEM_KEYS = ['id', 'content', 'categoryId', 'image', 'imageAlt'];
+const PD_RESOURCE_TIMELINE_ITEM_KEYS = ['date', 'event', 'image', 'imageAlt'];
+const PD_RESOURCE_GLOSSARY_ITEM_KEYS = ['term', 'def', 'tier'];
 const PD_QUESTION_KEYS = ['prompt', 'options', 'correctIndex', 'explanation'];
 const PD_LINK_KEYS = ['label', 'url'];
 const PD_AFFIRMATION_KEYS = ['author_or_authorized', 'no_pii', 'license_agreed', 'age_eligible'];
@@ -495,6 +505,63 @@ function validatePdModuleServer(m) {
         if (!isNonBlank(c.scenario, 20000)) return bad('sim_scenario_required', `${ap}.content.scenario`, `Sim activity ${act.id} needs a non-empty scenario.`);
         if (!isNonBlank(c.rubric, 20000)) return bad('invalid_sim_rubric', `${ap}.content.rubric`, `Sim activity ${act.id} needs a non-empty rubric up to 20000 chars.`);
       }
+      if (act.type === 'resource') {
+        if (!PD_RESOURCE_TYPES.has(c.resourceType)) return bad('invalid_resource_type', `${ap}.content.resourceType`, `Resource activity ${act.id} needs resourceType concept-sort, timeline, or glossary.`);
+        if (c.instructions !== undefined && !isNonBlank(c.instructions, 4000)) return bad('invalid_resource_instructions', `${ap}.content.instructions`, 'Resource instructions must be non-empty up to 4000 chars when supplied.');
+        if (!isObject(c.data)) return bad('resource_data_required', `${ap}.content.data`, `Resource activity ${act.id} needs a content.data object.`);
+        if (c.resourceType === 'concept-sort') {
+          const dataFields = pdUnknownFields(c.data, ['categories', 'items'], 'unknown_resource_data_fields', `${ap}.content.data`);
+          if (dataFields) return dataFields;
+          const cats = c.data.categories;
+          if (!Array.isArray(cats) || cats.length === 0 || cats.length > 26) return bad('invalid_resource_categories', `${ap}.content.data.categories`, `Resource ${act.id} needs 1-26 categories.`);
+          const catIds = new Set();
+          for (let ci = 0; ci < cats.length; ci++) {
+            const cat = cats[ci]; const cp = `${ap}.content.data.categories[${ci}]`;
+            if (!isObject(cat)) return bad('invalid_resource_category', cp, 'Every category must be an object.');
+            const catFields = pdUnknownFields(cat, PD_RESOURCE_CATEGORY_KEYS, 'unknown_resource_category_fields', cp);
+            if (catFields) return catFields;
+            if (!isNonBlank(cat.id, 128) || !isNonBlank(cat.label, 2000)) return bad('invalid_resource_category', cp, 'Every category needs an id and a label.');
+            if (catIds.has(cat.id)) return bad('duplicate_resource_category', cp, `Duplicate category id "${cat.id}".`);
+            catIds.add(cat.id);
+            if (cat.color !== undefined && !isNonBlank(cat.color, 64)) return bad('invalid_resource_category', cp, 'Category color must be non-empty when supplied.');
+          }
+          const items = c.data.items;
+          if (!Array.isArray(items) || items.length === 0 || items.length > 200) return bad('invalid_resource_items', `${ap}.content.data.items`, `Resource ${act.id} needs 1-200 items.`);
+          const itemIds = new Set();
+          for (let ii = 0; ii < items.length; ii++) {
+            const item = items[ii]; const ip = `${ap}.content.data.items[${ii}]`;
+            if (!isObject(item)) return bad('invalid_resource_item', ip, 'Every item must be an object.');
+            const itemFields = pdUnknownFields(item, PD_RESOURCE_SORT_ITEM_KEYS, 'unknown_resource_item_fields', ip);
+            if (itemFields) return itemFields;
+            if (!isNonBlank(item.id, 128) || !isNonBlank(item.content, 4000)) return bad('invalid_resource_item', ip, 'Every sort item needs an id and content.');
+            if (itemIds.has(item.id)) return bad('duplicate_resource_item', ip, `Duplicate item id "${item.id}".`);
+            itemIds.add(item.id);
+            if (!catIds.has(item.categoryId)) return bad('invalid_resource_item_category', `${ip}.categoryId`, 'Every sort item categoryId must match a category.');
+            if (item.image !== undefined && !validPdUrl(item.image)) return bad('invalid_resource_item_image', `${ip}.image`, 'Item image must be a safe URL.');
+            if (item.image !== undefined && !isNonBlank(item.imageAlt, 4000)) return bad('resource_image_alt_required', `${ip}.imageAlt`, 'An item image needs imageAlt text.');
+          }
+        } else {
+          const dataFields = pdUnknownFields(c.data, ['items'], 'unknown_resource_data_fields', `${ap}.content.data`);
+          if (dataFields) return dataFields;
+          const rows = c.data.items;
+          if (!Array.isArray(rows) || rows.length === 0 || rows.length > 500) return bad('invalid_resource_items', `${ap}.content.data.items`, `Resource ${act.id} needs 1-500 items.`);
+          const rowKeys = c.resourceType === 'timeline' ? PD_RESOURCE_TIMELINE_ITEM_KEYS : PD_RESOURCE_GLOSSARY_ITEM_KEYS;
+          for (let ri = 0; ri < rows.length; ri++) {
+            const row = rows[ri]; const rp = `${ap}.content.data.items[${ri}]`;
+            if (!isObject(row)) return bad('invalid_resource_item', rp, 'Every item must be an object.');
+            const rowFields = pdUnknownFields(row, rowKeys, 'unknown_resource_item_fields', rp);
+            if (rowFields) return rowFields;
+            if (c.resourceType === 'timeline') {
+              if (!isNonBlank(row.date, 200) || !isNonBlank(row.event, 4000)) return bad('invalid_resource_item', rp, 'Every timeline item needs date and event.');
+              if (row.image !== undefined && !validPdUrl(row.image)) return bad('invalid_resource_item_image', `${rp}.image`, 'Item image must be a safe URL.');
+              if (row.image !== undefined && !isNonBlank(row.imageAlt, 4000)) return bad('resource_image_alt_required', `${rp}.imageAlt`, 'An item image needs imageAlt text.');
+            } else {
+              if (!isNonBlank(row.term, 2000) || !isNonBlank(row.def, 10000)) return bad('invalid_resource_item', rp, 'Every glossary item needs term and def.');
+              if (row.tier !== undefined && !isNonBlank(String(row.tier), 40)) return bad('invalid_resource_item', rp, 'Glossary tier must be non-empty when supplied.');
+            }
+          }
+        }
+      }
       if (act.type === 'checklist') {
         if (!Array.isArray(c.items) || c.items.length === 0 || c.items.length > 100) return bad('invalid_checklist_items', `${ap}.content.items`, `Checklist activity ${act.id} needs 1-100 items.`);
         for (let ii = 0; ii < c.items.length; ii++) if (!isNonBlank(c.items[ii], 2000)) return bad('invalid_checklist_item', `${ap}.content.items[${ii}]`, 'Every checklist item must be a non-empty string up to 2000 chars.');
@@ -514,6 +581,62 @@ function validatePdModuleServer(m) {
         }
       }
 
+      if (act.type === 'branching') {
+        if (c.intro !== undefined && !isNonBlank(c.intro, 4000)) return bad('invalid_branching_intro', `${ap}.content.intro`, 'Branching intro must be non-empty up to 4000 chars when supplied.');
+        if (!isObject(c.nodes)) return bad('branching_nodes_required', `${ap}.content.nodes`, `Branching activity ${act.id} needs a content.nodes object.`);
+        const nodeIds = Object.keys(c.nodes);
+        if (nodeIds.length === 0 || nodeIds.length > 100) return bad('invalid_branching_nodes', `${ap}.content.nodes`, `Branching activity ${act.id} needs 1-100 nodes.`);
+        if (!isNonBlank(c.start, 128) || !c.nodes[c.start]) return bad('invalid_branching_start', `${ap}.content.start`, `Branching activity ${act.id} needs start naming an existing node.`);
+        let endings = 0;
+        for (const nodeId of nodeIds) {
+          const np = `${ap}.content.nodes.${nodeId}`;
+          if (!PD_AUTHORING_ID_RE.test(nodeId)) return bad('invalid_branching_node_id', np, 'Branching node ids must be stable identifiers.');
+          const node = c.nodes[nodeId];
+          if (!isObject(node)) return bad('invalid_branching_node', np, 'Every branching node must be an object.');
+          const nodeFields = pdUnknownFields(node, PD_BRANCHING_NODE_KEYS, 'unknown_branching_node_fields', np);
+          if (nodeFields) return nodeFields;
+          if (!isNonBlank(node.text, 10000)) return bad('invalid_branching_node', np, 'Every branching node needs text up to 10000 chars.');
+          if (node.ending === true) {
+            endings++;
+            if (node.choices !== undefined && (!Array.isArray(node.choices) || node.choices.length > 0)) return bad('invalid_branching_node', np, 'An ending node must not have choices.');
+          } else {
+            if (node.ending !== undefined && node.ending !== false) return bad('invalid_branching_node', np, 'Branching node ending must be a boolean.');
+            if (!Array.isArray(node.choices) || node.choices.length === 0 || node.choices.length > 6) return bad('invalid_branching_node', np, 'A non-ending node needs 1-6 choices.');
+            for (let ci = 0; ci < node.choices.length; ci++) {
+              const choice = node.choices[ci]; const cp = `${np}.choices[${ci}]`;
+              if (!isObject(choice)) return bad('invalid_branching_choice', cp, 'Every choice must be an object.');
+              const choiceFields = pdUnknownFields(choice, PD_BRANCHING_CHOICE_KEYS, 'unknown_branching_choice_fields', cp);
+              if (choiceFields) return choiceFields;
+              if (!isNonBlank(choice.label, 2000)) return bad('invalid_branching_choice', cp, 'Every choice needs a label up to 2000 chars.');
+              if (!isNonBlank(choice.to, 128) || !c.nodes[choice.to]) return bad('invalid_branching_choice', cp, 'Every choice must point to an existing node.');
+              if (choice.feedback !== undefined && !isNonBlank(choice.feedback, 4000)) return bad('invalid_branching_choice', cp, 'Choice feedback must be non-empty up to 4000 chars when supplied.');
+            }
+          }
+        }
+        if (!endings) return bad('invalid_branching_nodes', `${ap}.content.nodes`, `Branching activity ${act.id} needs at least one ending node.`);
+        const seen = new Set(); const queue = [c.start]; let endingReachable = false;
+        while (queue.length) {
+          const cur = queue.pop();
+          if (seen.has(cur)) continue;
+          seen.add(cur);
+          const node = c.nodes[cur];
+          if (node.ending === true) { endingReachable = true; continue; }
+          for (const choice of node.choices || []) if (!seen.has(choice.to)) queue.push(choice.to);
+        }
+        if (!endingReachable) return bad('invalid_branching_nodes', `${ap}.content.nodes`, `Branching activity ${act.id} has no reachable ending.`);
+        for (const nodeId of nodeIds) if (!seen.has(nodeId)) return bad('unreachable_branching_node', `${ap}.content.nodes.${nodeId}`, `Branching node "${nodeId}" is unreachable from start.`);
+      }
+      if (act.type === 'persona') {
+        if (!isNonBlank(c.personaName, 200)) return bad('persona_name_required', `${ap}.content.personaName`, `Persona activity ${act.id} needs a non-empty personaName up to 200 chars.`);
+        if (!isNonBlank(c.personaRole, 2000)) return bad('persona_role_required', `${ap}.content.personaRole`, `Persona activity ${act.id} needs a non-empty personaRole up to 2000 chars.`);
+        if (!isNonBlank(c.scenario, 20000)) return bad('persona_scenario_required', `${ap}.content.scenario`, `Persona activity ${act.id} needs a non-empty scenario.`);
+        if (!isNonBlank(c.rubric, 20000)) return bad('persona_rubric_required', `${ap}.content.rubric`, `Persona activity ${act.id} needs a non-empty rubric.`);
+        if (c.minTurns !== undefined && !(Number.isInteger(c.minTurns) && c.minTurns >= 1 && c.minTurns <= 20)) return bad('invalid_persona_min_turns', `${ap}.content.minTurns`, 'Persona minTurns must be an integer 1-20.');
+        if (c.maxTurns !== undefined) {
+          const minEff = c.minTurns === undefined ? 3 : c.minTurns;
+          if (!(Number.isInteger(c.maxTurns) && c.maxTurns >= minEff && c.maxTurns <= 50)) return bad('invalid_persona_max_turns', `${ap}.content.maxTurns`, 'Persona maxTurns must be an integer between minTurns and 50.');
+        }
+      }
       const gate = act.gate == null ? { kind: 'none' } : act.gate;
       if (!isObject(gate)) return bad('invalid_gate_kind', `${ap}.gate`, 'Activity gate must be an object.');
       const gateFields = pdUnknownFields(gate, PD_GATE_KEYS, 'unknown_gate_fields', `${ap}.gate`);

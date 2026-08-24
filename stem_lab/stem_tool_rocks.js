@@ -415,7 +415,7 @@
       // "Salt and pepper" is a FINE intermix. Diorite listed its darkest colour
       // first, so that became the whole body with a few big pale blocks on top —
       // it read as a cow, not as the even speckle the description names.
-      g.push(h('rect', { key: 'sp0', x: 0, y: 0, width: S, height: S, fill: '#9ca3af' }));
+      g.push(h('rect', { key: 'sp-bg', x: 0, y: 0, width: S, height: S, fill: '#9ca3af' }));
       for (i = 0; i < 54; i++) {
         var spx = rnd() * S, spy = rnd() * S, spr = 0.055 * S * (0.6 + rnd() * 0.8);
         var spSides = 4 + Math.floor(rnd() * 3), spPts = [];
@@ -423,7 +423,7 @@
           var spa = (sk / spSides) * Math.PI * 2 + rnd() * 0.5;
           spPts.push((spx + Math.cos(spa) * spr).toFixed(1) + ',' + (spy + Math.sin(spa) * spr).toFixed(1));
         }
-        g.push(h('polygon', { key: 'sp' + i, points: spPts.join(' '), fill: i % 2 ? cols[0] : cols[1], opacity: 0.95, stroke: edge, strokeWidth: 0.35 }));
+        g.push(h('polygon', { key: 'sp-grain-' + i, points: spPts.join(' '), fill: i % 2 ? cols[0] : cols[1], opacity: 0.95, stroke: edge, strokeWidth: 0.35 }));
       }
     } else if (art === 'slaty') {
       // Slate, phyllite and schist all carried texture 'foliated', so all three
@@ -2122,6 +2122,7 @@
     { id: 'specimens_examined', name: 'Rock Collector', desc: 'Examine 5+ rock specimens', icon: '🔍', rp: 15, check: function(s) { var st = s || {}; return Object.keys(st.rocksViewed || {}).length >= 5; } },
     { id: 'quiz_ace', name: 'Earth Science Ace', desc: 'Correctly answer 3 questions in the quiz', icon: '🎓', rp: 20, check: function(s) { var st = s || {}; return (st.quizScore || 0) >= 3; } },
     { id: 'vocab_studied', name: 'Vocabulary Master', desc: 'Study 3 key terminology definitions', icon: '📖', rp: 15, check: function(s) { var st = s || {}; return (st.vocabLookedUp || []).length >= 3; } },
+    { id: 'wb_identify', name: 'Field Mineralogist', desc: 'Identify 2 unknown specimens at the Mineral Workbench', icon: '🔬', rp: 25, check: function(st) { var w = (st || {}).wb || {}; return (w.solved || 0) >= 2; } },
     { id: 'cycle_interact', name: 'Cycle Creator', desc: 'Perform 3 operations in the Rock Cycle simulator', icon: '🔄', rp: 20, check: function(s) { var st = s || {}; return (st.cycleInteractions || 0) >= 3; } }
   ];
 
@@ -2400,35 +2401,35 @@ const d = labToolData.rocks || {};
           const ROCKS = RK_ROCKS.map(function (r) { return Object.assign({}, r, { label: t(r.labelKey) }); });
           const MINERALS = [
 
-            { id: 'quartz', label: t('stem.rocks.quartz'), hardness: 7, streak: 'White', luster: 'Vitreous', crystal: 'Hexagonal', color: '#e8edf0', formula: 'SiO\u2082', desc: 'The second most abundant mineral in the crust of Earth. Forms distinctive six-sided prismatic crystals with pointed terminations. Extremely resistant to weathering. Comes in many colored varieties: amethyst (purple), citrine (yellow), rose quartz (pink), smoky quartz (brown).', uses: 'Electronics (oscillators, watches), glassmaking, abrasives, gemstones', funFact: 'Quartz is piezoelectric (when squeezed, it generates an electric charge). This property makes quartz watches accurate to within 15 seconds per month!', occurrence: 'Found in virtually all rock types worldwide. Major deposits in Brazil, Arkansas (USA), Madagascar, and the Alps.' },
+            { id: 'quartz', label: t('stem.rocks.quartz'), hardness: 7, density: 2.65, streak: 'White', luster: 'Vitreous', crystal: 'Hexagonal', color: '#e8edf0', formula: 'SiO\u2082', desc: 'The second most abundant mineral in the crust of Earth. Forms distinctive six-sided prismatic crystals with pointed terminations. Extremely resistant to weathering. Comes in many colored varieties: amethyst (purple), citrine (yellow), rose quartz (pink), smoky quartz (brown).', uses: 'Electronics (oscillators, watches), glassmaking, abrasives, gemstones', funFact: 'Quartz is piezoelectric (when squeezed, it generates an electric charge). This property makes quartz watches accurate to within 15 seconds per month!', occurrence: 'Found in virtually all rock types worldwide. Major deposits in Brazil, Arkansas (USA), Madagascar, and the Alps.' },
 
-            { id: 'feldspar', label: t('stem.rocks.feldspar'), hardness: 6, streak: 'White', luster: 'Vitreous', crystal: 'Monoclinic/Triclinic', habit: 'blocky90', color: '#d9a48f', formula: 'KAlSi\u2083O\u2088', desc: 'The most abundant mineral group on Earth, making up ~60% of the crust. Two main families: orthoclase (potassium) and plagioclase (sodium-calcium). Shows distinctive cleavage at nearly 90\u00B0 angles. Often pink, white, or gray.', uses: 'Ceramics, glass, porcelain, scouring powders, dental products', funFact: 'The name means "field spar" in Swedish because early miners found it in their fields. Moonstone and labradorite are feldspar gemstones!', occurrence: 'Constituent of granite, gneiss, basalt, and most igneous and metamorphic rocks globally.' },
+            { id: 'feldspar', label: t('stem.rocks.feldspar'), hardness: 6, density: 2.56, streak: 'White', luster: 'Vitreous', crystal: 'Monoclinic/Triclinic', habit: 'blocky90', color: '#d9a48f', formula: 'KAlSi\u2083O\u2088', desc: 'The most abundant mineral group on Earth, making up ~60% of the crust. Two main families: orthoclase (potassium) and plagioclase (sodium-calcium). Shows distinctive cleavage at nearly 90\u00B0 angles. Often pink, white, or gray.', uses: 'Ceramics, glass, porcelain, scouring powders, dental products', funFact: 'The name means "field spar" in Swedish because early miners found it in their fields. Moonstone and labradorite are feldspar gemstones!', occurrence: 'Constituent of granite, gneiss, basalt, and most igneous and metamorphic rocks globally.' },
 
-            { id: 'mica', label: t('stem.rocks.mica_muscovite'), hardness: 2.5, streak: 'White', luster: 'Pearly/Vitreous', crystal: 'Monoclinic', habit: 'micaceous', color: '#c9b380', formula: 'KAl\u2082(Si\u2083Al)O\u2081\u2080(OH)\u2082', desc: 'Sheet silicate that peels into thin, flexible, transparent sheets. The "sparkly" mineral in rocks. Two common types: muscovite (light/clear) and biotite (dark/black). Perfect basal cleavage produces incredibly thin layers.', uses: 'Electrical insulation, cosmetics (shimmer), paint filler, window material (historically)', funFact: 'Before glass windows were common, thin sheets of muscovite mica were used as window panes in medieval Russia, hence "Muscovy glass" \u2192 muscovite!', occurrence: 'Common in granites, schists, pegmatites. Major deposits in India, Brazil, Russia, and the USA.' },
+            { id: 'mica', label: t('stem.rocks.mica_muscovite'), hardness: 2.5, density: 2.82, streak: 'White', luster: 'Pearly/Vitreous', crystal: 'Monoclinic', habit: 'micaceous', color: '#c9b380', formula: 'KAl\u2082(Si\u2083Al)O\u2081\u2080(OH)\u2082', desc: 'Sheet silicate that peels into thin, flexible, transparent sheets. The "sparkly" mineral in rocks. Two common types: muscovite (light/clear) and biotite (dark/black). Perfect basal cleavage produces incredibly thin layers.', uses: 'Electrical insulation, cosmetics (shimmer), paint filler, window material (historically)', funFact: 'Before glass windows were common, thin sheets of muscovite mica were used as window panes in medieval Russia, hence "Muscovy glass" \u2192 muscovite!', occurrence: 'Common in granites, schists, pegmatites. Major deposits in India, Brazil, Russia, and the USA.' },
 
-            { id: 'calcite', label: t('stem.rocks.calcite'), hardness: 3, streak: 'White', luster: 'Vitreous', crystal: 'Trigonal (Rhombohedral)', color: '#efe9dc', formula: 'CaCO\u2083', desc: 'The primary mineral in limestone and marble. Shows perfect rhombohedral cleavage, always breaks into parallelogram-shaped pieces. Fizzes vigorously when dilute acid is applied. Some varieties show double refraction (text appears doubled through clear crystals).', uses: 'Cement/concrete, lime production, optical instruments, antacid tablets (Tums)', funFact: 'Iceland spar (transparent calcite) creates double images! Vikings may have used it as a "sunstone" to navigate on cloudy days by detecting polarized skylight.', occurrence: 'Limestone caves (stalactites/stalagmites), coral reefs, chalk cliffs, marble deposits worldwide.' },
+            { id: 'calcite', label: t('stem.rocks.calcite'), hardness: 3, density: 2.71, streak: 'White', luster: 'Vitreous', crystal: 'Trigonal (Rhombohedral)', color: '#efe9dc', formula: 'CaCO\u2083', desc: 'The primary mineral in limestone and marble. Shows perfect rhombohedral cleavage, always breaks into parallelogram-shaped pieces. Fizzes vigorously when dilute acid is applied. Some varieties show double refraction (text appears doubled through clear crystals).', uses: 'Cement/concrete, lime production, optical instruments, antacid tablets (Tums)', funFact: 'Iceland spar (transparent calcite) creates double images! Vikings may have used it as a "sunstone" to navigate on cloudy days by detecting polarized skylight.', occurrence: 'Limestone caves (stalactites/stalagmites), coral reefs, chalk cliffs, marble deposits worldwide.' },
 
-            { id: 'halite', label: t('stem.rocks.halite'), hardness: 2.5, streak: 'White', luster: 'Vitreous', crystal: 'Cubic (Isometric)', color: '#eceff3', formula: t('stem.periodic.nacl'), desc: 'Common table salt! Forms perfect cubic crystals. Tastes salty (one of the few minerals safe to taste-test). Forms when shallow seas or salt lakes evaporate. Can be colorless, white, pink, blue, or red depending on impurities.', uses: 'Food seasoning/preservation, road de-icing, chemical industry, water softening', funFact: 'Roman soldiers were sometimes paid in salt, the word "salary" comes from the Latin "salarium" (salt money). The phrase "worth your salt" comes from this tradition!', occurrence: 'Evaporite deposits in arid regions: Great Salt Lake, Dead Sea, salt mines in Poland (Wieliczka), Germany, and Louisiana.' },
+            { id: 'halite', label: t('stem.rocks.halite'), hardness: 2.5, density: 2.17, streak: 'White', luster: 'Vitreous', crystal: 'Cubic (Isometric)', color: '#eceff3', formula: t('stem.periodic.nacl'), desc: 'Common table salt! Forms perfect cubic crystals. Tastes salty (one of the few minerals safe to taste-test). Forms when shallow seas or salt lakes evaporate. Can be colorless, white, pink, blue, or red depending on impurities.', uses: 'Food seasoning/preservation, road de-icing, chemical industry, water softening', funFact: 'Roman soldiers were sometimes paid in salt, the word "salary" comes from the Latin "salarium" (salt money). The phrase "worth your salt" comes from this tradition!', occurrence: 'Evaporite deposits in arid regions: Great Salt Lake, Dead Sea, salt mines in Poland (Wieliczka), Germany, and Louisiana.' },
 
-            { id: 'pyrite', label: t('stem.rocks.pyrite'), hardness: 6.5, streak: 'Greenish-black', luster: 'Metallic', crystal: 'Cubic (Isometric)', color: '#c9a227', formula: 'FeS\u2082', desc: 'Iron sulfide with a brilliant metallic brass-yellow color. Forms perfect cubes, pyritohedrons, and octahedrons. Produces sparks when struck against steel (name from Greek "pyr" = fire). Commonly mistaken for gold but much harder and lighter.', uses: 'Sulfuric acid production, electronics (early crystal radios), decorative stone, gold indicator mineral', funFact: 'Called "fool\u2019s gold" because miners confused it with real gold. You can tell them apart: gold is soft (scratches with a knife), pyrite is hard. Gold leaves a yellow streak, pyrite leaves a greenish-black streak!', occurrence: 'Found in all rock types. Often found alongside real gold deposits! Common in coal, hydrothermal veins, and sedimentary rocks.' },
+            { id: 'pyrite', label: t('stem.rocks.pyrite'), hardness: 6.5, density: 5.01, streak: 'Greenish-black', luster: 'Metallic', crystal: 'Cubic (Isometric)', color: '#c9a227', formula: 'FeS\u2082', desc: 'Iron sulfide with a brilliant metallic brass-yellow color. Forms perfect cubes, pyritohedrons, and octahedrons. Produces sparks when struck against steel (name from Greek "pyr" = fire). Commonly mistaken for gold but much harder and lighter.', uses: 'Sulfuric acid production, electronics (early crystal radios), decorative stone, gold indicator mineral', funFact: 'Called "fool\u2019s gold" because miners confused it with real gold. You can tell them apart: gold is soft (scratches with a knife), pyrite is hard. Gold leaves a yellow streak, pyrite leaves a greenish-black streak!', occurrence: 'Found in all rock types. Often found alongside real gold deposits! Common in coal, hydrothermal veins, and sedimentary rocks.' },
 
-            { id: 'talc', label: t('stem.rocks.talc'), hardness: 1, streak: 'White', luster: 'Pearly/Waxy', crystal: 'Monoclinic', color: '#dcded2', formula: 'Mg\u2083Si\u2084O\u2081\u2080(OH)\u2082', desc: 'The softest known mineral, number 1 on the Mohs scale. Can be scratched with a fingernail! Has a soapy, greasy feel. Forms flat, foliated masses. Color ranges from white to pale green to gray. Metamorphic mineral formed from magnesium-rich rocks.', uses: 'Talcum powder, ceramics, paint filler, paper coating, cosmetics', funFact: 'Soapstone (used for carving and countertops) is a rock made mostly of talc. It was used by ancient cultures worldwide to carve cooking vessels because it retains heat well!', occurrence: 'Metamorphic rocks (ultramafic environments). Major deposits in China, India, USA (Vermont), France, and Brazil.' },
+            { id: 'talc', label: t('stem.rocks.talc'), hardness: 1, density: 2.75, streak: 'White', luster: 'Pearly/Waxy', crystal: 'Monoclinic', color: '#dcded2', formula: 'Mg\u2083Si\u2084O\u2081\u2080(OH)\u2082', desc: 'The softest known mineral, number 1 on the Mohs scale. Can be scratched with a fingernail! Has a soapy, greasy feel. Forms flat, foliated masses. Color ranges from white to pale green to gray. Metamorphic mineral formed from magnesium-rich rocks.', uses: 'Talcum powder, ceramics, paint filler, paper coating, cosmetics', funFact: 'Soapstone (used for carving and countertops) is a rock made mostly of talc. It was used by ancient cultures worldwide to carve cooking vessels because it retains heat well!', occurrence: 'Metamorphic rocks (ultramafic environments). Major deposits in China, India, USA (Vermont), France, and Brazil.' },
 
             { id: 'diamond', label: t('stem.rocks.diamond'), hardness: 10, streak: 'None (too hard)', luster: 'Adamantine', crystal: 'Cubic (Isometric)', color: '#f0f9ff', formula: 'C', desc: 'Pure crystallized carbon, the hardest natural substance on Earth. Forms deep in the mantle (150+ km below surface) under extreme pressure and temperature. Brought to surface by violent volcanic eruptions in kimberlite pipes. High refractive index creates "fire" (rainbow flashes).', uses: 'Gemstones, cutting/grinding tools, drill bits, thermal conductors, optical windows', funFact: 'Diamond and graphite (pencil lead) are both pure carbon! The only difference is how the carbon atoms are arranged. Diamond is the hardest mineral; graphite is one of the softest. Same atoms, completely different properties!', occurrence: 'Kimberlite pipes in South Africa, Russia, Australia, Canada, Botswana. Also found in river gravels (alluvial deposits).' },
 
-            { id: 'magnetite', label: t('stem.rocks.magnetite'), hardness: 5.5, streak: 'Black', luster: 'Metallic/Submetallic', crystal: 'Cubic (Isometric)', habit: 'octahedral', color: '#1f2937', formula: 'Fe\u2083O\u2084', desc: 'The most magnetic naturally occurring mineral on Earth. Strongly attracted to magnets and can itself act as a natural magnet ("lodestone"). Black, heavy, and opaque. Important iron ore mineral. Octahedral crystal habit.', uses: 'Iron/steel production, magnetic recording media, heavy concrete, water purification', funFact: 'Lodestone (naturally magnetized magnetite) was the first compass! Ancient Chinese and Greek navigators used floating lodestones to find north. Magnetite crystals have even been found in the brains of pigeons and sea turtles, helping them navigate!', occurrence: 'Igneous and metamorphic rocks worldwide. Major deposits in Sweden (Kiruna), Australia, Brazil, South Africa, and Minnesota (USA).' },
+            { id: 'magnetite', label: t('stem.rocks.magnetite'), hardness: 5.5, density: 5.18, streak: 'Black', luster: 'Metallic/Submetallic', crystal: 'Cubic (Isometric)', habit: 'octahedral', color: '#1f2937', formula: 'Fe\u2083O\u2084', desc: 'The most magnetic naturally occurring mineral on Earth. Strongly attracted to magnets and can itself act as a natural magnet ("lodestone"). Black, heavy, and opaque. Important iron ore mineral. Octahedral crystal habit.', uses: 'Iron/steel production, magnetic recording media, heavy concrete, water purification', funFact: 'Lodestone (naturally magnetized magnetite) was the first compass! Ancient Chinese and Greek navigators used floating lodestones to find north. Magnetite crystals have even been found in the brains of pigeons and sea turtles, helping them navigate!', occurrence: 'Igneous and metamorphic rocks worldwide. Major deposits in Sweden (Kiruna), Australia, Brazil, South Africa, and Minnesota (USA).' },
 
-            { id: 'hematite', label: t('stem.rocks.hematite'), hardness: 5.5, streak: 'Red-brown', luster: 'Metallic/Earthy', crystal: 'Trigonal', color: '#991b1b', formula: 'Fe\u2082O\u2083', desc: 'The most important iron ore mineral. Name from Greek "haima" (blood) due to its red streak. Can appear metallic silver-gray (specular hematite) or earthy red-brown. Always produces a distinctive red-brown streak regardless of surface color.', uses: 'Iron/steel production (primary ore), pigment (red ochre), polishing compound (jeweler\u2019s rouge), radiation shielding', funFact: 'The red color of Mars comes from hematite! NASA\u2019s rovers have confirmed that the Martian soil is rich in iron oxide. Hematite was also used by prehistoric humans as the first paint pigment; cave paintings from 40,000 years ago used ground hematite!', occurrence: 'Banded iron formations, volcanic rocks, red soils. Lake Superior region (USA), Minas Gerais (Brazil), Pilbara (Australia), Mars!' },
+            { id: 'hematite', label: t('stem.rocks.hematite'), hardness: 5.5, density: 5.26, streak: 'Red-brown', luster: 'Metallic/Earthy', crystal: 'Trigonal', color: '#991b1b', formula: 'Fe\u2082O\u2083', desc: 'The most important iron ore mineral. Name from Greek "haima" (blood) due to its red streak. Can appear metallic silver-gray (specular hematite) or earthy red-brown. Always produces a distinctive red-brown streak regardless of surface color.', uses: 'Iron/steel production (primary ore), pigment (red ochre), polishing compound (jeweler\u2019s rouge), radiation shielding', funFact: 'The red color of Mars comes from hematite! NASA\u2019s rovers have confirmed that the Martian soil is rich in iron oxide. Hematite was also used by prehistoric humans as the first paint pigment; cave paintings from 40,000 years ago used ground hematite!', occurrence: 'Banded iron formations, volcanic rocks, red soils. Lake Superior region (USA), Minas Gerais (Brazil), Pilbara (Australia), Mars!' },
 
             { id: 'garnet', label: t('stem.rocks.garnet'), hardness: 7, streak: 'White', luster: 'Vitreous/Resinous', crystal: 'Cubic (Isometric)', habit: 'dodecahedral', color: '#7f1d1d', formula: 'Complex silicates (e.g., Fe\u2083Al\u2082Si\u2083O\u2081\u2082)', desc: 'A group of silicate minerals known for their beautiful dodecahedral crystals (12-sided). Most commonly deep red (almandine), but can be green (tsavorite), orange (spessartine), or even color-changing. Very hard and durable. Excellent for identifying metamorphic grade.', uses: 'Abrasive blasting (sandpaper, waterjet cutting), gemstones, water filtration, indicator mineral in geology', funFact: 'Garnets grow in metamorphic rocks and their size indicates how much heat and pressure the rock experienced. Geologists use garnet composition like a geological thermometer! Some rare garnets change color from blue-green in daylight to purple under incandescent light.', occurrence: 'Schists, gneisses, contact metamorphic zones. Major gem deposits in India, Sri Lanka, Tanzania, Madagascar, and Idaho (USA).' },
 
             { id: 'olivine', label: t('stem.rocks.olivine'), hardness: 6.5, streak: 'White', luster: 'Vitreous', crystal: 'Orthorhombic', color: '#4d7c0f', formula: '(Mg,Fe)\u2082SiO\u2084', desc: 'Olive-green mineral abundant in the upper mantle of Earth. One of the first minerals to crystallize from cooling magma. Forms small glassy grains in basalt. Gem variety is called peridot. Weathers quickly at the surface, which is why it is rare in sedimentary rocks.', uses: 'Gemstone (peridot), refractory bricks, CO\u2082 capture research, foundry sand', funFact: 'Olivine makes up most of the upper mantle of Earth! There is more olivine inside Earth than any other mineral. The green sand beaches of Hawaii (Papak\u014Dlea Beach) are made of tiny olivine crystals eroded from volcanic rock!', occurrence: 'Basalt, peridotite, meteorites. Hawaii, Canary Islands, Pakistan (peridot gems), mantle xenoliths worldwide.' },
 
-            { id: 'fluorite', label: t('stem.rocks.fluorite'), hardness: 4, streak: 'White', luster: 'Vitreous', crystal: 'Cubic (Isometric)', color: '#7c3aed', formula: 'CaF\u2082', desc: 'Known as the "most colorful mineral in the world", comes in virtually every color: purple, green, blue, yellow, pink, and even colorless. Forms perfect cubic and octahedral crystals. Often fluorescent under UV light (the word "fluorescence" comes from fluorite!). Four directions of perfect cleavage.', uses: 'Steelmaking flux, hydrofluoric acid production, optical lenses, gemstone, decorative carvings', funFact: 'Fluorite literally invented the word "fluorescence"! In 1852, George Stokes described the glow of fluorite under UV light and coined the term from the name of the mineral. The element fluorine is also named after fluorite!', occurrence: 'Hydrothermal veins, limestone cavities. Major deposits in China, Mexico, South Africa, Derbyshire (England, "Blue John"), and Illinois (USA).' },
+            { id: 'fluorite', label: t('stem.rocks.fluorite'), hardness: 4, density: 3.18, streak: 'White', luster: 'Vitreous', crystal: 'Cubic (Isometric)', color: '#7c3aed', formula: 'CaF\u2082', desc: 'Known as the "most colorful mineral in the world", comes in virtually every color: purple, green, blue, yellow, pink, and even colorless. Forms perfect cubic and octahedral crystals. Often fluorescent under UV light (the word "fluorescence" comes from fluorite!). Four directions of perfect cleavage.', uses: 'Steelmaking flux, hydrofluoric acid production, optical lenses, gemstone, decorative carvings', funFact: 'Fluorite literally invented the word "fluorescence"! In 1852, George Stokes described the glow of fluorite under UV light and coined the term from the name of the mineral. The element fluorine is also named after fluorite!', occurrence: 'Hydrothermal veins, limestone cavities. Major deposits in China, Mexico, South Africa, Derbyshire (England, "Blue John"), and Illinois (USA).' },
 
-            { id: 'galena', label: t('stem.rocks.galena'), hardness: 2.5, streak: 'Lead-gray', luster: 'Metallic', crystal: 'Cubic (Isometric)', color: '#94a3b8', formula: 'PbS', desc: 'Primary ore of lead. Very dense (heavy for its size) with perfect cubic cleavage, fractures into tiny cubes. Bright metallic silver color when fresh, tarnishes to dull gray. Lead-gray streak. Often found with silver as an impurity, making it a source of silver too.', uses: 'Lead production, ammunition, batteries, radiation shielding, early radio crystal detectors', funFact: 'Before transistors were invented, galena crystals were used in "crystal radio" sets! A thin wire ("cat\u2019s whisker") touching a galena crystal could detect radio signals without any battery or electricity. Galena was also used by ancient Egyptians as kohl eyeliner!', occurrence: 'Hydrothermal veins, limestone replacement deposits. Missouri (USA, largest lead deposit), Broken Hill (Australia), Germany, Mexico.' },
+            { id: 'galena', label: t('stem.rocks.galena'), hardness: 2.5, density: 7.5, streak: 'Lead-gray', luster: 'Metallic', crystal: 'Cubic (Isometric)', color: '#94a3b8', formula: 'PbS', desc: 'Primary ore of lead. Very dense (heavy for its size) with perfect cubic cleavage, fractures into tiny cubes. Bright metallic silver color when fresh, tarnishes to dull gray. Lead-gray streak. Often found with silver as an impurity, making it a source of silver too.', uses: 'Lead production, ammunition, batteries, radiation shielding, early radio crystal detectors', funFact: 'Before transistors were invented, galena crystals were used in "crystal radio" sets! A thin wire ("cat\u2019s whisker") touching a galena crystal could detect radio signals without any battery or electricity. Galena was also used by ancient Egyptians as kohl eyeliner!', occurrence: 'Hydrothermal veins, limestone replacement deposits. Missouri (USA, largest lead deposit), Broken Hill (Australia), Germany, Mexico.' },
 
-            { id: 'gypsum', label: t('stem.rocks.gypsum'), hardness: 2, streak: 'White', luster: 'Vitreous/Silky/Pearly', crystal: 'Monoclinic', color: '#efe9e0', formula: 'CaSO\u2084\u00B72H\u2082O', desc: 'A very soft evaporite mineral (can be scratched with a fingernail). Forms in a variety of habits: tabular crystals (selenite), fibrous masses (satin spar), and granular masses (alabaster). Transparent selenite crystals can be enormous. Contains water in its crystal structure.', uses: 'Drywall/plasterboard, plaster of Paris, cement, fertilizer, alabaster carvings', funFact: 'The Naica Mine in Mexico contains selenite gypsum crystals up to 12 meters (39 feet) long and weighing 55 tons, the largest crystals ever discovered on Earth! The cave is so hot (58\u00B0C/136\u00B0F) that humans can only survive inside for about 10 minutes!', occurrence: 'Evaporite deposits, desert roses (sand-included crystals), cave formations. Major deposits in USA, Mexico, Spain, Italy, and Nova Scotia.' },
+            { id: 'gypsum', label: t('stem.rocks.gypsum'), hardness: 2, density: 2.32, streak: 'White', luster: 'Vitreous/Silky/Pearly', crystal: 'Monoclinic', color: '#efe9e0', formula: 'CaSO\u2084\u00B72H\u2082O', desc: 'A very soft evaporite mineral (can be scratched with a fingernail). Forms in a variety of habits: tabular crystals (selenite), fibrous masses (satin spar), and granular masses (alabaster). Transparent selenite crystals can be enormous. Contains water in its crystal structure.', uses: 'Drywall/plasterboard, plaster of Paris, cement, fertilizer, alabaster carvings', funFact: 'The Naica Mine in Mexico contains selenite gypsum crystals up to 12 meters (39 feet) long and weighing 55 tons, the largest crystals ever discovered on Earth! The cave is so hot (58\u00B0C/136\u00B0F) that humans can only survive inside for about 10 minutes!', occurrence: 'Evaporite deposits, desert roses (sand-included crystals), cave formations. Major deposits in USA, Mexico, Spain, Italy, and Nova Scotia.' },
 
             { id: 'sulfur', label: t('stem.periodic.sulfur'), hardness: 2, streak: 'White-yellow', luster: 'Resinous/Adamantine', crystal: 'Orthorhombic', color: '#eab308', formula: 'S', desc: 'Native element with a distinctive bright yellow color and rotten-egg smell when heated. Very light and brittle. Low melting point (115\u00B0C). Burns with a blue flame producing SO\u2082 gas. Associated with volcanic activity and hot springs. One of the few minerals that occurs as a native element.', uses: 'Sulfuric acid (most widely used chemical), gunpowder, rubber vulcanization, fungicides, matches', funFact: 'Sulfur was known to ancient civilizations as "brimstone" (burning stone). It is mentioned in the Bible and in the Odyssey by Homer! The moon Io of Jupiter is covered in sulfur from its 400+ active volcanoes, giving it a bright yellow-orange appearance.', occurrence: 'Volcanic fumaroles, hot springs, evaporite domes (Gulf Coast USA), Sicily, Japan, Indonesia.' },
 
@@ -3644,9 +3645,9 @@ const d = labToolData.rocks || {};
               // work around, so it wraps rather than overflowing.
               React.createElement("div", { className: "flex flex-wrap gap-1 sm:ml-auto" },
 
-                ['landscape', 'rocks', 'minerals', 'mystery', 'quiz', 'weathHunt'].map(function (m) {
+                ['landscape', 'rocks', 'minerals', 'mystery', 'workbench', 'quiz', 'weathHunt'].map(function (m) {
 
-                  const modeLabel = m === 'landscape' ? __alloT('stem.rocks.mode_landscape', 'Landscape') : m === 'rocks' ? __alloT('stem.rocks.mode_rocks', 'Rocks') : m === 'minerals' ? __alloT('stem.rocks.mode_minerals', 'Minerals') : m === 'mystery' ? __alloT('stem.rocks.mystery_rock', 'Mystery Rock') : m === 'weathHunt' ? __alloT('stem.rocks.weathering_lab', 'Weathering Lab') : __alloT('stem.rocks.mode_quiz', 'Quiz');
+                  const modeLabel = m === 'landscape' ? __alloT('stem.rocks.mode_landscape', 'Landscape') : m === 'rocks' ? __alloT('stem.rocks.mode_rocks', 'Rocks') : m === 'minerals' ? __alloT('stem.rocks.mode_minerals', 'Minerals') : m === 'mystery' ? __alloT('stem.rocks.mystery_rock', 'Mystery Rock') : m === 'workbench' ? __alloT('stem.rocks.mode_workbench', 'Workbench') : m === 'weathHunt' ? __alloT('stem.rocks.weathering_lab', 'Weathering Lab') : __alloT('stem.rocks.mode_quiz', 'Quiz');
 
                   return React.createElement("button", { "aria-label": __alloT('stem.rocks.switch_to_prefix', "Switch to ") + modeLabel + __alloT('stem.rocks.mode_suffix', " mode"),
 
@@ -3664,7 +3665,7 @@ const d = labToolData.rocks || {};
 
                   },
 
-                    m === 'landscape' ? '🗺️ ' + __alloT('stem.rocks.mode_landscape', 'Landscape') : m === 'rocks' ? '🪨 ' + __alloT('stem.rocks.mode_rocks', 'Rocks') : m === 'minerals' ? '💎 ' + __alloT('stem.rocks.mode_minerals', 'Minerals') : m === 'mystery' ? '🔍 ' + __alloT('stem.rocks.mystery', 'Mystery') : m === 'weathHunt' ? '⛏️ ' + __alloT('stem.rocks.weathering', 'Weathering') : '🧠 ' + __alloT('stem.rocks.mode_quiz', 'Quiz'));
+                    m === 'landscape' ? '🗺️ ' + __alloT('stem.rocks.mode_landscape', 'Landscape') : m === 'rocks' ? '🪨 ' + __alloT('stem.rocks.mode_rocks', 'Rocks') : m === 'minerals' ? '💎 ' + __alloT('stem.rocks.mode_minerals', 'Minerals') : m === 'mystery' ? '🔍 ' + __alloT('stem.rocks.mystery', 'Mystery') : m === 'workbench' ? '🔬 ' + __alloT('stem.rocks.mode_workbench', 'Workbench') : m === 'weathHunt' ? '⛏️ ' + __alloT('stem.rocks.weathering', 'Weathering') : '🧠 ' + __alloT('stem.rocks.mode_quiz', 'Quiz'));
 
                 })
 
@@ -3711,6 +3712,7 @@ const d = labToolData.rocks || {};
                 rocks:     { accent: '#92400e', soft: 'rgba(146,64,14,0.10)',  icon: '🪨', title: __alloT('stem.rocks.hero_rocks_title', 'Rocks: igneous, sedimentary, metamorphic'),     hint: __alloT('stem.rocks.hero_rocks_hint', 'Igneous (cooled magma: granite, basalt), sedimentary (compressed layers: sandstone, limestone), metamorphic (heat + pressure: marble, slate). The rock cycle moves stones between all three over millions of years.') },
                 minerals:  { accent: '#0e7490', soft: 'rgba(8,145,178,0.10)',  icon: '💎', title: __alloT('stem.rocks.hero_minerals_title', 'Minerals, the building blocks of rocks'),         hint: __alloT('stem.rocks.hero_minerals_hint', 'Mohs scale 1-10: talc soft, diamond hardest. Streak, luster, cleavage, hardness, color = the 5 ID tests. Quartz is 12% of Earth\u2019s crust; you carry it in every grain of sand.') },
                 mystery:   { accent: '#9333ea', soft: 'rgba(147,51,234,0.10)', icon: '🔍', title: __alloT('stem.rocks.hero_mystery_title', 'Mystery Rock, detective ID'),                  hint: __alloT('stem.rocks.hero_mystery_hint', 'Real geology workflow: observe (color, crystals, layers), test (hardness, streak, fizz with HCl for carbonate), classify. The fizz test alone separates limestone from a pile of look-alikes.') },
+                workbench: { accent: '#b45309', soft: 'rgba(180,83,9,0.10)',  icon: '🔬', title: __alloT('stem.rocks.hero_wb_title', 'Mineral Workbench, evidence-first ID'),            hint: __alloT('stem.rocks.hero_wb_hint', 'Streak, scratch hardness, acid, magnet, and lens on an unknown specimen. Your notebook of observations eliminates suspects until only one mineral fits, the same way a field geologist works.') },
                 quiz:      { accent: '#b45309', soft: 'rgba(217,119,6,0.10)',  icon: '🧠', title: __alloT('stem.rocks.hero_quiz_title', 'Quiz, graded ID + classification'),              hint: __alloT('stem.rocks.hero_quiz_hint', 'NGSS MS-ESS2-1: rock cycle as material system. AP ES practice: matching rocks to environment of formation. Builds the visual library so you can ID a rock at the Grand Canyon by sight.') },
                 // weathHunt had no entry, so the fallback below quietly served the
                 // LANDSCAPE banner: the Weathering tab announced itself as
@@ -4128,23 +4130,28 @@ const d = labToolData.rocks || {};
                           })
                         ),
 
-                        // Rotating stage. Extinction is only observable if you can
-                        // turn the stage, so this is the instrument's core control
-                        // rather than decoration.
-                        React.createElement("label", { htmlFor: "rk-stage", className: "block text-[11px] font-bold text-slate-700" },
-                          __alloT('stem.rocks.thin_stage', "Rotate stage: "),
-                          React.createElement("span", { className: "font-mono text-slate-900" }, stage + "°")),
-                        React.createElement("input", {
-                          id: "rk-stage", type: "range", min: 0, max: 90, step: 1, value: stage,
-                          onChange: function (e) { setTS({ stage: parseInt(e.target.value, 10) }); },
-                          className: "w-full", "aria-label": __alloT('stem.rocks.thin_stage_aria', "Rotate microscope stage in degrees")
-                        }),
-
-                        xpl && React.createElement("p", { className: "text-[11px] text-slate-700 leading-snug mt-1" },
-                          __alloT('stem.rocks.thin_extinction', "Turn the stage and watch grains darken and brighten. Every crystal goes black four times in a full turn — that is extinction. Anything that stays black at EVERY angle is isotropic or opaque, which identifies it on its own.")
-                        ),
-                        !xpl && React.createElement("p", { className: "text-[11px] text-slate-700 leading-snug mt-1" },
-                          __alloT('stem.rocks.thin_ppl_hint', "Plane light shows natural colour, relief and cleavage traces. Switch to crossed polars to tell the colourless minerals apart.")
+                        // Rotating stage. This model uses stage angle to teach
+                        // extinction under crossed polars. Leaving an active
+                        // no-op slider in plane light made the control look
+                        // broken, so it now pauses and says exactly how to use it.
+                        React.createElement("div", { className: "rounded-lg border p-2 " + (xpl ? "border-indigo-200 bg-indigo-50/60" : "border-slate-200 bg-slate-50") },
+                          React.createElement("label", { htmlFor: "rk-stage", className: "block text-[11px] font-bold text-slate-700" },
+                            __alloT('stem.rocks.thin_stage', "Stage angle: "),
+                            React.createElement("span", { className: "font-mono text-slate-900" }, stage + "°")),
+                          React.createElement("input", {
+                            id: "rk-stage", type: "range", min: 0, max: 90, step: 1, value: stage,
+                            disabled: !xpl,
+                            onChange: function (e) { setTS({ stage: parseInt(e.target.value, 10) }); },
+                            className: "w-full disabled:opacity-45 disabled:cursor-not-allowed",
+                            "aria-describedby": "rk-stage-help",
+                            "aria-label": __alloT('stem.rocks.thin_stage_aria', "Microscope stage angle in degrees; use crossed polars to observe extinction")
+                          }),
+                          xpl && React.createElement("p", { id: "rk-stage-help", className: "text-[11px] text-slate-700 leading-snug mt-1" },
+                            __alloT('stem.rocks.thin_extinction', "Why rotate? Under crossed polars, turn the stage and watch individual grains darken and brighten. A crystal reaches extinction when it turns black. Anything that stays black at every angle is isotropic or opaque.")
+                          ),
+                          !xpl && React.createElement("p", { id: "rk-stage-help", className: "text-[11px] text-slate-700 leading-snug mt-1" },
+                            __alloT('stem.rocks.thin_ppl_hint', "Plane light shows natural colour, relief and cleavage. In this model, stage rotation is used to investigate extinction: choose Crossed polars, then drag from 0° to 90° and watch different grains turn black.")
+                          )
                         ),
 
                         React.createElement("p", { className: "text-[11px] text-slate-800 leading-snug mt-2 bg-slate-50 border border-slate-200 rounded-lg p-2" },
@@ -4193,6 +4200,57 @@ const d = labToolData.rocks || {};
                   var coolingSpeed = d.coolingSpeed || 'slow';
                   var animProgress = d.coolingProgress || 0;
                   var isAnimActive = d.coolingAnimActive || false;
+                  var speeds = [
+                    {
+                      id: 'slow', label: __alloT('stem.rocks.speed_slow_label', 'Slow (Intrusive)'),
+                      desc: __alloT('stem.rocks.speed_slow_desc', 'Magma loses heat slowly at depth, so a few crystals have time to grow large.'),
+                      where: __alloT('stem.rocks.speed_slow_where', 'Deep underground'),
+                      atoms: __alloT('stem.rocks.speed_slow_atoms', 'Lots of time to migrate and join an ordered crystal lattice'),
+                      texture: __alloT('stem.rocks.speed_slow_texture', 'Coarse-grained; large crystals visible to the eye'),
+                      example: __alloT('stem.rocks.speed_slow_example', 'Granite or gabbro'),
+                      visual: __alloT('stem.rocks.speed_slow_visual', 'Few large crystals'), duration: 3200
+                    },
+                    {
+                      id: 'medium', label: __alloT('stem.rocks.speed_medium_label', 'Moderate'),
+                      desc: __alloT('stem.rocks.speed_medium_desc', 'A shallow intrusion cools faster, leaving less growth time and medium-sized crystals.'),
+                      where: __alloT('stem.rocks.speed_medium_where', 'Shallow underground intrusion'),
+                      atoms: __alloT('stem.rocks.speed_medium_atoms', 'Some time to organize, but crystal growth stops sooner'),
+                      texture: __alloT('stem.rocks.speed_medium_texture', 'Medium-grained; crystals are smaller but still distinct'),
+                      example: __alloT('stem.rocks.speed_medium_example', 'Diabase (dolerite)'),
+                      visual: __alloT('stem.rocks.speed_medium_visual', 'More medium crystals'), duration: 2400
+                    },
+                    {
+                      id: 'fast', label: __alloT('stem.rocks.speed_fast_label', 'Fast (Extrusive)'),
+                      desc: __alloT('stem.rocks.speed_fast_desc', 'Lava cools quickly at the surface, producing many crystals too small to see easily.'),
+                      where: __alloT('stem.rocks.speed_fast_where', 'At or near Earth\'s surface'),
+                      atoms: __alloT('stem.rocks.speed_fast_atoms', 'Little time to move before the melt becomes solid'),
+                      texture: __alloT('stem.rocks.speed_fast_texture', 'Fine-grained; microscopic crystals'),
+                      example: __alloT('stem.rocks.speed_fast_example', 'Basalt or rhyolite'),
+                      visual: __alloT('stem.rocks.speed_fast_visual', 'Many tiny crystals'), duration: 1500
+                    },
+                    {
+                      id: 'rapid', label: __alloT('stem.rocks.speed_rapid_label', 'Quenched (Glassy)'),
+                      desc: __alloT('stem.rocks.speed_rapid_desc', 'Quenching locks the disordered melt in place before a crystal lattice can form.'),
+                      where: __alloT('stem.rocks.speed_rapid_where', 'A chilled lava margin or contact with water'),
+                      atoms: __alloT('stem.rocks.speed_rapid_atoms', 'Almost no time to organize into repeating structures'),
+                      texture: __alloT('stem.rocks.speed_rapid_texture', 'Glassy; no mineral crystals'),
+                      example: __alloT('stem.rocks.speed_rapid_example', 'Obsidian or volcanic glass'),
+                      visual: __alloT('stem.rocks.speed_rapid_visual', 'Glass — no crystals'), duration: 800
+                    }
+                  ];
+                  var currentSpeed = speeds.find(function(s) { return s.id === coolingSpeed; }) || speeds[0];
+                  var canvasPhase = animProgress <= 0
+                    ? __alloT('stem.rocks.cooling_phase_molten', 'Molten magma')
+                    : animProgress < 30
+                      ? __alloT('stem.rocks.cooling_phase_nuclei', 'Crystal nuclei forming')
+                      : animProgress < 100
+                        ? __alloT('stem.rocks.cooling_phase_growing', 'Crystals growing')
+                        : currentSpeed.visual;
+                  var modelStatus = animProgress <= 0
+                    ? __alloT('stem.rocks.cooling_status_ready', 'Ready to run: the model begins with molten magma.')
+                    : isAnimActive
+                      ? __alloT('stem.rocks.cooling_status_active', 'Cooling in progress: watch the melt fade as crystals nucleate and grow.')
+                      : __alloT('stem.rocks.cooling_status_complete', 'Model complete: ') + currentSpeed.texture + '.';
 
                   // Unlike the landscape and rock-cycle canvases, this one is
                   // MEANT to redraw every render — it has no animation loop or
@@ -4202,24 +4260,44 @@ const d = labToolData.rocks || {};
                     var ctx = canvasEl.getContext('2d');
                     // Null on any canvas-less host; the clearRect below would throw.
                     if (!ctx) return;
-                    var W = canvasEl.width = 160 * (window.devicePixelRatio || 1);
-                    var H = canvasEl.height = 100 * (window.devicePixelRatio || 1);
                     var dpr = window.devicePixelRatio || 1;
-
+                    // Give the model enough room for crystal-size differences to
+                    // be legible. Draw in CSS pixels and scale once for HiDPI so
+                    // the science diagram stays sharp without shrinking its art.
+                    var W = 360, H = 225;
+                    canvasEl.width = W * dpr;
+                    canvasEl.height = H * dpr;
+                    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
                     ctx.clearRect(0,0,W,H);
 
                     var progress = animProgress / 100;
-                    ctx.fillStyle = 'rgba(239, 68, 68, ' + (1 - progress * 0.9) + ')';
+                    var melt = ctx.createLinearGradient(0, 0, W, H);
+                    melt.addColorStop(0, 'rgba(251, 146, 60, ' + (1 - progress * 0.72) + ')');
+                    melt.addColorStop(0.48, 'rgba(220, 38, 38, ' + (1 - progress * 0.82) + ')');
+                    melt.addColorStop(1, 'rgba(127, 29, 29, ' + (1 - progress * 0.68) + ')');
+                    ctx.fillStyle = melt;
                     ctx.fillRect(0,0,W,H);
+
+                    // Atomic building blocks in the melt. Their scattered
+                    // positions make the starting state visibly disordered;
+                    // the crystal shapes below are the ordered outcome.
+                    for (var atomI = 0; atomI < 54; atomI++) {
+                      var atomX = 12 + ((atomI * 73) % 337);
+                      var atomY = 48 + ((atomI * 47) % 158);
+                      ctx.beginPath();
+                      ctx.arc(atomX, atomY, 1.8 + (atomI % 3) * 0.55, 0, Math.PI * 2);
+                      ctx.fillStyle = 'rgba(254, 240, 138, ' + Math.max(0.05, 0.56 * (1 - progress)) + ')';
+                      ctx.fill();
+                    }
 
                     ctx.save();
                     if (coolingSpeed === 'slow') {
                       var numCrystals = 6;
-                      ctx.lineWidth = 1.5 * dpr;
+                      ctx.lineWidth = 1.8;
                       for (var i = 0; i < numCrystals; i++) {
                         var cx = W * (0.2 + (i % 3) * 0.3);
                         var cy = H * (0.3 + Math.floor(i / 3) * 0.45);
-                        var size = 25 * progress * dpr;
+                        var size = H * 0.25 * progress;
                         if (size > 0) {
                           ctx.beginPath();
                           ctx.moveTo(cx, cy - size * 0.5);
@@ -4238,12 +4316,15 @@ const d = labToolData.rocks || {};
                       for (var i = 0; i < numCrystals; i++) {
                         var cx = W * (0.15 + (i % 5) * 0.18);
                         var cy = H * (0.2 + Math.floor(i / 5) * 0.3);
-                        var size = 12 * progress * dpr;
+                        var size = H * 0.13 * progress;
                         if (size > 0) {
                           ctx.beginPath();
                           ctx.arc(cx, cy, size * 0.5, 0, Math.PI * 2);
                           ctx.fillStyle = selRock.grainColors[i % selRock.grainColors.length];
                           ctx.fill();
+                          ctx.strokeStyle = 'rgba(255,255,255,0.32)';
+                          ctx.lineWidth = 1;
+                          ctx.stroke();
                         }
                       }
                     } else if (coolingSpeed === 'fast') {
@@ -4251,7 +4332,7 @@ const d = labToolData.rocks || {};
                       for (var i = 0; i < numCrystals; i++) {
                         var cx = W * (0.05 + (i % 10) * 0.1);
                         var cy = H * (0.08 + Math.floor(i / 10) * 0.11);
-                        var size = 4 * progress * dpr;
+                        var size = H * 0.042 * progress;
                         if (size > 0) {
                           ctx.beginPath();
                           ctx.arc(cx, cy, size * 0.5, 0, Math.PI * 2);
@@ -4260,17 +4341,25 @@ const d = labToolData.rocks || {};
                         }
                       }
                     } else {
-                      ctx.fillStyle = 'rgba(15, 15, 15, ' + progress + ')';
+                      // A quench produces glass, not tiny crystals. Curved
+                      // conchoidal fracture lines distinguish the finished
+                      // glass from an empty black panel.
+                      ctx.fillStyle = 'rgba(8, 10, 16, ' + progress + ')';
                       ctx.fillRect(0,0,W,H);
-                      if (progress > 0.5) {
-                        ctx.strokeStyle = 'rgba(255,255,255,0.15)';
-                        ctx.lineWidth = 1 * dpr;
-                        ctx.beginPath();
-                        ctx.arc(W*0.5, H*0.5, 30*dpr, 0, Math.PI*0.5);
-                        ctx.stroke();
-                        ctx.beginPath();
-                        ctx.arc(W*0.6, H*0.4, 40*dpr, Math.PI, Math.PI*1.5);
-                        ctx.stroke();
+                      if (progress > 0.35) {
+                        ctx.strokeStyle = 'rgba(191,219,254,' + (0.22 + progress * 0.3) + ')';
+                        ctx.lineWidth = 2;
+                        for (var glassArc = 0; glassArc < 4; glassArc++) {
+                          ctx.beginPath();
+                          ctx.arc(W * 0.44, H * 0.47, 34 + glassArc * 24, -0.65, 1.75);
+                          ctx.stroke();
+                        }
+                        var sheen = ctx.createLinearGradient(W * 0.1, 0, W * 0.8, H);
+                        sheen.addColorStop(0, 'rgba(255,255,255,0)');
+                        sheen.addColorStop(0.5, 'rgba(148,163,184,0.20)');
+                        sheen.addColorStop(1, 'rgba(255,255,255,0)');
+                        ctx.fillStyle = sheen;
+                        ctx.fillRect(0, 0, W, H);
                       }
                     }
                     ctx.restore();
@@ -4279,14 +4368,31 @@ const d = labToolData.rocks || {};
                       ctx.fillStyle = 'rgba(251, 191, 36, ' + (0.3 * (1 - progress) * (1 + 0.2 * Math.sin(Date.now() * 0.005))) + ')';
                       ctx.fillRect(0,0,W,H);
                     }
+
+                    // A visible phase label keeps the animation interpretable
+                    // even when it is paused on its first or final frame.
+                    ctx.fillStyle = 'rgba(15,23,42,0.82)';
+                    ctx.fillRect(12, 12, W - 24, 31);
+                    ctx.fillStyle = '#f8fafc';
+                    ctx.font = '700 14px system-ui, sans-serif';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(canvasPhase, 23, 28);
                   };
 
                   var startCooling = function() {
                     updMulti({ coolingProgress: 0, coolingAnimActive: true });
                     sfxRockMelt();
-                    var p = 0;
+                    var reduceMotion = false;
+                    try { reduceMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) {}
+                    if (reduceMotion) {
+                      updMulti({ coolingProgress: 100, coolingAnimActive: false });
+                      sfxRockCool();
+                      return;
+                    }
+                    var elapsed = 0;
                     var interval = setInterval(function() {
-                      p += 4;
+                      elapsed += 50;
+                      var p = Math.min(100, Math.round((elapsed / currentSpeed.duration) * 100));
                       upd("coolingProgress", p);
                       if (p >= 100) {
                         clearInterval(interval);
@@ -4296,40 +4402,113 @@ const d = labToolData.rocks || {};
                     }, 50);
                   };
 
-                  var speeds = [
-                    { id: 'slow', label: __alloT('stem.rocks.speed_slow_label', 'Slow (Intrusive)'), desc: __alloT('stem.rocks.speed_slow_desc', 'Forms deep underground. Atoms have time to form large, visible crystals (e.g. granite).') },
-                    { id: 'medium', label: __alloT('stem.rocks.speed_medium_label', 'Medium'), desc: __alloT('stem.rocks.speed_medium_desc', 'Intermediate depth, moderate cooling and crystal sizing.') },
-                    { id: 'fast', label: __alloT('stem.rocks.speed_fast_label', 'Fast (Extrusive)'), desc: __alloT('stem.rocks.speed_fast_desc', 'Cools rapidly at surface. Tiny, fine-grained crystals (e.g. basalt).') },
-                    { id: 'rapid', label: __alloT('stem.rocks.speed_rapid_label', 'Rapid (Glassy)'), desc: __alloT('stem.rocks.speed_rapid_desc', 'Instant quenching. Atoms frozen in place, no crystals (e.g. obsidian).') }
-                  ];
-                  var currentSpeed = speeds.find(function(s) { return s.id === coolingSpeed; });
-
-                  return React.createElement("div", { className: "border-t border-slate-100 pt-3 mt-3" },
-                    React.createElement("p", { className: "text-xs font-black text-amber-800 mb-2 flex items-center gap-1.5" },
-                      React.createElement("span", null, "🌋"),
+                  return React.createElement("div", { className: "border-t border-slate-200 pt-4 mt-4" },
+                    React.createElement("p", { className: "text-sm font-black text-amber-900 mb-1.5 flex items-center gap-1.5" },
+                      React.createElement("span", { "aria-hidden": true }, "🌋"),
                       React.createElement("span", null, __alloT('stem.rocks.magma_cooling_simulator_title', "Magma Cooling & Crystallization Simulator"))
                     ),
-                    React.createElement("div", { className: "flex flex-col md:flex-row gap-3 items-center" },
-                      React.createElement("div", { className: "w-full md:w-1/3 flex flex-col items-center" },
-                        React.createElement("canvas", { ref: coolingRef, role: "img", tabIndex: 0, "aria-label": __alloT('stem.rocks.crystal_cooling_diagram_aria', "Crystal cooling-rate diagram — slower cooling grows larger crystals."), style: { width: '130px', height: '80px', borderRadius: '8px', border: '1px solid #cbd5e1', display: 'block', background: '#1e293b' } }),
-                        React.createElement("button", {
-                          disabled: isAnimActive,
-                          onClick: startCooling,
-                          className: "transition-colors mt-2 px-3 py-1 bg-amber-700 hover:bg-amber-800 text-white font-bold rounded text-[10px] shadow-sm disabled:opacity-50 active:scale-[0.97]"
-                        }, isAnimActive ? __alloT('stem.rocks.cooling_ellipsis', "Cooling...") : "⚡ " + __alloT('stem.rocks.run_solidification', "Run Solidification"))
+                    React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed mb-2" },
+                      __alloT('stem.rocks.cooling_intro', "Change only the cooling rate and follow the evidence chain: time for atoms to move → crystal size → igneous texture.")
+                    ),
+                    React.createElement("p", { id: "rk-cooling-context", className: "text-xs text-slate-700 leading-relaxed rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 mb-3" },
+                      React.createElement("span", { className: "font-black text-amber-900" }, __alloT('stem.rocks.cooling_current_specimen', "Current specimen: ")),
+                      selRock.label + " (" + selRock.texture + "). ",
+                      __alloT('stem.rocks.cooling_context', "Use the model to isolate cooling rate, then compare its predicted texture with this specimen. Chemistry, dissolved gas, and eruption style can also shape an igneous rock.")
+                    ),
+
+                    React.createElement("div", { className: "rounded-xl border border-amber-200 bg-white p-3 mb-3" },
+                      React.createElement("p", { className: "text-xs font-black text-amber-900 mb-2" },
+                        __alloT('stem.rocks.cooling_how_title', "How to use this model")
                       ),
-                      React.createElement("div", { className: "flex-1 w-full" },
-                        React.createElement("div", { className: "grid grid-cols-4 gap-1 mb-2" },
+                      React.createElement("ol", { className: "grid gap-2 sm:grid-cols-3", "aria-label": __alloT('stem.rocks.cooling_how_title', "How to use this model") },
+                        [
+                          __alloT('stem.rocks.cooling_walkthrough_choose', "Choose a cooling history."),
+                          __alloT('stem.rocks.cooling_walkthrough_run', "Run solidification and watch crystal size change."),
+                          __alloT('stem.rocks.cooling_walkthrough_compare', "Compare the predicted texture with the specimen and explain why.")
+                        ].map(function(step, stepIndex) {
+                          return React.createElement("li", { key: "cooling-step-" + stepIndex, className: "flex items-start gap-2 text-xs text-slate-700 leading-relaxed" },
+                            React.createElement("span", { "aria-hidden": true, className: "shrink-0 inline-flex h-6 w-6 items-center justify-center rounded-full bg-amber-100 text-amber-900 font-black" }, stepIndex + 1),
+                            React.createElement("span", null, step)
+                          );
+                        })
+                      )
+                    ),
+
+                    React.createElement("div", { className: "grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(280px,380px)] items-start" },
+                      React.createElement("div", { className: "w-full order-2" },
+                        React.createElement("p", { className: "text-xs font-black text-slate-800 mb-1.5" },
+                          __alloT('stem.rocks.cooling_run_step', "Live solidification model")
+                        ),
+                        React.createElement("canvas", {
+                          ref: coolingRef, role: "img", tabIndex: 0,
+                          "aria-describedby": "rk-cooling-context rk-cooling-status",
+                          "aria-label": __alloT('stem.rocks.crystal_cooling_diagram_aria', "Crystal cooling-rate model — slower cooling grows larger crystals.") + " " + currentSpeed.label + ": " + currentSpeed.visual + ". " + currentSpeed.texture + ".",
+                          style: { width: '100%', maxWidth: '380px', height: 'auto', aspectRatio: '16 / 10', borderRadius: '12px', border: '2px solid #cbd5e1', display: 'block', background: '#1e293b' }
+                        }),
+                        React.createElement("div", { className: "mt-2 flex items-center gap-2" },
+                          React.createElement("progress", {
+                            value: animProgress, max: 100,
+                            className: "h-2 flex-1 accent-amber-600",
+                            "aria-label": __alloT('stem.rocks.cooling_progress_aria', "Solidification model progress")
+                          }),
+                          React.createElement("span", { className: "text-xs font-mono font-bold text-slate-700 min-w-[3ch] text-right" }, animProgress + "%")
+                        ),
+                        React.createElement("p", { id: "rk-cooling-status", role: "status", "aria-live": "polite", className: "mt-1 text-xs text-slate-700 leading-relaxed min-h-[2.5rem]" }, modelStatus),
+                        React.createElement("button", {
+                          type: "button", disabled: isAnimActive, onClick: startCooling,
+                          className: "transition-colors mt-2 w-full min-h-11 px-4 py-2.5 bg-amber-700 hover:bg-amber-800 text-white font-bold rounded-lg text-sm shadow-sm disabled:opacity-50 active:scale-[0.99]"
+                        }, isAnimActive
+                          ? __alloT('stem.rocks.cooling_ellipsis', "Cooling...")
+                          : "⚡ " + (animProgress >= 100
+                            ? __alloT('stem.rocks.replay_solidification', "Replay solidification")
+                            : __alloT('stem.rocks.run_solidification', "Run solidification")))
+                      ),
+
+                      React.createElement("div", { className: "w-full order-1" },
+                        React.createElement("p", { className: "text-xs font-black text-slate-800 mb-1.5" },
+                          __alloT('stem.rocks.cooling_choose_rate', "Cooling history controls")
+                        ),
+                        React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-2 gap-2 mb-3", role: "group", "aria-label": __alloT('stem.rocks.cooling_rate_group', "Cooling history") },
                           speeds.map(function(s) {
+                            var selected = coolingSpeed === s.id;
                             return React.createElement("button", {
-                              key: s.id,
+                              key: s.id, type: "button", disabled: isAnimActive,
+                              "aria-pressed": selected,
                               onClick: function() { updMulti({ coolingSpeed: s.id, coolingProgress: 0, coolingAnimActive: false }); sfxRockClick(); },
-                              className: "p-1 rounded text-[10px] font-bold text-center border transition-all " +
-                                (coolingSpeed === s.id ? "bg-amber-100 border-amber-500 text-amber-800" : "transition-colors bg-slate-50 border-slate-200 text-slate-600 hover:border-amber-200")
+                              className: "min-h-[48px] px-2.5 py-2 rounded-lg text-xs font-bold text-center border transition-all disabled:opacity-50 " +
+                                (selected ? "bg-amber-100 border-amber-500 text-amber-900 shadow-sm" : "bg-slate-50 border-slate-200 text-slate-700 hover:border-amber-300 hover:bg-amber-50")
                             }, s.label);
                           })
                         ),
-                        React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed font-semibold" }, currentSpeed.desc)
+                        React.createElement("p", { className: "text-sm text-slate-800 leading-relaxed font-semibold mb-3" }, currentSpeed.desc),
+                        React.createElement("dl", { className: "grid gap-2 sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3" },
+                          React.createElement("div", { className: "rounded-lg border border-slate-200 bg-slate-50 p-2.5" },
+                            React.createElement("dt", { className: "text-xs font-black uppercase tracking-wide text-slate-600" }, __alloT('stem.rocks.cooling_environment', "Environment")),
+                            React.createElement("dd", { className: "mt-1 text-xs font-semibold text-slate-800 leading-relaxed" }, currentSpeed.where)
+                          ),
+                          React.createElement("div", { className: "rounded-lg border border-slate-200 bg-slate-50 p-2.5" },
+                            React.createElement("dt", { className: "text-xs font-black uppercase tracking-wide text-slate-600" }, __alloT('stem.rocks.cooling_atom_time', "Time for atoms")),
+                            React.createElement("dd", { className: "mt-1 text-xs font-semibold text-slate-800 leading-relaxed" }, currentSpeed.atoms)
+                          ),
+                          React.createElement("div", { className: "rounded-lg border border-slate-200 bg-slate-50 p-2.5" },
+                            React.createElement("dt", { className: "text-xs font-black uppercase tracking-wide text-slate-600" }, __alloT('stem.rocks.cooling_result_texture', "Resulting texture")),
+                            React.createElement("dd", { className: "mt-1 text-xs font-semibold text-slate-800 leading-relaxed" }, currentSpeed.texture)
+                          )
+                        ),
+                        React.createElement("p", { className: "mt-2 text-xs text-slate-700" },
+                          React.createElement("span", { className: "font-black text-slate-900" }, __alloT('stem.rocks.cooling_example', "Rock examples: ")),
+                          currentSpeed.example
+                        )
+                      )
+                    ),
+
+                    React.createElement("div", { className: "mt-3 rounded-xl border border-orange-200 bg-orange-50 p-3" },
+                      React.createElement("p", { className: "text-xs font-black text-orange-900" }, __alloT('stem.rocks.cooling_why_title', "Why geologists care")),
+                      React.createElement("p", { className: "mt-1 text-xs text-slate-700 leading-relaxed" },
+                        __alloT('stem.rocks.cooling_why', "Crystal size is a record of cooling history. Large visible crystals point to slow cooling underground; microscopic crystals point to fast cooling after eruption; glass records quenching so rapid that crystals never formed. Cooling rate controls texture, while magma chemistry helps determine which minerals and rock name result.")
+                      ),
+                      React.createElement("p", { className: "mt-2 text-xs font-bold text-orange-900" },
+                        __alloT('stem.rocks.cooling_compare_prompt', "Try Slow and Quenched back-to-back: which result has visible crystals, and what did the atoms have time to do?")
                       )
                     )
                   );
@@ -5781,6 +5960,263 @@ const d = labToolData.rocks || {};
             })(),
 
 
+
+            // ── Workbench mode: evidence-first mineral identification ──
+            // The scratch/fizz primitives elsewhere in this tool demonstrate a
+            // KNOWN mineral's properties. The workbench inverts that: an unknown
+            // specimen, a tray of instruments, a notebook that fills with the
+            // student's own observations, and an identification earned from
+            // evidence. All interactions are buttons (no drag requirement), every
+            // async completion is try/finally-guarded so a busy flag can never
+            // latch, and the candidate order is shuffled once per specimen draw.
+            mode === 'workbench' && (function () {
+              rkEnsureBenchCss();
+              if (typeof document !== 'undefined') {
+                var wbCssHost = document.getElementById('rock-a11y');
+                if (wbCssHost && !wbCssHost._rkWbCss) {
+                  wbCssHost._rkWbCss = true;
+                  wbCssHost.textContent += [
+                    '@keyframes rkWbSwing{0%,100%{transform:rotate(-8deg)}50%{transform:rotate(8deg)}}',
+                    '@keyframes rkWbTug{0%{transform:translateX(0)}60%{transform:translateX(26px)}100%{transform:translateX(22px)}}',
+                    '@keyframes rkWbShake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}',
+                    '@keyframes rkWbPop{0%{transform:scale(.6);opacity:0}70%{transform:scale(1.08)}100%{transform:scale(1);opacity:1}}',
+                    '@keyframes rkWbShine{0%{opacity:.15}50%{opacity:.55}100%{opacity:.15}}',
+                    '@keyframes rkWbDrip{0%{transform:translateY(-18px);opacity:0}30%{opacity:1}100%{transform:translateY(6px);opacity:0}}',
+                    '.rk-wb-swing{animation:rkWbSwing .9s ease-in-out infinite;transform-origin:50% 10%}',
+                    '.rk-wb-tug{animation:rkWbTug 1s ease-out forwards}',
+                    '.rk-wb-shake{animation:rkWbShake .35s ease-in-out 2}',
+                    '.rk-wb-pop{animation:rkWbPop .45s ease-out forwards}',
+                    '.rk-wb-shine{animation:rkWbShine 2.6s ease-in-out infinite}',
+                    '.rk-wb-drip{animation:rkWbDrip .8s ease-in infinite}'
+                  ].join('');
+                }
+              }
+
+              var wb = d.wb || {};
+              var updWb = function (patch) {
+                setLabToolData(function (prev) {
+                  var pr = (prev && prev.rocks) || {};
+                  var pw = pr.wb || {};
+                  var next = { ...pw, ...patch };
+                  return { ...prev, rocks: { ...pr, wb: next } };
+                });
+              };
+              var wbSay = function (msg) { if (typeof announceToSR === 'function') { try { announceToSR(msg); } catch (e) {} } };
+
+              // Specimen pool: minerals with distinct, testable signatures.
+              var WB_POOL = ['quartz', 'feldspar', 'mica', 'calcite', 'halite', 'pyrite', 'talc', 'gypsum', 'magnetite', 'hematite', 'galena', 'fluorite'];
+              var wbMineral = function (id) { for (var i = 0; i < MINERALS.length; i++) { if (MINERALS[i].id === id) return MINERALS[i]; } return null; };
+              var WB_CARBONATES = ['calcite']; // keep in step with RK_CARBONATES
+              var WB_MAGNETIC = ['magnetite'];
+              var WB_REFS = [
+                { id: 'fingernail', label: '💅 ' + __alloT('stem.rocks.tool_fingernail', 'Fingernail'), h: 2.5 },
+                { id: 'penny', label: '🪙 ' + __alloT('stem.rocks.tool_copper_penny', 'Copper Penny'), h: 3.5 },
+                { id: 'steel_nail', label: '📌 ' + __alloT('stem.rocks.tool_steel_nail', 'Steel Nail'), h: 5.5 },
+                { id: 'streak_plate', label: '🍽️ ' + __alloT('stem.rocks.tool_streak_plate', 'Streak Plate'), h: 6.5 },
+                { id: 'drill_bit', label: '🪚 ' + __alloT('stem.rocks.tool_masonry_drill', 'Masonry Drill'), h: 8.5 },
+                { id: 'diamond_scribe', label: '💎 ' + __alloT('stem.rocks.tool_diamond_scribe', 'Diamond Scribe'), h: 10.0 }
+              ];
+
+              var wbShuffle = function (list) {
+                var a = list.slice();
+                for (var i = a.length - 1; i > 0; i--) {
+                  var j = Math.floor(Math.random() * (i + 1));
+                  var t2 = a[i]; a[i] = a[j]; a[j] = t2;
+                }
+                return a;
+              };
+              var wbDraw = function () {
+                var order = wbShuffle(WB_POOL);
+                updWb({
+                  spId: order[Math.floor(Math.random() * order.length)],
+                  order: order, scratch: {}, streakDone: false, fizz: null, magnet: null, density: false,
+                  lens: false, guessedWrong: [], solvedId: null, anim: null,
+                  solved: (wb.solved || 0), attempts: (wb.attempts || 0)
+                });
+                wbSay(__alloT('stem.rocks.wb_new_specimen_sr', 'A new unknown specimen is on the bench. Choose an instrument to begin testing.'));
+              };
+
+              var sp = wb.spId ? wbMineral(wb.spId) : null;
+              var spIsCarb = sp ? WB_CARBONATES.indexOf(sp.id) !== -1 : false;
+              var spIsMag = sp ? WB_MAGNETIC.indexOf(sp.id) !== -1 : false;
+
+              // A tiny stable hash so each specimen gets its own silhouette.
+              var wbHash = 0; if (sp) { for (var hI = 0; hI < sp.id.length; hI++) { wbHash = (wbHash * 31 + sp.id.charCodeAt(hI)) % 997; } }
+              var wbJit = function (n, amp) { return ((wbHash * (n + 3) * 7919) % 100) / 100 * amp - amp / 2; };
+
+              // Evidence, derived once for the notebook and the candidate filter.
+              var wbEvidence = [];
+              if (wb.streakDone && sp) wbEvidence.push({ k: 'streak', text: __alloT('stem.rocks.wb_ev_streak', 'Streak: ') + sp.streak, test: function (m) { return m.streak === sp.streak; } });
+              (function () {
+                var sc = wb.scratch || {};
+                for (var i = 0; i < WB_REFS.length; i++) {
+                  var ref = WB_REFS[i];
+                  if (!sc[ref.id]) continue;
+                  var marked = sc[ref.id] === 'scratched';
+                  wbEvidence.push({
+                    k: 'scratch_' + ref.id,
+                    text: ref.label.replace(/^\S+\s/, '') + ': ' + (marked ? __alloT('stem.rocks.wb_ev_marked', 'left a scratch') : __alloT('stem.rocks.wb_ev_nomark', 'no mark')),
+                    test: (function (r, wasMarked) { return function (m) { return (r.h > m.hardness) === wasMarked; }; })(ref, marked)
+                  });
+                }
+              })();
+              if (wb.fizz && sp) wbEvidence.push({ k: 'fizz', text: wb.fizz === 'fizz' ? __alloT('stem.rocks.wb_ev_fizz', 'Acid: fizzes (carbonate)') : __alloT('stem.rocks.wb_ev_nofizz', 'Acid: no reaction'), test: function (m) { return (WB_CARBONATES.indexOf(m.id) !== -1) === (wb.fizz === 'fizz'); } });
+              if (wb.magnet && sp) wbEvidence.push({ k: 'magnet', text: wb.magnet === 'pull' ? __alloT('stem.rocks.wb_ev_pull', 'Magnet: strong pull') : __alloT('stem.rocks.wb_ev_nopull', 'Magnet: no attraction'), test: function (m) { return (WB_MAGNETIC.indexOf(m.id) !== -1) === (wb.magnet === 'pull'); } });
+              if (wb.lens && sp) wbEvidence.push({ k: 'lens', text: __alloT('stem.rocks.wb_ev_lens', 'Lens: luster ') + sp.luster, test: function (m) { return m.luster === sp.luster; } });
+              if (wb.density && sp && sp.density) wbEvidence.push({ k: 'density', text: __alloT('stem.rocks.wb_ev_density', 'Density: about ') + sp.density.toFixed(2) + ' g/cm³' + (sp.density > 6.5 ? __alloT('stem.rocks.wb_ev_d_vheavy', ' (remarkably heavy)') : sp.density > 4.5 ? __alloT('stem.rocks.wb_ev_d_heavy', ' (noticeably heavy)') : ''), test: function (m) { return !m.density || Math.abs(m.density - sp.density) <= 0.25; } });
+
+              var wbFits = function (m) { for (var i = 0; i < wbEvidence.length; i++) { if (!wbEvidence[i].test(m)) return false; } return true; };
+              var wbRemaining = 0; (wb.order || []).forEach(function (id) { var m = wbMineral(id); if (m && wbFits(m)) wbRemaining++; });
+
+              // Hardness bracket from the scratch map, for the notebook summary.
+              var wbLo = 0, wbHi = 10.5;
+              (function () { var sc = wb.scratch || {}; for (var i = 0; i < WB_REFS.length; i++) { var r = WB_REFS[i]; if (sc[r.id] === 'scratched' && r.h < wbHi) wbHi = r.h; if (sc[r.id] === 'no' && r.h > wbLo) wbLo = r.h; } })();
+
+              var wbBusy = !!wb.anim;
+              var wbRun = function (kind, ms, finish) {
+                if (wbBusy) return;
+                sfxRockClick();
+                updWb({ anim: kind });
+                setTimeout(function () {
+                  try { finish(); } finally { updWb({ anim: null }); }
+                }, ms);
+              };
+
+              // ── The bench itself: SVG scene ──
+              var wbBench = sp && React.createElement("svg", {
+                viewBox: "0 0 560 250", role: "img", className: "w-full rounded-xl",
+                "aria-label": __alloT('stem.rocks.wb_bench_aria', 'Laboratory bench with the unknown specimen. Test results are described in the field notebook below.'),
+                style: { display: 'block', maxHeight: 250, background: 'linear-gradient(180deg,#1e293b 0%,#334155 58%,#7c5a35 58%,#a97c4f 63%,#8a6540 100%)' }
+              },
+                // bench edge highlight + soft pool of light
+                React.createElement("rect", { x: 0, y: 145, width: 560, height: 4, fill: "#c99a68", opacity: 0.9 }),
+                React.createElement("ellipse", { cx: 280, cy: 175, rx: 190, ry: 26, fill: "#000", opacity: 0.28 }),
+                React.createElement("ellipse", { cx: 280, cy: 60, rx: 220, ry: 60, fill: "#f8fafc", opacity: 0.05 }),
+                // specimen: faceted cluster, colours from the mineral itself
+                React.createElement("g", { className: wb.anim === 'magnet' && spIsMag ? 'rk-wb-tug' : (wb.anim === 'wrong' ? 'rk-wb-shake' : undefined) },
+                  React.createElement("polygon", { points: (250 + wbJit(1, 14)) + ",168 " + (222 + wbJit(2, 10)) + "," + (128 + wbJit(3, 12)) + " " + (262 + wbJit(4, 10)) + "," + (96 + wbJit(5, 14)) + " " + (318 + wbJit(6, 12)) + "," + (112 + wbJit(7, 10)) + " " + (338 + wbJit(8, 10)) + ",168", fill: sp.color, stroke: "#0f172a", strokeWidth: 2.5, strokeLinejoin: "round" }),
+                  React.createElement("polygon", { points: "262,96 318,112 296,168 250,168", fill: "#000", opacity: 0.16 }),
+                  React.createElement("polygon", { points: "222,128 262,96 258,168 250,168", fill: "#fff", opacity: 0.13 }),
+                  React.createElement("ellipse", { className: "rk-wb-shine", cx: 268, cy: 118, rx: 22, ry: 9, fill: "#ffffff", opacity: 0.3, transform: "rotate(-18 268 118)" }),
+                  sp.luster === 'Metallic' || sp.luster === 'Metallic/Submetallic' ? React.createElement("ellipse", { cx: 300, cy: 132, rx: 9, ry: 4, fill: "#fff", opacity: 0.55, transform: "rotate(24 300 132)" }) : null
+                ),
+                // streak tile appears once the streak test has run
+                wb.streakDone ? React.createElement("g", null,
+                  React.createElement("rect", { x: 388, y: 120, width: 120, height: 52, rx: 6, fill: "#f8fafc", stroke: "#94a3b8", strokeWidth: 2 }),
+                  React.createElement("path", { className: wb.anim === 'streak' ? 'rk-smear' : undefined, d: "M400 152 C 424 138, 452 156, 496 140", fill: "none", stroke: (RK_STREAK_HEX[sp.streak] || '#cbd5e1'), strokeWidth: 9, strokeLinecap: "round", opacity: RK_STREAK_HEX[sp.streak] === '#ffffff' ? 0.95 : 0.9 }),
+                  RK_STREAK_HEX[sp.streak] === '#ffffff' ? React.createElement("path", { d: "M400 152 C 424 138, 452 156, 496 140", fill: "none", stroke: "#d7dde6", strokeWidth: 2, strokeDasharray: "3 5", opacity: 0.8 }) : null
+                ) : null,
+                // acid bubbles while the acid test runs
+                wb.anim === 'acid' ? React.createElement("g", null,
+                  React.createElement("path", { d: "M280 34 l7 14 a8 8 0 1 1 -14 0 z", fill: "#7dd3fc", stroke: "#0369a1", strokeWidth: 1.5 }),
+                  React.createElement("circle", { className: "rk-wb-drip", cx: 280, cy: 66, r: 3.4, fill: "#7dd3fc" }),
+                  spIsCarb ? [0, 1, 2, 3, 4, 5].map(function (i) {
+                    return React.createElement("circle", { key: 'b' + i, className: "rk-bubble", cx: 258 + i * 11, cy: 118, r: 3 + (i % 3) * 1.6, fill: "#e0f2fe", stroke: "#7dd3fc", strokeWidth: 1, style: { animationDelay: (i * 0.18) + 's' } });
+                  }) : null
+                ) : null,
+                // balance + displacement beaker while measuring density
+                wb.anim === 'density' ? React.createElement("g", { className: "rk-wb-pop" },
+                  React.createElement("path", { d: "M392 60 h84 v66 a10 10 0 0 1 -10 10 h-64 a10 10 0 0 1 -10 -10 z", fill: "#e0f2fe", stroke: "#0369a1", strokeWidth: 2.5, opacity: 0.9 }),
+                  React.createElement("rect", { x: 396, y: 96, width: 76, height: 36, fill: "#7dd3fc", opacity: 0.65 }),
+                  React.createElement("rect", { className: "rk-wb-shine", x: 396, y: 88, width: 76, height: 8, fill: "#bae6fd" }),
+                  React.createElement("polygon", { points: "424,104 414,122 444,122 434,104", fill: sp.color, stroke: "#0f172a", strokeWidth: 2 }),
+                  React.createElement("rect", { x: 402, y: 40, width: 64, height: 16, rx: 8, fill: "#0f172a", opacity: 0.85 }),
+                  React.createElement("text", { x: 434, y: 52, fontSize: 11, fill: "#f8fafc", textAnchor: "middle", fontWeight: 700 }, (sp.density || 0).toFixed(2) + ' g/cm³')
+                ) : null,
+                // magnet swings in over the specimen
+                wb.anim === 'magnet' ? React.createElement("text", { className: "rk-wb-swing", x: 348, y: 84, fontSize: 40 }, '🧲') : null,
+                // lens overlay: a magnified porthole showing luster + crystal habit
+                wb.anim === 'lens' ? React.createElement("g", { className: "rk-wb-pop" },
+                  React.createElement("circle", { cx: 280, cy: 118, r: 62, fill: sp.color, stroke: "#0f172a", strokeWidth: 5 }),
+                  React.createElement("circle", { cx: 280, cy: 118, r: 62, fill: "url(#rkWbLensGrad)", opacity: 0.35 }),
+                  [0, 1, 2, 3].map(function (i) { return React.createElement("line", { key: 'cl' + i, x1: 236 + i * 24 + wbJit(i, 8), y1: 74, x2: 252 + i * 22 + wbJit(i + 4, 8), y2: 160, stroke: "#0f172a", strokeWidth: 1.4, opacity: 0.35 }); }),
+                  React.createElement("ellipse", { cx: 258, cy: 96, rx: 16, ry: 7, fill: "#fff", opacity: sp.luster.indexOf('Metallic') !== -1 ? 0.75 : (sp.luster.indexOf('Vitreous') !== -1 ? 0.5 : 0.25), transform: "rotate(-20 258 96)" }),
+                  React.createElement("rect", { x: 216, y: 168, width: 128, height: 20, rx: 10, fill: "#0f172a", opacity: 0.85 }),
+                  React.createElement("text", { x: 280, y: 182, fontSize: 12, fill: "#f8fafc", textAnchor: "middle", fontWeight: 700 }, sp.luster)
+                ) : null,
+                React.createElement("defs", null, React.createElement("radialGradient", { id: "rkWbLensGrad" }, React.createElement("stop", { offset: "60%", stopColor: "#fff", stopOpacity: 0 }), React.createElement("stop", { offset: "100%", stopColor: "#fff", stopOpacity: 0.9 })))
+              );
+
+              var wbToolBtn = function (opts) {
+                return React.createElement("button", {
+                  key: opts.key, disabled: wbBusy || opts.done, onClick: opts.onClick,
+                  "aria-label": opts.aria, title: opts.aria,
+                  className: "px-2.5 py-2 rounded-lg text-[12px] font-bold border transition-all min-h-[44px] " + (opts.done ? "bg-emerald-50 border-emerald-300 text-emerald-800" : "bg-white border-slate-300 text-slate-700 hover:border-amber-400 hover:-translate-y-0.5 hover:shadow-md")
+                }, (opts.done ? '✓ ' : '') + opts.label);
+              };
+
+              return React.createElement("div", { className: "space-y-3" },
+                !sp ? React.createElement("div", { className: "rounded-2xl border-2 border-amber-300 p-6 text-center", style: { background: 'linear-gradient(160deg,#fffbeb,#fef3c7)' } },
+                  React.createElement("div", { style: { fontSize: 46 } }, '🔬'),
+                  React.createElement("h3", { className: "text-lg font-black text-amber-900 mt-1" }, __alloT('stem.rocks.wb_intro_title', 'The Mineral Workbench')),
+                  React.createElement("p", { className: "text-[13px] text-amber-900 max-w-md mx-auto mt-1" }, __alloT('stem.rocks.wb_intro_body', 'An unknown specimen, real instruments, and a field notebook. Run the tests a geologist would, watch your evidence eliminate suspects, then name the mineral.')),
+                  React.createElement("button", { className: "mt-4 px-5 py-2.5 rounded-xl bg-amber-600 text-white font-black shadow hover:bg-amber-700 min-h-[44px]", onClick: wbDraw }, __alloT('stem.rocks.wb_open', '🪨 Put a specimen on the bench'))
+                ) : React.createElement(React.Fragment, null,
+                  wbBench,
+                  React.createElement("div", { className: "grid md:grid-cols-3 gap-3" },
+                    // Instrument tray
+                    React.createElement("div", { className: "rounded-xl border border-slate-200 bg-white p-3 md:col-span-1" },
+                      React.createElement("h4", { className: "text-[12px] font-black text-slate-700 uppercase tracking-wide mb-2" }, '🧰 ' + __alloT('stem.rocks.wb_tray', 'Instrument tray')),
+                      React.createElement("div", { className: "grid grid-cols-2 gap-1.5" },
+                        wbToolBtn({ key: 'streak', label: '🍽️ ' + __alloT('stem.rocks.wb_t_streak', 'Streak plate'), done: !!wb.streakDone, aria: __alloT('stem.rocks.wb_t_streak_aria', 'Drag the specimen across the streak plate'), onClick: function () { wbRun('streak', 900, function () { updWb({ streakDone: true }); sfxRockCrack(); wbSay(__alloT('stem.rocks.wb_sr_streak', 'Streak test complete. The powder trail is ') + sp.streak + '.'); }); } }),
+                        wbToolBtn({ key: 'acid', label: '🧪 ' + __alloT('stem.rocks.wb_t_acid', 'Acid dropper'), done: !!wb.fizz, aria: __alloT('stem.rocks.wb_t_acid_aria', 'Apply a drop of dilute hydrochloric acid'), onClick: function () { wbRun('acid', 1400, function () { var r = spIsCarb ? 'fizz' : 'none'; updWb({ fizz: r }); (spIsCarb ? sfxRockCool : sfxRockClick)(); wbSay(r === 'fizz' ? __alloT('stem.rocks.wb_sr_fizz', 'The acid fizzes. Carbon dioxide bubbles mean a carbonate mineral.') : __alloT('stem.rocks.wb_sr_nofizz', 'No reaction to the acid.')); }); } }),
+                        wbToolBtn({ key: 'magnet', label: '🧲 ' + __alloT('stem.rocks.wb_t_magnet', 'Magnet'), done: !!wb.magnet, aria: __alloT('stem.rocks.wb_t_magnet_aria', 'Bring a magnet close to the specimen'), onClick: function () { wbRun('magnet', 1100, function () { var r = spIsMag ? 'pull' : 'none'; updWb({ magnet: r }); wbSay(r === 'pull' ? __alloT('stem.rocks.wb_sr_pull', 'The specimen jumps to the magnet. Strongly magnetic.') : __alloT('stem.rocks.wb_sr_nopull', 'The magnet has no effect.')); }); } }),
+                        wbToolBtn({ key: 'lens', label: '🔍 ' + __alloT('stem.rocks.wb_t_lens', 'Hand lens'), done: !!wb.lens, aria: __alloT('stem.rocks.wb_t_lens_aria', 'Examine the surface with a hand lens'), onClick: function () { wbRun('lens', 1600, function () { updWb({ lens: true }); wbSay(__alloT('stem.rocks.wb_sr_lens', 'Under the lens the luster is ') + sp.luster + '. ' + __alloT('stem.rocks.wb_sr_lens2', 'Crystal habit: ') + sp.crystal + '.'); }); } }),
+                        wbToolBtn({ key: 'balance', label: '⚖️ ' + __alloT('stem.rocks.wb_t_balance', 'Balance and beaker'), done: !!wb.density, aria: __alloT('stem.rocks.wb_t_balance_aria', 'Weigh the specimen and measure displacement to find density'), onClick: function () { wbRun('density', 1800, function () { updWb({ density: true }); sfxRockCool(); wbSay(__alloT('stem.rocks.wb_sr_density', 'Mass over displaced volume gives a density of about ') + (sp.density || 0).toFixed(2) + ' g/cm³.'); }); } })
+                      ),
+                      React.createElement("p", { className: "text-[11px] font-black text-slate-600 uppercase tracking-wide mt-3 mb-1.5" }, '🪛 ' + __alloT('stem.rocks.wb_scratch_set', 'Scratch set, hardest tool that fails brackets the hardness')),
+                      React.createElement("div", { className: "grid grid-cols-2 gap-1.5" },
+                        WB_REFS.map(function (ref) {
+                          var res = (wb.scratch || {})[ref.id];
+                          return wbToolBtn({ key: ref.id, label: ref.label + (res ? (res === 'scratched' ? ' · ✓' : ' · ✗') : ''), done: !!res, aria: __alloT('stem.rocks.wb_scratch_aria', 'Try to scratch the specimen with ') + ref.label, onClick: function () { wbRun('scratch', 800, function () { var marked = ref.h > sp.hardness; var sc = { ...(wb.scratch || {}) }; sc[ref.id] = marked ? 'scratched' : 'no'; updWb({ scratch: sc }); sfxRockCrack(); wbSay(marked ? __alloT('stem.rocks.wb_sr_scratched', 'It left a scratch. The specimen is softer than ') + ref.h + '.' : __alloT('stem.rocks.wb_sr_not_scratched', 'No mark. The specimen is at least as hard as ') + ref.h + '.'); }); } });
+                        })
+                      )
+                    ),
+                    // Field notebook
+                    React.createElement("div", { className: "rounded-xl border border-amber-200 p-3 md:col-span-1", style: { background: 'repeating-linear-gradient(180deg,#fffbeb,#fffbeb 26px,#fde68a22 27px)' } },
+                      React.createElement("h4", { className: "text-[12px] font-black text-amber-900 uppercase tracking-wide mb-2" }, '📓 ' + __alloT('stem.rocks.wb_notebook', 'Field notebook')),
+                      wbEvidence.length === 0 ? React.createElement("p", { className: "text-[12px] text-amber-800 italic" }, __alloT('stem.rocks.wb_notebook_empty', 'No observations yet. Every test you run is recorded here, in your own evidence.')) :
+                        React.createElement("ul", { className: "space-y-1" }, wbEvidence.map(function (ev) { return React.createElement("li", { key: ev.k, className: "text-[12.5px] text-amber-950 font-semibold rk-wb-pop" }, '✓ ' + ev.text); })),
+                      (wbLo > 0 || wbHi < 10.5) ? React.createElement("p", { className: "text-[12px] text-amber-900 font-black mt-2 border-t border-amber-300 pt-2" }, '⛏️ ' + __alloT('stem.rocks.wb_bracket', 'Hardness bracket: ') + (wbLo > 0 ? wbLo : '0') + ' to ' + (wbHi < 10.5 ? wbHi : '10')) : null,
+                      React.createElement("p", { className: "text-[11px] text-amber-800 mt-2" }, __alloT('stem.rocks.wb_remaining', 'Suspects still fitting the evidence: ') + wbRemaining + ' / ' + (wb.order || []).length)
+                    ),
+                    // Suspect board
+                    React.createElement("div", { className: "rounded-xl border border-slate-200 bg-white p-3 md:col-span-1" },
+                      React.createElement("h4", { className: "text-[12px] font-black text-slate-700 uppercase tracking-wide mb-2" }, '🕵️ ' + __alloT('stem.rocks.wb_suspects', 'Name that mineral')),
+                      wb.solvedId ? React.createElement("div", { className: "rounded-xl border-2 border-emerald-300 bg-emerald-50 p-3 text-center rk-wb-pop" },
+                        React.createElement("div", { style: { fontSize: 34 } }, '🏆'),
+                        React.createElement("p", { className: "text-[13px] font-black text-emerald-900" }, __alloT('stem.rocks.wb_solved', 'Identified: ') + (wbMineral(wb.solvedId) || {}).label),
+                        React.createElement("p", { className: "text-[11.5px] text-emerald-800 mt-1" }, __alloT('stem.rocks.wb_solved_body', 'Named from ') + wbEvidence.length + __alloT('stem.rocks.wb_solved_body2', ' pieces of your own evidence. Solved so far: ') + (wb.solved || 0) + '.'),
+                        React.createElement("button", { className: "mt-2 px-4 py-2 rounded-lg bg-emerald-600 text-white font-black min-h-[44px]", onClick: wbDraw }, __alloT('stem.rocks.wb_next', '🔄 Next specimen'))
+                      ) : React.createElement("div", { className: "grid grid-cols-2 gap-1.5" },
+                        (wb.order || []).map(function (id) {
+                          var m = wbMineral(id); if (!m) return null;
+                          var out = !wbFits(m);
+                          var wrong = (wb.guessedWrong || []).indexOf(id) !== -1;
+                          return React.createElement("button", {
+                            key: id, disabled: wbBusy || out || wrong,
+                            className: "px-2 py-1.5 rounded-lg text-[11.5px] font-bold border min-h-[38px] transition-all " + (out || wrong ? "bg-slate-100 border-slate-200 text-slate-400 line-through" : "bg-white border-slate-300 text-slate-800 hover:border-violet-400 hover:shadow"),
+                            "aria-label": (out ? __alloT('stem.rocks.wb_out_aria', 'Eliminated by your evidence: ') : __alloT('stem.rocks.wb_guess_aria', 'Identify the specimen as ')) + m.label,
+                            onClick: function () {
+                              if (id === sp.id) {
+                                sfxRockCorrect();
+                                updWb({ solvedId: id, solved: (wb.solved || 0) + 1, attempts: (wb.attempts || 0) + 1 });
+                                setTimeout(function () { try { checkRocksChallenges({ ...d, wb: { ...wb, solvedId: id, solved: (wb.solved || 0) + 1 } }); } catch (e) {} }, 60);
+                                wbSay(__alloT('stem.rocks.wb_sr_solved', 'Correct. The specimen is ') + m.label + '.');
+                              } else {
+                                updWb({ guessedWrong: (wb.guessedWrong || []).concat([id]), attempts: (wb.attempts || 0) + 1, anim: 'wrong' });
+                                setTimeout(function () { try { wbSay(__alloT('stem.rocks.wb_sr_wrong', 'Not ') + m.label + '. ' + __alloT('stem.rocks.wb_sr_wrong2', 'Your evidence still fits it, so run a test that would tell them apart.')); } finally { updWb({ anim: null }); } }, 700);
+                              }
+                            }
+                          }, m.label);
+                        })
+                      ),
+                      !wb.solvedId ? React.createElement("p", { className: "text-[10.5px] text-slate-500 mt-2" }, __alloT('stem.rocks.wb_hint', 'Greyed suspects were eliminated by your own notebook. A wrong guess is not revealed, it is crossed off.')) : null
+                    )
+                  )
+                )
+              );
+            })(),
 
             // ── Quiz mode ──
 

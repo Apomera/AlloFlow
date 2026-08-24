@@ -519,6 +519,7 @@
     icon: '\u2302',
     desc: 'Plan an accessible semantic building model, approve every proposed change, and prepare an open IFC project for Bonsai.',
     category: 'engineering',
+    gradeRange: '9-12',
     aliases: ['Bonsai', 'BIM', 'OpenBIM', 'IFC', 'architecture', 'building information modeling', 'blueprint'],
     questHooks: [
       { id: 'draft_bim', label: 'Draft a semantic building proposal', icon: '\u2302', check: function (d) { return !!d.proposal; }, progress: function (d) { return d.proposal ? 'Draft ready' : 'Not started'; } },
@@ -539,10 +540,31 @@
       var aiAvailable = typeof ctx.generateText === 'function' || typeof ctx.callGemini === 'function';
       var announce = typeof ctx.announceToSR === 'function' ? ctx.announceToSR : function () {};
       var toast = typeof ctx.addToast === 'function' ? ctx.addToast : function () {};
+      // ★--allo-stem-surface DOES NOT EXIST. Only nine --allo-stem-* variables are
+      // ever defined (app_styles_module.js, ":root/.theme-dark/.theme-contrast") and
+      // "surface" is not one of them; the page ground is --allo-stem-canvas. Reading
+      // the phantom name pinned this tool's card to light #f4f7f8 in EVERY theme
+      // while the ink kept following the theme, so dark mode rendered #e2e8f0 on
+      // #f4f7f8 -- 1.14:1, invisible -- on the h2, the brief textarea and the three
+      // sample buttons. A phantom var fails silently: there is no warning, just the
+      // literal fallback frozen across all three themes.
+      var isDark = !!ctx.isDark;
+      var isContrast = !!ctx.isContrast;
+      // ★The accents cannot be flat constants either. #0f766e is 5.24:1 on the light
+      // panel but 3.11:1 on the dark canvas, so fixing the ground alone would have
+      // traded five invisible nodes for three merely-failing ones. Each accent
+      // branches per theme; contrast mode collapses them to the theme's yellow.
       var colors = {
         ink: 'var(--allo-stem-text, #162033)', soft: 'var(--allo-stem-text-soft, #526177)',
-        panel: 'var(--allo-stem-panel, #ffffff)', surface: 'var(--allo-stem-surface, #f4f7f8)',
-        border: 'var(--allo-stem-border, #b9c6d0)', teal: '#0f766e', cyan: '#155e75', gold: '#a16207'
+        panel: 'var(--allo-stem-panel, #f8fafc)', surface: 'var(--allo-stem-canvas, #ffffff)',
+        border: 'var(--allo-stem-border, #cbd5e1)',
+        teal: isContrast ? '#ffff00' : isDark ? '#5eead4' : '#0f766e',
+        cyan: isContrast ? '#ffff00' : isDark ? '#7dd3fc' : '#155e75',
+        gold: isContrast ? '#ffff00' : isDark ? '#fcd34d' : '#a16207',
+        chipBg: isContrast ? '#000000' : isDark ? '#134e4a' : '#ecfdf5',
+        chipInk: isContrast ? '#ffff00' : isDark ? '#99f6e4' : '#115e59',
+        chipBorder: isContrast ? '#ffff00' : isDark ? '#0f766e' : '#a7d5cf',
+        navActiveBg: isContrast ? '#000000' : isDark ? '#12303f' : '#e6f5f7'
       };
       var button = function (label, onClick, options) {
         var opts = options || {};
@@ -672,7 +694,7 @@
           el('p', { style: { margin: '0 0 4px', color: colors.teal, fontSize: 12, fontWeight: 900, letterSpacing: '.08em', textTransform: 'uppercase' } }, 'Open architecture pathway'),
           el('h2', { style: { margin: 0, color: colors.ink, fontSize: 25, lineHeight: 1.15 } }, 'OpenBIM Companion'),
           el('p', { style: { margin: '7px 0 0', color: colors.soft, maxWidth: 720, lineHeight: 1.5 } }, 'Turn a design idea into an inspectable semantic building proposal, approve each inventory change, and prepare an IFC4 starter project for the open-source Bonsai authoring environment.')),
-        el('div', { style: { border: '1px solid #a7d5cf', background: '#ecfdf5', color: '#115e59', borderRadius: 999, padding: '6px 10px', fontSize: 12, fontWeight: 900 } }, 'Open formats | Human approval')
+        el('div', { style: { border: '1px solid ' + colors.chipBorder, background: colors.chipBg, color: colors.chipInk, borderRadius: 999, padding: '6px 10px', fontSize: 12, fontWeight: 900 } }, 'Open formats | Human approval')
       );
 
       var nav = el('nav', { 'aria-label': 'OpenBIM workflow', style: { display: 'flex', gap: 7, flexWrap: 'wrap', margin: '16px 0' } },
@@ -681,7 +703,7 @@
           return el('button', {
             key: entry[0], type: 'button', disabled: !available, onClick: function () { if (available) update({ stage: entry[0] }); },
             'aria-current': stage === entry[0] ? 'step' : undefined,
-            style: { padding: '7px 11px', borderRadius: 999, border: '1px solid ' + (stage === entry[0] ? colors.cyan : colors.border), background: stage === entry[0] ? '#e6f5f7' : colors.panel, color: stage === entry[0] ? colors.cyan : colors.soft, fontSize: 12, fontWeight: 850, cursor: available ? 'pointer' : 'not-allowed', opacity: available ? 1 : .5 }
+            style: { padding: '7px 11px', borderRadius: 999, border: '1px solid ' + (stage === entry[0] ? colors.cyan : colors.border), background: stage === entry[0] ? colors.navActiveBg : colors.panel, color: stage === entry[0] ? colors.cyan : colors.soft, fontSize: 12, fontWeight: 850, cursor: available ? 'pointer' : 'not-allowed', opacity: available ? 1 : .5 }
           }, entry[1]);
         })
       );
@@ -745,7 +767,7 @@
           ),
           card(
             el('h3', { style: { margin: '0 0 7px', color: colors.ink, fontSize: 16 } }, 'Model-readiness questions'),
-            readiness.checks.length > 0 && el('p', { style: { margin: '0 0 7px', color: '#115e59', fontSize: 12, lineHeight: 1.5, fontWeight: 750 } }, readiness.checks.join(' ')),
+            readiness.checks.length > 0 && el('p', { style: { margin: '0 0 7px', color: colors.teal, fontSize: 12, lineHeight: 1.5, fontWeight: 750 } }, readiness.checks.join(' ')),
             el('ul', { style: { margin: 0, paddingLeft: 19, color: colors.soft, fontSize: 12, lineHeight: 1.55 } }, readiness.questions.map(function (item) { return el('li', { key: item }, item); })),
             el('p', { style: { margin: '8px 0 0', color: colors.gold, fontSize: 11, lineHeight: 1.45 } }, 'These prompts support review; they are not code or safety checks.')
           )
@@ -755,7 +777,7 @@
             el('div', null,
               el('h3', { style: { margin: 0, color: colors.ink, fontSize: 18 } }, 'Review the semantic inventory'),
               el('p', { style: { margin: '5px 0 10px', color: colors.soft, fontSize: 12 } }, proposal.proposalSource + '. Adjust counts or remove an inventory row before approval.')),
-            el('span', { style: { color: '#115e59', background: '#ecfdf5', border: '1px solid #a7d5cf', borderRadius: 999, padding: '4px 8px', fontSize: 11, fontWeight: 900 } }, 'Allowlisted IFC classes')
+            el('span', { style: { color: colors.chipInk, background: colors.chipBg, border: '1px solid ' + colors.chipBorder, borderRadius: 999, padding: '4px 8px', fontSize: 11, fontWeight: 900 } }, 'Allowlisted IFC classes')
           ),
           el('div', { style: { overflowX: 'auto' } },
             el('table', { style: { width: '100%', borderCollapse: 'collapse', color: colors.ink, fontSize: 12 } },
@@ -844,7 +866,7 @@
         el('main', { className: 'ob-shell' },
           header,
           nav,
-          state.statusMessage && el('div', { role: 'status', 'aria-live': 'polite', style: { marginBottom: 12, borderLeft: '4px solid ' + colors.teal, background: '#eaf7f5', color: '#134e4a', borderRadius: 7, padding: '9px 11px', fontSize: 12, fontWeight: 750 } }, state.statusMessage),
+          state.statusMessage && el('div', { role: 'status', 'aria-live': 'polite', style: { marginBottom: 12, borderLeft: '4px solid ' + colors.teal, background: colors.chipBg, color: colors.chipInk, borderRadius: 7, padding: '9px 11px', fontSize: 12, fontWeight: 750 } }, state.statusMessage),
           briefStage,
           reviewStage,
           exportStage,

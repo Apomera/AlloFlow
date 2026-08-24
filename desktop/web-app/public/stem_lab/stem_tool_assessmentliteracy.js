@@ -8536,7 +8536,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
   // ═══════════════════════════════════════════════════════════════
 
   window.StemLab.registerTool('assessmentLiteracy', {
-    icon: '\uD83D\uDCCA',
+    icon: '\uD83D\uDCCB',
     label: 'Assessment Literacy Lab',
     desc: 'Learn how cognitive, personality, career, and employer tests actually work — build mock batteries, critique pseudoscience, coach yourself ethically for hiring tests.',
     color: 'indigo',
@@ -8635,11 +8635,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
         ];
         return h('div', { className: 'max-w-4xl mx-auto p-4 md:p-6' },
           h('header', { className: 'mb-6' },
-            h('h1', { className: 'text-2xl md:text-3xl font-black text-indigo-200 mb-2' }, __alloT('stem.assessmentliteracy.assessment_literacy_lab', '\uD83D\uDCCA Assessment Literacy Lab')),
-            h('p', { className: 'text-sm text-slate-300 leading-relaxed' },
+            h('h1', { className: 'text-2xl md:text-3xl font-black text-indigo-900 mb-2' }, __alloT('stem.assessmentliteracy.assessment_literacy_lab', '\uD83D\uDCCA Assessment Literacy Lab')),
+            h('p', { className: 'text-sm text-slate-700 leading-relaxed' },
               __alloT('stem.assessmentliteracy.this_tool_doesn_t_measure_you_it_teach', 'This tool doesn\'t measure you. It teaches you how measurement claims are made — and how to tell a validated instrument from a persuasive-sounding one. Build mock batteries. Critique your own results. Learn to navigate employer tests ethically and strategically.')
             ),
-            h('div', { className: 'mt-3 p-3 rounded-lg bg-indigo-900/30 border border-indigo-500/30 text-xs text-indigo-200' },
+            h('div', { className: 'mt-3 p-3 rounded-lg bg-indigo-50 border border-indigo-200 text-xs text-indigo-900' },
               h('strong', null, __alloT('stem.assessmentliteracy.design_principle', 'Design principle: ')), __alloT('stem.assessmentliteracy.every_inventory_here_is_for_education_', 'Every inventory here is for education and self-reflection, not diagnosis. Real clinical/educational decisions require a qualified professional administering a full validated battery.')
             )
           ),

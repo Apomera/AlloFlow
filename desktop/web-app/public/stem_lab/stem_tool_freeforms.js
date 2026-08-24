@@ -90,7 +90,15 @@ window.StemLab = window.StemLab || {
     var st = document.createElement('style');
     st.id = 'allo-freeforms-css';
     st.textContent = [
-      '#allo-free-forms { color: #f8fafc; }',
+      // ★The root declared an INK but no GROUND. This tool is dark-authored throughout
+      // -- bg-slate-900, bg-slate-800/70, bg-amber-950/60 and 30 uses of the
+      // -100/-200/-300/-400 text shades -- and the host card is white in the light
+      // theme and white again in dark (stem_lab_module.js ~1633). So the /70 alphas
+      // composited over white to a mid-grey #626976 with slate-400 on it at 2.56:1,
+      // and the title sat on bare white at 1.38:1. Giving the alphas the dark ground
+      // they were mixed against fixes all 17 at once, and it belongs HERE rather than
+      // on a return: two branches render with this same id.
+      '#allo-free-forms { color: #f8fafc; background: #0f172a; border-radius: 12px; }',
       '#allo-free-forms button:focus-visible, #allo-free-forms input:focus-visible, #allo-free-forms select:focus-visible, #allo-free-forms textarea:focus-visible { outline: 3px solid #facc15 !important; outline-offset: 2px !important; box-shadow: 0 0 0 5px rgba(250,204,21,0.28) !important; }',
       '#allo-free-forms input::placeholder, #allo-free-forms textarea::placeholder { color: #cbd5e1 !important; opacity: 1 !important; }',
       '#allo-free-forms .ff-sidebar .text-slate-500 { color: #94a3b8 !important; }',
@@ -450,9 +458,31 @@ window.StemLab = window.StemLab || {
   // ═══ TOOL REGISTRATION ═══════════════════════════════════════════════
 
   window.StemLab.registerTool('freeForms', {
-    icon: '\u{1F3DB}️', label: 'Free Forms',
+    icon: '\uD83E\uDDFE', label: 'Free Forms',
     desc: 'Build your own World of Forms: fill an archetypal 3D structure (Venn, story mountain, fishbone…) with your OWN ideas, sculpt them, and get AI coaching on the whole composition.',
     color: 'violet', category: 'creative',
+    gradeRange: '4-12',
+    aliases: ['graphic organizer', 'venn diagram', 'story mountain', 'fishbone', 'concept map', 'world of forms', 'mind map'],
+    // This tool had NO learning contract: no quest hooks, no definition of what a
+    // good structure contains, and the only feedback loop was the optional AI coach.
+    // These hooks are checkable from the groups doc alone -- no model involved -- and
+    // encode the minimum that makes a graphic organizer an organizer: multiple groups,
+    // populated groups, and at least one deliberate spatial arrangement pass.
+    questDataKey: 'freeForms',
+    questHooks: [
+      { id: 'ff_structure', label: 'Create a structure with 3 or more groups', icon: '🌳',
+        check: function (d) { return !!(d && d.groups && d.groups.length >= 3); },
+        progress: function (d) { return Math.min(3, (d && d.groups && d.groups.length) || 0) + '/3 groups'; } },
+      { id: 'ff_populate', label: 'Put 2+ of your own ideas in every group', icon: '🧾',
+        check: function (d) { var g = (d && d.groups) || []; return g.length >= 2 && g.every(function (x) { return x.items && x.items.length >= 2; }); },
+        progress: function (d) { var g = (d && d.groups) || []; var done = g.filter(function (x) { return x.items && x.items.length >= 2; }).length; return done + '/' + Math.max(2, g.length) + ' groups filled'; } },
+      { id: 'ff_arrange', label: 'Arrange your ideas in 3D space', icon: '🔗',
+        check: function (d) { return !!(d && d.arrangement); },
+        progress: function (d) { return (d && d.arrangement) ? 'Arranged' : 'Not yet'; } },
+      { id: 'ff_sculpt', label: 'Sculpt at least one idea into an object', icon: '🎨',
+        check: function (d) { return !!(d && d.nodeArt && Object.keys(d.nodeArt).length >= 1); },
+        progress: function (d) { return Object.keys((d && d.nodeArt) || {}).length + ' sculpted'; } }
+    ],
 
     init: function(ctx) {
       ensureConceptGraph(function(ok) {

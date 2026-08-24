@@ -932,8 +932,15 @@
     // INDIVIDUALLY first, so one bad file cannot poison the union, and a
     // single registered snapshot behaves exactly as before.
     const registeredSnapshots = new Map();
+    // Lazy-rebuild flag: registrations mark the union stale instead of paying
+    // for the full stem/index build per registration. Three 2-5 MB snapshots
+    // register during app boot; the eager build-per-registration (plus a full
+    // throwaway index build used only for validation) produced multi-second
+    // main-thread long tasks in the first seconds of every session.
+    let registeredProviderDirty = false;
 
     function rebuildRegisteredProvider() {
+        registeredProviderDirty = false;
         if (registeredSnapshots.size === 0) { registeredProvider = null; return null; }
         const snapshots = Array.from(registeredSnapshots.values());
         if (snapshots.length === 1) {
@@ -987,15 +994,34 @@
         return registeredProvider;
     }
 
+    function scheduleIdleProviderRebuild() {
+        // Build the union index during browser idle time so the first consumer
+        // usually finds it ready without anyone paying for it mid-boot. The
+        // getRegisteredProvider() fallback below keeps correctness if a
+        // consumer arrives first (or no idle callback exists, as in tests).
+        const run = () => { if (registeredProviderDirty) rebuildRegisteredProvider(); };
+        if (root && typeof root.requestIdleCallback === 'function') root.requestIdleCallback(run, { timeout: 10000 });
+        else if (root && typeof root.setTimeout === 'function') root.setTimeout(run, 2000);
+    }
+
     function registerLocalSnapshot(snapshot) {
-        // validate the individual snapshot first — unchanged failure behavior
-        createLocalProvider(snapshot);
+        // Validate the individual snapshot first — unchanged failure behavior,
+        // but via validateSnapshot alone: the previous createLocalProvider call
+        // built a full throwaway search index just to validate.
+        const report = validateSnapshot(snapshot);
+        if (!report.ok) throw makeError('Invalid local standards snapshot.', report);
         const key = (snapshot && snapshot.dataset && snapshot.dataset.snapshotId) || ('unkeyed:' + registeredSnapshots.size);
         registeredSnapshots.set(key, snapshot);
-        return rebuildRegisteredProvider();
+        // No caller consumes the returned provider (snapshot module tails and
+        // drainInjectedSnapshots both ignore it), so registration no longer
+        // returns the eagerly built union.
+        registeredProviderDirty = true;
+        scheduleIdleProviderRebuild();
+        return null;
     }
 
     function getRegisteredProvider() {
+        if (registeredProviderDirty) rebuildRegisteredProvider();
         return registeredProvider;
     }
 
@@ -1006,6 +1032,7 @@
     function clearRegisteredProvider() {
         registeredSnapshots.clear();
         registeredProvider = null;
+        registeredProviderDirty = false;
     }
 
     function drainInjectedSnapshots() {

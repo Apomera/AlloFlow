@@ -642,13 +642,41 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
     { title: 'Watch for Moving Entities', text: 'A pedestrian is walking around the room. You will hear a faint tone and see a subtle glow from their body. In Urban mode, watch for cars. In School, Grocery, and Park modes, watch for pedestrians, joggers, and cyclists!' }
   ];
 
+  // -- Accents that follow the SUBSTRATE, in both directions --
+  // The accents were flat, and this tool has grounds of BOTH kinds: a themed root
+  // plus hardcoded panels (#1c1917, #1e293b dark; #ecfdf5, #eff6ff, #fef5de light).
+  // So no single hex worked: #0891b2 was 3.68:1 on white while #92400e was 2.46:1 on
+  // the dark ember panel. Map each hue to a deeper partner on a light substrate and a
+  // brighter one on a dark substrate.
+  var ET_LIGHT_INK = {
+    '#fbbf24': '#b45309', '#f59e0b': '#b45309', '#34d399': '#047857',
+    '#3b82f6': '#1d4ed8', '#0891b2': '#155e75', '#6366f1': '#4338ca',
+    '#22c55e': '#166534', '#ff9c9c': '#b91c1c', '#ffc47c': '#b45309',
+    '#c4b5fd': '#6d28d9', '#a3e635': '#4d7c0f', '#67e8f9': '#155e75',
+    '#fb923c': '#c2410c', '#f472b6': '#be185d'
+  };
+  var ET_DARK_INK = {
+    '#92400e': '#fbbf24', '#64748b': '#94a3b8', '#6366f1': '#a5b4fc',
+    '#7c3aed': '#a78bfa', '#3b82f6': '#60a5fa', '#0369a1': '#7dd3fc'
+  };
+  function etInk(hex, isDark, isContrast) {
+    if (isContrast) return '#ffff00';
+    if (typeof hex !== 'string') return hex;
+    var key = hex.toLowerCase();
+    return (isDark ? ET_DARK_INK : ET_LIGHT_INK)[key] || hex;
+  }
+
   window.StemLab.registerTool('echoTrainer', {
     icon: '\uD83C\uDFA7',
     label: 'Echo Navigator',
     desc: 'Navigate virtual spaces using only spatial audio echoes. 3D first-person with Three.js. Emit clicks, listen for reflections off walls and moving agents, find the goal. Real HRTF binaural audio \u2014 wear headphones!',
     color: 'indigo',
     category: 'applied',
+    gradeRange: '3-8',
     questHooks: [
+      { id: 'et_explain_echo', label: 'Explain how distance changes the echo, in your own words', icon: '💡',
+        check: function (d) { var iq = (d && d._echoHunt) || {}; return !!iq.understood && typeof iq.explanation === 'string' && iq.explanation.trim().length >= 40; },
+        progress: function (d) { var iq = (d && d._echoHunt) || {}; return iq.understood ? (((iq.explanation || '').trim().length >= 40) ? 'Explained' : 'Say more') : 'Open Echo Timing Discovery'; } },
       { id: 'find_goal_1', label: 'Find the goal in any environment', icon: '\u2B50', check: function(d) { return d.goalsFound >= 1; }, progress: function(d) { return (d.goalsFound || 0) + '/1'; } },
       { id: 'find_goal_5', label: 'Find goals in 5 different environments', icon: '\uD83C\uDFC6', check: function(d) { return d.goalsFound >= 5; }, progress: function(d) { return (d.goalsFound || 0) + '/5'; } },
       { id: 'blind_navigation', label: 'Find a goal in Audio Only mode', icon: '\uD83C\uDFA7', check: function(d) { return d.blindWins >= 1; }, progress: function(d) { return (d.blindWins || 0) >= 1 ? 'Done!' : 'Not yet'; } },
@@ -658,6 +686,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
       { id: 'waypoint_complete', label: 'Complete a waypoint route', icon: '\uD83D\uDEA9', check: function(d) { return !!d.waypointComplete; }, progress: function(d) { return d.waypointComplete ? 'Done!' : 'Not yet'; } }
     ],
     render: function(ctx) {
+      var etint = function (c) { return etInk(c, !!ctx.isDark, !!ctx.isContrast); };
       // honor the 2nd-arg English fallback (ctx.t is single-arg & ignores it; see dev-tools/check_i18n_fallback.cjs)
       var t = function (k, fb) { var v; try { v = (typeof ctx.t === 'function') ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
       // Message templates with named placeholders. ctx.t takes no interpolation
@@ -1720,11 +1749,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
         { label: t('stem.echotrainer.best_run', 'Best Run'), value: bestRun ? bestRun.time + 's' : t('stem.echotrainer.none_yet', 'New') }
       ];
 
-      return h('div', { style: { display: 'flex', flexDirection: 'column', gap: '12px', height: '100%' } },
+      return h('div', { style: { display: 'flex', flexDirection: 'column', gap: '12px', height: '100%',
+        // ★This tool already branches on isDark for its panels
+        // (isDark ? '#1e293b' : '#f8fafc') but painted no ground of its own, so in dark
+        // theme those dark panels floated on the host's white card and every element
+        // between them took a dark ink onto white: #94a3b8 on #ffffff x10. Give the
+        // isDark branch the canvas it already assumes.
+        background: isDark ? '#0f172a' : '#ffffff', borderRadius: 12, padding: 10 } },
         h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' } },
           h('button', { onClick: function() { if (setStemLabTool) setStemLabTool(null); }, 'aria-label': t('stem.echotrainer.back_to_stem_lab', 'Back to STEAM Lab'), style: { background: isDark ? '#1e293b' : '#f1f5f9', border: '1px solid ' + (isDark ? '#334155' : '#e2e8f0'), borderRadius: '8px', padding: '6px 12px', color: isDark ? '#94a3b8' : '#475569', fontSize: '12px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' } }, ArrowLeft ? h(ArrowLeft, { size: 14 }) : '\u2190', t('stem.echotrainer.stem_lab', ' STEAM Lab')),
           h('div', { style: { fontSize: '18px', fontWeight: 900, color: isDark ? '#e2e8f0' : '#1e293b' } }, t('stem.echotrainer.echo_navigator', '\uD83C\uDFA7 Echo Navigator')),
-          has3D ? h('span', { style: { fontSize: '10px', fontWeight: 800, color: '#3b82f6', background: isDark ? '#1e3a5f' : '#eff6ff', padding: '2px 8px', borderRadius: '6px', border: '1px solid #3b82f680' } }, '3D') : null,
+          has3D ? h('span', { style: { fontSize: '10px', fontWeight: 800, color: etint('#3b82f6'), background: isDark ? '#1e3a5f' : '#eff6ff', padding: '2px 8px', borderRadius: '6px', border: '1px solid #3b82f680' } }, '3D') : null,
           h('div', { style: { fontSize: '11px', color: isDark ? '#94a3b8' : '#64748b', marginLeft: '8px' } }, t('stem.echotrainer.navigate_by_sound_alone', 'Navigate by sound alone'))
         ),
         h('section', {
@@ -1779,7 +1814,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
           h('div', { style: { display: 'flex', alignItems: 'flex-start', gap: '10px' } },
             h('span', { style: { fontSize: '20px', lineHeight: 1 } }, '\u26A0\uFE0F'),
             h('div', { style: { flex: 1 } },
-              h('div', { style: { fontSize: '12px', fontWeight: 800, color: '#92400e', marginBottom: '4px' } }, t('stem.echotrainer.important_safety_notice', 'Important Safety Notice')),
+              h('div', { style: { fontSize: '12px', fontWeight: 800, color: etint('#92400e'), marginBottom: '4px' } }, t('stem.echotrainer.important_safety_notice', 'Important Safety Notice')),
               h('p', { style: { fontSize: '11px', color: isDark ? '#d6d3d1' : '#78350f', lineHeight: 1.5, margin: 0 } }, t('stem.echotrainer.this_simulation_is_an_educational_tool', 'This simulation is an educational tool for learning about echolocation and spatial audio. It does NOT replace training with a qualified Orientation & Mobility (O&M) specialist. ')),
               h('p', { style: { fontSize: '11px', color: isDark ? '#d6d3d1' : '#78350f', lineHeight: 1.5, margin: '6px 0 0 0' } }, t('stem.echotrainer.do_not_attempt_to_navigate_real_world_', 'Do not attempt to navigate real-world environments using echolocation skills developed in this simulation. Virtual environments are simplified and do not include the complexity, hazards, or unpredictability of real spaces. Success here does not indicate readiness for real-world navigation.')),
               h('p', { style: { fontSize: '10px', color: isDark ? '#a8a29e' : '#92400e', lineHeight: 1.4, margin: '8px 0 0 0', fontStyle: 'italic' } }, t('stem.echotrainer.research_thaler_et_al_2011_2021_demons', 'Research: Thaler et al. (2011, 2021) demonstrated that both blind and sighted individuals can develop echolocation skills through training. This tool is inspired by the work of Daniel Kish and World Access for the Blind.'))
@@ -1819,18 +1854,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
               h('defs', null, h('marker', { id: 'arrowOut', viewBox: '0 0 10 10', refX: 9, refY: 5, markerWidth: 5, markerHeight: 5, orient: 'auto' }, h('path', { d: 'M 0 0 L 10 5 L 0 10 z', fill: '#a78bfa' })), h('marker', { id: 'arrowBack', viewBox: '0 0 10 10', refX: 9, refY: 5, markerWidth: 5, markerHeight: 5, orient: 'auto' }, h('path', { d: 'M 0 0 L 10 5 L 0 10 z', fill: '#4ade80' })))
             ),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', marginTop: '10px', fontSize: '10px' } },
-              h('div', { style: { padding: '8px', borderRadius: '8px', background: isDark ? '#1e293b' : '#f5f3ff', border: '1px solid ' + (isDark ? '#334155' : '#e9d5ff'), textAlign: 'center' } }, h('div', { style: { fontSize: '16px', marginBottom: '2px' } }, '\uD83D\uDD0A'), h('div', { style: { fontWeight: 700, color: '#7c3aed' } }, t('stem.echotrainer.click_2', 'Click')), h('div', { style: { color: isDark ? '#94a3b8' : '#64748b', lineHeight: 1.3 } }, t('stem.echotrainer.press_space_to_emit_a_tongue_click_sou', 'Press Space to emit a tongue click sound'))),
-              h('div', { style: { padding: '8px', borderRadius: '8px', background: isDark ? '#1e293b' : '#ecfdf5', border: '1px solid ' + (isDark ? '#334155' : '#bbf7d0'), textAlign: 'center' } }, h('div', { style: { fontSize: '16px', marginBottom: '2px' } }, '\uD83C\uDFA7'), h('div', { style: { fontWeight: 700, color: '#22c55e' } }, t('stem.echotrainer.listen', 'Listen')), h('div', { style: { color: isDark ? '#94a3b8' : '#64748b', lineHeight: 1.3 } }, t('stem.echotrainer.echoes_return_from_different_direction', 'Echoes return from different directions via headphones'))),
-              h('div', { style: { padding: '8px', borderRadius: '8px', background: isDark ? '#1e293b' : '#eff6ff', border: '1px solid ' + (isDark ? '#334155' : '#bfdbfe'), textAlign: 'center' } }, h('div', { style: { fontSize: '16px', marginBottom: '2px' } }, '\uD83E\uDDE0'), h('div', { style: { fontWeight: 700, color: '#3b82f6' } }, t('stem.echotrainer.navigate', 'Navigate')), h('div', { style: { color: isDark ? '#94a3b8' : '#64748b', lineHeight: 1.3 } }, t('stem.echotrainer.build_a_mental_map_from_echo_timing_di', 'Build a mental map from echo timing + direction')))
+              h('div', { style: { padding: '8px', borderRadius: '8px', background: isDark ? '#1e293b' : '#f5f3ff', border: '1px solid ' + (isDark ? '#334155' : '#e9d5ff'), textAlign: 'center' } }, h('div', { style: { fontSize: '16px', marginBottom: '2px' } }, '\uD83D\uDD0A'), h('div', { style: { fontWeight: 700, color: etint('#7c3aed') } }, t('stem.echotrainer.click_2', 'Click')), h('div', { style: { color: isDark ? '#94a3b8' : '#475569', lineHeight: 1.3 } }, t('stem.echotrainer.press_space_to_emit_a_tongue_click_sou', 'Press Space to emit a tongue click sound'))),
+              h('div', { style: { padding: '8px', borderRadius: '8px', background: isDark ? '#1e293b' : '#ecfdf5', border: '1px solid ' + (isDark ? '#334155' : '#bbf7d0'), textAlign: 'center' } }, h('div', { style: { fontSize: '16px', marginBottom: '2px' } }, '\uD83C\uDFA7'), h('div', { style: { fontWeight: 700, color: etint('#22c55e') } }, t('stem.echotrainer.listen', 'Listen')), h('div', { style: { color: isDark ? '#94a3b8' : '#475569', lineHeight: 1.3 } }, t('stem.echotrainer.echoes_return_from_different_direction', 'Echoes return from different directions via headphones'))),
+              h('div', { style: { padding: '8px', borderRadius: '8px', background: isDark ? '#1e293b' : '#eff6ff', border: '1px solid ' + (isDark ? '#334155' : '#bfdbfe'), textAlign: 'center' } }, h('div', { style: { fontSize: '16px', marginBottom: '2px' } }, '\uD83E\uDDE0'), h('div', { style: { fontWeight: 700, color: etint('#3b82f6') } }, t('stem.echotrainer.navigate', 'Navigate')), h('div', { style: { color: isDark ? '#94a3b8' : '#475569', lineHeight: 1.3 } }, t('stem.echotrainer.build_a_mental_map_from_echo_timing_di', 'Build a mental map from echo timing + direction')))
             ),
             h('div', { style: { marginTop: '10px', padding: '10px', borderRadius: '8px', background: isDark ? '#1e293b' : '#f0f9ff', border: '1px solid ' + (isDark ? '#334155' : '#bae6fd') } },
-              h('div', { style: { fontWeight: 800, fontSize: '11px', color: '#0369a1', marginBottom: '4px' } }, t('stem.echotrainer.why_headphones_are_essential', '\uD83C\uDFA7 Why Headphones Are Essential')),
+              h('div', { style: { fontWeight: 800, fontSize: '11px', color: etint('#0369a1'), marginBottom: '4px' } }, t('stem.echotrainer.why_headphones_are_essential', '\uD83C\uDFA7 Why Headphones Are Essential')),
               h('p', { style: { fontSize: '10px', lineHeight: 1.5, margin: '0 0 6px 0', color: isDark ? '#94a3b8' : '#475569' } }, t('stem.echotrainer.this_tool_uses_hrtf_head_related_trans', 'This tool uses HRTF (Head-Related Transfer Function) \u2014 the same technique your brain uses to locate sounds in 3D space. Each echo is processed through a virtual model of how sound reaches your left and right ears differently based on direction.')),
               h('p', { style: { fontSize: '10px', lineHeight: 1.5, margin: '0 0 6px 0', color: isDark ? '#94a3b8' : '#475569' } }, t('stem.echotrainer.a_wall_to_your_left_will_return_an_ech', 'A wall to your LEFT will return an echo that arrives at your left ear a fraction of a millisecond sooner and slightly louder. Your brain detects this automatically \u2014 if you\'re wearing headphones. Speakers cannot reproduce this effect.')),
               h('p', { style: { fontSize: '10px', lineHeight: 1.5, margin: 0, color: isDark ? '#94a3b8' : '#475569' } }, t('stem.echotrainer.in_3d_mode_you_also_perceive_height_di', 'In 3D mode, you also perceive HEIGHT differences. A bat flying overhead sounds different from a car at ground level. The 3D scene positions every echo and every moving entity\'s sound in true 3D space around your head.'))
             ),
             h('div', { style: { marginTop: '10px', display: 'flex', gap: '6px', flexWrap: 'wrap', justifyContent: 'center' } },
-              [{ name: t('stem.echotrainer.rock', 'Rock'), color: 'var(--allo-stem-text-soft, #94a3b8)', desc: t('stem.echotrainer.bright_echo', 'Bright echo'), ref: '85%' }, { name: t('stem.echotrainer.metal', 'Metal'), color: 'var(--allo-stem-text-soft, #94a3b8)', desc: t('stem.echotrainer.sharp_ring', 'Sharp ring'), ref: '95%' }, { name: t('stem.echotrainer.wood', 'Wood'), color: '#92400e', desc: t('stem.echotrainer.muffled', 'Muffled'), ref: '50%' }, { name: t('stem.echotrainer.glass', 'Glass'), color: '#7dd3fc', desc: t('stem.echotrainer.faint', 'Faint'), ref: '30%' }, { name: t('stem.echotrainer.goal', 'Goal \u2B50'), color: '#fbbf24', desc: 'Bright!', ref: '90%' }].map(function(mat) {
+              [{ name: t('stem.echotrainer.rock', 'Rock'), color: 'var(--allo-stem-text-soft, #94a3b8)', desc: t('stem.echotrainer.bright_echo', 'Bright echo'), ref: '85%' }, { name: t('stem.echotrainer.metal', 'Metal'), color: 'var(--allo-stem-text-soft, #94a3b8)', desc: t('stem.echotrainer.sharp_ring', 'Sharp ring'), ref: '95%' }, { name: t('stem.echotrainer.wood', 'Wood'), color: etint('#92400e'), desc: t('stem.echotrainer.muffled', 'Muffled'), ref: '50%' }, { name: t('stem.echotrainer.glass', 'Glass'), color: '#7dd3fc', desc: t('stem.echotrainer.faint', 'Faint'), ref: '30%' }, { name: t('stem.echotrainer.goal', 'Goal \u2B50'), color: etint('#fbbf24'), desc: 'Bright!', ref: '90%' }].map(function(mat) {
                 return h('div', { key: mat.name, style: { display: 'flex', alignItems: 'center', gap: '4px', padding: '3px 8px', borderRadius: '6px', background: isDark ? '#1e293b' : '#f8fafc', border: '1px solid ' + (isDark ? '#334155' : '#e2e8f0'), fontSize: '9px' } }, h('div', { style: { width: '8px', height: '8px', borderRadius: '50%', background: mat.color } }), h('span', { style: { fontWeight: 700, color: isDark ? '#e2e8f0' : '#1e293b' } }, mat.name), h('span', { style: { color: isDark ? '#94a3b8' : '#64748b' } }, mat.desc));
               })
             )
@@ -1909,10 +1944,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
           h('div', { style: { padding: '10px', background: isDark ? '#0f172a' : '#fff' } },
             (d.runHistory && d.runHistory.length > 0) ?
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', marginBottom: '8px' } },
-                h('div', { style: { padding: '8px', borderRadius: '6px', background: isDark ? '#1e293b' : '#f5f3ff', textAlign: 'center' } }, h('div', { style: { fontSize: '18px', fontWeight: 900, color: '#6366f1' } }, (d.runHistory || []).length), h('div', { style: { fontSize: '9px', color: isDark ? '#94a3b8' : '#64748b' } }, t('stem.echotrainer.total_runs', 'Total Runs'))),
+                h('div', { style: { padding: '8px', borderRadius: '6px', background: isDark ? '#1e293b' : '#f5f3ff', textAlign: 'center' } }, h('div', { style: { fontSize: '18px', fontWeight: 900, color: etint('#6366f1') } }, (d.runHistory || []).length), h('div', { style: { fontSize: '9px', color: isDark ? '#94a3b8' : '#64748b' } }, t('stem.echotrainer.total_runs', 'Total Runs'))),
                 h('div', { style: { padding: '8px', borderRadius: '6px', background: isDark ? '#1e293b' : '#ecfdf5', textAlign: 'center' } }, h('div', { style: { fontSize: '18px', fontWeight: 900, color: '#22c55e' } }, (d.runHistory || []).reduce(function(sum, r) { return sum + r.xp; }, 0)), h('div', { style: { fontSize: '9px', color: isDark ? '#94a3b8' : '#64748b' } }, t('stem.echotrainer.total_xp', 'Total XP'))),
-                h('div', { style: { padding: '8px', borderRadius: '6px', background: isDark ? '#1e293b' : '#eff6ff', textAlign: 'center' } }, h('div', { style: { fontSize: '18px', fontWeight: 900, color: '#3b82f6' } }, Math.min.apply(null, (d.runHistory || [{ time: 0 }]).map(function(r) { return r.time; })) + 's'), h('div', { style: { fontSize: '9px', color: isDark ? '#94a3b8' : '#64748b' } }, t('stem.echotrainer.best_time', 'Best Time'))),
-                h('div', { style: { padding: '8px', borderRadius: '6px', background: isDark ? '#1e293b' : '#fef3c7', textAlign: 'center' } }, h('div', { style: { fontSize: '18px', fontWeight: 900, color: '#f59e0b' } }, Math.min.apply(null, (d.runHistory || [{ bumps: 0 }]).map(function(r) { return r.bumps; }))), h('div', { style: { fontSize: '9px', color: isDark ? '#94a3b8' : '#64748b' } }, t('stem.echotrainer.fewest_bumps', 'Fewest Bumps')))
+                h('div', { style: { padding: '8px', borderRadius: '6px', background: isDark ? '#1e293b' : '#eff6ff', textAlign: 'center' } }, h('div', { style: { fontSize: '18px', fontWeight: 900, color: etint('#3b82f6') } }, Math.min.apply(null, (d.runHistory || [{ time: 0 }]).map(function(r) { return r.time; })) + 's'), h('div', { style: { fontSize: '9px', color: isDark ? '#94a3b8' : '#64748b' } }, t('stem.echotrainer.best_time', 'Best Time'))),
+                h('div', { style: { padding: '8px', borderRadius: '6px', background: isDark ? '#1e293b' : '#fef3c7', textAlign: 'center' } }, h('div', { style: { fontSize: '18px', fontWeight: 900, color: etint('#f59e0b') } }, Math.min.apply(null, (d.runHistory || [{ bumps: 0 }]).map(function(r) { return r.bumps; }))), h('div', { style: { fontSize: '9px', color: isDark ? '#94a3b8' : '#64748b' } }, t('stem.echotrainer.fewest_bumps', 'Fewest Bumps')))
               ) : h('p', { style: { color: isDark ? '#94a3b8' : '#64748b', fontStyle: 'italic' } }, t('stem.echotrainer.complete_a_run_to_see_your_stats_here', 'Complete a run to see your stats here.')),
             (d.runHistory && d.runHistory.length > 0) ?
               h('table', { style: { width: '100%', fontSize: '10px', borderCollapse: 'collapse' } },
@@ -1931,14 +1966,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
                     h('td', { style: { padding: '3px 4px', textAlign: 'right', color: isDark ? '#e2e8f0' : '#1e293b' } }, run.time + 's'),
                     h('td', { style: { padding: '3px 4px', textAlign: 'right', color: isDark ? '#e2e8f0' : '#1e293b' } }, run.clicks),
                     h('td', { style: { padding: '3px 4px', textAlign: 'right', color: run.bumps === 0 ? '#22c55e' : (isDark ? '#e2e8f0' : '#1e293b') } }, run.bumps),
-                    h('td', { style: { padding: '3px 4px', textAlign: 'right', fontWeight: 700, color: '#6366f1' } }, run.xp)
+                    h('td', { style: { padding: '3px 4px', textAlign: 'right', fontWeight: 700, color: etint('#6366f1') } }, run.xp)
                   );
                 }))
               ) : null
           )
         ),
         (envType === 'simple_room' && tutStep < 4) ? h('div', { role: 'region', 'aria-label': tFmt('stem.echotrainer.aria_tutorial_step', 'Tutorial step {n} of 4', { n: tutStep + 1 }), tabIndex: 0, style: { background: isDark ? '#0f172a' : '#eff6ff', border: '2px solid #3b82f6', borderRadius: '12px', padding: '16px', position: 'relative', zIndex: 10 } },
-          h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' } }, h('span', { style: { fontSize: '14px', fontWeight: 800, color: '#3b82f6' } }, tFmt('stem.echotrainer.tut_counter', 'Tutorial {n}/4', { n: tutStep + 1 })), h('span', { style: { fontSize: '12px', fontWeight: 700, color: isDark ? '#e2e8f0' : '#1e293b' } }, t('stem.echotrainer.tut_' + tutStep + '_title', TUTORIAL_STEPS[tutStep].title))),
+          h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' } }, h('span', { style: { fontSize: '14px', fontWeight: 800, color: etint('#3b82f6') } }, tFmt('stem.echotrainer.tut_counter', 'Tutorial {n}/4', { n: tutStep + 1 })), h('span', { style: { fontSize: '12px', fontWeight: 700, color: isDark ? '#e2e8f0' : '#1e293b' } }, t('stem.echotrainer.tut_' + tutStep + '_title', TUTORIAL_STEPS[tutStep].title))),
           h('p', { style: { fontSize: '12px', color: isDark ? '#94a3b8' : '#475569', lineHeight: 1.6, margin: '0 0 10px 0' } }, t('stem.echotrainer.tut_' + tutStep + '_text', TUTORIAL_STEPS[tutStep].text)),
           h('button', { onClick: function() { var next = tutStep + 1; upd('tutStep', next); if (next >= 4 && announceToSR) announceToSR(t('stem.echotrainer.tutorial_complete_you_are_ready_to_exp', 'Tutorial complete! You are ready to explore on your own.')); }, 'aria-label': tutStep < 3 ? 'Next tutorial step' : 'Complete tutorial', style: { padding: '6px 16px', borderRadius: '8px', border: 'none', background: '#1d4ed8', color: '#fff', fontSize: '12px', fontWeight: 800, cursor: 'pointer' } }, tutStep < 3 ? 'Next \u2192' : 'Got It!')
         ) : null,
@@ -1993,7 +2028,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
           tabIndex: 0,
           style: { padding: '14px', borderRadius: '12px', border: '2px solid #f59e0b', background: isDark ? '#1c1917' : '#fffbeb', marginBottom: '8px' }
         },
-          h('div', { style: { fontWeight: 800, fontSize: '13px', color: '#f59e0b', marginBottom: '6px' } }, t('stem.echotrainer.material_quiz_2', '\uD83E\uDDCA Material Quiz')),
+          h('div', { style: { fontWeight: 800, fontSize: '13px', color: etint('#f59e0b'), marginBottom: '6px' } }, t('stem.echotrainer.material_quiz_2', '\uD83E\uDDCA Material Quiz')),
           h('p', { style: { fontSize: '12px', color: isDark ? '#e2e8f0' : '#1e293b', margin: '0 0 10px 0' } },
             t('stem.echotrainer.listen_to_the_echo_ahead_what_material', 'Listen to the echo ahead. What material did you just hear?')),
           h('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap' } },
@@ -2043,7 +2078,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
         has3D ? h('div', { style: { position: 'relative', width: '100%', flex: 1, minHeight: '400px', borderRadius: '12px', overflow: 'hidden', background: '#000' } },
           h('div', { ref: mountRef, role: 'application', 'aria-label': t('stem.echotrainer.echo_navigation_3d_viewport_click_to_l', 'Echo navigation 3D viewport. Click to lock mouse, then click to emit sonar. WASD to move, mouse to look, Q/E to strafe. Shift to sprint, C to crouch.'), tabIndex: 0, style: { width: '100%', height: '100%', minHeight: '400px', cursor: 'crosshair' } }),
           h('canvas', { ref: canvasRef, 'aria-hidden': 'true', style: { position: 'absolute', bottom: '10px', right: '10px', width: '200px', height: '200px', borderRadius: '8px', border: '1px solid rgba(99,102,241,0.4)', opacity: 0.9, pointerEvents: 'none', zIndex: 5 } }),
-          h('div', { style: { position: 'absolute', bottom: '14px', right: '194px', fontSize: '10px', fontWeight: 700, color: '#6366f1', background: 'rgba(0,0,0,0.7)', padding: '2px 6px', borderRadius: '4px', zIndex: 10, pointerEvents: 'none' } }, coveragePct + '% mapped'),
+          h('div', { style: { position: 'absolute', bottom: '14px', right: '194px', fontSize: '10px', fontWeight: 700, color: etint('#6366f1'), background: 'rgba(0,0,0,0.7)', padding: '2px 6px', borderRadius: '4px', zIndex: 10, pointerEvents: 'none' } }, coveragePct + '% mapped'),
           h('div', { 'aria-hidden': 'true', style: { position: 'absolute', top: 0, left: 0, right: 0, padding: '6px 12px', background: 'rgba(0,0,0,0.5)', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '11px', fontFamily: 'monospace', fontWeight: 700, zIndex: 5, pointerEvents: 'none' } },
             'Echo Navigator 3D  |  ' + viewModeLabel + '  |  Clicks: ' + (d.clicks || 0) + '  |  Bumps: ' + (d.bumps || 0) + '  |  Goals: ' + goalsFound + '  |  ' + envType + '  |  ' + diff.icon + ' ' + diff.label + '  |  Time: ' + timeStr + '  |  ' + cpm + ' clicks/min' + (waypointMode && WAYPOINT_ROUTES[envType] ? '  |  WP ' + Math.min((d.waypointIdx || 0) + 1, WAYPOINT_ROUTES[envType].points.length) + '/' + WAYPOINT_ROUTES[envType].points.length : '') + (pointerLockedRef.current ? '' : '  |  Click to lock mouse')
           ),
@@ -2058,8 +2093,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
           h('span', null, '\uD83C\uDFAE WASD: Move' + (has3D ? ', Q/E: Strafe' : '/Arrows: Turn')),
           h('span', null, t('stem.echotrainer.space_click', 'Space: Click')), h('span', null, t('stem.echotrainer.headphones_required', '\uD83C\uDFA7 Headphones required')), h('span', null, t('stem.echotrainer.find_the_goal_using_echoes', '\u2B50 Find the goal using echoes')),
           h('span', null, t('stem.echotrainer.shift_sprint_c_crouch', 'Shift: Sprint | C: Crouch')),
-          agentCounts.length > 0 ? h('span', { style: { color: '#f59e0b' } }, '\uD83D\uDEB6 ' + agentCounts.join(', ')) : null,
-          h('span', { style: { color: '#6366f1' } }, 'HRTF spatial audio \u2022 ' + (d.clicks || 0) + ' clicks \u2022 Seed: ' + seed)
+          agentCounts.length > 0 ? h('span', { style: { color: etint('#f59e0b') } }, '\uD83D\uDEB6 ' + agentCounts.join(', ')) : null,
+          h('span', { style: { color: etint('#6366f1') } }, 'HRTF spatial audio \u2022 ' + (d.clicks || 0) + ' clicks \u2022 Seed: ' + seed)
         ),
         h('details', { style: { fontSize: '10px', color: isDark ? '#94a3b8' : '#64748b' } },
           h('summary', { style: { cursor: 'pointer', fontWeight: 700 } }, t('stem.echotrainer.how_materials_sound', '\uD83D\uDCD6 How Materials Sound')),
@@ -2072,14 +2107,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
               h('span', { style: { fontWeight: 700 } }, 'Fabric/Carpet:'), h('span', null, t('stem.echotrainer.nearly_silent_absorbs_most_sound_hard_', 'Nearly silent (absorbs most sound \u2014 hard to detect)')),
               h('span', { style: { fontWeight: 700 } }, t('stem.echotrainer.locker_shopping_cart_metal', 'Locker/Shopping Cart (Metal):')), h('span', null, t('stem.echotrainer.sharp_ring_highest_reflectivity_easy_t', 'Sharp ring, highest reflectivity \u2014 easy to locate')),
               h('span', { style: { fontWeight: 700 } }, t('stem.echotrainer.trophy_case_freezer_glass', 'Trophy Case/Freezer (Glass):')), h('span', null, t('stem.echotrainer.faint_echo_deceptively_quiet_easy_to_w', 'Faint echo \u2014 deceptively quiet, easy to walk into')),
-              h('span', { style: { fontWeight: 700, color: '#ff9c9c' } }, 'Pedestrian:'), h('span', null, t('stem.echotrainer.soft_echo_faint_glow_triangle_wave_ton', 'Soft echo, faint glow, triangle-wave tone at 200Hz')),
-              h('span', { style: { fontWeight: 700, color: '#ffc47c' } }, 'Car:'), h('span', null, t('stem.echotrainer.strong_echo_sawtooth_engine_rumble_at_', 'Strong echo, sawtooth engine rumble at 55Hz \u2014 AVOID!')),
-              h('span', { style: { fontWeight: 700, color: '#c4b5fd' } }, 'Bat:'), h('span', null, t('stem.echotrainer.faint_ultrasonic_chirp_at_3200hz_tiny_', 'Faint, ultrasonic chirp at 3200Hz \u2014 tiny targets')),
-              h('span', { style: { fontWeight: 700, color: '#a3e635' } }, 'Deer:'), h('span', null, t('stem.echotrainer.low_80hz_thud_large_slow_moving_body', 'Low 80Hz thud \u2014 large, slow-moving body')),
-              h('span', { style: { fontWeight: 700, color: '#67e8f9' } }, 'Bird:'), h('span', null, t('stem.echotrainer.high_2400_3200hz_chirp_tiny_fast_movin', 'High 2400-3200Hz chirp \u2014 tiny, fast-moving')),
-              h('span', { style: { fontWeight: 700, color: '#fb923c' } }, 'Jogger:'), h('span', null, t('stem.echotrainer.rhythmic_180hz_footsteps_fast_small_ta', 'Rhythmic 180Hz footsteps \u2014 fast, small target')),
-              h('span', { style: { fontWeight: 700, color: '#f472b6' } }, 'Cyclist:'), h('span', null, t('stem.echotrainer.low_90hz_wheel_hum_very_fast_watch_out', 'Low 90Hz wheel hum \u2014 very fast, watch out!')),
-              h('span', { style: { fontWeight: 700, color: '#fbbf24' } }, t('stem.echotrainer.goal_2', 'Goal \u2B50:')), h('span', null, t('stem.echotrainer.distinctive_bright_echo_with_a_unique_', 'Distinctive bright echo with a unique tonal quality'))
+              h('span', { style: { fontWeight: 700, color: etint('#ff9c9c') } }, 'Pedestrian:'), h('span', null, t('stem.echotrainer.soft_echo_faint_glow_triangle_wave_ton', 'Soft echo, faint glow, triangle-wave tone at 200Hz')),
+              h('span', { style: { fontWeight: 700, color: etint('#ffc47c') } }, 'Car:'), h('span', null, t('stem.echotrainer.strong_echo_sawtooth_engine_rumble_at_', 'Strong echo, sawtooth engine rumble at 55Hz \u2014 AVOID!')),
+              h('span', { style: { fontWeight: 700, color: etint('#c4b5fd') } }, 'Bat:'), h('span', null, t('stem.echotrainer.faint_ultrasonic_chirp_at_3200hz_tiny_', 'Faint, ultrasonic chirp at 3200Hz \u2014 tiny targets')),
+              h('span', { style: { fontWeight: 700, color: etint('#a3e635') } }, 'Deer:'), h('span', null, t('stem.echotrainer.low_80hz_thud_large_slow_moving_body', 'Low 80Hz thud \u2014 large, slow-moving body')),
+              h('span', { style: { fontWeight: 700, color: etint('#67e8f9') } }, 'Bird:'), h('span', null, t('stem.echotrainer.high_2400_3200hz_chirp_tiny_fast_movin', 'High 2400-3200Hz chirp \u2014 tiny, fast-moving')),
+              h('span', { style: { fontWeight: 700, color: etint('#fb923c') } }, 'Jogger:'), h('span', null, t('stem.echotrainer.rhythmic_180hz_footsteps_fast_small_ta', 'Rhythmic 180Hz footsteps \u2014 fast, small target')),
+              h('span', { style: { fontWeight: 700, color: etint('#f472b6') } }, 'Cyclist:'), h('span', null, t('stem.echotrainer.low_90hz_wheel_hum_very_fast_watch_out', 'Low 90Hz wheel hum \u2014 very fast, watch out!')),
+              h('span', { style: { fontWeight: 700, color: etint('#fbbf24') } }, t('stem.echotrainer.goal_2', 'Goal \u2B50:')), h('span', null, t('stem.echotrainer.distinctive_bright_echo_with_a_unique_', 'Distinctive bright echo with a unique tonal quality'))
             ),
             h('p', { style: { marginTop: '6px', fontStyle: 'italic', fontSize: '9px' } }, t('stem.echotrainer.real_bats_use_frequencies_of_20_200_kh', '\uD83E\uDD87 Real bats use frequencies of 20-200 kHz (ultrasonic). Humans echolocate best with tongue clicks at 2-4 kHz. The key cue is the time delay between click and echo \u2014 at 343 m/s, a wall 1.7m away returns an echo in 10ms.')),
             h('p', { style: { marginTop: '4px', fontStyle: 'italic', fontSize: '9px', color: isDark ? '#94a3b8' : '#64748b' } }, t('stem.echotrainer.ghost_outlines_after_sonar_pulses_hit_', '\uD83D\uDC7B Ghost outlines: After sonar pulses hit surfaces, a faint persistent glow remains to help you build a mental map. Higher difficulties reduce or eliminate ghost outlines.'))
@@ -2099,24 +2134,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
           else state = 'reverb';
           var sm = {
             tooFast:  { label: t('stem.echotrainer.too_fast_no_echo_detect', '\u26A1 Too fast (no echo detect)'), color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: t('stem.echotrainer.surface_too_close_brain_merges_echo_wi', 'Surface too close. Brain merges echo with click.') },
-            crisp:    { label: t('stem.echotrainer.crisp_echo', '\uD83D\uDFE2 Crisp echo'), color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: t('stem.echotrainer.optimal_range_brain_can_localize_surfa', 'Optimal range. Brain can localize surface.') },
+            crisp:    { label: t('stem.echotrainer.crisp_echo', '\uD83D\uDFE2 Crisp echo'), color: '#065f46', bg: '#ecfdf5', border: '#86efac', desc: t('stem.echotrainer.optimal_range_brain_can_localize_surfa', 'Optimal range. Brain can localize surface.') },
             distinct: { label: t('stem.echotrainer.distinct_delay', '\uD83D\uDFE1 Distinct delay'), color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: t('stem.echotrainer.surface_noticeable_but_distant', 'Surface noticeable but distant.') },
             reverb:   { label: t('stem.echotrainer.reverberant', '\uD83D\uDD0A Reverberant'), color: '#7c3aed', bg: '#f5f3ff', border: '#c4b5fd', desc: t('stem.echotrainer.far_surface_multiple_bounces', 'Far surface, multiple bounces.') }
           }[state];
           return h('div', { style: { margin: '8px', padding: '12px', background: isDark ? '#1e293b' : '#fff', border: '1px solid ' + (isDark ? '#334155' : '#cbd5e1'), borderRadius: 8 } },
-            h('h3', { style: { fontSize: 13, fontWeight: 800, color: isDark ? '#67e8f9' : '#0891b2', marginBottom: 6 } }, t('stem.echotrainer.echo_timing_discovery', '\uD83C\uDFB5 Echo timing discovery')),
+            h('h3', { style: { fontSize: 13, fontWeight: 800, color: isDark ? '#67e8f9' : '#155e75', marginBottom: 6 } }, t('stem.echotrainer.echo_timing_discovery', '\uD83C\uDFB5 Echo timing discovery')),
             h('p', { style: { fontSize: 11, color: isDark ? '#cbd5e1' : '#475569', marginBottom: 8 } }, t('stem.echotrainer.sliders_for_distance_speed_surface_dis', 'Sliders for distance, speed, surface. Discrete 4-state echo. No score, no reveal.')),
             h('div', { style: { padding: 10, borderRadius: 6, textAlign: 'center', background: sm.bg, border: '2px solid ' + sm.border, marginBottom: 8 } },
               h('div', { style: { fontSize: 13, fontWeight: 900, color: sm.color } }, sm.label),
               h('div', { style: { fontSize: 11, color: '#475569', marginTop: 4 } }, sm.desc),
-              h('div', { style: { fontSize: 10, color: '#64748b', marginTop: 4, fontFamily: 'monospace' } }, 'Round-trip \u2248 ' + echoMs.toFixed(1) + ' ms')
+              h('div', { style: { fontSize: 10, color: '#475569', marginTop: 4, fontFamily: 'monospace' } }, 'Round-trip \u2248 ' + echoMs.toFixed(1) + ' ms')
             ),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 8 } },
               [{ k: 'distance', l: 'Distance (m)', mn: 0.5, mx: 100, st: 0.5 },
                { k: 'speed', l: 'Speed (m/s)', mn: 200, mx: 400, st: 5 },
                { k: 'surface', l: 'Reflect (%)', mn: 0, mx: 100, st: 5 }].map(function(s) {
                 return h('div', { key: s.k },
-                  h('label', { htmlFor: 'eh-' + s.k, style: { display: 'block', fontSize: 11, fontWeight: 'bold', color: isDark ? '#cbd5e1' : '#475569' } }, s.l + ': ', h('span', { style: { color: isDark ? '#67e8f9' : '#0891b2', fontFamily: 'monospace' } }, iq[s.k])),
+                  h('label', { htmlFor: 'eh-' + s.k, style: { display: 'block', fontSize: 11, fontWeight: 'bold', color: isDark ? '#cbd5e1' : '#475569' } }, s.l + ': ', h('span', { style: { color: isDark ? '#67e8f9' : '#155e75', fontFamily: 'monospace' } }, iq[s.k])),
                   h('input', { id: 'eh-' + s.k, type: 'range', min: s.mn, max: s.mx, step: s.st, value: iq[s.k],
                     onChange: function(e) { var p = {}; p[s.k] = parseFloat(e.target.value); setIQ(p); },
                     style: { width: '100%' }, 'aria-label': s.l }));
@@ -2128,16 +2163,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
             ),
             h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, 'aria-label': t('stem.echotrainer.hypothesis_input', 'Echo distance hypothesis'), placeholder: t('stem.echotrainer.hypothesis_at_what_distance_does_echo_', 'Hypothesis: At what distance does echo become detectable?'),
               style: { width: '100%', minHeight: 50, padding: 6, background: isDark ? '#0f172a' : '#fff', color: isDark ? '#e2e8f0' : '#1e293b', border: '1px solid ' + (isDark ? '#334155' : '#cbd5e1'), borderRadius: 4, fontSize: 12, fontFamily: 'monospace', marginBottom: 8 }, rows: 2 }),
-            !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '4px 10px', background: 'rgba(251,191,36,0.15)', color: '#fbbf24', border: '1px solid rgba(251,191,36,0.5)', borderRadius: 4, fontSize: 11, fontWeight: 'bold', cursor: 'pointer', marginBottom: 8 } }, t('stem.echotrainer.stuck_show_open_prompts', '\uD83E\uDD14 Stuck \u2014 show open prompts')),
+            !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '4px 10px', background: 'rgba(251,191,36,0.15)', color: etint('#fbbf24'), border: '1px solid rgba(251,191,36,0.5)', borderRadius: 4, fontSize: 11, fontWeight: 'bold', cursor: 'pointer', marginBottom: 8 } }, t('stem.echotrainer.stuck_show_open_prompts', '\uD83E\uDD14 Stuck \u2014 show open prompts')),
             iq.stuckRevealed && h('div', { style: { padding: 10, background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.3)', borderRadius: 4, fontSize: 11, color: isDark ? '#cbd5e1' : '#475569', marginBottom: 8 } },
               h('ul', { style: { margin: 0, paddingLeft: 18 } },
                 h('li', null, t('stem.echotrainer.sound_in_air_343_m_s_investigate_the_f', 'Sound in air = 343 m/s. Investigate the formula.')),
                 h('li', null, t('stem.echotrainer.why_do_bats_use_high_frequency_clicks', 'Why do bats use high-frequency clicks?')))),
-            h('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 'bold', color: '#34d399', cursor: 'pointer' } },
+            h('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 'bold', color: etint('#34d399'), cursor: 'pointer' } },
               h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }), t('stem.echotrainer.i_understand_explain_in_own_words', 'I understand \u2014 explain in own words')),
             iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, 'aria-label': t('stem.echotrainer.explanation_input', 'Echo physics explanation'), placeholder: t('stem.echotrainer.explain_echo_physics', 'Explain echo physics.'),
               style: { width: '100%', minHeight: 60, padding: 6, background: isDark ? '#0f172a' : '#fff', color: isDark ? '#e2e8f0' : '#1e293b', border: '1px solid rgba(16,185,129,0.3)', borderRadius: 4, fontSize: 12, fontFamily: 'monospace', marginTop: 6 }, rows: 3 }),
-            h('div', { style: { marginTop: 8, fontSize: 10, fontStyle: 'italic', color: '#64748b' } }, t('stem.echotrainer.design_note_discrete_4_state_echo_mark', 'Design note: discrete 4-state echo marker; no detection score; no reveal \u2014 by design.'))
+            h('div', { style: { marginTop: 8, fontSize: 10, fontStyle: 'italic', color: etint('#64748b') } }, t('stem.echotrainer.design_note_discrete_4_state_echo_mark', 'Design note: discrete 4-state echo marker; no detection score; no reveal \u2014 by design.'))
           );
         })()
       );

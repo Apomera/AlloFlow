@@ -1295,6 +1295,27 @@
     document.body.appendChild(lr);
   })();
 
+  // ── Pin the STEM palette to its LIGHT values on this tool's own root ──
+  // The MIRROR of the skatelab/throwlab pin, and for the opposite reason. Arc City
+  // paints no ground of its own, so its substrate is the host card -- which is white
+  // in the light theme AND white in the dark theme, because stem_lab_module.js
+  // deliberately wraps every tool in a white card when the shell is dark (see its
+  // comment at ~1633: tools are authored for a light substrate). But --allo-stem-*
+  // live on <html>.theme-dark and keep resolving DARK there, so this tool's
+  // `INK = var(--allo-stem-text, #0f172a)` came out #e2e8f0 on white: 52 nodes at
+  // 1.07-1.23:1, the tool title among them. A tool that does not paint its own
+  // ground must not read the themed ink. One inherited definition fixes all 52.
+  (function () {
+    if (document.getElementById('allo-arccity-palette-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-arccity-palette-css';
+    st.textContent = 'html:not(.theme-contrast) #allo-arccity-root{'
+      + '--allo-stem-canvas:#ffffff;--allo-stem-panel:#f8fafc;--allo-stem-deeper:#e2e8f0;'
+      + '--allo-stem-text:#0f172a;--allo-stem-text-soft:#475569;--allo-stem-border:#cbd5e1;'
+      + '--allo-stem-button-bg:#f1f5f9;--allo-stem-button-text:#0f172a;--allo-stem-button-border:#cbd5e1;}';
+    document.head.appendChild(st);
+  })();
+
   (function () {
     if (document.getElementById('allo-arccity-css')) return;
     var st = document.createElement('style');
@@ -1696,6 +1717,23 @@
     desc: 'Author functions, re-light a neon city, and battle across two function-powered Circuit Clash arenas.',
     color: 'fuchsia',
     category: 'strategy',
+    gradeRange: '7-12',
+    // The only reviewed tool with NO quest hooks at all -- all its progress logic
+    // (byLevel, badges, familyStatus) lived behind the internal badge strip. These
+    // read the same state the teacher summary reads, and the independence hook uses
+    // the tool's own strongest distinction: solved WITHOUT the scaffold.
+    questDataKey: '_arccity',
+    questHooks: [
+      { id: 'arc_first_light', label: 'Re-light your first district', icon: '🌆',
+        check: function (d) { var b = (d && d.byLevel) || {}; return Object.keys(b).some(function (k) { return b[k] && b[k].solved; }); },
+        progress: function (d) { var b = (d && d.byLevel) || {}; var n = Object.keys(b).filter(function (k) { return b[k] && b[k].solved; }).length; return n + ' lit'; } },
+      { id: 'arc_independent', label: 'Solve 3 levels without the scaffold', icon: '🦉',
+        check: function (d) { var b = (d && d.byLevel) || {}; return Object.keys(b).filter(function (k) { return b[k] && b[k].solved && b[k].independent; }).length >= 3; },
+        progress: function (d) { var b = (d && d.byLevel) || {}; return Math.min(3, Object.keys(b).filter(function (k) { return b[k] && b[k].solved && b[k].independent; }).length) + '/3 independent'; } },
+      { id: 'arc_badges', label: 'Earn 5 badges', icon: '🏅',
+        check: function (d) { return ((d && d.badges) || []).length >= 5; },
+        progress: function (d) { return Math.min(5, ((d && d.badges) || []).length) + '/5'; } }
+    ],
     render: function (ctx) {
       var React = ctx && ctx.React;
       if (!React) { return null; }
@@ -2199,6 +2237,12 @@
         var THEME = arcTheme();
         var PAL = arcPalette(THEME);
         var BEAM = PAL.accent, NODE_OFF = PAL.nodeOff, NODE_ON = PAL.nodeOn, GATE = PAL.gate, WALL = PAL.wall;
+        // ★PAL drives the SVG scene, which paints its OWN dark sky and is legitimately
+        // dark in the dark theme -- do not flip THEME globally. But three sites use the
+        // accent as HTML TEXT, and that text sits on the host card, which is white in
+        // the light theme AND white in the dark theme. The dark accent #22d3ee is 1.8:1
+        // on white. Contrast mode keeps its own accent: there the host surface is black.
+        var BEAM_INK = (THEME === 'contrast') ? PAL.accent : arcPalette('light').accent;
 
         // ── Calm board (§8.3 "reduced clutter", a UDL knob that was specified and never
         // built — and this pass has been ADDING marks to the board, so it earns its
@@ -2763,7 +2807,7 @@
           },
             h('div', { key: 'hdr', style: { display: 'flex', justifyContent: 'space-between', gap: 8, fontSize: 13, color: INK, marginBottom: 5 } },
               h('span', { key: 'l', style: rowHot ? { fontWeight: 700 } : null }, spec.label),
-              h('span', { key: 'v', style: { fontVariantNumeric: 'tabular-nums', fontWeight: 800, color: BEAM, whiteSpace: 'nowrap' } }, valLabel)),
+              h('span', { key: 'v', style: { fontVariantNumeric: 'tabular-nums', fontWeight: 800, color: BEAM_INK, whiteSpace: 'nowrap' } }, valLabel)),
             h('div', { key: 'ctl', style: { display: 'flex', alignItems: 'center', gap: 8 } },
               h('button', { key: 'dec', type: 'button', className: 'arc-param-btn', 'aria-label': 'Decrease ' + spec.label, onClick: function () { bump(-1); }, style: btn }, '−'),
               h('div', {
@@ -2852,8 +2896,8 @@
             key: hot ? name + '-hot' + touchTick : name,
             className: hot ? 'arccity-eq-hot' : null,
             style: hot
-              ? { color: BEAM, fontWeight: 800, display: 'inline-block', borderBottom: '2px solid ' + BEAM }
-              : { color: BEAM, fontWeight: 800 }
+              ? { color: BEAM_INK, fontWeight: 800, display: 'inline-block', borderBottom: '2px solid ' + BEAM_INK }
+              : { color: BEAM_INK, fontWeight: 800 }
           }, text);
         }
         // Defensive: a family whose param is absent from the level spec renders nothing
@@ -2979,7 +3023,7 @@
             if (!chips.length) return null;
             var hereNow = lIdx >= d.from && lIdx <= d.to;
             return h('div', { key: 'district-' + d.key, role: 'group', 'aria-label': d.label, style: { display: 'flex', flexDirection: 'column', gap: 5 } },
-              h('div', { key: 'dl', style: { fontSize: 10, fontWeight: 800, letterSpacing: '.05em', textTransform: 'uppercase', color: INK, opacity: hereNow ? 0.95 : 0.55 } }, d.label),
+              h('div', { key: 'dl', style: { fontSize: 10, fontWeight: 800, letterSpacing: '.05em', textTransform: 'uppercase', color: INK, opacity: hereNow ? 0.95 : 0.65 } }, d.label),
               h('div', { key: 'dc', style: { display: 'flex', gap: 6, flexWrap: 'wrap' } }, chips));
           }));
 
@@ -3039,10 +3083,23 @@
                   fontSize: 11, padding: '3px 8px', borderRadius: 999, color: INK,
                   border: '1px solid ' + (got ? NODE_ON : GRID),
                   background: got ? 'rgba(52,211,153,0.12)' : 'transparent',
-                  opacity: got ? 1 : 0.5, fontWeight: got ? 700 : 500
+                  opacity: got ? 1 : 0.65, fontWeight: got ? 700 : 500
                 }
               }, (got ? '🏅 ' : '🔒 ') + shortName);
-            })));
+            })),
+          // The full badge descriptions used to live ONLY in title/aria-label -- fine
+          // for a screen reader, invisible on a touchscreen, unreachable by keyboard
+          // (the chips are spans). This disclosure is the same content as visible text;
+          // the chips above stay a scannable grid.
+          h('details', { key: 'blegend', style: { marginTop: 8, fontSize: 12, color: INK } },
+            h('summary', { style: { cursor: 'pointer', fontWeight: 700, opacity: 0.85 } },
+              t('arccity.badge_legend', 'What each badge means')),
+            h('ul', { style: { margin: '6px 0 0', paddingLeft: 18, lineHeight: 1.6 } },
+              BADGES.map(function (bd) {
+                var got = badges.indexOf(bd.id) >= 0;
+                return h('li', { key: 'bl-' + bd.id, style: { opacity: got ? 1 : 0.8 } },
+                  (got ? '🏅 ' : '🔒 ') + bd.label);
+              }))));
 
         // ── View toggle (Play ↔ Teacher) ──
         function viewBtn(v, label) {
@@ -3303,14 +3360,14 @@
           if (spec.locked) return h('div', { key: 'bp-' + name, className: 'arc-battle-param', style: { marginBottom: 8, color: INK, fontSize: 12, opacity: 0.72 } }, spec.label + ': ' + display + ' (fixed)');
           if (spec.snapValues) return h('label', { key: 'bp-' + name, className: 'arc-battle-param arc-battle-param-snap', style: { display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(110px,180px)', gap: 10, alignItems: 'center', marginBottom: 9, color: INK, fontSize: 12 } },
             h('span', { key: 'label' }, spec.label),
-            h('select', { key: 'select', value: String(value), disabled: battleLocked, onChange: function (e) { setBattleParam(name, e.target.value); }, style: { width: '100%', padding: '7px 8px', borderRadius: 8, border: '1px solid ' + GRID, background: 'var(--allo-stem-surface, #ffffff)', color: INK } }, spec.snapValues.map(function (snap) {
+            h('select', { key: 'select', value: String(value), disabled: battleLocked, onChange: function (e) { setBattleParam(name, e.target.value); }, style: { width: '100%', padding: '7px 8px', borderRadius: 8, border: '1px solid ' + GRID, background: 'var(--allo-stem-panel, #ffffff)', color: INK } }, spec.snapValues.map(function (snap) {
               return h('option', { key: 'snap-' + snap, value: String(snap) }, periodOf(snap) + ' units');
             })));
           return h('div', { key: 'bp-' + name, className: 'arc-battle-param', style: { marginBottom: 9 } },
             h('label', { key: 'label', htmlFor: 'arc-battle-' + name, style: { display: 'flex', justifyContent: 'space-between', gap: 8, color: INK, fontSize: 12, marginBottom: 4 } }, h('span', { key: 'txt' }, spec.label), h('span', { key: 'val', style: { fontWeight: 800 } }, display)),
             h('div', { key: 'inputs', className: 'arc-battle-param-inputs', style: { display: 'grid', gridTemplateColumns: 'minmax(0,1fr) 86px', gap: 8, alignItems: 'center' } },
               h('input', { key: 'range', id: 'arc-battle-' + name, type: 'range', min: spec.min, max: spec.max, step: spec.step, value: value, disabled: battleLocked, onChange: function (e) { setBattleParam(name, e.target.value); }, style: { width: '100%', accentColor: BEAM } }),
-              h('input', { key: 'number', type: 'number', min: spec.min, max: spec.max, step: spec.step, value: value, disabled: battleLocked, 'aria-label': spec.label + ' exact value', onChange: function (e) { setBattleParam(name, e.target.value); }, style: { width: '100%', boxSizing: 'border-box', padding: '6px 7px', borderRadius: 8, border: '1px solid ' + GRID, background: 'var(--allo-stem-surface, #ffffff)', color: INK } })));
+              h('input', { key: 'number', type: 'number', min: spec.min, max: spec.max, step: spec.step, value: value, disabled: battleLocked, 'aria-label': spec.label + ' exact value', onChange: function (e) { setBattleParam(name, e.target.value); }, style: { width: '100%', boxSizing: 'border-box', padding: '6px 7px', borderRadius: 8, border: '1px solid ' + GRID, background: 'var(--allo-stem-panel, #ffffff)', color: INK } })));
         }
 
         var battleReview = battle.status === 'won' ? battleRecap(battle) : null;

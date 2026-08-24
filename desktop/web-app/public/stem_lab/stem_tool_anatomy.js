@@ -3797,7 +3797,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                   className: 'min-w-[112px] px-3 py-1.5 rounded-lg text-[11px] font-bold border text-left hover:brightness-95 active:scale-[0.97]'
                 },
                   h('span', { className: 'block' }, scenarioItem.selectorLabel),
-                  h('span', { className: 'block mt-0.5 text-[9px] font-semibold opacity-80' }, scenarioSolvedCount + '/' + scenarioItem.steps.length + ' solved')
+                  h('span', { className: 'block mt-0.5 text-[9px] font-semibold' }, scenarioSolvedCount + '/' + scenarioItem.steps.length + ' solved')
                 );
               })
             ),
@@ -7700,7 +7700,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
             h('span', { className: 'anatomy-atlas-visual-key-label', 'aria-hidden': 'true' }, 'Visual key'),
             keyData.items.map(function(keyItem) {
               return h('span', { key: keyItem.label, className: 'anatomy-atlas-key-item', role: 'listitem' },
-                h('span', { className: 'anatomy-atlas-key-swatch', style: { backgroundColor: keyItem.color }, 'aria-hidden': 'true' }, keyItem.symbol),
+                h('span', { className: 'anatomy-atlas-key-swatch', style: { backgroundColor: keyItem.color === '#0284c7' ? '#0369a1' : keyItem.color }, 'aria-hidden': 'true' }, keyItem.symbol),
                 h('span', null, keyItem.label)
               );
             })
@@ -9395,11 +9395,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
             ),
             h('div', { className: 'anatomy-relation-core' },
               h('div', { className: 'anatomy-relation-node', 'data-kind': 'structure' },
-                h('span', null, 'Selected structure'), h('strong', null, sel.name)
+                h('span', { style: { color: '#475569' } }, 'Selected structure'), h('strong', null, sel.name)
               ),
               h('span', { className: 'anatomy-relation-arrow', 'aria-hidden': 'true' }, '\u2192'),
               h('div', { className: 'anatomy-relation-node', 'data-kind': 'system' },
-                h('span', null, 'Belongs to'), h('strong', null, sys.icon + ' ' + sys.name)
+                h('span', { style: { color: '#475569' } }, 'Belongs to'), h('strong', null, sys.icon + ' ' + sys.name)
               )
             ),
             h('div', { className: 'anatomy-relation-branches', role: 'list', 'aria-label': 'Related system processes' },
@@ -9418,7 +9418,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                     type: 'button', className: 'anatomy-relation-node', 'data-kind': 'partner',
                     'aria-label': 'Open ' + partnerSystem.name + ' system diagram from ' + connection.title,
                     onClick: function() { showAnatomySystem(partnerSystemId, connection.title); }
-                  }, h('span', null, 'Partner system'), h('strong', null, partnerSystem.icon + ' ' + partnerSystem.name))
+                  }, h('span', { style: { color: '#475569' } }, 'Partner system'), h('strong', null, partnerSystem.icon + ' ' + partnerSystem.name))
                 );
               })
             ),
@@ -11965,7 +11965,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                       },
                         h('div', { className: 'flex items-center gap-2 mb-1' },
                           h('span', { className: 'text-lg' }, pw.icon),
-                          h('span', { className: 'text-xs font-black', style: { color: pw.color } }, pw.title),
+                          h('span', { className: 'text-xs font-black', style: { color: ({ '#ef4444': '#b91c1c', '#3b82f6': '#1d4ed8', '#16a34a': '#166534', '#eab308': '#854d0e' })[pw.color] || pw.color } }, pw.title),
                           isDone ? h('span', { className: 'ml-auto text-[11px] text-emerald-500 font-bold' }, '\u2713') : null
                         ),
                         h('p', { className: 'text-[11px] text-slate-600 leading-relaxed' }, pw.desc)

@@ -57,6 +57,27 @@ window.StemLab = window.StemLab || {
     document.head.appendChild(st);
   })();
 
+  // ── Pin the STEM palette to its DARK values on this tool's own root ──
+  // ThrowLab is dark by design (cyan #67e8f9 focus rings, cream/sky/amber inks on
+  // slate panels) but only HALF-migrated, and it broke in both directions at once:
+  // panels hardcoded to #1e293b took the themed ink, which resolves to #0f172a in
+  // light -- 1.22:1 across all 21 mode tabs, 1.93:1 on five readouts -- while inks
+  // hardcoded to the dark palette (#fde68a, #bae6fd, #fbbf24) landed on themed
+  // grounds that went white, at 1.14-1.66:1. One inherited definition on the tool's
+  // root settles both directions at once. Same fix as skatelab and bridgeLab;
+  // html:not(.theme-contrast) leaves high-contrast mode to the theme.
+  (function() {
+    if (document.getElementById('allo-throwlab-palette-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-throwlab-palette-css';
+    st.textContent = 'html:not(.theme-contrast) [data-throwlab-root]{'
+      + '--allo-stem-canvas:#0f172a;--allo-stem-panel:#1e293b;--allo-stem-deeper:#020617;'
+      + '--allo-stem-text:#e2e8f0;--allo-stem-text-soft:#94a3b8;--allo-stem-border:#334155;'
+      + '--allo-stem-button-bg:#1e293b;--allo-stem-button-text:#e2e8f0;--allo-stem-button-border:#334155;'
+      + 'background:#0f172a;}';
+    document.head.appendChild(st);
+  })();
+
   (function() {
     if (document.getElementById('allo-throwlab-polish-css')) return;
     var st = document.createElement('style');
@@ -1641,6 +1662,7 @@ window.StemLab = window.StemLab || {
     desc: 'Sports physics: how spin, speed, and release point shape the ball\'s path',
     color: 'amber',
     category: 'science',
+    gradeRange: '5-12',
     questHooks: [
       { id: 'tl_throw_5',
         label: 'Throw 5 pitches',
@@ -1652,6 +1674,11 @@ window.StemLab = window.StemLab || {
         icon: '🎯',
         check: function(d) { return (d.strikeCount || 0) >= 3; },
         progress: function(d) { return (d.strikeCount || 0) + '/3 strikes'; } },
+      { id: 'tl_explain_flight',
+        label: 'Explain in your own words what shapes the flight',
+        icon: '💡',
+        check: function(d) { var iq = (d && d._throwHunt) || {}; return !!iq.understood && typeof iq.explanation === 'string' && iq.explanation.trim().length >= 40; },
+        progress: function(d) { var iq = (d && d._throwHunt) || {}; return iq.understood ? (((iq.explanation || '').trim().length >= 40) ? 'Explained' : 'Say more') : 'Visit the inquiry station'; } },
       { id: 'tl_throw_each',
         label: 'Throw every pitch type at least once',
         icon: '🏆',

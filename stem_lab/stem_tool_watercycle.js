@@ -412,7 +412,7 @@
       '.wc-walkthrough-copy{min-width:0;flex:1}.wc-walkthrough-kicker{display:block;font-size:10px;font-weight:900;letter-spacing:.09em;text-transform:uppercase;color:#4f46e5}.wc-walkthrough-copy strong{display:block;margin-top:1px;font-size:12px;line-height:1.25;color:#1e293b}.wc-walkthrough-copy span:last-child{display:block;margin-top:2px;font-size:11px;line-height:1.3;color:#64748b}.wc-walkthrough-progress{flex:0 0 110px;height:6px;border-radius:999px;background:#cbd5e1;overflow:hidden}.wc-walkthrough-progress span{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#6366f1,#0ea5e9);transition:width 220ms ease}.wc-walkthrough-actions{display:flex;align-items:center;gap:5px;flex:0 0 auto}.wc-walkthrough-btn,.wc-walkthrough-primary{min-height:30px;padding:5px 8px;border-radius:8px;font-size:11px;font-weight:900;transition:background 160ms ease,transform 160ms ease,box-shadow 160ms ease}.wc-walkthrough-btn{border:1px solid rgba(99,102,241,.28);background:rgba(255,255,255,.72);color:#4338ca}.wc-walkthrough-btn:hover:not(:disabled),.wc-walkthrough-primary:hover{transform:translateY(-1px);box-shadow:0 5px 12px rgba(79,70,229,.14)}.wc-walkthrough-btn:disabled{opacity:.45;cursor:not-allowed}.wc-walkthrough-primary{border:1px solid #4f46e5;background:#4f46e5;color:#fff}.wc-walkthrough-primary:hover{background:#4338ca}',
       '@media(max-width:680px){.wc-walkthrough-strip{align-items:flex-start;flex-wrap:wrap}.wc-walkthrough-copy{flex-basis:calc(100% - 10px)}.wc-walkthrough-progress{flex:1 1 120px}.wc-walkthrough-actions{margin-left:auto}}',
       '@media(max-width:420px){.wc-walkthrough-actions{width:100%;margin-left:0}.wc-walkthrough-actions button{flex:1}}',
-      '.dark .wc-walkthrough-strip{background:linear-gradient(135deg,rgba(30,27,75,.55),rgba(8,47,73,.58));border-color:rgba(129,140,248,.28);color:#cbd5e1}.dark .wc-walkthrough-kicker{color:#a5b4fc}.dark .wc-walkthrough-copy strong{color:#f8fafc}.dark .wc-walkthrough-copy span:last-child{color:#94a3b8}.dark .wc-walkthrough-progress{background:#334155}.dark .wc-walkthrough-btn{background:rgba(15,23,42,.72);border-color:rgba(129,140,248,.32);color:#c7d2fe}.dark .wc-walkthrough-primary{background:#6366f1;border-color:#818cf8;color:#fff}',
+      '.dark .wc-walkthrough-strip{background:linear-gradient(135deg,rgba(30,27,75,.55),rgba(8,47,73,.58));border-color:rgba(129,140,248,.28);color:#cbd5e1}.dark .wc-walkthrough-kicker{color:#a5b4fc}.dark .wc-walkthrough-copy strong{color:#f8fafc}.dark .wc-walkthrough-copy span:last-child{color:#94a3b8}.dark .wc-walkthrough-progress{background:#334155}.dark .wc-walkthrough-btn{background:rgba(15,23,42,.72);border-color:rgba(129,140,248,.32);color:#c7d2fe}.dark .wc-walkthrough-primary{background:#4f46e5;border-color:#a5b4fc;color:#fff}',
       '.wc-compare-strip{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;margin:0 0 12px;padding:10px 12px;border:1px solid rgba(99,102,241,.24);border-left:3px solid #6366f1;border-radius:12px;background:linear-gradient(135deg,rgba(238,242,255,.72),rgba(224,242,254,.58));color:#334155}',
       '.wc-compare-copy{min-width:0}.wc-compare-kicker{display:block;font-size:9px;font-weight:900;letter-spacing:.1em;text-transform:uppercase;color:#4f46e5}.wc-compare-copy strong{display:block;margin-top:2px;font-size:12px;line-height:1.25;color:#1e293b}.wc-compare-copy span:last-child{display:block;margin-top:3px;font-size:11px;line-height:1.35;color:#64748b;overflow-wrap:anywhere}',
       '.wc-compare-method{grid-column:1/-1;margin:0;padding:6px 8px;border-left:2px solid #6366f1;border-radius:5px;background:rgba(99,102,241,.08);color:#3730a3;font-size:10px;line-height:1.35}.wc-compare-method strong{margin-right:4px;color:#312e81}.dark .wc-compare-method{background:rgba(99,102,241,.18);color:#c7d2fe;border-left-color:#a5b4fc}.dark .wc-compare-method strong{color:#e0e7ff}@media(forced-colors:active){.wc-compare-method{border-color:Highlight;background:Canvas;color:CanvasText}.wc-compare-method strong{color:CanvasText}}',
@@ -493,6 +493,40 @@
       ,'.wc-precip-view-toggle{display:inline-flex;align-items:stretch;gap:0;overflow:hidden;border:1px solid rgba(14,116,144,.38);border-radius:9px;background:rgba(255,255,255,.72)}.wc-precip-view-choice{min-height:38px;padding:6px 9px;border:0;border-right:1px solid rgba(14,116,144,.22);background:transparent;color:#075985;font-size:11px;font-weight:900;white-space:nowrap}.wc-precip-view-choice:last-child{border-right:0}.wc-precip-view-choice:hover{background:rgba(224,242,254,.84)}.wc-precip-view-choice[aria-pressed=true]{background:#0369a1;color:#fff}.wc-precip-3d-canvas{display:block;width:100%;height:clamp(300px,42vw,520px);min-height:300px;background:#061a2c;touch-action:none}.wc-precip-3d-key{position:absolute;z-index:4;left:10px;right:10px;bottom:58px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;pointer-events:none}.wc-precip-3d-key>span,.wc-precip-3d-reset{display:inline-flex;align-items:center;gap:5px;min-height:25px;padding:4px 7px;border:1px solid rgba(186,230,253,.3);border-radius:999px;background:rgba(3,18,31,.72);color:#e0f2fe;font-size:11px;font-weight:900;line-height:1}.wc-precip-3d-gesture{opacity:.8;font-size:11px!important;font-weight:700!important;letter-spacing:.01em!important}.wc-precip-3d-key i{display:inline-block;width:8px;height:8px;border-radius:50%;background:#7dd3fc;box-shadow:0 0 8px rgba(125,211,252,.8)}.wc-precip-3d-key i.is-updraft{background:#fde68a;box-shadow:0 0 8px rgba(253,230,138,.8)}.wc-precip-3d-key i.is-thermal{background:#fb7185;box-shadow:0 0 8px rgba(251,113,133,.72)}.wc-precip-3d-key i.is-charge{background:linear-gradient(90deg,#fde68a 0 50%,#fb7185 50%);box-shadow:0 0 8px rgba(251,113,133,.68)}.wc-precip-3d-key i.is-orographic{background:linear-gradient(90deg,#7dd3fc 0 48%,#fbbf24 52%);box-shadow:0 0 8px rgba(125,211,252,.62)}.wc-precip-3d-reset{pointer-events:auto;margin-left:auto;border-color:rgba(125,211,252,.46);background:rgba(7,89,133,.88);color:#fff;cursor:pointer}.wc-precip-3d-reset:hover{background:#0e7490}.wc-precip-3d-science{margin:6px 0 0;padding:7px 9px;border:1px solid rgba(56,189,248,.22);border-left:3px solid #38bdf8;border-radius:8px;background:rgba(224,242,254,.58);color:#075985;font-size:11px;line-height:1.38}.dark .wc-precip-3d-science{background:rgba(8,47,73,.52);border-color:rgba(125,211,252,.24);border-left-color:#7dd3fc;color:#bae6fd}.dark .wc-precip-view-toggle{border-color:rgba(125,211,252,.34);background:rgba(15,23,42,.76)}.dark .wc-precip-view-choice{border-color:rgba(125,211,252,.22);color:#bae6fd}.dark .wc-precip-view-choice:hover{background:rgba(8,47,73,.86)}.dark .wc-precip-view-choice[aria-pressed=true]{background:#0ea5e9;color:#082f49}@media(max-width:560px){.wc-precip-head-actions{display:grid;grid-template-columns:1fr 1fr;align-items:stretch;width:100%}.wc-precip-head-actions>.wc-precip-view-toggle{grid-column:1/-1;grid-row:2}.wc-precip-head-actions>.wc-precip-btn:first-child{grid-column:1;grid-row:1}.wc-precip-head-actions>.wc-precip-btn.is-primary{grid-column:2;grid-row:1}.wc-precip-view-toggle{min-width:0}.wc-precip-view-choice{flex:1;padding-inline:6px}.wc-precip-3d-canvas{height:clamp(300px,78vw,430px);min-height:300px}.wc-precip-3d-key{left:7px;right:7px;bottom:119px;gap:4px}.wc-precip-3d-key>span,.wc-precip-3d-reset{font-size:11px;padding-inline:6px}.wc-precip-key-secondary,.wc-precip-3d-gesture{display:none!important}}@media(prefers-reduced-motion:reduce){.wc-precip-3d-canvas{animation:none}.wc-precip-view-choice,.wc-precip-3d-reset{transition:none!important}}@media(forced-colors:active){.wc-precip-view-toggle,.wc-precip-view-choice,.wc-precip-3d-key>span,.wc-precip-3d-reset,.wc-precip-3d-science{border:1px solid CanvasText;background:Canvas;color:CanvasText}.wc-precip-view-choice[aria-pressed=true],.wc-precip-3d-reset{background:Highlight;color:HighlightText}.wc-precip-3d-key i{background:Highlight;box-shadow:none}}'
       ,'.wc-precip-3d-focus{position:absolute;z-index:3;top:10px;left:10px;display:inline-flex;overflow:hidden;border:1px solid rgba(186,230,253,.34);border-radius:9px;background:rgba(3,18,31,.78);backdrop-filter:blur(9px)}.wc-precip-3d-focus-choice{min-height:36px;padding:6px 9px;border:0;border-right:1px solid rgba(186,230,253,.18);background:transparent;color:#dff6ff;font-size:11px;font-weight:900;white-space:nowrap}.wc-precip-3d-focus-choice:last-child{border-right:0}.wc-precip-3d-focus-choice:hover{background:rgba(14,116,144,.48)}.wc-precip-3d-focus-choice[aria-pressed=true]{background:#0ea5e9;color:#082f49}.wc-precip-3d-thermal-rail{position:absolute;z-index:2;top:58px;right:10px;display:grid;gap:5px;width:116px;padding:7px;border:1px solid rgba(186,230,253,.28);border-radius:10px;background:rgba(3,18,31,.72);color:#e0f2fe;backdrop-filter:blur(9px);pointer-events:none}.wc-precip-3d-thermal-rail>strong{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#bae6fd}.wc-precip-3d-thermal-level{display:grid;grid-template-columns:9px minmax(0,1fr) auto;align-items:center;gap:5px;font-size:11px;line-height:1.15}.wc-precip-3d-thermal-level i{display:block;width:8px;height:8px;border-radius:50%;background:#fbbf24;box-shadow:0 0 7px rgba(251,191,36,.72)}.wc-precip-3d-thermal-level[data-temperature-phase=frozen] i{background:#7dd3fc;box-shadow:0 0 7px rgba(125,211,252,.8)}.wc-precip-3d-thermal-level b{font-weight:800}.wc-precip-3d-thermal-level em{font-style:normal;font-weight:900;color:#fff}.wc-precip-3d-thermal-rail small{padding-top:4px;border-top:1px solid rgba(186,230,253,.2);font-size:11px;line-height:1.2;color:#bae6fd}.dark .wc-precip-3d-focus,.dark .wc-precip-3d-thermal-rail{background:rgba(2,6,23,.8)}@media(max-width:560px){.wc-precip-3d-focus{top:7px;left:7px;right:7px;display:flex}.wc-precip-3d-focus-choice{flex:1;min-height:34px;padding-inline:5px;font-size:11px}.wc-precip-3d-thermal-rail{top:48px;right:7px;width:102px;padding:6px}.wc-precip-3d-thermal-rail>strong{display:none}.wc-precip-3d-thermal-level{grid-template-columns:8px minmax(0,1fr) auto;gap:3px;font-size:11px}.wc-precip-3d-thermal-rail small{font-size:11px}.wc-precip-3d-key{padding-right:0}}@media(prefers-reduced-motion:reduce){.wc-precip-3d-focus-choice{transition:none!important}}@media(forced-colors:active){.wc-precip-3d-focus,.wc-precip-3d-focus-choice,.wc-precip-3d-thermal-rail{border-color:CanvasText;background:Canvas;color:CanvasText}.wc-precip-3d-focus-choice[aria-pressed=true]{background:Highlight;color:HighlightText}.wc-precip-3d-thermal-level i{background:CanvasText;box-shadow:none}.wc-precip-3d-thermal-level em,.wc-precip-3d-thermal-rail>strong,.wc-precip-3d-thermal-rail small{color:CanvasText}}'
       ,'.wc-precip-3d-key i.is-evaporation{background:radial-gradient(circle at 35% 35%,#e0f2fe 0 22%,#fde68a 30% 58%,rgba(251,191,36,.18) 72%);box-shadow:0 0 8px rgba(251,191,36,.72)}.wc-precip-3d-key i.is-condensation{background:radial-gradient(circle at 35% 35%,#f8fafc 0 18%,#67e8f9 24% 52%,#0284c7 62% 100%);box-shadow:0 0 9px rgba(103,232,249,.86)}.wc-precip-3d-key i.is-coalescence{width:12px;border-radius:999px;background:radial-gradient(circle at 24% 50%,#bae6fd 0 18%,transparent 22%),radial-gradient(circle at 70% 50%,#38bdf8 0 30%,#0369a1 34% 100%);box-shadow:0 0 9px rgba(56,189,248,.78)}'
+      // Readability pass: keep the model's visual detail, but make the first
+      // explanation and the controls comfortable to scan at normal zoom.
+      ,'.wc-explorer-root .wc-brief-copy{font-size:16px;line-height:1.55}.wc-explorer-root .wc-kicker{font-size:13px}.wc-explorer-root .wc-brief-title{font-size:clamp(22px,3vw,30px)}.wc-explorer-root .wc-status-pill{font-size:13px;padding:8px 12px}.wc-explorer-root .wc-metric span{font-size:12px}.wc-explorer-root .wc-metric strong{font-size:16px}.wc-explorer-root .wc-start-path-head strong{font-size:14px}.wc-explorer-root .wc-start-path-head span{font-size:12px}.wc-explorer-root .wc-start-action{min-height:64px;padding:10px 12px;grid-template-columns:34px minmax(0,1fr)}.wc-explorer-root .wc-start-number{width:34px;height:34px;font-size:14px}.wc-explorer-root .wc-start-action strong{font-size:14px}.wc-explorer-root .wc-start-action small{font-size:12px;line-height:1.35}.wc-explorer-root .wc-view-switch-label{font-size:14px}.wc-explorer-root .wc-view-switch-note{font-size:12px}.wc-explorer-root .wc-view-segments button{min-height:42px;padding:7px 12px;font-size:13px}.wc-explorer-root .wc-stage-rack-label{font-size:13px}.wc-explorer-root .wc-stage-rack button{min-height:40px;padding:7px 11px;font-size:13px}.wc-explorer-root .wc-stage-focus-summary{font-size:15px;line-height:1.5}.wc-explorer-root .wc-stage-focus-flow{font-size:13px}.wc-explorer-root .wc-canvas-guide-copy{font-size:14px;line-height:1.45}.wc-explorer-root .wc-canvas-guide-label{font-size:13px}.wc-explorer-root .wc-2d-playback{min-height:44px;padding:8px 13px;font-size:13px}.wc-explorer-root .wc-signal-dashboard-copy{font-size:14px;line-height:1.5}.wc-explorer-root .wc-signal-bar-head{font-size:13px}.wc-explorer-root .wc-signal-legend{font-size:13px}.wc-explorer-root .wc-signal-driver{font-size:13px}.wc-explorer-root .wc-signal-driver-kicker{font-size:12px}.wc-explorer-root .wc-signal-driver-value{font-size:14px}.wc-explorer-root .wc-next-test-copy strong{font-size:14px}.wc-explorer-root .wc-next-test-copy span{font-size:13px}.wc-explorer-root .wc-journey-panel p,.wc-explorer-root .wc-journey-panel button{font-size:14px}.wc-explorer-root .wc-journey-panel .wc-timeline-step strong{font-size:13px}.wc-explorer-root .wc-journey-panel .wc-replay-status{font-size:13px}.wc-explorer-root .wc-journey-panel .wc-route-choice-card{font-size:13px}.wc-explorer-root .wc-journey-panel .wc-route-choice-card strong{font-size:15px}.wc-explorer-root .wc-journey-panel .wc-route-choice-card span{font-size:12px}.wc-explorer-root .wc-signal-chart text{font-size:13px}.wc-explorer-root .wc-signal-chart .wc-signal-axis-label{font-size:13px}@media(max-width:700px){.wc-explorer-root .wc-brief-copy{font-size:15px}.wc-explorer-root .wc-start-action{min-height:58px}.wc-explorer-root .wc-signal-dashboard-copy{font-size:13px}}'
+      // ── BE THE WATER + the four-destination mode bar ──────────────────────
+      // Plain CSS, not Tailwind utilities: the tool has already been bitten by
+      // phantom shades (`text-slate-350`) and by unthemed `hover:` variants that
+      // silently do nothing, and both classes are invisible here.
+      ,'.wc-data-time-note{display:block;margin-top:4px;font-size:11px;line-height:1.45;color:#155e75}.dark .wc-data-time-note{color:#a5f3fc}'
+      ,'.wc-start-action-flagship{background:linear-gradient(135deg,rgba(2,132,199,.13),rgba(16,185,129,.13))!important;border-color:rgba(2,132,199,.42)!important}.dark .wc-start-action-flagship{background:linear-gradient(135deg,rgba(14,165,233,.2),rgba(45,212,191,.16))!important;border-color:rgba(125,211,252,.44)!important}'
+      ,'.wc-section-tabs{display:grid;grid-template-columns:repeat(auto-fit,minmax(158px,1fr));gap:6px;margin:16px 0 12px;padding:5px;border:1px solid rgba(148,163,184,.42);border-radius:13px;background:rgba(248,250,252,.9)}.wc-section-tab{display:flex;flex-direction:column;gap:1px;min-height:52px;padding:7px 10px;border:1px solid transparent;border-radius:9px;background:transparent;color:#334155;font:inherit;text-align:left;cursor:pointer}.wc-section-tab strong{font-size:12.5px;font-weight:900;line-height:1.2}.wc-section-tab small{font-size:11px;font-weight:600;color:#64748b;line-height:1.25}.wc-section-tab:hover{background:#e2e8f0}.wc-section-tab:focus-visible{outline:3px solid #0369a1;outline-offset:2px}.wc-section-tab[aria-pressed=true]{background:#334155;border-color:#1e293b;color:#f8fafc}.wc-section-tab[aria-pressed=true] small{color:#cbd5e1}.dark .wc-section-tabs{border-color:rgba(51,65,85,.9);background:rgba(15,23,42,.66)}.dark .wc-section-tab{color:#e2e8f0}.dark .wc-section-tab small{color:#94a3b8}.dark .wc-section-tab:hover{background:rgba(30,41,59,.9)}.dark .wc-section-tab[aria-pressed=true]{background:#e2e8f0;border-color:#f1f5f9;color:#0f172a}.dark .wc-section-tab[aria-pressed=true] small{color:#334155}.wc-section-body{display:block}@media(max-width:560px){.wc-section-tab small{display:none}.wc-section-tab{min-height:44px}}@media(forced-colors:active){.wc-section-tabs,.wc-section-tab{border:1px solid CanvasText;background:Canvas;color:CanvasText}.wc-section-tab[aria-pressed=true]{background:Highlight;color:HighlightText}}'
+      ,'.wc-stage-funfact-kicker{display:block;margin-bottom:3px;font-size:11px;font-weight:900;letter-spacing:.04em;text-transform:uppercase;color:#92400e}.dark .wc-stage-funfact-kicker{color:#fcd34d}.wc-stage-funfact-copy{margin:0;font-size:13px;line-height:1.5;color:#78350f}.dark .wc-stage-funfact-copy{color:#fde68a}'
+      ,'.wc-mode-shell{max-width:62rem;margin:0 auto}.wc-mode-shell>.wc-mode-bar{margin-bottom:14px}.wc-precip-lab>.wc-mode-bar{margin-bottom:14px}'
+      ,'.wc-mode-bar{display:flex;align-items:stretch;gap:6px;margin:0 0 12px;padding:5px;border:1px solid rgba(14,116,144,.28);border-radius:14px;background:rgba(240,249,255,.9);overflow-x:auto}.wc-mode-bar::-webkit-scrollbar{height:4px}.wc-mode-tab{flex:1 1 0;min-width:112px;min-height:56px;display:flex;flex-direction:column;justify-content:center;gap:2px;padding:8px 10px;border:1px solid transparent;border-radius:10px;background:transparent;color:#0c4a6e;font:inherit;text-align:left;cursor:pointer}.wc-mode-tab strong{font-size:13px;font-weight:900;letter-spacing:.01em}.wc-mode-tab small{font-size:11px;font-weight:600;line-height:1.25;color:#0e7490}.wc-mode-tab:hover{background:rgba(224,242,254,.9);border-color:rgba(14,116,144,.3)}.wc-mode-tab:focus-visible{outline:3px solid #0369a1;outline-offset:2px}.wc-mode-tab[aria-pressed=true]{background:#0369a1;border-color:#075985;color:#fff;box-shadow:0 2px 8px rgba(3,105,161,.3)}.wc-mode-tab[aria-pressed=true] small{color:#e0f2fe}.wc-mode-tab.is-flagship{position:relative}.wc-mode-tab.is-flagship[aria-pressed=false]{background:linear-gradient(135deg,rgba(2,132,199,.14),rgba(16,185,129,.14));border-color:rgba(2,132,199,.42)}.wc-mode-tab.is-flagship[aria-pressed=true]{background:linear-gradient(135deg,#0369a1,#0f766e)}.wc-mode-flag{align-self:flex-start;margin-top:2px;padding:1px 6px;border-radius:999px;background:#0f766e;color:#ecfdf5;font-size:10px;font-weight:900;letter-spacing:.06em}.dark .wc-mode-bar{border-color:rgba(125,211,252,.26);background:rgba(2,20,35,.72)}.dark .wc-mode-tab{color:#e0f2fe}.dark .wc-mode-tab small{color:#7dd3fc}.dark .wc-mode-tab:hover{background:rgba(8,47,73,.86);border-color:rgba(125,211,252,.3)}.dark .wc-mode-tab[aria-pressed=true]{background:#0ea5e9;border-color:#7dd3fc;color:#062338}.dark .wc-mode-tab[aria-pressed=true] small{color:#083344}.dark .wc-mode-tab.is-flagship[aria-pressed=false]{background:linear-gradient(135deg,rgba(14,165,233,.2),rgba(45,212,191,.18));border-color:rgba(125,211,252,.44)}.dark .wc-mode-flag{background:#5eead4;color:#042f2e}@media(max-width:640px){.wc-mode-bar{flex-wrap:wrap;overflow-x:visible}.wc-mode-tab{flex:1 1 calc(50% - 9px);min-width:0;min-height:48px}.wc-mode-tab small{display:none}}@media(forced-colors:active){.wc-mode-bar,.wc-mode-tab{border:1px solid CanvasText;background:Canvas;color:CanvasText}.wc-mode-tab[aria-pressed=true]{background:Highlight;color:HighlightText}}'
+      ,'.wc-pilot-root{max-width:62rem;margin:0 auto;display:flex;flex-direction:column;gap:12px;color:#0f172a}.wc-pilot-root.is-dark{color:#e2e8f0}.wc-pilot-topbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.wc-pilot-back{min-height:38px;padding:7px 12px;border:1px solid rgba(14,116,144,.4);border-radius:9px;background:rgba(240,249,255,.9);color:#075985;font-size:13px;font-weight:800;cursor:pointer}.wc-pilot-back:hover{background:#e0f2fe}.wc-pilot-back:focus-visible{outline:3px solid #0369a1;outline-offset:2px}.dark .wc-pilot-back{border-color:rgba(125,211,252,.36);background:rgba(8,47,73,.66);color:#bae6fd}.wc-pilot-title{display:flex;flex-direction:column;gap:1px;min-width:0}.wc-pilot-title strong{font-size:19px;font-weight:900;letter-spacing:-.01em}.wc-pilot-title span{font-size:12.5px;font-weight:600;color:#0e7490}.dark .wc-pilot-title span{color:#7dd3fc}.wc-pilot-loops{margin-left:auto;padding:5px 11px;border-radius:999px;background:rgba(2,132,199,.14);color:#075985;font-size:12px;font-weight:900}.dark .wc-pilot-loops{background:rgba(14,165,233,.2);color:#bae6fd}'
+      ,'.wc-pilot-scenarios{display:grid;grid-template-columns:repeat(auto-fit,minmax(158px,1fr));gap:7px}.wc-pilot-scenario{display:flex;flex-direction:column;gap:2px;min-height:56px;padding:8px 10px;border:1px solid rgba(14,116,144,.3);border-radius:11px;background:rgba(255,255,255,.86);color:#0c4a6e;text-align:left;cursor:pointer}.wc-pilot-scenario strong{font-size:13px;font-weight:900}.wc-pilot-scenario small{font-size:11px;font-weight:700;color:#0e7490}.wc-pilot-scenario:hover{background:#e0f2fe}.wc-pilot-scenario:focus-visible{outline:3px solid #0369a1;outline-offset:2px}.wc-pilot-scenario[aria-pressed=true]{background:#0369a1;border-color:#075985;color:#fff}.wc-pilot-scenario[aria-pressed=true] small{color:#e0f2fe}.dark .wc-pilot-scenario{border-color:rgba(125,211,252,.28);background:rgba(15,23,42,.72);color:#e0f2fe}.dark .wc-pilot-scenario small{color:#7dd3fc}.dark .wc-pilot-scenario:hover{background:rgba(8,47,73,.9)}.dark .wc-pilot-scenario[aria-pressed=true]{background:#0ea5e9;color:#062338}.dark .wc-pilot-scenario[aria-pressed=true] small{color:#083344}.wc-pilot-scenario-note{margin:0;font-size:13px;line-height:1.5;color:#155e75}.dark .wc-pilot-scenario-note{color:#a5f3fc}'
+      ,'.wc-pilot-stage{position:relative;border-radius:16px;overflow:hidden;border:1px solid rgba(8,47,73,.5);background:#041a2b;box-shadow:0 10px 30px rgba(2,20,35,.28)}.wc-pilot-canvas{display:block;width:100%;height:clamp(340px,52vw,600px);min-height:340px;background:#08243a;touch-action:none;cursor:grab}.wc-pilot-canvas:active{cursor:grabbing}.wc-pilot-canvas:focus-visible{outline:3px solid #38bdf8;outline-offset:-3px}.wc-pilot-fallback{padding:26px 20px;color:#e0f2fe;text-align:center}.wc-pilot-fallback strong{display:block;margin-bottom:6px;font-size:16px}.wc-pilot-fallback p{margin:0 0 12px;font-size:13px;line-height:1.5;color:#bae6fd}.wc-pilot-btn{min-height:40px;padding:9px 15px;border:1px solid #7dd3fc;border-radius:10px;background:#0369a1;color:#fff;font-size:13px;font-weight:800;cursor:pointer}'
+      // Every HUD surface is a fixed dark glass panel with fixed light ink. The
+      // canvas behind it is dark in BOTH themes, so making these theme-reactive
+      // would produce dark-on-dark in light mode - the failure this tool has
+      // already had to fix four separate times.
+      ,'.wc-pilot-hud{position:absolute;z-index:3;padding:9px 11px;border:1px solid rgba(186,230,253,.26);border-radius:12px;background:rgba(3,18,31,.76);backdrop-filter:blur(10px);color:#e0f2fe;pointer-events:none}.wc-pilot-hud-left{top:10px;left:10px;display:grid;gap:7px;min-width:186px}.wc-pilot-hud-right{top:10px;right:10px;min-width:170px}.wc-pilot-form-badge{display:flex;align-items:center;gap:7px;font-size:14px;font-weight:900;letter-spacing:.01em}.wc-pilot-form-dot{width:11px;height:11px;border-radius:50%;background:#38bdf8;box-shadow:0 0 10px rgba(56,189,248,.9)}.wc-pilot-form-badge[data-form=vapor] .wc-pilot-form-dot{background:#bae6fd}.wc-pilot-form-badge[data-form=droplet] .wc-pilot-form-dot,.wc-pilot-form-badge[data-form=cloud] .wc-pilot-form-dot{background:#f8fafc}.wc-pilot-form-badge[data-form=ice] .wc-pilot-form-dot,.wc-pilot-form-badge[data-form=snow] .wc-pilot-form-dot{background:#a5f3fc}.wc-pilot-form-badge[data-form=rain] .wc-pilot-form-dot{background:#60a5fa}.wc-pilot-form-badge[data-form=soil] .wc-pilot-form-dot{background:#bef264}.wc-pilot-form-badge[data-form=plant] .wc-pilot-form-dot,.wc-pilot-form-badge[data-form=transpiring] .wc-pilot-form-dot{background:#86efac}.wc-pilot-form-badge[data-form=groundwater] .wc-pilot-form-dot{background:#a5b4fc}.wc-pilot-readouts{display:grid;grid-template-columns:1fr 1fr;gap:4px 10px;margin:0}.wc-pilot-readouts div{display:flex;flex-direction:column}.wc-pilot-readouts dt{font-size:10px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:#7dd3fc}.wc-pilot-readouts dd{margin:0;font-size:13.5px;font-weight:900;color:#f0f9ff}.wc-pilot-buoy{padding:5px 7px;border-radius:8px;font-size:11px;font-weight:800;line-height:1.3;background:rgba(248,113,113,.18);color:#fecaca}.wc-pilot-buoy[data-state=rising]{background:rgba(52,211,153,.2);color:#bbf7d0}'
+      ,'.wc-pilot-gauge{display:grid;gap:4px}.wc-pilot-gauge>span{font-size:10px;font-weight:900;letter-spacing:.05em;text-transform:uppercase;color:#7dd3fc}.wc-pilot-gauge-track{height:9px;border-radius:999px;background:rgba(186,230,253,.2);overflow:hidden}.wc-pilot-gauge-track i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#38bdf8,#a5f3fc);transition:width .18s linear}.wc-pilot-gauge small{font-size:11px;font-weight:700;line-height:1.3;color:#e0f2fe}'
+      ,'.wc-pilot-ladder{position:absolute;z-index:3;left:10px;bottom:78px;display:grid;justify-items:center;gap:4px;pointer-events:none}.wc-pilot-ladder-track{position:relative;width:5px;height:clamp(120px,22vw,210px);border-radius:999px;background:linear-gradient(180deg,rgba(30,58,138,.85),rgba(125,211,252,.6))}.wc-pilot-ladder-mark{position:absolute;left:9px;transform:translateY(50%);white-space:nowrap;padding:1px 5px;border-radius:5px;font-size:10px;font-weight:900;letter-spacing:.03em;background:rgba(3,105,161,.9);color:#f0f9ff}.wc-pilot-ladder-mark.is-freeze{background:rgba(21,94,117,.92);color:#ecfeff}.wc-pilot-ladder-mark.is-lfc{background:rgba(15,118,110,.92);color:#ecfdf5}.wc-pilot-ladder-mark::before{content:"";position:absolute;left:-9px;top:50%;width:9px;height:2px;background:currentColor;opacity:.7}.wc-pilot-ladder-you{position:absolute;left:-5px;width:15px;height:15px;transform:translateY(50%);border-radius:50%;border:2px solid #fff;background:#38bdf8;box-shadow:0 0 12px rgba(56,189,248,.9);transition:bottom .18s linear}.wc-pilot-ladder small{font-size:10px;font-weight:800;color:#bae6fd}'
+      ,'.wc-pilot-pad{position:absolute;z-index:4;left:50%;bottom:10px;transform:translateX(-50%);display:flex;flex-wrap:wrap;justify-content:center;gap:5px;padding:6px;border:1px solid rgba(186,230,253,.26);border-radius:13px;background:rgba(3,18,31,.8);backdrop-filter:blur(10px)}.wc-pilot-key{min-width:46px;min-height:44px;padding:6px 10px;border:1px solid rgba(125,211,252,.4);border-radius:9px;background:rgba(7,89,133,.82);color:#f0f9ff;font-size:13px;font-weight:900;cursor:pointer;touch-action:none;-webkit-user-select:none;user-select:none}.wc-pilot-key.is-wide{min-width:82px;font-size:12px}.wc-pilot-key:hover{background:#0e7490}.wc-pilot-key:active{background:#38bdf8;color:#062338}.wc-pilot-key:focus-visible{outline:3px solid #7dd3fc;outline-offset:2px}.wc-pilot-key[aria-pressed=true]{background:#38bdf8;color:#062338}'
+      ,'.wc-pilot-objective{display:grid;gap:3px;padding:11px 13px;border:1px solid rgba(2,132,199,.3);border-left:4px solid #0284c7;border-radius:11px;background:rgba(224,242,254,.7)}.wc-pilot-objective-kicker{font-size:10.5px;font-weight:900;letter-spacing:.07em;text-transform:uppercase;color:#0369a1}.wc-pilot-objective p{margin:0;font-size:14.5px;line-height:1.5;font-weight:600;color:#0c4a6e}.dark .wc-pilot-objective{border-color:rgba(125,211,252,.28);border-left-color:#38bdf8;background:rgba(8,47,73,.6)}.dark .wc-pilot-objective-kicker{color:#7dd3fc}.dark .wc-pilot-objective p{color:#e0f2fe}'
+      ,'.wc-pilot-science,.wc-pilot-ledger{padding:13px 15px;border:1px solid rgba(148,163,184,.4);border-radius:13px;background:rgba(255,255,255,.86)}.dark .wc-pilot-science,.dark .wc-pilot-ledger{border-color:rgba(51,65,85,.8);background:rgba(15,23,42,.66)}.wc-pilot-science h4,.wc-pilot-ledger h4{margin:0 0 6px;font-size:15px;font-weight:900;color:#0f172a}.dark .wc-pilot-science h4,.dark .wc-pilot-ledger h4{color:#f1f5f9}.wc-pilot-science p{margin:0 0 9px;font-size:14px;line-height:1.55;color:#334155}.dark .wc-pilot-science p{color:#cbd5e1}.wc-pilot-science-numbers{display:grid;grid-template-columns:repeat(auto-fit,minmax(126px,1fr));gap:7px;margin-bottom:9px}.wc-pilot-science-numbers div{padding:7px 9px;border:1px solid rgba(2,132,199,.22);border-radius:9px;background:rgba(240,249,255,.8)}.dark .wc-pilot-science-numbers div{border-color:rgba(125,211,252,.2);background:rgba(8,47,73,.5)}.wc-pilot-science-numbers dt{font-size:10.5px;font-weight:900;letter-spacing:.04em;text-transform:uppercase;color:#0369a1}.dark .wc-pilot-science-numbers dt{color:#7dd3fc}.wc-pilot-science-numbers dd{margin:0;font-size:15px;font-weight:900;color:#0c4a6e}.dark .wc-pilot-science-numbers dd{color:#e0f2fe}.wc-pilot-model-note{margin:0!important;font-size:12px!important;line-height:1.45!important;color:#475569!important}.dark .wc-pilot-model-note{color:#94a3b8!important}'
+      ,'.wc-pilot-ledger-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px}.wc-pilot-ledger-head span{font-size:13px;font-weight:900;color:#0369a1}.dark .wc-pilot-ledger-head span{color:#7dd3fc}.wc-pilot-ledger-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(142px,1fr));gap:6px;margin:8px 0 9px;padding:0;list-style:none}.wc-pilot-ledger-list li{display:flex;align-items:center;gap:7px;padding:7px 9px;border:1px solid rgba(148,163,184,.36);border-radius:9px;font-size:13px;font-weight:700;color:#475569}.wc-pilot-ledger-list li.is-done{border-color:rgba(16,185,129,.5);background:rgba(209,250,229,.6);color:#065f46}.dark .wc-pilot-ledger-list li{border-color:rgba(51,65,85,.9);color:#94a3b8}.dark .wc-pilot-ledger-list li.is-done{border-color:rgba(52,211,153,.44);background:rgba(6,78,59,.42);color:#a7f3d0}.wc-pilot-ledger-mark{font-weight:900}.wc-pilot-ledger-done,.wc-pilot-ledger-hint{margin:0;font-size:13px;line-height:1.5;color:#475569}.dark .wc-pilot-ledger-done,.dark .wc-pilot-ledger-hint{color:#cbd5e1}.wc-pilot-ledger-done{color:#065f46;font-weight:700}.dark .wc-pilot-ledger-done{color:#a7f3d0}'
+      ,'.wc-pilot-alt{padding:9px 12px;border:1px solid rgba(148,163,184,.4);border-radius:10px;background:rgba(248,250,252,.8)}.wc-pilot-alt summary{font-size:13px;font-weight:800;color:#334155;cursor:pointer}.wc-pilot-alt p{margin:7px 0 0;font-size:13px;line-height:1.55;color:#475569}.dark .wc-pilot-alt{border-color:rgba(51,65,85,.8);background:rgba(15,23,42,.6)}.dark .wc-pilot-alt summary{color:#e2e8f0}.dark .wc-pilot-alt p{color:#cbd5e1}'
+      ,'@media(max-width:700px){.wc-pilot-canvas{height:clamp(300px,74vw,430px)}.wc-pilot-hud-left{min-width:0;padding:7px 8px}.wc-pilot-readouts{grid-template-columns:1fr 1fr;gap:3px 7px}.wc-pilot-hud-right{top:auto;bottom:118px;right:8px;min-width:0;max-width:52%}.wc-pilot-ladder{bottom:92px;left:8px}.wc-pilot-ladder-track{height:clamp(76px,21vw,104px)}.wc-pilot-ladder-mark{font-size:9px;padding:1px 4px}.wc-pilot-pad{left:8px;right:8px;transform:none;bottom:8px}.wc-pilot-key{min-width:0;flex:1 1 40px}.wc-pilot-key.is-wide{flex:1 1 74px}.wc-pilot-buoy{font-size:10px}}'
+      // Reduced motion: the scene already skips its own animation, but the CSS
+      // transitions that move the HUD ladder and gauges have to stop too, or the
+      // page still animates for someone who asked it not to.
+      ,'@media(prefers-reduced-motion:reduce){.wc-pilot-ladder-you,.wc-pilot-gauge-track i{transition:none!important}}'
+      ,'@media(forced-colors:active){.wc-pilot-hud,.wc-pilot-pad,.wc-pilot-key,.wc-pilot-scenario,.wc-pilot-science,.wc-pilot-ledger,.wc-pilot-objective,.wc-pilot-alt{border:1px solid CanvasText;background:Canvas;color:CanvasText}.wc-pilot-key[aria-pressed=true],.wc-pilot-scenario[aria-pressed=true]{background:Highlight;color:HighlightText}.wc-pilot-form-dot,.wc-pilot-ladder-you,.wc-pilot-gauge-track i{background:CanvasText!important;box-shadow:none!important}}'
     ].join('');
     if (document.head) document.head.appendChild(st);
   })();
@@ -1663,6 +1697,46 @@
     return goLighter ? '#f8fafc' : '#0a0f1a';
   }
 
+  // Composite a hue at `alpha` over the surface beneath it and return the
+  // resulting ground. This is the ground that a chip, pill, or button actually
+  // renders on whenever it tints itself with its OWN identity colour and then
+  // writes that same colour on top - the exact shape behind this tool's
+  // most-repeated contrast defect. Hoisted out of the cycle-stage chip, which
+  // had computed it inline, so there is one derivation of "what am I sitting on"
+  // rather than one per call site.
+  function wcTintGround(hex, alpha, onDark) {
+    var base = onDark ? [15, 23, 42] : [255, 255, 255];
+    if (typeof hex !== 'string' || hex.charAt(0) !== '#' || hex.length !== 7 || !alpha) {
+      return '#' + base.map(function (v) { return ('0' + v.toString(16)).slice(-2); }).join('');
+    }
+    var n = parseInt(hex.slice(1), 16);
+    var mixed = [
+      alpha * ((n >> 16) & 255) + (1 - alpha) * base[0],
+      alpha * ((n >> 8) & 255) + (1 - alpha) * base[1],
+      alpha * (n & 255) + (1 - alpha) * base[2]
+    ];
+    return '#' + mixed.map(function (v) { return ('0' + Math.round(v).toString(16)).slice(-2); }).join('');
+  }
+
+  // An identity colour used as INK, corrected for whichever theme is showing.
+  //
+  // ★ Every previous call site read `wcIdentityInk(c.color, isDark)`,
+  // which corrects the dark half and leaves the light half raw. That is the
+  // fifth separate appearance of "light mode was the broken half" in this file:
+  // an axe sweep found the watershed component names at 2.77:1 and 3.29:1 on the
+  // WHITE steward cards, and their deep-dive buttons at 2.55:1 and 3.00:1 on a
+  // pale tint of their own hue. Correcting both halves is the whole point of
+  // wcReadableInk, which already returns the original when it passes - so light
+  // mode only changes where it was actually failing.
+  //
+  // Target 5.2 rather than 4.5 for the same reason the chips use it: the ground
+  // is COMPUTED from a tint alpha and the rendered value differs slightly,
+  // because the panel behind is never pure white or pure slate-900. The margin
+  // absorbs that estimation error instead of fitting one measurement.
+  function wcIdentityInk(hex, onDark, tintAlpha) {
+    return wcReadableInk(hex, wcTintGround(hex, tintAlpha || 0, onDark), 5.2);
+  }
+
   function wcPrecipClamp(value, low, high) {
     var numberValue = Number(value);
     if (!isFinite(numberValue)) numberValue = low;
@@ -2215,6 +2289,527 @@
     return wcPrecipPhaseFromModel(computeWcPrecipitationModel(config), fallProgress);
   }
 
+  // ══════════════════════════════════════════════════════════════════════════
+  //  BE THE WATER - flagship piloted-parcel kernel
+  //  ------------------------------------------------------------------------
+  //  Every rule the piloted 3D mode obeys lives here, as pure functions over a
+  //  plain state object. Nothing in this block touches THREE, the DOM, or React.
+  //  WHY: the render loop runs at 60fps inside a 5,000-line closure, which is
+  //  exactly where a physics bug becomes unobservable. Keeping the model pure
+  //  means one derivation of each fact, and a test can run the whole cycle
+  //  headlessly in milliseconds.
+  //
+  //  SCIENCE. The numbers below are the standard textbook values, not invented
+  //  game constants, because the mode's whole claim is that piloting it teaches
+  //  the real mechanism:
+  //    - environmental lapse rate      6.5 C/km   (ICAO standard atmosphere)
+  //    - dry adiabatic lapse rate      9.8 C/km   (unsaturated parcel)
+  //    - saturated adiabatic lapse     ~5.0 C/km  (mid-tropospheric average;
+  //                                     the true value ranges ~4-9 depending on
+  //                                     temperature and pressure)
+  //    - LCL height                    125*(T - Td) metres  (Espy's equation)
+  //  The consequence is the lesson, and it comes in three acts the learner feels
+  //  through the controls rather than reads:
+  //    1. Near the ground the parcel is warmer than the air around it (surface
+  //       heating), so it rises easily.
+  //    2. Climbing unsaturated, it loses 3.3 C/km against its surroundings and
+  //       goes negatively buoyant. This is convective inhibition, and it is why
+  //       the middle of the climb is the hard part - the learner has to hold
+  //       thrust to keep going.
+  //    3. Above the LCL, condensation releases latent heat, the parcel now cools
+  //       at only ~5 C/km, and it wins 1.5 C/km back every kilometre until it is
+  //       warmer than its surroundings again. That crossing is the LEVEL OF FREE
+  //       CONVECTION, and above it the parcel climbs with no help at all.
+  //  Act 3 is why clouds build themselves, and in this mode the learner feels it
+  //  as the controls abruptly no longer being needed.
+  // ══════════════════════════════════════════════════════════════════════════
+
+  // 1 world unit = 40 m. Everything the kernel exposes is in SI; only the
+  // renderer converts. Keeping the conversion in one place stops the classic
+  // "altitude reads 40x too high" class of bug.
+  // 12 m per world unit. At the first value (40) the whole 6 km atmospheric
+  // column was only 150 world units tall while the coastline was 300 units
+  // wide, so the vertical journey - the entire point of the mode - was the
+  // SHORT axis of the scene and the cloud base label floated at sea level.
+  var WC_PILOT_UNIT_M = 12;
+  var WC_PILOT_ENV_LAPSE = 6.5;      // deg C per km, ambient air
+  var WC_PILOT_DRY_LAPSE = 9.8;      // deg C per km, unsaturated parcel
+  var WC_PILOT_MOIST_LAPSE = 5.0;    // deg C per km, saturated parcel
+  var WC_PILOT_CEILING_M = 6000;     // top of the modelled column
+  var WC_PILOT_DROPLETS_FOR_CLOUD = 8;
+  // 2.4, NOT 1.0. At 1.0 the mass threshold for falling was reached by exactly
+  // the same eighth droplet that triggers the cloud, so the cloud state - the
+  // culmination the whole mode is built toward - lasted about two seconds
+  // before collapsing into rain, and in a captured flight it was never actually
+  // seen. Being a cloud now takes 8 droplets and raining takes about 21, so the
+  // cloud is a place you inhabit rather than a frame you pass through.
+  var WC_PILOT_MASS_TO_FALL = 2.4;
+
+  var WC_PILOT_SCENARIOS = {
+    tropicalOcean: {
+      id: 'tropicalOcean',
+      label: 'Tropical ocean',
+      blurb: 'Hot sea, humid air, a low cloud base. The easiest place to become a cloud.',
+      surfaceTempC: 30, surfaceRH: 80, seaTempC: 29, windMs: 4, solar: 1.15, surfaceExcessC: 2,
+      terrain: 'coast'
+    },
+    temperateCoast: {
+      id: 'temperateCoast',
+      label: 'Temperate coast',
+      blurb: 'Mild sea, drier air. You must climb further before anything condenses.',
+      surfaceTempC: 20, surfaceRH: 62, seaTempC: 17, windMs: 6, solar: 1, surfaceExcessC: 1.6,
+      terrain: 'coast'
+    },
+    mountainWinter: {
+      id: 'mountainWinter',
+      label: 'Mountain winter',
+      blurb: 'Cold and dry. The freezing level is near the ground, so you become ice, not rain.',
+      surfaceTempC: 2, surfaceRH: 70, seaTempC: 4, windMs: 8, solar: 0.7, surfaceExcessC: 1.1,
+      terrain: 'mountain'
+    },
+    desertBasin: {
+      id: 'desertBasin',
+      label: 'Desert basin',
+      blurb: 'Very dry air lifts the cloud base far above your head, and falling drops evaporate on the way down.',
+      surfaceTempC: 38, surfaceRH: 22, seaTempC: 26, windMs: 3, solar: 1.35, surfaceExcessC: 2.8,
+      terrain: 'desert'
+    }
+  };
+
+  function wcPilotClamp(v, lo, hi) { return v < lo ? lo : v > hi ? hi : v; }
+
+  // Dew point from temperature and relative humidity. The simple
+  // (100-RH)/5 form is accurate to about 1 deg C for RH above ~50 % and is the
+  // version students meet first; below that it is stretched, so the LCL it
+  // feeds is clamped rather than allowed to run off-world.
+  function wcPilotDewPointC(tempC, rhPercent) {
+    var rh = wcPilotClamp(rhPercent, 5, 100);
+    return tempC - (100 - rh) / 5;
+  }
+
+  // Espy's equation. Returned in metres above the surface and clamped into the
+  // modelled column so a very dry scenario cannot put the cloud base off-world.
+  function wcPilotLclM(tempC, dewPointC) {
+    return wcPilotClamp(125 * (tempC - dewPointC), 60, WC_PILOT_CEILING_M - 400);
+  }
+
+  function wcPilotEnvironment(scenario) {
+    var s = scenario && WC_PILOT_SCENARIOS[scenario.id || scenario]
+      ? WC_PILOT_SCENARIOS[scenario.id || scenario]
+      : (scenario && scenario.surfaceTempC != null ? scenario : WC_PILOT_SCENARIOS.tropicalOcean);
+    var surfaceTempC = s.surfaceTempC;
+    // The parcel leaves the ground WARMER than the air around it. That excess is
+    // the whole reason anything rises: sunlight heats the surface, the surface
+    // heats the air touching it, and that warm bubble is buoyant. Without it the
+    // parcel would be neutrally buoyant at the ground and convection would never
+    // start - which is exactly what a first draft of this kernel modelled, and
+    // it made every scenario negatively buoyant everywhere.
+    var excessC = s.surfaceExcessC != null ? s.surfaceExcessC : 1.5;
+    var parcelSurfaceC = surfaceTempC + excessC;
+    var dewPointC = wcPilotDewPointC(surfaceTempC, s.surfaceRH);
+    var lclM = wcPilotLclM(parcelSurfaceC, dewPointC);
+    var tempAtLcl = parcelSurfaceC - WC_PILOT_DRY_LAPSE * (lclM / 1000);
+    // Freezing level for the LIFTED PARCEL, which is the altitude the learner
+    // actually feels, not the ambient 0 C height. Below the LCL it follows the
+    // dry rate; above it the moist rate.
+    var freezingM;
+    if (parcelSurfaceC <= 0) freezingM = 0;
+    else if (tempAtLcl <= 0) freezingM = (parcelSurfaceC / WC_PILOT_DRY_LAPSE) * 1000;
+    else freezingM = lclM + (tempAtLcl / WC_PILOT_MOIST_LAPSE) * 1000;
+    freezingM = wcPilotClamp(freezingM, 0, WC_PILOT_CEILING_M);
+    // Level of free convection: the height above the LCL where the parcel finally
+    // becomes WARMER than its surroundings and climbs with no help at all. Below
+    // the LCL the parcel loses 3.3 C/km against the environment; above it, moist
+    // ascent hands 1.5 C/km back. Solving for the crossing gives the altitude at
+    // which the learner feels the controls stop fighting them - the single most
+    // important moment in the mode, so it is derived once, here, and never
+    // re-guessed at render time.
+    var deficitAtLcl = tempAtLcl - (surfaceTempC - WC_PILOT_ENV_LAPSE * (lclM / 1000));
+    var recoveryPerM = (WC_PILOT_ENV_LAPSE - WC_PILOT_MOIST_LAPSE) / 1000;
+    var lfcM = deficitAtLcl >= 0 ? lclM : lclM + (-deficitAtLcl) / recoveryPerM;
+    var lfcReachable = lfcM <= WC_PILOT_CEILING_M;
+    lfcM = wcPilotClamp(lfcM, 0, WC_PILOT_CEILING_M);
+    return {
+      id: s.id, label: s.label, blurb: s.blurb, terrain: s.terrain,
+      surfaceTempC: surfaceTempC, surfaceRH: s.surfaceRH, seaTempC: s.seaTempC,
+      windMs: s.windMs, solar: s.solar, surfaceExcessC: excessC,
+      parcelSurfaceC: parcelSurfaceC,
+      dewPointC: dewPointC, lclM: lclM, tempAtLclC: tempAtLcl, freezingM: freezingM,
+      lfcM: lfcM, lfcReachable: lfcReachable,
+      ceilingM: WC_PILOT_CEILING_M
+    };
+  }
+
+  // Ambient air temperature at an altitude - what the parcel is competing with.
+  function wcPilotAmbientTempC(env, altitudeM) {
+    return env.surfaceTempC - WC_PILOT_ENV_LAPSE * (wcPilotClamp(altitudeM, 0, env.ceilingM) / 1000);
+  }
+
+  // Temperature of the LIFTED PARCEL itself. The kink at the LCL is the whole
+  // point of the mode, so it is modelled explicitly rather than smoothed.
+  function wcPilotParcelTempC(env, altitudeM) {
+    var m = wcPilotClamp(altitudeM, 0, env.ceilingM);
+    if (m <= env.lclM) return env.parcelSurfaceC - WC_PILOT_DRY_LAPSE * (m / 1000);
+    return env.tempAtLclC - WC_PILOT_MOIST_LAPSE * ((m - env.lclM) / 1000);
+  }
+
+  // Relative humidity of the rising parcel: it climbs toward 100 % as the
+  // parcel approaches its LCL, then stays saturated above it. This is what the
+  // HUD shows, and it is why the nuclei only matter once you are high enough.
+  function wcPilotParcelRH(env, altitudeM) {
+    var m = wcPilotClamp(altitudeM, 0, env.ceilingM);
+    if (m >= env.lclM) return 100;
+    return wcPilotClamp(env.surfaceRH + (100 - env.surfaceRH) * (m / env.lclM), 0, 100);
+  }
+
+  // Buoyancy as the parcel-minus-ambient temperature excess in deg C.
+  // Positive = rises unaided. Below the LCL this is negative and gets worse
+  // with height (you are fighting the atmosphere); above it, it climbs (the
+  // atmosphere is now helping).
+  function wcPilotBuoyancyC(env, altitudeM) {
+    return wcPilotParcelTempC(env, altitudeM) - wcPilotAmbientTempC(env, altitudeM);
+  }
+
+  // -- Forms the parcel can take -------------------------------------------
+  // `stage` maps each form onto the tool's six canonical water-cycle stages so
+  // piloting credits the same stage ledger and challenges as every other view.
+  var WC_PILOT_FORMS = {
+    liquid: { id: 'liquid', label: 'Liquid water', stage: 'collection', tint: 0x38bdf8,
+      science: 'You are liquid water at the surface, held together by hydrogen bonds. Molecules at the top are always escaping and returning; evaporation happens when more leave than come back.' },
+    vapor: { id: 'vapor', label: 'Water vapour', stage: 'evaporation', tint: 0xbae6fd,
+      science: 'You are a gas, and gaseous water is invisible - the white you can see above a kettle or in a cloud is already condensed liquid. You rise because warm, moist air is less dense than dry air.' },
+    droplet: { id: 'droplet', label: 'Cloud droplet', stage: 'condensation', tint: 0xe0f2fe,
+      science: 'You condensed onto a speck of dust, salt, or smoke - a cloud condensation nucleus. You are about 20 micrometres across, roughly a fifth the width of a human hair, and light enough to stay aloft.' },
+    cloud: { id: 'cloud', label: 'Cloud', stage: 'condensation', tint: 0xf8fafc,
+      science: 'Billions of droplets like you together scatter every wavelength of light, which is why a cloud looks white. Latent heat released as you condensed is now warming the parcel and driving it upward on its own.' },
+    ice: { id: 'ice', label: 'Ice crystal', stage: 'condensation', tint: 0xcffafe,
+      science: 'Above the freezing level you deposited into a hexagonal ice crystal. Ice holds water vapour less readily than liquid does, so you grow at the droplets’ expense - the Bergeron process behind most rain outside the tropics.' },
+    rain: { id: 'rain', label: 'Raindrop', stage: 'precipitation', tint: 0x60a5fa,
+      science: 'You collided and merged with enough droplets that gravity beat the updraft. A raindrop is roughly a million cloud droplets, which is why clouds can hang around for hours before it rains.' },
+    snow: { id: 'snow', label: 'Snowflake', stage: 'precipitation', tint: 0xf0f9ff,
+      science: 'You fell through air that stayed below freezing the whole way down, so you never melted. Every branch grew in the same conditions at the same moment, which is what makes a snowflake symmetrical.' },
+    runoff: { id: 'runoff', label: 'Surface runoff', stage: 'collection', tint: 0x22d3ee,
+      science: 'You landed faster than the ground could absorb you, so you are flowing downhill over the surface toward a stream. Runoff carries sediment and whatever the land surface holds.' },
+    soil: { id: 'soil', label: 'Soil water', stage: 'infiltration', tint: 0xa3e635,
+      science: 'You soaked into pore spaces between soil grains. How fast depends on permeability: sand takes you in quickly, clay and pavement turn you back into runoff.' },
+    groundwater: { id: 'groundwater', label: 'Groundwater', stage: 'infiltration', tint: 0x818cf8,
+      science: 'Below the water table you move through connected pores in rock - often only metres per year. Groundwater is not an underground river; it is saturated rock, and it can hold water for thousands of years.' },
+    plant: { id: 'plant', label: 'Inside a plant', stage: 'transpiration', tint: 0x4ade80,
+      science: 'A root hair took you up, and you are being pulled through the xylem by tension created as water evaporates from the leaves above you - a continuous thread of water metres tall.' },
+    transpiring: { id: 'transpiring', label: 'Transpiring', stage: 'transpiration', tint: 0x86efac,
+      science: 'You are leaving through a stoma on the underside of a leaf and becoming vapour again. Plants return a large share of land precipitation to the air this way.' }
+  };
+
+  var WC_PILOT_STAGE_ORDER = ['evaporation', 'condensation', 'precipitation', 'collection', 'infiltration', 'transpiration'];
+
+  function wcPilotInitialState(scenarioId) {
+    return {
+      scenario: WC_PILOT_SCENARIOS[scenarioId] ? scenarioId : 'tropicalOcean',
+      form: 'liquid',
+      altitudeM: 0,
+      x: 0, z: 0,
+      vy: 0,
+      energy: 0,          // 0..1, charge toward evaporation
+      droplets: 0,        // coalesced cloud droplets
+      mass: 0.12,         // relative; >= WC_PILOT_MASS_TO_FALL falls
+      nucleus: false,     // has met a condensation nucleus at or above the LCL
+      formsSeen: { liquid: true },
+      stagesSeen: {},
+      loops: 0,
+      elapsed: 0,
+      note: ''
+    };
+  }
+
+  // The evaporation charge rate. Sunlight supplies the latent heat, dry air
+  // gives the vapour somewhere to go, and wind clears saturated air off the
+  // surface - all three are real controls on evaporation, and all three are
+  // scenario values rather than free parameters.
+  function wcPilotEvaporationRate(env, sunlit) {
+    var dryness = 1 - env.surfaceRH / 100;
+    var warmth = wcPilotClamp((env.seaTempC + 5) / 35, 0.05, 1.2);
+    var windTerm = 0.55 + 0.45 * wcPilotClamp(env.windMs / 10, 0, 1);
+    return env.solar * (sunlit ? 1 : 0.28) * (0.25 + 0.75 * dryness) * warmth * windTerm * 0.42;
+  }
+
+  // -- The transition rules -------------------------------------------------
+  // Each returns the next form, or '' to stay. Written as predicates so a test
+  // can assert the SCIENCE ("you cannot condense below the LCL", "you cannot
+  // condense without a nucleus") rather than a rendering detail.
+  function wcPilotNextForm(state, env) {
+    var alt = state.altitudeM;
+    switch (state.form) {
+      case 'liquid':
+        return state.energy >= 1 ? 'vapor' : '';
+      case 'vapor':
+        // Two hard gates, both real: you must be at or above the lifting
+        // condensation level, AND you must have met a condensation nucleus.
+        // Clean, nucleus-free air can stay supersaturated without condensing.
+        if (alt >= env.lclM && state.nucleus) return alt >= env.freezingM ? 'ice' : 'droplet';
+        return '';
+      case 'droplet':
+        if (alt >= env.freezingM) return 'ice';
+        if (state.droplets >= WC_PILOT_DROPLETS_FOR_CLOUD) return 'cloud';
+        if (state.mass >= WC_PILOT_MASS_TO_FALL) return 'rain';
+        if (alt < env.lclM) return 'vapor';   // sank below the cloud base: you evaporate again
+        return '';
+      case 'cloud':
+        if (state.mass >= WC_PILOT_MASS_TO_FALL) return alt >= env.freezingM ? 'snow' : 'rain';
+        return '';
+      case 'ice':
+        if (state.mass >= WC_PILOT_MASS_TO_FALL) return 'snow';
+        if (alt < env.freezingM) return 'droplet';   // fell back below freezing: melts
+        return '';
+      case 'snow':
+        // A snowflake that falls below the freezing level melts into rain.
+        return alt < env.freezingM ? 'rain' : '';
+      case 'rain':
+        return alt >= env.freezingM ? 'snow' : '';
+      default:
+        return '';
+    }
+  }
+
+  // What happens when the falling parcel reaches the ground. Surface type is
+  // decided by where the learner steered, so the pathway is their choice
+  // expressed through position rather than through a menu.
+  function wcPilotLandingForm(surface) {
+    if (surface === 'water') return 'liquid';
+    if (surface === 'plant') return 'plant';
+    if (surface === 'permeable') return 'soil';
+    return 'runoff';
+  }
+
+  function wcPilotIsAirborne(form) {
+    return form === 'vapor' || form === 'droplet' || form === 'cloud'
+      || form === 'ice' || form === 'rain' || form === 'snow' || form === 'transpiring';
+  }
+
+  function wcPilotIsFalling(form) { return form === 'rain' || form === 'snow'; }
+
+  // Vertical acceleration in world units per second squared. Buoyancy is scaled
+  // from the parcel's temperature excess; the learner's thrust represents the
+  // lift that actually raises air in the real world (surface heating, terrain,
+  // convergence), which is why it is strongest low down and fades with height.
+  function wcPilotVerticalAccel(state, env, thrust) {
+    if (wcPilotIsFalling(state.form)) {
+      // Terminal-velocity style fall: snow descends far more slowly than rain
+      // because of its much greater drag for the same mass.
+      // Time-compressed: a real 800 m raindrop fall takes about 90 seconds.
+      // These rates land it in roughly 20, which keeps the descent readable
+      // without turning it into a wait. Snow still falls far more slowly than
+      // rain, because that difference is the thing worth noticing.
+      return state.form === 'snow' ? -1.0 : -3.0;
+    }
+    if (!wcPilotIsAirborne(state.form)) return 0;
+    var buoy = wcPilotBuoyancyC(env, state.altitudeM);
+    // 1 deg C of excess ~ 0.34 units/s^2 - tuned so a saturated parcel visibly
+    // accelerates upward while an unsaturated one clearly does not.
+    var buoyancyAccel = buoy * 0.34;
+    var thrustFade = 1 - 0.55 * wcPilotClamp(state.altitudeM / env.ceilingM, 0, 1);
+    return buoyancyAccel + thrust * 2.9 * thrustFade;
+  }
+
+  // One simulation step. Pure: same inputs, same output, no clock read.
+  //   input = { thrust: -1..1, dt: seconds, sunlit: bool, nucleusHit: bool,
+  //             dropletHit: bool, surface: 'water'|'permeable'|'hard'|'plant' }
+  function wcPilotStep(state, input) {
+    var env = wcPilotEnvironment(state.scenario);
+    var dt = wcPilotClamp(input && input.dt != null ? input.dt : 0.016, 0, 0.12);
+    var next = Object.assign({}, state);
+    next.elapsed = state.elapsed + dt;
+    next.formsSeen = Object.assign({}, state.formsSeen);
+    next.stagesSeen = Object.assign({}, state.stagesSeen);
+    next.note = '';
+
+    // Charge toward evaporation only while liquid at the surface.
+    if (state.form === 'liquid') {
+      next.energy = wcPilotClamp(state.energy + wcPilotEvaporationRate(env, !!(input && input.sunlit)) * dt, 0, 1);
+    } else if (state.form === 'transpiring') {
+      next.energy = wcPilotClamp(state.energy + 0.5 * dt, 0, 1);
+      if (next.energy >= 1) { next.form = 'vapor'; next.energy = 0; }
+    }
+
+    // A nucleus is only meaningful at or above the cloud base; meeting one in
+    // clear air below the LCL must not arm condensation, or the mode would
+    // teach that vapour condenses at any height.
+    if (input && input.nucleusHit && state.altitudeM >= env.lclM) next.nucleus = true;
+
+    // Coalescence: each droplet you sweep up adds mass. This is collision-
+    // coalescence, and it is deliberately slow - a real raindrop needs about a
+    // million droplets, which is why clouds do not rain the moment they form.
+    if (input && input.dropletHit && (state.form === 'droplet' || state.form === 'cloud' || state.form === 'ice')) {
+      next.droplets = state.droplets + 1;
+      next.mass = state.mass + (state.form === 'ice' ? 0.16 : 0.11);
+    }
+
+    // Vertical motion.
+    var thrust = wcPilotClamp(input && input.thrust != null ? input.thrust : 0, -1, 1);
+    if (wcPilotIsAirborne(next.form)) {
+      var accel = wcPilotVerticalAccel(next, env, thrust);
+      next.vy = wcPilotClamp(state.vy + accel * dt, -14, 14) * (1 - 0.9 * dt);
+      next.altitudeM = state.altitudeM + next.vy * WC_PILOT_UNIT_M * dt;
+    } else {
+      next.vy = 0;
+      next.altitudeM = 0;
+    }
+
+    // Ground contact.
+    if (next.altitudeM <= 0 && wcPilotIsFalling(next.form)) {
+      next.altitudeM = 0;
+      next.vy = 0;
+      next.form = wcPilotLandingForm(input && input.surface);
+      next.droplets = 0;
+      next.mass = 0.12;
+      next.nucleus = false;
+      next.loops = state.loops + 1;
+      next.note = 'landed';
+    } else if (next.altitudeM < 0) {
+      next.altitudeM = 0;
+      next.vy = 0;
+    }
+    if (next.altitudeM > env.ceilingM) { next.altitudeM = env.ceilingM; next.vy = Math.min(0, next.vy); }
+
+    // Phase transition last, so it sees this step's altitude and mass.
+    var transition = wcPilotNextForm(next, env);
+    if (transition && transition !== next.form) {
+      next.form = transition;
+      if (transition === 'vapor') { next.energy = 0; next.nucleus = false; next.droplets = 0; next.mass = 0.12; }
+      if (transition === 'droplet' && state.form === 'vapor') { next.mass = 0.12; next.droplets = 1; }
+      next.note = 'transition';
+    }
+
+    next.formsSeen[next.form] = true;
+    var stage = WC_PILOT_FORMS[next.form] && WC_PILOT_FORMS[next.form].stage;
+    if (stage) next.stagesSeen[stage] = true;
+    return next;
+  }
+
+  // Coverage of the six canonical stages, for the ledger and the debrief.
+  function wcPilotStageCoverage(state) {
+    var seen = (state && state.stagesSeen) || {};
+    var done = 0;
+    for (var i = 0; i < WC_PILOT_STAGE_ORDER.length; i++) if (seen[WC_PILOT_STAGE_ORDER[i]]) done++;
+    return { done: done, total: WC_PILOT_STAGE_ORDER.length, complete: done >= WC_PILOT_STAGE_ORDER.length };
+  }
+
+  // The one-line coaching prompt. It names the next PHYSICAL thing to do, never
+  // a UI control, so reading it teaches the mechanism even away from the screen.
+  // Localisation for the kernel's copy.
+  //
+  // Every sentence that carries a NUMBER is one key with a {token}, never a run
+  // of concatenated fragments. Fragments like "Climb. At " + n + " m the air..."
+  // cannot be translated: a translator receives three meaningless pieces, and
+  // the word order they imply is wrong in most languages. One key with {m} lets
+  // the number move wherever the target language needs it.
+  //
+  // `_wcPilotT` defaults to returning the English fallback, so the kernel still
+  // runs standalone - which is exactly how the test suite loads it.
+  var _wcPilotT = function (key, fallback) { return fallback == null ? key : fallback; };
+  function wcPilotFill(text, tokens) {
+    if (!tokens) return text;
+    return String(text).replace(/\{(\w+)\}/g, function (whole, name) {
+      return Object.prototype.hasOwnProperty.call(tokens, name) ? String(tokens[name]) : whole;
+    });
+  }
+  function _pt(key, fallback, tokens) {
+    return wcPilotFill(_wcPilotT('stem.watercycle.' + key, fallback), tokens);
+  }
+
+  function wcPilotObjective(state, env) {
+    switch (state.form) {
+      case 'liquid':
+        return state.energy > 0.55
+          ? _pt('pilot_obj_liquid_nearly', 'Almost vapour - stay in the sunlit water until the energy bar fills.')
+          : _pt('pilot_obj_liquid', 'Hold in the sunlit shallows. Sunlight, dry air, and wind are all loading you with enough energy to escape as vapour.');
+      case 'vapor':
+        if (state.altitudeM < env.lclM) {
+          return _pt('pilot_obj_vapor_climb', 'Climb. At {m} m the air has cooled to your dew point and condensation can start - not one metre lower.', { m: Math.round(env.lclM) });
+        }
+        return _pt('pilot_obj_vapor_nucleus', 'You are above the cloud base and saturated, but water vapour will not condense on nothing. Fly into a condensation nucleus - the drifting specks of dust and sea salt.');
+      case 'droplet':
+        if (state.droplets >= WC_PILOT_DROPLETS_FOR_CLOUD - 3) {
+          return _pt('pilot_obj_droplet_nearly', 'Keep sweeping up droplets. At {n} you and the droplets around you are a visible cloud.', { n: WC_PILOT_DROPLETS_FOR_CLOUD });
+        }
+        return state.altitudeM >= env.lfcM && env.lfcReachable
+          ? _pt('pilot_obj_droplet_free', 'Above {m} m you are warmer than the air around you and rising on your own - that is latent heat from condensing. Collide with other droplets to grow.', { m: Math.round(env.lfcM) })
+          : _pt('pilot_obj_droplet', 'You are a cloud droplet. Collide with the other droplets to grow. Keep climbing: at {m} m the latent heat you released makes you buoyant and you stop needing thrust.', { m: Math.round(env.lfcM) });
+      case 'cloud':
+        return _pt('pilot_obj_cloud', 'You are a cloud. Keep collecting to grow heavy enough that gravity finally beats the updraft, or ride the lift higher and freeze.');
+      case 'ice':
+        return _pt('pilot_obj_ice', 'You are above the freezing level at {m} m. Ice grows faster than the droplets around it - keep collecting, then fall.', { m: Math.round(env.freezingM) });
+      case 'rain':
+        return _pt('pilot_obj_rain', 'Falling as rain. Steer toward open water, permeable ground, or a plant - each sends you down a different pathway.');
+      case 'snow':
+        return _pt('pilot_obj_snow', 'Falling as snow. If you pass below {m} m you will melt into rain on the way down.', { m: Math.round(env.freezingM) });
+      case 'runoff':
+        return _pt('pilot_obj_runoff', 'You could not soak in, so you are running off the surface toward a stream. Follow the slope downhill.');
+      case 'soil':
+        return _pt('pilot_obj_soil', 'You infiltrated. Move down toward the water table, or let a root take you up.');
+      case 'groundwater':
+        return _pt('pilot_obj_groundwater', 'You are groundwater, moving through pores in rock - metres per year, not per second. Find a spring or a well to return.');
+      case 'plant':
+        return _pt('pilot_obj_plant', 'A root took you up. Ride the xylem to a leaf.');
+      case 'transpiring':
+        return _pt('pilot_obj_transpiring', 'Leaving through a stoma. In a moment you are vapour again and the cycle repeats.');
+      default:
+        return '';
+    }
+  }
+
+  // Scenario and form copy. The English is READ BACK OUT OF THE DATA the first
+  // time through and cached on the object, so it exists in exactly one place and
+  // cannot drift from a retyped fallback. Re-applying with a different `t` (a
+  // language change) therefore always translates the original English, never a
+  // previous translation.
+  function applyPilotCopy(t) {
+    if (typeof t !== 'function') t = function (key, fallback) { return fallback == null ? key : fallback; };
+    _wcPilotT = t;
+    Object.keys(WC_PILOT_SCENARIOS).forEach(function (id) {
+      var s = WC_PILOT_SCENARIOS[id];
+      if (s._enLabel == null) { s._enLabel = s.label; s._enBlurb = s.blurb; }
+      s.label = t('stem.watercycle.pilot_sc_' + id + '_label', s._enLabel);
+      s.blurb = t('stem.watercycle.pilot_sc_' + id + '_blurb', s._enBlurb);
+    });
+    Object.keys(WC_PILOT_FORMS).forEach(function (id) {
+      var f = WC_PILOT_FORMS[id];
+      if (f._enLabel == null) { f._enLabel = f.label; f._enScience = f.science; }
+      f.label = t('stem.watercycle.pilot_form_' + id + '_label', f._enLabel);
+      f.science = t('stem.watercycle.pilot_form_' + id + '_science', f._enScience);
+    });
+  }
+
+  window.WaterCyclePilotKernel = {
+    UNIT_M: WC_PILOT_UNIT_M,
+    CEILING_M: WC_PILOT_CEILING_M,
+    DROPLETS_FOR_CLOUD: WC_PILOT_DROPLETS_FOR_CLOUD,
+    MASS_TO_FALL: WC_PILOT_MASS_TO_FALL,
+    scenarios: WC_PILOT_SCENARIOS,
+    forms: WC_PILOT_FORMS,
+    stageOrder: WC_PILOT_STAGE_ORDER.slice(),
+    environment: wcPilotEnvironment,
+    dewPointC: wcPilotDewPointC,
+    lclM: wcPilotLclM,
+    envLapse: WC_PILOT_ENV_LAPSE,
+    dryLapse: WC_PILOT_DRY_LAPSE,
+    moistLapse: WC_PILOT_MOIST_LAPSE,
+    ambientTempC: wcPilotAmbientTempC,
+    parcelTempC: wcPilotParcelTempC,
+    parcelRH: wcPilotParcelRH,
+    buoyancyC: wcPilotBuoyancyC,
+    evaporationRate: wcPilotEvaporationRate,
+    initialState: wcPilotInitialState,
+    nextForm: wcPilotNextForm,
+    landingForm: wcPilotLandingForm,
+    isAirborne: wcPilotIsAirborne,
+    isFalling: wcPilotIsFalling,
+    verticalAccel: wcPilotVerticalAccel,
+    step: wcPilotStep,
+    stageCoverage: wcPilotStageCoverage,
+    objective: wcPilotObjective,
+    applyCopy: applyPilotCopy
+  };
+
   window.WaterCyclePrecipitationKernel = {
     defaults: Object.assign({}, WC_PRECIP_DEFAULTS),
     presets: WC_PRECIP_PRESETS,
@@ -2253,6 +2848,7 @@
       // Everything downstream reads copy through watershedComponents().
       _wcT = t;
       applyStewardCopy(t);
+      applyPilotCopy(t);
       var ArrowLeft=ctx.icons.ArrowLeft;
       var announceToSR=ctx.announceToSR;
       // ctx.addToast was never bound here, yet the tool calls addToast in 14
@@ -2621,12 +3217,92 @@ const d = labToolData.waterCycle || {};
           };
 
           // ═══ WATERSHED STEWARD CAMPAIGN ═══
-          var wcMode = d.wcMode || 'explorer';   // 'explorer' (existing) | 'steward' (new)
+          var wcMode = d.wcMode || 'explorer';   // 'explorer' | 'pilot' | 'precipHunt' | 'steward'
           var steward = d.steward || defaultStewardState();
           var T_BLUE = '#0ea5e9', T_BLUE_HI = '#7dd3fc';
 
           function setSteward(patch) { updMulti({ steward: Object.assign({}, steward, patch) }); }
           function switchMode(mode) { upd('wcMode', mode); }
+
+          // ── The one navigation control ────────────────────────────────────
+          // Before this, the tool's four destinations were reached four different
+          // ways: two gradient buttons in the header, a segmented "Choose a view"
+          // control halfway down the page, and a "Play the droplet journey" button
+          // roughly 2,000 pixels below that - with the last two both leading to
+          // the same 3D view. One bar, rendered identically in every mode, so the
+          // set of places you can go never depends on where you already are.
+          var WC_MODE_TABS = [
+            { id: 'explorer', icon: '🌊', label: t('stem.watercycle.sect_explore', 'Explore'), blurb: t('stem.watercycle.sect_the_whole_system_at_once', 'The whole system at once') },
+            { id: 'pilot', icon: '💧', label: t('stem.watercycle.sect_be_the_water', 'Be the Water'), blurb: t('stem.watercycle.sect_fly_one_parcel_through_every_form', 'Fly one parcel through every form'), flagship: true },
+            { id: 'precipHunt', icon: '🌧️', label: t('stem.watercycle.sect_storm_lab', 'Storm Lab'), blurb: t('stem.watercycle.sect_build_rain_snow_and_hail', 'Build rain, snow, and hail') },
+            { id: 'steward', icon: '🏞️', label: t('stem.watercycle.sect_steward', 'Steward'), blurb: t('stem.watercycle.sect_10_years_of_one_watershed', '10 years of one watershed') }
+          ];
+          // ── Explorer sections ─────────────────────────────────────────────
+          // Below the canvas the Explorer used to stack fifteen panels into a
+          // single ~3,900-pixel scroll with no landmarks, so finding the Climate
+          // Lab meant scrolling past the quiz and hoping. The panels themselves
+          // were fine; what was missing was any statement of what the page
+          // CONTAINED. These four groups are that statement, and only one is
+          // mounted at a time, which also means the heavy signal dashboard is
+          // not rendering while a learner is answering the quiz.
+          var WC_SECTIONS = [
+            { id: 'conditions', label: t('stem.watercycle.sect_change_the_conditions', 'Change the conditions'), blurb: t('stem.watercycle.sect_climate_and_land_controls', 'Climate and land controls') },
+            { id: 'journey', label: t('stem.watercycle.sect_follow_one_droplet', 'Follow one droplet'), blurb: t('stem.watercycle.sect_journey_mode_and_the_tutor', 'Journey mode and the tutor') },
+            { id: 'data', label: t('stem.watercycle.sect_what_the_data_shows', 'What the data shows'), blurb: t('stem.watercycle.sect_readouts_comparison_next_test', 'Readouts, comparison, next test') },
+            { id: 'check', label: t('stem.watercycle.sect_check_yourself', 'Check yourself'), blurb: t('stem.watercycle.sect_quiz_and_water_myths', 'Quiz and water myths') }
+          ];
+          var wcSection = WC_SECTIONS.some(function(s) { return s.id === d.wcSection; })
+            ? d.wcSection : 'conditions';
+          function renderWcSectionTabs() {
+            return h('nav', { className: 'wc-section-tabs', 'aria-label': t('stem.watercycle.sect_nav_label', 'Explorer sections') },
+              WC_SECTIONS.map(function(sec) {
+                var active = wcSection === sec.id;
+                return h('button', {
+                  key: sec.id,
+                  type: 'button',
+                  className: 'wc-section-tab',
+                  'aria-pressed': active,
+                  'aria-label': t(active ? 'stem.watercycle.sect_aria_active' : 'stem.watercycle.sect_aria',
+                    active ? '{label}. {blurb}. Currently shown.' : '{label}. {blurb}')
+                    .replace('{label}', sec.label).replace('{blurb}', sec.blurb),
+                  onClick: function() {
+                    if (active) return;
+                    upd('wcSection', sec.id);
+                    if (typeof announceToSR === 'function') announceToSR(t('stem.watercycle.sect_announce', '{label} shown. {blurb}.').replace('{label}', sec.label).replace('{blurb}', sec.blurb));
+                  }
+                },
+                  h('strong', null, sec.label),
+                  h('small', null, sec.blurb)
+                );
+              })
+            );
+          }
+
+          function renderWcModeBar() {
+            return h('nav', { className: 'wc-mode-bar', 'aria-label': t('stem.watercycle.mode_nav_label', 'Water Cycle modes') },
+              WC_MODE_TABS.map(function(tab) {
+                var active = wcMode === tab.id;
+                return h('button', {
+                  key: tab.id,
+                  type: 'button',
+                  className: 'wc-mode-tab' + (tab.flagship ? ' is-flagship' : ''),
+                  'aria-pressed': active,
+                  'aria-label': t(active ? 'stem.watercycle.mode_aria_active' : 'stem.watercycle.mode_aria',
+                    active ? '{label}. {blurb}. Currently open.' : '{label}. {blurb}')
+                    .replace('{label}', tab.label).replace('{blurb}', tab.blurb),
+                  onClick: function() {
+                    if (active) return;
+                    switchMode(tab.id);
+                    if (typeof announceToSR === 'function') announceToSR(t('stem.watercycle.mode_announce', '{label} opened. {blurb}.').replace('{label}', tab.label).replace('{blurb}', tab.blurb));
+                  }
+                },
+                  h('strong', null, tab.icon + ' ' + tab.label),
+                  h('small', null, tab.blurb),
+                  tab.flagship && h('span', { className: 'wc-mode-flag' }, t('stem.watercycle.mode_flagship', 'FLAGSHIP'))
+                );
+              })
+            );
+          }
 
           function startStewardCampaign(opts) {
             opts = opts || {};
@@ -2909,9 +3585,9 @@ const d = labToolData.waterCycle || {};
               h('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 10 } },
                 h('span', { style: { fontSize: 36 } }, def.icon),
                 h('div', { style: { flex: 1 } },
-                  h('div', { style: { fontSize: 11, color: isDark ? wcReadableInk(def.color) : def.color, fontWeight: 700, letterSpacing: 0.5, textTransform: 'uppercase' } }, t('stem.watercycle.watershed_deep_dive', 'Watershed deep-dive')),
+                  h('div', { style: { fontSize: 11, color: wcIdentityInk(def.color, isDark), fontWeight: 700, letterSpacing: 0.5, textTransform: 'uppercase' } }, t('stem.watercycle.watershed_deep_dive', 'Watershed deep-dive')),
                   h('h3', { id: 'watercycle-deep-dive-title-' + def.id, style: { margin: '2px 0 0', color: isDark ? '#fff' : '#0f172a', fontSize: 20 } }, def.name),
-                  h('div', { style: { color: isDark ? wcReadableInk(def.color) : def.color, fontSize: 13, marginTop: 4, fontStyle: 'italic' } }, def.role)
+                  h('div', { style: { color: wcIdentityInk(def.color, isDark), fontSize: 13, marginTop: 4, fontStyle: 'italic' } }, def.role)
                 ),
                 h('button', {
                   onClick: closeStewardDeepDive,
@@ -3215,7 +3891,7 @@ const d = labToolData.waterCycle || {};
                     },
                       h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
                         h('span', { style: { fontSize: 22 } }, c.icon),
-                        h('strong', { style: { color: isDark ? wcReadableInk(c.color) : c.color } }, c.name)
+                        h('strong', { style: { color: wcIdentityInk(c.color, isDark) } }, c.name)
                       ),
                       h('div', { style: { fontSize: 11, color: isDark ? '#94a3b8' : '#64748b', marginBottom: 4 } }, c.role),
                       h('div', { style: { fontSize: 12, color: isDark ? '#cbd5e1' : '#475569', lineHeight: 1.5, marginBottom: 8 } }, __alloT('stem.watercycle.' + (c.id) + '_desc', c.desc)),
@@ -3229,7 +3905,7 @@ const d = labToolData.waterCycle || {};
                           borderRadius: 8,
                           border: '1px solid ' + c.color + (isDark ? '88' : '55'),
                           background: c.color + (isDark ? '22' : '15'),
-                          color: c.color,
+                          color: wcIdentityInk(c.color, isDark, isDark ? 0.133 : 0.082),
                           cursor: 'pointer',
                           fontWeight: 700,
                           fontSize: 11.5
@@ -3363,7 +4039,7 @@ const d = labToolData.waterCycle || {};
                         fontSize: 12
                       }
                     },
-                      h('div', { style: { fontWeight: 700, color: isDark ? wcReadableInk(def.color) : def.color, marginBottom: 4, display: 'flex', alignItems: 'center', gap: 6 } },
+                      h('div', { style: { fontWeight: 700, color: wcIdentityInk(def.color, isDark), marginBottom: 4, display: 'flex', alignItems: 'center', gap: 6 } },
                         h('span', null, def.icon + ' ' + def.name + (targetsHit ? ' ✓' : '')),
                         def.deepDive ? h('button', {
                           onClick: function() { openStewardDeepDive(c.id); },
@@ -3544,7 +4220,7 @@ const d = labToolData.waterCycle || {};
                       return h('span', { style: { color: color, fontSize: 11, fontWeight: 700, marginRight: 8 } }, label + ' ' + Math.round(after) + ' ' + arrow + ' ' + (dlt > 0 ? '+' : '') + dlt);
                     }
                     return h('div', { key: preC.id, style: { fontSize: 12, padding: '4px 0', borderTop: isDark ? '1px solid #1e293b' : '1px solid #e2e8f0' } },
-                      h('strong', { style: { color: isDark ? wcReadableInk(def.color) : def.color, marginRight: 8 } }, def.icon + ' ' + def.name),
+                      h('strong', { style: { color: wcIdentityInk(def.color, isDark), marginRight: 8 } }, def.icon + ' ' + def.name),
                       delta('Q', preC.quality, postC.quality),
                       delta('Conn', preC.connectivity, postC.connectivity),
                       delta('Sup', preC.support, postC.support)
@@ -3682,7 +4358,7 @@ const d = labToolData.waterCycle || {};
                     h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 } },
                       h('span', { style: { fontSize: 22 } }, def.icon),
                       h('div', { style: { flex: 1 } },
-                        h('div', { style: { fontWeight: 700, color: isDark ? wcReadableInk(def.color) : def.color, fontSize: 14 } }, def.name),
+                        h('div', { style: { fontWeight: 700, color: wcIdentityInk(def.color, isDark), fontSize: 14 } }, def.name),
                         h('div', { style: { fontSize: 11, color: isDark ? '#94a3b8' : '#64748b' } }, def.role)
                       ),
                       def.deepDive ? h('button', {
@@ -3812,7 +4488,10 @@ const d = labToolData.waterCycle || {};
           // If user has switched into Watershed Steward mode, render that
           // instead of the existing Water Cycle Explorer.
           if (wcMode === 'steward') {
-            return renderStewardCampaign();
+            // Wrapped rather than threaded through renderStewardCampaign: that
+            // function returns a different tree per campaign phase, and the bar
+            // has to appear above all of them.
+            return h('div', { className: 'wc-mode-shell' }, renderWcModeBar(), renderStewardCampaign());
           }
           // === Inquiry widget: precipitation discovery ===
           if (wcMode === 'precipHunt') {
@@ -8829,30 +9508,30 @@ const d = labToolData.waterCycle || {};
                   precipConfig.thunderEstimateChecked && h('p', { className: 'wc-thunder-measure-result', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' },
                     precipModel.thunderEstimate.feedback + ' Error: ' + precipModel.thunderEstimate.errorKm.toFixed(1) + ' km.'))
               : h('div', { className: 'wc-thunder-measure', 'data-thunder-measurement': 'unavailable' },
-                  h('strong', null, 'Measure the storm'),
-                  h('span', null, 'No lightning flash is modeled yet, so there is no flash-to-thunder interval to measure. Increase cloud depth, moisture, or updraft to build electrical activity.'));
+                  h('strong', null, t('stem.watercycle.measure_the_storm', 'Measure the storm')),
+                  h('span', null, t('stem.watercycle.no_lightning_flash_is_modeled_yet', 'No lightning flash is modeled yet, so there is no flash-to-thunder interval to measure. Increase cloud depth, moisture, or updraft to build electrical activity.')));
             return h('section', { className: 'wc-precip-lab', role: 'region', 'aria-labelledby': 'wcPrecipLabTitle',
               'data-precipitation-kind': precipModel.visualType,
               'data-precipitation-reach': precipModel.reachesGround ? 'ground' : 'aloft',
               'data-precipitation-view': precipViewMode,
               'data-lightning-study-step': activeLightningStudy.key,
               'data-lightning-study-mode': lightningStudyMode },
+              renderWcModeBar(),
               h('div', { className: 'wc-precip-head' },
                 h('div', { className: 'wc-precip-head-copy' },
-                  h('span', { className: 'wc-precip-kicker' }, 'Interactive storm chamber'),
-                  h('h3', { id: 'wcPrecipLabTitle' }, '\uD83C\uDF27\uFE0F Precipitation Lab'),
-                  h('p', null, 'Build a cloud, shape the temperature profile, and watch water reach the surface as rain, snow, wintry mix, freezing rain, hail, or virga.')
+                  h('span', { className: 'wc-precip-kicker' }, t('stem.watercycle.interactive_storm_chamber', 'Interactive storm chamber')),
+                  h('h3', { id: 'wcPrecipLabTitle' }, t('stem.watercycle.precipitation_lab_title', '\uD83C\uDF27\uFE0F Precipitation Lab')),
+                  h('p', null, t('stem.watercycle.build_a_cloud_shape_the_temperature', 'Build a cloud, shape the temperature profile, and watch water reach the surface as rain, snow, wintry mix, freezing rain, hail, or virga.'))
                 ),
                 h('div', { className: 'wc-precip-head-actions' },
-                  h('button', { type: 'button', className: 'wc-precip-btn', onClick: function() { upd('wcMode', 'explorer'); } }, '\u2190 Back to cycle'),
-                  h('div', { className: 'wc-precip-view-toggle', role: 'group', 'aria-label': 'Precipitation lab visual mode' },
+                  h('div', { className: 'wc-precip-view-toggle', role: 'group', 'aria-label': t('stem.watercycle.precipitation_lab_visual_mode', 'Precipitation lab visual mode') },
                     h('button', { type: 'button', className: 'wc-precip-view-choice', 'aria-pressed': precipViewMode === '2d',
-                      onClick: function() { setPrecipViewMode('2d'); } }, '2D chamber'),
+                      onClick: function() { setPrecipViewMode('2d'); } }, t('stem.watercycle.two_d_chamber', '2D chamber')),
                     h('button', { type: 'button', className: 'wc-precip-view-choice', 'aria-pressed': precipViewMode === '3d',
-                      'aria-label': 'View this setup in 3D cloud chamber',
-                      onClick: function() { setPrecipViewMode('3d'); } }, '3D cloud chamber')),
+                      'aria-label': t('stem.watercycle.view_this_setup_in_3d_cloud_chamber', 'View this setup in 3D cloud chamber'),
+                      onClick: function() { setPrecipViewMode('3d'); } }, t('stem.watercycle.three_d_cloud_chamber', '3D cloud chamber'))),
                   h('button', { type: 'button', className: 'wc-precip-btn is-primary', onClick: openPrecipitationIn3d,
-                    'aria-label': 'Continue this precipitation setup into the full 3D water journey' }, 'Full journey \u2192')
+                    'aria-label': t('stem.watercycle.continue_this_precipitation_setup', 'Continue this precipitation setup into the full 3D water journey') }, t('stem.watercycle.full_journey_arrow', 'Full journey \u2192'))
                 )
               ),
               h('div', { className: 'wc-precip-layout' },
@@ -8864,13 +9543,13 @@ const d = labToolData.waterCycle || {};
                       ? h('canvas', { id: 'wcPrecip3dCanvas', ref: precip3dRef, className: 'wc-precip-3d-canvas', role: 'img',
                           'aria-label': precipCanvasLabel.replace('2.5D', '3D cloud chamber') + ' Drag to orbit and scroll to zoom.', 'data-precipitation-chamber': '3d-cloud',
                           'data-precipitation-view': '3d' },
-                          'Interactive 3D cloud chamber showing cloud formation, airflow, thermal layers, and precipitation.')
+                          t('stem.watercycle.interactive_3d_cloud_chamber_showing', 'Interactive 3D cloud chamber showing cloud formation, airflow, thermal layers, and precipitation.'))
                       : h('canvas', { id: 'wcPrecipCanvas', ref: precipCanvasRef, className: 'wc-precip-canvas', role: 'img',
                           'aria-label': precipCanvasLabel, 'data-precipitation-chamber': '2.5d',
                           'data-precipitation-view': '2d' },
-                          'Animated cross-section of cloud growth, airflow, and precipitation.'),
+                          t('stem.watercycle.animated_cross_section_of_cloud_growth', 'Animated cross-section of cloud growth, airflow, and precipitation.')),
                     precipViewMode === '3d' && h('div', { className: 'wc-precip-3d-focus', role: 'group',
-                      'aria-label': 'Choose a 3D science viewpoint' },
+                      'aria-label': t('stem.watercycle.choose_a_3d_science_viewpoint', 'Choose a 3D science viewpoint') },
                       [
                         { key: 'storm', label: 'Whole storm' },
                         { key: 'cloud', label: 'Inside cloud' },
@@ -8931,7 +9610,7 @@ const d = labToolData.waterCycle || {};
                           h('small', null, precipReachLabel))),
                       h('div', { className: 'wc-precip-live-meter' },
                         h('div', { className: 'wc-precip-live-meter-head' },
-                          h('span', null, 'Intensity index'),
+                          h('span', null, t('stem.watercycle.intensity_index', 'Intensity index')),
                           h('strong', null, precipIntensityLabel + ' \u00B7 ' + precipModel.relativeIntensity + '/100')),
                         h('meter', { min: 0, max: 100, value: precipModel.relativeIntensity,
                           'aria-label': precipIntensityLabel + ' precipitation intensity index, ' +
@@ -8989,8 +9668,8 @@ const d = labToolData.waterCycle || {};
                           onChange: function(event) { setStormLifecycleTime(Number(event.target.value), false); } })),
                       h('div', { className: 'wc-storm-playback' },
                         h('button', { type: 'button', className: 'wc-precip-btn',
-                          'aria-label': 'Move storm lifecycle backward',
-                          onClick: function() { setStormLifecycleTime(precipModel.lifecycle.time - 4, false); } }, 'Previous'),
+                          'aria-label': t('stem.watercycle.move_storm_lifecycle_backward', 'Move storm lifecycle backward'),
+                          onClick: function() { setStormLifecycleTime(precipModel.lifecycle.time - 4, false); } }, t('stem.watercycle.previous', 'Previous')),
                         h('button', { type: 'button', className: 'wc-precip-btn is-primary',
                           'aria-pressed': precipConfig.stormAutoPlay && !precipMotionReduced,
                           'aria-disabled': precipMotionReduced,
@@ -8998,12 +9677,12 @@ const d = labToolData.waterCycle || {};
                             if (precipMotionReduced) return;
                             var restartTime = precipModel.lifecycle.time >= 100 ? 0 : precipModel.lifecycle.time;
                             setStormLifecycleTime(restartTime, !precipConfig.stormAutoPlay);
-                          } }, precipMotionReduced ? 'Static' : (precipConfig.stormAutoPlay ? 'Pause time' : 'Play storm')),
+                          } }, precipMotionReduced ? t('stem.watercycle.static', 'Static') : (precipConfig.stormAutoPlay ? t('stem.watercycle.pause_time', 'Pause time') : t('stem.watercycle.play_storm', 'Play storm'))),
                         h('button', { type: 'button', className: 'wc-precip-btn',
-                          'aria-label': 'Move storm lifecycle forward',
-                          onClick: function() { setStormLifecycleTime(precipModel.lifecycle.time + 4, false); } }, 'Next'))),
+                          'aria-label': t('stem.watercycle.move_storm_lifecycle_forward', 'Move storm lifecycle forward'),
+                          onClick: function() { setStormLifecycleTime(precipModel.lifecycle.time + 4, false); } }, t('stem.watercycle.next', 'Next')))),
                     h('p', { className: 'wc-storm-stage-copy' }, precipModel.lifecycle.stageCopy),
-                    h('div', { className: 'wc-storm-accumulation', 'aria-label': 'Qualitative ground accumulation indices' },
+                    h('div', { className: 'wc-storm-accumulation', 'aria-label': t('stem.watercycle.qualitative_ground_accumulation', 'Qualitative ground accumulation indices') },
                       stormAccumulationKeys.map(function(accumulationItem) {
                         var accumulationValue = precipModel.lifecycle.accumulation[accumulationItem.key];
                         return h('div', { key: accumulationItem.key, className: 'wc-storm-accumulation-item' },
@@ -9269,6 +9948,1402 @@ const d = labToolData.waterCycle || {};
                          '6-8': 'The Ogallala Aquifer under the US Great Plains holds about 3,000 km\u00B3 of water  -  enough to cover the entire US in 40 cm of water.',
                          '9-12': 'Groundwater depletion in the Indo-Gangetic Basin exceeds 50 km\u00B3/yr, detectable via GRACE satellite gravity anomalies averaging -2 cm/yr equivalent water height.' } },
           ];
+
+          // ═══ FLAGSHIP MODE: BE THE WATER ═══
+          // Declared here, after STAGES, because the stage ledger reads the
+          // same STAGES metadata every other view uses - one source for the
+          // six stage names rather than a second list that can drift.
+          var _lastWcPilotCanvas = null;
+          // ══════════════════════════════════════════════════════════════════
+          //  BE THE WATER - the piloted 3D world
+          //  ----------------------------------------------------------------
+          //  ARCHITECTURE. The animation loop OWNS the simulation; React only
+          //  receives throttled snapshots. Two reasons, both learned the hard
+          //  way elsewhere in this file:
+          //    · a 60fps setState would re-render a 20,000-line component sixty
+          //      times a second, and
+          //    · reading React state from inside the loop captures the value
+          //      from the frame the loop was created on, which is the stale-
+          //      closure class that has bitten several STEM canvases.
+          //  So: intent goes IN through `canvasEl._wcPilotInput` (mutated, never
+          //  replaced), and summary state comes OUT through `onSnapshot` only
+          //  when the form changes or every 400 ms.
+          // ══════════════════════════════════════════════════════════════════
+          var WCPK = window.WaterCyclePilotKernel;
+
+          function wcPilotCanvasRef(canvasEl) {
+            if (!canvasEl) {
+              var detached = _lastWcPilotCanvas;
+              _lastWcPilotCanvas = null;
+              setTimeout(function() {
+                if (detached && !detached.isConnected && detached._wcPilotCleanup) {
+                  detached._wcPilotCleanup();
+                  detached._wcPilotInit = false;
+                }
+              }, 0);
+              return;
+            }
+            _lastWcPilotCanvas = canvasEl;
+            if (canvasEl._wcPilotInit) return;
+            if (!window.THREE) { canvasEl.dataset.engineState = 'loading'; return; }
+
+            var THREE = window.THREE;
+            var renderer;
+            try {
+              renderer = new THREE.WebGLRenderer({ canvas: canvasEl, antialias: true, alpha: false, powerPreference: 'high-performance' });
+            } catch (err) {
+              canvasEl.dataset.engineState = 'error';
+              setTimeout(function() { upd('pilotError', t('stem.watercycle.pilot_webgl_is_unavailable_on_this_device_th', 'WebGL is unavailable on this device. The System Map view teaches the same six stages without 3D.')); }, 0);
+              return;
+            }
+            canvasEl._wcPilotInit = true;
+            canvasEl.dataset.engineState = 'ready';
+
+            var W = Math.max(320, canvasEl.clientWidth || 900);
+            var H = Math.max(300, canvasEl.clientHeight || 520);
+            // The third argument MUST stay false: setSize without it writes the
+            // CSS width/height inline, which pins the canvas at its first size
+            // and freezes every later resize.
+            renderer.setSize(W, H, false);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+            if (THREE.ACESFilmicToneMapping) renderer.toneMapping = THREE.ACESFilmicToneMapping;
+            renderer.toneMappingExposure = 0.84;
+            if (THREE.sRGBEncoding) renderer.outputEncoding = THREE.sRGBEncoding;
+
+            var scene = new THREE.Scene();
+            var camera = new THREE.PerspectiveCamera(55, W / H, 0.5, 4000);
+
+            var motionReduced = false, motionMedia = null;
+            function syncMotion(ev) {
+              motionReduced = ev && typeof ev.matches === 'boolean' ? ev.matches : !!(motionMedia && motionMedia.matches);
+            }
+            try {
+              motionMedia = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)');
+              syncMotion(motionMedia);
+              if (motionMedia && motionMedia.addEventListener) motionMedia.addEventListener('change', syncMotion);
+              else if (motionMedia && motionMedia.addListener) motionMedia.addListener(syncMotion);
+            } catch (e) {}
+
+            // ── World scale ──────────────────────────────────────────────────
+            // The kernel speaks metres; the scene speaks world units. UNIT_M is
+            // the only bridge, so an altitude can never disagree between the HUD
+            // and the geometry.
+            var U = WCPK.UNIT_M;                 // metres per world unit
+            var m2u = function(m) { return m / U; };
+
+            // ── Sky ──────────────────────────────────────────────────────────
+            var skyUniforms = {
+              topColor: { value: new THREE.Color(0x1e3a8a) },
+              midColor: { value: new THREE.Color(0x38bdf8) },
+              horizonColor: { value: new THREE.Color(0xdbeafe) },
+              offset: { value: 12.0 }
+            };
+            var sky = new THREE.Mesh(
+              new THREE.SphereGeometry(900, 32, 20),
+              new THREE.ShaderMaterial({
+                side: THREE.BackSide, depthWrite: false, fog: false, uniforms: skyUniforms,
+                vertexShader: 'varying vec3 vW;void main(){vec4 wp=modelMatrix*vec4(position,1.0);vW=wp.xyz;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}',
+                fragmentShader: 'uniform vec3 topColor;uniform vec3 midColor;uniform vec3 horizonColor;uniform float offset;varying vec3 vW;void main(){float hgt=normalize(vW+vec3(0.0,offset,0.0)).y;float t=clamp(hgt,0.0,1.0);vec3 c=mix(horizonColor,midColor,smoothstep(0.0,0.35,t));c=mix(c,topColor,smoothstep(0.32,0.95,t));gl_FragColor=vec4(c,1.0);}'
+              })
+            );
+            scene.add(sky);
+            // Far plane pushed out to 1500: at 900 the ridge line at z=-320 sat
+            // deep in the fog and read as a grey smear rather than as mountains.
+            scene.fog = new THREE.Fog(0xcfe3f7, 620, 2300);
+
+            // 0.95 washed the sea out to pale mint: hemisphere light is ambient
+            // from every direction, so a strong one erases the shading that makes
+            // water look wet. Most of the light here should come from the sun.
+            var hemi = new THREE.HemisphereLight(0xdbeafe, 0x14342b, 0.55);
+            scene.add(hemi);
+            var sun = new THREE.DirectionalLight(0xfff6e0, 1.15);
+            sun.position.set(-120, 190, 90);
+            scene.add(sun);
+            var sunDisc = new THREE.Mesh(
+              new THREE.SphereGeometry(22, 20, 14),
+              new THREE.MeshBasicMaterial({ color: 0xfffbe8, fog: false })
+            );
+            sunDisc.position.copy(sun.position).multiplyScalar(3.1);
+            scene.add(sunDisc);
+
+            // ── Ocean ────────────────────────────────────────────────────────
+            // A displaced plane rather than a flat one: a still mirror reads as a
+            // floor, and the learner needs to believe this is water before they
+            // will believe they are made of it.
+            var oceanGeo = new THREE.PlaneGeometry(1400, 1400, 96, 96);
+            oceanGeo.rotateX(-Math.PI / 2);
+            var oceanBase = oceanGeo.attributes.position.array.slice();
+            // Phong, not Standard. MeshStandardMaterial is physically based, and
+            // physically based metal with no environment map to reflect resolves
+            // to a flat wash - which is exactly what the first build of this
+            // ocean looked like: a pale cyan bedsheet. Phong's explicit specular
+            // highlight gives sun glint off the wave crests with no env map at
+            // all, which is the effect that actually reads as water.
+            var ocean = new THREE.Mesh(oceanGeo, new THREE.MeshPhongMaterial({
+              color: 0x08304a, specular: 0x93c5fd, shininess: 60, reflectivity: 0.35,
+              transparent: true, opacity: 0.97, flatShading: false
+            }));
+            ocean.position.y = 0;
+            scene.add(ocean);
+
+            // Sunlit band: where evaporation actually charges. Making the fast
+            // water VISIBLE is the difference between "hold still somewhere" and
+            // "hold still where the sun is hitting the water".
+            // A ring rather than a filled disc: a soft additive disc over bright
+            // water is invisible, and this marker has to be findable from any
+            // altitude, since it is where the whole cycle starts.
+            // A thin ring the parcel sits inside, not a lit floor. The first
+            // attempt used a 46-unit additive disc, which stopped reading as a
+            // patch of sunlit sea and started reading as the sea itself.
+            var SUN_PATCH_R = 26;
+            var START_X = -150, START_Z = 40;
+            var sunPatch = new THREE.Mesh(
+              new THREE.RingGeometry(SUN_PATCH_R - 2.2, SUN_PATCH_R, 56),
+              new THREE.MeshBasicMaterial({ color: 0xfde68a, transparent: true, opacity: 0.55, depthWrite: false, side: THREE.DoubleSide, blending: THREE.AdditiveBlending })
+            );
+            sunPatch.rotation.x = -Math.PI / 2;
+            sunPatch.position.set(START_X, 1.6, START_Z);
+            scene.add(sunPatch);
+            var sunPatchFill = new THREE.Mesh(
+              new THREE.CircleGeometry(SUN_PATCH_R - 2.2, 48),
+              new THREE.MeshBasicMaterial({ color: 0xfef3c7, transparent: true, opacity: 0.12, depthWrite: false, side: THREE.DoubleSide, blending: THREE.AdditiveBlending })
+            );
+            sunPatchFill.rotation.x = -Math.PI / 2;
+            sunPatchFill.position.set(START_X, 1.2, START_Z);
+            scene.add(sunPatchFill);
+            var sunPatchLabel = makeLabelSprite(t('stem.watercycle.pilot_sunlit_water', 'SUNLIT WATER'), 'rgba(180,83,9,0.92)', '#fffbeb');
+            sunPatchLabel.position.set(START_X, 15, START_Z);
+            scene.add(sunPatchLabel);
+
+            // ── Land: beach, meadow, ridge ───────────────────────────────────
+            var land = new THREE.Group();
+            scene.add(land);
+            var beach = new THREE.Mesh(
+              new THREE.BoxGeometry(300, 6, 190),
+              new THREE.MeshStandardMaterial({ color: 0x9c8a63, roughness: 1 })
+            );
+            beach.position.set(150, 1.4, -40);
+            land.add(beach);
+            var meadow = new THREE.Mesh(
+              new THREE.BoxGeometry(300, 10, 150),
+              new THREE.MeshStandardMaterial({ color: 0x2f5228, roughness: 1 })
+            );
+            meadow.position.set(210, 3.2, -150);
+            land.add(meadow);
+            // Bare, low-permeability ground: the runoff pathway made legible as a
+            // place rather than as a menu option.
+            var hardpan = new THREE.Mesh(
+              new THREE.BoxGeometry(110, 10, 120),
+              new THREE.MeshStandardMaterial({ color: 0x6b5a45, roughness: 1 })
+            );
+            hardpan.position.set(90, 3.4, -170);
+            land.add(hardpan);
+
+            var ridge = new THREE.Group();
+            for (var mi = 0; mi < 7; mi++) {
+              var peakH = 58 + (mi % 3) * 26 + (mi % 2) * 14;
+              var cone = new THREE.Mesh(
+                new THREE.ConeGeometry(64 + (mi % 3) * 16, peakH, 5),
+                new THREE.MeshStandardMaterial({ color: mi % 2 ? 0x3f4d5c : 0x33404f, roughness: 0.96, flatShading: true })
+              );
+              cone.position.set(-160 + mi * 84, peakH / 2, -320 - (mi % 3) * 40);
+              ridge.add(cone);
+              if (peakH > 130) {
+                var cap = new THREE.Mesh(
+                  new THREE.ConeGeometry(24 + (mi % 3) * 5, peakH * 0.26, 5),
+                  new THREE.MeshStandardMaterial({ color: 0xf1f5f9, roughness: 0.7, flatShading: true })
+                );
+                cap.position.set(cone.position.x, peakH * 0.88, cone.position.z);
+                ridge.add(cap);
+              }
+            }
+            land.add(ridge);
+
+            // Trees. The plant-uptake pathway needs somewhere to actually be, and
+            // a canopy also gives the eye a scale reference on the way down.
+            var treeGroup = new THREE.Group();
+            var trunkGeo = new THREE.CylinderGeometry(0.8, 1.1, 7, 6);
+            var canopyGeo = new THREE.ConeGeometry(5.4, 13, 7);
+            var trunkMat = new THREE.MeshStandardMaterial({ color: 0x46301f, roughness: 1 });
+            for (var ti = 0; ti < 44; ti++) {
+              // Deterministic layout from the index: a Math.random() forest
+              // reshuffles itself on every remount, which reads as a glitch.
+              var tAng = ti * 2.399963;
+              var tRad = 26 + (ti % 11) * 9;
+              var tx = 190 + Math.cos(tAng) * tRad;
+              var tz = -160 + Math.sin(tAng) * tRad * 0.8;
+              var tScale = 0.75 + ((ti * 37) % 11) / 22;
+              var trunk = new THREE.Mesh(trunkGeo, trunkMat);
+              trunk.position.set(tx, 8 + 3.5 * tScale, tz);
+              trunk.scale.setScalar(tScale);
+              var canopy = new THREE.Mesh(canopyGeo, new THREE.MeshStandardMaterial({
+                color: new THREE.Color().setHSL(0.31 + ((ti * 17) % 9) / 180, 0.42, 0.26 + ((ti * 13) % 7) / 70),
+                roughness: 1, flatShading: true
+              }));
+              canopy.position.set(tx, 15 + 8 * tScale, tz);
+              canopy.scale.setScalar(tScale);
+              treeGroup.add(trunk); treeGroup.add(canopy);
+            }
+            land.add(treeGroup);
+
+            // Lake: the second open-water landing target, inland so that
+            // "steer back to water" is a real navigational choice.
+            var lake = new THREE.Mesh(
+              new THREE.CircleGeometry(34, 40),
+              new THREE.MeshStandardMaterial({ color: 0x0e7490, roughness: 0.2, metalness: 0.3 })
+            );
+            lake.rotation.x = -Math.PI / 2;
+            lake.position.set(268, 8.6, -104);
+            land.add(lake);
+
+            // ── Reference planes: cloud base and freezing level ──────────────
+            // These two heights are the mode's entire physics made visible. They
+            // are rebuilt whenever the scenario changes, never guessed.
+            var lclPlane = new THREE.Mesh(
+              new THREE.PlaneGeometry(760, 760),
+              new THREE.MeshBasicMaterial({ color: 0x7dd3fc, transparent: true, opacity: 0.1, side: THREE.DoubleSide, depthWrite: false })
+            );
+            lclPlane.rotation.x = -Math.PI / 2;
+            scene.add(lclPlane);
+            var freezePlane = new THREE.Mesh(
+              new THREE.PlaneGeometry(760, 760),
+              new THREE.MeshBasicMaterial({ color: 0xa5f3fc, transparent: true, opacity: 0.09, side: THREE.DoubleSide, depthWrite: false })
+            );
+            freezePlane.rotation.x = -Math.PI / 2;
+            scene.add(freezePlane);
+
+            function makeLabelSprite(text, bg, ink) {
+              var cv = document.createElement('canvas');
+              cv.width = 512; cv.height = 96;
+              var c2 = cv.getContext('2d');
+              c2.fillStyle = bg; c2.strokeStyle = 'rgba(255,255,255,0.42)'; c2.lineWidth = 3;
+              var r = 20;
+              c2.beginPath();
+              c2.moveTo(r, 6); c2.lineTo(506 - r, 6); c2.quadraticCurveTo(506, 6, 506, 6 + r);
+              c2.lineTo(506, 90 - r); c2.quadraticCurveTo(506, 90, 506 - r, 90);
+              c2.lineTo(r, 90); c2.quadraticCurveTo(6, 90, 6, 90 - r);
+              c2.lineTo(6, 6 + r); c2.quadraticCurveTo(6, 6, r, 6);
+              c2.closePath(); c2.fill(); c2.stroke();
+              c2.fillStyle = ink;
+              c2.font = 'bold 42px system-ui, -apple-system, Segoe UI, sans-serif';
+              c2.textAlign = 'center'; c2.textBaseline = 'middle';
+              c2.fillText(text, 256, 50);
+              var tex = new THREE.CanvasTexture(cv);
+              tex.minFilter = THREE.LinearFilter; tex.magFilter = THREE.LinearFilter;
+              var sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthTest: false, depthWrite: false, fog: false }));
+              // World units, not pixels. At 72 wide these labels were larger than
+              // the mountains and "SUNLIT WATER" covered a third of the frame.
+              sp.scale.set(16, 3, 1);
+              sp.userData.dispose = function() { tex.dispose(); };
+              return sp;
+            }
+            var lclLabel = makeLabelSprite(t('stem.watercycle.pilot_cloud_base', 'CLOUD BASE'), 'rgba(3,105,161,0.92)', '#f0f9ff');
+            var freezeLabel = makeLabelSprite(t('stem.watercycle.pilot_freezing_level', 'FREEZING LEVEL'), 'rgba(21,94,117,0.92)', '#ecfeff');
+            var lfcLabel = makeLabelSprite(t('stem.watercycle.pilot_free_convection', 'FREE CONVECTION'), 'rgba(15,118,110,0.92)', '#ecfdf5');
+            scene.add(lclLabel); scene.add(freezeLabel); scene.add(lfcLabel);
+
+            // ── Condensation nuclei ─────────────────────────────────────────
+            // The gate that most water-cycle teaching leaves out: vapour needs a
+            // surface to condense on. They are drawn as visible motes so the
+            // learner hunts for the actual mechanism.
+            var NUC_COUNT = 90;
+            var nucPos = new Float32Array(NUC_COUNT * 3);
+            var nucSeed = [];
+            for (var ni = 0; ni < NUC_COUNT; ni++) {
+              var na = ni * 2.399963, nr = 9 + (ni % 17) * 3.4;
+              nucSeed.push({ a: na, r: nr, yOff: ((ni * 29) % 40) - 12, live: true });
+              nucPos[ni * 3] = Math.cos(na) * nr;
+              nucPos[ni * 3 + 1] = 0;
+              nucPos[ni * 3 + 2] = Math.sin(na) * nr;
+            }
+            var nucGeo = new THREE.BufferGeometry();
+            nucGeo.setAttribute('position', new THREE.BufferAttribute(nucPos, 3));
+            function makeDotTexture(inner, outer) {
+              var cv = document.createElement('canvas'); cv.width = cv.height = 64;
+              var c2 = cv.getContext('2d');
+              var g = c2.createRadialGradient(32, 32, 0, 32, 32, 32);
+              g.addColorStop(0, inner); g.addColorStop(0.45, outer); g.addColorStop(1, 'rgba(255,255,255,0)');
+              c2.fillStyle = g; c2.fillRect(0, 0, 64, 64);
+              var tx = new THREE.CanvasTexture(cv);
+              tx.minFilter = THREE.LinearFilter; tx.magFilter = THREE.LinearFilter;
+              return tx;
+            }
+            var nucTex = makeDotTexture('rgba(255,247,214,1)', 'rgba(251,191,36,0.55)');
+            var nuclei = new THREE.Points(nucGeo, new THREE.PointsMaterial({
+              size: 5.2, map: nucTex, transparent: true, depthWrite: false,
+              blending: THREE.AdditiveBlending, sizeAttenuation: true
+            }));
+            scene.add(nuclei);
+
+            // ── Free cloud droplets to coalesce with ────────────────────────
+            var DROP_COUNT = 120;
+            var dropPos = new Float32Array(DROP_COUNT * 3);
+            var dropSeed = [];
+            for (var di = 0; di < DROP_COUNT; di++) {
+              var da = di * 1.61803 * Math.PI * 2, dr = 6 + (di % 19) * 1.5;
+              dropSeed.push({ a: da, r: dr, yOff: ((di * 23) % 70) - 8, live: true });
+              dropPos[di * 3] = Math.cos(da) * dr; dropPos[di * 3 + 1] = -9999; dropPos[di * 3 + 2] = Math.sin(da) * dr;
+            }
+            var dropGeo = new THREE.BufferGeometry();
+            dropGeo.setAttribute('position', new THREE.BufferAttribute(dropPos, 3));
+            var dropTex = makeDotTexture('rgba(255,255,255,1)', 'rgba(186,230,253,0.7)');
+            var freeDrops = new THREE.Points(dropGeo, new THREE.PointsMaterial({
+              size: 3.1, map: dropTex, transparent: true, depthWrite: false,
+              blending: THREE.AdditiveBlending, sizeAttenuation: true
+            }));
+            scene.add(freeDrops);
+
+            // ── Ambient cumulus ─────────────────────────────────────────────
+            // Built from overlapping soft billboards rather than spheres: a
+            // sphere with a gradient reads as a ping-pong ball, which is exactly
+            // the defect the 2D cloud renderer had to be rescued from.
+            // Two textures, not one. A cumulus is lit from above and shaded
+            // underneath, and a single symmetric gradient - which is what the
+            // first version used - produces a shapeless white haze with no top,
+            // no base, and no volume. The core is also held solid out to 55 % of
+            // the radius before it falls away: the earlier gradient started
+            // fading at 42 % and the lobes never read as solid at all.
+            function makePuffTexture(topLit) {
+              var cv = document.createElement('canvas'); cv.width = cv.height = 128;
+              var c2 = cv.getContext('2d');
+              // Highlight offset upward for sunlit lobes, downward-neutral for
+              // the shaded base lobes.
+              var g = c2.createRadialGradient(64, topLit ? 50 : 66, 6, 64, 64, 63);
+              if (topLit) {
+                g.addColorStop(0, 'rgba(255,255,255,1)');
+                g.addColorStop(0.55, 'rgba(252,253,255,0.96)');
+                g.addColorStop(0.82, 'rgba(219,231,245,0.46)');
+                g.addColorStop(1, 'rgba(203,213,225,0)');
+              } else {
+                g.addColorStop(0, 'rgba(226,234,246,0.98)');
+                g.addColorStop(0.55, 'rgba(203,215,232,0.92)');
+                g.addColorStop(0.84, 'rgba(163,180,204,0.4)');
+                g.addColorStop(1, 'rgba(148,163,184,0)');
+              }
+              c2.fillStyle = g; c2.fillRect(0, 0, 128, 128);
+              var tx = new THREE.CanvasTexture(cv);
+              tx.minFilter = THREE.LinearFilter; tx.magFilter = THREE.LinearFilter;
+              return tx;
+            }
+            var puffTexTop = makePuffTexture(true);
+            var puffTexBase = makePuffTexture(false);
+            // A cumulus has a FLAT BASE at the condensation level and a heaped,
+            // cauliflower top. Scattering lobes on a phyllotaxis spiral - the
+            // first approach - gave an even blob with neither. Building it as
+            // explicit tiers reproduces the real silhouette, and the flat base is
+            // itself the teaching point: that base is the LCL made visible.
+            function buildCumulus(seed, scale, lobeCount) {
+              var g = new THREE.Group();
+              var total = lobeCount || 9;
+              var baseCount = Math.max(3, Math.round(total * 0.42));
+              var midCount = Math.max(2, Math.round(total * 0.36));
+              var topCount = Math.max(1, total - baseCount - midCount);
+              var tiers = [
+                { n: baseCount, y: 0, spread: 1.15, size: 15, lit: false },
+                { n: midCount, y: 5.6, spread: 0.82, size: 17, lit: true },
+                { n: topCount, y: 10.4, spread: 0.5, size: 14, lit: true }
+              ];
+              var idx = 0;
+              for (var ti = 0; ti < tiers.length; ti++) {
+                var tier = tiers[ti];
+                for (var li = 0; li < tier.n; li++) {
+                  // Deterministic jitter from the lobe index and the group seed,
+                  // never Math.random(): a cloud that reshuffles its own lobes on
+                  // every remount reads as a rendering fault.
+                  var ang = (idx * 2.399963) + seed;
+                  var wobble = ((idx * 37) % 13) / 13 - 0.5;
+                  var rad = (li === 0 && ti === 2 ? 0 : (7 + (li % 4) * 4.6)) * tier.spread * scale;
+                  var sp = new THREE.Sprite(new THREE.SpriteMaterial({
+                    map: tier.lit ? puffTexTop : puffTexBase,
+                    transparent: true, depthWrite: false, opacity: 0.97, fog: true
+                  }));
+                  sp.position.set(
+                    Math.cos(ang) * rad + wobble * 2.4 * scale,
+                    (tier.y + wobble * 1.6) * scale,
+                    Math.sin(ang) * rad * 0.62 + wobble * 1.8 * scale
+                  );
+                  var s = (tier.size + (idx % 5) * 3.4) * scale;
+                  sp.scale.set(s, s * (tier.lit ? 0.82 : 0.62), 1);
+                  g.add(sp);
+                  idx++;
+                }
+              }
+              return g;
+            }
+            var ambientClouds = new THREE.Group();
+            for (var ci = 0; ci < 7; ci++) {
+              var cg = buildCumulus(ci * 1.7, 0.85 + (ci % 3) * 0.3);
+              cg.position.set(-420 + ci * 145, 0, -620 + (ci % 4) * 96);
+              cg.userData.baseY = (ci % 3) * 16;
+              ambientClouds.add(cg);
+            }
+            scene.add(ambientClouds);
+
+            // ── The parcel: one group, many forms ───────────────────────────
+            // Every form is built once and shown/hidden. Rebuilding geometry on a
+            // phase change would drop frames at exactly the moment the learner is
+            // meant to be noticing the change.
+            var parcel = new THREE.Group();
+            scene.add(parcel);
+
+            var liquidMesh = new THREE.Mesh(
+              new THREE.SphereGeometry(3.1, 28, 20),
+              new THREE.MeshPhysicalMaterial({
+                color: 0x22d3ee, roughness: 0.06, metalness: 0, transmission: 0.72,
+                thickness: 2.4, transparent: true, opacity: 0.92, clearcoat: 1, clearcoatRoughness: 0.05
+              })
+            );
+            parcel.add(liquidMesh);
+
+            // Vapour is INVISIBLE in reality, and saying so while drawing a solid
+            // blob would contradict the tool's own myth panel. So the vapour form
+            // is a faint additive shimmer plus a wireframe marker: enough to
+            // pilot, honest about being a rendering aid.
+            var vaporShell = new THREE.Mesh(
+              new THREE.SphereGeometry(5.2, 20, 14),
+              new THREE.MeshBasicMaterial({ color: 0xbae6fd, transparent: true, opacity: 0.14, blending: THREE.AdditiveBlending, depthWrite: false })
+            );
+            parcel.add(vaporShell);
+            var vaporMarker = new THREE.Mesh(
+              new THREE.IcosahedronGeometry(3.4, 1),
+              new THREE.MeshBasicMaterial({ color: 0xe0f2fe, wireframe: true, transparent: true, opacity: 0.5 })
+            );
+            parcel.add(vaporMarker);
+
+            var dropletMesh = new THREE.Mesh(
+              new THREE.SphereGeometry(2.2, 24, 18),
+              new THREE.MeshPhysicalMaterial({
+                color: 0xf0f9ff, roughness: 0.02, transmission: 0.9, thickness: 1.4,
+                transparent: true, opacity: 0.95, clearcoat: 1
+              })
+            );
+            parcel.add(dropletMesh);
+
+            var iceMesh = new THREE.Mesh(
+              new THREE.CylinderGeometry(3.4, 3.4, 0.9, 6),
+              new THREE.MeshPhysicalMaterial({
+                color: 0xcffafe, roughness: 0.08, transmission: 0.82, thickness: 1.1,
+                transparent: true, opacity: 0.93, clearcoat: 1, flatShading: false
+              })
+            );
+            parcel.add(iceMesh);
+
+            // A falling drop is not a sphere: surface tension plus drag gives the
+            // flattened base every photograph shows. Modelled as a squashed
+            // sphere so the fall reads differently from the float.
+            var rainMesh = new THREE.Mesh(
+              new THREE.SphereGeometry(2.6, 24, 18),
+              new THREE.MeshPhysicalMaterial({
+                color: 0x93c5fd, roughness: 0.03, transmission: 0.88, thickness: 1.8,
+                transparent: true, opacity: 0.94, clearcoat: 1
+              })
+            );
+            rainMesh.scale.set(1.12, 0.82, 1.12);
+            parcel.add(rainMesh);
+
+            var snowMesh = new THREE.Group();
+            for (var si = 0; si < 6; si++) {
+              var arm = new THREE.Mesh(
+                new THREE.BoxGeometry(6.4, 0.5, 0.9),
+                new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.35, emissive: 0x93c5fd, emissiveIntensity: 0.22 })
+              );
+              arm.rotation.y = (si * Math.PI) / 3;
+              snowMesh.add(arm);
+            }
+            parcel.add(snowMesh);
+
+            // The culmination. When the learner becomes a cloud, they get a real
+            // cumulus centred on themselves, and the camera pulls back to show it.
+            var selfCloud = buildCumulus(0.6, 1.5, 26);
+            parcel.add(selfCloud);
+
+            // A soft halo so the parcel is never lost against the terrain - the
+            // single most common complaint about first-person particle sims.
+            var halo = new THREE.Sprite(new THREE.SpriteMaterial({
+              map: makeDotTexture('rgba(224,242,254,0.9)', 'rgba(56,189,248,0.28)'),
+              transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, fog: false
+            }));
+            halo.scale.set(20, 20, 1);
+            parcel.add(halo);
+
+            // Trail: where you have been, which is what makes an invisible gas
+            // pilotable at all.
+            var TRAIL_N = 120;
+            var trailPos = new Float32Array(TRAIL_N * 3);
+            var trailGeo = new THREE.BufferGeometry();
+            trailGeo.setAttribute('position', new THREE.BufferAttribute(trailPos, 3));
+            var trail = new THREE.Line(trailGeo, new THREE.LineBasicMaterial({
+              color: 0x7dd3fc, transparent: true, opacity: 0.5
+            }));
+            trail.frustumCulled = false;
+            scene.add(trail);
+            var trailWrite = 0, trailFilled = 0;
+
+            // ── Input ────────────────────────────────────────────────────────
+            // Mutated in place, never replaced: React holds this same object, and
+            // swapping it would silently orphan the loop's reference.
+            var input = canvasEl._wcPilotInput = {
+              up: 0, down: 0, left: 0, right: 0, fwd: 0, back: 0,
+              paused: false, orbit: false, scenario: 'tropicalOcean', reset: 0, restartAt: -1
+            };
+
+            var keyState = {};
+            function onKeyDown(e) {
+              var k = e.key.toLowerCase();
+              if (['w', 'a', 's', 'd', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright', ' ', 'shift'].indexOf(k) === -1) return;
+              // The canvas is focusable and documents these keys, so it owns them
+              // while focused; letting them scroll the page instead is the classic
+              // "the game fights the browser" bug.
+              e.preventDefault();
+              keyState[k] = true;
+            }
+            function onKeyUp(e) { keyState[e.key.toLowerCase()] = false; }
+            canvasEl.addEventListener('keydown', onKeyDown);
+            canvasEl.addEventListener('keyup', onKeyUp);
+
+            // Pointer look. Touch is handled by the same handlers via pointer
+            // events, and every action also has an on-screen button, so the mode
+            // is fully playable with a keyboard alone or a finger alone.
+            // Opening framing. The parcel starts offshore and the land is to its
+            // +x side, so a default yaw pointed the camera out to empty sea and
+            // the learner's first sight of the world was a blank horizon. This
+            // yaw puts the camera seaward looking back at the coast, so the
+            // ocean, the beach, the forest, and the ridge are all in the first
+            // frame - the destinations before the journey.
+            var yaw = -1.05, pitch = 0.26, dragging = false, lastPx = 0, lastPy = 0;
+            function onPointerDown(e) {
+              dragging = true; lastPx = e.clientX; lastPy = e.clientY;
+              if (canvasEl.setPointerCapture && e.pointerId != null) { try { canvasEl.setPointerCapture(e.pointerId); } catch (_e) {} }
+            }
+            function onPointerMove(e) {
+              if (!dragging) return;
+              yaw -= (e.clientX - lastPx) * 0.005;
+              pitch = Math.max(-0.35, Math.min(1.15, pitch + (e.clientY - lastPy) * 0.004));
+              lastPx = e.clientX; lastPy = e.clientY;
+            }
+            function onPointerUp() { dragging = false; }
+            canvasEl.addEventListener('pointerdown', onPointerDown);
+            canvasEl.addEventListener('pointermove', onPointerMove);
+            canvasEl.addEventListener('pointerup', onPointerUp);
+            canvasEl.addEventListener('pointercancel', onPointerUp);
+            canvasEl.addEventListener('pointerleave', onPointerUp);
+
+            var camDist = 118;
+            var userZoom = 0;
+            function formCamDist(f) {
+              if (f === 'cloud') return 210;
+              if (f === 'droplet' || f === 'ice') return 42;
+              if (f === 'rain' || f === 'snow') return 66;
+              if (f === 'vapor' || f === 'transpiring') return 88;
+              return camDist;
+            }
+            function onWheel(e) {
+              e.preventDefault();
+              userZoom = Math.max(12, Math.min(320, (userZoom || camDist) + e.deltaY * 0.12));
+            }
+            canvasEl.addEventListener('wheel', onWheel, { passive: false });
+
+            // ── Simulation state ─────────────────────────────────────────────
+            var sim = WCPK.initialState(input.scenario);
+            var env = WCPK.environment(sim.scenario);
+            var px = START_X, pz = START_Z;   // horizontal position in world units
+            var lastSnapshot = 0, lastForm = sim.form, lastScenario = sim.scenario;
+            var cloudBurstT = 0;
+
+            function applyScenario(id) {
+              sim = WCPK.initialState(id);
+              env = WCPK.environment(id);
+              px = START_X; pz = START_Z;
+              trailWrite = 0; trailFilled = 0;
+              lastForm = sim.form;
+              cloudBurstT = 0;
+              for (var i = 0; i < nucSeed.length; i++) nucSeed[i].live = true;
+              for (var j = 0; j < dropSeed.length; j++) dropSeed[j].live = true;
+              // Reference planes and their labels are positioned FROM the
+              // environment, so a scenario swap can never leave a stale cloud base
+              // drawn at the previous scenario's height.
+              lclPlane.position.y = m2u(env.lclM);
+              lclLabel.position.set(-150, m2u(env.lclM) + 7, 40);
+              freezePlane.position.y = m2u(env.freezingM);
+              freezePlane.visible = env.freezingM < env.ceilingM - 1;
+              freezeLabel.position.set(150, m2u(env.freezingM) + 7, 40);
+              freezeLabel.visible = freezePlane.visible;
+              lfcLabel.position.set(-10, m2u(env.lfcM) + 7, -60);
+              lfcLabel.visible = env.lfcReachable;
+              // Sky and sun follow the scenario's warmth, so a desert and a winter
+              // mountain do not share one generic blue.
+              var warm = WCPK.environment(id).surfaceTempC;
+              skyUniforms.topColor.value.setHex(warm > 26 ? 0x1d4ed8 : warm > 12 ? 0x1e3a8a : 0x334155);
+              skyUniforms.midColor.value.setHex(warm > 26 ? 0x38bdf8 : warm > 12 ? 0x60a5fa : 0x93a8c4);
+              skyUniforms.horizonColor.value.setHex(warm > 26 ? 0xfef3c7 : warm > 12 ? 0xdbeafe : 0xe2e8f0);
+              sun.intensity = 0.6 + env.solar * 0.5;
+              ambientClouds.children.forEach(function(cg) { cg.position.y = m2u(env.lclM) + cg.userData.baseY; });
+
+              // ── Terrain follows the scenario ────────────────────────────
+              // The land was fixed temperate coast in every scenario, so
+              // "Desert basin" rendered a lush green forest and "Mountain
+              // winter" rendered high summer. The scenario is a claim about the
+              // place, and a scene that contradicts its own label teaches the
+              // learner that the labels do not mean anything.
+              var biome = env.id;
+              var isDesert = biome === 'desertBasin';
+              var isWinter = biome === 'mountainWinter';
+              meadow.material.color.setHex(isDesert ? 0x9a7f4e : isWinter ? 0xd8e3ea : 0x2f5228);
+              beach.material.color.setHex(isDesert ? 0xb09468 : isWinter ? 0xc3cdd6 : 0x9c8a63);
+              hardpan.material.color.setHex(isDesert ? 0x8a6f4a : isWinter ? 0xaeb9c2 : 0x6b5a45);
+              lake.visible = !isDesert;   // a desert basin has no standing lake
+              // Trees: sparse and dry in the desert, dark and frosted in winter.
+              // Children alternate trunk, canopy, so the index parity selects
+              // which of the two is being touched.
+              treeGroup.children.forEach(function(part, idx) {
+                var treeIndex = Math.floor(idx / 2);
+                part.visible = isDesert ? (treeIndex % 5 === 0) : true;
+                if (idx % 2 === 1 && part.material && part.material.color) {
+                  if (isDesert) part.material.color.setHSL(0.16, 0.34, 0.34);
+                  else if (isWinter) part.material.color.setHSL(0.36, 0.2, 0.3);
+                  else part.material.color.setHSL(0.31 + ((treeIndex * 17) % 9) / 180, 0.42, 0.26 + ((treeIndex * 13) % 7) / 70);
+                }
+              });
+              // Snow line: in winter every peak is capped, not only the tall ones.
+              ridge.children.forEach(function(peak) {
+                if (peak.material && peak.material.color && peak.geometry
+                  && peak.geometry.type === 'ConeGeometry' && peak.geometry.parameters.radius > 50) {
+                  peak.material.color.setHex(isWinter ? 0x8fa3b5 : isDesert ? 0x6f6152 : 0x3f4d5c);
+                }
+              });
+              ocean.material.color.setHex(env.seaTempC > 24 ? 0x0a4763 : env.seaTempC > 12 ? 0x08304a : 0x0b2e42);
+            }
+            applyScenario(sim.scenario);
+
+            // Which surface is under the parcel right now. Position IS the choice:
+            // the learner steers to a pathway rather than picking one from a list.
+            function surfaceUnder(x, z) {
+              // Lake centre (268, -104), radius 34 - the same numbers the lake
+              // mesh is positioned with, so the visible shore and the pathway it
+              // grants can never drift apart.
+              var lakeDx = x - 268, lakeDz = z + 104;
+              if (lakeDx * lakeDx + lakeDz * lakeDz < 34 * 34) return 'water';
+              if (x > 145 && x < 235 && z > -230 && z < -110) return 'plant';   // forest
+              if (x > 35 && x < 145 && z > -230 && z < -110) return 'hard';     // hardpan
+              if (x > 60 && x < 300 && z > -230 && z < 55) return 'permeable';  // meadow / beach
+              return 'water';                                                    // ocean
+            }
+
+            function snapshot(reason) {
+              var cov = WCPK.stageCoverage(sim);
+              if (canvasEl.dataset) {
+                // Dataset mirrors are how the screenshot harness and the a11y
+                // text alternative read the live sim without a React round-trip.
+                canvasEl.dataset.parcelForm = sim.form;
+                canvasEl.dataset.parcelAltitudeM = String(Math.round(sim.altitudeM));
+                canvasEl.dataset.parcelStages = String(cov.done);
+                canvasEl.dataset.pilotScenario = sim.scenario;
+              }
+              if (canvasEl._wcPilotOnSnapshot) {
+                canvasEl._wcPilotOnSnapshot({
+                  form: sim.form, altitudeM: sim.altitudeM, energy: sim.energy,
+                  droplets: sim.droplets, mass: sim.mass, nucleus: sim.nucleus,
+                  loops: sim.loops, elapsed: sim.elapsed, scenario: sim.scenario,
+                  stagesSeen: Object.assign({}, sim.stagesSeen),
+                  formsSeen: Object.assign({}, sim.formsSeen),
+                  tempC: WCPK.parcelTempC(env, sim.altitudeM),
+                  ambientC: WCPK.ambientTempC(env, sim.altitudeM),
+                  rh: WCPK.parcelRH(env, sim.altitudeM),
+                  buoyancyC: WCPK.buoyancyC(env, sim.altitudeM),
+                  vy: sim.vy, reason: reason || 'tick'
+                });
+              }
+            }
+
+            // ── Loop ─────────────────────────────────────────────────────────
+            var alive = true, raf = null, prevT = 0;
+            function frame(now) {
+              if (!alive) return;
+              raf = requestAnimationFrame(frame);
+              var dt = prevT ? Math.min(0.05, (now - prevT) / 1000) : 0.016;
+              prevT = now;
+
+              if (input.scenario !== lastScenario) { lastScenario = input.scenario; applyScenario(input.scenario); snapshot('scenario'); }
+              if (input.reset) { input.reset = 0; applyScenario(sim.scenario); snapshot('reset'); }
+
+              var thrust = 0, strafe = 0, surge = 0;
+              if (!input.paused) {
+                thrust = (keyState[' '] || keyState.w || keyState.arrowup || input.up ? 1 : 0)
+                       - (keyState.shift || keyState.s || keyState.arrowdown || input.down ? 1 : 0);
+                strafe = (keyState.d || keyState.arrowright || input.right ? 1 : 0)
+                       - (keyState.a || keyState.arrowleft || input.left ? 1 : 0);
+                surge = (input.fwd ? 1 : 0) - (input.back ? 1 : 0);
+              }
+
+              // Horizontal motion is steered relative to where the camera looks,
+              // which is what makes "fly toward that cloud" work as an instruction.
+              var airborne = WCPK.isAirborne(sim.form);
+              var speed = (WCPK.isFalling(sim.form) ? 15 : airborne ? 22 : 12) * (input.paused ? 0 : 1);
+              var fwdX = -Math.sin(yaw), fwdZ = -Math.cos(yaw);
+              px += (fwdX * surge + Math.cos(yaw) * -strafe) * speed * dt;
+              pz += (fwdZ * surge + Math.sin(yaw) * -strafe) * speed * dt;
+              // Wind pushes everything airborne downwind. This is why a parcel
+              // that evaporates over the sea can rain over the land at all.
+              if (airborne && !input.paused) { px += env.windMs * 0.11 * dt * 12; }
+              px = Math.max(-330, Math.min(330, px));
+              pz = Math.max(-330, Math.min(330, pz));
+
+              // Collisions with nuclei and droplets, computed against the parcel's
+              // actual world position so the HUD gate and the visible mote can
+              // never disagree.
+              var py = m2u(sim.altitudeM);
+              var nucleusHit = false, dropletHit = false;
+              var nAttr = nucGeo.attributes.position;
+              for (var k = 0; k < NUC_COUNT; k++) {
+                if (!nucSeed[k].live) continue;
+                var nx = nAttr.array[k * 3], ny = nAttr.array[k * 3 + 1], nz = nAttr.array[k * 3 + 2];
+                var ddx = nx - px, ddy = ny - py, ddz = nz - pz;
+                if (ddx * ddx + ddy * ddy + ddz * ddz < 100) {
+                  if (sim.form === 'vapor' && sim.altitudeM >= env.lclM) { nucleusHit = true; nucSeed[k].live = false; nAttr.array[k * 3 + 1] = -9999; nAttr.needsUpdate = true; }
+                }
+              }
+              var dAttr = dropGeo.attributes.position;
+              for (var q = 0; q < DROP_COUNT; q++) {
+                if (!dropSeed[q].live) continue;
+                var dx2 = dAttr.array[q * 3] - px, dy2 = dAttr.array[q * 3 + 1] - py, dz2 = dAttr.array[q * 3 + 2] - pz;
+                if (dx2 * dx2 + dy2 * dy2 + dz2 * dz2 < 81) {
+                  if (sim.form === 'droplet' || sim.form === 'cloud' || sim.form === 'ice') {
+                    dropletHit = true; dropSeed[q].live = false; dAttr.array[q * 3 + 1] = -9999; dAttr.needsUpdate = true;
+                  }
+                }
+              }
+
+              // Evaporation only charges in the sunlit patch, and only over water.
+              var overWater = surfaceUnder(px, pz) === 'water';
+              // Same radius and centre as the ring mesh above, read from the same
+              // constant: if the gate and the drawn marker ever disagreed, the
+              // learner would be told to sit in a circle that does not charge.
+              var inSunPatch = (px - START_X) * (px - START_X) + (pz - START_Z) * (pz - START_Z) < SUN_PATCH_R * SUN_PATCH_R;
+
+              if (!input.paused) {
+                sim = WCPK.step(sim, {
+                  dt: dt, thrust: thrust, sunlit: overWater && inSunPatch,
+                  nucleusHit: nucleusHit, dropletHit: dropletHit,
+                  surface: surfaceUnder(px, pz)
+                });
+                sim.x = px; sim.z = pz;
+              }
+
+              // Repopulate collectables once the learner is a droplet, so a long
+              // climb never ends in an empty sky with nothing left to coalesce
+              // with. Deterministic reseeding, so it cannot shimmer.
+              if ((sim.form === 'droplet' || sim.form === 'cloud' || sim.form === 'ice') && !input.paused) {
+                for (var rp = 0; rp < DROP_COUNT; rp++) {
+                  if (dropSeed[rp].live) continue;
+                  if ((rp + Math.floor(sim.elapsed * 2)) % 97 !== 0) continue;
+                  dropSeed[rp].live = true;
+                }
+              }
+
+              var t = sim.elapsed;
+              py = m2u(sim.altitudeM);
+              // Surface forms float ON the water rather than through it. At
+              // altitude 0 the parcel centre is the waterline, so half the sphere
+              // was buried and it read as a dome, not a drop.
+              var surfaceLift = (sim.form === 'liquid' || sim.form === 'runoff') ? 3.2
+                : (sim.form === 'soil' || sim.form === 'plant') ? 1.5
+                : (sim.form === 'groundwater') ? -6 : 0;
+              parcel.position.set(px, py + surfaceLift, pz);
+
+              // ── Form presentation ───────────────────────────────────────
+              var f = sim.form;
+              liquidMesh.visible = (f === 'liquid' || f === 'runoff' || f === 'soil' || f === 'groundwater' || f === 'plant');
+              vaporShell.visible = (f === 'vapor' || f === 'transpiring');
+              vaporMarker.visible = vaporShell.visible;
+              dropletMesh.visible = (f === 'droplet');
+              iceMesh.visible = (f === 'ice');
+              rainMesh.visible = (f === 'rain');
+              snowMesh.visible = (f === 'snow');
+              selfCloud.visible = (f === 'cloud');
+              halo.material.opacity = f === 'cloud' ? 0 : 0.62;
+              var haloScale = (f === 'droplet' || f === 'ice') ? 11 : (f === 'rain' || f === 'snow') ? 15 : 22;
+              halo.scale.set(haloScale, haloScale, 1);
+
+              if (f === 'liquid') {
+                liquidMesh.material.color.setHex(0x22d3ee);
+                var pulse = motionReduced ? 1 : 1 + Math.sin(t * 3.4) * 0.05 * sim.energy;
+                liquidMesh.scale.setScalar(pulse);
+              } else if (f === 'soil' || f === 'groundwater') {
+                liquidMesh.material.color.setHex(f === 'soil' ? 0xa3e635 : 0x818cf8);
+                liquidMesh.scale.setScalar(0.8);
+              } else if (f === 'plant') {
+                liquidMesh.material.color.setHex(0x4ade80); liquidMesh.scale.setScalar(0.75);
+              } else if (f === 'runoff') {
+                liquidMesh.material.color.setHex(0x22d3ee); liquidMesh.scale.setScalar(0.9);
+              }
+              if (!motionReduced) {
+                if (f === 'ice') iceMesh.rotation.y += dt * 0.9;
+                if (f === 'snow') { snowMesh.rotation.y += dt * 1.4; snowMesh.rotation.x = Math.sin(t * 1.1) * 0.35; }
+                if (f === 'vapor' || f === 'transpiring') {
+                  vaporMarker.rotation.y += dt * 0.6; vaporMarker.rotation.x += dt * 0.35;
+                  vaporShell.scale.setScalar(1 + Math.sin(t * 2.2) * 0.09);
+                }
+              }
+              // Growing as you coalesce is the clearest possible read on "you are
+              // getting heavier", so the droplet and the self-cloud both scale
+              // with collected mass rather than staying a fixed size.
+              var growth = 1 + Math.min(1.6, sim.mass * 0.9);
+              dropletMesh.scale.setScalar(growth);
+              if (f === 'cloud') {
+                cloudBurstT = Math.min(1, cloudBurstT + dt * 1.6);
+                var cs = (0.5 + cloudBurstT * 0.5) * (1 + Math.min(0.9, sim.mass * 0.5));
+                selfCloud.scale.setScalar(cs);
+                if (!motionReduced) selfCloud.rotation.y += dt * 0.08;
+              } else { cloudBurstT = Math.max(0, cloudBurstT - dt * 2); }
+
+              // Trail.
+              if (!motionReduced && !input.paused) {
+                trailPos[trailWrite * 3] = px; trailPos[trailWrite * 3 + 1] = py; trailPos[trailWrite * 3 + 2] = pz;
+                trailWrite = (trailWrite + 1) % TRAIL_N;
+                trailFilled = Math.min(TRAIL_N, trailFilled + 1);
+                trailGeo.setDrawRange(0, trailFilled);
+                trailGeo.attributes.position.needsUpdate = true;
+                trail.material.color.setHex(WCPK.forms[f] ? WCPK.forms[f].tint : 0x7dd3fc);
+              }
+
+              // Nuclei and droplets drift; both live in the saturated layer, which
+              // is why they only appear once you are near the cloud base.
+              var lclU = m2u(env.lclM);
+              for (var na2 = 0; na2 < NUC_COUNT; na2++) {
+                if (!nucSeed[na2].live) continue;
+                var ns = nucSeed[na2];
+                var ang2 = ns.a + (motionReduced ? 0 : t * 0.06);
+                nAttr.array[na2 * 3] = px + Math.cos(ang2) * ns.r;
+                nAttr.array[na2 * 3 + 1] = lclU + ns.yOff * 0.42 + (motionReduced ? 0 : Math.sin(t * 0.7 + ns.a) * 1.4);
+                nAttr.array[na2 * 3 + 2] = pz + Math.sin(ang2) * ns.r;
+              }
+              nAttr.needsUpdate = true;
+              nuclei.visible = sim.form === 'vapor';
+              for (var db = 0; db < DROP_COUNT; db++) {
+                if (!dropSeed[db].live) { dAttr.array[db * 3 + 1] = -9999; continue; }
+                var ds = dropSeed[db];
+                var ang3 = ds.a + (motionReduced ? 0 : t * 0.1);
+                dAttr.array[db * 3] = px + Math.cos(ang3) * ds.r;
+                dAttr.array[db * 3 + 1] = Math.max(lclU, py) + ds.yOff * 0.3 - 4;
+                dAttr.array[db * 3 + 2] = pz + Math.sin(ang3) * ds.r;
+              }
+              dAttr.needsUpdate = true;
+              freeDrops.visible = (sim.form === 'droplet' || sim.form === 'cloud' || sim.form === 'ice');
+
+              // Ocean shimmer.
+              if (!motionReduced) {
+                var op = oceanGeo.attributes.position;
+                for (var oi = 0; oi < op.count; oi++) {
+                  var ox = oceanBase[oi * 3], oz = oceanBase[oi * 3 + 2];
+                  op.array[oi * 3 + 1] = Math.sin(ox * 0.035 + t * 1.3) * 0.9 + Math.cos(oz * 0.028 + t * 0.9) * 0.7;
+                }
+                op.needsUpdate = true;
+                oceanGeo.computeVertexNormals();
+              }
+              sunPatchFill.material.opacity = 0.22 + (motionReduced ? 0.08 : Math.sin(t * 1.8) * 0.06 + 0.08);
+              // The marker is only meaningful while you are liquid and looking
+              // for somewhere to evaporate; once airborne it is visual noise.
+              var atSurface = sim.form === 'liquid';
+              sunPatch.visible = atSurface; sunPatchFill.visible = atSurface; sunPatchLabel.visible = atSurface;
+
+              // Labels face the camera and stay legible at any distance.
+              lclLabel.position.x = px - 60;
+              freezeLabel.position.x = px + 60;
+              lfcLabel.position.x = px + 4;
+
+              // ── Camera ───────────────────────────────────────────────────
+              // Chase, not first-person: the learner has to SEE their own form
+              // change, and a first-person camera hides the one thing the mode
+              // exists to show.
+              var wantDist = userZoom || formCamDist(f);
+              var camGoal = new THREE.Vector3(
+                px + Math.sin(yaw) * Math.cos(pitch) * wantDist,
+                py + surfaceLift + Math.sin(pitch) * wantDist + 6,
+                pz + Math.cos(yaw) * Math.cos(pitch) * wantDist
+              );
+              // Never let the chase camera drop below the waterline: at low pitch
+              // near the surface it otherwise dips under the ocean plane and the
+              // whole frame becomes an undifferentiated wash of water.
+              camGoal.y = Math.max(camGoal.y, 7);
+              camera.position.lerp(camGoal, motionReduced ? 1 : Math.min(1, dt * 4.5));
+              camera.lookAt(px, py + surfaceLift + 2, pz);
+              sky.position.set(px, py, pz);
+
+              if (sim.form !== lastForm) {
+                if (sim.form === 'cloud') { pitch = -0.08; }
+                lastForm = sim.form;
+                snapshot('form');
+              } else if (now - lastSnapshot > 400) {
+                lastSnapshot = now;
+                snapshot('tick');
+              }
+
+              renderer.render(scene, camera);
+            }
+            raf = requestAnimationFrame(frame);
+
+            function onResize() {
+              var w2 = Math.max(320, canvasEl.clientWidth || W);
+              var h2 = Math.max(300, canvasEl.clientHeight || H);
+              renderer.setSize(w2, h2, false);
+              camera.aspect = w2 / h2;
+              camera.updateProjectionMatrix();
+            }
+            var ro = null;
+            try { ro = new ResizeObserver(onResize); ro.observe(canvasEl); } catch (e) { window.addEventListener('resize', onResize); }
+
+            canvasEl._wcPilotCleanup = function() {
+              alive = false;
+              if (raf) cancelAnimationFrame(raf);
+              canvasEl.removeEventListener('keydown', onKeyDown);
+              canvasEl.removeEventListener('keyup', onKeyUp);
+              canvasEl.removeEventListener('pointerdown', onPointerDown);
+              canvasEl.removeEventListener('pointermove', onPointerMove);
+              canvasEl.removeEventListener('pointerup', onPointerUp);
+              canvasEl.removeEventListener('pointercancel', onPointerUp);
+              canvasEl.removeEventListener('pointerleave', onPointerUp);
+              canvasEl.removeEventListener('wheel', onWheel);
+              if (ro) { try { ro.disconnect(); } catch (e) {} } else { window.removeEventListener('resize', onResize); }
+              if (motionMedia && motionMedia.removeEventListener) motionMedia.removeEventListener('change', syncMotion);
+              else if (motionMedia && motionMedia.removeListener) motionMedia.removeListener(syncMotion);
+              scene.traverse(function(o) {
+                if (o.geometry) o.geometry.dispose();
+                if (o.material) {
+                  var mats = Array.isArray(o.material) ? o.material : [o.material];
+                  mats.forEach(function(mm) { if (mm.map) mm.map.dispose(); mm.dispose(); });
+                }
+              });
+              renderer.dispose();
+              canvasEl._wcPilotOnSnapshot = null;
+              canvasEl._wcPilotInput = null;
+              canvasEl._wcPilotCleanup = null;
+            };
+          }
+          // ══════════════════════════════════════════════════════════════════
+          //  BE THE WATER - the panel around the world
+          //  The canvas owns the simulation; everything here reads the throttled
+          //  snapshot it publishes. Nothing below recomputes physics: the HUD
+          //  numbers, the coaching line, and the text alternative all come from
+          //  the same kernel call, so they cannot disagree with each other or
+          //  with the scene.
+          // ══════════════════════════════════════════════════════════════════
+          function renderWcPilot() {
+            var pilotStored = d.pilot || {};
+            var scenarioId = WCPK.scenarios[pilotStored.scenario] ? pilotStored.scenario : 'tropicalOcean';
+            var env = WCPK.environment(scenarioId);
+            // The live snapshot. Before the first frame publishes one, the panel
+            // renders the kernel's INITIAL state rather than blanks, so the HUD is
+            // never briefly empty and never shows a placeholder that looks like a
+            // reading.
+            var snap = pilotStored.snapshot && pilotStored.snapshot.scenario === scenarioId
+              ? pilotStored.snapshot
+              : (function() {
+                  var s0 = WCPK.initialState(scenarioId);
+                  return {
+                    form: s0.form, altitudeM: 0, energy: 0, droplets: 0, mass: s0.mass,
+                    nucleus: false, loops: 0, elapsed: 0, scenario: scenarioId,
+                    stagesSeen: {}, formsSeen: { liquid: true },
+                    tempC: WCPK.parcelTempC(env, 0), ambientC: WCPK.ambientTempC(env, 0),
+                    rh: WCPK.parcelRH(env, 0), buoyancyC: WCPK.buoyancyC(env, 0), vy: 0
+                  };
+                })();
+            var form = WCPK.forms[snap.form] || WCPK.forms.liquid;
+            var coverage = WCPK.stageCoverage({ stagesSeen: snap.stagesSeen });
+            var objective = WCPK.objective(snap, env);
+            var paused = !!pilotStored.paused;
+            // Defaults ON: the mode is only ever entered deliberately, and the
+            // form-change cue is the mode's only non-visual channel.
+            var pilotSound = pilotStored.sound !== false;
+
+            // ── Publishing the snapshot back into tool state ────────────────
+            // Throttled by the loop, but ALSO guarded here: an identical snapshot
+            // must not schedule a re-render, or a paused sim would still spin
+            // React at the snapshot rate.
+            function receiveSnapshot(next) {
+              setLabToolData(function(prev) {
+                var wc = prev.waterCycle || {};
+                var cur = wc.pilot || {};
+                var prevSnap = cur.snapshot;
+                if (prevSnap && prevSnap.form === next.form
+                  && Math.abs((prevSnap.altitudeM || 0) - next.altitudeM) < 25
+                  && prevSnap.droplets === next.droplets
+                  && Math.abs((prevSnap.energy || 0) - next.energy) < 0.04
+                  && prevSnap.loops === next.loops) return prev;
+                // Piloting credits the SAME stage ledger and challenge set as
+                // every other view, so a learner who only ever flies still
+                // completes the tool. One ledger, one derivation.
+                var stagesViewed = Object.assign({}, wc.stagesViewed || {});
+                Object.keys(next.stagesSeen || {}).forEach(function(k) { stagesViewed[k] = true; });
+                var patch = {
+                  pilot: Object.assign({}, cur, { snapshot: next, scenario: next.scenario }),
+                  stagesViewed: stagesViewed
+                };
+                // The culmination gets an announcement and a toast. A silent
+                // state change is the one thing this moment must not be: it is
+                // what the learner has spent the whole climb working toward, and
+                // a screen-reader user would otherwise have no idea it happened.
+                var wasForm = prevSnap ? prevSnap.form : '';
+                // ── Audio on every change of form ──────────────────────────
+                // The tool already carries a full water-cycle SFX bank that the
+                // 2D canvas and the Precipitation Lab both use; the flagship was
+                // silent. Sound here is not decoration: a change of form is the
+                // single most important event in the mode, and a learner who is
+                // watching the terrain rather than the badge - or who cannot see
+                // the badge at all - otherwise has no signal that it happened.
+                // Opt-out, defaulting ON, because the mode is only entered
+                // deliberately; the toggle lives beside the flight controls.
+                if (wasForm && next.form !== wasForm && cur.sound !== false) {
+                  var pilotCue = {
+                    vapor: sfxEvaporate, droplet: sfxCondense, cloud: sfxCondense,
+                    ice: sfxFreeze, rain: sfxRain, snow: sfxFreeze,
+                    liquid: playBubblePop, runoff: sfxStream,
+                    soil: playInfiltrationSwell, groundwater: playInfiltrationSwell,
+                    plant: sfxCollect, transpiring: sfxEvaporationSizzle
+                  }[next.form];
+                  if (pilotCue) { try { pilotCue(); } catch (_sfxErr) {} }
+                }
+                if (next.form === 'cloud' && wasForm !== 'cloud') {
+                  setTimeout(function() {
+                    if (typeof announceToSR === 'function') {
+                      announceToSR(t('stem.watercycle.pilot_cloud_announce',
+                        'You are a cloud. {n} droplets have gathered around you at {m} metres. Keep collecting to grow heavy enough to fall.')
+                        .replace('{n}', WCPK.DROPLETS_FOR_CLOUD).replace('{m}', Math.round(next.altitudeM)));
+                    }
+                    if (addToast) addToast(t('stem.watercycle.pilot_cloud_toast', '☁️ You are a cloud — {m} m up').replace('{m}', Math.round(next.altitudeM)), 'success');
+                    if (typeof stemCelebrate === 'function') { try { stemCelebrate(); } catch (_e) {} }
+                  }, 0);
+                }
+                if (next.loops > (cur.snapshot ? cur.snapshot.loops || 0 : 0)) {
+                  patch.journeyLoops = (wc.journeyLoops || 0) + 1;
+                }
+                return Object.assign({}, prev, { waterCycle: Object.assign({}, wc, patch) });
+              });
+            }
+
+            // The ref that wires React to the loop. It must re-attach the
+            // callbacks on every mount, because the canvas element survives a
+            // re-render but the closure it was given does not.
+            function attachPilotCanvas(el) {
+              wcPilotCanvasRef(el);
+              if (el) {
+                el._wcPilotOnSnapshot = receiveSnapshot;
+                if (el._wcPilotInput) {
+                  el._wcPilotInput.scenario = scenarioId;
+                  el._wcPilotInput.paused = paused;
+                }
+              }
+            }
+
+            function setPilot(patch) {
+              upd('pilot', Object.assign({}, pilotStored, patch));
+            }
+            function pilotInput() {
+              var el = document.getElementById('wcPilotCanvas');
+              return el && el._wcPilotInput ? el._wcPilotInput : null;
+            }
+            // Every on-screen control drives the SAME input object the keyboard
+            // drives, so touch, pointer, and keyboard can never diverge in
+            // behaviour - the trap where a control works with a mouse and is
+            // silently dead to a keyboard.
+            function holdProps(key, label) {
+              function on() { var i = pilotInput(); if (i) i[key] = 1; }
+              function off() { var i = pilotInput(); if (i) i[key] = 0; }
+              return {
+                type: 'button', className: 'wc-pilot-key', 'aria-label': label,
+                onPointerDown: on, onPointerUp: off, onPointerLeave: off, onPointerCancel: off,
+                onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); on(); } },
+                onKeyUp: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); off(); } },
+                onBlur: off
+              };
+            }
+
+            function chooseScenario(id) {
+              setPilot({ scenario: id, snapshot: null });
+              var i = pilotInput(); if (i) i.scenario = id;
+              if (typeof announceToSR === 'function') {
+                var e2 = WCPK.environment(id);
+                announceToSR(t('stem.watercycle.pilot_scenario_announce',
+                        '{label} selected. Surface {temp} degrees, humidity {rh} percent, cloud base {m} metres.')
+                  .replace('{label}', e2.label).replace('{temp}', Math.round(e2.surfaceTempC))
+                  .replace('{rh}', Math.round(e2.surfaceRH)).replace('{m}', Math.round(e2.lclM)));
+              }
+            }
+            function resetRun() {
+              setPilot({ snapshot: null });
+              var i = pilotInput(); if (i) i.reset = 1;
+              if (typeof announceToSR === 'function') announceToSR(t('stem.watercycle.pilot_run_reset_you_are_liquid_water_at_the', 'Run reset. You are liquid water at the sea surface.'));
+            }
+            function togglePause() {
+              var nextPaused = !paused;
+              setPilot({ paused: nextPaused });
+              var i = pilotInput(); if (i) i.paused = nextPaused;
+            }
+
+            var altPct = Math.max(0, Math.min(100, (snap.altitudeM / env.ceilingM) * 100));
+            var lclPct = (env.lclM / env.ceilingM) * 100;
+            var lfcPct = (env.lfcM / env.ceilingM) * 100;
+            var frzPct = (env.freezingM / env.ceilingM) * 100;
+
+            // The text alternative. It is the whole simulation in words, because
+            // a canvas is otherwise entirely unavailable to a screen reader, and
+            // this mode is the tool's flagship.
+            var textAlternative = t('stem.watercycle.pilot_alt_state',
+                        'You are {form} at {alt} metres. Parcel temperature {you} degrees Celsius against surrounding air at {air}. Relative humidity {rh} percent. ')
+                .replace('{form}', form.label.toLowerCase()).replace('{alt}', Math.round(snap.altitudeM))
+                .replace('{you}', snap.tempC.toFixed(1)).replace('{air}', snap.ambientC.toFixed(1))
+                .replace('{rh}', Math.round(snap.rh)) +
+              (snap.buoyancyC >= 0 ? t('stem.watercycle.pilot_you_are_warmer_than_the_air_around_you', 'You are warmer than the air around you and rising on your own.')
+                                   : t('stem.watercycle.pilot_you_are_cooler_than_the_air_around_you', 'You are cooler than the air around you, so you need lift to keep climbing.')) +
+              t('stem.watercycle.pilot_alt_cloudbase', ' Cloud base is at {m} metres').replace('{m}', Math.round(env.lclM)) +
+              (env.lfcReachable ? t('stem.watercycle.pilot_alt_lfc', ', free convection at {m} metres').replace('{m}', Math.round(env.lfcM)) : '') +
+              (env.freezingM < env.ceilingM ? t('stem.watercycle.pilot_alt_freezing', ', freezing level at {m} metres').replace('{m}', Math.round(env.freezingM)) : '') +
+              '. ' + objective;
+
+            return h('div', {
+              className: 'wc-pilot-root' + (isDark ? ' is-dark' : ''),
+              role: 'region',
+              'aria-label': t('stem.watercycle.pilot_be_the_water_pilot_one_parcel_of_water', 'Be the Water. Pilot one parcel of water through every stage of the water cycle.')
+            },
+              renderWcModeBar(),
+
+              h('div', { className: 'wc-pilot-topbar' },
+                h('div', { className: 'wc-pilot-title' },
+                  h('strong', null, t('stem.watercycle.pilot_be_the_water', '💧 Be the Water')),
+                  h('span', null, t('stem.watercycle.pilot_fly_one_parcel_through_every_form_wate', 'Fly one parcel through every form water takes'))
+                ),
+                h('span', { className: 'wc-pilot-loops' },
+                  t(snap.loops === 1 ? 'stem.watercycle.pilot_loops_one' : 'stem.watercycle.pilot_loops_many',
+                    snap.loops === 1 ? '{n} full cycle' : '{n} full cycles').replace('{n}', snap.loops || 0))
+              ),
+
+              // ── Scenario picker ─────────────────────────────────────────
+              h('div', { className: 'wc-pilot-scenarios', role: 'group', 'aria-label': t('stem.watercycle.pilot_starting_conditions', 'Starting conditions') },
+                Object.keys(WCPK.scenarios).map(function(id) {
+                  var s = WCPK.scenarios[id];
+                  var e2 = WCPK.environment(id);
+                  return h('button', {
+                    key: id, type: 'button', className: 'wc-pilot-scenario',
+                    'aria-pressed': id === scenarioId,
+                    onClick: function() { chooseScenario(id); },
+                    'aria-label': t('stem.watercycle.pilot_scenario_aria', '{label}. {blurb} Cloud base {m} metres.')
+                      .replace('{label}', s.label).replace('{blurb}', s.blurb).replace('{m}', Math.round(e2.lclM))
+                  },
+                    h('strong', null, s.label),
+                    h('small', null, t('stem.watercycle.pilot_scenario_stats', '{temp}°C · {rh}% RH · base {m} m')
+                      .replace('{temp}', Math.round(e2.surfaceTempC)).replace('{rh}', Math.round(e2.surfaceRH)).replace('{m}', Math.round(e2.lclM)))
+                  );
+                })
+              ),
+              h('p', { className: 'wc-pilot-scenario-note' }, env.blurb),
+
+              // ── The world ────────────────────────────────────────────────
+              h('div', { className: 'wc-pilot-stage' },
+                d.pilotError
+                  ? h('div', { className: 'wc-pilot-fallback', role: 'alert' },
+                      h('strong', null, t('stem.watercycle.pilot_3d_is_unavailable_on_this_device', '3D is unavailable on this device.')),
+                      h('p', null, d.pilotError),
+                      h('button', { type: 'button', className: 'wc-pilot-btn', onClick: function() { switchMode('explorer'); } }, t('stem.watercycle.pilot_open_system_map_instead', 'Open the System Map instead')))
+                  : h('canvas', {
+                      id: 'wcPilotCanvas', className: 'wc-pilot-canvas', ref: attachPilotCanvas,
+                      tabIndex: 0, role: 'application',
+                      'aria-label': textAlternative,
+                      'aria-keyshortcuts': t('stem.watercycle.pilot_w_a_s_d_arrowup_arrowdown_arrowleft_ar', 'W A S D ArrowUp ArrowDown ArrowLeft ArrowRight Space Shift'),
+                      'data-parcel-form': snap.form
+                    }),
+
+                // Live HUD. Fixed light inks on a fixed dark glass panel: the
+                // canvas behind is always dark in both themes, so a theme-reactive
+                // ink here would be the one that failed contrast.
+                h('div', { className: 'wc-pilot-hud wc-pilot-hud-left', 'aria-hidden': 'true' },
+                  h('div', { className: 'wc-pilot-form-badge', 'data-form': snap.form },
+                    h('span', { className: 'wc-pilot-form-dot' }),
+                    h('strong', null, form.label)),
+                  h('dl', { className: 'wc-pilot-readouts' },
+                    h('div', null, h('dt', null, t('stem.watercycle.pilot_altitude', 'Altitude')), h('dd', null, Math.round(snap.altitudeM) + ' m')),
+                    h('div', null, h('dt', null, t('stem.watercycle.pilot_you', 'You')), h('dd', null, snap.tempC.toFixed(1) + '°C')),
+                    h('div', null, h('dt', null, t('stem.watercycle.pilot_air', 'Air')), h('dd', null, snap.ambientC.toFixed(1) + '°C')),
+                    h('div', null, h('dt', null, t('stem.watercycle.pilot_humidity', 'Humidity')), h('dd', null, Math.round(snap.rh) + '%'))
+                  ),
+                  h('div', { className: 'wc-pilot-buoy', 'data-state': snap.buoyancyC >= 0 ? 'rising' : 'sinking' },
+                    snap.buoyancyC >= 0
+                      ? t('stem.watercycle.pilot_buoyant_warmer_than_the_air_rising_on', '↑ Buoyant: warmer than the air, rising on your own')
+                      : t('stem.watercycle.pilot_needs_lift', '↓ Needs lift: {d}°C cooler than the air').replace('{d}', Math.abs(snap.buoyancyC).toFixed(1)))
+                ),
+
+                // Altitude ladder. The three physics heights are drawn to scale
+                // against the parcel, which is the whole model in one glance.
+                h('div', { className: 'wc-pilot-ladder', 'aria-hidden': 'true' },
+                  h('div', { className: 'wc-pilot-ladder-track' },
+                    // The three reference heights can sit within a few per cent
+                    // of each other - in the tropics the cloud base and the level
+                    // of free convection are ~300 m apart on a 6 km ladder - so
+                    // the labels are stepped outward in bottom-up order instead
+                    // of being drawn on top of one another.
+                    (function() {
+                      var marks = [
+                        { key: 'lcl', pct: lclPct, cls: 'is-lcl', text: t('stem.watercycle.pilot_cloud_base_2', 'cloud base'), show: true },
+                        { key: 'lfc', pct: lfcPct, cls: 'is-lfc', text: t('stem.watercycle.pilot_free_convection_2', 'free convection'), show: env.lfcReachable },
+                        { key: 'frz', pct: frzPct, cls: 'is-freeze', text: t('stem.watercycle.pilot_freezing_short', 'freezing'), show: env.freezingM < env.ceilingM }
+                      ].filter(function(mk) { return mk.show; }).sort(function(a, b) { return a.pct - b.pct; });
+                      var lastPct = -99, tier = 0;
+                      return marks.map(function(mk) {
+                        tier = (mk.pct - lastPct) < 9 ? tier + 1 : 0;
+                        lastPct = mk.pct;
+                        // The leader line still points at the TRUE height; only
+                        // the text box is stepped up and out, so the reading
+                        // stays honest while the labels stop colliding.
+                        return h('span', {
+                          key: mk.key,
+                          className: 'wc-pilot-ladder-mark ' + mk.cls + (tier ? ' is-stacked' : ''),
+                          style: {
+                            bottom: mk.pct + '%',
+                            left: (9 + tier * 10) + 'px',
+                            transform: 'translateY(' + (50 - tier * 108) + '%)'
+                          }
+                        }, mk.text);
+                      });
+                    })(),
+                    h('span', { className: 'wc-pilot-ladder-you', style: { bottom: altPct + '%' } })
+                  ),
+                  h('small', null, t('stem.watercycle.pilot_ladder_km', '{n} km').replace('{n}', Math.round(env.ceilingM / 1000)))
+                ),
+
+                // Progress toward the next transition. Which bar shows depends on
+                // the form, because "what is stopping me" is a different quantity
+                // at each stage and a single generic meter would teach nothing.
+                h('div', { className: 'wc-pilot-hud wc-pilot-hud-right', 'aria-hidden': 'true' },
+                  snap.form === 'liquid' || snap.form === 'transpiring'
+                    ? h('div', { className: 'wc-pilot-gauge' },
+                        h('span', null, t('stem.watercycle.pilot_energy_absorbed', 'Energy absorbed')),
+                        h('div', { className: 'wc-pilot-gauge-track' },
+                          h('i', { style: { width: Math.round(snap.energy * 100) + '%' } })),
+                        h('small', null, snap.energy >= 1 ? t('stem.watercycle.pilot_escaping_as_vapour', 'Escaping as vapour') : t('stem.watercycle.pilot_sunlit_water_charges_you_fastest', 'Sunlit water charges you fastest')))
+                    : snap.form === 'vapor'
+                      ? h('div', { className: 'wc-pilot-gauge' },
+                          h('span', null, t('stem.watercycle.pilot_saturation', 'Saturation')),
+                          h('div', { className: 'wc-pilot-gauge-track' },
+                            h('i', { style: { width: Math.round(snap.rh) + '%' } })),
+                          h('small', null, snap.altitudeM < env.lclM
+                            ? t('stem.watercycle.pilot_below_cloud_base', '{m} m below the cloud base').replace('{m}', Math.round(env.lclM - snap.altitudeM))
+                            : snap.nucleus ? t('stem.watercycle.pilot_nucleus_found', 'Nucleus found') : t('stem.watercycle.pilot_saturated_now_find_a_nucleus', 'Saturated — now find a nucleus')))
+                      // Two different questions, two different meters. Before the
+                      // cloud forms the limiting quantity is droplet COUNT; once
+                      // you are a cloud it is MASS, because what stops a cloud
+                      // raining is weight, not headcount.
+                      : (snap.form === 'cloud' || snap.form === 'ice')
+                        ? h('div', { className: 'wc-pilot-gauge' },
+                            h('span', null, t('stem.watercycle.pilot_weight_vs_updraft', 'Weight vs updraft')),
+                            h('div', { className: 'wc-pilot-gauge-track' },
+                              h('i', { style: { width: Math.min(100, (snap.mass / WCPK.MASS_TO_FALL) * 100) + '%' } })),
+                            h('small', null, snap.mass >= WCPK.MASS_TO_FALL
+                              ? t('stem.watercycle.pilot_heavy_enough_gravity_wins', 'Heavy enough — gravity wins')
+                              : t('stem.watercycle.pilot_keep_collecting', 'Keep collecting: {n} droplets so far').replace('{n}', snap.droplets)))
+                        : h('div', { className: 'wc-pilot-gauge' },
+                            h('span', null, t('stem.watercycle.pilot_droplets_collected', 'Droplets collected')),
+                            h('div', { className: 'wc-pilot-gauge-track' },
+                              h('i', { style: { width: Math.min(100, (snap.droplets / WCPK.DROPLETS_FOR_CLOUD) * 100) + '%' } })),
+                            h('small', null, t('stem.watercycle.pilot_droplets_progress', '{n} / {total} to become a cloud')
+                              .replace('{n}', Math.min(snap.droplets, WCPK.DROPLETS_FOR_CLOUD)).replace('{total}', WCPK.DROPLETS_FOR_CLOUD)))
+                ),
+
+                // On-screen controls. Present on every device, not just touch:
+                // they are the keyboard-free path AND the discoverability cue for
+                // learners who would never guess at WASD.
+                h('div', { className: 'wc-pilot-pad', role: 'group', 'aria-label': t('stem.watercycle.pilot_flight_controls', 'Flight controls') },
+                  h('button', Object.assign(holdProps('up', t('stem.watercycle.pilot_rise_also_space_or_w', 'Rise. Also Space or W.')), { key: 'u' }), '▲'),
+                  h('button', Object.assign(holdProps('down', t('stem.watercycle.pilot_sink_also_shift_or_s', 'Sink. Also Shift or S.')), { key: 'd' }), '▼'),
+                  h('button', Object.assign(holdProps('left', t('stem.watercycle.pilot_steer_left_also_a_or_left_arrow', 'Steer left. Also A or Left Arrow.')), { key: 'l' }), '◀'),
+                  h('button', Object.assign(holdProps('right', t('stem.watercycle.pilot_steer_right_also_d_or_right_arrow', 'Steer right. Also D or Right Arrow.')), { key: 'r' }), '▶'),
+                  h('button', Object.assign(holdProps('fwd', t('stem.watercycle.pilot_move_forward_away_from_the_camera', 'Move forward, away from the camera.')), { key: 'f' }), t('stem.watercycle.pilot_fwd', 'Fwd')),
+                  h('button', Object.assign(holdProps('back', t('stem.watercycle.pilot_move_back_toward_the_camera', 'Move back, toward the camera.')), { key: 'b' }), t('stem.watercycle.pilot_back', 'Back')),
+                  h('button', {
+                    key: 'p', type: 'button', className: 'wc-pilot-key is-wide',
+                    'aria-pressed': paused, 'aria-label': paused ? t('stem.watercycle.pilot_resume_the_simulation', 'Resume the simulation') : t('stem.watercycle.pilot_pause_the_simulation', 'Pause the simulation'),
+                    onClick: togglePause
+                  }, paused ? t('stem.watercycle.pilot_resume', '▶ Resume') : t('stem.watercycle.pilot_pause', '⏸ Pause')),
+                  h('button', {
+                    key: 'x', type: 'button', className: 'wc-pilot-key is-wide',
+                    'aria-label': t('stem.watercycle.pilot_reset_this_run_and_start_again_as_liqu', 'Reset this run and start again as liquid water'),
+                    onClick: resetRun
+                  }, t('stem.watercycle.pilot_reset', '↻ Reset')),
+                  h('button', {
+                    key: 's', type: 'button', className: 'wc-pilot-key is-wide',
+                    'aria-pressed': pilotSound,
+                    'aria-label': pilotSound
+                      ? t('stem.watercycle.pilot_sound_on_each_change_of_form_plays_a_c', 'Sound on. Each change of form plays a cue. Select to mute.')
+                      : t('stem.watercycle.pilot_sound_muted_select_to_hear_a_cue_on_ea', 'Sound muted. Select to hear a cue on each change of form.'),
+                    onClick: function() {
+                      setPilot({ sound: !pilotSound });
+                      if (typeof announceToSR === 'function') {
+                        announceToSR(pilotSound ? t('stem.watercycle.pilot_pilot_sound_muted', 'Pilot sound muted.') : t('stem.watercycle.pilot_pilot_sound_on', 'Pilot sound on.'));
+                      }
+                    }
+                  }, pilotSound ? t('stem.watercycle.pilot_sound', '🔊 Sound') : t('stem.watercycle.pilot_muted', '🔇 Muted'))
+                )
+              ),
+
+              // ── Coaching line ────────────────────────────────────────────
+              h('div', { className: 'wc-pilot-objective', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' },
+                h('span', { className: 'wc-pilot-objective-kicker' }, t('stem.watercycle.pilot_do_this_next', 'Do this next')),
+                h('p', null, objective)
+              ),
+
+              // ── Science card ─────────────────────────────────────────────
+              h('section', { className: 'wc-pilot-science', 'aria-labelledby': 'wcPilotScienceTitle' },
+                h('h4', { id: 'wcPilotScienceTitle' }, t('stem.watercycle.pilot_what_you_are', 'What you are right now: {form}').replace('{form}', form.label)),
+                h('p', null, form.science),
+                h('div', { className: 'wc-pilot-science-numbers' },
+                  h('div', null, h('dt', null, t('stem.watercycle.pilot_cloud_base_lcl', 'Cloud base (LCL)')), h('dd', null, Math.round(env.lclM) + ' m')),
+                  env.lfcReachable && h('div', null, h('dt', null, t('stem.watercycle.pilot_free_convection_3', 'Free convection')), h('dd', null, Math.round(env.lfcM) + ' m')),
+                  env.freezingM < env.ceilingM && h('div', null, h('dt', null, t('stem.watercycle.pilot_freezing_level_2', 'Freezing level')), h('dd', null, Math.round(env.freezingM) + ' m')),
+                  h('div', null, h('dt', null, t('stem.watercycle.pilot_dew_point', 'Dew point')), h('dd', null, env.dewPointC.toFixed(1) + '°C'))
+                ),
+                h('p', { className: 'wc-pilot-model-note', role: 'note' },
+                  t('stem.watercycle.pilot_model_note',
+                        'The heights above are computed from this scenario using the standard lapse rates (environment {env}°C/km, dry {dry}°C/km, saturated {moist}°C/km) and Espy’s equation for the lifting condensation level. Distances and droplet sizes in the scene are drawn at a teaching scale, not to life.')
+                    .replace('{env}', WCPK.envLapse).replace('{dry}', WCPK.dryLapse).replace('{moist}', WCPK.moistLapse))
+              ),
+
+              // ── Stage ledger ─────────────────────────────────────────────
+              h('section', { className: 'wc-pilot-ledger', 'aria-labelledby': 'wcPilotLedgerTitle' },
+                h('div', { className: 'wc-pilot-ledger-head' },
+                  h('h4', { id: 'wcPilotLedgerTitle' }, t('stem.watercycle.pilot_stages_you_have_been_through', 'Stages you have been through')),
+                  h('span', null, t('stem.watercycle.pilot_coverage', '{done} / {total}').replace('{done}', coverage.done).replace('{total}', coverage.total))
+                ),
+                h('ul', { className: 'wc-pilot-ledger-list' },
+                  WCPK.stageOrder.map(function(stageId) {
+                    var done = !!(snap.stagesSeen && snap.stagesSeen[stageId]);
+                    var meta = STAGES.filter(function(s) { return s.id === stageId; })[0];
+                    return h('li', {
+                      key: stageId, className: done ? 'is-done' : 'is-open',
+                      // One whole phrase per state, not a label glued to a
+                      // fragment: ": experienced" alone is not translatable, and
+                      // several languages need the marker before the noun.
+                      'aria-label': (done ? t('stem.watercycle.pilot_stage_experienced', '{stage}: experienced')
+                              : t('stem.watercycle.pilot_stage_not_yet_experienced', '{stage}: not yet experienced'))
+                        .replace('{stage}', meta ? meta.label : stageId)
+                    },
+                      h('span', { className: 'wc-pilot-ledger-mark', 'aria-hidden': 'true' }, done ? '✓' : '○'),
+                      h('span', null, meta ? meta.label : stageId));
+                  })
+                ),
+                coverage.complete
+                  ? h('p', { className: 'wc-pilot-ledger-done', role: 'status' },
+                      t('stem.watercycle.pilot_you_have_now_been_through_all_six_stag', 'You have now been through all six stages. Different landings send you down different pathways — try landing on bare ground, on a forest, and in the lake to compare how long each one holds you.'))
+                  : h('p', { className: 'wc-pilot-ledger-hint' },
+                      t('stem.watercycle.pilot_one_flight_cannot_reach_every_stage_wh', 'One flight cannot reach every stage: where you land decides which pathway you take. Fly it again and land somewhere else.'))
+              ),
+
+              // ── Text alternative ─────────────────────────────────────────
+              h('details', { className: 'wc-pilot-alt' },
+                h('summary', null, t('stem.watercycle.pilot_text_description_of_the_3d_scene', 'Text description of the 3D scene')),
+                h('p', null, textAlternative)
+              )
+            );
+          }
+          if (wcMode === 'pilot') {
+            return renderWcPilot();
+          }
 
           const sel = STAGES.find(s => s.id === (d.activeStage || 'evaporation'));
           // Resolve grade-tiered content
@@ -10508,6 +12583,60 @@ const d = labToolData.waterCycle || {};
 
               ctx.fillRect(0, cH * 0.62, cW, cH * 0.1);
 
+              // ── Ground surface: fringe and mottling ──────────────────────
+              // The land was a rectangle of flat gradient green with a
+              // ruler-straight top edge running the full width of the canvas -
+              // the one horizon in the scene that no landscape has. The logical
+              // ground line STAYS at 0.62, because trees, snow cover, the water
+              // body, and the journey path are all positioned against it; only
+              // the surface treatment changes, so nothing realigns.
+              (function drawGroundSurface() {
+                if (landCover2d === 'urban') return;   // paving has no fringe
+                ctx.save();
+                var gTop2d = cH * 0.62;
+                // Mottling: broad, soft patches so the gradient stops reading as
+                // a printed swatch. Deterministic from the loop index - a
+                // per-frame random scatter shimmers, which reads as a fault.
+                ctx.globalAlpha = isDark ? 0.1 : 0.13;
+                for (var mi2 = 0; mi2 < 26; mi2++) {
+                  var mx2 = (((mi2 * 73) % 100) / 100) * cW;
+                  var my2 = gTop2d + (((mi2 * 41) % 100) / 100) * cH * 0.09;
+                  var mw2 = (18 + (mi2 % 6) * 11) * dpr;
+                  ctx.beginPath();
+                  ctx.ellipse(mx2, my2, mw2, mw2 * 0.28, 0, 0, Math.PI * 2);
+                  ctx.fillStyle = (mi2 % 2)
+                    ? (isDark ? '#022c22' : '#15803d')
+                    : (isDark ? '#0b3d2e' : '#65cc7d');
+                  ctx.fill();
+                }
+                ctx.globalAlpha = 1;
+                // Grass fringe: short blades breaking the top edge, leaning with
+                // the wind slider so the same control that drives evaporation
+                // visibly moves the land too.
+                var lean2d = wcMotionReduced ? windInput2d * 0.8 : windInput2d * (0.8 + Math.sin(tick * 0.03) * 0.22);
+                var bladeCount2d = Math.round(cW / (5 * dpr));
+                ctx.lineCap = 'round';
+                for (var bi2 = 0; bi2 < bladeCount2d; bi2++) {
+                  var bx2 = (bi2 + 0.5) * (cW / bladeCount2d);
+                  // Skip the open water: blades only belong on the shore side.
+                  if (bx2 < cW * 0.5) continue;
+                  var seed2d = (bi2 * 2654435761) % 1000 / 1000;
+                  var bh2 = (2.4 + seed2d * 4.6) * dpr * (landCover2d === 'forest' ? 1.25 : 1);
+                  ctx.beginPath();
+                  ctx.moveTo(bx2, gTop2d + 1);
+                  ctx.quadraticCurveTo(
+                    bx2 + lean2d * bh2 * 0.4, gTop2d - bh2 * 0.6,
+                    bx2 + lean2d * bh2 * 0.9, gTop2d - bh2
+                  );
+                  ctx.strokeStyle = seed2d > 0.62
+                    ? (isDark ? '#065f46' : '#86efac')
+                    : (isDark ? '#043c2c' : '#22c55e');
+                  ctx.lineWidth = (0.7 + seed2d * 0.5) * dpr;
+                  ctx.stroke();
+                }
+                ctx.restore();
+              })();
+
               // Broad cloud shadows connect the sky to the surface and make
               // changing wind/rain conditions affect the entire landscape.
               if (landCover2d !== 'urban') {
@@ -10632,21 +12761,123 @@ const d = labToolData.waterCycle || {};
 
               ctx.fillRect(0, cH * 0.72, cW, cH * 0.28);
 
+              // ── Soil horizons ────────────────────────────────────────────
+              // The underground was a single flat brown gradient occupying 28 %
+              // of the canvas - the largest area in the scene and the only one
+              // with nothing in it, while infiltration and groundwater are two of
+              // the six stages this tool teaches. Real soil is layered, and those
+              // layers are exactly what governs how water moves: dark organic
+              // topsoil that takes water in fastest, a denser subsoil it
+              // percolates through, and parent rock below.
+              // All texture is derived from the loop index, never Math.random():
+              // a per-frame random scatter shimmers, which reads as a fault.
+              var soilTop2d = cH * 0.72;
+              var soilB2d = cH * 0.755;      // topsoil / subsoil boundary
+              var soilRock2d = cH * 0.815;   // subsoil / parent material
+              var waterTable2d = cH * 0.845;
+              (function drawSoilHorizons() {
+                ctx.save();
+                // A (organic) horizon: darkest, thin, with a crumb texture.
+                var aGrad = ctx.createLinearGradient(0, soilTop2d, 0, soilB2d);
+                aGrad.addColorStop(0, isDark ? 'rgba(28,25,23,0.9)' : 'rgba(59,37,17,0.92)');
+                aGrad.addColorStop(1, isDark ? 'rgba(20,18,17,0.55)' : 'rgba(87,54,26,0.5)');
+                ctx.fillStyle = aGrad;
+                ctx.fillRect(0, soilTop2d, cW, soilB2d - soilTop2d);
+                // B (subsoil) horizon: lighter, denser, faintly banded.
+                var bGrad = ctx.createLinearGradient(0, soilB2d, 0, soilRock2d);
+                bGrad.addColorStop(0, isDark ? 'rgba(41,30,22,0.4)' : 'rgba(146,86,38,0.42)');
+                bGrad.addColorStop(1, isDark ? 'rgba(30,24,20,0.25)' : 'rgba(120,70,32,0.2)');
+                ctx.fillStyle = bGrad;
+                ctx.fillRect(0, soilB2d, cW, soilRock2d - soilB2d);
+                // Horizon boundaries are gradational in the field, not ruled
+                // lines, so they are drawn as soft undulating strokes.
+                [[soilB2d, 0.018, 5], [soilRock2d, 0.013, 7]].forEach(function(band, bi) {
+                  ctx.beginPath();
+                  ctx.strokeStyle = isDark ? 'rgba(120,113,108,0.3)' : 'rgba(68,42,20,0.32)';
+                  ctx.lineWidth = 1.4 * dpr;
+                  for (var hx = 0; hx <= cW; hx += 8) {
+                    var hy = band[0] + Math.sin(hx * band[1] + bi * 2.1) * band[2] * dpr * 0.4;
+                    if (hx === 0) ctx.moveTo(hx, hy); else ctx.lineTo(hx, hy);
+                  }
+                  ctx.stroke();
+                });
+                // Pore spaces. Above the water table they are air-filled (dark);
+                // below it they are water-filled (blue). That single visual
+                // difference IS the vadose/phreatic distinction the tool already
+                // explains in prose but never showed.
+                for (var pi = 0; pi < 90; pi++) {
+                  var pxx = ((pi * 137.508) % 100) / 100 * cW;
+                  var pyy = soilTop2d + (((pi * 73) % 97) / 97) * (cH - soilTop2d);
+                  var saturated = pyy > waterTable2d;
+                  var pr = (0.9 + ((pi * 17) % 5) * 0.42) * dpr;
+                  ctx.beginPath();
+                  ctx.arc(pxx, pyy, pr, 0, Math.PI * 2);
+                  ctx.fillStyle = saturated
+                    ? (isDark ? 'rgba(56,189,248,0.5)' : 'rgba(14,165,233,0.55)')
+                    : (isDark ? 'rgba(0,0,0,0.45)' : 'rgba(48,28,12,0.34)');
+                  ctx.fill();
+                }
+                // Parent material: angular clasts, deterministic, increasingly
+                // large with depth so the eye reads "rock" rather than "gravel".
+                for (var ri = 0; ri < 22; ri++) {
+                  var rx = (((ri * 61) % 100) / 100) * cW;
+                  var ry = soilRock2d + (((ri * 41) % 100) / 100) * (cH - soilRock2d);
+                  var rs = (3 + ((ri * 13) % 6)) * dpr * (0.7 + (ry - soilRock2d) / Math.max(1, cH - soilRock2d));
+                  ctx.beginPath();
+                  ctx.moveTo(rx, ry - rs);
+                  ctx.lineTo(rx + rs * 0.9, ry - rs * 0.2);
+                  ctx.lineTo(rx + rs * 0.5, ry + rs * 0.8);
+                  ctx.lineTo(rx - rs * 0.7, ry + rs * 0.5);
+                  ctx.closePath();
+                  ctx.fillStyle = isDark ? 'rgba(87,83,78,0.34)' : 'rgba(87,63,42,0.36)';
+                  ctx.fill();
+                }
+                ctx.restore();
+              })();
+
               // Aquifer water table
 
               ctx.fillStyle = isDark ? 'rgba(6,182,212,0.25)' : 'rgba(14,165,233,0.15)';
 
               ctx.beginPath();
 
-              ctx.moveTo(0, cH * 0.82);
+              // Reads waterTable2d, the same value the pore spaces above are
+              // classified against. When these were two separate literals the
+              // saturated wash and the water-filled pores disagreed about where
+              // the water table was.
+              var wtY2d = function(x) { return waterTable2d + Math.sin(x * 0.01 + tick * 0.01) * 4 * dpr; };
+
+              ctx.moveTo(0, wtY2d(0));
 
               for (var ax = 0; ax <= cW; ax += 10) {
 
-                ctx.lineTo(ax, cH * 0.82 + Math.sin(ax * 0.01 + tick * 0.01) * 4 * dpr);
+                ctx.lineTo(ax, wtY2d(ax));
 
               }
 
               ctx.lineTo(cW, cH); ctx.lineTo(0, cH); ctx.closePath(); ctx.fill();
+
+              // The water table itself, as a line. The saturated wash alone was
+              // 0.15-alpha cyan over dark brown, which measured as very nearly
+              // nothing: the single most important boundary underground was
+              // invisible in light mode.
+              ctx.save();
+              ctx.beginPath();
+              for (var wx = 0; wx <= cW; wx += 10) {
+                if (wx === 0) ctx.moveTo(wx, wtY2d(wx)); else ctx.lineTo(wx, wtY2d(wx));
+              }
+              ctx.strokeStyle = isDark ? 'rgba(103,232,249,0.75)' : 'rgba(2,132,199,0.8)';
+              ctx.lineWidth = 1.8 * dpr;
+              ctx.stroke();
+              // Downward ticks, the standard cartographic mark for a water table.
+              ctx.lineWidth = 1.2 * dpr;
+              for (var tx = cW * 0.06; tx < cW; tx += cW * 0.12) {
+                ctx.beginPath();
+                ctx.moveTo(tx, wtY2d(tx));
+                ctx.lineTo(tx, wtY2d(tx) + 5 * dpr);
+                ctx.stroke();
+              }
+              ctx.restore();
 
               // Aquifer shimmer highlights
 
@@ -10750,7 +12981,47 @@ const d = labToolData.waterCycle || {};
 
               }
 
-              ctx.lineTo(cW * 0.55, cH * 0.72); ctx.lineTo(0, cH * 0.72); ctx.closePath(); ctx.fill();
+              // A shelving shore instead of a vertical wall. The water body used
+              // to close with a straight drop at x = 0.55, so ocean met grass on
+              // a hard vertical seam - the one edge in the scene that could not
+              // exist. Water now thins toward the beach: the surface runs a
+              // little further inshore than the bed does, which is what a
+              // shoreline actually looks like in section.
+              ctx.lineTo(cW * 0.578, cH * 0.672);
+              ctx.lineTo(cW * 0.532, cH * 0.72);
+              ctx.lineTo(0, cH * 0.72); ctx.closePath(); ctx.fill();
+
+              // Beach: the wedge of sand the shelving water exposes.
+              (function drawShoreBeach() {
+                ctx.save();
+                var beachGrad2d = ctx.createLinearGradient(0, cH * 0.645, 0, cH * 0.72);
+                if (isDark) {
+                  beachGrad2d.addColorStop(0, 'rgba(87,83,78,0.9)');
+                  beachGrad2d.addColorStop(1, 'rgba(41,37,36,0.95)');
+                } else {
+                  beachGrad2d.addColorStop(0, 'rgba(233,213,168,0.96)');
+                  beachGrad2d.addColorStop(1, 'rgba(190,160,110,0.96)');
+                }
+                ctx.fillStyle = beachGrad2d;
+                ctx.beginPath();
+                ctx.moveTo(cW * 0.532, cH * 0.72);
+                ctx.lineTo(cW * 0.578, cH * 0.672);
+                ctx.lineTo(cW * 0.606, cH * 0.656);
+                ctx.lineTo(cW * 0.619, cH * 0.72);
+                ctx.closePath();
+                ctx.fill();
+                // Damp sand at the waterline: a darker band where the last wave
+                // reached, which is what makes a beach read as wet at one end.
+                ctx.beginPath();
+                ctx.moveTo(cW * 0.541, cH * 0.714);
+                ctx.lineTo(cW * 0.578, cH * 0.676);
+                ctx.lineTo(cW * 0.589, cH * 0.687);
+                ctx.lineTo(cW * 0.553, cH * 0.72);
+                ctx.closePath();
+                ctx.fillStyle = isDark ? 'rgba(28,25,23,0.45)' : 'rgba(146,116,68,0.42)';
+                ctx.fill();
+                ctx.restore();
+              })();
 
               // Wave highlights
 
@@ -10816,12 +13087,20 @@ const d = labToolData.waterCycle || {};
                   causticX + 16 * dpr, causticY + 1.5 * dpr);
                 ctx.stroke();
               }
-              var shoalGlow = ctx.createLinearGradient(cW * 0.48, 0, cW * 0.56, 0);
+              // Shallow water brightens toward the shore - but this ramped to
+              // 40 % WHITE and then stopped dead at a hard vertical cut, so the
+              // sea carried a pale slab with a ruled right edge running from the
+              // surface to the sea bed. It read as a rendering artefact, and it
+              // was the thing that looked wrong in the shoreline zoom.
+              // Now it peaks mid-span and fades out at BOTH ends, so it is a
+              // gradient of depth rather than an edge.
+              var shoalGlow = ctx.createLinearGradient(cW * 0.44, 0, cW * 0.582, 0);
               shoalGlow.addColorStop(0, 'rgba(224,247,255,0)');
-              shoalGlow.addColorStop(0.72, isDark ? 'rgba(103,232,249,0.08)' : 'rgba(224,247,255,0.2)');
-              shoalGlow.addColorStop(1, isDark ? 'rgba(207,250,254,0.24)' : 'rgba(255,255,255,0.4)');
+              shoalGlow.addColorStop(0.62, isDark ? 'rgba(103,232,249,0.07)' : 'rgba(224,247,255,0.16)');
+              shoalGlow.addColorStop(0.86, isDark ? 'rgba(207,250,254,0.13)' : 'rgba(240,250,255,0.22)');
+              shoalGlow.addColorStop(1, isDark ? 'rgba(207,250,254,0)' : 'rgba(255,255,255,0)');
               ctx.fillStyle = shoalGlow;
-              ctx.fillRect(cW * 0.47, cH * 0.645, cW * 0.09, cH * 0.075);
+              ctx.fillRect(cW * 0.44, cH * 0.645, cW * 0.142, cH * 0.075);
               ctx.restore();
 
               // Pebbles and a darker wet edge make the shoreline read as a
@@ -11060,27 +13339,49 @@ const d = labToolData.waterCycle || {};
 
                 var sway = Math.sin(tick * 0.01 + tx * 0.1) * 1.5;
 
-                // Roots (visible underground)
+                // ── Roots ────────────────────────────────────────────────
+                // These were four opaque brown curves splaying outward and
+                // downward from the trunk base ACROSS the bright green surface
+                // band. At full canvas scale that is a smudge; zoomed in, every
+                // tree in the scene read as a green blob standing on spider
+                // legs. Roots belong under the surface, so they are now drawn
+                // into a darkened soil patch, kept near-vertical rather than
+                // splayed, and shown at full strength only when the journey is
+                // actually in a root-uptake or infiltration state - which is the
+                // one moment they carry teaching weight.
+                var rootsTeaching = jState === 'plant_absorb' || jState === 'transpiring'
+                  || jState === 'infiltrating' || jState === 'aquifer_flow';
+                // A soil shadow at the base: without something darker beneath
+                // it, anything drawn below the trunk sits ON the grass rather
+                // than in it.
+                ctx.save();
+                ctx.globalAlpha = isDark ? 0.34 : 0.22;
+                ctx.fillStyle = isDark ? '#020617' : '#14532d';
+                ctx.beginPath();
+                ctx.ellipse(tx * dpr, (ty + 3 * sz) * dpr, 9 * sz * dpr, 3.2 * sz * dpr, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
 
-                ctx.strokeStyle = 'rgba(120,53,15,0.5)'; ctx.lineWidth = 1.5 * sz * dpr;
-
-                for (var ri = 0; ri < 4; ri++) {
-
-                  var rootDir = (ri - 1.5) * 8 * sz;
-
-                  ctx.beginPath(); ctx.moveTo(tx * dpr, (ty + 2 * sz) * dpr);
-
-                  ctx.quadraticCurveTo((tx + rootDir * 0.5) * dpr, (ty + 8 * sz) * dpr, (tx + rootDir) * dpr, (ty + 12 * sz + ri * 2 * sz) * dpr);
-
+                ctx.save();
+                ctx.strokeStyle = rootsTeaching ? 'rgba(146,64,14,0.62)' : 'rgba(69,26,3,0.3)';
+                ctx.lineWidth = (rootsTeaching ? 1.2 : 0.8) * sz * dpr;
+                ctx.lineCap = 'round';
+                var rootCount = rootsTeaching ? 4 : 2;
+                var rootReach = rootsTeaching ? 1 : 0.45;
+                for (var ri = 0; ri < rootCount; ri++) {
+                  // Spread halved and biased downward: roots taper below the
+                  // trunk, they do not radiate sideways like legs.
+                  var rootDir = (ri - (rootCount - 1) / 2) * 3.6 * sz;
+                  var rootTipY = ty + (7 * sz + ri * 1.4 * sz) * rootReach + 3 * sz;
+                  ctx.beginPath();
+                  ctx.moveTo(tx * dpr, (ty + 2 * sz) * dpr);
+                  ctx.quadraticCurveTo(
+                    (tx + rootDir * 0.35) * dpr, (ty + 5 * sz) * dpr,
+                    (tx + rootDir) * dpr, rootTipY * dpr
+                  );
                   ctx.stroke();
-
-                  // Root tips
-
-                  ctx.fillStyle = 'rgba(120,53,15,0.3)';
-
-                  ctx.beginPath(); ctx.arc((tx + rootDir) * dpr, (ty + 12 * sz + ri * 2 * sz) * dpr, 1.5 * dpr, 0, Math.PI * 2); ctx.fill();
-
                 }
+                ctx.restore();
 
                 // Trunk with bark texture
 
@@ -17217,7 +19518,7 @@ const d = labToolData.waterCycle || {};
             ? (wcRouteShares.runoff === wcMaxRouteShare ? 'runoff' : wcRouteShares.infiltration === wcMaxRouteShare ? 'infiltrate' : 'plant')
             : '';
           var wcRouteLeaderLabel = wcRouteLeader === 'runoff' ? 'River Runoff' : wcRouteLeader === 'infiltrate' ? 'Underground infiltration' : wcRouteLeader === 'plant' ? 'Plant uptake' : '';
-          var wcRouteLeaderAccessibility = wcRouteLeader ? ' Strongest modeled pathway.' : ' The modeled signals are tied; compare the paths.';
+          var wcRouteLeaderAccessibility = wcRouteLeader ? ' The model favors this path.' : ' The model shows no clear favorite; compare the paths.';
           // Keep route receipts and the pathway ledger downstream of the derived shares.
           // Journey states can render immediately after a route choice, so these values
           // must exist before any learner-facing route evidence is composed.
@@ -17241,7 +19542,7 @@ const d = labToolData.waterCycle || {};
             : journeyChosenRouteKey === 'infiltrate'
               ? { label: 'Underground infiltration', signalLabel: 'Infiltration opportunity', signalValue: infiltrationOpportunity, relativeShare: wcRouteShares.infiltration, pace: journeyPathPaceByKey.infiltrate, returnPath: journeyPathReturnByKey.infiltrate, driver: journeyPathDriverByKey.infiltrate, rationale: 'Permeable, less-saturated ground gives water more opportunity to enter pore spaces.' }
               : journeyChosenRouteKey === 'plant'
-                ? { label: 'Plant uptake', signalLabel: 'Relative route share', signalValue: wcRouteShares.plant, relativeShare: wcRouteShares.plant, pace: journeyPathPaceByKey.plant, returnPath: journeyPathReturnByKey.plant, driver: journeyPathDriverByKey.plant, rationale: 'Plants can take up water and return some vapor through transpiration; this is not a measured uptake rate.' }
+                ? { label: 'Plant uptake', signalLabel: 'Plant uptake tendency', signalValue: wcRouteShares.plant, relativeShare: wcRouteShares.plant, pace: journeyPathPaceByKey.plant, returnPath: journeyPathReturnByKey.plant, driver: journeyPathDriverByKey.plant, rationale: 'Plants can take up water and return some vapor through transpiration; this is not a measured uptake rate.' }
                 : null;
           var journeyChoiceKicker = d.journeyState === 'complete' ? 'Cycle receipt' : 'Path chosen';
           var journeyChoiceCopy = journeyChosenRoute
@@ -17263,9 +19564,9 @@ const d = labToolData.waterCycle || {};
               ? 'Try ' + journeyPathNext.label + ' next to compare residence time and return route.'
               : 'Choose a land pathway to start comparing routes.';
           var journeyDataContext = journeyChosenRoute
-            ? journeyChosenRoute.signalLabel + ': ' + journeyChosenRoute.signalValue + '/100. Relative route share: ' + journeyChosenRoute.relativeShare + ' percent. ' + journeyChosenRoute.rationale + ' Driver: ' + journeyChosenRoute.driver + '. Return path: ' + journeyChosenRoute.returnPath + '.'
+            ? journeyChosenRoute.signalLabel + ': ' + journeyChosenRoute.signalValue + '/100. Share of the three possible paths: ' + journeyChosenRoute.relativeShare + ' percent. ' + journeyChosenRoute.rationale + ' Driver: ' + journeyChosenRoute.driver + '. Return path: ' + journeyChosenRoute.returnPath + '.'
             : d.journeyState === 'ground_choice'
-              ? 'Choose a land pathway. Runoff tendency: ' + runoffTendency + '/100; infiltration opportunity: ' + infiltrationOpportunity + '/100. These are qualitative teaching indices, not measured volumes.' + ' Relative route shares: runoff ' + wcRouteShares.runoff + ' percent; infiltration ' + wcRouteShares.infiltration + ' percent; plant ' + wcRouteShares.plant + ' percent.' + (wcRouteLeader ? ' Strongest modeled pathway: ' + wcRouteLeaderLabel + '.' : ' The modeled signals are tied; compare the paths.')
+              ? 'Choose a land pathway. Runoff tendency: ' + runoffTendency + '/100; infiltration opportunity: ' + infiltrationOpportunity + '/100. These are qualitative teaching indices, not measured volumes.' + ' Shares of the three possible paths: runoff ' + wcRouteShares.runoff + ' percent; infiltration ' + wcRouteShares.infiltration + ' percent; plant ' + wcRouteShares.plant + ' percent.' + (wcRouteLeader ? ' The model favors ' + wcRouteLeaderLabel + '.' : ' The model shows no clear favorite; compare the paths.')
               : journeyView === '3d' ? '3D tracked parcel' : '2D animated model';
           journeyDataContext += ' Path explorer: ' + journeyPathCoverageLabel + '.';
           function landIndexBand(value) {
@@ -17356,7 +19657,7 @@ const d = labToolData.waterCycle || {};
           };
           var wcRouteShareAria = function(pathKey) {
             var copy = wcRouteShareDeltaCopy(pathKey);
-            return ' Relative teaching share, not measured water volume.' + (copy ? ' ' + copy + '.' : '');
+            return ' Share of the three possible paths; not measured water volume.' + (copy ? ' ' + copy + '.' : '');
           };
           var wcCausalStageIds = [];
           var wcCausalDriver = '';
@@ -17740,12 +20041,12 @@ const d = labToolData.waterCycle || {};
             var trackClass = pathKey === 'infiltrate' ? ' is-infiltrate' : pathKey === 'plant' ? ' is-plant' : '';
             var deltaCopy = wcRouteShareDeltaCopy(pathKey);
             return React.createElement("span", { className: "wc-2d-route-share", "aria-hidden": "true" },
-              "Relative signal: " + share + "%" + (deltaCopy ? " · " + deltaCopy : ""),
+              "Share of 3 paths: " + share + "%" + (deltaCopy ? " · " + deltaCopy : ""),
               React.createElement("span", { className: "wc-2d-route-share-track" + trackClass },
                 React.createElement("span", { style: { width: share + "%" } }),
                 wcRouteBaselineActive && React.createElement("span", { className: "wc-route-share-baseline-marker", style: { left: wcBaselineRouteShares[pathKey] + "%" } })
               ),
-              isLeader && React.createElement("span", { className: "wc-route-leader-badge" }, "Strongest modeled pathway")
+              isLeader && React.createElement("span", { className: "wc-route-leader-badge" }, "Model favors this path")
             );
           }
           function renderLandSegments(label, stateKey, options, selected) {
@@ -17797,6 +20098,19 @@ const d = labToolData.waterCycle || {};
               journeyReplayProgress: null
             });
             if (typeof announceToSR === 'function') announceToSR('Droplet journey started in ocean storage.');
+          }
+          function watchWcCycle() {
+            updMulti({ journeyView: '2d', journeyActive: false, journeyState: 'idle', wc2dPaused: false, wcWalkthroughActive: false });
+            var cycleCanvas = document.getElementById('wcCanvas');
+            if (cycleCanvas) {
+              cycleCanvas.dataset.wc2dPaused = 'false';
+              if (cycleCanvas._wc2dSetPaused) cycleCanvas._wc2dSetPaused(false);
+            }
+            requestAnimationFrame(function() {
+              var canvasShell = document.querySelector('[data-watercycle-canvas-shell]');
+              if (canvasShell) canvasShell.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            });
+            if (typeof announceToSR === 'function') announceToSR('Water cycle animation playing. Watch water move between ocean, air, land, and plants.');
           }
           function clampWcSignal(value) {
             return Math.max(0, Math.min(100, Math.round(value)));
@@ -17895,13 +20209,13 @@ const d = labToolData.waterCycle || {};
                 ? 'Change permeability or saturation by one step, then check whether more water stays in soil or reaches deep storage.'
                 : 'Change one climate control by one step, then compare the plant-storage signal with atmospheric transfer.';
           var wcNextExperimentStatus = !wcScenarioBaseline
-            ? 'No comparison baseline saved yet.'
+            ? t('stem.watercycle.no_comparison_baseline_saved_yet', 'No comparison baseline saved yet.')
             : wcScenarioChanges.length
-              ? 'Comparison ready: the highlighted deltas are your evidence.'
-              : 'Baseline saved: change one control to create a testable difference.';
+              ? t('stem.watercycle.comparison_ready_the_highlighted_deltas', 'Comparison ready: the highlighted deltas are your evidence.')
+              : t('stem.watercycle.baseline_saved_change_one_control', 'Baseline saved: change one control to create a testable difference.');
           var missionCopy = d.journeyActive
-            ? 'Follow the highlighted droplet and choose its path when it reaches the ground.'
-            : 'Start a droplet journey or tune the climate sliders to see how energy, temperature, and wind reshape the cycle.';
+            ? t('stem.watercycle.follow_the_highlighted_droplet_and_choose', 'Follow the highlighted droplet and choose its path when it reaches the ground.')
+            : t('stem.watercycle.watch_water_move_between_ocean_air_land', 'Watch water move between ocean, air, land, and plants. Then try one change to see what shifts.');
 
           return React.createElement("div", {
               className: "wc-explorer-root max-w-3xl mx-auto animate-in fade-in duration-200 " + (isDark ? "text-slate-100" : "text-slate-800"),
@@ -17925,19 +20239,10 @@ const d = labToolData.waterCycle || {};
 
               React.createElement("span", { className: "px-2 py-0.5 text-[11px] font-bold rounded-full " + (isDark ? "bg-sky-950/50 text-sky-400 border border-sky-900/50" : "bg-sky-100 text-sky-700") }, "ANIMATED"),
 
-              React.createElement("button", {
-                onClick: () => switchMode('steward'),
-                className: "ml-auto px-3 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-sky-700 to-emerald-700 text-white hover:from-sky-700 hover:to-emerald-700 shadow-md focus:ring-2 focus:ring-yellow-500 focus:outline-none",
-                'aria-label': t('stem.watercycle.switch_to_watershed_steward_10_year_ca', 'Switch to Watershed Steward 10-year campaign')
-              }, t('stem.watercycle.watershed_steward', "\uD83D\uDCA7 Watershed Steward \u2192")),
-
-              React.createElement("button", {
-                onClick: () => switchMode('precipHunt'),
-                className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-cyan-700 to-blue-600 text-white hover:from-cyan-700 hover:to-blue-600 shadow-md focus:ring-2 focus:ring-yellow-500 focus:outline-none",
-                'aria-label': t('stem.watercycle.switch_to_precipitation_discovery_widg', 'Switch to Precipitation Discovery widget')
-              }, t('stem.watercycle.precipitation_lab', "\uD83C\uDF27\uFE0F Precipitation Lab \u2192"))
-
             ),
+
+            // The four destinations, in one place, in every mode.
+            renderWcModeBar(),
 
             // ═══ GRADE LEVEL SELECTOR ═══
             React.createElement("div", { className: "flex items-center gap-1.5 mb-3 flex-wrap" },
@@ -17995,40 +20300,48 @@ const d = labToolData.waterCycle || {};
                   React.createElement("strong", null, viewedStageCount + "/" + WATER_CYCLE_STAGE_COUNT + " stages - " + completedChallengeCount + "/" + WATER_CYCLE_CHALLENGES.length + " challenges")
                 )
               ),
-              React.createElement("nav", { className: "wc-start-path", "aria-label": "Start here" },
+              React.createElement("nav", { className: "wc-start-path", "aria-label": t('stem.watercycle.start_here', "Start here") },
                 React.createElement("div", { className: "wc-start-path-head" },
-                  React.createElement("strong", null, "Start here"),
-                  React.createElement("span", null, "Choose one way to explore")
+                  React.createElement("strong", null, t('stem.watercycle.start_here', "Start here")),
+                  React.createElement("span", null, t('stem.watercycle.choose_one_way_to_explore', "Choose one way to explore"))
                 ),
                 React.createElement("div", { className: "wc-start-path-grid" },
                   React.createElement("button", {
-                    type: "button", className: "wc-start-action", onClick: startWcQuickGuide,
-                    "aria-label": "Start a guided tour of all six water cycle processes"
+                    type: "button", className: "wc-start-action wc-start-action-primary", onClick: watchWcCycle,
+                    "aria-label": t('stem.watercycle.play_the_animated_water_cycle', "Play the animated water cycle")
                   },
                     React.createElement("span", { className: "wc-start-number", "aria-hidden": "true" }, "1"),
                     React.createElement("span", null,
-                      React.createElement("strong", null, "Tour the cycle"),
-                      React.createElement("small", null, "See all six processes in order")
+                      React.createElement("strong", null, t('stem.watercycle.watch_the_cycle', "▶ Watch the cycle")),
+                      React.createElement("small", null, t('stem.watercycle.see_water_move_through_the_system', "See water move through the system"))
                     )
                   ),
                   React.createElement("button", {
                     type: "button", className: "wc-start-action", onClick: openWcClimateControls,
-                    "aria-label": "Open climate controls and run a one-variable experiment"
+                    "aria-label": t('stem.watercycle.open_climate_controls_and_run_a_one_var', "Open climate controls and run a one-variable experiment")
                   },
                     React.createElement("span", { className: "wc-start-number", "aria-hidden": "true" }, "2"),
                     React.createElement("span", null,
-                      React.createElement("strong", null, "Change one variable"),
-                      React.createElement("small", null, "Test sunlight, temperature, or wind")
+                      React.createElement("strong", null, t('stem.watercycle.change_the_weather', "Change the weather")),
+                      React.createElement("small", null, t('stem.watercycle.test_sunlight_temperature_or_wind', "Test sunlight, temperature, or wind"))
                     )
                   ),
+                  // Card 3 now opens the flagship. There used to be three separate
+                  // doors into 3D - this card, the "Droplet Journey" segment in
+                  // Choose a view, and a "Play the droplet journey" button about
+                  // 2,000 pixels below - all leading to the same guided view. The
+                  // guided view keeps its door in Choose a view, where it belongs
+                  // as a way of drawing the canvas; this card, which is the page's
+                  // primary call to action, points at the mode built to be the
+                  // tool's centrepiece.
                   React.createElement("button", {
-                    type: "button", className: "wc-start-action", onClick: beginWcQuickJourney,
-                    "aria-label": "Begin a three-dimensional journey following one water droplet"
+                    type: "button", className: "wc-start-action wc-start-action-flagship", onClick: function() { switchMode('pilot'); },
+                    "aria-label": "Be the Water: pilot one parcel of water through every stage of the cycle in 3D"
                   },
                     React.createElement("span", { className: "wc-start-number", "aria-hidden": "true" }, "3"),
                     React.createElement("span", null,
-                      React.createElement("strong", null, "Follow a droplet"),
-                      React.createElement("small", null, "Make a land-path choice in 3D")
+                      React.createElement("strong", null, "Be the water"),
+                      React.createElement("small", null, "Fly one parcel through every form")
                     )
                   )
                 )
@@ -18104,22 +20417,22 @@ const d = labToolData.waterCycle || {};
                   "aria-atomic": "true"
                 }, journeyView === '3d'
                   ? "Droplet view: " + immersiveStageLabel + " | " + journeyStatusLabel + " | illustrative scale"
-                  : "Systems view: six connected water-cycle processes"),
+                  : t('stem.watercycle.systems_view_six_connected_water_cycle', "Systems view: six connected water-cycle processes")),
                 React.createElement("button", {
                   type: "button",
                   className: "wc-focus-toggle",
-                  "data-tooltip": wcFocusMode ? "Exit Focus Canvas" : "Focus Canvas",
-                  "aria-label": wcFocusMode ? "Exit Focus Canvas mode" : "Enter Focus Canvas mode",
+                  "data-tooltip": wcFocusMode ? t('stem.watercycle.exit_focus_canvas', "Exit Focus Canvas") : t('stem.watercycle.focus_canvas', "Focus Canvas"),
+                  "aria-label": wcFocusMode ? t('stem.watercycle.exit_focus_canvas_mode', "Exit Focus Canvas mode") : t('stem.watercycle.enter_focus_canvas_mode', "Enter Focus Canvas mode"),
                   "aria-pressed": wcFocusMode,
                   onClick: toggleWcFocusMode
-                }, wcFocusMode ? "\u2199 Full explorer" : "\uD83C\uDFAF Focus Canvas"),
+                }, wcFocusMode ? t('stem.watercycle.full_explorer', "\u2199 Full explorer") : t('stem.watercycle.focus_canvas_button', "\uD83C\uDFAF Focus Canvas")),
                 React.createElement("button", {
                   type: "button",
                   className: "wc-compare-trigger",
-                  "data-tooltip": wcScenarioBaseline ? "Update scenario baseline" : "Save current scenario as baseline",
-                  "aria-label": wcScenarioBaseline ? "Update scenario comparison baseline" : "Save current scenario as comparison baseline",
+                  "data-tooltip": wcScenarioBaseline ? t('stem.watercycle.update_scenario_baseline', "Update scenario baseline") : t('stem.watercycle.save_current_scenario_as_baseline', "Save current scenario as baseline"),
+                  "aria-label": wcScenarioBaseline ? t('stem.watercycle.update_scenario_comparison_baseline', "Update scenario comparison baseline") : t('stem.watercycle.save_current_scenario_as_comparison', "Save current scenario as comparison baseline"),
                   onClick: captureWcScenarioBaseline
-                }, wcScenarioBaseline ? "\u21BB Baseline" : "\u2295 Set baseline"),                journeyView === '3d' && React.createElement("button", {
+                }, wcScenarioBaseline ? t('stem.watercycle.baseline_button', "\u21BB Baseline") : t('stem.watercycle.set_baseline_button', "\u2295 Set baseline")),                journeyView === '3d' && React.createElement("button", {
                   type: "button",
                   className: "wc-camera-reset",
                   "data-tooltip": "Resume guided camera",
@@ -18299,19 +20612,7 @@ journeyView === '2d' && React.createElement("div", {
                 // 2.02:1, collection 2.42, precipitation 3.18 (axe, on the real
                 // rendered ground). Compute whichever ground applies, then let
                 // wcReadableInk move the ink away from it.
-                var _wcChipBg = (function (hex) {
-                  var n = parseInt(hex.slice(1), 16);
-                  var a = isDark ? 0.145 : 0.082;
-                  var base = isDark ? [15, 23, 42] : [255, 255, 255];
-                  var mixed = [
-                    a * ((n >> 16) & 255) + (1 - a) * base[0],
-                    a * ((n >> 8) & 255) + (1 - a) * base[1],
-                    a * (n & 255) + (1 - a) * base[2]
-                  ];
-                  return '#' + mixed.map(function (v) {
-                    return ('0' + Math.round(v).toString(16)).slice(-2);
-                  }).join('');
-                })(stage.color);
+                var _wcChipBg = wcTintGround(stage.color, isDark ? 0.145 : 0.082, isDark);
                 // Target 5.2, not 4.5: the chip ground is COMPUTED from the
                 // tint alpha, and the rendered value differs slightly (the
                 // panel behind is not pure white), which left precipitation
@@ -18697,26 +20998,26 @@ React.createElement("div", {
                 "aria-describedby": "wcViewportChoiceDescription wcViewportChoiceStatus",
               },
                 React.createElement("h5", { id: "wcViewportChoiceTitle" }, "Choose where the droplet travels next"),
-                React.createElement("p", { id: "wcViewportChoiceDescription" }, "Compare the relative route shares as teaching evidence, not measured water volumes. You remain in control."),
+                React.createElement("p", { id: "wcViewportChoiceDescription" }, "Compare the three possible paths in this scenario. These are teaching comparisons, not measured water amounts. You remain in control."),
                 wcScenarioBaseline && wcScenarioChanges.length && React.createElement("p", {
                   className: "wc-viewport-scenario-note",
                   role: "note"
                 }, wcScenarioHeadline + " Compare the route shares before choosing." + wcJourneyPredictionReceipt),
-                wcRouteBaselineActive && React.createElement("p", { className: "wc-route-baseline-note", role: "note" }, "Saved baseline markers show each route's previous relative share; labels show the point change."),
+                wcRouteBaselineActive && React.createElement("p", { className: "wc-route-baseline-note", role: "note" }, "Saved markers show each path's previous share; labels show the point change."),
                 React.createElement("p", { id: "wcViewportChoiceStatus", className: "wc-route-choice-signal", role: "status", "aria-live": "polite", "aria-atomic": "true" }, wcRouteLeaderLabel
-                  ? "Strongest modeled signal: " + wcRouteLeaderLabel + " (" + wcMaxRouteShare + "%). Any route remains available."
-                  : "The modeled signals are tied; compare the paths and choose any route."),
+                  ? "The model favors " + wcRouteLeaderLabel + " in this scenario (" + wcMaxRouteShare + " of 100). Any route remains available."
+                  : "The model shows no clear favorite; compare the three paths and choose any route."),
                 React.createElement("div", { className: "wc-viewport-choice-grid" },
                   React.createElement("button", {
                     type: "button",
                     className: "wc-route-choice-card" + (wcRouteLeader === "runoff" ? " is-leading" : ""),
                     "data-route-choice": "runoff",
-                    "aria-label": "Choose River Runoff path. Relative route share " + wcRouteShares.runoff + " percent. Runoff tendency " + landIndexBand(runoffTendency) + (wcRouteLeader === "runoff" ? " Strongest modeled pathway." : "") + " Residence pace: " + journeyPathPaceByKey.runoff + ". Driver: " + journeyPathDriverByKey.runoff + ". Return path: " + journeyPathReturnByKey.runoff + "." + wcRouteShareAria('runoff'),
+                    "aria-label": "Choose River Runoff path. Share of the three possible paths " + wcRouteShares.runoff + " percent. Runoff tendency " + landIndexBand(runoffTendency) + (wcRouteLeader === "runoff" ? " The model favors this path." : "") + " Residence pace: " + journeyPathPaceByKey.runoff + ". Driver: " + journeyPathDriverByKey.runoff + ". Return path: " + journeyPathReturnByKey.runoff + "." + wcRouteShareAria('runoff'),
                     onClick: function() { chooseJourneyPath('runoff'); }
                   },
                     React.createElement("strong", null, "\uD83C\uDF0A River Runoff"),
-                    wcRouteLeader === 'runoff' && React.createElement("span", { className: "wc-route-leader-badge" }, "Strongest signal"),
-                    React.createElement("span", { className: "wc-route-share-copy" }, "Relative share " + wcRouteShares.runoff + "% \u00B7 Runoff " + runoffTendency + "/100" + (wcRouteBaselineActive ? " \u00B7 " + wcRouteShareDeltaCopy('runoff') : "")),
+                    wcRouteLeader === 'runoff' && React.createElement("span", { className: "wc-route-leader-badge" }, "Model favors this path"),
+                    React.createElement("span", { className: "wc-route-share-copy" }, "Share of 3 paths: " + wcRouteShares.runoff + "% \u00B7 Runoff tendency: " + runoffTendency + "/100" + (wcRouteBaselineActive ? " \u00B7 " + wcRouteShareDeltaCopy('runoff') : "")),
                     React.createElement("span", { className: "wc-route-driver-copy" }, "Driver: " + journeyPathDriverByKey.runoff),
                     React.createElement("span", { className: "wc-route-pace-copy" }, "Residence pace: " + journeyPathPaceByKey.runoff),
                     React.createElement("span", { className: "wc-route-return-copy" }, "Return path: " + journeyPathReturnByKey.runoff),
@@ -18726,12 +21027,12 @@ React.createElement("div", {
                     type: "button",
                     className: "wc-route-choice-card" + (wcRouteLeader === "infiltrate" ? " is-leading" : ""),
                     "data-route-choice": "infiltrate",
-                    "aria-label": "Choose Underground infiltration path. Relative route share " + wcRouteShares.infiltration + " percent. Infiltration opportunity " + landIndexBand(infiltrationOpportunity) + (wcRouteLeader === "infiltrate" ? " Strongest modeled pathway." : "") + " Residence pace: " + journeyPathPaceByKey.infiltrate + ". Driver: " + journeyPathDriverByKey.infiltrate + ". Return path: " + journeyPathReturnByKey.infiltrate + "." + wcRouteShareAria('infiltrate'),
+                    "aria-label": "Choose Underground infiltration path. Share of the three possible paths " + wcRouteShares.infiltration + " percent. Infiltration opportunity " + landIndexBand(infiltrationOpportunity) + (wcRouteLeader === "infiltrate" ? " The model favors this path." : "") + " Residence pace: " + journeyPathPaceByKey.infiltrate + ". Driver: " + journeyPathDriverByKey.infiltrate + ". Return path: " + journeyPathReturnByKey.infiltrate + "." + wcRouteShareAria('infiltrate'),
                     onClick: function() { chooseJourneyPath('infiltrate'); }
                   },
                     React.createElement("strong", null, "\uD83E\uDEB4 Underground"),
-                    wcRouteLeader === 'infiltrate' && React.createElement("span", { className: "wc-route-leader-badge" }, "Strongest signal"),
-                    React.createElement("span", { className: "wc-route-share-copy" }, "Relative share " + wcRouteShares.infiltration + "% \u00B7 Infiltration " + infiltrationOpportunity + "/100" + (wcRouteBaselineActive ? " \u00B7 " + wcRouteShareDeltaCopy('infiltrate') : "")),
+                    wcRouteLeader === 'infiltrate' && React.createElement("span", { className: "wc-route-leader-badge" }, "Model favors this path"),
+                    React.createElement("span", { className: "wc-route-share-copy" }, "Share of 3 paths: " + wcRouteShares.infiltration + "% \u00B7 Infiltration opportunity: " + infiltrationOpportunity + "/100" + (wcRouteBaselineActive ? " \u00B7 " + wcRouteShareDeltaCopy('infiltrate') : "")),
                     React.createElement("span", { className: "wc-route-driver-copy" }, "Driver: " + journeyPathDriverByKey.infiltrate),
                     React.createElement("span", { className: "wc-route-pace-copy" }, "Residence pace: " + journeyPathPaceByKey.infiltrate),
                     React.createElement("span", { className: "wc-route-return-copy" }, "Return path: " + journeyPathReturnByKey.infiltrate),
@@ -18741,12 +21042,12 @@ React.createElement("div", {
                     type: "button",
                     className: "wc-route-choice-card" + (wcRouteLeader === "plant" ? " is-leading" : ""),
                     "data-route-choice": "plant",
-                    "aria-label": "Choose Plant absorption path. Relative route share " + wcRouteShares.plant + " percent." + (wcRouteLeader === "plant" ? " Strongest modeled pathway." : "") + " Residence pace: " + journeyPathPaceByKey.plant + ". Driver: " + journeyPathDriverByKey.plant + ". Return path: " + journeyPathReturnByKey.plant + "." + wcRouteShareAria('plant'),
+                    "aria-label": "Choose Plant absorption path. Share of the three possible paths " + wcRouteShares.plant + " percent." + (wcRouteLeader === "plant" ? " The model favors this path." : "") + " Residence pace: " + journeyPathPaceByKey.plant + ". Driver: " + journeyPathDriverByKey.plant + ". Return path: " + journeyPathReturnByKey.plant + "." + wcRouteShareAria('plant'),
                     onClick: function() { chooseJourneyPath('plant'); }
                   },
                     React.createElement("strong", null, "\uD83C\uDF3F Enter Plant"),
-                    wcRouteLeader === 'plant' && React.createElement("span", { className: "wc-route-leader-badge" }, "Strongest signal"),
-                    React.createElement("span", { className: "wc-route-share-copy" }, "Relative share " + wcRouteShares.plant + "% \u00B7 Plant uptake" + (wcRouteBaselineActive ? " \u00B7 " + wcRouteShareDeltaCopy('plant') : "")),
+                    wcRouteLeader === 'plant' && React.createElement("span", { className: "wc-route-leader-badge" }, "Model favors this path"),
+                    React.createElement("span", { className: "wc-route-share-copy" }, "Share of 3 paths: " + wcRouteShares.plant + "% \u00B7 Plant uptake" + (wcRouteBaselineActive ? " \u00B7 " + wcRouteShareDeltaCopy('plant') : "")),
                     React.createElement("span", { className: "wc-route-share-track", "aria-hidden": "true" }, React.createElement("span", { style: { width: wcRouteShares.plant + "%" } }), wcRouteBaselineActive && React.createElement("span", { className: "wc-route-share-baseline-marker", style: { left: wcBaselineRouteShares.plant + "%" } })),
                     React.createElement("span", { className: "wc-route-driver-copy" }, "Driver: " + journeyPathDriverByKey.plant),
                     React.createElement("span", { className: "wc-route-pace-copy" }, "Residence pace: " + journeyPathPaceByKey.plant),
@@ -18931,6 +21232,14 @@ React.createElement("div", {
                       React.createElement("td", null,
                         React.createElement("strong", null, currentHydrologicTimeLabel),
                         React.createElement("span", null, currentHydrologicTime.caveat + " Animation is compressed, not a physical clock.")
+                        // The playback caveat lives here rather than beside the
+                        // canvas: this panel is the tool s model-caveat surface, it
+                        // sits outside every switchable Explorer section, and a
+                        // closed <details> still keeps its content in the DOM, so the
+                        // statement stays part of the page contract without wedging a
+                        // four-sentence paragraph into a one-line flex strip.
+                        ,React.createElement("span", { className: "wc-data-time-note" },
+                          "Playback speed changes this animation only. Animation is compressed - not physical time. For context, groundwater pathways can take years to millennia. Faster fractured-rock pathways also exist, and real residence and transit times vary enormously.")
                       )
                     ),
                     React.createElement("tr", null,
@@ -19003,6 +21312,9 @@ React.createElement("div", {
               )
             ),
 
+            renderWcSectionTabs(),
+
+            wcSection === 'conditions' && React.createElement("div", { className: "wc-section-body", role: "region", "aria-label": "Change the conditions" },
             React.createElement("details", {
               className: "wc-climate-lab wc-control-panel rounded-xl p-3 mb-3 shadow-md border-2 " + (isDark ? "bg-slate-950/60 border-amber-900/40 backdrop-blur-md" : "bg-gradient-to-r from-amber-50 via-sky-50 to-emerald-50 border-amber-200"),
               "data-watercycle-climate": "true",
@@ -19583,6 +21895,9 @@ React.createElement("div", {
                 })
               )
             ),
+            ),
+
+            wcSection === 'journey' && React.createElement("div", { className: "wc-section-body", role: "region", "aria-label": "Follow one droplet" },
             React.createElement("div", {
               className: "wc-journey-panel wc-control-panel rounded-xl p-4 mb-3 shadow-md border-2 " + (isDark ? "bg-slate-950/60 border-cyan-900/40 backdrop-blur-md" : "bg-gradient-to-r from-cyan-50 to-sky-50 border-cyan-300"),
               "data-watercycle-journey": "true",
@@ -19592,7 +21907,7 @@ React.createElement("div", {
                 React.createElement("div", { className: "flex items-center gap-2" },
                   React.createElement("span", { className: "text-xl" }, "\uD83D\uDCA7"),
                   React.createElement("h4", { className: "text-sm font-bold " + (isDark ? "text-cyan-400" : "text-cyan-800") }, t('stem.watercycle.journey_mode', "Journey Mode")),
-                  React.createElement("span", { className: "px-2 py-0.5 text-[11px] font-bold rounded-full " + (isDark ? "bg-cyan-950/50 text-cyan-300 border border-cyan-900/30" : "bg-cyan-200 text-cyan-800") }, t('stem.watercycle.play_as_water', "PLAY AS WATER"))
+                  React.createElement("span", { className: "px-2 py-0.5 text-[11px] font-bold rounded-full " + (isDark ? "bg-cyan-950/50 text-cyan-300 border border-cyan-900/30" : "bg-cyan-200 text-cyan-800") }, t('stem.watercycle.play_as_water', "FOLLOW ONE DROPLET"))
                 ),
                 !d.journeyActive
                   ? React.createElement("button", { "aria-label": t('stem.watercycle.start_journey_mode_shortcut_j', "Start Journey mode (shortcut: J)"),
@@ -19605,7 +21920,7 @@ React.createElement("div", {
                         addToast('\uD83D\uDCA7 You are now a water droplet in the ocean! Watch and learn as you travel through the water cycle.', 'info');
                       },
                       className: "px-4 py-2 bg-gradient-to-r from-cyan-700 to-blue-600 text-white text-xs font-bold rounded-xl hover:from-cyan-700 hover:to-blue-600 shadow-lg transition-all hover:scale-105 focus:ring-2 focus:ring-yellow-500 focus:outline-none"
-                    }, t('stem.watercycle.start_journey_j', "\uD83C\uDFAE Start Journey (J)"))
+                    }, t('stem.watercycle.start_journey_j', "\u25B6 Play the droplet journey (J)"))
                   : React.createElement("div", { className: "flex gap-1.5" },
                       React.createElement("button", {
                   type: "button",
@@ -19746,9 +22061,6 @@ React.createElement("div", {
                   }, "▶ Resume live journey"),
                   React.createElement("p", { id: "wcJourneyReplayStatus", className: "wc-replay-status", role: "status", "aria-live": "polite", "aria-atomic": "true" }, journeyReplayStatus)
                 ),
-                React.createElement("p", { role: "note", className: "text-[11px] leading-relaxed " + (isDark ? "text-cyan-200" : "text-cyan-800") },
-                  "Playback speed changes this animation only. Animation is compressed - not physical time. For context, groundwater pathways can take years to millennia. Faster fractured-rock pathways also exist, and real residence and transit times vary enormously."
-                ),
                 // Current state card
                 React.createElement("div", { className: "rounded-lg p-3 border " + (isDark ? "bg-slate-900/60 border-cyan-950/50 text-slate-300" : "bg-white border-cyan-100 text-slate-800") },
                   React.createElement("p", { className: "text-xs font-bold mb-1 " + (isDark ? "text-cyan-400" : "text-cyan-700") },
@@ -19771,13 +22083,13 @@ React.createElement("div", {
                     ),
                     React.createElement("div", {
                       className: "wc-journey-choice-signal",
-                      "aria-label": journeyChosenRoute.signalLabel + ": " + journeyChosenRoute.signalValue + " out of 100; relative route share: " + journeyChosenRoute.relativeShare + " percent"
+                      "aria-label": journeyChosenRoute.signalLabel + ": " + journeyChosenRoute.signalValue + " out of 100; share of the three possible paths: " + journeyChosenRoute.relativeShare + " percent"
                     },
                       React.createElement("span", null, journeyChosenRoute.signalLabel + ": " + journeyChosenRoute.signalValue + "/100"),
                       React.createElement("span", { className: "wc-journey-choice-track", "aria-hidden": "true" },
                         React.createElement("span", { style: { width: journeyChosenRoute.relativeShare + "%" } })
                       ),
-                      React.createElement("span", null, "Relative signal: " + journeyChosenRoute.relativeShare + "%")
+                      React.createElement("span", null, "Share of 3 paths: " + journeyChosenRoute.relativeShare + "%")
                     )
                   ),
                   d.journeyActive && React.createElement("section", {
@@ -19828,13 +22140,13 @@ React.createElement("div", {
                     role: "note"
                   }, wcScenarioHeadline + " Compare the route shares before choosing." + wcJourneyPredictionReceipt),
                   d.journeyState === 'ground_choice' && journeyView === '2d' && React.createElement("p", { className: "wc-2d-route-note", role: "note" }, wcRouteLeader
-                    ? "Strongest modeled signal: " + wcRouteLeaderLabel + ". Compare the relative shares before choosing." + wcJourneyPredictionReceipt
-                    : "The modeled signals are tied; compare the relative shares before choosing." + wcJourneyPredictionReceipt),
+                    ? "The model favors " + wcRouteLeaderLabel + ". Compare the three path shares before choosing." + wcJourneyPredictionReceipt
+                    : "The model shows no clear favorite. Compare the three path shares before choosing." + wcJourneyPredictionReceipt),
                   d.journeyState === 'ground_choice' && React.createElement("div", { className: "grid grid-cols-3 gap-2 mt-2", role: "group", },
-                  wcRouteBaselineActive && React.createElement("p", { className: "wc-route-baseline-note", role: "note" }, "Saved baseline markers show each route's previous relative share; labels show the point change."),
+                  wcRouteBaselineActive && React.createElement("p", { className: "wc-route-baseline-note", role: "note" }, "Saved markers show each path's previous share; labels show the point change."),
                     React.createElement("button", {
                   type: "button",
-                  "aria-label": t('stem.watercycle.choose_river_runoff_path_shortcut_r', "Choose River Runoff path (shortcut: R)") + ". Relative route share " + wcRouteShares.runoff + " percent." + wcRouteLeaderAccessibility + " Residence pace: " + journeyPathPaceByKey.runoff + ". Driver: " + journeyPathDriverByKey.runoff + ". Return path: " + journeyPathReturnByKey.runoff + "." + wcRouteShareAria('runoff'),
+                  "aria-label": t('stem.watercycle.choose_river_runoff_path_shortcut_r', "Choose River Runoff path (shortcut: R)") + ". Share of the three possible paths " + wcRouteShares.runoff + " percent." + wcRouteLeaderAccessibility + " Residence pace: " + journeyPathPaceByKey.runoff + ". Driver: " + journeyPathDriverByKey.runoff + ". Return path: " + journeyPathReturnByKey.runoff + "." + wcRouteShareAria('runoff'),
                       onClick: function() { chooseJourneyPath('runoff'); },
                       className: "wc-route-choice-card" + (wcRouteLeader === "runoff" ? " is-leading" : "") + " p-2 rounded-lg text-center border-2 transition-all hover:scale-105 focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (isDark ? "transition-colors bg-blue-950/40 border-blue-800 hover:bg-blue-900/40 text-blue-300 active:scale-[0.97]" : "transition-colors bg-blue-50 border-blue-600 hover:bg-blue-100 text-blue-700 active:scale-[0.97]")
                     },
@@ -19848,7 +22160,7 @@ React.createElement("div", {
                     ),
                     React.createElement("button", {
                   type: "button",
-                  "aria-label": t('stem.watercycle.choose_underground_infiltration_path_s', "Choose Underground infiltration path (shortcut: U)") + ". Relative route share " + wcRouteShares.infiltration + " percent." + wcRouteLeaderAccessibility + " Residence pace: " + journeyPathPaceByKey.infiltrate + ". Driver: " + journeyPathDriverByKey.infiltrate + ". Return path: " + journeyPathReturnByKey.infiltrate + "." + wcRouteShareAria('infiltrate'),
+                  "aria-label": t('stem.watercycle.choose_underground_infiltration_path_s', "Choose Underground infiltration path (shortcut: U)") + ". Share of the three possible paths " + wcRouteShares.infiltration + " percent." + wcRouteLeaderAccessibility + " Residence pace: " + journeyPathPaceByKey.infiltrate + ". Driver: " + journeyPathDriverByKey.infiltrate + ". Return path: " + journeyPathReturnByKey.infiltrate + "." + wcRouteShareAria('infiltrate'),
                       onClick: function() { chooseJourneyPath('infiltrate'); },
                       className: "wc-route-choice-card" + (wcRouteLeader === "infiltrate" ? " is-leading" : "") + " p-2 rounded-lg text-center border-2 transition-all hover:scale-105 focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (isDark ? "transition-colors bg-amber-950/40 border-amber-800 hover:bg-amber-900/40 text-amber-300 active:scale-[0.97]" : "transition-colors bg-amber-50 border-amber-600 hover:bg-amber-100 text-amber-700 active:scale-[0.97]")
                     },
@@ -19862,7 +22174,7 @@ React.createElement("div", {
                     ),
                     React.createElement("button", {
                   type: "button",
-                  "aria-label": t('stem.watercycle.choose_plant_absorption_path_shortcut_', "Choose Plant absorption path (shortcut: P)") + ". Relative route share " + wcRouteShares.plant + " percent." + wcRouteLeaderAccessibility + " Residence pace: " + journeyPathPaceByKey.plant + ". Driver: " + journeyPathDriverByKey.plant + ". Return path: " + journeyPathReturnByKey.plant + "." + wcRouteShareAria('plant'),
+                  "aria-label": t('stem.watercycle.choose_plant_absorption_path_shortcut_', "Choose Plant absorption path (shortcut: P)") + ". Share of the three possible paths " + wcRouteShares.plant + " percent." + wcRouteLeaderAccessibility + " Residence pace: " + journeyPathPaceByKey.plant + ". Driver: " + journeyPathDriverByKey.plant + ". Return path: " + journeyPathReturnByKey.plant + "." + wcRouteShareAria('plant'),
                       onClick: function() { chooseJourneyPath('plant'); },
                       className: "wc-route-choice-card" + (wcRouteLeader === "plant" ? " is-leading" : "") + " p-2 rounded-lg text-center border-2 transition-all hover:scale-105 focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (isDark ? "transition-colors bg-emerald-950/40 border-emerald-800 hover:bg-emerald-900/40 text-emerald-300 active:scale-[0.97]" : "transition-colors bg-emerald-50 border-emerald-600 hover:bg-emerald-100 text-emerald-700 active:scale-[0.97]")
                     },
@@ -19903,28 +22215,18 @@ React.createElement("div", {
               !d.journeyActive && React.createElement("p", { className: "text-[11px] text-cyan-500 mt-1" }, t('stem.watercycle.become_a_water_droplet_and_travel_thro', "Become a water droplet and travel through the entire water cycle! Make choices at each stage and learn the science behind each transformation."))
             ),
 
-            sel && React.createElement("div", { 
-              className: "wc-focus-secondary rounded-xl p-4 border mb-3 " + (isDark ? "bg-gradient-to-r from-sky-950/20 via-slate-900/60 to-blue-950/20 border-sky-900/50 backdrop-blur-md" : "bg-gradient-to-r from-sky-50 to-blue-50 border-sky-200")
+            // The stage heading, description, and phase chip that used to sit here
+            // were a verbatim second rendering of the Selected Process panel above
+            // the canvas - the same paragraph twice on one page, roughly 1,200
+            // pixels apart. The fun fact was the only content unique to this card,
+            // so the card is now just the fun fact.
+            sel && selFunFact && React.createElement("div", {
+              className: "wc-stage-funfact wc-focus-secondary rounded-xl p-3 border mb-3 " + (isDark ? "bg-amber-950/30 border-amber-900/50" : "bg-amber-50 border-amber-200"),
+              role: "note",
+              "aria-label": sel.label + " fun fact"
             },
-
-              React.createElement("div", { className: "flex items-center gap-2 mb-2" },
-
-                React.createElement("span", { className: "text-2xl" }, sel.emoji),
-
-                React.createElement("h4", { className: "text-base font-bold", style: { color: sel.color } }, sel.label)
-
-              ),
-
-              React.createElement("p", { className: "text-sm leading-relaxed mb-2 " + (isDark ? "text-slate-300" : "text-slate-600") }, selDesc),
-
-              selPhase && React.createElement("div", { className: "rounded-lg p-2 mb-2 border text-[11px] font-semibold " + (isDark ? "bg-cyan-950/40 border-cyan-900/50 text-cyan-200" : "bg-cyan-50 border-cyan-200 text-cyan-800") }, selPhase),
-
-              selFunFact && React.createElement("div", { className: "rounded-lg p-2 border " + (isDark ? "bg-amber-950/40 border-amber-900/50 text-amber-300" : "bg-amber-50 border-amber-200 text-amber-700") },
-
-                React.createElement("p", { className: "text-[11px]" }, "\uD83D\uDCA1 " + selFunFact)
-
-              )
-
+              React.createElement("span", { className: "wc-stage-funfact-kicker" }, "\uD83D\uDCA1 " + sel.label + " \u2014 did you know"),
+              React.createElement("p", { className: "wc-stage-funfact-copy" }, selFunFact)
             ),
 
             // ═══ AI HYDROLOGIST TUTOR PANEL ═══
@@ -19970,6 +22272,9 @@ React.createElement("div", {
             ),
 
             // ═══ WATER BUDGET  -  Live Data Panel ═══
+            ),
+
+            wcSection === 'data' && React.createElement("div", { className: "wc-section-body", role: "region", "aria-label": "What the data shows" },
             React.createElement("div", { role: "status", "aria-live": "polite", "aria-atomic": "true", className: "wc-focus-secondary rounded-xl p-3 mb-3 border " + (isDark ? "bg-slate-950/60 border-slate-800/50 backdrop-blur-md" : "bg-gradient-to-r from-slate-50 to-sky-50 border-slate-400 shadow-sm") },
               React.createElement("div", { className: "flex items-center gap-2 mb-2" },
                 React.createElement("span", { className: "text-base" }, "\uD83D\uDCCA"),
@@ -20018,27 +22323,27 @@ React.createElement("div", {
               React.createElement("div", { className: "wc-signal-dashboard-head" },
                 React.createElement("div", { className: "wc-signal-dashboard-title" },
                   React.createElement("span", { "aria-hidden": "true" }, "◒"),
-                  React.createElement("strong", { id: "wcSignalDashboardTitle" }, "Water Budget Dashboard"),
-                  React.createElement("span", null, "LIVE SIGNALS")
+                  React.createElement("strong", { id: "wcSignalDashboardTitle" }, "What the model is showing"),
+                  React.createElement("span", null, "LIVE COMPARISON")
                 ),
                 React.createElement("span", { className: "wc-signal-focus-chip", "aria-label": "Focused stage: " + currentStageLabel }, "Focus · " + currentStageLabel)
               ),
-              React.createElement("p", { className: "wc-signal-dashboard-copy" }, "Watch the same controls reshape relative storage signals and transfer drivers. This is a normalized teaching model, not measured water volume or a forecast."),
-              React.createElement("div", { className: "wc-signal-driver", role: "note", "data-wc-signal-driver": wcSignalDriver.key, "aria-label": "Current modeled driver: " + wcSignalDriver.label + ". Relative signal " + wcSignalDriver.value + " out of 100. " + wcSignalDriver.detail },
-                React.createElement("span", { className: "wc-signal-driver-kicker" }, "Current driver"),
+              React.createElement("p", { className: "wc-signal-dashboard-copy" }, "These bars are a simple 0-100 comparison of where water is stored and what is moving it. They are teaching cues, not measured water amounts or a forecast."),
+              React.createElement("div", { className: "wc-signal-driver", role: "note", "data-wc-signal-driver": wcSignalDriver.key, "aria-label": "Current modeled driver: " + wcSignalDriver.label + ". Teaching comparison " + wcSignalDriver.value + " out of 100. " + wcSignalDriver.detail },
+                React.createElement("span", { className: "wc-signal-driver-kicker" }, "What matters most now"),
                 React.createElement("strong", null, wcSignalDriver.label),
                 React.createElement("span", { className: "wc-signal-driver-value" }, wcSignalDriver.value + "/100"),
                 React.createElement("span", { className: "wc-signal-driver-copy" }, wcSignalDriver.detail)
               ),
               React.createElement("div", { className: "wc-signal-grid" },
-                React.createElement("div", { className: "wc-signal-bars", role: "list", "aria-label": "Relative reservoir signals" },
+                React.createElement("div", { className: "wc-signal-bars", role: "list", "aria-label": "Water storage comparisons" },
                   wcSignalReservoirs.map(function(reservoir) {
                     return React.createElement("div", {
                       key: reservoir.key,
                       className: "wc-signal-bar",
                       "data-signal-focus": reservoir.key === wcSignalDriver.key ? "true" : undefined,
                       role: "listitem",
-                      "aria-label": reservoir.label + ": relative teaching signal " + reservoir.value + " out of 100; not a measured volume"
+                      "aria-label": reservoir.label + ": teaching comparison " + reservoir.value + " out of 100; not a measured volume"
                     },
                       React.createElement("div", { className: "wc-signal-bar-head" },
                         React.createElement("span", null, reservoir.label),
@@ -20047,11 +22352,11 @@ React.createElement("div", {
                       React.createElement("div", {
                         className: "wc-signal-track",
                         role: "progressbar",
-                        "aria-label": reservoir.label + " relative teaching signal",
+                        "aria-label": reservoir.label + " teaching comparison",
                         "aria-valuemin": 0,
                         "aria-valuemax": 100,
                         "aria-valuenow": reservoir.value,
-                        "aria-valuetext": reservoir.value + " out of 100 relative teaching signal; not a measured volume"
+                        "aria-valuetext": reservoir.value + " out of 100 teaching comparison; not a measured volume"
                       }, React.createElement("span", { style: { width: reservoir.value + "%" } }))
                     );
                   })
@@ -20063,8 +22368,8 @@ React.createElement("div", {
                     "aria-labelledby": "wcSignalChartTitle wcSignalChartDesc",
                     preserveAspectRatio: "xMidYMid meet"
                   },
-                    React.createElement("title", { id: "wcSignalChartTitle" }, "Water-cycle transfer driver signals"),
-                    React.createElement("desc", { id: "wcSignalChartDesc" }, "Three relative teaching signals compare energy, surface flow, and storage from surface water through the atmosphere and land back toward return flow. The vertical marker identifies the current modeled stage: " + wcSignalChartLabels[wcSignalChartStageIndex] + "."),
+                    React.createElement("title", { id: "wcSignalChartTitle" }, "Water-cycle teaching comparisons"),
+                    React.createElement("desc", { id: "wcSignalChartDesc" }, "Three teaching comparisons show energy, surface flow, and storage from surface water through the atmosphere and land back toward return flow. The vertical marker identifies the current modeled stage: " + wcSignalChartLabels[wcSignalChartStageIndex] + "."),
                     [25, 50, 75].map(function(gridValue) {
                       return React.createElement("line", {
                         key: "grid-" + gridValue,
@@ -20086,7 +22391,7 @@ React.createElement("div", {
                         textAnchor: "end"
                       }, String(axisValue));
                     }),
-                    React.createElement("text", { className: "wc-signal-axis-label", x: 10, y: 86, transform: "rotate(-90 10 86)", textAnchor: "middle" }, "Relative signal"),
+                    React.createElement("text", { className: "wc-signal-axis-label", x: 10, y: 86, transform: "rotate(-90 10 86)", textAnchor: "middle" }, "Teaching comparison"),
                     React.createElement("line", { className: "wc-signal-stage-marker", "aria-hidden": "true", x1: wcSignalChartX(wcSignalChartStageIndex), x2: wcSignalChartX(wcSignalChartStageIndex), y1: wcSignalChartPad.top, y2: wcSignalChartHeight - wcSignalChartPad.bottom }),
                     React.createElement("circle", { className: "wc-signal-stage-marker-dot", "aria-hidden": "true", cx: wcSignalChartX(wcSignalChartStageIndex), cy: wcSignalChartPad.top + 1, r: 4 }),
                     React.createElement("text", { className: "wc-signal-stage-marker-label", "aria-hidden": "true", x: wcSignalChartX(wcSignalChartStageIndex), y: 11, textAnchor: "middle" }, wcSignalChartLabels[wcSignalChartStageIndex]),
@@ -20130,6 +22435,9 @@ React.createElement("div", {
               }, !wcScenarioBaseline ? "Set baseline + tune" : "Tune one control")
             ),
 
+            ),
+
+            wcSection === 'check' && React.createElement("div", { className: "wc-section-body", role: "region", "aria-label": "Check yourself" },
             React.createElement("div", {
               className: "wc-focus-secondary flex items-center gap-2 mb-2 flex-wrap",
               role: "region",
@@ -20442,6 +22750,8 @@ React.createElement("div", {
                 )
               );
             })(),
+
+            ),
 
             React.createElement("button", { "aria-label": t('stem.watercycle.snapshot', "Snapshot"), onClick: () => { setToolSnapshots(prev => [...prev, { id: 'wc-' + Date.now(), tool: 'waterCycle', label: sel ? sel.label : t('stem.tools_menu.water_cycle'), data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "wc-focus-secondary mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none" }, t('stem.watercycle.snapshot_2', "\uD83D\uDCF8 Snapshot"))
 

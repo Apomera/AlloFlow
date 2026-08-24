@@ -5,6 +5,14 @@
   var st = document.createElement('style');
   st.id = 'allo-stem-motion-reduce-css';
   st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
+  // Universal keyboard-focus + reduced-motion floor for EVERY tool (2026-08-23).
+  // 8 of the 20 tools reviewed shipped with no :focus-visible style at all and 3 with
+  // no prefers-reduced-motion handling; per-tool fixes kept regressing, so the floor
+  // lives here on the host shell that wraps all of them. currentColor keeps the ring
+  // legible on light, dark and contrast substrates alike. Tools that define their own
+  // richer focus styles still win: theirs load later and at higher specificity.
+  st.textContent += '[data-stem-tool-shell] :is(button,a,input,select,textarea,summary,[role=tab],[role=button],[role=slider],[tabindex]):focus-visible{outline:3px solid currentColor;outline-offset:2px}' +
+    '@media (prefers-reduced-motion:reduce){[data-stem-tool-shell] *,[data-stem-tool-shell] *::before,[data-stem-tool-shell] *::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}';
   if (document.head) document.head.appendChild(st);
 })();
 

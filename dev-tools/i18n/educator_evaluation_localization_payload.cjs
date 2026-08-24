@@ -78,10 +78,6 @@ module.exports = [
     "english": "4 · Annual archive inventory and restore rehearsal"
   },
   {
-    "key": "educator_evaluation.4px_solid_121zz6w",
-    "english": "4px solid "
-  },
-  {
     "key": "educator_evaluation.5_enable_drive_api_v3_1vh82a8",
     "english": "5. Enable Drive API v3"
   },
@@ -306,18 +302,6 @@ module.exports = [
     "english": "Advanced workspace options · AI reflection and custom rubric"
   },
   {
-    "key": "educator_evaluation.ae_obs_ack_1owkxjf",
-    "english": "ae-obs-ack-"
-  },
-  {
-    "key": "educator_evaluation.ae_tab_yr2u0k",
-    "english": "ae-tab-"
-  },
-  {
-    "key": "educator_evaluation.ae_walk_ack_19j5d5y",
-    "english": "ae-walk-ack-"
-  },
-  {
     "key": "educator_evaluation.after_finalized_cycles_sheag8",
     "english": "after finalized cycles."
   },
@@ -352,22 +336,6 @@ module.exports = [
   {
     "key": "educator_evaluation.all_statuses_u1q98u",
     "english": "All statuses"
-  },
-  {
-    "key": "educator_evaluation.alloflow_before_import_5acnma",
-    "english": "alloflow-before-import-"
-  },
-  {
-    "key": "educator_evaluation.alloflow_damaged_workspace_80kgpe",
-    "english": "alloflow-damaged-workspace-"
-  },
-  {
-    "key": "educator_evaluation.alloflow_emergency_backup_xe9kd",
-    "english": "alloflow-emergency-backup-"
-  },
-  {
-    "key": "educator_evaluation.alloflow_evaluation_1rx8rx5",
-    "english": "alloflow-evaluation-"
   },
   {
     "key": "educator_evaluation.alloflow_evaluation_share_helper_1gddc6a",
@@ -1734,32 +1702,12 @@ module.exports = [
     "english": "Evaluation overview"
   },
   {
-    "key": "educator_evaluation.evaluation_packet_10n29e1",
-    "english": "evaluation-packet-"
-  },
-  {
-    "key": "educator_evaluation.evaluation_response_1964s9o",
-    "english": "evaluation-response-"
-  },
-  {
-    "key": "educator_evaluation.evaluation_rubric_mxt02e",
-    "english": "evaluation-rubric-"
-  },
-  {
-    "key": "educator_evaluation.evaluation_status_12p2q0f",
-    "english": "evaluation-status-"
-  },
-  {
     "key": "educator_evaluation.evaluation_status_counts_198dv4l",
     "english": "Evaluation status counts"
   },
   {
     "key": "educator_evaluation.evaluation_status_csv_exported_8n3zje",
     "english": "Evaluation status CSV exported"
-  },
-  {
-    "key": "educator_evaluation.evaluation_summary_5hcwa5",
-    "english": "evaluation-summary-"
   },
   {
     "key": "educator_evaluation.evaluation_workspace_sections_bfw4o2",
@@ -2220,10 +2168,6 @@ module.exports = [
   {
     "key": "educator_evaluation.grade_subject_role_h3sbnw",
     "english": "Grade / subject / role"
-  },
-  {
-    "key": "educator_evaluation.growth_snapshot_1j4901g",
-    "english": "growth-snapshot-"
   },
   {
     "key": "educator_evaluation.growth_snapshot_formative_1knugio",

@@ -24,6 +24,33 @@ const registryBlock = () => {
   return SOURCE.slice(start, end);
 };
 
+describe('teacher guide screenshots', () => {
+  const CHAPTER_DIR = path.join(ROOT, 'docs', 'teacher-guide', 'chapters');
+  const chapters = fs.readdirSync(CHAPTER_DIR).filter((f) => f.endsWith('.md'));
+  const images = [];
+  for (const file of chapters) {
+    const text = fs.readFileSync(path.join(CHAPTER_DIR, file), 'utf8');
+    for (const m of text.matchAll(/!\[([^\]]*)\]\(([^)\s]+)(?:\s+"[^"]*")?\)/g)) images.push({ file, alt: m[1], src: m[2] });
+  }
+
+  it('references only images that exist on disk', () => {
+    expect(images.length).toBeGreaterThan(30);
+    const missing = images
+      .filter((img) => !fs.existsSync(path.join(CHAPTER_DIR, img.src)))
+      .map((img) => img.file + ' -> ' + img.src);
+    expect(missing).toEqual([]);
+  });
+
+  it('gives every screenshot alt text a screen reader can use', () => {
+    // A screenshot with a filename-shaped or one-word alt is decoration pretending
+    // to be content; these are instructional images and must describe the screen.
+    const weak = images
+      .filter((img) => img.alt.trim().length < 40 || /\.(png|jpg)$/i.test(img.alt.trim()))
+      .map((img) => img.file + ': "' + img.alt.slice(0, 40) + '"');
+    expect(weak).toEqual([]);
+  });
+});
+
 describe('tool catalog launch links', () => {
   const CATALOG = read('tool-catalog-data.js');
   const REDIRECTS = read('_redirects');
@@ -48,6 +75,44 @@ describe('tool catalog launch links', () => {
     expect(launches).toBeGreaterThan(10);
     // Primary action first, then a separator, then the details link.
     expect(REFERENCE).toMatch(/tool-reference-card__launch[^<]*>Open the tool<\/a><span aria-hidden="true"> · <\/span><a/);
+  });
+});
+
+describe('promotional site link integrity', () => {
+  const REDIRECTS = read('_redirects');
+  const slugs = new Set([...REDIRECTS.matchAll(/^\/([a-z0-9-]+) \/app\/\?tool=/gm)].map((m) => m[1]));
+  const pages = fs.readdirSync(ROOT).filter((f) => f.endsWith('.html'));
+
+  it('never links a tool by bare slug, which only resolves on Cloudflare', () => {
+    // GitHub Pages ignores _redirects entirely, so href="water-cycle" is a 404
+    // on the promotional site. This has shipped broken twice: once on the home
+    // page "Try one tool" cards, once on every "Open instantly" button in the
+    // tool catalog. Absolute CDN URLs work on both hosts.
+    const offenders = [];
+    for (const page of pages) {
+      const html = fs.readFileSync(path.join(ROOT, page), 'utf8');
+      for (const m of html.matchAll(/href="([a-z0-9-]+)"/g)) {
+        if (slugs.has(m[1])) offenders.push(page + ' -> ' + m[1]);
+      }
+    }
+    expect(offenders).toEqual([]);
+  });
+
+  it('resolves every relative link to a file that exists', () => {
+    const missing = [];
+    for (const page of pages) {
+      const html = fs.readFileSync(path.join(ROOT, page), 'utf8');
+      for (const m of html.matchAll(/href="([^"]+)"/g)) {
+        const href = m[1];
+        if (/^(https?:|mailto:|#|data:|javascript:)/.test(href)) continue;
+        // Strip fragment and query before resolving.
+        const file = href.split('#')[0].split('?')[0];
+        if (!file || file.includes("' +")) continue;
+        const target = path.resolve(ROOT, file);
+        if (!fs.existsSync(target) && !fs.existsSync(target + '.html')) missing.push(page + ' -> ' + href);
+      }
+    }
+    expect(missing).toEqual([]);
   });
 });
 

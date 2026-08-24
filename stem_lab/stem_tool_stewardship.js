@@ -1037,7 +1037,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
   }
 
   window.StemLab.registerTool('stewardshipHub', {
-    icon: '🌍',
+    icon: '\u267B\uFE0F',
     label: 'Environmental Stewardship Campaigns',
     desc: 'Cross-campaign launcher across multiple regions and biomes. 5 deep Maine campaigns plus 10 cross-region scenarios across all five mechanic families: fire (Yarralin Australia, Karuk Northern California), conservation (Yellowstone wolves, Akagera Rwanda lions), public health (Mumbai dengue, Liberia 2014 Ebola), watershed (Klamath River, Murray–Darling Basin), climate (Marshall Islands atolls, Bangladesh delta). Same universal mechanics taught through grounded regional case studies. Family Pairing Insights unlock as you complete Maine + cross-region scenarios in the same mechanic family.',
     color: 'emerald',

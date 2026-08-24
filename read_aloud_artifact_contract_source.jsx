@@ -497,7 +497,7 @@ const ReadAloudArtifactContract = (() => {
 
     function makePersonaCandidate(input, options, errors) {
         const limits = limitsFrom(options);
-        strictKeys(input, ['artifactId', 'sessionId', 'title', 'language', 'persona', 'messages'], '', errors);
+        strictKeys(input, ['artifactId', 'sessionId', 'title', 'language', 'persona', 'messages', 'questionCraft'], '', errors);
         const sessionId = readStableId(input.sessionId, 'sessionId', errors);
         const artifactId = input.artifactId == null
             ? stableIdFromParts('private-persona-session-audio', [sessionId || 'missing'])
@@ -512,6 +512,28 @@ const ReadAloudArtifactContract = (() => {
             resourceId: readStableId(personaInput.resourceId, 'persona.resourceId', errors, false),
             name: readText(personaInput.name == null ? '' : personaInput.name, 'persona.name', errors, { required: false, max: 160 }),
         };
+        // Optional question-craft tally (2026-08-23): how the student sourced
+        // their interview questions. Bounded integers; unknown keys rejected.
+        let questionCraft = null;
+        if (input.questionCraft != null) {
+            if (!isPlainObject(input.questionCraft)) {
+                errors.push(issue('invalid-question-craft', 'questionCraft', 'questionCraft must be an object when present.'));
+            } else if (strictKeys(input.questionCraft, ['good', 'neutral', 'poor', 'coached', 'freeform'], 'questionCraft', errors)) {
+                const counts = {};
+                let craftValid = true;
+                ['good', 'neutral', 'poor', 'coached', 'freeform'].forEach((kind) => {
+                    const raw = input.questionCraft[kind];
+                    const value = raw == null ? 0 : Number(raw);
+                    if (!Number.isInteger(value) || value < 0 || value > 999) {
+                        craftValid = false;
+                        errors.push(issue('invalid-question-craft-count', 'questionCraft.' + kind, 'questionCraft counts must be integers from 0 to 999.'));
+                    } else {
+                        counts[kind] = value;
+                    }
+                });
+                if (craftValid) questionCraft = counts;
+            }
+        }
         const budget = { totalAudioBytes: 0, audioClips: 0 };
         const messageIds = new Set();
         const chunkIds = new Set();
@@ -588,7 +610,9 @@ const ReadAloudArtifactContract = (() => {
             language,
             privacy: clonePolicy(PERSONA_PRIVACY),
             persona,
-            session: { sessionId: sessionId || '', messages },
+            session: questionCraft
+                ? { sessionId: sessionId || '', messages, questionCraft }
+                : { sessionId: sessionId || '', messages },
             transcript: {
                 format: 'plain-text',
                 text: transcriptText,
@@ -657,7 +681,7 @@ const ReadAloudArtifactContract = (() => {
             }, options, errors);
             validateTranscript(input.transcript, candidate.transcript, type, errors);
         } else if (type === TYPES.PERSONA_SESSION) {
-            if (!strictKeys(input.session, ['sessionId', 'messages'], 'session', errors)) input = Object.assign({}, input, { session: {} });
+            if (!strictKeys(input.session, ['sessionId', 'messages', 'questionCraft'], 'session', errors)) input = Object.assign({}, input, { session: {} });
             if (!policiesEqual(input.privacy, PERSONA_PRIVACY)) {
                 errors.push(issue('persona-artifact-must-remain-private', 'privacy', 'Persona session artifacts must remain private, local-only, and non-shareable.'));
             }
@@ -668,6 +692,7 @@ const ReadAloudArtifactContract = (() => {
                 language: input.language,
                 persona: input.persona,
                 messages: input.session.messages,
+                questionCraft: input.session.questionCraft,
             }, options, errors);
             validateTranscript(input.transcript, candidate.transcript, type, errors);
         }

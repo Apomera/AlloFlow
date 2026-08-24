@@ -128,7 +128,7 @@ window.StemLab = window.StemLab || {
   ];
 
   window.StemLab.registerTool('inequality', {
-    icon: '\uD83C\uDFA8', label: 'Inequality Grapher',
+    icon: '\u2265', label: 'Inequality Grapher',
     desc: 'Visualize inequalities on a number line with notation, quiz, solver, badges & AI tutor.',
     color: 'fuchsia', category: 'math',
     questHooks: [

@@ -21,7 +21,9 @@ const MissionReportCard = React.memo(({ adventureState, globalLevel, onClose, on
   const { stats, climax, xp, level } = adventureState;
   const safeStats = stats || { successes: 0, failures: 0, decisions: 0, partials: 0, conceptsFound: [] };
   const totalDecisions = Math.max(1, safeStats.decisions);
-  const efficiency = Math.round((safeStats.successes / totalDecisions) * 100);
+  // Partial credit counts (2026-08-23): partials sat in the DENOMINATOR only, so a partial
+  // scored identically to a misconception. Half credit matches the 3-band assessment's intent.
+  const efficiency = Math.round(((safeStats.successes + (safeStats.partials || 0) * 0.5) / totalDecisions) * 100);
   const proficiency = Math.max(0, Math.min(100, Number(climax?.masteryScore) || 0));
   // Honest framing (2026-07-16): "Proficiency Rating"/"Mastery" overclaimed what an
   // AI-scored story number can support. New keys (old keys kept so lang packs are
@@ -67,6 +69,11 @@ const MissionReportCard = React.memo(({ adventureState, globalLevel, onClose, on
                 <p className="text-[10px] text-slate-400 mt-1.5 leading-snug">
                     {t('adventure.mission_report.ai_estimate_note') || 'Estimated by AI from story decisions — a reflection prompt, not a formal assessment.'}
                 </p>
+                {Number(climax?.attempts) > 0 && (
+                    <p className="text-[10px] text-slate-300 mt-1 font-bold">
+                        {(t('adventure.mission_report.climax_attempts') || 'Final challenge attempts') + ': ' + climax.attempts}
+                    </p>
+                )}
             </div>
             {/* 3-band decision breakdown (2026-07-16): partial_success used to be
                 invisible — counted in neither successes nor failures, silently
@@ -86,7 +93,7 @@ const MissionReportCard = React.memo(({ adventureState, globalLevel, onClose, on
                 </div>
             </div>
             <div className="grid grid-cols-2 gap-4 relative z-20">
-                <div className="bg-slate-800/50 p-4 rounded-xl border border-slate-700 flex flex-col items-center justify-center">
+                <div className="bg-slate-800/50 p-4 rounded-xl border border-slate-700 flex flex-col items-center justify-center" title={t('adventure.mission_report.efficiency_formula') || 'Strong moves count fully, partial credit counts half, out of all decisions.'}>
                     <div className="flex items-center gap-2 mb-2 text-yellow-400">
                         <Zap size={16} aria-hidden="true" /> <span className="text-[11px] font-bold uppercase">{t('adventure.mission_report.efficiency')}</span>
                     </div>
@@ -149,79 +156,10 @@ const MissionReportCard = React.memo(({ adventureState, globalLevel, onClose, on
 });
 
 // ═══ playAdventureEventSound (lines 9264-9336) ═══
-const playAdventureEventSoundLegacy = (type) => {
-  const ctx = getGlobalAudioContext();
-  if (!ctx) return;
-  if (ctx.state === 'suspended') ctx.resume();
-  const now = ctx.currentTime;
-  const playTone = (wave, freq, startTime, duration, vol = 0.1) => {
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.type = wave;
-    osc.frequency.setValueAtTime(freq, startTime);
-    gain.gain.setValueAtTime(vol, startTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.start(startTime);
-    osc.stop(startTime + duration);
-  };
-  switch (type) {
-    case 'transition':
-      const tNoise = ctx.createBufferSource();
-      const tBuffer = ctx.createBuffer(1, ctx.sampleRate * 0.5, ctx.sampleRate);
-      const tData = tBuffer.getChannelData(0);
-      for(let i=0; i<tBuffer.length; i++) tData[i] = Math.random() * 2 - 1;
-      tNoise.buffer = tBuffer;
-      const tFilter = ctx.createBiquadFilter();
-      tFilter.type = 'lowpass';
-      tFilter.frequency.setValueAtTime(200, now);
-      tFilter.frequency.linearRampToValueAtTime(1200, now + 0.2);
-      const tGain = ctx.createGain();
-      tGain.gain.setValueAtTime(0.05, now);
-      tGain.gain.linearRampToValueAtTime(0, now + 0.4);
-      tNoise.connect(tFilter);
-      tFilter.connect(tGain);
-      tGain.connect(ctx.destination);
-      tNoise.start(now);
-      break;
-    case 'critical_success':
-      playTone('square', 523.25, now, 0.4);
-      playTone('square', 659.25, now + 0.1, 0.4);
-      playTone('square', 783.99, now + 0.2, 0.4);
-      playTone('square', 1046.50, now + 0.3, 0.8, 0.15);
-      break;
-    case 'success':
-      playTone('sine', 880, now, 0.3);
-      playTone('sine', 1760, now + 0.1, 0.4);
-      break;
-    case 'failure':
-      playTone('sawtooth', 100, now, 0.4, 0.15);
-      playTone('sawtooth', 92, now, 0.4, 0.15);
-      break;
-    case 'damage':
-      const dOsc = ctx.createOscillator();
-      const dGain = ctx.createGain();
-      dOsc.type = 'sawtooth';
-      dOsc.frequency.setValueAtTime(150, now);
-      dOsc.frequency.exponentialRampToValueAtTime(40, now + 0.2);
-      dGain.gain.setValueAtTime(0.2, now);
-      dGain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
-      dOsc.connect(dGain);
-      dGain.connect(ctx.destination);
-      dOsc.start(now);
-      dOsc.stop(now + 0.2);
-      break;
-    case 'item_get':
-      playTone('sine', 1500, now, 0.1, 0.05);
-      playTone('sine', 2000, now + 0.1, 0.1, 0.05);
-      playTone('sine', 2500, now + 0.2, 0.3, 0.05);
-      break;
-    case 'decision_select':
-      playTone('triangle', 800, now, 0.05, 0.05);
-      break;
-  }
-};
+// (2026-08-23) playAdventureEventSoundLegacy REMOVED — it was dead code (no caller anywhere,
+// module or monolith) and a trap: it contained its own 'success'/'failure' oscillator recipes,
+// so a future session hunting "why does success sound wrong" could edit the wrong function.
+// The live cues are in playAdventureEventSound below (fixed-tonic resolved cadences, 2026-08-23).
 
 // ═══ playGenerativeSoundscape (lines 9337-9498) ═══
 const playGenerativeSoundscapeLegacy = (ctx, dest, params) => {
@@ -1042,6 +980,7 @@ const getAdventureAudioEngine = () => {
     const stopLayer = (layer, fadeSeconds = 1.2) => {
         if (!layer || layer.stopping) return;
         layer.stopping = true;
+        if (layer.autoStopTimer) { clearTimeout(layer.autoStopTimer); layer.autoStopTimer = null; }
         rampGain(layer.gain, 0.0001, fadeSeconds);
         layer.stopTimer = setTimeout(() => {
             stopAdventureAudioNodes(layer.nodes);
@@ -1109,6 +1048,17 @@ const getAdventureAudioEngine = () => {
         if (currentAmbience && currentAmbience.signature === signature && !currentAmbience.stopping) {
             currentAmbience.volume = volume;
             rampGain(currentAmbience.gain, volume, 0.45);
+            // Re-playing the same scene refreshes (or newly imposes) the declared lifetime —
+            // an early-returned layer must not outlive the bound its caller asked for.
+            const refreshMs = Number(options.autoStopMs);
+            if (Number.isFinite(refreshMs) && refreshMs > 0) {
+                if (currentAmbience.autoStopTimer) clearTimeout(currentAmbience.autoStopTimer);
+                const held = currentAmbience;
+                held.autoStopTimer = setTimeout(() => {
+                    if (currentAmbience === held && !held.stopping) stopAmbience(2.2);
+                    else if (!held.stopping) stopLayer(held, 2.2);
+                }, refreshMs);
+            }
             return currentAmbience;
         }
         const oldLayer = currentAmbience;
@@ -1133,6 +1083,17 @@ const getAdventureAudioEngine = () => {
         currentAmbience = layer;
         rampGain(gain, volume, oldLayer ? 1.7 : 1.05);
         if (oldLayer) stopLayer(oldLayer, 1.8);
+        // Engine-level bound (2026-08-23, field report: a drone kept playing "perpetually" over a
+        // whole session). When the caller declares a lifetime, the LAYER enforces it — a leaked
+        // component, a missed cleanup, or any future caller that forgets to stop cannot leave an
+        // oscillator running. Belt to the component's braces; no autoStopMs = old behavior.
+        const autoStopMs = Number(options.autoStopMs);
+        if (Number.isFinite(autoStopMs) && autoStopMs > 0) {
+            layer.autoStopTimer = setTimeout(() => {
+                if (currentAmbience === layer && !layer.stopping) stopAmbience(2.2);
+                else if (!layer.stopping) stopLayer(layer, 2.2);
+            }, autoStopMs);
+        }
         return layer;
     };
 
@@ -1212,6 +1173,16 @@ const ADVENTURE_EVENT_SCALES = {
     dark: [110, 130.81, 146.83, 174.61, 207.65],
     tense: [110, 116.54, 130.81, 155.56, 174.61]
 };
+
+// ── Positive-reinforcement tonic (2026-08-23, Aaron's classroom feedback) ──────────────────
+// Success cues used to borrow the SCENE's atmosphere scale, so a good dice roll in a tense
+// scene rang out on a low semitone-cluster root and resolved nowhere. Reinforcement should
+// sound like reinforcement no matter the scene: positive cues (success / critical_success /
+// item_get) are now anchored on one fixed bright tonic and built from pure ratios (3/2 fifth,
+// 5/4 major third), ending ON the tonic — a conventional authentic cadence, the same cue every
+// time so students learn the association. Failure / damage / tension cues keep the scene's
+// darker language on purpose ("drums are good for some things").
+const ADVENTURE_REWARD_TONIC = 523.25; // C5
 
 const ADVENTURE_EVENT_ELEMENT_BANDS = {
     water: [170, 1100], rain: [500, 2400], ocean: [110, 900], nature: [700, 2600],
@@ -1365,15 +1336,24 @@ const playAdventureEventSound = (type) => {
             playSceneAccent(2, 0.1, 0.54, 0.011, variation === 0 ? 0.22 : -0.22);
             break;
         case 'critical_success': {
-            [1, 1.25, 1.5, 2].forEach((ratio, index) => tone({ wave: index === 3 ? 'sine' : materialWave === 'sine' ? 'triangle' : materialWave, frequency: eventRoot * ratio, start: index * 0.095, duration: 0.38 + index * 0.07, volume: index === 3 ? 0.065 : 0.045, pan: (index - 1.5) * 0.18 }));
-            playSceneAccent(2.5, 0.18, 0.62, 0.014, 0.22);
+            // Full authentic cadence: sol + ti (the dominant's pull) resolving into a rising
+            // C-major arpeggio that lands and RINGS on the octave, grounded by a soft low tonic
+            // pad. The leading tone is what makes the landing feel earned.
+            const doN = ADVENTURE_REWARD_TONIC;
+            tone({ frequency: doN * 3 / 4, duration: 0.14, volume: 0.034, pan: -0.18 });
+            tone({ wave: 'triangle', frequency: doN * 15 / 16, duration: 0.14, volume: 0.026, pan: 0.14 });
+            [[1, 0.16, 0.3, 0.048], [5 / 4, 0.27, 0.32, 0.044], [3 / 2, 0.38, 0.36, 0.046], [2, 0.5, 0.72, 0.06]]
+                .forEach(([ratio, start, duration, volume], index) => tone({ wave: index === 3 ? 'sine' : 'triangle', frequency: doN * ratio, start, duration, volume, pan: (index - 1.5) * 0.16 }));
+            tone({ frequency: doN / 2, start: 0.16, duration: 0.9, volume: 0.02 });
             break;
         }
         case 'success': {
-            const root = eventRoot;
-            tone({ frequency: root, duration: 0.32, volume: 0.046, pan: -0.12 });
-            tone({ wave: 'triangle', frequency: root * (variation === 1 ? 1.5 : 1.25), start: 0.085, duration: 0.4, volume: 0.042, pan: 0.12 });
-            playSceneAccent(2, 0.12, 0.5, 0.012, -0.2);
+            // sol → do: the dominant pickup resolves onto the tonic, which rings, with a quiet
+            // pure major third underneath. Two beats, unmistakably "that went well".
+            const doN = ADVENTURE_REWARD_TONIC;
+            tone({ frequency: doN * 3 / 4, duration: 0.16, volume: 0.04, pan: variation === 1 ? 0.1 : -0.1 });
+            tone({ frequency: doN, start: 0.14, duration: 0.5, volume: 0.05, pan: 0.08 });
+            tone({ wave: 'triangle', frequency: doN * 5 / 4, start: 0.2, duration: 0.42, volume: 0.02, pan: 0.16 });
             break;
         }
         case 'failure': {
@@ -1388,9 +1368,10 @@ const playAdventureEventSound = (type) => {
             tone({ wave: 'sawtooth', frequency: Math.max(60, eventRoot * 0.75), endFrequency: Math.max(35, eventRoot * 0.24), duration: 0.24, volume: 0.042 });
             break;
         case 'item_get': {
-            const root = Math.max(784, eventRoot * 4);
-            [1, 1.25, 1.5].forEach((ratio, index) => tone({ frequency: root * ratio, start: index * 0.075, duration: 0.2 + index * 0.08, volume: 0.026, pan: (index - 1) * 0.3 }));
-            playSceneAccent(4, 0.12, 0.4, 0.009, 0.18);
+            // do-mi-sol-do′ sparkle an octave up — a complete major arpeggio, so even the small
+            // reward resolves instead of trailing off mid-air.
+            const root = ADVENTURE_REWARD_TONIC * 2;
+            [1, 5 / 4, 3 / 2, 2].forEach((ratio, index) => tone({ frequency: root * ratio, start: index * 0.07, duration: 0.16 + index * 0.07, volume: index === 3 ? 0.03 : 0.024, pan: (index - 1.5) * 0.22 }));
             break;
         }
         case 'decision_select':
@@ -1398,7 +1379,7 @@ const playAdventureEventSound = (type) => {
             break;
     }
     if (playedAnyVoice) {
-        const focusDuration = ({ transition: 620, success: 520, critical_success: 950, failure: 680, damage: 430, item_get: 560 })[type] || 0;
+        const focusDuration = ({ transition: 620, success: 700, critical_success: 1300, failure: 680, damage: 430, item_get: 560 })[type] || 0;
         if (focusDuration) engine.focusEvent(eventPriority, focusDuration);
     }
 };
@@ -1472,22 +1453,66 @@ const ClimaxProgressBar = React.memo(({ climaxState }) => {
 });
 // ═══ AdventureAmbience (lines 9565-9642) ═══
 // ═══ playDiceSound + getD20Rotation (lines 10760-10811) ═══
+// ── Scene-bookend ambience (2026-08-23, Aaron's classroom feedback) ─────────────────────────
+// The old behavior held the generative bed for the ENTIRE scene (ducked under TTS, then ramped
+// back to full when speech ended). In class that reads as "the drone never stops", and students
+// need silence to focus on the text/TTS. New contract: ambience INTRODUCES a scene (swell in,
+// hold a few seconds, fade to silence) and the next scene's swell is the closing bookend of the
+// one before it. Between bookends: silence. TTS starting during the intro cuts it short — speech
+// always wins. Dice/XP/event SFX are untouched (sfx bus, separate path).
+const ADVENTURE_AMBIENCE_INTRO_HOLD_MS = 7000;   // swell + hold before the fade begins
+const ADVENTURE_AMBIENCE_OUTRO_FADE_S = 3.5;     // gentle fade, not a cut
+
 const AdventureAmbience = React.memo(({ sceneText, soundParams, themeSeed, active, volume = 0.3 }) => {
     const engineRef = useRef(null);
+    const lastSceneRef = useRef(null);   // scene identity: bookend fires once per scene, not per re-render
+    const holdTimerRef = useRef(null);
 
     useEffect(() => {
         const engine = engineRef.current || getAdventureAudioEngine();
         engineRef.current = engine;
         if (!active || !sceneText) {
+            lastSceneRef.current = null;
+            if (holdTimerRef.current) { clearTimeout(holdTimerRef.current); holdTimerRef.current = null; }
             engine.setEnabled(false);
             engine.stopAmbience(0.65);
             return;
         }
         engine.setEnabled(true);
-        engine.playAmbience(soundParams, { sceneText, themeSeed, volume });
+        // Re-renders of the SAME scene (state churn recreates currentScene/soundParams identity)
+        // must not restart the bookend — the mid-scene silence is the whole point.
+        if (lastSceneRef.current === sceneText) return;
+        lastSceneRef.current = sceneText;
+        if (holdTimerRef.current) clearTimeout(holdTimerRef.current);
+        // autoStopMs: the engine enforces the lifetime even if this component leaks — the exact
+        // "kept going perpetually" failure this redesign exists to make impossible.
+        engine.playAmbience(soundParams, {
+            sceneText, themeSeed, volume,
+            autoStopMs: ADVENTURE_AMBIENCE_INTRO_HOLD_MS + ADVENTURE_AMBIENCE_OUTRO_FADE_S * 1000 + 4000,
+        });
+        holdTimerRef.current = setTimeout(() => {
+            holdTimerRef.current = null;
+            engine.stopAmbience(ADVENTURE_AMBIENCE_OUTRO_FADE_S);
+        }, ADVENTURE_AMBIENCE_INTRO_HOLD_MS);
     }, [sceneText, soundParams, themeSeed, active, volume]);
 
+    // TTS beats ambience: if speech starts during the intro hold, fade out early instead of
+    // ducking-then-returning. Mount-scoped listener so same-scene effect re-runs can't drop it.
+    useEffect(() => {
+        const onSpeech = (event) => {
+            if (!event?.detail?.isPlaying) return;
+            if (holdTimerRef.current) {
+                clearTimeout(holdTimerRef.current);
+                holdTimerRef.current = null;
+                if (engineRef.current) engineRef.current.stopAmbience(1.3);
+            }
+        };
+        window.addEventListener('allo-speech-state', onSpeech);
+        return () => window.removeEventListener('allo-speech-state', onSpeech);
+    }, []);
+
     useEffect(() => () => {
+        if (holdTimerRef.current) { clearTimeout(holdTimerRef.current); holdTimerRef.current = null; }
         if (engineRef.current) {
             engineRef.current.setEnabled(false);
             engineRef.current.stopAmbience(0.45);
@@ -1612,6 +1637,7 @@ const AdventureAudioControls = React.memo(({ soundEnabled = true, t = key => key
                 <label className="mb-3 block text-xs font-bold" htmlFor="adventure-ambience-level">
                     <span className="mb-1 flex justify-between"><span>{translate('adventure.audio_ambience', 'Ambience')}</span><output>{ambiencePercent}%</output></span>
                     <input id="adventure-ambience-level" type="range" min="0" max="100" step="10" value={ambiencePercent} onChange={event => update({ ambience: Number(event.target.value) / 100 })} className="min-h-11 w-full accent-indigo-700" />
+                    <span className="mt-1 block text-[10px] font-normal leading-snug text-slate-600">{translate('adventure.audio_ambience_hint', 'Scene sound plays at the start of each scene, then fades out so reading and narration stay clear.')}</span>
                 </label>
                 <label className="mb-3 block text-xs font-bold" htmlFor="adventure-effects-level">
                     <span className="mb-1 flex justify-between"><span>{translate('adventure.audio_effects', 'Effects')}</span><output>{effectsPercent}%</output></span>
@@ -1661,8 +1687,8 @@ const AdventureAudioControls = React.memo(({ soundEnabled = true, t = key => key
                             <button type="button" disabled={!soundEnabled} onClick={startLabPreview} className="min-h-11 rounded-xl bg-violet-700 px-3 py-2 text-xs font-black text-white hover:bg-violet-800 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 focus-visible:ring-offset-2">{previewActive ? translate('adventure.audio_restart_preview', 'Restart preview') : translate('adventure.audio_start_preview', 'Preview ambience')}</button>
                             <button type="button" disabled={!previewActive} onClick={() => getAdventureAudioEngine().stopPreview(0.2)} className="min-h-11 rounded-xl border border-violet-400 bg-white px-3 py-2 text-xs font-black text-violet-900 hover:bg-violet-100 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700">{translate('adventure.audio_stop_preview', 'Stop preview')}</button>
                         </div>
-                        <div role="group" aria-label={translate('adventure.audio_event_previews', 'Event cue previews')} className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-                            {[['transition', 'Transition'], ['success', 'Success'], ['failure', 'Failure'], ['item_get', 'Item']].map(([type, text]) => <button key={type} type="button" disabled={!soundEnabled} onClick={() => previewLabEvent(type)} className="min-h-11 rounded-lg border border-violet-300 bg-white px-2 py-2 text-[11px] font-bold text-violet-900 hover:bg-violet-100 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700">{text}</button>)}
+                        <div role="group" aria-label={translate('adventure.audio_event_previews', 'Event cue previews')} className="grid grid-cols-2 gap-2 sm:grid-cols-5">
+                            {[['transition', 'Transition'], ['success', 'Success'], ['critical_success', 'Big win'], ['failure', 'Failure'], ['item_get', 'Item']].map(([type, text]) => <button key={type} type="button" disabled={!soundEnabled} onClick={() => previewLabEvent(type)} className="min-h-11 rounded-lg border border-violet-300 bg-white px-2 py-2 text-[11px] font-bold text-violet-900 hover:bg-violet-100 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700">{text}</button>)}
                         </div>
                         <div role="status" aria-live="polite" className="min-h-5 text-[11px] font-bold text-violet-900">{previewActive ? translate('adventure.audio_preview_active', 'Preview playing for up to 8 seconds.') : translate('adventure.audio_preview_idle', 'Preview stopped.')}</div>
                         <div className="rounded-lg border border-slate-300 bg-white p-2">

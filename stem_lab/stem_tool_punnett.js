@@ -1152,7 +1152,7 @@ window.StemLab = window.StemLab || {
   try { window.__punnettPure = { CHALLENGE_QS: CHALLENGE_QS, BATTLE_QS: BATTLE_QS, punnettRotateQuestion: punnettRotateQuestion }; } catch (_e) {}
 
   window.StemLab.registerTool('punnett', {
-    icon: '\uD83E\uDDEC', label: 'Punnett Square Lab',
+    icon: '\uD83D\uDC30', label: 'Punnett Square Lab',
     desc: 'Genetics lab: crosses, pedigrees, population genetics, DNA translation',
     color: 'violet', category: 'science',
     questHooks: [
@@ -2365,7 +2365,7 @@ window.StemLab = window.StemLab || {
                         h('p', { className: 'text-[10px] text-slate-500 mb-2' }, 'Each row is measured within the two son or two daughter outcomes.'),
                         [
                           { label: 'Affected sons', count: affectedSons, total: sons.length, color: '#dc2626' },
-                          { label: 'Unaffected sons', count: sons.length - affectedSons, total: sons.length, color: '#0284c7' },
+                          { label: 'Unaffected sons', count: sons.length - affectedSons, total: sons.length, color: '#0369a1' },
                           { label: 'Carrier daughters', count: carrierDaughters, total: daughters.length, color: '#7c3aed' },
                           { label: 'Affected daughters', count: affectedDaughters, total: daughters.length, color: '#dc2626' },
                           { label: 'Unaffected, non-carrier daughters', count: daughters.length - carrierDaughters - affectedDaughters, total: daughters.length, color: '#059669' }
@@ -2385,9 +2385,9 @@ window.StemLab = window.StemLab || {
                     : h('div', { className: 'rounded-xl border border-sky-200 bg-white p-3' },
                         h('h4', { className: 'text-xs font-black text-slate-800 mb-2' }, 'Genotype structure'),
                         [
-                          { label: 'Homozygous dominant', count: homoD, color: '#16a34a' },
-                          { label: 'Heterozygous', count: hetero, color: '#0284c7' },
-                          { label: 'Homozygous recessive', count: homoR, color: '#d97706' }
+                          { label: 'Homozygous dominant', count: homoD, color: '#166534' },
+                          { label: 'Heterozygous', count: hetero, color: '#0369a1' },
+                          { label: 'Homozygous recessive', count: homoR, color: '#92400e' }
                         ].map(function(item) {
                           return h('div', { key: item.label, className: 'mb-2 last:mb-0' },
                             h('div', { className: 'flex justify-between gap-2 text-[11px] mb-1' },

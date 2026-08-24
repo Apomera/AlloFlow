@@ -698,7 +698,7 @@ window.StemLab = window.StemLab || {
           rows.push(h('div', { key: 'vrow-' + ri, className: 'flex items-center gap-2' },
             visualSkipOn && h('div', { className: 'text-xs font-bold text-amber-700 font-mono w-12 text-right pr-1', style: { fontVariantNumeric: 'tabular-nums' } },
               (ri === 0 ? b : '+' + b),
-              h('span', { className: 'block text-[10px] text-amber-500' }, '=' + runningTotal)
+              h('span', { className: 'block text-[10px] text-amber-700' }, '=' + runningTotal)
             ),
             h('div', { className: 'flex', style: { gap: dotGap } }, dots)
           ));
@@ -867,7 +867,7 @@ window.StemLab = window.StemLab || {
             for (var rr = 0; rr < maxNum; rr++) { if (selectedPattern.cellMatches(rr, hc)) { colHasMatch = true; break; } }
           }
           headerRow.push(h('th', { key: 'h' + hc, scope: 'col',
-            className: 'w-8 h-8 text-xs font-bold ' + (colHasMatch ? 'text-white' : 'text-indigo-500'),
+            className: 'w-8 h-8 text-xs font-bold ' + (colHasMatch ? 'text-white' : 'text-indigo-700'),
             style: colHasMatch ? { backgroundColor: selectedPattern.accent } : null
           }, hc + 1));
         }
@@ -878,7 +878,7 @@ window.StemLab = window.StemLab || {
             for (var cc = 0; cc < maxNum; cc++) { if (selectedPattern.cellMatches(br, cc)) { rowHasMatch = true; break; } }
           }
           var cells = [h('td', { key: 'rh-' + br,
-            className: 'w-8 h-8 text-xs font-bold ' + (rowHasMatch ? 'text-white' : 'text-indigo-500'),
+            className: 'w-8 h-8 text-xs font-bold ' + (rowHasMatch ? 'text-white' : 'text-indigo-700'),
             style: rowHasMatch ? { backgroundColor: selectedPattern.accent } : null
           }, br + 1)];
           for (var bc = 0; bc < maxNum; bc++) {

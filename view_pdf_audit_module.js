@@ -3608,6 +3608,7 @@ function PdfAuditView(props) {
     fixIssuesList,
     generateAuditReportHtml,
     selectChunkVersion,
+    retireChunkState,
     getPdfPreviewHtml,
     imageReinsertionReport,
     insertBlockFilter,
@@ -3913,6 +3914,24 @@ function PdfAuditView(props) {
       });
     };
     const onChunkRefixed = onChunkFixed;
+    setHumanEditsAdopted(0);
+    setReviewFindingsLive(null);
+    setReviewDismissed({});
+    const onHumanEdit = (ev) => {
+      const detail = ev && ev.detail || {};
+      if (detail.documentEpoch !== pdfDocumentEpoch) return;
+      setHumanEditsAdopted(Number(detail.adopted) || 0);
+    };
+    const onReviewFindings = (ev) => {
+      const detail = ev && ev.detail || {};
+      if (detail.documentEpoch !== pdfDocumentEpoch) return;
+      setReviewFindingsLive({
+        passNumber: Number(detail.passNumber) || 0,
+        findings: Array.isArray(detail.findings) ? detail.findings : []
+      });
+    };
+    window.addEventListener("alloflow:remediation-human-edit", onHumanEdit);
+    window.addEventListener("alloflow:remediation-review-findings", onReviewFindings);
     window.addEventListener("alloflow:remediation-progress", onProgress);
     window.addEventListener("alloflow:chunk-session-start", onChunkSessionStart);
     try {
@@ -3924,6 +3943,8 @@ function PdfAuditView(props) {
     window.addEventListener("alloflow:chunk-fixed", onChunkFixed);
     window.addEventListener("alloflow:chunk-refixed", onChunkRefixed);
     return () => {
+      window.removeEventListener("alloflow:remediation-human-edit", onHumanEdit);
+      window.removeEventListener("alloflow:remediation-review-findings", onReviewFindings);
       window.removeEventListener("alloflow:remediation-progress", onProgress);
       window.removeEventListener("alloflow:chunk-session-start", onChunkSessionStart);
       window.removeEventListener("alloflow:chunk-progress", onChunkProgress);
@@ -4220,6 +4241,7 @@ function PdfAuditView(props) {
     if (document.visibilityState === "hidden" && !_hiddenSinceRef.current) _hiddenSinceRef.current = Date.now();
     return () => document.removeEventListener("visibilitychange", _onVis);
   }, [_remediationBusy]);
+  const _remediationInFlight = _remediationBusy || pdfAutoContinueRunning;
   const _oneClickOperationBusy = oneClickRemediationBusy || pdfAuditLoading || _remediationBusy || pdfAutoContinueRunning;
   const _auditModalOpenRef = useRef(false);
   useEffect(() => {
@@ -4980,6 +5002,10 @@ function PdfAuditView(props) {
   const [_appliedPalette, setAppliedPalette] = useState(null);
   const [_paletteBusy, setPaletteBusy] = useState(false);
   const [_paletteIntent, setPaletteIntent] = useState("");
+  const [_humanEditsAdopted, setHumanEditsAdopted] = useState(0);
+  const [_reviewFindingsLive, setReviewFindingsLive] = useState(null);
+  const [_reviewDismissed, setReviewDismissed] = useState({});
+  const [_watchLiveOpen, setWatchLiveOpen] = useState(false);
   const [_regionArmed, setRegionArmed] = useState(false);
   const _regionHandlerRef = useRef(null);
   const [_restyleProposals, setRestyleProposals] = useState(null);
@@ -9369,6 +9395,9 @@ Return ONLY JSON:
             _estimatedMinimumScore: Number.isFinite(project._estimatedMinimumScore) ? project._estimatedMinimumScore : Number.isFinite(project.estimatedMinimumScore) ? project.estimatedMinimumScore : null,
             _estimatedScoreBasis: project._estimatedScoreBasis || project.estimatedScoreBasis || null,
             _finalAuditRetryAvailable: !!project._finalAuditRetryAvailable,
+            _remediationThrottlePaused: !!project._remediationThrottlePaused,
+            _finalAuditThrottleDeferred: !!project._finalAuditThrottleDeferred,
+            _finalAuditIncompleteReason: project._finalAuditIncompleteReason || null,
             axeAudit: project.axeAudit || null,
             secondEngineAudit: project.secondEngineAudit || null,
             verificationCoverage: project.verificationCoverage || null,
@@ -9397,6 +9426,9 @@ Return ONLY JSON:
             issuesFixed: project.issuesFixed || 0,
             remainingIssues: project.remainingIssues != null ? project.remainingIssues : 0,
             autoFixPasses: project.autoFixPasses || 0,
+            // Collaboration provenance (2026-08-23): who-did-what survives the file.
+            humanEditsAdopted: Number(project.humanEditsAdopted) || 0,
+            reviewedFindings: project.reviewedFindings && typeof project.reviewedFindings === "object" ? project.reviewedFindings : null,
             _audioJobMeta: project._audioJobMeta || null,
             _translation: project._translation || null,
             _plainLanguage: project._plainLanguage || null
@@ -10855,7 +10887,7 @@ Return ONLY JSON:
           "aria-label": `Re-fix section ${chunk.index + 1}`
         },
         "\u{1F504} Re-fix"
-      ), !isRejected && !pdfFixLoading && !pdfAutoContinueRunning && /* @__PURE__ */ React.createElement(
+      ), !isRejected && !pdfFixLoading && /* @__PURE__ */ React.createElement(
         "button",
         {
           onClick: () => {
@@ -10880,10 +10912,11 @@ Return ONLY JSON:
             }
           },
           className: "text-[11px] bg-red-100 text-red-700 px-2 py-1 rounded-full font-bold hover:bg-red-200 transition-colors focus:ring-2 focus:ring-red-400",
+          title: t("pdf_audit.live_chunk.reject_title") || "Revert this section to the original text. Works while the loop is running: it adopts your choice at its next pass and will not revert it.",
           "aria-label": `Reject fix for section ${chunk.index + 1}, revert to original`
         },
         "\u2715 Reject"
-      ), isRejected && !pdfFixLoading && !pdfAutoContinueRunning && /* @__PURE__ */ React.createElement(
+      ), isRejected && !pdfFixLoading && /* @__PURE__ */ React.createElement(
         "button",
         {
           onClick: () => {
@@ -10928,14 +10961,69 @@ Return ONLY JSON:
         "aria-label": t("pdf_audit.live_chunk.clear_history_aria") || "Clear live review history"
       },
       "Clear history"
-    ))), pdfFixResult && /* @__PURE__ */ React.createElement("div", { className: "mt-4 bg-gradient-to-b from-white to-emerald-50 rounded-2xl border-2 border-emerald-300 p-5 space-y-4 animate-in slide-in-from-bottom duration-300" }, (() => {
-      const _v = _docPipeline && typeof _docPipeline.distributionVerdict === "function" ? _docPipeline.distributionVerdict(pdfFixResult, { targetScore: pdfTargetScore }) : null;
+    ))), (() => {
+      const _rfMapC = (engine, bucket) => (f) => ({ engine, bucket, id: f && f.id || "unknown-rule", description: f && f.description || "", nodes: f && f.nodes || 0, wcagCriteria: f && Array.isArray(f.wcagCriteria) ? f.wcagCriteria : [], helpUrl: f && f.helpUrl || "" });
+      const _rfEaAudit = pdfFixResult && (pdfFixResult.secondEngineAudit || pdfFixResult.equalAccessAudit);
+      const _rfSource = pdfFixResult && (pdfFixResult.axeAudit || _rfEaAudit) ? { committed: true, findings: [].concat(
+        (pdfFixResult.axeAudit && pdfFixResult.axeAudit.incomplete || []).map(_rfMapC("axe", "incomplete")),
+        (_rfEaAudit && _rfEaAudit.potentialFindings || []).map(_rfMapC("equalAccess", "potential")),
+        (_rfEaAudit && _rfEaAudit.manualFindings || []).map(_rfMapC("equalAccess", "manual"))
+      ) } : _reviewFindingsLive ? { committed: false, findings: _reviewFindingsLive.findings, passNumber: _reviewFindingsLive.passNumber } : null;
+      if (!_rfSource || _rfSource.findings.length === 0) return null;
+      const _rfKey = (f) => f.engine + "|" + f.bucket + "|" + f.id;
+      const _rfAll = _rfSource.findings;
+      const _rfDismissed = { ...pdfFixResult && pdfFixResult.reviewedFindings || {}, ..._reviewDismissed };
+      const _rfOpen = _rfAll.filter((f) => !_rfDismissed[_rfKey(f)]);
+      const _rfDone = _rfAll.length - _rfOpen.length;
+      const _rfBucketLabel = { incomplete: t("pdf_audit.review_queue.bucket_incomplete") || "needs review", potential: t("pdf_audit.review_queue.bucket_potential") || "potential issue", manual: t("pdf_audit.review_queue.bucket_manual") || "manual check" };
+      const _rfEngineLabel = { axe: "axe-core", equalAccess: "Equal Access" };
+      const _reviewToWorkbench = (f) => {
+        try {
+          setExpertCommandInput("Review and fix if needed (" + (_rfEngineLabel[f.engine] || f.engine) + " " + (_rfBucketLabel[f.bucket] || f.bucket) + ", " + (f.id || "") + ((f.wcagCriteria || []).length ? ", WCAG " + f.wcagCriteria.join(", ") : "") + "): " + (f.description || ""));
+        } catch (_) {
+        }
+        try {
+          const wb = document.getElementById("allo-sec-workbench");
+          if (wb) {
+            wb.open = true;
+            wb.scrollIntoView({ behavior: "smooth", block: "start" });
+          }
+        } catch (_) {
+        }
+        addToast(t("pdf_audit.issue.sent_workbench") || "\u{1F6E0} Loaded into the Expert Workbench below \u2014 review and run it.", "info");
+      };
+      return /* @__PURE__ */ React.createElement("div", { className: "mt-4 bg-white rounded-2xl border-2 border-amber-300 p-4 space-y-2", role: "region", "aria-label": t("pdf_audit.review_queue.aria") || "Findings that need human judgment" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 flex-wrap" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-black text-amber-900 flex-1" }, "\u{1F9D1}\u200D\u2696\uFE0F ", t("pdf_audit.review_queue.heading") || "Needs your judgment", " ", /* @__PURE__ */ React.createElement("span", { "aria-live": "polite" }, "(", _rfOpen.length, ")")), /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-bold text-amber-800 bg-amber-50 border border-amber-200 rounded-full px-2 py-0.5" }, _rfSource.committed ? t("pdf_audit.review_queue.current") || "current result" : (t("pdf_audit.review_queue.as_of") || "as of pass") + " " + _rfSource.passNumber), _rfDone > 0 && /* @__PURE__ */ React.createElement("button", { onClick: () => {
+        setReviewDismissed({});
+        setPdfFixResult((prev) => prev ? { ...prev, reviewedFindings: null } : prev);
+      }, className: "text-[10px] font-bold text-slate-600 underline", title: t("pdf_audit.review_queue.reset_title") || "Bring back the findings you marked as reviewed \u2014 also clears the attestations recorded for the report" }, _rfDone, " ", t("pdf_audit.review_queue.reviewed") || "reviewed", " \u2014 ", t("pdf_audit.review_queue.reset") || "reset")), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-amber-900" }, _remediationInFlight ? t("pdf_audit.review_queue.explainer") || "The automated engines flagged these but cannot decide them \u2014 semantic meaning, context, and intent need a person. Work through them here while the automatic passes handle the mechanical fixes; findings a later pass resolves drop off on their own." : t("pdf_audit.review_queue.explainer_settled") || "The automated engines flagged these but cannot decide them \u2014 semantic meaning, context, and intent need a person. Work through them with the Workbench, or mark each reviewed once you have checked it yourself."), _rfOpen.length === 0 ? /* @__PURE__ */ React.createElement("p", { className: "text-[11px] font-bold text-emerald-700" }, "\u2705 ", t("pdf_audit.review_queue.all_done") || "All current review findings handled \u2014 new ones will appear here if a later pass surfaces any.") : /* @__PURE__ */ React.createElement("ul", { className: "space-y-1.5 list-none" }, _rfOpen.map((f) => /* @__PURE__ */ React.createElement("li", { key: _rfKey(f), className: "flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-lg px-2.5 py-1.5 text-[11px] text-amber-950" }, /* @__PURE__ */ React.createElement("span", { className: "shrink-0 font-bold", "aria-hidden": "true" }, f.bucket === "incomplete" ? "\u26A0" : f.bucket === "potential" ? "\u{1F50E}" : "\u{1F440}"), /* @__PURE__ */ React.createElement("span", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("span", { className: "font-mono font-bold" }, f.id), /* @__PURE__ */ React.createElement("span", { className: "ml-1 px-1 py-0.5 rounded bg-white/80 border border-amber-300 text-[9px] font-bold uppercase tracking-wide" }, (_rfEngineLabel[f.engine] || f.engine) + " \xB7 " + (_rfBucketLabel[f.bucket] || f.bucket)), f.nodes > 0 && /* @__PURE__ */ React.createElement("span", { className: "ml-1 opacity-70" }, f.nodes, " ", f.nodes === 1 ? t("pdf_audit.review_queue.element") || "element" : t("pdf_audit.review_queue.elements") || "elements"), (f.wcagCriteria || []).length > 0 && /* @__PURE__ */ React.createElement("span", { className: "ml-1 opacity-70" }, "WCAG ", f.wcagCriteria.join(", ")), f.description && /* @__PURE__ */ React.createElement("span", { className: "block mt-0.5 opacity-90" }, f.description), f.helpUrl && /* @__PURE__ */ React.createElement("a", { href: f.helpUrl, target: "_blank", rel: "noopener noreferrer", className: "font-bold underline" }, t("pdf_audit.wcag_report.guidance") || "Guidance")), /* @__PURE__ */ React.createElement("span", { className: "shrink-0 flex gap-1" }, /* @__PURE__ */ React.createElement("button", { onClick: () => _reviewToWorkbench(f), className: "px-1.5 py-0.5 rounded bg-slate-200 text-slate-700 hover:bg-indigo-600 hover:text-white font-bold transition-colors", title: t("pdf_audit.review_queue.wb_title") || "Send to the Expert Workbench \u2014 prefills a targeted command you review and run" }, "\u{1F6E0}"), /* @__PURE__ */ React.createElement("button", { onClick: () => {
+        const _k = _rfKey(f);
+        const _at = Date.now();
+        setReviewDismissed((prev) => ({ ...prev, [_k]: _at }));
+        setPdfFixResult((prev) => prev ? { ...prev, reviewedFindings: { ...prev.reviewedFindings || {}, [_k]: _at } } : prev);
+      }, className: "px-1.5 py-0.5 rounded bg-slate-200 text-slate-700 hover:bg-emerald-600 hover:text-white font-bold transition-colors", title: t("pdf_audit.review_queue.done_title") || "Mark as reviewed \u2014 I checked this myself. Recorded in the audit report as a human attestation.", "aria-label": (t("pdf_audit.review_queue.done_aria") || "Mark reviewed") + ": " + f.id }, "\u2713"))))));
+    })(), pdfFixResult && /* @__PURE__ */ React.createElement("div", { className: "mt-4 bg-gradient-to-b from-white to-emerald-50 rounded-2xl border-2 border-emerald-300 p-5 space-y-4 animate-in slide-in-from-bottom duration-300" }, (() => {
+      const _v = _docPipeline && typeof _docPipeline.distributionVerdict === "function" ? _docPipeline.distributionVerdict(pdfFixResult, { targetScore: pdfTargetScore, inProgress: _remediationInFlight }) : null;
       if (!_v) return null;
-      const _sty = _v.level === "ready" ? "bg-emerald-100 border-emerald-500 text-emerald-900" : _v.level === "caution" ? "bg-amber-50 border-amber-400 text-amber-900" : "bg-rose-50 border-rose-400 text-rose-900";
-      const _icon = _v.level === "ready" ? "\u2705" : _v.level === "caution" ? "\u26A0\uFE0F" : "\u{1F6D1}";
+      const _sty = _v.inProgress ? "bg-indigo-50 border-indigo-400 text-indigo-900" : _v.level === "ready" ? "bg-emerald-100 border-emerald-500 text-emerald-900" : _v.level === "caution" ? "bg-amber-50 border-amber-400 text-amber-900" : "bg-rose-50 border-rose-400 text-rose-900";
+      const _icon = _v.inProgress ? "\u23F3" : _v.level === "ready" ? "\u2705" : _v.level === "caution" ? "\u26A0\uFE0F" : "\u{1F6D1}";
       const _items = _v.level === "review" ? _v.review.concat(_v.cautions) : _v.cautions;
-      return /* @__PURE__ */ React.createElement("div", { role: "status", "data-help-key": "pdf_audit_verdict_strip", className: `rounded-xl border-2 p-3 ${_sty}` }, /* @__PURE__ */ React.createElement("p", { className: "text-sm font-black" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, _icon, " "), t("pdf_audit.verdict." + _v.level) || _v.headline), _items.length > 0 && /* @__PURE__ */ React.createElement("ul", { className: "mt-1 ml-5 list-disc text-xs space-y-0.5" }, _items.slice(0, 6).map((m, i) => /* @__PURE__ */ React.createElement("li", { key: i }, m)), _items.length > 6 && /* @__PURE__ */ React.createElement("li", null, "+ " + (_items.length - 6) + " " + (t("pdf_audit.verdict.more") || "more \u2014 see the panels below"))));
-    })(), (() => {
+      return /* @__PURE__ */ React.createElement("div", { role: "status", "data-help-key": "pdf_audit_verdict_strip", className: `rounded-xl border-2 p-3 ${_sty}` }, /* @__PURE__ */ React.createElement("p", { className: "text-sm font-black" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, _icon, " "), (_v.inProgress ? t("pdf_audit.verdict.in_progress_" + _v.level) : t("pdf_audit.verdict." + _v.level)) || _v.headline), _items.length > 0 && /* @__PURE__ */ React.createElement("ul", { className: "mt-1 ml-5 list-disc text-xs space-y-0.5" }, _items.slice(0, 6).map((m, i) => /* @__PURE__ */ React.createElement("li", { key: i }, m)), _items.length > 6 && /* @__PURE__ */ React.createElement("li", null, "+ " + (_items.length - 6) + " " + (t("pdf_audit.verdict.more") || "more \u2014 see the panels below"))));
+    })(), pdfFixResult._remediationThrottlePaused && /* @__PURE__ */ React.createElement("section", { role: "status", "aria-labelledby": "pdf-remediation-paused-heading", className: "rounded-xl border-2 border-amber-400 bg-amber-50 p-3 text-amber-950" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0 flex-1" }, /* @__PURE__ */ React.createElement("h3", { id: "pdf-remediation-paused-heading", className: "text-sm font-black" }, "\u23F3 AI remediation paused safely"), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-xs" }, "Canvas temporarily rate-limited the AI service. Your last verified version was preserved; no same-storm retry wave was launched.")), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        disabled: pdfFixLoading || pdfAutoContinueRunning,
+        onClick: async () => {
+          try {
+            await runAutoFixLoop(3);
+          } catch (error) {
+            addToast("Could not resume AI remediation: " + (error && error.message || error), "error");
+          }
+        },
+        className: "px-3 py-1.5 rounded-lg bg-amber-700 text-white text-xs font-bold hover:bg-amber-800 disabled:opacity-50"
+      },
+      pdfAutoContinueRunning ? "Checking service\u2026" : "Resume AI remediation"
+    ))), (() => {
       const state = pdfFixResult.verificationState || "unavailable";
       const coverage = pdfFixResult.verificationCoverage || {};
       const reasons = Array.isArray(pdfFixResult.verificationReasons) ? pdfFixResult.verificationReasons : [];
@@ -11012,21 +11100,21 @@ Return ONLY JSON:
       const _htmlImagesWithAlt = Number(_htmlImageSummary.withAlt) || 0;
       const _imageFoundationConcern = _sourceImageCount > _htmlImageCount || _htmlImagesWithAlt < _htmlImageCount;
       const _imageFoundationDetail = _sourceImageCount > 0 && _htmlImageCount === 0 ? _sourceImageCount + " meaningful source image" + (_sourceImageCount === 1 ? " was" : "s were") + " identified, but the remediated HTML contains no <img> element. Review the image panel and content Diff before distributing; an auditor cannot flag missing alt text on an image element that disappeared." : _sourceImageCount > _htmlImageCount ? _sourceImageCount + " meaningful source images were identified, but only " + _htmlImageCount + " <img> element" + (_htmlImageCount === 1 ? " is" : "s are") + " present in the remediated HTML. Confirm that no instructional image was lost." : _htmlImagesWithAlt < _htmlImageCount ? _htmlImageCount - _htmlImagesWithAlt + " of " + _htmlImageCount + " HTML image" + (_htmlImageCount === 1 ? "" : "s") + " lack" + (_htmlImageCount - _htmlImagesWithAlt === 1 ? "s" : "") + " non-empty alternative text." : "";
-      return /* @__PURE__ */ React.createElement(React.Fragment, null, (pdfFixLoading || pdfAutoContinueRunning) && /* @__PURE__ */ React.createElement("div", { className: "sticky -top-5 -mx-5 px-5 py-2.5 bg-indigo-600 text-white z-30 flex items-center gap-2 flex-wrap rounded-t-2xl", role: "status", "aria-live": "polite" }, /* @__PURE__ */ React.createElement("span", { className: "inline-block w-3 h-3 rounded-full bg-white animate-ping shrink-0", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold flex-1 min-w-0" }, "\u23F3 ", t("pdf_audit.running.lead") || "STILL WORKING", " \u2014 ", pdfFixStep || (t("pdf_audit.running.generic") || "improving toward the target score"), ". ", t("pdf_audit.running.note") || "Results below update live; keep this open."), /* @__PURE__ */ React.createElement("button", { onClick: () => {
+      return /* @__PURE__ */ React.createElement(React.Fragment, null, _remediationInFlight && /* @__PURE__ */ React.createElement("div", { className: "sticky -top-5 -mx-5 px-5 py-2.5 bg-indigo-600 text-white z-30 flex items-center gap-2 flex-wrap rounded-t-2xl", role: "status", "aria-live": "polite" }, /* @__PURE__ */ React.createElement("span", { className: "inline-block w-3 h-3 rounded-full bg-white animate-ping shrink-0", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold flex-1 min-w-0" }, "\u23F3 ", t("pdf_audit.running.lead") || "STILL WORKING", " \u2014 ", pdfFixStep || (t("pdf_audit.running.generic") || "improving toward the target score"), ". ", t("pdf_audit.running.note") || "Results below update live; keep this open."), _humanEditsAdopted > 0 && /* @__PURE__ */ React.createElement("span", { className: "px-2 py-0.5 bg-white/20 border border-white/50 rounded-full text-[11px] font-bold shrink-0", title: t("pdf_audit.running.human_edits_title") || "Your edits were picked up mid-run. The loop rebased onto them and will not revert them when it ships." }, "\u270D ", _humanEditsAdopted, " ", _humanEditsAdopted === 1 ? t("pdf_audit.running.human_edit") || "edit of yours kept" : t("pdf_audit.running.human_edits") || "edits of yours kept"), /* @__PURE__ */ React.createElement("button", { onClick: () => setWatchLiveOpen((v) => !v), "aria-pressed": _watchLiveOpen, className: "px-2.5 py-1 bg-white/20 border border-white/50 rounded-full text-[11px] font-bold hover:bg-white/30 shrink-0", title: t("pdf_audit.watch_live.toggle_title") || "Watch the document itself update as each round commits \u2014 read-only, so nothing you do here can collide with the run" }, "\u{1F441} ", _watchLiveOpen ? t("pdf_audit.watch_live.on") || "Watching" : t("pdf_audit.watch_live.cta") || "Watch live"), /* @__PURE__ */ React.createElement("button", { onClick: () => {
         try {
           pdfAutoContinueAbortRef.current = true;
         } catch (_) {
         }
         _remOpLog("Stop pressed \u2014 finishing the current round, then stopping.", { button: "stop-after-round", documentEpoch: pdfDocumentEpoch });
         addToast(t("toasts.stopping_after_round") || "Stopping after the current round \u2014 what\u2019s done is kept.", "info");
-      }, className: "px-2.5 py-1 bg-white/20 border border-white/50 rounded-full text-[11px] font-bold hover:bg-white/30 shrink-0" }, "\u23F9 ", t("pdf_audit.running.stop") || "Stop after this round")), /* @__PURE__ */ React.createElement("div", { "data-help-key": "pdf_audit_dashboard_bar", className: "sticky -top-5 -mx-5 px-5 py-2 bg-white/95 backdrop-blur border-b border-emerald-200 rounded-t-2xl z-20 flex items-center gap-1.5 flex-wrap", role: "navigation", "aria-label": t("pdf_audit.dashboard.aria") || "Remediation results overview and section navigation" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-black whitespace-nowrap " + (pdfFixResult._aiVerificationIncomplete ? "text-slate-500" : "text-emerald-800"), title: (pdfFixResult._aiVerificationIncomplete ? (t("pdf_audit.dashboard.score_incomplete_title") || "Structural/automated checks only \u2014 the AI semantic audit was throttled and did not finish, so this is NOT a verified content score.") + " " : "") + (t("pdf_audit.dashboard.score_title") || "Content audit score (HTML reconstruction: AI rubric + axe), before \u2192 after. This is NOT PDF/UA conformance of the exported PDF \u2014 see the PDF/UA chip.") }, pdfFixResult.beforeScore ?? pdfAuditResult?.score ?? "\u2013", " \u2192 ", pdfFixResult._aiVerificationIncomplete ? /* @__PURE__ */ React.createElement("span", { className: "text-slate-500" }, "\u2014") : /* @__PURE__ */ React.createElement(React.Fragment, null, pdfFixResult.afterScore ?? "\u2013", /* @__PURE__ */ React.createElement("span", { className: "font-normal text-slate-500" }, "/100")), " ", pdfFixResult._aiVerificationIncomplete && Number.isFinite(pdfFixResult._estimatedMinimumScore) ? /* @__PURE__ */ React.createElement(_AlloQualifier, { className: "ml-1 px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 text-[9px] font-bold uppercase tracking-wide", text: t("pdf_audit.dashboard.estimated_min_title") || "Lower-confidence estimate: the lower of the last successful AI audit and the current automated checks. Complete the final audit for a verified score." }, t("pdf_audit.dashboard.estimated_min") || "est. min", " ", pdfFixResult._estimatedMinimumScore, "/100") : null, " ", _govTag === (t("pdf_audit.dashboard.automated_tag") || "automated") ? /* @__PURE__ */ React.createElement(_AlloQualifier, { className: "font-normal text-slate-400 text-[9px] uppercase tracking-wide", text: t("pdf_audit.dashboard.automated_tag_title") || "Headline governed by the automated layer (axe-core / IBM Equal Access) \u2014 the lower of the engines. The AI content rubric may be higher; see the breakdown below." }, _govTag) : /* @__PURE__ */ React.createElement("span", { className: "font-normal text-slate-400 text-[9px] uppercase tracking-wide" }, _govTag), pdfFixResult.fidelityLimited ? /* @__PURE__ */ React.createElement(_AlloQualifier, { className: "text-amber-600 font-bold", text: t("pdf_audit.dashboard.fidelity_limited_title") || "Asterisk: content fidelity is limited on this run (reduced coverage or fidelity notes) \u2014 a high score must not be read as \u201Call good\u201D. See the fidelity panel below for the specifics." }, "*") : null), pdfFixResult.fidelityLimited && /* @__PURE__ */ React.createElement(
+      }, className: "px-2.5 py-1 bg-white/20 border border-white/50 rounded-full text-[11px] font-bold hover:bg-white/30 shrink-0" }, "\u23F9 ", t("pdf_audit.running.stop") || "Stop after this round")), _remediationInFlight && _watchLiveOpen && /* @__PURE__ */ React.createElement("div", { className: "-mx-5 px-5 py-2 bg-indigo-50 border-b border-indigo-200" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2 mb-1" }, /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold text-indigo-800" }, "\u{1F441} ", t("pdf_audit.watch_live.title") || "Live document \u2014 read-only; repaints each time a round commits"), /* @__PURE__ */ React.createElement("button", { onClick: () => setWatchLiveOpen(false), className: "text-[11px] font-bold text-indigo-700 underline shrink-0" }, t("pdf_audit.watch_live.hide") || "Hide")), /* @__PURE__ */ React.createElement("iframe", { title: t("pdf_audit.watch_live.iframe") || "Live remediated document (read-only)", sandbox: "allow-same-origin", srcDoc: pdfFixResult.accessibleHtml, className: "w-full bg-white border border-indigo-200 rounded-lg", style: { height: "45vh" } }), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-indigo-700 mt-1" }, t("pdf_audit.watch_live.note") || "Showing the last committed version \u2014 section-by-section changes stream in the panel above. To intervene, use a section\u2019s Reject button or the Expert Workbench; the loop adopts your change at its next pass.")), /* @__PURE__ */ React.createElement("div", { "data-help-key": "pdf_audit_dashboard_bar", className: "sticky -top-5 -mx-5 px-5 py-2 bg-white/95 backdrop-blur border-b border-emerald-200 rounded-t-2xl z-20 flex items-center gap-1.5 flex-wrap", role: "navigation", "aria-label": t("pdf_audit.dashboard.aria") || "Remediation results overview and section navigation" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-black whitespace-nowrap " + (pdfFixResult._aiVerificationIncomplete ? "text-slate-500" : "text-emerald-800"), title: (pdfFixResult._aiVerificationIncomplete ? (t("pdf_audit.dashboard.score_incomplete_title") || "Structural/automated checks only \u2014 the AI semantic audit was throttled and did not finish, so this is NOT a verified content score.") + " " : "") + (t("pdf_audit.dashboard.score_title") || "Content audit score (HTML reconstruction: AI rubric + axe), before \u2192 after. This is NOT PDF/UA conformance of the exported PDF \u2014 see the PDF/UA chip.") }, pdfFixResult.beforeScore ?? pdfAuditResult?.score ?? "\u2013", " \u2192 ", pdfFixResult._aiVerificationIncomplete ? /* @__PURE__ */ React.createElement("span", { className: "text-slate-500" }, "\u2014") : /* @__PURE__ */ React.createElement(React.Fragment, null, pdfFixResult.afterScore ?? "\u2013", /* @__PURE__ */ React.createElement("span", { className: "font-normal text-slate-500" }, "/100")), " ", pdfFixResult._aiVerificationIncomplete && Number.isFinite(pdfFixResult._estimatedMinimumScore) ? /* @__PURE__ */ React.createElement(_AlloQualifier, { className: "ml-1 px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 text-[9px] font-bold uppercase tracking-wide", text: t("pdf_audit.dashboard.estimated_min_title") || "Lower-confidence estimate: the lower of the last successful AI audit and the current automated checks. Complete the final audit for a verified score." }, t("pdf_audit.dashboard.estimated_min") || "est. min", " ", pdfFixResult._estimatedMinimumScore, "/100") : null, " ", _govTag === (t("pdf_audit.dashboard.automated_tag") || "automated") ? /* @__PURE__ */ React.createElement(_AlloQualifier, { className: "font-normal text-slate-400 text-[9px] uppercase tracking-wide", text: t("pdf_audit.dashboard.automated_tag_title") || "Headline governed by the automated layer (axe-core / IBM Equal Access) \u2014 the lower of the engines. The AI content rubric may be higher; see the breakdown below." }, _govTag) : /* @__PURE__ */ React.createElement("span", { className: "font-normal text-slate-400 text-[9px] uppercase tracking-wide" }, _govTag), pdfFixResult.fidelityLimited ? /* @__PURE__ */ React.createElement(_AlloQualifier, { className: "text-amber-600 font-bold", text: t("pdf_audit.dashboard.fidelity_limited_title") || "Asterisk: content fidelity is limited on this run (reduced coverage or fidelity notes) \u2014 a high score must not be read as \u201Call good\u201D. See the fidelity panel below for the specifics." }, "*") : null), pdfFixResult.fidelityLimited && /* @__PURE__ */ React.createElement(
         "span",
         {
           className: "px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 whitespace-nowrap",
           title: t("pdf_audit.dashboard.fidelity_limited_title") || "This is an ACCESSIBILITY score only. Some source content may not have carried over" + (typeof pdfFixResult.integrityCoverage === "number" ? " (" + pdfFixResult.integrityCoverage + "% of source text preserved)" : "") + " \u2014 verify content fidelity (review the Diff) before distributing."
         },
         t("pdf_audit.dashboard.fidelity_limited") || "\u26A0 verify content"
-      ), _vio !== null && /* @__PURE__ */ React.createElement("span", { className: "px-1.5 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap " + (_dashboardEvidence.fullyVerifiedSuccess ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700") }, _dashboardEvidence.compactLabel), _imageFoundationConcern && /* @__PURE__ */ React.createElement(
+      ), Number(pdfFixResult.humanEditsAdopted) > 0 && /* @__PURE__ */ React.createElement("span", { className: "px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-100 text-indigo-800 whitespace-nowrap", title: t("pdf_audit.dashboard.human_edits_title") || "The automated loop adopted this many human edits while it ran. This is a collaborative result (automated passes + human edits) \u2014 the scores describe the combined document." }, "\u270D ", pdfFixResult.humanEditsAdopted, " ", Number(pdfFixResult.humanEditsAdopted) === 1 ? t("pdf_audit.dashboard.human_edit") || "human edit" : t("pdf_audit.dashboard.human_edits") || "human edits"), _vio !== null && /* @__PURE__ */ React.createElement("span", { className: "px-1.5 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap " + (_dashboardEvidence.fullyVerifiedSuccess ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700") }, _dashboardEvidence.compactLabel), _imageFoundationConcern && /* @__PURE__ */ React.createElement(
         "button",
         {
           type: "button",
@@ -11142,7 +11230,7 @@ Return ONLY JSON:
         }
       ));
     })(), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, (() => {
-      const _stillWorking = pdfAutoContinueRunning || pdfFixLoading;
+      const _stillWorking = _remediationInFlight;
       const _fidelity = !!(pdfFixResult && pdfFixResult.fidelityLimited);
       const _label = _stillWorking ? t("pdf_audit.results.ready_heading_working") || "Draft accessible copy ready \u2014 still improving\u2026" : _fidelity ? t("pdf_audit.results.ready_heading_verify") || "Accessible copy ready \u2014 verify content before sharing" : t("pdf_audit.results.ready_heading") || "Your accessible copy is ready";
       const _icon = _stillWorking ? "\u23F3" : _fidelity ? "\u26A0\uFE0F" : "\u2705";
@@ -11415,9 +11503,25 @@ Return ONLY JSON:
         "3.3.9": "Accessible Authentication (Enhanced)"
       };
       const scMap = {};
-      const addToSc = (sc, bucket) => {
-        if (!scMap[sc]) scMap[sc] = { passes: 0, violations: 0, incomplete: 0 };
-        scMap[sc][bucket]++;
+      const _blank = () => ({ pass: 0, fail: 0, review: 0, passNodes: 0, failNodes: 0, reviewNodes: 0, rules: [] });
+      const _rec = (sc) => {
+        if (!scMap[sc]) scMap[sc] = { axe: _blank(), ea: _blank() };
+        return scMap[sc];
+      };
+      const addToSc = (sc, engine, bucket, entry) => {
+        const slot = _rec(sc)[engine];
+        slot[bucket]++;
+        const n = Number(entry && entry.nodes);
+        slot[bucket + "Nodes"] += Number.isFinite(n) && n > 0 ? n : 0;
+        slot.rules.push({
+          id: entry && entry.id || "unknown-rule",
+          description: entry && entry.description || "",
+          nodes: Number.isFinite(n) && n > 0 ? n : 0,
+          impact: entry && entry.impact || "",
+          helpUrl: entry && entry.helpUrl || "",
+          bucket,
+          engine
+        });
       };
       const extractScList = (entry) => {
         if (entry && Array.isArray(entry.wcagCriteria) && entry.wcagCriteria.length) return entry.wcagCriteria;
@@ -11438,31 +11542,80 @@ Return ONLY JSON:
         return out;
       };
       (pdfFixResult.axeAudit.passes || []).forEach((p) => {
-        extractScList(p).forEach((sc) => addToSc(sc, "passes"));
+        extractScList(p).forEach((sc) => addToSc(sc, "axe", "pass", p));
       });
       ["critical", "serious", "moderate", "minor"].forEach((sev) => {
         (pdfFixResult.axeAudit[sev] || []).forEach((v) => {
-          extractScList(v).forEach((sc) => addToSc(sc, "violations"));
+          extractScList(v).forEach((sc) => addToSc(sc, "axe", "fail", v));
         });
       });
       (pdfFixResult.axeAudit.incomplete || []).forEach((i) => {
-        extractScList(i).forEach((sc) => addToSc(sc, "incomplete"));
+        extractScList(i).forEach((sc) => addToSc(sc, "axe", "review", i));
       });
-      const scEntries = Object.entries(scMap).sort((a, b) => a[0].localeCompare(b[0], void 0, { numeric: true }));
-      if (scEntries.length === 0) return null;
+      const _ea = pdfFixResult.secondEngineAudit || pdfFixResult.equalAccessAudit || null;
+      if (_ea) {
+        (_ea.passes || []).forEach((p) => {
+          extractScList(p).forEach((sc) => addToSc(sc, "ea", "pass", p));
+        });
+        (_ea.fails || []).forEach((v) => {
+          extractScList(v).forEach((sc) => addToSc(sc, "ea", "fail", v));
+        });
+        [].concat(_ea.potentialFindings || [], _ea.manualFindings || []).forEach((v) => {
+          extractScList(v).forEach((sc) => addToSc(sc, "ea", "review", v));
+        });
+      }
+      const _catalog = _ea && Array.isArray(_ea.wcagCatalog) ? _ea.wcagCatalog : [];
+      const _catalogBy = {};
+      _catalog.forEach((c) => {
+        if (c && c.num) _catalogBy[c.num] = c;
+      });
+      const _nameOf = (sc) => _catalogBy[sc] && _catalogBy[sc].name || WCAG_LABELS[sc] || "";
+      const _levelOf = (sc) => _catalogBy[sc] && _catalogBy[sc].level || "";
+      const _scNum = (a, b) => String(a).localeCompare(String(b), void 0, { numeric: true });
+      const scEntries = Object.entries(scMap).sort((a, b) => _scNum(a[0], b[0]));
+      if (scEntries.length === 0 && _catalog.length === 0) return null;
+      const _totals = (v) => ({
+        fail: v.axe.fail + v.ea.fail,
+        review: v.axe.review + v.ea.review,
+        pass: v.axe.pass + v.ea.pass,
+        failNodes: v.axe.failNodes + v.ea.failNodes,
+        reviewNodes: v.axe.reviewNodes + v.ea.reviewNodes,
+        passNodes: v.axe.passNodes + v.ea.passNodes
+      });
+      const _statusOf = (v) => {
+        const tt = _totals(v);
+        return tt.fail > 0 ? "fail" : tt.review > 0 ? "warn" : tt.pass > 0 ? "pass" : "none";
+      };
       const counts = scEntries.reduce((acc, [, v]) => {
-        if (v.violations > 0) acc.fail++;
-        else if (v.incomplete > 0) acc.warn++;
-        else if (v.passes > 0) acc.pass++;
+        const s = _statusOf(v);
+        if (acc[s] != null) acc[s]++;
         return acc;
-      }, { pass: 0, warn: 0, fail: 0 });
-      return /* @__PURE__ */ React.createElement("details", { className: "bg-slate-50 border border-slate-400 rounded-lg p-3" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer text-xs font-bold text-slate-700 flex flex-wrap items-center gap-2" }, "\u{1F4CB} WCAG Success Criteria Report", /* @__PURE__ */ React.createElement("span", { className: "bg-green-100 text-green-700 px-2 py-0.5 rounded-full text-[11px]" }, "\u2713 ", counts.pass, " pass"), counts.warn > 0 && /* @__PURE__ */ React.createElement("span", { className: "bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full text-[11px]" }, "\u26A0 ", counts.warn, " needs review"), counts.fail > 0 && /* @__PURE__ */ React.createElement("span", { className: "bg-red-100 text-red-700 px-2 py-0.5 rounded-full text-[11px]" }, "\u2717 ", counts.fail, " fail")), /* @__PURE__ */ React.createElement("div", { className: "mt-2 grid grid-cols-1 sm:grid-cols-2 gap-1" }, scEntries.map(([sc, v]) => {
-        const status = v.violations > 0 ? "fail" : v.incomplete > 0 ? "warn" : v.passes > 0 ? "pass" : "none";
+      }, { pass: 0, warn: 0, fail: 0, none: 0 });
+      const _untested = _catalog.filter((c) => c && c.num && !scMap[c.num]).sort((a, b) => _scNum(a.num, b.num));
+      const _noRule = _untested.filter((c) => !c.ruleCount);
+      const _notTriggered = _untested.filter((c) => c.ruleCount > 0);
+      const _plural = (n, one, many) => n + " " + (n === 1 ? one : many);
+      const _engineLine = (slot, engineLabel) => {
+        if (!slot.pass && !slot.fail && !slot.review) return engineLabel + ": no findings";
+        const parts = [];
+        if (slot.fail) parts.push(_plural(slot.fail, "rule", "rules") + " failed" + (slot.failNodes ? " (" + _plural(slot.failNodes, "element", "elements") + ")" : ""));
+        if (slot.review) parts.push(_plural(slot.review, "rule", "rules") + " need review" + (slot.reviewNodes ? " (" + _plural(slot.reviewNodes, "element", "elements") + ")" : ""));
+        if (slot.pass) parts.push(_plural(slot.pass, "rule", "rules") + " passed" + (slot.passNodes ? " (" + _plural(slot.passNodes, "element", "elements") + ")" : ""));
+        return engineLabel + ": " + parts.join(" \xB7 ");
+      };
+      const _bucketIcon = { fail: "\u2717", review: "\u26A0", pass: "\u2713" };
+      return /* @__PURE__ */ React.createElement("details", { className: "bg-slate-50 border border-slate-400 rounded-lg p-3" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer text-xs font-bold text-slate-700 flex flex-wrap items-center gap-2" }, "\u{1F4CB} WCAG Success Criteria Report", /* @__PURE__ */ React.createElement("span", { className: "bg-green-100 text-green-700 px-2 py-0.5 rounded-full text-[11px]" }, "\u2713 ", counts.pass, " pass"), counts.warn > 0 && /* @__PURE__ */ React.createElement("span", { className: "bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full text-[11px]" }, "\u26A0 ", counts.warn, " needs review"), counts.fail > 0 && /* @__PURE__ */ React.createElement("span", { className: "bg-red-100 text-red-700 px-2 py-0.5 rounded-full text-[11px]" }, "\u2717 ", counts.fail, " fail"), _untested.length > 0 && /* @__PURE__ */ React.createElement("span", { className: "bg-slate-200 text-slate-700 px-2 py-0.5 rounded-full text-[11px]" }, "\u25CB ", _untested.length, " not evaluated")), _catalog.length > 0 && /* @__PURE__ */ React.createElement("p", { className: "mt-2 text-[11px] text-slate-600" }, t("pdf_audit.wcag_report.scope") || "Scope: WCAG 2.2 Level A and AA \u2014 " + _catalog.length + " success criteria. " + scEntries.length + " were exercised by an automated engine on this document; " + _untested.length + " were not."), /* @__PURE__ */ React.createElement("div", { className: "mt-2 grid grid-cols-1 sm:grid-cols-2 gap-1" }, scEntries.map(([sc, v]) => {
+        const tt = _totals(v);
+        const status = _statusOf(v);
         const color = status === "pass" ? "bg-green-50 border-green-200 text-green-800" : status === "warn" ? "bg-amber-50 border-amber-200 text-amber-800" : status === "fail" ? "bg-red-50 border-red-200 text-red-800" : "bg-slate-50 border-slate-200 text-slate-600";
         const icon = status === "pass" ? "\u2713" : status === "warn" ? "\u26A0" : status === "fail" ? "\u2717" : "\u25CB";
-        const label = WCAG_LABELS[sc] || "";
-        return /* @__PURE__ */ React.createElement("div", { key: sc, className: `flex items-start gap-2 px-2 py-1 rounded border text-[11px] ${color}` }, /* @__PURE__ */ React.createElement("span", { className: "font-bold shrink-0" }, icon), /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold font-mono" }, sc), label && /* @__PURE__ */ React.createElement("span", { className: "ml-1 opacity-80" }, "\u2014 ", label), /* @__PURE__ */ React.createElement("div", { className: "opacity-70 mt-0.5" }, v.passes > 0 && /* @__PURE__ */ React.createElement("span", null, v.passes, " pass"), v.violations > 0 && /* @__PURE__ */ React.createElement("span", { className: "ml-2" }, v.violations, " fail"), v.incomplete > 0 && /* @__PURE__ */ React.createElement("span", { className: "ml-2" }, v.incomplete, " review"))));
-      })), /* @__PURE__ */ React.createElement("p", { className: "mt-2 text-[10px] text-slate-500 italic" }, t("pdf_audit.wcag_report.coverage_note") || "Coverage may be incomplete \u2014 this view aggregates axe-core rules by WCAG SC. Manual review still required for some criteria (e.g. semantic meaning, reading order, complex forms)."));
+        const label = _nameOf(sc);
+        const level = _levelOf(sc);
+        const ruleCount = tt.fail + tt.review + tt.pass;
+        const nodeCount = tt.failNodes + tt.reviewNodes + tt.passNodes;
+        const allRules = [].concat(v.axe.rules, v.ea.rules);
+        return /* @__PURE__ */ React.createElement("div", { key: sc, className: `flex items-start gap-2 px-2 py-1 rounded border text-[11px] ${color}` }, /* @__PURE__ */ React.createElement("span", { className: "font-bold shrink-0" }, icon), /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold font-mono" }, sc), level && /* @__PURE__ */ React.createElement("span", { className: "ml-1 px-1 py-0.5 rounded bg-white/70 border border-slate-300 text-slate-700 font-bold text-[9px] tracking-wide" }, level), label && /* @__PURE__ */ React.createElement("span", { className: "ml-1 opacity-80" }, "\u2014 ", label), /* @__PURE__ */ React.createElement("div", { className: "opacity-70 mt-0.5" }, _plural(ruleCount, "rule", "rules"), nodeCount > 0 && /* @__PURE__ */ React.createElement("span", null, " \xB7 ", _plural(nodeCount, "element", "elements"))), /* @__PURE__ */ React.createElement("div", { className: "opacity-70 mt-0.5" }, /* @__PURE__ */ React.createElement("div", null, _engineLine(v.axe, "axe-core")), _ea && /* @__PURE__ */ React.createElement("div", null, _engineLine(v.ea, "Equal Access"))), allRules.length > 0 && /* @__PURE__ */ React.createElement("details", { className: "mt-1" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer font-bold opacity-80" }, t("pdf_audit.wcag_report.which_rules") || "Which checks ran"), /* @__PURE__ */ React.createElement("ul", { className: "mt-1 space-y-0.5 list-none" }, allRules.map((rule, ri) => /* @__PURE__ */ React.createElement("li", { key: rule.engine + ":" + rule.id + ":" + ri, className: "flex items-start gap-1" }, /* @__PURE__ */ React.createElement("span", { className: "shrink-0 font-bold", "aria-hidden": "true" }, _bucketIcon[rule.bucket]), /* @__PURE__ */ React.createElement("span", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("span", { className: "font-mono font-bold" }, rule.id), /* @__PURE__ */ React.createElement("span", { className: "opacity-70" }, " (", rule.engine === "ea" ? "Equal Access" : "axe-core", rule.nodes ? ", " + _plural(rule.nodes, "element", "elements") : "", rule.impact ? ", " + rule.impact : "", ")"), rule.description && /* @__PURE__ */ React.createElement("span", { className: "opacity-90" }, " \u2014 ", rule.description), rule.helpUrl && /* @__PURE__ */ React.createElement("a", { href: rule.helpUrl, target: "_blank", rel: "noopener noreferrer", className: "ml-1 font-bold underline" }, t("pdf_audit.wcag_report.guidance") || "Guidance"))))))));
+      })), _untested.length > 0 && /* @__PURE__ */ React.createElement("details", { className: "mt-3 bg-white border border-slate-300 rounded-lg p-2" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer text-[11px] font-bold text-slate-700" }, "\u25CB ", t("pdf_audit.wcag_report.untested_heading") || "Not evaluated on this document (" + _untested.length + " of " + _catalog.length + " criteria)"), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-[10px] text-slate-600" }, t("pdf_audit.wcag_report.untested_note") || "These criteria are in scope for WCAG 2.2 AA but produced no automated result on this document. They are neither passing nor failing here \u2014 they are unmeasured, and a conformance claim that covers them needs a human reviewer."), _noRule.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-2" }, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold text-slate-700 uppercase tracking-wide" }, t("pdf_audit.wcag_report.untested_manual") || "No automated test exists \u2014 manual review only"), /* @__PURE__ */ React.createElement("ul", { className: "mt-1 grid grid-cols-1 sm:grid-cols-2 gap-x-3 gap-y-0.5" }, _noRule.map((c) => /* @__PURE__ */ React.createElement("li", { key: "nr-" + c.num, className: "text-[10px] text-slate-600 flex items-start gap-1" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u25CB"), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("span", { className: "font-mono font-bold" }, c.num), " ", /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, c.level), c.name ? " \u2014 " + c.name : ""))))), _notTriggered.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-2" }, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold text-slate-700 uppercase tracking-wide" }, t("pdf_audit.wcag_report.untested_inapplicable") || "Automated tests exist but none applied to this content"), /* @__PURE__ */ React.createElement("ul", { className: "mt-1 grid grid-cols-1 sm:grid-cols-2 gap-x-3 gap-y-0.5" }, _notTriggered.map((c) => /* @__PURE__ */ React.createElement("li", { key: "nt-" + c.num, className: "text-[10px] text-slate-600 flex items-start gap-1" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u25CB"), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("span", { className: "font-mono font-bold" }, c.num), " ", /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, c.level), c.name ? " \u2014 " + c.name : "")))))), /* @__PURE__ */ React.createElement("p", { className: "mt-2 text-[10px] text-slate-500 italic" }, t("pdf_audit.wcag_report.coverage_note") || "This view aggregates automated engine results by WCAG success criterion. A criterion shown as passing means every automated check that ran against it passed, not that the criterion is met; semantic meaning, reading order, and complex forms still need human review."));
     })(), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 flex-wrap items-center" }, /* @__PURE__ */ React.createElement("span", { className: "text-[11px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-bold" }, "\u2705 ", pdfFixResult.axeAudit.totalPasses, " passed"), pdfFixResult.axeAudit.totalIncomplete > 0 && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-bold" }, "\u23F3 ", pdfFixResult.axeAudit.totalIncomplete, " need manual review"), pdfFixResult.autoFixPasses > 0 && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] bg-violet-100 text-violet-700 px-2 py-0.5 rounded-full font-bold" }, "\u{1F527} ", pdfFixResult.autoFixPasses, " auto-fix pass", pdfFixResult.autoFixPasses > 1 ? "es" : "", " applied"), pdfFixResult.axeAudit.totalViolations > 0 && !pdfFixLoading && /* @__PURE__ */ React.createElement("button", { onClick: async () => {
       try {
         await runAutoFixLoop(pdfAutoContinue ? 3 : 1);
@@ -13061,6 +13214,9 @@ Return ONLY JSON:
             _estimatedMinimumScore: Number.isFinite(project._estimatedMinimumScore) ? project._estimatedMinimumScore : Number.isFinite(project.estimatedMinimumScore) ? project.estimatedMinimumScore : null,
             _estimatedScoreBasis: project._estimatedScoreBasis || project.estimatedScoreBasis || null,
             _finalAuditRetryAvailable: !!project._finalAuditRetryAvailable,
+            _remediationThrottlePaused: !!project._remediationThrottlePaused,
+            _finalAuditThrottleDeferred: !!project._finalAuditThrottleDeferred,
+            _finalAuditIncompleteReason: project._finalAuditIncompleteReason || null,
             axeAudit: project.axeAudit || null,
             secondEngineAudit: project.secondEngineAudit || null,
             verificationCoverage: project.verificationCoverage || null,
@@ -13087,6 +13243,8 @@ Return ONLY JSON:
             issuesFixed: project.issuesFixed || 0,
             remainingIssues: project.remainingIssues != null ? project.remainingIssues : 0,
             autoFixPasses: project.autoFixPasses || 0,
+            humanEditsAdopted: Number(project.humanEditsAdopted) || 0,
+            reviewedFindings: project.reviewedFindings && typeof project.reviewedFindings === "object" ? project.reviewedFindings : null,
             _audioJobMeta: project._audioJobMeta || null,
             _translation: project._translation || null,
             _plainLanguage: project._plainLanguage || null
@@ -13474,7 +13632,16 @@ Return ONLY JSON:
           const _stripT = (h) => String(h || "").replace(/<style[\s\S]*?<\/style>/gi, " ").replace(/<script[\s\S]*?<\/script>/gi, " ").replace(/<[^>]+>/g, " ").replace(/&nbsp;/g, " ").replace(/&[a-z]+;/gi, " ").replace(/\s+/g, " ").trim();
           const _cmdDiff = { before: _stripT(_commandSourceHtml), after: _stripT(result.html), label: cmd };
           const _preCmdHtml = _commandSourceHtml;
-          if (!_commitAsyncHtmlIfCurrent(_commitToken, (prev) => ({ ...prev, accessibleHtml: result.html, _lastCmdDiff: _cmdDiff, _preCmdHtml, _lastMiniAudit: result.miniAudit || null, _lastTableReadback: result.tableReadback || null }))) {
+          if (typeof retireChunkState === "function") {
+            const _retired = retireChunkState({ currentHtml: _commandSourceHtml, documentEpoch: _commitToken && _commitToken.documentEpoch });
+            if (!_retired || _retired.stale) {
+              setAgentActivityLog((prev) => [...prev, { text: "Stale result discarded - document changed", type: "info", time: (/* @__PURE__ */ new Date()).toLocaleTimeString() }]);
+              addToast(t("toasts.workbench_stale") || "The document changed while Workbench was running, so its stale result was discarded.", "info");
+              setIsAgentRunning(false);
+              return;
+            }
+          }
+          if (!_commitAsyncHtmlIfCurrent(_commitToken, (prev) => ({ ...prev, accessibleHtml: result.html, chunkState: null, chunkWeightedScore: null, chunkReport: null, _lastCmdDiff: _cmdDiff, _preCmdHtml, _lastMiniAudit: result.miniAudit || null, _lastTableReadback: result.tableReadback || null }))) {
             setAgentActivityLog((prev) => [...prev, { text: "? Stale result discarded ? document changed", type: "info", time: (/* @__PURE__ */ new Date()).toLocaleTimeString() }]);
             addToast(t("toasts.workbench_stale") || "The document changed while Workbench was running ? its stale result was discarded.", "info");
             setIsAgentRunning(false);

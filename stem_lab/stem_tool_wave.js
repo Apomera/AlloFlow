@@ -43,7 +43,7 @@ window.StemLab = window.StemLab || {
   }
 
   window.StemLab.registerTool('wave', {
-    icon: "🌊",
+    icon: '\u3030\uFE0F',
     label: "Wave Simulator",
     desc: "Animate sound and water waves across Free, Standing, Ripple Tank, Reflection, Longitudinal, Doppler, and Spectrum modes.",
     color: 'slate',

@@ -86,6 +86,46 @@ const activities = {
     id: 'sim-1', type: 'sim', title: 'Scenario', gate: { kind: 'none' },
     content: { scenario: 'Describe how you would respond.', rubric: 'Use specific, evidence-based reasoning.' },
   },
+  resource: {
+    id: 'resource-1', type: 'resource', title: 'Vocabulary snapshot', gate: { kind: 'none' },
+    content: { resourceType: 'glossary', instructions: 'Review these terms.', data: { items: [{ term: 'Scaffold', def: 'A temporary support that is gradually removed.' }] } },
+  },
+  persona: {
+    id: 'persona-1', type: 'persona', title: 'Parent conference practice', gate: { kind: 'none' },
+    content: {
+      personaName: 'Riley', personaRole: 'a parent worried about reading progress',
+      scenario: 'Riley requested this conference after benchmark results.',
+      rubric: 'Empathy, plain language, specifics, collaborative next step.', minTurns: 2,
+    },
+  },
+  branching: {
+    id: 'branching-1', type: 'branching', title: 'Head down mid-lesson', gate: { kind: 'none' },
+    content: {
+      intro: 'Walk this one decision at a time.',
+      start: 'n1',
+      nodes: {
+        n1: { text: 'A student puts their head down mid-lesson.', choices: [{ label: 'Quietly check in', to: 'end1', feedback: 'Connection first.' }] },
+        end1: { text: 'They re-engage on their own terms.', ending: true },
+      },
+    },
+  },
+};
+
+// Extra embedded-resource fixtures for the interactive concept-sort surface
+// (kept OUT of the `activities` map so the inventory-parity check stays 1:1).
+const conceptSortResource = {
+  id: 'resource-sort-1', type: 'resource', title: 'Sort the supports', gate: { kind: 'none' },
+  content: {
+    resourceType: 'concept-sort', instructions: 'Sort each support.',
+    data: {
+      categories: [{ id: 'c1', label: 'Representation' }, { id: 'c2', label: 'Engagement' }],
+      items: [{ id: 'i1', content: 'Offer a diagram alongside text', categoryId: 'c1' }, { id: 'i2', content: 'Offer choice of topic', categoryId: 'c2' }],
+    },
+  },
+};
+const timelineResource = {
+  id: 'resource-time-1', type: 'resource', title: 'History of UDL', gate: { kind: 'none' },
+  content: { resourceType: 'timeline', data: { items: [{ date: '1984', event: 'CAST founded.' }, { date: '2024', event: 'UDL Guidelines 3.0 released.' }] } },
 };
 
 function approvedActivityStates(activity) {
@@ -113,6 +153,34 @@ function approvedActivityStates(activity) {
   if (activity.type === 'checklist') return [
     { name: 'empty', raw: { checked: activity.content.items.map(() => false) } },
     { name: 'completed', raw: { checked: activity.content.items.map(() => true) } },
+  ];
+  if (activity.type === 'branching') {
+    const start = activity.content.start;
+    const nodes = activity.content.nodes || {};
+    const walk = [start];
+    let guard = 0;
+    while (guard++ < 100) {
+      const node = nodes[walk[walk.length - 1]];
+      if (!node || node.ending === true) break;
+      walk.push(node.choices[0].to);
+    }
+    return [
+      { name: 'start', raw: {} },
+      { name: 'mid-path', raw: { path: [start] } },
+      { name: 'ending', raw: { path: walk } },
+    ];
+  }
+  if (activity.type === 'persona') return [
+    { name: 'idle', raw: {} },
+    { name: 'active', raw: { messages: [{ role: 'educator', text: 'Thanks for coming in.' }, { role: 'persona', text: 'I want to know what is going on.' }] } },
+    { name: 'feedback', raw: { messages: [{ role: 'educator', text: 'Thanks for coming in.' }, { role: 'persona', text: 'Tell me.' }, { role: 'educator', text: 'Here is the data.' }], feedback: 'A strong, empathetic opening.' } },
+    { name: 'unavailable', raw: { fallbackResponse: 'I would start by thanking Riley.' } },
+    { name: 'completed', raw: { messages: [{ role: 'educator', text: 'One' }, { role: 'persona', text: 'Reply' }, { role: 'educator', text: 'Two' }] } },
+  ];
+  if (activity.type === 'resource') return [
+    { name: 'initial', raw: {} },
+    { name: 'in-progress', raw: {} },
+    { name: 'completed', raw: { acknowledged: true } },
   ];
   if (activity.type === 'sim') return [
     { name: 'idle', raw: { response: '', masteryScore: null } },
@@ -152,6 +220,17 @@ describe('PD learner activities — axe WCAG 2.2 A/AA smoke audit', () => {
     'scenario response': render(CC.SimActivity, { activity: activities.sim, raw: { response: '', masteryScore: null }, onRaw: noop }),
     'scenario qualitative feedback': render(CC.SimActivity, { activity: activities.sim, raw: { response: 'I would listen.', masteryScore: 82, feedback: 'Thoughtful start.', qualitativeAnalysis: { strengths: ['Centers the learner'], growthAreas: ['Add a follow-up'], criterionEvidence: [{ criterion: 'Evidence use', assessment: 'developing', evidence: 'Listening is named.', feedback: 'Connect to the rubric.' }] } }, onRaw: noop }),
     'monitored reflection disclosure': render(CC.PdRunner, { module: monitoredModule, addToast: noop, onExit: noop }),
+    'resource glossary snapshot': render(CC.ResourceActivity, { activity: activities.resource, raw: {}, onRaw: noop }),
+    'resource glossary acknowledged': render(CC.ResourceActivity, { activity: activities.resource, raw: { acknowledged: true }, onRaw: noop }),
+    'resource concept sort unplaced': render(CC.ResourceActivity, { activity: conceptSortResource, raw: {}, onRaw: noop }),
+    'resource concept sort partial': render(CC.ResourceActivity, { activity: conceptSortResource, raw: { placements: { i1: 'c1' } }, onRaw: noop }),
+    'resource concept sort all placed with mismatch': render(CC.ResourceActivity, { activity: conceptSortResource, raw: { placements: { i1: 'c2', i2: 'c2' } }, onRaw: noop }),
+    'resource timeline': render(CC.ResourceActivity, { activity: timelineResource, raw: {}, onRaw: noop }),
+    'persona unavailable fallback': render(CC.PersonaActivity, { activity: activities.persona, raw: {}, onRaw: noop }),
+    'persona fallback written': render(CC.PersonaActivity, { activity: activities.persona, raw: { fallbackResponse: 'I would open with empathy.' }, onRaw: noop }),
+    'persona with feedback': render(CC.PersonaActivity, { activity: activities.persona, raw: { messages: [{ role: 'educator', text: 'Hello Riley.' }, { role: 'persona', text: 'Thanks for meeting me.' }], feedback: 'Warm, specific opening.' }, onRaw: noop }),
+    'branching at start': render(CC.BranchingActivity, { activity: activities.branching, raw: {}, onRaw: noop }),
+    'branching at ending with arrival feedback': render(CC.BranchingActivity, { activity: activities.branching, raw: { path: ['n1', 'end1'] }, onRaw: noop }),
   };
 
   for (const [name, html] of Object.entries(states)) {
@@ -168,7 +247,7 @@ describe('PD learner activities — axe WCAG 2.2 A/AA smoke audit', () => {
   });
   it('shares the canonical activity-state inventory with the rendered audit matrix', () => {
     expect(Object.keys(activities).sort()).toEqual([...stateInventory.activityTypes].sort());
-    for (const type of ['read', 'quiz', 'reflect', 'video', 'checklist']) {
+    for (const type of ['read', 'quiz', 'reflect', 'video', 'checklist', 'resource', 'persona', 'branching']) {
       expect(approvedActivityStates(activities[type]).map((state) => state.name))
         .toEqual(stateInventory.activityStates[type]);
     }
@@ -222,6 +301,9 @@ describe('approved PD catalog ? immutable accessibility-ready bindings', () => {
         video: CC.VideoActivity,
         checklist: CC.ChecklistActivity,
         sim: CC.SimActivity,
+        resource: CC.ResourceActivity,
+        persona: CC.PersonaActivity,
+        branching: CC.BranchingActivity,
       };
       for (const section of module.sections) {
         for (const activity of section.activities) {

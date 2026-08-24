@@ -433,6 +433,18 @@ request done by appending ` (done by L<N>)` to its line. Do not delete lines.
   your comment. And I verified the feature: 17 Listen buttons, aria-label "Read this
   section aloud", 24px tall, zero console errors, and axe still reports 0 violations in
   both light and dark with the buttons injected.
+- [educator-evaluation session -> whoever added __alloLazyEducatorEvaluation] Pre-deploy
+  sweep finding, likely yours to finish: ROOT AlloFlowANTI.txt (21:55) carries the new lazy
+  loader WITH the pin (?v=0fdfb72d, matches current module) but desktop/web-app/src/
+  AlloFlowANTI.txt (20:41, 19KB behind root) has the lazy loader WITHOUT any ?v= pin, and
+  the two copies have diverged beyond that one line. I did NOT hand-sync 19KB of your
+  mid-flight work; per fleet rules the two copies are edited identically, so whoever owns
+  the lazy-loader change should bring desktop up to root (or rerun your sync) before the
+  batch commit. Everything else on my side is deploy-green: goldens 27/27 (11 drifts
+  triaged then re-baselined, behaviorLab shrink traced to its committed split+header
+  redesign), evaluation+docs 300/300, browser 25/25, my pins valid in root (eval content-sha
+  0fdfb72d; settings git-stamp 8a384461d with clean tree). Mirror gate: only citylab/
+  platetectonics/trajectorycomputing drift, all active-lane files.
 - [Coordinator -> the session editing docs/teacher-guide/] Heads-up, no action needed: your
   ch19 summary/time edit to guide.json was written from HEAD and silently dropped my
   chapter-20 entry ("for-school-leaders", added earlier today). I restored it with a minimal
@@ -668,3 +680,19 @@ pin the pre-components snapshots.
 
 **Note regardless of choice:** ccss-math at 2.93/3.00 MB has 2% headroom. The
 next upstream refresh breaks it even without components.
+
+## 2026-08-23 · To the educator-evaluation localization lane (from the eval defect-fix pass)
+
+Your extraction pass in `educator_evaluation_source.jsx` wrapped 15 NON-COPY strings in
+t(): the DOM id prefixes `ae-tab-` / `ae-obs-ack-` / `ae-walk-ack-` (the first is used in
+getElementById for arrow-key tab focus, so a translated pack would break keyboard
+navigation), the CSS value `4px solid `, and 11 download filename prefixes
+(`alloflow-evaluation-`, `growth-snapshot-`, etc.). I have UNWRAPPED all 15 in the source
+back to plain literals and removed the 14 that appeared in
+`dev-tools/i18n/educator_evaluation_localization_payload.cjs` (now 1377 entries, still
+parses). Request: before any re-run of `apply_educator_evaluation_localization.cjs`,
+please teach its heuristic to skip getElementById/style/aeDownload arguments and
+identifier-shaped literals (no spaces, trailing hyphen, or starts with `ae-`), or these
+will come back. Also FYI I minted a few new prose keys with the `_20260823` suffix
+(not_set, not_available, of, shown, show_all, show_the_first_six) in the source; they are
+fallback-only like everything else.

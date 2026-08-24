@@ -50,7 +50,9 @@ describe('read-aloud artifact host integration', () => {
   it('shows a visible pending indicator while a private Persona artifact is saving', () => {
     const source = read('view_persona_chat_source.jsx');
     expect(source).toContain('transcriptSavePending ? <RefreshCw size={16}');
-    expect(source).toContain('Saving private session...');
+    // Stale-pin repair 2026-08-23: the label evolved to name Persona and
+    // rides the button title; the spinner + aria-busy pins carry the rest.
+    expect(source).toContain("transcriptSavePending ? t('persona.save_transcript_title_saving')");
     expect(source).toContain("aria-busy={transcriptSavePending ? 'true' : 'false'}");
   });
 

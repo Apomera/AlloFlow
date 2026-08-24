@@ -304,7 +304,7 @@ window.StemLab = window.StemLab || {
   };
 
   window.StemLab.registerTool('artStudio', {
-    icon: "🎨",
+    icon: '\uD83D\uDD8C\uFE0F',
     label: "Art & Design Studio",
     desc: "Explore color theory, watercolor, pixel art, symmetry, spirographs, fractals, generative design, and WCAG contrast.",
     color: 'slate',

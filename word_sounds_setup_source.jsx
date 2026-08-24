@@ -2154,6 +2154,43 @@
                  if (item._ttsAssets) Object.assign(packedTtsAssets, item._ttsAssets);
                  delete item._ttsAssets;
              });
+             // ── Bank-first packing (2026-08-23) ──
+             // The recorded word bank (word_audio_kokoro_bank.json, Kokoro
+             // af_heart — see dev-tools/kokoro_audio_manifest.json) covers most
+             // single-word clips, so Gemini TTS is reserved for sentences,
+             // phrases and words the bank lacks. Three consequences on purpose:
+             //   * pack builds stop burning Gemini quota on words the bank
+             //     already holds (this loop has a 429 gate because builds
+             //     genuinely hit rate limits);
+             //   * a KEYLESS teacher (callTTS unavailable) still gets real
+             //     word audio in the pack instead of nothing;
+             //   * word audio in packs matches what the player speaks live,
+             //     since handleAudio prefers the same bank at runtime.
+             // English packs only — the bank is English by construction — and
+             // the load is bounded so a failed fetch can never hang a build.
+             let packRecordedWordBank = null;
+             if (packIsEnglish && typeof window !== 'undefined' && typeof window.loadWordAudioBank === 'function') {
+                 try {
+                     await Promise.race([
+                         window.loadWordAudioBank(),
+                         new Promise((resolve) => setTimeout(resolve, 6000)),
+                     ]);
+                     const bank = window._CACHE_WORD_AUDIO_BANK;
+                     if (bank && Object.keys(bank).length > 0) packRecordedWordBank = bank;
+                 } catch (_) { packRecordedWordBank = null; }
+             }
+             const recordedBankAssetFor = (text) => {
+                 if (!packRecordedWordBank) return null;
+                 const key = normalizePackKey(text);
+                 // Single words only: sentences, prompts and phoneme prompts
+                 // always go to TTS so their voice stays consistent.
+                 if (!key || key.includes(' ')) return null;
+                 const src = packRecordedWordBank[key];
+                 if (typeof src !== 'string') return null;
+                 const match = src.match(/^data:([^;,]+);base64,(.+)$/i);
+                 return match ? { mime: match[1], base64: match[2] } : null;
+             };
+             let packedFromRecordedBank = 0;
              const addInstructionParts = (tasks, sentence) => {
                  String(sentence || '').split(/(\/[^\s/]{1,4}\/)/g)
                      .map((part) => part.trim())
@@ -2239,6 +2276,15 @@
                          setPrewarmCount((prev) => prev + 1);
                          return packedTtsAssets[key];
                      }
+                     // Recorded bank beats synthesis — and still supplies words
+                     // when the TTS gate has aborted or no backend exists.
+                     const recorded = recordedBankAssetFor(text);
+                     if (recorded) {
+                         packedTtsAssets[key] = recorded;
+                         packedFromRecordedBank += 1;
+                         setPrewarmCount((prev) => prev + 1);
+                         return recorded;
+                     }
                      try {
                          if (ttsGate.aborted || typeof callTTS !== 'function') throw new Error('TTS unavailable');
                          const src = await callTTS(text, voiceForTts, speedForTts);
@@ -2290,6 +2336,10 @@
                      words: processed.length,
                      rateLimited: ttsGate.rateLimited,
                      gaveUp: ttsGate.aborted,
+                     // Provenance: clips served from the recorded word bank
+                     // instead of synthesis (developer-side Kokoro label; see
+                     // dev-tools/kokoro_audio_manifest.json).
+                     fromRecordedBank: packedFromRecordedBank,
                  };
                  processed[0]._ttsRequiredKeys = [...requiredTtsKeys];
                  processed[0]._ttsAssets = packedTtsAssets;

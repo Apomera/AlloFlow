@@ -29,6 +29,10 @@ const rootMirrorFiles = [
   'view_quiz_module.js',
   'student_analytics_module.js',
   'view_submission_inbox_module.js',
+  // Loaded on demand by word_sounds_module.js via window.__alloLoadPlugin.
+  // It is not a *_module.js file, so check_deploy_mirror.cjs does not see it;
+  // without this entry a stale copy would silently serve an old lesson script.
+  'word_sounds_di_loader.js',
 ];
 const checkOnly = process.argv.includes('--check');
 const mismatches = [];

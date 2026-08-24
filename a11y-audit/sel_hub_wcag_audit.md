@@ -1,6 +1,6 @@
 # SEL Hub WCAG AA and Theme Audit
 
-Generated: 2026-08-23T20:30:41.431Z
+Generated: 2026-08-24T01:29:04.052Z
 
 ## Summary
 
@@ -11,7 +11,7 @@ Generated: 2026-08-23T20:30:41.431Z
 
 ## Coverage (read this before the counts)
 
-- Tool contrast: 14196 text node(s) graded; 921 skipped (gradient background), 933 skipped (colour set by a CSS class)
+- Tool contrast: 14199 text node(s) graded; 921 skipped (gradient background), 933 skipped (colour set by a CSS class)
 - **Skipped is not passed.** Gradient-backed text has no single background to measure, and a colour set by a utility class cannot be resolved from server-rendered markup.
 - Hub shell entry points found this run: light=recent+sharePacket+teacherLaunch+privacyCopy, dark=recent+sharePacket+teacherLaunch+privacyCopy, high-contrast=recent+sharePacket+teacherLaunch+privacyCopy, mobile-high-contrast=recent+sharePacket+teacherLaunch+privacyCopy
 - Tool interiors render on the host dark shell (`needsDarkShell` in sel_hub_module.js), so a tool that ignores `ctx.theme` produces identical markup in light and dark. Byte-identical renders across themes below mean the tool is theme-blind, not that it passed three audits.

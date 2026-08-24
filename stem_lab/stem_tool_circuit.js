@@ -1027,7 +1027,7 @@ window.StemLab = window.StemLab || {
                     return h('div', { key: stat.label, className: 'rounded-xl border border-slate-700/70 bg-slate-950/55 p-2.5' },
                       h('div', { className: 'text-base font-black text-white font-mono leading-none' }, stat.value),
                       h('div', { className: 'mt-1 text-[10px] font-bold uppercase tracking-wide text-slate-400' }, stat.label),
-                      h('div', { className: 'mt-0.5 text-[10px] text-slate-500' }, stat.hint)
+                      h('div', { className: 'mt-0.5 text-[10px] text-slate-400' }, stat.hint)
                     );
                   })
                 )
@@ -1781,7 +1781,7 @@ window.StemLab = window.StemLab || {
                 { label: __alloT('stem.circuit.readout_mode', 'Mode'), val: mode, color: 'slate', icon: mode === 'series' ? '\u2192' : '\u2261', textCls: 'text-slate-400', valCls: 'text-slate-200', borderCls: 'border-slate-800 bg-slate-900/40' },
                 { label: __alloT('stem.circuit.readout_resistance', 'Resistance'), val: totalR >= 1e8 ? '\u221E' : totalR.toFixed(1) + '\u03A9', color: 'yellow', icon: '\u2AE8', textCls: 'text-yellow-400/80', valCls: 'text-yellow-400', borderCls: 'border-yellow-500/20 bg-yellow-950/10' },
                 { label: __alloT('stem.circuit.stat_current', 'Current'), val: current.toFixed(3) + 'A', color: 'blue', icon: '\u26A1', textCls: 'text-blue-400/80', valCls: 'text-blue-400', borderCls: 'border-blue-500/20 bg-blue-950/10' },
-                { label: __alloT('stem.circuit.readout_power', 'Power'), val: power.toFixed(2) + 'W', color: 'red', icon: '\uD83D\uDD25', textCls: 'text-rose-400/80', valCls: 'text-rose-400', borderCls: 'border-rose-500/20 bg-rose-950/10' }
+                { label: __alloT('stem.circuit.readout_power', 'Power'), val: power.toFixed(2) + 'W', color: 'red', icon: '\uD83D\uDD25', textCls: 'text-rose-300', valCls: 'text-rose-400', borderCls: 'border-rose-500/20 bg-rose-950/10' }
               ].map(function(m) {
                 var isSh = isShort && m.label !== __alloT('stem.circuit.readout_mode', 'Mode');
                 return h('div', {

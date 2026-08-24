@@ -15861,7 +15861,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
           disabled: !!sim.active,
           'aria-describedby': !REGIONS[region].complete ? 'fl-region-preview-note' : undefined,
           onChange: function(e) { setRegion(e.target.value); flAnnounce('Region set to ' + REGIONS[e.target.value].label); },
-          style: { background: '#0f1c2f', color: 'var(--allo-stem-text, #e2e8f0)', border: '1px solid rgba(56,189,248,0.4)', borderRadius: 6, padding: '4px 8px', fontSize: 12, opacity: sim.active ? 0.62 : 1 } },
+          style: { background: '#0f1c2f', color: '#e2e8f0', border: '1px solid rgba(56,189,248,0.4)', borderRadius: 6, padding: '4px 8px', fontSize: 12, opacity: sim.active ? 0.62 : 1 } },
           Object.keys(REGIONS).map(function(rk) {
             return h('option', { key: rk, value: rk }, REGIONS[rk].label + (REGIONS[rk].complete ? '' : ' (preview)'));
           })),

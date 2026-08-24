@@ -1221,7 +1221,7 @@ window.StemLab = window.StemLab || {
   } catch (e) {}
 
   window.StemLab.registerTool('cell', {
-    icon: '\uD83D\uDD2C',
+    icon: '\uD83E\uDDEB',
     label: 'Cell Simulator',
     desc: 'Explore 11 living micro-organisms in a simulated petri dish',
     color: 'green',

@@ -2893,7 +2893,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
         // ════════════════════════════════════════
 
         var cardClass = isDark
-          ? 'bg-slate-800 border border-slate-700 rounded-xl p-4'
+          ? 'bg-slate-800 border border-slate-700 rounded-xl p-4 text-slate-100'
           : 'bg-white border border-slate-400 rounded-xl p-4 shadow-sm';
         var headingClass = isDark ? 'text-white font-bold' : 'text-slate-900 font-bold';
         var subTextClass = isDark ? 'text-slate-200 text-xs' : 'text-slate-600 text-xs';
@@ -3410,7 +3410,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                     h('div', { className: headingClass + ' text-xs mb-1' }, ex.label),
                     h('div', { className: subTextClass }, ex.desc),
                     h('div', {
-                      className: 'mt-1 text-xs font-mono ' + (isDark ? 'text-rose-300' : 'text-rose-600')
+                      className: 'mt-1 text-xs font-mono ' + (isDark ? 'text-rose-300' : 'text-rose-700')
                     }, 'Target: ' + ex.target)
                   );
                 })
@@ -4377,7 +4377,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                 h('label', { className: subTextClass }, 'Difficulty:'),
                 h('div', { className: 'flex gap-1' },
                   ['easy', 'medium', 'hard'].map(function(lvl) {
-                    var colors = { easy: '#22c55e', medium: '#eab308', hard: '#ef4444' };
+                    var colors = { easy: '#166534', medium: '#a16207', hard: '#b91c1c' };
                     var isActive = srDifficulty === lvl;
                     return h('button', {
                       key: lvl,
@@ -4779,7 +4779,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                 rich:   { label: t('stem.singing.rich_open_lifted', '🎶 Rich (open + lifted)'), color: '#7c3aed', bg: '#f5f3ff', border: '#c4b5fd', desc: t('stem.singing.operatic_professional_tone_full_resona', 'Operatic / professional tone. Full resonance.') },
                 bright: { label: t('stem.singing.bright_open_lowered', '✨ Bright (open + lowered)'), color: '#facc15', bg: '#fefce8', border: '#fde047', desc: t('stem.singing.forward_placement_pop_belt_style', 'Forward placement. Pop / belt style.') },
                 warm:   { label: t('stem.singing.warm_narrow_lifted', '🌅 Warm (narrow + lifted)'), color: '#f97316', bg: '#fff7ed', border: '#fdba74', desc: t('stem.singing.mellow_tone_choral_acoustic', 'Mellow tone. Choral / acoustic.') },
-                nasal:  { label: t('stem.singing.nasal_narrow_lowered', '🐝 Nasal (narrow + lowered)'), color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: t('stem.singing.tight_resonance_often_unintended', 'Tight resonance. Often unintended.') }
+                nasal:  { label: t('stem.singing.nasal_narrow_lowered', '🐝 Nasal (narrow + lowered)'), color: '#b91c1c', bg: '#fef2f2', border: '#fca5a5', desc: t('stem.singing.tight_resonance_often_unintended', 'Tight resonance. Often unintended.') }
               }[tone];
               return h('div', { className: cardClass + ' space-y-3' },
                 h('h3', { className: 'text-sm font-black' }, t('stem.singing.resonance_discovery', '🎙️ Resonance discovery')),
@@ -4799,10 +4799,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                 ),
                 h('div', { className: 'flex gap-2 items-center flex-wrap' },
                   h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ t: iq.throat, p: iq.palate, st: tone }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-200 text-[11px] font-bold text-slate-700' }, t('stem.singing.log', '📋 Log')),
-                  h('button', { onClick: function() { setIQ({ throat: 50, palate: 50, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded text-[11px] font-semibold text-slate-600 border border-slate-300' }, t('stem.singing.reset', '↺ Reset'))
+                  h('button', { onClick: function() { setIQ({ throat: 50, palate: 50, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded text-[11px] font-semibold border ' + (isDark ? 'text-slate-300 border-slate-600' : 'text-slate-600 border-slate-300') }, t('stem.singing.reset', '↺ Reset'))
                 ),
                 h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, 'aria-label': t('stem.singing.hypothesis_input', 'Resonance discovery hypothesis'), placeholder: t('stem.singing.hypothesis_what_anatomical_adjustments', 'Hypothesis: What anatomical adjustments produce rich tone?'),
-                  className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
+                  className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug bg-white text-slate-800', rows: 3 }),
                 !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300' }, t('stem.singing.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
                 iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] leading-relaxed' },
                   h('ul', { className: 'list-disc pl-5 space-y-1' },
@@ -4812,8 +4812,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                   h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
                   t('stem.singing.i_understand_explain_in_own_words', 'I understand — explain in own words')),
                 iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, 'aria-label': t('stem.singing.explanation_input', 'Resonance discovery explanation'), placeholder: t('stem.singing.explain_how_resonance_cavity_shape_con', 'Explain how resonance cavity shape controls vocal tone.'),
-                  className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 3 }),
-                h('div', { className: 'text-[10px] italic text-slate-500' }, t('stem.singing.design_note_discrete_4_tone_marker_no_', 'Design note: discrete 4-tone marker; no acoustic score; no reveal — by design.'))
+                  className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2 bg-white text-slate-800', rows: 3 }),
+                h('div', { className: 'text-[10px] italic ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, t('stem.singing.design_note_discrete_4_tone_marker_no_', 'Design note: discrete 4-tone marker; no acoustic score; no reveal — by design.'))
               );
             })()
           ),

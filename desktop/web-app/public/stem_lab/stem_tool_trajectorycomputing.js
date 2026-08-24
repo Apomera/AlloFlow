@@ -833,6 +833,7 @@
     desc: 'Recreate the human-computing workflow: calculate a flight path, debug FORTRAN-style code, sequence punch cards, run a batch job, and independently verify the result.',
     color: 'emerald',
     category: 'coding',
+    gradeRange: '7-12',
     aliases: ['human computers', 'fortran', 'punch cards', 'trajectory', 'coding history', 'women in STEM'],
     questHooks: [
       {
@@ -892,6 +893,8 @@
       }
     ],
     render: function (ctx) {
+      var t = ctx.t || function (k, fb) { return fb != null ? fb : k; }; // extraction anchor: the codemod requires a ctx.t-shaped init
+      t = function (k, fb) { var v; try { v = (typeof ctx.t === 'function') ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null || v === k) ? (fb != null ? fb : k) : v; }; // robust: a host t() that returns undefined or the raw key on a pack miss (see stem_tool_geologyexplorer.js's note) must still yield the English fallback
       var React = ctx.React;
       var h = React.createElement;
       var d = (ctx.toolData && ctx.toolData[STATE_KEY]) || {};
@@ -1039,8 +1042,8 @@
           h('table', { className: 'tc-ledger' },
             h('caption', { style: { textAlign: 'left', padding: 10, fontWeight: 900 } }, caption || 'Calculation audit ledger'),
             h('thead', null, h('tr', null,
-              h('th', { scope: 'col' }, 'Step'), h('th', { scope: 'col' }, 'Substitution'),
-              h('th', { scope: 'col' }, 'Entered'), h('th', { scope: 'col' }, 'Reference'), h('th', { scope: 'col' }, 'Audit')
+              h('th', { scope: 'col' }, t('stem.trajectorycomputing.step', 'Step')), h('th', { scope: 'col' }, t('stem.trajectorycomputing.substitution', 'Substitution')),
+              h('th', { scope: 'col' }, t('stem.trajectorycomputing.entered', 'Entered')), h('th', { scope: 'col' }, t('stem.trajectorycomputing.reference', 'Reference')), h('th', { scope: 'col' }, t('stem.trajectorycomputing.audit', 'Audit'))
             )),
             h('tbody', null, ledger.rows.map(function (row) {
               return h('tr', { key: row.id },
@@ -1061,7 +1064,7 @@
         };
         var entries = normalizeAuditTrail(trail);
         return h('section', { className: 'tc-audit-log', 'aria-labelledby': 'tc-audit-log-title' },
-          h('h4', { id: 'tc-audit-log-title' }, 'Operator audit log'),
+          h('h4', { id: 'tc-audit-log-title' }, t('stem.trajectorycomputing.operator_audit_log', 'Operator audit log')),
           entries.length
             ? h('ol', null, entries.map(function (event, index) {
               var fromLabel = labels[event.station] || event.station;
@@ -1070,7 +1073,7 @@
                 h('strong', null, String(index + 1).padStart(2, '0') + ' / ' + fromLabel), ' → ', toLabel
               );
             }))
-            : h('p', { className: 'tc-lede' }, 'No station handoffs recorded in this snapshot.')
+            : h('p', { className: 'tc-lede' }, t('stem.trajectorycomputing.no_station_handoffs_recorded_in_this_s', 'No station handoffs recorded in this snapshot.'))
         );
       }
 
@@ -1081,18 +1084,18 @@
         return h('section', { className: 'tc-report', 'aria-labelledby': 'tc-report-title' },
           h('div', { className: 'tc-report-head' },
             h('div', null,
-              h('p', { className: 'tc-kicker', style: { color: '#9b3e21' } }, 'Fictional National Aeronautics Laboratory'),
+              h('p', { className: 'tc-kicker', style: { color: '#9b3e21' } }, t('stem.trajectorycomputing.fictional_national_aeronautics_laborat', 'Fictional National Aeronautics Laboratory')),
               h('h3', { id: 'tc-report-title', style: { margin: '4px 0' } }, report.title),
               h('p', { style: { margin: 0 } }, 'Work order ' + report.workOrder + ' / instructional simulation')
             ),
             h('strong', { style: { fontFamily: 'ui-monospace,monospace', color: '#17633f' } }, report.status)
           ),
           h('div', { className: 'tc-report-grid' },
-            h('div', { className: 'tc-report-card' }, h('b', null, report.workflow), 'verification workflow'),
-            h('div', { className: 'tc-report-card' }, h('b', null, round(report.output.range, 1) + ' m'), 'verified landing range'),
-            h('div', { className: 'tc-report-card' }, h('b', null, report.output.verdict), 'landing-zone recommendation')
+            h('div', { className: 'tc-report-card' }, h('b', null, report.workflow), t('stem.trajectorycomputing.verification_workflow', 'verification workflow')),
+            h('div', { className: 'tc-report-card' }, h('b', null, round(report.output.range, 1) + ' m'), t('stem.trajectorycomputing.verified_landing_range', 'verified landing range')),
+            h('div', { className: 'tc-report-card' }, h('b', null, report.output.verdict), t('stem.trajectorycomputing.landing_zone_recommendation', 'landing-zone recommendation'))
           ),
-          h('h4', null, 'Audit chain'),
+          h('h4', null, t('stem.trajectorycomputing.audit_chain', 'Audit chain')),
           h('ul', { className: 'tc-checklist' }, report.checks.map(function (check) {
             return h('li', { key: check.label }, (check.pass ? '\u2713 ' : '\u25CB ') + check.label);
           })),
@@ -1103,21 +1106,21 @@
             h('ul', { className: 'tc-checklist' }, safeguards.checks.map(function (check) {
               return h('li', { key: check.id }, (check.pass ? '\u2713 Verified: ' : '\u25CB Needs review: ') + check.label + ' - ' + check.detail);
             })),
-            h('p', { className: 'tc-lede' }, 'Interface safeguards: Keyboard station tabs support Arrow keys, Home, and End. Visible focus rings and 24-pixel checkbox and radio targets support keyboard and switch access. The line-printer preview and machine read-back remain separate checks so learners can inspect output independently.')
+            h('p', { className: 'tc-lede' }, t('stem.trajectorycomputing.interface_safeguards_keyboard_station_', 'Interface safeguards: Keyboard station tabs support Arrow keys, Home, and End. Visible focus rings and 24-pixel checkbox and radio targets support keyboard and switch access. The line-printer preview and machine read-back remain separate checks so learners can inspect output independently.'))
           ),
-          h('p', null, h('strong', null, 'Role separation: '), report.assignment.message),
+          h('p', null, h('strong', null, t('stem.trajectorycomputing.role_separation', 'Role separation: ')), report.assignment.message),
           renderLedger(d.worksheet || {}, 'Hand-calculation audit ledger'),
-          report.tableApproximation && h('p', null, h('strong', null, 'Table-precision control: '), 'The four-place reference estimate was ' + round(report.tableApproximation.range, 1) + ' m, a ' + round(Math.abs(report.tableApproximation.difference), 2) + ' m difference. Prediction ' + (report.tableApproximation.correct ? 'supported.' : 'needs revision.')),
-          report.formatAudit && h('p', null, h('strong', null, 'Format card: '), 'TIME ' + (formatFields.timeFormat && formatFields.timeFormat.actual || '\u2014') + ', RANGE ' + (formatFields.rangeFormat && formatFields.rangeFormat.actual || '\u2014') + ', order ' + (formatFields.order && formatFields.order.actual || '\u2014') + '.'),
+          report.tableApproximation && h('p', null, h('strong', null, t('stem.trajectorycomputing.table_precision_control', 'Table-precision control: ')), 'The four-place reference estimate was ' + round(report.tableApproximation.range, 1) + ' m, a ' + round(Math.abs(report.tableApproximation.difference), 2) + ' m difference. Prediction ' + (report.tableApproximation.correct ? 'supported.' : 'needs revision.')),
+          report.formatAudit && h('p', null, h('strong', null, t('stem.trajectorycomputing.format_card', 'Format card: ')), 'TIME ' + (formatFields.timeFormat && formatFields.timeFormat.actual || '\u2014') + ', RANGE ' + (formatFields.rangeFormat && formatFields.rangeFormat.actual || '\u2014') + ', order ' + (formatFields.order && formatFields.order.actual || '\u2014') + '.'),
           report.printPreview && h('div', null,
-            h('p', null, h('strong', null, 'Fixed-width preview: '), report.printPreview.pass ? 'confirmed.' : 'needs review.'),
-            h('pre', { className: 'tc-print-preview', 'aria-label': 'Confirmed fixed-width line-printer preview' }, report.printPreview.actualLine || '\u2014')
+            h('p', null, h('strong', null, t('stem.trajectorycomputing.fixed_width_preview', 'Fixed-width preview: ')), report.printPreview.pass ? 'confirmed.' : 'needs review.'),
+            h('pre', { className: 'tc-print-preview', 'aria-label': t('stem.trajectorycomputing.confirmed_fixed_width_line_printer_pre', 'Confirmed fixed-width line-printer preview') }, report.printPreview.actualLine || '\u2014')
           ),
-          report.batchReadback && h('p', null, h('strong', null, 'Machine read-back: '), report.batchReadback.correct + ' of ' + report.batchReadback.total + ' read-back fields matched the printed job.'),
-          report.reproducibilityNote && h('p', null, h('strong', null, 'Reproducibility note: '), report.reproducibilityNote.correct + ' of ' + report.reproducibilityNote.total + ' fixed mission inputs recorded.'),
-          report.angleStudy && h('p', null, h('strong', null, 'Parameter study: '), report.angleStudy.angle + ' degrees produced ' + round(report.angleStudy.range, 1) + ' m, ' + report.angleStudy.relation + ' than baseline. Prediction ' + (report.angleStudy.correct ? 'supported.' : 'revised.')),
-          h('p', { className: 'tc-lede' }, h('strong', null, 'Model limit: '), report.modelLimit),
-          h('p', { className: 'tc-lede' }, 'Original fictional mission and report. Historical context is documented separately in the lab; no copyrighted film material is reproduced.'),
+          report.batchReadback && h('p', null, h('strong', null, t('stem.trajectorycomputing.machine_read_back', 'Machine read-back: ')), report.batchReadback.correct + ' of ' + report.batchReadback.total + ' read-back fields matched the printed job.'),
+          report.reproducibilityNote && h('p', null, h('strong', null, t('stem.trajectorycomputing.reproducibility_note', 'Reproducibility note: ')), report.reproducibilityNote.correct + ' of ' + report.reproducibilityNote.total + ' fixed mission inputs recorded.'),
+          report.angleStudy && h('p', null, h('strong', null, t('stem.trajectorycomputing.parameter_study', 'Parameter study: ')), report.angleStudy.angle + ' degrees produced ' + round(report.angleStudy.range, 1) + ' m, ' + report.angleStudy.relation + ' than baseline. Prediction ' + (report.angleStudy.correct ? 'supported.' : 'revised.')),
+          h('p', { className: 'tc-lede' }, h('strong', null, t('stem.trajectorycomputing.model_limit', 'Model limit: ')), report.modelLimit),
+          h('p', { className: 'tc-lede' }, t('stem.trajectorycomputing.original_fictional_mission_and_report_', 'Original fictional mission and report. Historical context is documented separately in the lab; no copyrighted film material is reproduced.')),
           h('div', { className: 'tc-row' },
             action('Print this report', function () { if (typeof window !== 'undefined' && typeof window.print === 'function') window.print(); }),
             action('Close report', function () { update({ reportOpen: false }); }, true)
@@ -1127,13 +1130,13 @@
 
       function renderReferenceTable() {
         return h('section', { className: 'tc-reference-table', 'aria-labelledby': 'tc-reference-table-title' },
-          h('p', { className: 'tc-kicker', style: { color: '#9b3e21' } }, 'Desk card / printed reference'),
-          h('h3', { id: 'tc-reference-table-title' }, 'Read the trigonometry table before calculating.'),
-          h('p', { className: 'tc-lede' }, 'The table is a shared reference, not a calculator. Find the 38-degree row and record four decimal places for sin(theta) and cos(theta).'),
+          h('p', { className: 'tc-kicker', style: { color: '#9b3e21' } }, t('stem.trajectorycomputing.desk_card_printed_reference', 'Desk card / printed reference')),
+          h('h3', { id: 'tc-reference-table-title' }, t('stem.trajectorycomputing.read_the_trigonometry_table_before_cal', 'Read the trigonometry table before calculating.')),
+          h('p', { className: 'tc-lede' }, t('stem.trajectorycomputing.the_table_is_a_shared_reference_not_a_', 'The table is a shared reference, not a calculator. Find the 38-degree row and record four decimal places for sin(theta) and cos(theta).')),
           h('div', { className: 'tc-ledger-wrap' },
             h('table', { className: 'tc-ledger' },
-              h('caption', { style: { textAlign: 'left', padding: 10, fontWeight: 900 } }, 'Printed values / angle in degrees'),
-              h('thead', null, h('tr', null, h('th', { scope: 'col' }, 'Angle'), h('th', { scope: 'col' }, 'sin(theta)'), h('th', { scope: 'col' }, 'cos(theta)'))),
+              h('caption', { style: { textAlign: 'left', padding: 10, fontWeight: 900 } }, t('stem.trajectorycomputing.printed_values_angle_in_degrees', 'Printed values / angle in degrees')),
+              h('thead', null, h('tr', null, h('th', { scope: 'col' }, t('stem.trajectorycomputing.angle', 'Angle')), h('th', { scope: 'col' }, 'sin(theta)'), h('th', { scope: 'col' }, 'cos(theta)'))),
               h('tbody', null, TRIG_TABLE.map(function (row) {
                 return h('tr', { key: row.angle, className: row.angle === MISSION.angle ? 'tc-reference-target' : '' },
                   h('th', { scope: 'row' }, row.angle + ' deg'), h('td', null, row.sin.toFixed(4)), h('td', null, row.cos.toFixed(4))
@@ -1146,23 +1149,23 @@
             update({ tableResult: checkReferenceTable(tableLookup) });
           } },
             h('div', { className: 'tc-role-grid' },
-              h('label', { className: 'tc-field' }, 'sin(theta) at 38 deg', h('input', { type: 'number', step: '0.0001', inputMode: 'decimal', value: tableLookup.sin == null ? '' : tableLookup.sin, onChange: function (event) { setTableField('sin', event.target.value); } }),
+              h('label', { className: 'tc-field' }, t('stem.trajectorycomputing.sin_theta_at_38_deg', 'sin(theta) at 38 deg'), h('input', { type: 'number', step: '0.0001', inputMode: 'decimal', value: tableLookup.sin == null ? '' : tableLookup.sin, onChange: function (event) { setTableField('sin', event.target.value); } }),
                 tableResult && h('small', { className: tableResult.fields.sin.ok ? 'tc-ok' : 'tc-bad' }, tableResult.fields.sin.message)
               ),
-              h('label', { className: 'tc-field' }, 'cos(theta) at 38 deg', h('input', { type: 'number', step: '0.0001', inputMode: 'decimal', value: tableLookup.cos == null ? '' : tableLookup.cos, onChange: function (event) { setTableField('cos', event.target.value); } }),
+              h('label', { className: 'tc-field' }, t('stem.trajectorycomputing.cos_theta_at_38_deg', 'cos(theta) at 38 deg'), h('input', { type: 'number', step: '0.0001', inputMode: 'decimal', value: tableLookup.cos == null ? '' : tableLookup.cos, onChange: function (event) { setTableField('cos', event.target.value); } }),
                 tableResult && h('small', { className: tableResult.fields.cos.ok ? 'tc-ok' : 'tc-bad' }, tableResult.fields.cos.message)
               )
             ),
             tableResult && h('p', { role: 'status', className: tableResult.pass ? 'tc-check tc-ok' : 'tc-diag tc-bad' }, tableResult.correct + ' of ' + tableResult.total + ' reference values recorded.'),
-            h('div', { className: 'tc-row' }, h('button', { type: 'submit', className: 'tc-action' }, 'Check table lookup'))
+            h('div', { className: 'tc-row' }, h('button', { type: 'submit', className: 'tc-action' }, t('stem.trajectorycomputing.check_table_lookup', 'Check table lookup')))
           ),
           h('div', { className: 'tc-control-box' },
-            h('h4', { style: { margin: '0 0 6px' } }, 'Control estimate: how much does table precision change the range?'),
-            h('p', { className: 'tc-lede' }, 'Predict first. Using the four-place table values, will the landing range differ from the full-precision result by more than 3 meters?'),
+            h('h4', { style: { margin: '0 0 6px' } }, t('stem.trajectorycomputing.control_estimate_how_much_does_table_p', 'Control estimate: how much does table precision change the range?')),
+            h('p', { className: 'tc-lede' }, t('stem.trajectorycomputing.predict_first_using_the_four_place_tab', 'Predict first. Using the four-place table values, will the landing range differ from the full-precision result by more than 3 meters?')),
             h('fieldset', { style: { border: 0, padding: 0, margin: 0 } },
-              h('legend', { className: 'tc-field' }, 'My prediction'),
-              h('label', { style: { display: 'block', marginTop: 5 } }, h('input', { type: 'radio', name: 'tc-table-prediction', value: 'within', checked: tableApproximationPrediction === 'within', onChange: function () { update({ tableApproximationPrediction: 'within', tableApproximationResult: null }); } }), ' Within 3 meters'),
-              h('label', { style: { display: 'block', marginTop: 5 } }, h('input', { type: 'radio', name: 'tc-table-prediction', value: 'outside', checked: tableApproximationPrediction === 'outside', onChange: function () { update({ tableApproximationPrediction: 'outside', tableApproximationResult: null }); } }), ' More than 3 meters')
+              h('legend', { className: 'tc-field' }, t('stem.trajectorycomputing.my_prediction', 'My prediction')),
+              h('label', { style: { display: 'block', marginTop: 5 } }, h('input', { type: 'radio', name: 'tc-table-prediction', value: 'within', checked: tableApproximationPrediction === 'within', onChange: function () { update({ tableApproximationPrediction: 'within', tableApproximationResult: null }); } }), t('stem.trajectorycomputing.within_3_meters', ' Within 3 meters')),
+              h('label', { style: { display: 'block', marginTop: 5 } }, h('input', { type: 'radio', name: 'tc-table-prediction', value: 'outside', checked: tableApproximationPrediction === 'outside', onChange: function () { update({ tableApproximationPrediction: 'outside', tableApproximationResult: null }); } }), t('stem.trajectorycomputing.more_than_3_meters', ' More than 3 meters'))
             ),
             h('div', { className: 'tc-row' }, action('Run table-precision control', function () { update({ tableApproximationResult: checkTableApproximation(tableLookup, tableApproximationPrediction) }); }, false, !tableResult || !tableResult.pass || !tableApproximationPrediction)),
             tableApproximationResult && h('div', { className: tableApproximationResult.correct ? 'tc-check' : 'tc-diag', role: 'status' },
@@ -1175,34 +1178,34 @@
 
       function renderBriefing() {
         return h('section', { role: 'tabpanel', id: 'tc-panel-briefing', 'aria-labelledby': 'tc-tab-briefing' },
-          h('p', { className: 'tc-kicker', style: { color: '#9b3e21' } }, 'Work order 62-AUR-03'),
-          h('h2', { className: 'tc-heading' }, 'The answer must be trusted before the vehicle flies.'),
-          h('p', { className: 'tc-lede' }, 'You have joined the fictional National Aeronautics Laboratory as a computation specialist. Aurora Test 3 will release a research capsule from a 30-meter tower. Your team must predict where it lands, translate the method into early scientific code, prepare the card deck, and check the machine independently.'),
-          h('div', { className: 'tc-note' }, h('strong', null, 'Historical boundary: '), 'The mission, facility, documents, and interface in this simulation are original and fictional. The workflow is grounded in documented history about women who worked as human computers and later programmed early electronic computers.'),
-          h('div', { className: 'tc-data', 'aria-label': 'Mission constants' },
+          h('p', { className: 'tc-kicker', style: { color: '#9b3e21' } }, t('stem.trajectorycomputing.work_order_62_aur_03', 'Work order 62-AUR-03')),
+          h('h2', { className: 'tc-heading' }, t('stem.trajectorycomputing.the_answer_must_be_trusted_before_the_', 'The answer must be trusted before the vehicle flies.')),
+          h('p', { className: 'tc-lede' }, t('stem.trajectorycomputing.you_have_joined_the_fictional_national', 'You have joined the fictional National Aeronautics Laboratory as a computation specialist. Aurora Test 3 will release a research capsule from a 30-meter tower. Your team must predict where it lands, translate the method into early scientific code, prepare the card deck, and check the machine independently.')),
+          h('div', { className: 'tc-note' }, h('strong', null, t('stem.trajectorycomputing.historical_boundary', 'Historical boundary: ')), t('stem.trajectorycomputing.the_mission_facility_documents_and_int', 'The mission, facility, documents, and interface in this simulation are original and fictional. The workflow is grounded in documented history about women who worked as human computers and later programmed early electronic computers.')),
+          h('div', { className: 'tc-data', 'aria-label': t('stem.trajectorycomputing.mission_constants', 'Mission constants') },
             dataTile('release speed', '215 m/s'), dataTile('launch angle', '38 degrees'),
             dataTile('initial height', '30 m'), dataTile('landing zone', '4.55-4.70 km')
           ),
-          h('h3', null, 'Your assignment'),
+          h('h3', null, t('stem.trajectorycomputing.your_assignment', 'Your assignment')),
           h('ol', { className: 'tc-lede' },
-            h('li', null, 'Read the printed trigonometry table and record the 38-degree reference values.'),
-            h('li', null, 'Resolve velocity into horizontal and vertical components.'),
-            h('li', null, 'Calculate time aloft and downrange distance.'),
-            h('li', null, 'Debug a FORTRAN-style transcription and order its card deck.'),
-            h('li', null, 'Audit the line-printer format card and inspect its fixed-width preview before releasing the deck.'),
-            h('li', null, 'Run the batch job, transcribe its printed range and status, then verify it without relying on the printout.')
+            h('li', null, t('stem.trajectorycomputing.read_the_printed_trigonometry_table_an', 'Read the printed trigonometry table and record the 38-degree reference values.')),
+            h('li', null, t('stem.trajectorycomputing.resolve_velocity_into_horizontal_and_v', 'Resolve velocity into horizontal and vertical components.')),
+            h('li', null, t('stem.trajectorycomputing.calculate_time_aloft_and_downrange_dis', 'Calculate time aloft and downrange distance.')),
+            h('li', null, t('stem.trajectorycomputing.debug_a_fortran_style_transcription_an', 'Debug a FORTRAN-style transcription and order its card deck.')),
+            h('li', null, t('stem.trajectorycomputing.audit_the_line_printer_format_card_and', 'Audit the line-printer format card and inspect its fixed-width preview before releasing the deck.')),
+            h('li', null, t('stem.trajectorycomputing.run_the_batch_job_transcribe_its_print', 'Run the batch job, transcribe its printed range and status, then verify it without relying on the printout.'))
           ),
           h('fieldset', { className: 'tc-role-box' },
-            h('legend', { style: { fontWeight: 900 } }, 'Choose the verification workflow'),
+            h('legend', { style: { fontWeight: 900 } }, t('stem.trajectorycomputing.choose_the_verification_workflow', 'Choose the verification workflow')),
             h('label', { style: { display: 'block', marginTop: 7 } },
               h('input', { type: 'radio', name: 'tc-work-pattern', value: 'pair', checked: workPattern === 'pair', onChange: function () { update({ workPattern: 'pair', verification: {}, verificationResult: null }); } }),
-              ' Paired cross-check \u2014 separate calculator and verifier desk codes'
+              t('stem.trajectorycomputing.paired_cross_check_separate_calculator', ' Paired cross-check \u2014 separate calculator and verifier desk codes')
             ),
             h('label', { style: { display: 'block', marginTop: 7 } },
               h('input', { type: 'radio', name: 'tc-work-pattern', value: 'solo', checked: workPattern === 'solo', onChange: function () { update({ workPattern: 'solo', verification: {}, verificationResult: null }); } }),
-              ' Solo dual-pass audit \u2014 recompute after a deliberate reset'
+              t('stem.trajectorycomputing.solo_dual_pass_audit_recompute_after_a', ' Solo dual-pass audit \u2014 recompute after a deliberate reset')
             ),
-            h('p', { className: 'tc-lede', style: { marginBottom: 0 } }, 'Desk codes represent roles, not student names. The lab stores no personal identifiers.')
+            h('p', { className: 'tc-lede', style: { marginBottom: 0 } }, t('stem.trajectorycomputing.desk_codes_represent_roles_not_student', 'Desk codes represent roles, not student names. The lab stores no personal identifiers.'))
           ),
           h('div', { className: 'tc-row' },
             action('Begin hand calculation', function () { markComplete('briefing', 'worksheet'); }),
@@ -1217,15 +1220,15 @@
           ['flightTime', 'Positive flight time t', 'seconds'], ['range', 'Downrange distance R', 'meters']
         ];
         return h('section', { role: 'tabpanel', id: 'tc-panel-worksheet', 'aria-labelledby': 'tc-tab-worksheet' },
-          h('p', { className: 'tc-kicker', style: { color: '#9b3e21' } }, 'Station 02 / desktop calculation'),
-          h('h2', { className: 'tc-heading' }, 'Build a result the electronic computer can be checked against.'),
-          h('p', { className: 'tc-lede' }, 'Keep units beside every value. Use at least two decimal places until the final step.'),
+          h('p', { className: 'tc-kicker', style: { color: '#9b3e21' } }, t('stem.trajectorycomputing.station_02_desktop_calculation', 'Station 02 / desktop calculation')),
+          h('h2', { className: 'tc-heading' }, t('stem.trajectorycomputing.build_a_result_the_electronic_computer', 'Build a result the electronic computer can be checked against.')),
+          h('p', { className: 'tc-lede' }, t('stem.trajectorycomputing.keep_units_beside_every_value_use_at_l', 'Keep units beside every value. Use at least two decimal places until the final step.')),
           renderReferenceTable(),
-          (mode === 'guided' || d.showReference) && h('div', { className: 'tc-formula', 'aria-label': 'Formula reference' },
-            'theta radians = theta degrees x pi / 180\n',
-            'Vx = V x cos(theta)        Vy = V x sin(theta)\n',
-            't = [Vy + sqrt(Vy^2 + 2gY0)] / g\n',
-            'R = Vx x t'
+          (mode === 'guided' || d.showReference) && h('div', { className: 'tc-formula', 'aria-label': t('stem.trajectorycomputing.formula_reference', 'Formula reference') },
+            t('stem.trajectorycomputing.theta_radians_theta_degrees_x_pi_180', 'theta radians = theta degrees x pi / 180\n'),
+            t('stem.trajectorycomputing.vx_v_x_cos_theta_vy_v_x_sin_theta', 'Vx = V x cos(theta)        Vy = V x sin(theta)\n'),
+            t('stem.trajectorycomputing.t_vy_sqrt_vy_2_2gy0_g', 't = [Vy + sqrt(Vy^2 + 2gY0)] / g\n'),
+            t('stem.trajectorycomputing.r_vx_x_t', 'R = Vx x t')
           ),
           h('form', { onSubmit: function (event) {
             event.preventDefault();
@@ -1243,7 +1246,7 @@
             })),
             worksheetResult && h('p', { role: 'status', className: feedbackClass(worksheetResult.pass) }, worksheetResult.correct + ' of ' + worksheetResult.total + ' calculations check out.'),
             h('div', { className: 'tc-row' },
-              h('button', { type: 'submit', className: 'tc-action' }, 'Check worksheet'),
+              h('button', { type: 'submit', className: 'tc-action' }, t('stem.trajectorycomputing.check_worksheet', 'Check worksheet')),
               mode !== 'guided' && action(d.showReference ? 'Hide formula reference' : 'Open formula reference', function () { update({ showReference: !d.showReference }); }, true)
             )
           )
@@ -1253,43 +1256,43 @@
       function renderProgram() {
         var diagnostics = compileResult && compileResult.diagnostics ? compileResult.diagnostics : [];
         return h('section', { role: 'tabpanel', id: 'tc-panel-program', 'aria-labelledby': 'tc-tab-program' },
-          h('p', { className: 'tc-kicker', style: { color: '#9b3e21' } }, 'Station 03 / transcription desk'),
-          h('h2', { className: 'tc-heading' }, 'Debug the FORTRAN-style program.'),
+          h('p', { className: 'tc-kicker', style: { color: '#9b3e21' } }, t('stem.trajectorycomputing.station_03_transcription_desk', 'Station 03 / transcription desk')),
+          h('h2', { className: 'tc-heading' }, t('stem.trajectorycomputing.debug_the_fortran_style_program', 'Debug the FORTRAN-style program.')),
           h('p', { className: 'tc-lede' }, mode === 'expert' ? 'Audit the listing against your worksheet and compile when ready.' : 'Three transcription errors were introduced: one constant, one variable name, and one trigonometric function. Find and repair them.'),
           completed.worksheet && h('details', null,
-            h('summary', null, 'Open checked calculation ledger'),
+            h('summary', null, t('stem.trajectorycomputing.open_checked_calculation_ledger', 'Open checked calculation ledger')),
             renderLedger(worksheet, 'Human reference used for program audit')
           ),
-          h('label', { className: 'tc-field', htmlFor: 'tc-code-editor' }, 'Program listing'),
+          h('label', { className: 'tc-field', htmlFor: 'tc-code-editor' }, t('stem.trajectorycomputing.program_listing', 'Program listing')),
           h('textarea', { id: 'tc-code-editor', className: 'tc-code', spellCheck: 'false', value: code, onChange: function (event) { update({ code: event.target.value, compileResult: null, formatAuditResult: null, printPreview: null, printPreviewResult: null, printPreviewConfirmed: false }); }, 'aria-describedby': 'tc-code-help' }),
-          h('p', { id: 'tc-code-help', className: 'tc-lede' }, 'This safe learning compiler validates the mathematical statements. It does not execute arbitrary code.'),
-          diagnostics.length > 0 && h('div', { role: 'region', 'aria-label': 'Compiler diagnostics', 'aria-live': 'polite' }, diagnostics.map(function (diag) { return h('p', { key: diag.code + diag.message, className: 'tc-diag' }, h('strong', null, diag.code + ': '), diag.message); })),
-          compileResult && compileResult.pass && h('p', { role: 'status', className: 'tc-check tc-ok' }, 'COMPILE SUCCESSFUL - 0 errors. The listing is ready to keypunch.'),
-          compileResult && compileResult.pass && h('div', { className: 'tc-next-cue' }, h('strong', null, 'Next on the desk: '), 'match the FORMAT card, inspect the fixed-width preview, then release the deck.'),
+          h('p', { id: 'tc-code-help', className: 'tc-lede' }, t('stem.trajectorycomputing.this_safe_learning_compiler_validates_', 'This safe learning compiler validates the mathematical statements. It does not execute arbitrary code.')),
+          diagnostics.length > 0 && h('div', { role: 'region', 'aria-label': t('stem.trajectorycomputing.compiler_diagnostics', 'Compiler diagnostics'), 'aria-live': 'polite' }, diagnostics.map(function (diag) { return h('p', { key: diag.code + diag.message, className: 'tc-diag' }, h('strong', null, diag.code + ': '), diag.message); })),
+          compileResult && compileResult.pass && h('p', { role: 'status', className: 'tc-check tc-ok' }, t('stem.trajectorycomputing.compile_successful_0_errors_the_listin', 'COMPILE SUCCESSFUL - 0 errors. The listing is ready to keypunch.')),
+          compileResult && compileResult.pass && h('div', { className: 'tc-next-cue' }, h('strong', null, t('stem.trajectorycomputing.next_on_the_desk', 'Next on the desk: ')), t('stem.trajectorycomputing.match_the_format_card_inspect_the_fixe', 'match the FORMAT card, inspect the fixed-width preview, then release the deck.')),
           compileResult && compileResult.pass && h('div', { className: 'tc-format-box' },
-            h('p', { className: 'tc-kicker', style: { color: '#9b3e21' } }, 'Format card / line-printer audit'),
-            h('h3', null, 'Make the batch output readable.'),
-            h('p', { className: 'tc-lede' }, 'The program can calculate the right numbers and still produce a confusing record. Match the FORMAT card to the required time and range columns before the deck leaves the desk.'),
+            h('p', { className: 'tc-kicker', style: { color: '#9b3e21' } }, t('stem.trajectorycomputing.format_card_line_printer_audit', 'Format card / line-printer audit')),
+            h('h3', null, t('stem.trajectorycomputing.make_the_batch_output_readable', 'Make the batch output readable.')),
+            h('p', { className: 'tc-lede' }, t('stem.trajectorycomputing.the_program_can_calculate_the_right_nu', 'The program can calculate the right numbers and still produce a confusing record. Match the FORMAT card to the required time and range columns before the deck leaves the desk.')),
             h('div', { className: 'tc-role-grid' },
-              h('label', { className: 'tc-field' }, 'Time field format',
+              h('label', { className: 'tc-field' }, t('stem.trajectorycomputing.time_field_format', 'Time field format'),
                 h('select', { value: formatAudit.timeFormat || '', onChange: function (event) { setFormatAuditField('timeFormat', event.target.value); } },
-                  h('option', { value: '' }, 'Choose a width'),
-                  h('option', { value: 'F8.2' }, 'F8.2 / 8 columns, 2 decimals'),
-                  h('option', { value: 'F10.1' }, 'F10.1 / 10 columns, 1 decimal')
+                  h('option', { value: '' }, t('stem.trajectorycomputing.choose_a_width', 'Choose a width')),
+                  h('option', { value: 'F8.2' }, t('stem.trajectorycomputing.f8_2_8_columns_2_decimals', 'F8.2 / 8 columns, 2 decimals')),
+                  h('option', { value: 'F10.1' }, t('stem.trajectorycomputing.f10_1_10_columns_1_decimal', 'F10.1 / 10 columns, 1 decimal'))
                 )
               ),
-              h('label', { className: 'tc-field' }, 'Range field format',
+              h('label', { className: 'tc-field' }, t('stem.trajectorycomputing.range_field_format', 'Range field format'),
                 h('select', { value: formatAudit.rangeFormat || '', onChange: function (event) { setFormatAuditField('rangeFormat', event.target.value); } },
-                  h('option', { value: '' }, 'Choose a width'),
-                  h('option', { value: 'F10.1' }, 'F10.1 / 10 columns, 1 decimal'),
-                  h('option', { value: 'F8.2' }, 'F8.2 / 8 columns, 2 decimals')
+                  h('option', { value: '' }, t('stem.trajectorycomputing.choose_a_width_2', 'Choose a width')),
+                  h('option', { value: 'F10.1' }, t('stem.trajectorycomputing.f10_1_10_columns_1_decimal_2', 'F10.1 / 10 columns, 1 decimal')),
+                  h('option', { value: 'F8.2' }, t('stem.trajectorycomputing.f8_2_8_columns_2_decimals_2', 'F8.2 / 8 columns, 2 decimals'))
                 )
               )
             ),
             h('fieldset', { style: { border: 0, padding: 0, margin: '12px 0 0' } },
-              h('legend', { className: 'tc-field' }, 'Printed record order'),
-              h('label', { style: { display: 'block', marginTop: 5 } }, h('input', { type: 'radio', name: 'tc-format-order', value: 'time-range', checked: formatAudit.order === 'time-range', onChange: function () { setFormatAuditField('order', 'time-range'); } }), ' TIME then RANGE'),
-              h('label', { style: { display: 'block', marginTop: 5 } }, h('input', { type: 'radio', name: 'tc-format-order', value: 'range-time', checked: formatAudit.order === 'range-time', onChange: function () { setFormatAuditField('order', 'range-time'); } }), ' RANGE then TIME')
+              h('legend', { className: 'tc-field' }, t('stem.trajectorycomputing.printed_record_order', 'Printed record order')),
+              h('label', { style: { display: 'block', marginTop: 5 } }, h('input', { type: 'radio', name: 'tc-format-order', value: 'time-range', checked: formatAudit.order === 'time-range', onChange: function () { setFormatAuditField('order', 'time-range'); } }), t('stem.trajectorycomputing.time_then_range', ' TIME then RANGE')),
+              h('label', { style: { display: 'block', marginTop: 5 } }, h('input', { type: 'radio', name: 'tc-format-order', value: 'range-time', checked: formatAudit.order === 'range-time', onChange: function () { setFormatAuditField('order', 'range-time'); } }), t('stem.trajectorycomputing.range_then_time', ' RANGE then TIME'))
             ),
             h('div', { className: 'tc-row' }, action('Check format card', function () {
               var audit = checkFormatAudit(formatAudit);
@@ -1298,20 +1301,20 @@
               if (audit.pass && typeof ctx.announceToSR === 'function') ctx.announceToSR('Format card matches. Inspect the fixed-width preview before releasing the deck.');
             }, false, !formatAudit.timeFormat || !formatAudit.rangeFormat || !formatAudit.order)),
             formatAuditResult && h('p', { role: 'status', className: formatAuditResult.pass ? 'tc-check tc-ok' : 'tc-diag tc-bad' }, formatAuditResult.correct + ' of ' + formatAuditResult.total + ' format checks pass.'),
-            formatAuditResult && !formatAuditResult.pass && h('p', { className: 'tc-diag' }, 'Recheck the field widths, decimal precision, and printed record order.')
+            formatAuditResult && !formatAuditResult.pass && h('p', { className: 'tc-diag' }, t('stem.trajectorycomputing.recheck_the_field_widths_decimal_preci', 'Recheck the field widths, decimal precision, and printed record order.'))
           ),
           formatAuditResult && formatAuditResult.pass && printPreview && h('div', { className: 'tc-preview-box', 'aria-labelledby': 'tc-preview-title' },
-            h('p', { className: 'tc-kicker', style: { color: '#17633f' } }, 'Output trace / fixed columns'),
-            h('h3', { id: 'tc-preview-title' }, 'Inspect the line-printer preview.'),
-            h('p', { className: 'tc-lede' }, 'Every character occupies a column. Verify that the values land in the same fields promised by the FORMAT card before releasing the deck to the keypunch room.'),
-            h('div', { className: 'tc-print-preview', role: 'img', 'aria-label': 'Fixed-width preview with time in columns 7 through 14 and range in columns 22 through 31' },
+            h('p', { className: 'tc-kicker', style: { color: '#17633f' } }, t('stem.trajectorycomputing.output_trace_fixed_columns', 'Output trace / fixed columns')),
+            h('h3', { id: 'tc-preview-title' }, t('stem.trajectorycomputing.inspect_the_line_printer_preview', 'Inspect the line-printer preview.')),
+            h('p', { className: 'tc-lede' }, t('stem.trajectorycomputing.every_character_occupies_a_column_veri', 'Every character occupies a column. Verify that the values land in the same fields promised by the FORMAT card before releasing the deck to the keypunch room.')),
+            h('div', { className: 'tc-print-preview', role: 'img', 'aria-label': t('stem.trajectorycomputing.fixed_width_preview_with_time_in_colum', 'Fixed-width preview with time in columns 7 through 14 and range in columns 22 through 31') },
               h('code', null, printPreview.ruler),
               h('code', null, printPreview.line)
             ),
             h('p', { className: 'tc-lede' }, h('strong', null, 'TIME: '), 'columns ' + printPreview.fields.time.startColumn + '-' + printPreview.fields.time.endColumn + ' / ' + printPreview.fields.time.format + '; ', h('strong', null, 'RANGE: '), 'columns ' + printPreview.fields.range.startColumn + '-' + printPreview.fields.range.endColumn + ' / ' + printPreview.fields.range.format + '.'),
             h('label', { style: { display: 'block', lineHeight: 1.5, marginTop: 10 } },
               h('input', { type: 'checkbox', checked: printPreviewConfirmed, onChange: function (event) { update({ printPreviewConfirmed: event.target.checked, printPreviewResult: null }); } }),
-              ' I checked the ruler, field boundaries, and decimal precision.'
+              t('stem.trajectorycomputing.i_checked_the_ruler_field_boundaries_a', ' I checked the ruler, field boundaries, and decimal precision.')
             ),
             h('div', { className: 'tc-row' }, action('Confirm preview and release deck', function () {
               var result = checkPrintPreview(formatAudit, printPreview.line);
@@ -1336,10 +1339,10 @@
 
       function renderCards() {
         return h('section', { role: 'tabpanel', id: 'tc-panel-cards', 'aria-labelledby': 'tc-tab-cards' },
-          h('p', { className: 'tc-kicker', style: { color: '#9b3e21' } }, 'Station 04 / keypunch room'),
-          h('h2', { className: 'tc-heading' }, 'Put the card deck in machine order.'),
-          h('p', { className: 'tc-lede' }, 'A dropped deck could turn a correct program into a failed job. Use the printed sequence field from columns 73-80. One pair is out of order.'),
-          h('div', { role: 'list', 'aria-label': 'Punch-card deck' }, deck.map(function (id, index) {
+          h('p', { className: 'tc-kicker', style: { color: '#9b3e21' } }, t('stem.trajectorycomputing.station_04_keypunch_room', 'Station 04 / keypunch room')),
+          h('h2', { className: 'tc-heading' }, t('stem.trajectorycomputing.put_the_card_deck_in_machine_order', 'Put the card deck in machine order.')),
+          h('p', { className: 'tc-lede' }, t('stem.trajectorycomputing.a_dropped_deck_could_turn_a_correct_pr', 'A dropped deck could turn a correct program into a failed job. Use the printed sequence field from columns 73-80. One pair is out of order.')),
+          h('div', { role: 'list', 'aria-label': t('stem.trajectorycomputing.punch_card_deck', 'Punch-card deck') }, deck.map(function (id, index) {
             var card = getCard(id);
             return h('div', { className: 'tc-card', role: 'listitem', key: card.id },
               h('span', { 'aria-hidden': 'true' }, String(index + 1).padStart(2, '0')),
@@ -1366,14 +1369,14 @@
       function renderChart() {
         return h('figure', null,
           h('svg', { className: 'tc-chart', viewBox: '0 0 680 245', role: 'img', 'aria-labelledby': 'tc-chart-title tc-chart-desc' },
-            h('title', { id: 'tc-chart-title' }, 'Aurora Test 3 predicted trajectory'),
+            h('title', { id: 'tc-chart-title' }, t('stem.trajectorycomputing.aurora_test_3_predicted_trajectory', 'Aurora Test 3 predicted trajectory')),
             h('desc', { id: 'tc-chart-desc' }, 'A parabolic flight path begins 30 meters above ground, reaches about ' + round(EXPECTED.peakHeight, 0) + ' meters, and lands about ' + round(EXPECTED.range, 0) + ' meters downrange inside the target zone.'),
             h('line', { x1: 34, y1: 212, x2: 658, y2: 212, stroke: '#9ad7c0', strokeWidth: 2 }),
             h('rect', { x: 34 + MISSION.zoneMin / 4900 * 624, y: 201, width: (MISSION.zoneMax - MISSION.zoneMin) / 4900 * 624, height: 11, fill: '#a64220' }),
             h('polyline', { points: trajectoryPath(), fill: 'none', stroke: '#fff0b5', strokeWidth: 4, strokeLinecap: 'round' }),
             h('circle', { cx: 34 + EXPECTED.range / 4900 * 624, cy: 212, r: 7, fill: '#ffbf47' }),
-            h('text', { x: 38, y: 232, fill: '#d8eee5', fontSize: 12 }, '0 m'),
-            h('text', { x: 563, y: 232, fill: '#d8eee5', fontSize: 12 }, 'target zone')
+            h('text', { x: 38, y: 232, fill: '#d8eee5', fontSize: 12 }, t('stem.trajectorycomputing.0_m', '0 m')),
+            h('text', { x: 563, y: 232, fill: '#d8eee5', fontSize: 12 }, t('stem.trajectorycomputing.target_zone', 'target zone'))
           ),
           h('figcaption', { className: 'tc-lede' }, 'Text alternative: peak height ' + round(EXPECTED.peakHeight, 1) + ' m; flight time ' + round(EXPECTED.flightTime, 2) + ' s; landing distance ' + round(EXPECTED.range, 1) + ' m; predicted landing is inside the 4,550-4,700 m target zone.')
         );
@@ -1382,10 +1385,10 @@
       function renderBatch() {
         var complete = runStatus === 'complete';
         return h('section', { role: 'tabpanel', id: 'tc-panel-batch', 'aria-labelledby': 'tc-tab-batch' },
-          h('p', { className: 'tc-kicker', style: { color: '#9b3e21' } }, 'Station 05 / electronic computation room'),
-          h('h2', { className: 'tc-heading' }, 'Submit the deck as a batch job.'),
-          h('p', { className: 'tc-lede' }, 'Early programmers did not receive instant feedback. A prepared deck was read into the machine and the result returned as a printed listing.'),
-          h('div', { className: 'tc-machine', role: 'region', 'aria-label': 'Batch computer console' },
+          h('p', { className: 'tc-kicker', style: { color: '#9b3e21' } }, t('stem.trajectorycomputing.station_05_electronic_computation_room', 'Station 05 / electronic computation room')),
+          h('h2', { className: 'tc-heading' }, t('stem.trajectorycomputing.submit_the_deck_as_a_batch_job', 'Submit the deck as a batch job.')),
+          h('p', { className: 'tc-lede' }, t('stem.trajectorycomputing.early_programmers_did_not_receive_inst', 'Early programmers did not receive instant feedback. A prepared deck was read into the machine and the result returned as a printed listing.')),
+          h('div', { className: 'tc-machine', role: 'region', 'aria-label': t('stem.trajectorycomputing.batch_computer_console', 'Batch computer console') },
             h('div', { className: 'tc-lights', 'aria-hidden': 'true' },
               h('span', { className: 'tc-light on' }), h('span', { className: 'tc-light' + (complete ? ' on' : '') }), h('span', { className: 'tc-light' + (complete ? ' on' : '') })
             ),
@@ -1404,38 +1407,38 @@
               if (typeof ctx.announceToSR === 'function') ctx.announceToSR('Batch job complete. Review the line-printer output and trajectory before verification.');
             }))
           ),
-          runStatus === 'error' && h('p', { role: 'alert', className: 'tc-diag' }, 'JOB REJECTED. Return to the program and deck stations to restore a valid job.'),
+          runStatus === 'error' && h('p', { role: 'alert', className: 'tc-diag' }, t('stem.trajectorycomputing.job_rejected_return_to_the_program_and', 'JOB REJECTED. Return to the program and deck stations to restore a valid job.')),
           complete && h('div', null,
-            h('h3', null, 'Line-printer output'),
+            h('h3', null, t('stem.trajectorycomputing.line_printer_output', 'Line-printer output')),
             h('pre', { className: 'tc-printout' }, d.printout || formatPrintout(EXPECTED)),
             renderChart(),
             h('section', { className: 'tc-readback-box', 'aria-labelledby': 'tc-readback-title' },
-              h('p', { className: 'tc-kicker', style: { color: '#9b3e21' } }, 'Output interpretation / human read-back'),
-              h('h3', { id: 'tc-readback-title' }, 'Read the machine result before signing it.'),
-              h('p', { className: 'tc-lede' }, 'A printed job can be accurate and still be misread. Match each status claim to the line-printer output, then release the record to independent verification.'),
+              h('p', { className: 'tc-kicker', style: { color: '#9b3e21' } }, t('stem.trajectorycomputing.output_interpretation_human_read_back', 'Output interpretation / human read-back')),
+              h('h3', { id: 'tc-readback-title' }, t('stem.trajectorycomputing.read_the_machine_result_before_signing', 'Read the machine result before signing it.')),
+              h('p', { className: 'tc-lede' }, t('stem.trajectorycomputing.a_printed_job_can_be_accurate_and_stil', 'A printed job can be accurate and still be misread. Match each status claim to the line-printer output, then release the record to independent verification.')),
               h('div', { className: 'tc-role-grid' },
-                h('label', { className: 'tc-field' }, 'Compiler status',
+                h('label', { className: 'tc-field' }, t('stem.trajectorycomputing.compiler_status', 'Compiler status'),
                   h('select', { value: batchReadback.compile || '', onChange: function (event) { setBatchReadbackField('compile', event.target.value); } },
-                    h('option', { value: '' }, 'Choose status'),
-                    h('option', { value: 'zero-errors' }, '0 errors'),
-                    h('option', { value: 'errors' }, 'Errors reported')
+                    h('option', { value: '' }, t('stem.trajectorycomputing.choose_status', 'Choose status')),
+                    h('option', { value: 'zero-errors' }, t('stem.trajectorycomputing.0_errors', '0 errors')),
+                    h('option', { value: 'errors' }, t('stem.trajectorycomputing.errors_reported', 'Errors reported'))
                   )
                 ),
-                h('label', { className: 'tc-field' }, 'Deck status',
+                h('label', { className: 'tc-field' }, t('stem.trajectorycomputing.deck_status', 'Deck status'),
                   h('select', { value: batchReadback.deck || '', onChange: function (event) { setBatchReadbackField('deck', event.target.value); } },
-                    h('option', { value: '' }, 'Choose status'),
-                    h('option', { value: 'ordered' }, '00010001-00010009 / in order'),
-                    h('option', { value: 'misordered' }, 'Sequence error')
+                    h('option', { value: '' }, t('stem.trajectorycomputing.choose_status_2', 'Choose status')),
+                    h('option', { value: 'ordered' }, t('stem.trajectorycomputing.00010001_00010009_in_order', '00010001-00010009 / in order')),
+                    h('option', { value: 'misordered' }, t('stem.trajectorycomputing.sequence_error', 'Sequence error'))
                   )
                 ),
-                h('label', { className: 'tc-field' }, 'Target-zone result',
+                h('label', { className: 'tc-field' }, t('stem.trajectorycomputing.target_zone_result', 'Target-zone result'),
                   h('select', { value: batchReadback.zone || '', onChange: function (event) { setBatchReadbackField('zone', event.target.value); } },
-                    h('option', { value: '' }, 'Choose result'),
-                    h('option', { value: 'inside' }, 'Inside 4550-4700 m'),
-                    h('option', { value: 'outside' }, 'Outside 4550-4700 m')
+                    h('option', { value: '' }, t('stem.trajectorycomputing.choose_result', 'Choose result')),
+                    h('option', { value: 'inside' }, t('stem.trajectorycomputing.inside_4550_4700_m', 'Inside 4550-4700 m')),
+                    h('option', { value: 'outside' }, t('stem.trajectorycomputing.outside_4550_4700_m', 'Outside 4550-4700 m'))
                   )
                 ),
-                h('label', { className: 'tc-field' }, 'Printed range (m)',
+                h('label', { className: 'tc-field' }, t('stem.trajectorycomputing.printed_range_m', 'Printed range (m)'),
                   h('input', { type: 'number', step: '0.1', inputMode: 'decimal', value: batchReadback.range == null ? '' : batchReadback.range, onChange: function (event) { setBatchReadbackField('range', event.target.value); } })
                 )
               ),
@@ -1464,9 +1467,9 @@
           ['desk-c', 'Desk C / review table']
         ];
         return h('section', { role: 'tabpanel', id: 'tc-panel-verify', 'aria-labelledby': 'tc-tab-verify' },
-          h('p', { className: 'tc-kicker', style: { color: '#9b3e21' } }, 'Station 06 / independent check'),
-          h('h2', { className: 'tc-heading' }, 'Never let the machine check itself.'),
-          h('p', { className: 'tc-lede' }, 'Use your original worksheet\u2014not the printout\u2014to record the independent range. Then decide whether the prediction falls inside the assigned landing zone.'),
+          h('p', { className: 'tc-kicker', style: { color: '#9b3e21' } }, t('stem.trajectorycomputing.station_06_independent_check', 'Station 06 / independent check')),
+          h('h2', { className: 'tc-heading' }, t('stem.trajectorycomputing.never_let_the_machine_check_itself', 'Never let the machine check itself.')),
+          h('p', { className: 'tc-lede' }, t('stem.trajectorycomputing.use_your_original_worksheet_not_the_pr', 'Use your original worksheet\u2014not the printout\u2014to record the independent range. Then decide whether the prediction falls inside the assigned landing zone.')),
           h('form', { onSubmit: function (event) {
             event.preventDefault();
             if (!reproducibilityResult || !reproducibilityResult.pass) {
@@ -1485,44 +1488,44 @@
             }
           } },
             h('div', { className: 'tc-fields' },
-              h('label', { className: 'tc-field' }, 'Independent range from worksheet (meters)', h('input', { type: 'number', step: 'any', value: verification.range == null ? '' : verification.range, onChange: function (event) { setVerificationField('range', event.target.value); } })),
+              h('label', { className: 'tc-field' }, t('stem.trajectorycomputing.independent_range_from_worksheet_meter', 'Independent range from worksheet (meters)'), h('input', { type: 'number', step: 'any', value: verification.range == null ? '' : verification.range, onChange: function (event) { setVerificationField('range', event.target.value); } })),
               h('fieldset', { style: { border: 0, padding: 0, margin: 0 } },
-                h('legend', { className: 'tc-field' }, 'Mission recommendation'),
-                h('label', null, h('input', { type: 'radio', name: 'tc-verdict', value: 'go', checked: verification.verdict === 'go', onChange: function () { setVerificationField('verdict', 'go'); } }), ' GO - prediction is inside the zone'), h('br'),
-                h('label', null, h('input', { type: 'radio', name: 'tc-verdict', value: 'hold', checked: verification.verdict === 'hold', onChange: function () { setVerificationField('verdict', 'hold'); } }), ' HOLD - prediction is outside the zone')
+                h('legend', { className: 'tc-field' }, t('stem.trajectorycomputing.mission_recommendation', 'Mission recommendation')),
+                h('label', null, h('input', { type: 'radio', name: 'tc-verdict', value: 'go', checked: verification.verdict === 'go', onChange: function () { setVerificationField('verdict', 'go'); } }), t('stem.trajectorycomputing.go_prediction_is_inside_the_zone', ' GO - prediction is inside the zone')), h('br'),
+                h('label', null, h('input', { type: 'radio', name: 'tc-verdict', value: 'hold', checked: verification.verdict === 'hold', onChange: function () { setVerificationField('verdict', 'hold'); } }), t('stem.trajectorycomputing.hold_prediction_is_outside_the_zone', ' HOLD - prediction is outside the zone'))
               )
             ),
             h('fieldset', { className: 'tc-role-box' },
               h('legend', { style: { fontWeight: 900 } }, workPattern === 'pair' ? 'Two-desk verification record' : 'Solo second-pass record'),
               workPattern === 'pair' ? h('div', { className: 'tc-role-grid' },
-                h('label', { className: 'tc-field' }, 'Calculation desk code',
+                h('label', { className: 'tc-field' }, t('stem.trajectorycomputing.calculation_desk_code', 'Calculation desk code'),
                   h('select', { value: verification.calculatorDesk || '', onChange: function (event) { setVerificationField('calculatorDesk', event.target.value); } },
-                    h('option', { value: '' }, 'Choose a desk'),
+                    h('option', { value: '' }, t('stem.trajectorycomputing.choose_a_desk', 'Choose a desk')),
                     deskCodes.map(function (desk) { return h('option', { value: desk[0], key: 'calc-' + desk[0] }, desk[1]); })
                   )
                 ),
-                h('label', { className: 'tc-field' }, 'Independent verifier desk code',
+                h('label', { className: 'tc-field' }, t('stem.trajectorycomputing.independent_verifier_desk_code', 'Independent verifier desk code'),
                   h('select', { value: verification.verifierDesk || '', onChange: function (event) { setVerificationField('verifierDesk', event.target.value); } },
-                    h('option', { value: '' }, 'Choose a different desk'),
+                    h('option', { value: '' }, t('stem.trajectorycomputing.choose_a_different_desk', 'Choose a different desk')),
                     deskCodes.map(function (desk) { return h('option', { value: desk[0], key: 'verify-' + desk[0] }, desk[1]); })
                   )
                 )
               ) : h('label', { style: { display: 'block', lineHeight: 1.5 } },
                 h('input', { type: 'checkbox', checked: verification.secondPass === true, onChange: function (event) { setVerificationField('secondPass', event.target.checked); } }),
-                ' I set the first result aside, recomputed from the mission constants, and compared the two passes.'
+                t('stem.trajectorycomputing.i_set_the_first_result_aside_recompute', ' I set the first result aside, recomputed from the mission constants, and compared the two passes.')
               ),
               h('p', { className: 'tc-lede', style: { marginBottom: 0 } }, workPattern === 'pair'
                 ? 'The verifier must use a different desk code from the original calculation.'
                 : 'A second pass is independent only when it begins again from the source constants.')
             ),
             h('fieldset', { className: 'tc-repro-box' },
-              h('legend', { style: { fontWeight: 900 } }, 'Reproducibility note'),
-              h('p', { className: 'tc-lede', style: { marginTop: 0 } }, 'Record the inputs held constant so another person can repeat this exact machine run.'),
+              h('legend', { style: { fontWeight: 900 } }, t('stem.trajectorycomputing.reproducibility_note_2', 'Reproducibility note')),
+              h('p', { className: 'tc-lede', style: { marginTop: 0 } }, t('stem.trajectorycomputing.record_the_inputs_held_constant_so_ano', 'Record the inputs held constant so another person can repeat this exact machine run.')),
               h('div', { className: 'tc-role-grid' },
-                h('label', null, h('input', { type: 'checkbox', checked: reproducibility.speed === true, onChange: function (event) { setReproducibilityField('speed', event.target.checked); } }), ' Speed = 215 m/s'),
-                h('label', null, h('input', { type: 'checkbox', checked: reproducibility.angle === true, onChange: function (event) { setReproducibilityField('angle', event.target.checked); } }), ' Angle = 38 degrees'),
-                h('label', null, h('input', { type: 'checkbox', checked: reproducibility.height === true, onChange: function (event) { setReproducibilityField('height', event.target.checked); } }), ' Release height = 30 m'),
-                h('label', null, h('input', { type: 'checkbox', checked: reproducibility.gravity === true, onChange: function (event) { setReproducibilityField('gravity', event.target.checked); } }), ' Gravity = 9.81 m/s2')
+                h('label', null, h('input', { type: 'checkbox', checked: reproducibility.speed === true, onChange: function (event) { setReproducibilityField('speed', event.target.checked); } }), t('stem.trajectorycomputing.speed_215_m_s', ' Speed = 215 m/s')),
+                h('label', null, h('input', { type: 'checkbox', checked: reproducibility.angle === true, onChange: function (event) { setReproducibilityField('angle', event.target.checked); } }), t('stem.trajectorycomputing.angle_38_degrees', ' Angle = 38 degrees')),
+                h('label', null, h('input', { type: 'checkbox', checked: reproducibility.height === true, onChange: function (event) { setReproducibilityField('height', event.target.checked); } }), t('stem.trajectorycomputing.release_height_30_m', ' Release height = 30 m')),
+                h('label', null, h('input', { type: 'checkbox', checked: reproducibility.gravity === true, onChange: function (event) { setReproducibilityField('gravity', event.target.checked); } }), t('stem.trajectorycomputing.gravity_9_81_m_s2', ' Gravity = 9.81 m/s2'))
               ),
               reproducibilityResult && h('p', { role: 'status', className: reproducibilityResult.pass ? 'tc-check tc-ok' : 'tc-diag tc-bad' }, reproducibilityResult.correct + ' of ' + reproducibilityResult.total + ' fixed mission inputs recorded. ' + reproducibilityResult.message),
               h('div', { className: 'tc-row' }, action('Check fixed inputs', function () {
@@ -1532,43 +1535,43 @@
               }))
             ),
             h('details', null,
-              h('summary', null, 'Review the hand-calculation audit ledger'),
+              h('summary', null, t('stem.trajectorycomputing.review_the_hand_calculation_audit_ledg', 'Review the hand-calculation audit ledger')),
               renderLedger(worksheet, 'Independent reference ledger')
             ),
             verificationResult && !passed && h('div', { role: 'alert', className: 'tc-diag' },
-              !verificationResult.pass && !verificationResult.rangePass && h('p', null, 'The independent range does not agree within 15 meters. Revisit your worksheet.'),
-              !verificationResult.pass && !verificationResult.verdictPass && h('p', null, 'Compare the predicted range with both boundaries of the target zone.'),
+              !verificationResult.pass && !verificationResult.rangePass && h('p', null, t('stem.trajectorycomputing.the_independent_range_does_not_agree_w', 'The independent range does not agree within 15 meters. Revisit your worksheet.')),
+              !verificationResult.pass && !verificationResult.verdictPass && h('p', null, t('stem.trajectorycomputing.compare_the_predicted_range_with_both_', 'Compare the predicted range with both boundaries of the target zone.')),
               !verificationResult.pass && !verificationResult.assignmentPass && h('p', null, verificationResult.assignment.message),
-              verificationResult.pass && (!reproducibilityResult || !reproducibilityResult.pass) && h('p', null, 'Complete the reproducibility note before signing the verification sheet.')
+              verificationResult.pass && (!reproducibilityResult || !reproducibilityResult.pass) && h('p', null, t('stem.trajectorycomputing.complete_the_reproducibility_note_befo', 'Complete the reproducibility note before signing the verification sheet.'))
             ),
-            h('div', { className: 'tc-row' }, h('button', { type: 'submit', className: 'tc-action', disabled: !reproducibilityResult || !reproducibilityResult.pass }, 'Sign verification sheet'))
+            h('div', { className: 'tc-row' }, h('button', { type: 'submit', className: 'tc-action', disabled: !reproducibilityResult || !reproducibilityResult.pass }, t('stem.trajectorycomputing.sign_verification_sheet', 'Sign verification sheet')))
           ),
           passed && h('div', null,
             h('div', { className: 'tc-certificate', role: 'status' },
-              h('p', { className: 'tc-kicker', style: { color: '#9b3e21' } }, 'Computation specialist certification'),
-              h('h3', { className: 'tc-heading' }, 'Aurora Test 3 is verified.'),
-              h('p', null, 'You created a hand reference, repaired the program, protected card sequence, interpreted machine output, recorded fixed inputs, and made an independent GO/HOLD decision.'),
-              h('p', null, h('strong', null, 'Audit workflow: '), workPattern === 'pair' ? 'paired independent cross-check with separated desk codes.' : 'solo dual-pass recomputation.'),
-              h('p', null, h('strong', null, 'Reflection: '), 'Which error was easier for a person to catch than a machine\u2014and which safeguard mattered most?'),
+              h('p', { className: 'tc-kicker', style: { color: '#9b3e21' } }, t('stem.trajectorycomputing.computation_specialist_certification', 'Computation specialist certification')),
+              h('h3', { className: 'tc-heading' }, t('stem.trajectorycomputing.aurora_test_3_is_verified', 'Aurora Test 3 is verified.')),
+              h('p', null, t('stem.trajectorycomputing.you_created_a_hand_reference_repaired_', 'You created a hand reference, repaired the program, protected card sequence, interpreted machine output, recorded fixed inputs, and made an independent GO/HOLD decision.')),
+              h('p', null, h('strong', null, t('stem.trajectorycomputing.audit_workflow', 'Audit workflow: ')), workPattern === 'pair' ? 'paired independent cross-check with separated desk codes.' : 'solo dual-pass recomputation.'),
+              h('p', null, h('strong', null, 'Reflection: '), t('stem.trajectorycomputing.which_error_was_easier_for_a_person_to', 'Which error was easier for a person to catch than a machine\u2014and which safeguard mattered most?')),
               h('div', { className: 'tc-row', style: { justifyContent: 'center' } },
                 action('Save evidence snapshot', saveEvidenceSnapshot),
                 action(d.reportOpen ? 'Hide completion report' : 'Review completion report', function () { update({ reportOpen: !d.reportOpen }); }, true),
                 action('Run mission again', restartMission, true)
               ),
-              d.lastSnapshotAt && h('p', { className: 'tc-ok' }, 'Evidence saved to this lesson.')
+              d.lastSnapshotAt && h('p', { className: 'tc-ok' }, t('stem.trajectorycomputing.evidence_saved_to_this_lesson', 'Evidence saved to this lesson.'))
             ),
             h('section', { className: 'tc-extension', 'aria-labelledby': 'tc-angle-study-title' },
-              h('p', { className: 'tc-kicker', style: { color: '#9b3e21' } }, 'Extension / parameter study'),
-              h('h3', { id: 'tc-angle-study-title' }, 'Change one variable. Predict before computing.'),
-              h('p', { className: 'tc-lede' }, 'Keep speed and release height fixed. Change only the launch angle, then predict how the landing distance compares with the verified 38-degree baseline.'),
+              h('p', { className: 'tc-kicker', style: { color: '#9b3e21' } }, t('stem.trajectorycomputing.extension_parameter_study', 'Extension / parameter study')),
+              h('h3', { id: 'tc-angle-study-title' }, t('stem.trajectorycomputing.change_one_variable_predict_before_com', 'Change one variable. Predict before computing.')),
+              h('p', { className: 'tc-lede' }, t('stem.trajectorycomputing.keep_speed_and_release_height_fixed_ch', 'Keep speed and release height fixed. Change only the launch angle, then predict how the landing distance compares with the verified 38-degree baseline.')),
               h('div', { className: 'tc-study-grid' },
-                h('label', { className: 'tc-field' }, 'Comparison angle',
+                h('label', { className: 'tc-field' }, t('stem.trajectorycomputing.comparison_angle', 'Comparison angle'),
                   h('select', { value: String(studyAngle), onChange: function (event) { update({ studyAngle: Number(event.target.value), studyResult: null }); } },
                     [30, 38, 46, 52].map(function (angle) { return h('option', { value: String(angle), key: angle }, angle + ' degrees'); })
                   )
                 ),
                 h('fieldset', { style: { border: 0, padding: 0, margin: 0 } },
-                  h('legend', { className: 'tc-field' }, 'My prediction for downrange distance'),
+                  h('legend', { className: 'tc-field' }, t('stem.trajectorycomputing.my_prediction_for_downrange_distance', 'My prediction for downrange distance')),
                   ['shorter', 'about', 'longer'].map(function (relation) {
                     var label = relation === 'about' ? 'About the same' : relation.charAt(0).toUpperCase() + relation.slice(1);
                     return h('label', { key: relation, style: { display: 'block', marginTop: 5 } },
@@ -1587,9 +1590,9 @@
               studyResult && h('div', { className: studyResult.correct ? 'tc-check' : 'tc-diag', role: 'status' },
                 h('p', null, h('strong', null, studyResult.correct ? 'Prediction supported. ' : 'Revise your prediction. '), 'At ' + studyResult.angle + ' degrees, the capsule travels ' + studyResult.relation + ' than the 38-degree baseline.'),
                 h('div', { className: 'tc-result-grid' },
-                  h('div', null, h('b', null, round(studyResult.result.range, 1) + ' m'), 'new range'),
-                  h('div', null, h('b', null, (studyResult.difference >= 0 ? '+' : '') + round(studyResult.difference, 1) + ' m'), 'change from baseline'),
-                  h('div', null, h('b', null, studyResult.inZone ? 'INSIDE' : 'OUTSIDE'), 'assigned landing zone')
+                  h('div', null, h('b', null, round(studyResult.result.range, 1) + ' m'), t('stem.trajectorycomputing.new_range', 'new range')),
+                  h('div', null, h('b', null, (studyResult.difference >= 0 ? '+' : '') + round(studyResult.difference, 1) + ' m'), t('stem.trajectorycomputing.change_from_baseline', 'change from baseline')),
+                  h('div', null, h('b', null, studyResult.inZone ? 'INSIDE' : 'OUTSIDE'), t('stem.trajectorycomputing.assigned_landing_zone', 'assigned landing zone'))
                 )
               )
             ),
@@ -1609,15 +1612,15 @@
 
       return h('div', { 'data-trajectory-lab': 'true', 'data-stem-tool-shell': 'true' },
         h('div', { className: 'tc-shell' },
-          h('a', { className: 'tc-skip-link', href: '#tc-main-content' }, 'Skip to station content'),
+          h('a', { className: 'tc-skip-link', href: '#tc-main-content' }, t('stem.trajectorycomputing.skip_to_station_content', 'Skip to station content')),
           h('header', { className: 'tc-top' },
             h('div', null,
-              h('p', { className: 'tc-kicker' }, 'Original historical STEM simulation'),
-              h('h1', { className: 'tc-title' }, 'Trajectory Computing Lab'),
-              h('p', { className: 'tc-subtitle' }, 'From pencil, table, and trigonometry to FORTRAN-style code, punch cards, batch output, and human verification.'),
-              h('div', { className: 'tc-progress', role: 'group', 'aria-label': 'Audit progress' },
+              h('p', { className: 'tc-kicker' }, t('stem.trajectorycomputing.original_historical_stem_simulation', 'Original historical STEM simulation')),
+              h('h1', { className: 'tc-title' }, t('stem.trajectorycomputing.trajectory_computing_lab', 'Trajectory Computing Lab')),
+              h('p', { className: 'tc-subtitle' }, t('stem.trajectorycomputing.from_pencil_table_and_trigonometry_to_', 'From pencil, table, and trigonometry to FORTRAN-style code, punch cards, batch output, and human verification.')),
+              h('div', { className: 'tc-progress', role: 'group', 'aria-label': t('stem.trajectorycomputing.audit_progress', 'Audit progress') },
             h('div', { className: 'tc-progress-head' },
-                  h('span', { id: 'tc-progress-label' }, 'Audit progress'),
+                  h('span', { id: 'tc-progress-label' }, t('stem.trajectorycomputing.audit_progress_2', 'Audit progress')),
                   h('strong', null, completedCount + ' of ' + stages.length + ' stations')
                 ),
                 h('div', { className: 'tc-progress-track', role: 'progressbar', 'aria-labelledby': 'tc-progress-label', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': progressPercent, 'aria-valuetext': completedCount + ' of ' + stages.length + ' stations complete' },
@@ -1625,11 +1628,11 @@
                 )
               )
             ),
-            h('button', { type: 'button', className: 'tc-back', onClick: function () { if (typeof ctx.setStemLabTool === 'function') ctx.setStemLabTool(null); }, 'aria-label': 'Back to all STEAM Lab tools' }, '\u2190 All tools')
+            h('button', { type: 'button', className: 'tc-back', onClick: function () { if (typeof ctx.setStemLabTool === 'function') ctx.setStemLabTool(null); }, 'aria-label': t('stem.trajectorycomputing.back_to_all_steam_lab_tools', 'Back to all STEAM Lab tools') }, t('stem.trajectorycomputing.all_tools', '\u2190 All tools'))
           ),
-          h('div', { className: 'tc-tabs-region', role: 'region', 'aria-label': 'Simulation stations' },
-            h('p', { id: 'tc-tabs-help', className: 'tc-visually-hidden' }, 'Station tabs: use Arrow Right or Arrow Left, or Arrow Down or Arrow Up, to move between unlocked stations. Press Home for the briefing or End for the last unlocked station.'),
-            h('nav', { className: 'tc-tabs', role: 'tablist', 'aria-label': 'Simulation stations', 'aria-describedby': 'tc-tabs-help' }, stages.map(function (item, index) {
+          h('div', { className: 'tc-tabs-region', role: 'region', 'aria-label': t('stem.trajectorycomputing.simulation_stations', 'Simulation stations') },
+            h('p', { id: 'tc-tabs-help', className: 'tc-visually-hidden' }, t('stem.trajectorycomputing.station_tabs_use_arrow_right_or_arrow_', 'Station tabs: use Arrow Right or Arrow Left, or Arrow Down or Arrow Up, to move between unlocked stations. Press Home for the briefing or End for the last unlocked station.')),
+            h('nav', { className: 'tc-tabs', role: 'tablist', 'aria-label': t('stem.trajectorycomputing.simulation_stations_2', 'Simulation stations'), 'aria-describedby': 'tc-tabs-help' }, stages.map(function (item, index) {
             var locked = index > unlockedIndex;
             return h('button', { id: 'tc-tab-' + item[0], key: item[0], type: 'button', role: 'tab', className: 'tc-tab', 'aria-selected': stage === item[0], 'aria-controls': stage === item[0] ? 'tc-panel-' + item[0] : undefined, tabIndex: stage === item[0] ? 0 : -1, disabled: locked, onClick: function () { update({ stage: item[0] }); }, onKeyDown: function (event) { handleTabKey(event, index); } },
               h('span', { className: 'tc-tab-num' }, (locked ? 'LOCKED / ' : (completed[item[0]] ? 'CHECKED / ' : '')) + '0' + (index + 1)), item[1]
@@ -1638,69 +1641,69 @@
           ),
           h('div', { className: 'tc-grid' },
             h('main', { id: 'tc-main-content', className: 'tc-paper', tabIndex: -1 }, renderStage()),
-            h('aside', { className: 'tc-side', 'aria-label': 'Desk references and historical context' },
-              h('h3', null, 'Desk card'),
+            h('aside', { className: 'tc-side', 'aria-label': t('stem.trajectorycomputing.desk_references_and_historical_context', 'Desk references and historical context') },
+              h('h3', null, t('stem.trajectorycomputing.desk_card', 'Desk card')),
               h('dl', null,
-                h('dt', null, 'Mission'), h('dd', null, 'AURORA-3'),
-                h('dt', null, 'Speed'), h('dd', null, '215.0 m/s'),
-                h('dt', null, 'Angle'), h('dd', null, '38.0 deg'),
-                h('dt', null, 'Height'), h('dd', null, '30.0 m'),
-                h('dt', null, 'Gravity'), h('dd', null, '9.81 m/s2'),
-                h('dt', null, 'Zone'), h('dd', null, '4550-4700 m')
+                h('dt', null, t('stem.trajectorycomputing.mission', 'Mission')), h('dd', null, 'AURORA-3'),
+                h('dt', null, t('stem.trajectorycomputing.speed', 'Speed')), h('dd', null, t('stem.trajectorycomputing.215_0_m_s', '215.0 m/s')),
+                h('dt', null, t('stem.trajectorycomputing.angle_2', 'Angle')), h('dd', null, t('stem.trajectorycomputing.38_0_deg', '38.0 deg')),
+                h('dt', null, t('stem.trajectorycomputing.height', 'Height')), h('dd', null, t('stem.trajectorycomputing.30_0_m', '30.0 m')),
+                h('dt', null, t('stem.trajectorycomputing.gravity', 'Gravity')), h('dd', null, t('stem.trajectorycomputing.9_81_m_s2', '9.81 m/s2')),
+                h('dt', null, t('stem.trajectorycomputing.zone', 'Zone')), h('dd', null, t('stem.trajectorycomputing.4550_4700_m', '4550-4700 m'))
               ),
-              h('label', { className: 'tc-field', style: { marginTop: 15 } }, 'Support level',
+              h('label', { className: 'tc-field', style: { marginTop: 15 } }, t('stem.trajectorycomputing.support_level', 'Support level'),
                 h('select', { value: mode, onChange: function (event) { update({ mode: event.target.value }); } },
-                  h('option', { value: 'guided' }, 'Guided - formulas visible'),
-                  h('option', { value: 'standard' }, 'Standard - references on request'),
-                  h('option', { value: 'expert' }, 'Expert - audit independently')
+                  h('option', { value: 'guided' }, t('stem.trajectorycomputing.guided_formulas_visible', 'Guided - formulas visible')),
+                  h('option', { value: 'standard' }, t('stem.trajectorycomputing.standard_references_on_request', 'Standard - references on request')),
+                  h('option', { value: 'expert' }, t('stem.trajectorycomputing.expert_audit_independently', 'Expert - audit independently'))
                 )
               ),
               h('details', null,
-                h('summary', null, 'Historical grounding'),
+                h('summary', null, t('stem.trajectorycomputing.historical_grounding', 'Historical grounding')),
                 h('div', { className: 'tc-sources' },
-                  h('p', null, 'At NACA and NASA, teams of women performed and checked aerospace calculations. Katherine Johnson calculated trajectories and verified electronic-computer results. Dorothy Vaughan led the West Area Computing unit and became an expert FORTRAN programmer.'),
+                  h('p', null, t('stem.trajectorycomputing.at_naca_and_nasa_teams_of_women_perfor', 'At NACA and NASA, teams of women performed and checked aerospace calculations. Katherine Johnson calculated trajectories and verified electronic-computer results. Dorothy Vaughan led the West Area Computing unit and became an expert FORTRAN programmer.')),
                   h('ul', { className: 'tc-teacher-list' },
-                    h('li', null, 'Human computers organized data, used shared tables, applied mathematical procedures, checked one another\'s work, and documented results.'),
-                    h('li', null, 'As electronic computers arrived, mathematical knowledge remained essential for programming, debugging, and verification.'),
-                    h('li', null, 'The simulation emphasizes the work process; it does not turn discrimination or segregation into a game mechanic.')
+                    h('li', null, t('stem.trajectorycomputing.human_computers_organized_data_used_sh', 'Human computers organized data, used shared tables, applied mathematical procedures, checked one another\'s work, and documented results.')),
+                    h('li', null, t('stem.trajectorycomputing.as_electronic_computers_arrived_mathem', 'As electronic computers arrived, mathematical knowledge remained essential for programming, debugging, and verification.')),
+                    h('li', null, t('stem.trajectorycomputing.the_simulation_emphasizes_the_work_pro', 'The simulation emphasizes the work process; it does not turn discrimination or segregation into a game mechanic.'))
                   ),
-                  h('p', null, 'This simulation uses those documented kinds of work as educational context; it does not recreate a copyrighted story or portray a real person as a fictional character.'),
-                  h('p', null, h('a', { href: 'https://www.nasa.gov/centers-and-facilities/langley/katherine-johnson-biography/', target: '_blank', rel: 'noreferrer' }, 'NASA: Katherine Johnson biography')),
-                  h('p', null, h('a', { href: 'https://www.nasa.gov/people/dorothy-vaughan/', target: '_blank', rel: 'noreferrer' }, 'NASA: Dorothy Vaughan biography'))
+                  h('p', null, t('stem.trajectorycomputing.this_simulation_uses_those_documented_', 'This simulation uses those documented kinds of work as educational context; it does not recreate a copyrighted story or portray a real person as a fictional character.')),
+                  h('p', null, h('a', { href: 'https://www.nasa.gov/centers-and-facilities/langley/katherine-johnson-biography/', target: '_blank', rel: 'noreferrer' }, t('stem.trajectorycomputing.nasa_katherine_johnson_biography', 'NASA: Katherine Johnson biography'))),
+                  h('p', null, h('a', { href: 'https://www.nasa.gov/people/dorothy-vaughan/', target: '_blank', rel: 'noreferrer' }, t('stem.trajectorycomputing.nasa_dorothy_vaughan_biography', 'NASA: Dorothy Vaughan biography')))
                 )
               ),
               h('details', null,
-                h('summary', null, 'Vocabulary desk'),
+                h('summary', null, t('stem.trajectorycomputing.vocabulary_desk', 'Vocabulary desk')),
                 h('dl', { className: 'tc-glossary' },
-                  h('dt', null, 'Algorithm'), h('dd', null, 'A repeatable sequence of steps for solving a problem.'),
-                  h('dt', null, 'Human computer'), h('dd', null, 'A person employed to perform and verify mathematical calculations.'),
-                  h('dt', null, 'FORTRAN'), h('dd', null, 'An early language designed for scientific and engineering computation.'),
-                  h('dt', null, 'Compiler'), h('dd', null, 'A program that translates source instructions and reports structural errors.'),
-                  h('dt', null, 'Punch card'), h('dd', null, 'A physical card that encoded one line of data or program instructions.'),
-                  h('dt', null, 'Batch job'), h('dd', null, 'A prepared program submitted for processing without an interactive screen.'),
-                  h('dt', null, 'Verification'), h('dd', null, 'An independent check that a result agrees with requirements and evidence.')
+                  h('dt', null, t('stem.trajectorycomputing.algorithm', 'Algorithm')), h('dd', null, t('stem.trajectorycomputing.a_repeatable_sequence_of_steps_for_sol', 'A repeatable sequence of steps for solving a problem.')),
+                  h('dt', null, t('stem.trajectorycomputing.human_computer', 'Human computer')), h('dd', null, t('stem.trajectorycomputing.a_person_employed_to_perform_and_verif', 'A person employed to perform and verify mathematical calculations.')),
+                  h('dt', null, 'FORTRAN'), h('dd', null, t('stem.trajectorycomputing.an_early_language_designed_for_scienti', 'An early language designed for scientific and engineering computation.')),
+                  h('dt', null, t('stem.trajectorycomputing.compiler', 'Compiler')), h('dd', null, t('stem.trajectorycomputing.a_program_that_translates_source_instr', 'A program that translates source instructions and reports structural errors.')),
+                  h('dt', null, t('stem.trajectorycomputing.punch_card', 'Punch card')), h('dd', null, t('stem.trajectorycomputing.a_physical_card_that_encoded_one_line_', 'A physical card that encoded one line of data or program instructions.')),
+                  h('dt', null, t('stem.trajectorycomputing.batch_job', 'Batch job')), h('dd', null, t('stem.trajectorycomputing.a_prepared_program_submitted_for_proce', 'A prepared program submitted for processing without an interactive screen.')),
+                  h('dt', null, t('stem.trajectorycomputing.verification', 'Verification')), h('dd', null, t('stem.trajectorycomputing.an_independent_check_that_a_result_agr', 'An independent check that a result agrees with requirements and evidence.'))
                 )
               ),
               h('details', null,
-                h('summary', null, 'Teacher guide'),
+                h('summary', null, t('stem.trajectorycomputing.teacher_guide', 'Teacher guide')),
                 h('div', { className: 'tc-sources' },
-                  h('p', null, h('strong', null, 'Suggested time: '), '40-60 minutes individually or in pairs.'),
-                  h('p', null, h('strong', null, 'Learning objectives')),
+                  h('p', null, h('strong', null, t('stem.trajectorycomputing.suggested_time', 'Suggested time: ')), t('stem.trajectorycomputing.40_60_minutes_individually_or_in_pairs', '40-60 minutes individually or in pairs.')),
+                  h('p', null, h('strong', null, t('stem.trajectorycomputing.learning_objectives', 'Learning objectives'))),
                   h('ul', { className: 'tc-teacher-list' },
-                    h('li', null, 'Read a printed reference table, decompose velocity, and apply a multi-step mathematical model.'),
-                    h('li', null, 'Explain how variable names, constants, functions, and statement order affect a program.'),
-                    h('li', null, 'Distinguish compilation, execution, output interpretation, and independent verification.'),
-                    h('li', null, 'Connect computing history to the documented labor and expertise of women mathematicians and programmers.')
+                    h('li', null, t('stem.trajectorycomputing.read_a_printed_reference_table_decompo', 'Read a printed reference table, decompose velocity, and apply a multi-step mathematical model.')),
+                    h('li', null, t('stem.trajectorycomputing.explain_how_variable_names_constants_f', 'Explain how variable names, constants, functions, and statement order affect a program.')),
+                    h('li', null, t('stem.trajectorycomputing.distinguish_compilation_execution_outp', 'Distinguish compilation, execution, output interpretation, and independent verification.')),
+                    h('li', null, t('stem.trajectorycomputing.connect_computing_history_to_the_docum', 'Connect computing history to the documented labor and expertise of women mathematicians and programmers.'))
                   ),
-                  h('p', null, h('strong', null, 'Evidence to collect: '), 'printed trigonometry lookup, table-precision prediction, calculation ledger, repaired listing, line-printer format card, fixed-width preview confirmation, ordered deck, machine read-back, reproducibility note, audit-role record, GO/HOLD reasoning, angle-study prediction, and the completion report.'),
-                  h('p', null, h('strong', null, 'Debrief prompts: '), 'Why did card order matter? Which errors could a compiler detect? Why should a person verify a machine result?')
+                  h('p', null, h('strong', null, t('stem.trajectorycomputing.evidence_to_collect', 'Evidence to collect: ')), t('stem.trajectorycomputing.printed_trigonometry_lookup_table_prec', 'printed trigonometry lookup, table-precision prediction, calculation ledger, repaired listing, line-printer format card, fixed-width preview confirmation, ordered deck, machine read-back, reproducibility note, audit-role record, GO/HOLD reasoning, angle-study prediction, and the completion report.')),
+                  h('p', null, h('strong', null, t('stem.trajectorycomputing.debrief_prompts', 'Debrief prompts: ')), t('stem.trajectorycomputing.why_did_card_order_matter_which_errors', 'Why did card order matter? Which errors could a compiler detect? Why should a person verify a machine result?'))
                 )
               ),
               h('details', null,
-                h('summary', null, 'Model limits'),
-                h('p', { className: 'tc-sources' }, 'The flight model is a classroom-scale two-dimensional ballistic approximation. It ignores air resistance, winds, Earth curvature, propulsion after release, and orbital mechanics. It is realistic as a verification workflow, not as a complete launch model.')
+                h('summary', null, t('stem.trajectorycomputing.model_limits', 'Model limits')),
+                h('p', { className: 'tc-sources' }, t('stem.trajectorycomputing.the_flight_model_is_a_classroom_scale_', 'The flight model is a classroom-scale two-dimensional ballistic approximation. It ignores air resistance, winds, Earth curvature, propulsion after release, and orbital mechanics. It is realistic as a verification workflow, not as a complete launch model.'))
               ),
-              h('p', { className: 'tc-sources', style: { marginTop: 16 } }, 'Fictional mission. Original interface and instructional text. No NASA insignia, film assets, dialogue, music, or character portrayals are used.')
+              h('p', { className: 'tc-sources', style: { marginTop: 16 } }, t('stem.trajectorycomputing.fictional_mission_original_interface_a', 'Fictional mission. Original interface and instructional text. No NASA insignia, film assets, dialogue, music, or character portrayals are used.'))
             )
           )
         )

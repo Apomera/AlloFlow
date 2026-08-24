@@ -1292,9 +1292,9 @@ window.StemLab = window.StemLab || {
           else state = 'rectangle';
           var sm = {
             special:   { label: t('stem.areamodel.special_case_area_perimeter_sum', '✨ Special case (area = perimeter sum)'), color: '#7c3aed', bg: '#f5f3ff', border: '#c4b5fd' },
-            square:    { label: t('stem.areamodel.square_rows_cols', '🟦 Square (rows = cols)'), color: '#0891b2', bg: '#ecfeff', border: '#67e8f9' },
-            large:     { label: t('stem.areamodel.large_rectangle_area_50', '🟧 Large rectangle (area > 50)'), color: '#d97706', bg: '#fffbeb', border: '#fcd34d' },
-            rectangle: { label: t('stem.areamodel.standard_rectangle', '🟩 Standard rectangle'), color: '#059669', bg: '#ecfdf5', border: '#86efac' }
+            square:    { label: t('stem.areamodel.square_rows_cols', '🟦 Square (rows = cols)'), color: '#0e7490', bg: '#ecfeff', border: '#67e8f9' },
+            large:     { label: t('stem.areamodel.large_rectangle_area_50', '🟧 Large rectangle (area > 50)'), color: '#92400e', bg: '#fffbeb', border: '#fcd34d' },
+            rectangle: { label: t('stem.areamodel.standard_rectangle', '🟩 Standard rectangle'), color: '#047857', bg: '#ecfdf5', border: '#86efac' }
           }[state];
           return h('div', { className: 'mt-3 p-3 rounded-xl bg-white border border-emerald-300 space-y-2' },
             h('h3', { className: 'text-sm font-black text-emerald-700' }, t('stem.areamodel.area_discovery', '📐 Area discovery')),

@@ -389,7 +389,11 @@
     icon: '\uD83E\uDD50', label: 'Baking Lab',
     desc: 'Explore the chemistry, ratios, and heat science that make baking work',
     color: 'amber', category: 'science',
+    gradeRange: '4-10',
     questHooks: [
+      { id: 'bk_explain_browning', label: 'Explain what controls browning, in your own words', icon: '💡',
+        check: function (d) { var iq = (d && d.caramelHunt) || {}; return !!iq.understood && typeof iq.explanation === 'string' && iq.explanation.trim().length >= 40; },
+        progress: function (d) { var iq = (d && d.caramelHunt) || {}; return iq.understood ? (((iq.explanation || '').trim().length >= 40) ? 'Explained' : 'Say more') : 'Open the Browning Lab inquiry'; } },
       { id: 'leaven_5',  label: 'Run 5 leavening reactions', icon: '\uD83E\uDED0', check: function(d) { var e = d._bakingExt || {}; return (e.leaveningRuns || 0) >= 5; }, progress: function(d) { var e = d._bakingExt || {}; return (e.leaveningRuns || 0) + '/5'; } },
       { id: 'emul_3',    label: 'Stabilize 3 emulsions',     icon: '\uD83E\uDD5A', check: function(d) { var e = d._bakingExt || {}; return (e.emulsionsSolved || 0) >= 3; }, progress: function(d) { var e = d._bakingExt || {}; return (e.emulsionsSolved || 0) + '/3'; } },
       { id: 'scale_3',   label: 'Scale 3 different recipes', icon: '\uD83D\uDCCF', check: function(d) { var e = d._bakingExt || {}; return (e.recipesScaled || 0) >= 3; }, progress: function(d) { var e = d._bakingExt || {}; return (e.recipesScaled || 0) + '/3'; } },
@@ -496,7 +500,7 @@
           var bakeRoutes = ['leavening', 'emulsion', 'scaler', 'browning'].map(function(id) {
             return SUBTOOLS.find(function(st) { return st.id === id; });
           }).filter(Boolean);
-          return h('div', { className: 'p-4 sm:p-6 max-w-5xl mx-auto', 'data-baking-tool': 'true' },
+          return h('div', { className: 'p-4 sm:p-6 max-w-5xl mx-auto', style: { background: '#ffffff', borderRadius: 12 }, 'data-baking-tool': 'true' },
             h('div', { className: 'mb-6 text-center' },
               h('div', { className: 'text-5xl mb-2' }, '\uD83E\uDD50\uD83D\uDC69\u200D\uD83C\uDF73'),
               h('h2', { className: 'text-2xl sm:text-3xl font-black text-amber-900' }, tr('baking.title', 'Baking Lab')),
@@ -561,31 +565,31 @@
             h('div', { className: 'mt-8 grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2' },
               h('div', { className: 'rounded-xl bg-amber-50 border border-amber-200 p-3 text-center' },
                 h('div', { className: 'text-2xl font-black text-amber-700 tabular-nums' }, ext.leaveningRuns || 0),
-                h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-amber-600' }, tr('baking.stats.reactions', 'Reactions'))
+                h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-amber-800' }, tr('baking.stats.reactions', 'Reactions'))
               ),
               h('div', { className: 'rounded-xl bg-yellow-50 border border-yellow-200 p-3 text-center' },
                 h('div', { className: 'text-2xl font-black text-yellow-700 tabular-nums' }, ext.emulsionsSolved || 0),
-                h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-yellow-600' }, tr('baking.stats.emulsions', 'Emulsions'))
+                h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-yellow-800' }, tr('baking.stats.emulsions', 'Emulsions'))
               ),
               h('div', { className: 'rounded-xl bg-orange-50 border border-orange-200 p-3 text-center' },
                 h('div', { className: 'text-2xl font-black text-orange-700 tabular-nums' }, ext.recipesScaled || 0),
-                h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-orange-600' }, tr('baking.stats.recipes_scaled', 'Recipes scaled'))
+                h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-orange-800' }, tr('baking.stats.recipes_scaled', 'Recipes scaled'))
               ),
               h('div', { className: 'rounded-xl bg-rose-50 border border-rose-200 p-3 text-center' },
                 h('div', { className: 'text-2xl font-black text-rose-700 tabular-nums' }, (ext.ovenEventsFound || []).length + '/' + OVEN_EVENTS.length),
-                h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-rose-600' }, tr('baking.stats.oven_events', 'Oven events'))
+                h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-rose-800' }, tr('baking.stats.oven_events', 'Oven events'))
               ),
               h('div', { className: 'rounded-xl bg-pink-50 border border-pink-200 p-3 text-center' },
                 h('div', { className: 'text-2xl font-black text-pink-700 tabular-nums' }, ext.diagnosesCorrect || 0),
-                h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-pink-600' }, tr('baking.stats.diagnoses', 'Diagnoses'))
+                h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-pink-800' }, tr('baking.stats.diagnoses', 'Diagnoses'))
               ),
               h('div', { className: 'rounded-xl bg-teal-50 border border-teal-200 p-3 text-center' },
                 h('div', { className: 'text-2xl font-black text-teal-700 tabular-nums' }, ext.glutenMatches || 0),
-                h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-teal-600' }, tr('baking.stats.gluten_matches', 'Gluten matches'))
+                h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-teal-800' }, tr('baking.stats.gluten_matches', 'Gluten matches'))
               ),
               h('div', { className: 'rounded-xl bg-orange-50 border border-orange-200 p-3 text-center' },
                 h('div', { className: 'text-2xl font-black text-orange-700 tabular-nums' }, ext.browningPerfections || 0),
-                h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-orange-600' }, tr('baking.stats.brownings', 'Perfect bakes'))
+                h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-orange-800' }, tr('baking.stats.brownings', 'Perfect bakes'))
               )
             )
           );
@@ -685,7 +689,7 @@
             }
           }
 
-          return h('div', { className: 'p-4 sm:p-6 max-w-4xl mx-auto' },
+          return h('div', { className: 'p-4 sm:p-6 max-w-4xl mx-auto', style: { background: '#ffffff', borderRadius: 12 } },
             h('div', { className: 'flex items-center justify-between mb-4 gap-2 flex-wrap' },
               h('div', null,
                 h('h2', { className: 'text-xl sm:text-2xl font-black text-amber-900 flex items-center gap-2' }, '\uD83E\uDED0 ' + tr('baking.activities.leavening_label', 'Leavening Lab')),
@@ -856,7 +860,7 @@
             }
           };
 
-          return h('div', { className: 'p-4 sm:p-6 max-w-4xl mx-auto' },
+          return h('div', { className: 'p-4 sm:p-6 max-w-4xl mx-auto', style: { background: '#ffffff', borderRadius: 12 } },
             h('div', { className: 'flex items-center justify-between mb-4 gap-2 flex-wrap' },
               h('div', null,
                 h('h2', { className: 'text-xl sm:text-2xl font-black text-yellow-800 flex items-center gap-2' }, '\uD83E\uDD5A ' + tr('baking.activities.emulsion_label', 'Emulsion Mixer')),
@@ -1000,7 +1004,7 @@
             addToast && addToast(tr('baking.scaler.scaled_toast', 'Recipe scaled to {n} servings.', { n: Math.round(recipe.serves * factor) }), 'success');
           };
 
-          return h('div', { className: 'p-4 sm:p-6 max-w-4xl mx-auto' },
+          return h('div', { className: 'p-4 sm:p-6 max-w-4xl mx-auto', style: { background: '#ffffff', borderRadius: 12 } },
             h('div', { className: 'flex items-center justify-between mb-4 gap-2 flex-wrap' },
               h('div', null,
                 h('h2', { className: 'text-xl sm:text-2xl font-black text-orange-800 flex items-center gap-2' }, '\uD83D\uDCCF ' + tr('baking.activities.scaler_label', 'Recipe Scaler')),
@@ -1201,7 +1205,7 @@
           else if (temp < 400)  foodColor = '#92400e';
           else                  foodColor = '#451a03'; // burnt
 
-          return h('div', { className: 'p-4 sm:p-6 max-w-4xl mx-auto' },
+          return h('div', { className: 'p-4 sm:p-6 max-w-4xl mx-auto', style: { background: '#ffffff', borderRadius: 12 } },
             h('div', { className: 'flex items-center justify-between mb-4 gap-2 flex-wrap' },
               h('div', null,
                 h('h2', { className: 'text-xl sm:text-2xl font-black text-rose-800 flex items-center gap-2' }, '\uD83D\uDD25 ' + tr('baking.activities.oven_label', 'Oven Timeline')),
@@ -1437,7 +1441,7 @@
           var accuracy = attempted > 0 ? Math.round((correct / attempted) * 100) : 0;
           var streak = ext.diagStreak || 0;
 
-          return h('div', { className: 'p-4 sm:p-6 max-w-4xl mx-auto' },
+          return h('div', { className: 'p-4 sm:p-6 max-w-4xl mx-auto', style: { background: '#ffffff', borderRadius: 12 } },
             h('div', { className: 'flex items-center justify-between mb-4 gap-2 flex-wrap' },
               h('div', null,
                 h('h2', { className: 'text-xl sm:text-2xl font-black text-pink-800 flex items-center gap-2' }, '\uD83D\uDD0D ' + tr('baking.activities.diagnosis_label', 'Bake Diagnosis')),
@@ -1456,21 +1460,21 @@
             h('div', { className: 'grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4' },
               h('div', { className: 'rounded-xl bg-pink-50 border border-pink-200 p-2.5 text-center' },
                 h('div', { className: 'text-xl font-black text-pink-700 tabular-nums' }, (idx + 1) + '/' + order.length),
-                h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-pink-600' }, tr('baking.diagnosis.scenario', 'Scenario'))
+                h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-pink-800' }, tr('baking.diagnosis.scenario', 'Scenario'))
               ),
               h('div', { className: 'rounded-xl bg-emerald-50 border border-emerald-200 p-2.5 text-center' },
                 h('div', { className: 'text-xl font-black text-emerald-700 tabular-nums' }, correct),
-                h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-emerald-600' }, tr('baking.diagnosis.correct', 'Correct'))
+                h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-emerald-800' }, tr('baking.diagnosis.correct', 'Correct'))
               ),
               h('div', { className: 'rounded-xl bg-indigo-50 border border-indigo-200 p-2.5 text-center' },
                 h('div', { className: 'text-xl font-black text-indigo-700 tabular-nums' }, accuracy + '%'),
-                h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-indigo-600' }, tr('baking.diagnosis.accuracy', 'Accuracy'))
+                h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-indigo-800' }, tr('baking.diagnosis.accuracy', 'Accuracy'))
               ),
               h('div', { className: 'rounded-xl bg-amber-50 border border-amber-200 p-2.5 text-center' },
                 h('div', { className: 'text-xl font-black text-amber-700 tabular-nums flex items-center justify-center gap-1' },
                   streak >= 2 ? '\uD83D\uDD25' : '', streak
                 ),
-                h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-amber-600' }, tr('baking.diagnosis.streak', 'Streak'))
+                h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-amber-800' }, tr('baking.diagnosis.streak', 'Streak'))
               )
             ),
             // Symptom card
@@ -1488,7 +1492,7 @@
             ),
             // Options
             h('div', { className: 'space-y-2 mb-4' },
-              h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-slate-600 mb-1' }, tr('baking.diagnosis.pick_cause', 'Pick the most likely cause')),
+              h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-slate-800 mb-1' }, tr('baking.diagnosis.pick_cause', 'Pick the most likely cause')),
               scenario.options.map(function(opt) {
                 var isSelected = selected === opt.id;
                 var isCorrect = opt.correct;
@@ -1649,7 +1653,7 @@
             }
           };
 
-          return h('div', { className: 'p-4 sm:p-6 max-w-4xl mx-auto' },
+          return h('div', { className: 'p-4 sm:p-6 max-w-4xl mx-auto', style: { background: '#ffffff', borderRadius: 12 } },
             h('div', { className: 'flex items-center justify-between mb-4 gap-2 flex-wrap' },
               h('div', null,
                 h('h2', { className: 'text-xl sm:text-2xl font-black text-teal-800 flex items-center gap-2' }, '\uD83E\uDDF5 ' + tr('baking.activities.gluten_label', 'Gluten Lab')),
@@ -1926,7 +1930,7 @@
             announceToSR && announceToSR(verdict);
           };
 
-          return h('div', { className: 'p-4 sm:p-6 max-w-4xl mx-auto' },
+          return h('div', { className: 'p-4 sm:p-6 max-w-4xl mx-auto', style: { background: '#ffffff', borderRadius: 12 } },
             h('div', { className: 'flex items-center justify-between mb-4 gap-2 flex-wrap' },
               h('div', null,
                 h('h2', { className: 'text-xl sm:text-2xl font-black text-orange-800 flex items-center gap-2' }, '\uD83E\uDD69 ' + tr('baking.activities.browning_label', 'Browning Lab')),
@@ -2155,7 +2159,7 @@
             });
           }
           return h('div', {
-            className: 'p-3 rounded-xl border-2 border-purple-200 bg-purple-50/60 mt-4',
+            className: 'p-3 rounded-xl border-2 border-purple-200 bg-purple-50 mt-4',
             role: 'region', 'aria-label': __alloT('stem.bakingscience.ai_baking_tutor', 'AI baking tutor')
           },
             h('div', { className: 'flex items-center flex-wrap gap-2 mb-1.5' },
@@ -2182,7 +2186,7 @@
             ),
             aiError && h('p', { className: 'text-[11px] text-rose-600', role: 'alert' }, aiError),
             aiText && h('p', { className: 'text-xs text-slate-700 leading-relaxed bg-white rounded-lg p-2 border border-purple-100' }, aiText),
-            !aiText && !aiLoading && !aiError && h('p', { className: 'text-[11px] italic text-slate-500' }, __alloT('stem.bakingscience.click_explain_for_an_ai_breakdown_of_t', 'Click \u201CExplain\u201D for an AI breakdown of the current activity at your chosen reading level.'))
+            !aiText && !aiLoading && !aiError && h('p', { className: 'text-[11px] italic text-slate-600' }, __alloT('stem.bakingscience.click_explain_for_an_ai_breakdown_of_t', 'Click \u201CExplain\u201D for an AI breakdown of the current activity at your chosen reading level.'))
           );
         }
 

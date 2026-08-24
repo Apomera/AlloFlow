@@ -60,6 +60,26 @@ function findAll(node, predicate, acc = []) {
   return acc;
 }
 
+function findDuplicateSiblingKeys(node, path = 'root', acc = []) {
+  if (node == null || typeof node !== 'object') return acc;
+  if (Array.isArray(node)) {
+    const seen = new Map();
+    node.forEach((child, index) => {
+      if (child && typeof child === 'object' && child.key != null) {
+        const key = String(child.key);
+        if (seen.has(key)) acc.push(`${path}: ${key} at ${seen.get(key)} and ${index}`);
+        else seen.set(key, index);
+      }
+      findDuplicateSiblingKeys(child, `${path}[${index}]`, acc);
+    });
+    return acc;
+  }
+  if (node.props && node.props.children != null) {
+    findDuplicateSiblingKeys(node.props.children, `${path}.${String(node.type)}`, acc);
+  }
+  return acc;
+}
+
 beforeEach(() => {
   resetStemLab();
   loadTool(ROCKS_FILE, 'rocks');
@@ -98,6 +118,26 @@ describe('catalog identity', () => {
 });
 
 describe('rock specimen ID visuals', () => {
+  it('renders every specimen swatch without React key warnings', () => {
+    const warnings = [];
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation((...args) => {
+      warnings.push(args.map(String).join(' '));
+    });
+
+    let duplicates;
+    try {
+      renderRocks({ mode: 'rocks' });
+      duplicates = findDuplicateSiblingKeys(treeFor({ rocks: { mode: 'rocks' }, rockCycle: {} }));
+    } finally {
+      errorSpy.mockRestore();
+    }
+
+    expect(warnings.filter((warning) =>
+      /same key|unique ["']key["'] prop/i.test(warning)
+    )).toEqual([]);
+    expect(duplicates).toEqual([]);
+  });
+
   it('draws a distinct swatch per specimen in the rocks grid, not a shared type emoji', () => {
     const { markup } = renderRocks({ mode: 'rocks' });
 

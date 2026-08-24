@@ -64,7 +64,7 @@ describe('Persona interview UI resilience', () => {
     expect(viewSource).toContain('personaState.personaSummaryError');
     expect(viewSource).toContain("t('persona.summary.verification_note')");
     expect(viewSource).toContain('onClick={_savePersonaTranscript}');
-    expect(viewSource).toContain("event.target.closest('[data-persona-definition-dialog], [data-persona-reflection-dialog], [data-persona-summary-dialog]')");
+    expect(viewSource).toContain("event.target.closest('[data-persona-definition-dialog], [data-persona-reflection-dialog], [data-persona-summary-dialog], [data-persona-archive-dialog]')");
     expect(viewSource).toContain("if (e.key === 'Escape')");
     expect(viewSource).toContain('personaState.personaSummaryError && !personaSummary');
     expect(viewSource).toContain("t('persona.summary.refresh_failed')");
@@ -74,7 +74,7 @@ describe('Persona interview UI resilience', () => {
     const outerHandlerStart = viewSource.indexOf('var handleDialogKeyDown = function (event)');
     const outerHandlerEnd = viewSource.indexOf("dialog.addEventListener('keydown', handleDialogKeyDown)", outerHandlerStart);
     const outerHandler = viewSource.slice(outerHandlerStart, outerHandlerEnd);
-    expect(outerHandler).toContain("event.target.closest('[data-persona-definition-dialog], [data-persona-reflection-dialog], [data-persona-summary-dialog]')");
+    expect(outerHandler).toContain("event.target.closest('[data-persona-definition-dialog], [data-persona-reflection-dialog], [data-persona-summary-dialog], [data-persona-archive-dialog]')");
     expect(outerHandler.indexOf('return;')).toBeLessThan(outerHandler.indexOf('personaCloseHandlerRef.current()'));
     const summaryScope = outerHandler.indexOf("dialog.querySelector('[data-persona-summary-dialog]')");
     const reflectionScope = outerHandler.indexOf("dialog.querySelector('[data-persona-reflection-dialog]')");

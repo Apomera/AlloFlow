@@ -12,12 +12,19 @@ const src = read('educator_evaluation_source.jsx');
 const gs = read(path.join('apps_script', 'educator_evaluation', 'Code.gs'));
 
 describe('framework registry (client)', () => {
-  it('defines both profiles with PA as the default everywhere', () => {
+  it('defines every profile and defaults to Maine everywhere', () => {
+    // Default flipped to Maine on 2026-08-18: this tool is built and piloted in
+    // Maine, and the Maine profile is the one that is correct for any Maine
+    // district because it mirrors the local PEPG plan rather than assuming one.
     expect(src).toMatch(/pa_act13:/);
     expect(src).toMatch(/maine_pepg:/);
-    // normalizer, blank and sample workspaces all default to PA
-    expect(src.match(/frameworkProfile: 'pa_act13'/g).length).toBeGreaterThanOrEqual(2);
-    expect(src).toMatch(/AE_FRAMEWORKS\[rawConfig\.frameworkProfile\] \? rawConfig\.frameworkProfile : 'pa_act13'/);
+    expect(src).toMatch(/portland_me:/);
+    // Blank and sample workspaces both start on Maine.
+    expect(src.match(/frameworkProfile: 'maine_pepg'/g).length).toBeGreaterThanOrEqual(2);
+    expect(src).not.toMatch(/frameworkProfile: 'pa_act13'/);
+    // Normalizer and sanitizer fall back to Maine, never to PA.
+    expect(src).toMatch(/AE_FRAMEWORKS\[rawConfig\.frameworkProfile\] \? rawConfig\.frameworkProfile : 'maine_pepg'/);
+    expect(src).toMatch(/AE_FRAMEWORKS\.maine_pepg, practiceWeight: null/);
   });
 
   it('PA weights and bands are unchanged', () => {
@@ -61,7 +68,7 @@ describe('framework registry (client)', () => {
 
 describe('framework awareness (server)', () => {
   it('config sanitizer carries frameworkProfile and pepgPracticeWeight with null-safe validation', () => {
-    expect(gs).toMatch(/var profile = oneOf_\(v\.frameworkProfile \|\| 'pa_act13', \['pa_act13', 'maine_pepg', 'portland_me'\]/);
+    expect(gs).toMatch(/var profile = oneOf_\(v\.frameworkProfile \|\| 'maine_pepg', \['pa_act13', 'maine_pepg', 'portland_me'\]/);
     expect(gs).toMatch(/profile === 'maine_pepg' && !\(v\.pepgPracticeWeight == null \|\| String\(v\.pepgPracticeWeight\) === ''\)/);
     expect(gs).toContain('aiReflectionEnabled: !!v.aiReflectionEnabled');
   });

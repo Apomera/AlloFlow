@@ -50,6 +50,10 @@ Curipod, Nearpod, Pear Deck, and similar tools do not place their proprietary po
 
 ### Rehearse the join and delivery path
 
+![The Start live session dialog offering three choices: Prepare live run, marked optional, for attaching presenter cues and checkpoints to lesson steps without starting a session; Standard live session using the configured Firebase, district, or local network backend; and Class Mailbox QR session, where students scan a code and join without accounts through your Google Apps Script mailbox.](../assets/live-screenshots/09-live-session-choices.png)
+
+Starting a live class opens this dialog. The first option prepares material without starting anything, so you can build the run in advance and start it later.
+
 Before class:
 
 - Start a practice session.

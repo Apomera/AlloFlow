@@ -105,8 +105,28 @@ describe('R1 — distribution verdict (BEHAVIORAL, the real fn)', () => {
   });
   it('wiring: exported, and the view renders it as a visible role=status strip (never tooltip-only)', () => {
     expect(dp).toContain('distributionVerdict: _alloDistributionVerdict,');
-    expect(view).toContain("_docPipeline.distributionVerdict(pdfFixResult, { targetScore: pdfTargetScore })");
+    expect(view).toContain("_docPipeline.distributionVerdict(pdfFixResult, { targetScore: pdfTargetScore, inProgress: _remediationInFlight })");
     expect(view).toContain('role="status" data-help-key="pdf_audit_verdict_strip"');
+  });
+  // 2026-08-23: the strip used to render "Ready to hand out" above the STILL WORKING banner,
+  // because the verdict only ever saw the result object. One in-flight fact, read by all three
+  // surfaces (strip, banner, headline) — a second derivation is how they drifted apart before.
+  it('in-flight runs get a provisional verdict, and every status surface reads ONE flag', () => {
+    const clean = { afterScore: 99, verificationState: 'complete', integrityCoverage: 99, fidelityNotes: [], axeAudit: { totalViolations: 0 }, secondEngineAudit: { failViolations: 0 } };
+    const settled = verdict(clean, { targetScore: 95 });
+    expect(settled.level).toBe('ready');
+    expect(settled.inProgress).toBe(false);
+    const running = verdict(clean, { targetScore: 95, inProgress: true });
+    expect(running.level).not.toBe('ready');
+    expect(running.inProgress).toBe(true);
+    expect(running.headline).toMatch(/still improving/i);
+    expect(running.cautions[0]).toMatch(/still running/i);
+    // The single derivation, and its three consumers.
+    expect(view).toContain('const _remediationInFlight = _remediationBusy || pdfAutoContinueRunning;');
+    expect(view).toContain('const _stillWorking = _remediationInFlight;');
+    expect(view).toContain('{_remediationInFlight && (');
+    // ...and no surface re-deriving it locally.
+    expect(view).not.toContain('pdfAutoContinueRunning || pdfFixLoading');
   });
 });
 

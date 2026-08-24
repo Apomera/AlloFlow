@@ -3649,12 +3649,12 @@
               var active = d.selectedForce === f.id;
               return h('button', { key: f.id,
                 onClick: function() { upd({ selectedForce: f.id }); },
-                style: { padding: '6px 12px', borderRadius: 8, background: active ? f.color + '33' : '#1e293b', border: '1px solid ' + (active ? f.color : '#94a3b8'), color: active ? f.color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, fontWeight: 700, cursor: 'pointer' }
+                style: { padding: '6px 12px', borderRadius: 8, background: active ? f.color + '33' : '#1e293b', border: '1px solid ' + (active ? f.color : '#94a3b8'), color: active ? (({ '#dc2626': '#f87171', '#2563eb': '#93c5fd' })[f.color] || f.color) : 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, fontWeight: 700, cursor: 'pointer' }
               }, f.icon + ' ' + f.name);
             })
           ),
           h('div', { style: { padding: 14, borderRadius: 12, background: 'var(--allo-stem-panel, #1e293b)', borderTop: '1px solid var(--allo-stem-border, #334155)', borderRight: '1px solid var(--allo-stem-border, #334155)', borderBottom: '1px solid var(--allo-stem-border, #334155)', borderLeft: '3px solid ' + selected.color, marginBottom: 16 } },
-            h('h3', { style: { margin: '0 0 8px', color: selected.color, fontSize: 18 } }, selected.icon + ' ' + selected.name),
+            h('h3', { style: { margin: '0 0 8px', color: ({ '#dc2626': '#f87171', '#2563eb': '#93c5fd' })[selected.color] || selected.color, fontSize: 18 } }, selected.icon + ' ' + selected.name),
             h('p', { style: { margin: '0 0 10px', fontSize: 13.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } }, selected.desc),
             h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 } },
               h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(34,197,94,0.10)', border: '1px solid rgba(34,197,94,0.3)' } },
@@ -4565,7 +4565,7 @@
           );
         }
         function sectionInfo(title, body, color) {
-          color = color || '#94a3b8';
+          color = ({ '#dc2626': '#f87171', '#2563eb': '#93c5fd' })[color] || color || '#94a3b8';
           return h('div', { style: { padding: 10, borderRadius: 8, background: 'var(--allo-stem-canvas, #0f172a)', borderLeft: '3px solid ' + color, marginBottom: 8 } },
             h('div', { style: { fontSize: 11, fontWeight: 800, color: color, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, title),
             h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.65 } }, body)
@@ -4889,7 +4889,7 @@
         var stressMax = Math.max(a.maxChord, a.maxDiag) * 1000 / iq.areaMm2;
         var sf = mat.yieldMPa / stressMax;
         var status = sf >= 2 ? 'safe' : sf >= 1 ? 'marginal' : 'failed';
-        var stateColor = status === 'safe' ? '#10b981' : status === 'marginal' ? '#f59e0b' : '#ef4444';
+        var stateColor = status === 'safe' ? '#34d399' : status === 'marginal' ? '#f59e0b' : '#fca5a5';
         var stateBg = status === 'safe' ? '#064e3b' : status === 'marginal' ? '#78350f' : '#7f1d1d';
         var stateLabel = status === 'safe' ? '🟢 SAFE' : status === 'marginal' ? '🟡 MARGINAL' : '🔴 FAILS';
         function logObs() {
@@ -5035,7 +5035,7 @@
           h('div', { id: 'bridge-print-region', style: { padding: 18, borderRadius: 12, background: '#ffffff', color: '#0f172a', border: '1px solid #e2e8f0' } },
             h('div', { style: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', borderBottom: '2px solid #0f172a', paddingBottom: 8, marginBottom: 14 } },
               h('h2', { style: { margin: 0, fontSize: 22, fontWeight: 900, color: '#0f172a' } }, d.designName || 'My Bridge Design'),
-              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #475569)' } }, __alloT('stem.bridgelab.ngss_ms_ets1_hs_ets1_hs_ps2', 'NGSS MS-ETS1 · HS-ETS1 · HS-PS2'))
+              h('div', { style: { fontSize: 11, color: '#475569' } }, __alloT('stem.bridgelab.ngss_ms_ets1_hs_ets1_hs_ps2', 'NGSS MS-ETS1 · HS-ETS1 · HS-PS2'))
             ),
 
             h('div', { style: { padding: 10, background: status === 'safe' ? '#ecfdf5' : status === 'marginal' ? '#fffbeb' : '#fef2f2', border: '1px solid ' + (status === 'safe' ? '#6ee7b7' : status === 'marginal' ? '#fcd34d' : '#fecaca'), borderRadius: 8, marginBottom: 14, fontSize: 12, color: status === 'safe' ? '#065f46' : status === 'marginal' ? '#78350f' : '#7f1d1d' } },
@@ -5095,7 +5095,7 @@
               __alloT('stem.bridgelab.a_deep_beam_approximation_real_bridge_', 'A deep-beam approximation. Real bridge design uses method of joints, method of sections, or matrix structural analysis to get exact member forces, then checks every individual member for yield, buckling, fatigue, and connection limits. This tool is for learning, not for actually building a bridge.')
             ),
 
-            h('div', { style: { marginTop: 14, padding: 10, borderTop: '2px solid #0f172a', fontSize: 10.5, color: 'var(--allo-stem-text-soft, #475569)', lineHeight: 1.5 } },
+            h('div', { style: { marginTop: 14, padding: 10, borderTop: '2px solid #0f172a', fontSize: 10.5, color: '#475569', lineHeight: 1.5 } },
               __alloT('stem.bridgelab.sources_ngss_lead_states_2013_hibbeler', 'Sources: NGSS Lead States (2013) · Hibbeler, R.C. (2017), Structural Analysis · AASHTO LRFD Bridge Design Specifications · Petroski, H. (1994), Design Paradigms (Tacoma Narrows + Tay Bridge + Hyatt). Printed from AlloFlow STEAM Lab.')
             )
           )

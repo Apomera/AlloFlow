@@ -22385,6 +22385,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     } },
       h('style', null,
         '.aq-lab-shell{line-height:1.5;overflow-wrap:anywhere;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;box-shadow:inset 0 1px 0 rgba(255,255,255,0.04),0 24px 60px rgba(0,0,0,0.18);}' +
+                // ── Contrast audit note (2026-08-23) ──
+        // axe marks ~310 nodes INCOMPLETE here: this decorative wash (a 4.5%-alpha
+        // teal, incapable of moving any ratio by more than ~1%) plus the panel
+        // gradients below block automated background resolution. Verified by hand
+        // instead: with the wash disabled, axe grades 0 violations in both themes;
+        // and compositing the PALEST ink (#cbd5e1) over the LIGHTEST gradient stop
+        // (rgba(4,47,46,.9)) over pure white -- the worst under-layer possible --
+        // measures 7.22:1. Every other ink/ground pair is higher (max 11.09:1).
+        // The tool's dark panels are opaque enough that the substrate question is
+        // settled; do not spend a screenshot pass on this UNMEASURED count.
         '.aq-lab-shell:before{content:"";position:absolute;z-index:-1;inset:0 0 auto;height:180px;border-radius:inherit;background:linear-gradient(180deg,rgba(153,246,228,0.045),transparent);pointer-events:none;}' +
         '.aq-comfortable-reading p,.aq-comfortable-reading li,.aq-comfortable-reading td,.aq-comfortable-reading th,.aq-comfortable-reading label,.aq-comfortable-reading summary,.aq-comfortable-reading button{font-size:14px!important;line-height:1.65!important;}' +
         '.aq-comfortable-reading [style*="font-size: 10px"],.aq-comfortable-reading [style*="font-size: 10.5px"],.aq-comfortable-reading [style*="font-size: 11px"],.aq-comfortable-reading [style*="font-size: 11.5px"],.aq-comfortable-reading [style*="font-size: 12px"],.aq-comfortable-reading [style*="font-size: 13px"]{font-size:14px!important;line-height:1.65!important;}' +

@@ -2095,6 +2095,29 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
         if (item._ttsAssets) Object.assign(packedTtsAssets, item._ttsAssets);
         delete item._ttsAssets;
       });
+      let packRecordedWordBank = null;
+      if (packIsEnglish && typeof window !== "undefined" && typeof window.loadWordAudioBank === "function") {
+        try {
+          await Promise.race([
+            window.loadWordAudioBank(),
+            new Promise((resolve) => setTimeout(resolve, 6e3))
+          ]);
+          const bank = window._CACHE_WORD_AUDIO_BANK;
+          if (bank && Object.keys(bank).length > 0) packRecordedWordBank = bank;
+        } catch (_) {
+          packRecordedWordBank = null;
+        }
+      }
+      const recordedBankAssetFor = (text) => {
+        if (!packRecordedWordBank) return null;
+        const key = normalizePackKey(text);
+        if (!key || key.includes(" ")) return null;
+        const src = packRecordedWordBank[key];
+        if (typeof src !== "string") return null;
+        const match = src.match(/^data:([^;,]+);base64,(.+)$/i);
+        return match ? { mime: match[1], base64: match[2] } : null;
+      };
+      let packedFromRecordedBank = 0;
       const addInstructionParts = (tasks, sentence) => {
         String(sentence || "").split(/(\/[^\s/]{1,4}\/)/g).map((part) => part.trim()).filter((part) => part && /[a-z0-9]/i.test(part) && !/^\/[^/]+\/$/.test(part)).forEach((part) => tasks.add(part));
       };
@@ -2161,6 +2184,13 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
             setPrewarmCount((prev) => prev + 1);
             return packedTtsAssets[key];
           }
+          const recorded = recordedBankAssetFor(text);
+          if (recorded) {
+            packedTtsAssets[key] = recorded;
+            packedFromRecordedBank += 1;
+            setPrewarmCount((prev) => prev + 1);
+            return recorded;
+          }
           try {
             if (ttsGate.aborted || typeof callTTS !== "function") throw new Error("TTS unavailable");
             const src = await callTTS(text, voiceForTts, speedForTts);
@@ -2208,7 +2238,11 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
           wordsWithAudio: processed.filter((it) => it.ttsReady).length,
           words: processed.length,
           rateLimited: ttsGate.rateLimited,
-          gaveUp: ttsGate.aborted
+          gaveUp: ttsGate.aborted,
+          // Provenance: clips served from the recorded word bank
+          // instead of synthesis (developer-side Kokoro label; see
+          // dev-tools/kokoro_audio_manifest.json).
+          fromRecordedBank: packedFromRecordedBank
         };
         processed[0]._ttsRequiredKeys = [...requiredTtsKeys];
         processed[0]._ttsAssets = packedTtsAssets;

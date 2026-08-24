@@ -1,0 +1,73 @@
+{
+  "schema_version": "pd-1.0",
+  "kind": "pd_module",
+  "metadata": {
+    "id": "family-conversations-practice",
+    "version": "1.0.0",
+    "language": "en-US",
+    "title": "Hard Conversations with Families: Live Practice",
+    "topic": "Communication",
+    "summary": "A ~20-minute practice module on difficult family conversations: a short primer on what works, then a live role-play with an AI-played parent to rehearse it, and a reflection. The role-play is formative practice and never graded.",
+    "estMinutes": 20,
+    "credit": "AlloFlow Seed Library",
+    "license": "CC-BY-SA-4.0",
+    "audience": "educator"
+  },
+  "sections": [
+    {
+      "title": "Learn",
+      "activities": [
+        {
+          "id": "read-families",
+          "type": "read",
+          "title": "What makes these conversations go well",
+          "content": {
+            "body": "Conversations where an educator has hard news — a student is far behind, a behavior pattern is escalating, an evaluation is being recommended — go badly for predictable reasons: the educator leads with data before connection, uses professional shorthand the family cannot act on, or arrives with a decision instead of an invitation. A few practices consistently help.\n\nStart with the child, not the problem. Families need to hear, early and specifically, that you see their child as a person — a real strength, a real moment, not a formula. This is not a softener before the 'real' message; for the family, it establishes that you and they are on the same side, which is the condition for everything after.\n\nUse plain language and check for meaning. 'Below benchmark in oral reading fluency' means nothing actionable to most families. 'When she reads out loud, she reads about half as many words as we would expect this year, and that makes it hard to follow the story' can be acted on. Jargon is a power move even when it is not meant as one.\n\nBring specifics, framed as shared information rather than a verdict. Concrete work samples and short factual observations invite a family into the evidence; global judgments invite defense. Families are experts on their child outside school — treat what they know as data you need, and ask for it.\n\nEnd with one collaborative next step. A conversation that ends with 'we will keep an eye on it' changes nothing. One concrete action for school, one realistic action offered (not assigned) for home, and a date to talk again turns worry into a plan.\n\nExpect emotion, and do not treat it as an obstacle. A defensive or upset reaction is usually protective — it means the family cares. Acknowledging it plainly ('This is hard to hear, and I'm sorry to be bringing it') moves the conversation further than pressing on with data.",
+            "keyPoints": [
+              "Open with the child's genuine strengths — connection before content.",
+              "Plain language; translate every technical term into something actionable.",
+              "Specific, concrete evidence framed as shared information, not a verdict.",
+              "Ask for the family's expertise about their child — and use it.",
+              "End with one concrete next step for each side and a date to reconnect.",
+              "Emotion is protective, not an obstacle; acknowledge it directly."
+            ]
+          },
+          "gate": { "kind": "none" }
+        }
+      ]
+    },
+    {
+      "title": "Practice live",
+      "activities": [
+        {
+          "id": "persona-families",
+          "type": "persona",
+          "title": "Conference with Riley",
+          "content": {
+            "personaName": "Riley",
+            "personaRole": "a parent who requested this conference after seeing their child's mid-year reading benchmark results",
+            "scenario": "Riley's third-grader, Sam, scored well below benchmark on the mid-year reading screening. Riley emailed asking for a meeting 'to find out what is going on.' Riley is anxious, a little defensive about earlier suggestions that Sam 'just needs to read more at home,' and deeply loves their kid. You have Sam's screening data, two writing samples, and your own observation that Sam avoids reading aloud but lights up during read-alouds. Open the conversation.",
+            "rubric": "A strong conversation opens with genuine connection and a specific strength of Sam's; translates the screening data into plain, actionable language; treats Riley's knowledge of Sam as expertise and asks for it; acknowledges emotion directly instead of pressing past it; and ends with one concrete school action, one realistic offered (not assigned) home action, and a date to reconnect.",
+            "minTurns": 4,
+            "maxTurns": 14
+          },
+          "gate": { "kind": "none" }
+        }
+      ]
+    },
+    {
+      "title": "Apply it",
+      "activities": [
+        {
+          "id": "reflect-families",
+          "type": "reflect",
+          "title": "Your next real conversation",
+          "content": {
+            "prompt": "Think of a real family conversation you have coming up (or one that went badly in the past). Which of the practices from this module was missing or will matter most — and what is the first sentence you plan to say?"
+          },
+          "gate": { "kind": "none" }
+        }
+      ]
+    }
+  ]
+}

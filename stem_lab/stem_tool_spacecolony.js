@@ -409,7 +409,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
   };
 
   window.StemLab.registerTool('spaceColony', {
-    icon: '\uD83D\uDE80',
+    icon: '\uD83C\uDFD5\uFE0F',
     label: 'Kepler Colony',
     desc: 'Colonize an alien planet! Turn-based cooperative strategy where mastering science unlocks colony survival.',
     color: 'indigo',
@@ -4569,7 +4569,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
               var sm = {
                 critical:    { label: t('stem.spacecolony.critical_settler_health_failing', '\uD83D\uDEA8 Critical (settler health failing)'), color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: t('stem.spacecolony.failure_imminent_one_subsystem_in_crit', 'Failure imminent. One subsystem in critical zone.') },
                 struggling:  { label: t('stem.spacecolony.struggling_low_capacity', '\uD83D\uDD34 Struggling (low capacity)'), color: '#ea580c', bg: '#fff7ed', border: '#fdba74', desc: t('stem.spacecolony.multiple_subsystems_below_adequate_col', 'Multiple subsystems below adequate. Colony stressed.') },
-                stable:      { label: t('stem.spacecolony.stable_adequate', '\uD83D\uDFE1 Stable (adequate)'), color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: t('stem.spacecolony.2_good_1_adequate_limited_margin_for_e', '2 good, 1 adequate. Limited margin for events.') },
+                stable:      { label: t('stem.spacecolony.stable_adequate', '\uD83D\uDFE1 Stable (adequate)'), color: '#b45309', bg: '#fffbeb', border: '#fcd34d', desc: t('stem.spacecolony.2_good_1_adequate_limited_margin_for_e', '2 good, 1 adequate. Limited margin for events.') },
                 optimal:     { label: t('stem.spacecolony.optimal_3_good', '\uD83D\uDFE2 Optimal (3+ good)'), color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: t('stem.spacecolony.all_subsystems_comfortable_sustained_g', 'All subsystems comfortable. Sustained growth possible.') },
                 thriving:    { label: t('stem.spacecolony.thriving_all_optimized', '\uD83C\uDF1F Thriving (all optimized)'), color: '#7c3aed', bg: '#f5f3ff', border: '#c4b5fd', desc: t('stem.spacecolony.best_case_scenario_population_growth_b', 'Best-case scenario. Population growth bonus active.') }
               }[state];
@@ -4589,7 +4589,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                 React.createElement('div', { style: { padding: 12, borderRadius: 8, textAlign: 'center', background: sm.bg, border: '2px solid ' + sm.border, marginBottom: 12 } },
                   React.createElement('div', { style: { fontSize: 14, fontWeight: 900, color: sm.color } }, sm.label),
                   React.createElement('div', { style: { fontSize: 11, color: '#475569', marginTop: 4 } }, sm.desc),
-                  React.createElement('div', { style: { fontSize: 10, color: '#64748b', marginTop: 4, fontFamily: 'monospace' } },
+                  React.createElement('div', { style: { fontSize: 10, color: '#475569', marginTop: 4, fontFamily: 'monospace' } },
                     'Balance avg = ' + balanceScore.toFixed(0) + '%, min subsystem = ' + minSys + '%')
                 ),
                 // SVG: 5 circular gauges side by side
@@ -4615,7 +4615,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                       );
                     })
                   ),
-                  React.createElement('div', { style: { fontSize: 10, color: '#64748b', textAlign: 'center', fontStyle: 'italic', marginTop: 4 } },
+                  React.createElement('div', { style: { fontSize: 10, color: '#94a3b8', textAlign: 'center', fontStyle: 'italic', marginTop: 4 } },
                     t('stem.spacecolony.gauges_fill_from_0_to_100_any_single_g', 'Gauges fill from 0 to 100%. Any single gauge below 30% threatens colony.'))
                 ),
                 // Sliders

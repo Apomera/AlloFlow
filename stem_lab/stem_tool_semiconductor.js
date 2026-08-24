@@ -196,7 +196,7 @@ window.StemLab = window.StemLab || {
   };
 
   window.StemLab.registerTool('semiconductor', {
-    icon: '\u{1F4A1}',
+    icon: '\uD83D\uDCA0',
     label: 'Semiconductor Lab',
     desc: 'Explore band gaps, doping, junctions, transistors, gates, I-V curves, wafer fab, LEDs, solar cells, quantum wells, memory & amplifiers.',
     color: 'cyan',

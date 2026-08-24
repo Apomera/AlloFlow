@@ -228,7 +228,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
     { maxF: 285, label: 'Maillard threshold', color: '#dcc18b', textColor: '#92400e',
       visual: 'First hint of golden color. Faint sweet aroma starts. Looks "cooked" but not "seared."',
       science: '250-285°F (120-140°C). The reaction has begun. Amino acids in the food are starting to react with reducing sugars (glucose, fructose, lactose), producing the first wave of brown pigment compounds (melanoidins) + dozens of volatile flavor molecules.' },
-    { maxF: 325, label: 'Active Maillard — golden brown', color: '#c08a3c', ink: '#c08a3c', textColor: '#fef9c3',
+    { maxF: 325, label: 'Active Maillard — golden brown', color: '#c08a3c', ink: '#c08a3c', textColor: '#451a03',
       visual: 'Clear golden-brown surface. Aromas are rich + nutty. This is the "perfect cook" zone for most things.',
       science: '285-325°F (140-163°C). Reaction at full speed. The brown color comes from melanoidins; the smell from hundreds of volatile compounds (pyrazines, furans, thiophenes) — these don\'t exist in raw food at all.' },
     { maxF: 375, label: 'Deep Maillard — mahogany', color: '#7c4a1f', ink: '#cd8f55', textColor: '#fef3c7',
@@ -4287,7 +4287,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
         else state = 'burnt';
         var sm = {
           noReact:   { label: __alloT('stem.kitchenlab.no_reaction', '⚪ No reaction'), color: '#475569', bg: '#f1f5f9', border: '#cbd5e1', desc: __alloT('stem.kitchenlab.below_threshold_no_maillard_activity', 'Below threshold — no Maillard activity.') },
-          beginning: { label: __alloT('stem.kitchenlab.browning_begins', '🟡 Browning begins'), color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: __alloT('stem.kitchenlab.light_tan_color_mild_aroma', 'Light tan color, mild aroma.') },
+          beginning: { label: __alloT('stem.kitchenlab.browning_begins', '🟡 Browning begins'), color: '#92400e', bg: '#fffbeb', border: '#fcd34d', desc: __alloT('stem.kitchenlab.light_tan_color_mild_aroma', 'Light tan color, mild aroma.') },
           active:    { label: __alloT('stem.kitchenlab.active_maillard', '🟠 Active Maillard'), color: '#ea580c', bg: '#fff7ed', border: '#fdba74', desc: __alloT('stem.kitchenlab.golden_brown_rich_aroma_compounds_form', 'Golden-brown, rich aroma compounds forming.') },
           deep:      { label: __alloT('stem.kitchenlab.deep_brown', '🟤 Deep brown'), color: '#92400e', bg: '#fef3c7', border: '#fbbf24', desc: __alloT('stem.kitchenlab.strong_flavors_approaching_upper_limit', 'Strong flavors. Approaching upper limit.') },
           burnt:     { label: __alloT('stem.kitchenlab.burnt_acrylamide_risk', '⚫ Burnt / acrylamide risk'), color: '#1e293b', bg: '#fef2f2', border: '#fca5a5', desc: __alloT('stem.kitchenlab.pyrolysis_bitter_potential_acrylamide_', 'Pyrolysis. Bitter, potential acrylamide formation.') }
@@ -4315,7 +4315,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
             h('button', { onClick: function() { setIQ({ tempF: 350, aminoPct: 50, sugarPct: 50, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[11px] font-semibold text-slate-600 border border-slate-300' }, __alloT('stem.kitchenlab.reset', '↺ Reset'))
           ),
           h('textarea', { id: 'kitchen-maillard-hypothesis', 'aria-label': 'Maillard reaction hypothesis', value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: __alloT('stem.kitchenlab.hypothesis_both_amino_sugar_needed_or_', 'Hypothesis: Both amino + sugar needed? Or one is enough?'),
-            className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
+            className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug bg-white text-slate-800', rows: 3 }),
           !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300' }, __alloT('stem.kitchenlab.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
           iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] text-slate-700 leading-relaxed' },
             h('ul', { className: 'list-disc pl-5 space-y-1' },

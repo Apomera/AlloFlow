@@ -72,7 +72,7 @@ window.StemLab = window.StemLab || {
 
   // ═══ 🔬 physics (physics) ═══
   window.StemLab.registerTool('physics', {
-    icon: '\uD83D\uDE80',
+    icon: '\uD83C\uDFB1',
     label: 'Physics Simulator',
     desc: 'Launch projectiles, explore kinematics, and learn Newtons laws',
     color: 'sky',
@@ -3112,7 +3112,7 @@ const d = labToolData.physics;
                   h('textarea', { id: 'gh-hypo', value: iq.hypothesis || '',
                     onChange: function(e) { setIQ({ hypothesis: e.target.value }); },
                     placeholder: __alloT('stem.physics.iq_hypothesis_placeholder', 'Is the optimal angle the same on every planet? Does doubling velocity double range? Type your own theory.'),
-                    className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 })
+                    className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug bg-white text-slate-800', rows: 3 })
                 ),
                 h('div', { className: 'mb-3' },
                   !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); },

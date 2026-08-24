@@ -164,6 +164,10 @@ const PersonaSessionArtifact = (() => {
         return firstText([raw.text, raw.content, raw.message, raw.response, raw.answer], 12000);
     }
 
+    function isQuestionCraftSource(value) {
+        return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
+    }
+
     function normalizePersonaSession(input = {}, options = {}) {
         if (!input || typeof input !== 'object' || Array.isArray(input)) {
             throw runtimeError('invalid-input', 'Persona artifact input must be an object.');
@@ -213,6 +217,22 @@ const PersonaSessionArtifact = (() => {
 
         const contractInput = { artifactId: safeStableId(input.artifactId) || undefined,
             sessionId, title, language, persona, messages };
+        const rawQuestionCraft = isQuestionCraftSource(input.questionCraft)
+            ? input.questionCraft
+            : (isQuestionCraftSource(state.questionCraft) ? state.questionCraft : null);
+        if (rawQuestionCraft) {
+            const questionCraft = {};
+            let questionCraftTotal = 0;
+            ['good', 'neutral', 'poor', 'coached', 'freeform'].forEach((kind) => {
+                const numeric = Number(rawQuestionCraft[kind]);
+                const bounded = Number.isFinite(numeric) ? Math.max(0, Math.min(999, Math.round(numeric))) : 0;
+                questionCraft[kind] = bounded;
+                questionCraftTotal += bounded;
+            });
+            // All-zero tallies are omitted so empty sessions keep producing
+            // byte-identical artifacts to the pre-tally contract.
+            if (questionCraftTotal > 0) contractInput.questionCraft = questionCraft;
+        }
         contract.buildPrivatePersonaSessionArtifact(contractInput, options.limits);
         return {
             contractInput, narrationPlan,
@@ -308,6 +328,86 @@ const PersonaSessionArtifact = (() => {
         return serialized.length;
     }
 
+    // Archive access (2026-08-23): the persona_artifacts namespace was
+    // write-only before this - artifacts could be saved but never listed,
+    // reopened, or deleted from inside the app. Every stored record is
+    // re-validated through the contract before it is surfaced.
+    async function listPrivateSessionArtifacts(options = {}) {
+        const contract = getContract(options.contract);
+        const storage = options.deviceStorage;
+        if (!storage || typeof storage.list !== 'function' || typeof storage.get !== 'function') {
+            throw runtimeError('device-storage-required',
+                'An initialized device-storage adapter must be injected to list Persona artifacts.');
+        }
+        const keys = await storage.list(STORAGE_NAMESPACE);
+        const sessions = [];
+        const unreadable = [];
+        for (const rawKey of (Array.isArray(keys) ? keys : [])) {
+            const key = String(rawKey || '').slice(0, 300);
+            if (!key) continue;
+            try {
+                const serialized = await storage.get(STORAGE_NAMESPACE, key);
+                if (typeof serialized !== 'string' || !serialized) {
+                    unreadable.push({ key, code: 'missing' });
+                    continue;
+                }
+                const validated = contract.parseReadAloudArtifact(serialized, options.limits);
+                if (validated.artifactType !== contract.TYPES.PERSONA_SESSION) {
+                    unreadable.push({ key, code: 'not-a-persona-session' });
+                    continue;
+                }
+                let audioClips = 0;
+                const messages = (validated.session && validated.session.messages) || [];
+                messages.forEach((message) => (message.chunks || []).forEach((chunk) => {
+                    if (chunk && chunk.audio) audioClips += 1;
+                }));
+                sessions.push({
+                    key,
+                    artifactId: validated.artifactId,
+                    title: cleanText(validated.title, 300),
+                    language: cleanText(validated.language, 100),
+                    messageCount: messages.length,
+                    audioClips,
+                    bytes: byteLength(serialized),
+                    questionCraft: validated.session && validated.session.questionCraft
+                        ? validated.session.questionCraft : null,
+                });
+            } catch (error) {
+                // One corrupted record must never hide the readable ones.
+                unreadable.push({ key, code: error && error.code ? String(error.code) : 'unreadable' });
+            }
+        }
+        return { sessions, unreadable };
+    }
+
+    async function loadPrivateSessionArtifact(key, options = {}) {
+        const contract = getContract(options.contract);
+        const storage = options.deviceStorage;
+        if (!storage || typeof storage.get !== 'function') {
+            throw runtimeError('device-storage-required',
+                'An initialized device-storage adapter must be injected to load a Persona artifact.');
+        }
+        const boundedKey = String(key || '').slice(0, 300);
+        const serialized = boundedKey ? await storage.get(STORAGE_NAMESPACE, boundedKey) : null;
+        if (typeof serialized !== 'string' || !serialized) {
+            throw runtimeError('artifact-not-found', 'No saved Persona session was found under this id.');
+        }
+        const artifact = contract.parseReadAloudArtifact(serialized, options.limits);
+        return assertPrivateArtifact(artifact, contract);
+    }
+
+    async function deletePrivateSessionArtifact(key, options = {}) {
+        const storage = options.deviceStorage;
+        if (!storage || typeof storage.remove !== 'function') {
+            throw runtimeError('device-storage-required',
+                'An initialized device-storage adapter must be injected to delete a Persona artifact.');
+        }
+        const boundedKey = String(key || '').slice(0, 300);
+        if (!boundedKey) throw runtimeError('artifact-not-found', 'A saved Persona session id is required.');
+        await storage.remove(STORAGE_NAMESPACE, boundedKey);
+        return true;
+    }
+
     async function persistPrivateSessionArtifact(artifact, options = {}) {
         const contract = getContract(options.contract);
         const validated = assertPrivateArtifact(artifact, contract);
@@ -385,6 +485,19 @@ const PersonaSessionArtifact = (() => {
         const language = cleanText(validated.language, 100) || 'English';
         const messages = Array.isArray(validated.session && validated.session.messages)
             ? validated.session.messages : [];
+        const questionCraft = validated.session && isQuestionCraftSource(validated.session.questionCraft)
+            ? validated.session.questionCraft
+            : null;
+        const craftLineParts = [];
+        if (questionCraft) {
+            const rankedPicks = (questionCraft.good || 0) + (questionCraft.neutral || 0) + (questionCraft.poor || 0);
+            if (rankedPicks > 0) craftLineParts.push('When offered ranked question choices the student picked strong ' + (questionCraft.good || 0) + ', middle ' + (questionCraft.neutral || 0) + ', weak ' + (questionCraft.poor || 0) + '.');
+            if ((questionCraft.coached || 0) > 0) craftLineParts.push('Suggested-question picks: ' + questionCraft.coached + '.');
+            if ((questionCraft.freeform || 0) > 0) craftLineParts.push('Questions the student wrote in their own words: ' + questionCraft.freeform + '.');
+        }
+        const questionCraftHtml = craftLineParts.length
+            ? '<section class="sourcing"><h2>Question sourcing</h2><p>' + escapeHtmlText(craftLineParts.join(' ')) + '</p></section>'
+            : '';
         const speakers = [];
         messages.forEach((message) => {
             const speaker = cleanText(message && message.speaker, 160);
@@ -425,6 +538,8 @@ const PersonaSessionArtifact = (() => {
             + '.turn.learner .speaker{color:#1d4ed8;}\n'
             + '.chunk{margin:0 0 8px;}\n'
             + 'audio.narration{width:100%;max-width:420px;display:block;margin:2px 0 10px;}\n'
+            + '.sourcing{background:#eef2ff;border:1px solid #c7d2fe;border-radius:8px;padding:10px 14px;font-family:system-ui,sans-serif;font-size:0.85em;color:#3730a3;margin-top:28px;}\n'
+            + '.sourcing h2{font-size:1em;margin:0 0 4px;}\n'
             + 'footer{margin-top:36px;padding-top:14px;border-top:1px solid #e5e7eb;font-family:system-ui,sans-serif;font-size:0.8em;color:#6b7280;}\n'
             + '@media print{audio.narration{display:none;}}\n'
             + '</style>\n</head>\n<body>\n'
@@ -435,6 +550,7 @@ const PersonaSessionArtifact = (() => {
             + (audioClips ? ' with ' + audioClips + ' narration clip' + (audioClips === 1 ? '' : 's') + ' embedded' : '')
             + ' — store and share it the way you would any private student record.</p>\n'
             + messageHtml
+            + questionCraftHtml
             + '\n<footer>Created with AlloFlow · self-contained page (works offline; audio plays without the app).</footer>\n'
             + '</body>\n</html>\n';
         return { html, stats: { messages: messages.length, audioClips } };
@@ -535,6 +651,7 @@ const PersonaSessionArtifact = (() => {
 
     return Object.freeze({ STORAGE_NAMESPACE, FILE_EXTENSION, PRIVACY_CONFIG, splitTranscriptText,
         normalizePersonaSession, buildPrivateSessionArtifact, persistPrivateSessionArtifact, downloadOwnerCopy,
+        listPrivateSessionArtifacts, loadPrivateSessionArtifact, deletePrivateSessionArtifact,
         buildOwnerHtmlDocument, downloadOwnerHtmlCopy, buildSecureReflectionPrompt });
 })();
 

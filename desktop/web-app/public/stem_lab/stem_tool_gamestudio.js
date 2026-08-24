@@ -450,6 +450,23 @@ window.StemLab = window.StemLab || {
     desc: 'Build, play & learn 2D game design',
     color: 'rose',
     category: 'creativity',
+    gradeRange: '4-10',
+    // No quest hooks existed, so nothing checked that the frame-loop idea -- the
+    // concept this tool exists to teach -- ever landed. The Learn lessons already
+    // carry real quiz questions and record per-lesson completion in learnCompleted,
+    // so the first hook is understanding-gated, not activity-gated.
+    questDataKey: 'gameStudio',
+    questHooks: [
+      { id: 'gs_lessons', label: 'Pass the quiz in 3 design lessons', icon: '🎓',
+        check: function (d) { return Object.keys((d && d.learnCompleted) || {}).length >= 3; },
+        progress: function (d) { return Math.min(3, Object.keys((d && d.learnCompleted) || {}).length) + '/3'; } },
+      { id: 'gs_challenge', label: 'Complete a design challenge', icon: '🎯',
+        check: function (d) { return Object.keys((d && d.challengeCompleted) || {}).length >= 1; },
+        progress: function (d) { return Object.keys((d && d.challengeCompleted) || {}).length >= 1 ? 'Done' : 'Not yet'; } },
+      { id: 'gs_playtest', label: 'Win a playtest of your own level', icon: '🏆',
+        check: function (d) { return !!(d && d.playWon); },
+        progress: function (d) { return (d && d.playWon) ? 'Won' : 'Keep testing'; } }
+    ],
     render: function(ctx) {
       var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
       var React = ctx.React;
@@ -807,7 +824,7 @@ window.StemLab = window.StemLab || {
               return h('button', { key: tab.id,
                 onClick: function() { upd({ tab: tab.id, playMessage: null }); },
                 className: 'flex-1 py-2 px-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ' +
-                  (isActive ? 'bg-white text-rose-800 shadow-md border border-rose-600' : 'text-rose-500 hover:text-rose-700 hover:bg-rose-100')
+                  (isActive ? 'bg-white text-rose-800 shadow-md border border-rose-600' : 'text-rose-700 hover:text-rose-900 hover:bg-rose-100')
               }, tab.icon + ' ' + tab.label);
             })
           ),
@@ -844,7 +861,7 @@ window.StemLab = window.StemLab || {
                 h('option', { value: 'puzzle' }, __alloT('stem.gamestudio.puzzle', '\uD83E\uDDE9 Puzzle'))
               ),
               // Danger overlay toggle
-              h('label', { className: 'flex items-center gap-1.5 ml-auto text-xs font-bold text-orange-600 cursor-pointer' },
+              h('label', { className: 'flex items-center gap-1.5 ml-auto text-xs font-bold text-orange-700 cursor-pointer' },
                 h('input', { type: 'checkbox', checked: showDanger, onChange: function() { upd({ showDanger: !showDanger }); } }),
                 __alloT('stem.gamestudio.danger_map', '\u26A0\uFE0F Danger Map')
               ),
@@ -963,7 +980,7 @@ window.StemLab = window.StemLab || {
             ),
 
             // Stats bar
-            h('div', { className: 'flex flex-wrap gap-3 text-[11px] text-rose-500 font-bold' },
+            h('div', { className: 'flex flex-wrap gap-3 text-[11px] text-rose-700 font-bold' },
               h('span', null, '\uD83D\uDD0D ' + gridW + '\u00D7' + gridH + ' = ' + (gridW * gridH) + ' tiles'),
               h('span', null, '\uD83E\uDDD1 Players: ' + countTile(tiles, 'player')),
               h('span', null, '\uD83D\uDC7E Enemies: ' + countTile(tiles, 'enemy')),
@@ -1758,7 +1775,7 @@ window.StemLab = window.StemLab || {
                   },
                     h('div', { className: 'text-2xl mb-1' }, starter.icon),
                     h('div', { className: 'text-xs font-bold text-rose-800' }, starter.name),
-                    h('div', { className: 'text-[11px] text-rose-500' }, starter.desc)
+                    h('div', { className: 'text-[11px] text-rose-700' }, starter.desc)
                   );
                 })
               )

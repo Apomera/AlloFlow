@@ -232,7 +232,7 @@
      Register Tool
      ═══════════════════════════════════════════════════════════ */
   window.StemLab.registerTool('graphCalc', {
-    icon: '\uD83D\uDCC8',
+    icon: '\uD83D\uDCDF',
     label: 'Graphing Calculator',
     desc: 'Graph functions, analyze zeros and intersections, explore transformations',
     color: 'indigo',

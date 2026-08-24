@@ -200,7 +200,7 @@ window.StemLab = window.StemLab || {
   // ── REGISTER TOOL ──
   // ══════════════════════════════════════════════════════════════
   window.StemLab.registerTool('dataPlot', {
-    icon: '\uD83D\uDCCA', label: 'Data Plotter',
+    icon: '\uD83D\uDCC9', label: 'Data Plotter',
     desc: 'Plot data, calculate regression & R\u00B2',
     color: 'slate', category: 'creative',
     questHooks: [

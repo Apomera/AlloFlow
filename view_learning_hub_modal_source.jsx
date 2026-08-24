@@ -336,7 +336,7 @@ function LearningHubModal(props) {
               </div>
               <div className="relative group" data-hub-id="text-inquiry" data-hub-label="Text Inquiry Studio" data-hub-section="core">
                 <button type="button" data-hub-launch="true" data-help-key="learning_hub_text_inquiry_card" onClick={openTextInquiryStudio} className="flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-fuchsia-50 to-cyan-50 border border-fuchsia-700 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-center" aria-describedby={textInquiryLaunchError ? 'text-inquiry-launch-error' : undefined}>
-                <span className="text-4xl" aria-hidden="true">{'🔎'}</span>
+                <span className="text-4xl" aria-hidden="true">{'\uD83D\uDCC3'}</span>
                 <div>
                   <h3 className="font-bold text-fuchsia-900">Text Inquiry Studio</h3>
                   <p className="text-xs text-fuchsia-800 mt-1">Inspect frequency and concordance, then test an interpretation against exceptions and context.</p>
@@ -371,7 +371,7 @@ function LearningHubModal(props) {
               {typeof setIsTestPrepHubOpen === 'function' && (
                 <div className="relative group" data-hub-id="test-prep" data-hub-label="Test Prep Hub" data-hub-section="practice">
                   <button type="button" data-hub-launch="true" onClick={() => { setShowLearningHub(false); setIsTestPrepHubOpen(true); }} className="flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-indigo-50 to-violet-50 border border-indigo-700 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-center">
-                  <span className="text-4xl" aria-hidden="true">{'\uD83E\uDDED'}</span>
+                  <span className="text-4xl" aria-hidden="true">{'\uD83C\uDFAF'}</span>
                   <div>
                     <h3 className="font-bold text-indigo-900">{tr('learning_hub.test_prep_title', 'Test Prep Hub')}</h3>
                     <p className="text-xs text-indigo-800 mt-1">{tr('learning_hub.test_prep_desc', 'Accessible practice packs for licensure, vocational, and professional exams')}</p>
@@ -398,7 +398,7 @@ function LearningHubModal(props) {
                   own window because the site it coaches is not AlloFlow. */}
               <div className="relative group" data-hub-id="screen-coach" data-hub-label="Screen Coach" data-hub-section="practice">
                 <button type="button" data-hub-launch="true" onClick={() => { setShowLearningHub(false); try { const VS = (window.AlloModules && window.AlloModules.VideoStudio) || null; if (VS && typeof VS.openCoachWindow === 'function') { VS.openCoachWindow('learner'); } else { try { if (window.__alloLazyVideoStudio) window.__alloLazyVideoStudio(); } catch (_) {} const w = window.open('https://alloflow-cdn.pages.dev/it_coach/it_coach.html?posture=learner', 'alloflow-it-coach'); if (w) { window.__alloPendingCoachWin = w; window.__alloPendingCoachPosture = 'learner'; } } } catch (_) {} }} className="flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-sky-50 to-cyan-50 border border-sky-700 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-center">
-                <span className="text-4xl" aria-hidden="true">{'🧭'}</span>
+                <span className="text-4xl" aria-hidden="true">{'\u23F1\uFE0F'}</span>
                 <div>
                   <h3 className="font-bold text-sky-900">{t('learning_hub.screen_coach_title') || 'Screen Coach'}</h3>
                   <p className="text-xs text-sky-800 mt-1">{t('learning_hub.screen_coach_desc') || 'Stuck on a website? Share it and get the next step. It helps you use the site, not answer your work.'}</p>
@@ -418,7 +418,7 @@ function LearningHubModal(props) {
               </div>
               <div className="relative group" data-hub-id="research-hub" data-hub-label="Research Hub" data-hub-section="explore">
                 <button type="button" data-hub-launch="true" onClick={() => { setShowLearningHub(false); if (typeof setShowResearchHub === 'function') setShowResearchHub(true); }} className="flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-indigo-50 to-purple-50 border border-indigo-700 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-center">
-                <span className="text-4xl" aria-hidden="true">{'🔍'}</span>
+                <span className="text-4xl" aria-hidden="true">{'\uD83D\uDCD1'}</span>
                 <div>
                   <h3 className="font-bold text-indigo-800">{t('learning_hub.research_title') || 'Research Hub'}</h3>
                   <p className="text-xs text-indigo-700 mt-1">{t('learning_hub.research_desc') || 'Scientific Inquiry, Engineering Design, and Humanities research — one inquiry journal, three lanes.'}</p>
@@ -485,7 +485,7 @@ function LearningHubModal(props) {
               </div>
               <div className="relative group" data-hub-id="poettree" data-hub-label="PoetTree" data-hub-section="create">
                 <button type="button" data-hub-launch="true" onClick={() => { setShowLearningHub(false); setShowPoetTree(true); }} className="flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-teal-50 to-cyan-50 border border-teal-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-center">
-                <span className="text-4xl" aria-hidden="true">🌳</span>
+                <span className="text-4xl" aria-hidden="true">{'\uD83C\uDF43'}</span>
                 <div>
                   <h3 className="font-bold text-teal-800">{t('learning_hub.poettree_title') || 'PoetTree'}</h3>
                   <p className="text-xs text-teal-600 mt-1">{t('learning_hub.poettree_desc') || 'Write poems with form scaffolds, rhyme & meter analysis, AI feedback'}</p>

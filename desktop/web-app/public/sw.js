@@ -60,6 +60,25 @@ self.addEventListener('fetch', (event) => {
         return;
     }
 
+    // Version-pinned module URLs (?v=<stamp>) are immutable by repo convention:
+    // every deploy restamps the pin, so a cached body for a given pinned URL
+    // cannot go stale, and the per-deploy CACHE_NAME purge clears old pins
+    // anyway. Serving them cache-first lets a warm boot skip ~180 module
+    // round trips; unpinned URLs (audio_bank.json and other data fetches)
+    // keep the network-first handling below.
+    if (url.origin === self.location.origin && url.searchParams.has('v')) {
+        event.respondWith(
+            caches.open(CACHE_NAME).then((cache) => cache.match(event.request).then((cached) => {
+                if (cached) return cached;
+                return fetch(event.request).then((response) => {
+                    if (response.ok) cache.put(event.request, response.clone());
+                    return response;
+                });
+            }))
+        );
+        return;
+    }
+
     event.respondWith(
         fetch(event.request).then((response) => {
             // Clone synchronously BEFORE returning: caches.open() resolves in a

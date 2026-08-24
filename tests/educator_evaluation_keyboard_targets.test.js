@@ -20,7 +20,9 @@ describe('Educator Evaluation: keyboard and touch targets', () => {
     const page = await browser.newPage({ viewport });
     await page.goto(PAGE);
     await page.waitForSelector('.ae-onboarding-overlay .ae-onboarding-option');
-    await page.locator('.ae-onboarding-overlay .ae-onboarding-option').nth(1).click();
+    // Label-based: the option order changed once already and an index click
+    // silently opened the wrong workspace.
+    await page.locator('.ae-onboarding-overlay .ae-onboarding-option', { hasText: 'guided sample tour' }).first().click();
     await page.waitForSelector('.ae-tabs');
     await page.waitForTimeout(400);
     return page;

@@ -44,12 +44,70 @@ describe('Adventure dynamic audio engine', () => {
     expect(ambienceSource).toContain('engine.setEnabled(true)');
   });
 
-  it('keeps ambience alive and crossfades profiles instead of auto-killing after 12 seconds', () => {
-    expect(ambienceSource).toContain('engine.playAmbience(soundParams, { sceneText, themeSeed, volume })');
-    expect(ambienceSource).not.toContain('totalDuration');
-    expect(ambienceSource).not.toContain("playAdventureEventSound('transition')");
+  // ── CONTRACT FLIP (2026-08-23, Aaron's classroom feedback) ────────────────────────────────
+  // The previous test here pinned CONTINUOUS ambience ("keeps ambience alive ... instead of
+  // auto-killing"). Field use showed the opposite need: the bed read as "a drone that never
+  // stops", and students need silence to focus on the text/TTS. The contract is now scene
+  // BOOKENDS - swell in, hold ~7s, fade to silence; the next scene's swell closes the previous
+  // one. If someone re-pins continuous ambience, they are reverting a deliberate product
+  // decision by the maintainer, not fixing a bug.
+  it('plays a scene-intro bookend that fades to silence instead of a perpetual bed', () => {
+    // The constants are declared just above the component (engine side of the slice).
+    expect(source).toContain('ADVENTURE_AMBIENCE_INTRO_HOLD_MS = 7000');
+    expect(source).toContain('ADVENTURE_AMBIENCE_OUTRO_FADE_S = 3.5');
+    expect(ambienceSource).toContain('autoStopMs: ADVENTURE_AMBIENCE_INTRO_HOLD_MS + ADVENTURE_AMBIENCE_OUTRO_FADE_S * 1000 + 4000');
+    expect(ambienceSource).toContain('engine.stopAmbience(ADVENTURE_AMBIENCE_OUTRO_FADE_S)');
+    // Same-scene re-renders (state churn recreates soundParams identity) must not restart the
+    // bookend - mid-scene silence is the point.
+    expect(ambienceSource).toContain('if (lastSceneRef.current === sceneText) return;');
+    // Scene TRANSITIONS still crossfade rather than hard-cutting.
     expect(engineSource).toContain('if (oldLayer) stopLayer(oldLayer, 1.8)');
     expect(engineSource).toContain("join(':')");
+  });
+
+  it('TTS starting during the intro cuts the ambience short - speech always wins', () => {
+    const at = ambienceSource.indexOf("window.addEventListener('allo-speech-state', onSpeech);");
+    expect(at).toBeGreaterThan(-1);
+    expect(ambienceSource).toContain('if (!event?.detail?.isPlaying) return;');
+    expect(ambienceSource).toContain('engineRef.current.stopAmbience(1.3);');
+    expect(ambienceSource).toContain("window.removeEventListener('allo-speech-state', onSpeech);");
+  });
+
+  it('positive cues resolve on the fixed reward tonic, never the scene scale (2026-08-23, Aaron)', () => {
+    // A success in a tense scene used to ring out on a low semitone-cluster root. Reinforcement
+    // cues are now one consistent bright key with pure ratios, ending ON the tonic.
+    expect(engineSource).toContain('const ADVENTURE_REWARD_TONIC = 523.25;');
+    const successCase = engineSource.slice(engineSource.indexOf("case 'success': {"), engineSource.indexOf("case 'failure': {"));
+    expect(successCase).toContain('ADVENTURE_REWARD_TONIC');
+    expect(successCase).not.toContain('eventRoot');
+    const critCase = engineSource.slice(engineSource.indexOf("case 'critical_success': {"), engineSource.indexOf("case 'success': {"));
+    expect(critCase).toContain('ADVENTURE_REWARD_TONIC');
+    expect(critCase).toContain('15 / 16'); // the leading tone - what makes the landing feel earned
+    expect(critCase).not.toContain('eventRoot');
+    const itemCase = engineSource.slice(engineSource.indexOf("case 'item_get': {"), engineSource.indexOf("case 'decision_select':"));
+    expect(itemCase).toContain('ADVENTURE_REWARD_TONIC * 2');
+    expect(itemCase).not.toContain('eventRoot');
+    // Failure and damage deliberately KEEP the scene's darker language.
+    const failCase = engineSource.slice(engineSource.indexOf("case 'failure': {"), engineSource.indexOf("case 'damage':"));
+    expect(failCase).toContain("getAdventureEventRoot(sceneProfile, variation, 'failure'");
+  });
+
+  it('the dead legacy cue function stays deleted, and the Sound Lab can audition the big win', () => {
+    // playAdventureEventSoundLegacy had its own success/failure recipes with no caller - a trap
+    // for future sessions editing the wrong function.
+    expect(source).not.toContain('const playAdventureEventSoundLegacy');
+    expect(source).toContain("['critical_success', 'Big win']");
+    expect(source).toContain("'adventure.audio_ambience_hint'");
+  });
+
+  it('the ENGINE enforces a declared layer lifetime, so a leaked caller cannot leave a drone running', () => {
+    // The field failure: a drone "kept going perpetually". The layer now owns its own bound.
+    expect(engineSource).toContain('const autoStopMs = Number(options.autoStopMs);');
+    expect(engineSource).toContain('layer.autoStopTimer = setTimeout(');
+    // stopLayer clears the watchdog (no timer firing on an already-stopped layer)...
+    expect(engineSource).toContain('if (layer.autoStopTimer) { clearTimeout(layer.autoStopTimer); layer.autoStopTimer = null; }');
+    // ...and a same-signature re-play refreshes the bound instead of escaping it.
+    expect(engineSource).toContain('const refreshMs = Number(options.autoStopMs);');
   });
 
   it('adds semantic intensity and motion while preserving old atmosphere and element fields', () => {

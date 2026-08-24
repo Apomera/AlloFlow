@@ -3040,6 +3040,255 @@
       );
     });
 
+    // ────────────────────────────────────────────────────────────────────
+    // Direct Instruction lesson script (printable).
+    //
+    // The analysis and the wording live in word_sounds_di_loader.js, which is
+    // pure and testable. This component only lays it out for paper. Printing
+    // uses the visibility trick rather than display:none so the panel keeps its
+    // layout while everything the app drew around it stops painting; the panel
+    // is rendered in place of the game, but the host may still have chrome
+    // outside it.
+    //
+    // Teacher-only, for the same reason Review Words is: this page lists every
+    // word with its sounds, its rhyme answers and its manipulation answers.
+    // ────────────────────────────────────────────────────────────────────
+    const WordSoundsDiScriptPanel = ({ script, onClose, onCopy, copyState, ts }) => {
+      const label = (key, fallback) => {
+        try { return (ts && ts(key)) || fallback; } catch (_) { return fallback; }
+      };
+      if (!script) return null;
+      const line = (text, i, cls) =>
+        /*#__PURE__*/ React.createElement("p", { key: i, className: cls }, text);
+
+      return /*#__PURE__*/ React.createElement(
+        "div",
+        { className: "fixed inset-0 z-50 bg-slate-100 overflow-y-auto" },
+        /*#__PURE__*/ React.createElement("style", null, `
+          @media print {
+            html, body { background: #fff !important; }
+            body * { visibility: hidden !important; }
+            #ws-di-print, #ws-di-print * { visibility: visible !important; }
+            #ws-di-print {
+              position: absolute !important; left: 0 !important; top: 0 !important;
+              width: 100% !important; margin: 0 !important; padding: 0 !important;
+              box-shadow: none !important; background: #fff !important;
+              /* The on-screen paper is max-w-3xl and centred; on paper the sheet
+                 IS the page, so the cap would waste a third of every printed page. */
+              max-width: none !important;
+            }
+            .ws-di-no-print { display: none !important; }
+            .ws-di-section { break-inside: avoid; page-break-inside: avoid; }
+          }
+        `),
+        /*#__PURE__*/ React.createElement(
+          "div",
+          { className: "ws-di-no-print sticky top-0 z-10 bg-white border-b border-slate-200 px-4 py-3 flex flex-wrap items-center justify-between gap-2" },
+          /*#__PURE__*/ React.createElement(
+            "span",
+            { className: "font-bold text-slate-800" },
+            label("word_sounds.di_script_title", "Lesson script"),
+          ),
+          /*#__PURE__*/ React.createElement(
+            "div",
+            { className: "flex items-center gap-2" },
+            /*#__PURE__*/ React.createElement(
+              "button",
+              {
+                type: "button",
+                onClick: onCopy,
+                className: "min-h-11 px-4 py-2 rounded-lg border border-slate-300 bg-white text-slate-700 font-bold text-sm hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2",
+              },
+              copyState === "copied"
+                ? label("common.copied", "Copied")
+                : label("common.copy", "Copy text"),
+            ),
+            /*#__PURE__*/ React.createElement(
+              "button",
+              {
+                type: "button",
+                onClick: () => { try { window.print(); } catch (_) { /* no print target */ } },
+                className: "min-h-11 px-4 py-2 rounded-lg bg-indigo-600 text-white font-bold text-sm hover:bg-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2",
+              },
+              label("word_sounds.di_script_print", "Print or save as PDF"),
+            ),
+            /*#__PURE__*/ React.createElement(
+              "button",
+              {
+                type: "button",
+                onClick: onClose,
+                className: "min-h-11 min-w-11 px-4 py-2 rounded-lg border border-slate-300 bg-white text-slate-700 font-bold text-sm hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2",
+                "aria-label": label("common.close", "Close"),
+              },
+              label("common.close", "Close"),
+            ),
+          ),
+        ),
+        /*#__PURE__*/ React.createElement(
+          "div",
+          {
+            id: "ws-di-print",
+            className: "max-w-3xl mx-auto bg-white my-6 p-8 shadow print:shadow-none text-slate-900",
+          },
+          /*#__PURE__*/ React.createElement("h1", { className: "text-2xl font-black" }, script.title),
+          /*#__PURE__*/ React.createElement("p", { className: "text-sm text-slate-600 mt-1" }, script.subtitle),
+          /*#__PURE__*/ React.createElement(
+            "div",
+            { className: "mt-4 p-4 rounded-lg border-2 border-slate-300 bg-slate-50 ws-di-section" },
+            /*#__PURE__*/ React.createElement("p", { className: "text-[11px] font-bold uppercase tracking-widest text-slate-500" }, label("word_sounds.di_heading_objective", "Objective")),
+            /*#__PURE__*/ React.createElement("p", { className: "mt-1 font-semibold" }, script.objective),
+            /*#__PURE__*/ React.createElement(
+              "p",
+              { className: "mt-2 text-sm text-slate-600" },
+              label("word_sounds.di_timing", "About {{minutes}} minutes. Mastery: {{mastery}} consecutive correct.")
+                .replace("{{minutes}}", String(script.estimatedMinutes))
+                .replace("{minutes}", String(script.estimatedMinutes))
+                .replace("{{mastery}}", String(script.mastery))
+                .replace("{mastery}", String(script.mastery)),
+            ),
+          ),
+          /*#__PURE__*/ React.createElement(
+            "div",
+            { className: "mt-4 ws-di-section" },
+            /*#__PURE__*/ React.createElement("p", { className: "text-[11px] font-bold uppercase tracking-widest text-slate-500" }, label("word_sounds.di_heading_materials", "Materials")),
+            /*#__PURE__*/ React.createElement(
+              "ul",
+              { className: "mt-1 list-disc pl-5 text-sm space-y-0.5" },
+              script.materials.map((m, i) => /*#__PURE__*/ React.createElement("li", { key: i }, m)),
+            ),
+          ),
+          script.sections.map((s, si) =>
+            /*#__PURE__*/ React.createElement(
+              "section",
+              { key: s.id || si, className: "mt-6 pt-4 border-t-2 border-slate-200 ws-di-section" },
+              /*#__PURE__*/ React.createElement(
+                "h2",
+                { className: "text-lg font-black flex items-baseline justify-between gap-3" },
+                /*#__PURE__*/ React.createElement("span", null, s.title),
+                s.minutes
+                  ? /*#__PURE__*/ React.createElement("span", { className: "text-xs font-bold text-slate-500 whitespace-nowrap" }, label("word_sounds.di_minutes", "{{n}} min").replace("{{n}}", String(s.minutes)).replace("{n}", String(s.minutes)))
+                  : null,
+              ),
+              s.strand
+                ? /*#__PURE__*/ React.createElement("p", { className: "text-[11px] font-bold uppercase tracking-widest text-indigo-700 mt-0.5" }, s.strand)
+                : null,
+              s.intent
+                ? /*#__PURE__*/ React.createElement("p", { className: "text-sm text-slate-600 italic mt-1" }, s.intent)
+                : null,
+              (s.teacherSays && s.teacherSays.length)
+                ? /*#__PURE__*/ React.createElement(
+                  "div",
+                  { className: "mt-3 pl-3 border-l-4 border-indigo-400" },
+                  s.teacherSays.map((x, i) => line(x, i, "font-semibold leading-relaxed")),
+                )
+                : null,
+              (s.teacherDoes && s.teacherDoes.length)
+                ? /*#__PURE__*/ React.createElement(
+                  "ul",
+                  { className: "mt-3 list-disc pl-5 text-sm text-slate-700 space-y-0.5" },
+                  s.teacherDoes.map((x, i) => /*#__PURE__*/ React.createElement("li", { key: i }, x)),
+                )
+                : null,
+              (s.steps && s.steps.length)
+                ? /*#__PURE__*/ React.createElement(
+                  "ol",
+                  { className: "mt-3 space-y-2" },
+                  s.steps.map((st, i) =>
+                    /*#__PURE__*/ React.createElement(
+                      "li",
+                      { key: i, className: "text-sm" },
+                      /*#__PURE__*/ React.createElement("span", { className: "font-black" }, (i + 1) + ". " + st.step + ". "),
+                      /*#__PURE__*/ React.createElement("span", { className: "font-semibold" }, "“" + st.teacherSays + "” "),
+                      /*#__PURE__*/ React.createElement("span", { className: "text-slate-600" }, st.note),
+                    ),
+                  ),
+                )
+                : null,
+              (s.items && s.items.length)
+                ? /*#__PURE__*/ React.createElement(
+                  "table",
+                  { className: "mt-3 w-full text-sm border-collapse" },
+                  /*#__PURE__*/ React.createElement(
+                    "tbody",
+                    null,
+                    s.items.map((it, i) =>
+                      /*#__PURE__*/ React.createElement(
+                        "tr",
+                        { key: i, className: "border-b border-slate-200" },
+                        /*#__PURE__*/ React.createElement("td", { className: "py-1 pr-3 font-bold align-top whitespace-nowrap" }, it.primary),
+                        /*#__PURE__*/ React.createElement("td", { className: "py-1 text-slate-600" }, it.secondary),
+                      ),
+                    ),
+                  ),
+                )
+                : null,
+              (s.notes && s.notes.length)
+                ? /*#__PURE__*/ React.createElement(
+                  "ul",
+                  { className: "mt-3 list-disc pl-5 text-sm text-slate-700 space-y-0.5" },
+                  s.notes.map((x, i) => /*#__PURE__*/ React.createElement("li", { key: i }, x)),
+                )
+                : null,
+            ),
+          ),
+          /*#__PURE__*/ React.createElement(
+            "section",
+            { className: "mt-6 pt-4 border-t-2 border-slate-200 ws-di-section" },
+            /*#__PURE__*/ React.createElement("h2", { className: "text-lg font-black" }, label("word_sounds.di_heading_word_list", "Word list")),
+            /*#__PURE__*/ React.createElement(
+              "table",
+              { className: "mt-2 w-full text-sm border-collapse" },
+              /*#__PURE__*/ React.createElement(
+                "thead",
+                null,
+                /*#__PURE__*/ React.createElement(
+                  "tr",
+                  { className: "text-left text-[11px] uppercase tracking-widest text-slate-500 border-b-2 border-slate-300" },
+                  /*#__PURE__*/ React.createElement("th", { scope: "col", className: "py-1 pr-3" }, label("word_sounds.di_col_word", "Word")),
+                  /*#__PURE__*/ React.createElement("th", { scope: "col", className: "py-1 pr-3" }, label("word_sounds.di_col_sounds", "Sounds")),
+                  /*#__PURE__*/ React.createElement("th", { scope: "col", className: "py-1 pr-3" }, label("word_sounds.di_col_count", "Count")),
+                  /*#__PURE__*/ React.createElement("th", { scope: "col", className: "py-1 pr-3" }, label("word_sounds.di_col_shape", "Shape")),
+                  /*#__PURE__*/ React.createElement("th", { scope: "col", className: "py-1" }, label("word_sounds.di_col_syllable_type", "Syllable type")),
+                ),
+              ),
+              /*#__PURE__*/ React.createElement(
+                "tbody",
+                null,
+                script.wordList.map((wl, i) =>
+                  /*#__PURE__*/ React.createElement(
+                    "tr",
+                    { key: i, className: "border-b border-slate-200" },
+                    /*#__PURE__*/ React.createElement(
+                      "td",
+                      { className: "py-1 pr-3 font-bold" },
+                      wl.word,
+                      wl.estimated
+                        ? /*#__PURE__*/ React.createElement("span", { className: "ml-1 text-[10px] font-bold text-amber-700" }, label("word_sounds.di_estimated", "(estimated)"))
+                        : null,
+                    ),
+                    /*#__PURE__*/ React.createElement("td", { className: "py-1 pr-3" }, wl.sounds),
+                    /*#__PURE__*/ React.createElement("td", { className: "py-1 pr-3" }, wl.count),
+                    /*#__PURE__*/ React.createElement("td", { className: "py-1 pr-3" }, wl.shape),
+                    /*#__PURE__*/ React.createElement("td", { className: "py-1" }, wl.syllableType),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          /*#__PURE__*/ React.createElement(
+            "section",
+            { className: "mt-6 pt-4 border-t-2 border-slate-300 ws-di-section" },
+            /*#__PURE__*/ React.createElement("h2", { className: "text-sm font-black uppercase tracking-widest text-slate-600" }, label("word_sounds.di_heading_caveats", "Before you teach this")),
+            /*#__PURE__*/ React.createElement(
+              "ul",
+              { className: "mt-2 list-disc pl-5 text-sm text-slate-700 space-y-1" },
+              script.caveats.map((c, i) => /*#__PURE__*/ React.createElement("li", { key: i }, c)),
+            ),
+          ),
+        ),
+      );
+    };
+
     window.AlloModules = window.AlloModules || {};
     window.AlloModules.WordSoundsModal = ({
       audioCache: providedAudioCache,
@@ -3658,96 +3907,26 @@
       React.useEffect(() => {
         loadWordAudioBank();
       }, []);
-      React.useEffect(() => {
-        if (!playInstructions || !wordSoundsActivity || initialShowReviewPanel)
-          return;
-        const activityInstructionMap = {
-          counting: "how_many_sounds",
-          blending: "listen_to_sounds",
-          segmentation: "break_the_word",
-          rhyming: "which_word_rhymes",
-          letter_tracing: "trace_the_letter",
-          mapping: "match_sounds_to_letters",
-          orthography: "spell_the_word",
-          sound_sort: "sort_the_sounds",
-          word_families: "find_word_family",
-          spelling_bee: "spell_the_word",
-          word_scramble: "unscramble_the_word",
-          missing_letter: "find_missing_letter",
-        };
-        const instrKey = activityInstructionMap[wordSoundsActivity];
-        if (!instrKey) return;
-        let instrCancelled = false;
-        const playInstr = async () => {
-          await new Promise((r) => setTimeout(r, 600));
-          if (instrCancelled) return;
-          if (
-            typeof window.__ALLO_INSTRUCTION_AUDIO !== "undefined" &&
-            window.__ALLO_INSTRUCTION_AUDIO[instrKey]
-          ) {
-            debugLog(
-              "🔊 Playing instruction audio for:",
-              wordSoundsActivity,
-              instrKey,
-            );
-            try {
-              const audio = new Audio(
-                window.__ALLO_INSTRUCTION_AUDIO[instrKey],
-              );
-              instructionAudioRef.current = audio;
-              if (instrCancelled) { try { audio.pause(); } catch (e) {} return; }
-              audio.playbackRate = 0.95;
-              await new Promise((res, rej) => {
-                audio.onended = res;
-                audio.onerror = () => {
-                  warnLog("Instruction audio error");
-                  res();
-                };
-                setTimeout(res, 8000);
-                audio.play().catch(() => res());
-              });
-            } catch (e) {
-              warnLog("Instruction playback failed:", e);
-            }
-          } else {
-            debugLog(
-              "⚠️ No instruction audio for:",
-              instrKey,
-              "- using TTS fallback",
-            );
-            const fallbackTexts = {
-              how_many_sounds: "How many sounds do you hear?",
-              what_is_the_sound: "What sound do you hear?",
-              listen_to_sounds: "Listen to the sounds and pick the word.",
-              break_the_word: "Break the word into its sounds.",
-              which_word_rhymes: "Which word rhymes?",
-              trace_the_letter: "Trace the letter.",
-              match_sounds_to_letters: "Match the sounds to their letters.",
-              spell_the_word: "Spell the word you hear.",
-              sort_the_sounds: "Sort the sounds.",
-              find_word_family: "Find the word family.",
-              unscramble_the_word: "Unscramble the word.",
-              find_missing_letter: "Find the missing letter.",
-            };
-            const text = fallbackTexts[instrKey];
-            if (text && handleAudio) {
-              try {
-                await handleAudio(text);
-              } catch (e) {
-                /* silent */
-              }
-            }
-          }
-        };
-        playInstr();
-        return () => {
-          instrCancelled = true;
-          if (instructionAudioRef.current) {
-            try { instructionAudioRef.current.pause(); } catch (e) {}
-            instructionAudioRef.current = null;
-          }
-        };
-      }, [wordSoundsActivity]);
+      // REMOVED: the second instruction effect (playInstr).
+      //
+      // It played the generic audio-bank instruction clip 600ms after an
+      // activity was entered. runInstructionSequence (further down) plays an
+      // instruction for every one of the same activities 800ms after entry,
+      // then plays the word. Both fired on activity entry with no shared
+      // queue, so a child heard the instruction twice, 200ms apart, and then
+      // the word landing on the tail of it. That is the jumbled ordering
+      // reported in Sound Counting.
+      //
+      // This was the wrong copy to keep, twice over:
+      //   * For counting, blending, segmentation, mapping, orthography,
+      //     spelling_bee, word_scramble and missing_letter it played exactly
+      //     the same bank clip runInstructionSequence plays.
+      //   * For rhyming, letter_tracing, sound_sort and word_families it
+      //     played the generic clip OVER the richer per-word instruction
+      //     those four have their own branches for. runInstructionSequence
+      //     excludes them from its generic branch for precisely that reason.
+      // It also had no run-id staleness guard, only a cancel flag on activity
+      // change, so it could keep talking across an answer.
       const audioCache = providedAudioCache || internalAudioCache;
       const ttsQueue = React.useRef(Promise.resolve());
       const [attempts, setAttempts] = React.useState(0);
@@ -3870,7 +4049,6 @@
       const submissionLockRef = React.useRef(false);
       const sessionWordResults = React.useRef([]);
       const feedbackAudioRef = React.useRef(null);
-      const instructionAudioRef = React.useRef(null);
       const activityRegionRef = React.useRef(null);
       const activityFocusInitedRef = React.useRef(false);
       const isolationPositionRef = React.useRef(null);
@@ -4181,6 +4359,71 @@
       const [showReviewPanel, setShowReviewPanel] = React.useState(
         initialShowReviewPanel || false,
       );
+      // Direct Instruction lesson script. `diScript` is the built structure;
+      // null means the panel is closed. `diScriptState` drives the button while
+      // the pure generator module is being fetched.
+      const [diScript, setDiScript] = React.useState(null);
+      const [diScriptState, setDiScriptState] = React.useState("idle");
+      const [diCopyState, setDiCopyState] = React.useState("idle");
+      // Builds the printable DI script from the pack that is already loaded.
+      // Nothing here calls an AI backend or the network beyond fetching the
+      // generator itself, so this works on a keyless device.
+      const handleOpenDiScript = React.useCallback(async () => {
+        setDiScriptState("loading");
+        try {
+          if (!window.AlloWordSoundsDI && typeof window.__alloLoadPlugin === "function") {
+            await window.__alloLoadPlugin("word_sounds_di_loader.js");
+          }
+          const DI = window.AlloWordSoundsDI;
+          if (!DI || typeof DI.buildLessonScript !== "function") {
+            addToast?.(
+              "The lesson script generator could not be loaded. Check the connection and try again.",
+              "error",
+            );
+            setDiScriptState("idle");
+            return;
+          }
+          // A DI script is scripted teacher speech; the generator refuses any
+          // language it cannot vouch for rather than machine-translating it.
+          if (!DI.supportsLanguage(wordSoundsLanguage)) {
+            addToast?.(
+              "The lesson script is available for English word sets only.",
+              "info",
+            );
+            setDiScriptState("idle");
+            return;
+          }
+          if (!preloadedWords.length) {
+            addToast?.("There are no words to build a lesson script from yet.", "info");
+            setDiScriptState("idle");
+            return;
+          }
+          const analysis = DI.analyzeWordSet(preloadedWords, {
+            language: wordSoundsLanguage || "en",
+            grade: (runtimeSessionConfig && runtimeSessionConfig.probeGrade) || "",
+          });
+          setDiScript(DI.buildLessonScript(analysis, lessonPlanConfig));
+          setDiCopyState("idle");
+          setDiScriptState("idle");
+        } catch (e) {
+          debugLog("[WS] DI script build failed:", e?.message || e);
+          addToast?.("The lesson script could not be built.", "error");
+          setDiScriptState("idle");
+        }
+      }, [preloadedWords, lessonPlanConfig, wordSoundsLanguage, runtimeSessionConfig, addToast]);
+      const handleCopyDiScript = React.useCallback(() => {
+        try {
+          const DI = window.AlloWordSoundsDI;
+          const text = (DI && diScript) ? DI.scriptToText(diScript) : "";
+          if (!text) return;
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(
+              () => setDiCopyState("copied"),
+              () => setDiCopyState("idle"),
+            );
+          }
+        } catch (_) { setDiCopyState("idle"); }
+      }, [diScript]);
       const hasStartedFromReview = React.useRef(false);
       // Direct-play detection: hosts that preset a concrete activity before
       // mount (live-session push hydration, student self-open from history,
@@ -4857,7 +5100,6 @@
         try { if (currentActiveAudio.current) { currentActiveAudio.current.pause(); currentActiveAudio.current = null; } } catch (e) {}
         try { if (audioInstances.current) audioInstances.current.forEach(function (a) { try { a.pause(); } catch (e) {} }); } catch (e) {}
         try { if (feedbackAudioRef.current) { feedbackAudioRef.current.pause(); feedbackAudioRef.current = null; } } catch (e) {}
-        try { if (instructionAudioRef.current) { instructionAudioRef.current.pause(); instructionAudioRef.current = null; } } catch (e) {}
         try { if (typeof window !== "undefined" && window.speechSynthesis) window.speechSynthesis.cancel(); } catch (e) {}
         try { if (anchorReplayTimeoutRef.current) { clearTimeout(anchorReplayTimeoutRef.current); anchorReplayTimeoutRef.current = null; } } catch (e) {}
       }, []);
@@ -5074,7 +5316,17 @@
             normalizedKey.length === 7
           ) {
             normalizedKey = normalizedKey.replace("short ", "");
-          } else if (normalizedKey.endsWith("_short"))
+          } else if (
+            normalizedKey.endsWith("_short") &&
+            // A verbatim bank key outranks suffix-stripping: 'oo_short' has
+            // its own recorded clip, and stripping first played the LONG oo
+            // — 'book' got the vowel from 'moon'. Deliberately narrow (only
+            // the _short strip is guarded) so no other precedence changes.
+            !(
+              typeof window.__ALLO_PHONEME_AUDIO_BANK !== "undefined" &&
+              window.__ALLO_PHONEME_AUDIO_BANK[normalizedKey]
+            )
+          )
             normalizedKey = normalizedKey.replace("_short", "");
           else if (normalizedKey.endsWith(" short"))
             normalizedKey = normalizedKey.replace(" short", "");
@@ -11566,15 +11818,13 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               try { audio.pause(); } catch (e) { console.warn("[WordSounds] silent catch:", e); }
             });
           }
-          // Feedback + instruction clips are standalone Audio objects not in the
-          // maps above; stop them too so they don't bleed into the next activity.
+          // Feedback clips are standalone Audio objects not in the maps above;
+          // stop them too so they do not bleed into the next activity. The
+          // instruction clip needs no entry here: it plays through handleAudio,
+          // which the audioInstances sweep above already stops.
           if (feedbackAudioRef.current) {
             try { feedbackAudioRef.current.pause(); } catch (e) {}
             feedbackAudioRef.current = null;
-          }
-          if (instructionAudioRef.current) {
-            try { instructionAudioRef.current.pause(); } catch (e) {}
-            instructionAudioRef.current = null;
           }
           // Guard against un-cancelling a MINIMIZED tool: switch-activity-
           // then-minimize within 50ms left the hard-cancel flag false,
@@ -17629,6 +17879,17 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           ),
         );
       }
+      // Rendered in place of the game so window.print() has a clean target and
+      // no game audio or timers are driving underneath a teacher reading a page.
+      if (diScript) {
+        return /*#__PURE__*/ React.createElement(WordSoundsDiScriptPanel, {
+          script: diScript,
+          ts: ts,
+          copyState: diCopyState,
+          onCopy: handleCopyDiScript,
+          onClose: () => { setDiScript(null); setDiCopyState("idle"); },
+        });
+      }
       if (showReviewPanel) {
         return /*#__PURE__*/ React.createElement(WordSoundsReviewPanel, {
           ts: ts,
@@ -18181,6 +18442,27 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     title: t("common.review_and_edit_word_list"),
                   },
                   ts("word_sounds.review_words") || "\u270F\uFE0F Review Words",
+                ),
+                // Same gate as Review Words, for the same reason: the script
+                // prints every word with its sounds and its answers, so it must
+                // never render on a student device or during a probe.
+                isTeacherMode &&
+                !isProbeMode &&
+                preloadedWords.length > 0 &&
+                  /*#__PURE__*/ React.createElement(
+                  "button",
+                  {
+                    type: "button",
+                    "aria-label": ts("word_sounds.di_script_open") || "Open the lesson script",
+                    onClick: handleOpenDiScript,
+                    disabled: diScriptState === "loading",
+                    className:
+                      "flex items-center gap-1 px-3 py-1.5 bg-indigo-700 text-white rounded-full text-sm font-bold hover:bg-indigo-600 disabled:opacity-60 transition-colors shadow-md",
+                    title: ts("word_sounds.di_script_open") || "Open the lesson script",
+                  },
+                  diScriptState === "loading"
+                    ? (ts("common.loading") || "Loading...")
+                    : (ts("word_sounds.di_script_button") || "\u{1F4C4} Lesson script"),
                 ),
                 isTeacherMode &&
                 !isProbeMode &&

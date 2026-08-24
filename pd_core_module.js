@@ -24,7 +24,7 @@
   var SCHEMA_VERSION = 'pd-1.0';
   var COMPLETION_SCHEMA_VERSION = 'pd-completion-1.0';
   var REVIEW_CANDIDATE_SCHEMA_VERSION = 'pd-review-candidate-1.0';
-  var REVIEW_CANDIDATE_CONSENT_VERSION = 'pd-review-candidate-consent-1.0';
+  var REVIEW_CANDIDATE_CONSENT_VERSION = 'pd-review-candidate-consent-1.1';
   var MAX_COMPLETION_INTEGRITY_EVENTS = 500;
   var REVIEW_MAX_ACTIVITIES = 500;
   var REVIEW_MAX_ARTIFACTS = 1000;
@@ -39,7 +39,22 @@
 
   // Activity types understood by the runner. 'sim' is an AI-assessed scenario
   // (formative masteryScore 0..100); wired in the runner, not the AI generator.
-  var ACTIVITY_TYPES = ['read', 'quiz', 'reflect', 'video', 'checklist', 'sim'];
+  // 'resource' embeds a FROZEN SNAPSHOT of an AlloFlow pipeline resource
+  // (concept sort / timeline / glossary) by value: the data rides inside the
+  // module so digests bind it and the module works offline. It never gates.
+  // 'persona' is live multi-turn AI role-play practice (rehearsing a hard
+  // conversation with an AI-played character). The SETUP (persona, scenario,
+  // rubric, turn bounds) is module data and digest-bound; the CONVERSATION is
+  // non-deterministic and therefore rides only as optional, separately
+  // consented evidence — never as module content. Participation-based
+  // completion; never scored, never gates.
+  // 'branching' is a deterministic choose-your-path case study: a
+  // module-authored decision tree (digest-bound, offline, no AI) the learner
+  // walks to an ending. The adventure-style PD format without the game
+  // engine; full Adventure-mode embedding remains a separate integration.
+  var ACTIVITY_TYPES = ['read', 'quiz', 'reflect', 'video', 'checklist', 'sim', 'resource', 'persona', 'branching'];
+  var PERSONA_DEFAULT_MIN_TURNS = 3;
+  var RESOURCE_TYPES = ['concept-sort', 'timeline', 'glossary'];
   // Types whose objective score may GATE advancement. 'sim' is deliberately
   // excluded: its masteryScore is an AI-self-reported, fuzzy FORMATIVE estimate,
   // so it must never block a learner (and could strand them) — sim is always
@@ -182,6 +197,123 @@
           if (!isNonEmptyString(act.content.scenario)) return { ok: false, error: 'Sim ' + act.id + ' needs a content.scenario.' };
           if (!isNonEmptyString(act.content.rubric)) return { ok: false, error: 'Sim ' + act.id + ' needs a content.rubric.' };
         }
+        if (act.type === 'resource') {
+          var rType = act.content.resourceType;
+          if (RESOURCE_TYPES.indexOf(rType) === -1) {
+            return { ok: false, error: 'Resource ' + act.id + ' needs content.resourceType (one of: ' + RESOURCE_TYPES.join(', ') + ').' };
+          }
+          if (act.content.instructions !== undefined && !isNonEmptyString(act.content.instructions)) {
+            return { ok: false, error: 'Resource ' + act.id + ' instructions must be non-empty when supplied.' };
+          }
+          var rData = act.content.data;
+          if (!rData || typeof rData !== 'object' || Array.isArray(rData)) {
+            return { ok: false, error: 'Resource ' + act.id + ' needs a content.data object.' };
+          }
+          if (rType === 'concept-sort') {
+            var rCats = rData.categories, rItems = rData.items;
+            if (!Array.isArray(rCats) || rCats.length === 0) return { ok: false, error: 'Resource ' + act.id + ' needs data.categories (non-empty array).' };
+            var catIds = {};
+            for (var rc = 0; rc < rCats.length; rc++) {
+              var rcat = rCats[rc];
+              if (!rcat || !isNonEmptyString(rcat.id) || !isNonEmptyString(rcat.label)) return { ok: false, error: 'Resource ' + act.id + ' category ' + (rc + 1) + ' needs id and label.' };
+              if (catIds[rcat.id]) return { ok: false, error: 'Resource ' + act.id + ' has a duplicate category id: ' + rcat.id };
+              catIds[rcat.id] = true;
+            }
+            if (!Array.isArray(rItems) || rItems.length === 0) return { ok: false, error: 'Resource ' + act.id + ' needs data.items (non-empty array).' };
+            var itemIds = {};
+            for (var ri = 0; ri < rItems.length; ri++) {
+              var rit = rItems[ri];
+              if (!rit || !isNonEmptyString(rit.id) || !isNonEmptyString(rit.content)) return { ok: false, error: 'Resource ' + act.id + ' item ' + (ri + 1) + ' needs id and content.' };
+              if (itemIds[rit.id]) return { ok: false, error: 'Resource ' + act.id + ' has a duplicate item id: ' + rit.id };
+              itemIds[rit.id] = true;
+              if (!catIds[rit.categoryId]) return { ok: false, error: 'Resource ' + act.id + ' item ' + (ri + 1) + ' categoryId does not match a category.' };
+            }
+          } else {
+            // timeline + glossary share the { items: [...] } container.
+            var rList = rData.items;
+            if (!Array.isArray(rList) || rList.length === 0) return { ok: false, error: 'Resource ' + act.id + ' needs data.items (non-empty array).' };
+            for (var rj = 0; rj < rList.length; rj++) {
+              var row = rList[rj];
+              if (rType === 'timeline' && !(row && isNonEmptyString(row.date) && isNonEmptyString(row.event))) {
+                return { ok: false, error: 'Resource ' + act.id + ' timeline item ' + (rj + 1) + ' needs date and event.' };
+              }
+              if (rType === 'glossary' && !(row && isNonEmptyString(row.term) && isNonEmptyString(row.def))) {
+                return { ok: false, error: 'Resource ' + act.id + ' glossary item ' + (rj + 1) + ' needs term and def.' };
+              }
+            }
+          }
+        }
+
+        if (act.type === 'branching') {
+          var bNodes = act.content.nodes;
+          if (!bNodes || typeof bNodes !== 'object' || Array.isArray(bNodes)) {
+            return { ok: false, error: 'Branching ' + act.id + ' needs a content.nodes object.' };
+          }
+          if (act.content.intro !== undefined && !isNonEmptyString(act.content.intro)) {
+            return { ok: false, error: 'Branching ' + act.id + ' intro must be non-empty when supplied.' };
+          }
+          var bIds = Object.keys(bNodes);
+          if (bIds.length === 0 || bIds.length > 100) return { ok: false, error: 'Branching ' + act.id + ' needs 1-100 nodes.' };
+          if (!isNonEmptyString(act.content.start) || !bNodes[act.content.start]) {
+            return { ok: false, error: 'Branching ' + act.id + ' needs content.start naming an existing node.' };
+          }
+          var bEndings = 0;
+          for (var bi = 0; bi < bIds.length; bi++) {
+            var bNode = bNodes[bIds[bi]];
+            if (!isStableId(bIds[bi])) return { ok: false, error: 'Branching ' + act.id + ' node ids must be stable identifiers.' };
+            if (!bNode || !isNonEmptyString(bNode.text)) return { ok: false, error: 'Branching ' + act.id + ' node ' + bIds[bi] + ' needs text.' };
+            var bChoices = bNode.choices;
+            if (bNode.ending === true) {
+              bEndings++;
+              if (bChoices !== undefined && (!Array.isArray(bChoices) || bChoices.length > 0)) {
+                return { ok: false, error: 'Branching ' + act.id + ' ending node ' + bIds[bi] + ' must not have choices.' };
+              }
+            } else {
+              if (!Array.isArray(bChoices) || bChoices.length === 0 || bChoices.length > 6) {
+                return { ok: false, error: 'Branching ' + act.id + ' node ' + bIds[bi] + ' needs 1-6 choices (or ending: true).' };
+              }
+              for (var bc = 0; bc < bChoices.length; bc++) {
+                var bChoice = bChoices[bc];
+                if (!bChoice || !isNonEmptyString(bChoice.label)) return { ok: false, error: 'Branching ' + act.id + ' node ' + bIds[bi] + ' choice ' + (bc + 1) + ' needs a label.' };
+                if (!isNonEmptyString(bChoice.to) || !bNodes[bChoice.to]) return { ok: false, error: 'Branching ' + act.id + ' node ' + bIds[bi] + ' choice ' + (bc + 1) + ' must point to an existing node.' };
+                if (bChoice.feedback !== undefined && !isNonEmptyString(bChoice.feedback)) return { ok: false, error: 'Branching ' + act.id + ' choice feedback must be non-empty when supplied.' };
+              }
+            }
+          }
+          if (!bEndings) return { ok: false, error: 'Branching ' + act.id + ' needs at least one ending node.' };
+          // Every node must be reachable from start, and an ending must be
+          // reachable — an unreachable branch is authored dead weight and an
+          // endless graph would strand the learner.
+          var bSeen = {}; var bQueue = [act.content.start]; var bEndingReachable = false;
+          while (bQueue.length) {
+            var bCur = bQueue.pop();
+            if (bSeen[bCur]) continue;
+            bSeen[bCur] = true;
+            var bCurNode = bNodes[bCur];
+            if (bCurNode.ending === true) { bEndingReachable = true; continue; }
+            (bCurNode.choices || []).forEach(function (choice) { if (!bSeen[choice.to]) bQueue.push(choice.to); });
+          }
+          if (!bEndingReachable) return { ok: false, error: 'Branching ' + act.id + ' has no ending reachable from start.' };
+          for (var bu = 0; bu < bIds.length; bu++) {
+            if (!bSeen[bIds[bu]]) return { ok: false, error: 'Branching ' + act.id + ' node ' + bIds[bu] + ' is unreachable from start.' };
+          }
+        }
+        if (act.type === 'persona') {
+          if (!isNonEmptyString(act.content.personaName)) return { ok: false, error: 'Persona ' + act.id + ' needs content.personaName.' };
+          if (!isNonEmptyString(act.content.personaRole)) return { ok: false, error: 'Persona ' + act.id + ' needs content.personaRole (who the AI plays).' };
+          if (!isNonEmptyString(act.content.scenario)) return { ok: false, error: 'Persona ' + act.id + ' needs content.scenario.' };
+          if (!isNonEmptyString(act.content.rubric)) return { ok: false, error: 'Persona ' + act.id + ' needs content.rubric.' };
+          var minT = act.content.minTurns, maxT = act.content.maxTurns;
+          if (minT !== undefined && !(isNum(minT) && minT === Math.floor(minT) && minT >= 1 && minT <= 20)) {
+            return { ok: false, error: 'Persona ' + act.id + ' minTurns must be an integer 1-20.' };
+          }
+          if (maxT !== undefined) {
+            var minEff = (minT !== undefined) ? minT : PERSONA_DEFAULT_MIN_TURNS;
+            if (!(isNum(maxT) && maxT === Math.floor(maxT) && maxT >= minEff && maxT <= 50)) {
+              return { ok: false, error: 'Persona ' + act.id + ' maxTurns must be an integer between minTurns and 50.' };
+            }
+          }
+        }
 
         var gate = act.gate || { kind: 'none' };
         if (gate.kind && gate.kind !== 'none' && gate.kind !== 'score') {
@@ -238,6 +370,14 @@
           if (!captions) issue('video-captions-missing', path + '.content', 'Provide captions for prerecorded video.');
           if (!transcript && !alternative) issue('video-alternative-missing', path + '.content', 'Provide a transcript or documented accessible alternative.');
         }
+        if (act && act.type === 'resource') {
+          var resourceItems = (content.data && Array.isArray(content.data.items)) ? content.data.items : [];
+          resourceItems.forEach(function (resourceItem, rii) {
+            if (resourceItem && resourceItem.image && !isNonEmptyString(resourceItem.imageAlt)) {
+              issue('resource-image-alt-missing', path + '.content.data.items[' + rii + ']', 'Give the embedded image alt text (imageAlt) or remove it.');
+            }
+          });
+        }
       });
     });
     return {
@@ -288,6 +428,47 @@
       out.completed = !!raw.watched;
     } else if (type === 'checklist') {
       out.completed = Array.isArray(raw.checked) && raw.checked.some(function (x) { return !!x; });
+    } else if (type === 'branching') {
+      var walkContent = (activity && activity.content) || {};
+      var walkNodes = (walkContent.nodes && typeof walkContent.nodes === 'object') ? walkContent.nodes : {};
+      var walkPath = Array.isArray(raw.path) ? raw.path : [];
+      var walkOk = walkPath.length > 0 && walkPath[0] === walkContent.start;
+      for (var wi = 0; walkOk && wi < walkPath.length - 1; wi++) {
+        var wNode = walkNodes[walkPath[wi]];
+        var wChoices = (wNode && Array.isArray(wNode.choices)) ? wNode.choices : [];
+        walkOk = wChoices.some(function (choice) { return choice && choice.to === walkPath[wi + 1]; });
+      }
+      var wLast = walkOk ? walkNodes[walkPath[walkPath.length - 1]] : null;
+      out.completed = !!(wLast && wLast.ending === true);
+    } else if (type === 'persona') {
+      // Participation-based: the educator has taken minTurns conversational
+      // turns (default 3). With AI unavailable, a written fallback response
+      // completes instead — a persona activity is never uncompletable offline.
+      // No score is ever produced, so it can never satisfy a score gate.
+      var personaContent = (activity && activity.content) || {};
+      var minTurns = (isNum(personaContent.minTurns) && personaContent.minTurns >= 1) ? Math.floor(personaContent.minTurns) : PERSONA_DEFAULT_MIN_TURNS;
+      var personaMsgs = Array.isArray(raw.messages) ? raw.messages : [];
+      var educatorTurns = 0;
+      for (var pmi = 0; pmi < personaMsgs.length; pmi++) {
+        var pMsg = personaMsgs[pmi];
+        if (pMsg && pMsg.role === 'educator' && typeof pMsg.text === 'string' && pMsg.text.trim()) educatorTurns++;
+      }
+      out.completed = educatorTurns >= minTurns
+        || (typeof raw.fallbackResponse === 'string' && raw.fallbackResponse.trim().length > 0);
+    } else if (type === 'resource') {
+      // Concept sort completes when every card is PLACED (formative practice —
+      // a mismatched sort still completes; resource never gates). Timeline and
+      // glossary snapshots complete on acknowledgement, like read.
+      var rContent = (activity && activity.content) || {};
+      if (rContent.resourceType === 'concept-sort') {
+        var rcItems = (rContent.data && Array.isArray(rContent.data.items)) ? rContent.data.items : [];
+        var placements = (raw.placements && typeof raw.placements === 'object' && !Array.isArray(raw.placements)) ? raw.placements : {};
+        var placed = 0;
+        for (var pi = 0; pi < rcItems.length; pi++) { if (rcItems[pi] && typeof placements[rcItems[pi].id] === 'string' && placements[rcItems[pi].id]) placed++; }
+        out.completed = rcItems.length > 0 && placed === rcItems.length;
+      } else {
+        out.completed = !!raw.acknowledged;
+      }
     } else {
       out.completed = !!raw.completed;
       if (isNum(raw.score)) out.score = raw.score;
@@ -506,7 +687,8 @@
       privacy: 'Structured identity fields and raw clipboard event/content fields are omitted. Written responses are included as learner-provided, unverified free text and may contain names, email addresses, or other personal data you typed or pasted.',
       consent_label: 'I choose to include my written responses in this local review-candidate export.',
       ai_option_label: 'Optional - Include AI-assisted advisory notes, clearly labeled for human review.',
-      integrity_option_label: 'Optional - Include an aggregate paste-event summary (counts only; context, never an automatic decision).'
+      integrity_option_label: 'Optional - Include an aggregate paste-event summary (counts only; context, never an automatic decision).',
+      transcript_option_label: 'Optional - Include live role-play practice transcripts (the conversation text between you and the AI persona; it may contain personal details you typed).'
     };
   }
 
@@ -705,9 +887,29 @@
 
     var includeAi = options.includeAiAnalysis === true;
     var includeIntegrity = options.includeIntegritySummary === true;
+    var includeTranscripts = options.includeTranscripts === true;
     var activities = [];
     var artifacts = [];
     var buildProblem = null;
+
+    function appendAiAdvisory(act, raw, refs) {
+      if (raw.feedback != null && typeof raw.feedback !== 'string') {
+        return reviewCandidateProblem('invalid_ai_analysis', 'activities.' + act.id + '.feedback', 'AI advisory feedback must be text.');
+      }
+      var advisoryFeedback = (raw.feedback || '').trim();
+      if (advisoryFeedback.length > REVIEW_MAX_AI_FEEDBACK_CHARS) {
+        return reviewCandidateProblem('oversized_ai_analysis', 'activities.' + act.id + '.feedback', 'AI advisory feedback exceeds the formal package limit.');
+      }
+      var analysisProblem = reviewQualitativeLimitProblem(raw.qualitativeAnalysis, 'activities.' + act.id + '.qualitativeAnalysis');
+      if (analysisProblem) return analysisProblem;
+      var analysis = sanitizeQualitativeAnalysis(raw.qualitativeAnalysis);
+      if (advisoryFeedback || analysis) {
+        refs.push(addReviewArtifact(artifacts, act.id, 'ai-advisory-analysis', 'application/json', 'ai-assisted-advisory',
+          { capture: 'learner-device', advisory: true, provider: 'not-recorded', model: 'not-recorded', human_review_required: true },
+          { feedback: advisoryFeedback, qualitativeAnalysis: analysis }));
+      }
+      return null;
+    }
 
     flatActivities.forEach(function (act) {
       if (buildProblem) return;
@@ -769,23 +971,46 @@
           refs.push(addReviewArtifact(artifacts, act.id, 'learner-response', 'text/plain', 'learner-provided-unverified',
             { capture: 'learner-device', verified: false }, scenarioResponse));
         if (includeAi) {
-          if (raw.feedback != null && typeof raw.feedback !== 'string') {
-            buildProblem = reviewCandidateProblem('invalid_ai_analysis', 'activities.' + act.id + '.feedback', 'AI advisory feedback must be text.');
-            return;
+          var simAdvisoryProblem = appendAiAdvisory(act, raw, refs);
+          if (simAdvisoryProblem) { buildProblem = simAdvisoryProblem; return; }
+        }
+      } else if (act.type === 'persona') {
+        // The conversation is EVIDENCE, not module content: it rides only
+        // under its own opt-in scope, and its absence is never an error —
+        // completion is participation-based, and a reviewer sees the
+        // client_observation either way.
+        if (includeTranscripts) {
+          var personaMessages = Array.isArray(raw.messages) ? raw.messages : [];
+          var transcriptLines = [];
+          var personaName = String((act.content && act.content.personaName) || 'Persona');
+          for (var pm = 0; pm < personaMessages.length; pm++) {
+            var personaMsg = personaMessages[pm];
+            if (!personaMsg || typeof personaMsg.text !== 'string' || !personaMsg.text.trim()) continue;
+            if (personaMsg.role !== 'educator' && personaMsg.role !== 'persona') continue;
+            transcriptLines.push((personaMsg.role === 'educator' ? 'Educator' : personaName) + ': ' + personaMsg.text.trim());
           }
-          var feedback = (raw.feedback || '').trim();
-          if (feedback.length > REVIEW_MAX_AI_FEEDBACK_CHARS) {
-            buildProblem = reviewCandidateProblem('oversized_ai_analysis', 'activities.' + act.id + '.feedback', 'AI advisory feedback exceeds the formal package limit.');
-            return;
+          if (transcriptLines.length) {
+            var transcriptText = transcriptLines.join('\n');
+            if (transcriptText.length > REVIEW_MAX_RESPONSE_CHARS) {
+              buildProblem = reviewCandidateProblem('response_too_large', 'activities.' + act.id, 'A practice transcript exceeds the formal package limit.');
+              return;
+            }
+            refs.push(addReviewArtifact(artifacts, act.id, 'live-practice-transcript', 'text/plain', 'learner-provided-unverified',
+              { capture: 'learner-device', verified: false, participants: 'educator-and-ai-persona' }, transcriptText));
           }
-          var analysisProblem = reviewQualitativeLimitProblem(raw.qualitativeAnalysis, 'activities.' + act.id + '.qualitativeAnalysis');
-          if (analysisProblem) { buildProblem = analysisProblem; return; }
-          var analysis = sanitizeQualitativeAnalysis(raw.qualitativeAnalysis);
-          if (feedback || analysis) {
-            refs.push(addReviewArtifact(artifacts, act.id, 'ai-advisory-analysis', 'application/json', 'ai-assisted-advisory',
-              { capture: 'learner-device', advisory: true, provider: 'not-recorded', model: 'not-recorded', human_review_required: true },
-              { feedback: feedback, qualitativeAnalysis: analysis }));
+          if (typeof raw.fallbackResponse === 'string' && raw.fallbackResponse.trim()) {
+            var fallbackText = raw.fallbackResponse.trim();
+            if (fallbackText.length > REVIEW_MAX_RESPONSE_CHARS) {
+              buildProblem = reviewCandidateProblem('response_too_large', 'activities.' + act.id, 'A learner response exceeds the formal package limit.');
+              return;
+            }
+            refs.push(addReviewArtifact(artifacts, act.id, 'learner-response', 'text/plain', 'learner-provided-unverified',
+              { capture: 'learner-device', verified: false }, fallbackText));
           }
+        }
+        if (includeAi) {
+          var personaAdvisoryProblem = appendAiAdvisory(act, raw, refs);
+          if (personaAdvisoryProblem) { buildProblem = personaAdvisoryProblem; return; }
         }
       }
 
@@ -816,6 +1041,7 @@
     var scopes = ['learner-response-evidence'];
     if (includeAi) scopes.push('ai-advisory-analysis');
     if (includeIntegrity) scopes.push('integrity-summary');
+    if (includeTranscripts) scopes.push('live-practice-transcript');
 
     var candidate = {
       schema_version: REVIEW_CANDIDATE_SCHEMA_VERSION,
@@ -852,6 +1078,7 @@
         exact_event_times_included: false,
         field_identifiers_included: false,
         ai_advisory_analysis_included: artifacts.some(function (artifact) { return artifact.kind === 'ai-advisory-analysis'; }),
+        live_practice_transcript_included: artifacts.some(function (artifact) { return artifact.kind === 'live-practice-transcript'; }),
         integrity_summary_included: !!integritySummary
       }
     };
@@ -896,7 +1123,7 @@
     }
 
     var consent = candidate.consent;
-    var allowedScopes = ['learner-response-evidence', 'ai-advisory-analysis', 'integrity-summary'];
+    var allowedScopes = ['learner-response-evidence', 'ai-advisory-analysis', 'integrity-summary', 'live-practice-transcript'];
     if (!reviewOnlyKeys(consent, ['granted', 'granted_at', 'notice_version', 'notice_locale', 'notice_payload', 'notice_digest', 'scopes']) ||
         consent.granted !== true || !reviewIsIsoTimestamp(consent.granted_at) ||
         consent.notice_version !== REVIEW_CANDIDATE_CONSENT_VERSION ||
@@ -913,12 +1140,13 @@
     }
 
     var privacy = candidate.privacy_manifest;
-    if (!reviewOnlyKeys(privacy, ['structured_identity_fields_included', 'raw_clipboard_events_included', 'raw_clipboard_content_included', 'free_text_may_contain_personal_data', 'learner_response_text_included', 'exact_event_times_included', 'field_identifiers_included', 'ai_advisory_analysis_included', 'integrity_summary_included']) ||
+    if (!reviewOnlyKeys(privacy, ['structured_identity_fields_included', 'raw_clipboard_events_included', 'raw_clipboard_content_included', 'free_text_may_contain_personal_data', 'learner_response_text_included', 'exact_event_times_included', 'field_identifiers_included', 'ai_advisory_analysis_included', 'live_practice_transcript_included', 'integrity_summary_included']) ||
         privacy.structured_identity_fields_included !== false || privacy.raw_clipboard_events_included !== false ||
         privacy.raw_clipboard_content_included !== false || privacy.free_text_may_contain_personal_data !== true ||
         typeof privacy.learner_response_text_included !== 'boolean' || privacy.exact_event_times_included !== false ||
         privacy.field_identifiers_included !== false ||
         typeof privacy.ai_advisory_analysis_included !== 'boolean' ||
+        typeof privacy.live_practice_transcript_included !== 'boolean' ||
         typeof privacy.integrity_summary_included !== 'boolean') {
       return bad('invalid_privacy_manifest', 'privacy_manifest', 'The privacy manifest must distinguish structured exclusions from possible personal data in free text.');
     }
@@ -958,6 +1186,7 @@
     var artifactMap = {};
     var aiArtifactFound = false;
     var artifactKindsByActivity = {};
+    var transcriptArtifactFound = false;
     for (var ar = 0; ar < candidate.artifacts.length; ar++) {
       var artifact = candidate.artifacts[ar];
       if (!reviewOnlyKeys(artifact, ['artifact_id', 'activity_id', 'kind', 'media_type', 'source', 'provenance', 'value', 'digest']) ||
@@ -967,7 +1196,7 @@
         return bad('invalid_artifact', 'artifacts[' + ar + ']', 'Artifact binding or digest is invalid.');
       }
       if (artifact.kind === 'learner-response') {
-        if ((activityMap[artifact.activity_id].type !== 'reflect' && activityMap[artifact.activity_id].type !== 'sim') ||
+        if ((activityMap[artifact.activity_id].type !== 'reflect' && activityMap[artifact.activity_id].type !== 'sim' && activityMap[artifact.activity_id].type !== 'persona') ||
             artifact.media_type !== 'text/plain' || artifact.source !== 'learner-provided-unverified' ||
             !reviewOnlyKeys(artifact.provenance, ['capture', 'verified']) ||
             artifact.provenance.capture !== 'learner-device' || artifact.provenance.verified !== false ||
@@ -984,7 +1213,7 @@
         }
       } else if (artifact.kind === 'ai-advisory-analysis') {
         aiArtifactFound = true;
-        if (activityMap[artifact.activity_id].type !== 'sim' ||
+        if ((activityMap[artifact.activity_id].type !== 'sim' && activityMap[artifact.activity_id].type !== 'persona') ||
             artifact.media_type !== 'application/json' || artifact.source !== 'ai-assisted-advisory' ||
             !reviewOnlyKeys(artifact.provenance, ['capture', 'advisory', 'provider', 'model', 'human_review_required']) ||
             artifact.provenance.capture !== 'learner-device' || artifact.provenance.advisory !== true ||
@@ -996,6 +1225,16 @@
         }
         var qualitativeProblem = reviewQualitativeLimitProblem(artifact.value.qualitativeAnalysis, 'artifacts[' + ar + '].value.qualitativeAnalysis');
         if (qualitativeProblem) return qualitativeProblem;
+      } else if (artifact.kind === 'live-practice-transcript') {
+        transcriptArtifactFound = true;
+        if (activityMap[artifact.activity_id].type !== 'persona' ||
+            artifact.media_type !== 'text/plain' || artifact.source !== 'learner-provided-unverified' ||
+            !reviewOnlyKeys(artifact.provenance, ['capture', 'verified', 'participants']) ||
+            artifact.provenance.capture !== 'learner-device' || artifact.provenance.verified !== false ||
+            artifact.provenance.participants !== 'educator-and-ai-persona' ||
+            !isNonEmptyString(artifact.value) || artifact.value.length > REVIEW_MAX_RESPONSE_CHARS) {
+          return bad('invalid_artifact', 'artifacts[' + ar + ']', 'Practice transcript artifact is invalid or too large.');
+        }
       } else {
         return bad('unsupported_artifact_kind', 'artifacts[' + ar + '].kind', 'Unsupported review artifact kind.');
       }
@@ -1022,6 +1261,13 @@
         requiredArtifactProblem = bad('required_evidence_missing', 'activities.' + activityId, 'Reflect and scenario activities require exactly one learner-provided response artifact.');
       } else if (activityType === 'checklist' && selectionCount !== 1) {
         requiredArtifactProblem = bad('required_evidence_missing', 'activities.' + activityId, 'Checklist activities require exactly one learner selection of module-authored options.');
+      } else if (activityType === 'persona') {
+        // Persona evidence is OPTIONAL (its own consent scope) — but never
+        // more than one transcript and one fallback response per activity.
+        var transcriptCount = kinds.filter(function (kind) { return kind === 'live-practice-transcript'; }).length;
+        if (responseCount > 1 || transcriptCount > 1) {
+          requiredArtifactProblem = bad('invalid_artifact', 'activities.' + activityId, 'A persona activity carries at most one transcript and one fallback response.');
+        }
       }
     });
     if (requiredArtifactProblem) return requiredArtifactProblem;
@@ -1032,6 +1278,10 @@
     if (aiArtifactFound !== privacy.ai_advisory_analysis_included ||
         (aiArtifactFound && consent.scopes.indexOf('ai-advisory-analysis') === -1)) {
       return bad('ai_scope_mismatch', 'consent.scopes', 'AI advisory inclusion must match the consent and privacy manifest.');
+    }
+    if (transcriptArtifactFound !== privacy.live_practice_transcript_included ||
+        (transcriptArtifactFound && consent.scopes.indexOf('live-practice-transcript') === -1)) {
+      return bad('transcript_scope_mismatch', 'consent.scopes', 'Practice-transcript inclusion must match the consent and privacy manifest.');
     }
 
     var integrity = candidate.integrity_summary;

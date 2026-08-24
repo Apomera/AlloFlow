@@ -9776,6 +9776,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
     desc: 'Educational flight simulator \u2014 learn aerodynamics, navigation, and world geography by flying between real airports.',
     color: 'sky',
     category: 'applied',
+    gradeRange: '5-12',
     questHooks: [
       { id: 'visit_3_airports', label: 'Visit 3 different airports', icon: '\uD83D\uDEEB', check: function(d) { return (d.visitedAirports || []).length >= 3; }, progress: function(d) { return (d.visitedAirports || []).length + '/3 airports'; } },
       { id: 'visit_5_airports', label: 'Visit 5 different airports', icon: '\uD83C\uDF0D', check: function(d) { return (d.visitedAirports || []).length >= 5; }, progress: function(d) { return (d.visitedAirports || []).length + '/5 airports'; } },
@@ -22959,7 +22960,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
 
       // ── MENU VIEW ──
       if (view === 'menu') {
-        return h('div', { id: 'skyschool-menu', 'data-flightsim-visual-menu': 'true', style: { minHeight: '500px', height: '100%', maxHeight: 'calc(100vh - 80px)', background: 'var(--allo-stem-canvas, radial-gradient(circle at 16% 0%, #164e63 0%, #0c2239 32%, #07111f 100%))', borderRadius: '16px', overflow: 'auto', position: 'relative', scrollbarColor: '#38bdf8 #0f172a' } },
+        return h('div', { id: 'skyschool-menu', 'data-flightsim-visual-menu': 'true', style: { minHeight: '500px', height: '100%', maxHeight: 'calc(100vh - 80px)', background: 'radial-gradient(circle at 16% 0%, #164e63 0%, #0c2239 32%, #07111f 100%)' /* NOT var(--allo-stem-canvas, <gradient>): that variable IS defined (#ffffff in light), so the defined value always beat the fallback and the gradient was dead code. In light theme the whole SkySchool shell went plain WHITE while all 66 #94a3b8 labels and 79 white-alpha glass panels kept the dark palette they were drawn for -- 21 AA failures, none of them in dark. Every sibling branch of this render is unconditionally dark; this one now matches. */, borderRadius: '16px', overflow: 'auto', position: 'relative', scrollbarColor: '#38bdf8 #0f172a' } },
           h('style', null, '#skyschool-menu button{transition:transform .16s ease,filter .16s ease,box-shadow .16s ease}#skyschool-menu button:hover{transform:translateY(-1px);filter:brightness(1.07)}#skyschool-menu button:focus-visible,#skyschool-menu select:focus-visible{outline:3px solid #f8fafc;outline-offset:2px}'),
           // FAA Part 107 Drone Briefing Modal (gates drone_survey mission)
           d.droneBriefing && h('div', {
@@ -23192,7 +23193,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           // Flight Planner
           h('div', { style: { padding: '0 24px 16px' } },
             h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' } }, __alloT('stem.flightsim.flight_planner', '🗺️ Flight Planner')),
-            h('div', { style: { background: 'var(--allo-stem-deeper, #0f172a)', borderRadius: '10px', padding: '12px', border: '1px solid #1e3a5f' } },
+            h('div', { style: { background: '#0f172a' /* same trap as the shell above: --allo-stem-deeper IS defined (#e2e8f0 in light), so this panel turned light while its 8px #94a3b8 labels stayed dark-palette -- 2.07:1. The tool is dark in every branch; pin the literal. */, borderRadius: '10px', padding: '12px', border: '1px solid #1e3a5f' } },
               h('div', { style: { display: 'flex', gap: '8px', marginBottom: '8px', alignItems: 'center' } },
                 h('div', { style: { flex: 1 } },
                   h('div', { style: { fontSize: '8px', color: '#94a3b8', textTransform: 'uppercase', marginBottom: '2px' } }, __alloT('stem.flightsim.from', 'From')),

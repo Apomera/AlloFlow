@@ -4418,8 +4418,8 @@
               Object.keys(CHEM_BADGES).map(function(bid) {
                 var b = CHEM_BADGES[bid];
                 var earned = ext.badges.indexOf(bid) !== -1;
-                return h('div', { key: bid, className: 'text-center p-1.5 rounded-lg border ' + (earned ? 'bg-white border-amber-300' : 'bg-slate-50 border-slate-200 opacity-50'), title: b.desc },
-                  h('span', { className: 'text-lg block' }, earned ? b.icon : '\uD83D\uDD12'),
+                return h('div', { key: bid, className: 'text-center p-1.5 rounded-lg border ' + (earned ? 'bg-white border-amber-300' : 'bg-slate-50 border-slate-200'), title: b.desc },
+                  h('span', { className: 'text-lg block' + (earned ? '' : ' opacity-50') }, earned ? b.icon : '\uD83D\uDD12'),
                   h('span', { className: 'text-[11px] font-bold block ' + (earned ? 'text-amber-700' : 'text-slate-600') }, b.label)
                 );
               })

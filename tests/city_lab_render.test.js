@@ -65,14 +65,25 @@ describe('City Planning Lab - the panel renders at all', () => {
     expect(() => renderPanel(makeCtx({ theme: 'light' }))).not.toThrow();
   });
 
-  it('paints an explicit background colour in both themes rather than inheriting', () => {
+  it('follows the SUBSTRATE rather than the app theme, and still responds to contrast', () => {
     const dark = renderPanel(makeCtx({ theme: 'dark' }));
     const light = renderPanel(makeCtx({ theme: 'light' }));
-    // A tool that renders byte-identical in both themes has hardcoded one of
-    // them, which is how a panel ends up invisible in light mode.
-    expect(dark).not.toBe(light);
+    const contrast = renderPanel(makeCtx({ theme: 'contrast' }));
+    // This used to assert dark !== light, on the reasoning that a tool rendering
+    // identically in both themes must have hardcoded one of them. That premise does
+    // not hold here. In dark theme the host wraps every tool in a WHITE card
+    // (stem_lab_module.js ~1633), and cityLab paints only TRANSLUCENT panels over it,
+    // so its substrate is white in BOTH themes. Driving its ink tokens off the app
+    // theme put #e2e8f0/#94a3b8 on that white card: 143 failing nodes, the tool title
+    // at 1.23:1. Rendering identically in light and dark is now the CORRECT outcome.
+    // Contrast is the one theme whose substrate really changes -- the host keeps a
+    // black surface there -- so that is where a difference must still appear, and
+    // that is what catches a future hardcoded palette.
+    expect(dark).toBe(light);
+    expect(contrast).not.toBe(light);
     expect(dark).toMatch(/background:/);
     expect(light).toMatch(/background:/);
+    expect(contrast).toMatch(/background:/);
   });
 
   it('draws all 144 parcels as real buttons with an id and a label', () => {

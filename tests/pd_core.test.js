@@ -403,7 +403,7 @@ describe('pd-review-candidate-1.0 evidence packages', () => {
         activity_ids: ['read-one', 'reflect-one', 'commit-one', 'sim-one'],
       },
       consent: {
-        notice_version: 'pd-review-candidate-consent-1.0',
+        notice_version: 'pd-review-candidate-consent-1.1',
         notice_locale: 'en-US',
         notice_payload: PD.reviewConsentNotice('en-US'),
       },

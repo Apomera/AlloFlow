@@ -21480,7 +21480,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
 
   window.StemLab.registerTool('learningLab', {
     name: 'Learning Lab',
-    icon: '🧠',
+    icon: '\uD83D\uDCD3',
     category: 'life-skills',
     description: 'Explore optional learning, planning, reflection, accessibility, and education-career resources. Individual tools explain their purpose, limits, storage, and cited sources where relevant.',
     tags: ['pedagogy', 'learning-science', 'metacognition', 'UDL', 'study-skills', 'education-career', 'maine', 'teachers', 'school-psych'],

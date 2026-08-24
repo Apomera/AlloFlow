@@ -1,4 +1,4 @@
-# The STEAM Lab: find and share the right tool
+# The STEAM Lab. Find and share the right tool
 
 The STEAM Lab is the largest collection in AlloFlow, with interactive tools across thirteen subject areas, from a water-cycle simulation to a titration burette to a disproportionality analyzer. The generated registry changes as tools are added or retired, so this manual intentionally does not hard-code a total. Use the live STEAM Lab catalog for the current list.
 
@@ -12,7 +12,11 @@ Do not confuse this with [Find a tool](https://alloflow-cdn.pages.dev/tools.html
 
 ## Finding a tool: three routes
 
-**Search, if you know roughly what you want.** Open the STEAM Lab and type in its search box. It matches tool names, descriptions, topics, and hand-written aliases — so "photosynthesis" finds the tree lab even though that word is not in its title.
+![The STEAM Lab tool browser. A search box sits at the top, followed by a box asking "What do you want to learn about?" with an AI Suggest tools button, then subject filter chips for All, Science, Math, Engineering, Creative, Applied, and Games. Below them a Math Fundamentals group shows tool cards including Number Line, Area Model, Arithmetic Strategy Studio, Fraction Lab, Math Manipulatives, and Multiplication Table, each with a one-line description. A Keyboard accessible badge sits in the header.](../assets/live-screenshots/17-current-v1.2-steam-lab.png)
+
+The search box and the subject chips are the first two routes. The tool count shown in your build will differ from this capture as tools are added.
+
+**Search, if you know roughly what you want.** Open the STEAM Lab and type in its search box. It matches tool names, descriptions, topics, and hand-written aliases, so "photosynthesis" finds the tree lab even though that word is not in its title.
 
 **Browse by area, if you are planning a unit.** The lab's own subject groupings are the fastest way to see everything available for a topic you are about to teach.
 
@@ -29,6 +33,10 @@ Preview the copied link in a student-equivalent browser profile before sharing i
 **Or share the whole lab** by sending the app link and telling students which tool to open. Use the direct link when you want them in one place; use the app link when the activity is "explore three of these."
 
 ## What to expect from any tool
+
+![The Number Line tool open inside the STEAM Lab. A breadcrumb reads All tools, then Number Line, with a note that Escape or Alt+B returns to all tools. The workspace is headed "Explore: make magnitude visible" and shows status chips for Range, Accuracy, and Badges, a dark number line canvas, and a list of modes down the right side: Explore, Challenge, Skip Count, Frac slash Dec, and Compare, each with its own short description.](../assets/live-screenshots/18-current-v1.2-number-line.png)
+
+Most tools follow this shape: a named workspace, a set of modes rather than a single activity, and a clearly marked way back out. Note the keyboard route stated in the corner.
 
 **The interface runs in the browser, but data paths are feature-specific.** Many simulations compute locally. AI extras, online lookups, live coordination, camera or microphone features, imports, LMS launches, and configured school services can use a network or create records elsewhere. Check the tool's disclosure and the approved deployment before entering student-related content.
 

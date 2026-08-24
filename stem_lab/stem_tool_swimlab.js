@@ -73,7 +73,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
     var swimReadinessStyle = document.createElement('style');
     swimReadinessStyle.id = 'swimlab-readiness-css';
     swimReadinessStyle.textContent = [
-      '.swimlab-menu-shell{width:min(100%,1080px);margin:0 auto;padding:8px;color:#e6f4ff;display:grid;gap:14px;}',
+      // ★The shell declared an INK (#e6f4ff) but no GROUND, and this whole stylesheet is
+      // dark-only: .swimlab-section is rgba(15,23,42,.65) and .swimlab-action-note is
+      // #bae6fd. Over the light page those composited to a mid-grey #5e6675 carrying
+      // light text -- 2.25:1 and 4.35:1. The tool's INLINE styles are correctly
+      // theme-aware through T; only this block was not, so give it the dark ground its
+      // alphas and inks were written against.
+      '.swimlab-menu-shell{width:min(100%,1080px);margin:0 auto;padding:8px;color:#e6f4ff;background:#0c2233;border-radius:16px;display:grid;gap:14px;}',
       '.swimlab-menu-shell *{box-sizing:border-box;}',
       '.swimlab-command{padding:20px;border:1px solid rgba(56,189,248,.42);border-radius:20px;background:radial-gradient(circle at 90% 10%,rgba(14,165,233,.24),transparent 34%),linear-gradient(135deg,rgba(7,89,133,.72),rgba(2,6,23,.98) 66%);box-shadow:0 18px 44px rgba(2,6,23,.28);}',
       '.swimlab-command-top{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;}',
@@ -134,6 +140,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
     name: 'SwimLab',
     icon: '🏊',
     category: 'life-skills',
+    gradeRange: '5-12',
+    // No quest hooks existed, so nothing outside the badge system defined success.
+    // The mini-quizzes already award a per-module mastery badge only at >=80%
+    // (badges['mod_<id>'], see miniQuizBlock), so the mastery hooks below are
+    // understanding-gated for free; the stroke-hunt hook requires the student's own
+    // written explanation, not just the checkbox.
+    questDataKey: 'swimLab',
+    questHooks: [
+      { id: 'ws_first_module', label: 'Visit 3 modules', icon: '📖',
+        check: function (d) { return Object.keys((d && d.modulesVisited) || {}).length >= 3; },
+        progress: function (d) { return Math.min(3, Object.keys((d && d.modulesVisited) || {}).length) + '/3'; } },
+      { id: 'ws_mastery', label: 'Score 80%+ on 2 module quizzes', icon: '🏅',
+        check: function (d) { var b = (d && d.badges) || {}; return Object.keys(b).filter(function (k) { return k.indexOf('mod_') === 0; }).length >= 2; },
+        progress: function (d) { var b = (d && d.badges) || {}; return Math.min(2, Object.keys(b).filter(function (k) { return k.indexOf('mod_') === 0; }).length) + '/2'; } },
+      { id: 'ws_stroke_hunt', label: 'Explain the stroke trade-off in your own words', icon: '💡',
+        check: function (d) { var iq = (d && d.strokeHunt) || {}; return !!iq.understood && typeof iq.explanation === 'string' && iq.explanation.trim().length >= 40; },
+        progress: function (d) { var iq = (d && d.strokeHunt) || {}; return iq.understood ? (((iq.explanation || '').trim().length >= 40) ? 'Explained' : 'Say more') : 'Experiment first'; } },
+      { id: 'ws_mastery_any', label: 'Reach mastery on any safety module', icon: '🌊',
+        check: function (d) { var b = (d && d.badges) || {}; return Object.keys(b).some(function (k) { return k.indexOf('mod_') === 0; }); },
+        progress: function (d) { var b = (d && d.badges) || {}; return Object.keys(b).some(function (k) { return k.indexOf('mod_') === 0; }) ? 'Mastered' : 'Not yet'; } }
+    ],
     description: 'How swimming works (stroke physics + survival skills) plus what every swimmer should know about cold water, rip currents, ice, life jackets, and rescue. Visual stroke breakdowns, the science of buoyancy and propulsion, and the survival skills (back float, eggbeater, HELP, huddle) that actually save lives. Sources cited inline (CDC, USCG, AAP, NAA, ASAN, NOAA, USA Swimming, Cold Water Boot Camp). Educational only — find a Water Safety Instructor for actual swim training.',
     tags: ['swim', 'swimming', 'stroke-physics', 'buoyancy', 'survival-swim', 'cold-water', 'rip-currents', 'ice-safety', 'pfd', 'autism-water', 'maine', 'life-skills'],
 
@@ -462,7 +489,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
               onClick: function() { openTile(tile); },
               style: btn({
                 display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 6,
-                padding: 14, background: emphasized ? '#0a1d2e' : T.card,
+                padding: 14, background: emphasized ? T.cardAlt : T.card,
                 borderColor: borderColor, borderWidth: emphasized ? 2 : 1, borderStyle: 'solid'
               })
             },
@@ -940,7 +967,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
             width: W, height: H, viewBox: '0 0 ' + W + ' ' + H,
             role: 'img',
             'aria-label': __alloT('stem.swimlab.stroke_phase_diagram', 'Swimming stroke phase diagram') + (opts.caption ? ': ' + opts.caption : ''),
-            style: { background: 'linear-gradient(180deg, #10283c 0%, #0a1d2e 55%, #06141f 100%)', borderRadius: 6, border: '1px solid ' + T.border }
+            style: { background: isDark || isContrast ? 'linear-gradient(180deg, #10283c 0%, #0a1d2e 55%, #06141f 100%)' : 'linear-gradient(180deg, #e0f2fe 0%, #bae6fd 55%, #7dd3fc 100%)', borderRadius: 6, border: '1px solid ' + T.border }
           },
             h('defs', null,
               h('marker', { id: 'wsArrow', markerWidth: 6, markerHeight: 6, refX: 5, refY: 3, orient: 'auto', markerUnits: 'strokeWidth' },
@@ -2641,8 +2668,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
                 h('polyline', { points: pts.join(' '), fill: 'none', stroke: '#67e8f9', strokeWidth: 2 }),
                 h('circle', { cx: px(iq.rate), cy: py(curE), r: 4, fill: '#fbbf24', stroke: '#0b1220', strokeWidth: 1 }),
                 h('text', { x: px(iq.rate), y: py(curE) - 7, fill: '#fbbf24', fontSize: 8, textAnchor: 'middle', fontWeight: 'bold' }, 'you'),
-                h('text', { x: (padL + W - padR) / 2, y: Hc - 5, fill: '#94a3b8', fontSize: 9, textAnchor: 'middle' }, __alloT('stem.swimlab.stroke_rate', 'Stroke rate →')),
-                h('text', { x: 4, y: padT + 4, fill: '#94a3b8', fontSize: 8 }, 'eff')
+                h('text', { x: (padL + W - padR) / 2, y: Hc - 5, fill: T.dim, fontSize: 9, textAnchor: 'middle' }, __alloT('stem.swimlab.stroke_rate', 'Stroke rate →')),
+                h('text', { x: 4, y: padT + 4, fill: T.dim, fontSize: 8 }, 'eff')
               );
             })(),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 10 } },

@@ -127,7 +127,7 @@ window.StemLab = window.StemLab || {
 
 
   window.StemLab.registerTool('dataStudio', {
-    icon: "📊",
+    icon: '\uD83E\uDD67',
     label: "Charts & Graphs",
     desc: "Build bar, pie, line, scatter, box and histogram charts from your data, explore stats like mean, median and trendlines, then switch to Regression mode for curve fits, R², residuals and outlier analysis.",
     color: 'slate',

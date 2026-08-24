@@ -256,7 +256,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
   try { window.__universePure = { COSMIC_QUIZ: COSMIC_QUIZ, QUIZ_PER_ATTEMPT: QUIZ_PER_ATTEMPT, quizRng: quizRng, quizShuffle: quizShuffle, quizDeck: quizDeck, quizView: quizView }; } catch (_e) {}
 
   window.StemLab.registerTool('universe', {
-    icon: "🌌",
+    icon: '\uD83C\uDF20',
     label: "Universe Explorer",
     desc: "Journey through cosmic time from the Big Bang to heat death, exploring epochs, distance scales, galaxies, exoplanets, and dark matter.",
     color: 'slate',

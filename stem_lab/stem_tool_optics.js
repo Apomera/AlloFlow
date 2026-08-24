@@ -4525,6 +4525,7 @@
         'data-opticslab-tool': 'true',
         style: {
           fontFamily: 'system-ui, sans-serif',
+          background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 14,
           color: 'var(--allo-stem-text, #e2e8f0)',
           '--op-accent-text': opAccentText,
           '--op-green-text': opGreenText,

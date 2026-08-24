@@ -1352,6 +1352,15 @@ function UdlWalkthroughPanel(props) {
                             return (
                               <li key={sig.id} className="text-xs text-slate-700 bg-indigo-50 border border-indigo-200 rounded-lg p-2">
                                 <span className="font-bold">{g ? g.label : sig.id}</span> — {Math.round(sig.rate * 100)}% {tt('udlwalk.observed_short', 'observed')} (n={sig.n}). {UDLWALK_SUGGESTIONS[g ? g.principle : ''] || ''}
+                                {typeof window !== 'undefined' && typeof window.__alloOpenPdCatalog === 'function' && (
+                                  <button
+                                    type="button"
+                                    onClick={() => window.__alloOpenPdCatalog({ guideline: sig.id })}
+                                    className="block mt-1.5 px-2 py-1 text-[11px] font-semibold border border-indigo-600 text-indigo-700 rounded hover:bg-indigo-100"
+                                  >
+                                    {tt('udlwalk.pd_find_modules', 'Find related PD modules')}
+                                  </button>
+                                )}
                               </li>
                             );
                           })}

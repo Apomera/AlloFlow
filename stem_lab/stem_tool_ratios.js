@@ -324,7 +324,7 @@
   };
 
   window.StemLab.registerTool('ratioLab', {
-    icon: '\uD83D\uDCCA',
+    icon: '\u2797',
     label: 'Ratios, Rates & Proportions Lab',
     desc: 'Explore ratio tables, double number lines, unit rates, percents, and proportional relationships.',
     color: 'indigo',

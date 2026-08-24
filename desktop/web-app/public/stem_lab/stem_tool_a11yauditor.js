@@ -156,11 +156,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
   try { window.__alloA11yPure = __alloA11yPure; } catch (_e) {}
 
   window.StemLab.registerTool('a11yAuditor', {
-    icon: '♿',
+    icon: '\uD83E\uDDAE',
     label: 'Digital Accessibility Lab',
     desc: 'Audit websites and documents for WCAG 2.1 AA accessibility compliance. Learn about digital accessibility by analyzing real-world content.',
     color: 'teal',
     category: 'coding',
+    gradeRange: '6-12',
+    // Quest hooks were absent entirely, so nothing outside the badge tab verified that a
+    // student did anything. These mirror the badge checks that require real work (the
+    // fields are maintained by the same update sites the badges read); the cross-check
+    // one is deliberately about comparing findings across sites, which is the habit
+    // this tool exists to build.
+    questDataKey: 'a11yAuditor',
+    questHooks: [
+      { id: 'first_audit', label: 'Complete an accessibility audit', icon: '🔍',
+        check: function (d) { return ((d && d.auditsCompleted) || 0) >= 1; },
+        progress: function (d) { return Math.min(1, (d && d.auditsCompleted) || 0) + '/1'; } },
+      { id: 'learn_criteria', label: 'Explore all 10 core WCAG criteria', icon: '📖',
+        check: function (d) { return ((d && d.criteriaExplored) || 0) >= 10; },
+        progress: function (d) { return Math.min(10, (d && d.criteriaExplored) || 0) + '/10'; } },
+      { id: 'take_action', label: 'Generate an advocacy letter from real findings', icon: '✊',
+        check: function (d) { return ((d && d.complaintsGenerated) || 0) >= 1; },
+        progress: function (d) { return ((d && d.complaintsGenerated) || 0) >= 1 ? 'Sent' : 'Not yet'; } },
+      { id: 'cross_check', label: 'Audit 3 different sites and compare their patterns', icon: '📊',
+        check: function (d) { return ((d && d.uniqueSites) || 0) >= 3; },
+        progress: function (d) { return Math.min(3, (d && d.uniqueSites) || 0) + '/3'; } }
+    ],
     render: function(ctx) {
       var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
       // honor the 2nd-arg English fallback (ctx.t is single-arg & ignores it; see dev-tools/check_i18n_fallback.cjs)
@@ -503,7 +524,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
 
         // Student-friendly intro (collapsible)
         !d.introHidden && h('div', { className: 'bg-gradient-to-r from-teal-50 to-cyan-50 border-2 border-teal-200 rounded-2xl p-5 relative' },
-          h('button', { onClick: function() { upd('introHidden', true); }, className: 'absolute top-3 right-3 text-teal-400 hover:text-teal-600 text-xs font-bold', 'aria-label': t('stem.a11yauditor.hide_intro', 'Hide intro') }, '\u2716'),
+          h('button', { onClick: function() { upd('introHidden', true); }, className: 'absolute top-3 right-3 text-teal-700 hover:text-teal-900 text-xs font-bold', 'aria-label': t('stem.a11yauditor.hide_intro', 'Hide intro') }, '\u2716'),
           h('h3', { className: 'text-base font-black text-teal-800 mb-2' }, t('stem.a11yauditor.what_is_digital_accessibility', '\u267F What is Digital Accessibility?')),
           h('p', { className: 'text-sm text-teal-700 leading-relaxed mb-3' },
             parseInt(gradeLevel, 10) <= 5
@@ -523,7 +544,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
                 h('span', null, d2.icon),
                 h('div', null,
                   h('span', { className: 'font-bold text-teal-800' }, d2.label),
-                  h('span', { className: 'text-teal-600 ml-1' }, '\u2014 ' + d2.desc)
+                  h('span', { className: 'text-teal-700 ml-1' }, '\u2014 ' + d2.desc)
                 )
               );
             })
@@ -536,7 +557,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
             return h('button', { 'aria-label': 'Switch to ' + t.label + ' tab',
               key: t.id, role: 'tab', 'aria-selected': tab === t.id,
               onClick: function() { upd('tab', t.id); },
-              className: 'flex-1 px-2 py-2 rounded-lg text-[11px] font-bold transition-all min-w-[60px] ' + (tab === t.id ? 'bg-white text-teal-700 shadow-sm' : 'text-teal-600/60 hover:text-teal-700')
+              className: 'flex-1 px-2 py-2 rounded-lg text-[11px] font-bold transition-all min-w-[60px] ' + (tab === t.id ? 'bg-white text-teal-700 shadow-sm' : 'text-teal-700 hover:text-teal-900')
             }, t.label);
           })
         ),
@@ -605,7 +626,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
                   onKeyDown: function(e) { if (e.key === 'Enter' && auditUrl.trim()) fetchAndAudit(auditUrl.trim()); },
                   placeholder: 'https://example.com',
                   'aria-label': t('stem.a11yauditor.website_url_to_audit', 'Website URL to audit'),
-                  className: 'flex-1 text-sm p-2.5 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-teal-300'
+                  className: 'flex-1 text-sm p-2.5 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-teal-300',
+                  style: { background: '#ffffff', color: '#0f172a' }
                 }),
                 h('button', { 'aria-label': 'Try:',
                   onClick: function() { if (auditUrl.trim()) fetchAndAudit(auditUrl.trim()); },
@@ -620,7 +642,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
                 ['https://www.wikipedia.org', 'https://www.google.com', 'https://www.nytimes.com', 'https://www.amazon.com'].map(function(url) {
                   return h('button', { key: url,
                     onClick: function() { upd('auditUrl', url); },
-                    className: 'text-[11px] text-teal-600 hover:text-teal-800 font-medium hover:underline'
+                    className: 'text-[11px] text-teal-700 hover:text-teal-900 font-medium hover:underline'
                   }, url.replace('https://www.', ''));
                 })
               )
@@ -842,7 +864,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
                     ),
                     h('p', { className: 'text-sm text-slate-800 font-medium mt-1' }, issue.issue),
                     issue.who && h('p', { className: 'text-xs text-slate-600 mt-1' }, t('stem.a11yauditor.who_it_affects', '👤 Who it affects: '), issue.who),
-                    issue.fix && h('p', { className: 'text-xs text-teal-600 mt-1 font-medium' }, t('stem.a11yauditor.fix', '🔧 Fix: '), issue.fix)
+                    issue.fix && h('p', { className: 'text-xs text-teal-700 mt-1 font-medium' }, t('stem.a11yauditor.fix', '🔧 Fix: '), issue.fix)
                   );
                 })
               )
@@ -1080,7 +1102,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
             h('label', { className: 'text-xs font-bold text-slate-600 block mt-2' }, t('stem.a11yauditor.describe_the_impact_who_is_affected_an', 'Describe the impact (who is affected and how)')),
             h('textarea', { value: complaintImpact, onChange: function(e) { upd('complaintImpact', e.target.value); }, placeholder: t('stem.a11yauditor.e_g_my_child_uses_a_screen_reader_and_', 'e.g. My child uses a screen reader and cannot navigate the enrollment forms...'), className: 'w-full text-xs p-3 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-red-300 resize-none h-20 mt-1', 'aria-label': t('stem.a11yauditor.impact_description', 'Impact description') }),
             // Auto-populate from last audit
-            auditResult && auditResult.issues && h('p', { className: 'text-[11px] text-teal-600 font-bold' }, '\u2705 ' + auditResult.issues.length + ' issues from your last audit will be included automatically'),
+            auditResult && auditResult.issues && h('p', { className: 'text-[11px] text-teal-700 font-bold' }, '\u2705 ' + auditResult.issues.length + ' issues from your last audit will be included automatically'),
             // Generate button
             h('button', {
               'aria-label': t('stem.a11yauditor.generate_complaint_letter', 'Generate complaint letter'),

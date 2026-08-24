@@ -1329,6 +1329,7 @@
     desc: 'Find open textures and visual assets for educational materials or artwork, with source and reuse information.',
     color: 'teal',
     category: 'creative',
+    gradeRange: '6-12',
     aliases: ['textures', 'visual assets', 'open images', 'maps', 'blueprints', 'archival materials'],
     render: function (ctx) {
       var React = ctx.React;
@@ -1826,7 +1827,7 @@
           preview(item, activePrep, 260),
           h('div', { className: 'p-5 space-y-4' },
             h('div', null,
-              h('p', { className: 'text-[10px] uppercase tracking-[.2em] font-black text-[#6d806f]' }, item.provider + ' · ' + item.kind),
+              h('p', { className: 'text-[10px] uppercase tracking-[.2em] font-black text-[#5a6b5c]' }, item.provider + ' · ' + item.kind),
               h('h2', { className: 'font-serif text-2xl font-black text-[#19372e] mt-1 leading-tight' }, item.title),
               h('p', { className: 'text-xs text-[#596b63] mt-2' }, item.creator + ' · ' + item.year)
             ),
@@ -1842,7 +1843,7 @@
             h('section', { className: 'space-y-3', 'aria-labelledby': 'sourcebook-prepare-title' },
               h('div', { className: 'flex items-center justify-between' },
                 h('h3', { id: 'sourcebook-prepare-title', className: 'font-black text-sm text-[#243e35]' }, 'Prepare for use'),
-                h('span', { className: 'text-[10px] text-[#65756e]' }, 'Saved per item')
+                h('span', { className: 'text-[10px] text-[#56655e]' }, 'Saved per item')
               ),
               h('div', { className: 'flex gap-2 flex-wrap' },
                 controlButton('Fit', activePrep.mode === 'fit', function () { updatePrep(item.id, { mode: 'fit' }); }),
@@ -1885,7 +1886,7 @@
         );
       }
 
-      return h('div', { className: 'sourcebook-tool min-h-full text-[#1c342c]', 'data-sourcebook': 'true' },
+      return h('div', { className: 'sourcebook-tool min-h-full text-[#1c342c] bg-[#f7f4ed]', 'data-sourcebook': 'true' },  // ★The root declared an ink but no GROUND, so only the cream detail panel had paper under it and the main column fell onto the theme canvas: fine on white in light, but #18352d on #0f172a in dark -- 1.34:1 on the 'Browse the starting shelf' heading. This tool's whole design is a paper/cream book, unconditional in both themes, so the ground belongs on the root next to the ink that assumes it.
         h('style', null, '.sourcebook-tool{--sb-ink:#18352d;--sb-paper:#f7f3e9}.sourcebook-tool input[type=range]{min-height:28px}@media(max-width:700px){.sourcebook-tool .sb-board{grid-template-columns:1fr!important}}@media print{.sourcebook-tool .sb-no-print{display:none!important}}'),
         h('header', { className: 'relative overflow-hidden rounded-3xl border border-[#a9c2b8] bg-[#e8efe9] p-5 md:p-7 mb-5' },
           h('div', { 'aria-hidden': 'true', className: 'absolute -right-12 -top-16 w-64 h-64 rounded-full border-[36px] border-[#c8ddd4] opacity-70' }),
@@ -1944,7 +1945,7 @@
           h('main', null,
             h('div', { className: 'flex flex-wrap items-end justify-between gap-3 mb-3' },
               h('div', null,
-                h('p', { className: 'text-[10px] uppercase tracking-[.18em] font-black text-[#62766e]' }, showingCollection ? 'Selected working set' : (query ? 'Federated public collections' : 'Offline fallback shelf')),
+                h('p', { className: 'text-[10px] uppercase tracking-[.18em] font-black text-[#5c6f67]' }, showingCollection ? 'Selected working set' : (query ? 'Federated public collections' : 'Offline fallback shelf')),
                 h('h2', { className: 'font-serif text-2xl font-black text-[#18352d]' }, showingCollection ? storedTitle : (query ? visible.length + ' matches for “' + query + '”' : 'Browse the starting shelf')),
                 !showingCollection && h('p', { className: 'mt-1 text-[11px] font-bold text-[#597067]' }, publicDomainResultCount + ' public-domain result' + (publicDomainResultCount === 1 ? '' : 's') + ' shown')
               ),

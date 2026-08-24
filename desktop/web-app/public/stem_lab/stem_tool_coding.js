@@ -980,7 +980,7 @@
   /* __CODING_INTERP_END__ */
 
   window.StemLab.registerTool('codingPlayground', {
-    icon: '🔬',
+    icon: '\uD83D\uDCBB',
     label: 'codingPlayground',
     desc: 'Learn sequencing, loops, and conditionals by programming a turtle with visual blocks or text code.',
     color: 'slate',
@@ -2536,7 +2536,7 @@
                   "aria-controls": (tab.key === 'inquiry' && active) ? 'coding-inquiry-panel' : undefined,
                   onClick: function() { upd('workspaceTab', tab.key); },
                   className: "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all " +
-                    (active ? "bg-white text-indigo-700 shadow-sm" : "bg-white/10 text-white/75 hover:bg-white/20 hover:text-white")
+                    (active ? "bg-white text-indigo-700 shadow-sm" : "bg-slate-800 text-white hover:bg-slate-700")
                 },
                   React.createElement("span", { "aria-hidden": "true" }, tab.icon),
                   React.createElement("span", null, tab.label)
@@ -3339,7 +3339,7 @@
                 }, t('stem.coding.clear_canvas_2', "🗑️ Clear Canvas")),
                 React.createElement("button", { "aria-label": t('stem.coding.reset_all', "Reset All"),
                   onClick: handleReset,
-                  className: "flex items-center gap-1 px-4 py-2 rounded-xl text-sm font-semibold bg-red-600/80 text-white hover:bg-red-600 transition-all"
+                  className: "flex items-center gap-1 px-4 py-2 rounded-xl text-sm font-semibold bg-red-700 text-white hover:bg-red-800 transition-all"
                 }, t('stem.coding.reset_all_2', "⏪ Reset All")),
                 running && React.createElement("span", { className: "text-xs text-yellow-400 font-medium" + (reducedMotion ? "" : " animate-pulse") },
                   "🔄 Running... step " + (stepIdx + 1)
@@ -3351,7 +3351,7 @@
                 React.createElement("button", { "aria-label": t('stem.coding.toggle_turtle_cursor_visibility', "Toggle turtle cursor visibility"),
                   onClick: function () { upd('showTurtle', !showTurtle); },
                   className: "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all " +
-                    (showTurtle ? 'bg-emerald-600/80 text-white hover:bg-emerald-800' : 'bg-slate-700 text-slate-300 hover:bg-slate-600')
+                    (showTurtle ? 'bg-emerald-700 text-white hover:bg-emerald-800' : 'bg-slate-700 text-slate-300 hover:bg-slate-600')
                 }, showTurtle ? '🐢 Turtle On' : '▸ Cursor Only'),
                 React.createElement("button", { "aria-label": t('stem.coding.toggle_cumulative_drawing_mode', "Toggle cumulative drawing mode"),
                   onClick: function () { upd('cumulativeMode', !cumulativeMode); },
@@ -3519,7 +3519,7 @@
                 React.createElement("button", { "aria-label": t('stem.coding.toggle_high_contrast_mode', "Toggle high contrast mode"), "aria-pressed": highContrastMode,
                   onClick: function() { upd('highContrastMode', !highContrastMode); },
                   className: "flex-1 px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all " +
-                    (highContrastMode ? "bg-white text-slate-900" : "bg-slate-700/50 text-slate-200 hover:text-white")
+                    (highContrastMode ? "bg-white text-slate-900" : "bg-slate-800 text-slate-100 hover:text-white")
                 }, highContrastMode ? "◐ Standard Mode" : "◑ High Contrast")
               ),
               // ── AI Assistant Panel ──

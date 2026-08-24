@@ -345,7 +345,7 @@
   });
 
   window.StemLab.registerTool('timeSchedule', {
-    icon: '🕰️',
+    icon: '\u23F0',
     label: 'Time & Schedule Lab',
     desc: 'Link analog and digital clocks, model elapsed time, reason about schedules, and convert 12/24-hour time.',
     color: 'sky',

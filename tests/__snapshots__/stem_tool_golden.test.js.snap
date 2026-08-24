@@ -4,8 +4,8 @@ exports[`STEM tool render goldens (default state) > renders + pins a digest for 
 {
   "buttons": 8,
   "inputs": 1,
-  "lengthBucket": 25,
-  "sha": "c8ba400c4bc50ce8",
+  "lengthBucket": 26,
+  "sha": "caaf192ade0f0aad",
   "svgs": 0,
 }
 `;
@@ -22,20 +22,20 @@ exports[`STEM tool render goldens (default state) > renders + pins a digest for 
 
 exports[`STEM tool render goldens (default state) > renders + pins a digest for aquarium 1`] = `
 {
-  "buttons": 27,
+  "buttons": 28,
   "inputs": 0,
-  "lengthBucket": 160,
-  "sha": "e946abe9e5db88b6",
+  "lengthBucket": 162,
+  "sha": "fa923a630377922e",
   "svgs": 0,
 }
 `;
 
 exports[`STEM tool render goldens (default state) > renders + pins a digest for behaviorLab 1`] = `
 {
-  "buttons": 24,
+  "buttons": 19,
   "inputs": 4,
-  "lengthBucket": 63,
-  "sha": "607fc5d7d4cea784",
+  "lengthBucket": 57,
+  "sha": "7c2a44d916b7b6a7",
   "svgs": 0,
 }
 `;
@@ -45,7 +45,7 @@ exports[`STEM tool render goldens (default state) > renders + pins a digest for 
   "buttons": 52,
   "inputs": 3,
   "lengthBucket": 131,
-  "sha": "cdb0c9f89d1f0dea",
+  "sha": "a3383ae5ed78f336",
   "svgs": 1,
 }
 `;
@@ -55,17 +55,17 @@ exports[`STEM tool render goldens (default state) > renders + pins a digest for 
   "buttons": 40,
   "inputs": 0,
   "lengthBucket": 171,
-  "sha": "3b4f1e29d70c4c9b",
+  "sha": "19c5ef6021827be4",
   "svgs": 0,
 }
 `;
 
 exports[`STEM tool render goldens (default state) > renders + pins a digest for ecosystem 1`] = `
 {
-  "buttons": 44,
-  "inputs": 9,
-  "lengthBucket": 175,
-  "sha": "f5f67024c6e10acd",
+  "buttons": 47,
+  "inputs": 11,
+  "lengthBucket": 210,
+  "sha": "49ab34cc4aa2f005",
   "svgs": 0,
 }
 `;
@@ -82,10 +82,10 @@ exports[`STEM tool render goldens (default state) > renders + pins a digest for 
 
 exports[`STEM tool render goldens (default state) > renders + pins a digest for geologyExplorer 1`] = `
 {
-  "buttons": 46,
-  "inputs": 1,
-  "lengthBucket": 160,
-  "sha": "8bc52f4a49666c42",
+  "buttons": 49,
+  "inputs": 2,
+  "lengthBucket": 184,
+  "sha": "b122a4d12e7ffa21",
   "svgs": 1,
 }
 `;
@@ -102,10 +102,10 @@ exports[`STEM tool render goldens (default state) > renders + pins a digest for 
 
 exports[`STEM tool render goldens (default state) > renders + pins a digest for musicSynth 1`] = `
 {
-  "buttons": 118,
-  "inputs": 14,
-  "lengthBucket": 239,
-  "sha": "3652635fb149fe68",
+  "buttons": 121,
+  "inputs": 15,
+  "lengthBucket": 260,
+  "sha": "69e050ec5ed887fe",
   "svgs": 1,
 }
 `;
@@ -114,8 +114,8 @@ exports[`STEM tool render goldens (default state) > renders + pins a digest for 
 {
   "buttons": 34,
   "inputs": 0,
-  "lengthBucket": 106,
-  "sha": "c1448eb28cb7f67d",
+  "lengthBucket": 108,
+  "sha": "6609c726cfda9dd5",
   "svgs": 0,
 }
 `;
@@ -125,7 +125,7 @@ exports[`STEM tool render goldens (default state) > renders + pins a digest for 
   "buttons": 16,
   "inputs": 7,
   "lengthBucket": 101,
-  "sha": "41bde046cd05dffd",
+  "sha": "80e13d585be362af",
   "svgs": 1,
 }
 `;
@@ -135,7 +135,7 @@ exports[`STEM tool render goldens (default state) > renders + pins a digest for 
   "buttons": 15,
   "inputs": 7,
   "lengthBucket": 62,
-  "sha": "c35af84c5dfb596d",
+  "sha": "ee7695e3735821fe",
   "svgs": 1,
 }
 `;

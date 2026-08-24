@@ -51,7 +51,7 @@ window.StemLab = window.StemLab || {
   var _drag = { sym: null, proofKey: null };
 
   window.StemLab.registerTool('logicLab', {
-    icon: '\uD83E\uDDE0',
+    icon: '\u2234',
     label: 'Logic Lab',
     desc: 'Propositional Logic, Proofs & Reasoning',
     color: 'violet',
@@ -842,7 +842,7 @@ window.StemLab = window.StemLab || {
           // ── Symbol colors for drag palette ──
           var _symColor = {
             '∧': '#7c3aed', '∨': '#2563eb', '¬': '#dc2626',
-            '→': '#059669', '↔': '#d97706', '⊕': '#db2777',
+            '→': '#047857', '↔': '#b45309', '⊕': '#be185d',
             'P': '#6366f1', 'Q': '#8b5cf6', 'R': '#a78bfa', 'S': '#c4b5fd',
             '(': '#94a3b8', ')': '#94a3b8'
           };
@@ -2541,7 +2541,7 @@ window.StemLab = window.StemLab || {
 
                 React.createElement("span", { className: "font-black text-violet-900 text-sm flex-1" }, t('stem.logiclab.learn_what_is_propositional_logic', "Learn: What is Propositional Logic?")),
 
-                React.createElement("span", { className: "text-violet-400 font-bold text-xs" }, showEdu ? "\u25B2 Hide" : "\u25BC Show")
+                React.createElement("span", { className: "text-violet-700 font-bold text-xs" }, showEdu ? "\u25B2 Hide" : "\u25BC Show")
 
               ),
 

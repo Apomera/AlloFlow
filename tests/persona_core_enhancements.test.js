@@ -255,29 +255,6 @@ describe('Persona core enhancement contracts', () => {
     }
   });
 
-  it('atomically deduplicates deferred transcript writes and records bounded-export metadata', () => {
-    const character = { name: 'Ada', role: 'Mathematician', year: '1843', quests: [] };
-    const resource = { id: 'persona-atomic-export', type: 'persona', data: [character], config: {} };
-    const chatHistory = Array.from({ length: 230 }, (_, index) => ({
-      role: index % 2 ? 'user' : 'model',
-      text: `Message ${index}`,
-    }));
-    const harness = createHarness({
-      state: basePersonaState(character, { chatHistory }), resource, history: [resource],
-      callGemini: vi.fn(), deferHistoryUpdates: true,
-    });
-
-    harness.api.handleSavePersonaChat();
-    harness.api.handleSavePersonaChat();
-    harness.flushHistoryUpdates();
-    const transcripts = harness.history.filter(item => item.type === 'persona-transcript');
-    expect(transcripts).toHaveLength(1);
-    expect(transcripts[0].config.totalMessageCount).toBe(230);
-    expect(transcripts[0].config.exportedMessageCount).toBe(200);
-    expect(transcripts[0].config.transcriptTruncated).toBe(true);
-    expect(transcripts[0].data).toContain('latest 200 of 230 messages');
-  });
-
   it('supersedes in-flight follow-ups after a language change and accepts content envelopes', async () => {
     const character = { name: 'Ada', role: 'Mathematician', year: '1843', quests: [] };
     const resource = { id: 'persona-language-supersede', type: 'persona', data: [character], config: {} };
@@ -297,7 +274,9 @@ describe('Persona core enhancement contracts', () => {
     expect(pending[0].signal.aborted).toBe(true);
     pending[1].resolve({ content: JSON.stringify(['¿Qué ocurrió?', '¿Por qué importa?']) });
     await Promise.all([english, spanish]);
-    expect(harness.state.suggestions).toEqual(['¿Qué ocurrió?', '¿Por qué importa?']);
+    // Contract flip 2026-08-23: free-response suggestions are {text, tier: null}
+    // objects since the single-mode tier extension (tiers stay null below 6).
+    expect(harness.state.suggestions).toEqual([{ text: '¿Qué ocurrió?', tier: null }, { text: '¿Por qué importa?', tier: null }]);
     expect(harness.state.isGeneratingSuggestions).toBe(false);
   });
   it('keeps regeneration atomic and preserves structured sources from oversized grounding metadata', async () => {
@@ -419,18 +398,6 @@ describe('Persona core enhancement contracts', () => {
     expect(harness.state.isGeneratingSummary).toBe(false);
     expect(harness.history.filter((item) => item.type === 'persona-summary')).toHaveLength(0);
 
-    harness.api.handleSavePersonaChat();
-    harness.api.handleSavePersonaChat();
-    const transcripts = harness.history.filter((item) => item.type === 'persona-transcript');
-    expect(transcripts).toHaveLength(1);
-    expect(transcripts[0].data).toContain('Evidence / simulation note');
-    expect(transcripts[0].config.exportFingerprint).toMatch(/^fnv1a-/);
-    expect(transcripts[0].config.personaSource.excerpt).toBe('Bound lesson evidence');
-    expect(transcripts[0].config.personaSource.fingerprint).not.toBe('source-1');
-
-    harness.setHistory((items) => items.filter((item) => item.type !== 'persona-transcript'));
-    harness.api.handleSavePersonaChat();
-    expect(harness.history.filter((item) => item.type === 'persona-transcript')).toHaveLength(1);
   });
 
   it('does not generate a summary for character greetings without a student turn', async () => {
@@ -560,16 +527,16 @@ describe('Persona core enhancement contracts', () => {
     harness.setState((prev) => ({ ...prev, chatHistory: newHistory }));
 
     await harness.api.generatePersonaFollowUps(newHistory, character, 2);
-    expect(harness.state.suggestions).toEqual(['New context one', 'New context two']);
+    expect(harness.state.suggestions).toEqual([{ text: 'New context one', tier: null }, { text: 'New context two', tier: null }]);
 
     resolveOldFollowUps(['Old context one', 'Old context two']);
     await oldRequest;
-    expect(harness.state.suggestions).toEqual(['New context one', 'New context two']);
+    expect(harness.state.suggestions).toEqual([{ text: 'New context one', tier: null }, { text: 'New context two', tier: null }]);
 
     const latestHistory = [...newHistory, { role: 'model', text: 'A newer answer' }];
     harness.setState((prev) => ({ ...prev, chatHistory: latestHistory }));
     await harness.api.generatePersonaFollowUps(latestHistory, character, 2);
-    expect(harness.state.suggestions).toEqual(['Direct array one', 'Direct array two']);
+    expect(harness.state.suggestions).toEqual([{ text: 'Direct array one', tier: null }, { text: 'Direct array two', tier: null }]);
   });
 
   it('accepts direct-array panel suggestions while preserving exact tier balance', async () => {
@@ -778,7 +745,6 @@ describe('Persona core enhancement contracts', () => {
     expect(harness.state.isLoading).toBe(true);
     expect(harness.state.personaSummary).toBeNull();
     expect(await harness.api.handleGeneratePersonaSummary()).toBeNull();
-    expect(harness.api.handleSavePersonaChat()).toBeNull();
 
     harness.api.handleClosePersonaChat();
     expect(harness.state.chatHistory).toEqual([{ role: 'model', text: 'Welcome', evidenceNote: 'Lesson-supported greeting.' }]);
@@ -786,9 +752,9 @@ describe('Persona core enhancement contracts', () => {
     // strips chatHistory and savedDialogue from every candidate on purpose: an
     // async portrait edit can resolve after a chat turn, or after another
     // resource is opened, and writing the transcript through that path let a
-    // stale copy clobber the live one. Durable persistence is the explicit
-    // handleSavePersonaChat export (a markdown transcript document), not a
-    // field on the persona. So assert the invariant that replaced this: the
+    // stale copy clobber the live one. Durable persistence is the private
+    // session artifact save (handleSavePrivatePersonaSession in the monolith),
+    // not a field on the persona. So assert the invariant that replaced this: the
     // trim lands in live state, and the resource keeps its persona attributes
     // without ever gaining a transcript.
     expect(harness.generated.data[0].chatHistory).toBeUndefined();

@@ -25,16 +25,16 @@ function makeGate(opts) {
   const factory = new Function(
     // _usesLocalTextBackend is defined ABOVE the sliced gate block — an injection-contract free var
     // here (like warnLog): reset() and M4's applyPacing clamp both consult it. Cloud default: false.
-    'warnLog', '_pipelineStats', '_pipeLog', 'setTimeout', 'clearTimeout', 'Date', '_usesLocalTextBackend',
+    'warnLog', '_pipelineStats', '_pipeLog', 'setTimeout', 'clearTimeout', 'Date', '_usesLocalTextBackend', '_hostTransportProfile',
     gateBlock +
     '\nreturn {' +
     '  acquire: _acquireGeminiSlot, release: _releaseGeminiSlot, gate: _geminiGate,' +
     '  pump: _geminiPump, applyPacing: _applyGeminiPacing, reset: _resetGeminiBreaker,' +
     '  noteSuccess: _geminiNoteSuccess, noteFail: _geminiNoteTransientFail, info: _geminiThrottleInfo,' +
-    '  state: function(){ return { cap: _geminiCap, inFlight: _geminiInFlight, waiters: _geminiWaiters.length, effMax: _geminiEffectiveMax, stagger: _geminiStaggerMs }; }' +
+    '  state: function(){ return { cap: _geminiCap, inFlight: _geminiInFlight, waiters: _geminiWaiters.length, effMax: _geminiEffectiveMax, stagger: _geminiStaggerMs, rateWindow: _geminiRateWindowMs, rateMax: _geminiRateMaxStarts, recentStarts: _geminiRecentStarts.length }; }' +
     '};'
   );
-  const api = factory(() => {}, {}, () => {}, fakeSetTimeout, fakeClearTimeout, fakeDate, () => !!(opts && opts.localBackend));
+  const api = factory(() => {}, {}, () => {}, fakeSetTimeout, fakeClearTimeout, fakeDate, () => !!(opts && opts.localBackend), () => null);
   return {
     api,
     fireTimers: () => { const t = timers.splice(0, timers.length); t.forEach(x => x.fn()); },
@@ -65,6 +65,8 @@ describe('heavy/scanned pacing: lower ceiling + stagger the starts, but DROP NOT
     expect(s.effMax).toBe(2);
     expect(s.cap).toBe(2);        // clamped down from 3
     expect(s.stagger).toBeGreaterThan(0);
+    expect(s.rateWindow).toBe(180000);
+    expect(s.rateMax).toBe(5);
   });
 
   it('a 5-call burst starts only ONE immediately, defers the rest until the stagger gap elapses (spread over time)', () => {
@@ -140,6 +142,8 @@ describe('heavy/scanned pacing: lower ceiling + stagger the starts, but DROP NOT
     const s = g.api.state();
     expect(s.effMax).toBe(3);
     expect(s.stagger).toBe(0);
+    expect(s.rateWindow).toBe(0);
+    expect(s.rateMax).toBe(0);
     expect(s.cap).toBe(3);
   });
 
@@ -149,6 +153,8 @@ describe('heavy/scanned pacing: lower ceiling + stagger the starts, but DROP NOT
     g.api.applyPacing(false);
     expect(g.api.state().effMax).toBe(3);
     expect(g.api.state().stagger).toBe(0);
+    expect(g.api.state().rateWindow).toBe(0);
+    expect(g.api.state().rateMax).toBe(0);
   });
 
   it('M4 (2026-07-09): the LOCAL backend stays SERIAL — heavy pacing must not raise its ceiling to 2, nor the calm branch to 3', () => {
@@ -219,6 +225,8 @@ describe('anti-drift: the pacing wiring ships in the source', () => {
     expect(dp).toMatch(/var _geminiStaggerMs = 0;/);
     expect(dp).toMatch(/var _geminiStaggerTimer = null;/);
     expect(dp).toMatch(/var _geminiLastStartAt = 0;/);
+    expect(dp).toMatch(/var _geminiRateWindowMs = 0;/);
+    expect(dp).toMatch(/var _geminiRateMaxStarts = 0;/);
   });
   it('cooldown expiry alone cannot raise the cap; successful calls recover toward the run ceiling', () => {
     expect(dp).toContain('var _GEMINI_RECOVER_HITS = 3;');
@@ -231,6 +239,8 @@ describe('anti-drift: the pacing wiring ships in the source', () => {
     expect(dp).toMatch(/var _sinceLast = now - _geminiLastStartAt;/);
     expect(dp).toMatch(/if \(_sinceLast < _geminiStaggerMs\)/);
     expect(dp).toMatch(/_geminiLastStartAt = now;/);
+    expect(dp).toContain('_geminiRecentStarts.length >= _geminiRateMaxStarts');
+    expect(dp).toContain('_geminiRecentStarts.push(now)');
   });
   it('noteSuccess restores to _geminiEffectiveMax', () => {
     expect(dp).toMatch(/_geminiCap = _geminiEffectiveMax; \/\/ restore to THIS run's ceiling/);
@@ -249,5 +259,10 @@ describe('anti-drift: the pacing wiring ships in the source', () => {
   it('describes stagger as a minimum floor, not guaranteed actual spacing', () => {
     expect(dp).toContain('minimum gap between call starts');
     expect(dp).not.toContain('staggering actual call starts');
+  });
+  it('does not pre-queue every heavy-document fixer chunk past a throttle checkpoint', () => {
+    expect(dp).toContain('const _serialFixWave = _localTextMode || (_geminiRateWindowMs > 0 && _geminiRateMaxStarts > 0);');
+    expect(dp).toContain('if (_deferredIdx.length) {');
+    expect(dp).toContain('queued chunk(s) were never launched and remain byte-identical for resume');
   });
 });

@@ -158,6 +158,15 @@ const WC_QUIZ_BASE = {
 };
 
 const SHOTS = [
+  // BE THE WATER, the flagship piloted mode. The sim runs itself from the
+  // moment the canvas mounts, so a plain mount already shows liquid water in
+  // the sunlit patch; the later labels drive the parcel to a form by injecting
+  // a pilot snapshot, because reaching a cloud by flying takes ~20 s of held
+  // thrust and a shot cannot hold a key.
+  ['40-pilot-start-light', { wcMode: 'pilot' }, false],
+  ['41-pilot-start-dark', { wcMode: 'pilot' }, true],
+  ['42-pilot-mountain-light', { wcMode: 'pilot', pilot: { scenario: 'mountainWinter' } }, false],
+  ['43-pilot-desert-light', { wcMode: 'pilot', pilot: { scenario: 'desertBasin' } }, false],
   ['01-explorer-light', {}, false],
   ['02-explorer-dark', {}, true],
   ['03-explorer-night-light', { climSolar: 0.2, climateAdjusted: true }, false],
@@ -220,6 +229,10 @@ const SHOTS = [
 // Narrow-viewport pass: the tool carries a lot of responsive CSS (@media 840/700/
 // 640/560/460) that no test exercises. Same states, phone-width viewport.
 const MOBILE_SHOTS = [
+  // The pilot HUD stacks four overlays on one canvas (form badge, altitude
+  // ladder, gauge, control pad), which is the arrangement most likely to
+  // collide at phone width.
+  ['M4-pilot-light', { wcMode: 'pilot' }, false],
   ['M1-explorer-light', {}, false],
   ['M2-preciplab-light', { wcMode: 'precipHunt' }, false],
   ['M2b-preciplab-3d-light', { wcMode: 'precipHunt', precipHunt: { viewMode: '3d', preset: 'summerStorm', moisture: 94, tempC: -6, midLevelTempC: 8, lowLevelHumidity: 82, surfaceTempC: 28, wind: 22, windDirection: 'east', updraft: 78, cloudDepth: 11, terrain: 'plains' } }, false],
@@ -279,9 +292,9 @@ const MOBILE_SHOTS = [
     // canvas: engineState stays 'loading' if THREE is missing, and a lost
     // context photographs as a plausible-looking blank.
     let glNote = '';
-    if (label.indexOf('journey3d') !== -1 || label.indexOf('preciplab-3d') !== -1) {
+    if (label.indexOf('journey3d') !== -1 || label.indexOf('preciplab-3d') !== -1 || label.indexOf('pilot') !== -1) {
       const gl = await pg.evaluate(() => {
-        const c = document.querySelector('canvas.wc-journey-3d, canvas.wc-precip-3d-canvas');
+        const c = document.querySelector('canvas.wc-journey-3d, canvas.wc-precip-3d-canvas, canvas.wc-pilot-canvas');
         if (!c) return { ok: false, why: 'no 3D canvas in DOM' };
         const ctx = c.getContext('webgl2') || c.getContext('webgl');
         if (!ctx) return { ok: false, why: 'canvas has no GL context', state: c.dataset.engineState };
@@ -303,6 +316,8 @@ const MOBILE_SHOTS = [
         ? await pg.$('.wc-hydro-quest')
       : label.indexOf('focus') !== -1
         ? await pg.$('.wc-stage-focus')
+      : label.indexOf('pilot') !== -1
+        ? await pg.$('.wc-pilot-stage')
         : await pg.$('canvas.wc-journey-3d') || await pg.$('.wc-canvas-shell') || await pg.$('.wc-precip-chamber');
     if (shell) await shell.screenshot({ path: path.join(OUT, label + '-canvas.png') });
     // The lightning flash is random (~0.3%/frame) and lasts only a few frames,

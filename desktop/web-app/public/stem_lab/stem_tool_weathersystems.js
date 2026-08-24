@@ -7694,7 +7694,7 @@ var geographyGroup = new THREE.Group();
                 h('p', { className: 'mt-1 text-xs ' + featureMuted }, 'Build a complete, evidence-based forecast before verification.')
               ),
               h('div', { className: 'rounded-xl px-3 py-2 text-center ' + featureChip },
-                h('div', { className: 'text-2xl font-black text-sky-300' }, forecastReadiness + '%'),
+                h('div', { className: 'text-2xl font-black ' + (dark ? 'text-sky-300' : 'text-sky-800') }, forecastReadiness + '%'),
                 h('div', { className: 'text-[11px] font-bold uppercase tracking-wide ' + featureMuted }, forecastReadiness === 100 ? 'Ready to verify' : 'In progress')
               )
             ),
@@ -8309,7 +8309,7 @@ var geographyGroup = new THREE.Group();
               })),
               h('div', { className: 'mt-4 rounded-xl border p-4 ' + (dark ? 'border-cyan-300/20 bg-black/20' : 'border-cyan-200 bg-white'), role: 'status', 'aria-live': 'polite' },
                 h('div', { className: 'flex items-center justify-between gap-2' },
-                  h('p', { className: 'text-xs font-black uppercase tracking-wide text-cyan-300' }, communicationReady ? 'Broadcast script ready' : 'Live script builder'),
+                  h('p', { className: 'text-xs font-black uppercase tracking-wide ' + (dark ? 'text-cyan-300' : 'text-cyan-800') }, communicationReady ? 'Broadcast script ready' : 'Live script builder'),
                   h('span', { className: 'text-[11px] ' + featureFaint }, audience.label + ' audience')
                 ),
                 h('p', { className: 'mt-2 text-sm font-bold leading-relaxed' }, script)
@@ -9886,7 +9886,7 @@ h('div', { className: 'rounded-xl border border-cyan-300/30 bg-slate-950/80 px-4
             )
           ),
           h('section', { className: panelClass + ' grid gap-3 p-4 sm:grid-cols-2 lg:grid-cols-4', 'aria-label': 'Immersive weather layer guide' },
-            (geographicMode ? [['Open vector map', 'Published roads, water, places, and boundaries'], [geographicStudyRadius + ' km study area', 'True-scale radius centered on the selected site'], ['Downwind vector', cardinal(geographicOverlays ? geographicOverlays.downwindBearing : 0) + ' from the live observation'], ['3D terrain/profile', 'Elevation, buildings, and a wind-aligned natural terrain cross-section']] : [['Terrain map', geography.label], ['Blue volume', 'Cooler air mass'], ['Orange volume', 'Warmer air mass'], ['Arrows and particles', 'Wind and precipitation']]).map(function (item) { return h('div', { key: item[0], className: 'rounded-xl p-3 ' + (dark ? 'bg-slate-950/60' : 'bg-sky-50') }, h('p', { className: 'text-xs font-black text-sky-500' }, item[0]), h('p', { className: 'mt-1 text-[11px] ' + mutedClass }, item[1])); })
+            (geographicMode ? [['Open vector map', 'Published roads, water, places, and boundaries'], [geographicStudyRadius + ' km study area', 'True-scale radius centered on the selected site'], ['Downwind vector', cardinal(geographicOverlays ? geographicOverlays.downwindBearing : 0) + ' from the live observation'], ['3D terrain/profile', 'Elevation, buildings, and a wind-aligned natural terrain cross-section']] : [['Terrain map', geography.label], ['Blue volume', 'Cooler air mass'], ['Orange volume', 'Warmer air mass'], ['Arrows and particles', 'Wind and precipitation']]).map(function (item) { return h('div', { key: item[0], className: 'rounded-xl p-3 ' + (dark ? 'bg-slate-950/60' : 'bg-sky-50') }, h('p', { className: 'text-xs font-black ' + (dark ? 'text-sky-300' : 'text-sky-700') }, item[0]), h('p', { className: 'mt-1 text-[11px] ' + mutedClass }, item[1])); })
           )
         );
       }

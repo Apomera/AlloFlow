@@ -107,7 +107,7 @@ describe('PD prepublish pipeline', () => {
       conformanceClaim: false,
       scope: 'catalog',
       summary: {
-        modules: 3,
+        modules: 8,
         blockingFailures: 0,
         manualReviewRequired: true,
         readinessStatus: 'ready-for-render-audit',

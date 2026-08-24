@@ -635,6 +635,21 @@ const handleResumeAdventure = async (deps) => {
               characters: parsed.characters || [],
               isReviewingCharacters: false
           };
+          // Consent back-fill (2026-08-23): portraits uploaded BEFORE the cast-lobby consent
+          // guard existed (or on another device) ride into the consistent-characters scene pass
+          // without their uploader ever having seen the disclosure. Show the same disclosure
+          // ONCE on resume and stamp the characters so it does not repeat for this save. The
+          // stamp value names its origin: 'resume-disclosure' is disclosure-shown, distinct from
+          // the guard's explicit `true` (consent clicked) — do not collapse the two.
+          try {
+              const _needsPortraitDisclosure = Array.isArray(safeState.characters)
+                  && safeState.characters.some((c) => c && c.isUserUploaded && c.portrait && !c.uploadConsent);
+              if (_needsPortraitDisclosure) {
+                  safeState.characters = safeState.characters.map((c) => (c && c.isUserUploaded && c.portrait && !c.uploadConsent)
+                      ? { ...c, uploadConsent: 'resume-disclosure' } : c);
+                  addToast(t('toasts.adventure_portrait_resume_disclosure') || 'This saved adventure includes an uploaded character image. With consistent characters on, that image is sent to the AI provider configured for this app with each scene. To stop that, open the cast and replace it with AI Generate.', 'info');
+              }
+          } catch (_) {}
           let restoredSceneImage = null;
           try {
               if (adventureImageDB && typeof adventureImageDB.getImage === 'function') {

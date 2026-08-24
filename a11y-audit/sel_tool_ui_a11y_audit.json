@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-23T20:37:57.611Z",
+  "generatedAt": "2026-08-24T01:22:53.045Z",
   "toolCount": 71,
   "themesAudited": [
     "light",
@@ -15,7 +15,7 @@
     "toolsWithIssues": 0,
     "toolsWithoutStandardShell": [],
     "contrastCoverage": {
-      "textNodesGraded": 14196,
+      "textNodesGraded": 14199,
       "skippedGradientBackground": 921,
       "skippedColourFromCssClass": 933,
       "note": "Skipped nodes are NOT passes. Gradient-backed text has no single background to measure; class-sourced colours cannot be resolved from SSR markup."
@@ -25,7 +25,7 @@
     {
       "id": "advocacy",
       "label": "Self-Advocacy Workshop",
-      "renderedBytes": 77139,
+      "renderedBytes": 77967,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -33,7 +33,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 25713,
+          "renderedBytes": 25989,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -42,7 +42,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 25713,
+          "renderedBytes": 25989,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -51,7 +51,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 25713,
+          "renderedBytes": 25989,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,

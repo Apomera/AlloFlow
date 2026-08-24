@@ -96,7 +96,7 @@ var MissionReportCard = React.memo(({ adventureState, globalLevel, onClose, onEx
   const { stats, climax, xp, level } = adventureState;
   const safeStats = stats || { successes: 0, failures: 0, decisions: 0, partials: 0, conceptsFound: [] };
   const totalDecisions = Math.max(1, safeStats.decisions);
-  const efficiency = Math.round(safeStats.successes / totalDecisions * 100);
+  const efficiency = Math.round((safeStats.successes + (safeStats.partials || 0) * 0.5) / totalDecisions * 100);
   const proficiency = Math.max(0, Math.min(100, Number(climax?.masteryScore) || 0));
   const performanceLabel = t("adventure.mission_report.performance_rating") || "Story Performance";
   let ratingLabel = t("adventure.mission_report.rating2_beginning") || "Just Beginning";
@@ -109,7 +109,7 @@ var MissionReportCard = React.memo(({ adventureState, globalLevel, onClose, onEx
       className: "h-full bg-gradient-to-r from-cyan-600 to-cyan-400 transition-all duration-1000 ease-out",
       style: { width: `${proficiency}%` }
     }
-  )), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-400 mt-1.5 leading-snug" }, t("adventure.mission_report.ai_estimate_note") || "Estimated by AI from story decisions \u2014 a reflection prompt, not a formal assessment.")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-3 gap-2 relative z-20" }, /* @__PURE__ */ React.createElement("div", { className: "bg-slate-800/50 p-2.5 rounded-xl border border-slate-700 flex flex-col items-center justify-center" }, /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-bold uppercase text-green-400" }, t("adventure.mission_report.band_strong") || "Strong moves"), /* @__PURE__ */ React.createElement("span", { className: "text-xl font-black text-white" }, safeStats.successes || 0)), /* @__PURE__ */ React.createElement("div", { className: "bg-slate-800/50 p-2.5 rounded-xl border border-slate-700 flex flex-col items-center justify-center" }, /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-bold uppercase text-yellow-400" }, t("adventure.mission_report.band_partial") || "Partial credit"), /* @__PURE__ */ React.createElement("span", { className: "text-xl font-black text-white" }, safeStats.partials || 0)), /* @__PURE__ */ React.createElement("div", { className: "bg-slate-800/50 p-2.5 rounded-xl border border-slate-700 flex flex-col items-center justify-center" }, /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-bold uppercase text-rose-400" }, t("adventure.mission_report.band_misconception") || "Misconceptions"), /* @__PURE__ */ React.createElement("span", { className: "text-xl font-black text-white" }, safeStats.failures || 0))), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-4 relative z-20" }, /* @__PURE__ */ React.createElement("div", { className: "bg-slate-800/50 p-4 rounded-xl border border-slate-700 flex flex-col items-center justify-center" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-2 text-yellow-400" }, /* @__PURE__ */ React.createElement(Zap, { size: 16, "aria-hidden": "true" }), " ", /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold uppercase" }, t("adventure.mission_report.efficiency"))), /* @__PURE__ */ React.createElement("div", { className: "text-3xl font-black" }, efficiency, "%")), /* @__PURE__ */ React.createElement("div", { className: "bg-slate-800/50 p-4 rounded-xl border border-slate-700 flex flex-col items-center justify-center" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-2 text-green-400" }, /* @__PURE__ */ React.createElement(Key, { size: 16, "aria-hidden": "true" }), " ", /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold uppercase" }, t("adventure.mission_report.concepts"))), /* @__PURE__ */ React.createElement("div", { className: "text-3xl font-black" }, safeStats.conceptsFound.length))), safeStats.conceptsFound.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-4 pt-4 border-t border-slate-700/50 relative z-20" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-300 font-bold uppercase mb-2" }, t("adventure.mission_report.concepts_secured")), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2" }, safeStats.conceptsFound.map((c, i) => /* @__PURE__ */ React.createElement("span", { key: i, className: "px-2 py-1 rounded-md bg-cyan-900/30 text-cyan-200 text-xs border border-cyan-800/50" }, c))))), /* @__PURE__ */ React.createElement("div", { className: "p-4 bg-slate-800 border-t border-slate-700 flex flex-col gap-3 relative z-20 shrink-0" }, /* @__PURE__ */ React.createElement(
+  )), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-400 mt-1.5 leading-snug" }, t("adventure.mission_report.ai_estimate_note") || "Estimated by AI from story decisions \u2014 a reflection prompt, not a formal assessment."), Number(climax?.attempts) > 0 && /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-300 mt-1 font-bold" }, (t("adventure.mission_report.climax_attempts") || "Final challenge attempts") + ": " + climax.attempts)), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-3 gap-2 relative z-20" }, /* @__PURE__ */ React.createElement("div", { className: "bg-slate-800/50 p-2.5 rounded-xl border border-slate-700 flex flex-col items-center justify-center" }, /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-bold uppercase text-green-400" }, t("adventure.mission_report.band_strong") || "Strong moves"), /* @__PURE__ */ React.createElement("span", { className: "text-xl font-black text-white" }, safeStats.successes || 0)), /* @__PURE__ */ React.createElement("div", { className: "bg-slate-800/50 p-2.5 rounded-xl border border-slate-700 flex flex-col items-center justify-center" }, /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-bold uppercase text-yellow-400" }, t("adventure.mission_report.band_partial") || "Partial credit"), /* @__PURE__ */ React.createElement("span", { className: "text-xl font-black text-white" }, safeStats.partials || 0)), /* @__PURE__ */ React.createElement("div", { className: "bg-slate-800/50 p-2.5 rounded-xl border border-slate-700 flex flex-col items-center justify-center" }, /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-bold uppercase text-rose-400" }, t("adventure.mission_report.band_misconception") || "Misconceptions"), /* @__PURE__ */ React.createElement("span", { className: "text-xl font-black text-white" }, safeStats.failures || 0))), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-4 relative z-20" }, /* @__PURE__ */ React.createElement("div", { className: "bg-slate-800/50 p-4 rounded-xl border border-slate-700 flex flex-col items-center justify-center", title: t("adventure.mission_report.efficiency_formula") || "Strong moves count fully, partial credit counts half, out of all decisions." }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-2 text-yellow-400" }, /* @__PURE__ */ React.createElement(Zap, { size: 16, "aria-hidden": "true" }), " ", /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold uppercase" }, t("adventure.mission_report.efficiency"))), /* @__PURE__ */ React.createElement("div", { className: "text-3xl font-black" }, efficiency, "%")), /* @__PURE__ */ React.createElement("div", { className: "bg-slate-800/50 p-4 rounded-xl border border-slate-700 flex flex-col items-center justify-center" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-2 text-green-400" }, /* @__PURE__ */ React.createElement(Key, { size: 16, "aria-hidden": "true" }), " ", /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold uppercase" }, t("adventure.mission_report.concepts"))), /* @__PURE__ */ React.createElement("div", { className: "text-3xl font-black" }, safeStats.conceptsFound.length))), safeStats.conceptsFound.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-4 pt-4 border-t border-slate-700/50 relative z-20" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-300 font-bold uppercase mb-2" }, t("adventure.mission_report.concepts_secured")), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2" }, safeStats.conceptsFound.map((c, i) => /* @__PURE__ */ React.createElement("span", { key: i, className: "px-2 py-1 rounded-md bg-cyan-900/30 text-cyan-200 text-xs border border-cyan-800/50" }, c))))), /* @__PURE__ */ React.createElement("div", { className: "p-4 bg-slate-800 border-t border-slate-700 flex flex-col gap-3 relative z-20 shrink-0" }, /* @__PURE__ */ React.createElement(
     "button",
     {
       "aria-label": t("common.create_storybook"),
@@ -154,79 +154,6 @@ var MissionReportCard = React.memo(({ adventureState, globalLevel, onClose, onEx
     t("adventure.mission_report.confirm_exit")
   ))));
 });
-var playAdventureEventSoundLegacy = (type) => {
-  const ctx = getGlobalAudioContext();
-  if (!ctx) return;
-  if (ctx.state === "suspended") ctx.resume();
-  const now = ctx.currentTime;
-  const playTone = (wave, freq, startTime, duration, vol = 0.1) => {
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.type = wave;
-    osc.frequency.setValueAtTime(freq, startTime);
-    gain.gain.setValueAtTime(vol, startTime);
-    gain.gain.exponentialRampToValueAtTime(1e-3, startTime + duration);
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.start(startTime);
-    osc.stop(startTime + duration);
-  };
-  switch (type) {
-    case "transition":
-      const tNoise = ctx.createBufferSource();
-      const tBuffer = ctx.createBuffer(1, ctx.sampleRate * 0.5, ctx.sampleRate);
-      const tData = tBuffer.getChannelData(0);
-      for (let i = 0; i < tBuffer.length; i++) tData[i] = Math.random() * 2 - 1;
-      tNoise.buffer = tBuffer;
-      const tFilter = ctx.createBiquadFilter();
-      tFilter.type = "lowpass";
-      tFilter.frequency.setValueAtTime(200, now);
-      tFilter.frequency.linearRampToValueAtTime(1200, now + 0.2);
-      const tGain = ctx.createGain();
-      tGain.gain.setValueAtTime(0.05, now);
-      tGain.gain.linearRampToValueAtTime(0, now + 0.4);
-      tNoise.connect(tFilter);
-      tFilter.connect(tGain);
-      tGain.connect(ctx.destination);
-      tNoise.start(now);
-      break;
-    case "critical_success":
-      playTone("square", 523.25, now, 0.4);
-      playTone("square", 659.25, now + 0.1, 0.4);
-      playTone("square", 783.99, now + 0.2, 0.4);
-      playTone("square", 1046.5, now + 0.3, 0.8, 0.15);
-      break;
-    case "success":
-      playTone("sine", 880, now, 0.3);
-      playTone("sine", 1760, now + 0.1, 0.4);
-      break;
-    case "failure":
-      playTone("sawtooth", 100, now, 0.4, 0.15);
-      playTone("sawtooth", 92, now, 0.4, 0.15);
-      break;
-    case "damage":
-      const dOsc = ctx.createOscillator();
-      const dGain = ctx.createGain();
-      dOsc.type = "sawtooth";
-      dOsc.frequency.setValueAtTime(150, now);
-      dOsc.frequency.exponentialRampToValueAtTime(40, now + 0.2);
-      dGain.gain.setValueAtTime(0.2, now);
-      dGain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
-      dOsc.connect(dGain);
-      dGain.connect(ctx.destination);
-      dOsc.start(now);
-      dOsc.stop(now + 0.2);
-      break;
-    case "item_get":
-      playTone("sine", 1500, now, 0.1, 0.05);
-      playTone("sine", 2e3, now + 0.1, 0.1, 0.05);
-      playTone("sine", 2500, now + 0.2, 0.3, 0.05);
-      break;
-    case "decision_select":
-      playTone("triangle", 800, now, 0.05, 0.05);
-      break;
-  }
-};
 var playGenerativeSoundscapeLegacy = (ctx, dest, params) => {
   const safeParams = params || {};
   const atmosphere = safeParams.atmosphere || "Calm";
@@ -1051,6 +978,10 @@ const getAdventureAudioEngine = () => {
   const stopLayer = (layer, fadeSeconds = 1.2) => {
     if (!layer || layer.stopping) return;
     layer.stopping = true;
+    if (layer.autoStopTimer) {
+      clearTimeout(layer.autoStopTimer);
+      layer.autoStopTimer = null;
+    }
     rampGain(layer.gain, 1e-4, fadeSeconds);
     layer.stopTimer = setTimeout(() => {
       stopAdventureAudioNodes(layer.nodes);
@@ -1120,6 +1051,15 @@ const getAdventureAudioEngine = () => {
     if (currentAmbience && currentAmbience.signature === signature && !currentAmbience.stopping) {
       currentAmbience.volume = volume;
       rampGain(currentAmbience.gain, volume, 0.45);
+      const refreshMs = Number(options.autoStopMs);
+      if (Number.isFinite(refreshMs) && refreshMs > 0) {
+        if (currentAmbience.autoStopTimer) clearTimeout(currentAmbience.autoStopTimer);
+        const held = currentAmbience;
+        held.autoStopTimer = setTimeout(() => {
+          if (currentAmbience === held && !held.stopping) stopAmbience(2.2);
+          else if (!held.stopping) stopLayer(held, 2.2);
+        }, refreshMs);
+      }
       return currentAmbience;
     }
     const oldLayer = currentAmbience;
@@ -1144,6 +1084,13 @@ const getAdventureAudioEngine = () => {
     currentAmbience = layer;
     rampGain(gain, volume, oldLayer ? 1.7 : 1.05);
     if (oldLayer) stopLayer(oldLayer, 1.8);
+    const autoStopMs = Number(options.autoStopMs);
+    if (Number.isFinite(autoStopMs) && autoStopMs > 0) {
+      layer.autoStopTimer = setTimeout(() => {
+        if (currentAmbience === layer && !layer.stopping) stopAmbience(2.2);
+        else if (!layer.stopping) stopLayer(layer, 2.2);
+      }, autoStopMs);
+    }
     return layer;
   };
   const stopAmbience = (fadeSeconds = 0.75) => {
@@ -1216,6 +1163,7 @@ const ADVENTURE_EVENT_SCALES = {
   dark: [110, 130.81, 146.83, 174.61, 207.65],
   tense: [110, 116.54, 130.81, 155.56, 174.61]
 };
+const ADVENTURE_REWARD_TONIC = 523.25;
 const ADVENTURE_EVENT_ELEMENT_BANDS = {
   water: [170, 1100],
   rain: [500, 2400],
@@ -1243,7 +1191,7 @@ const getAdventureEventBand = (profile) => {
   const element = String(profile?.element || "silence").toLowerCase();
   return ADVENTURE_EVENT_ELEMENT_BANDS[element] || ADVENTURE_EVENT_ELEMENT_BANDS.silence;
 };
-const playAdventureEventSound = (type) => {
+var playAdventureEventSound = (type) => {
   const engine = getAdventureAudioEngine();
   const cooldown = type === "transition" ? 500 : type === "decision_select" ? 45 : 100;
   if (!engine.canPlayEvent(type, cooldown)) return;
@@ -1387,15 +1335,18 @@ const playAdventureEventSound = (type) => {
       playSceneAccent(2, 0.1, 0.54, 0.011, variation === 0 ? 0.22 : -0.22);
       break;
     case "critical_success": {
-      [1, 1.25, 1.5, 2].forEach((ratio, index) => tone({ wave: index === 3 ? "sine" : materialWave === "sine" ? "triangle" : materialWave, frequency: eventRoot * ratio, start: index * 0.095, duration: 0.38 + index * 0.07, volume: index === 3 ? 0.065 : 0.045, pan: (index - 1.5) * 0.18 }));
-      playSceneAccent(2.5, 0.18, 0.62, 0.014, 0.22);
+      const doN = ADVENTURE_REWARD_TONIC;
+      tone({ frequency: doN * 3 / 4, duration: 0.14, volume: 0.034, pan: -0.18 });
+      tone({ wave: "triangle", frequency: doN * 15 / 16, duration: 0.14, volume: 0.026, pan: 0.14 });
+      [[1, 0.16, 0.3, 0.048], [5 / 4, 0.27, 0.32, 0.044], [3 / 2, 0.38, 0.36, 0.046], [2, 0.5, 0.72, 0.06]].forEach(([ratio, start, duration, volume], index) => tone({ wave: index === 3 ? "sine" : "triangle", frequency: doN * ratio, start, duration, volume, pan: (index - 1.5) * 0.16 }));
+      tone({ frequency: doN / 2, start: 0.16, duration: 0.9, volume: 0.02 });
       break;
     }
     case "success": {
-      const root = eventRoot;
-      tone({ frequency: root, duration: 0.32, volume: 0.046, pan: -0.12 });
-      tone({ wave: "triangle", frequency: root * (variation === 1 ? 1.5 : 1.25), start: 0.085, duration: 0.4, volume: 0.042, pan: 0.12 });
-      playSceneAccent(2, 0.12, 0.5, 0.012, -0.2);
+      const doN = ADVENTURE_REWARD_TONIC;
+      tone({ frequency: doN * 3 / 4, duration: 0.16, volume: 0.04, pan: variation === 1 ? 0.1 : -0.1 });
+      tone({ frequency: doN, start: 0.14, duration: 0.5, volume: 0.05, pan: 0.08 });
+      tone({ wave: "triangle", frequency: doN * 5 / 4, start: 0.2, duration: 0.42, volume: 0.02, pan: 0.16 });
       break;
     }
     case "failure": {
@@ -1410,9 +1361,8 @@ const playAdventureEventSound = (type) => {
       tone({ wave: "sawtooth", frequency: Math.max(60, eventRoot * 0.75), endFrequency: Math.max(35, eventRoot * 0.24), duration: 0.24, volume: 0.042 });
       break;
     case "item_get": {
-      const root = Math.max(784, eventRoot * 4);
-      [1, 1.25, 1.5].forEach((ratio, index) => tone({ frequency: root * ratio, start: index * 0.075, duration: 0.2 + index * 0.08, volume: 0.026, pan: (index - 1) * 0.3 }));
-      playSceneAccent(4, 0.12, 0.4, 9e-3, 0.18);
+      const root = ADVENTURE_REWARD_TONIC * 2;
+      [1, 5 / 4, 3 / 2, 2].forEach((ratio, index) => tone({ frequency: root * ratio, start: index * 0.07, duration: 0.16 + index * 0.07, volume: index === 3 ? 0.03 : 0.024, pan: (index - 1.5) * 0.22 }));
       break;
     }
     case "decision_select":
@@ -1420,7 +1370,7 @@ const playAdventureEventSound = (type) => {
       break;
   }
   if (playedAnyVoice) {
-    const focusDuration = { transition: 620, success: 520, critical_success: 950, failure: 680, damage: 430, item_get: 560 }[type] || 0;
+    const focusDuration = { transition: 620, success: 700, critical_success: 1300, failure: 680, damage: 430, item_get: 560 }[type] || 0;
     if (focusDuration) engine.focusEvent(eventPriority, focusDuration);
   }
 };
@@ -1486,20 +1436,57 @@ var ClimaxProgressBar = React.memo(({ climaxState }) => {
     /* @__PURE__ */ React.createElement("div", { className: "absolute top-0 bottom-0 left-[75%] w-px bg-white/10 z-0", "aria-hidden": "true" })
   ), /* @__PURE__ */ React.createElement("div", { className: "flex justify-between text-[11px] font-bold uppercase mt-1.5 px-1" }, /* @__PURE__ */ React.createElement("span", { className: "text-red-300" }, leftLabel, " (0%)"), /* @__PURE__ */ React.createElement("span", { className: "text-green-400" }, rightLabel, " (100%)")));
 });
+const ADVENTURE_AMBIENCE_INTRO_HOLD_MS = 7e3;
+const ADVENTURE_AMBIENCE_OUTRO_FADE_S = 3.5;
 var AdventureAmbience = React.memo(({ sceneText, soundParams, themeSeed, active, volume = 0.3 }) => {
   const engineRef = useRef(null);
+  const lastSceneRef = useRef(null);
+  const holdTimerRef = useRef(null);
   useEffect(() => {
     const engine = engineRef.current || getAdventureAudioEngine();
     engineRef.current = engine;
     if (!active || !sceneText) {
+      lastSceneRef.current = null;
+      if (holdTimerRef.current) {
+        clearTimeout(holdTimerRef.current);
+        holdTimerRef.current = null;
+      }
       engine.setEnabled(false);
       engine.stopAmbience(0.65);
       return;
     }
     engine.setEnabled(true);
-    engine.playAmbience(soundParams, { sceneText, themeSeed, volume });
+    if (lastSceneRef.current === sceneText) return;
+    lastSceneRef.current = sceneText;
+    if (holdTimerRef.current) clearTimeout(holdTimerRef.current);
+    engine.playAmbience(soundParams, {
+      sceneText,
+      themeSeed,
+      volume,
+      autoStopMs: ADVENTURE_AMBIENCE_INTRO_HOLD_MS + ADVENTURE_AMBIENCE_OUTRO_FADE_S * 1e3 + 4e3
+    });
+    holdTimerRef.current = setTimeout(() => {
+      holdTimerRef.current = null;
+      engine.stopAmbience(ADVENTURE_AMBIENCE_OUTRO_FADE_S);
+    }, ADVENTURE_AMBIENCE_INTRO_HOLD_MS);
   }, [sceneText, soundParams, themeSeed, active, volume]);
+  useEffect(() => {
+    const onSpeech = (event) => {
+      if (!event?.detail?.isPlaying) return;
+      if (holdTimerRef.current) {
+        clearTimeout(holdTimerRef.current);
+        holdTimerRef.current = null;
+        if (engineRef.current) engineRef.current.stopAmbience(1.3);
+      }
+    };
+    window.addEventListener("allo-speech-state", onSpeech);
+    return () => window.removeEventListener("allo-speech-state", onSpeech);
+  }, []);
   useEffect(() => () => {
+    if (holdTimerRef.current) {
+      clearTimeout(holdTimerRef.current);
+      holdTimerRef.current = null;
+    }
     if (engineRef.current) {
       engineRef.current.setEnabled(false);
       engineRef.current.stopAmbience(0.45);
@@ -1625,7 +1612,7 @@ var AdventureAudioControls = React.memo(({ soundEnabled = true, t = (key) => key
     /* @__PURE__ */ React.createElement("span", { className: "hidden xl:inline" }, translate("adventure.audio_short", "Sound mix"))
   ), open && /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[300] flex items-center justify-center bg-black/55 p-4 backdrop-blur-sm", role: "presentation", onMouseDown: (event) => {
     if (event.target === event.currentTarget) closeDialog();
-  } }, /* @__PURE__ */ React.createElement("div", { ref: dialogRef, tabIndex: -1, className: "relative max-h-[calc(100vh-2rem)] w-full max-w-md overflow-y-auto rounded-2xl border-2 border-indigo-300 bg-white p-5 text-slate-800 shadow-2xl focus:outline-none", role: "dialog", "aria-modal": "true", "aria-labelledby": "adventure-audio-dialog-title" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: closeDialog, className: "absolute right-2 top-2 flex min-h-11 min-w-11 items-center justify-center rounded-full text-slate-600 hover:bg-slate-100 hover:text-slate-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700", "aria-label": translate("common.close", "Close") }, /* @__PURE__ */ React.createElement(X, { size: 18, "aria-hidden": "true" })), /* @__PURE__ */ React.createElement("div", { className: "mb-3 flex items-start justify-between gap-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { id: "adventure-audio-dialog-title", className: "pr-10 font-black text-indigo-950" }, label), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] leading-snug text-slate-600" }, soundEnabled ? translate("adventure.audio_local_note", "Created on this device with procedural audio.") : translate("adventure.audio_muted_note", "App sound is currently muted."))), /* @__PURE__ */ React.createElement("span", { className: `mt-1 h-2.5 w-2.5 shrink-0 rounded-full ${audioAvailable ? "bg-emerald-500" : "bg-slate-400"}`, "aria-hidden": "true" })), /* @__PURE__ */ React.createElement("label", { className: "mb-3 block text-xs font-bold", htmlFor: "adventure-ambience-level" }, /* @__PURE__ */ React.createElement("span", { className: "mb-1 flex justify-between" }, /* @__PURE__ */ React.createElement("span", null, translate("adventure.audio_ambience", "Ambience")), /* @__PURE__ */ React.createElement("output", null, ambiencePercent, "%")), /* @__PURE__ */ React.createElement("input", { id: "adventure-ambience-level", type: "range", min: "0", max: "100", step: "10", value: ambiencePercent, onChange: (event) => update({ ambience: Number(event.target.value) / 100 }), className: "min-h-11 w-full accent-indigo-700" })), /* @__PURE__ */ React.createElement("label", { className: "mb-3 block text-xs font-bold", htmlFor: "adventure-effects-level" }, /* @__PURE__ */ React.createElement("span", { className: "mb-1 flex justify-between" }, /* @__PURE__ */ React.createElement("span", null, translate("adventure.audio_effects", "Effects")), /* @__PURE__ */ React.createElement("output", null, effectsPercent, "%")), /* @__PURE__ */ React.createElement("input", { id: "adventure-effects-level", type: "range", min: "0", max: "100", step: "10", value: effectsPercent, onChange: (event) => update({ effects: Number(event.target.value) / 100 }), className: "min-h-11 w-full accent-indigo-700" })), /* @__PURE__ */ React.createElement("label", { className: "flex min-h-11 cursor-pointer items-center gap-3 rounded-xl border border-indigo-200 bg-indigo-50 px-3 py-2 text-xs font-bold text-indigo-950" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: preferences.gentle, onChange: (event) => update({ gentle: event.target.checked }), className: "h-5 w-5 accent-indigo-700" }), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("span", { className: "block" }, translate("adventure.audio_gentle", "Gentle sound mode")), /* @__PURE__ */ React.createElement("span", { className: "block font-normal text-indigo-700" }, translate("adventure.audio_gentle_note", "Softer effects and calmer motion.")))), /* @__PURE__ */ React.createElement("details", { className: "mt-3 rounded-xl border border-violet-200 bg-violet-50/70 p-3" }, /* @__PURE__ */ React.createElement("summary", { className: "min-h-11 cursor-pointer select-none py-2 text-sm font-black text-violet-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700" }, translate("adventure.audio_sound_lab", "Adventure Sound Lab")), /* @__PURE__ */ React.createElement("div", { className: "mt-2 space-y-3 border-t border-violet-200 pt-3" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] leading-snug text-violet-900" }, translate("adventure.audio_sound_lab_note", "Audition procedural scene profiles without replacing the live adventure ambience.")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 gap-2 sm:grid-cols-2" }, /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-slate-800", htmlFor: "adventure-lab-atmosphere" }, /* @__PURE__ */ React.createElement("span", { className: "mb-1 block" }, translate("adventure.audio_atmosphere", "Atmosphere")), /* @__PURE__ */ React.createElement("select", { id: "adventure-lab-atmosphere", value: labProfile.atmosphere, onChange: (event) => updateLabProfile("atmosphere", event.target.value), className: "min-h-11 w-full rounded-lg border border-slate-400 bg-white px-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700" }, ["calm", "joyful", "ethereal", "dark", "tense"].map((value) => /* @__PURE__ */ React.createElement("option", { key: value, value }, value.charAt(0).toUpperCase() + value.slice(1))))), /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-slate-800", htmlFor: "adventure-lab-element" }, /* @__PURE__ */ React.createElement("span", { className: "mb-1 block" }, translate("adventure.audio_environment", "Environment")), /* @__PURE__ */ React.createElement("select", { id: "adventure-lab-element", value: labProfile.element, onChange: (event) => updateLabProfile("element", event.target.value), className: "min-h-11 w-full rounded-lg border border-slate-400 bg-white px-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700" }, ["nature", "water", "rain", "ocean", "wind", "fire", "cave", "city", "machinery", "laboratory", "space", "crowd", "silence"].map((value) => /* @__PURE__ */ React.createElement("option", { key: value, value }, value.charAt(0).toUpperCase() + value.slice(1))))), /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-slate-800", htmlFor: "adventure-lab-space" }, /* @__PURE__ */ React.createElement("span", { className: "mb-1 block" }, translate("adventure.audio_space", "Acoustic space")), /* @__PURE__ */ React.createElement("select", { id: "adventure-lab-space", value: labProfile.acousticSpace, onChange: (event) => updateLabProfile("acousticSpace", event.target.value), className: "min-h-11 w-full rounded-lg border border-slate-400 bg-white px-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700" }, ["open", "room", "cave", "void"].map((value) => /* @__PURE__ */ React.createElement("option", { key: value, value }, value.charAt(0).toUpperCase() + value.slice(1))))), /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-slate-800", htmlFor: "adventure-lab-motion" }, /* @__PURE__ */ React.createElement("span", { className: "mb-1 block" }, translate("adventure.audio_motion", "Motion")), /* @__PURE__ */ React.createElement("select", { id: "adventure-lab-motion", value: labProfile.motion, onChange: (event) => updateLabProfile("motion", event.target.value), className: "min-h-11 w-full rounded-lg border border-slate-400 bg-white px-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700" }, ["still", "steady", "travel", "chase", "urgent"].map((value) => /* @__PURE__ */ React.createElement("option", { key: value, value }, value.charAt(0).toUpperCase() + value.slice(1)))))), /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-bold text-slate-800", htmlFor: "adventure-lab-intensity" }, /* @__PURE__ */ React.createElement("span", { className: "mb-1 flex justify-between" }, /* @__PURE__ */ React.createElement("span", null, translate("adventure.audio_intensity", "Intensity")), /* @__PURE__ */ React.createElement("output", null, Math.round(labProfile.intensity * 100), "%")), /* @__PURE__ */ React.createElement("input", { id: "adventure-lab-intensity", type: "range", min: "10", max: "100", step: "10", value: Math.round(labProfile.intensity * 100), onChange: (event) => updateLabProfile("intensity", Number(event.target.value) / 100), className: "min-h-11 w-full accent-violet-700" })), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", disabled: !soundEnabled, onClick: startLabPreview, className: "min-h-11 rounded-xl bg-violet-700 px-3 py-2 text-xs font-black text-white hover:bg-violet-800 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 focus-visible:ring-offset-2" }, previewActive ? translate("adventure.audio_restart_preview", "Restart preview") : translate("adventure.audio_start_preview", "Preview ambience")), /* @__PURE__ */ React.createElement("button", { type: "button", disabled: !previewActive, onClick: () => getAdventureAudioEngine().stopPreview(0.2), className: "min-h-11 rounded-xl border border-violet-400 bg-white px-3 py-2 text-xs font-black text-violet-900 hover:bg-violet-100 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700" }, translate("adventure.audio_stop_preview", "Stop preview"))), /* @__PURE__ */ React.createElement("div", { role: "group", "aria-label": translate("adventure.audio_event_previews", "Event cue previews"), className: "grid grid-cols-2 gap-2 sm:grid-cols-4" }, [["transition", "Transition"], ["success", "Success"], ["failure", "Failure"], ["item_get", "Item"]].map(([type, text]) => /* @__PURE__ */ React.createElement("button", { key: type, type: "button", disabled: !soundEnabled, onClick: () => previewLabEvent(type), className: "min-h-11 rounded-lg border border-violet-300 bg-white px-2 py-2 text-[11px] font-bold text-violet-900 hover:bg-violet-100 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700" }, text))), /* @__PURE__ */ React.createElement("div", { role: "status", "aria-live": "polite", className: "min-h-5 text-[11px] font-bold text-violet-900" }, previewActive ? translate("adventure.audio_preview_active", "Preview playing for up to 8 seconds.") : translate("adventure.audio_preview_idle", "Preview stopped.")), /* @__PURE__ */ React.createElement("div", { className: "rounded-lg border border-slate-300 bg-white p-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", disabled: diagnostic.status === "running", onClick: runLabDiagnostic, className: "min-h-11 w-full rounded-lg border border-slate-400 px-3 py-2 text-xs font-black text-slate-800 hover:bg-slate-100 disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700" }, diagnostic.status === "running" ? translate("adventure.audio_check_running", "Rendering audio check\u2026") : translate("adventure.audio_run_check", "Run waveform check")), diagnostic.status === "complete" && diagnostic.result && /* @__PURE__ */ React.createElement("div", { role: "status", "aria-live": "polite", className: `mt-2 rounded-md px-2 py-1.5 text-[11px] font-bold ${diagnostic.result.passed ? "bg-emerald-50 text-emerald-900" : "bg-amber-50 text-amber-950"}` }, diagnostic.result.supported === false ? diagnostic.result.reason : diagnostic.result.passed ? `Passed \xB7 peak ${diagnostic.result.peak} \xB7 RMS ${diagnostic.result.rms} \xB7 quiet tail ${diagnostic.result.tailPeak}` : `Needs review${diagnostic.result.reason ? ` \xB7 ${diagnostic.result.reason}` : ` \xB7 peak ${diagnostic.result.peak} \xB7 step ${diagnostic.result.maxStep} \xB7 tail ${diagnostic.result.tailPeak}`}`)))), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => update(ADVENTURE_AUDIO_PREFS_DEFAULTS), className: "mt-3 min-h-11 w-full rounded-xl border border-indigo-300 px-3 py-2 text-xs font-bold text-indigo-800 transition-colors hover:bg-indigo-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700" }, translate("adventure.audio_reset", "Reset sound settings")))));
+  } }, /* @__PURE__ */ React.createElement("div", { ref: dialogRef, tabIndex: -1, className: "relative max-h-[calc(100vh-2rem)] w-full max-w-md overflow-y-auto rounded-2xl border-2 border-indigo-300 bg-white p-5 text-slate-800 shadow-2xl focus:outline-none", role: "dialog", "aria-modal": "true", "aria-labelledby": "adventure-audio-dialog-title" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: closeDialog, className: "absolute right-2 top-2 flex min-h-11 min-w-11 items-center justify-center rounded-full text-slate-600 hover:bg-slate-100 hover:text-slate-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700", "aria-label": translate("common.close", "Close") }, /* @__PURE__ */ React.createElement(X, { size: 18, "aria-hidden": "true" })), /* @__PURE__ */ React.createElement("div", { className: "mb-3 flex items-start justify-between gap-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { id: "adventure-audio-dialog-title", className: "pr-10 font-black text-indigo-950" }, label), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] leading-snug text-slate-600" }, soundEnabled ? translate("adventure.audio_local_note", "Created on this device with procedural audio.") : translate("adventure.audio_muted_note", "App sound is currently muted."))), /* @__PURE__ */ React.createElement("span", { className: `mt-1 h-2.5 w-2.5 shrink-0 rounded-full ${audioAvailable ? "bg-emerald-500" : "bg-slate-400"}`, "aria-hidden": "true" })), /* @__PURE__ */ React.createElement("label", { className: "mb-3 block text-xs font-bold", htmlFor: "adventure-ambience-level" }, /* @__PURE__ */ React.createElement("span", { className: "mb-1 flex justify-between" }, /* @__PURE__ */ React.createElement("span", null, translate("adventure.audio_ambience", "Ambience")), /* @__PURE__ */ React.createElement("output", null, ambiencePercent, "%")), /* @__PURE__ */ React.createElement("input", { id: "adventure-ambience-level", type: "range", min: "0", max: "100", step: "10", value: ambiencePercent, onChange: (event) => update({ ambience: Number(event.target.value) / 100 }), className: "min-h-11 w-full accent-indigo-700" }), /* @__PURE__ */ React.createElement("span", { className: "mt-1 block text-[10px] font-normal leading-snug text-slate-600" }, translate("adventure.audio_ambience_hint", "Scene sound plays at the start of each scene, then fades out so reading and narration stay clear."))), /* @__PURE__ */ React.createElement("label", { className: "mb-3 block text-xs font-bold", htmlFor: "adventure-effects-level" }, /* @__PURE__ */ React.createElement("span", { className: "mb-1 flex justify-between" }, /* @__PURE__ */ React.createElement("span", null, translate("adventure.audio_effects", "Effects")), /* @__PURE__ */ React.createElement("output", null, effectsPercent, "%")), /* @__PURE__ */ React.createElement("input", { id: "adventure-effects-level", type: "range", min: "0", max: "100", step: "10", value: effectsPercent, onChange: (event) => update({ effects: Number(event.target.value) / 100 }), className: "min-h-11 w-full accent-indigo-700" })), /* @__PURE__ */ React.createElement("label", { className: "flex min-h-11 cursor-pointer items-center gap-3 rounded-xl border border-indigo-200 bg-indigo-50 px-3 py-2 text-xs font-bold text-indigo-950" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: preferences.gentle, onChange: (event) => update({ gentle: event.target.checked }), className: "h-5 w-5 accent-indigo-700" }), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("span", { className: "block" }, translate("adventure.audio_gentle", "Gentle sound mode")), /* @__PURE__ */ React.createElement("span", { className: "block font-normal text-indigo-700" }, translate("adventure.audio_gentle_note", "Softer effects and calmer motion.")))), /* @__PURE__ */ React.createElement("details", { className: "mt-3 rounded-xl border border-violet-200 bg-violet-50/70 p-3" }, /* @__PURE__ */ React.createElement("summary", { className: "min-h-11 cursor-pointer select-none py-2 text-sm font-black text-violet-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700" }, translate("adventure.audio_sound_lab", "Adventure Sound Lab")), /* @__PURE__ */ React.createElement("div", { className: "mt-2 space-y-3 border-t border-violet-200 pt-3" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] leading-snug text-violet-900" }, translate("adventure.audio_sound_lab_note", "Audition procedural scene profiles without replacing the live adventure ambience.")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 gap-2 sm:grid-cols-2" }, /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-slate-800", htmlFor: "adventure-lab-atmosphere" }, /* @__PURE__ */ React.createElement("span", { className: "mb-1 block" }, translate("adventure.audio_atmosphere", "Atmosphere")), /* @__PURE__ */ React.createElement("select", { id: "adventure-lab-atmosphere", value: labProfile.atmosphere, onChange: (event) => updateLabProfile("atmosphere", event.target.value), className: "min-h-11 w-full rounded-lg border border-slate-400 bg-white px-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700" }, ["calm", "joyful", "ethereal", "dark", "tense"].map((value) => /* @__PURE__ */ React.createElement("option", { key: value, value }, value.charAt(0).toUpperCase() + value.slice(1))))), /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-slate-800", htmlFor: "adventure-lab-element" }, /* @__PURE__ */ React.createElement("span", { className: "mb-1 block" }, translate("adventure.audio_environment", "Environment")), /* @__PURE__ */ React.createElement("select", { id: "adventure-lab-element", value: labProfile.element, onChange: (event) => updateLabProfile("element", event.target.value), className: "min-h-11 w-full rounded-lg border border-slate-400 bg-white px-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700" }, ["nature", "water", "rain", "ocean", "wind", "fire", "cave", "city", "machinery", "laboratory", "space", "crowd", "silence"].map((value) => /* @__PURE__ */ React.createElement("option", { key: value, value }, value.charAt(0).toUpperCase() + value.slice(1))))), /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-slate-800", htmlFor: "adventure-lab-space" }, /* @__PURE__ */ React.createElement("span", { className: "mb-1 block" }, translate("adventure.audio_space", "Acoustic space")), /* @__PURE__ */ React.createElement("select", { id: "adventure-lab-space", value: labProfile.acousticSpace, onChange: (event) => updateLabProfile("acousticSpace", event.target.value), className: "min-h-11 w-full rounded-lg border border-slate-400 bg-white px-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700" }, ["open", "room", "cave", "void"].map((value) => /* @__PURE__ */ React.createElement("option", { key: value, value }, value.charAt(0).toUpperCase() + value.slice(1))))), /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-slate-800", htmlFor: "adventure-lab-motion" }, /* @__PURE__ */ React.createElement("span", { className: "mb-1 block" }, translate("adventure.audio_motion", "Motion")), /* @__PURE__ */ React.createElement("select", { id: "adventure-lab-motion", value: labProfile.motion, onChange: (event) => updateLabProfile("motion", event.target.value), className: "min-h-11 w-full rounded-lg border border-slate-400 bg-white px-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700" }, ["still", "steady", "travel", "chase", "urgent"].map((value) => /* @__PURE__ */ React.createElement("option", { key: value, value }, value.charAt(0).toUpperCase() + value.slice(1)))))), /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-bold text-slate-800", htmlFor: "adventure-lab-intensity" }, /* @__PURE__ */ React.createElement("span", { className: "mb-1 flex justify-between" }, /* @__PURE__ */ React.createElement("span", null, translate("adventure.audio_intensity", "Intensity")), /* @__PURE__ */ React.createElement("output", null, Math.round(labProfile.intensity * 100), "%")), /* @__PURE__ */ React.createElement("input", { id: "adventure-lab-intensity", type: "range", min: "10", max: "100", step: "10", value: Math.round(labProfile.intensity * 100), onChange: (event) => updateLabProfile("intensity", Number(event.target.value) / 100), className: "min-h-11 w-full accent-violet-700" })), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", disabled: !soundEnabled, onClick: startLabPreview, className: "min-h-11 rounded-xl bg-violet-700 px-3 py-2 text-xs font-black text-white hover:bg-violet-800 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 focus-visible:ring-offset-2" }, previewActive ? translate("adventure.audio_restart_preview", "Restart preview") : translate("adventure.audio_start_preview", "Preview ambience")), /* @__PURE__ */ React.createElement("button", { type: "button", disabled: !previewActive, onClick: () => getAdventureAudioEngine().stopPreview(0.2), className: "min-h-11 rounded-xl border border-violet-400 bg-white px-3 py-2 text-xs font-black text-violet-900 hover:bg-violet-100 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700" }, translate("adventure.audio_stop_preview", "Stop preview"))), /* @__PURE__ */ React.createElement("div", { role: "group", "aria-label": translate("adventure.audio_event_previews", "Event cue previews"), className: "grid grid-cols-2 gap-2 sm:grid-cols-5" }, [["transition", "Transition"], ["success", "Success"], ["critical_success", "Big win"], ["failure", "Failure"], ["item_get", "Item"]].map(([type, text]) => /* @__PURE__ */ React.createElement("button", { key: type, type: "button", disabled: !soundEnabled, onClick: () => previewLabEvent(type), className: "min-h-11 rounded-lg border border-violet-300 bg-white px-2 py-2 text-[11px] font-bold text-violet-900 hover:bg-violet-100 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700" }, text))), /* @__PURE__ */ React.createElement("div", { role: "status", "aria-live": "polite", className: "min-h-5 text-[11px] font-bold text-violet-900" }, previewActive ? translate("adventure.audio_preview_active", "Preview playing for up to 8 seconds.") : translate("adventure.audio_preview_idle", "Preview stopped.")), /* @__PURE__ */ React.createElement("div", { className: "rounded-lg border border-slate-300 bg-white p-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", disabled: diagnostic.status === "running", onClick: runLabDiagnostic, className: "min-h-11 w-full rounded-lg border border-slate-400 px-3 py-2 text-xs font-black text-slate-800 hover:bg-slate-100 disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700" }, diagnostic.status === "running" ? translate("adventure.audio_check_running", "Rendering audio check\u2026") : translate("adventure.audio_run_check", "Run waveform check")), diagnostic.status === "complete" && diagnostic.result && /* @__PURE__ */ React.createElement("div", { role: "status", "aria-live": "polite", className: `mt-2 rounded-md px-2 py-1.5 text-[11px] font-bold ${diagnostic.result.passed ? "bg-emerald-50 text-emerald-900" : "bg-amber-50 text-amber-950"}` }, diagnostic.result.supported === false ? diagnostic.result.reason : diagnostic.result.passed ? `Passed \xB7 peak ${diagnostic.result.peak} \xB7 RMS ${diagnostic.result.rms} \xB7 quiet tail ${diagnostic.result.tailPeak}` : `Needs review${diagnostic.result.reason ? ` \xB7 ${diagnostic.result.reason}` : ` \xB7 peak ${diagnostic.result.peak} \xB7 step ${diagnostic.result.maxStep} \xB7 tail ${diagnostic.result.tailPeak}`}`)))), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => update(ADVENTURE_AUDIO_PREFS_DEFAULTS), className: "mt-3 min-h-11 w-full rounded-xl border border-indigo-300 px-3 py-2 text-xs font-bold text-indigo-800 transition-colors hover:bg-indigo-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700" }, translate("adventure.audio_reset", "Reset sound settings")))));
 });
 var playDiceSound = () => {
   const engine = getAdventureAudioEngine();

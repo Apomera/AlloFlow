@@ -52,7 +52,7 @@ Ms. Rivera chooses five connected resources:
 
 ## Step 1: catch a missing translation setting
 
-The live Glossary panel shows an important preflight message: **No translation languages set — add them in Universal Settings.** The teacher notices this before generating the glossary.
+The live Glossary panel shows an important preflight message: **No translation languages set, add them in Universal Settings.** The teacher notices this before generating the glossary.
 
 ![AlloFlow Glossary panel in Gemini Canvas showing Tier 2 and Tier 3 controls and a message that no translation languages are set](../assets/live-screenshots/current-v1.2-resources/02-glossary-panel.png "Focused controls view")
 

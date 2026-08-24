@@ -248,7 +248,7 @@
 
   /* ============ Register Tool ============ */
   window.StemLab.registerTool('algebraCAS', {
-    icon: '\uD83E\uDDEE',
+    icon: '\uD83D\uDD23',
     label: 'Algebra Solver',
     desc: 'Interactive algebra with equation builder, balance scale, and step-by-step AI solving',
     color: 'amber',
@@ -322,7 +322,7 @@ onSpeak: function(formats) {
           'aria-label': 'Open accessible math keyboard',
           title: 'Open accessible math keyboard',
           onClick: function() { openAccessibleMathInput(currentValue, onValue, title); },
-          style: { maxWidth: '100%', padding: '8px 11px', borderRadius: '10px', background: 'transparent', border: '1px solid currentColor', color: '#6d28d9', fontWeight: '700', fontSize: '11px', cursor: 'pointer', whiteSpace: 'nowrap' }
+          style: { maxWidth: '100%', padding: '8px 11px', borderRadius: '10px', background: 'transparent', border: '1px solid currentColor', color: ctx.isDark ? '#a78bfa' : '#6d28d9', fontWeight: '700', fontSize: '11px', cursor: 'pointer', whiteSpace: 'nowrap' }
         }, '\u2328 Math keyboard');
       };
 

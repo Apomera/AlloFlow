@@ -1944,7 +1944,7 @@
         return h('div', null,
           h('label', { htmlFor: sliderId, style: { display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#cbd5e1', marginBottom: 4 } },
             h('span', null, opts.label),
-            h('span', { style: { color: accent, fontWeight: 700 }, 'aria-live': 'polite' }, opts.valueText || String(opts.value))
+            h('span', { style: { color: accent === INDIGO ? '#a5b4fc' : accent, fontWeight: 700 }, 'aria-live': 'polite' }, opts.valueText || String(opts.value))
           ),
           h('input', {
             id: sliderId, type: 'range',
@@ -5473,7 +5473,7 @@
                       'aria-pressed': active ? 'true' : 'false',
                       style: { padding: '8px 12px', borderRadius: 8, background: active ? 'rgba(245,158,11,0.20)' : '#1e293b', border: '1px solid ' + (active ? '#fbbf24' : '#334155'), color: active ? '#fbbf24' : '#cbd5e1', fontSize: 12, fontWeight: 700, cursor: 'pointer', textAlign: 'left', maxWidth: 220 } },
                       h('div', null, s.name),
-                      h('div', { style: { fontSize: 10, opacity: 0.75, fontWeight: 500, marginTop: 2, lineHeight: 1.4 } }, s.desc)
+                      h('div', { style: { fontSize: 10, fontWeight: 500, marginTop: 2, lineHeight: 1.4 } }, s.desc)
                     );
                   })
                 ),

@@ -707,8 +707,11 @@ describe('Educator Evaluation Apps Script server-derived lifecycle records', () 
     peer = saved.workspace.teachers.find(item => item.id === 'peer-02');
     expect(harness.rows('Audit')).toHaveLength(auditRows);
     expect(peer.cycleLockedAt).toBe(FIXED_NOW);
+    // Frozen under the workspace default, which is Maine since 2026-08-18: a
+    // practice-only composition. The point is that the snapshot freezes, not
+    // which framework produced it.
     expect(peer.weightSnapshot.map(item => [item.id, item.weight])).toEqual([
-      ['observation', 70], ['building', 10], ['teacher', 10], ['lea', 10],
+      ['observation', 100],
     ]);
 
     boot = harness.invoke('bootstrap');
@@ -736,8 +739,11 @@ describe('Educator Evaluation Apps Script server-derived lifecycle records', () 
     const released = saved.workspace.teachers.find(item => item.id === 'peer-01');
     expect(released.finalizedAt).toBe(FIXED_NOW);
     expect(released.finalScore).toBe(2);
+    // Frozen under the workspace default, which is Maine since 2026-08-18: a
+    // practice-only composition. The point is that the snapshot freezes, not
+    // which framework produced it.
     expect(released.weightSnapshot.map(item => [item.id, item.weight])).toEqual([
-      ['observation', 70], ['building', 10], ['teacher', 10], ['lea', 10],
+      ['observation', 100],
     ]);
     const snapshots = saved.workspace.cycleSnapshots.filter(item => item.teacherId === 'peer-01');
     expect(snapshots).toHaveLength(1);

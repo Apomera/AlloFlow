@@ -274,6 +274,27 @@
     });
   }
 
+  // ── Tree traversal for the roving-tabindex tree ───────────────────────────
+  // The flattened list of node names a sighted user can currently SEE, in
+  // document order, honouring the collapsed map. ArrowUp/ArrowDown walk this
+  // list, which is what makes the keyboard order and the visual order the same
+  // thing rather than two things that happen to agree.
+  function visibleTreeNames(collapsedMap) {
+    collapsedMap = collapsedMap || {};
+    var out = [];
+    (function walk(node) {
+      out.push(node.name);
+      if (collapsedMap[node.name]) return;
+      var kids = node.kids || [];
+      for (var i = 0; i < kids.length; i++) walk(kids[i]);
+    })(TREE);
+    return out;
+  }
+
+  function treeDomId(name) {
+    return 'oid-node-' + String(name).replace(/[^A-Za-z0-9]+/g, '-');
+  }
+
   // ── Tiny rich-text parser: <b> and <i> only, nesting allowed ──────────────
   function richText(h, text, keyPrefix) {
     var out = [];
@@ -347,7 +368,11 @@
     }
 
     function selectView(view) {
-      patchState({ activeView: view }, view + ' view selected');
+      // Announce the human label, not the internal id -- 'Hazard Tiers view
+      // selected', not 'groups view selected'.
+      var meta = null;
+      for (var i = 0; i < VIEWS.length; i++) if (VIEWS[i][0] === view) meta = VIEWS[i];
+      patchState({ activeView: view }, (meta ? meta[2] : view) + ' view selected');
     }
 
     function handleTabKeyDown(event, index) {
@@ -387,28 +412,93 @@
     }
 
     // ── Tree view ───────────────────────────────────────────────────────────
+    // ── WAI-ARIA tree (roving tabindex) ─────────────────────────────────────
+    // This used to be a flat list of buttons: 2 tab stops per visible row, ~90
+    // stops from top to bottom, and no arrow keys. Now the whole tree is ONE tab
+    // stop. Arrows move focus (without selecting), ArrowRight expands or enters,
+    // ArrowLeft collapses or exits to the parent, Home/End jump, and Enter/Space
+    // select via the button's native click. Focus and selection are deliberately
+    // separate so a student can scan the tree without churning the detail panel.
+    var treeVisible = visibleTreeNames(collapsed);
+    var treeFocusName = (function () {
+      if (d.treeFocus && treeVisible.indexOf(d.treeFocus) !== -1) return d.treeFocus;
+      if (treeVisible.indexOf(selectedName) !== -1) return selectedName;
+      return treeVisible[0];
+    })();
+
+    function moveTreeFocus(nextName) {
+      if (!nextName || nextName === treeFocusName) return;
+      patchState({ treeFocus: nextName });
+      if (typeof document !== 'undefined' && typeof window !== 'undefined' && window.setTimeout) {
+        window.setTimeout(function () {
+          var el = document.getElementById(treeDomId(nextName));
+          if (el && typeof el.focus === 'function') el.focus();
+        }, 0);
+      }
+    }
+
+    function handleTreeKeyDown(event, node) {
+      var visible = visibleTreeNames(collapsed);
+      var index = visible.indexOf(node.name);
+      var hasKids = !!(node.kids && node.kids.length);
+      var isCollapsed = !!collapsed[node.name];
+      var key = event.key;
+      if (key === 'ArrowDown') {
+        if (index < visible.length - 1) moveTreeFocus(visible[index + 1]);
+      } else if (key === 'ArrowUp') {
+        if (index > 0) moveTreeFocus(visible[index - 1]);
+      } else if (key === 'ArrowRight') {
+        if (hasKids && isCollapsed) toggleCollapsed(node.name);
+        else if (hasKids) moveTreeFocus(node.kids[0].name);
+        else return;
+      } else if (key === 'ArrowLeft') {
+        if (hasKids && !isCollapsed) toggleCollapsed(node.name);
+        else if (PARENT_OF[node.name]) moveTreeFocus(PARENT_OF[node.name]);
+        else return;
+      } else if (key === 'Home') {
+        moveTreeFocus(visible[0]);
+      } else if (key === 'End') {
+        moveTreeFocus(visible[visible.length - 1]);
+      } else {
+        return; // Enter/Space fall through to the button's native click = select
+      }
+      event.preventDefault();
+    }
+
     function renderTreeNode(node, depth) {
       var kids = node.kids || [];
       var hasKids = kids.length > 0;
       var isCollapsed = !!collapsed[node.name];
       var isSelected = node.name === selectedName;
+      var isFocusable = node.name === treeFocusName;
       var color = node.tier ? tierColor(node.tier) : null;
 
-      return h('li', { key: node.name, className: 'oid-tree-item' },
+      return h('li', { key: node.name, className: 'oid-tree-item', role: 'none' },
         h('div', { className: 'oid-node-row' },
+          // The caret stays as a MOUSE affordance only. Keyboard users expand and
+          // collapse with ArrowLeft/ArrowRight on the treeitem itself, so the caret
+          // leaves the tab order entirely; aria-hidden keeps it from reading as a
+          // second, redundant control.
           hasKids ? h('button', {
             type: 'button',
             className: 'oid-caret',
-            'aria-expanded': !isCollapsed,
-            'aria-label': (isCollapsed ? 'Expand ' : 'Collapse ') + node.name,
+            tabIndex: -1,
+            'aria-hidden': 'true',
             onClick: function () { toggleCollapsed(node.name); },
             style: { color: C.muted, borderColor: 'transparent' }
           }, isCollapsed ? '▸' : '▾') : h('span', { className: 'oid-caret oid-caret-empty', 'aria-hidden': 'true' }),
           h('button', {
             type: 'button',
+            id: treeDomId(node.name),
+            role: 'treeitem',
+            'aria-level': depth + 1,
+            'aria-expanded': hasKids ? !isCollapsed : undefined,
+            'aria-selected': isSelected ? 'true' : 'false',
+            tabIndex: isFocusable ? 0 : -1,
             className: 'oid-node' + (isSelected ? ' is-selected' : ''),
             'aria-current': isSelected ? 'true' : undefined,
-            onClick: function () { selectNode(node.name); },
+            onClick: function () { selectNode(node.name); if (node.name !== treeFocusName) patchState({ treeFocus: node.name }); },
+            onKeyDown: function (event) { handleTreeKeyDown(event, node); },
             style: {
               color: C.text,
               borderColor: isSelected ? C.accent : 'transparent',
@@ -423,7 +513,7 @@
             node.tier ? h('span', { className: 'sr-only' }, ', hazard tier: ' + TIER_LABEL[node.tier]) : null
           )
         ),
-        hasKids && !isCollapsed ? h('ul', { className: 'oid-tree-children', style: { borderColor: C.border } },
+        hasKids && !isCollapsed ? h('ul', { className: 'oid-tree-children', role: 'group', style: { borderColor: C.border } },
           kids.map(function (kid) { return renderTreeNode(kid, depth + 1); })
         ) : null
       );
@@ -438,7 +528,7 @@
 
       return h('aside', {
         className: 'oid-detail',
-        'aria-label': 'Details for ' + node.name,
+        'aria-label': __alloT('stem.organismid.aria_details_for', 'Details for') + ' ' + node.name,
         style: { background: C.panel, borderColor: C.border, color: C.text }
       },
         h('h3', { className: 'oid-detail-name' + (node.rank === 'genus' ? ' is-latin' : '') }, node.name),
@@ -451,12 +541,12 @@
         ) : null,
 
         node.rule ? h('p', { className: 'oid-detail-rule', style: { color: C.muted } },
-          h('strong', { style: { color: C.text } }, 'Blanket rule: '), node.rule) : null,
+          h('strong', { style: { color: C.text } }, __alloT('stem.organismid.blanket_rule', 'Blanket rule') + ': '), node.rule) : null,
 
         node.note ? h('p', { className: 'oid-note', style: { background: C.raised, borderColor: C.border } }, node.note) : null,
 
         node.ex && node.ex.length ? h('div', { className: 'oid-detail-block' },
-          h('h4', null, 'Species in this genus'),
+          h('h4', null, __alloT('stem.organismid.species_in_genus', 'Species in this genus')),
           h('ul', { className: 'oid-species-list' }, node.ex.map(function (pair) {
             return h('li', { key: pair[0] },
               h('span', { className: 'is-latin' }, pair[0]),
@@ -465,7 +555,7 @@
         ) : null,
 
         siblings.length ? h('div', { className: 'oid-detail-block' },
-          h('h4', null, 'Confused with'),
+          h('h4', null, __alloT('stem.organismid.confused_with', 'Confused with')),
           h('ul', { className: 'oid-species-list' }, siblings.map(function (sib) {
             return h('li', { key: sib.name },
               h('button', {
@@ -478,7 +568,7 @@
         ) : null,
 
         h('div', { className: 'oid-detail-block' },
-          h('h4', null, 'Where it sits'),
+          h('h4', null, __alloT('stem.organismid.where_it_sits', 'Where it sits')),
           h('ol', { className: 'oid-lineage' }, chain.map(function (step, i) {
             var isLast = i === chain.length - 1;
             return h('li', { key: step.name, style: { color: isLast ? C.text : C.muted } },
@@ -503,7 +593,7 @@
         renderLegend(),
         h('div', { className: 'oid-explorer' },
           h('div', { className: 'oid-treewrap' },
-            h('ul', { className: 'oid-tree' }, renderTreeNode(TREE, 0))
+            h('ul', { className: 'oid-tree', role: 'tree', 'aria-label': __alloT('stem.organismid.aria_tree', 'Tree of life') }, renderTreeNode(TREE, 0))
           ),
           renderDetail()
         )
@@ -511,7 +601,7 @@
     }
 
     function renderLegend() {
-      return h('ul', { className: 'oid-legend', 'aria-label': 'Hazard tier legend' }, TIER_ORDER.map(function (tier) {
+      return h('ul', { className: 'oid-legend', 'aria-label': __alloT('stem.organismid.aria_legend', 'Hazard tier legend') }, TIER_ORDER.map(function (tier) {
         return h('li', { key: tier },
           h('span', { className: 'oid-swatch', style: { background: tierColor(tier) }, 'aria-hidden': 'true' }),
           h('span', { style: { color: C.muted } }, tier + ' · ' + TIER_LABEL[tier]));
@@ -562,14 +652,14 @@
             style: { background: C.panel, borderColor: C.border, color: C.text }
           },
             h('div', { className: 'oid-edge-side' },
-              h('span', { className: 'oid-edge-label', style: { color: C.muted } }, 'Often taken for'),
+              h('span', { className: 'oid-edge-label', style: { color: C.muted } }, __alloT('stem.organismid.often_taken_for', 'Often taken for')),
               h('span', { className: 'oid-edge-common' }, edge.safe[0]),
               h('span', { className: 'oid-edge-latin is-latin', style: { color: C.muted } }, edge.safe[1])),
             h('div', { className: 'oid-edge-vs', style: { color: C.muted } },
               h('span', { className: 'oid-edge-arrow', style: { color: color } }, '⇄'),
               h('span', null, edge.tier)),
             h('div', { className: 'oid-edge-side' },
-              h('span', { className: 'oid-edge-label', style: { color: C.muted } }, 'But may actually be'),
+              h('span', { className: 'oid-edge-label', style: { color: C.muted } }, __alloT('stem.organismid.but_may_actually_be', 'But may actually be')),
               h('span', { className: 'oid-edge-common', style: { color: color } }, edge.danger[0]),
               h('span', { className: 'oid-edge-latin is-latin', style: { color: C.muted } }, edge.danger[1])),
             h('p', { className: 'oid-edge-tell', style: { color: C.muted, borderColor: C.border } },
@@ -722,6 +812,11 @@
       '.organism-id-lab .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}',
       '.organism-id-lab .is-latin{font-family:Georgia,"Iowan Old Style",Palatino,serif;font-style:italic}',
       '.oid-hero{display:flex;gap:16px;align-items:center;padding:20px;border-radius:18px;background:linear-gradient(135deg,#14532d,#2f6b57 55%,#155e75);color:#fff;box-shadow:0 14px 30px rgba(20,83,45,.22)}',
+      // The gradient makes axe mark the three hero text nodes INCOMPLETE, so the
+      // contrast is verified by hand instead (2026-08-23): white text against every
+      // stop, at the lowest opacity used, is 5.05:1 at worst (#fff@.85 on #2f6b57,
+      // the lightest stop) and 9.11:1 at best -- all clear AA. The other 28
+      // "incomplete" nodes are the caret/dot glyphs, which axe skips as non-text.
       '.oid-hero-icon{display:grid;place-items:center;width:64px;height:64px;flex:0 0 64px;border:1px solid rgba(255,255,255,.4);border-radius:16px;background:rgba(255,255,255,.14);font-size:34px}',
       '.oid-hero-copy{min-width:0}.oid-kicker{margin:0;font-size:11px;font-weight:900;letter-spacing:.14em;opacity:.85}',
       '.oid-hero h1{margin:2px 0 4px;font-size:clamp(24px,4vw,38px);line-height:1.1}',
@@ -808,7 +903,7 @@
   window.StemLab.registerTool('organismId', {
     label: 'Taxonomy Explorer',
     title: 'Taxonomy Explorer',
-    icon: '🧬',
+    icon: '\uD83E\uDD8B',
     desc: 'Explore the ranked tree of life, the lookalike pairs that fool people, and why classification keeps changing.',
     description: 'Explore the ranked tree of life, the lookalike pairs that fool people, and why classification keeps changing.',
     category: 'science',
@@ -845,6 +940,8 @@
       lineageOf: function (name) { return lineageOf(name).map(function (n) { return n.name; }); },
       tieredNodes: function (tier) { return tieredNodes(tier).map(function (n) { return n.name; }); },
       groupMembers: function (key, exclude) { return groupMembers(key, exclude).map(function (n) { return n.name; }); },
+      visibleTreeNames: function (collapsedMap) { return visibleTreeNames(collapsedMap); },
+      treeDomId: function (name) { return treeDomId(name); },
       edgeCount: EDGES.length,
       edgeTiers: EDGES.map(function (e) { return e.tier; }),
       explainTitles: EXPLAIN.map(function (s) { return s.title; }),

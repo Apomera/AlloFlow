@@ -27,7 +27,7 @@ const RUNTIME_COMPONENT_PROFILE_VERSION = 'pd-runtime-components-1.0';
 const PD_STATE_INVENTORY = Object.freeze({
   schema_version: 'pd-runtime-state-inventory-1.0',
   scope: 'authoritative-state-binding',
-  activityTypes: ['read', 'quiz', 'reflect', 'video', 'checklist', 'sim'],
+  activityTypes: ['read', 'quiz', 'reflect', 'video', 'checklist', 'sim', 'resource', 'persona', 'branching'],
   activityStates: {
     read: ['initial', 'acknowledged'],
     quiz: ['unanswered', 'partial', 'submitted-pass', 'submitted-fail'],
@@ -35,6 +35,9 @@ const PD_STATE_INVENTORY = Object.freeze({
     video: ['initial', 'watched'],
     checklist: ['empty', 'completed'],
     sim: ['idle', 'scoring', 'success', 'unavailable', 'error', 'edit-invalidated'],
+    resource: ['initial', 'in-progress', 'completed'],
+    persona: ['idle', 'active', 'feedback', 'unavailable', 'completed'],
+    branching: ['start', 'mid-path', 'ending'],
   },
   pastePolicyStates: ['allowed', 'monitored', 'restricted-blocked', 'accommodation-notice'],
   runnerStates: ['loading', 'fresh', 'resumed', 'active', 'completed', 'fetch-error', 'validation-error'],
@@ -61,11 +64,14 @@ const CONTENT_KEYS = Object.freeze({
   video: ['url', 'body', 'captions', 'captionsUrl', 'transcript', 'transcriptUrl', 'accessibleAlternative'],
   checklist: ['items'],
   sim: ['scenario', 'rubric'],
+  resource: ['resourceType', 'data', 'instructions'],
+  persona: ['personaName', 'personaRole', 'scenario', 'rubric', 'minTurns', 'maxTurns'],
+  branching: ['start', 'nodes', 'intro'],
 });
 const QUESTION_KEYS = ['prompt', 'options', 'correctIndex', 'explanation'];
 const LINK_KEYS = ['label', 'url'];
 const MANIFEST_KEYS = ['schema_version', 'kind', 'generated_at', 'entries', 'paths'];
-const MANIFEST_ENTRY_KEYS = ['slug', 'moduleId', 'version', 'language', 'contentDigest', 'title', 'topic', 'summary', 'estMinutes', 'credit', 'license', 'audience', 'path'];
+const MANIFEST_ENTRY_KEYS = ['slug', 'moduleId', 'version', 'language', 'contentDigest', 'title', 'topic', 'summary', 'estMinutes', 'credit', 'license', 'audience', 'path', 'udlGuidelines'];
 const LEARNING_PATH_KEYS = ['slug', 'title', 'summary', 'moduleSlugs'];
 const MANUAL_REVIEW = Object.freeze([
   { code: 'manual-content-accuracy', area: 'content', message: 'Verify factual accuracy, sources, authorship, and instructional quality.' },

@@ -1,0 +1,126 @@
+{
+  "schema_version": "pd-1.0",
+  "kind": "pd_module",
+  "metadata": {
+    "id": "academic-vocabulary-snapshot",
+    "version": "1.0.0",
+    "language": "en-US",
+    "title": "Academic Vocabulary that Sticks",
+    "topic": "Literacy",
+    "summary": "A ~12-minute primer on explicit vocabulary instruction — choosing high-value words, student-friendly definitions, and multiple encounters — with an embedded example word bank, a knowledge check, and an action step.",
+    "estMinutes": 12,
+    "credit": "AlloFlow Seed Library",
+    "license": "CC-BY-SA-4.0",
+    "audience": "educator"
+  },
+  "sections": [
+    {
+      "title": "Learn",
+      "activities": [
+        {
+          "id": "read-vocab",
+          "type": "read",
+          "title": "Teach fewer words, harder",
+          "content": {
+            "body": "Vocabulary knowledge is one of the strongest correlates of reading comprehension, and it compounds: students who know more words learn more words from context. Explicit instruction cannot cover the tens of thousands of words students need — its job is to make a small set of high-value words genuinely usable, while wide reading does the volume work.\n\nChoose words worth the time. A widely used framework (Beck, McKeown, and Kucan) sorts words into three tiers: everyday words most students already know (tier one), high-utility academic words that appear across subjects — analyze, consequence, evidence, contrast (tier two), and domain-specific technical terms — photosynthesis, denominator (tier three). Tier two words repay instruction most broadly, because they unlock text in every class.\n\nDefine in student-friendly language first. Dictionary definitions are written for people who already know the word. 'Reluctant: not wanting to do something, and maybe trying to get out of it' beats 'unwilling; disinclined.' Characterize the word — how it is used, what it goes with — rather than just labeling it.\n\nThen engineer multiple encounters in varied contexts. A word is learned through repeated meaningful use: examples and non-examples, questions that force a decision ('Would a reluctant student volunteer first? Why not?'), quick writing and speaking uses, and morphology work — reluctant, reluctance, reluctantly — that turns one word into a family. A single introduction, however good, fades.\n\nA glossary or word bank supports this — as a reference students return to during reading and writing, not as a list to memorize. The embedded word bank below is an example of the form: a small set of tier-two words with student-friendly definitions, ready to sit beside a text.",
+            "keyPoints": [
+              "Explicit instruction covers few words; make them count and let wide reading do volume.",
+              "Prioritize tier-two words — high-utility academic words that appear across subjects.",
+              "Student-friendly definitions characterize how a word is used, not just what it labels.",
+              "Learning takes multiple meaningful encounters: examples, non-examples, decisions, morphology.",
+              "A word bank is a reference to use during reading and writing, not a memorization list."
+            ]
+          },
+          "gate": { "kind": "none" }
+        }
+      ]
+    },
+    {
+      "title": "An example word bank",
+      "activities": [
+        {
+          "id": "resource-vocab",
+          "type": "resource",
+          "title": "Tier-two words, student-friendly form",
+          "content": {
+            "resourceType": "glossary",
+            "instructions": "This is the form in practice: six tier-two words with student-friendly definitions, the kind of word bank that sits beside a text during reading and writing.",
+            "data": {
+              "items": [
+                { "term": "analyze", "def": "To look at something piece by piece to figure out what it means or how it works." },
+                { "term": "evidence", "def": "Facts or details that show why something is true — what you point to when someone asks 'how do you know?'" },
+                { "term": "contrast", "def": "To show how two things are different from each other." },
+                { "term": "consequence", "def": "What happens because of something else — the result, good or bad." },
+                { "term": "reluctant", "def": "Not wanting to do something, and maybe trying to get out of it." },
+                { "term": "significant", "def": "Important enough to matter and worth paying attention to." }
+              ]
+            }
+          },
+          "gate": { "kind": "none" }
+        }
+      ]
+    },
+    {
+      "title": "Check your understanding",
+      "activities": [
+        {
+          "id": "quiz-vocab",
+          "type": "quiz",
+          "title": "Vocabulary instruction check",
+          "content": {
+            "questions": [
+              {
+                "prompt": "Which set is the best candidate for explicit whole-class instruction before a science text?",
+                "options": [
+                  "happy, run, book — words everyone knows",
+                  "every unfamiliar word in the chapter",
+                  "words the teacher finds personally interesting",
+                  "analyze, evidence, significant — high-utility words the text leans on"
+                ],
+                "correctIndex": 3,
+                "explanation": "Tier-two academic words repay instruction across every subject; covering everything spreads the time too thin to stick."
+              },
+              {
+                "prompt": "Which is the strongest STUDENT-FRIENDLY definition of 'reluctant'?",
+                "options": [
+                  "Not wanting to do something, and maybe trying to get out of it",
+                  "Unwilling; disinclined",
+                  "An adjective describing hesitation",
+                  "The opposite of eager"
+                ],
+                "correctIndex": 0,
+                "explanation": "It characterizes how the word is used in plain language. Dictionary synonyms only help students who already know the synonyms."
+              },
+              {
+                "prompt": "A teacher introduces 'consequence' well on Monday and never returns to it. The most likely outcome is:",
+                "options": [
+                  "Students own the word — one strong introduction is enough",
+                  "The word fades; learning needs multiple meaningful encounters in varied contexts",
+                  "Students learn it if it was on the word wall",
+                  "Only struggling readers forget it"
+                ],
+                "correctIndex": 1,
+                "explanation": "Vocabulary learning is incremental: examples, non-examples, forced decisions, and morphology across days do the work."
+              }
+            ]
+          },
+          "gate": { "kind": "score", "threshold": 0.66 }
+        }
+      ]
+    },
+    {
+      "title": "Apply it",
+      "activities": [
+        {
+          "id": "reflect-vocab",
+          "type": "reflect",
+          "title": "Pick your five",
+          "content": {
+            "prompt": "Look at the next text your students will read. Choose up to five tier-two words worth teaching explicitly, write a student-friendly definition for the hardest one, and name two different encounters you will engineer with it during the week."
+          },
+          "gate": { "kind": "none" }
+        }
+      ]
+    }
+  ]
+}

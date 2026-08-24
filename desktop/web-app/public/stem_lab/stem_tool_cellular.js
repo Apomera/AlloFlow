@@ -1486,7 +1486,7 @@
   window.__alloCellularPure = { emptyGrid: emptyGrid, randomGrid: randomGrid, countPop: countPop, populationBounds: populationBounds, shapeFingerprint: shapeFingerprint, detectDynamics: detectDynamics, neighborCount: neighborCount, stepLife: stepLife, stepLifeDetailed: stepLifeDetailed, parseLifeRule: parseLifeRule, gridSignature: gridSignature, stampPattern: stampPattern, ruleToBits: ruleToBits, bitsToRule: bitsToRule, stepRuleRow: stepRuleRow, buildCaRows: buildCaRows, caCellCause: caCellCause, caCounterfactualInfluence: caCounterfactualInfluence, analyzeCaSensitivityRow: analyzeCaSensitivityRow, caRuleSensitivityProfile: caRuleSensitivityProfile, caCausalCone: caCausalCone, caCellTransition: caCellTransition, caTemporalChangeCells: caTemporalChangeCells, analyzeCaRows: analyzeCaRows, analyzeLifePhase: analyzeLifePhase, analyzePatternEvolution: analyzePatternEvolution, analyzePatternJourney: analyzePatternJourney, analyzeLifeForecastMotion: analyzeLifeForecastMotion, analyzeLifeForecastResidency: analyzeLifeForecastResidency, compareLifeStates: compareLifeStates, projectLifeFuture: projectLifeFuture, patterns: LIFE_PATTERNS };
 
   window.StemLab.registerTool('cellularLab', {
-    icon: '🧫',
+    icon: '\u25A6',
     label: 'Cellular Automaton Lab',
     desc: "Explore 2-D Life-like worlds with custom B/S rules, predictive and scientific lenses, challenges, 17 classic patterns, dynamic grids, export, and population evidence - plus all 256 elementary 1-D Wolfram rules.",
     color: 'emerald',

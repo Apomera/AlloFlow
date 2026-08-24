@@ -1,0 +1,25 @@
+{
+  "generatedFrom": "audio_bank.json",
+  "categories": {
+    "phonemes": {
+      "keys": 51,
+      "bytes": 592941
+    },
+    "instructions": {
+      "keys": 77,
+      "bytes": 3014825
+    },
+    "letters": {
+      "keys": 26,
+      "bytes": 598405
+    },
+    "isolation": {
+      "keys": 10,
+      "bytes": 605166
+    },
+    "words": {
+      "keys": 173,
+      "bytes": 11297911
+    }
+  }
+}

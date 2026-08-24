@@ -5741,7 +5741,13 @@
         }
       };
 
-      return h('div', { className: 'space-y-3 animate-in fade-in duration-200', 'data-geology-tool': 'true', 'data-geology-theme': isContrast ? 'contrast' : (isDark ? 'dark' : 'light'), style: isContrast ? { background: '#000000', color: '#ffffff', padding: '2px' } : null },
+      return h('div', { className: 'space-y-3 animate-in fade-in duration-200', 'data-geology-tool': 'true', 'data-geology-theme': isContrast ? 'contrast' : (isDark ? 'dark' : 'light'), style: isContrast ? { background: '#000000', color: '#ffffff', padding: '2px' }
+        // ★isDark needs a ground too: in dark theme the HOST wraps every tool in a
+        // WHITE card (stem_lab_module.js ~1633) while this tool's dark branch paints
+        // translucent slate panels and -300/-400 inks that assume a dark substrate.
+        // Over white the alphas composited to #626976 with #94a3b8 on top: 2.15:1
+        // across 31 nodes. Give the dark branch the canvas its palette was mixed for.
+        : isDark ? { background: '#0f172a', borderRadius: 12, padding: 10 } : null },
         // live region (SR)
         h('div', { id: 'allo-live-geology', 'aria-live': 'polite', 'aria-atomic': 'true', role: 'status', className: 'sr-only' }),
         // header

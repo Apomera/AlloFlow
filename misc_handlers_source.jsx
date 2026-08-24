@@ -1567,6 +1567,7 @@ async function runAutoFixLoop(maxRounds, deps) {
     const _loopOwner = { runId: _loopRunId, documentEpoch: _loopDocumentEpoch, stats: { startTime: 0 } };
     if (_canPublish()) setPdfAutoContinueRunning(true);
     let cur = pdfFixResultRef.current;
+    let _pausedForThrottle = false;
     const _aiIssuesOf = (c) => (c && c.verificationAudit && Array.isArray(c.verificationAudit.issues)) ? c.verificationAudit.issues : [];
     const _plainTextOf = (html) => { try { const d = new DOMParser().parseFromString(html || '', 'text/html'); return (d.body && d.body.textContent || '').trim(); } catch (_) { return null; } };
     const _isCanonicalComplete = (c) => !!(c && c.verificationState === 'complete' && c.afterScoreVerified === true && !c.requiresManualReview && isLiveVerificationHtmlBound(c, c.accessibleHtml));
@@ -1631,23 +1632,30 @@ async function runAutoFixLoop(maxRounds, deps) {
         // Storm-aware WAIT-not-stop (2026-07-05, maintainer): never fire a round into an active
         // Canvas rate-limit storm — on the 7/5 run those calls each failed after ~150s AND extended
         // the throttle window, until the 12-min dead-man switch killed the whole loop. Waiting is not
-        // stopping: nothing is skipped and no target is abandoned — the round runs at full strength
-        // once the storm passes (bounded, then it proceeds regardless, only ever slower). The ticking
+        // abandoning the target: the round runs at full strength if the storm passes inside the bound;
+        // otherwise the verified checkpoint remains available for an explicit later resume. The ticking
         // status ALSO keeps the dead-man switch (a frozen-step detector) from false-firing meanwhile.
+        let _calmState = null;
         try {
-          await waitForGeminiCalm({ maxWaitMs: 240000, shouldAbort: () => !_canContinue(), signal: _abortCtrl.signal, owner: _loopOwner, onTick: (w) => {
+          _calmState = await waitForGeminiCalm({ maxWaitMs: 240000, shouldAbort: () => !_canContinue(), signal: _abortCtrl.signal, owner: _loopOwner, onTick: (w) => {
             if (!_canContinue()) return;
             const _ws = Math.max(1, Math.ceil((((w && w.cooldownRemainingMs) || 5000)) / 1000));
-            _setStepIfOwned(t('pdf_audit.storm_wait_round', { round: round + 1, max: maxRounds, s: _ws }) || ('Canvas is rate-limiting — pausing before round ' + (round + 1) + '/' + maxRounds + ' so calls are not wasted (rechecking in ~' + _ws + 's; nothing is skipped, the run just takes longer)'));
+            _setStepIfOwned(t('pdf_audit.storm_wait_round', { round: round + 1, max: maxRounds, s: _ws }) || ('Canvas is rate-limiting — pausing before round ' + (round + 1) + '/' + maxRounds + ' so calls are not wasted (rechecking in ~' + _ws + 's; your checkpoint will remain resumable)'));
           } });
         } catch (_) {}
         // H3 (deep dive 2026-07-09): the storm wait can hold this spot for up to 4 minutes — a Stop
         // press or watchdog invalidation DURING it used to go unnoticed until AFTER the next full
         // round had fired into the storm (and the post-round check then discarded its work anyway).
         // Re-check before firing; shouldAbort above also exits the wait itself within seconds.
-        if (!_canContinue()
+        if ((_calmState && _calmState.calm === false) || !_canContinue()
             || pdfHtmlRevisionRef.current !== _roundHtmlRevision) {
           cur = pdfFixResultRef.current;
+          if (_calmState && _calmState.calm === false && cur && _canPublish()) {
+            _pausedForThrottle = true;
+            cur = { ...cur, _remediationThrottlePaused: true, _finalAuditThrottleDeferred: true, _finalAuditRetryAvailable: true, _finalAuditIncompleteReason: 'remediation-paused-transient-throttle' };
+            setPdfFixResult(cur);
+            warnLog('[AutoContinue] Provider throttle did not clear inside the bounded wait; preserving the checkpoint for a later resume.');
+          }
           break;
         }
         const _auditOnlyRefresh = _vio === 0 && _aiIssues.length === 0 && _eaFails === 0 && !_isCanonicalComplete(cur);
@@ -1671,11 +1679,13 @@ async function runAutoFixLoop(maxRounds, deps) {
             : (t(_aiIssues.length === 1 ? 'pdf_audit.ai_issue_one' : 'pdf_audit.ai_issue_other', { count: _aiIssues.length }) || (_aiIssues.length + ' AI-flagged issue' + (_aiIssues.length !== 1 ? 's' : ''))));
         _setStepIfOwned(t('pdf_audit.auto_continue_round', { round: round + 1, max: maxRounds, detail: _acDetail, score: cur.afterScore || 0, target: pdfTargetScore }) || ('Auto-continue round ' + (round + 1) + '/' + maxRounds + ': ' + _acDetail + ', score ' + (cur.afterScore || 0) + '/100 (target ' + pdfTargetScore + ')...'));
         let result;
+        let _roundThrottleDeferred = false;
         if (_vio > 0) {
           result = await autoFixAxeViolations(cur.accessibleHtml, cur.axeAudit, pdfAutoFixPasses, {
             signal: _abortCtrl.signal,
             shouldAbort: () => !_canContinue(),
             owner: _loopOwner, // M20: heartbeats carry this loop's identity
+            onThrottleDeferred: () => { _roundThrottleDeferred = true; },
           });
           if (!result || result.stale) { cur = pdfFixResultRef.current; break; }
         } else if (_auditOnlyRefresh) {
@@ -1696,6 +1706,7 @@ async function runAutoFixLoop(maxRounds, deps) {
             signal: _abortCtrl.signal,
             shouldAbort: () => !_canContinue(),
             owner: _loopOwner,
+            onThrottleDeferred: () => { _roundThrottleDeferred = true; },
           });
           if (!_canContinue() || pdfHtmlRevisionRef.current !== _roundHtmlRevision) {
             cur = pdfFixResultRef.current;
@@ -1710,6 +1721,13 @@ async function runAutoFixLoop(maxRounds, deps) {
           if (_hasContrast) { try { const _sr = sanitizeStyleForWCAG(_fixedHtml); if (_sr && _sr.html && _sr.fixCount > 0) _fixedHtml = _sr.html; } catch (_) {} }
           const _freshAxe = await runAxeAudit(_fixedHtml);
           result = { html: _fixedHtml, axe: _freshAxe, passes: 1 };
+        }
+        if (_roundThrottleDeferred || (result && result.throttlePaused)) {
+          _pausedForThrottle = true;
+          cur = { ...cur, _remediationThrottlePaused: true, _finalAuditThrottleDeferred: true, _finalAuditRetryAvailable: true, _finalAuditIncompleteReason: 'remediation-paused-transient-throttle' };
+          if (_canPublish()) setPdfFixResult(cur);
+          warnLog('[AutoContinue] Round paused after a temporary provider throttle; no re-verification call was launched and the prior checkpoint was preserved.');
+          break;
         }
         if (!_canContinue() || pdfHtmlRevisionRef.current !== _roundHtmlRevision) {
           cur = pdfFixResultRef.current;
@@ -1823,6 +1841,8 @@ async function runAutoFixLoop(maxRounds, deps) {
       const _humanReviewRequired = !!(cur && (!_canonicalComplete || _expertOrFidelityReview));
       if (pdfAutoContinueAbortRef.current || (_abortCtrl.signal && _abortCtrl.signal.aborted)) {
         _toastIfOwned(t('toasts.auto_continue_stopped'), 'info');
+      } else if (_pausedForThrottle || (cur && cur._remediationThrottlePaused)) {
+        _toastIfOwned('AI remediation paused safely because the provider is temporarily rate-limiting requests. Your last verified version is preserved; choose Resume AI remediation after the service recovers.', 'warning');
       } else if (cur && (cur.afterScore || 0) >= pdfTargetScore && _canonicalComplete && !_expertOrFidelityReview) {
         if (cur.axeAudit && cur.axeAudit.totalViolations === 0) {
           _toastIfOwned(t('toasts.all_violations_resolved_score') + (cur.afterScore || 0) + ')', 'success');

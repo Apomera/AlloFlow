@@ -59,7 +59,7 @@
   }
 
   window.StemLab.registerTool('zoomGallery', {
-    icon: '🔍',
+    icon: '\uD83D\uDDBC\uFE0F',
     label: 'Zoom Gallery',
     desc: 'Zoom deep into real, openly-licensed images — Smithsonian Open Access artifacts (CC0) and famous NASA photographs (public domain) — in OpenSeadragon, the viewer museums use. Magnify to the pixel: the Pillars of Creation, an Apollo bootprint, the Apollo 11 capsule, a coral fan. A Notice → Wonder coach sits beside the viewer.',
     color: 'sky',
@@ -159,7 +159,13 @@
         if (announceToSR) announceToSR(t('stem.zoomGallery.returned_catalog_sr', 'Returned to the STEAM Lab tools.'));
       }
 
-      return h('div', { className: 'flex flex-col gap-4 animate-in fade-in duration-300 max-w-2xl' },
+      return h('div', { className: 'flex flex-col gap-4 animate-in fade-in duration-300 max-w-2xl',
+        // The launcher card is dark-authored (text-slate-300 body, bg-slate-800/60
+        // privacy panel, slate-900/70 back button) but painted no ground, so it sat
+        // on the host card -- white in BOTH themes (stem_lab_module.js ~1633): body
+        // text 1.48:1, privacy rows 2.72:1 on the composited grey. Six shelf/launcher
+        // tools share this exact recipe; each gets the slate ground its inks assume.
+        style: { background: '#0f172a', borderRadius: 14, padding: 16 } },
         typeof setStemLabTool === 'function' && h('button', {
           onClick: returnToCatalog,
           className: 'inline-flex w-fit items-center gap-2 rounded-lg border border-slate-700 bg-slate-900/70 px-3 py-2 text-xs font-bold text-slate-200 transition-colors hover:bg-slate-800 active:scale-[0.97]',
@@ -189,7 +195,7 @@
           t('stem.zoomGallery.open_note', 'Zoom Gallery is open. Keep this AlloFlow window open too — it powers the AI coach.')),
         popupState === 'closed' && h('p', { className: 'text-xs text-slate-400' },
           t('stem.zoomGallery.closed_note', 'Zoom Gallery was closed. You can reopen it whenever you are ready.')),
-        h('p', { className: 'text-[11px] text-slate-500 leading-relaxed' },
+        h('p', { className: 'text-[11px] text-slate-400 leading-relaxed' },
           t('stem.zoomGallery.credit', 'Viewer: OpenSeadragon (openseadragon.github.io), free and open source under the BSD-3-Clause license. Images: Smithsonian Open Access (released CC0) served as IIIF deep-zoom tiles, and NASA photographs (public domain). Each image lists its source and a link to the original record. The viewer and images load from the web, so the gallery needs internet.'))
       );
     }

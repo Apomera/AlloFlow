@@ -115,7 +115,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
     var petsWorkspaceStyle = document.createElement('style');
     petsWorkspaceStyle.id = 'petslab-workspace-css';
     petsWorkspaceStyle.textContent = [
-      '.petslab-menu-shell{max-width:1120px!important;margin:0 auto;padding:6px!important;color:#fef3e2;}',
+      '.petslab-menu-shell{max-width:1120px!important;margin:0 auto;padding:10px!important;color:#fef3e2;background:#100b09;border-radius:14px;}', /* the shell declared warm-cream ink but no ground, so it sat on the host card (white in BOTH themes): 1.09:1. #100b09 is the espresso its own panels already use. */
       '.petslab-menu-shell *{box-sizing:border-box;}',
       '.petslab-command{padding:18px!important;border:1px solid rgba(245,158,11,.42);border-radius:18px!important;background:radial-gradient(circle at 88% 12%,rgba(245,158,11,.2),transparent 34%),linear-gradient(135deg,rgba(69,26,3,.96),rgba(24,18,16,.98));box-shadow:0 18px 42px rgba(0,0,0,.24);}',
       '.petslab-command h2{color:#fff;font-size:clamp(20px,3vw,29px)!important;}',

@@ -1,7 +1,7 @@
 {
   "schema_version": "pd-1.0",
   "kind": "pd_catalog",
-  "generated_at": "2026-07-16T00:00:00.000Z",
+  "generated_at": "2026-08-23T16:22:40.587Z",
   "entries": [
     {
       "slug": "udl-representation-quickstart",
@@ -16,7 +16,52 @@
       "credit": "AlloFlow Seed Library",
       "license": "CC-BY-SA-4.0",
       "audience": "educator",
-      "path": "catalog/pd/approved/udl-representation-quickstart.json"
+      "path": "catalog/pd/approved/udl-representation-quickstart.json",
+      "udlGuidelines": [
+        "rep_1",
+        "rep_2",
+        "rep_3"
+      ]
+    },
+    {
+      "slug": "udl-engagement-quickstart",
+      "moduleId": "udl-engagement-quickstart",
+      "version": "1.0.0",
+      "language": "en-US",
+      "contentDigest": "sha256:1bd966b320f9338e95c17d26f72bf6ca534eea1f158e066ea08e517e926186b1",
+      "title": "UDL Quick Start: Multiple Means of Engagement",
+      "topic": "UDL",
+      "summary": "A ~15-minute primer on the engagement principle of Universal Design for Learning: recruiting interest, sustaining effort, and supporting self-regulation, with a knowledge check and a classroom action step.",
+      "estMinutes": 15,
+      "credit": "AlloFlow Seed Library",
+      "license": "CC-BY-SA-4.0",
+      "audience": "educator",
+      "path": "catalog/pd/approved/udl-engagement-quickstart.json",
+      "udlGuidelines": [
+        "eng_7",
+        "eng_8",
+        "eng_9"
+      ]
+    },
+    {
+      "slug": "udl-action-expression-quickstart",
+      "moduleId": "udl-action-expression-quickstart",
+      "version": "1.0.0",
+      "language": "en-US",
+      "contentDigest": "sha256:ead40e67f39910c7630a233356aa549f084c35296a07dcadbb9f73bb9fd56a37",
+      "title": "UDL Quick Start: Multiple Means of Action & Expression",
+      "topic": "UDL",
+      "summary": "A ~15-minute primer on the action and expression principle of Universal Design for Learning: physical access, multiple ways to show knowledge, and executive-function supports, with a knowledge check and an action step.",
+      "estMinutes": 15,
+      "credit": "AlloFlow Seed Library",
+      "license": "CC-BY-SA-4.0",
+      "audience": "educator",
+      "path": "catalog/pd/approved/udl-action-expression-quickstart.json",
+      "udlGuidelines": [
+        "act_4",
+        "act_5",
+        "act_6"
+      ]
     },
     {
       "slug": "retrieval-practice-quickstart",
@@ -31,7 +76,10 @@
       "credit": "AlloFlow Seed Library",
       "license": "CC-BY-SA-4.0",
       "audience": "educator",
-      "path": "catalog/pd/approved/retrieval-practice-quickstart.json"
+      "path": "catalog/pd/approved/retrieval-practice-quickstart.json",
+      "udlGuidelines": [
+        "rep_3"
+      ]
     },
     {
       "slug": "actionable-feedback-quickstart",
@@ -46,18 +94,89 @@
       "credit": "AlloFlow Seed Library",
       "license": "CC-BY-SA-4.0",
       "audience": "educator",
-      "path": "catalog/pd/approved/actionable-feedback-quickstart.json"
+      "path": "catalog/pd/approved/actionable-feedback-quickstart.json",
+      "udlGuidelines": [
+        "eng_8"
+      ]
+    },
+    {
+      "slug": "academic-vocabulary-snapshot",
+      "moduleId": "academic-vocabulary-snapshot",
+      "version": "1.0.0",
+      "language": "en-US",
+      "contentDigest": "sha256:308636f5e8225d2b37767816baa262ec114d478b18e9ced9629390ba1c26e61b",
+      "title": "Academic Vocabulary that Sticks",
+      "topic": "Literacy",
+      "summary": "A ~12-minute primer on explicit vocabulary instruction — choosing high-value words, student-friendly definitions, and multiple encounters — with an embedded example word bank, a knowledge check, and an action step.",
+      "estMinutes": 12,
+      "credit": "AlloFlow Seed Library",
+      "license": "CC-BY-SA-4.0",
+      "audience": "educator",
+      "path": "catalog/pd/approved/academic-vocabulary-snapshot.json",
+      "udlGuidelines": [
+        "rep_2"
+      ]
+    },
+    {
+      "slug": "family-conversations-practice",
+      "moduleId": "family-conversations-practice",
+      "version": "1.0.0",
+      "language": "en-US",
+      "contentDigest": "sha256:16a88434abfd3f37c7e823c218ebb3e199464cc380e446052aace5c2ccc7450c",
+      "title": "Hard Conversations with Families: Live Practice",
+      "topic": "Communication",
+      "summary": "A ~20-minute practice module on difficult family conversations: a short primer on what works, then a live role-play with an AI-played parent to rehearse it, and a reflection. The role-play is formative practice and never graded.",
+      "estMinutes": 20,
+      "credit": "AlloFlow Seed Library",
+      "license": "CC-BY-SA-4.0",
+      "audience": "educator",
+      "path": "catalog/pd/approved/family-conversations-practice.json"
+    },
+    {
+      "slug": "deescalation-branching-practice",
+      "moduleId": "deescalation-branching-practice",
+      "version": "1.0.0",
+      "language": "en-US",
+      "contentDigest": "sha256:9fb7eadb49721fa15765e006a989b2d9b67a3d8412c7f42f08a615e6021b9452",
+      "title": "De-escalation in the Moment: A Branching Scenario",
+      "topic": "Behavior & SEL",
+      "summary": "A ~15-minute primer on the escalation cycle and adult de-escalation moves, followed by a branching classroom scenario you walk one decision at a time, and a reflection.",
+      "estMinutes": 15,
+      "credit": "AlloFlow Seed Library",
+      "license": "CC-BY-SA-4.0",
+      "audience": "educator",
+      "path": "catalog/pd/approved/deescalation-branching-practice.json"
     }
   ],
   "paths": [
     {
       "slug": "evidence-based-teaching-essentials",
       "title": "Evidence-Based Teaching Essentials",
-      "summary": "A short curated sequence on practices with strong research support: retrieval practice, actionable feedback, and UDL representation.",
+      "summary": "Three short modules on practices with strong evidence behind them: retrieval practice, actionable feedback, and multiple means of representation.",
       "moduleSlugs": [
         "retrieval-practice-quickstart",
         "actionable-feedback-quickstart",
         "udl-representation-quickstart"
+      ]
+    },
+    {
+      "slug": "udl-foundations",
+      "title": "UDL Foundations",
+      "summary": "The three principles of Universal Design for Learning, one short module each: representation, engagement, and action & expression.",
+      "moduleSlugs": [
+        "udl-representation-quickstart",
+        "udl-engagement-quickstart",
+        "udl-action-expression-quickstart"
+      ]
+    },
+    {
+      "slug": "responsive-communication",
+      "title": "Responsive Communication",
+      "summary": "Feedback students can act on, family conversations you can practice live, and de-escalation you can walk one decision at a time.",
+      "moduleSlugs": [
+        "actionable-feedback-quickstart",
+        "family-conversations-practice",
+        "deescalation-branching-practice"
       ]
     }
   ]

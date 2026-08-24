@@ -3342,7 +3342,7 @@ window.StemLab = window.StemLab || {
               style: { fontSize: 20, lineHeight: 1, textAlign: 'center' }
             }, b.icon),
             h('span', { key: 'l', style: { lineHeight: 1.2 } }, [
-              h('span', { key: 'n', style: { display: 'block', fontSize: 9, opacity: 0.72, letterSpacing: 0.7, textTransform: 'uppercase' } },
+              h('span', { key: 'n', style: { display: 'block', fontSize: 9, letterSpacing: 0.7, textTransform: 'uppercase' } },
                 __alloT('stem.machinelab.station', 'Station ') + (stationIndex + 1)),
               h('span', { key: 't' }, b.label)
             ]),
@@ -3695,7 +3695,7 @@ window.StemLab = window.StemLab || {
           }, [
             h('span', { key: 'i', 'aria-hidden': 'true', style: { fontSize: 15, marginRight: 5 } }, v.icon),
             h('span', { key: 'l' }, v.label),
-            h('span', { key: 'n', 'aria-hidden': 'true', style: { display: 'block', marginTop: 1, fontSize: 8, opacity: 0.65, letterSpacing: 0.6 } },
+            h('span', { key: 'n', 'aria-hidden': 'true', style: { display: 'block', marginTop: 1, fontSize: 8, letterSpacing: 0.6 } },
               '0' + (viewIndex + 1))
           ]);
         }));

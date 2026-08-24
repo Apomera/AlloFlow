@@ -4,6 +4,10 @@ Adventure Mode turns a lesson into a short interactive story. Students make choi
 
 If you have not built a lesson yet, start with [Prepare a lesson](02-prepare-a-lesson.md).
 
+![The Adventure Mode settings panel in the teacher sidebar, expanded below collapsed cards for Document Analysis and STEAM Lab. It offers Interaction Mode set to Standard Adventure Mode, noted as students choosing from AI generated options; Difficulty Level set to Normal, described as standard risk and reward balance; and Adventure Language set to English Only, with a note that further languages are added in the Glossary tool first. Below those sit optional Custom Instructions and three switches: Enable Free Response for typing your own actions, Enable Chance Mode where d20 rolls influence the outcome, and Social Scenario Mode for social-emotional role play.](../assets/live-screenshots/17-adventure-mode-settings.png)
+
+These are the teacher-side controls. Students never see this panel; they see the story it produces.
+
 ## When students see it
 
 Two things must both be true before the Adventure panel appears for students:

@@ -1259,6 +1259,7 @@
     desc: 'Shape volume-conserving clay by wheel or hand, measure wall and coil stability, control heatwork, test post-firing function, and study pottery technologies in specific cultural contexts.',
     color: 'amber',
     category: 'creative',
+    gradeRange: '4-12',
     questHooks: [
       { id: 'center_clay', label: 'Center the clay to 80% or better', icon: '🌀', check: function (d) { var v = d && d.vessel; return !!(v && v.centered >= 80); }, progress: function (d) { var v = d && d.vessel; return Math.round(v && v.centered || 0) + '%'; } },
       { id: 'stable_form', label: 'Create a vessel with a wall under 1 cm', icon: '🏺', check: function (d) { var v = d && d.vessel; return !!(v && analyzeVessel(v, d).minWallCm < 1 && analyzeVessel(v, d).stability >= 55); }, progress: function (d) { var v = d && d.vessel; return v ? analyzeVessel(v, d).status : 'Begin shaping'; } },

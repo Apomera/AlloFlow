@@ -64,7 +64,7 @@ window.StemLab = window.StemLab || {
 
   // ═══ 🔬 geoQuiz (geoQuiz) ═══
   window.StemLab.registerTool('geoQuiz', {
-    icon: "🗺️",
+    icon: '\uD83C\uDF10',
     label: "Geography Explorer",
     desc: "Interactive maps and quizzes for countries, capitals, continents, landmarks, distances, a 3D globe, and an AI quiz builder.",
     color: 'slate',
@@ -1652,7 +1652,7 @@ var d = labToolData || {};
 
                   onClick: function() { upd('geoAnswered', []); upd('geoScore', 0); upd('geoStreak', 0); upd('geoRound', 0); pickTarget('findCountry'); },
 
-                  className: 'text-teal-600 hover:text-teal-800 font-bold'
+                  className: 'text-teal-700 hover:text-teal-900 font-bold'
 
                 }, __alloT('stem.geo.reset', '\u267B Reset'))
 
@@ -2742,7 +2742,7 @@ var d = labToolData || {};
                 ),
 
                 geoStatsOpen && React.createElement('div', { className: 'mt-2 space-y-1.5' },
-                  !hasStats && React.createElement('p', { className: 'text-[11px] text-slate-300 italic text-center py-2' }, __alloT('stem.geo.answer_some_questions_to_see_your_prog', 'Answer some questions to see your progress per continent.')),
+                  !hasStats && React.createElement('p', { className: 'text-[11px] text-slate-600 italic text-center py-2' }, __alloT('stem.geo.answer_some_questions_to_see_your_prog', 'Answer some questions to see your progress per continent.')),
                   hasStats && ['Africa', 'Asia', 'Europe', 'North America', 'South America', 'Oceania'].map(function(cont) {
                     var s = geoSessionStats[cont];
                     var hasData = !!s;
@@ -2803,7 +2803,7 @@ var d = labToolData || {};
                   if (addToast) addToast('\u267B Fresh start \u2014 score, streak, and progress cleared.', 'info');
                 },
 
-                className: 'text-teal-600 hover:text-teal-800 font-bold'
+                className: 'text-teal-700 hover:text-teal-900 font-bold'
 
               }, __alloT('stem.geo.reset_all', '\u267B Reset All'))
 
@@ -2820,7 +2820,7 @@ var d = labToolData || {};
 
   // ═══ 📐 geometryProver ═══
   window.StemLab.registerTool('geometryProver', {
-    icon: '📐',
+    icon: '\uD83D\uDD3A',
     label: 'Geometry',
     desc: 'Explore theorems, construct proofs, discover geometric relationships',
     color: 'violet',

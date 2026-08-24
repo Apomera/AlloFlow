@@ -147,3 +147,79 @@ describe('Views render', () => {
     expect(html).toMatch(/<strong>|<em>/);
   });
 });
+
+describe('The tree is a real WAI-ARIA tree, not a pile of tab stops', () => {
+  // Before 2026-08-23 every visible node was two tab stops (caret + select) with
+  // no arrow keys — ~90 presses of Tab from Life to the last genus. The rewrite
+  // makes the whole tree one stop with a roving tabindex. These tests pin the
+  // pieces that would silently regress: the roles, the single tab stop, and the
+  // traversal order the arrow keys depend on.
+
+  it('exposes tree / treeitem / group roles with levels', () => {
+    const html = renderView('tree');
+    expect(html).toMatch(/role="tree"/);
+    expect(html).toMatch(/role="treeitem"/);
+    expect(html).toMatch(/role="group"/);
+    expect(html).toMatch(/aria-level="1"/);
+    expect(html).toMatch(/aria-level="3"/);
+  });
+
+  it('gives exactly ONE treeitem tabindex 0 — the roving stop', () => {
+    const html = renderView('tree');
+    const stops = html.match(/role="treeitem"[^>]*tabindex="0"/g) || [];
+    expect(stops).toHaveLength(1);
+  });
+
+  it('roves the stop to the stored focus name', () => {
+    const html = renderView('tree', { treeFocus: 'Fungi' });
+    expect(html).toMatch(/id="oid-node-Fungi"[^>]*tabindex="0"/);
+  });
+
+  it('falls back to the selected node when the stored focus is hidden by a collapse', () => {
+    // Amanita is under Fungi; collapsing Fungi hides it, so the stop must not
+    // vanish with it — it lands on the selected node (or the root).
+    const html = renderView('tree', { treeFocus: 'Amanita', collapsed: { Fungi: true }, selected: 'Conus' });
+    const stops = html.match(/role="treeitem"[^>]*tabindex="0"/g) || [];
+    expect(stops).toHaveLength(1);
+    expect(html).toMatch(/id="oid-node-Conus"[^>]*tabindex="0"/);
+  });
+
+  it('keeps the mouse caret out of the tab order and out of the accessibility tree', () => {
+    const html = renderView('tree');
+    // every caret button: tabindex -1 and aria-hidden
+    const carets = html.match(/class="oid-caret"[^>]*/g) || [];
+    expect(carets.length).toBeGreaterThan(3);
+    for (const c of carets) {
+      expect(c).toMatch(/tabindex="-1"/);
+      expect(c).toMatch(/aria-hidden="true"/);
+    }
+  });
+
+  it('visibleTreeNames walks document order and honours collapse', () => {
+    const visible = config.testHooks.visibleTreeNames({});
+    expect(visible[0]).toBe('Life');
+    expect(visible).toContain('Amanita');
+    // collapse Fungi: every fungal descendant disappears, the kingdom itself stays
+    const collapsed = config.testHooks.visibleTreeNames({ Fungi: true });
+    expect(collapsed).toContain('Fungi');
+    expect(collapsed).not.toContain('Amanita');
+    expect(collapsed).not.toContain('Basidiomycota');
+    // Animalia is untouched
+    expect(collapsed).toContain('Conus');
+    // order is stable: a collapsed list is a subsequence of the full list
+    let i = 0;
+    for (const name of collapsed) {
+      i = visible.indexOf(name, i);
+      expect(i, name + ' out of order').toBeGreaterThanOrEqual(0);
+      i += 1;
+    }
+  });
+
+  it('marks expandable nodes with aria-expanded and leaves leaves without it', () => {
+    const html = renderView('tree');
+    expect(html).toMatch(/id="oid-node-Fungi"[^>]*aria-expanded="true"/);
+    // A leaf genus never carries aria-expanded — the absence IS the leaf signal.
+    const amanita = html.match(/id="oid-node-Amanita"[^>]*/)[0];
+    expect(amanita).not.toMatch(/aria-expanded/);
+  });
+});

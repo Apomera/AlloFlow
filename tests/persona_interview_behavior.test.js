@@ -458,7 +458,11 @@ describe('Persona persistence contracts', () => {
     const reflectionSource = fs.readFileSync('phase_k_helpers_source.jsx', 'utf8');
     const appSource = fs.readFileSync('AlloFlowANTI.txt', 'utf8');
     const uiStrings = fs.readFileSync('ui_strings.js', 'utf8');
-    expect(personaSource).toContain("type: 'persona-transcript'");
+    // 2026-08-23: the markdown transcript export was removed (superseded by
+    // the private session artifact). Old 'persona-transcript' items must
+    // still be recognized by the monolith's history-type registry.
+    expect(personaSource).not.toContain("type: 'persona-transcript'");
+    expect(appSource).toContain("'persona-transcript',");
     expect(reflectionSource).toContain("type: 'persona-reflection'");
     expect(viewSource).toContain("resourceId: _personaSnapshotResourceId");
     expect(viewSource).toContain('var _personaSnapshotEnabled = Boolean(_personaSnapshotResourceId && _personaSnapshotStudentId && _personaRetentionDays > 0)');

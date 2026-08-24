@@ -1292,7 +1292,7 @@ window.StemLab = window.StemLab || {
 
   window.StemLab.registerTool('epidemicSim', {
     title: 'Epidemic Modeling Lab',
-    icon: '\uD83E\uDDA0',
+    icon: '\uD83D\uDE37',
     description: 'Simulate disease spread with SIR/SEIR models, vaccination strategies, and outbreak maps.',
     category: 'Life Science',
     gradeRange: 'K-12',

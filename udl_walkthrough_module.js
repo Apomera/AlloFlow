@@ -1245,7 +1245,15 @@ function UdlWalkthroughPanel(props) {
       return /* @__PURE__ */ React.createElement(UdlWalkTrendChart, { trend, tt });
     })(), agg.pdSignals.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-3 bg-white border border-indigo-300 rounded-xl p-3" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-indigo-800" }, tt("udlwalk.pd_title", "PD signals")), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-500" }, tt("udlwalk.pd_note", "Lowest observed-rates with at least " + agg.minN + " rated observations building-wide — framed as PD topics, not verdicts.")), /* @__PURE__ */ React.createElement("ul", { className: "mt-1.5 space-y-1" }, agg.pdSignals.map((sig) => {
       const g = UDLWALK_GUIDELINES.find((x) => x.id === sig.id);
-      return /* @__PURE__ */ React.createElement("li", { key: sig.id, className: "text-xs text-slate-700 bg-indigo-50 border border-indigo-200 rounded-lg p-2" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, g ? g.label : sig.id), " — ", Math.round(sig.rate * 100), "% ", tt("udlwalk.observed_short", "observed"), " (n=", sig.n, "). ", UDLWALK_SUGGESTIONS[g ? g.principle : ""] || "");
+      return /* @__PURE__ */ React.createElement("li", { key: sig.id, className: "text-xs text-slate-700 bg-indigo-50 border border-indigo-200 rounded-lg p-2" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, g ? g.label : sig.id), " — ", Math.round(sig.rate * 100), "% ", tt("udlwalk.observed_short", "observed"), " (n=", sig.n, "). ", UDLWALK_SUGGESTIONS[g ? g.principle : ""] || "", typeof window !== "undefined" && typeof window.__alloOpenPdCatalog === "function" && /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          type: "button",
+          onClick: () => window.__alloOpenPdCatalog({ guideline: sig.id }),
+          className: "block mt-1.5 px-2 py-1 text-[11px] font-semibold border border-indigo-600 text-indigo-700 rounded hover:bg-indigo-100"
+        },
+        tt("udlwalk.pd_find_modules", "Find related PD modules")
+      ));
     }))), /* @__PURE__ */ React.createElement("div", { className: "mt-3 bg-white border border-slate-300 rounded-xl p-3" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-slate-700" }, tt("udlwalk.coverage_title", "Coverage")), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-500" }, tt("udlwalk.coverage_note", "Walkthrough initiatives die from uneven coverage — who has not had a visit lately?")), /* @__PURE__ */ React.createElement("ul", { className: "mt-1.5 grid grid-cols-1 sm:grid-cols-2 gap-1" }, agg.coverage.map((c) => {
       const teacher = teacherById(c.teacherId);
       return /* @__PURE__ */ React.createElement("li", { key: c.teacherId, className: "text-xs p-2 rounded-lg border " + (c.visits === 0 ? "bg-amber-50 border-amber-300 text-amber-900" : "bg-slate-50 border-slate-200 text-slate-700") }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, udlwalkTeacherDisplay(teacher, config.anonymizeTeachers)), " — ", c.visits === 0 ? tt("udlwalk.coverage_never", "no visits yet") : c.visits + " " + tt("udlwalk.coverage_visits", "visit(s), last") + " " + c.lastDate);

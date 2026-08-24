@@ -18672,7 +18672,7 @@ test('no a11y violations', async () => {
 
   window.StemLab.registerTool('appLab', {
     title: 'AppLab',
-    icon: '\uD83D\uDCA1',
+    icon: '\uD83D\uDCF1',
     description: 'Describe an app or science demo and AI builds it instantly. Edit the code, iterate, and export.',
     category: 'technology',
     gradeRange: 'K-12',
@@ -20287,7 +20287,7 @@ test('no a11y violations', async () => {
         h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 } },
           h('button', { onClick: function() { ctx.setStemLabTool(null); }, 'aria-label': __alloT('stem.applab.back_to_stem_lab', 'Back to STEAM Lab'), style: btn('#f1f5f9', '#374151', false) }, h(ArrowLeft, { size: 14 })),
           h('h2', { style: { fontSize: '18px', fontWeight: 900, color: '#1e293b', margin: 0 } }, __alloT('stem.applab.applab', '\uD83D\uDCA1 AppLab')),
-          h('span', { style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, #94a3b8)' } }, __alloT('stem.applab.ai_mini_app_generator_coding_curriculu', 'AI Mini-App Generator + Coding Curriculum')),
+          h('span', { style: { fontSize: '11px', color: '#475569' } }, __alloT('stem.applab.ai_mini_app_generator_coding_curriculu', 'AI Mini-App Generator + Coding Curriculum')),
           activeTab === 'build' && html && h('div', { style: { marginLeft: 'auto', display: 'flex', gap: '4px' } },
             h('button', { onClick: undo, disabled: !canUndo, style: btn('#f1f5f9', '#374151', !canUndo), title: __alloT('stem.applab.undo', 'Undo') }, '↩'),
             h('button', { onClick: redo, disabled: !canRedo, style: btn('#f1f5f9', '#374151', !canRedo), title: __alloT('stem.applab.redo', 'Redo') }, '↪'),
@@ -20482,7 +20482,7 @@ test('no a11y violations', async () => {
             h('label', { style: { fontSize: '13px', fontWeight: 700, color: 'var(--allo-stem-text, #374151)', marginBottom: '6px', display: 'block' } }, __alloT('stem.applab.what_do_you_want_to_build', 'What do you want to build?')),
             h('textarea', { value: prompt, onChange: function(ev) { setPrompt(ev.target.value); },
               placeholder: __alloT('stem.applab.describe_an_interactive_app_simulation', 'Describe an interactive app, simulation, or visualization...\n\nExamples:\n• "Interactive solar system with orbiting planets and info on click"\n• "Color mixing tool where you combine primary colors"\n• "Simple calculator with history"'),
-              rows: 4, style: { width: '100%', padding: '10px 14px', border: '2px solid #d1d5db', borderRadius: '12px', fontSize: '14px', fontFamily: 'inherit', resize: 'vertical', outline: 'none' },
+              rows: 4, style: { width: '100%', padding: '10px 14px', border: '2px solid #d1d5db', borderRadius: '12px', fontSize: '14px', fontFamily: 'inherit', resize: 'vertical', outline: 'none', background: '#ffffff', color: '#1f2937' },
               onFocus: function(e) { e.target.style.boxShadow = '0 0 0 3px rgba(124,58,237,0.4)'; },
               onBlur: function(e) { e.target.style.boxShadow = 'none'; },
               'aria-label': __alloT('stem.applab.app_description_prompt', 'App description prompt') }),

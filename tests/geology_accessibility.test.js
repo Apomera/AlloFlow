@@ -26,4 +26,26 @@ describe('Geology Explorer text accessibility', () => {
     expect(html).not.toMatch(/font-size="(?:[0-9](?:\.[0-9]+)?)"/);
     expect(html).toContain('text-[10px]');
   });
+
+  it('renders every scene and investigation mode without React key warnings', () => {
+    loadTool('stem_lab/stem_tool_geologyexplorer.js', 'geologyExplorer');
+    const warnings = [];
+    let renderCase = 'setup';
+    const originalError = console.error;
+    console.error = (...args) => warnings.push(renderCase + ': ' + args.map(String).join(' '));
+    try {
+      const scenes = ['crust', 'geode', 'subduction', 'ridge', 'deepEarth', 'volcano'];
+      const modes = ['explore', 'investigate', 'assess'];
+      scenes.forEach((scene) => {
+        modes.forEach((mode) => {
+          renderCase = scene + '/' + mode;
+          renderTool('geologyExplorer', { geologyExplorer: { scene, mode } });
+        });
+      });
+    } finally {
+      console.error = originalError;
+    }
+
+    expect(warnings.filter((warning) => /unique ["']key["'] prop/i.test(warning))).toEqual([]);
+  });
 });

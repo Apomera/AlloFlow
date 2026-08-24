@@ -339,7 +339,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
   });
 
   window.StemLab.registerTool('unitConvert', {
-    icon: '\uD83D\uDCCF',
+    icon: '\u21C4',
     label: 'Unit Converter',
     desc: 'Convert units with visual comparison, quiz, AI word problems, badges & keyboard shortcuts',
     color: 'cyan',

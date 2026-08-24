@@ -24,7 +24,7 @@ The fix for all three is the same, and it is the next section.
 
 This is the one habit worth building. If a lesson took you more than a few minutes to build, save the project. The file is device-independent, survives a browser wipe, and is how you move work between home and school.
 
-> **In Gemini Canvas, this matters even more.** Canvas storage behavior can vary by host session and browser policy. Do not rely on the tab to preserve a lesson: download a project file before closing it.
+> **In Gemini Canvas, this matters even more.** Canvas storage behavior can vary by host session and browser policy. Do not rely on the tab to preserve a lesson. Download a project file before closing it.
 
 ## Getting finished work out
 
@@ -44,6 +44,10 @@ For the full treatment of formats, margins, and what prints well, see [Documents
 AlloFlow has a **Storage and recovery** panel, and on a device used all year you will eventually want it.
 
 ### Recovery
+
+![The Storage and recovery dialog headed "Continue where you left off?", reporting saved resource history from an earlier Gemini Canvas session with a Glossary holding two resources. Four buttons offer Continue previous work, Start a fresh workspace, Manage saved work showing one of twenty, and Import project file. A note explains AlloFlow keeps up to twenty recent device workspaces and that saving beyond that removes the oldest, and a warning notes saved work can be opened by anyone using the same browser profile on a shared computer.](../assets/live-screenshots/14-current-v1.2-storage-recovery.png)
+
+When earlier work is found, AlloFlow asks before doing anything with it. Note the two limits stated in that dialog: twenty saved workspaces, oldest removed first, and the warning that anyone sharing your browser profile can open them.
 
 If the app cannot find your previous session it says so directly, reporting that no restorable workspace was found rather than opening silently empty. You can also choose to **work without device recovery**, which is the right choice on a shared or public machine where you do not want work persisting after you walk away.
 

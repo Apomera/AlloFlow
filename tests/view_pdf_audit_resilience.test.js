@@ -73,3 +73,17 @@ describe('the widened verification gate survives a null audit', () => {
     expect(mod).not.toContain('(pdfFixResult.verificationAudit.passes || []).length > 0');
   });
 });
+
+describe('a provider throttle is a resumable UI state, not an authentication failure', () => {
+  it('shows the preserved-checkpoint banner and exposes the existing continuation loop', () => {
+    expect(view).toContain('pdfFixResult._remediationThrottlePaused');
+    expect(view).toContain('AI remediation paused safely');
+    expect(view).toContain('Resume AI remediation');
+    expect(view).toContain('await runAutoFixLoop(3)');
+  });
+
+  it('rehydrates the pause marker and its provenance from saved projects', () => {
+    expect((view.match(/_remediationThrottlePaused: !!project\._remediationThrottlePaused/g) || []).length).toBe(2);
+    expect((view.match(/_finalAuditThrottleDeferred: !!project\._finalAuditThrottleDeferred/g) || []).length).toBe(2);
+  });
+});

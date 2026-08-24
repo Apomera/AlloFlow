@@ -57,7 +57,7 @@
   }
 
   window.StemLab.registerTool('circuitShelf', {
-    icon: '🔌',
+    icon: '\uD83D\uDD0B',
     label: 'Circuit Shelf',
     desc: 'Build and run real electronic circuits in CircuitJS — Paul Falstad’s open-source simulator — wrapped in a Predict → Explore → Explain coach. Pick a challenge, lock in a guess before you wire anything, build it, then let the coach compare what you predicted with what the meters actually read.',
     color: 'amber',
@@ -159,7 +159,13 @@
         if (announceToSR) announceToSR(returnTool ? t('stem.circuitShelf.returned_sr', 'Returned to Circuit Builder.') : t('stem.circuitShelf.returned_catalog_sr', 'Returned to the STEAM Lab tools.'));
       }
 
-      return h('div', { className: 'flex flex-col gap-4 animate-in fade-in duration-300 max-w-2xl' },
+      return h('div', { className: 'flex flex-col gap-4 animate-in fade-in duration-300 max-w-2xl',
+        // The launcher card is dark-authored (text-slate-300 body, bg-slate-800/60
+        // privacy panel, slate-900/70 back button) but painted no ground, so it sat
+        // on the host card -- white in BOTH themes (stem_lab_module.js ~1633): body
+        // text 1.48:1, privacy rows 2.72:1 on the composited grey. Six shelf/launcher
+        // tools share this exact recipe; each gets the slate ground its inks assume.
+        style: { background: '#0f172a', borderRadius: 14, padding: 16 } },
         typeof setStemLabTool === 'function' && h('button', {
           onClick: returnToLab,
           className: 'inline-flex w-fit items-center gap-2 rounded-lg border border-slate-700 bg-slate-900/70 px-3 py-2 text-xs font-bold text-slate-200 transition-colors hover:bg-slate-800 active:scale-[0.97]',
@@ -189,7 +195,7 @@
           t('stem.circuitShelf.open_note', 'Circuit Shelf is open. Keep this AlloFlow window open too — it powers the AI coach.')),
         popupState === 'closed' && h('p', { className: 'text-xs text-slate-400' },
           t('stem.circuitShelf.closed_note', 'Circuit Shelf was closed. You can reopen it whenever you are ready.')),
-        h('p', { className: 'text-[11px] text-slate-500 leading-relaxed' },
+        h('p', { className: 'text-[11px] text-slate-400 leading-relaxed' },
           t('stem.circuitShelf.credit', 'Circuit simulator: CircuitJS1 by Paul Falstad and Iain Sharp (github.com/pfalstad/circuitjs1), free and open source under the GPL. The simulator loads from its host, so the shelf needs internet; offline use for School Box is on the roadmap (the GPL permits it).'))
       );
     }

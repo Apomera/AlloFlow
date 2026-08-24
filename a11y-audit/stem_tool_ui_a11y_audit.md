@@ -1,6 +1,6 @@
 # STEM Tool UI/UX Accessibility Audit
 
-Generated: 2026-08-22T16:50:56.777Z
+Generated: 2026-08-23T18:14:38.985Z
 
 ## Scope
 
@@ -13,9 +13,9 @@ Generated: 2026-08-22T16:50:56.777Z
 
 | Metric | Count |
 | --- | ---: |
-| Total findings | 13 |
+| Total findings | 10 |
 | High-confidence errors | 0 |
-| Tool-level warnings | 13 |
+| Tool-level warnings | 10 |
 | Review notices | 0 |
 | Tools with any finding | 8 |
 | Tools with high-confidence errors | 0 |
@@ -29,7 +29,6 @@ Generated: 2026-08-22T16:50:56.777Z
 | warning | `placeholder-render` | 3 | 3 | geoSandbox, geometryWorld, lawNavigator | The audit only saw a loading/gated screen. Give the harness what the tool waits on (host state, 3D loader, network stub) so the real first screen gets audited. |
 | warning | `canvas-focus` | 2 | 2 | epidemicSim, graphCalc | Make interactive canvases keyboard-focusable. For static output, use role=img, a meaningful name and description, plus data-a11y-static=true. |
 | warning | `tiny-text` | 2 | 2 | cityLab, dnaLab | Avoid persistent 8px/9px instructional text; keep small labels at 10px+ with clear line height. |
-| warning | `inline-contrast` | 3 | 1 | cityLab | Adjust inline foreground/background colors to meet at least 4.5:1 contrast for body text. |
 
 ## Recommended Next Passes
 
@@ -78,7 +77,7 @@ Generated: 2026-08-22T16:50:56.777Z
 | `chemBalance` Chemistry Lab | science | standard | 16 | 1 | 0 | 0 | 0 | 0 |  |
 | `circuit` Circuit Builder | science | standard | 44 | 1 | 0 | 0 | 0 | 0 |  |
 | `circuitShelf` Circuit Shelf | engineering | standard | 2 | 0 | 0 | 0 | 0 | 0 |  |
-| `cityLab` City Planning Lab | engineering | standard | 180 | 1 | 0 | 0 | 4 | 0 | inline-contrast x3, tiny-text x1 |
+| `cityLab` City Planning Lab | engineering | standard | 180 | 1 | 0 | 0 | 1 | 0 | tiny-text x1 |
 | `climateExplorer` Climate Explorer | science | standard | 40 | 0 | 2 | 0 | 0 | 0 |  |
 | `coasterLab` Coaster Lab | science | standard | 0 | 0 | 0 | 0 | 1 | 0 | no-interactive-controls x1 |
 | `codingPlayground` codingPlayground | creative | standard | 45 | 2 | 1 | 0 | 0 | 0 |  |
@@ -149,7 +148,7 @@ Generated: 2026-08-22T16:50:56.777Z
 | `particleLab3d` Particle Lab 3D | science | standard | 44 | 10 | 1 | 0 | 0 | 0 |  |
 | `petsLab` Science of Pets Lab | life-earth-science | standard | 36 | 7 | 0 | 0 | 0 | 0 |  |
 | `physics` Physics Simulator | science | standard | 36 | 10 | 1 | 0 | 0 | 0 |  |
-| `plateTectonics` Plate Tectonics | science | standard | 29 | 5 | 6 | 0 | 0 | 0 |  |
+| `plateTectonics` Plate Tectonics | science | standard | 33 | 5 | 6 | 0 | 0 | 0 |  |
 | `playlab` PlayLab | science | standard | 31 | 5 | 1 | 0 | 0 | 0 |  |
 | `printingPress` PrintingPress | history-engineering | standard | 25 | 0 | 0 | 0 | 0 | 0 |  |
 | `probability` Probability Lab | math | standard | 39 | 5 | 0 | 0 | 0 | 0 |  |
@@ -184,7 +183,7 @@ Generated: 2026-08-22T16:50:56.777Z
 | `unitConvert` Unit Converter | math | standard | 22 | 4 | 1 | 0 | 0 | 0 |  |
 | `universe` Universe Explorer | science | standard | 126 | 5 | 1 | 0 | 0 | 0 |  |
 | `volume` 3D Volume Explorer | math | standard | 33 | 8 | 2 | 0 | 0 | 0 |  |
-| `waterCycle` Water Cycle | science | standard | 39 | 7 | 1 | 0 | 0 | 0 |  |
+| `waterCycle` Water Cycle | science | standard | 40 | 6 | 1 | 0 | 0 | 0 |  |
 | `wave` Wave Simulator | science | standard | 36 | 8 | 1 | 0 | 0 | 0 |  |
 | `weatherSystems` Weather Systems & Forecasting | science | standard | 43 | 10 | 1 | 0 | 0 | 0 |  |
 | `weldLab` WeldLab — Welding & Metal Joining | engineering | standard | 26 | 0 | 0 | 0 | 0 | 0 |  |

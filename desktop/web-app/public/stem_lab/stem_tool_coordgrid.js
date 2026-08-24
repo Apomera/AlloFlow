@@ -978,13 +978,13 @@ window.StemLab = window.StemLab || {
               h('input', { type: 'number', value: qtPointX, min: gridRange.min, max: gridRange.max, step: 1,
                 onChange: function(e) { var v = parseInt(e.target.value, 10); if (!isNaN(v)) updCG({ qtPointX: v, qtWalkPhase: 0 }); },
                 'aria-label': t('stem.coordgrid.x_coordinate', 'X coordinate'),
-                className: 'w-16 px-2 py-1 border border-purple-300 rounded text-center font-mono'
+                className: 'w-16 px-2 py-1 border border-purple-300 rounded text-center font-mono bg-white text-slate-900'
               }),
               h('label', { className: 'text-xs font-bold text-purple-700 ml-2' }, 'y:'),
               h('input', { type: 'number', value: qtPointY, min: gridRange.min, max: gridRange.max, step: 1,
                 onChange: function(e) { var v = parseInt(e.target.value, 10); if (!isNaN(v)) updCG({ qtPointY: v, qtWalkPhase: 0 }); },
                 'aria-label': t('stem.coordgrid.y_coordinate', 'Y coordinate'),
-                className: 'w-16 px-2 py-1 border border-purple-300 rounded text-center font-mono'
+                className: 'w-16 px-2 py-1 border border-purple-300 rounded text-center font-mono bg-white text-slate-900'
               }),
               h('span', { className: 'text-[11px] text-purple-700 ml-1 font-bold' }, '→ ' + getQuadrant(qtPointX, qtPointY)),
               h('button', {
@@ -1216,7 +1216,7 @@ window.StemLab = window.StemLab || {
                   },
                   placeholder: 'e4',
                   'aria-label': t('stem.coordgrid.type_a_chess_square_like_e4', 'Type a chess square like e4'),
-                  className: 'w-16 px-2 py-1 border border-emerald-400 rounded text-center font-mono uppercase'
+                  className: 'w-16 px-2 py-1 border border-emerald-400 rounded text-center font-mono uppercase bg-white text-slate-900'
                 })
               )
             ),
@@ -2330,7 +2330,7 @@ window.StemLab = window.StemLab || {
               h('button', { onClick: function() { setIQ({ x: 3, y: 4, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[11px] font-semibold text-slate-600 border border-slate-300' }, t('stem.coordgrid.reset_2', '↺ Reset'))
             ),
             h('textarea', { 'aria-label': t('stem.coordgrid.hypothesis_input', 'Quadrant sign hypothesis'), value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: t('stem.coordgrid.hypothesis_what_sign_combinations_defi', 'Hypothesis: What sign combinations define each quadrant?'),
-              className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
+              className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug bg-white text-slate-800', rows: 3 }),
             !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300' }, t('stem.coordgrid.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
             iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] text-slate-700 leading-relaxed' },
               h('ul', { className: 'list-disc pl-5 space-y-1' },

@@ -2510,9 +2510,9 @@ const d = labToolData.solarSystem || {};
 
               React.createElement("button", { ref: solarBackButtonRef, type: "button", onClick: () => setStemLabTool(null), className: "p-1.5 rounded-lg transition-colors " + (isDark ? 'hover:bg-slate-700' : 'hover:bg-slate-100'), 'aria-label': __alloT('stem.solarsystem.back_to_tools', 'Back to tools') }, React.createElement(ArrowLeft, { size: 18, className: isDark ? "text-slate-200" : "text-slate-600" })),
 
-              React.createElement("h3", { className: "text-lg font-bold " + (isDark ? 'text-slate-100' : 'text-slate-800') }, __alloT('stem.solarsystem.solar_system_explorer', "\uD83C\uDF0D Solar System Explorer")),
+              React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, __alloT('stem.solarsystem.solar_system_explorer', "\uD83C\uDF0D Solar System Explorer")),
 
-              React.createElement("span", { className: "px-2 py-0.5 text-[11px] font-bold rounded-full ml-1 " + (isDark ? 'bg-indigo-900/50 text-indigo-300' : 'bg-indigo-100 text-indigo-700') }, d.orreryMode ? "Orrery" : "3D")
+              React.createElement("span", { className: "px-2 py-0.5 text-[11px] font-bold rounded-full ml-1 " + (isDark ? 'bg-indigo-900 text-indigo-200' : 'bg-indigo-100 text-indigo-700') }, d.orreryMode ? "Orrery" : "3D")
             ),
 
             // ═══ ORRERY MODE ═══
@@ -2535,10 +2535,10 @@ const d = labToolData.solarSystem || {};
                   React.createElement("div", { className: "space-y-4" },
                     React.createElement("div", { className: "flex flex-wrap items-start justify-between gap-3" },
                       React.createElement("div", null,
-                        React.createElement("div", { className: "text-[11px] font-black uppercase " + (isDark ? 'text-indigo-300' : 'text-indigo-600') }, "Mission Control"),
-                        React.createElement("h4", { className: "mt-1 text-xl font-black " + (isDark ? 'text-white' : 'text-slate-900') }, selectedName + " Survey"),
+                        React.createElement("div", { className: "text-[11px] font-black uppercase " + (isDark ? 'text-indigo-300' : 'text-indigo-600') }, "Start here"),
+                        React.createElement("h4", { className: "mt-1 text-xl font-black " + (isDark ? 'text-white' : 'text-slate-900') }, selectedName + " Explorer"),
                         React.createElement("p", { className: "mt-1 max-w-2xl text-sm leading-relaxed " + (isDark ? 'text-slate-300' : 'text-slate-600') },
-                          sel ? sel.fact : "World fieldwork, scale comparisons, and orbital mechanics share one flight plan."
+                          sel ? sel.fact : "Choose a world, choose a view, and collect evidence at your own pace."
                         )
                       ),
                       React.createElement("div", { className: "flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-black " + (isDark ? 'bg-indigo-500/15 text-indigo-200 border border-indigo-400/25' : 'bg-indigo-50 text-indigo-700 border border-indigo-100') },
@@ -2546,7 +2546,9 @@ const d = labToolData.solarSystem || {};
                         React.createElement("span", { className: "h-1.5 w-1.5 rounded-full", style: { background: selectedAccent, boxShadow: '0 0 10px ' + selectedAccent } })
                       )
                     ),
-                    React.createElement("div", { className: "grid gap-2 sm:grid-cols-2 xl:grid-cols-4" },
+                    React.createElement("details", { className: "rounded-lg border px-3 py-2 " + (isDark ? 'bg-slate-900/70 border-slate-700' : 'bg-white/75 border-white shadow-sm'), open: false },
+                      React.createElement("summary", { className: "cursor-pointer text-xs font-black " + (isDark ? 'text-slate-200' : 'text-slate-700') }, "Progress dashboard • " + planetsVisited.length + "/" + PLANETS.length + " worlds visited"),
+                      React.createElement("div", { className: "mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-4" },
                       [
                         { label: 'Worlds visited', value: planetsVisited.length + '/' + PLANETS.length, sub: visitProgress + '% complete' },
                         { label: 'Research points', value: researchPoints, sub: totalRP + ' lifetime' },
@@ -2559,10 +2561,11 @@ const d = labToolData.solarSystem || {};
                           React.createElement("div", { className: "text-[11px] " + (isDark ? 'text-slate-400' : 'text-slate-500') }, stat.sub)
                         );
                       })
+                      )
                     ),
                     React.createElement("div", { className: "rounded-lg border p-3 " + (isDark ? 'bg-slate-900/70 border-slate-700' : 'bg-white/75 border-white shadow-sm') },
                       React.createElement("div", { className: "mb-2 flex items-center justify-between gap-3" },
-                        React.createElement("span", { className: "text-xs font-black " + (isDark ? 'text-slate-200' : 'text-slate-700') }, "Grand Tour Progress"),
+                        React.createElement("span", { className: "text-xs font-black " + (isDark ? 'text-slate-200' : 'text-slate-700') }, "1. Choose a world"),
                         React.createElement("span", { className: "text-[11px] font-bold " + (isDark ? 'text-slate-400' : 'text-slate-500') }, nextAction)
                       ),
                       React.createElement("div", { className: "h-2 overflow-hidden rounded-full " + (isDark ? 'bg-slate-800' : 'bg-slate-200') },
@@ -2599,11 +2602,11 @@ const d = labToolData.solarSystem || {};
                   ),
                   React.createElement("div", { className: "flex flex-col gap-3" },
                     React.createElement("div", { role: "group", "aria-label": "Explorer view", "data-solarsystem-route-switcher": true, className: "rounded-lg border p-3 " + (isDark ? 'bg-slate-900/80 border-slate-700' : 'bg-white/85 border-white shadow-sm') },
-                      React.createElement("div", { className: "text-xs font-black " + (isDark ? 'text-slate-200' : 'text-slate-800') }, "Explorer Route"),
+                      React.createElement("div", { className: "text-xs font-black " + (isDark ? 'text-slate-200' : 'text-slate-800') }, "2. Choose a view"),
                       React.createElement("div", { className: "mt-3 grid gap-2" },
                         [
-                          { id: '3d', label: '3D Explorer', desc: 'Planet fieldwork, surface evidence, and rover logs.' },
-                          { id: 'orrery', label: 'Orrery Lab', desc: 'Orbit mechanics, Kepler laws, and transfer paths.' }
+                          { id: '3d', label: '3D Explorer', desc: 'See a world up close and gather surface evidence.' },
+                          { id: 'orrery', label: 'Orrery Lab', desc: 'Learn orbit motion, Kepler laws, and transfers.' }
                         ].map(function(route) {
                           var active = route.id === 'orrery' ? d.orreryMode : !d.orreryMode;
 
@@ -2631,7 +2634,7 @@ const d = labToolData.solarSystem || {};
                       )
                     ),
                     React.createElement("div", { className: "rounded-lg border p-3 " + (isDark ? 'bg-slate-900/80 border-slate-700' : 'bg-white/85 border-white shadow-sm') },
-                      React.createElement("div", { className: "text-xs font-black " + (isDark ? 'text-slate-200' : 'text-slate-800') }, "Learning Focus"),
+                      React.createElement("div", { className: "text-xs font-black " + (isDark ? 'text-slate-200' : 'text-slate-800') }, "3. Pick a goal"),
                       React.createElement("div", { className: "mt-2 flex flex-wrap gap-2" },
                         [
                           { label: 'Path', value: activePath ? activePath.name : 'Free Explore' },
@@ -2653,7 +2656,7 @@ const d = labToolData.solarSystem || {};
                         },
                         className: "mt-3 w-full rounded-lg bg-indigo-600 px-3 py-2 text-sm font-black text-white transition-all hover:bg-indigo-700",
                         style: { borderLeft: '4px solid ' + nextWorld.color }
-                      }, "Survey " + nextWorld.name)
+                      }, "Start with " + nextWorld.name)
                     )
                   )
                 )
@@ -13599,40 +13602,58 @@ const d = labToolData.solarSystem || {};
 
                         var fsToggle = document.createElement('button');
 
+                        fsToggle.type = 'button';
+                        fsToggle.setAttribute('data-drone-fullscreen-toggle', 'true');
                         fsToggle.style.cssText = 'position:absolute;top:8px;right:64px;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);border-radius:8px;width:48px;height:48px;display:flex;align-items:center;justify-content:center;color:#38bdf8;font-size:24px;border:1px solid rgba(56,189,248,0.3);cursor:pointer;z-index:15;transition:background 0.2s';
 
-                        fsToggle.innerHTML = '\u26F6';
-
-                        fsToggle.title = "Toggle Fullscreen";
+                        var getDroneFullscreenContainer = function() {
+                          return document.getElementById('drone-fullscreen-container') || canvasEl.parentElement;
+                        };
+                        var getDroneFullscreenElement = function() {
+                          return document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement;
+                        };
+                        var isDroneFullscreenActive = function() {
+                          var container = getDroneFullscreenContainer();
+                          return !!(getDroneFullscreenElement() || (container && (container.__alloFsOn || container.getAttribute('data-allo-fullscreen-active') === 'true')));
+                        };
+                        var syncDroneFullscreenButton = function() {
+                          var active = isDroneFullscreenActive();
+                          fsToggle.innerHTML = active ? '\u2716' : '\u26F6';
+                          fsToggle.setAttribute('aria-label', active ? 'Exit fullscreen view' : 'Enter fullscreen view');
+                          fsToggle.setAttribute('aria-pressed', active ? 'true' : 'false');
+                          fsToggle.title = active ? 'Exit fullscreen' : 'Enter fullscreen';
+                        };
+                        syncDroneFullscreenButton();
 
                         fsToggle.onmouseover = function() { this.style.background = 'rgba(56,189,248,0.3)'; };
 
                         fsToggle.onmouseout = function() { this.style.background = 'rgba(0,0,0,0.6)'; };
 
                         fsToggle.onclick = function() {
-
-                          var container = document.getElementById('drone-fullscreen-container') || canvasEl.parentElement;
-
-                          if (!document.fullscreenElement) {
-
-                            if (window.__alloStemFS) window.__alloStemFS(container);
-
-                            fsToggle.innerHTML = '\xDF'; // shrink icon approximation
-
+                          var container = getDroneFullscreenContainer();
+                          var active = isDroneFullscreenActive();
+                          if (active) {
+                            var realEl = getDroneFullscreenElement();
+                            if (realEl) {
+                              var exit = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen || document.msExitFullscreen;
+                              if (exit) {
+                                try { var exitPromise = exit.call(document); if (exitPromise && exitPromise.catch) exitPromise.catch(function() {}); } catch (e) {}
+                              }
+                            } else if (window.__alloStemFS) {
+                              window.__alloStemFS(container);
+                            }
+                          } else if (window.__alloStemFS) {
+                            // The shared helper falls back to a CSS fill-frame when the
+                            // iframe/permissions policy rejects native fullscreen.
+                            window.__alloStemFS(container);
                           } else {
-
-                            if (document.exitFullscreen) { document.exitFullscreen(); }
-
-                            else if (document.mozCancelFullScreen) { document.mozCancelFullScreen(); }
-
-                            else if (document.webkitExitFullscreen) { document.webkitExitFullscreen(); }
-
-                            else if (document.msExitFullscreen) { document.msExitFullscreen(); }
-
-                            fsToggle.innerHTML = '\u26F6'; // expand icon
-
+                            var request = container && (container.requestFullscreen || container.webkitRequestFullscreen || container.mozRequestFullScreen || container.msRequestFullscreen);
+                            if (request) {
+                              try { var requestPromise = request.call(container); if (requestPromise && requestPromise.catch) requestPromise.catch(function() {}); } catch (e) {}
+                            }
                           }
-
+                          syncDroneFullscreenButton();
+                          requestAnimationFrame(function() { resizeDroneCanvas(true); syncDroneFullscreenButton(); });
                         };
 
                         canvasEl.parentElement.appendChild(fsToggle);
@@ -13643,10 +13664,18 @@ const d = labToolData.solarSystem || {};
 
                         // Robust fullscreen + resize handler
                         var _lastDroneSizeW = 0, _lastDroneSizeH = 0, _lastDroneSizeFS = null;
+                        var _droneInnerContainer = canvasEl.parentElement;
+                        var _droneInnerOriginalStyle = _droneInnerContainer ? {
+                          height: _droneInnerContainer.style.height,
+                          maxHeight: _droneInnerContainer.style.maxHeight,
+                          borderRadius: _droneInnerContainer.style.borderRadius,
+                          border: _droneInnerContainer.style.border
+                        } : null;
+                        var droneFullscreenObserver = null;
                         function resizeDroneCanvas(forceResize) {
                           if (!renderer || !camera) return;
-                          var isFS = !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement);
-                          var container = document.getElementById('drone-fullscreen-container') || canvasEl.parentElement;
+                          var container = getDroneFullscreenContainer();
+                          var isFS = isDroneFullscreenActive();
                           var innerContainer = canvasEl.parentElement;
                           var w, h2;
                           if (isFS) {
@@ -13654,13 +13683,18 @@ const d = labToolData.solarSystem || {};
                             h2 = window.innerHeight;
                             canvasEl.style.width = w + 'px';
                             canvasEl.style.height = h2 + 'px';
-                            container.style.width = w + 'px';
-                            container.style.height = h2 + 'px';
-                            container.style.position = 'fixed';
-                            container.style.top = '0';
-                            container.style.left = '0';
-                            container.style.zIndex = '99999';
-                            container.style.background = '#000';
+                            // Native fullscreen owns the outer element's viewport box;
+                            // the CSS fallback helper owns it in fill-frame mode.
+                            // Keep the inline sizing only for older native implementations.
+                            if (getDroneFullscreenElement()) {
+                              container.style.width = w + 'px';
+                              container.style.height = h2 + 'px';
+                              container.style.position = 'fixed';
+                              container.style.top = '0';
+                              container.style.left = '0';
+                              container.style.zIndex = '99999';
+                              container.style.background = '#000';
+                            }
                             if (innerContainer && innerContainer !== container) {
                               innerContainer.style.height = h2 + 'px';
                               innerContainer.style.maxHeight = 'none';
@@ -13678,10 +13712,10 @@ const d = labToolData.solarSystem || {};
                             container.style.zIndex = '';
                             container.style.background = '';
                             if (innerContainer && innerContainer !== container) {
-                              innerContainer.style.height = '';
-                              innerContainer.style.maxHeight = '';
-                              innerContainer.style.borderRadius = '';
-                              innerContainer.style.border = '';
+                              innerContainer.style.height = _droneInnerOriginalStyle ? _droneInnerOriginalStyle.height : '';
+                              innerContainer.style.maxHeight = _droneInnerOriginalStyle ? _droneInnerOriginalStyle.maxHeight : '';
+                              innerContainer.style.borderRadius = _droneInnerOriginalStyle ? _droneInnerOriginalStyle.borderRadius : '';
+                              innerContainer.style.border = _droneInnerOriginalStyle ? _droneInnerOriginalStyle.border : '';
                             }
                             w = canvasEl.clientWidth || canvasEl.parentElement.clientWidth || 900;
                             h2 = canvasEl.clientHeight || canvasEl.parentElement.clientHeight || 600;
@@ -13700,6 +13734,7 @@ const d = labToolData.solarSystem || {};
                             try { droneComposer.setSize(w, h2); } catch (e) {}
                             try { if (droneBloomPass && droneBloomPass.setSize) droneBloomPass.setSize(w, h2); } catch (e) {}
                           }
+                          syncDroneFullscreenButton();
                         }
                         // Track on a separate doc map so cleanup can target the right node.
                         function onDroneFullscreenChange() { resizeDroneCanvas(true); }
@@ -13707,6 +13742,18 @@ const d = labToolData.solarSystem || {};
                         document.addEventListener('fullscreenchange', onDroneFullscreenChange);
                         document.addEventListener('webkitfullscreenchange', onDroneFullscreenChange);
                         document.addEventListener('mozfullscreenchange', onDroneFullscreenChange);
+                        // The safe fullscreen helper signals CSS fill-frame mode with an
+                        // attribute, not a browser fullscreenchange event.
+                        var _droneFsContainer = getDroneFullscreenContainer();
+                        if (typeof MutationObserver === 'function' && _droneFsContainer) {
+                          droneFullscreenObserver = new MutationObserver(function() {
+                            resizeDroneCanvas(true);
+                            syncDroneFullscreenButton();
+                          });
+                          droneFullscreenObserver.observe(_droneFsContainer, { attributes: true, attributeFilter: ['data-allo-fullscreen-active'] });
+                          canvasEl._droneFullscreenObserver = droneFullscreenObserver;
+                        }
+                        canvasEl._droneFullscreenContainer = _droneFsContainer;
                         // Also observe size changes from layout reflow. The actual resize is
                         // deferred to the next frame: resizing the renderer inside observer
                         // delivery re-triggers the observer and logs "ResizeObserver loop
@@ -18332,7 +18379,24 @@ const d = labToolData.solarSystem || {};
                             });
                             canvasEl._droneDocHandlers = null;
                           }
+                          if (canvasEl._droneFullscreenObserver) {
+                            try { canvasEl._droneFullscreenObserver.disconnect(); } catch (e) {}
+                            canvasEl._droneFullscreenObserver = null;
+                          }
                           if (droneRO) { try { droneRO.disconnect(); } catch (e) {} }
+
+                          // Do not leave a CSS fill-frame or native fullscreen session
+                          // attached to a detached drone canvas when the learner changes
+                          // planet, switches tabs, or leaves the tool.
+                          var _droneFsContainer = canvasEl._droneFullscreenContainer || getDroneFullscreenContainer();
+                          if (_droneFsContainer && (_droneFsContainer.__alloFsOn || getDroneFullscreenElement() === _droneFsContainer)) {
+                            if (window.__alloStemFS) window.__alloStemFS(_droneFsContainer);
+                            else {
+                              var _droneExit = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen || document.msExitFullscreen;
+                              if (_droneExit && getDroneFullscreenElement() === _droneFsContainer) { try { _droneExit.call(document); } catch (e) {} }
+                            }
+                          }
+                          canvasEl._droneFullscreenContainer = null;
 
                           if (document.pointerLockElement === canvasEl) document.exitPointerLock();
 

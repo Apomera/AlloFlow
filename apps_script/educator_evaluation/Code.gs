@@ -348,7 +348,7 @@ function sendPortalNotification(request) {
   var url = config.webAppUrl || safePortalUrl_(ScriptApp.getService().getUrl() || '');
   var body = 'There is new activity in the AlloFlow Educator Evaluation portal.\n\nSign in with your district Google account';
   // Deep link straight to the relevant educator record. The parameters carry
-  // only opaque record identifiers — no name, rating, or content — and are
+  // only opaque record identifiers: no name, rating, or content, and are
   // useless without an authorized signed-in district account.
   if (url) body += ':\n' + url + (url.indexOf('?') >= 0 ? '&' : '?') + 'view=overview&teacher=' + encodeURIComponent(teacherId);
   body += '\n\nFor privacy, this email contains no evaluation content, ratings, evidence, comments, or educator name.';
@@ -368,8 +368,7 @@ function sendPortalNotification(request) {
 /**
  * Share a released (finalized) evaluation with the evaluated educator as a
  * strengths-first Google Doc: created in a repository subfolder, shared
- * VIEW-ONLY to the educator's active district member account (single-file ACL —
- * the central folder stays unshared), recorded on the educator record and in
+ * VIEW-ONLY to the educator's active district member account (single-file ACL: * the central folder stays unshared), recorded on the educator record and in
  * the audit log. The confirmation screen treats Drive access and the separate
  * content-free portal notice as two distinct actions and makes no promise
  * about Google-controlled Drive activity surfaces.
@@ -377,7 +376,7 @@ function sendPortalNotification(request) {
 var EE_DOC_DOMAINS = [
   { id: 'd1', code: '1', label: 'Planning and Preparation', plain: 'how the lesson and its goals were designed' },
   { id: 'd2', code: '2', label: 'Classroom Environment', plain: 'the respect, routines, and culture students experience' },
-  { id: 'd3', code: '3', label: 'Instruction', plain: 'the teaching itself — engagement, questioning, and feedback' },
+  { id: 'd3', code: '3', label: 'Instruction', plain: 'the teaching itself: engagement, questioning, and feedback' },
   { id: 'd4', code: '4', label: 'Professional Responsibilities', plain: 'reflection, communication, and professional growth' },
 ];
 
@@ -398,7 +397,7 @@ function eeBandLabel_(score, frameworkProfile) {
 }
 
 // Guidebook v1.0 domain-to-practice operating principles (mirror of the
-// client's aePortlandPracticeRating — keep the two in step).
+// client's aePortlandPracticeRating, keep the two in step).
 function eePortlandPracticeRating_(domains) {
   var ids = ['d1', 'd2', 'd3', 'd4'];
   var levels = [];
@@ -692,16 +691,16 @@ function eeDocPlainDate_(iso) {
 
 function buildReleasedEvaluationDoc_(workspace, teacher, actor) {
   var config = configMap_();
-  var frameworkProfile = (workspace.config && workspace.config.frameworkProfile) || 'pa_act13';
+  var frameworkProfile = (workspace.config && workspace.config.frameworkProfile) || 'maine_pepg';
   var teacherName = safeString_(teacher.name, 160, '') || safeString_(teacher.code, 60, 'Educator');
   var year = safeString_(teacher.academicYear || (workspace.config && workspace.config.academicYear), 40, '');
   var doc = DocumentApp.create('Released evaluation - ' + teacherName + (year ? ' - ' + year : ''));
   var body = doc.getBody();
   var H = DocumentApp.ParagraphHeading;
 
-  body.appendParagraph('Educator Effectiveness Summary' + (year ? ' — ' + year : '')).setHeading(H.HEADING1);
+  body.appendParagraph('Educator Effectiveness Summary' + (year ? ', ' + year : '')).setHeading(H.HEADING1);
   body.appendParagraph('Prepared for ' + teacherName + ' on ' + eeDocPlainDate_(nowIso_()) + ' by ' + (actor.displayName || actor.email) + '.').setHeading(H.NORMAL);
-  body.appendParagraph('This document is a plain-language summary of your finalized evaluation. It is shared view-only with you and your evaluation team — no one else. The district portal remains the official record and holds every observation, note, timestamp, and revision behind this summary; nothing here is hidden from you there.').setHeading(H.NORMAL);
+  body.appendParagraph('This document is a plain-language summary of your finalized evaluation. It is shared view-only with you and your evaluation team, no one else. The district portal remains the official record and holds every observation, note, timestamp, and revision behind this summary; nothing here is hidden from you there.').setHeading(H.NORMAL);
 
   // ── The educator's own words lead the document when provided. ──────────
   if (teacher.educatorStatement && teacher.educatorStatement.text) {
@@ -741,13 +740,13 @@ function buildReleasedEvaluationDoc_(workspace, teacher, actor) {
   if (strengths.length) {
     strengths.forEach(function (entry) {
       var lead = entry.spm
-        ? 'Student performance goal — rated ' + eeBandLabel_(entry.rating, frameworkProfile)
+        ? 'Student performance goal, rated ' + eeBandLabel_(entry.rating, frameworkProfile)
         : entry.walkthrough
           ? 'Walkthrough observation' + (entry.date ? ' (' + eeDocPlainDate_(entry.date) + ')' : '')
-          : entry.domain.label + ' — rated ' + eeBandLabel_(entry.rating, frameworkProfile) + ' (' + entry.domain.plain + ')';
+          : entry.domain.label + ', rated ' + eeBandLabel_(entry.rating, frameworkProfile) + ' (' + entry.domain.plain + ')';
       var item = body.appendListItem(lead);
       item.setGlyphType(DocumentApp.GlyphType.BULLET);
-      var detail = entry.spm ? (entry.goal ? 'Goal: ' + entry.goal + (entry.rationale ? ' — ' + entry.rationale : '') : entry.rationale) : entry.rationale;
+      var detail = entry.spm ? (entry.goal ? 'Goal: ' + entry.goal + (entry.rationale ? ', ' + entry.rationale : '') : entry.rationale) : entry.rationale;
       if (detail) body.appendListItem(detail).setNestingLevel(1).setGlyphType(DocumentApp.GlyphType.HOLLOW_BULLET);
     });
   } else {
@@ -760,12 +759,12 @@ function buildReleasedEvaluationDoc_(workspace, teacher, actor) {
   if (frameworkProfile === 'portland_me') {
     var rollup = eePortlandPracticeRating_(teacher.ratings && teacher.ratings.domains);
     if (rollup) {
-      body.appendParagraph('Practice rating: "' + rollup.label + '" — reached because ' + rollup.rule + '. Under the Portland guidebook the practice rating is derived from the four domain ratings by rule, never by averaging. The student-growth portion of the summative rating combines under the district’s current plan documents; confirm this summary against the current PEPG plan.').setHeading(H.NORMAL);
+      body.appendParagraph('Practice rating: "' + rollup.label + '", reached because ' + rollup.rule + '. Under the Portland guidebook the practice rating is derived from the four domain ratings by rule, never by averaging. The student-growth portion of the summative rating combines under the district’s current plan documents; confirm this summary against the current PEPG plan.').setHeading(H.NORMAL);
     }
   } else if (teacher.finalScore != null && bandLabel) {
     var bandSentence = frameworkProfile === 'maine_pepg'
-      ? 'Overall score: ' + teacher.finalScore + ' out of 3, shown here with the default label "' + bandLabel + '". Your district’s PEPG plan defines the official rating levels and cut points — confirm this label against the plan; the score arithmetic itself is shown below.'
-      : 'Overall score: ' + teacher.finalScore + ' out of 3, which is the "' + bandLabel + '" performance band. Bands are fixed statewide cut points: 2.50 and above is Distinguished, 1.50–2.49 Proficient, 0.50–1.49 Needs Improvement, below 0.50 Failing.';
+      ? 'Overall score: ' + teacher.finalScore + ' out of 3, shown here with the default label "' + bandLabel + '". Your district’s PEPG plan defines the official rating levels and cut points, confirm this label against the plan; the score arithmetic itself is shown below.'
+      : 'Overall score: ' + teacher.finalScore + ' out of 3, which is the "' + bandLabel + '" performance band. Bands are fixed statewide cut points: 2.50 and above is Distinguished, 1.50 to 2.49 Proficient, 0.50 to 1.49 Needs Improvement, below 0.50 Failing.';
     body.appendParagraph(bandSentence).setHeading(H.NORMAL);
   }
   var profile = teacher.weightSnapshot ? teacher.weightSnapshot : serverWeightProfile_(teacher, workspace.config);
@@ -778,7 +777,7 @@ function buildReleasedEvaluationDoc_(workspace, teacher, actor) {
     row.appendTableCell(component.weight + '%');
     row.appendTableCell(component.id === 'observation' ? 'Your observed practice across the four domains below.' : component.short === 'BLD' ? 'Your building\'s performance data for the year.' : 'The measures selected for your role and assignment.');
   });
-  body.appendParagraph('Your final score is the weighted average of these components — each score is multiplied by its weight and the results are added. No component is hidden and no other factor enters the calculation.').setHeading(H.NORMAL);
+  body.appendParagraph('Your final score is the weighted average of these components, each score is multiplied by its weight and the results are added. No component is hidden and no other factor enters the calculation.').setHeading(H.NORMAL);
   var domainTable = body.appendTable();
   var domainHeader = domainTable.appendTableRow();
   ['Domain', 'Rating', 'In plain language'].forEach(function (label) { domainHeader.appendTableCell(label).editAsText().setBold(true); });
@@ -786,16 +785,16 @@ function buildReleasedEvaluationDoc_(workspace, teacher, actor) {
     var rating = teacher.ratings && teacher.ratings.domains ? teacher.ratings.domains[domain.id] : null;
     var row = domainTable.appendTableRow();
     row.appendTableCell(domain.code + '. ' + domain.label);
-    row.appendTableCell(rating == null ? 'Not rated' : rating + ' — ' + eeBandLabel_(rating, frameworkProfile));
+    row.appendTableCell(rating == null ? 'Not rated' : rating + ', ' + eeBandLabel_(rating, frameworkProfile));
     row.appendTableCell(domain.plain.charAt(0).toUpperCase() + domain.plain.slice(1) + '.');
   });
 
   // ── Growth framed constructively, tied to the evaluator's own words. ───
   body.appendParagraph('Growth focus').setHeading(H.HEADING2);
   if (growth.length) {
-    body.appendParagraph('These areas were rated below Proficient. They are the focus of support — not a verdict — and each one comes with your evaluator\'s written reasoning:').setHeading(H.NORMAL);
+    body.appendParagraph('These areas were rated below Proficient. They are the focus of support, not a verdict, and each one comes with your evaluator\'s written reasoning:').setHeading(H.NORMAL);
     growth.forEach(function (entry) {
-      var item = body.appendListItem(entry.domain.label + (entry.rationale ? ' — ' + entry.rationale : ''));
+      var item = body.appendListItem(entry.domain.label + (entry.rationale ? ', ' + entry.rationale : ''));
       item.setGlyphType(DocumentApp.GlyphType.BULLET);
     });
     body.appendParagraph('You are entitled to discuss supports, resources, and timelines for each of these in your post-conference and through the portal dialogue.').setHeading(H.NORMAL);
@@ -810,7 +809,7 @@ function buildReleasedEvaluationDoc_(workspace, teacher, actor) {
     'You can read every underlying record, timestamp, and revision in the portal at any time.',
     'You acknowledged the observation before finalization; acknowledgment records that you received it, not that you agree.',
     'You can add a written response through the portal dialogue, and it becomes part of the record.',
-    'Finalized records are immutable — nothing in this summary can be edited after release without a new, visible record.',
+    'Finalized records are immutable, nothing in this summary can be edited after release without a new, visible record.',
   ];
   rights.forEach(function (line) { body.appendListItem(line).setGlyphType(DocumentApp.GlyphType.BULLET); });
   body.appendParagraph('Questions about this evaluation go first to your evaluator' + (config.organization ? ' or to ' + safeString_(config.organization, 160, 'your district') + ' leadership' : '') + '. This copy is shared view-only to your district account; if any detail here disagrees with the portal, the portal record governs.').setHeading(H.NORMAL);
@@ -822,7 +821,7 @@ function buildReleasedEvaluationDoc_(workspace, teacher, actor) {
 /**
  * Honest open receipt for the released summary: records that the educator
  * clicked the portal link to their shared Doc. Deliberately labeled a LINK
- * click — Drive itself cannot tell us the document was read.
+ * click, Drive itself cannot tell us the document was read.
  */
 function recordReleasedSummaryOpened(request) {
   var actor = currentActor_();
@@ -1061,7 +1060,7 @@ function performPortalCycleSchedule(request) {
 function workspaceConfigurationCandidate_(current, requestConfig) {
   current = sanitizeConfig_(current || {});
   requestConfig = requireObject_(requestConfig || {}, 'configuration');
-  var profile = oneOf_(requestConfig.frameworkProfile || current.frameworkProfile || 'pa_act13', ['pa_act13', 'maine_pepg', 'portland_me'], 'frameworkProfile');
+  var profile = oneOf_(requestConfig.frameworkProfile || current.frameworkProfile || 'maine_pepg', ['pa_act13', 'maine_pepg', 'portland_me'], 'frameworkProfile');
   function proposed_(field) { return requestConfig[field] === undefined ? current[field] : requestConfig[field]; }
   return sanitizeConfig_({
     organization: proposed_('organization'),
@@ -1779,7 +1778,7 @@ function mergeTeacherProfiles_(merged, incoming, actor, allowed) {
       allowed[id] = true;
     } else if (allowed[id]) {
       if (actor.role === 'teacher') {
-        // Teachers never mutate cycle/profile authority — with ONE exception:
+        // Teachers never mutate cycle/profile authority, with ONE exception:
         // the educator statement is THEIR field on THEIR record, editable until
         // the cycle is finalized, then frozen with everything else.
         if (actor.teacherId === id && !old.finalizedAt) {
@@ -1795,7 +1794,7 @@ function mergeTeacherProfiles_(merged, incoming, actor, allowed) {
       // releasedDoc is server-owned (written only by sharePortalReleasedEvaluation)
       // and educatorStatement is teacher-owned. Overwrite the client's copies
       // BEFORE the immutability comparison, so an evaluator holding a stale
-      // snapshot doesn't fail finalized-record saves — and can never edit the
+      // snapshot doesn't fail finalized-record saves, and can never edit the
       // educator's words.
       next.releasedDoc = old.releasedDoc ? clone_(old.releasedDoc) : null;
       next.educatorStatement = old.educatorStatement ? clone_(old.educatorStatement) : null;
@@ -2137,7 +2136,7 @@ function hasCycleActivity_(workspace, teacher) {
 }
 
 function serverWeightProfile_(teacher, config) {
-  // Portland ME guidebook profile: practice only — the guidebook publishes a
+  // Portland ME guidebook profile: practice only, the guidebook publishes a
   // categorical practice roll-up and defers the growth combination to later
   // plan documents, so no combined weights exist to encode.
   if (config && config.frameworkProfile === 'portland_me') {
@@ -2217,9 +2216,9 @@ function serverObservationScore_(domains, config) {
 // records always know which arithmetic created them.
 function eeFrameworkTag_(config) {
   var profile = config && config.frameworkProfile;
-  if (profile === 'maine_pepg') return 'me-pepg-local';
+  if (profile === 'pa_act13') return 'pa-act13-classroom-2021';
   if (profile === 'portland_me') return 'me-portland-pepg-guidebook-v1';
-  return 'pa-act13-classroom-2021';
+  return 'me-pepg-local';
 }
 
 function serverOverallScore_(teacher, config) {
@@ -2324,7 +2323,7 @@ function sanitizeWorkspace_(raw) {
 
 function sanitizeConfig_(v) {
   v = requireObject_(v || {}, 'config');
-  var profile = oneOf_(v.frameworkProfile || 'pa_act13', ['pa_act13', 'maine_pepg', 'portland_me'], 'frameworkProfile');
+  var profile = oneOf_(v.frameworkProfile || 'maine_pepg', ['pa_act13', 'maine_pepg', 'portland_me'], 'frameworkProfile');
   return {
     organization: safeString_(v.organization,160,'District'), building: safeString_(v.building,160,''), academicYear: safeString_(v.academicYear,20,''),
     evaluatorName: safeString_(v.evaluatorName,160,'Evaluator'), evaluatorInitials: safeString_(v.evaluatorInitials,12,''),

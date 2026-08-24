@@ -93,12 +93,36 @@ Every activity needs `id` (unique), `type`, `title`, and a `gate`.
 | `reflect`   | `{ prompt }`                                                      | non-empty response            | no       |
 | `checklist` | `{ items: [string, …] }`                                          | ≥ 1 item checked              | no       |
 | `sim`       | `{ scenario, rubric }`                                            | AI returns a formative masteryScore — or, if AI is unavailable, on a written response | no¹ |
+| `resource`  | `{ resourceType: 'concept-sort'\|'timeline'\|'glossary', data, instructions? }` | concept sort: every card placed; timeline/glossary: learner acknowledges | no² |
+| `persona`   | `{ personaName, personaRole, scenario, rubric, minTurns?, maxTurns? }` | `minTurns` educator turns in the live role-play (default 3) — or, if AI is unavailable, on a written response | no³ |
+| `branching` | `{ start, nodes: { id: { text, choices:[{label,to,feedback?}] \| ending:true } }, intro? }` | a real walked path reaches an ending node | no⁴ |
 
 > ¹ `sim` is an **AI-assessed scenario**: the learner writes a response and the
 > shared AI returns a *formative* `masteryScore` (0–100) + feedback. That score
 > is informational only and **must never gate** advancement (`gate.kind` must be
 > `none`); a score gate on a `sim` is rejected by `validatePdModule`. If AI is
 > unavailable, a written response still completes the activity.
+>
+> ² `resource` embeds a **frozen snapshot** of an AlloFlow pipeline resource
+> *by value*: the data rides inside the module, so digests bind it and it works
+> offline. It is never a live generator. Embedded images require `imageAlt`
+> (enforced by the accessibility preflight and the worker).
+>
+> ³ `persona` is **live multi-turn AI role-play** (rehearsing a hard
+> conversation with an AI-played character). The *setup* is digest-bound module
+> content; the *conversation* is non-deterministic and therefore rides only as
+> optional review evidence under its own consent scope
+> (`live-practice-transcript`, default **off**; consent doc v1.1). Completion is
+> participation-based and the AI can never block it. Coaching feedback is
+> qualitative only — deliberately no score.
+>
+> ⁴ `branching` is a **deterministic choose-your-path case study** — the
+> adventure-style PD format without the game engine. Validators reject dangling
+> links, unreachable nodes, and graphs with no reachable ending, and completion
+> requires a genuinely walked path (`raw.path` must follow real choice edges).
+> Full Adventure-mode embedding (story engine, dice, inventory) is a separate
+> future integration; the `buildAdventureStorybookArtifact` contract is the
+> intended evidence seam for it.
 
 ### Gates (advance/“Next” is blocked until the gate passes)
 
@@ -231,3 +255,45 @@ See [the microcredential foundation](../../docs/PD_MICROCREDENTIAL_FOUNDATION.md
 for the contract, UMS pathway mapping, privacy boundary, and deployment steps.
 
 The app reads `index.json` from GitHub raw, so a push is all it takes to publish.
+
+## Educator authoring (My modules)
+
+Educator-authored PD has three visibility tiers — only the last is reviewed:
+
+1. **Private** — drafts on the My modules shelf (device localStorage,
+   `alloflow_pd_my_modules_v1`; 50-draft / byte-capped). Created from scratch,
+   from **✨ Create with AI** (every generated draft autosaves to the shelf),
+   or by **Remix** of any catalog entry (all allowed licenses permit it; the
+   credit line preserves provenance).
+2. **Shared** — Export JSON → a colleague imports it under My modules.
+3. **Submitted** — the existing `/submitPd` review route.
+
+The **module builder** (PdEditor) is a form editor over this schema with live
+`validatePdModule` + accessibility-preflight checks and debounced autosave.
+Drafts must pass the same preflight as approved content before they can RUN.
+
+## UDL Walkthrough bridge
+
+Manifest entries may carry `udlGuidelines` tags (`['rep_1']`, `['eng_8']`, … —
+CAST numbering: rep 1-3, act 4-6, eng 7-9). The UDL Walkthrough's Building-tab
+"PD signals" deep-link into the PD tab via
+`window.__alloOpenPdCatalog({ guideline: 'eng_7' })`; PdHome spotlights matching
+modules (prefix-tolerant both directions: tag `rep` ↔ signal `rep_1`).
+
+## Hours log and facilitation guides
+
+**My learning** includes a self-reported hours log (`alloflow_pd_hours_v1`):
+module completions tally automatically, outside PD is added by hand, CSV export.
+It never claims approval — whether an entry counts (e.g. toward PA Act 48) is
+the provider's and state system's decision. Each catalog entry also offers a
+printable **facilitation guide** that turns the module into a group-session
+plan (a facilitation move per activity type; completion stays individual).
+
+## Regenerating the manifest
+
+`node dev-tools/regen_pd_manifest.cjs` rebuilds `index.json` from
+`approved/*.json` — every entry's identity fields and `contentDigest` are
+derived from the module via PdCore, so the manifest cannot drift from content.
+Editorial fields (display order, `udlGuidelines`, path definitions) live in the
+script. It refuses to write if any module fails validation or the accessibility
+preflight. Then run `node dev-tools/check_pd_publish.cjs`.

@@ -207,7 +207,13 @@
       else if (status === 'ready' || status === 'open') statusLine = h('p', { className: 'text-xs text-emerald-300' }, t('stem.timeline.ready', 'Timeline is open in a new window. Keep this window open to send it new timelines.'));
       else if (typeof status === 'string' && status.indexOf('error:') === 0) statusLine = h('p', { className: 'text-xs text-rose-300' }, t('stem.timeline.error', 'Something went wrong generating the timeline: ') + status.slice(6));
 
-      return h('div', { className: 'flex flex-col gap-4 animate-in fade-in duration-300 max-w-2xl' },
+      return h('div', { className: 'flex flex-col gap-4 animate-in fade-in duration-300 max-w-2xl',
+        // The launcher card is dark-authored (text-slate-300 body, bg-slate-800/60
+        // privacy panel, slate-900/70 back button) but painted no ground, so it sat
+        // on the host card -- white in BOTH themes (stem_lab_module.js ~1633): body
+        // text 1.48:1, privacy rows 2.72:1 on the composited grey. Six shelf/launcher
+        // tools share this exact recipe; each gets the slate ground its inks assume.
+        style: { background: '#0f172a', borderRadius: 14, padding: 16 } },
         h('h2', { className: 'text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-rose-400 to-pink-400' },
           t('stem.timeline.title', '🕰️ Timeline Studio — turn a reading into a timeline')),
         h('p', { className: 'text-sm text-slate-300 leading-relaxed' },
@@ -250,7 +256,7 @@
           h('div', null, (aiOn ? '✨ ' + t('stem.timeline.ai_on', 'AI is ON — it reads your text and pulls out the dated events.')
             : '🌱 ' + t('stem.timeline.ai_off', 'AI hints are off — use “Build by hand” to add events yourself in the timeline window.'))),
           h('div', null, '🔒 ' + t('stem.timeline.privacy', 'Your text and the timeline stay in memory — nothing is saved or graded.'))),
-        h('p', { className: 'text-[11px] text-slate-500 leading-relaxed' },
+        h('p', { className: 'text-[11px] text-slate-400 leading-relaxed' },
           t('stem.timeline.credit', 'Timeline rendering: TimelineJS by Northwestern University Knight Lab (timeline.knightlab.com), free and open source under the Mozilla Public License. The timeline library loads from Knight Lab’s CDN, so this tool needs internet.'))
       );
     }

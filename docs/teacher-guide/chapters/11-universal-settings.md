@@ -57,11 +57,11 @@ This is worth checking before you conclude a tool got something wrong. A mismatc
 
 Use **Image style** in Universal Settings to keep one lesson visually coherent. Visuals, Glossary, and Word Sounds begin on **Use Universal style**; their own preset and custom-style controls appear only after you choose **Override for this resource**. Timeline and Concept Sort use the Universal style directly. Adventure keeps story-specific presets, with **Use Universal style** available when continuity matters more than a separate story look.
 
-Choose an override for an instructional reason—for example, a simple line-drawing style for a worksheet that must photocopy clearly—not merely because the same selector is visible. Return the resource to **Use Universal style** when the exception is no longer needed. A change affects new or regenerated images; it does not restyle images that already exist.
+Choose an override for an instructional reason, for example, a simple line-drawing style for a worksheet that must photocopy clearly, not merely because the same selector is visible. Return the resource to **Use Universal style** when the exception is no longer needed. A change affects new or regenerated images; it does not restyle images that already exist.
 
 ## Separate the requested grade from internal calibration
 
-The grade you select is the educator-facing target. It is not silently relabeled as a lower instructional grade. For source writing, AlloFlow may use a lower internal prompt target to compensate for a model's tendency to overshoot. The resource still records the grade you requested, the internal calibration target, and—when an English readability check is appropriate—the measured result as separate facts.
+The grade you select is the educator-facing target. It is not silently relabeled as a lower instructional grade. For source writing, AlloFlow may use a lower internal prompt target to compensate for a model's tendency to overshoot. The resource still records the grade you requested, the internal calibration target, and, when an English readability check is appropriate, the measured result as separate facts.
 
 That distinction matters:
 
@@ -70,7 +70,7 @@ That distinction matters:
 - **Internal calibration** is a generation technique, not a recommendation about what students should read.
 - **Measured complexity** is evidence about the resulting text, not proof that it is instructionally appropriate.
 
-Flesch–Kincaid is an English screening measure based mainly on word and sentence patterns. It cannot judge knowledge demands, text structure, content accuracy, cultural context, or the reader and task. AlloFlow therefore does not show an English grade-level verdict for non-English or bilingual text.
+Flesch, Kincaid is an English screening measure based mainly on word and sentence patterns. It cannot judge knowledge demands, text structure, content accuracy, cultural context, or the reader and task. AlloFlow therefore does not show an English grade-level verdict for non-English or bilingual text.
 
 Do this before you share:
 

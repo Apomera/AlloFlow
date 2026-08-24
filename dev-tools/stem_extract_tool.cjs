@@ -185,8 +185,11 @@ console.log(`Tool: ${tool}  (render body ${renderStart}-${renderEnd}, t decl @${
 console.log(`  render-scope user-facing strings (WRAPPED): ${inRender.length}`);
 console.log(`  static module-level user-facing strings (SKIPPED, need manual restructure): ${skippedStatic.length}`);
 if (skippedStatic.length) {
-  console.log(`  skipped samples:`);
-  skippedStatic.slice(0, 8).forEach(s => console.log(`    [${s.bucket}] ${s.value.slice(0, 60)}`));
+  // --all-skipped: print every static instead of 8 samples -- the hand-restructure
+  // pass needs the complete list, and re-deriving it by other means invites drift.
+  const ALLSKIP = process.argv.includes('--all-skipped');
+  console.log(ALLSKIP ? `  skipped statics (all):` : `  skipped samples:`);
+  (ALLSKIP ? skippedStatic : skippedStatic.slice(0, 8)).forEach(s => console.log(`    [${s.bucket}] ${s.value.slice(0, 80)}`));
 }
 if (WRITE) {
   fs.copyFileSync(file, file + '.bak.extract');

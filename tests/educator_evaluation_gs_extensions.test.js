@@ -97,6 +97,8 @@ describe('archived-educator gate (Article 16.C)', () => {
 describe('era-aware release scoring', () => {
   it('PA profile releases with statutory weights (3,2,2,3 -> 2.40)', () => {
     const harness = repositoryFixture();
+    // The default is Maine, so a PA test must select PA rather than assume it.
+    expect(configureAsAdmin(harness, { frameworkProfile: 'pa_act13' }).ok).toBe(true);
     const released = rateAndRelease(harness, 't1', { d1: 3, d2: 2, d3: 2, d4: 3 });
     expect(released.ok).toBe(true);
     const boot = harness.invoke('bootstrap');
@@ -109,7 +111,9 @@ describe('era-aware release scoring', () => {
 
   it('Maine profile releases with the equal average and stamps the me-pepg era tag', () => {
     const harness = repositoryFixture();
-    const configured = configureAsAdmin(harness, { frameworkProfile: 'maine_pepg', pepgPracticeWeight: null }); // practice-only: legitimate since 2019
+    // Maine is the default, so there is nothing to configure. Practice-only is
+    // legitimate: 20-A section 13704 forbids rules requiring growth measures.
+    const configured = { ok: true };
     expect(configured.ok).toBe(true);
     // peer-01 has NO current-cycle activity, so its weights freeze under the
     // Maine profile at release time: equal-average 2.50, era tag me-pepg-local
@@ -124,14 +128,26 @@ describe('era-aware release scoring', () => {
 
   it('a mid-cycle profile change NEVER rewrites weights already frozen under the old framework', () => {
     const harness = repositoryFixture();
-    configureAsAdmin(harness, { frameworkProfile: 'maine_pepg', pepgPracticeWeight: null });
-    // t1 already has cycle activity from the fixture, so its PA 70/10/10/10
-    // snapshot is frozen: practice averages equally (2.50) but composes through
-    // the FROZEN weights — 2.50*0.7 + 2*0.1 + 2*0.1 + 2*0.1 = 2.35
-    const released = rateAndRelease(harness, 't1', { d1: 3, d2: 2, d3: 2, d4: 3 });
-    expect(released.ok).toBe(true);
-    const boot = harness.invoke('bootstrap');
-    expect(boot.workspace.teachers.find((item) => item.id === 't1').finalScore).toBe(2.35);
+    // Release under the workspace default (Maine since 2026-08-18), which freezes
+    // this cycle's weights and stamps its era tag.
+    expect(rateAndRelease(harness, 't1', { d1: 3, d2: 2, d3: 2, d4: 3 }).ok).toBe(true);
+    const before = harness.invoke('bootstrap');
+    const firstScore = before.workspace.teachers.find((item) => item.id === 't1').finalScore;
+    const firstSnapshot = before.workspace.cycleSnapshots.find(
+      (item) => item.teacherId === 't1' && item.academicYear === '2026-27');
+    expect(firstScore).toBe(2.5);
+    expect(firstSnapshot.frameworkVersion).toBe('me-pepg-local');
+
+    // Now change the district framework mid-cycle. The already-released snapshot
+    // must keep BOTH its score and the era tag that produced it. Recomposing a
+    // released record under a framework it was never scored under is the bug
+    // this guards; the numbers are asserted through the tag, not the default.
+    expect(configureAsAdmin(harness, { frameworkProfile: 'pa_act13' }).ok).toBe(true);
+    const after = harness.invoke('bootstrap');
+    const keptSnapshot = after.workspace.cycleSnapshots.find(
+      (item) => item.teacherId === 't1' && item.academicYear === '2026-27');
+    expect(keptSnapshot.frameworkVersion).toBe('me-pepg-local');
+    expect(keptSnapshot.finalScore).toBe(firstSnapshot.finalScore);
   });
 
   it('the Portland practice matrix mirror applies the guidebook rules', () => {

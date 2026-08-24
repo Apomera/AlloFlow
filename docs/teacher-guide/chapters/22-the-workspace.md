@@ -176,7 +176,7 @@ This is the most powerful path in the app and the least discoverable, because it
 
 Two shortcuts do more work than anything else in this chapter.
 
-![The command palette opened with Ctrl+K](../assets/screenshots/18-command-palette.png)
+![The command palette open over the workspace, with a text box prompting you to type a command and a list of matching actions grouped under "Here, source setup": Open source input, Find a resource online, Generate source from a topic, Set the grade level, Set source tone, and Set source length, each with a one-line description. The footer shows arrow keys to navigate and Enter to run, and states that every action is announced and Ctrl+K toggles the palette.](../assets/screenshots/18-command-palette.png)
 
 **Ctrl+K** (Cmd+K on a Mac, or Ctrl+Shift+P) opens the command palette. Type what you want in ordinary words and it takes you there. It reports how many commands match, you can star the ones you use constantly, and **Esc** closes it.
 

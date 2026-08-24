@@ -7227,9 +7227,9 @@ if (!window._galaxyHasLoadedOnce) {
 
                       },
 
-                      className: "min-h-[44px] px-3 py-2 rounded-lg text-xs font-bold border transition-all " + (on ? 'border-fuchsia-400 bg-fuchsia-500/20 text-fuchsia-200 shadow-sm' : 'border-slate-600 bg-slate-800/60 text-slate-300 hover:border-fuchsia-600')
+                      className: "min-h-[44px] px-3 py-2 rounded-lg text-xs font-bold border transition-all " + (on ? 'border-fuchsia-400 bg-slate-900 text-fuchsia-200 shadow-sm' : 'border-slate-600 bg-slate-800 text-slate-300 hover:border-fuchsia-600')
 
-                    }, rm.label, React.createElement("span", { className: "block text-[11px] font-semibold opacity-70" }, rm.hint));
+                    }, rm.label, React.createElement("span", { className: "block text-[11px] font-semibold" }, rm.hint));
 
                   })
 
@@ -7828,7 +7828,7 @@ if (!window._galaxyHasLoadedOnce) {
                         if (typeof awardStemXP === 'function') awardStemXP('galaxy_doppler', 1, 'Tested Doppler shift');
                       },
                       className: "min-h-[44px] rounded-lg border px-2 py-2 text-left text-xs font-bold transition-all " + (on ? "bg-slate-900 text-white border-slate-900" : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-white")
-                    }, preset.icon + " " + preset.label, React.createElement("span", { className: "block text-[11px] font-semibold opacity-70" }, (preset.value > 0 ? "+" : "") + preset.value + " km/s"));
+                    }, preset.icon + " " + preset.label, React.createElement("span", { className: "block text-[11px] font-semibold" }, (preset.value > 0 ? "+" : "") + preset.value + " km/s"));
                   })
                 ),
                 React.createElement("div", { className: "mt-2 grid grid-cols-1 md:grid-cols-2 gap-2 text-xs" },

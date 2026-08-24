@@ -11045,7 +11045,7 @@ var d = (labToolData.companionPlanting) || {};
                           ),
                           React.createElement("span", { className: "rounded-full px-2 py-0.5 text-[11px] font-bold", style: { background: active ? tab.accent : tab.soft, color: active ? '#ffffff' : tab.accent } }, active ? 'Active' : 'Open')
                         ),
-                        React.createElement("p", { className: "mt-1 hidden text-[11px] leading-snug text-slate-500 sm:block" }, tab.desc),
+                        React.createElement("p", { className: "mt-1 hidden text-[11px] leading-snug text-slate-600 sm:block" }, tab.desc),
                         active && React.createElement("div", { className: "mt-2 text-[11px] font-semibold", style: { color: tab.accent } }, tab.intent)
                       );
                     })
@@ -12274,7 +12274,7 @@ var d = (labToolData.companionPlanting) || {};
                         className: "w-full text-left p-2.5 rounded-xl border-2 text-xs transition-all " + cls,
                         disabled: answered
                       },
-                        React.createElement("span", { className: "font-bold mr-1 " + (answered && isRight ? 'text-green-600' : answered && isSelected ? 'text-red-500' : 'text-slate-200') }, String.fromCharCode(65 + oi) + '.'),
+                        React.createElement("span", { className: "font-bold mr-1 " + (answered && isRight ? 'text-green-600' : answered && isSelected ? 'text-red-500' : 'text-slate-700') }, String.fromCharCode(65 + oi) + '.'),
                         React.createElement("span", { className: answered && isRight ? 'text-green-700' : answered && isSelected && !isRight ? 'text-red-600' : 'text-slate-700' }, ' ' + opt)
                       );
                     })
@@ -12703,7 +12703,7 @@ var d = (labToolData.companionPlanting) || {};
                 sisters:     { label: __alloT('stem.companionplanting.three_sisters_thrive', '🌽🫘🎃 Three Sisters thrive'), color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: __alloT('stem.companionplanting.balanced_trio_beans_fix_nitrogen_corn_', 'Balanced trio. Beans fix nitrogen, corn provides poles, squash shades soil.') },
                 overcrowded: { label: __alloT('stem.companionplanting.overcrowded', '⚠️ Overcrowded'), color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: __alloT('stem.companionplanting.competition_for_light_water_nutrients', 'Competition for light, water, nutrients.') },
                 noFixation:  { label: __alloT('stem.companionplanting.no_nitrogen_fixation', '🟠 No nitrogen fixation'), color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: __alloT('stem.companionplanting.too_few_beans_soil_nitrogen_depletes', 'Too few beans — soil nitrogen depletes.') },
-                unbalanced:  { label: __alloT('stem.companionplanting.unbalanced_monoculture_risk', '🟡 Unbalanced — monoculture risk'), color: '#0891b2', bg: '#ecfeff', border: '#67e8f9', desc: __alloT('stem.companionplanting.one_species_dominates_synergy_reduced', 'One species dominates. Synergy reduced.') }
+                unbalanced:  { label: __alloT('stem.companionplanting.unbalanced_monoculture_risk', '🟡 Unbalanced — monoculture risk'), color: '#0e7490', bg: '#ecfeff', border: '#67e8f9', desc: __alloT('stem.companionplanting.one_species_dominates_synergy_reduced', 'One species dominates. Synergy reduced.') }
               }[state];
               return h('div', { className: 'mt-3 p-4 rounded-xl bg-white border border-emerald-300 shadow-sm space-y-3' },
                 h('h3', { className: 'text-sm font-black text-emerald-700' }, __alloT('stem.companionplanting.three_sisters_synergy_discovery', '🌽 Three-sisters synergy discovery')),

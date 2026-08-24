@@ -501,6 +501,7 @@
     desc: 'Conduction, convection and radiation on a real heat-equation model; insulation R-values; calorimetry mixing; the water heating curve with its two latent plateaus; and why no heat engine reaches 100 percent.',
     color: 'orange',
     category: 'science',
+    gradeRange: '7-12',
     aliases: ['thermodynamics', 'heat', 'heat transfer', 'conduction', 'convection', 'radiation', 'insulation',
       'specific heat', 'calorimetry', 'latent heat', 'phase change', 'heating curve', 'entropy', 'carnot',
       'heat engine', 'thermal', 'temperature', 'R-value', 'second law'],
@@ -1861,7 +1862,15 @@
         )
       );
 
-      return h('div', { 'data-heat-lab': 'true', className: 'max-w-5xl mx-auto animate-in fade-in duration-200' },
+      return h('div', { 'data-heat-lab': 'true', className: 'max-w-5xl mx-auto animate-in fade-in duration-200',
+        // ★In DARK theme the host wraps every tool in a WHITE card (stem_lab_module.js
+        // ~1633), but this tool keeps its dark accents (ink() maps to lightInk only when
+        // ctx.theme === 'light') and builds its panels from translucent slate. Over white
+        // those composited to a mid-grey #525866 that suits neither palette: 141 nodes at
+        // 3.14-4.4:1. The accents were 'originally chosen for the dark lab canvas', as the
+        // ink() comment says, so give them that canvas back. Light theme is untouched and
+        // already measured clean.
+        style: isDark ? { background: '#0b1120', borderRadius: 12, padding: 10 } : null },
 
         // ── header ──
         h('div', { className: 'relative overflow-hidden rounded-xl border mb-1 px-3 py-2.5', style: { background: 'linear-gradient(115deg, #2a0f04 0%, #451a03 46%, #0c1a2e 100%)', borderColor: 'rgba(251,146,60,0.4)' } },

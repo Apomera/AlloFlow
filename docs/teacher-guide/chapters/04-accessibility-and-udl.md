@@ -62,6 +62,10 @@ Plain language is not the same as lowered expectations. Students can reason abou
 
 ## Use built-in access supports purposefully
 
+![The Student tools panel, opened from a button in the lower right and subtitled "Read, focus, and practice your way". A Focus group offers Toggle Reading Ruler, Task Timer, Toggle Focus Mode, and Visual Supports. An Input and practice group offers Start Voice Input.](../assets/live-screenshots/08-student-tools.png)
+
+This is one view's set. Which supports appear depends on the view, the loaded modules, and the deployment, so check the panel in the exact place students will be working rather than assuming this list.
+
 The exact supports and labels available depend on the current view, loaded modules, browser, and deployment. Turn on **Help Mode** or press the question-mark key to inspect supported controls. Do not promise a feature to students until you test it in the delivered resource.
 
 ### Text and display
