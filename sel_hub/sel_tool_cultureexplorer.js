@@ -161,41 +161,66 @@ window.SelHub = window.SelHub || {
   var QUIZ_BANKS = {
     elementary: [
       { q: 'Which country is famous for cherry blossom viewing called Hanami?', opts: ['China', 'Japan', 'Korea', 'Thailand'], ans: 1 },
-      { q: 'What instrument from Australia is one of the oldest in the world?', opts: ['Sitar', 'Didgeridoo', 'Bagpipes', 'Ukulele'], ans: 1 },
+      { q: 'What instrument from Australia is one of the oldest in the world?', opts: ['Glockenspiel', 'Didgeridoo', 'Bagpipes', 'Ukulele'], ans: 1 },
       { q: 'Diwali, the Festival of Lights, is celebrated in which country?', opts: ['Egypt', 'Brazil', 'India', 'Japan'], ans: 2 },
       { q: 'What food is a staple in Ethiopia, made from teff flour?', opts: ['Naan', 'Tortilla', 'Injera', 'Pita'], ans: 2 },
       { q: 'The haka is a ceremonial dance from which culture?', opts: ['Hawaiian', 'Samoan', 'M\u0101ori', 'Fijian'], ans: 2 },
       { q: '"Jambo" is a greeting in which language?', opts: ['Swahili', 'Arabic', 'Hindi', 'Tagalog'], ans: 0 },
-      { q: 'Which country has more than 7,600 islands?', opts: ['Indonesia', 'Japan', 'Philippines', 'Greece'], ans: 2 },
-      { q: 'What is the name of the Mexican holiday honoring loved ones who have passed?', opts: ['Cinco de Mayo', 'D\u00eda de los Muertos', 'Carnival', 'Las Posadas'], ans: 1 },
-      { q: 'Kimchi is a traditional food from which country?', opts: ['Japan', 'China', 'Vietnam', 'South Korea'], ans: 3 },
-      { q: '"Aloha" is a greeting from which culture?', opts: ['Samoan', 'M\u0101ori', 'Hawaiian', 'Tongan'], ans: 2 }
+      { q: 'Which country has more than 7,600 islands?', opts: ['Indonesia', 'New Zealand', 'Philippines', 'Greece'], ans: 2 },
+      { q: 'What is the name of the Mexican holiday honoring loved ones who have passed?', opts: ['Cinco de Mayo', 'D\u00eda de los Muertos', 'Fiesta de la Candelaria', 'Las Posadas'], ans: 1 },
+      { q: 'Kimchi is a traditional food from which country?', opts: ['Philippines', 'China', 'Vietnam', 'South Korea'], ans: 3 },
+      { q: '"Aloha" is a greeting from which culture?', opts: ['Tahitian', 'M\u0101ori', 'Hawaiian', 'Tongan'], ans: 2 }
     ],
     middle: [
-      { q: 'Nowruz, celebrated at the spring equinox, is the New Year of which culture?', opts: ['Turkish', 'Persian/Iranian', 'Egyptian', 'Indian'], ans: 1 },
+      { q: 'Nowruz, celebrated at the spring equinox, is the New Year of which culture?', opts: ['Turkish/Anatolian', 'Persian/Iranian', 'Egyptian', 'Indian'], ans: 1 },
       { q: 'Which African country uses a calendar with 13 months?', opts: ['Nigeria', 'South Africa', 'Ethiopia', 'Kenya'], ans: 2 },
-      { q: 'The Hangul alphabet was scientifically designed by a king of which country?', opts: ['Japan', 'China', 'South Korea', 'Vietnam'], ans: 2 },
-      { q: 'Which city is the only one that sits on two continents?', opts: ['Cairo', 'Istanbul', 'Moscow', 'Dubai'], ans: 1 },
+      { q: 'The Hangul alphabet was scientifically designed by a king of which country?', opts: ['Philippines', 'China', 'South Korea', 'Vietnam'], ans: 2 },
+      { q: 'Which city is the only one that sits on two continents?', opts: ['Budapest', 'Istanbul', 'Moscow', 'Dubai'], ans: 1 },
       { q: 'Gnawa music with spiritual rhythms originates in which country?', opts: ['Turkey', 'Lebanon', 'Morocco', 'Iran'], ans: 2 },
       { q: 'Which culture is known for tatau, one of the oldest tattoo traditions?', opts: ['Japanese', 'M\u0101ori', 'Samoan', 'Celtic'], ans: 2 },
       { q: 'Al-Qarawiyyin, the world\'s oldest university, is in which city?', opts: ['Baghdad', 'Cairo', 'Fez', 'Damascus'], ans: 2 },
       { q: 'Afrobeats is a global music genre that originated in which city?', opts: ['Nairobi', 'Lagos', 'Accra', 'Johannesburg'], ans: 1 },
-      { q: 'How many official languages does South Africa have?', opts: ['4', '7', '12', '3'], ans: 2 },
+      { q: 'How many official languages does South Africa have?', opts: ['10', '7', '12', '3'], ans: 2 },
       { q: 'The Great Pyramid was the tallest structure on Earth for approximately how many years?', opts: ['1,000', '2,500', '3,800', '5,000'], ans: 2 }
     ],
     high: [
-      { q: 'Aboriginal Australians have maintained continuous culture for approximately how long?', opts: ['10,000 years', '25,000 years', '45,000 years', '65,000+ years'], ans: 3 },
+      { q: 'Aboriginal Australians have maintained continuous culture for approximately how long?', opts: ['10,000 years', '25,000 years', '45,000+ years', '65,000+ years'], ans: 3 },
       { q: 'The Haudenosaunee (Iroquois) Confederacy influenced which major document?', opts: ['Magna Carta', 'U.S. Constitution', 'UN Charter', 'Treaty of Westphalia'], ans: 1 },
-      { q: 'Capoeira, a martial art disguised as dance, originated among which group?', opts: ['Indigenous Brazilians', 'Enslaved Africans in Brazil', 'Portuguese colonists', 'Japanese immigrants'], ans: 1 },
+      { q: 'Capoeira, a martial art disguised as dance, originated among which group?', opts: ['Indigenous Brazilian communities', 'Enslaved Africans in Brazil', 'Portuguese colonists', 'Japanese immigrants'], ans: 1 },
       { q: 'Which empire had the largest contiguous land territory in history?', opts: ['Roman Empire', 'British Empire', 'Mongol Empire', 'Ottoman Empire'], ans: 2 },
-      { q: 'The concept of "ubuntu" (I am because we are) comes from which cultural tradition?', opts: ['Hindu philosophy', 'Confucianism', 'Southern African philosophy', 'Sufi tradition'], ans: 2 },
+      { q: 'The concept of "ubuntu" (I am because we are) comes from which cultural tradition?', opts: ['Hindu philosophy', 'Confucianism', 'Southern African philosophy', 'The Sufi tradition of Islam'], ans: 2 },
       { q: 'Which ancient trade route connected East Asia to the Mediterranean for over 1,500 years?', opts: ['Spice Route', 'Silk Road', 'Trans-Saharan Route', 'Amber Road'], ans: 1 },
-      { q: 'The Rosetta Stone allowed scholars to decipher which ancient writing system?', opts: ['Cuneiform', 'Egyptian hieroglyphs', 'Sanskrit', 'Linear B'], ans: 1 },
+      { q: 'The Rosetta Stone allowed scholars to decipher which ancient writing system?', opts: ['Mesopotamian cuneiform', 'Egyptian hieroglyphs', 'Sanskrit', 'Linear B'], ans: 1 },
       { q: 'Which Pacific Island culture navigated thousands of miles using stars and wave patterns?', opts: ['Japanese', 'Filipino', 'Polynesian', 'Melanesian'], ans: 2 },
       { q: 'Griot oral historians are central to the cultural traditions of which region?', opts: ['East Asia', 'West Africa', 'South America', 'Scandinavia'], ans: 1 },
       { q: 'The concept of "wabi-sabi" (beauty in imperfection) originates from which culture?', opts: ['Korean', 'Chinese', 'Japanese', 'Vietnamese'], ans: 2 }
     ]
   };
+
+  // Move each question's correct answer onto a cycling target slot. As
+  // authored, 27 of 30 answers sat at B or C (53% at C alone), and the file
+  // read as "shuffled" only because startQuiz shuffles QUESTION ORDER - which
+  // does nothing for answer position; options render in authored order and
+  // grading is by index. Slot-targeted for an exactly uniform spread; runs
+  // once at module load so the order is stable across renders, sessions and
+  // exports. Same pattern as economicslab / galaxy / magnetism / allobotsage.
+  (function () {
+    var SLOTS = [0, 2, 1, 3];
+    var counter = 0;
+    Object.keys(QUIZ_BANKS).forEach(function (band) {
+      (QUIZ_BANKS[band] || []).forEach(function (item) {
+        if (!item || !Array.isArray(item.opts) || typeof item.ans !== 'number') return;
+        var len = item.opts.length;
+        if (len < 2 || item.ans < 0 || item.ans >= len) return;
+        var target = SLOTS[counter++ % SLOTS.length] % len;
+        var shift = (item.ans - target + len) % len;
+        if (!shift) return;
+        item.opts = item.opts.slice(shift).concat(item.opts.slice(0, shift));
+        item.ans = target;
+      });
+    });
+  })();
+
 
   // ── Journal Prompts ──
   var JOURNAL_PROMPTS = [

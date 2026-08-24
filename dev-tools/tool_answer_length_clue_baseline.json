@@ -37,11 +37,6 @@
       "severe": 40,
       "items": 69
     },
-    "stem_lab/geologyexplorer": {
-      "uniq": 21,
-      "severe": 3,
-      "items": 25
-    },
     "stem_lab/lifeskills": {
       "uniq": 10,
       "severe": 1,
@@ -87,11 +82,6 @@
       "severe": 31,
       "items": 70
     },
-    "sel_hub/community": {
-      "uniq": 30,
-      "severe": 8,
-      "items": 44
-    },
     "stem_lab/weldlab": {
       "uniq": 42,
       "severe": 15,
@@ -127,15 +117,10 @@
       "severe": 0,
       "items": 25
     },
-    "sel_hub/cultureexplorer": {
-      "uniq": 13,
-      "severe": 0,
-      "items": 30
-    },
     "stem_lab/allobotsage": {
-      "uniq": 101,
+      "uniq": 100,
       "severe": 16,
-      "items": 249
+      "items": 248
     },
     "stem_lab/music": {
       "uniq": 9,
@@ -246,6 +231,16 @@
       "uniq": 0,
       "severe": 0,
       "items": 24
+    },
+    "sel_hub/community": {
+      "uniq": 0,
+      "severe": 0,
+      "items": 36
+    },
+    "sel_hub/cultureexplorer": {
+      "uniq": 0,
+      "severe": 0,
+      "items": 30
     },
     "sel_hub/selfadvocacy": {
       "uniq": 0,

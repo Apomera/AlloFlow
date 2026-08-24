@@ -46,7 +46,16 @@ function splitOptions(raw) {
     if (c === "'" || c === '"') {
       const q = c; i++;
       let s = '';
-      while (i < n && raw[i] !== q) { if (raw[i] === '\\') { s += raw[i + 1]; i += 2; } else s += raw[i++]; }
+      while (i < n && raw[i] !== q) {
+        if (raw[i] === '\\') {
+          // Decode escapes to RENDERED length: 'M\u0101ori' is 5 characters
+          // on screen, not 10 - source length overcounted escaped keys as tells.
+          if (raw[i + 1] === 'u' && /^[0-9a-fA-F]{4}$/.test(raw.slice(i + 2, i + 6))) {
+            s += String.fromCharCode(parseInt(raw.slice(i + 2, i + 6), 16));
+            i += 6;
+          } else { s += raw[i + 1]; i += 2; }
+        } else s += raw[i++];
+      }
       i++;
       out.push(s);
       continue;
@@ -57,6 +66,10 @@ function splitOptions(raw) {
 }
 
 function judge(opts, idx, stats) {
+  // Two-option (True/False) items are excluded: chance is already 50%, and
+  // "False" being one character longer than "True" is neither a real cue nor
+  // fixable. The licensure-pack rule likewise judges 4-choice items only.
+  if (opts.length < 3) return;
   const lens = opts.map((o) => o.length);
   const maxLen = Math.max(...lens);
   const others = lens.filter((_, j) => j !== idx);

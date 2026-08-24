@@ -291,39 +291,39 @@ window.SelHub = window.SelHub || {
   var CULTURE_QUIZ = {
     elementary: [
       { q: 'Diwali is celebrated in which tradition?', a: 'Hindu / Indian', options: ['Hindu / Indian', 'Chinese', 'Native American', 'Greek'] },
-      { q: 'Day of the Dead (D\u00EDa de los Muertos) honors...', a: 'Deceased loved ones', options: ['Deceased loved ones', 'Military heroes', 'Ancient kings', 'Harvest season'] },
+      { q: 'Day of the Dead (D\u00EDa de los Muertos) honors...', a: 'Deceased loved ones', options: ['Deceased loved ones', 'Fallen military heroes', 'Ancient kings', 'Harvest season'] },
       { q: 'Kwanzaa celebrates which heritage?', a: 'African heritage', options: ['European heritage', 'African heritage', 'Asian heritage', 'Australian heritage'] },
       { q: 'During Hanukkah, families light candles on a...', a: 'Menorah', options: ['Cake', 'Menorah', 'Campfire', 'Lantern'] },
       { q: 'Lunar New Year is celebrated in many...', a: 'Asian cultures', options: ['South American cultures', 'European cultures', 'Asian cultures', 'African cultures'] },
-      { q: 'During Ramadan, many Muslims...', a: 'Fast from sunrise to sunset', options: ['Fast from sunrise to sunset', 'Stay awake all night', 'Exchange gifts daily', 'Play games all month'] },
-      { q: 'Holi is known as the festival of...', a: 'Colors', options: ['Colors', 'Fire', 'Water', 'Stars'] },
-      { q: 'A Pow Wow is a gathering of...', a: 'Native American communities', options: ['European royalty', 'Native American communities', 'African musicians', 'Japanese artists'] },
+      { q: 'During Ramadan, many Muslims...', a: 'Fast from sunrise to sunset', options: ['Fast from sunrise to sunset', 'Stay awake through every night', 'Exchange gifts daily', 'Play games all month'] },
+      { q: 'Holi is known as the festival of...', a: 'Colors', options: ['Colors', 'Lanterns', 'Water', 'Stars'] },
+      { q: 'A Pow Wow is a gathering of...', a: 'Native American communities', options: ['European royalty', 'Native American communities', 'West African drumming circles', 'Japanese artists'] },
       { q: 'Dragon Boat Festival is celebrated in...', a: 'China', options: ['India', 'Brazil', 'China', 'Egypt'] },
       { q: 'Carnival features colorful parades in countries like...', a: 'Brazil and Trinidad', options: ['Japan and Korea', 'Brazil and Trinidad', 'Norway and Finland', 'Australia and New Zealand'] }
     ],
     middle: [
-      { q: 'Code-switching means...', a: 'Changing behavior to fit different environments', options: ['Changing behavior to fit different environments', 'Switching between phone apps', 'Learning to code computers', 'Copying someone else\'s homework'] },
-      { q: 'Cultural appropriation is different from appreciation because it...', a: 'Takes without understanding or permission', options: ['Takes without understanding or permission', 'Always involves clothing', 'Only applies to food', 'Is the same thing'] },
-      { q: 'The "model minority" myth is harmful because it...', a: 'Erases individual struggles and pits groups against each other', options: ['Celebrates all minorities equally', 'Erases individual struggles and pits groups against each other', 'Only affects one racial group', 'Is actually true for most people'] },
-      { q: 'Implicit bias refers to...', a: 'Unconscious attitudes that affect our actions', options: ['Lies people tell on purpose', 'Unconscious attitudes that affect our actions', 'Laws that discriminate openly', 'Opinions shared on social media'] },
-      { q: 'A microaggression is best described as...', a: 'Small comments that communicate negative messages about identity', options: ['A very tiny act of violence', 'A small compliment', 'Small comments that communicate negative messages about identity', 'Quietly disagreeing with someone'] },
-      { q: 'An ally is someone who...', a: 'Uses their voice to support people facing discrimination', options: ['Only helps people who look like them', 'Uses their voice to support people facing discrimination', 'Avoids all conflict', 'Agrees with everyone always'] },
-      { q: 'Representation in media matters because...', a: 'It shapes self-image and tells people they belong', options: ['It makes TV shows longer', 'It shapes self-image and tells people they belong', 'It only matters to adults', 'It has no real effect'] },
-      { q: 'Stereotypes are harmful even when "positive" because they...', a: 'Ignore individual differences', options: ['Ignore individual differences', 'Are always accurate', 'Only affect celebrities', 'Help people fit in'] },
-      { q: 'Multicultural families often navigate...', a: 'Multiple traditions, languages, and expectations', options: ['Only one culture', 'Multiple traditions, languages, and expectations', 'No traditions at all', 'Only food differences'] },
-      { q: 'Digital culture can reinforce stereotypes through...', a: 'Biased algorithms and viral trends', options: ['Better WiFi signals', 'Biased algorithms and viral trends', 'Longer battery life', 'Fewer ads'] }
+      { q: 'Code-switching means...', a: 'Changing behavior to fit different environments', options: ['Changing behavior to fit different environments', 'Switching between phone apps', 'Learning to code computers', 'Copying another student\'s homework word for word'] },
+      { q: 'Cultural appropriation is different from appreciation because it...', a: 'Takes without understanding or permission', options: ['Takes without understanding or permission', 'Always involves clothing and hairstyles rather than ideas', 'Only applies to food', 'Is the same thing'] },
+      { q: 'The "model minority" myth is harmful because it...', a: 'Erases individual struggles and pits groups against each other', options: ['Celebrates every minority group equally and lifts all of them up', 'Erases individual struggles and pits groups against each other', 'Only affects one racial group', 'Is actually true for most people'] },
+      { q: 'Implicit bias refers to...', a: 'Unconscious attitudes that affect our actions', options: ['Lies people tell on purpose', 'Unconscious attitudes that affect our actions', 'Laws that discriminate openly', 'Strong opinions people share openly on social media'] },
+      { q: 'A microaggression is best described as...', a: 'Small comments that communicate negative messages about identity', options: ['A very tiny act of violence', 'A small compliment', 'Small comments that communicate negative messages about identity', 'Quietly disagreeing with someone without ever telling them directly'] },
+      { q: 'An ally is someone who...', a: 'Uses their voice to support people facing discrimination', options: ['Someone who only helps people who look and think like they do', 'Uses their voice to support people facing discrimination', 'Avoids all conflict', 'Agrees with everyone always'] },
+      { q: 'Representation in media matters because...', a: 'It shapes self-image and tells people they belong', options: ['It makes TV shows longer', 'It shapes self-image and tells people they belong', 'It only matters to adults who watch the news regularly', 'It has no real effect'] },
+      { q: 'Stereotypes are harmful even when "positive" because they...', a: 'Ignore individual differences', options: ['Ignore individual differences', 'Are always accurate', 'Only affect celebrities and public figures', 'Help people fit in'] },
+      { q: 'Multicultural families often navigate...', a: 'Multiple traditions, languages, and expectations', options: ['Only one culture', 'Multiple traditions, languages, and expectations', 'No traditions at all', 'Only differences in food and holiday cooking traditions'] },
+      { q: 'Digital culture can reinforce stereotypes through...', a: 'Biased algorithms and viral trends', options: ['Faster networks that spread every idea equally', 'Biased algorithms and viral trends', 'Longer battery life', 'Fewer ads'] }
     ],
     high: [
-      { q: 'Intersectionality, coined by Kimberl\u00E9 Crenshaw, describes how...', a: 'Multiple identities create unique experiences of privilege and oppression', options: ['People should only identify one way', 'Multiple identities create unique experiences of privilege and oppression', 'Race is the only identity that matters', 'Everyone has the same experience'] },
-      { q: 'Systemic bias differs from personal prejudice because it is...', a: 'Built into institutions, laws, and systems', options: ['Only in people\'s heads', 'Built into institutions, laws, and systems', 'Easy to fix with one conversation', 'Not real'] },
+      { q: 'Intersectionality, coined by Kimberl\u00E9 Crenshaw, describes how...', a: 'Multiple identities create unique experiences of privilege and oppression', options: ['People should only identify one way', 'Multiple identities create unique experiences of privilege and oppression', 'Race is the only identity that truly matters when discussing discrimination', 'Everyone has the same experience'] },
+      { q: 'Systemic bias differs from personal prejudice because it is...', a: 'Built into institutions, laws, and systems', options: ['Only in people\'s heads', 'Built into institutions, laws, and systems', 'Easy to fix with a single honest conversation between individuals', 'Not real'] },
       { q: 'Cultural humility differs from cultural competence in that it...', a: 'Is an ongoing process, not a destination', options: ['Can be achieved with a single course', 'Is an ongoing process, not a destination', 'Only applies to doctors', 'Means knowing everything about a culture'] },
-      { q: 'Decolonization primarily involves...', a: 'Dismantling colonial structures and centering Indigenous knowledge', options: ['Building more colonies', 'Dismantling colonial structures and centering Indigenous knowledge', 'Ignoring history completely', 'Only changing textbooks'] },
-      { q: 'Diaspora communities are formed when people...', a: 'Are dispersed from their homeland', options: ['Move to the suburbs', 'Are dispersed from their homeland', 'Choose to live alone', 'Join a sports team'] },
-      { q: 'Restorative justice focuses on...', a: 'Repairing harm through dialogue', options: ['Harsher punishments', 'Repairing harm through dialogue', 'Ignoring wrongdoing', 'Only forgiving'] },
-      { q: 'Indigenous sovereignty affirms the right to...', a: 'Self-governance and cultural preservation', options: ['Colonial rule', 'Self-governance and cultural preservation', 'Isolation from society', 'Military power'] },
-      { q: 'Environmental racism means that...', a: 'Marginalized communities bear disproportionate environmental burdens', options: ['Nature is inherently racist', 'Marginalized communities bear disproportionate environmental burdens', 'Only certain countries pollute', 'All communities are affected equally'] },
-      { q: 'Performative allyship is problematic because it...', a: 'Prioritizes appearance over genuine action', options: ['Raises too much money for causes', 'Prioritizes appearance over genuine action', 'Always leads to real change', 'Is a new type of activism'] },
-      { q: 'Coalition building requires...', a: 'Trust, shared goals, and centering the most affected voices', options: ['Everyone agreeing on everything', 'Trust, shared goals, and centering the most affected voices', 'Only one strong leader', 'Avoiding difficult conversations'] }
+      { q: 'Decolonization primarily involves...', a: 'Dismantling colonial structures and centering Indigenous knowledge', options: ['Building more colonies', 'Dismantling colonial structures and centering Indigenous knowledge', 'Ignoring colonial history completely and starting over from scratch', 'Only changing textbooks'] },
+      { q: 'Diaspora communities are formed when people...', a: 'Are dispersed from their homeland', options: ['Move together into the same suburbs', 'Are dispersed from their homeland', 'Choose to live alone', 'Join a sports team'] },
+      { q: 'Restorative justice focuses on...', a: 'Repairing harm through dialogue', options: ['Handing out harsher punishments', 'Repairing harm through dialogue', 'Ignoring wrongdoing', 'Only forgiving'] },
+      { q: 'Indigenous sovereignty affirms the right to...', a: 'Self-governance and cultural preservation', options: ['Colonial rule', 'Self-governance and cultural preservation', 'Complete isolation from the wider society', 'Military power'] },
+      { q: 'Environmental racism means that...', a: 'Marginalized communities bear disproportionate environmental burdens', options: ['Nature is inherently racist', 'Marginalized communities bear disproportionate environmental burdens', 'Only certain countries pollute', 'All communities are affected exactly equally, whatever their income or race'] },
+      { q: 'Performative allyship is problematic because it...', a: 'Prioritizes appearance over genuine action', options: ['Raises too much money for the causes it claims to support', 'Prioritizes appearance over genuine action', 'Always leads to real change', 'Is a new type of activism'] },
+      { q: 'Coalition building requires...', a: 'Trust, shared goals, and centering the most affected voices', options: ['Everyone agreeing on everything', 'Trust, shared goals, and centering the most affected voices', 'Only one strong leader', 'Carefully avoiding every difficult conversation between partners'] }
     ]
   };
 
@@ -388,13 +388,13 @@ window.SelHub = window.SelHub || {
       { q: 'True or False: Everyone in the same country celebrates the same holidays.', a: 'False', options: ['True', 'False'] },
       { q: 'What does the word "culture" include?', a: 'All of the above', options: ['Food and music', 'Language and traditions', 'Beliefs and values', 'All of the above'] },
       { q: 'True or False: Being multilingual (speaking many languages) is a strength.', a: 'True', options: ['True', 'False'] },
-      { q: 'What is the best way to learn about another culture?', a: 'Ask respectful questions and listen', options: ['Watch one movie about it', 'Ask respectful questions and listen', 'Assume you already know', 'Avoid the topic'] }
+      { q: 'What is the best way to learn about another culture?', a: 'Ask respectful questions and listen', options: ['Watch one popular movie about that culture', 'Ask respectful questions and listen', 'Assume you already know', 'Avoid the topic'] }
     ],
     middle: [
       { q: 'True or False: A microaggression is always intentional.', a: 'False', options: ['True', 'False'] },
-      { q: 'What is code-switching?', a: 'Changing behavior to fit different social contexts', options: ['Switching computer programming languages', 'Changing behavior to fit different social contexts', 'A type of secret code', 'Switching schools'] },
+      { q: 'What is code-switching?', a: 'Changing behavior to fit different social contexts', options: ['Switching between computer programming languages mid-project', 'Changing behavior to fit different social contexts', 'A type of secret code', 'Switching schools'] },
       { q: 'True or False: "Positive" stereotypes (like "all Asians are good at math") are still harmful.', a: 'True', options: ['True', 'False'] },
-      { q: 'Cultural appropriation is taking elements of a culture without...', a: 'Understanding or respect', options: ['Paying money', 'Understanding or respect', 'A permission slip', 'Telling anyone'] },
+      { q: 'Cultural appropriation is taking elements of a culture without...', a: 'Understanding or respect', options: ['Paying money', 'Understanding or respect', 'A signed permission slip', 'Telling anyone'] },
       { q: 'True or False: Implicit biases can be changed with awareness and effort.', a: 'True', options: ['True', 'False'] }
     ],
     high: [
@@ -402,7 +402,7 @@ window.SelHub = window.SelHub || {
       { q: 'True or False: Systemic bias can exist even without individual racist intent.', a: 'True', options: ['True', 'False'] },
       { q: 'Restorative justice has its roots in which traditions?', a: 'Indigenous practices', options: ['Roman law', 'British common law', 'Indigenous practices', 'Social media movements'] },
       { q: 'True or False: "Colorblindness" (claiming not to see race) promotes equity.', a: 'False', options: ['True', 'False'] },
-      { q: 'Environmental racism describes how pollution disproportionately affects...', a: 'Marginalized communities', options: ['Rural areas only', 'Wealthy neighborhoods', 'Marginalized communities', 'All areas equally'] }
+      { q: 'Environmental racism describes how pollution disproportionately affects...', a: 'Marginalized communities', options: ['Rural areas only', 'Wealthier gated neighborhoods', 'Marginalized communities', 'All areas equally'] }
     ]
   };
 
