@@ -8241,7 +8241,7 @@
     "anchor_chart_paper": "Suprafața texturată tip hârtie a Anchor Chart cu titlul în partea de sus și secțiuni cu pictograme și marcatori. Aspectul mimează intenționat hârtia de panou de clasă.",
     "anchor_chart_add_section": "Adaugă o secțiune nouă goală la Anchor Chart (doar în modul editare). Util când AI a omis o categorie sau când co-construiești live cu elevii. Limitează la 5-7 secțiuni.",
     "anchor_chart_critique_panel": "Bara de antet chihlimbarie din modul Critique care explică elevilor protocolul I notice / I wonder înainte de a posta adnotări. Vizibil cât timp modul este activ.",
-    "ai_backend_modal_panel": "Setări AI Backend: configurare completă a furnizorului. Schimbă AI-ul care alimentează generarea (Gemini, Claude, OpenAI, Ollama, LocalAI, NPU), cheile API, modelele și furnizorul TTS.",
+    "ai_backend_modal_panel": "Setările motorului IA. Aici alegi ce IA pune în mișcare AlloFlow. În mod normal te poartă prin trei alegeri simple (Google Gemini cu o cheie gratuită, o IA pe deplin privată care rulează pe acest calculator, sau o aplicație IA pe care o folosești deja, cum ar fi LM Studio sau Ollama), cere doar ce are nevoie acea alegere și confirmă printr-un test de conexiune. Tot ce merge mai în adâncime. Lista furnizorilor, schimbarea modelului, text în vorbire, generare de imagini, diagnostice. Stă în spatele comutatorului „Setări avansate” de jos. Setările se păstrează de la o sesiune la alta și se aplică peste tot. Sfat: majorității profesorilor le ajunge traseul ghidat; deschide Avansate doar dacă ai cerințe anume de cost, confidențialitate sau capacitate a modelului.",
     "ai_backend_provider_select": "Pick AI provider acela powers lecție generation. Gemini (implicit, generous free tier, excellent pentru education conținut). Claude (Anthropic — strongest pentru nuanced writing/analysis tasks, paid). OpenAI (GPT-4 family — paid, broad capability). Ollama (tău own self-hosted modl, free, fully private — requires local installation). LocalAI (self-hosted compatible API, free, private). NPU (pe-device Neural Processing Unit dacă tău machine has one — fully local). Custom (any OpenAI-compatible endpoint URL tu supply). sfat: schools serving elev cu strictest privacy requirements (some IEP populations, some districts) should rulează Ollama locally so no elev date leaves device.",
     "ai_backend_custom_url_input": "URL backend pentru furnizori auto-găzduiți sau personalizați. Format: http://localhost:8080 pentru Ollama local (port implicit 11434) sau HTTPS pentru API la distanță compatibil OpenAI.",
     "ai_backend_api_key_input": "Cheie API pentru furnizorii cloud (mascată ca parolă, niciodată afișată în clar). Stocată local în localStorage. Rotiește cheia la 90 de zile pentru igienă de securitate.",
@@ -15302,6 +15302,8 @@
       "badge_wordProblem": "Vrăjitorul Problemelor"
     },
     "watercycle": {
+      "20": "❄️ -20°",
+      "45": "🔥 45°",
       "build_the_water_cycle": "Construiește circuitul apei",
       "choose_a_stage_to_spotlight": "Alege o etapă pentru a-i evidenția mișcarea în modelul live.",
       "choose_a_view": "Alege o vizualizare",
@@ -15677,8 +15679,6 @@
       "quiz_912_8_fb2": "Acesta este un raport de repartiție hidrologică, nu raportul termodinamic Bowen.",
       "quiz_912_8_fb3": "Acesta este un bilanț hidric global, nu raportul Bowen.",
       "quiz_912_8_fb4": "Aceasta privește fracțiunea de nebulozitate, nu raportul fluxurilor de căldură Bowen.",
-      "20": "❄️ -20°",
-      "45": "🔥 45°",
       "mode_announce": "{label} deschis. {blurb}.",
       "mode_aria": "{label}. {blurb}",
       "mode_aria_active": "{label}. {blurb}. Deschis acum.",

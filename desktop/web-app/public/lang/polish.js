@@ -8244,7 +8244,7 @@
     "anchor_chart_paper": "Element interfejsu: wykresu zakotwiczenia.",
     "anchor_chart_add_section": "Dodaj nową sekcję do tablicy kotwicznej.",
     "anchor_chart_critique_panel": "Panel wykresu zakotwiczenia.",
-    "ai_backend_modal_panel": "Panel konfiguracji backendu AI - wybór dostawcy i modelu.",
+    "ai_backend_modal_panel": "Ustawienia silnika SI. Tutaj wybierasz, która SI napędza AlloFlow. Domyślnie przeprowadza cię przez trzy proste możliwości (Google Gemini z darmowym kluczem, w pełni prywatna SI działająca na tym komputerze, albo aplikacja SI, której już używasz, na przykład LM Studio lub Ollama), pyta tylko o to, czego dany wybór wymaga, i potwierdza testem połączenia. Wszystko, co idzie głębiej. Lista dostawców, podmiana modeli, zamiana tekstu na mowę, generowanie obrazów, diagnostyka. Kryje się pod przełącznikiem „Ustawienia zaawansowane” na dole. Ustawienia zostają między sesjami i działają wszędzie. Wskazówka: większości nauczycieli wystarcza ścieżka prowadzona; otwieraj Zaawansowane tylko wtedy, gdy masz konkretne wymagania co do kosztów, prywatności albo możliwości modelu.",
     "ai_backend_provider_select": "Wybierz dostawcę AI (Google Gemini, Anthropic Claude, OpenAI, Ollama).",
     "ai_backend_custom_url_input": "Wpisz własny URL endpointu dla niestandardowego dostawcy AI.",
     "ai_backend_api_key_input": "Wpisz klucz API dla wybranego dostawcy AI.",
@@ -15289,6 +15289,8 @@
       "badge_wordProblem": "Czarodziej Zadań"
     },
     "watercycle": {
+      "20": "❄️ -20°",
+      "45": "🔥 45°",
       "build_the_water_cycle": "Zbuduj obieg wody",
       "choose_a_stage_to_spotlight": "Wybierz etap, aby wyróżnić jego ruch w modelu na żywo.",
       "choose_a_view": "Wybierz widok",
@@ -15664,8 +15666,6 @@
       "quiz_912_8_fb2": "To wskaźnik podziału hydrologicznego, a nie termodynamiczny stosunek Bowena.",
       "quiz_912_8_fb3": "To globalny bilans wodny, a nie stosunek Bowena.",
       "quiz_912_8_fb4": "To dotyczy udziału zachmurzenia, a nie stosunku strumieni ciepła Bowena.",
-      "20": "❄️ -20°",
-      "45": "🔥 45°",
       "mode_announce": "Otwarto: {label}. {blurb}.",
       "mode_aria": "{label}. {blurb}",
       "mode_aria_active": "{label}. {blurb}. Otwarte teraz.",

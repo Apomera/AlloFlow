@@ -8233,7 +8233,7 @@
     "anchor_chart_paper": "textured-paper チャート表面 itself — タイトル上部、 その後セクションアイコンと bullet アイテム。",
     "anchor_chart_add_section": "追加新しい空白セクションチャート (編集モードのみ)。",
     "anchor_chart_critique_panel": "アンバーヘッダーバー上部の批評モード説明私気づく / 私不思議に思う protocol 生徒前彼ら投稿アノテーション。",
-    "ai_backend_modal_panel": "AI バックエンド設定 — 完全プロバイダー設定モーダル。",
+    "ai_backend_modal_panel": "AI 接続の設定です。AlloFlow をどの AI で動かすかをここで選びます。既定では、三つのかんたんな選択肢（無料キーで使う Google Gemini、この端末の中だけで動く完全非公開の AI、LM Studio や Ollama など既にお使いの AI アプリ）を順に案内し、その選択に必要なことだけを尋ね、接続テストで確認します。それより踏み込んだ内容はすべて。提供元の一覧、モデルの上書き、読み上げ、画像生成、診断。いちばん下の「詳細設定」の切り替えの中にあります。設定はセッションをまたいで保存され、全体に適用されます。ヒント：ほとんどの先生には案内どおりの手順で十分です。費用、プライバシー、モデルの機能に特別な要件があるときだけ詳細設定を開いてください。",
     "ai_backend_provider_select": "選択 AI プロバイダーその powers 授業生成。",
     "ai_backend_custom_url_input": "バックエンド URL 自己-hosted またはカスタムプロバイダー。",
     "ai_backend_api_key_input": "API キークラウドプロバイダー (パスワード-masked, 決して表示プレーンテキスト)。",
