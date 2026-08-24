@@ -2930,7 +2930,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
               advanced: 'Net joint torque reflects muscle force, moment-arm length, gravity, and opposing muscle activity; the patella improves the quadriceps moment arm.',
               summary: 'Tendon force crosses the knee and rotates bones around the joint while cartilage distributes load.',
                 question: 'How does muscle tension become visible joint movement?',
-                options: ['Tendon pull creates torque around the joint', 'Ligaments actively shorten', 'Synovial fluid pushes the tibia'], correct: 0,
+                options: ['Tendon pull creates torque around the joint', 'Ligaments actively shorten to pull the bones', 'Pressurized synovial fluid pushes the tibia forward'], correct: 0,
                 feedback: 'A contracting muscle transmits force through its tendon, creating torque around the joint axis.'
               },
               {
@@ -2948,7 +2948,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
               advanced: 'Diffusion follows partial-pressure gradients and depends on surface area, membrane thickness, and gas properties; matched ventilation and perfusion improve exchange.',
               summary: 'Ventilation and pulmonary blood flow sustain diffusion across the thin alveolar-capillary barrier.',
                 question: 'What keeps oxygen moving from alveolar air into blood?',
-                options: ['Equal oxygen pressure on both sides', 'A maintained partial-pressure gradient', 'A thicker diffusion barrier'], correct: 1,
+                options: ['Equal oxygen pressure maintained on both sides', 'A maintained partial-pressure gradient', 'A thicker diffusion barrier'], correct: 1,
                 feedback: 'Ventilation and perfusion maintain an oxygen partial-pressure gradient across a very thin barrier.'
               }
             ]
@@ -2983,7 +2983,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
               advanced: 'Portal flow provides first-pass exposure of hepatocytes to nutrients, hormones, and some orally absorbed substances before blood returns through hepatic veins.',
               summary: 'Nutrient-rich venous blood from the intestine travels to liver lobules through the hepatic portal vein.',
                 question: 'Why does portal blood reach the liver before the general circulation?',
-                options: ['To bypass all metabolism', 'To allow early processing and storage', 'To exchange gases in alveoli'], correct: 1,
+                options: ['To bypass metabolism until nutrients are needed', 'To allow early processing and storage', 'To exchange gases in alveoli'], correct: 1,
                 feedback: 'The portal route gives hepatocytes early access to absorbed nutrients for storage, transformation, and controlled release.'
               },
               {
@@ -3027,7 +3027,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
               advanced: 'Perfusion supports oxidative metabolism and leukocyte delivery; ischemia, edema, or vascular disease can slow every subsequent repair phase.',
               summary: 'Systemic blood flow supplies oxygen, platelets, immune cells, and nutrients near the injured tissue.',
                 question: 'Why is adequate perfusion important before tissue rebuilding begins?',
-                options: ['It delivers repair cells and oxygen', 'It prevents all inflammation', 'It turns epidermis into muscle'], correct: 0,
+                options: ['It delivers repair cells and oxygen', 'It prevents any inflammation from starting', 'It turns epidermis into muscle'], correct: 0,
                 feedback: 'Perfusion delivers oxygen, nutrients, platelets, and circulating immune cells needed across repair phases.'
               },
               {
@@ -3054,7 +3054,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
               advanced: 'Re-epithelialization restores barrier continuity while fibroblasts generate provisional extracellular matrix; later remodeling reorganizes collagen and reduces vascularity.',
               summary: 'Keratinocytes close the surface while fibroblasts deposit matrix and new vessels support granulation tissue.',
                 question: 'Which paired processes directly restore the wound surface and support tissue beneath it?',
-                options: ['Keratinocyte migration and angiogenesis', 'Valve closure and bile flow', 'Bone resorption and ventilation'], correct: 0,
+                options: ['Keratinocyte migration and angiogenesis', 'Cardiac valve closure and hepatic bile flow', 'Bone resorption and ventilation'], correct: 0,
                 feedback: 'Migrating keratinocytes restore the epithelial barrier while angiogenesis supplies the rebuilding tissue.'
               }
             ]
@@ -3089,7 +3089,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                 advanced: 'Net filtration reflects glomerular hydrostatic pressure opposed by capsular pressure and plasma oncotic pressure; barrier size and charge selectivity restrict proteins.',
                 summary: 'The glomerulus produces a cell-poor, nearly protein-free ultrafiltrate from plasma.',
                 question: 'Which component is normally retained most strongly by an intact filtration barrier?',
-                options: ['Albumin and blood cells', 'Water and sodium', 'Glucose and urea'], correct: 0,
+                options: ['Albumin and blood cells', 'Free water and sodium ions', 'Glucose and urea'], correct: 0,
                 feedback: 'Blood cells and most plasma proteins are retained, while water and many small solutes enter the filtrate.'
               },
               {
@@ -3107,7 +3107,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                 advanced: 'Countercurrent multiplication builds the medullary gradient, vasa recta exchange preserves it, and ADH regulates aquaporin-2 insertion in collecting-duct principal cells.',
                 summary: 'The loop of Henle and collecting duct tune final water conservation and urine concentration.',
                 question: 'What is a major renal effect of antidiuretic hormone?',
-                options: ['Increase collecting-duct water permeability', 'Open the aortic valve', 'Block all proximal sodium transport'], correct: 0,
+                options: ['Increase collecting-duct water permeability', 'Hold the aortic valve open longer in systole', 'Block all proximal sodium transport'], correct: 0,
                 feedback: 'ADH increases aquaporin-2 insertion, allowing more water to leave the collecting duct when a medullary gradient is present.'
               }
             ]

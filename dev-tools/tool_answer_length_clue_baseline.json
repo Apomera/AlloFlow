@@ -2,11 +2,6 @@
   "_comment": "Ratchet baseline for the tool-bank longest-answer tell. Counts may only go DOWN; fixing the tell means hand-rewriting distractors (never the key) - the automated-filler pass was reverted in f6e08fe43, do not reinvent it. Regenerate with --update-baseline only after re-reading each changed bank.",
   "_rule": "uniq = key uniquely longest; severe = key >= longestDistractor + 20 AND >= longestDistractor * 1.75",
   "tools": {
-    "stem_lab/swimlab": {
-      "uniq": 18,
-      "severe": 13,
-      "items": 18
-    },
     "stem_lab/learning_lab": {
       "uniq": 62,
       "severe": 52,
@@ -37,6 +32,11 @@
       "severe": 48,
       "items": 69
     },
+    "stem_lab/swimlab": {
+      "uniq": 59,
+      "severe": 40,
+      "items": 69
+    },
     "stem_lab/geologyexplorer": {
       "uniq": 21,
       "severe": 3,
@@ -62,10 +62,20 @@
       "severe": 30,
       "items": 70
     },
+    "stem_lab/beehive": {
+      "uniq": 18,
+      "severe": 6,
+      "items": 24
+    },
     "stem_lab/behaviorlab": {
       "uniq": 12,
       "severe": 1,
       "items": 16
+    },
+    "stem_lab/printingpress": {
+      "uniq": 184,
+      "severe": 104,
+      "items": 246
     },
     "stem_lab/nutritionlab": {
       "uniq": 16,
@@ -87,15 +97,15 @@
       "severe": 15,
       "items": 62
     },
-    "stem_lab/printingpress": {
-      "uniq": 18,
-      "severe": 12,
-      "items": 31
-    },
     "stem_lab/cell": {
       "uniq": 10,
       "severe": 1,
       "items": 18
+    },
+    "stem_lab/platetectonics": {
+      "uniq": 4,
+      "severe": 0,
+      "items": 8
     },
     "stem_lab/optics": {
       "uniq": 30,
@@ -107,10 +117,10 @@
       "severe": 0,
       "items": 25
     },
-    "stem_lab/anatomy": {
-      "uniq": 7,
+    "sel_hub/cultureexplorer": {
+      "uniq": 13,
       "severe": 0,
-      "items": 16
+      "items": 30
     },
     "stem_lab/music": {
       "uniq": 9,
@@ -156,6 +166,11 @@
       "uniq": 5,
       "severe": 0,
       "items": 28
+    },
+    "stem_lab/anatomy": {
+      "uniq": 0,
+      "severe": 0,
+      "items": 16
     },
     "stem_lab/astronomy": {
       "uniq": 0,

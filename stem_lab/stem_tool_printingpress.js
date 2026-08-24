@@ -476,7 +476,35 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
         );
       }
 
+      // ═══ QUIZ OPTION ORDER ═══
+      // The 254 inline quiz questions put 66% of correct answers at index 1
+      // (and the scanner had excused the file on phantom arithmetic - CSS
+      // rotate() calls, not a shuffle). The banks are literals scattered across
+      // dozens of miniQuizBlock/scenarioCard calls, so the neutralisation lives
+      // HERE, at render time: hash the question text to a target slot and
+      // rotate the options onto it. Deterministic on the text - the order must
+      // be stable across re-renders or options would move mid-answer - and the
+      // avalanche step matters: a multiplicative hash has weak low bits, and
+      // seed % n reads exactly those (see semiconductor's orderOptions, which
+      // measured 50-75% pile-ups without it).
+      function ppPlaceAnswer(qText, opts, ansIdx) {
+        if (!Array.isArray(opts) || opts.length < 2) return { opts: opts, ans: ansIdx };
+        if (typeof ansIdx !== 'number' || ansIdx < 0 || ansIdx >= opts.length) return { opts: opts, ans: ansIdx };
+        var seed = 2166136261;
+        var t2 = String(qText || '');
+        for (var c2 = 0; c2 < t2.length; c2++) seed = ((seed ^ t2.charCodeAt(c2)) * 16777619) >>> 0;
+        seed ^= seed >>> 16; seed = (seed * 2246822507) >>> 0;
+        seed ^= seed >>> 13; seed = (seed * 3266489909) >>> 0;
+        seed ^= seed >>> 16;
+        var target = (seed >>> 0) % opts.length;
+        var shift = (ansIdx - target + opts.length) % opts.length;
+        if (!shift) return { opts: opts, ans: ansIdx };
+        return { opts: opts.slice(shift).concat(opts.slice(0, shift)), ans: target };
+      }
+
       function scenarioCard(modId, idx, scenario) {
+        var _pp = ppPlaceAnswer(scenario.prompt, scenario.choices, scenario.correct);
+        scenario = Object.assign({}, scenario, { choices: _pp.opts, correct: _pp.ans });
         var localStateRaw = useState(null);
         var localState = localStateRaw[0], setLocalState = localStateRaw[1];
         var revealed = !!localState;
@@ -505,6 +533,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
       }
 
       function miniQuizBlock(modId, questions) {
+        questions = questions.map(function(qq) {
+          var _p = ppPlaceAnswer(qq.q, qq.opts, qq.ans);
+          return _p.ans === qq.ans ? qq : Object.assign({}, qq, { opts: _p.opts, ans: _p.ans });
+        });
         // Hooks called UNCONDITIONALLY at the top — Rules of Hooks. The
         // badge-award useEffect was previously inside an `if (done && pct >= 80)`
         // branch which violated React's rules. Now it always runs and the
