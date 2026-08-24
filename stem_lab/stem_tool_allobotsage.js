@@ -1059,6 +1059,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
       ]
     }
   ];
+  // Move each question's correct answer onto a cycling target slot. As
+  // authored, 58% of 248 answers across the 39 challenge banks sat at index 1; the position scanner had excused this file on phantom
+  // arithmetic (any `* n + m %` expression counts as a "rotation"), so the
+  // bias shipped. Slot-targeted rather than a fixed shift so the distribution
+  // is exactly uniform; runs once at module load so the order is stable across
+  // renders, sessions and exports. Same pattern as economicslab / galaxy /
+  // advocacy.
+  (function () {
+    var SLOTS = [0, 2, 1, 3];
+    var counter = 0;
+    SPELLBOOK.forEach(function (sage) {
+      ((sage && sage.challengeBank) || []).forEach(function (item) {
+        if (!item || !Array.isArray(item.options) || typeof item.correctIndex !== 'number') return;
+        var len = item.options.length;
+        if (len < 2 || item.correctIndex < 0 || item.correctIndex >= len) return;
+        var target = SLOTS[counter++ % SLOTS.length] % len;
+        var shift = (item.correctIndex - target + len) % len;
+        if (!shift) return;
+        item.options = item.options.slice(shift).concat(item.options.slice(0, shift));
+        item.correctIndex = target;
+      });
+    });
+  })();
+
 
   // ═══════════════════════════════════════════════════════════════
   // ENEMIES — expanded sector-themed roster

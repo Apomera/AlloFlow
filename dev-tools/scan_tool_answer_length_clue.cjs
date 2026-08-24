@@ -107,9 +107,9 @@ for (const dir of DIRS) {
     };
 
     let m;
-    const reA = /(?:options|opts|choices|a):\s*\[([^\]]{4,900})\]\s*,\s*(?:correctIdx|correct|answer|ans):\s*(\d+)/g;
+    const reA = /(?:options|opts|choices|a):\s*\[([^\]]{4,900})\]\s*,\s*(?:correctIndex|correctIdx|correct|answer|ans|a|c):\s*(\d+)/g;
     while ((m = reA.exec(src))) tryArr(m[1], parseInt(m[2], 10));
-    const reA2 = /(?:correctIdx|correct|answer|ans):\s*(\d+)\s*,\s*(?:options|opts|choices|a):\s*\[([^\]]{4,900})\]/g;
+    const reA2 = /(?:correctIndex|correctIdx|correct|answer|ans|a|c):\s*(\d+)\s*,\s*(?:options|opts|choices|a):\s*\[([^\]]{4,900})\]/g;
     while ((m = reA2.exec(src))) tryArr(m[2], parseInt(m[1], 10));
     const reB = /a:\s*'((?:[^'\\]|\\.)*)'\s*,\s*[\r\n]*\s*(?:opts|options):\s*\[([^\]]{4,900})\]/g;
     while ((m = reB.exec(src))) {

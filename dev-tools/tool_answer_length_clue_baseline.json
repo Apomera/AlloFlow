@@ -102,6 +102,11 @@
       "severe": 1,
       "items": 18
     },
+    "stem_lab/magnetism": {
+      "uniq": 12,
+      "severe": 1,
+      "items": 22
+    },
     "stem_lab/platetectonics": {
       "uniq": 4,
       "severe": 0,
@@ -112,6 +117,11 @@
       "severe": 7,
       "items": 62
     },
+    "stem_lab/climateExplorer": {
+      "uniq": 19,
+      "severe": 3,
+      "items": 40
+    },
     "stem_lab/statslab": {
       "uniq": 11,
       "severe": 0,
@@ -121,6 +131,11 @@
       "uniq": 13,
       "severe": 0,
       "items": 30
+    },
+    "stem_lab/allobotsage": {
+      "uniq": 101,
+      "severe": 16,
+      "items": 249
     },
     "stem_lab/music": {
       "uniq": 9,
@@ -161,6 +176,11 @@
       "uniq": 3,
       "severe": 0,
       "items": 16
+    },
+    "stem_lab/moonmission": {
+      "uniq": 2,
+      "severe": 0,
+      "items": 11
     },
     "stem_lab/semiconductor": {
       "uniq": 5,

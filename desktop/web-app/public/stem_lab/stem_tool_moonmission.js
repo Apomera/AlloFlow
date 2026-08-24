@@ -597,6 +597,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
         { q: 'What does Moon dust smell like after it is brought inside a cabin?', opts: ['Nothing', 'Spent gunpowder', 'Sulfur', 'Roses'], a: 1, fact: t('stem.moonmission.every_apollo_astronaut_reported_that_m', 'Several Apollo astronauts reported that Moon dust smelled like spent gunpowder when brought inside the LM.'), why: ['Astronaut reports describe a noticeable smell once the dust came inside the LM.', null, 'Sulfur is a volcanic-Earth smell — lunar dust smelled burnt, not rotten.', 'Apollo reports point to “spent gunpowder,” not flowers.'] },
         { q: 'How old are the oldest Moon rocks collected?', opts: ['1 billion years', '2.5 billion years', '4.4 billion years', '6 billion years'], a: 2, fact: t('stem.moonmission.the_oldest_moon_rocks_are_4_4_billion_', 'The oldest Moon rocks are 4.4 billion years old \u2014 nearly as old as the solar system itself!'), why: ['1 billion years is younger than nearly all of the lunar surface.', '2.5 billion is still younger than the ancient highland crust the crews sampled.', null, '6 billion years would be older than the solar system itself (4.6 billion).'] }
       ];
+  // Move each question's correct answer onto a cycling target slot. As
+      // authored, 7 of 11 answers sat at index 1; the position scanner had excused this file on phantom
+      // arithmetic (any `* n + m %` expression counts as a "rotation"), so the
+      // bias shipped. Slot-targeted rather than a fixed shift so the distribution
+      // is exactly uniform; runs once at module load so the order is stable across
+      // renders, sessions and exports. Same pattern as economicslab / galaxy /
+      // advocacy.
+      // The per-distractor `why` array is POSITION-ALIGNED with opts (null at the
+      // correct index), so it must rotate in lockstep or feedback would explain
+      // the wrong option.
+      (function () {
+        var SLOTS = [0, 2, 1, 3];
+        var counter = 0;
+        QUIZ_BANK.forEach(function (item) {
+          if (!item || !Array.isArray(item.opts) || typeof item.a !== 'number') return;
+          var len = item.opts.length;
+          if (len < 2 || item.a < 0 || item.a >= len) return;
+          var target = SLOTS[counter++ % SLOTS.length] % len;
+          var shift = (item.a - target + len) % len;
+          if (!shift) return;
+          item.opts = item.opts.slice(shift).concat(item.opts.slice(0, shift));
+          if (Array.isArray(item.why) && item.why.length === len) {
+            item.why = item.why.slice(shift).concat(item.why.slice(0, shift));
+          }
+          item.a = target;
+        });
+      })();
+
 
       // ── AI-customized content override ──
       // When the teacher ran "Customize from source text," d.aiBriefing holds a parsed

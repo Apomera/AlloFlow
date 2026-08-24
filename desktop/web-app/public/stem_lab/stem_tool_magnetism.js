@@ -1181,6 +1181,28 @@
     { q: 'At the instant a rotating coil has maximum magnetic flux, its induced voltage is…', a: ['Zero', 'Maximum', 'Always negative', 'Independent of motion'], c: 0,
       why: 'Voltage depends on the rate of flux change. At a flux maximum the slope is momentarily zero, so the induced voltage is zero.' }
   ];
+  // Move each question's correct answer onto a cycling target slot. As
+  // authored, 21 of 22 answers sat at index 0 (95% - always-pick-A nearly aced the quiz); the position scanner had excused this file on phantom
+  // arithmetic (any `* n + m %` expression counts as a "rotation"), so the
+  // bias shipped. Slot-targeted rather than a fixed shift so the distribution
+  // is exactly uniform; runs once at module load so the order is stable across
+  // renders, sessions and exports. Same pattern as economicslab / galaxy /
+  // advocacy.
+  (function () {
+    var SLOTS = [0, 2, 1, 3];
+    var counter = 0;
+    QUIZ.forEach(function (item) {
+      if (!item || !Array.isArray(item.a) || typeof item.c !== 'number') return;
+      var len = item.a.length;
+      if (len < 2 || item.c < 0 || item.c >= len) return;
+      var target = SLOTS[counter++ % SLOTS.length] % len;
+      var shift = (item.c - target + len) % len;
+      if (!shift) return;
+      item.a = item.a.slice(shift).concat(item.a.slice(0, shift));
+      item.c = target;
+    });
+  })();
+
 
   // Which tab teaches each quiz question (parallel to QUIZ) — powers the
   // post-quiz “study this” loop. Order: the 12 originals, then the R6 four.
