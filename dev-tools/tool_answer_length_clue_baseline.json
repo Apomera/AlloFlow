@@ -87,21 +87,6 @@
       "severe": 15,
       "items": 62
     },
-    "stem_lab/bridgelab": {
-      "uniq": 10,
-      "severe": 4,
-      "items": 15
-    },
-    "stem_lab/dinolab": {
-      "uniq": 21,
-      "severe": 12,
-      "items": 34
-    },
-    "stem_lab/renewables": {
-      "uniq": 11,
-      "severe": 1,
-      "items": 18
-    },
     "stem_lab/printingpress": {
       "uniq": 18,
       "severe": 12,
@@ -182,10 +167,20 @@
       "severe": 0,
       "items": 10
     },
+    "stem_lab/bridgelab": {
+      "uniq": 0,
+      "severe": 0,
+      "items": 15
+    },
     "stem_lab/companionplanting": {
       "uniq": 0,
       "severe": 0,
       "items": 10
+    },
+    "stem_lab/dinolab": {
+      "uniq": 0,
+      "severe": 0,
+      "items": 34
     },
     "stem_lab/galaxy": {
       "uniq": 0,
@@ -196,6 +191,11 @@
       "uniq": 0,
       "severe": 0,
       "items": 15
+    },
+    "stem_lab/renewables": {
+      "uniq": 0,
+      "severe": 0,
+      "items": 18
     },
     "stem_lab/treelab": {
       "uniq": 0,
