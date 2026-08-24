@@ -892,10 +892,10 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
     {
       q: 'A 504 plan is different from an IEP in which way?',
       options: [
-        'A 504 is only for high school students',
+        'A 504 is available only to students in high school or college',
         'A 504 provides accommodations but not specialized instruction',
         'A 504 requires a medical diagnosis; an IEP doesn\'t',
-        'A 504 covers only physical disabilities'
+        'A 504 covers only physical and sensory disabilities, never learning needs'
       ],
       correct: 1,
       why: '504 plans provide accommodations without specialized instruction. IEPs include specialized instruction plus accommodations. Both serve K-12, and both can cover mental or physical conditions. The big difference is the level of support.'
@@ -903,7 +903,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
     {
       q: 'What does LRE (Least Restrictive Environment) mean?',
       options: [
-        'You have to be in general education classes at all times',
+        'You must be placed in general education classes at all times, no matter what you need',
         'Schools should educate you with non-disabled peers to the maximum extent appropriate',
         'Your teachers can\'t remove you from a classroom for any reason',
         'You don\'t have to take hard classes if you have an IEP'
@@ -914,8 +914,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
     {
       q: 'Under FAPE, your school must provide:',
       options: [
-        'The absolute best education they can',
-        'Whatever you and your parents want',
+        'The absolute best education that money can buy, regardless of the cost',
+        'Whatever placement you and your parents request, without any evaluation',
         'An education that meets your individual needs at no cost to your family',
         'Private school placement if public school isn\'t working'
       ],
@@ -925,7 +925,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
     {
       q: 'If you disagree with your school\'s evaluation, you can:',
       options: [
-        'Refuse to participate in the meeting',
+        'Refuse to attend any further meetings until the school changes its evaluation',
         'Request an Independent Educational Evaluation (IEE) at public expense',
         'Ask your parent to pick a new school',
         'Nothing. The school\'s eval is final.'
@@ -958,8 +958,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
     {
       q: 'Your school hasn\'t been implementing an accommodation in your IEP for three months. What\'s the right first step?',
       options: [
-        'File an OCR complaint immediately',
-        'Go to the news',
+        'File a federal OCR complaint immediately, before speaking to anyone at the school',
+        'Contact a local news station and ask them to run the story',
         'Talk with the person most directly involved (teacher, case manager) in writing',
         'Refuse to go to school until it\'s fixed'
       ],
@@ -969,10 +969,10 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
     {
       q: 'In a job interview, if an employer asks if you have a disability:',
       options: [
-        'You must answer truthfully',
+        'You must answer truthfully, because the job offer can legally be withdrawn later if you do not',
         'You can decline to answer — ADA generally prohibits pre-offer disability questions',
-        'You must provide medical documentation',
-        'You can sue them right away'
+        'You must provide medical documentation before the interview can continue',
+        'You can immediately sue the employer for asking the question'
       ],
       correct: 1,
       why: 'ADA generally prohibits pre-offer disability questions. You don\'t have to answer, and employers who ask are on shaky legal ground. Once you have a job offer, you can disclose and request accommodations through the interactive process.'
@@ -980,10 +980,10 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
     {
       q: 'Disclosing your disability to a teacher is:',
       options: [
-        'Required if you have an IEP',
+        'Required by law whenever you have an IEP, so every one of your teachers must be told your full diagnosis and history',
         'A choice you make about what to share — your 504/IEP gives them the legal info they need; you decide about more',
-        'Something you should avoid at all costs',
-        'Illegal without a doctor\'s note'
+        'Something to avoid at all costs, because teachers are not allowed to know about disabilities',
+        'Illegal unless a doctor writes a note approving each conversation in advance'
       ],
       correct: 1,
       why: 'Disclosure is your choice. Your IEP/504 plan already gives teachers the information they legally need about your accommodations. Beyond that, what you share about your diagnosis, history, or clinical details is up to you.'
@@ -992,9 +992,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
       q: 'In college, who makes sure you get accommodations?',
       options: [
         'Your college does it automatically like high school',
-        'Your parents register for you',
+        'Your parents contact Disability Services and register on your behalf',
         'You register with Disability Services and request specific accommodations',
-        'Your IEP follows you and applies automatically'
+        'Your IEP transfers with your transcript and applies automatically in college'
       ],
       correct: 2,
       why: 'College is self-identify-only. Nobody will reach out to you about accommodations. You contact Disability Services, submit documentation, and request specific accommodations. Your high school IEP does NOT automatically transfer.'
@@ -1002,10 +1002,10 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
     {
       q: 'If you feel unsafe at school because of bullying or discrimination:',
       options: [
-        'You just have to cope',
+        'You are expected to cope on your own until you graduate',
         'You have the right to a safe learning environment, and the school must respond if notified',
-        'You have to move to another school',
-        'Only the police can help'
+        'Your only real option is transferring to a different school in the district, at your own expense',
+        'Only the police can act, because schools have no authority over bullying'
       ],
       correct: 1,
       why: 'You have legal rights to a safe learning environment. Multiple federal laws (Section 504, Title VI, Title IX, ADA) require schools to investigate and respond to harassment once they\'re notified. Telling a trusted adult activates the school\'s legal obligation.'

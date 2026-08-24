@@ -37,11 +37,6 @@
       "severe": 48,
       "items": 69
     },
-    "sel_hub/advocacy": {
-      "uniq": 21,
-      "severe": 16,
-      "items": 25
-    },
     "stem_lab/geologyexplorer": {
       "uniq": 21,
       "severe": 3,
@@ -66,11 +61,6 @@
       "uniq": 54,
       "severe": 30,
       "items": 70
-    },
-    "sel_hub/selfadvocacy": {
-      "uniq": 9,
-      "severe": 5,
-      "items": 12
     },
     "stem_lab/behaviorlab": {
       "uniq": 12,
@@ -100,11 +90,6 @@
     "stem_lab/bridgelab": {
       "uniq": 10,
       "severe": 4,
-      "items": 15
-    },
-    "stem_lab/astronomy": {
-      "uniq": 10,
-      "severe": 3,
       "items": 15
     },
     "stem_lab/dinolab": {
@@ -187,6 +172,11 @@
       "severe": 0,
       "items": 28
     },
+    "stem_lab/astronomy": {
+      "uniq": 0,
+      "severe": 0,
+      "items": 15
+    },
     "stem_lab/brainatlas": {
       "uniq": 0,
       "severe": 0,
@@ -212,10 +202,20 @@
       "severe": 0,
       "items": 11
     },
+    "sel_hub/advocacy": {
+      "uniq": 0,
+      "severe": 0,
+      "items": 25
+    },
     "sel_hub/civicaction": {
       "uniq": 0,
       "severe": 0,
       "items": 24
+    },
+    "sel_hub/selfadvocacy": {
+      "uniq": 0,
+      "severe": 0,
+      "items": 12
     }
   }
 }

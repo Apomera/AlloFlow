@@ -7413,10 +7413,10 @@ window.SelHub = window.SelHub || {
       level: 'intermediate',
       question: 'What does LRE stand for and what does it mean?',
       options: [
-        { letter: 'A', text: 'Legally Required Education - all schools must follow', correct: false },
-        { letter: 'B', text: 'Lowest Restrictive Environment - place where you have most freedom', correct: false },
+        { letter: 'A', text: 'Legally Required Education - the mandate that every school must follow federal education law', correct: false },
+        { letter: 'B', text: 'Lowest Restrictive Environment - the single placement where a student is given the most personal freedom', correct: false },
         { letter: 'C', text: 'Least Restrictive Environment - educated with non-disabled peers to the maximum extent appropriate', correct: true },
-        { letter: 'D', text: 'Limited Resource Environment - where most services are provided', correct: false }
+        { letter: 'D', text: 'Limited Resource Environment - the setting where a district concentrates most of its services', correct: false }
       ],
       explanation: 'LRE means Least Restrictive Environment. Federal law requires students with disabilities be educated with non-disabled peers to the maximum extent appropriate.',
       followUp: 'What is your current LRE? Is it appropriate?'
@@ -7428,9 +7428,9 @@ window.SelHub = window.SelHub || {
       question: 'When does a school have to do a manifestation determination?',
       options: [
         { letter: 'A', text: 'Before suspending or expelling a student with an IEP for more than 10 cumulative days', correct: true },
-        { letter: 'B', text: 'Every time discipline is considered', correct: false },
-        { letter: 'C', text: 'Only when parent requests', correct: false },
-        { letter: 'D', text: 'Never - it is parent choice', correct: false }
+        { letter: 'B', text: 'Every single time any form of discipline is considered for any student, with or without an IEP', correct: false },
+        { letter: 'C', text: 'Only when a parent formally requests one in writing before the hearing', correct: false },
+        { letter: 'D', text: 'Never - holding one is entirely the choice of the parent, not the school', correct: false }
       ],
       explanation: 'Manifestation determination is required before disciplinary change of placement (typically 10+ cumulative days) for a student with an IEP. The team decides if behavior was disability-related.',
       followUp: 'If a manifestation determination finds behavior was caused by disability, what happens?'
@@ -7441,10 +7441,10 @@ window.SelHub = window.SelHub || {
       level: 'intermediate',
       question: 'What is "stay-put"?',
       options: [
-        { letter: 'A', text: 'A rule that you cannot move during testing', correct: false },
+        { letter: 'A', text: 'A rule that a student cannot change schools while state testing is under way', correct: false },
         { letter: 'B', text: 'A rule requiring the school to maintain current educational placement during due process', correct: true },
-        { letter: 'C', text: 'A rule about classroom seating', correct: false },
-        { letter: 'D', text: 'A rule about staying in school during disputes', correct: false }
+        { letter: 'C', text: 'A rule about keeping the same classroom seating chart for the whole year', correct: false },
+        { letter: 'D', text: 'A rule that a student must keep attending school in person while any dispute with the district is active', correct: false }
       ],
       explanation: 'Stay-put is the federal rule requiring schools to maintain a student\'s current educational placement during due process proceedings.',
       followUp: 'When would stay-put be invoked?'
@@ -7455,10 +7455,10 @@ window.SelHub = window.SelHub || {
       level: 'advanced',
       question: 'What is the difference between Section 504 and IDEA?',
       options: [
-        { letter: 'A', text: 'They are the same thing with different names', correct: false },
+        { letter: 'A', text: 'They are two names for the same law, used in different states', correct: false },
         { letter: 'B', text: 'Section 504 is a civil rights law and provides accommodations; IDEA provides special education services', correct: true },
-        { letter: 'C', text: 'Section 504 is only for elementary students', correct: false },
-        { letter: 'D', text: 'IDEA is only for high school students', correct: false }
+        { letter: 'C', text: 'Section 504 applies only to elementary school students, and IDEA takes over once a student reaches high school', correct: false },
+        { letter: 'D', text: 'IDEA applies only to high school students preparing for transition', correct: false }
       ],
       explanation: 'Section 504 is part of the Rehabilitation Act (1973) and prohibits disability discrimination. IDEA (1975) is special education law requiring schools to identify, evaluate, and serve students with disabilities. Many students qualify under both.',
       followUp: 'When is a 504 plan more appropriate than an IEP?'
@@ -7469,10 +7469,10 @@ window.SelHub = window.SelHub || {
       level: 'advanced',
       question: 'Who has the right to file an OCR complaint?',
       options: [
-        { letter: 'A', text: 'Only attorneys', correct: false },
-        { letter: 'B', text: 'Only school employees', correct: false },
+        { letter: 'A', text: 'Only licensed attorneys acting on behalf of a family', correct: false },
+        { letter: 'B', text: 'Only school employees who personally witnessed the discrimination', correct: false },
         { letter: 'C', text: 'Any individual or organization, including students and families', correct: true },
-        { letter: 'D', text: 'Only parents', correct: false }
+        { letter: 'D', text: 'Only the parents or legal guardians of the student involved', correct: false }
       ],
       explanation: 'Anyone can file an OCR complaint, including students themselves. It is free and does not require an attorney. The U.S. Department of Education Office for Civil Rights investigates.',
       followUp: 'When would you file an OCR complaint?'
@@ -7483,10 +7483,10 @@ window.SelHub = window.SelHub || {
       level: 'beginner',
       question: 'Self-advocacy is best described as:',
       options: [
-        { letter: 'A', text: 'Always being assertive', correct: false },
+        { letter: 'A', text: 'Being assertive in every situation, no matter what', correct: false },
         { letter: 'B', text: 'Knowing what you need and how to ask for it', correct: true },
-        { letter: 'C', text: 'Demanding things you want', correct: false },
-        { letter: 'D', text: 'Avoiding asking for help', correct: false }
+        { letter: 'C', text: 'Demanding the things you want until you get them', correct: false },
+        { letter: 'D', text: 'Handling everything alone instead of asking for help', correct: false }
       ],
       explanation: 'Self-advocacy starts with self-knowledge (what you need) and includes the skills to communicate and request what you need.',
       followUp: 'What is one thing you need but have not asked for?'
@@ -7511,10 +7511,10 @@ window.SelHub = window.SelHub || {
       level: 'intermediate',
       question: 'When a teacher denies an accommodation you have in your IEP, what is the BEST first step?',
       options: [
-        { letter: 'A', text: 'Argue in front of the class', correct: false },
+        { letter: 'A', text: 'Argue your case in front of the whole class right then', correct: false },
         { letter: 'B', text: 'Ask politely if they can verify with your case manager', correct: true },
-        { letter: 'C', text: 'Storm out of class', correct: false },
-        { letter: 'D', text: 'Just give up the accommodation', correct: false }
+        { letter: 'C', text: 'Walk out of class and go straight to the principal', correct: false },
+        { letter: 'D', text: 'Quietly give up the accommodation to avoid any conflict', correct: false }
       ],
       explanation: 'Calmly inviting verification preserves the relationship and gets the accommodation. Escalation is for patterns, not single incidents.',
       followUp: 'What would you do if the teacher refuses to verify?'
@@ -7525,10 +7525,10 @@ window.SelHub = window.SelHub || {
       level: 'intermediate',
       question: 'You disagree with a decision made in your IEP meeting. What is the BEST course of action?',
       options: [
-        { letter: 'A', text: 'Refuse to sign and walk out', correct: false },
-        { letter: 'B', text: 'Sign anyway to keep peace', correct: false },
+        { letter: 'A', text: 'Refuse to sign any documents and walk out of the meeting', correct: false },
+        { letter: 'B', text: 'Sign the plan anyway to keep the peace with the team', correct: false },
         { letter: 'C', text: 'State your disagreement and ask for it to be documented in writing', correct: true },
-        { letter: 'D', text: 'Tell other parents to file complaints', correct: false }
+        { letter: 'D', text: 'Encourage other parents to file complaints about the same decision', correct: false }
       ],
       explanation: 'Documenting disagreement in writing preserves your record and may trigger reconsideration. You can also request mediation or due process.',
       followUp: 'What is one specific decision you have wanted to disagree with?'
@@ -7539,10 +7539,10 @@ window.SelHub = window.SelHub || {
       level: 'advanced',
       question: 'How can you tell if you should escalate from teacher level to principal level?',
       options: [
-        { letter: 'A', text: 'Always escalate to be safe', correct: false },
-        { letter: 'B', text: 'Never escalate; teachers handle everything', correct: false },
+        { letter: 'A', text: 'Always escalate straight to the principal so nothing gets missed', correct: false },
+        { letter: 'B', text: 'Never escalate, because teachers are required by their contracts to handle every problem themselves', correct: false },
         { letter: 'C', text: 'Escalate when there is a pattern, when teacher has refused to engage, or when stakes are high', correct: true },
-        { letter: 'D', text: 'Only when parent says so', correct: false }
+        { letter: 'D', text: 'Only when a parent gives you explicit permission to escalate', correct: false }
       ],
       explanation: 'Escalation is appropriate when pattern is established, lower-level resolution failed, or stakes are high (rights violations, safety). Document each level.',
       followUp: 'When have you wanted to escalate but did not? Why?'
@@ -7555,7 +7555,7 @@ window.SelHub = window.SelHub || {
       options: [
         { letter: 'A', text: '"Person with autism"', correct: true },
         { letter: 'B', text: '"Autistic person"', correct: false },
-        { letter: 'C', text: '"Differently abled"', correct: false },
+        { letter: 'C', text: '"Differently abled person"', correct: false },
         { letter: 'D', text: '"Special needs"', correct: false }
       ],
       explanation: 'Person-first language puts the person before the disability. Originally chosen to humanize. Many disability communities now prefer identity-first language.',
@@ -7581,10 +7581,10 @@ window.SelHub = window.SelHub || {
       level: 'intermediate',
       question: 'Ableism is best defined as:',
       options: [
-        { letter: 'A', text: 'A disability', correct: false },
+        { letter: 'A', text: 'A word for any serious disability', correct: false },
         { letter: 'B', text: 'Discrimination, prejudice, or systems built against disabled people', correct: true },
-        { letter: 'C', text: 'The opposite of ability', correct: false },
-        { letter: 'D', text: 'A medical condition', correct: false }
+        { letter: 'C', text: 'The exact opposite of having an ability', correct: false },
+        { letter: 'D', text: 'A medical condition that a doctor is able to diagnose, treat, and cure', correct: false }
       ],
       explanation: 'Ableism is discrimination or systems that exclude or harm disabled people. Internalized ableism is when disabled people apply these messages to themselves.',
       followUp: 'Where do you see ableism in your school?'
@@ -7595,10 +7595,10 @@ window.SelHub = window.SelHub || {
       level: 'intermediate',
       question: 'Inspiration porn refers to:',
       options: [
-        { letter: 'A', text: 'Movies about disabled heroes', correct: false },
+        { letter: 'A', text: 'Feature films that cast disabled actors in heroic leading roles', correct: false },
         { letter: 'B', text: 'Disabled people being portrayed as inspirational for ordinary things, primarily for non-disabled benefit', correct: true },
-        { letter: 'C', text: 'Documentaries about disability', correct: false },
-        { letter: 'D', text: 'Inspirational quotes about disability', correct: false }
+        { letter: 'C', text: 'Documentary films that follow the daily lives of disabled people', correct: false },
+        { letter: 'D', text: 'Collections of inspirational quotes written by disabled authors about the experience of overcoming hardship', correct: false }
       ],
       explanation: 'Inspiration porn portrays disabled people as inspirational for doing ordinary things. The term was coined by Stella Young. It centers non-disabled feelings.',
       followUp: 'When have you been positioned as "inspirational"?'
@@ -7609,10 +7609,10 @@ window.SelHub = window.SelHub || {
       level: 'advanced',
       question: 'Disability justice differs from disability rights primarily because:',
       options: [
-        { letter: 'A', text: 'Disability justice focuses on accommodations only', correct: false },
+        { letter: 'A', text: 'Disability justice focuses only on winning legal accommodations in schools and workplaces, nothing broader', correct: false },
         { letter: 'B', text: 'Disability justice is intersectional, anti-capitalist, and centers multiply marginalized disabled people', correct: true },
-        { letter: 'C', text: 'They are the same', correct: false },
-        { letter: 'D', text: 'Disability justice is older', correct: false }
+        { letter: 'C', text: 'They are two interchangeable names for the same movement', correct: false },
+        { letter: 'D', text: 'Disability justice is the older movement that rights work later grew out of', correct: false }
       ],
       explanation: 'Disability justice was articulated by Patty Berne and Sins Invalid as an intersectional framework. It critiques disability rights for being too individualistic and white-led.',
       followUp: 'What does disability justice mean to you?'
@@ -7623,10 +7623,10 @@ window.SelHub = window.SelHub || {
       level: 'advanced',
       question: 'Neurodiversity is best understood as:',
       options: [
-        { letter: 'A', text: 'A medical diagnosis', correct: false },
+        { letter: 'A', text: 'A new medical diagnosis added to the DSM', correct: false },
         { letter: 'B', text: 'Natural variation in human brains and minds, like biodiversity', correct: true },
-        { letter: 'C', text: 'Always the same as autism', correct: false },
-        { letter: 'D', text: 'Only relevant to children', correct: false }
+        { letter: 'C', text: 'Another clinical word that means exactly the same thing as autism', correct: false },
+        { letter: 'D', text: 'A concept that is only relevant to school-age children', correct: false }
       ],
       explanation: 'Neurodiversity is the concept that brain variation is natural, like biodiversity. The term was coined by Judy Singer. It does not mean disability is not real, just that brain differences are not inherently disorders.',
       followUp: 'How does neurodiversity reframe your own brain?'
@@ -7637,10 +7637,10 @@ window.SelHub = window.SelHub || {
       level: 'beginner',
       question: 'When should you call 988 (the Suicide and Crisis Lifeline)?',
       options: [
-        { letter: 'A', text: 'Only if you are about to harm yourself', correct: false },
+        { letter: 'A', text: 'Only at the exact moment you are actually about to harm yourself, and never before things have reached that point', correct: false },
         { letter: 'B', text: 'Anytime you are in mental health crisis or even if you are worried about your or someone else\'s mental health', correct: true },
-        { letter: 'C', text: 'Only at night', correct: false },
-        { letter: 'D', text: 'Only if you have insurance', correct: false }
+        { letter: 'C', text: 'Only at night, when other mental health services are closed', correct: false },
+        { letter: 'D', text: 'Only if you have health insurance that covers a crisis call', correct: false }
       ],
       explanation: '988 is for any mental health crisis. You do not have to be at the point of crisis to call. They support people in distress and people worried about others.',
       followUp: 'Have you saved 988 in your phone?'
@@ -7651,10 +7651,10 @@ window.SelHub = window.SelHub || {
       level: 'intermediate',
       question: 'A mental health day from school is best when:',
       options: [
-        { letter: 'A', text: 'Used regularly to avoid all stressful days', correct: false },
+        { letter: 'A', text: 'Used regularly, so that every stressful day can be avoided entirely', correct: false },
         { letter: 'B', text: 'Used occasionally when honestly needed, with a plan for re-entry', correct: true },
-        { letter: 'C', text: 'Never used', correct: false },
-        { letter: 'D', text: 'Used only with doctor approval', correct: false }
+        { letter: 'C', text: 'Never used, because school comes first no matter what', correct: false },
+        { letter: 'D', text: 'Used only when a doctor has approved it in writing', correct: false }
       ],
       explanation: 'Mental health days are valid when needed. Pattern of avoidance suggests bigger problem needs addressing. Each day should have a plan: communicate, take rest, plan re-entry.',
       followUp: 'When was your last mental health day? Did it work?'
@@ -7665,10 +7665,10 @@ window.SelHub = window.SelHub || {
       level: 'advanced',
       question: 'What is the difference between accommodation and modification for mental health?',
       options: [
-        { letter: 'A', text: 'There is no difference', correct: false },
+        { letter: 'A', text: 'There is no real difference; the two words are interchangeable', correct: false },
         { letter: 'B', text: 'Accommodation adjusts how; modification adjusts what (the actual work)', correct: true },
-        { letter: 'C', text: 'Modification is faster', correct: false },
-        { letter: 'D', text: 'Accommodation is medical', correct: false }
+        { letter: 'C', text: 'Modification is simply the faster version of an accommodation', correct: false },
+        { letter: 'D', text: 'Accommodation is the medical term, while modification is the term schools prefer', correct: false }
       ],
       explanation: 'Accommodation changes how you do work (e.g., extended time, quiet space). Modification changes the work itself (e.g., shorter essay required). Both have their place.',
       followUp: 'Which do you have? Are they working?'
@@ -7679,10 +7679,10 @@ window.SelHub = window.SelHub || {
       level: 'beginner',
       question: 'At what age should transition planning start under IDEA?',
       options: [
-        { letter: 'A', text: '18', correct: false },
+        { letter: 'A', text: '18, when a student legally becomes an adult', correct: false },
         { letter: 'B', text: '14-16 (varies by state, federal floor is 16)', correct: true },
-        { letter: 'C', text: '12', correct: false },
-        { letter: 'D', text: 'Junior year of high school', correct: false }
+        { letter: 'C', text: '12, at the start of middle school', correct: false },
+        { letter: 'D', text: 'Junior year of high school, before college applications', correct: false }
       ],
       explanation: 'Federal IDEA requires transition planning to start by 16. Many states (like Maine) require by 14. The earlier, the better.',
       followUp: 'When did your transition planning start?'
@@ -7693,10 +7693,10 @@ window.SelHub = window.SelHub || {
       level: 'intermediate',
       question: 'Does your IEP transfer to college?',
       options: [
-        { letter: 'A', text: 'Yes, automatically', correct: false },
+        { letter: 'A', text: 'Yes, it transfers automatically from high school the same way it did between grades', correct: false },
         { letter: 'B', text: 'No, you must register with Disability Services and provide documentation', correct: true },
-        { letter: 'C', text: 'Yes, if you bring it with you', correct: false },
-        { letter: 'D', text: 'Only if it has been signed', correct: false }
+        { letter: 'C', text: 'Yes, as long as you bring a signed copy with you to campus', correct: false },
+        { letter: 'D', text: 'Only if it was signed during your final year of high school', correct: false }
       ],
       explanation: 'IEPs do not transfer to college. You must self-register with college Disability Services (DSS) and provide current documentation. ADA applies, not IDEA.',
       followUp: 'Have you visited DSS at colleges you are considering?'
@@ -7707,10 +7707,10 @@ window.SelHub = window.SelHub || {
       level: 'advanced',
       question: 'What is "age of majority" and why does it matter for IEP?',
       options: [
-        { letter: 'A', text: 'The age you can drive', correct: false },
+        { letter: 'A', text: 'The age when a student is first allowed to drive to school', correct: false },
         { letter: 'B', text: 'The age (typically 18) when IEP rights transfer from parent to student', correct: true },
-        { letter: 'C', text: 'The age you can vote', correct: false },
-        { letter: 'D', text: 'The age you finish school', correct: false }
+        { letter: 'C', text: 'The age when a citizen first becomes eligible to vote in national elections', correct: false },
+        { letter: 'D', text: 'The age when a student is required to finish high school', correct: false }
       ],
       explanation: 'Age of majority is when legal rights transfer from parent to student. In most states this is 18. At that point, the student is the legal IEP signer.',
       followUp: 'Are you 18 yet? If not, when will you be?'
@@ -7721,10 +7721,10 @@ window.SelHub = window.SelHub || {
       level: 'advanced',
       question: 'What is a "transition assessment"?',
       options: [
-        { letter: 'A', text: 'A test you take when changing schools', correct: false },
+        { letter: 'A', text: 'A placement test that you are required to take whenever you transfer schools or change districts', correct: false },
         { letter: 'B', text: 'An evaluation that documents your interests, preferences, and goals for post-school life', correct: true },
-        { letter: 'C', text: 'An IQ test', correct: false },
-        { letter: 'D', text: 'A driver\'s test', correct: false }
+        { letter: 'C', text: 'An IQ test given at the start of transition planning', correct: false },
+        { letter: 'D', text: 'A driving test required before leaving high school', correct: false }
       ],
       explanation: 'Transition assessments document your interests, preferences, and abilities to inform transition planning. Required under IDEA.',
       followUp: 'What was on your last transition assessment? Was it accurate?'
