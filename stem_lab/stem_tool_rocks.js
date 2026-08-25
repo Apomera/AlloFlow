@@ -2483,7 +2483,7 @@ const d = labToolData.rocks || {};
             {
               q: __alloT('stem.rocks.what_process_turns_sediment_into_sedimentary_rock', 'What process turns sediment into sedimentary rock?'),
               a: 'Compaction and cementation',
-              options: ['Compaction and cementation', 'Melting', 'Cooling', 'Erosion'],
+              options: ['Compaction and cementation', 'Melting and recrystallizing', 'Cooling', 'Erosion'],
               concept: 'Lithification',
               wrongFeedback: [
                 __alloT('stem.rocks.correct_compaction_and_cementation_bind_sediment_into_rock', 'Correct! Compaction and cementation bind sediment into rock.'),
@@ -2531,7 +2531,7 @@ const d = labToolData.rocks || {};
             {
               q: __alloT('stem.rocks.obsidian_forms_when_lava_cools', 'Obsidian forms when lava cools...'),
               a: 'Very quickly',
-              options: ['Very quickly', 'Very slowly', 'Underground', 'Underwater'],
+              options: ['Very quickly', 'Extremely slowly', 'Underground', 'Underwater'],
               concept: 'Crystallization',
               wrongFeedback: [
                 __alloT('stem.rocks.correct_obsidian_is_volcanic_glass_formed_by_extremely', 'Correct! Obsidian is volcanic glass formed by extremely rapid cooling.'),
@@ -2675,7 +2675,7 @@ const d = labToolData.rocks || {};
             {
               q: __alloT('stem.rocks.chalk_is_made_of_tiny_shells_from', 'Chalk is made of tiny shells from...'),
               a: 'Microscopic plankton',
-              options: ['Microscopic plankton', 'Snails', 'Clams', 'Coral'],
+              options: ['Microscopic plankton', 'Snails and other molluscs', 'Clams', 'Coral'],
               concept: 'Sedimentary',
               wrongFeedback: [
                 __alloT('stem.rocks.correct_chalk_is_composed_of_tiny_coccolith_shells', 'Correct! Chalk is composed of tiny coccolith shells from microscopic marine plankton.'),
@@ -2687,7 +2687,7 @@ const d = labToolData.rocks || {};
             {
               q: __alloT('stem.rocks.diorite_has_what_distinctive_appearance', 'Diorite has what distinctive appearance?'),
               a: 'Salt and pepper',
-              options: ['Salt and pepper', 'Solid black', 'Striped', 'Glassy'],
+              options: ['Salt and pepper', 'Solid black throughout', 'Striped', 'Glassy'],
               concept: 'Igneous',
               wrongFeedback: [
                 __alloT('stem.rocks.correct_diorite_is_intrusive_with_a_speckled_salt', 'Correct! Diorite is intrusive with a speckled salt-and-pepper look from light plagioclase and dark hornblende.'),
@@ -2723,7 +2723,7 @@ const d = labToolData.rocks || {};
             {
               q: __alloT('stem.rocks.which_building_was_made_from_travertine', 'Which building was made from travertine?'),
               a: 'The Colosseum',
-              options: ['The Colosseum', 'The Pyramids', 'Stonehenge', 'Taj Mahal'],
+              options: ['The Colosseum', 'The Great Pyramids', 'Stonehenge', 'Taj Mahal'],
               concept: 'Sedimentary',
               wrongFeedback: [
                 __alloT('stem.rocks.correct_the_colosseum_in_rome_was_constructed_largely', 'Correct! The Colosseum in Rome was constructed largely of travertine limestone.'),
@@ -2735,7 +2735,7 @@ const d = labToolData.rocks || {};
             {
               q: __alloT('stem.rocks.schist_gets_its_sparkly_appearance_from', 'Schist gets its sparkly appearance from...'),
               a: 'Aligned mica flakes',
-              options: ['Aligned mica flakes', 'Quartz crystals', 'Gold inclusions', 'Diamond dust'],
+              options: ['Aligned mica flakes', 'Embedded quartz crystals', 'Gold inclusions', 'Diamond dust'],
               concept: 'Foliation',
               wrongFeedback: [
                 __alloT('stem.rocks.correct_aligned_muscovite_and_biotite_mica_flakes_reflect', 'Correct! Aligned muscovite and biotite mica flakes reflect light, making schist sparkle.'),
@@ -2747,7 +2747,7 @@ const d = labToolData.rocks || {};
             {
               q: __alloT('stem.rocks.what_makes_quartz_watches_accurate', 'What makes quartz watches accurate?'),
               a: 'Piezoelectric effect',
-              options: ['Piezoelectric effect', 'Magnetic field', 'Battery power', 'High density'],
+              options: ['Piezoelectric effect', 'A magnetic field coil', 'Battery power', 'High density'],
               concept: 'Piezoelectric',
               wrongFeedback: [
                 __alloT('stem.rocks.correct_squeezing_quartz_generates_an_electric_charge_causing', 'Correct! Squeezing quartz generates an electric charge, causing precise vibrations.'),
@@ -2759,7 +2759,7 @@ const d = labToolData.rocks || {};
             {
               q: __alloT('stem.rocks.where_are_the_largest_crystals_ever_found', 'Where are the largest crystals ever found?'),
               a: 'Naica Mine, Mexico',
-              options: ['Naica Mine, Mexico', 'Mount Everest', 'Grand Canyon', 'Sahara Desert'],
+              options: ['Naica Mine, Mexico', 'Mount Everest, Nepal', 'Grand Canyon', 'Sahara Desert'],
               concept: 'Crystallization',
               wrongFeedback: [
                 __alloT('stem.rocks.correct_gypsum_crystals_up_to_12_meters_long', 'Correct! Gypsum crystals up to 12 meters long grow in the extreme heat of the Naica Mine.'),
@@ -2771,7 +2771,7 @@ const d = labToolData.rocks || {};
             {
               q: __alloT('stem.rocks.the_word_salary_comes_from_the_latin_word', 'What was the Latin salarium associated with?'),
               a: 'An allowance connected with salt',
-              options: ['An allowance connected with salt', 'Payment made in silver only', 'A gold coin', 'A stone-trading fee'],
+              options: ['An allowance connected with salt', 'A payment made in silver coin only', 'A gold coin', 'A stone-trading fee'],
               concept: 'Hardness',
               wrongFeedback: [
                 __alloT('stem.rocks.correct_roman_soldiers_were_sometimes_paid_in_salt', 'Correct! Salary comes through Latin salarium, an allowance associated with buying salt—not evidence that soldiers were paid in salt.'),
@@ -2795,7 +2795,7 @@ const d = labToolData.rocks || {};
             {
               q: __alloT('stem.rocks.tuff_is_made_from_consolidated', 'Tuff is made from consolidated...'),
               a: 'Volcanic ash',
-              options: ['Volcanic ash', 'River sand', 'Coral reef', 'Glacier ice'],
+              options: ['Volcanic ash', 'River sand and silt', 'Coral reef', 'Glacier ice'],
               concept: 'Igneous',
               wrongFeedback: [
                 __alloT('stem.rocks.correct_tuff_is_igneous_rock_composed_of_compacted', 'Correct! Tuff is igneous rock composed of compacted volcanic ash.'),
@@ -2819,7 +2819,7 @@ const d = labToolData.rocks || {};
             {
               q: __alloT('stem.rocks.garnet_crystals_commonly_have_how_many_sides', 'Garnet crystals commonly have how many sides?'),
               a: '12 (dodecahedral)',
-              options: ['12 (dodecahedral)', '4 (tetrahedral)', '6 (cubic)', '8 (octahedral)'],
+              options: ['12 (dodecahedral)', '4 (tetrahedral)', '6 (cubic)', '8 (octahedral form)'],
               concept: 'Crystallization',
               wrongFeedback: [
                 __alloT('stem.rocks.correct_garnet_crystals_typically_grow_into_12_sided', 'Correct! Garnet crystals typically grow into 12-sided dodecahedrons.'),
@@ -9878,7 +9878,7 @@ const d = labToolData.rockCycle || {};
                     {
                       q: __alloT('stem.rocks.rc_marble_forms_from_which_rock', 'Marble forms from which rock?'),
                       a: 'Limestone (sedimentary)',
-                      opts: ['Granite (igneous)', 'Limestone (sedimentary)', 'Basalt (igneous)'],
+                      opts: ['Granite (igneous, coarse)', 'Limestone (sedimentary)', 'Basalt (igneous)'],
                       concept: 'Metamorphic',
                       wrongFeedback: [
                         __alloT('stem.rocks.rc_incorrect_granite_transforms_into_gneiss', 'Incorrect. Granite transforms into gneiss.'),
@@ -9889,7 +9889,7 @@ const d = labToolData.rockCycle || {};
                     {
                       q: __alloT('stem.rocks.rc_what_breaks_rocks_into_sediment', 'What breaks rocks into sediment?'),
                       a: 'Weathering & erosion',
-                      opts: ['Heat & pressure', 'Weathering & erosion', 'Melting'],
+                      opts: ['Heat & pressure at depth', 'Weathering & erosion', 'Melting'],
                       concept: 'Lithification',
                       wrongFeedback: [
                         __alloT('stem.rocks.rc_incorrect_heat_and_pressure_trigger_metamorphic_alteration', 'Incorrect. Heat and pressure trigger metamorphic alteration.'),
@@ -9900,7 +9900,7 @@ const d = labToolData.rockCycle || {};
                     {
                       q: __alloT('stem.rocks.rc_what_must_happen_for_metamorphic_rock_to_become', 'What must happen for metamorphic rock to become igneous?'),
                       a: 'It must melt, then cool',
-                      opts: ['It must be weathered', 'It must be compressed', 'It must melt, then cool'],
+                      opts: ['It must be weathered', 'It must be compressed further', 'It must melt, then cool'],
                       concept: 'Crystallization',
                       wrongFeedback: [
                         __alloT('stem.rocks.rc_incorrect_weathering_turns_metamorphic_rocks_into_sedimentary_ones', 'Incorrect. Weathering turns metamorphic rocks into sedimentary ones.'),
@@ -9911,7 +9911,7 @@ const d = labToolData.rockCycle || {};
                     {
                       q: __alloT('stem.rocks.rc_what_is_the_mohs_scale_used_to_measure', 'What is the Mohs scale used to measure?'),
                       a: 'Mineral hardness',
-                      opts: ['Rock age', 'Mineral hardness', 'Crystal size'],
+                      opts: ['Rock age', 'Mineral hardness', 'Crystal size and shape'],
                       concept: 'Hardness',
                       wrongFeedback: [
                         __alloT('stem.rocks.rc_incorrect_radiometric_dating_measures_rock_age_not_the', 'Incorrect. Radiometric dating measures rock age, not the Mohs scale.'),
