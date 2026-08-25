@@ -143,7 +143,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
       challengeBank: [
         { prompt: 'Which planet orbits the Sun most quickly?', options: ['Jupiter', 'Mercury', 'Neptune', 'Saturn'], correctIndex: 1, explain: 'Closer orbits = faster orbital periods (Kepler\u2019s third law).' },
         { prompt: 'Light from the Sun takes roughly how long to reach Earth?', options: ['8 minutes', '8 seconds', '8 hours', '8 days'], correctIndex: 0, explain: 'About 8 minutes \u2014 150 million km \u00f7 c.' },
-        { prompt: 'What is a light-year a unit of?', options: ['time', 'speed', 'distance', 'mass'], correctIndex: 2, explain: 'Distance light travels in one year \u2014 ~9.46 trillion km.' },
+        { prompt: 'What is a light-year a unit of?', options: ['time', 'velocity', 'distance', 'mass'], correctIndex: 2, explain: 'Distance light travels in one year \u2014 ~9.46 trillion km.' },
         { prompt: 'Which force keeps planets in orbit around the Sun?', options: ['friction', 'magnetism', 'gravity', 'tension'], correctIndex: 2, explain: 'Gravity between Sun and planet provides the centripetal pull.' },
         { prompt: 'Which planet has the most moons?', options: ['Earth', 'Mars', 'Jupiter', 'Saturn'], correctIndex: 3, explain: 'Saturn currently holds the title with 140+ confirmed moons.' },
         { prompt: 'Which planet is known as the Red Planet?', options: ['Venus', 'Mars', 'Jupiter', 'Mercury'], correctIndex: 1, explain: 'Iron oxide (rust) on Mars\u2019 surface gives it the reddish color.' },
@@ -164,9 +164,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
       critMultiplier: 2.2,
       flavor: 'Bends spacetime into a crushing singularity at the target.',
       challengeBank: [
-        { prompt: 'Which of these has the STRONGEST surface gravity?', options: ['Moon', 'Mars', 'Earth', 'Jupiter'], correctIndex: 3, explain: 'Jupiter\u2019s surface gravity is ~2.5\u00d7 Earth\u2019s.' },
+        { prompt: 'Which of these has the STRONGEST surface gravity?', options: ['Moon', 'Mars', 'Neptune', 'Jupiter'], correctIndex: 3, explain: 'Jupiter\u2019s surface gravity is ~2.5\u00d7 Earth\u2019s.' },
         { prompt: 'On the Moon (g = 1.62 m/s\u00b2), objects fall how compared to Earth?', options: ['slower', 'faster', 'same', 'sideways'], correctIndex: 0, explain: 'Lower g \u2192 smaller acceleration \u2192 slower fall.' },
-        { prompt: 'What happens to your weight on Mars vs Earth?', options: ['3\u00d7 heavier', 'same', 'about 38% of Earth', 'zero'], correctIndex: 2, explain: 'Mars g = 3.72 m/s\u00b2 \u2248 38% of Earth\u2019s 9.8 m/s\u00b2.' },
+        { prompt: 'What happens to your weight on Mars vs Earth?', options: ['about three times heavier', 'same', 'about 38% of Earth', 'zero'], correctIndex: 2, explain: 'Mars g = 3.72 m/s\u00b2 \u2248 38% of Earth\u2019s 9.8 m/s\u00b2.' },
         { prompt: 'A black hole\u2019s event horizon is the point where...', options: ['light can escape easily', 'not even light escapes', 'gravity reverses', 'time stops globally'], correctIndex: 1, explain: 'Past the event horizon, escape velocity exceeds the speed of light.' },
         { prompt: 'Astronauts on the ISS feel weightless because they are...', options: ['outside Earth\u2019s gravity', 'in continuous free fall', 'too small to feel gravity', 'spinning fast'], correctIndex: 1, explain: 'The ISS and astronauts fall around Earth together \u2014 free fall = apparent weightlessness.' },
         { prompt: 'Which pair of objects experiences the STRONGEST gravity between them?', options: ['2 apples next to each other', 'Earth and a bowling ball', 'Earth and the Moon', 'You and your phone'], correctIndex: 2, explain: 'F = Gm\u2081m\u2082/r\u00b2 \u2014 huge masses dominate even at large distance.' }
@@ -186,10 +186,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
       critMultiplier: 2.0,
       flavor: 'A lance of plasma erupts from AlloBot\u2019s wand.',
       challengeBank: [
-        { prompt: 'The Sun is mostly made of which element?', options: ['oxygen', 'iron', 'hydrogen', 'carbon'], correctIndex: 2, explain: 'Hydrogen (~74%) fusing into helium powers the Sun.' },
+        { prompt: 'The Sun is mostly made of which element?', options: ['nitrogen', 'iron', 'hydrogen', 'carbon'], correctIndex: 2, explain: 'Hydrogen (~74%) fusing into helium powers the Sun.' },
         { prompt: 'What process releases energy in the Sun\u2019s core?', options: ['combustion', 'fission', 'fusion', 'friction'], correctIndex: 2, explain: 'Nuclear fusion \u2014 hydrogen nuclei merging into helium.' },
         { prompt: 'Which layer of the Sun do we see with our eyes?', options: ['core', 'photosphere', 'corona', 'radiative zone'], correctIndex: 1, explain: 'The photosphere is the visible surface layer.' },
-        { prompt: 'Solar flares are bursts of...', options: ['solid matter', 'radiation and charged particles', 'liquid sunlight', 'silent vibration'], correctIndex: 1, explain: 'Magnetic reconnection releases radiation + accelerated particles.' },
+        { prompt: 'Solar flares are bursts of...', options: ['solid matter', 'radiation and charged particles', 'liquid sunlight', 'silent vibration of the solar wind'], correctIndex: 1, explain: 'Magnetic reconnection releases radiation + accelerated particles.' },
         { prompt: 'When a solar flare hits Earth\u2019s atmosphere, it can cause...', options: ['auroras', 'earthquakes', 'tides', 'eclipses'], correctIndex: 0, explain: 'Charged particles exciting upper-atmosphere gases produce the aurora.' },
         { prompt: 'Which star is closest to Earth?', options: ['Proxima Centauri', 'Sirius', 'the Sun', 'Polaris'], correctIndex: 2, explain: 'The Sun is our star \u2014 only ~8 light-minutes away.' }
       ]
@@ -210,10 +210,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
       challengeBank: [
         { prompt: 'A nebula is mostly made of...', options: ['gas and dust', 'solid rock', 'liquid water', 'plasma fields only'], correctIndex: 0, explain: 'Interstellar gas (mostly hydrogen) and dust grains.' },
         { prompt: 'Stars are born in...', options: ['black holes', 'nebulae', 'galaxies only', 'supernovae only'], correctIndex: 1, explain: 'Gravitational collapse inside nebulae forms new stars.' },
-        { prompt: 'A supernova is...', options: ['a newborn star', 'an exploding massive star', 'a cold dead planet', 'a type of aurora'], correctIndex: 1, explain: 'End-of-life explosion of a massive star, seeding heavy elements.' },
+        { prompt: 'A supernova is...', options: ['a newborn star', 'an exploding massive star', 'a cold dead planet with no moons', 'a type of aurora'], correctIndex: 1, explain: 'End-of-life explosion of a massive star, seeding heavy elements.' },
         { prompt: 'The rainbow colors you see when starlight passes through a prism reveal the star\u2019s...', options: ['age only', 'mass only', 'composition', 'temperature only'], correctIndex: 2, explain: 'Absorption lines in a spectrum identify elements present.' },
         { prompt: 'Which telescope type uses a curved mirror to focus light?', options: ['refracting', 'reflecting', 'prismatic', 'laser'], correctIndex: 1, explain: 'Reflectors (like Hubble) use mirrors; refractors use lenses.' },
-        { prompt: 'A galaxy is a collection of...', options: ['planets only', 'billions of stars + gas + dust', 'solar systems in one star', 'black holes only'], correctIndex: 1, explain: 'Typical galaxy: 100 million to 1 trillion stars plus interstellar medium.' }
+        { prompt: 'A galaxy is a collection of...', options: ['planets only', 'billions of stars + gas + dust', 'solar systems orbiting one giant star', 'black holes only'], correctIndex: 1, explain: 'Typical galaxy: 100 million to 1 trillion stars plus interstellar medium.' }
       ]
     },
 
@@ -322,11 +322,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
       challengeBank: [
         { prompt: 'At a 4-way stop, a car arrives the same moment as you on your RIGHT. Who goes first?', options: ['you go first', 'the other car', 'whoever honks', 'both at once'], correctIndex: 1, explain: 'The car on your right has right-of-way at a 4-way stop.' },
         { prompt: 'A flashing RED traffic light means...', options: ['treat as stop sign', 'go faster', 'yield only', 'construction ahead'], correctIndex: 0, explain: 'Flashing red = full stop, then proceed when safe.' },
-        { prompt: 'When you see a school bus with flashing red lights stopped ahead, you must...', options: ['pass carefully', 'honk and pass', 'stop completely', 'slow to 15 mph'], correctIndex: 2, explain: 'Stop and wait until the lights stop flashing (most US states).' },
+        { prompt: 'When you see a school bus with flashing red lights stopped ahead, you must...', options: ['pass carefully', 'honk and pass', 'stop completely', 'slow to 15 mph and pass'], correctIndex: 2, explain: 'Stop and wait until the lights stop flashing (most US states).' },
         { prompt: 'Safe following distance is typically measured by the...', options: ['3-second rule', '1-minute rule', 'license-plate rule', 'coin-flip rule'], correctIndex: 0, explain: 'Stay at least 3 seconds behind the car in front (more in bad weather).' },
         { prompt: 'Hydroplaning is most likely to happen when...', options: ['driving slow on dry road', 'driving fast on wet road', 'parked', 'backing up'], correctIndex: 1, explain: 'Water lifts tires off the road \u2014 worst at high speed on wet surfaces.' },
-        { prompt: 'If your tires lose grip and the rear slides out, you should...', options: ['slam the brakes', 'steer the way you want to go', 'turn the wheel opposite', 'accelerate hard'], correctIndex: 1, explain: '\u201cSteer into the skid\u201d \u2014 point the wheels where you want to go.' },
-        { prompt: 'Seat belts work best because they...', options: ['look nice', 'spread crash forces across the body', 'warm you up', 'increase comfort'], correctIndex: 1, explain: 'They distribute deceleration forces over the strong parts of the skeleton.' }
+        { prompt: 'If your tires lose grip and the rear slides out, you should...', options: ['slam the brakes', 'steer the way you want to go', 'turn the wheel the opposite way', 'accelerate hard'], correctIndex: 1, explain: '\u201cSteer into the skid\u201d \u2014 point the wheels where you want to go.' },
+        { prompt: 'Seat belts work best because they...', options: ['look nice', 'spread crash forces across the body', 'warm you up', 'increase comfort on long family car rides'], correctIndex: 1, explain: 'They distribute deceleration forces over the strong parts of the skeleton.' }
       ]
     },
     {
@@ -349,10 +349,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
         { prompt: 'A YELLOW diamond sign usually means...', options: ['mandatory action', 'warning', 'regulation', 'rest area'], correctIndex: 1, explain: 'Yellow diamonds are warning signs.' },
         { prompt: 'A RED octagon sign means...', options: ['yield', 'stop', 'merge', 'no entry'], correctIndex: 1, explain: 'Red octagon = STOP.' },
         { prompt: 'An inverted (upside-down) TRIANGLE means...', options: ['yield', 'stop', 'school zone', 'construction'], correctIndex: 0, explain: 'Yield to cross traffic.' },
-        { prompt: 'A PENTAGON-shaped sign usually means...', options: ['gas station', 'school zone / school crossing', 'hospital', 'rest stop'], correctIndex: 1, explain: 'Pentagon = school zone in US signage.' },
-        { prompt: 'ORANGE signs usually indicate...', options: ['construction / work zone', 'hospital', 'campground', 'tourist info'], correctIndex: 0, explain: 'Orange = construction and temporary traffic controls.' },
-        { prompt: 'A WHITE rectangle with black text usually means...', options: ['a warning', 'a regulation (speed limit, etc.)', 'a service', 'a scenic route'], correctIndex: 1, explain: 'White rectangles = regulatory signs (speed limits, one-way, etc.).' },
-        { prompt: 'A GREEN sign usually gives...', options: ['warnings', 'directional / guidance info', 'regulations', 'hazards'], correctIndex: 1, explain: 'Green = guide signs (directions, distances, exits).' }
+        { prompt: 'A PENTAGON-shaped sign usually means...', options: ['gas station / fuel services ahead', 'school zone / school crossing', 'hospital', 'rest stop'], correctIndex: 1, explain: 'Pentagon = school zone in US signage.' },
+        { prompt: 'ORANGE signs usually indicate...', options: ['construction / work zone', 'hospital', 'campground', 'tourist info / attractions'], correctIndex: 0, explain: 'Orange = construction and temporary traffic controls.' },
+        { prompt: 'A WHITE rectangle with black text usually means...', options: ['a warning', 'a regulation (speed limit, etc.)', 'a service', 'a scenic route or historic marker'], correctIndex: 1, explain: 'White rectangles = regulatory signs (speed limits, one-way, etc.).' },
+        { prompt: 'A GREEN sign usually gives...', options: ['warnings', 'directional / guidance info', 'regulations and speed limits', 'hazards'], correctIndex: 1, explain: 'Green = guide signs (directions, distances, exits).' }
       ]
     },
     {
@@ -374,11 +374,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
       challengeBank: [
         { prompt: 'Which driving habit BEST improves fuel efficiency?', options: ['rapid acceleration', 'steady speed', 'slamming brakes', 'idling often'], correctIndex: 1, explain: 'Steady speed \u2192 less kinetic energy wasted in braking/acceleration.' },
         { prompt: 'Air resistance (drag) grows how with speed?', options: ['linearly', 'quadratically', 'not at all', 'exponentially then drops'], correctIndex: 1, explain: 'Drag \u221d v\u00b2 \u2014 doubling speed quadruples drag.' },
-        { prompt: 'Why is highway MPG often higher than city MPG?', options: ['fewer hills', 'less stopping and accelerating', 'warmer engine', 'softer tires'], correctIndex: 1, explain: 'Cities waste energy in stop-and-go; highways are closer to steady-state.' },
-        { prompt: 'Underinflated tires...', options: ['improve MPG', 'increase rolling resistance (hurt MPG)', 'have no MPG effect', 'are always safer'], correctIndex: 1, explain: 'More deformation = more rolling resistance = lower MPG.' },
+        { prompt: 'Why is highway MPG often higher than city MPG?', options: ['fewer hills', 'less stopping and accelerating', 'warmer engine running the whole time', 'softer tires'], correctIndex: 1, explain: 'Cities waste energy in stop-and-go; highways are closer to steady-state.' },
+        { prompt: 'Underinflated tires...', options: ['improve MPG', 'increase rolling resistance (hurt MPG)', 'have no MPG effect as long as they roll', 'are always safer'], correctIndex: 1, explain: 'More deformation = more rolling resistance = lower MPG.' },
         { prompt: 'Idling for 2 minutes uses about as much fuel as driving...', options: ['1 mile', '5 miles', '10 miles', '50 miles'], correctIndex: 0, explain: 'Roughly ~1 mile \u2014 modern guidance: restart if stopped >30s.' },
-        { prompt: 'A car doing 70 mph uses much more fuel than one doing 55 mph mostly because of...', options: ['gravity', 'drag (air resistance)', 'engine heat', 'tire noise'], correctIndex: 1, explain: 'Drag rises with v\u00b2 \u2014 the 70\u219255 gap has an outsized energy cost.' },
-        { prompt: 'Regenerative braking on hybrids/EVs recovers energy as...', options: ['sound', 'heat only', 'electrical energy in the battery', 'gasoline'], correctIndex: 2, explain: 'The motor acts as a generator, charging the battery while slowing the car.' }
+        { prompt: 'A car doing 70 mph uses much more fuel than one doing 55 mph mostly because of...', options: ['gravity', 'drag (air resistance)', 'engine heat (hotter motor)', 'tire noise'], correctIndex: 1, explain: 'Drag rises with v\u00b2 \u2014 the 70\u219255 gap has an outsized energy cost.' },
+        { prompt: 'Regenerative braking on hybrids/EVs recovers energy as...', options: ['sound', 'heat only, which warms up the cabin', 'electrical energy in the battery', 'gasoline'], correctIndex: 2, explain: 'The motor acts as a generator, charging the battery while slowing the car.' }
       ]
     },
 
@@ -400,8 +400,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
       critMultiplier: 2.0,
       flavor: 'A clear, ringing phoneme cracks the foe.',
       challengeBank: [
-        { prompt: 'Which sound starts the word \u201cthunder\u201d?', options: ['/t/', '/th/', '/d/', '/n/'], correctIndex: 1, explain: 'Digraph \u201cth\u201d is a single sound \u2014 the voiceless \u201cth\u201d in thunder.' },
-        { prompt: 'Which pair RHYMES?', options: ['cat / dog', 'moon / spoon', 'cup / cap', 'leaf / loaf'], correctIndex: 1, explain: 'Rhymes share ending sounds \u2014 moon/spoon both end in /u:n/.' },
+        { prompt: 'Which sound starts the word \u201cthunder\u201d?', options: ['/tr/', '/th/', '/d/', '/n/'], correctIndex: 1, explain: 'Digraph \u201cth\u201d is a single sound \u2014 the voiceless \u201cth\u201d in thunder.' },
+        { prompt: 'Which pair RHYMES?', options: ['cat / dog', 'moon / spoon', 'cup / cap', 'leaf / leash'], correctIndex: 1, explain: 'Rhymes share ending sounds \u2014 moon/spoon both end in /u:n/.' },
         { prompt: 'How many syllables in \u201cbutterfly\u201d?', options: ['1', '2', '3', '4'], correctIndex: 2, explain: 'but-ter-fly \u2014 3 syllables (clap it out).' },
         { prompt: 'Which word has a SHORT \u201ca\u201d sound?', options: ['cake', 'mat', 'rain', 'play'], correctIndex: 1, explain: 'Short \u201ca\u201d = /\u00e6/ as in mat. The others use long \u201ca\u201d = /e\u026a/.' },
         { prompt: 'The digraph \u201csh\u201d makes what sound?', options: ['/s/ + /h/ separately', '/sh/ as in \u201cshoe\u201d', '/ch/', '/z/'], correctIndex: 1, explain: 'Digraph = two letters, one sound. \u201csh\u201d = /\u0283/ as in shoe.' },
@@ -426,7 +426,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
       flavor: 'A ringing echo of paired sounds stuns the target.',
       challengeBank: [
         { prompt: 'Which word does NOT rhyme with the others?', options: ['bright', 'fight', 'kite', 'kit'], correctIndex: 3, explain: '\u201ckit\u201d has short /i/; the others share long /a\u026at/.' },
-        { prompt: 'Which word rhymes with \u201cblue\u201d?', options: ['bow', 'bee', 'shoe', 'by'], correctIndex: 2, explain: '\u201cshoe\u201d and \u201cblue\u201d both end in /u:/.' },
+        { prompt: 'Which word rhymes with \u201cblue\u201d?', options: ['bowl', 'bee', 'shoe', 'by'], correctIndex: 2, explain: '\u201cshoe\u201d and \u201cblue\u201d both end in /u:/.' },
         { prompt: 'Which is a near-rhyme (same ending vowel, different consonant)?', options: ['cat / dog', 'red / head', 'bike / boat', 'day / dock'], correctIndex: 1, explain: 'Both end in /\u025bd/.' },
         { prompt: 'Which word has TWO syllables?', options: ['happy', 'cat', 'banana', 'elephant'], correctIndex: 0, explain: 'hap-py = 2. Cat = 1. Banana = 3. Elephant = 3.' },
         { prompt: 'The onset of \u201cplay\u201d is...', options: ['p', 'l', 'pl', 'ay'], correctIndex: 2, explain: 'Onset = all consonants BEFORE the first vowel. \u201cpl\u201d is the onset; \u201cay\u201d is the rime.' },
@@ -452,12 +452,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
       critMultiplier: 2.2,
       flavor: 'A narrative arc ignites, scorching the foe across acts.',
       challengeBank: [
-        { prompt: 'Which element is MOST essential for a story?', options: ['a character with a goal', 'a glossary', 'a bibliography', 'page numbers'], correctIndex: 0, explain: 'A character pursuing something is the spine of narrative.' },
-        { prompt: 'The \u201cclimax\u201d of a story is usually...', options: ['the opening line', 'the peak moment of tension', 'the last paragraph', 'the author\u2019s name'], correctIndex: 1, explain: 'Climax = the turning point where conflict peaks.' },
-        { prompt: 'Which opening HOOKS the reader best?', options: ['\u201cIt was a normal Tuesday.\u201d', '\u201cThe phone rang for the twenty-first time that morning.\u201d', '\u201cThis is a story.\u201d', '\u201cChapter 1.\u201d'], correctIndex: 1, explain: 'Specific, curious detail pulls readers in.' },
-        { prompt: '\u201cShowing, not telling\u201d means...', options: ['no dialogue allowed', 'describe behavior and senses instead of stating feelings', 'use bullet points', 'write in past tense only'], correctIndex: 1, explain: 'Instead of \u201cshe was nervous,\u201d write \u201cher hands trembled on the door handle.\u201d' },
+        { prompt: 'Which element is MOST essential for a story?', options: ['a character with a goal', 'a glossary', 'a bibliography and index', 'page numbers'], correctIndex: 0, explain: 'A character pursuing something is the spine of narrative.' },
+        { prompt: 'The \u201cclimax\u201d of a story is usually...', options: ['the opening line', 'the peak moment of tension', 'the last paragraph of the book', 'the author\u2019s name'], correctIndex: 1, explain: 'Climax = the turning point where conflict peaks.' },
+        { prompt: 'Which opening HOOKS the reader best?', options: ['“It was a normal Tuesday, and nothing at all was going to happen.”', '\u201cThe phone rang for the twenty-first time that morning.\u201d', '\u201cThis is a story.\u201d', '\u201cChapter 1.\u201d'], correctIndex: 1, explain: 'Specific, curious detail pulls readers in.' },
+        { prompt: '\u201cShowing, not telling\u201d means...', options: ['no dialogue allowed', 'describe behavior and senses instead of stating feelings', 'use bullet points', 'write in past tense only, so the reader is not told what is happening now'], correctIndex: 1, explain: 'Instead of \u201cshe was nervous,\u201d write \u201cher hands trembled on the door handle.\u201d' },
         { prompt: 'A story told from \u201cshe ran, she thought, she wondered\u201d uses which POV?', options: ['first person', 'second person', 'third person', 'no POV'], correctIndex: 2, explain: 'Third person uses she/he/they as the narrator\u2019s referent.' },
-        { prompt: 'What is a \u201cstakes\u201d question in a story?', options: ['what the hero ate', 'what the character stands to lose or gain', 'the publication date', 'page count'], correctIndex: 1, explain: 'Stakes are what matters \u2014 without them, tension collapses.' }
+        { prompt: 'What is a \u201cstakes\u201d question in a story?', options: ['what the hero ate for breakfast that morning', 'what the character stands to lose or gain', 'the publication date', 'page count'], correctIndex: 1, explain: 'Stakes are what matters \u2014 without them, tension collapses.' }
       ]
     },
     {
@@ -482,7 +482,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
         { prompt: 'Which word is a VERB?', options: ['quick', 'jump', 'yellow', 'table'], correctIndex: 1, explain: '\u201cJump\u201d is an action; the others are adjective/adjective/noun.' },
         { prompt: 'Replace \u201cgot\u201d in \u201cShe got the book\u201d with a stronger verb:', options: ['grabbed', 'wanted', 'thought', 'was'], correctIndex: 0, explain: '\u201cGrabbed\u201d is vivid; \u201cwanted/thought/was\u201d changes meaning.' },
         { prompt: 'An adverb USUALLY describes...', options: ['a noun', 'a verb', 'a preposition', 'a comma'], correctIndex: 1, explain: 'Adverbs modify verbs (\u201cshe ran quickly\u201d) \u2014 also adjectives and other adverbs.' },
-        { prompt: 'Which is a compound sentence?', options: ['It rained.', 'It rained hard all morning.', 'It rained, and the garden flooded.', 'Rain.'], correctIndex: 2, explain: 'Compound = two independent clauses joined by a conjunction (here, \u201cand\u201d).' }
+        { prompt: 'Which is a compound sentence?', options: ['It rained.', 'It rained hard all morning long today.', 'It rained, and the garden flooded.', 'Rain.'], correctIndex: 2, explain: 'Compound = two independent clauses joined by a conjunction (here, \u201cand\u201d).' }
       ]
     },
 
@@ -504,12 +504,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
       critMultiplier: 2.0,
       flavor: 'Focus narrows the world to a single point of light.',
       challengeBank: [
-        { prompt: 'The BEST strategy if you hit an unknown word is...', options: ['skip and guess', 'use context clues from surrounding sentences', 'give up on the passage', 'only check the title'], correctIndex: 1, explain: 'Context clues unlock meaning without breaking flow.' },
-        { prompt: '\u201cMain idea\u201d of a paragraph means...', options: ['the longest sentence', 'the overall point it\u2019s making', 'the first word', 'any quote'], correctIndex: 1, explain: 'Main idea = what the paragraph is really saying, not just details.' },
+        { prompt: 'The BEST strategy if you hit an unknown word is...', options: ['skip and guess', 'use context clues from surrounding sentences', 'give up on the passage and read a different one', 'only check the title'], correctIndex: 1, explain: 'Context clues unlock meaning without breaking flow.' },
+        { prompt: '\u201cMain idea\u201d of a paragraph means...', options: ['the longest sentence in the paragraph', 'the overall point it\u2019s making', 'the first word', 'any quote'], correctIndex: 1, explain: 'Main idea = what the paragraph is really saying, not just details.' },
         { prompt: 'Which is a SIGNAL of a supporting detail?', options: ['\u201cfor example\u201d', '\u201cin conclusion\u201d', '\u201cwho are you\u201d', '\u201cpage 1\u201d'], correctIndex: 0, explain: '\u201cFor example\u201d introduces a detail supporting the main idea.' },
-        { prompt: 'When reading, to tell FACT from OPINION, ask...', options: ['does it rhyme?', 'can it be proven or tested?', 'is it short?', 'is it in italics?'], correctIndex: 1, explain: 'Facts are verifiable; opinions are beliefs or judgments.' },
-        { prompt: 'If a text defines a key word in a glossary, you should...', options: ['ignore it', 'use it to clarify meaning', 'memorize the page number', 'skip to the end'], correctIndex: 1, explain: 'Glossary entries are reading aids \u2014 use them actively.' },
-        { prompt: 'Re-reading a confusing passage is...', options: ['always unnecessary', 'a strong strategy used by skilled readers', 'against the rules', 'for beginners only'], correctIndex: 1, explain: 'Skilled readers re-read constantly \u2014 it\u2019s a core comprehension tool.' }
+        { prompt: 'When reading, to tell FACT from OPINION, ask...', options: ['does it rhyme?', 'can it be proven or tested?', 'is it short?', 'is it printed in italics or bold?'], correctIndex: 1, explain: 'Facts are verifiable; opinions are beliefs or judgments.' },
+        { prompt: 'If a text defines a key word in a glossary, you should...', options: ['ignore it', 'use it to clarify meaning', 'memorize the page number it is on', 'skip to the end'], correctIndex: 1, explain: 'Glossary entries are reading aids \u2014 use them actively.' },
+        { prompt: 'Re-reading a confusing passage is...', options: ['always unnecessary', 'a strong strategy used by skilled readers', 'against the rules', 'for beginners only, not for skilled readers'], correctIndex: 1, explain: 'Skilled readers re-read constantly \u2014 it\u2019s a core comprehension tool.' }
       ]
     },
     {
@@ -529,11 +529,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
       critMultiplier: 2.5,
       flavor: 'Turns an enemy\u2019s meaning against it \u2014 devastating when truly understood.',
       challengeBank: [
-        { prompt: 'What does \u201cinfer\u201d mean?', options: ['ignore', 'figure out from clues', 'repeat word-for-word', 'avoid'], correctIndex: 1, explain: 'To infer = to draw a conclusion from evidence you\u2019re given.' },
-        { prompt: 'A prefix like \u201cun-\u201d usually makes a word...', options: ['opposite / negative', 'louder', 'longer', 'fancier'], correctIndex: 0, explain: '\u201cUn-\u201d flips meaning: happy \u2192 unhappy.' },
-        { prompt: 'A \u201cthesis\u201d in nonfiction is...', options: ['a picture', 'the main claim the author argues', 'a joke', 'an index entry'], correctIndex: 1, explain: 'Thesis = the central argument the rest of the text supports.' },
-        { prompt: '\u201cSkim\u201d reading means...', options: ['read every word slowly', 'scan quickly for the gist', 'skip entirely', 'read upside down'], correctIndex: 1, explain: 'Skimming = fast sweep for main ideas, not deep comprehension.' },
-        { prompt: 'The suffix \u201c-less\u201d usually means...', options: ['more', 'without / lacking', 'again', 'before'], correctIndex: 1, explain: 'Hope + less = without hope.' },
+        { prompt: 'What does \u201cinfer\u201d mean?', options: ['ignore', 'figure out from clues', 'repeat it word-for-word', 'avoid'], correctIndex: 1, explain: 'To infer = to draw a conclusion from evidence you\u2019re given.' },
+        { prompt: 'A prefix like \u201cun-\u201d usually makes a word...', options: ['opposite / negative', 'louder', 'longer', 'fancier and much longer'], correctIndex: 0, explain: '\u201cUn-\u201d flips meaning: happy \u2192 unhappy.' },
+        { prompt: 'A \u201cthesis\u201d in nonfiction is...', options: ['a picture', 'the main claim the author argues', 'a joke', 'an index entry at the back of the book'], correctIndex: 1, explain: 'Thesis = the central argument the rest of the text supports.' },
+        { prompt: '\u201cSkim\u201d reading means...', options: ['read every single word slowly', 'scan quickly for the gist', 'skip entirely', 'read upside down'], correctIndex: 1, explain: 'Skimming = fast sweep for main ideas, not deep comprehension.' },
+        { prompt: 'The suffix \u201c-less\u201d usually means...', options: ['more', 'without / lacking', 'again', 'before / earlier on'], correctIndex: 1, explain: 'Hope + less = without hope.' },
         { prompt: 'If a character says one thing but does the OPPOSITE, that\u2019s...', options: ['sarcasm', 'irony', 'alliteration', 'plagiarism'], correctIndex: 1, explain: 'Irony: a contrast between expectation and reality.' }
       ]
     },
@@ -557,10 +557,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
       challengeBank: [
         { prompt: 'Which keys are the LEFT-HAND home row (resting fingers)?', options: ['q w e r', 'a s d f', 'z x c v', '1 2 3 4'], correctIndex: 1, explain: 'Left home row: a (pinky), s (ring), d (middle), f (index).' },
         { prompt: 'Which keys are the RIGHT-HAND home row?', options: ['p o i u', 'j k l ;', 'n m , .', '7 8 9 0'], correctIndex: 1, explain: 'Right home row: j (index), k (middle), l (ring), ; (pinky).' },
-        { prompt: 'Touch typing means you...', options: ['type while tapping the screen', 'type without looking at the keys', 'type very softly', 'type only one finger at a time'], correctIndex: 1, explain: 'Eyes stay on the screen; fingers find keys by muscle memory.' },
+        { prompt: 'Touch typing means you...', options: ['type while tapping the screen', 'type without looking at the keys', 'type very softly', 'type with only one finger at a time'], correctIndex: 1, explain: 'Eyes stay on the screen; fingers find keys by muscle memory.' },
         { prompt: 'Which finger should press the letter F?', options: ['left middle', 'left index', 'right index', 'left thumb'], correctIndex: 1, explain: 'The left index finger rests on F (notice the small bump that helps you find it without looking).' },
-        { prompt: 'Which finger presses the space bar?', options: ['index', 'pinky', 'either thumb', 'ring finger'], correctIndex: 2, explain: 'Thumbs hover over the space bar; use whichever is free.' },
-        { prompt: 'The small bump on the F and J keys is called...', options: ['a decoration', 'a home bump', 'a finger rest ridge', 'a lock'], correctIndex: 2, explain: 'The ridges help you find the home row without looking down.' },
+        { prompt: 'Which finger presses the space bar?', options: ['index', 'pinky', 'either thumb', 'the ring finger'], correctIndex: 2, explain: 'Thumbs hover over the space bar; use whichever is free.' },
+        { prompt: 'The small bump on the F and J keys is called...', options: ['a decoration on the keys', 'a home bump', 'a finger rest ridge', 'a lock'], correctIndex: 2, explain: 'The ridges help you find the home row without looking down.' },
         { prompt: 'WPM stands for...', options: ['Words Per Minute', 'Writing Practice Mode', 'Weight Per Millisecond', 'Word Placement Model'], correctIndex: 0, explain: 'WPM = (characters typed / 5) divided by minutes.' }
       ]
     },
@@ -581,7 +581,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
         { prompt: 'Which accommodation would MOST help a student with dyslexia type?', options: ['racing mode', 'OpenDyslexic font', 'louder beeps', 'a smaller keyboard'], correctIndex: 1, explain: 'Dyslexia-friendly fonts reduce letter-confusion (b/d, p/q).' },
         { prompt: '\u201cError-tolerant mode\u201d helps most with...', options: ['dysgraphia', 'running fast', 'memory loss', 'hearing'], correctIndex: 0, explain: 'Dysgraphia can make motor output mismatch intent \u2014 auto-advance keeps progress flowing.' },
         { prompt: 'If your accuracy is 90%, out of 100 keystrokes you got how many right?', options: ['10', '90', '100', '9'], correctIndex: 1, explain: '90% of 100 = 90 correct keystrokes.' },
-        { prompt: 'Consistent practice with LOW bars (e.g., 10 WPM at 80% accuracy) is called...', options: ['cheating', 'mastery learning', 'pressure typing', 'speed racing'], correctIndex: 1, explain: 'Mastery learning: meeting thresholds at your pace builds durable skill.' },
+        { prompt: 'Consistent practice with LOW bars (e.g., 10 WPM at 80% accuracy) is called...', options: ['cheating', 'mastery learning', 'pressure typing drills', 'speed racing'], correctIndex: 1, explain: 'Mastery learning: meeting thresholds at your pace builds durable skill.' },
         { prompt: 'Which is NOT a healthy typing habit?', options: ['look at the screen', 'rest your wrists neutrally', 'press as hard as you can', 'take breaks'], correctIndex: 2, explain: 'Light keystrokes protect your joints; hard pressing adds injury risk.' },
         { prompt: '\u201cPersonal best\u201d tracking compares you to...', options: ['every other student', 'only yourself', 'the class average', 'a national standard'], correctIndex: 1, explain: 'Personal best = you vs. your past self. No peer ranking.' },
         { prompt: 'In typing, a \u201cbaseline\u201d is...', options: ['the bottom of the keyboard', 'your first measured score', 'a warning light', 'the target WPM'], correctIndex: 1, explain: 'Baseline = starting measurement, so growth over time is visible.' }
@@ -603,7 +603,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
       challengeBank: [
         { prompt: 'Geosynchronous satellites stay above the same spot on Earth because their orbital period equals...', options: ['1 hour', 'one Earth day', 'one Earth year', 'one lunar cycle'], correctIndex: 1, explain: '~24 hours, so the satellite circles at the same rate Earth spins.' },
         { prompt: 'Lower orbits move...', options: ['slower', 'faster', 'the same speed as higher orbits', 'in reverse'], correctIndex: 1, explain: 'Closer in = stronger gravity = faster orbital speed.' },
-        { prompt: 'Which is NOT a real type of orbit?', options: ['polar', 'geostationary', 'ellipsoidal-static', 'sun-synchronous'], correctIndex: 2, explain: 'The other three are real; ellipsoidal-static is invented.' },
+        { prompt: 'Which is NOT a real type of orbit?', options: ['polar', 'geostationary', 'ellipsoidal-static', 'sun-synchronous polar'], correctIndex: 2, explain: 'The other three are real; ellipsoidal-static is invented.' },
         { prompt: 'When a spacecraft fires its engines opposite its motion, it...', options: ['speeds up', 'slows down', 'changes color', 'pauses orbit'], correctIndex: 1, explain: 'Retrograde burn — used to lower an orbit or de-orbit.' },
         { prompt: 'The Moon is moving away from Earth at about...', options: ['38 cm per year', '38 km per year', '38 m per second', '38 km per second'], correctIndex: 0, explain: 'Tidal interaction transfers angular momentum, slowly receding the Moon.' },
         { prompt: 'A "transfer orbit" between two planets is called a...', options: ['Hohmann transfer', 'Hyperbolic glide', 'Lagrange spin', 'Roche jump'], correctIndex: 0, explain: 'Hohmann transfer — the most fuel-efficient two-burn path.' },
@@ -648,11 +648,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
       flavor: 'A bar chart materializes mid-air and slams the foe with the average.',
       challengeBank: [
         { prompt: 'Range of {12, 4, 18, 7, 22, 9} = ?', options: ['10', '15', '18', '22'], correctIndex: 2, explain: 'Range = max − min = 22 − 4 = 18.' },
-        { prompt: 'A box plot shows...', options: ['only the mean', 'the five-number summary', 'a frequency table', 'percentages only'], correctIndex: 1, explain: 'Min, Q1, median, Q3, max — quartiles + extremes.' },
+        { prompt: 'A box plot shows...', options: ['only the mean', 'the five-number summary', 'a frequency table of counts', 'percentages only'], correctIndex: 1, explain: 'Min, Q1, median, Q3, max — quartiles + extremes.' },
         { prompt: 'In a normal distribution, ~68% of data falls within how many standard deviations of the mean?', options: ['1', '2', '3', '4'], correctIndex: 0, explain: 'Empirical rule: 68% within 1σ, 95% within 2σ, 99.7% within 3σ.' },
         { prompt: 'Which measure of center is MOST affected by outliers?', options: ['median', 'mean', 'mode', 'range'], correctIndex: 1, explain: 'Mean shifts toward extreme values; median resists.' },
-        { prompt: 'A correlation of −0.9 means the variables are...', options: ['unrelated', 'weakly related', 'strongly negatively related', 'identical'], correctIndex: 2, explain: 'Close to −1 = strong inverse relationship.' },
-        { prompt: 'Which is a sample, not a population?', options: ['every student in the U.S.', 'every Maine 8th grader', '50 randomly chosen Maine 8th graders', 'every 8th grader who has ever lived'], correctIndex: 2, explain: 'A sample is a subset chosen from the population.' }
+        { prompt: 'A correlation of −0.9 means the variables are...', options: ['unrelated', 'weakly but positively related', 'strongly negatively related', 'identical'], correctIndex: 2, explain: 'Close to −1 = strong inverse relationship.' },
+        { prompt: 'Which is a sample, not a population?', options: ['every student in the U.S.', 'every Maine 8th grader', '50 randomly chosen Maine 8th graders', 'every 8th grader who has ever lived anywhere'], correctIndex: 2, explain: 'A sample is a subset chosen from the population.' }
       ]
     },
     {
@@ -670,11 +670,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
       flavor: 'Mirror, signal, blessing. The foe gets a polite warning before harm.',
       challengeBank: [
         { prompt: 'The minimum following distance recommended in good conditions is...', options: ['1 second', '2 seconds', '3 seconds', '10 seconds'], correctIndex: 2, explain: 'The 3-second rule — pick a fixed point, count after the car ahead passes it.' },
-        { prompt: 'You should check your blind spot by...', options: ['looking only at mirrors', 'turning your head briefly', 'closing your eyes', 'asking a passenger'], correctIndex: 1, explain: 'Mirrors miss the area beside your rear corners — head-check before lane changes.' },
-        { prompt: 'What does a flashing yellow light mean?', options: ['stop completely', 'proceed with caution', 'speed up', 'turn left only'], correctIndex: 1, explain: 'Caution — slow down and watch for hazards.' },
+        { prompt: 'You should check your blind spot by...', options: ['looking only at your mirrors', 'turning your head briefly', 'closing your eyes', 'asking a passenger'], correctIndex: 1, explain: 'Mirrors miss the area beside your rear corners — head-check before lane changes.' },
+        { prompt: 'What does a flashing yellow light mean?', options: ['stop completely and wait', 'proceed with caution', 'speed up', 'turn left only'], correctIndex: 1, explain: 'Caution — slow down and watch for hazards.' },
         { prompt: 'When merging onto a highway, you should...', options: ['stop at the end of the ramp', 'match the speed of traffic', 'drive 10 mph slower than traffic', 'flash your brights'], correctIndex: 1, explain: 'Match traffic speed — merging slow forces others to brake.' },
         { prompt: 'Hydroplaning is most likely when...', options: ['roads are dry', 'roads first get wet', 'snow has packed the surface', 'temperatures are below 0°F'], correctIndex: 1, explain: 'Oil + water + first rain = slickest moment. Slow down.' },
-        { prompt: 'Which is the SAFER following distance in heavy rain?', options: ['1 second', '2 seconds', '3 seconds', '4–6 seconds'], correctIndex: 3, explain: 'Doubling/tripling the 3-second rule accounts for stopping distance on wet roads.' }
+        { prompt: 'Which is the SAFER following distance in heavy rain?', options: ['1 second', '2 seconds', '3.5 seconds', '4–6 seconds'], correctIndex: 3, explain: 'Doubling/tripling the 3-second rule accounts for stopping distance on wet roads.' }
       ]
     },
     {
@@ -695,7 +695,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
         { prompt: 'How many phonemes (sounds) are in "fish"?', options: ['2', '3', '4', '5'], correctIndex: 1, explain: '/f/ /i/ /sh/ — three phonemes (sh is one sound).' },
         { prompt: 'Which is a CVC word?', options: ['cake', 'truck', 'sit', 'dream'], correctIndex: 2, explain: 'CVC = consonant-vowel-consonant. s-i-t fits.' },
         { prompt: 'The "magic e" in "cake" makes the vowel sound...', options: ['short', 'long', 'silent', 'doubled'], correctIndex: 1, explain: 'Silent e signals the preceding vowel says its name (long sound).' },
-        { prompt: 'A blend like "st" in "stop" means...', options: ['both letters are silent', 'two letters with one combined sound', 'two letters where each sound is heard', 'a syllable break'], correctIndex: 2, explain: 'Blend = each consonant keeps its sound (/s/ + /t/).' },
+        { prompt: 'A blend like "st" in "stop" means...', options: ['both letters are silent', 'two letters that make one combined sound', 'two letters where each sound is heard', 'a syllable break'], correctIndex: 2, explain: 'Blend = each consonant keeps its sound (/s/ + /t/).' },
         { prompt: 'Which word has a long /e/ sound?', options: ['bed', 'see', 'set', 'best'], correctIndex: 1, explain: '"see" — the ee makes a long /e/. The others are short.' }
       ]
     },
@@ -717,7 +717,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
         { prompt: 'A "closed syllable" ends in...', options: ['a vowel', 'a consonant', 'silent e', 'two consonants'], correctIndex: 1, explain: 'Closed syllable: vowel followed by a consonant (cat, bug, run). Vowel = short.' },
         { prompt: 'How many syllables in "happy"?', options: ['1', '2', '3', '4'], correctIndex: 1, explain: 'hap-py = 2 syllables. Each has a vowel sound.' },
         { prompt: 'Which is an "open syllable"?', options: ['cat', 'go', 'fish', 'jump'], correctIndex: 1, explain: 'Open: ends in a vowel, says its long name (go, hi, me).' },
-        { prompt: 'Every syllable contains...', options: ['exactly two consonants', 'exactly one vowel sound', 'a silent letter', 'a digraph'], correctIndex: 1, explain: 'A syllable always has one vowel sound at its core.' },
+        { prompt: 'Every syllable contains...', options: ['exactly two consonant sounds', 'exactly one vowel sound', 'a silent letter', 'a digraph'], correctIndex: 1, explain: 'A syllable always has one vowel sound at its core.' },
         { prompt: 'Compound word "sunshine" has how many syllables?', options: ['1', '2', '3', '4'], correctIndex: 1, explain: 'sun-shine = 2 syllables.' }
       ]
     },
@@ -735,11 +735,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
       critMultiplier: 2.1,
       flavor: 'Topic, support, transition, conclusion. The foe is structurally outranked.',
       challengeBank: [
-        { prompt: 'A paragraph usually starts with a...', options: ['conclusion', 'topic sentence', 'quotation', 'list'], correctIndex: 1, explain: 'Topic sentence states the main idea; everything else supports it.' },
+        { prompt: 'A paragraph usually starts with a...', options: ['conclusion line', 'topic sentence', 'quotation', 'list'], correctIndex: 1, explain: 'Topic sentence states the main idea; everything else supports it.' },
         { prompt: 'Which transition word shows CONTRAST?', options: ['therefore', 'however', 'similarly', 'finally'], correctIndex: 1, explain: 'However signals a shift; therefore = cause, similarly = comparison, finally = sequence.' },
-        { prompt: 'Evidence in writing usually appears as...', options: ['only personal opinion', 'examples, quotes, or data', 'only emojis', 'questions'], correctIndex: 1, explain: 'Strong writing supports claims with concrete evidence.' },
+        { prompt: 'Evidence in writing usually appears as...', options: ['only your personal opinion', 'examples, quotes, or data', 'only emojis', 'questions'], correctIndex: 1, explain: 'Strong writing supports claims with concrete evidence.' },
         { prompt: 'A "claim" in argument writing is...', options: ['a fact you cannot question', 'your debatable position', 'someone else\'s opinion only', 'a list of dates'], correctIndex: 1, explain: 'Claim = your stance — must be debatable AND supportable.' },
-        { prompt: 'Which sentence is a strong topic sentence?', options: ['I will tell you about dogs.', 'Dogs make excellent companions because of their loyalty and intelligence.', 'Dogs.', 'My dog is named Max.'], correctIndex: 1, explain: 'Specific, debatable, previews reasons.' },
+        { prompt: 'Which sentence is a strong topic sentence?', options: ['I will tell you about dogs, and then I will tell you some more things about dogs.', 'Dogs make excellent companions because of their loyalty and intelligence.', 'Dogs.', 'My dog is named Max.'], correctIndex: 1, explain: 'Specific, debatable, previews reasons.' },
         { prompt: 'A 5-paragraph essay typically has how many BODY paragraphs?', options: ['1', '2', '3', '5'], correctIndex: 2, explain: 'Intro + 3 body + conclusion = 5 paragraphs.' }
       ]
     },
@@ -757,12 +757,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
       critMultiplier: 2.4,
       flavor: 'Quoted speech turns sharp. The foe is interrupted mid-sentence.',
       challengeBank: [
-        { prompt: 'Which is correctly punctuated dialogue?', options: ['"Hello," she said.', '"Hello" she said.', '"Hello" she said,', '"Hello", she said'], correctIndex: 0, explain: 'Comma INSIDE the quotes when a speaker tag follows.' },
-        { prompt: 'In dialogue, every new speaker gets a...', options: ['new chapter', 'new paragraph', 'new font', 'new page'], correctIndex: 1, explain: 'Standard: each speaker change = new paragraph for clarity.' },
-        { prompt: 'Which is a "show, don\'t tell" version of "She was angry"?', options: ['She felt very mad.', 'She was extremely angry.', 'She slammed the door, jaw tight.', 'She was angry, very angry.'], correctIndex: 2, explain: 'Show through action and detail; let the reader infer the emotion.' },
-        { prompt: 'A dialogue tag is the...', options: ['punctuation', 'phrase identifying who spoke', 'description of setting', 'quoted thought'], correctIndex: 1, explain: 'Tag = "she said," "he asked," etc. — pairs the line with a speaker.' },
+        { prompt: 'Which is correctly punctuated dialogue?', options: ['"Hello," she said.', '"Hello" she said.', '"Hello" she said,', '"Hello", she said.'], correctIndex: 0, explain: 'Comma INSIDE the quotes when a speaker tag follows.' },
+        { prompt: 'In dialogue, every new speaker gets a...', options: ['new chapter heading', 'new paragraph', 'new font', 'new page'], correctIndex: 1, explain: 'Standard: each speaker change = new paragraph for clarity.' },
+        { prompt: 'Which is a "show, don\'t tell" version of "She was angry"?', options: ['She felt very mad.', 'She was extremely angry.', 'She slammed the door, jaw tight.', 'She was angry, so very very angry.'], correctIndex: 2, explain: 'Show through action and detail; let the reader infer the emotion.' },
+        { prompt: 'A dialogue tag is the...', options: ['punctuation', 'phrase identifying who spoke', 'a description of the setting', 'quoted thought'], correctIndex: 1, explain: 'Tag = "she said," "he asked," etc. — pairs the line with a speaker.' },
         { prompt: 'Which weakens dialogue?', options: ['speaking in the character\'s voice', 'using "said" most of the time', 'long info-dumps mid-conversation', 'short, varied lines'], correctIndex: 2, explain: 'Info-dumps make characters sound like narrators. Keep talk natural.' },
-        { prompt: 'Which is more vivid?', options: ['"Yes," he said happily.', '"Yes!" he grinned, already grabbing his coat.', '"Yes" he agreed positively.', '"Yes," he was happy.'], correctIndex: 1, explain: 'Action beat + body language > explaining the emotion in the tag.' }
+        { prompt: 'Which is more vivid?', options: ['"Yes," he said happily.', '"Yes!" he grinned, already grabbing his coat.', '"Yes," he agreed positively and enthusiastically.', '"Yes," he was happy.'], correctIndex: 1, explain: 'Action beat + body language > explaining the emotion in the tag.' }
       ]
     },
     {
@@ -779,12 +779,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
       critMultiplier: 2.2,
       flavor: 'Highlighter-purple glyphs flicker over the foe, exposing every weak point.',
       challengeBank: [
-        { prompt: 'Annotating a text means...', options: ['memorizing every word', 'making notes, marks, and questions on the text', 'reading silently with no marks', 'only highlighting nouns'], correctIndex: 1, explain: 'Active marking — questions, summaries, vocabulary, connections.' },
-        { prompt: 'Which is the BEST annotation for an unfamiliar word?', options: ['Cross it out', 'Write a synonym in the margin', 'Skip it', 'Underline twice'], correctIndex: 1, explain: 'Margin synonym keeps you in the text and builds vocabulary.' },
-        { prompt: 'Marking the main idea of a paragraph helps you...', options: ['waste time', 'skim later for key points', 'rewrite the text', 'make the page shorter'], correctIndex: 1, explain: 'Annotated main ideas are recall-anchors during review.' },
-        { prompt: 'A "?" in the margin usually means...', options: ['interesting fact', 'I disagree', 'I don\'t understand this', 'this is the title'], correctIndex: 2, explain: 'Question mark flags confusion to revisit later.' },
-        { prompt: 'Which is NOT a useful annotation?', options: ['summary in your own words', 'connection to other texts', 'a smiley face every paragraph', 'argument response in margin'], correctIndex: 2, explain: 'Smiley spam adds no comprehension benefit.' },
-        { prompt: 'When using digital annotation tools, what should you do BEFORE moving to a new text?', options: ['nothing', 'export or save your notes', 'delete all annotations', 'rename the file'], correctIndex: 1, explain: 'Saving preserves the cognitive trail for review.' }
+        { prompt: 'Annotating a text means...', options: ['memorizing every word', 'making notes, marks, and questions on the text', 'reading silently with no marks or notes of any kind', 'only highlighting nouns'], correctIndex: 1, explain: 'Active marking — questions, summaries, vocabulary, connections.' },
+        { prompt: 'Which is the BEST annotation for an unfamiliar word?', options: ['Cross it out', 'Write a synonym in the margin', 'Skip it', 'Underline it twice in red pencil'], correctIndex: 1, explain: 'Margin synonym keeps you in the text and builds vocabulary.' },
+        { prompt: 'Marking the main idea of a paragraph helps you...', options: ['waste time', 'skim later for key points', 'rewrite the text', 'make the page look shorter'], correctIndex: 1, explain: 'Annotated main ideas are recall-anchors during review.' },
+        { prompt: 'A "?" in the margin usually means...', options: ['interesting fact', 'I disagree', 'I don\'t understand this', 'this is the title of the book'], correctIndex: 2, explain: 'Question mark flags confusion to revisit later.' },
+        { prompt: 'Which is NOT a useful annotation?', options: ['summary in your own words', 'connection to other texts', 'a smiley face every paragraph', 'an argument response in the margin'], correctIndex: 2, explain: 'Smiley spam adds no comprehension benefit.' },
+        { prompt: 'When using digital annotation tools, what should you do BEFORE moving to a new text?', options: ['nothing', 'export or save your notes', 'delete all of your annotations', 'rename the file'], correctIndex: 1, explain: 'Saving preserves the cognitive trail for review.' }
       ]
     },
     {
@@ -801,12 +801,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
       critMultiplier: 2,
       flavor: 'A perfect single-sentence distillation strikes the foe at its thesis.',
       challengeBank: [
-        { prompt: 'A good summary is mainly...', options: ['longer than the original', 'in the original\'s own words', 'in your own words, capturing the gist', 'a list of every detail'], correctIndex: 2, explain: 'Paraphrased + condensed; tests true understanding.' },
+        { prompt: 'A good summary is mainly...', options: ['longer than the original', 'in the original\'s own words, copied exactly', 'in your own words, capturing the gist', 'a list of every detail'], correctIndex: 2, explain: 'Paraphrased + condensed; tests true understanding.' },
         { prompt: 'Which detail belongs in a summary?', options: ['the main argument', 'an obscure example', 'the author\'s middle name', 'the pagination'], correctIndex: 0, explain: 'Summaries focus on main ideas, not trivia.' },
-        { prompt: 'When summarizing, you should...', options: ['copy whole sentences', 'paraphrase using synonyms + restructured sentences', 'skip the conclusion', 'invent extra details'], correctIndex: 1, explain: 'Paraphrasing builds comprehension; copying = plagiarism.' },
-        { prompt: 'Which is a "main idea" sentence?', options: ['It rained yesterday.', 'Climate change threatens coastal cities through rising seas.', 'Some say.', 'Page 12 is interesting.'], correctIndex: 1, explain: 'States the central claim with specifics.' },
+        { prompt: 'When summarizing, you should...', options: ['copy whole sentences', 'paraphrase using synonyms + restructured sentences', 'skip the conclusion', 'invent a few extra details to make it more interesting'], correctIndex: 1, explain: 'Paraphrasing builds comprehension; copying = plagiarism.' },
+        { prompt: 'Which is a "main idea" sentence?', options: ['It rained yesterday.', 'Climate change threatens coastal cities through rising seas.', 'Some say.', 'Page 12 is interesting, and so are pages 13, 14, 15, and 16.'], correctIndex: 1, explain: 'States the central claim with specifics.' },
         { prompt: 'A summary should be __ than the original.', options: ['longer', 'shorter', 'the exact same length', 'twice as long'], correctIndex: 1, explain: 'Compression is the point — typically 10-25% of length.' },
-        { prompt: 'When you finish a chapter, summarizing in your own words is an example of...', options: ['skimming', 'retrieval practice', 'outlining', 'transcribing'], correctIndex: 1, explain: 'You pull the ideas back from memory — strongest learning evidence.' }
+        { prompt: 'When you finish a chapter, summarizing in your own words is an example of...', options: ['skimming', 'retrieval practice', 'outlining', 'transcribing the text'], correctIndex: 1, explain: 'You pull the ideas back from memory — strongest learning evidence.' }
       ]
     },
     {
@@ -823,12 +823,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
       critMultiplier: 2.3,
       flavor: 'No backspaces. Every character a clean, lethal keystroke.',
       challengeBank: [
-        { prompt: 'Typing accuracy is calculated as...', options: ['words ÷ minutes', 'correct chars ÷ total chars × 100', 'mistakes only', 'time × WPM'], correctIndex: 1, explain: 'Accuracy = % of characters typed correctly.' },
+        { prompt: 'Typing accuracy is calculated as...', options: ['words typed ÷ minutes spent typing × 100', 'correct chars ÷ total chars × 100', 'mistakes only', 'time × WPM'], correctIndex: 1, explain: 'Accuracy = % of characters typed correctly.' },
         { prompt: 'WPM stands for...', options: ['Words Per Minute', 'Writing Per Minute', 'Word Pattern Math', 'Wonder Per Minute'], correctIndex: 0, explain: 'Standard speed metric in typing tests.' },
         { prompt: 'Which finger types the letter "F"?', options: ['left index', 'left middle', 'right index', 'right pinky'], correctIndex: 0, explain: 'Left index — F has the home-row bump for orientation.' },
         { prompt: 'What\'s the average typing speed for adults?', options: ['10 WPM', '40 WPM', '120 WPM', '500 WPM'], correctIndex: 1, explain: '~40 WPM is average; 60+ is fast; 100+ is professional.' },
         { prompt: 'The home row keys for the LEFT hand are...', options: ['Q W E R', 'A S D F', 'Z X C V', '1 2 3 4'], correctIndex: 1, explain: 'A S D F — fingers rest here in default position.' },
-        { prompt: 'To type accurately, you should focus on...', options: ['speed only', 'correctness first, then speed', 'using only one finger', 'keyboard appearance'], correctIndex: 1, explain: 'Accuracy first builds muscle memory; speed grows naturally.' }
+        { prompt: 'To type accurately, you should focus on...', options: ['speed only', 'correctness first, then speed', 'using only one finger at a time', 'keyboard appearance'], correctIndex: 1, explain: 'Accuracy first builds muscle memory; speed grows naturally.' }
       ]
     },
     {
@@ -845,11 +845,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
       critMultiplier: 2.1,
       flavor: 'A keyboard rumbles open beneath the foe — the letters spell their fate.',
       challengeBank: [
-        { prompt: 'The QWERTY layout was originally designed to...', options: ['speed up typing', 'prevent typewriter jams', 'help kids learn', 'fit small keyboards'], correctIndex: 1, explain: 'Christopher Sholes laid it out so common letter pairs were apart, reducing jams.' },
+        { prompt: 'The QWERTY layout was originally designed to...', options: ['speed up typing', 'prevent typewriter jams', 'help kids learn', 'fit onto small keyboards'], correctIndex: 1, explain: 'Christopher Sholes laid it out so common letter pairs were apart, reducing jams.' },
         { prompt: 'An alternative keyboard layout designed for efficiency is called...', options: ['Dvorak', 'Cyrillic', 'Klingon', 'Morse'], correctIndex: 0, explain: 'Dvorak places vowels on the home row; some claim faster typing.' },
         { prompt: 'On QWERTY, which key is to the LEFT of "S"?', options: ['A', 'D', 'W', 'Q'], correctIndex: 0, explain: 'A — left of S on the home row.' },
         { prompt: 'The space bar is typically pressed by your...', options: ['pinky', 'ring finger', 'thumb', 'index'], correctIndex: 2, explain: 'Either thumb. The longest, strongest digit handles the most-used key.' },
-        { prompt: 'Touch typing means typing without...', options: ['using a mouse', 'looking at the keys', 'making sound', 'a chair'], correctIndex: 1, explain: 'Eyes on the screen, fingers on home row, by feel.' },
+        { prompt: 'Touch typing means typing without...', options: ['using a mouse or trackpad', 'looking at the keys', 'making sound', 'a chair'], correctIndex: 1, explain: 'Eyes on the screen, fingers on home row, by feel.' },
         { prompt: 'A typing GOAL for an 8th grader is roughly...', options: ['10 WPM', '25-35 WPM', '60-80 WPM', '120+ WPM'], correctIndex: 1, explain: '25-35 WPM is a reasonable middle-school target; varies by student.' }
       ]
     }
@@ -873,11 +873,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
       challengeBank: [
         { prompt: 'The word \u201cthe\u201d is the MOST common word in English. True or false?', options: ['true', 'false'], correctIndex: 0, explain: '\u201cThe\u201d ranks #1 by frequency in English corpora.' },
         { prompt: 'High-frequency words that students should read without sounding out are called...', options: ['sight words', 'rhyme words', 'silent words', 'long words'], correctIndex: 0, explain: 'Sight words are recognized instantly \u2014 speeds up reading + writing.' },
-        { prompt: 'Which is an example of a compound word?', options: ['kindness', 'playground', 'running', 'quickly'], correctIndex: 1, explain: 'Compound = two whole words combined: play + ground.' },
-        { prompt: 'Reading fluency is measured by speed AND...', options: ['volume', 'accuracy + expression', 'handwriting', 'spelling only'], correctIndex: 1, explain: 'Fluent reading = accurate + paced + expressive (prosody).' },
+        { prompt: 'Which is an example of a compound word?', options: ['friendliness', 'playground', 'running', 'quickly'], correctIndex: 1, explain: 'Compound = two whole words combined: play + ground.' },
+        { prompt: 'Reading fluency is measured by speed AND...', options: ['volume', 'accuracy + expression', 'handwriting', 'spelling and handwriting only'], correctIndex: 1, explain: 'Fluent reading = accurate + paced + expressive (prosody).' },
         { prompt: 'If a student types \u201cteh\u201d instead of \u201cthe,\u201d that\u2019s a...', options: ['transposition error', 'missed letter', 'capital letter problem', 'space error'], correctIndex: 0, explain: 'Transposition = two letters swapped. Common in fast typing.' },
         { prompt: 'Which punctuation usually ends a sentence?', options: ['comma', 'period', 'apostrophe', 'colon'], correctIndex: 1, explain: 'Periods end declarative statements. Questions end with ? and strong emotion with !.' },
-        { prompt: 'The word \u201cIEP\u201d in schools stands for...', options: ['Incredible Education Plan', 'Individualized Education Program', 'International Exam Panel', 'Instructional Education Project'], correctIndex: 1, explain: 'IEP = federal plan for students receiving special education services.' }
+        { prompt: 'The word \u201cIEP\u201d in schools stands for...', options: ['Incredible Education Plan', 'Individualized Education Program', 'International Exam Panel', 'Instructional Education Project Plan'], correctIndex: 1, explain: 'IEP = federal plan for students receiving special education services.' }
       ]
     },
     {
@@ -897,9 +897,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
         { prompt: 'Saltwater fish typically...', options: ['drink lots of water', 'rarely drink water', 'absorb salt through skin', 'do not need water'], correctIndex: 0, explain: 'Saltwater fish drink lots and excrete salt to stay osmotically balanced.' },
         { prompt: 'A coral reef is built mostly by tiny animals called...', options: ['barnacles', 'polyps', 'plankton', 'urchins'], correctIndex: 1, explain: 'Coral polyps secrete calcium carbonate exoskeletons that form the reef.' },
         { prompt: 'Which of these is a freshwater fish?', options: ['clownfish', 'tuna', 'goldfish', 'shark'], correctIndex: 2, explain: 'Goldfish are freshwater. The other three live in saltwater.' },
-        { prompt: 'Aquarium nitrogen cycle: ammonia is converted by bacteria into...', options: ['oxygen', 'salt', 'nitrite then nitrate', 'water'], correctIndex: 2, explain: 'Beneficial bacteria oxidize ammonia → nitrite → nitrate, which plants use.' },
-        { prompt: 'Which is a sign of a HEALTHY tank?', options: ['cloudy water', 'algae taking over', 'fish swimming actively + clear water', 'no plants'], correctIndex: 2, explain: 'Active fish + clear water + balanced biology = healthy.' },
-        { prompt: 'Why do fish have gills?', options: ['for camouflage', 'to extract oxygen from water', 'to swim faster', 'to breathe air'], correctIndex: 1, explain: 'Gills pull dissolved oxygen out of water using a thin membrane.' }
+        { prompt: 'Aquarium nitrogen cycle: ammonia is converted by bacteria into...', options: ['oxygen and carbon dioxide', 'salt', 'nitrite then nitrate', 'water'], correctIndex: 2, explain: 'Beneficial bacteria oxidize ammonia → nitrite → nitrate, which plants use.' },
+        { prompt: 'Which is a sign of a HEALTHY tank?', options: ['cloudy water', 'algae taking over the glass and gravel', 'fish swimming actively + clear water', 'no plants'], correctIndex: 2, explain: 'Active fish + clear water + balanced biology = healthy.' },
+        { prompt: 'Why do fish have gills?', options: ['for camouflage', 'to extract oxygen from water', 'to swim faster', 'to breathe air at the surface'], correctIndex: 1, explain: 'Gills pull dissolved oxygen out of water using a thin membrane.' }
       ]
     },
     {
@@ -917,11 +917,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
       flavor: 'A miniature biome wraps the foe; predators and prey choose sides.',
       challengeBank: [
         { prompt: 'In a food chain, primary consumers eat...', options: ['other consumers', 'plants/producers', 'decomposers', 'sunlight directly'], correctIndex: 1, explain: 'Primary consumers (herbivores) eat the producers (plants).' },
-        { prompt: 'Decomposers like fungi and bacteria...', options: ['kill all plants', 'recycle dead matter into soil nutrients', 'are unnecessary', 'photosynthesize'], correctIndex: 1, explain: 'Decomposers return nutrients to the soil so producers can use them again.' },
+        { prompt: 'Decomposers like fungi and bacteria...', options: ['kill all plants', 'recycle dead matter into soil nutrients', 'are unnecessary', 'photosynthesize to make all of their own food'], correctIndex: 1, explain: 'Decomposers return nutrients to the soil so producers can use them again.' },
         { prompt: 'A species that has NO natural predators in a new environment is called...', options: ['endangered', 'invasive', 'native', 'extinct'], correctIndex: 1, explain: 'Invasive species often outcompete natives because nothing keeps them in check.' },
         { prompt: 'Photosynthesis converts CO₂ + water into...', options: ['nitrogen + oxygen', 'glucose + oxygen', 'protein + water', 'salt + sugar'], correctIndex: 1, explain: '6CO₂ + 6H₂O + light → C₆H₁₂O₆ (glucose) + 6O₂.' },
-        { prompt: 'Removing a top predator from an ecosystem usually...', options: ['has no effect', 'reduces all populations', 'causes prey populations to boom then crash', 'turns the area to desert'], correctIndex: 2, explain: 'Trophic cascade — prey overgraze, eventually crashing food supply.' },
-        { prompt: 'Which is an example of MUTUALISM?', options: ['lion and zebra', 'flea on dog', 'bee pollinating flower', 'mold on bread'], correctIndex: 2, explain: 'Both bee and flower benefit — bee gets nectar, flower gets pollinated.' }
+        { prompt: 'Removing a top predator from an ecosystem usually...', options: ['has no effect', 'reduces all populations', 'causes prey populations to boom then crash', 'turns the whole area into a dry, empty desert'], correctIndex: 2, explain: 'Trophic cascade — prey overgraze, eventually crashing food supply.' },
+        { prompt: 'Which is an example of MUTUALISM?', options: ['lion hunting a zebra herd', 'flea on dog', 'bee pollinating flower', 'mold on bread'], correctIndex: 2, explain: 'Both bee and flower benefit — bee gets nectar, flower gets pollinated.' }
       ]
     },
     {
@@ -939,11 +939,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
       flavor: 'Conditioned reflexes flicker; the foe trains itself into your trap.',
       challengeBank: [
         { prompt: 'Pavlov\'s dogs salivated at a bell because the bell became associated with...', options: ['fear', 'food', 'pain', 'a person'], correctIndex: 1, explain: 'Classical conditioning: neutral stimulus (bell) paired with food.' },
-        { prompt: 'Positive reinforcement means...', options: ['adding something pleasant after a behavior', 'taking away something pleasant', 'punishing wrong behavior', 'ignoring all behavior'], correctIndex: 0, explain: 'Add a reward to increase the likelihood the behavior happens again.' },
-        { prompt: 'Negative reinforcement is...', options: ['punishment', 'removing an unpleasant thing to increase a behavior', 'no reward', 'random reward'], correctIndex: 1, explain: 'NOT punishment — removing something aversive to encourage behavior (e.g., taking off seatbelt buzzer when you buckle up).' },
-        { prompt: 'A "fixed ratio" reinforcement schedule rewards every...', options: ['random Nth response', 'response', 'fixed Nth response (e.g., every 5th)', 'minute that passes'], correctIndex: 2, explain: 'Fixed ratio = reward after a set number of responses (FR-5 = every 5th).' },
-        { prompt: 'Operant conditioning was most associated with which scientist?', options: ['Freud', 'Pavlov', 'Skinner', 'Piaget'], correctIndex: 2, explain: 'B.F. Skinner formalized operant conditioning with the Skinner box.' },
-        { prompt: 'Extinction in behavior science means...', options: ['the species died out', 'the behavior fades when reinforcement stops', 'the trainer left', 'memory was erased'], correctIndex: 1, explain: 'Stop reinforcing → behavior gradually decreases → eventually disappears.' }
+        { prompt: 'Positive reinforcement means...', options: ['adding something pleasant after a behavior', 'taking away something pleasant after a behavior', 'punishing wrong behavior', 'ignoring all behavior'], correctIndex: 0, explain: 'Add a reward to increase the likelihood the behavior happens again.' },
+        { prompt: 'Negative reinforcement is...', options: ['punishment', 'removing an unpleasant thing to increase a behavior', 'no reward', 'random reward given after some behaviors but not others'], correctIndex: 1, explain: 'NOT punishment — removing something aversive to encourage behavior (e.g., taking off seatbelt buzzer when you buckle up).' },
+        { prompt: 'A "fixed ratio" reinforcement schedule rewards every...', options: ['random Nth response (e.g., sometimes the 3rd)', 'response', 'fixed Nth response (e.g., every 5th)', 'minute that passes'], correctIndex: 2, explain: 'Fixed ratio = reward after a set number of responses (FR-5 = every 5th).' },
+        { prompt: 'Operant conditioning was most associated with which scientist?', options: ['Freud', 'Bandura', 'Skinner', 'Piaget'], correctIndex: 2, explain: 'B.F. Skinner formalized operant conditioning with the Skinner box.' },
+        { prompt: 'Extinction in behavior science means...', options: ['the species died out and the behavior with it', 'the behavior fades when reinforcement stops', 'the trainer left', 'memory was erased'], correctIndex: 1, explain: 'Stop reinforcing → behavior gradually decreases → eventually disappears.' }
       ]
     },
     {
@@ -961,10 +961,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
       flavor: 'A diagram of every organ flickers across the foe — every weak point glows.',
       challengeBank: [
         { prompt: 'The heart has how many chambers?', options: ['2', '3', '4', '6'], correctIndex: 2, explain: '2 atria + 2 ventricles = 4 chambers.' },
-        { prompt: 'Red blood cells carry oxygen using which protein?', options: ['insulin', 'hemoglobin', 'collagen', 'keratin'], correctIndex: 1, explain: 'Hemoglobin binds O₂ in lungs and releases it in tissues.' },
+        { prompt: 'Red blood cells carry oxygen using which protein?', options: ['insulin', 'hemoglobin', 'fibrinogen', 'keratin'], correctIndex: 1, explain: 'Hemoglobin binds O₂ in lungs and releases it in tissues.' },
         { prompt: 'Which organ filters blood and produces urine?', options: ['liver', 'pancreas', 'kidneys', 'spleen'], correctIndex: 2, explain: 'Kidneys filter waste; produce urine that exits via the ureters.' },
         { prompt: 'The largest organ of the human body is the...', options: ['brain', 'liver', 'lungs', 'skin'], correctIndex: 3, explain: 'Skin — surface area ~2 m² in adults.' },
-        { prompt: 'Neurons send signals using...', options: ['mechanical bumps only', 'electrical impulses + chemical neurotransmitters', 'magnetic waves', 'sound'], correctIndex: 1, explain: 'Action potential travels electrically, then chemicals cross the synapse.' },
+        { prompt: 'Neurons send signals using...', options: ['mechanical bumps only, passed from cell to cell like dominoes', 'electrical impulses + chemical neurotransmitters', 'magnetic waves', 'sound'], correctIndex: 1, explain: 'Action potential travels electrically, then chemicals cross the synapse.' },
         { prompt: 'Which body system fights infections?', options: ['digestive', 'immune', 'endocrine', 'skeletal'], correctIndex: 1, explain: 'Immune system: white blood cells, lymph nodes, spleen, antibodies.' }
       ]
     },
@@ -985,10 +985,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
         { prompt: 'The three PRIMARY colors of light are...', options: ['red, yellow, blue', 'red, green, blue', 'cyan, magenta, yellow', 'black, white, gray'], correctIndex: 1, explain: 'Light uses additive primaries: RGB. Paint uses subtractive primaries (CMY or RYB).' },
         { prompt: 'Mixing all primary colors of LIGHT produces...', options: ['black', 'white', 'brown', 'gray'], correctIndex: 1, explain: 'Additive mixing: R+G+B → white. (Paint subtractive mixing → near-black.)' },
         { prompt: 'Two colors directly opposite on the color wheel are called...', options: ['analogous', 'monochromatic', 'complementary', 'triadic'], correctIndex: 2, explain: 'Complementary pairs (red/green, blue/orange) create high contrast.' },
-        { prompt: 'A color\'s value refers to its...', options: ['hue', 'lightness/darkness', 'saturation', 'temperature'], correctIndex: 1, explain: 'Value = how light or dark — independent of hue or saturation.' },
-        { prompt: 'Saturation describes a color\'s...', options: ['brightness only', 'purity / vividness', 'temperature', 'size on canvas'], correctIndex: 1, explain: 'A highly saturated color is intense; a desaturated one is grayish.' },
-        { prompt: 'Which is a WARM color?', options: ['blue', 'green', 'red-orange', 'violet'], correctIndex: 2, explain: 'Reds, oranges, yellows — associated with warmth/sun/fire.' },
-        { prompt: 'In a painting, the area where the viewer\'s eye is drawn first is called the...', options: ['background', 'focal point', 'horizon', 'frame'], correctIndex: 1, explain: 'Focal point — created via contrast, isolation, or composition.' }
+        { prompt: 'A color\'s value refers to its...', options: ['hue', 'lightness/darkness', 'saturation', 'temperature (warm/cool)'], correctIndex: 1, explain: 'Value = how light or dark — independent of hue or saturation.' },
+        { prompt: 'Saturation describes a color\'s...', options: ['brightness or darkness only', 'purity / vividness', 'temperature', 'size on canvas'], correctIndex: 1, explain: 'A highly saturated color is intense; a desaturated one is grayish.' },
+        { prompt: 'Which is a WARM color?', options: ['blue', 'green', 'red-orange', 'blue-violet'], correctIndex: 2, explain: 'Reds, oranges, yellows — associated with warmth/sun/fire.' },
+        { prompt: 'In a painting, the area where the viewer\'s eye is drawn first is called the...', options: ['background layer', 'focal point', 'horizon', 'frame'], correctIndex: 1, explain: 'Focal point — created via contrast, isolation, or composition.' }
       ]
     },
     {
@@ -1006,12 +1006,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
       flavor: 'A perfect fifth resolves into something violent.',
       challengeBank: [
         { prompt: 'A standard major scale has how many notes?', options: ['5', '7', '8', '12'], correctIndex: 1, explain: '7 unique notes (do re mi fa sol la ti); 8 counting the octave.' },
-        { prompt: 'The pitch difference between C and the next higher C is one...', options: ['note', 'tone', 'octave', 'fifth'], correctIndex: 2, explain: 'Octave = doubled frequency. C4 is 261.6 Hz; C5 is 523.2 Hz.' },
+        { prompt: 'The pitch difference between C and the next higher C is one...', options: ['note', 'tone', 'octave', 'perfect fifth'], correctIndex: 2, explain: 'Octave = doubled frequency. C4 is 261.6 Hz; C5 is 523.2 Hz.' },
         { prompt: 'Tempo is measured in...', options: ['Hertz', 'beats per minute', 'decibels', 'notes per measure'], correctIndex: 1, explain: 'BPM — how many beats fit in 60 seconds.' },
         { prompt: 'A song in 4/4 time has how many beats per measure?', options: ['2', '3', '4', '6'], correctIndex: 2, explain: 'Top number of time signature = beats per measure.' },
         { prompt: 'Forte means...', options: ['soft', 'loud', 'fast', 'slow'], correctIndex: 1, explain: 'Italian dynamics: forte = loud, piano = soft, mezzo = medium.' },
         { prompt: 'A major chord is built from which intervals (in semitones)?', options: ['1-2', '3-4', '4-3', '5-7'], correctIndex: 2, explain: 'Major triad = root + 4 semitones (major 3rd) + 3 semitones (minor 3rd).' },
-        { prompt: 'Sound waves travel through air as...', options: ['transverse waves', 'longitudinal compression waves', 'electromagnetic radiation', 'gravity ripples'], correctIndex: 1, explain: 'Sound is a longitudinal pressure wave — compressions and rarefactions.' }
+        { prompt: 'Sound waves travel through air as...', options: ['transverse waves', 'longitudinal compression waves', 'electromagnetic radiation waves', 'gravity ripples'], correctIndex: 1, explain: 'Sound is a longitudinal pressure wave — compressions and rarefactions.' }
       ]
     },
     {
@@ -1028,12 +1028,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
       critMultiplier: 2.1,
       flavor: 'A single beam splits into seven knives.',
       challengeBank: [
-        { prompt: 'When light passes through a prism it splits into colors because different wavelengths...', options: ['have different speeds in vacuum', 'bend by different amounts in glass', 'have different mass', 'reflect more strongly'], correctIndex: 1, explain: 'Refractive index varies with wavelength → different bending angles → spectrum.' },
-        { prompt: 'The fastest known speed in the universe is...', options: ['speed of sound', 'speed of light in vacuum', 'speed of an electron', 'orbital speed of Earth'], correctIndex: 1, explain: '~299,792,458 m/s — a fundamental constant.' },
-        { prompt: 'Visible light is what part of the electromagnetic spectrum?', options: ['radio waves', 'a narrow band between UV and IR', 'X-rays', 'gamma rays'], correctIndex: 1, explain: 'Roughly 380-700 nm wavelength — tiny slice of the EM spectrum.' },
+        { prompt: 'When light passes through a prism it splits into colors because different wavelengths...', options: ['travel at different speeds in a vacuum', 'bend by different amounts in glass', 'have different mass', 'reflect more strongly'], correctIndex: 1, explain: 'Refractive index varies with wavelength → different bending angles → spectrum.' },
+        { prompt: 'The fastest known speed in the universe is...', options: ['speed of sound', 'speed of light in vacuum', 'speed of an electron', 'orbital speed of the Earth'], correctIndex: 1, explain: '~299,792,458 m/s — a fundamental constant.' },
+        { prompt: 'Visible light is what part of the electromagnetic spectrum?', options: ['radio waves and microwaves together', 'a narrow band between UV and IR', 'X-rays', 'gamma rays'], correctIndex: 1, explain: 'Roughly 380-700 nm wavelength — tiny slice of the EM spectrum.' },
         { prompt: 'Newton\'s second law states F = ?', options: ['mv', 'ma', 'mgh', 'qE'], correctIndex: 1, explain: 'Force = mass × acceleration. Bigger mass or bigger accel = bigger force.' },
-        { prompt: 'Energy is conserved means...', options: ['energy can be destroyed', 'energy is always created', 'energy changes form but total stays constant', 'energy decreases over time'], correctIndex: 2, explain: 'First law of thermodynamics — energy is converted, not lost or gained.' },
-        { prompt: 'Which object falls FASTER on the Moon in a vacuum?', options: ['a feather', 'a hammer', 'both fall at the same rate', 'neither falls'], correctIndex: 2, explain: 'No air resistance → all objects accelerate equally under gravity. Apollo 15 demonstrated this.' }
+        { prompt: 'Energy is conserved means...', options: ['energy can be destroyed', 'energy is always created', 'energy changes form but total stays constant', 'energy slowly decreases over time until it is gone'], correctIndex: 2, explain: 'First law of thermodynamics — energy is converted, not lost or gained.' },
+        { prompt: 'Which object falls FASTER on the Moon in a vacuum?', options: ['a feather', 'a hammer', 'both fall at the same rate', 'neither falls without any air'], correctIndex: 2, explain: 'No air resistance → all objects accelerate equally under gravity. Apollo 15 demonstrated this.' }
       ]
     },
     {
@@ -1053,7 +1053,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
         { prompt: 'Ohm\'s law states that V = ?', options: ['I + R', 'I × R', 'I / R', 'R / I'], correctIndex: 1, explain: 'Voltage = current × resistance. Foundational electrical relationship.' },
         { prompt: 'Voltage is measured in...', options: ['amps', 'volts', 'ohms', 'watts'], correctIndex: 1, explain: 'Volt (V) — named for Alessandro Volta.' },
         { prompt: 'In a SERIES circuit, components are connected...', options: ['one after another, single path', 'in branches with multiple paths', 'wirelessly', 'with capacitors only'], correctIndex: 0, explain: 'Series = single loop. If one component breaks, current stops.' },
-        { prompt: 'A SHORT CIRCUIT happens when...', options: ['the battery dies', 'current bypasses the load with very low resistance', 'a switch is open', 'a fuse blows on purpose'], correctIndex: 1, explain: 'Low-resistance bypass → very high current → heat → fire risk.' },
+        { prompt: 'A SHORT CIRCUIT happens when...', options: ['the battery dies', 'current bypasses the load with very low resistance', 'a switch is open', 'a fuse blows on purpose to protect the whole circuit'], correctIndex: 1, explain: 'Low-resistance bypass → very high current → heat → fire risk.' },
         { prompt: 'A resistor\'s job is to...', options: ['store energy', 'limit current flow', 'amplify voltage', 'switch automatically'], correctIndex: 1, explain: 'Resistors convert electrical energy into heat, limiting current.' },
         { prompt: 'Power dissipated by a resistor (in watts) = ?', options: ['V × I', 'V + I', 'V / I', 'V − I'], correctIndex: 0, explain: 'P = V × I (also P = I²R or V²/R via Ohm\'s law).' }
       ]
