@@ -688,14 +688,22 @@ window.SelHub = window.SelHub || {
               var safePrompt = data.imagePrompt + ' Respectful, accurate, beautiful illustration. NO text, NO labels, NO stereotypes. Fine art quality, warm lighting.';
               callImagen(safePrompt, 400, 0.8).then(function(img) {
                 updMulti({ cultureImage: img, imageLoading: false });
-              }).catch(function() { upd('imageLoading', false); });
+              }).catch(function() {
+                upd('imageLoading', false);
+                addToast('The illustration could not be generated. The written guide is still here.', 'error');
+                if (announceToSR) announceToSR('The illustration could not be generated. The written guide is still here.');
+              });
             }
           } catch(e) {
             console.warn('Culture data parse failed', e);
             upd('aiLoading', false);
             addToast('Could not load culture data \u2014 try again', 'error');
           }
-        }).catch(function() { upd('aiLoading', false); });
+        }).catch(function() {
+          upd('aiLoading', false);
+          addToast('This culture guide could not be loaded just now. Try again in a moment.', 'error');
+          if (announceToSR) announceToSR('This culture guide could not be loaded just now. Try again in a moment.');
+        });
       };
 
       // ── Ask a follow-up question ──
@@ -720,7 +728,11 @@ window.SelHub = window.SelHub || {
           if (announceToSR) announceToSR('Follow-up answer ready');
           ctx.awardXP(5);
           checkBadges({ questionsAsked: newQ });
-        }).catch(function() { upd('aiLoading', false); });
+        }).catch(function() {
+          upd('aiLoading', false);
+          addToast('That follow-up could not be answered just now. Try again in a moment.', 'error');
+          if (announceToSR) announceToSR('That follow-up could not be answered just now. Try again in a moment.');
+        });
       };
 
       // ── Cultural Comparison ──
@@ -757,7 +769,11 @@ window.SelHub = window.SelHub || {
             upd('aiLoading', false);
             addToast('Could not generate comparison \u2014 try again', 'error');
           }
-        }).catch(function() { upd('aiLoading', false); });
+        }).catch(function() {
+          upd('aiLoading', false);
+          addToast('The comparison could not be generated just now. Try again in a moment.', 'error');
+          if (announceToSR) announceToSR('The comparison could not be generated just now. Try again in a moment.');
+        });
       };
 
       // ── Start Language Match Game ──
@@ -1758,7 +1774,11 @@ window.SelHub = window.SelHub || {
             callImagen && h('button', { onClick: function() {
               upd('imageLoading', true);
               var newPrompt = 'Beautiful illustration representing ' + selectedCulture + ' culture, ' + (EXPLORE_ASPECTS.find(function(a) { return a.id === selectedAspect; }) || {}).label + '. Respectful, accurate, fine art quality, warm lighting. NO text, NO stereotypes.';
-              callImagen(newPrompt, 400, 0.8).then(function(img) { updMulti({ cultureImage: img, imageLoading: false }); }).catch(function() { upd('imageLoading', false); });
+              callImagen(newPrompt, 400, 0.8).then(function(img) { updMulti({ cultureImage: img, imageLoading: false }); }).catch(function() {
+                upd('imageLoading', false);
+                addToast('The illustration could not be generated. The written guide is still here.', 'error');
+                if (announceToSR) announceToSR('The illustration could not be generated. The written guide is still here.');
+              });
             }, disabled: imageLoading, className: 'text-xs text-cyan-500 hover:text-cyan-700 font-bold disabled:opacity-40' }, imageLoading ? '\uD83C\uDFA8 Generating...' : '\uD83C\uDFA8 Generate new illustration')
           )
         ),

@@ -922,7 +922,11 @@ window.SelHub = window.SelHub || {
           callGemini(prompt, false).then(function(r) {
             var ct = (r || 'Take a breath. What\'s the one specific thing you want them to hear? Say that — then stop talking.').trim();
             upd({ fRpHistory: fRpHistory.concat([{ speaker: 'coach', text: ct }]), fRpLoading: false });
-          }).catch(function() { upd('fRpLoading', false); });
+          }).catch(function() {
+            upd('fRpLoading', false);
+            addToast('The practice partner could not reply just now. What you wrote is saved — try again.', 'error');
+            if (announceToSR) announceToSR('The practice partner could not reply just now. What you wrote is saved — try again.');
+          });
         }
         function fEndRp() {
           if (!callGemini || !fCfg) return;

@@ -947,7 +947,11 @@ window.SelHub = window.SelHub || {
             addToast('Your action plan is ready!', 'success');
             ctx.awardXP(10);
           } catch(e) { upd('aiLoading', false); }
-        }).catch(function() { upd('aiLoading', false); });
+        }).catch(function() {
+          upd('aiLoading', false);
+          addToast('That could not be generated just now. Your work is saved — try again.', 'error');
+          if (announceToSR) announceToSR('That could not be generated just now. Your work is saved — try again.');
+        });
       };
 
       // ── Planner steps ──
@@ -2086,7 +2090,11 @@ window.SelHub = window.SelHub || {
                     callGemini(prompt).then(function(resp) {
                       updMulti({ aiResponse: resp, aiLoading: false });
                       ctx.awardXP(5);
-                    }).catch(function() { upd('aiLoading', false); });
+                    }).catch(function() {
+                      upd('aiLoading', false);
+                      addToast('That could not be generated just now. Your work is saved — try again.', 'error');
+                      if (announceToSR) announceToSR('That could not be generated just now. Your work is saved — try again.');
+                    });
                   },
                   disabled: aiLoading,
                   className: 'px-4 py-2 bg-amber-700 text-white rounded-lg text-xs font-bold hover:bg-amber-800 disabled:opacity-40 flex items-center gap-2'
@@ -2181,7 +2189,11 @@ window.SelHub = window.SelHub || {
                         callGemini(prompt).then(function(resp) {
                           updMulti({ aiResponse: resp, aiLoading: false });
                           ctx.awardXP(5);
-                        }).catch(function() { upd('aiLoading', false); });
+                        }).catch(function() {
+                          upd('aiLoading', false);
+                          addToast('That could not be generated just now. Your work is saved — try again.', 'error');
+                          if (announceToSR) announceToSR('That could not be generated just now. Your work is saved — try again.');
+                        });
                       },
                       disabled: aiLoading,
                       className: 'px-4 py-2 bg-amber-700 text-white rounded-lg text-xs font-bold hover:bg-amber-700 disabled:opacity-40 flex items-center gap-2'

@@ -433,6 +433,35 @@
             h('div', { style: { padding: 16, minWidth: 0, flex: '1 1 auto' } }, content)
           );
         },
+        // ── Reduced motion: an accommodation must not depend on which tool you opened ──
+        // Eleven inline `animation:` declarations live in compassion (floating
+        // hearts) and growthmindset (growing bars, sparkles). An inline style beats
+        // a stylesheet rule, so only an `!important` rule can stand them down — and
+        // the only such rule in the hub was injected by growthmindset's own render.
+        // A student who never opened Growth Mindset got no accommodation anywhere,
+        // and one who did got it app-wide as a side effect. This installs it for
+        // every SEL tool, scoped to the tool shells so nothing outside the hub is
+        // touched. Render-time and idempotent, matching the existing doctrine that
+        // merely loading a tool script must not mutate document.head.
+        _injectMotionCSS: function() {
+          if (typeof document === 'undefined' || !document.head) return;
+          if (document.getElementById('sel-hub-reduced-motion')) return;
+          var scope = '[data-sel-tool-shell], [data-sel-standard-shell]';
+          var style = document.createElement('style');
+          style.id = 'sel-hub-reduced-motion';
+          style.textContent = [
+            '@media (prefers-reduced-motion: reduce) {',
+            '  ' + scope + ', ' + scope.replace(/(\[[^\]]+\])/g, '$1 *') + ',',
+            '  ' + scope.replace(/(\[[^\]]+\])/g, '$1 *::before') + ', ' + scope.replace(/(\[[^\]]+\])/g, '$1 *::after') + ' {',
+            '    animation-duration: 0.01ms !important;',
+            '    animation-iteration-count: 1 !important;',
+            '    transition-duration: 0.01ms !important;',
+            '    scroll-behavior: auto !important;',
+            '  }',
+            '}'
+          ].join('\n');
+          document.head.appendChild(style);
+        },
         // ── Tab bars: honour the contract the role announces ──
         // 66 SEL tool tab bars declare role="tablist" / role="tab". That tells a
         // screen-reader user "use the arrow keys to move between tabs", and 54 of
@@ -470,6 +499,7 @@
         renderTool: function(id, ctx) {
           var tool = this._registry[id];
           if (!tool || !tool.render) return null;
+          this._injectMotionCSS();
           var hasReact = ctx && ctx.React;
           var useStandardShell = hasReact && tool.standardShell !== false;
           var needsDarkShell = tool.lightBackground !== true && hasReact;

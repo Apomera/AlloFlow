@@ -1132,3 +1132,144 @@ calibration), `sel_toolbar_toggle_names` (contract, either spelling),
 `sel_cultureexplorer_quiz_explanations` (executes the bank; renders before and
 after an answer). Run any suspect test alone before believing a failure from a
 contended run; that pattern faked one failure again this pass.
+
+---
+
+## 18. 2026-08-25 (second pass) — what the tools do when things go wrong, and content nobody can reach  (local, unpushed)
+
+Dimensions nobody had measured: what a student sees when the AI is down, whether
+authored teaching actually renders, heading structure, touch targets, and motion.
+
+### 18a. FIXED — 165 rows of culturally-responsive practice guidance that never rendered
+
+Every entry in coping's `CULTURAL_ADAPTATIONS` (33 identity and context groups)
+carries `adaptations: [{traditional, adaptation, why}]` — the concrete "instead of
+X, try Y, because Z" guidance. The Learn > Cultural renderer reads `context`,
+`shortDesc`, `whyItMatters`, `considerations` and `helpfulResources`, and **never
+touched `adaptations`**. Students and educators got the background reading with the
+actionable part withheld: 165 rows across the whole file, invisible.
+
+Now rendered as a native `<details>` disclosure ("Practice adaptations (5)")
+matching the Considerations disclosure directly above it — keyboard-operable with
+no JS, and it keeps a 33-card list skimmable. Verified in a real browser as well as
+by assertion: all 33 disclosures render, the labels and the authored text appear,
+and a different Learn section does not show them.
+
+This is the cultureexplorer lesson generalised: **an authored explanation that
+nothing renders teaches exactly as much as no explanation.**
+
+### 18b. FIXED — 25 AI failures that looked like a dead button
+
+Twenty-five catch handlers cleared their loading flag and did nothing else. The
+spinner stopped, the screen returned to exactly how it was, and there was no way to
+tell "the AI is unreachable" from "my click did not register". Several of these
+tools announce SUCCESS to a screen reader and had no failure counterpart at all.
+
+Each now keeps the flag clear, adds a specific message naming what failed and
+confirming the student's writing is kept, and announces the same text:
+`ethicalreasoning` 9, `cultureexplorer` 5, `civicaction` 3, `coping` 2,
+`restorativecircle` 2, `selfadvocacy` 1, `friendship` 1, `upstander` 1.
+
+`selfadvocacy` also stopped printing raw exception text at students — a practice
+partner that answers "Error: Failed to fetch" in the middle of a hard conversation
+is alarming and useless.
+
+★ The first scan of this reported 10 sites that "spin forever". All ten were false
+positives: it had matched the inner `assessSafety(...).catch()` rather than the
+chain's own. Hand-reading two of them before editing is what caught it. The real
+defect was a different one.
+
+### 18c. FIXED — reduced motion depended on which tool you had opened
+
+Eleven inline `animation:` declarations live in `compassion` (floating hearts) and
+`growthmindset` (growing bars, sparkles). An inline style beats a stylesheet rule,
+so only an `!important` rule can stand them down — and the hub's only such rule was
+injected by **growthmindset's own render**. A student who never opened Growth
+Mindset had no accommodation in any SEL tool; one who did got it applied app-wide
+as a side effect.
+
+The host now installs it (`_injectMotionCSS`, called from `renderTool`), scoped to
+`[data-sel-tool-shell]` and `[data-sel-standard-shell]` so it covers all 71 tools
+and nothing outside the hub. Render-time and idempotent, matching the doctrine that
+loading a tool script must not mutate `document.head`. growthmindset's own rule is
+left alone deliberately — removing it would narrow an accommodation that currently
+reaches the rest of the app.
+
+### 18d. AARON — about 5 MB of authored content that no student can reach
+
+The single largest finding in either pass, and it generalises §17f well beyond the
+four tools recorded there. **652 module-scope content declarations across 11 tools,
+5.04 MB, are declared and never read anywhere in the repo.** Every byte is
+downloaded and parsed on every tool open.
+
+| tool | declarations | KB |
+|---|---|---|
+| howl | 13 | 623 |
+| upstander | 138 | 603 |
+| advocacy | 67 | 597 |
+| zones | 6 | 530 |
+| griefloss | 84 | 521 |
+| anxietytoolkit | 77 | 516 |
+| digitalwellbeing | 81 | 499 |
+| stressbucket | 89 | 484 |
+| bigfeelings | 90 | 457 |
+| mindfulness | 6 | 297 |
+| emotions | 1 | 27 |
+
+**This is not all filler, and that is what makes it a decision rather than a
+cleanup.** Some is the telegraphic generated prose recorded in §17f. But some is
+the best clinical writing in the hub:
+
+- `mindfulness` **TRAUMA_ADAPTATIONS** (70 KB) — standard practice, the specific
+  trauma risk it carries, and graded variants with when-to-use guidance
+  ("closing the eyes removes visual safety cues...").
+- `zones` **ZONE_COREGULATION** (130 KB) — observable cues and scripts, keyed by
+  zone, band and who you are to the student.
+- `zones` **ZONE_BODY_SENSATIONS** (159 KB), `mindfulness` **SENSORY_ANCHORS**
+  (127 KB), `howl` **COACHING_MOVES** (89 KB), **CONFERENCE_SCRIPTS** (67 KB),
+  `advocacy` **CRISIS_FIRST_AID**, **MENTOR_QUOTES**.
+
+Two specific cases were traced to root cause and left alone on purpose:
+
+- `advocacy` **IEP_ROLEPLAY_SCENES_EXTENDED** (10 scenes with debriefs) is appended
+  to `window.AlloFlowIEPRoleplay.scenes` behind a guard, and **nothing in the repo
+  ever defines `window.AlloFlowIEPRoleplay`** — the dead-window-global class. Its
+  shape (`setting`/`yourRole`/`preMeeting`/`moves[]`/`debrief`) is also entirely
+  different from the live `ROLEPLAY_SCENES` (`setup`/`opening`/`choices[]`), so it
+  cannot simply be concatenated; wiring it means writing a renderer.
+- `zones` **CULTURAL_ZONE_ADAPTATIONS** (128 entries, 1,069 lines) has no cultural
+  section in zones to live in at all. Building one is a feature, and the content is
+  sensitive enough (code-switching, racialised readings of affect) to want your
+  review before it goes in front of students.
+
+**New gate: `dev-tools/check_sel_dead_content.cjs`** + ratchet at
+`dev-tools/sel_dead_content_baseline.json`, run by
+`tests/sel_dead_content_ratchet.test.js`. The existing 5 MB is baselined, not
+failed — the call is yours. What it prevents is the debt growing: a new never-read
+declaration, or an existing one growing, fails. Detection is on the AST and the
+walk carries the parent node, so an assignment target, an object key or a
+non-computed member property is never mistaken for a read. Calibrated both ways
+(injected dead content fails; wiring it clears) and it exits 2 rather than passing
+if it ever scans zero files.
+
+### 18e. Measured and clean — negative results worth keeping
+
+- **Heading structure**: all 71 tools render headings starting at `h3` under the
+  shell with **zero skipped levels**. No work needed.
+- **Touch targets**: only 8 controls across 3 tools compute below 24 px, and all
+  are decorative badge/eyebrow spans rather than primary controls.
+- **Focus visibility**: exactly one `outline: none` in the hub (compassion), and
+  117 Tailwind `focus:ring` declarations. Not a systemic gap.
+- **`.catch` coverage**: 142 catch sites; none of the AI paths lack a catch
+  entirely, so nothing hangs forever.
+
+### 18f. Verification
+
+Full SEL suite **82 files / 1,109 passing / 2 skipped / 0 failing**;
+`check_sel_render` 71/71; `check_sel_a11y` 0 errors, 0 warnings, 14,160 nodes
+graded; `check_sel_dead_content` clean against its new baseline. All changed
+`sel_hub` files byte-identical with their `desktop/web-app/public/sel_hub` mirrors.
+
+★ An intermediate run reported 3 failed files with 300 skipped; every one passed
+alone. That is the third time contention has faked a failure in this hub — **never
+diagnose from a contended run.**

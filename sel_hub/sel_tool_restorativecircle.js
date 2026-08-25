@@ -1069,7 +1069,11 @@ window.SelHub = window.SelHub || {
           } catch(e) {
             upd('aiLoading', false);
           }
-        }).catch(function() { upd('aiLoading', false); });
+        }).catch(function() {
+          upd('aiLoading', false);
+          addToast('That could not be generated just now. Your writing is saved — try again.', 'error');
+          if (announceToSR) announceToSR('That could not be generated just now. Your writing is saved — try again.');
+        });
       };
 
       var prompts = d.customPrompts || getPrompts(selectedCircleType);
@@ -1816,6 +1820,8 @@ window.SelHub = window.SelHub || {
                         if (announceToSR) announceToSR('Coach feedback added');
                       }).catch(function() {
                         upd('rcRpLoading', false);
+                        addToast('The practice partner could not reply just now. What you wrote is saved — try again.', 'error');
+                        if (announceToSR) announceToSR('The practice partner could not reply just now. What you wrote is saved — try again.');
                       });
                     },
                     className: 'px-3 py-2 rounded-lg text-sm font-semibold',

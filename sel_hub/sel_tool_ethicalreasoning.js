@@ -745,6 +745,8 @@ window.SelHub = window.SelHub || {
           ctx.awardXP(5);
         }).catch(function() {
           upd('aiLoading', false);
+          addToast('The Socratic coach could not respond just now. Your writing is saved — try Send again.', 'error');
+          if (announceToSR) announceToSR('The Socratic coach could not respond just now. Your writing is saved — try Send again.');
         });
       };
 
@@ -766,7 +768,11 @@ window.SelHub = window.SelHub || {
           var applied = (d.frameworksApplied || []).slice();
           if (applied.indexOf(frameworkId) === -1) applied.push(frameworkId);
           updMulti({ frameworkAnalysis: resp, aiLoading: false, frameworksApplied: applied });
-        }).catch(function() { upd('aiLoading', false); });
+        }).catch(function() {
+          upd('aiLoading', false);
+          addToast('That reflection could not be sent just now. Your writing is saved — try again.', 'error');
+          if (announceToSR) announceToSR('That reflection could not be sent just now. Your writing is saved — try again.');
+        });
       };
 
       // ── Generate AI debate feedback ──
@@ -797,7 +803,11 @@ window.SelHub = window.SelHub || {
           updMulti({ debateFeedback: resp, aiLoading: false, debatesCompleted: completed });
           ctx.awardXP(10);
           if (completed >= 3) { addToast('\uD83C\uDFC5 Debate Champion badge earned!'); }
-        }).catch(function() { upd('aiLoading', false); });
+        }).catch(function() {
+          upd('aiLoading', false);
+          addToast('The response could not be generated just now. Your writing is saved — try again.', 'error');
+          if (announceToSR) announceToSR('The response could not be generated just now. Your writing is saved — try again.');
+        });
       };
 
       // ── Generate Kohlberg assessment AI feedback ──
@@ -827,7 +837,11 @@ window.SelHub = window.SelHub || {
           updMulti({ kohlbergFeedback: resp, kohlbergComplete: true, aiLoading: false });
           ctx.awardXP(15);
           addToast('\uD83E\uDDD9 Moral Philosopher badge earned!');
-        }).catch(function() { upd('aiLoading', false); });
+        }).catch(function() {
+          upd('aiLoading', false);
+          addToast('The response could not be generated just now. Your writing is saved — try again.', 'error');
+          if (announceToSR) announceToSR('The response could not be generated just now. Your writing is saved — try again.');
+        });
       };
 
       // ── Badge check helper ──
@@ -1081,7 +1095,11 @@ window.SelHub = window.SelHub || {
                     callGemini(prompt).then(function(resp) {
                       updMulti({ branchAIDiscussion: resp, aiLoading: false });
                       ctx.awardXP(5);
-                    }).catch(function() { upd('aiLoading', false); });
+                    }).catch(function() {
+                      upd('aiLoading', false);
+                      addToast('The discussion could not be generated just now. Your choice and reflection are saved — try again.', 'error');
+                      if (announceToSR) announceToSR('The discussion could not be generated just now. Your choice and reflection are saved — try again.');
+                    });
                   }, disabled: aiLoading,
                     className: 'px-4 py-2 bg-emerald-700 text-white rounded-lg text-xs font-bold hover:bg-emerald-700 transition-colors disabled:opacity-40 flex items-center gap-2'
                   }, h(Sparkles, { size: 14 }), aiLoading ? 'Thinking...' : '\uD83D\uDCAC Discuss with AI'),
@@ -1717,7 +1735,11 @@ window.SelHub = window.SelHub || {
                           var newHist = csSocratic.concat([{ role: 'student', text: userInput }, { role: 'socrates', text: resp }]);
                           updMulti({ caseStudySocratic: newHist, aiLoading: false, caseStudySocraticInput: '' });
                           ctx.awardXP(5);
-                        }).catch(function() { upd('aiLoading', false); });
+                        }).catch(function() {
+                          upd('aiLoading', false);
+                          addToast('The case-study response could not be generated just now. Your writing is saved — try again.', 'error');
+                          if (announceToSR) announceToSR('The case-study response could not be generated just now. Your writing is saved — try again.');
+                        });
                       }
                     },
                     placeholder: 'Share your reasoning...', disabled: aiLoading,
@@ -1738,7 +1760,11 @@ window.SelHub = window.SelHub || {
                         var newHist = csSocratic.concat([{ role: 'student', text: userInput }, { role: 'socrates', text: resp }]);
                         updMulti({ caseStudySocratic: newHist, aiLoading: false, caseStudySocraticInput: '' });
                         ctx.awardXP(5);
-                      }).catch(function() { upd('aiLoading', false); });
+                      }).catch(function() {
+                        upd('aiLoading', false);
+                        addToast('The case-study response could not be generated just now. Your writing is saved — try again.', 'error');
+                        if (announceToSR) announceToSR('The case-study response could not be generated just now. Your writing is saved — try again.');
+                      });
                     }
                   },
                     className: 'px-4 py-3 bg-teal-700 text-white rounded-xl text-sm font-bold hover:bg-teal-700 transition-colors disabled:opacity-40'
@@ -1762,7 +1788,11 @@ window.SelHub = window.SelHub || {
                   updMulti({ caseStudyAIResp: resp, aiLoading: false, caseStudiesCompleted: completed });
                   ctx.awardXP(10);
                   if (completed.length >= 3) { addToast('\uD83D\uDCD6 Case Study Scholar badge earned!'); }
-                }).catch(function() { upd('aiLoading', false); });
+                }).catch(function() {
+                  upd('aiLoading', false);
+                  addToast('The response could not be generated just now. Your writing is saved — try again.', 'error');
+                  if (announceToSR) announceToSR('The response could not be generated just now. Your writing is saved — try again.');
+                });
               }, disabled: aiLoading,
                 className: 'w-full px-4 py-3 bg-teal-700 text-white rounded-xl text-sm font-bold hover:bg-teal-700 transition-colors disabled:opacity-40 flex items-center justify-center gap-2'
               }, h(Sparkles, { size: 14 }), aiLoading ? 'Analyzing...' : '\uD83D\uDCD6 Get AI Insight on My Analysis'),
@@ -1908,7 +1938,11 @@ window.SelHub = window.SelHub || {
                   updMulti({ valuesAIResp: resp, valuesComplete: true, aiLoading: false });
                   ctx.awardXP(10);
                   addToast('\uD83D\uDC8E Values Explorer badge earned!');
-                }).catch(function() { upd('aiLoading', false); });
+                }).catch(function() {
+                  upd('aiLoading', false);
+                  addToast('Your values analysis could not be generated just now. Your rankings are saved — try again.', 'error');
+                  if (announceToSR) announceToSR('Your values analysis could not be generated just now. Your rankings are saved — try again.');
+                });
               }, disabled: aiLoading,
                 className: 'w-full px-4 py-3 bg-rose-600 text-white rounded-xl text-sm font-bold hover:bg-rose-700 transition-colors disabled:opacity-40 flex items-center justify-center gap-2'
               }, h(Sparkles, { size: 14 }), aiLoading ? 'Analyzing...' : '\uD83D\uDC8E See My Values Insight')

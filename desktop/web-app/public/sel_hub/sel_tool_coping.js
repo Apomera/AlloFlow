@@ -27822,6 +27822,8 @@ window.SelHub = window.SelHub || {
             upd({ cpRpHistory: cpRpHistory.concat([{ speaker: 'coach', text: coachText }]), cpRpLoading: false });
           }).catch(function() {
             upd('cpRpLoading', false);
+            addToast('The practice partner could not reply just now. What you wrote is saved — try again.', 'error');
+            if (announceToSR) announceToSR('The practice partner could not reply just now. What you wrote is saved — try again.');
           });
         }
 
@@ -28512,7 +28514,11 @@ window.SelHub = window.SelHub || {
                       'Use ' + (band === 'elementary' ? 'simple, encouraging language' : 'relatable, supportive language') + '.'
                     ).then(function(resp) {
                       upd({ dailyRec: resp, dailyRecLoading: false });
-                    }).catch(function() { upd('dailyRecLoading', false); });
+                    }).catch(function() {
+                      upd('dailyRecLoading', false);
+                      addToast('Today’s suggestions could not be loaded. Your saved strategies are still here.', 'error');
+                      if (announceToSR) announceToSR('Today’s suggestions could not be loaded. Your saved strategies are still here.');
+                    });
                   }
                 },
                 style: {
@@ -28792,6 +28798,28 @@ window.SelHub = window.SelHub || {
                   h('summary', { style: { cursor: 'pointer', color: _copFg('#5eead4'), fontSize: 11 } }, 'Considerations'),
                   h('ul', { style: { margin: '4px 0 0 18px', color: _copFg('#cbd5e1'), fontSize: 11, lineHeight: 1.5 } },
                     c.considerations.map(function(x, i) { return h('li', { key: i }, x); })
+                  )
+                ) : null,
+                // The practice guidance itself: what to do differently, and why.
+                // Authored on every entry (165 rows across 33 contexts) and, until
+                // now, never rendered — the section showed the background and
+                // withheld the actionable part.
+                c.adaptations && c.adaptations.length ? h('details', { style: { marginTop: 6 } },
+                  h('summary', { style: { cursor: 'pointer', color: _copFg('#5eead4'), fontSize: 11 } }, 'Practice adaptations (' + c.adaptations.length + ')'),
+                  h('div', { style: { display: 'grid', gap: 8, marginTop: 8 } },
+                    c.adaptations.map(function(a, i) {
+                      return h('div', { key: i, style: { padding: '8px 10px', borderRadius: 8, background: _copBg('#0f172a'), border: '1px solid #334155' } },
+                        h('div', { style: { color: _copFg('#94a3b8'), fontSize: 11, lineHeight: 1.5 } },
+                          h('span', { style: { fontWeight: 700 } }, 'Instead of: '), a.traditional
+                        ),
+                        h('div', { style: { color: _copFg('#cbd5e1'), fontSize: 12, lineHeight: 1.5, marginTop: 2 } },
+                          h('span', { style: { fontWeight: 700, color: _copFg('#5eead4') } }, 'Try: '), a.adaptation
+                        ),
+                        a.why ? h('div', { style: { color: _copFg('#94a3b8'), fontSize: 11, lineHeight: 1.5, marginTop: 4, fontStyle: 'italic' } },
+                          h('span', { style: { fontWeight: 700, fontStyle: 'normal' } }, 'Why: '), a.why
+                        ) : null
+                      );
+                    })
                   )
                 ) : null,
                 c.helpfulResources && c.helpfulResources.length ? h('div', { style: { marginTop: 8, color: _copFg('#fbbf24'), fontSize: 11 } },

@@ -19930,6 +19930,8 @@ window.SelHub = window.SelHub || {
                             if (announceToSR) announceToSR('Coach feedback ready');
                           }).catch(function() {
                             upd({ rpLoading: false });
+                            addToast('The practice partner could not reply just now. What you wrote is saved — try again.', 'error');
+                            if (announceToSR) announceToSR('The practice partner could not reply just now. What you wrote is saved — try again.');
                           });
                         },
                         style: {

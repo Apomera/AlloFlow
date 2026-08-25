@@ -2909,6 +2909,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
             })
             .catch(function() {
               upd('pRpLoading', false);
+              addToast('The practice partner could not reply just now. What you wrote is saved — try again.', 'error');
             });
         };
         var endRp = function() {
@@ -2965,8 +2966,12 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
               upd({ pLoading: false, pCritique: text, _lastTier: critSafety.action === 'nudge' ? 2 : 0 });
               announceSR('Coaching feedback ready');
             })
-            .catch(function(e) {
-              upd({ pLoading: false, pCritique: 'Error: ' + (e && e.message ? e.message : 'unknown') });
+            .catch(function() {
+              // A raw exception message ("Failed to fetch", "429") in front of a
+              // student practising a hard conversation is alarming and useless.
+              var msg = 'The coach could not respond just now. What you wrote is saved — try Get feedback again.';
+              upd({ pLoading: false, pCritique: msg });
+              announceSR(msg);
             });
         };
 
