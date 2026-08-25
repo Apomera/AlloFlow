@@ -265,10 +265,10 @@ exports[`science-sim + studio render goldens > renders + pins a digest for moonM
   "buttons": 10,
   "canvases": 1,
   "inputs": 4,
-  "lengthBucket": 119,
+  "lengthBucket": 125,
   "paths": 0,
   "selects": 0,
-  "sha": "9765728bea259642",
+  "sha": "89f2b18848540c2a",
   "svgs": 0,
 }
 `;

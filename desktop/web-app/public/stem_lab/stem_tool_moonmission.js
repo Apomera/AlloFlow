@@ -677,6 +677,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
         ['\u0394v (delta-v)', t('stem.moonmission.gl_deltav', 'The change in speed a burn produces. It is rocket currency: every manoeuvre costs some, and the tank only holds so much.')],
         [t('stem.moonmission.gl_burn_term', 'Burn'), t('stem.moonmission.gl_burn', 'Firing an engine for a set time. Short burns steer; long burns change orbits.')],
         [t('stem.moonmission.gl_window_term', 'Burn window'), t('stem.moonmission.gl_window', 'The short stretch when the spacecraft points the right way for a burn. Miss it and you need a correction later.')],
+        // The five burn names the mission is built around. They were spelled out only
+        // under the briefing diagram, so from phase 1 onward a student who forgot what
+        // TEI meant had nowhere to look it up.
+        ['TLI', t('stem.moonmission.gl_tli', 'Trans-Lunar Injection: the burn that leaves Earth orbit and starts the three-day coast to the Moon.')],
+        ['LOI', t('stem.moonmission.gl_loi', 'Lunar Orbit Insertion: slowing down at the Moon so its gravity captures you instead of flinging you past.')],
+        ['PDI', t('stem.moonmission.gl_pdi', 'Powered Descent Initiation: the moment the lander lights its engine to drop out of orbit toward the surface.')],
+        ['TEI', t('stem.moonmission.gl_tei', 'Trans-Earth Injection: the burn that leaves lunar orbit and starts the trip home.')],
+        ['EI', t('stem.moonmission.gl_ei', 'Entry Interface: where the atmosphere effectively begins on the way home, about 122 km up.')],
         ['CSM / CM / SM', t('stem.moonmission.gl_csm', 'Command and Service Module. The CM is the cone the crew rides home in; the SM behind it carries the engine, power and oxygen and is dropped before entry.')],
         ['LM (Eagle)', t('stem.moonmission.gl_lm', 'Lunar Module, the two-part lander. The descent stage stays on the Moon as a launch pad; the ascent stage flies back up.')],
         ['CDR / CMP / LMP', t('stem.moonmission.gl_crew', 'Commander, Command Module Pilot, Lunar Module Pilot. Two of them land; the CMP stays in orbit alone.')],
@@ -5193,6 +5201,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     var lrvCamDesired = new THREE.Vector3();
                     var lrvCamTarget = new THREE.Vector3();
                     var o2Exhausted = false;   // consumables gone: collection stops, banner + SR announcement
+                    // Latches, not value windows. The old test asked whether O2 sat inside a
+                    // 0.5-wide band on the exact frame it was sampled, so a difficulty whose
+                    // decay step straddled the band would skip the warning entirely and
+                    // nothing would report it. Crossing a threshold is the event; fire once.
+                    var o2Warned30 = false, o2Warned15 = false;
                     // The seismometer is the one landmark you can DO something with. Every
                     // Apollo surface crew spent a large slice of its EVA deploying ALSEP,
                     // and until now the instruments here were scenery you walked past and
@@ -5640,11 +5653,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       // O2 depletion (rate based on difficulty)
                       if (evaTick % 60 === 0) evaO2 = Math.max(0, evaO2 - diffSettings.o2Rate);
                       // O2 warnings
-                      if (evaO2 < 30 && evaO2 > 29.5 && evaTick % 60 === 0) {
+                      if (!o2Warned30 && evaO2 <= 30) {
+                        o2Warned30 = true;
+                        canvasEl.dataset.evaO2Warned = '30';
                         if (addToast) addToast('\u26A0\uFE0F O\u2082 at ' + Math.round(evaO2) + '% \u2014 Consider returning to the LM soon!', 'info');
+                        if (typeof announceToSR === 'function') announceToSR('Oxygen at ' + Math.round(evaO2) + ' percent. Consider returning to the Lunar Module soon.');
                       }
-                      if (evaO2 < 15 && evaO2 > 14.5 && evaTick % 60 === 0) {
+                      if (!o2Warned15 && evaO2 <= 15) {
+                        o2Warned15 = true;
+                        canvasEl.dataset.evaO2Warned = '15';
                         if (addToast) addToast('\uD83D\uDEA8 CRITICAL: O\u2082 at ' + Math.round(evaO2) + '%! Return to LM immediately!', 'error');
+                        if (typeof announceToSR === 'function') announceToSR('Critical. Oxygen at ' + Math.round(evaO2) + ' percent. Return to the Lunar Module immediately.');
                       }
                       // Consumables exhausted. The warnings above had no consequence attached \u2014
                       // O\u2082 ran to zero and the EVA carried on regardless, which quietly taught
@@ -7204,6 +7223,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
             }, t('stem.moonmission.fly_another_mission', '\uD83D\uDD04 Fly Another Mission'))
           )
         ),
+
+        // The glossary followed the student instead of living only on the two screens
+        // where nothing is happening. Collapsed, so it costs one line until it is wanted.
+        (phase >= 1 && phase <= 9) && glossaryPanel('mt-3'),
 
         // === H7b'' inquiry widget: orbital delta-V discovery ===
         // Gated to the briefing + mission-complete phases — this light-theme panel was rendering on EVERY

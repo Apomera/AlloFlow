@@ -85,8 +85,16 @@ describe('Moon Mission dashboard state', () => {
 
     const debrief = render({ missionPhase: 10 });
     expect(count(debrief, 'data-moonmission-glossary="true"')).toBe(1);
-    const mid = render({ missionPhase: 5 });
-    expect(count(mid, 'data-moonmission-glossary="true"')).toBe(0);
+  });
+
+  it('the glossary follows the student: exactly one on every phase', () => {
+    // It used to exist only on the briefing and the debrief — the two screens where
+    // nothing is happening. "What is TEI again?" gets asked mid-mission.
+    for (let phase = 0; phase <= 10; phase++) {
+      const html = render({ missionPhase: phase, evaStarted: false, descentStarted: false });
+      expect(count(html, 'data-moonmission-glossary="true"'), 'phase ' + phase).toBe(1);
+      expect(html, 'phase ' + phase).toContain('Trans-Earth Injection');
+    }
   });
 
   it('flight record lists the graded calls in the order they were flown, correction included', () => {
